@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CodeAction, CodeActionKind, CodeActionProvider, Diagnostic, DiagnosticCollection, DiagnosticSeverity, Disposable, Range, Selection, TextDocument, Uri, WorkspaceEdit, l10n, languages, workspace } from 'vscode';
+import { CodeAction, CodeActionKind, CodeActionProvider, CodeActionContext, CancellationToken, Diagnostic, DiagnosticCollection, DiagnosticSeverity, Disposable, Range, Selection, TextDocument, Uri, WorkspaceEdit, l10n, languages, workspace } from 'vscode';
 import { mapEvent, filterEvent, dispose } from './util';
 import { Model } from './model';
 
@@ -108,7 +108,7 @@ export class GitCommitInputBoxCodeActionsProvider implements CodeActionProvider 
 		this.disposables.push(languages.registerCodeActionsProvider({ scheme: 'vscode-scm' }, this));
 	}
 
-	provideCodeActions(document: TextDocument, range: Range | Selection): CodeAction[] {
+	provideCodeActions(document: TextDocument, range: Range | Selection, _context: CodeActionContext, _token: CancellationToken): any {
 		const codeActions: CodeAction[] = [];
 		const diagnostics = this.diagnosticsManager.getDiagnostics(document.uri);
 		const wrapAllLinesCodeAction = this.getWrapAllLinesCodeAction(document, diagnostics);

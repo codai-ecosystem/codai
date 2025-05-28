@@ -19,6 +19,7 @@
 	},
 	"search.exclude": {
 		"**/node_modules": true,
+		"**/dist": true,
 		"cli/target/**": true,
 		".build/**": true,
 		"out/**": true,
@@ -37,6 +38,11 @@
 		"src/vs/editor/test/node/diffing/fixtures/**": true,
 		"build/loader.min": true
 	},
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit"
+	},
+	"eslint.validate": ["typescript", "typescriptreact", "javascript", "javascriptreact"],
 	"files.readonlyInclude": {
 		"**/node_modules/**/*.*": true,
 		"**/yarn.lock": true,
@@ -60,10 +66,7 @@
 		"build/npm/*.js": true,
 		"build/*.js": true
 	},
-	"lcov.path": [
-		"./.build/coverage/lcov.info",
-		"./.build/coverage-single/lcov.info"
-	],
+	"lcov.path": ["./.build/coverage/lcov.info", "./.build/coverage-single/lcov.info"],
 	"lcov.watch": [
 		{
 			"pattern": "**/*.test.js",
@@ -80,24 +83,16 @@
 	"typescript.preferences.quoteStyle": "single",
 	"json.schemas": [
 		{
-			"fileMatch": [
-				"cgmanifest.json"
-			],
-			"url": "https://json.schemastore.org/component-detection-manifest.json",
+			"fileMatch": ["cgmanifest.json"],
+			"url": "https://json.schemastore.org/component-detection-manifest.json"
 		},
 		{
-			"fileMatch": [
-				"cglicenses.json"
-			],
+			"fileMatch": ["cglicenses.json"],
 			"url": "./.vscode/cglicenses.schema.json"
 		}
 	],
 	"git.ignoreLimitWarning": true,
-	"git.branchProtection": [
-		"main",
-		"distro",
-		"release/*"
-	],
+	"git.branchProtection": ["main", "distro", "release/*"],
 	"git.branchProtectionPrompt": "alwaysCommitToNewBranch",
 	"git.branchRandomName.enable": true,
 	"git.pullBeforeCheckout": true,
@@ -120,11 +115,9 @@
 	},
 	"[rust]": {
 		"editor.defaultFormatter": "rust-lang.rust-analyzer",
-		"editor.formatOnSave": true,
+		"editor.formatOnSave": true
 	},
-	"rust-analyzer.linkedProjects": [
-		"cli/Cargo.toml"
-	],
+	"rust-analyzer.linkedProjects": ["cli/Cargo.toml"],
 	"typescript.tsc.autoDetect": "off",
 	"testing.autoRun.mode": "rerun",
 	"conventionalCommits.scopes": [
@@ -139,21 +132,14 @@
 	],
 	"githubPullRequests.experimental.createView": true,
 	"debug.javascript.terminalOptions": {
-		"outFiles": [
-			"${workspaceFolder}/out/**/*.js",
-			"${workspaceFolder}/build/**/*.js"
-		]
+		"outFiles": ["${workspaceFolder}/out/**/*.js", "${workspaceFolder}/build/**/*.js"]
 	},
 	"extension-test-runner.debugOptions": {
-		"outFiles": [
-			"${workspaceFolder}/extensions/*/out/**/*.js",
-		]
+		"outFiles": ["${workspaceFolder}/extensions/*/out/**/*.js"]
 	},
 	"githubPullRequests.assignCreated": "${user}",
 	"githubPullRequests.defaultMergeMethod": "squash",
-	"githubPullRequests.ignoredPullRequestBranches": [
-		"main"
-	],
+	"githubPullRequests.ignoredPullRequestBranches": ["main"],
 	"application.experimental.rendererProfiling": true,
 	"editor.experimental.asyncTokenization": true,
 	"editor.experimental.asyncTokenizationVerification": true,

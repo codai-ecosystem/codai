@@ -17,13 +17,13 @@ export const agent = getAgent();
 function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
 	if (!url) {
 		return globalAgent;
-	}
-	try {
+	} try {
 		const { hostname, port, username, password } = new URL(url);
 		const auth = username && password && `${username}:${password}`;
 		return httpsOverHttp({ proxy: { host: hostname, port, proxyAuth: auth } });
 	} catch (e) {
-		window.showErrorMessage(`HTTPS_PROXY environment variable ignored: ${e.message}`);
+		const errorMessage = e instanceof Error ? e.message : String(e);
+		window.showErrorMessage(`HTTPS_PROXY environment variable ignored: ${errorMessage}`);
 		return globalAgent;
 	}
 }

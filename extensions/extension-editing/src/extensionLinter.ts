@@ -244,27 +244,27 @@ export class ExtensionLinter {
 		].forEach(n => findWhens(n, 'when'));
 
 		findWhens(findNodeAtLocation(contributesNode, ['commands']), 'enablement');
-
 		const parseResults = await commands.executeCommand<{ errorMessage: string; offset: number; length: number }[][]>('_validateWhenClauses', whenClauses.map(w => w.value as string /* we make sure to capture only if `w.value` is string above */));
 
 		const diagnostics: Diagnostic[] = [];
-		for (let i = 0; i < parseResults.length; ++i) {
-			const whenClauseJSONNode = whenClauses[i];
+		if (parseResults) {
+			for (let i = 0; i < parseResults.length; ++i) {
+				const whenClauseJSONNode = whenClauses[i];
 
-			const jsonStringScanner = new JsonStringScanner(document.getText(), whenClauseJSONNode.offset + 1);
+				const jsonStringScanner = new JsonStringScanner(document.getText(), whenClauseJSONNode.offset + 1);
 
-			for (const error of parseResults[i]) {
-				const realOffset = jsonStringScanner.getOffsetInEncoded(error.offset);
-				const realOffsetEnd = jsonStringScanner.getOffsetInEncoded(error.offset + error.length);
-				const start = document.positionAt(realOffset /* +1 to account for the quote (I think) */);
-				const end = document.positionAt(realOffsetEnd);
-				const errMsg = `${parsingErrorHeader}\n\n${error.errorMessage}`;
-				const diagnostic = new Diagnostic(new Range(start, end), errMsg, DiagnosticSeverity.Error);
-				diagnostic.code = {
-					value: 'See docs',
-					target: Uri.parse('https://code.visualstudio.com/api/references/when-clause-contexts'),
-				};
-				diagnostics.push(diagnostic);
+				for (const error of parseResults[i]) {
+					const realOffset = jsonStringScanner.getOffsetInEncoded(error.offset);
+					const realOffsetEnd = jsonStringScanner.getOffsetInEncoded(error.offset + error.length);
+					const start = document.positionAt(realOffset /* +1 to account for the quote (I think) */);
+					const end = document.positionAt(realOffsetEnd);
+					const errMsg = `${parsingErrorHeader}\n\n${error.errorMessage}`;
+					const diagnostic = new Diagnostic(new Range(start, end), errMsg, DiagnosticSeverity.Error);
+					diagnostic.code = {
+						value: 'See docs',
+						target: Uri.parse('https://code.visualstudio.com/api/references/when-clause-contexts'),
+					}; diagnostics.push(diagnostic);
+				}
 			}
 		}
 		return diagnostics;

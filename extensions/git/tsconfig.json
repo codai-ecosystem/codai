@@ -3,9 +3,8 @@
 	"compilerOptions": {
 		"outDir": "./out",
 		"experimentalDecorators": true,
-		"typeRoots": [
-			"./node_modules/@types"
-		]
+		"isolatedModules": false,
+		"typeRoots": ["./node_modules/@types"]
 	},
 	"include": [
 		"src/**/*",

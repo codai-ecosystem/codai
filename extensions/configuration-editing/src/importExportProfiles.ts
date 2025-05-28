@@ -32,7 +32,7 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 		return this._octokit;
 	}
 
-	async saveProfile(name: string, content: string): Promise<{ readonly id: string; readonly link: vscode.Uri } | null> {
+	async saveProfile(name: string, content: string, _token: vscode.CancellationToken): Promise<{ readonly id: string; readonly link: vscode.Uri } | null> {
 		const octokit = await this.getOctokit();
 		const result = await octokit.gists.create({
 			public: false,
@@ -59,11 +59,8 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 		}
 		return this._public_octokit;
 	}
-
-	async readProfile(id: string): Promise<string | null>;
-	async readProfile(uri: vscode.Uri): Promise<string | null>;
-	async readProfile(arg: string | vscode.Uri): Promise<string | null> {
-		const gist_id = typeof arg === 'string' ? arg : basename(arg.path);
+	async readProfile(idOrUri: string | vscode.Uri, _token: vscode.CancellationToken): Promise<string | null> {
+		const gist_id = typeof idOrUri === 'string' ? idOrUri : basename(idOrUri.path);
 		const octokit = await this.getPublicOctokit();
 		try {
 			const gist = await octokit.gists.get({ gist_id });

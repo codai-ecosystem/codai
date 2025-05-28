@@ -1,52 +1,9 @@
 {
-  "name": "code-oss-dev",
-  "version": "1.101.0",
-  "distro": "c0d702f8f75399581ffbd28b76c7eb7d06aee169",
-  "author": {
-    "name": "Microsoft Corporation"
-  },
-  "license": "MIT",
-  "main": "./out/main.js",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "test": "echo Please run any of the test scripts from the scripts folder.",
-    "test-browser": "npx playwright install && node test/unit/browser/index.js",
-    "test-browser-no-install": "node test/unit/browser/index.js",
-    "test-node": "mocha test/unit/node/index.js --delay --ui=tdd --timeout=5000 --exit",
-    "test-extension": "vscode-test",
-    "preinstall": "node build/npm/preinstall.js",
-    "postinstall": "node build/npm/postinstall.js",
-    "compile": "node ./node_modules/gulp/bin/gulp.js compile",
-    "watch": "npm-run-all -lp watch-client watch-extensions",
-    "watchd": "deemon npm run watch",
-    "watch-webd": "deemon npm run watch-web",
-    "kill-watchd": "deemon --kill npm run watch",
-    "kill-watch-webd": "deemon --kill npm run watch-web",
-    "restart-watchd": "deemon --restart npm run watch",
-    "restart-watch-webd": "deemon --restart npm run watch-web",
-    "watch-client": "node --max-old-space-size=8192 ./node_modules/gulp/bin/gulp.js watch-client",
-    "watch-clientd": "deemon npm run watch-client",
-    "kill-watch-clientd": "deemon --kill npm run watch-client",
-    "watch-extensions": "node --max-old-space-size=8192 ./node_modules/gulp/bin/gulp.js watch-extensions watch-extension-media",
-    "watch-extensionsd": "deemon npm run watch-extensions",
-    "kill-watch-extensionsd": "deemon --kill npm run watch-extensions",
-    "precommit": "node build/hygiene.js",
-    "gulp": "node --max-old-space-size=8192 ./node_modules/gulp/bin/gulp.js",
-    "electron": "node build/lib/electron",
-    "7z": "7z",
-    "update-grammars": "node build/npm/update-all-grammars.mjs",
-    "update-localization-extension": "node build/npm/update-localization-extension.js",
-    "smoketest": "node build/lib/preLaunch.js && cd test/smoke && npm run compile && node test/index.js",
-    "smoketest-no-compile": "cd test/smoke && node test/index.js",
-    "download-builtin-extensions": "node build/lib/builtInExtensions.js",
-    "download-builtin-extensions-cg": "node build/lib/builtInExtensionsCG.js",
-    "monaco-compile-check": "tsc -p src/tsconfig.monaco.json --noEmit",
-    "tsec-compile-check": "node node_modules/tsec/bin/tsec -p src/tsconfig.tsec.json",
-    "vscode-dts-compile-check": "tsc -p src/tsconfig.vscode-dts.json && tsc -p src/tsconfig.vscode-proposed-dts.json",
-    "valid-layers-check": "node build/lib/layersChecker.js",
-    "define-class-fields-check": "node build/lib/propertyInitOrderChecker.js && tsc -p src/tsconfig.defineClassFields.json",
-    "update-distro": "node build/npm/update-distro.mjs",
+  "name": "aide",
+  "version": "0.1.0",
+  "description": "AI-native development environment - conversational IDE for building software through natural language",
+  "main": "dist/main.js",
+  "homepage": "https://github.com/aide-dev/aide",
     "web": "echo 'npm run web' is replaced by './scripts/code-server' or './scripts/code-web'",
     "compile-cli": "gulp compile-cli",
     "compile-web": "node ./node_modules/gulp/bin/gulp.js compile-web",
@@ -218,21 +175,83 @@
     "webpack-stream": "^7.0.0",
     "xml2js": "^0.5.0",
     "yaserver": "^0.4.0"
-  },
-  "overrides": {
-    "node-gyp-build": "4.8.1",
-    "kerberos@2.1.1": {
-      "node-addon-api": "7.1.0"
-    }
-  },
-  "repository": {
+  },  "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "https://github.com/aide-dev/aide.git"
   },
-  "bugs": {
-    "url": "https://github.com/microsoft/vscode/issues"
+  "license": "MIT",
+  "private": false,
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   },
-  "optionalDependencies": {
-    "windows-foreground-love": "0.5.0"
+  "packageManager": "pnpm@9.1.0",
+  "workspaces": [
+    "packages/*",
+    "extensions/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "pnpm run build:packages",
+    "build:packages": "pnpm --filter \"@aide/*\" build",
+    "build:apps": "pnpm --filter \"@aide/electron\" build",
+    "build:extensions": "pnpm --filter \"@aide/aide-core\" build",
+    "dev": "pnpm -r dev",
+    "test": "pnpm -r test",
+    "test:packages": "pnpm --filter \"@aide/*\" test",
+    "test:coverage": "pnpm --filter \"@aide/*\" test -- --coverage",
+    "lint": "eslint \"packages/*/src/**/*.{ts,tsx}\" \"apps/*/src/**/*.{ts,tsx}\" --fix",
+    "format": "prettier --write \"packages/*/src/**/*.{ts,tsx}\" \"apps/*/src/**/*.{ts,tsx}\"",
+    "clean": "pnpm -r clean",
+    "setup": "pnpm install && pnpm build",
+    "prepare": "husky install",
+    "typecheck": "tsc --noEmit",
+    "aide:dev": "pnpm --filter @aide/electron dev",
+    "aide:build": "pnpm --filter @aide/electron build",
+    "aide:package": "pnpm --filter @aide/electron package",
+    "copilot:dev": "pnpm --filter @aide/copilot-extension dev",
+    "copilot:build": "pnpm --filter @aide/copilot-extension build",
+    "web:dev": "pnpm --filter @aide/web dev",
+    "web:build": "pnpm --filter @aide/web build",
+    "mobile:dev": "pnpm --filter @aide/mobile dev",
+    "mobile:build": "pnpm --filter @aide/mobile build"
+  },
+  "devDependencies": {
+    "@rollup/rollup-win32-x64-msvc": "^4.41.1",
+    "@stylistic/eslint-plugin-ts": "^4.4.0",
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.7",
+    "rollup": "^4.41.1",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.33.0",
+    "vitest": "^1.6.0"
+  },
+  "keywords": [
+    "ai",
+    "ide",
+    "development",
+    "copilot",
+    "agent",
+    "conversation",
+    "natural-language",
+    "automation"
+  ],
+  "pnpm": {
+    "overrides": {
+      "minimist@<0.2.1": ">=0.2.1",
+      "minimatch@<3.0.5": ">=3.0.5",
+      "minimist@<0.2.4": ">=0.2.4",
+      "esbuild@<=0.24.2": ">=0.25.0"
+    }
   }
 }

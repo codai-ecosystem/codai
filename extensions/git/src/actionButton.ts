@@ -3,12 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Command, Disposable, Event, EventEmitter, SourceControlActionButton, Uri, workspace, l10n, LogOutputChannel } from 'vscode';
-import { Branch, RefType, Status } from './api/git';
+import { Command, Disposable, Event, EventEmitter, /* SourceControlActionButton, */ Uri, workspace, l10n, LogOutputChannel } from 'vscode';
+import { Branch } from './api/git';
 import { OperationKind } from './operation';
 import { CommitCommandsCenter } from './postCommitCommands';
 import { Repository } from './repository';
 import { dispose } from './util';
+
+// Temporary interface for missing VS Code API type
+interface SourceControlActionButton {
+	command: Command;
+	description?: string;
+	enabled?: boolean;
+	secondaryCommands?: Command[][];
+}
+
+// Extended Command interface with additional properties
+interface ExtendedCommand extends Command {
+	shortTitle?: string;
+}
 
 function isActionButtonStateEqual(state1: ActionButtonState, state2: ActionButtonState): boolean {
 	return state1.HEAD?.name === state2.HEAD?.name &&
@@ -159,9 +172,8 @@ export class ActionButton {
 				arguments: [this.repository.sourceControl, null]
 			};
 		}
-
 		// Not a branch (tag, detached)
-		if (this.state.HEAD?.type === RefType.Tag || !this.state.HEAD?.name) {
+		if (this.state.HEAD?.type === 2 /* RefType.Tag */ || !this.state.HEAD?.name) {
 			return {
 				command: 'git.commit',
 				title: l10n.t('{0} Commit', '$(check)'),
@@ -184,9 +196,8 @@ export class ActionButton {
 		if (this.state.isMergeInProgress) {
 			return [];
 		}
-
 		// Not a branch (tag, detached)
-		if (this.state.HEAD?.type === RefType.Tag || !this.state.HEAD?.name) {
+		if (this.state.HEAD?.type === 2 /* RefType.Tag */ || !this.state.HEAD?.name) {
 			return [];
 		}
 
@@ -204,9 +215,8 @@ export class ActionButton {
 	private getPublishBranchActionButton(): SourceControlActionButton | undefined {
 		const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
 		const showActionButton = config.get<{ publish: boolean }>('showActionButton', { publish: true });
-
 		// Not a branch (tag, detached), branch does have an upstream, commit/merge/rebase is in progress, or the button is disabled
-		if (this.state.HEAD?.type === RefType.Tag || !this.state.HEAD?.name || this.state.HEAD?.upstream || this.state.isCommitInProgress || this.state.isMergeInProgress || this.state.isRebaseInProgress || !showActionButton.publish) { return undefined; }
+		if (this.state.HEAD?.type === 2 /* RefType.Tag */ || !this.state.HEAD?.name || this.state.HEAD?.upstream || this.state.isCommitInProgress || this.state.isMergeInProgress || this.state.isRebaseInProgress || !showActionButton.publish) { return undefined; }
 
 		// Button icon
 		const icon = this.state.isSyncInProgress ? '$(sync~spin)' : '$(cloud-upload)';
@@ -239,7 +249,6 @@ export class ActionButton {
 		const ahead = this.state.HEAD.ahead ? ` ${this.state.HEAD.ahead}$(arrow-up)` : '';
 		const behind = this.state.HEAD.behind ? ` ${this.state.HEAD.behind}$(arrow-down)` : '';
 		const icon = this.state.isSyncInProgress ? '$(sync~spin)' : '$(sync)';
-
 		return {
 			command: {
 				command: 'git.sync',
@@ -249,7 +258,7 @@ export class ActionButton {
 					l10n.t('Synchronizing Changes...')
 					: this.repository.syncTooltip,
 				arguments: [this.repository.sourceControl],
-			},
+			} as ExtendedCommand,
 			enabled: !this.state.isCheckoutInProgress && !this.state.isSyncInProgress
 		};
 	}
@@ -306,10 +315,9 @@ export class ActionButton {
 		) {
 			resources.push(...this.repository.workingTreeGroup.resourceStates);
 		}
-
 		// Smart commit enabled (tracked only)
 		if (enableSmartCommit && smartCommitChanges === 'tracked') {
-			resources.push(...this.repository.workingTreeGroup.resourceStates.filter(r => r.type !== Status.UNTRACKED));
+			resources.push(...this.repository.workingTreeGroup.resourceStates.filter(r => r.type !== 7 /* Status.UNTRACKED */));
 		}
 
 		return resources.length !== 0;

@@ -71,7 +71,7 @@ export class GitEditorDocumentLinkProvider implements DocumentLinkProvider {
 
 	constructor(private readonly _model: Model) { }
 
-	provideDocumentLinks(document: TextDocument, token: CancellationToken): DocumentLink[] {
+	provideDocumentLinks(document: TextDocument, token: CancellationToken): any {
 		if (token.isCancellationRequested) {
 			return [];
 		}

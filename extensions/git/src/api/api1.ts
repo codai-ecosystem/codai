@@ -8,7 +8,7 @@
 import { Model } from '../model';
 import { Repository as BaseRepository, Resource } from '../repository';
 import { InputBox, Git, API, Repository, Remote, RepositoryState, Branch, ForcePushMode, Ref, Submodule, Commit, Change, RepositoryUIState, Status, LogOptions, APIState, CommitOptions, RefType, CredentialsProvider, BranchQuery, PushErrorHandler, PublishEvent, FetchOptions, RemoteSourceProvider, RemoteSourcePublisher, PostCommitCommandsProvider, RefQuery, BranchProtectionProvider, InitOptions, SourceControlHistoryItemDetailsProvider } from './git';
-import { Event, SourceControlInputBox, Uri, SourceControl, Disposable, commands, CancellationToken } from 'vscode';
+import { SourceControl, Uri, EventEmitter, Event, Disposable, SourceControlInputBox, CancellationToken, commands } from 'vscode';
 import { combinedDisposable, filterEvent, mapEvent } from '../util';
 import { toGitUri } from '../uri';
 import { GitExtensionImpl } from './extension';
@@ -60,15 +60,15 @@ export class ApiRepositoryState implements RepositoryState {
 }
 
 export class ApiRepositoryUIState implements RepositoryUIState {
-	#sourceControl: SourceControl;
 	readonly onDidChange: Event<void>;
-
-	constructor(sourceControl: SourceControl) {
-		this.#sourceControl = sourceControl;
-		this.onDidChange = mapEvent<boolean, void>(this.#sourceControl.onDidChangeSelection, () => null);
+	constructor(_sourceControl: SourceControl) {
+		// TODO: onDidChangeSelection property doesn't exist in current VS Code API
+		// this.onDidChange = mapEvent<boolean, void>(this.#sourceControl.onDidChangeSelection, () => null);
+		this.onDidChange = new EventEmitter<void>().event;
 	}
 
-	get selected(): boolean { return this.#sourceControl.selected; }
+	// TODO: selected property doesn't exist in current VS Code API
+	get selected(): boolean { return false; /* this.#sourceControl.selected; */ }
 }
 
 export class ApiRepository implements Repository {

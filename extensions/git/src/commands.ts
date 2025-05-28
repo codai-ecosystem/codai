@@ -392,7 +392,7 @@ async function getRemoteRefItemButtons(repository: Repository) {
 	// Compute actions for all known remotes
 	const remoteUrlsToActions = new Map<string, RemoteSourceActionButton[]>();
 
-	const getButtons = async (remoteUrl: string) => (await getRemoteSourceActions(remoteUrl)).map((action) => ({ iconPath: new ThemeIcon(action.icon), tooltip: action.label, actual: action }));
+	const getButtons = async (remoteUrl: string) => (await getRemoteSourceActions(remoteUrl)).map((action) => ({ iconPath: action.icon as any, tooltip: action.label, actual: action }));
 
 	for (const remote of repository.remotes) {
 		if (remote.fetchUrl) {
@@ -2979,7 +2979,7 @@ export class CommandCenter {
 
 		inputBox.buttons = branchRandomNameEnabled ? [
 			{
-				iconPath: new ThemeIcon('refresh'),
+				iconPath: 'refresh' as any,
 				tooltip: l10n.t('Regenerate Branch Name'),
 				location: QuickInputButtonLocation.Inline
 			}
@@ -2987,7 +2987,7 @@ export class CommandCenter {
 
 		inputBox.value = initialValue ?? await getBranchName();
 		inputBox.valueSelection = getValueSelection(inputBox.value);
-		inputBox.validationMessage = getValidationMessage(inputBox.value);
+		inputBox.validationMessage = getValidationMessage(inputBox.value) as string;
 		inputBox.ignoreFocusOut = true;
 
 		inputBox.show();
@@ -2996,7 +2996,7 @@ export class CommandCenter {
 			disposables.push(inputBox.onDidHide(() => resolve(undefined)));
 			disposables.push(inputBox.onDidAccept(() => resolve(inputBox.value)));
 			disposables.push(inputBox.onDidChangeValue(value => {
-				inputBox.validationMessage = getValidationMessage(value);
+				inputBox.validationMessage = getValidationMessage(value) as string;
 			}));
 			disposables.push(inputBox.onDidTriggerButton(async () => {
 				inputBox.value = await getBranchName();
@@ -4361,7 +4361,7 @@ export class CommandCenter {
 		const resources = changes.map(c => toMultiFileDiffEditorUris(c, commitParentId, commit.hash));
 
 		const title = `${item.shortRef} - ${truncate(commit.message)}`;
-		const multiDiffSourceUri = Uri.from({ scheme: 'scm-history-item', path: `${repository.root}/${commitParentId}..${commit.hash}` });
+		const multiDiffSourceUri = Uri.parse(`scm-history-item://${repository.root}/${commitParentId}..${commit.hash}`);
 
 		return {
 			command: '_workbench.openMultiDiffEditor',
@@ -4628,7 +4628,7 @@ export class CommandCenter {
 		const title = `${truncate(historyItemId, commitShortHashLength, false)} - ${truncate(commit.message)}`;
 		const historyItemParentId = commit.parents.length > 0 ? commit.parents[0] : await repository.getEmptyTree();
 
-		const multiDiffSourceUri = Uri.from({ scheme: 'scm-history-item', path: `${repository.root}/${historyItemParentId}..${historyItemId}` });
+		const multiDiffSourceUri = Uri.parse(`scm-history-item://${repository.root}/${historyItemParentId}..${historyItemId}`);
 
 		const changes = await repository.diffTrees(historyItemParentId, historyItemId);
 		const resources = changes.map(c => toMultiFileDiffEditorUris(c, historyItemParentId, historyItemId));

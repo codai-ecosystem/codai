@@ -7,6 +7,7 @@ import { workspace, Disposable, EventEmitter, Memento, window, MessageItem, Conf
 import { Repository } from './repository';
 import { eventToPromise, filterEvent, onceEvent } from './util';
 import { GitErrorCodes } from './api/git';
+import { GitError } from './git';
 
 export class AutoFetcher {
 
@@ -112,7 +113,7 @@ export class AutoFetcher {
 					await this.repository.fetchDefault({ silent: true });
 				}
 			} catch (err) {
-				if (err.gitErrorCode === GitErrorCodes.AuthenticationFailed) {
+				if ((err as GitError).gitErrorCode === GitErrorCodes.AuthenticationFailed) {
 					this.disable();
 				}
 			}

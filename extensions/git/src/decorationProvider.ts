@@ -123,10 +123,9 @@ class GitDecorationProvider implements FileDecorationProvider {
 		this.collectDecorationData(this.repository.workingTreeGroup, newDecorations);
 		this.collectDecorationData(this.repository.mergeGroup, newDecorations);
 		this.collectSubmoduleDecorationData(newDecorations);
-
 		const uris = new Set([...this.decorations.keys()].concat([...newDecorations.keys()]));
 		this.decorations = newDecorations;
-		this._onDidChangeDecorations.fire([...uris.values()].map(value => Uri.parse(value, true)));
+		this._onDidChangeDecorations.fire([...uris.values()].map(value => Uri.parse(value)));
 	}
 
 	private collectDecorationData(group: GitResourceGroup, bucket: Map<string, FileDecoration>): void {
@@ -199,7 +198,7 @@ class GitIncomingChangesFileDecorationProvider implements FileDecorationProvider
 		this._currentHistoryItemRef = currentHistoryItemRef;
 		this._currentHistoryItemRemoteRef = currentHistoryItemRemoteRef;
 
-		this._onDidChangeDecorations.fire([...uris.values()].map(value => Uri.parse(value, true)));
+		this._onDidChangeDecorations.fire([...uris.values()].map(value => Uri.parse(value)));
 	}
 
 	private async collectIncomingChangesFileDecorations(bucket: Map<string, FileDecoration>): Promise<void> {

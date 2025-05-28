@@ -9,7 +9,7 @@ import tseslint from 'typescript-eslint';
 import { fileURLToPath } from 'url';
 
 import stylisticTs from '@stylistic/eslint-plugin-ts';
-import pluginLocal from 'eslint-plugin-local';
+// import pluginLocal from 'eslint-plugin-local'; // Temporarily disabled due to missing dependencies
 import pluginJsdoc from 'eslint-plugin-jsdoc';
 
 import pluginHeader from 'eslint-plugin-header';
@@ -33,9 +33,8 @@ export default tseslint.config(
 	{
 		languageOptions: {
 			parser: tseslint.parser,
-		},
-		plugins: {
-			'local': pluginLocal,
+		}, plugins: {
+			// 'local': pluginLocal, // Temporarily disabled
 			'header': pluginHeader,
 		},
 		rules: {

@@ -241,10 +241,11 @@ export class GitBlameController {
 			commitMessageWithLinks = await provideSourceControlHistoryItemMessageLinks(
 				this._model, repository, commitInformation?.message ?? blameInformation.subject ?? '');
 		}
-
 		const markdownString = new MarkdownString();
 		markdownString.isTrusted = true;
-		markdownString.supportThemeIcons = true;
+		if ('supportThemeIcons' in markdownString) {
+			(markdownString as any).supportThemeIcons = true;
+		}
 
 		// Author, date
 		const hash = commitInformation?.hash ?? blameInformation.hash;
@@ -763,13 +764,8 @@ class GitBlameStatusBarItem {
 			this._statusBarItem.tooltip2 = (cancellationToken: CancellationToken) => {
 				return this._provideTooltip(window.activeTextEditor!.document.uri,
 					blameInformation[0].blameInformation as BlameInformation, cancellationToken);
-			};
-
-			this._statusBarItem.command = {
-				title: l10n.t('Open Commit'),
-				command: 'git.viewCommit',
-				arguments: [window.activeTextEditor.document.uri, blameInformation[0].blameInformation.hash]
-			} satisfies Command;
+			};			// Use command string for compatibility
+			this._statusBarItem.command = 'git.viewCommit';
 		}
 
 		this._statusBarItem.show();

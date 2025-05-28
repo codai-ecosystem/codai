@@ -90,7 +90,8 @@ class RemoteSourceProviderQuickPick implements Disposable {
 				}));
 			}
 		} catch (err) {
-			this.quickpick!.items = [{ label: l10n.t('{0} Error: {1}', '$(error)', err.message), alwaysShow: true }];
+			const errorMessage = err instanceof Error ? err.message : String(err);
+			this.quickpick!.items = [{ label: l10n.t('{0} Error: {1}', '$(error)', errorMessage), alwaysShow: true }];
 			console.error(err);
 		} finally {
 			if (!this.isDisposed) {

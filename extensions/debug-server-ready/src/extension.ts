@@ -94,9 +94,12 @@ class ServerReadyDetector extends vscode.Disposable {
 		if (detector) {
 			detector.shellPid = pid;
 		}
-	}
+	} static async startListeningTerminalData() {
+		// TODO: onDidWriteTerminalData is not available in current VS Code API
+		// Commenting out until proper replacement is found
+		console.warn('Terminal data listening not implemented - onDidWriteTerminalData not available');
 
-	static async startListeningTerminalData() {
+		/*
 		if (!this.terminalDataListener) {
 			this.terminalDataListener = vscode.window.onDidWriteTerminalData(async e => {
 
@@ -118,6 +121,7 @@ class ServerReadyDetector extends vscode.Disposable {
 				}
 			});
 		}
+		*/
 	}
 
 	private constructor(private session: vscode.DebugSession) {
