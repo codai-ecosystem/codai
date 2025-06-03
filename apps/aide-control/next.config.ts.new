@@ -1,0 +1,50 @@
+import type { NextConfig } from "next";
+
+/**
+ * Configuration for the AIDE Control Panel
+ * This Next.js application serves as the administrative interface
+ * for managing the dual-mode infrastructure system
+ */
+const nextConfig: NextConfig = {
+	// Enable standalone output for Docker deployment
+	output: 'standalone',
+
+	// Configure environment variables
+	env: {
+		// API configuration
+		API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.aide.example.com',
+
+		// Default service mode
+		DEFAULT_SERVICE_MODE: process.env.DEFAULT_SERVICE_MODE || 'managed',
+	},
+
+	// Image domains for Next.js Image component
+	images: {
+		domains: ['firebasestorage.googleapis.com'],
+	},
+
+	// Security headers
+	async headers() {
+		return [
+			{
+				source: '/:path*',
+				headers: [
+					{
+						key: 'X-Frame-Options',
+						value: 'DENY',
+					},
+					{
+						key: 'X-Content-Type-Options',
+						value: 'nosniff',
+					},
+					{
+						key: 'X-XSS-Protection',
+						value: '1; mode=block',
+					},
+				],
+			},
+		];
+	},
+};
+
+export default nextConfig;

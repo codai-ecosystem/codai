@@ -1,0 +1,24 @@
+{
+	"name": "memory-graph-basic-demo",
+	"version": "1.0.0",
+	"description": "Basic demonstration of the AIDE Memory Graph components",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"@aide/memory-graph": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/react": "^18.2.0",
+		"@types/react-dom": "^18.2.0",
+		"@vitejs/plugin-react": "^4.0.0",
+		"typescript": "^5.0.0",
+		"vite": "^4.4.0"
+	}
+}

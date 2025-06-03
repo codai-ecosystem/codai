@@ -1,0 +1,82 @@
+.aide-node-card {
+	background-color: var(--background);
+	border-radius: 0.5rem;
+	border: 1px solid var(--border);
+	padding: 1rem;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	cursor: pointer;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.aide-node-card:hover {
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.aide-node-card.aide-node-selected {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 1px var(--primary);
+}
+
+.aide-node-card h3 {
+	margin: 0;
+	line-height: 1.2;
+}
+
+.aide-node-card p {
+	margin-bottom: 0.75rem;
+}
+
+.aide-node-card .badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 0.5rem;
+	font-size: 0.75rem;
+	height: 1.25rem;
+	border-radius: 1rem;
+}
+
+.aide-node-card .card-footer {
+	margin-top: 1rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--border);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.aide-node-card .card-actions {
+	display: flex;
+	gap: 0.25rem;
+}
+
+.aide-node-card .card-metadata {
+	margin: 0.5rem 0;
+}
+
+.aide-node-card .card-metadata-item {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.25rem;
+	font-size: 0.75rem;
+}
+
+.aide-node-card .card-metadata-label {
+	font-weight: 500;
+}
+
+.aide-node-card .card-header {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+}
+
+.aide-node-card .card-title {
+	flex: 1;
+}
+
+.aide-node-card .card-icon {
+	font-size: 1.25rem;
+	line-height: 1;
+}

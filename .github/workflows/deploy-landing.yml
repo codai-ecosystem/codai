@@ -1,0 +1,117 @@
+name: Deploy AIDE Landing Page
+
+on:
+  push:
+    branches: [aide-main, preview, dev]
+    paths:
+      - 'apps/aide-landing/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vercel.json'
+  pull_request:
+    branches: [aide-main, preview, dev]
+    paths:
+      - 'apps/aide-landing/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vercel.json'
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Determine Environment
+        id: env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/aide-main" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "target=production" >> $GITHUB_OUTPUT
+            echo "alias=aide.dev" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/preview" ]]; then
+            echo "environment=preview" >> $GITHUB_OUTPUT
+            echo "target=preview" >> $GITHUB_OUTPUT
+            echo "alias=preview.aide.dev" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            echo "environment=development" >> $GITHUB_OUTPUT
+            echo "target=development" >> $GITHUB_OUTPUT
+            echo "alias=dev.aide.dev" >> $GITHUB_OUTPUT
+          else
+            echo "environment=preview" >> $GITHUB_OUTPUT
+            echo "target=preview" >> $GITHUB_OUTPUT
+            echo "alias=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=${{ steps.env.outputs.environment }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build ${{ steps.env.outputs.target == 'production' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts
+        id: deploy
+        run: |
+          deployment_url=$(vercel deploy --prebuilt ${{ steps.env.outputs.target == 'production' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }})
+          echo "deployment_url=$deployment_url" >> $GITHUB_OUTPUT
+
+      - name: Set Custom Alias (Production/Preview/Dev only)
+        if: steps.env.outputs.alias != ''
+        run: vercel alias ${{ steps.deploy.outputs.deployment_url }} ${{ steps.env.outputs.alias }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Comment Deployment URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('🚀 Deployment Preview')
+            );
+
+            const body = `🚀 **Deployment Preview**
+
+            Your changes have been deployed to Vercel:
+            - **Preview URL**: ${{ steps.deploy.outputs.deployment_url }}
+            - **Environment**: ${{ steps.env.outputs.environment }}
+            - **Branch**: \`${{ github.head_ref || github.ref_name }}\`
+
+            Built with commit: ${{ github.sha }}`;
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }

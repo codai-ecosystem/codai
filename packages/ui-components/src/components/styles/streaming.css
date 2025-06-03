@@ -1,0 +1,8 @@
+/* Streaming Message Renderer Styles */
+.streaming-progress-bar {
+	width: var(--progress-width, 0%);
+}
+
+[data-progress] {
+	width: calc(var(--progress-value, 0) * 1%);
+}

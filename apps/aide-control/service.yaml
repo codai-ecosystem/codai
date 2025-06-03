@@ -1,0 +1,64 @@
+# Cloud Run service configuration for AIDE Control Panel
+# Learn more: https://cloud.google.com/run/docs/configuring/services/service-yaml
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: aide-control
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+    run.googleapis.com/cpu-throttling: "true"
+    run.googleapis.com/startup-cpu-boost: "true"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/cpu-allocation: "cpu-throttling"
+        run.googleapis.com/startup-cpu-boost: "true"
+        run.googleapis.com/cloudsql-instances: ""
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+        - image: gcr.io/PROJECT_ID/aide-control:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "8080"
+            # Add your public environment variables here
+            - name: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+              value: "YOUR_FIREBASE_PROJECT_ID"
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://aide-control-URL"
+            # Secret environment variables should be configured separately using Secret Manager
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            periodSeconds: 15
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true

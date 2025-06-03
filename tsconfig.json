@@ -1,0 +1,26 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"downlevelIteration": true,
+		"incremental": true,
+		"tsBuildInfoFile": ".tsbuildinfo",
+		"baseUrl": ".",
+		"paths": {
+			"@aide/*": ["packages/*/src"],
+			"@aide/memory-graph": ["packages/memory-graph/src"],
+			"@aide/agent-runtime": ["packages/agent-runtime/src"],
+			"@aide/ui-components": ["packages/ui-components/src"]
+		}
+	},
+	"include": ["packages/*/src/**/*", "apps/*/src/**/*"],
+	"exclude": ["node_modules", "dist", "build", "out", "extensions"],
+	"references": [
+		{ "path": "./packages/memory-graph" },
+		{ "path": "./packages/agent-runtime" },
+		{ "path": "./packages/ui-components" }
+	]
+}

@@ -1,0 +1,32 @@
+{
+	"buildCommand": "cd apps/aide-landing && npm run build",
+	"outputDirectory": "apps/aide-landing/.next",
+	"installCommand": "npm install",
+	"framework": "nextjs",
+	"env": {
+		"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
+		"STRIPE_SECRET_KEY": "@stripe_secret_key",
+		"NEXT_PUBLIC_STRIPE_PROFESSIONAL_PRICE_ID": "@stripe_professional_price_id",
+		"NEXT_PUBLIC_STRIPE_PROFESSIONAL_YEARLY_PRICE_ID": "@stripe_professional_yearly_price_id",
+		"NEXT_PUBLIC_STRIPE_ENTERPRISE_PRICE_ID": "@stripe_enterprise_price_id",
+		"NEXT_PUBLIC_STRIPE_ENTERPRISE_YEARLY_PRICE_ID": "@stripe_enterprise_yearly_price_id",
+		"NEXT_PUBLIC_CONTROL_PANEL_URL": "@control_panel_url",
+		"NEXT_PUBLIC_SITE_URL": "@site_url",
+		"NEXT_PUBLIC_BASE_URL": "@base_url"
+	},
+	"functions": {
+		"apps/aide-landing/app/api/**/*.ts": {
+			"runtime": "@vercel/node"
+		}
+	},
+	"git": {
+		"deploymentEnabled": {
+			"main": true,
+			"preview": true,
+			"dev": true
+		}
+	},
+	"github": {
+		"autoAlias": false
+	}
+}

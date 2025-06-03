@@ -1,0 +1,37 @@
+{
+	"compilerOptions": {
+		"target": "ES2020",
+		"module": "ESNext",
+		"moduleResolution": "node",
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"strict": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": false
+	},
+	"include": [
+		"src/core-only.ts",
+		"src/schemas.ts",
+		"src/engine.ts",
+		"src/builders.ts",
+		"src/runtime.ts",
+		"src/persistence/**/*",
+		"src/migrations/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+		"src/components",
+		"src/index.ts",
+		"**/*.test.ts",
+		"**/*.spec.ts"
+	]
+}

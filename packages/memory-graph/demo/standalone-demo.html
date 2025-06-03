@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>AIDE Memory Graph Demo</title>
+	<style>
+		body {
+			margin: 0;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+			background: #0f0f23;
+			color: #cccccc;
+		}
+
+		.demo-container {
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+			padding: 2rem;
+		}
+
+		.demo-title {
+			color: #007acc;
+			font-size: 1.5rem;
+			font-weight: 600;
+			margin-bottom: 1rem;
+		}
+
+		.graph-info {
+			background: #1e1e3f;
+			padding: 1rem;
+			border-radius: 8px;
+			margin-bottom: 1rem;
+		}
+
+		.node-list {
+			list-style: none;
+			padding: 0;
+		}
+
+		.node-item {
+			padding: 0.5rem;
+			margin: 0.5rem 0;
+			background: #2d2d5f;
+			border-radius: 4px;
+			border-left: 3px solid #007acc;
+		}
+
+		.success {
+			color: #00ff88;
+		}
+
+		.error {
+			color: #ff4444;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="demo-container">
+		<h1 class="demo-title">AIDE Memory Graph Demo</h1>
+		<div class="graph-info">
+			<h3>Demo Status</h3>
+			<div id="status">Loading...</div>
+		</div>
+		<div class="graph-info" id="demo-content">
+			<!-- Demo content will be inserted here -->
+		</div>
+	</div>
+
+	<script>
+		// Simple demo without external dependencies
+		function createMockEngine() {
+			const nodes = [];
+			const relationships = [];
+
+			return {
+				addNode: function (nodeData) {
+					const node = {
+						id: 'node-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						version: '1.0.0',
+						...nodeData
+					};
+					nodes.push(node);
+					return node;
+				},
+				addRelationship: function (relData) {
+					const relationship = {
+						id: 'rel-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+						createdAt: new Date(),
+						...relData
+					};
+					relationships.push(relationship);
+					return relationship;
+				},
+				get currentGraph() {
+					return {
+						id: 'demo-graph',
+						name: 'AIDE Demo Graph',
+						version: '1.0.0',
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						nodes: [...nodes],
+						relationships: [...relationships],
+						metadata: {
+							aiProvider: 'demo',
+							lastInteractionAt: new Date(),
+							tags: ['demo', 'showcase']
+						}
+					};
+				}
+			};
+		}
+
+		function createMockBuilder() {
+			return {
+				intent: function (name) {
+					return {
+						withDescription: function (desc) { this.description = desc; return this; },
+						withCategory: function (cat) { this.category = cat; return this; },
+						withPriority: function (pri) { this.priority = pri; return this; },
+						withStatus: function (status) { this.status = status; return this; },
+						withContext: function (ctx) { this.context = ctx; return this; },
+						withMetadata: function (meta) { this.metadata = meta; return this; },
+						build: function () {
+							return {
+								type: 'intent',
+								name: name,
+								description: this.description,
+								category: this.category || 'goal',
+								priority: this.priority || 'medium',
+								status: this.status || 'active',
+								context: this.context,
+								metadata: this.metadata
+							};
+						}
+					};
+				},
+				feature: function (name) {
+					return {
+						withDescription: function (desc) { this.description = desc; return this; },
+						withStatus: function (status) { this.status = status; return this; },
+						withPriority: function (pri) { this.priority = pri; return this; },
+						withMetadata: function (meta) { this.metadata = meta; return this; },
+						build: function () {
+							return {
+								type: 'feature',
+								name: name,
+								description: this.description,
+								status: this.status || 'planned',
+								priority: this.priority || 'medium',
+								metadata: this.metadata
+							};
+						}
+					};
+				},
+				screen: function (name) {
+					return {
+						withDescription: function (desc) { this.description = desc; return this; },
+						withMetadata: function (meta) { this.metadata = meta; return this; },
+						build: function () {
+							return {
+								type: 'screen',
+								name: name,
+								description: this.description,
+								metadata: this.metadata
+							};
+						}
+					};
+				},
+				relationship: function (fromId, toId, type) {
+					return {
+						build: function () {
+							return {
+								fromNodeId: fromId,
+								toNodeId: toId,
+								type: type,
+								strength: 1.0
+							};
+						}
+					};
+				}
+			};
+		}
+
+		function runDemo() {
+			try {
+				const engine = createMockEngine();
+				const builder = createMockBuilder();
+
+				// Create demo graph
+				const mainIntent = engine.addNode(
+					builder.intent('Task Management App')
+						.withDescription('Build a modern task management application')
+						.withCategory('goal')
+						.withPriority('high')
+						.withStatus('active')
+						.withContext('User wants to replace current inefficient task tracking')
+						.build()
+				);
+
+				const authFeature = engine.addNode(
+					builder.feature('User Authentication')
+						.withDescription('Secure user registration and login system')
+						.withStatus('implemented')
+						.withPriority('critical')
+						.withMetadata({
+							requirements: [
+								'Email/password registration',
+								'Social login (Google, GitHub)',
+								'Password reset functionality'
+							],
+							estimatedComplexity: 7
+						})
+						.build()
+				);
+
+				const loginScreen = engine.addNode(
+					builder.screen('Login Screen')
+						.withDescription('User authentication interface')
+						.withMetadata({
+							uiFramework: 'React',
+							responsiveBreakpoints: ['mobile', 'tablet', 'desktop']
+						})
+						.build()
+				);
+
+				// Create relationships
+				engine.addRelationship(
+					builder.relationship(mainIntent.id, authFeature.id, 'contains').build()
+				);
+
+				engine.addRelationship(
+					builder.relationship(authFeature.id, loginScreen.id, 'implements').build()
+				);
+
+				// Render results
+				const graph = engine.currentGraph;
+				const statusEl = document.getElementById('status');
+				const contentEl = document.getElementById('demo-content');
+
+				statusEl.innerHTML = '<span class="success">✓ Demo loaded successfully!</span>';
+
+				contentEl.innerHTML = `
+                    <h3>Graph Information</h3>
+                    <p><strong>Name:</strong> ${graph.name}</p>
+                    <p><strong>Nodes:</strong> ${graph.nodes.length} | <strong>Relationships:</strong> ${graph.relationships.length}</p>
+
+                    <h3>Nodes:</h3>
+                    <ul class="node-list">
+                        ${graph.nodes.map(node => `
+                            <li class="node-item">
+                                <strong>${node.name}</strong> (${node.type})
+                                <br><small>${node.description || 'No description'}</small>
+                                ${node.metadata ? `<br><small>Metadata: ${JSON.stringify(node.metadata)}</small>` : ''}
+                            </li>
+                        `).join('')}
+                    </ul>
+
+                    <h3>Relationships:</h3>
+                    <ul class="node-list">
+                        ${graph.relationships.map(rel => {
+					const fromNode = graph.nodes.find(n => n.id === rel.fromNodeId);
+					const toNode = graph.nodes.find(n => n.id === rel.toNodeId);
+					return `
+                                <li class="node-item">
+                                    <strong>${fromNode?.name || 'Unknown'}</strong>
+                                    → ${rel.type} →
+                                    <strong>${toNode?.name || 'Unknown'}</strong>
+                                </li>
+                            `;
+				}).join('')}
+                    </ul>
+
+                    <h3>Summary</h3>
+                    <p>This demo shows how AIDE transforms traditional development approaches:</p>
+                    <ul>
+                        <li><strong>Intent-Driven:</strong> Start with user goals, not implementation details</li>
+                        <li><strong>Graph-Based:</strong> Understand relationships between all components</li>
+                        <li><strong>AI-Enhanced:</strong> Let AI help structure and implement solutions</li>
+                        <li><strong>Living Documentation:</strong> The graph IS the documentation</li>
+                    </ul>
+                `;
+
+			} catch (error) {
+				console.error('Demo error:', error);
+				document.getElementById('status').innerHTML = `<span class="error">✗ Demo failed: ${error.message}</span>`;
+			}
+		}
+
+		// Run demo when page loads
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', runDemo);
+		} else {
+			runDemo();
+		}
+	</script>
+</body>
+
+</html>

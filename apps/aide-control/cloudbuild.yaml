@@ -1,0 +1,57 @@
+steps:
+  # Build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "gcr.io/$PROJECT_ID/aide-control:$COMMIT_SHA",
+        "-t",
+        "gcr.io/$PROJECT_ID/aide-control:latest",
+        "-f",
+        "apps/aide-control/Dockerfile",
+        "apps/aide-control",
+      ]
+
+  # Push the container image to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/aide-control:$COMMIT_SHA"]
+
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/aide-control:latest"]
+  # Deploy container image to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "aide-control"
+      - "--image"
+      - "gcr.io/$PROJECT_ID/aide-control:$COMMIT_SHA"
+      - "--region"
+      - "us-central1"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+      - "--port"
+      - "8080"
+      - "--memory"
+      - "2Gi"
+      - "--cpu"
+      - "1"
+      - "--max-instances"
+      - "10"
+      - "--min-instances"
+      - "1"
+      - "--concurrency"
+      - "80"
+      - "--timeout"
+      - "300"
+      - "--set-env-vars"
+      - "NODE_ENV=production,NEXT_TELEMETRY_DISABLED=1"
+      - "--set-secrets"
+      - "FIREBASE_ADMIN_CREDENTIALS=firebase-admin-key:latest,STRIPE_SECRET_KEY=stripe-secret:latest,STRIPE_WEBHOOK_SECRET=stripe-webhook-secret:latest"
+
+images:
+  - "gcr.io/$PROJECT_ID/aide-control:$COMMIT_SHA"
+  - "gcr.io/$PROJECT_ID/aide-control:latest"

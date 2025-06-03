@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--background: 0 0% 100%;
+		--foreground: 222.2 84% 4.9%;
+		--card: 0 0% 100%;
+		--card-foreground: 222.2 84% 4.9%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 222.2 84% 4.9%;
+		--primary: 221.2 83.2% 53.3%;
+		--primary-foreground: 210 40% 98%;
+		--secondary: 210 40% 96%;
+		--secondary-foreground: 222.2 84% 4.9%;
+		--muted: 210 40% 96%;
+		--muted-foreground: 215.4 16.3% 46.9%;
+		--accent: 210 40% 96%;
+		--accent-foreground: 222.2 84% 4.9%;
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 210 40% 98%;
+		--border: 214.3 31.8% 91.4%;
+		--input: 214.3 31.8% 91.4%;
+		--ring: 221.2 83.2% 53.3%;
+		--radius: 0.5rem;
+	}
+
+	.dark {
+		--background: 222.2 84% 4.9%;
+		--foreground: 210 40% 98%;
+		--card: 222.2 84% 4.9%;
+		--card-foreground: 210 40% 98%;
+		--popover: 222.2 84% 4.9%;
+		--popover-foreground: 210 40% 98%;
+		--primary: 217.2 91.2% 59.8%;
+		--primary-foreground: 222.2 84% 4.9%;
+		--secondary: 217.2 32.6% 17.5%;
+		--secondary-foreground: 210 40% 98%;
+		--muted: 217.2 32.6% 17.5%;
+		--muted-foreground: 215 20.2% 65.1%;
+		--accent: 217.2 32.6% 17.5%;
+		--accent-foreground: 210 40% 98%;
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 210 40% 98%;
+		--border: 217.2 32.6% 17.5%;
+		--input: 217.2 32.6% 17.5%;
+		--ring: 224.3 76.3% 94.1%;
+	}
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+
+	body {
+		@apply bg-background text-foreground;
+	}
+}
+
+/* AIDE specific styles */
+.aide-conversation {
+	@apply flex flex-col h-full bg-background;
+}
+
+.aide-message-bubble {
+	@apply p-3 rounded-lg mb-2 max-w-[80%];
+}
+
+.aide-message-user {
+	@apply bg-primary text-primary-foreground ml-auto;
+}
+
+.aide-message-agent {
+	@apply bg-muted text-muted-foreground;
+}
+
+.aide-memory-graph {
+	@apply w-full h-full relative overflow-hidden;
+}
+
+.aide-node-card {
+	@apply bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow;
+}
+
+.aide-node-selected {
+	@apply ring-2 ring-ring ring-offset-2;
+}
+
+.aide-timeline {
+	@apply space-y-4;
+}
+
+.aide-timeline-event {
+	@apply relative pl-6 pb-4 border-l-2 border-border;
+}
+
+.aide-timeline-event::before {
+	@apply absolute left-[-5px] top-2 w-2 h-2 bg-primary rounded-full;
+	content: '';
+}
+
+.aide-task-status {
+	@apply flex items-center space-x-2;
+}
+
+.aide-agent-indicator {
+	@apply flex items-center space-x-2 px-2 py-1 rounded-md;
+}
+
+.aide-agent-active {
+	@apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+}
+
+.aide-agent-inactive {
+	@apply bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200;
+}
+
+.aide-agent-error {
+	@apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+}

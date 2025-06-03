@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Memory Graph Demo</title>
+	<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+	<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+	<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<style>
+		/* Memory Graph Visualization Styles */
+		.memory-graph-container {
+			position: relative;
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+			background-color: #f8fafc;
+			border: 1px solid #e2e8f0;
+			border-radius: 0.5rem;
+		}
+
+		.graph-container {
+			width: 100%;
+			height: 100%;
+			position: relative;
+			cursor: move;
+			transition: transform 0.1s ease-out;
+		}
+
+		.graph-svg {
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+			width: 100%;
+			height: 100%;
+		}
+
+		.node-card {
+			position: absolute;
+			cursor: pointer;
+			transition: all 0.2s ease-in-out;
+			transform: translate(-50%, -50%);
+			min-width: 8rem;
+			max-width: 12rem;
+			padding: 0.75rem;
+			border: 2px solid;
+			border-radius: 0.5rem;
+			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+		}
+
+		.node-card:hover {
+			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+		}
+
+		.node-card.selected {
+			box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.2);
+		}
+
+		/* Node type colors */
+		.node-card.type-feature {
+			background-color: #dbeafe;
+			border-color: #93c5fd;
+			color: #1e40af;
+		}
+
+		.node-card.type-screen {
+			background-color: #dcfce7;
+			border-color: #86efac;
+			color: #166534;
+		}
+
+		.node-card.type-logic {
+			background-color: #f3e8ff;
+			border-color: #c084fc;
+			color: #7c3aed;
+		}
+
+		.node-card.type-data_model {
+			background-color: #fed7aa;
+			border-color: #fdba74;
+			color: #c2410c;
+		}
+
+		.node-card.type-api {
+			background-color: #fecaca;
+			border-color: #fca5a5;
+			color: #dc2626;
+		}
+
+		.node-card.type-test {
+			background-color: #fef3c7;
+			border-color: #fde047;
+			color: #a16207;
+		}
+
+		.graph-controls {
+			background-color: white;
+			border-radius: 0.5rem;
+			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+			padding: 0.75rem;
+			position: absolute;
+			top: 1rem;
+			left: 1rem;
+			z-index: 10;
+		}
+
+		.graph-controls button {
+			background-color: #f3f4f6;
+			border: 1px solid #d1d5db;
+			border-radius: 0.25rem;
+			padding: 0.25rem 0.5rem;
+			font-size: 0.75rem;
+			color: #374151;
+			cursor: pointer;
+			transition: background-color 0.15s ease-in-out;
+		}
+
+		.graph-controls button:hover:not(:disabled) {
+			background-color: #e5e7eb;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="root"></div>
+
+	<script type="text/babel">
+		// Simple memory graph implementation for demo
+		const createMemoryGraph = (data) => data;
+
+		const MemoryGraphVisualization = ({ graph, onNodeSelect, className }) => {
+			const [nodePositions, setNodePositions] = React.useState(new Map());
+			const [zoomLevel, setZoomLevel] = React.useState(1);
+			const [panOffset, setPanOffset] = React.useState({ x: 0, y: 0 });
+			const [selectedNodeId, setSelectedNodeId] = React.useState(null);
+			const containerRef = React.useRef(null);
+
+			// Simple circular layout
+			React.useEffect(() => {
+				if (nodePositions.size === 0 && graph.nodes.length > 0) {
+					const positions = new Map();
+					const centerX = 300;
+					const centerY = 200;
+					const radius = Math.min(150, graph.nodes.length * 20);
+
+					graph.nodes.forEach((node, index) => {
+						const angle = (index / graph.nodes.length) * 2 * Math.PI;
+						positions.set(node.id, {
+							id: node.id,
+							x: centerX + Math.cos(angle) * radius,
+							y: centerY + Math.sin(angle) * radius
+						});
+					});
+					setNodePositions(positions);
+				}
+			}, [graph.nodes]);
+
+			React.useEffect(() => {
+				if (containerRef.current) {
+					containerRef.current.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`;
+				}
+			}, [panOffset, zoomLevel]);
+
+			const handleNodeClick = (node) => {
+				setSelectedNodeId(node.id);
+				onNodeSelect?.(node.id);
+			};
+
+			const getNodeColor = (type) => {
+				switch (type) {
+					case 'feature': return 'type-feature';
+					case 'screen': return 'type-screen';
+					case 'logic': return 'type-logic';
+					case 'data_model': return 'type-data_model';
+					case 'api': return 'type-api';
+					case 'test': return 'type-test';
+					default: return 'bg-gray-100 border-gray-300';
+				}
+			};
+
+			const getEdgeColor = (type) => {
+				switch (type) {
+					case 'contains': return '#3B82F6';
+					case 'depends_on': return '#EF4444';
+					case 'implements': return '#10B981';
+					case 'extends': return '#8B5CF6';
+					case 'uses': return '#F59E0B';
+					case 'configures': return '#6B7280';
+					case 'tests': return '#EC4899';
+					default: return '#6B7280';
+				}
+			};
+
+			return (
+				<div className={`memory-graph-container ${className}`}>
+					<div className="graph-controls">
+						<div>
+							<label className="text-xs font-medium text-gray-600 block mb-1">Zoom</label>
+							<div className="flex items-center space-x-1">
+								<button onClick={() => setZoomLevel(Math.max(0.1, zoomLevel - 0.1))}>-</button>
+								<span className="text-xs min-w-12 text-center">{Math.round(zoomLevel * 100)}%</span>
+								<button onClick={() => setZoomLevel(Math.min(3, zoomLevel + 0.1))}>+</button>
+							</div>
+						</div>
+						<button
+							className="w-full mt-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+							onClick={() => setPanOffset({ x: 0, y: 0 })}
+						>
+							Reset View
+						</button>
+					</div>
+
+					<div
+						ref={containerRef}
+						className="graph-container"
+						onMouseDown={(e) => {
+							const startX = e.clientX;
+							const startY = e.clientY;
+							const startPanX = panOffset.x;
+							const startPanY = panOffset.y;
+
+							const handleMouseMove = (e) => {
+								const deltaX = e.clientX - startX;
+								const deltaY = e.clientY - startY;
+								setPanOffset({
+									x: startPanX + deltaX,
+									y: startPanY + deltaY
+								});
+							};
+
+							const handleMouseUp = () => {
+								document.removeEventListener('mousemove', handleMouseMove);
+								document.removeEventListener('mouseup', handleMouseUp);
+							};
+
+							document.addEventListener('mousemove', handleMouseMove);
+							document.addEventListener('mouseup', handleMouseUp);
+						}}
+						onWheel={(e) => {
+							e.preventDefault();
+							setZoomLevel(prev => e.deltaY > 0 ? Math.max(0.1, prev - 0.1) : Math.min(3, prev + 0.1));
+						}}
+					>
+						<svg className="graph-svg">
+							{graph.relationships.map((edge) => {
+								const fromPos = nodePositions.get(edge.fromNodeId);
+								const toPos = nodePositions.get(edge.toNodeId);
+								if (!fromPos || !toPos) return null;
+
+								const dx = toPos.x - fromPos.x;
+								const dy = toPos.y - fromPos.y;
+								const angle = Math.atan2(dy, dx);
+								const nodeRadius = 75;
+
+								const startX = fromPos.x + Math.cos(angle) * nodeRadius;
+								const startY = fromPos.y + Math.sin(angle) * nodeRadius;
+								const endX = toPos.x - Math.cos(angle) * nodeRadius;
+								const endY = toPos.y - Math.sin(angle) * nodeRadius;
+
+								const arrowSize = 8;
+								const arrowX1 = endX - arrowSize * Math.cos(angle - Math.PI / 6);
+								const arrowY1 = endY - arrowSize * Math.sin(angle - Math.PI / 6);
+								const arrowX2 = endX - arrowSize * Math.cos(angle + Math.PI / 6);
+								const arrowY2 = endY - arrowSize * Math.sin(angle + Math.PI / 6);
+
+								return (
+									<g key={edge.id}>
+										<line
+											x1={startX}
+											y1={startY}
+											x2={endX}
+											y2={endY}
+											stroke={getEdgeColor(edge.type)}
+											strokeWidth="2"
+											strokeDasharray={edge.type === 'depends_on' ? '5,5' : 'none'}
+										/>
+										<polygon
+											points={`${endX},${endY} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}`}
+											fill={getEdgeColor(edge.type)}
+										/>
+										<text
+											x={(startX + endX) / 2}
+											y={(startY + endY) / 2 - 5}
+											textAnchor="middle"
+											className="text-xs fill-gray-600"
+											fontSize="10"
+										>
+											{edge.type}
+										</text>
+									</g>
+								);
+							})}
+						</svg>
+
+						{graph.nodes.map((node) => {
+							const position = nodePositions.get(node.id);
+							if (!position) return null;
+
+							return (
+								<div
+									key={node.id}
+									className={`node-card ${getNodeColor(node.type)} ${selectedNodeId === node.id ? 'selected' : ''}`}
+									style={{
+										left: position.x - 100,
+										top: position.y - 50,
+									}}
+									onClick={() => handleNodeClick(node)}
+								>
+									<div className="font-semibold text-sm truncate">{node.name}</div>
+									<div className="text-xs opacity-75 capitalize">{node.type}</div>
+									{node.description && (
+										<div className="text-xs opacity-60 mt-1 line-clamp-2">
+											{node.description}
+										</div>
+									)}
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			);
+		};
+
+		const sampleGraph = createMemoryGraph({
+			nodes: [
+				{
+					id: 'user-auth',
+					type: 'feature',
+					name: 'User Authentication',
+					description: 'Login and registration functionality'
+				},
+				{
+					id: 'login-screen',
+					type: 'screen',
+					name: 'Login Screen',
+					description: 'UI for user login'
+				},
+				{
+					id: 'auth-service',
+					type: 'api',
+					name: 'Auth Service',
+					description: 'Backend authentication service'
+				},
+				{
+					id: 'user-model',
+					type: 'data_model',
+					name: 'User Model',
+					description: 'User data structure'
+				},
+				{
+					id: 'auth-logic',
+					type: 'logic',
+					name: 'Auth Logic',
+					description: 'Authentication business logic'
+				},
+				{
+					id: 'auth-tests',
+					type: 'test',
+					name: 'Auth Tests',
+					description: 'Unit tests for authentication'
+				}
+			],
+			relationships: [
+				{
+					id: 'rel-1',
+					fromNodeId: 'user-auth',
+					toNodeId: 'login-screen',
+					type: 'contains',
+					strength: 0.8
+				},
+				{
+					id: 'rel-2',
+					fromNodeId: 'login-screen',
+					toNodeId: 'auth-service',
+					type: 'uses',
+					strength: 0.9
+				},
+				{
+					id: 'rel-3',
+					fromNodeId: 'auth-service',
+					toNodeId: 'user-model',
+					type: 'depends_on',
+					strength: 0.7
+				},
+				{
+					id: 'rel-4',
+					fromNodeId: 'auth-service',
+					toNodeId: 'auth-logic',
+					type: 'implements',
+					strength: 0.8
+				},
+				{
+					id: 'rel-5',
+					fromNodeId: 'auth-tests',
+					toNodeId: 'auth-logic',
+					type: 'tests',
+					strength: 0.6
+				}
+			]
+		});
+
+		const App = () => {
+			const [selectedNode, setSelectedNode] = React.useState(null);
+			const [nodeCount, setNodeCount] = React.useState(sampleGraph.nodes.length);
+
+			const addRandomNode = () => {
+				const nodeTypes = ['feature', 'screen', 'logic', 'data_model', 'api', 'test'];
+				const randomType = nodeTypes[Math.floor(Math.random() * nodeTypes.length)];
+
+				const newNode = {
+					id: `node-${Date.now()}`,
+					type: randomType,
+					name: `New ${randomType} ${nodeCount + 1}`,
+					description: `A new ${randomType} node added dynamically`
+				};
+
+				sampleGraph.nodes.push(newNode);
+
+				// Add a random relationship
+				if (sampleGraph.nodes.length > 1) {
+					const randomExistingNode = sampleGraph.nodes[Math.floor(Math.random() * (sampleGraph.nodes.length - 1))];
+					sampleGraph.relationships.push({
+						id: `rel-${Date.now()}`,
+						fromNodeId: newNode.id,
+						toNodeId: randomExistingNode.id,
+						type: 'uses',
+						strength: Math.random()
+					});
+				}
+
+				setNodeCount(prev => prev + 1);
+			};
+
+			return (
+				<div className="p-6 bg-gray-50 min-h-screen">
+					<div className="max-w-7xl mx-auto">
+						<h1 className="text-3xl font-bold text-gray-900 mb-6">
+							Memory Graph Visualization Demo
+						</h1>
+
+						<div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+							<div className="flex items-center justify-between mb-4">
+								<h2 className="text-xl font-semibold text-gray-800">
+									Interactive Graph
+								</h2>
+								<button
+									onClick={addRandomNode}
+									className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+								>
+									Add Random Node
+								</button>
+							</div>
+
+							<div className="h-96 border border-gray-200 rounded-lg">
+								<MemoryGraphVisualization
+									graph={sampleGraph}
+									onNodeSelect={setSelectedNode}
+									className="w-full h-full"
+								/>
+							</div>
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="bg-white rounded-lg shadow p-6">
+								<h3 className="text-lg font-semibold text-gray-800 mb-4">
+									Graph Statistics
+								</h3>
+								<div className="space-y-2 text-sm text-gray-600">
+									<div>Nodes: {sampleGraph.nodes.length}</div>
+									<div>Relationships: {sampleGraph.relationships.length}</div>
+									<div>Selected Node: {selectedNode || 'None'}</div>
+								</div>
+							</div>
+
+							<div className="bg-white rounded-lg shadow p-6">
+								<h3 className="text-lg font-semibold text-gray-800 mb-4">
+									Instructions
+								</h3>
+								<ul className="space-y-2 text-sm text-gray-600">
+									<li>• Click nodes to select them</li>
+									<li>• Drag to pan the view</li>
+									<li>• Scroll to zoom in/out</li>
+									<li>• Use controls to change layout</li>
+									<li>• Click "Add Random Node" to test dynamic updates</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			);
+		};
+
+		ReactDOM.render(<App />, document.getElementById('root'));
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,419 @@
+import * as vscode from 'vscode';
+import { MemoryGraphEngine, AnyNode } from '@aide/memory-graph';
+import { IMemoryGraph } from '../interfaces/IMemoryGraph';
+
+/**
+ * Adapter class to bridge MemoryGraphEngine with legacy MemoryGraph interface
+ * This allows gradual migration to the new memory graph system
+ */
+export class MemoryGraphAdapter implements IMemoryGraph {
+	private memoryEngine: MemoryGraphEngine;
+	private context: vscode.ExtensionContext;
+
+	constructor(engine: MemoryGraphEngine, context: vscode.ExtensionContext) {
+		this.memoryEngine = engine;
+		this.context = context;
+	}
+
+	/**
+	 * Legacy interface compatibility
+	 */
+	get nodes() {
+		return new Map(
+			this.memoryEngine.nodes.map(node => [node.id, {
+				id: node.id,
+				type: this.mapNodeType(node.type),
+				content: this.getNodeContent(node),
+				timestamp: node.createdAt || new Date(),
+				connections: this.getNodeConnections(node.id),
+				metadata: this.getNodeMetadata(node)
+			}])
+		);
+	}
+
+	get edges() {
+		return new Map(
+			this.memoryEngine.relationships.map(rel => [rel.id, {
+				id: rel.id,
+				from: rel.fromNodeId,
+				to: rel.toNodeId,
+				type: rel.type || 'relates_to',
+				weight: rel.strength || 1,
+				metadata: rel.metadata || {}
+			}])
+		);
+	}	/**
+	 * Add a new node to the memory graph
+	 */
+	addNode(type: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision', content: string, metadata: Record<string, any> = {}): string {
+		let node: AnyNode;
+		const baseName = metadata.name || content.slice(0, 50);
+		const baseDescription = content;
+
+		switch (type) {
+			case 'intent':
+				node = this.memoryEngine.addNode({
+					type: 'intent',
+					name: baseName,
+					description: baseDescription,
+					category: (metadata.category as any) || 'goal',
+					priority: (metadata.priority as any) || 'medium',
+					status: (metadata.status as any) || 'active',
+					context: content,
+					metadata
+				} as any);
+				break;
+			case 'feature':
+				node = this.memoryEngine.addNode({
+					type: 'feature',
+					name: baseName,
+					description: baseDescription,
+					status: (metadata.status as any) || 'planned',
+					priority: (metadata.priority as any) || 'medium',
+					requirements: metadata.requirements || [],
+					acceptanceCriteria: metadata.acceptanceCriteria || [],
+					metadata
+				} as any);
+				break;
+			case 'decision':
+				node = this.memoryEngine.addNode({
+					type: 'decision',
+					name: baseName,
+					description: baseDescription,
+					options: metadata.options || [{
+						description: content,
+						pros: [],
+						cons: []
+					}],
+					selectedOption: metadata.selectedOption || 0,
+					rationale: metadata.rationale || '',
+					impact: (metadata.impact as any) || 'medium',
+					metadata
+				} as any);
+				break;
+			case 'screen':
+				node = this.memoryEngine.addNode({
+					type: 'screen',
+					name: baseName,
+					description: baseDescription,
+					screenType: (metadata.screenType as any) || 'component',
+					route: metadata.route,
+					metadata
+				} as any);
+				break;
+			case 'logic':
+				node = this.memoryEngine.addNode({
+					type: 'logic',
+					name: baseName,
+					description: baseDescription,
+					logicType: (metadata.logicType as any) || 'function',
+					inputs: metadata.inputs || [],
+					outputs: metadata.outputs || [],
+					metadata
+				} as any);
+				break;
+			default:
+				// For legacy types, create as intent nodes
+				node = this.memoryEngine.addNode({
+					type: 'intent',
+					name: baseName,
+					description: baseDescription,
+					category: 'goal',
+					priority: 'medium',
+					status: 'active',
+					context: content,
+					metadata: { ...metadata, legacyType: type }
+				} as any);
+		}
+
+		return node.id;
+	}
+	/**
+	 * Add an edge between nodes
+	 */
+	addEdge(fromId: string, toId: string, type: string = 'relates_to', weight: number = 1, metadata: Record<string, any> = {}): string {
+		try {
+			const relationshipType = this.mapRelationshipType(type);
+			const relationship = this.memoryEngine.addRelationship({
+				fromNodeId: fromId,
+				toNodeId: toId,
+				type: relationshipType,
+				strength: weight,
+				metadata,
+				createdAt: new Date()
+			});
+			return relationship.id;
+		} catch (error) {
+			console.error('Failed to add edge:', error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Get a node by ID
+	 */
+	getNode(id: string) {
+		const node = this.memoryEngine.nodes.find(n => n.id === id);
+		if (!node) return undefined;
+
+		return {
+			id: node.id,
+			type: this.mapNodeType(node.type),
+			content: this.getNodeContent(node),
+			timestamp: node.createdAt || new Date(),
+			connections: this.getNodeConnections(node.id),
+			metadata: this.getNodeMetadata(node)
+		};
+	}
+
+	/**
+	 * Query nodes by type
+	 */
+	queryByType(type: string) {
+		return this.memoryEngine.nodes
+			.filter(node => this.mapNodeType(node.type) === type)
+			.map(node => this.getNode(node.id))
+			.filter(Boolean);
+	}
+
+	/**
+	 * Query nodes by content
+	 */
+	queryByContent(query: string) {
+		return this.memoryEngine.nodes
+			.filter(node => {
+				const content = this.getNodeContent(node);
+				return content.toLowerCase().includes(query.toLowerCase());
+			})
+			.map(node => this.getNode(node.id))
+			.filter(Boolean);
+	}
+
+	/**
+	 * Get connected nodes
+	 */
+	getConnections(nodeId: string) {
+		const connections = this.getNodeConnections(nodeId);
+		return connections.map(id => this.getNode(id)).filter(Boolean);
+	}
+
+	/**
+	 * Save state (handled automatically by engine persistence)
+	 */
+	async saveToStorage(): Promise<void> {
+		// The engine handles persistence automatically
+		await this.memoryEngine.saveGraph();
+	}
+
+	/**
+	 * Load state (handled automatically by engine persistence)
+	 */
+	async loadFromStorage(): Promise<void> {
+		// The engine handles loading automatically
+		await this.memoryEngine.loadGraph();
+	}
+
+	/**
+	 * Get statistics
+	 */
+	getStats() {
+		const nodes = this.memoryEngine.nodes;
+		return {
+			nodeCount: nodes.length,
+			typeDistribution: nodes.reduce((acc, node) => {
+				const type = this.mapNodeType(node.type);
+				acc[type] = (acc[type] || 0) + 1;
+				return acc;
+			}, {} as Record<string, number>),
+			lastUpdated: new Date()
+		};
+	}
+	/**
+	 * Get node content from various node types
+	 */
+	private getNodeContent(node: AnyNode): string {
+		switch (node.type) {
+			case 'intent':
+				return node.context || node.description || '';
+			case 'feature':
+				return node.description || '';
+			case 'decision':
+				return node.description || '';
+			case 'screen':
+				return node.description || '';
+			case 'logic':
+				return node.description || '';
+			case 'data':
+				return node.description || '';
+			case 'api':
+				return node.description || `${node.method || ''} ${node.path || ''}`.trim();
+			case 'test':
+				return node.description || '';
+			case 'conversation':
+				return node.summary || '';
+			default:
+				return (node as any).description || '';
+		}
+	}
+
+	/**
+	 * Get node metadata from various node types
+	 */
+	private getNodeMetadata(node: AnyNode): Record<string, any> {
+		const base = {
+			name: node.name,
+			nodeType: node.type,
+			createdAt: node.createdAt,
+			updatedAt: node.updatedAt,
+			version: node.version,
+			...node.metadata
+		};
+
+		// Add type-specific metadata
+		switch (node.type) {
+			case 'intent':
+				return { ...base, category: node.category, priority: node.priority, status: node.status };
+			case 'feature':
+				return { ...base, status: node.status, priority: node.priority, requirements: node.requirements };
+			case 'decision':
+				return { ...base, options: node.options, selectedOption: node.selectedOption, rationale: node.rationale, impact: node.impact };
+			case 'screen':
+				return { ...base, screenType: node.screenType, route: node.route };
+			case 'logic':
+				return { ...base, logicType: node.logicType, inputs: node.inputs, outputs: node.outputs };
+			default:
+				return base;
+		}
+	}
+
+	/**
+	 * Get node connections (helper method)
+	 */
+	private getNodeConnections(nodeId: string): string[] {
+		return this.memoryEngine.relationships
+			.filter(rel => rel.fromNodeId === nodeId || rel.toNodeId === nodeId)
+			.map(rel => rel.fromNodeId === nodeId ? rel.toNodeId : rel.fromNodeId);
+	}
+
+	/**
+	 * Map engine node types to legacy types
+	 */
+	private mapNodeType(engineType: string): 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision' {
+		switch (engineType) {
+			case 'intent': return 'intent';
+			case 'feature': return 'feature';
+			case 'decision': return 'decision';
+			case 'screen': return 'screen';
+			case 'logic': return 'logic';
+			case 'data': return 'logic'; // Map data nodes to logic for legacy compatibility
+			case 'api': return 'logic'; // Map API nodes to logic for legacy compatibility
+			case 'test': return 'logic'; // Map test nodes to logic for legacy compatibility
+			default: return 'intent';
+		}
+	}
+
+	/**
+	 * Map legacy relationship types to engine types
+	 */
+	private mapRelationshipType(legacyType: string): 'contains' | 'depends_on' | 'implements' | 'extends' | 'uses' | 'configures' | 'tests' | 'derives_from' | 'relates_to' | 'influences' {
+		switch (legacyType.toLowerCase()) {
+			case 'contains': return 'contains';
+			case 'depends_on': return 'depends_on';
+			case 'implements': return 'implements';
+			case 'extends': return 'extends';
+			case 'uses': return 'uses';
+			case 'configures': return 'configures';
+			case 'tests': return 'tests';
+			case 'derives_from': return 'derives_from';
+			case 'influences': return 'influences';
+			default: return 'relates_to';
+		}
+	}
+
+	/**
+	 * Access to underlying engine for new functionality
+	 */
+	get engine(): MemoryGraphEngine {
+		return this.memoryEngine;
+	}
+
+	/**
+	 * Legacy interface methods required by agents
+	 */
+
+	/**
+	 * Get all nodes of a specific type
+	 */
+	getNodesByType(type: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision'): any[] {
+		return this.queryByType(type);
+	}
+
+	/**
+	 * Search nodes by content
+	 */
+	searchNodes(query: string): any[] {
+		return this.queryByContent(query);
+	}
+
+	/**
+	 * Get connected nodes
+	 */
+	getConnectedNodes(nodeId: string): any[] {
+		return this.getConnections(nodeId);
+	}
+
+	/**
+	 * Get all nodes and edges for visualization
+	 */
+	getGraphData(): { nodes: any[], edges: any[] } {
+		return {
+			nodes: Array.from(this.nodes.values()),
+			edges: Array.from(this.edges.values())
+		};
+	}
+
+	/**
+	 * Update node content
+	 */
+	updateNode(id: string, updates: Partial<{ content: string; metadata: Record<string, any> }>): boolean {
+		try {
+			const node = this.memoryEngine.nodes.find(n => n.id === id);
+			if (!node) return false;
+
+			// Update the node using the engine's update method
+			const updatedNode = this.memoryEngine.updateNode(id, {
+				description: updates.content,
+				metadata: { ...node.metadata, ...updates.metadata }
+			});
+
+			return updatedNode !== null;
+		} catch (error) {
+			console.error('Failed to update node:', error);
+			return false;
+		}
+	}
+
+	/**
+	 * Remove a node and its edges
+	 */
+	removeNode(id: string): boolean {
+		try {
+			return this.memoryEngine.removeNode(id);
+		} catch (error) {
+			console.error('Failed to remove node:', error);
+			return false;
+		}
+	}
+
+	/**
+	 * Clear all memory (useful for debugging)
+	 */
+	clear(): void {
+		// Clear all nodes and relationships
+		const nodeIds = this.memoryEngine.nodes.map(n => n.id);
+		nodeIds.forEach(id => this.memoryEngine.removeNode(id));
+
+		const relationshipIds = this.memoryEngine.relationships.map(r => r.id);
+		relationshipIds.forEach(id => this.memoryEngine.removeRelationship(id));
+	}
+}

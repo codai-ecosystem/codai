@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  aide-control:
+    build:
+      context: .
+      dockerfile: Dockerfile.aide-control
+    container_name: aide-control-panel
+    ports:
+      - '8080:8080'
+    environment:
+      # Application configuration
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - PORT=8080
+      - HOSTNAME=0.0.0.0
+
+      # API configuration (customize as needed)
+      - NEXT_PUBLIC_API_URL=https://api.aide.example.com
+      - DEFAULT_SERVICE_MODE=managed
+
+      # Add other environment variables as needed
+      # - DATABASE_URL=
+      # - REDIS_URL=
+      # - SECRET_KEY=
+
+    # Health check configuration
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/api/health', '||', 'exit', '1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+    # Logging configuration
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+    # Networks
+    networks:
+      - aide-network
+
+# Optional: Create a custom network for AIDE services
+networks:
+  aide-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Optional: Add volumes for persistent data
+volumes:
+  aide-control-data:
+    driver: local

@@ -1,0 +1,284 @@
+.agent-runtime-integration {
+	margin-top: 20px;
+	padding: 15px;
+	border-radius: 8px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	background: rgba(255, 255, 255, 0.8);
+	backdrop-filter: blur(10px);
+}
+
+.agent-status,
+.task-status {
+	margin-top: 12px;
+}
+
+.agent-status h3,
+.task-status h3 {
+	font-size: 16px;
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+
+.agent-status ul,
+.task-status ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.agent-status li,
+.task-status li {
+	padding: 6px 10px;
+	margin-bottom: 4px;
+	background: rgba(0, 0, 0, 0.03);
+	border-radius: 4px;
+}
+
+/* Agent Control Panel */
+.agent-control-panel {
+	margin-top: 20px;
+	background: rgba(255, 255, 255, 0.8);
+	backdrop-filter: blur(10px);
+	border-radius: 8px;
+	padding: 15px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.panel-header {
+	margin-bottom: 15px;
+}
+
+.panel-header h2 {
+	font-size: 18px;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.panel-header p {
+	color: #666;
+	font-size: 14px;
+	margin: 0;
+}
+
+.agent-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 15px;
+}
+
+.agent-tabs .tab {
+	padding: 8px 12px;
+	border-radius: 6px;
+	background: #f5f5f5;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 14px;
+	color: #333;
+	transition: all 0.2s ease;
+}
+
+.agent-tabs .tab.active {
+	background: #0078D4;
+	color: white;
+}
+
+.task-form {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.form-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.form-header h3 {
+	font-size: 16px;
+	font-weight: 500;
+	margin: 0;
+}
+
+.template-btn {
+	padding: 5px 10px;
+	background: #f0f0f0;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+}
+
+.task-form textarea {
+	resize: vertical;
+	width: 100%;
+	min-height: 100px;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	font-family: inherit;
+}
+
+.submit-btn {
+	padding: 10px;
+	background: #0078D4;
+	color: white;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-weight: 500;
+	transition: background 0.2s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+}
+
+.submit-btn:hover {
+	background: #005a9e;
+}
+
+.submit-btn:disabled {
+	background: #cccccc;
+	cursor: not-allowed;
+}
+
+.spin {
+	animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Task List */
+.task-list {
+	margin-top: 20px;
+	background: rgba(255, 255, 255, 0.8);
+	backdrop-filter: blur(10px);
+	border-radius: 8px;
+	padding: 15px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.list-header {
+	margin-bottom: 15px;
+}
+
+.list-header h2 {
+	font-size: 18px;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.empty-state {
+	color: #666;
+	font-style: italic;
+	font-size: 14px;
+}
+
+.task-items {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.task-item {
+	padding: 12px;
+	border-radius: 6px;
+	background: #f9f9f9;
+	border-left: 4px solid #ddd;
+}
+
+.task-item.in_progress {
+	border-left-color: #0078D4;
+}
+
+.task-item.completed {
+	border-left-color: #107C10;
+}
+
+.task-item.failed {
+	border-left-color: #D83B01;
+}
+
+.task-item.cancelled {
+	border-left-color: #797775;
+}
+
+.task-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.status-icon {
+	margin-right: 8px;
+}
+
+.status-icon.completed {
+	color: #107C10;
+}
+
+.status-icon.failed {
+	color: #D83B01;
+}
+
+.status-icon.pending {
+	color: #797775;
+}
+
+.status-icon.in-progress {
+	color: #0078D4;
+}
+
+.task-title {
+	font-weight: 500;
+	flex-grow: 1;
+	text-transform: capitalize;
+}
+
+.task-time {
+	font-size: 12px;
+	color: #666;
+}
+
+.task-description {
+	margin: 8px 0;
+	font-size: 14px;
+}
+
+.task-result,
+.task-error {
+	margin-top: 10px;
+	padding: 8px;
+	font-size: 13px;
+	background: rgba(0, 0, 0, 0.03);
+	border-radius: 4px;
+}
+
+.task-result h4,
+.task-error h4 {
+	margin: 0 0 4px 0;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.task-result p,
+.task-error p {
+	margin: 0;
+}
+
+.task-error {
+	background: rgba(216, 59, 1, 0.05);
+}

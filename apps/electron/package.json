@@ -1,0 +1,56 @@
+{
+  "name": "@aide/electron",
+  "version": "0.1.0",
+  "description": "AIDE Electron desktop application",
+  "main": "dist/main.js",
+  "homepage": "https://github.com/aide-dev/aide",
+  "scripts": {
+    "build": "npm run build:main && npm run build:renderer",
+    "build:main": "tsc",
+    "build:renderer": "vite build",
+    "dev": "concurrently \"npm run dev:main\" \"npm run dev:renderer\" \"wait-on dist/main.js && electron dist/main.js\"",
+    "dev:main": "tsc --watch",
+    "dev:renderer": "vite",
+    "start": "electron dist/main.js",
+    "package": "npm run build && electron-builder",
+    "clean": "rimraf dist"
+  },
+  "build": {
+    "appId": "com.aide.app",
+    "productName": "AIDE",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "dependencies": {
+    "@aide/memory-graph": "workspace:*",
+    "@aide/agent-runtime": "workspace:*",
+    "@aide/ui-components": "workspace:*",
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.2.1"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "concurrently": "^8.2.2",
+    "wait-on": "^8.0.1",
+    "vite": "^6.0.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "typescript": "^5.6.3",
+    "rimraf": "^6.0.1"
+  }
+}

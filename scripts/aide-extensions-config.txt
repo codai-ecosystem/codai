@@ -1,0 +1,39 @@
+# AIDE Extension Configuration
+# Defines which VS Code extensions are needed for AIDE's AI-native environment
+
+# Core AIDE extensions (keep)
+aide-core/
+copilot/
+
+# Essential VS Code infrastructure (keep)
+github/
+github-authentication/
+microsoft-authentication/
+git/
+git-base/
+simple-browser/
+
+# Theme support (keep minimal set)
+theme-defaults/
+theme-monokai/
+theme-solarized-dark/
+
+# Language features needed for generated code preview (keep minimal)
+json/
+json-language-features/
+html/
+html-language-features/
+css/
+css-language-features/
+typescript-basics/
+typescript-language-features/
+javascript/
+markdown-basics/
+markdown-language-features/
+
+# Configuration and tooling (keep)
+configuration-editing/
+extension-editing/
+
+# Remove all other language-specific extensions
+# These will be replaced by AI-generated code previews
