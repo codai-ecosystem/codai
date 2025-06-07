@@ -19,8 +19,8 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			'@aide/memory-graph': '../memory-graph/src',
-			'@aide/ui-components': '../ui-components/src'
+			'@codai/memory-graph': '../memory-graph/src',
+			'@codai/ui-components': '../ui-components/src'
 		}
 	}
 });

@@ -10,6 +10,15 @@ afterEach(() => {
 	cleanup();
 });
 
+// Add process global for Node.js compatibility
+if (typeof global.process === 'undefined') {
+	global.process = {
+		env: {},
+		// Add any other required process properties
+		nextTick: (fn: Function, ...args: any[]) => setTimeout(() => fn(...args), 0)
+	} as any;
+}
+
 // Mock ResizeObserver
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
 	observe: vi.fn(),
@@ -37,6 +46,37 @@ Object.defineProperty(SVGElement.prototype, 'getBBox', {
 // Mock requestAnimationFrame
 global.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
 global.cancelAnimationFrame = vi.fn((id) => clearTimeout(id));
+
+// Mock IDBKeyRange if not available
+if (typeof global.IDBKeyRange === 'undefined') {
+	global.IDBKeyRange = {
+		only: (key: any) => ({ key, type: 'only', includes: (x: any) => x === key }),
+		lowerBound: (lower: any, open = false) => ({
+			lower,
+			type: 'lowerBound',
+			open,
+			includes: (x: any) => open ? x > lower : x >= lower
+		}),
+		upperBound: (upper: any, open = false) => ({
+			upper,
+			type: 'upperBound',
+			open,
+			includes: (x: any) => open ? x < upper : x <= upper
+		}),
+		bound: (lower: any, upper: any, lowerOpen = false, upperOpen = false) => ({
+			lower,
+			upper,
+			type: 'bound',
+			lowerOpen,
+			upperOpen,
+			includes: (x: any) => {
+				const aboveLower = lowerOpen ? x > lower : x >= lower;
+				const belowUpper = upperOpen ? x < upper : x <= upper;
+				return aboveLower && belowUpper;
+			}
+		})
+	} as any;
+}
 
 // Mock console methods to reduce noise in tests
 global.console = {

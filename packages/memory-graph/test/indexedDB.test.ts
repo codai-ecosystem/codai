@@ -17,34 +17,11 @@ const mockDBRequest = {
   result: null as any,
 };
 
-const mockObjectStore = {
-  put: vi.fn(),
-  get: vi.fn(),
-  getAll: vi.fn(),
-  getAllKeys: vi.fn(),
-  delete: vi.fn(),
-  index: vi.fn(),
-  createIndex: vi.fn(),
+// Mock IDBKeyRange for backup functionality
+const mockIDBKeyRange = {
+  only: vi.fn().mockImplementation((key) => ({ key })),
 };
-
-const mockTransaction = {
-  objectStore: vi.fn().mockReturnValue(mockObjectStore),
-  oncomplete: null as any,
-};
-
-const mockDB = {
-  createObjectStore: vi.fn().mockReturnValue(mockObjectStore),
-  transaction: vi.fn().mockReturnValue(mockTransaction),
-  objectStoreNames: {
-    contains: vi.fn().mockReturnValue(true),
-  },
-  close: vi.fn(),
-};
-
-const mockIndex = {
-  openCursor: vi.fn(),
-  getAll: vi.fn(),
-};
+global.IDBKeyRange = mockIDBKeyRange as any;
 
 // Mock sample graph
 const createSampleGraph = (): MemoryGraph => ({
@@ -61,8 +38,77 @@ const createSampleGraph = (): MemoryGraph => ({
 
 describe('IndexedDBAdapter', () => {
   let adapter: IndexedDBAdapter;
+  let mockMainStore: any;
+  let mockBackupStore: any;
+  let mockBackupIndex: any;
+  let mockMainIndex: any;
+  let mockTransaction: any;
+  let mockDB: any;
 
   beforeEach(() => {
+    // Create fresh mocks for each test
+    mockMainStore = {
+      put: vi.fn(),
+      get: vi.fn(),
+      getAll: vi.fn(),
+      getAllKeys: vi.fn(),
+      delete: vi.fn(),
+      index: vi.fn(),
+      createIndex: vi.fn().mockReturnValue({}),
+    };
+
+    mockBackupStore = {
+      put: vi.fn(),
+      get: vi.fn(),
+      getAll: vi.fn(),
+      getAllKeys: vi.fn(),
+      delete: vi.fn(),
+      index: vi.fn(),
+      createIndex: vi.fn().mockReturnValue({}),
+      add: vi.fn(),
+    };
+
+    mockBackupIndex = {
+      openCursor: vi.fn(),
+      getAll: vi.fn(),
+    };
+
+    mockMainIndex = {
+      openCursor: vi.fn(),
+      getAll: vi.fn(),
+    };
+
+    // Setup transaction mock that returns appropriate store based on name
+    mockTransaction = {
+      objectStore: vi.fn((storeName) => {
+        if (storeName === 'backups') {
+          return mockBackupStore;
+        }
+        return mockMainStore;
+      }),
+      oncomplete: null as any,
+    };
+
+    // Setup DB mock with intelligent store selection
+    mockDB = {
+      createObjectStore: vi.fn((storeName) => {
+        if (storeName === 'backups') {
+          return mockBackupStore;
+        }
+        return mockMainStore;
+      }),
+      transaction: vi.fn().mockImplementation((storeNames) => {
+        return mockTransaction;
+      }),
+      objectStoreNames: {
+        contains: vi.fn((name) => {
+          // Simulate both main store and backup store existence
+          return name === 'test-store' || name === 'backups';
+        }),
+      },
+      close: vi.fn(),
+    };
+
     // Set up IndexedDB mock
     global.indexedDB = mockIndexedDB as any;
     mockIndexedDB.open.mockImplementation(() => {
@@ -81,11 +127,27 @@ describe('IndexedDBAdapter', () => {
       return mockDBRequest;
     });
 
-    mockObjectStore.index.mockReturnValue(mockIndex);
+    // Set up index mocks
+    mockMainStore.index.mockReturnValue(mockMainIndex);
+    mockBackupStore.index.mockReturnValue(mockBackupIndex);
 
+    // Mock cursor implementation for backup management
+    mockBackupIndex.openCursor.mockImplementation(() => {
+      const request = { onsuccess: null as any, onerror: null as any };
+      setTimeout(() => {
+        if (request.onsuccess) {
+          // Return null to simulate end of cursor
+          request.onsuccess({ target: { result: null } });
+        }
+      }, 0);
+      return request;
+    });
+
+    // Initialize with backup enabled
     adapter = new IndexedDBAdapter({
       dbName: 'test-db',
       storeName: 'test-store',
+      enableBackups: true, // Enable backups for testing
     });
   });
 
@@ -98,7 +160,7 @@ describe('IndexedDBAdapter', () => {
     it('should save a graph to IndexedDB', async () => {
       const graph = createSampleGraph();
 
-      mockObjectStore.put.mockImplementation((data) => {
+      mockMainStore.put.mockImplementation((data) => {
         const request = { onsuccess: null as any, onerror: null as any };
         setTimeout(() => {
           if (request.onsuccess) {
@@ -111,28 +173,38 @@ describe('IndexedDBAdapter', () => {
       const result = await adapter.save(graph);
 
       expect(mockDB.transaction).toHaveBeenCalledWith(['test-store'], 'readwrite');
-      expect(mockObjectStore.put).toHaveBeenCalledWith(expect.objectContaining({
+      expect(mockMainStore.put).toHaveBeenCalledWith(expect.objectContaining({
         id: graph.id,
         name: graph.name,
       }));
       expect(result).toBe(true);
-    });
-
-    it('should handle errors during save', async () => {
+    }); it('should handle errors during save', async () => {
       const graph = createSampleGraph();
 
-      mockObjectStore.put.mockImplementation(() => {
-        const request = { onsuccess: null as any, onerror: null as any, error: new Error('Test error') };
+      mockMainStore.put.mockImplementation(() => {
+        const request = {
+          onsuccess: null as any,
+          onerror: null as any,
+          error: { message: 'Test error' }
+        };
+
+        // Use setTimeout to ensure async behavior
         setTimeout(() => {
           if (request.onerror) {
-            request.onerror({});
+            request.onerror({ target: request });
           }
         }, 0);
+
         return request;
       });
 
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
       const result = await adapter.save(graph);
+
+      expect(consoleSpy).toHaveBeenCalled();
       expect(result).toBe(false);
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -140,7 +212,7 @@ describe('IndexedDBAdapter', () => {
     it('should load a graph by ID', async () => {
       const graph = createSampleGraph();
 
-      mockObjectStore.get.mockImplementation(() => {
+      mockMainStore.get.mockImplementation(() => {
         const request = { onsuccess: null as any, onerror: null as any };
         setTimeout(() => {
           if (request.onsuccess) {
@@ -153,12 +225,12 @@ describe('IndexedDBAdapter', () => {
       const result = await adapter.load(graph.id);
 
       expect(mockDB.transaction).toHaveBeenCalledWith('test-store', 'readonly');
-      expect(mockObjectStore.get).toHaveBeenCalledWith(graph.id);
+      expect(mockMainStore.get).toHaveBeenCalledWith(graph.id);
       expect(result).toEqual(graph);
     });
 
     it('should return null if no graph is found', async () => {
-      mockObjectStore.get.mockImplementation(() => {
+      mockMainStore.get.mockImplementation(() => {
         const request = { onsuccess: null as any, onerror: null as any };
         setTimeout(() => {
           if (request.onsuccess) {
@@ -177,7 +249,7 @@ describe('IndexedDBAdapter', () => {
     it('should list all available graph IDs', async () => {
       const ids = ['graph1', 'graph2', 'graph3'];
 
-      mockObjectStore.getAllKeys.mockImplementation(() => {
+      mockMainStore.getAllKeys.mockImplementation(() => {
         const request = { onsuccess: null as any, onerror: null as any };
         setTimeout(() => {
           if (request.onsuccess) {
@@ -190,14 +262,14 @@ describe('IndexedDBAdapter', () => {
       const result = await adapter.listGraphs();
 
       expect(mockDB.transaction).toHaveBeenCalledWith('test-store', 'readonly');
-      expect(mockObjectStore.getAllKeys).toHaveBeenCalled();
+      expect(mockMainStore.getAllKeys).toHaveBeenCalled();
       expect(result).toEqual(ids);
     });
   });
 
   describe('deleteGraph', () => {
     it('should delete a graph', async () => {
-      mockObjectStore.delete.mockImplementation(() => {
+      mockMainStore.delete.mockImplementation(() => {
         const request = { onsuccess: null as any, onerror: null as any };
         setTimeout(() => {
           if (request.onsuccess) {
@@ -210,7 +282,7 @@ describe('IndexedDBAdapter', () => {
       const result = await adapter.deleteGraph('graph-id');
 
       expect(mockDB.transaction).toHaveBeenCalledWith('test-store', 'readwrite');
-      expect(mockObjectStore.delete).toHaveBeenCalledWith('graph-id');
+      expect(mockMainStore.delete).toHaveBeenCalledWith('graph-id');
       expect(result).toBe(true);
     });
   });
@@ -219,40 +291,98 @@ describe('IndexedDBAdapter', () => {
     it('should export a graph to JSON format', async () => {
       const graph = createSampleGraph();
 
-      mockObjectStore.get.mockImplementation(() => {
-        const request = { onsuccess: null as any, onerror: null as any };
-        setTimeout(() => {
-          if (request.onsuccess) {
-            request.onsuccess({ target: { result: graph } });
-          }
-        }, 0);
-        return request;
-      });
-
-      // Mock the index behavior for getting the most recent graph
-      mockIndex.openCursor.mockImplementation(() => {
-        const request = { onsuccess: null as any, onerror: null as any };
-        setTimeout(() => {
-          if (request.onsuccess) {
-            request.onsuccess({
-              target: {
-                result: {
-                  value: graph
-                }
-              }
-            });
-          }
-        }, 0);
-        return request;
-      });
+      // Mock the load method explicitly for exportGraph
+      const loadSpy = vi.spyOn(adapter, 'load').mockResolvedValue(graph);
 
       const result = await adapter.exportGraph();
       const parsedResult = JSON.parse(result);
 
+      expect(loadSpy).toHaveBeenCalled();
       expect(parsedResult).toEqual(expect.objectContaining({
         id: graph.id,
         name: graph.name,
       }));
+
+      // Restore the original implementation
+      loadSpy.mockRestore();
+    });
+  });
+
+  describe('backup functionality', () => {
+    it('should create backups when saving a graph with backups enabled', async () => {
+      const graph = createSampleGraph();
+
+      // Track transactions with different stores
+      const transactionCalls: any[] = [];
+      mockDB.transaction.mockImplementation((storeNames, mode) => {
+        transactionCalls.push({ storeNames, mode });
+        return mockTransaction;
+      });
+
+      // Mock add method for backups
+      mockBackupStore.add.mockImplementation((data) => {
+        const request = { onsuccess: null as any, onerror: null as any };
+        setTimeout(() => {
+          if (request.onsuccess) {
+            request.onsuccess({});
+          }
+        }, 0);
+        return request;
+      });
+
+      // Mock put for regular save
+      mockMainStore.put.mockImplementation((data) => {
+        const request = { onsuccess: null as any, onerror: null as any };
+        setTimeout(() => {
+          if (request.onsuccess) {
+            request.onsuccess({});
+          }
+        }, 0);
+        return request;
+      });
+
+      const result = await adapter.save(graph);
+
+      // Verify transactions were created for both stores
+      expect(transactionCalls).toContainEqual(
+        expect.objectContaining({ storeNames: ['test-store'], mode: 'readwrite' })
+      );
+      expect(transactionCalls).toContainEqual(
+        expect.objectContaining({ storeNames: ['backups'], mode: 'readwrite' })
+      );
+
+      expect(mockMainStore.put).toHaveBeenCalled();
+      expect(mockBackupStore.add).toHaveBeenCalled();
+      expect(result).toBe(true);
+    });
+
+    it('should list available backups for a graph', async () => {
+      const graphId = 'test-graph-id';
+      const backups = [
+        { graphId, timestamp: '2023-01-01T00:00:00.000Z' },
+        { graphId, timestamp: '2023-01-02T00:00:00.000Z' }
+      ];
+
+      // Setup the getAll mock to return backups
+      mockBackupIndex.getAll.mockImplementation(() => {
+        const request = { onsuccess: null as any, onerror: null as any };
+        setTimeout(() => {
+          if (request.onsuccess) {
+            request.onsuccess({ target: { result: backups } });
+          }
+        }, 0);
+        return request;
+      });
+
+      const result = await adapter.listBackups(graphId);
+
+      expect(mockDB.transaction).toHaveBeenCalledWith('backups', 'readonly');
+      expect(mockBackupStore.index).toHaveBeenCalledWith('graphId');
+      expect(mockBackupIndex.getAll).toHaveBeenCalledWith(graphId);
+      expect(result).toEqual(backups.map(backup => ({
+        graphId: backup.graphId,
+        timestamp: backup.timestamp
+      })));
     });
   });
 });

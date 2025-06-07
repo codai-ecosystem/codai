@@ -1,5 +1,5 @@
-import { MemoryGraph, MemoryGraphSchema } from '../schemas';
-import { PersistenceAdapter, PersistenceOptions } from './types';
+import { MemoryGraph, MemoryGraphSchema } from '../schemas.js';
+import { PersistenceAdapter, PersistenceOptions } from './types.js';
 
 /**
  * Options specific to IndexedDB adapter
@@ -56,19 +56,18 @@ export class IndexedDBAdapter implements PersistenceAdapter {
 
       request.onsuccess = (event) => {
         resolve((event.target as IDBOpenDBRequest).result);
-      };
-
-      request.onupgradeneeded = (event) => {
+      }; request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
 
         // Create object store if it doesn't exist
         if (!db.objectStoreNames.contains(this.storeName)) {
           const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
           store.createIndex('updatedAt', 'updatedAt', { unique: false });
+        }
 
-          if (this.enableBackups) {
-            db.createObjectStore('backups', { keyPath: ['graphId', 'timestamp'] });
-          }
+        // Create backups store if enabled and it doesn't exist
+        if (this.enableBackups && !db.objectStoreNames.contains('backups')) {
+          db.createObjectStore('backups', { keyPath: ['graphId', 'timestamp'] });
         }
       };
     });
@@ -130,15 +129,12 @@ export class IndexedDBAdapter implements PersistenceAdapter {
           console.warn('Failed to create backup in IndexedDB', error);
           // Continue with save even if backup fails
         }
-      }
-
-      // Save the graph
+      }      // Save the graph
       return new Promise((resolve, reject) => {
         const request = store.put(graph);
 
         request.onerror = () => {
           reject(new Error(`Failed to save graph to IndexedDB: ${request.error?.message}`));
-          resolve(false);
         };
 
         request.onsuccess = () => {
@@ -174,11 +170,8 @@ export class IndexedDBAdapter implements PersistenceAdapter {
           // Load the most recently updated graph
           const index = store.index('updatedAt');
           request = index.openCursor(null, 'prev');
-        }
-
-        request.onerror = () => {
+        } request.onerror = () => {
           reject(new Error(`Failed to load graph from IndexedDB: ${request.error?.message}`));
-          resolve(null);
         };
 
         request.onsuccess = (event) => {
@@ -280,11 +273,8 @@ export class IndexedDBAdapter implements PersistenceAdapter {
       const store = tx.objectStore(this.storeName);
 
       return new Promise((resolve, reject) => {
-        const request = store.getAllKeys();
-
-        request.onerror = () => {
+        const request = store.getAllKeys(); request.onerror = () => {
           reject(new Error(`Failed to list graphs from IndexedDB: ${request.error?.message}`));
-          resolve([]);
         };
         request.onsuccess = (event) => {
           const keys = (event.target as IDBRequest).result;
@@ -311,11 +301,8 @@ export class IndexedDBAdapter implements PersistenceAdapter {
       const store = tx.objectStore(this.storeName);
 
       return new Promise((resolve, reject) => {
-        const request = store.delete(graphId);
-
-        request.onerror = () => {
+        const request = store.delete(graphId); request.onerror = () => {
           reject(new Error(`Failed to delete graph from IndexedDB: ${request.error?.message}`));
-          resolve(false);
         };
 
         request.onsuccess = () => {
@@ -351,11 +338,8 @@ export class IndexedDBAdapter implements PersistenceAdapter {
       const store = tx.objectStore('backups');
 
       return new Promise((resolve, reject) => {
-        const request = store.index('graphId').getAll(graphId);
-
-        request.onerror = () => {
+        const request = store.index('graphId').getAll(graphId); request.onerror = () => {
           reject(new Error(`Failed to list backups from IndexedDB: ${request.error?.message}`));
-          resolve([]);
         };
         request.onsuccess = (event) => {
           const backups = (event.target as IDBRequest).result;
@@ -394,11 +378,8 @@ export class IndexedDBAdapter implements PersistenceAdapter {
       const store = tx.objectStore('backups');
 
       return new Promise((resolve, reject) => {
-        const request = store.get([graphId, timestamp]);
-
-        request.onerror = () => {
+        const request = store.get([graphId, timestamp]); request.onerror = () => {
           reject(new Error(`Failed to retrieve backup from IndexedDB: ${request.error?.message}`));
-          resolve(null);
         };
 
         request.onsuccess = async (event) => {

@@ -8,8 +8,8 @@ export interface SidebarProps {
 }
 
 /**
- * Sidebar component for AIDE interface
- * Provides collapsible navigation and tool panels
+ * Sidebar component for CODAI.RO interface
+ * Provides collapsible navigation and tool panels with modern styling
  */
 export function Sidebar({
 	isOpen = true,
@@ -19,20 +19,39 @@ export function Sidebar({
 }: SidebarProps) {
 	return (
 		<aside
-			className={`aide-sidebar ${isOpen ? 'open' : 'closed'} ${className}`}
+			className={`
+				bg-codai-card border-r border-codai-border/20 
+				transition-all duration-300 ease-in-out
+				${isOpen ? 'w-64' : 'w-16'} 
+				flex flex-col h-full
+				${className}
+			`}
 			role="complementary"
-			aria-label="Sidebar navigation"
+			aria-label="Navigation sidebar"
 		>
 			{onToggle && (
 				<button
-					className="aide-sidebar-toggle"
+					className="
+						p-3 m-2 rounded-lg 
+						hover:bg-codai-accent/10 
+						transition-colors duration-200
+						text-codai-muted-foreground hover:text-codai-foreground
+						border border-codai-border/20
+					"
 					onClick={onToggle}
-					aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}
+					aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
 				>
-					{isOpen ? '‹' : '›'}
+					<svg 
+						className={`w-5 h-5 transition-transform duration-200 ${isOpen ? 'rotate-0' : 'rotate-180'}`}
+						fill="none" 
+						stroke="currentColor" 
+						viewBox="0 0 24 24"
+					>
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+					</svg>
 				</button>
 			)}
-			<div className="aide-sidebar-content">
+			<div className={`flex-1 overflow-y-auto ${isOpen ? 'px-3 pb-3' : 'px-2 pb-2'}`}>
 				{children}
 			</div>
 		</aside>

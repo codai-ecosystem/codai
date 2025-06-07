@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Loader2, Bot, User, Zap, Archive, Settings } from 'lucide-react';
-import { AgentMessage, AgentRuntime, ConversationContext, AgentStatus } from '@aide/agent-runtime';
-import { MemoryGraphEngine } from '@aide/memory-graph';
+import { AgentMessage, AgentRuntime, ConversationContext, AgentStatus } from '@codai/agent-runtime';
+import { MemoryGraphEngine } from '@codai/memory-graph';
 import { MessageBubble } from './MessageBubble';
 import { StreamingMessageRenderer } from './StreamingMessageRenderer';
 import { AgentStatusIndicator } from './AgentStatusIndicator';
@@ -59,11 +59,10 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 		const messagesSubscription = agentRuntime.messages$.subscribe((message) => {
 			setMessages(prev => [...prev, message]);
 		});
-
 		const statusSubscription = agentRuntime.status$.subscribe(({ agentId, status }) => {
-			if (status.state === 'active') {
+			if (status.currentTasks > 0) {
 				setActiveAgents(prev => [...prev.filter(id => id !== agentId), agentId]);
-			} else if (status.state === 'idle') {
+			} else {
 				setActiveAgents(prev => prev.filter(id => id !== agentId));
 			}
 		});
@@ -191,9 +190,8 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 			<div className="border-b border-border p-4">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center space-x-3">
-						<h2 className="text-lg font-semibold">AIDE Conversation</h2>
-						{conversationContext?.title && (
-							<Badge variant="outline">{conversationContext.title}</Badge>
+						<h2 className="text-lg font-semibold">AIDE Conversation</h2>						{conversationContext?.currentGoal && (
+							<Badge variant="outline">{conversationContext.currentGoal}</Badge>
 						)}
 					</div>
 

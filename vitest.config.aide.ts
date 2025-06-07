@@ -47,10 +47,9 @@ export default defineConfig({
 		},
 	},
 	resolve: {
-		alias: {
-			'@aide/memory-graph': resolve(__dirname, './packages/memory-graph/src'),
-			'@aide/agent-runtime': resolve(__dirname, './packages/agent-runtime/src'),
-			'@aide/ui-components': resolve(__dirname, './packages/ui-components/src'),
+		alias: {			'@codai/memory-graph': resolve(__dirname, './packages/memory-graph/src'),
+			'@codai/agent-runtime': resolve(__dirname, './packages/agent-runtime/src'),
+			'@codai/ui-components': resolve(__dirname, './packages/ui-components/src'),
 		},
 	},
 });

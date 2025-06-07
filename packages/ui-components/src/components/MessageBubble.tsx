@@ -1,6 +1,6 @@
 import React from 'react';
 import { Clock, User, Bot } from 'lucide-react';
-import { AgentMessage } from '@aide/agent-runtime';
+import { AgentMessage } from '@codai/agent-runtime';
 import { MessageBubbleProps } from '../types';
 
 /**

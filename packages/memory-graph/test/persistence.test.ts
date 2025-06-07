@@ -80,7 +80,6 @@ describe('LocalStorageAdapter', () => {
     expect(savedGraph.id).toBe(testGraph.id);
     expect(savedGraph.name).toBe(testGraph.name);
   });
-
   it('should load a graph from localStorage', async () => {
     // Save first
     await adapter.save(testGraph);
@@ -90,6 +89,8 @@ describe('LocalStorageAdapter', () => {
     expect(loadedGraph).not.toBeNull();
     expect(loadedGraph?.id).toBe(testGraph.id);
     expect(loadedGraph?.name).toBe(testGraph.name);
+    expect(loadedGraph?.createdAt).toBeInstanceOf(Date);
+    expect(loadedGraph?.updatedAt).toBeInstanceOf(Date);
   });
 
   it('should return null when loading a non-existent graph', async () => {
@@ -106,13 +107,14 @@ describe('LocalStorageAdapter', () => {
     const exportedGraph = JSON.parse(exportedJson);
     expect(exportedGraph.id).toBe(testGraph.id);
   });
-
   it('should import a graph from JSON', async () => {
     const jsonData = JSON.stringify(testGraph);
     const importedGraph = await adapter.importGraph(jsonData, 'json');
 
     expect(importedGraph).not.toBeNull();
     expect(importedGraph?.id).toBe(testGraph.id);
+    expect(importedGraph?.createdAt).toBeInstanceOf(Date);
+    expect(importedGraph?.updatedAt).toBeInstanceOf(Date);
     expect(localStorageMock.setItem).toHaveBeenCalled();
   });
 
@@ -120,7 +122,6 @@ describe('LocalStorageAdapter', () => {
     await adapter.save(testGraph);
     await expect(adapter.exportGraph('xml')).rejects.toThrow('Unsupported export format');
   });
-
   it('should throw an error for unsupported import formats', async () => {
     await expect(adapter.importGraph('<xml></xml>', 'xml')).rejects.toThrow('Unsupported import format');
   });
@@ -128,6 +129,10 @@ describe('LocalStorageAdapter', () => {
 
 describe('PersistenceAdapter factory', () => {
   it('should create a LocalStorageAdapter by default in browser environments', () => {
+    // Mock a browser environment without IndexedDB
+    delete (global as any).indexedDB;
+    delete (global as any).process;
+
     const adapter = createPersistenceAdapter('auto');
     expect(adapter).toBeInstanceOf(LocalStorageAdapter);
   });

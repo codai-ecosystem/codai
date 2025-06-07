@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
-import { MemoryGraphEngine } from '@aide/memory-graph';
-import { BaseAgent, AgentConfig, Task, TaskResult, AgentMessage, AgentStatus, AgentMetrics } from '../types';
+import { MemoryGraphEngine } from '@codai/memory-graph';
+import { BaseAgent, AgentConfig, Task, TaskResult, AgentMessage, AgentStatus, AgentMetrics } from '../types.js';
 
 /**
  * Base implementation for all AIDE agents

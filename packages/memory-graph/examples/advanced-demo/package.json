@@ -1,7 +1,7 @@
 {
 	"name": "memory-graph-advanced-demo",
 	"version": "1.0.0",
-	"description": "Advanced demonstration of the AIDE Memory Graph with real-world scenarios",
+	"description": "Advanced demonstration of the codai.ro Memory Graph with real-world scenarios",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -12,7 +12,7 @@
 	"dependencies": {
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"@aide/memory-graph": "workspace:*",
+		"@codai/memory-graph": "workspace:*",
 		"lucide-react": "^0.394.0",
 		"framer-motion": "^10.16.0"
 	},

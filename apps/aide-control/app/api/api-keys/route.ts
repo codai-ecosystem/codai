@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminApp } from '../../../lib/firebase';
+import { getAdminApp, adminDb, adminAuth } from '../../../lib/firebase-admin';
 import { withAuth } from '../../../lib/server/auth-middleware';
-
-// Get Firestore instance from our centralized Firebase admin initialization
-const admin = getAdminApp();
-const db = admin.firestore();
 
 // Helper function to verify Firebase ID token
 async function verifyAuthToken(request: NextRequest) {
@@ -15,7 +11,7 @@ async function verifyAuthToken(request: NextRequest) {
     }
 
     const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    const decodedToken = await adminAuth.verifyIdToken(token);
 
     return decodedToken;
   } catch (error) {
@@ -27,7 +23,7 @@ async function verifyAuthToken(request: NextRequest) {
 // Helper function to check if user is admin
 async function isUserAdmin(uid: string) {
   try {
-    const userDoc = await db.collection('users').doc(uid).get();
+    const userDoc = await adminDb.collection('users').doc(uid).get();
     const userData = userDoc.data();
 
     return userData?.role === 'admin';
@@ -45,9 +41,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  try {
-    // Get API keys for the authenticated user
-    const apiKeysSnapshot = await db
+  try {    // Get API keys for the authenticated user
+    const apiKeysSnapshot = await adminDb
       .collection('api_keys')
       .where('userId', '==', decodedToken.uid)
       .get();
@@ -103,7 +98,7 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString(),
     };
 
-    const docRef = await db.collection('api_keys').add(newApiKey);
+    const docRef = await adminDb.collection('api_keys').add(newApiKey);
 
     return NextResponse.json({
       id: docRef.id,
@@ -132,7 +127,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get the existing API key
-    const apiKeyDoc = await db.collection('api_keys').doc(id).get();
+    const apiKeyDoc = await adminDb.collection('api_keys').doc(id).get();
 
     if (!apiKeyDoc.exists) {
       return NextResponse.json({ error: 'API key not found' }, { status: 404 });
@@ -163,7 +158,7 @@ export async function PUT(request: NextRequest) {
       updatedApiKey['apiKey'] = apiKey;
     }
 
-    await db.collection('api_keys').doc(id).update(updatedApiKey);
+    await adminDb.collection('api_keys').doc(id).update(updatedApiKey);
 
     return NextResponse.json({
       id,
@@ -193,7 +188,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Get the existing API key
-    const apiKeyDoc = await db.collection('api_keys').doc(id).get();
+    const apiKeyDoc = await adminDb.collection('api_keys').doc(id).get();
 
     if (!apiKeyDoc.exists) {
       return NextResponse.json({ error: 'API key not found' }, { status: 404 });
@@ -208,10 +203,8 @@ export async function DELETE(request: NextRequest) {
       if (!isAdmin) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
-    }
-
-    // Delete API key
-    await db.collection('api_keys').doc(id).delete();
+    }    // Delete API key
+    await adminDb.collection('api_keys').doc(id).delete();
 
     return NextResponse.json({ success: true });
   } catch (error) {

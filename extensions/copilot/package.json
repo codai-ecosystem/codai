@@ -1,5 +1,5 @@
 {
-  "name": "@aide/copilot-extension",
+  "name": "@codai/copilot-extension",
   "version": "0.1.0",
   "description": "Custom GitHub Copilot extension for AIDE conversational interface",
   "main": "dist/extension.js",
@@ -122,10 +122,9 @@
     "package": "vsce package",
     "clean": "rimraf dist"
   },
-  "dependencies": {
-    "@aide/memory-graph": "workspace:*",
-    "@aide/agent-runtime": "workspace:*",
-    "@aide/ui-components": "workspace:*",
+  "dependencies": {    "@codai/memory-graph": "workspace:*",
+    "@codai/agent-runtime": "workspace:*",
+    "@codai/ui-components": "workspace:*",
     "vscode": "^1.1.37"
   },
   "devDependencies": {

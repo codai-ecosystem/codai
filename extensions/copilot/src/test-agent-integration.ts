@@ -6,8 +6,8 @@
 export async function testAgentIntegration(): Promise<void> {
 	try {
 		// Try to dynamically import the agent runtime
-		const { AgentRuntime } = await import('@aide/agent-runtime');
-		const { MemoryGraphEngine } = await import('@aide/memory-graph');
+		const { AgentRuntime } = await import('@codai/agent-runtime');
+		const { MemoryGraphEngine } = await import('@codai/memory-graph');
 
 		console.log('✅ Successfully imported AgentRuntime and MemoryGraphEngine');
 

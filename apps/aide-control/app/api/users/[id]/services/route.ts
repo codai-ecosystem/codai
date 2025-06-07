@@ -4,7 +4,7 @@
 // @ts-ignore - Next.js types
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '../../../../../lib/server/auth-middleware';
-import { getAdminApp } from '../../../../../lib/firebase';
+import { getAdminApp } from '../../../../../lib/firebase-admin';
 import { ServiceConfig } from '../../../../../lib/types';
 
 /**
@@ -12,11 +12,11 @@ import { ServiceConfig } from '../../../../../lib/types';
  */
 export function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(async (_, { uid }) => {
     try {
-      const userUid = params.id;
+      const { id: userUid } = await params;
 
       // Only allow users to access their own data unless they're an admin
       const admin = getAdminApp();
@@ -62,11 +62,11 @@ export function GET(
  */
 export function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(async (req, { uid }) => {
     try {
-      const userUid = params.id;
+      const { id: userUid } = await params;
       const { serviceType, providerId, mode, apiKey = null, baseUrl = null, additionalConfig = {} } = await req.json() as ServiceConfig;
 
       // Only allow users to access their own data unless they're an admin

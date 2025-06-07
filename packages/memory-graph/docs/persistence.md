@@ -32,7 +32,7 @@ interface PersistenceAdapter {
 Uses browser's localStorage API for persistence:
 
 ```typescript
-import { LocalStorageAdapter } from '@aide/memory-graph';
+import { LocalStorageAdapter } from '@codai/memory-graph';
 
 const adapter = new LocalStorageAdapter({
 	storageKey: 'my-project-graph',
@@ -45,7 +45,7 @@ const adapter = new LocalStorageAdapter({
 Uses Node.js filesystem for storage in desktop environments:
 
 ```typescript
-import { FileSystemAdapter } from '@aide/memory-graph';
+import { FileSystemAdapter } from '@codai/memory-graph';
 
 const adapter = new FileSystemAdapter({
 	storageKey: './data/graphs',
@@ -58,7 +58,7 @@ const adapter = new FileSystemAdapter({
 The library provides a factory function to automatically choose the appropriate adapter:
 
 ```typescript
-import { createPersistenceAdapter } from '@aide/memory-graph';
+import { createPersistenceAdapter } from '@codai/memory-graph';
 
 // Auto-detect environment
 const adapter = createPersistenceAdapter('auto');
@@ -78,7 +78,7 @@ The graph persistence layer includes a migration system that:
 ### Using migrations:
 
 ```typescript
-import { createMigrationSystem } from '@aide/memory-graph';
+import { createMigrationSystem } from '@codai/memory-graph';
 
 const migrationSystem = createMigrationSystem();
 const migratedGraph = migrationSystem.migrateGraph(oldGraph, '0.2.0');
@@ -87,7 +87,7 @@ const migratedGraph = migrationSystem.migrateGraph(oldGraph, '0.2.0');
 ### Creating Custom Migrations
 
 ```typescript
-import { Migration } from '@aide/memory-graph';
+import { Migration } from '@codai/memory-graph';
 
 const migration: Migration = {
 	fromVersion: '0.1.0',

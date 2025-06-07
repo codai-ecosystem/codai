@@ -1,6 +1,6 @@
-import { MemoryGraphEngine, LogicNode, ApiNode } from '@aide/memory-graph';
-import { BaseAgentImpl } from './BaseAgentImpl';
-import { Task, TaskResult, AgentConfig } from '../types';
+import { MemoryGraphEngine, LogicNode, ApiNode } from '@codai/memory-graph';
+import { BaseAgentImpl } from './BaseAgentImpl.js';
+import { Task, TaskResult, AgentConfig } from '../types.js';
 
 /**
  * Builder Agent

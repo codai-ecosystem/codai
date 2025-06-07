@@ -22,9 +22,9 @@
 		/* Path mapping */
 		"baseUrl": ".",
 		"paths": {
-			"@aide/memory-graph": ["../../src"],
-			"@aide/agent-runtime": ["../../../agent-runtime/src"],
-			"@aide/agent-runtime/*": ["../../../agent-runtime/src/*"],
+			"@codai/memory-graph": ["../../src"],
+			"@codai/agent-runtime": ["../../../agent-runtime/src"],
+			"@codai/agent-runtime/*": ["../../../agent-runtime/src/*"],
 			"@/*": ["src/*"]
 		}
 	},

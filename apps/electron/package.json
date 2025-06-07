@@ -1,7 +1,7 @@
-{
-  "name": "@aide/electron",
-  "version": "0.1.0",
-  "description": "AIDE Electron desktop application",
+{  "name": "@codai/electron",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "codai.ro Electron desktop application",
   "main": "dist/main.js",
   "homepage": "https://github.com/aide-dev/aide",
   "scripts": {
@@ -13,7 +13,8 @@
     "dev:renderer": "vite",
     "start": "electron dist/main.js",
     "package": "npm run build && electron-builder",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "test": "jest"
   },
   "build": {
     "appId": "com.aide.app",
@@ -36,12 +37,13 @@
       "target": "AppImage"
     }
   },
-  "dependencies": {
-    "@aide/memory-graph": "workspace:*",
-    "@aide/agent-runtime": "workspace:*",
-    "@aide/ui-components": "workspace:*",
+  "dependencies": {    "@codai/memory-graph": "workspace:*",
+    "@codai/agent-runtime": "workspace:*",
+    "@codai/ui-components": "workspace:*",
     "electron-store": "^8.2.0",
-    "electron-updater": "^6.2.1"
+    "electron-updater": "^6.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "electron": "^33.2.1",
@@ -51,6 +53,13 @@
     "vite": "^6.0.1",
     "@vitejs/plugin-react": "^4.3.3",
     "typescript": "^5.6.3",
-    "rimraf": "^6.0.1"
+    "rimraf": "^6.0.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
   }
 }

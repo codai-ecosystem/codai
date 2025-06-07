@@ -9,15 +9,28 @@
 		"incremental": true,
 		"tsBuildInfoFile": ".tsbuildinfo",
 		"baseUrl": ".",
-		"paths": {
-			"@aide/*": ["packages/*/src"],
-			"@aide/memory-graph": ["packages/memory-graph/src"],
-			"@aide/agent-runtime": ["packages/agent-runtime/src"],
-			"@aide/ui-components": ["packages/ui-components/src"]
+		"paths": {			"@codai/*": ["packages/*/src"],
+			"@codai/memory-graph": ["packages/memory-graph/src"],
+			"@codai/agent-runtime": ["packages/agent-runtime/src"],
+			"@codai/ui-components": ["packages/ui-components/src"]
 		}
-	},
-	"include": ["packages/*/src/**/*", "apps/*/src/**/*"],
-	"exclude": ["node_modules", "dist", "build", "out", "extensions"],
+	},	"include": ["packages/*/src/**/*", "apps/*/src/**/*"],
+	"exclude": [
+		"node_modules",
+		"packages/*/dist/**",
+		"packages/*/build/**",
+		"packages/*/out/**",
+		"apps/*/dist/**",
+		"apps/*/build/**",
+		"apps/*/out/**",
+		"**/dist/**",
+		"**/build/**",
+		"**/out/**",
+		"extensions",
+		"**/*.tsbuildinfo",
+		"**/.turbo/**",
+		"**/.next/**"
+	],
 	"references": [
 		{ "path": "./packages/memory-graph" },
 		{ "path": "./packages/agent-runtime" },

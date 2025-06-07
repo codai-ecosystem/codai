@@ -3,7 +3,7 @@
  * Provides real-time metrics for the admin dashboard
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminApp } from '../../../../lib/firebase';
+import { getAdminApp } from '../../../../lib/firebase-admin';
 import { withAdmin } from '../../../../lib/server/auth-middleware';
 
 async function handleGetDashboardStats(req: NextRequest, context: { uid: string }) {

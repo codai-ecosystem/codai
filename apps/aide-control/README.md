@@ -1,6 +1,6 @@
-# AIDE Control Panel
+# CODAI.RO Control Panel
 
-The AIDE Control Panel is an administrative dashboard for managing the AIDE platform's dual-mode infrastructure system. It provides tools for managing users, API keys, billing plans, and usage statistics.
+The CODAI.RO Control Panel (formerly AIDE Control Panel) is an administrative dashboard for managing the CODAI.RO platform's dual-mode infrastructure system. It provides tools for managing users, API keys, billing plans, and usage statistics.
 
 ## Dual-Mode Infrastructure System
 
@@ -19,6 +19,68 @@ The dual-mode infrastructure system provides a flexible approach that allows use
 - **Billing Plans**: Define and manage subscription plans with different pricing tiers.
 - **Usage Statistics**: Track and analyze platform usage across different services.
 - **Service Configuration**: Configure service-specific settings and defaults.
+
+### Advanced UI Features
+
+- **Responsive Dashboard Layout**: Optimized for both desktop and mobile devices
+- **Dark Mode Support**: Toggle between light and dark themes using system preferences or manual toggle
+- **Command Palette**: Quick access to actions and navigation with Ctrl+K, with command history
+- **Real-time Notifications**: Display success, error, warning, and info notifications
+- **User Preferences System**: Persistent settings for theme, sidebar state, and command history
+- **Keyboard Shortcuts**:
+  - `Ctrl+K`: Open command palette
+  - `Ctrl+/`: Toggle sidebar visibility
+  - `Ctrl+\`: Toggle sidebar collapsed state
+  - `Ctrl+L`: Switch to light theme
+  - `Ctrl+D`: Switch to dark theme
+  - `Ctrl+S`: Use system theme
+  - `Ctrl+R`: Refresh dashboard data
+- **Responsive Sidebar Navigation**: Collapsible sidebar with icon-only mode
+- **Accessibility**: Keyboard navigable interface with ARIA attributes and screen reader support
+
+## User Preferences
+
+The dashboard includes a user preferences system that persists the following settings:
+
+- **Theme**: Light, dark, or system preference
+- **Sidebar State**: Collapsed (icons only) or expanded (icons with labels)
+- **Command History**: Recently used commands for quick access
+- **Dismissed Notifications**: Track which notifications have been dismissed
+- **Accessibility Settings**: Motion reduction, high contrast, and text size preferences
+
+Preferences are automatically saved to localStorage and applied across sessions.
+
+## Testing
+
+✅ **All tests passing!** The dashboard includes comprehensive tests for components and utilities. For more details, see [Testing Documentation](./docs/testing.md).
+
+### Test Coverage Status
+
+- **22/22 tests passing** across user preferences and localStorage functionality
+- **Critical bug fixed**: Object reference mutation in user preferences system
+- **Complete test isolation**: Tests run independently without cross-contamination
+- **Robust browser API mocks**: Full DOM environment simulation for component testing
+
+### Testing Components and Utilities
+
+- **Component Tests**: Verify rendering, user interactions, state management, accessibility, and edge cases
+- **Utility Tests**: Verify API functionality, error handling, and edge cases
+- **User Preferences Tests**: Verify persistence, default values, and error handling
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run tests with coverage
+npm test -- --coverage
+```
+
+Tests are implemented using Vitest, Testing Library, and Jest DOM matchers. For more information on writing tests, see the [Testing Documentation](./docs/testing.md).
 
 ## Getting Started
 
@@ -89,3 +151,36 @@ See [.env.example](./.env.example) for required environment variables.
 ## Health Check Implementation
 
 The application includes health check endpoints for reliable container orchestration. See [Health Check Documentation](./docs/health-checks.md) for details.
+
+## Technologies
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Headless UI
+- Hero Icons
+
+## Project Structure
+
+- `app/` - Next.js application routes and pages
+- `components/` - Reusable UI components
+  - `layout/` - Layout components like DashboardLayout
+  - `ui/` - UI components like Notifications, CommandPalette
+- `lib/` - Utility functions and helpers
+- `public/` - Static assets
+- `types/` - TypeScript type definitions
+
+## Key UI Components
+
+### DashboardLayout
+
+The main layout component that provides the shell for the dashboard. It includes the sidebar navigation, header, theme toggle, and content area.
+
+### CommandPalette
+
+A keyboard-accessible command palette that allows users to quickly navigate and execute actions using Ctrl+K.
+
+### Notifications
+
+A notification system that displays success, error, warning, and info notifications with auto-dismiss capability.

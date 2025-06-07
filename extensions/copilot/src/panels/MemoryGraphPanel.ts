@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { MemoryGraphEngine, AnyNode, Relationship } from '@aide/memory-graph';
+import { MemoryGraphEngine, AnyNode, Relationship } from '@codai/memory-graph';
 
 /**
  * MemoryGraphPanel - Visual representation of the memory graph

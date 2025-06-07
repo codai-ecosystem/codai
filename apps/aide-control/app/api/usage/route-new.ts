@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '../../../lib/server/auth-middleware';
 import { updateUsage } from '../../../lib/server/quota-middleware';
-import { getAdminApp } from '../../../lib/firebase';
+import { getAdminApp } from '../../../lib/firebase-admin';
 
 interface UsageRequestData {
 	serviceType: string;

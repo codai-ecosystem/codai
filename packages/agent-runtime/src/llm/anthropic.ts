@@ -1,4 +1,4 @@
-import { LLMService, LLMRequestOptions, LLMResponse, Message, LLMModelConfig } from './types';
+import { LLMService, LLMRequestOptions, LLMResponse, Message, LLMModelConfig } from './types.js';
 
 /**
  * Anthropic Claude LLM service implementation

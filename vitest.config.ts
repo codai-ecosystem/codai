@@ -4,8 +4,9 @@ import { resolve } from 'path';
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'jsdom',
+    environment: 'node',
     include: ['packages/*/src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/apps/**'], // Exclude apps to avoid conflicts
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -20,10 +21,12 @@ export default defineConfig({
       ]
     },
     setupFiles: ['./test/setup.ts'],
-    alias: {
-      '@aide/memory-graph': resolve(__dirname, 'packages/memory-graph/src'),
-      '@aide/agent-runtime': resolve(__dirname, 'packages/agent-runtime/src'),
-      '@aide/ui-components': resolve(__dirname, 'packages/ui-components/src')
+    alias: {      '@codai/memory-graph': resolve(__dirname, 'packages/memory-graph/src'),
+      '@codai/agent-runtime': resolve(__dirname, 'packages/agent-runtime/src'),
+      '@codai/ui-components': resolve(__dirname, 'packages/ui-components/src')
     }
+  },
+  define: {
+    global: 'globalThis',
   }
 });

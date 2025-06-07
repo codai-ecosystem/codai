@@ -1,5 +1,5 @@
-import { MemoryGraph, MemoryGraphSchema } from '../schemas';
-import { PersistenceAdapter, PersistenceOptions } from './types';
+import { MemoryGraph, MemoryGraphSchema } from '../schemas.js';
+import { PersistenceAdapter, PersistenceOptions } from './types.js';
 
 /**
  * LocalStorageAdapter provides persistence using browser's localStorage API
@@ -42,7 +42,6 @@ export class LocalStorageAdapter implements PersistenceAdapter {
       return false;
     }
   }
-
   /**
    * Load memory graph from localStorage
    */
@@ -57,9 +56,16 @@ export class LocalStorageAdapter implements PersistenceAdapter {
 
       const parsedGraph = JSON.parse(storedGraph);
 
-      // Convert date strings back to Date objects
-      parsedGraph.createdAt = new Date(parsedGraph.createdAt);
-      parsedGraph.updatedAt = new Date(parsedGraph.updatedAt);
+      // Convert date strings back to Date objects if they are strings
+      if (typeof parsedGraph.createdAt === 'string') {
+        parsedGraph.createdAt = new Date(parsedGraph.createdAt);
+      }
+      if (typeof parsedGraph.updatedAt === 'string') {
+        parsedGraph.updatedAt = new Date(parsedGraph.updatedAt);
+      }
+      if (parsedGraph.metadata?.lastInteractionAt && typeof parsedGraph.metadata.lastInteractionAt === 'string') {
+        parsedGraph.metadata.lastInteractionAt = new Date(parsedGraph.metadata.lastInteractionAt);
+      }
 
       // If graphId is specified, verify it matches
       if (graphId && parsedGraph.id !== graphId) return null;
@@ -89,9 +95,7 @@ export class LocalStorageAdapter implements PersistenceAdapter {
 
     // Could implement other formats (XML, YAML, etc.) in the future
     throw new Error(`Unsupported export format: ${format}`);
-  }
-
-  /**
+  }  /**
    * Import graph from string format
    */
   async importGraph(data: string, format = 'json'): Promise<MemoryGraph | null> {
@@ -99,23 +103,30 @@ export class LocalStorageAdapter implements PersistenceAdapter {
       throw new Error('localStorage is not available in this environment');
     }
 
+    if (format !== 'json') {
+      throw new Error(`Unsupported import format: ${format}`);
+    }
+
     try {
-      if (format === 'json') {
-        const parsedGraph = JSON.parse(data);
+      const parsedGraph = JSON.parse(data);
 
-        // Convert date strings back to Date objects
+      // Convert date strings back to Date objects if they are strings
+      if (typeof parsedGraph.createdAt === 'string') {
         parsedGraph.createdAt = new Date(parsedGraph.createdAt);
+      }
+      if (typeof parsedGraph.updatedAt === 'string') {
         parsedGraph.updatedAt = new Date(parsedGraph.updatedAt);
-
-        // Validate with schema
-        const validatedGraph = MemoryGraphSchema.parse(parsedGraph);
-
-        // Save to storage
-        localStorage.setItem(this.storageKey, data);
-        return validatedGraph;
+      }
+      if (parsedGraph.metadata?.lastInteractionAt && typeof parsedGraph.metadata.lastInteractionAt === 'string') {
+        parsedGraph.metadata.lastInteractionAt = new Date(parsedGraph.metadata.lastInteractionAt);
       }
 
-      throw new Error(`Unsupported import format: ${format}`);
+      // Validate with schema
+      const validatedGraph = MemoryGraphSchema.parse(parsedGraph);
+
+      // Save to storage
+      localStorage.setItem(this.storageKey, JSON.stringify(validatedGraph));
+      return validatedGraph;
     } catch (error) {
       console.error('Failed to import graph', error);
       return null;

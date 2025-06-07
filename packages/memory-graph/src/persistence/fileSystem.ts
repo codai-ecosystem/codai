@@ -1,5 +1,5 @@
-import { MemoryGraph, MemoryGraphSchema } from '../schemas';
-import { PersistenceAdapter, PersistenceOptions } from './types';
+import { MemoryGraph, MemoryGraphSchema } from '../schemas.js';
+import { PersistenceAdapter, PersistenceOptions } from './types.js';
 
 /**
  * FileSystemAdapter provides persistence using Node.js filesystem
@@ -105,16 +105,16 @@ export class FileSystemAdapter implements PersistenceAdapter {
               file,
               mtime: stats.mtime
             };
-          });
-
-        const fileStats = await Promise.all(statsPromises);
+          }); const fileStats = await Promise.all(statsPromises);
         if (fileStats.length === 0) return null;
 
         // Sort by modified time descending
         fileStats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 
         // Extract ID from filename
-        graphId = fileStats[0].file.replace('.json', '');
+        const mostRecentFile = fileStats[0];
+        if (!mostRecentFile) return null;
+        graphId = mostRecentFile.file.replace('.json', '');
       }
 
       // Now graphId is definitely defined
@@ -160,16 +160,16 @@ export class FileSystemAdapter implements PersistenceAdapter {
           const filePath = this.path.join(this.storagePath, file);
           const stats = await this.fs.stat(filePath);
           return { file, mtime: stats.mtime };
-        });
-
-      const fileStats = await Promise.all(fileStatsPromises);
+        }); const fileStats = await Promise.all(fileStatsPromises);
       if (fileStats.length === 0) return '{}';
 
       // Sort by modified time descending
       fileStats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 
       // Read most recent file
-      const filePath = this.path.join(this.storagePath, fileStats[0].file);
+      const mostRecentFile = fileStats[0];
+      if (!mostRecentFile) return '{}';
+      const filePath = this.path.join(this.storagePath, mostRecentFile.file);
       const data = await this.fs.readFile(filePath, 'utf8');
 
       if (format === 'json') {

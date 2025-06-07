@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Observable, BehaviorSubject, Subject } from 'rxjs';
-import { MemoryGraphEngine, AnyNode } from '@aide/memory-graph';
+import { MemoryGraphEngine, AnyNode } from '@codai/memory-graph';
 import {
 	BaseAgent,
 	AgentConfig,
@@ -13,19 +13,19 @@ import {
 	AgentStatus,
 	AgentMetrics,
 	ConversationContext
-} from './types';
+} from './types.js';
 import {
 	LLMService,
 	LLMModelConfig,
 	createLLMService,
 	defaultLLMConfigs
-} from './llm';
-import { PlannerAgent } from './agents/PlannerAgent';
-import { BuilderAgent } from './agents/BuilderAgent';
-import { DesignerAgent } from './agents/DesignerAgent';
-import { TesterAgent } from './agents/TesterAgent';
-import { DeployerAgent } from './agents/DeployerAgent';
-import { HistoryAgent } from './agents/HistoryAgent';
+} from './llm/index.js';
+import { PlannerAgent } from './agents/PlannerAgent.js';
+import { BuilderAgent } from './agents/BuilderAgent.js';
+import { DesignerAgent } from './agents/DesignerAgent.js';
+import { TesterAgent } from './agents/TesterAgent.js';
+import { DeployerAgent } from './agents/DeployerAgent.js';
+import { HistoryAgent } from './agents/HistoryAgent.js';
 
 /**
  * Agent Runtime Engine

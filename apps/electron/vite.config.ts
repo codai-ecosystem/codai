@@ -16,13 +16,11 @@ export default defineConfig({
 		rollupOptions: {
 			external: ['electron']
 		}
-	},
-	resolve: {
+	}, resolve: {
 		alias: {
-			'@': resolve(__dirname, 'src/renderer'),
-			'@aide/memory-graph': resolve(__dirname, '../../packages/memory-graph/src'),
-			'@aide/agent-runtime': resolve(__dirname, '../../packages/agent-runtime/src'),
-			'@aide/ui-components': resolve(__dirname, '../../packages/ui-components/src')
+			'@': resolve(__dirname, 'src/renderer'),			'@codai/memory-graph': resolve(__dirname, '../../packages/memory-graph/dist'),
+			'@codai/agent-runtime': resolve(__dirname, '../../packages/agent-runtime/dist'),
+			'@codai/ui-components': resolve(__dirname, '../../packages/ui-components/dist')
 		}
 	},
 	define: {

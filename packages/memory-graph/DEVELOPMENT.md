@@ -34,7 +34,7 @@ The memory graph is a specialized graph database structure that represents:
 ## Usage Example
 
 ```typescript
-import { MemoryGraphEngine, IntentNode, CodeNode, ImplementsEdge } from '@aide/memory-graph';
+import { MemoryGraphEngine, IntentNode, CodeNode, ImplementsEdge } from '@codai/memory-graph';
 
 // Initialize the memory graph
 const memoryGraph = new MemoryGraphEngine();

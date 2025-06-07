@@ -1,5 +1,4 @@
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { auth } from '../firebase';
 import { UserProfile, ServiceConfig, ServiceType } from '../types';
 import { APIClient } from '../api-client';
 

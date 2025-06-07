@@ -50,7 +50,7 @@ interface MemoryGraphVisualizationProps {
 #### Usage
 
 ```typescript
-import { MemoryGraphVisualization } from '@aide/memory-graph';
+import { MemoryGraphVisualization } from '@codai/memory-graph';
 
 const MyComponent = () => {
 	const handleNodeSelect = (nodeId: string) => {
@@ -208,7 +208,7 @@ import {
 	createMemoryGraph,
 	type MemoryGraph,
 	type AnyNode
-} from '@aide/memory-graph';
+} from '@codai/memory-graph';
 
 const GraphApp: React.FC = () => {
 	const [graph, setGraph] = useState<MemoryGraph>(createMemoryGraph({

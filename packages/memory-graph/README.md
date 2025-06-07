@@ -56,7 +56,7 @@ High-level integration layer for AI agents:
 ### Basic Usage
 
 ```typescript
-import { AgentMemoryRuntime, createFeature, createScreen } from '@aide/memory-graph';
+import { AgentMemoryRuntime, createFeature, createScreen } from '@codai/memory-graph';
 
 // Create a runtime instance
 const runtime = new AgentMemoryRuntime({
@@ -84,7 +84,7 @@ await runtime.addRelationship(featureId, screenId, 'contains', {
 ### Direct Engine Usage
 
 ```typescript
-import { MemoryGraphEngine, createApi } from '@aide/memory-graph';
+import { MemoryGraphEngine, createApi } from '@codai/memory-graph';
 
 const engine = new MemoryGraphEngine();
 

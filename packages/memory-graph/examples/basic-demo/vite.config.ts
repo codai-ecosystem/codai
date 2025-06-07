@@ -9,7 +9,7 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			'@aide/memory-graph': '../../src'
+			'@codai/memory-graph': '../../src'
 		}
 	}
 });

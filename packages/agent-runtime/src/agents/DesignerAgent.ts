@@ -1,6 +1,6 @@
-import { MemoryGraphEngine, ScreenNode } from '@aide/memory-graph';
-import { BaseAgentImpl } from './BaseAgentImpl';
-import { Task, TaskResult, AgentConfig } from '../types';
+import { MemoryGraphEngine, ScreenNode } from '@codai/memory-graph';
+import { BaseAgentImpl } from './BaseAgentImpl.js';
+import { Task, TaskResult, AgentConfig } from '../types.js';
 
 /**
  * Designer Agent

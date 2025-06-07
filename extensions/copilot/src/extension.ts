@@ -11,14 +11,14 @@ let TimelinePanel: any;
 
 // Try to load optional dependencies
 try {
-	const memoryGraphModule = require('@aide/memory-graph');
+	const memoryGraphModule = require('@codai/memory-graph');
 	MemoryGraphEngine = memoryGraphModule.MemoryGraphEngine;
 } catch (error) {
 	console.log('Memory graph package not available yet');
 }
 
 try {
-	const agentRuntimeModule = require('@aide/agent-runtime');
+	const agentRuntimeModule = require('@codai/agent-runtime');
 	AgentRuntime = agentRuntimeModule.AgentRuntime;
 } catch (error) {
 	console.log('Agent runtime package not available yet');

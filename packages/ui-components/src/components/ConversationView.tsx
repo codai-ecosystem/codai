@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2 } from 'lucide-react';
-import { AgentMessage } from '@aide/agent-runtime';
+import { AgentMessage } from '@codai/agent-runtime';
 import { MessageBubble } from './MessageBubble';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';

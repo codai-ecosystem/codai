@@ -3,7 +3,7 @@
  * Checks user quotas and enforces limits based on their plan
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminApp } from '../firebase';
+import { getAdminApp } from '../firebase-admin';
 
 export interface QuotaCheck {
 	userId: string;

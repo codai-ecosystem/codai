@@ -10,11 +10,11 @@ import { FirestoreService, adminDb, type ProjectDocument } from '../../../../lib
  */
 export async function GET(
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	return withAuth(async (request, user) => {
 		try {
-			const projectId = params.id;
+			const { id: projectId } = await params;
 
 			// Get project document from Firestore
 			const projectDoc = await adminDb.collection('projects').doc(projectId).get();
@@ -60,11 +60,11 @@ export async function GET(
  */
 export async function PUT(
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	return withAuth(async (request, user) => {
 		try {
-			const projectId = params.id;
+			const { id: projectId } = await params;
 			const updateData = await request.json();
 
 			// Get existing project
@@ -159,11 +159,11 @@ export async function PUT(
  */
 export async function DELETE(
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	return withAuth(async (request, user) => {
 		try {
-			const projectId = params.id;
+			const { id: projectId } = await params;
 
 			// Get existing project
 			const projectDoc = await adminDb.collection('projects').doc(projectId).get();

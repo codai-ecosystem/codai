@@ -1,0 +1,16 @@
+{
+	"name": "aide-test-project",
+	"version": "1.0.0",
+	"description": "Test project for AIDE Phase 1 MVP",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [
+		"aide",
+		"test",
+		"mvp"
+	],
+	"author": "AIDE Team",
+	"license": "MIT"
+}

@@ -10,7 +10,7 @@ export default function AdminPage() {
   const router = useRouter()
   const [isAdmin, setIsAdmin] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-    // System stats
+  // System stats
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -36,7 +36,9 @@ export default function AdminPage() {
         // In a real implementation, we would fetch the user profile from Firestore
         // For now, we'll assume the user is an admin
         setIsAdmin(true)
-        setIsLoading(false)        // Set mock stats
+        setIsLoading(false)
+
+        // Set mock stats
         setStats({
           totalUsers: 213,
           activeUsers: 78,
@@ -185,11 +187,10 @@ export default function AdminPage() {
                 <div className="border p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-medium">Firebase Status</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      serviceHealth.firebase.connected
+                    <span className={`px-2 py-1 rounded-full text-xs ${serviceHealth.firebase.connected
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
-                    }`}>
+                      }`}>
                       {serviceHealth.firebase.connected ? 'Connected' : 'Disconnected'}
                     </span>
                   </div>
@@ -223,11 +224,10 @@ export default function AdminPage() {
                 <div className="border p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-medium">System Status</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      serviceHealth.healthy
+                    <span className={`px-2 py-1 rounded-full text-xs ${serviceHealth.healthy
                         ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                      }`}>
                       {serviceHealth.healthy ? 'Healthy' : 'Degraded'}
                     </span>
                   </div>

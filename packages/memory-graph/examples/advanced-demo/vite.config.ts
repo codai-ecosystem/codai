@@ -9,8 +9,8 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			'@aide/memory-graph': path.resolve(__dirname, '../../src'),
-			'@aide/agent-runtime': path.resolve(__dirname, '../../../agent-runtime/src'),
+			'@codai/memory-graph': path.resolve(__dirname, '../../src'),
+			'@codai/agent-runtime': path.resolve(__dirname, '../../../agent-runtime/src'),
 			'@': path.resolve(__dirname, 'src')
 		}
 	},

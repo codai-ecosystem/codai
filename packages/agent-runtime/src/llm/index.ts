@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 
-export * from './types';
-export * from './openai';
-export * from './anthropic';
-export * from './factory';
-export * from './modern-ai';
+export * from './types.js';
+export * from './openai.js';
+export * from './anthropic.js';
+export * from './factory.js';
+export * from './modern-ai.js';

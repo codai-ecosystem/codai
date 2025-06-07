@@ -1,6 +1,6 @@
-import { MemoryGraphEngine, FeatureNode, ScreenNode, LogicNode } from '@aide/memory-graph';
-import { BaseAgentImpl } from './BaseAgentImpl';
-import { Task, TaskResult, AgentConfig } from '../types';
+import { MemoryGraphEngine, FeatureNode, ScreenNode, LogicNode } from '@codai/memory-graph';
+import { BaseAgentImpl } from './BaseAgentImpl.js';
+import { Task, TaskResult, AgentConfig } from '../types.js';
 
 /**
  * Planner Agent

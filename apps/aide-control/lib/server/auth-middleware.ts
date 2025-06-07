@@ -2,7 +2,7 @@
  * Authentication middleware for API routes
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyIdToken, isUserAdmin } from './firebase-admin';
+import { verifyIdToken, isUserAdmin } from '../firebase-admin';
 
 /**
  * Extract the authentication token from the request

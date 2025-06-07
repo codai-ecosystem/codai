@@ -1,6 +1,6 @@
-import { BaseAgentImpl } from './BaseAgentImpl';
-import { Task, TaskResult, AgentConfig } from '../types';
-import { MemoryGraphEngine } from '@aide/memory-graph';
+import { BaseAgentImpl } from './BaseAgentImpl.js';
+import { Task, TaskResult, AgentConfig } from '../types.js';
+import { MemoryGraphEngine } from '@codai/memory-graph';
 
 /**
  * TesterAgent handles all testing-related tasks including unit testing,
@@ -376,8 +376,7 @@ const { describe, it, beforeEach, afterEach } = require('mocha');
 	private generateTestTeardown(): string {
 		return `});
 `;
-	}
-	/**
+	}	/**
 	 * Store test result in memory graph
 	 */
 	private async storeTestResult(testType: string, testCode: string, task: Task): Promise<void> {
@@ -387,6 +386,9 @@ const { describe, it, beforeEach, afterEach } = require('mocha');
 			type: 'test' as const,
 			name: `${testType.charAt(0).toUpperCase() + testType.slice(1)} Test`,
 			description: `Generated ${testType} test for ${task.title}`,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			version: '0.2.0',
 			testType: testType as 'unit' | 'integration' | 'e2e' | 'performance' | 'security',
 			framework: this.detectTestFramework(task),
 			testCases: [{

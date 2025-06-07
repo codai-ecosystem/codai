@@ -11,11 +11,11 @@ import { getFirestoreDb } from '../../../../../lib/server/firebase-utils';
  */
 export function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAdmin(async () => {
     try {
-      const planId = params.id;
+      const { id: planId } = await params;
       const db = getFirestoreDb();
 
       const planDoc = await db.collection('billing_plans').doc(planId).get();
@@ -48,11 +48,11 @@ export function GET(
  */
 export function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAdmin(async () => {
     try {
-      const planId = params.id;
+      const { id: planId } = await params;
       const planData = await req.json();
 
       const db = getFirestoreDb();
@@ -94,11 +94,11 @@ export function PUT(
  */
 export function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAdmin(async () => {
     try {
-      const planId = params.id;
+      const { id: planId } = await params;
       const db = getFirestoreDb();
 
       // Check if plan exists

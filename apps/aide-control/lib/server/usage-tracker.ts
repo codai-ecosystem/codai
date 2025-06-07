@@ -2,7 +2,7 @@
  * Middleware for tracking and enforcing usage quotas
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminApp } from '../firebase';
+import { getAdminApp } from './firebase-admin';
 
 export interface UsageTracker {
 	userId: string;

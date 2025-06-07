@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MessageSquare, Archive, Search, Filter } from 'lucide-react';
-import { MemoryGraphEngine, AnyNode } from '@aide/memory-graph';
+import { MemoryGraphEngine, AnyNode } from '@codai/memory-graph';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Badge } from './ui/Badge';

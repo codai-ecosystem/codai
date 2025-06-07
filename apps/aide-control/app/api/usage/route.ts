@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '../../../lib/server/auth-middleware';
 import { withQuotaCheck, updateUsage } from '../../../lib/server/quota-middleware';
-import { getAdminApp } from '../../../lib/firebase';
+import { getAdminApp } from '../../../lib/firebase-admin';
 import { UsageRecord } from '../../../lib/types';
 
 /**

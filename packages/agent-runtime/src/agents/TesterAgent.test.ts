@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TesterAgent } from './TesterAgent';
 import { AgentConfig, Task } from '../types';
-import { MemoryGraphEngine } from '@aide/memory-graph';
+import { MemoryGraphEngine } from '@codai/memory-graph';
 
 describe('TesterAgent', () => {
 	let testerAgent: TesterAgent;

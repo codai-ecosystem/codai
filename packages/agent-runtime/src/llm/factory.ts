@@ -2,11 +2,11 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { LLMService, LLMModelConfig, LLMProvider } from './types';
-import { OpenAIService } from './openai';
-import { AnthropicService } from './anthropic';
-import { OllamaService } from './ollama';
-import { createModernAIService, modernAIConfigs } from './modern-ai';
+import { LLMService, LLMModelConfig, LLMProvider } from './types.js';
+import { OpenAIService } from './openai.js';
+import { AnthropicService } from './anthropic.js';
+import { OllamaService } from './ollama.js';
+import { createModernAIService, modernAIConfigs } from './modern-ai.js';
 
 /**
  * Create an LLM service based on the provided configuration

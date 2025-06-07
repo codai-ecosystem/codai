@@ -10,11 +10,11 @@ import { FirestoreService, adminAuth, adminDb, type UserDocument } from '../../.
  */
 export async function GET(
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	return withAdminAuth(async (request, user) => {
 		try {
-			const userId = params.id;
+			const { id: userId } = await params;
 
 			// Get user document from Firestore
 			const userDoc = await FirestoreService.getUserDocument(userId);
@@ -63,11 +63,11 @@ export async function GET(
  */
 export async function PUT(
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	return withAdminAuth(async (request, user) => {
 		try {
-			const userId = params.id;
+			const { id: userId } = await params;
 			const updateData = await request.json();
 
 			// Validate user exists
@@ -165,11 +165,11 @@ export async function PUT(
  */
 export async function DELETE(
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	return withAdminAuth(async (request, user) => {
 		try {
-			const userId = params.id;
+			const { id: userId } = await params;
 
 			// Don't allow deleting yourself
 			if (userId === user.uid) {

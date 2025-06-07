@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { MemoryGraphEngine, AnyNode } from '@aide/memory-graph';
+import { MemoryGraphEngine, AnyNode } from '@codai/memory-graph';
 import { IMemoryGraph } from '../interfaces/IMemoryGraph';
 
 /**

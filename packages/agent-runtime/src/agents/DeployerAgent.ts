@@ -1,6 +1,6 @@
-import { BaseAgentImpl } from './BaseAgentImpl';
-import { Task, TaskResult, AgentConfig } from '../types';
-import { MemoryGraphEngine } from '@aide/memory-graph';
+import { BaseAgentImpl } from './BaseAgentImpl.js';
+import { Task, TaskResult, AgentConfig } from '../types.js';
+import { MemoryGraphEngine } from '@codai/memory-graph';
 
 /**
  * DeployerAgent handles all deployment-related tasks including CI/CD setup,

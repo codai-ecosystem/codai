@@ -1,4 +1,4 @@
-import { MemoryGraph } from '../schemas';
+import { MemoryGraph } from '../schemas.js';
 
 /**
  * Migration interface for schema upgrades
@@ -27,6 +27,16 @@ export interface Migration {
  */
 export class MigrationSystem {
   private migrations: Migration[] = [];
+
+  /**
+   * Check if a graph needs migration to the current version
+   * @param graph Graph to check
+   * @param targetVersion Target version to migrate to
+   * @returns True if migration is needed
+   */
+  needsMigration(graph: MemoryGraph, targetVersion: string): boolean {
+    return graph.version !== targetVersion;
+  }
 
   /**
    * Register a migration with the system

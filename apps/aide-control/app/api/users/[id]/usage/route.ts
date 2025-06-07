@@ -1,81 +1,150 @@
 /**
  * API route for retrieving user usage data
  */
-// @ts-ignore - Next.js types
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '../../../../../lib/server/auth-middleware';
-import { getAdminApp } from '../../../../../lib/firebase';
+import { withAdminAuth } from '../../../../../lib/auth-middleware';
+import { FirestoreService } from '../../../../../lib/firebase-admin';
+import { UsageTrackingService } from '../../../../../lib/services/usage-tracking';
 
 /**
- * GET /api/users/[uid]/usage - Get usage records for a specific user
+ * GET /api/users/[id]/usage - Get usage records and limits for a specific user
  */
 export function GET(
   req: NextRequest,
-  { params }: { params: { uid: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(async (req, { uid: currentUid }) => {
     try {
-      const userUid = params.uid;
-      
+      const { id: userId } = await params;
+
       // Only allow users to access their own data unless they're an admin
-      const admin = getAdminApp();
-      
-      if (currentUid !== userUid) {
+      if (currentUid !== userId) {
         // Check if requesting user is an admin
-        const adminUserData = await admin.firestore().collection('users').doc(currentUid).get();
-        if (!adminUserData.exists || adminUserData.data()?.role !== 'admin') {
+        const adminUserData = await FirestoreService.getUserDocument(currentUid);
+        if (!adminUserData || adminUserData.role !== 'admin') {
           return NextResponse.json(
-            { error: 'Not authorized to access this resource' }, 
+            { error: 'Not authorized to access this resource' },
             { status: 403 }
           );
         }
       }
-      
+
       // Parse query parameters
       const url = new URL(req.url);
       const startDate = url.searchParams.get('start') ? new Date(url.searchParams.get('start')!) : null;
       const endDate = url.searchParams.get('end') ? new Date(url.searchParams.get('end')!) : null;
-      
-      // Build the query
-      let usageQuery = admin.firestore().collection('usage')
-        .where('userId', '==', userUid)
-        .orderBy('timestamp', 'desc')
-        .limit(100); // Default limit
-      
-      // Add date filters if provided
-      if (startDate) {
-        usageQuery = usageQuery.where('timestamp', '>=', startDate);
+      const includeQuotas = url.searchParams.get('quotas') === 'true';
+
+      // Initialize usage tracking service
+      const usageService = new UsageTrackingService();
+
+      // Get current usage and plan limits
+      const [currentUsage, quotaStatus] = await Promise.all([
+        usageService.getCurrentUsage(userId),
+        includeQuotas ? usageService.checkQuotaStatus(userId) : Promise.resolve(null)
+      ]);
+      // Get detailed usage records if date range is specified
+      let detailedUsage = null;
+      if (startDate || endDate) {
+        detailedUsage = await usageService.getUsageHistory(userId, {
+          startDate: startDate?.toISOString(),
+          endDate: endDate?.toISOString(),
+          limit: 100
+        });
       }
-      
-      if (endDate) {
-        usageQuery = usageQuery.where('timestamp', '<=', endDate);
-      }
-      
-      // Get usage records
-      const usageSnapshot = await usageQuery.get();
-      
-      const usage = usageSnapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data(),
-        timestamp: doc.data().timestamp.toDate().toISOString()
-      }));
-      
-      // Get user's usage limits
-      const userData = await admin.firestore().collection('users').doc(userUid).get();
-      const { usageCurrent = 0, usageLimit = 0 } = userData.data() || {};
-      
-      return NextResponse.json({ 
-        usage,
+
+      const response: any = {
+        currentUsage,
         summary: {
-          total: usageCurrent,
-          limit: usageLimit,
-          remaining: Math.max(0, usageLimit - usageCurrent)
+          apiCalls: {
+            current: currentUsage.apiCalls,
+            remaining: quotaStatus?.apiCalls.remaining || 0,
+            warning: quotaStatus?.apiCalls.warning || false
+          },
+          computeMinutes: {
+            current: currentUsage.computeMinutes,
+            remaining: quotaStatus?.computeMinutes.remaining || 0,
+            warning: quotaStatus?.computeMinutes.warning || false
+          },
+          storage: {
+            current: currentUsage.storageMB,
+            remaining: quotaStatus?.storage.remaining || 0,
+            warning: quotaStatus?.storage.warning || false
+          }
         }
-      });
+      };
+
+      if (includeQuotas && quotaStatus) {
+        response.quotas = quotaStatus;
+      }
+
+      if (detailedUsage) {
+        response.history = detailedUsage;
+      }
+
+      return NextResponse.json(response);
+
     } catch (error) {
       console.error('Error getting usage data:', error);
       return NextResponse.json(
-        { error: 'Failed to retrieve usage data' }, 
+        { error: 'Failed to retrieve usage data' },
+        { status: 500 }
+      );
+    }
+  })(req);
+}
+
+/**
+ * POST /api/users/[id]/usage - Track new usage event (internal/admin only)
+ */
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return withAdminAuth(async (request, adminUser) => {
+    try {
+      const { id: userId } = await params;
+      const body = await request.json();
+
+      const { type, amount, metadata } = body;
+
+      if (!type || !amount) {
+        return NextResponse.json(
+          { error: 'Usage type and amount are required' },
+          { status: 400 }
+        );
+      }
+
+      // Initialize usage tracking service
+      const usageService = new UsageTrackingService();
+
+      // Track usage
+      await usageService.trackUsage(userId, type, amount, metadata);
+
+      // Log audit entry
+      await FirestoreService.logAudit({
+        userId: adminUser.uid,
+        action: 'TRACK_USAGE',
+        resource: 'usage',
+        resourceId: userId,
+        details: {
+          action: 'Tracked usage event',
+          usageType: type,
+          amount,
+          metadata
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Usage tracked successfully'
+      });
+
+    } catch (error) {
+      console.error('Error tracking usage:', error);
+      return NextResponse.json(
+        { error: 'Failed to track usage' },
         { status: 500 }
       );
     }

@@ -1,6 +1,6 @@
-import { BaseAgentImpl } from './BaseAgentImpl';
-import { Task, TaskResult, AgentConfig } from '../types';
-import { MemoryGraphEngine } from '@aide/memory-graph';
+import { BaseAgentImpl } from './BaseAgentImpl.js';
+import { Task, TaskResult, AgentConfig } from '../types.js';
+import { MemoryGraphEngine } from '@codai/memory-graph';
 
 /**
  * HistoryAgent manages project history, version control, change tracking,

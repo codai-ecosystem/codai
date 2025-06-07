@@ -9,23 +9,23 @@
  */
 
 // Core runtime and types
-export { AgentRuntime } from './AgentRuntime';
-export * from './types';
+export { AgentRuntime } from './AgentRuntime.js';
+export * from './types.js';
 
 // Settings management
-export * from './settings';
+export * from './settings/index.js';
 
 // Agent implementations
-export { BaseAgentImpl } from './agents/BaseAgentImpl';
-export { PlannerAgent } from './agents/PlannerAgent';
-export { BuilderAgent } from './agents/BuilderAgent';
-export { DesignerAgent } from './agents/DesignerAgent';
-export { TesterAgent } from './agents/TesterAgent';
-export { DeployerAgent } from './agents/DeployerAgent';
-export { HistoryAgent } from './agents/HistoryAgent';
+export { BaseAgentImpl } from './agents/BaseAgentImpl.js';
+export { PlannerAgent } from './agents/PlannerAgent.js';
+export { BuilderAgent } from './agents/BuilderAgent.js';
+export { DesignerAgent } from './agents/DesignerAgent.js';
+export { TesterAgent } from './agents/TesterAgent.js';
+export { DeployerAgent } from './agents/DeployerAgent.js';
+export { HistoryAgent } from './agents/HistoryAgent.js';
 
 // Re-export memory graph types for convenience
-export type { MemoryGraphEngine, AnyNode } from '@aide/memory-graph';
+export type { MemoryGraphEngine, AnyNode } from '@codai/memory-graph';
 
 // LLM integration
-export * from './llm';
+export * from './llm/index.js';

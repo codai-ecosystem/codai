@@ -4,18 +4,18 @@
 // @ts-ignore - Next.js types
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '../../../../lib/server/auth-middleware';
-import { getAdminApp } from '../../../../lib/firebase';
+import { getAdminApp } from '../../../../lib/firebase-admin';
 
 /**
  * GET /api/api-keys/[id] - Get details of a specific API key
  */
 export function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(async (_, { uid }) => {
     try {
-      const keyId = params.id;
+      const { id: keyId } = await params;
       const admin = getAdminApp();
       const db = (admin as any).firestore();
 
@@ -70,11 +70,11 @@ export function GET(
  */
 export function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuth(async (_, { uid }) => {
     try {
-      const keyId = params.id;
+      const { id: keyId } = await params;
       const admin = getAdminApp();
       const db = (admin as any).firestore();
 

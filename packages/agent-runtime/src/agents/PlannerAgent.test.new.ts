@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PlannerAgent } from './PlannerAgent';
-import { MemoryGraphEngine } from '@aide/memory-graph';
+import { MemoryGraphEngine } from '@codai/memory-graph';
 import { AgentConfig, Task } from '../types';
 
 describe('PlannerAgent', () => {

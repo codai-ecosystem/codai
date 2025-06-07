@@ -3,7 +3,7 @@
  * This file contains simplified types for demonstration purposes
  */
 
-import { MemoryGraphEngine, AnyNode } from '@aide/memory-graph';
+import { MemoryGraphEngine, AnyNode } from '@codai/memory-graph';
 
 // Task Status
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';

@@ -196,13 +196,13 @@ export type RelationshipChangeType = 'add' | 'update' | 'remove';
 export interface NodeChange {
 	type: NodeChangeType;
 	node: AnyNode;
-	previousNode?: AnyNode;
+	previousNode?: AnyNode | null;
 }
 
 export interface RelationshipChange {
 	type: RelationshipChangeType;
 	relationship: Relationship;
-	previousRelationship?: Relationship;
+	previousRelationship?: Relationship | null;
 }
 
 export type GraphChange = NodeChange | RelationshipChange;

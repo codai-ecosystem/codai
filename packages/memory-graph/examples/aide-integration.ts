@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { AgentMemoryRuntime } from '@aide/memory-graph';
+import { AgentMemoryRuntime } from '@codai/memory-graph';
 
 /**
  * Example integration showing how AIDE agents could use the memory graph system

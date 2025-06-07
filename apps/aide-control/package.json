@@ -1,20 +1,22 @@
 {
-  "name": "@aide/control",
-  "version": "0.1.0",
+  "name": "@codai/web",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run --config ./vitest.config.ts",
+    "test:watch": "vitest --config ./vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config ./vitest.config.ts",
+    "test:ui": "vitest --ui --config ./vitest.config.ts"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "next": "^14.1.0",
-    "@aide/ui-components": "workspace:*",
-    "@aide/memory-graph": "workspace:*",
-    "@aide/agent-runtime": "workspace:*",
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
+    "@octokit/auth-app": "^6.0.1",
+    "@octokit/rest": "^20.0.2",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
@@ -30,27 +32,42 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
     "date-fns": "^4.1.0",
+    "firebase": "^10.8.0",
+    "firebase-admin": "^12.0.0",
     "framer-motion": "^11.11.17",
+    "google-auth-library": "^9.0.0",
     "lucide-react": "^0.462.0",
+    "next": "^15.3.3",
+    "next-themes": "^0.4.6",
+    "object-hash": "^3.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "stripe": "^15.0.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8",
-    "zustand": "^5.0.1",
-    "firebase": "^10.8.0",
-    "firebase-admin": "^12.0.0",
-    "stripe": "^15.0.0",
-    "@octokit/rest": "^20.0.2",
-    "@octokit/auth-app": "^6.0.1"
+    "zustand": "^5.0.1"
   },
   "devDependencies": {
-    "typescript": "^5.6.3",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.5.1",
-    "tailwindcss": "^3.4.14",
-    "eslint": "^9.15.0",
-    "eslint-config-next": "^14.1.0"
-  }
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.1.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.6.3"
+  },
+  "description": "The CODAI.RO Control Panel (formerly AIDE Control Panel) is an administrative dashboard for managing the CODAI.RO platform's dual-mode infrastructure system. It provides tools for managing users, API keys, billing plans, and usage statistics.",
+  "main": "next.config.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "lib": "lib"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
 }

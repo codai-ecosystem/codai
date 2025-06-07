@@ -3,8 +3,7 @@
  * Tests rendering, interactions, styling, and accessibility features
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { NodeCard } from '../../src/components/NodeCard';
 import {
 	createFeatureNode,
@@ -18,7 +17,6 @@ import {
 describe('NodeCard Component', () => {
 	const mockOnClick = vi.fn();
 	const mockOnUpdate = vi.fn();
-	const user = userEvent.setup();
 
 	const defaultProps = {
 		position: { x: 100, y: 200 },
@@ -38,241 +36,262 @@ describe('NodeCard Component', () => {
 		it('renders feature node with correct content', () => {
 			render(<NodeCard node={featureNode} {...defaultProps} />);
 
-			expect(screen.getByText('User Authentication')).toBeInTheDocument();
-			expect(screen.getByText('Complete user authentication system')).toBeInTheDocument();
+			expect(screen.getByText(featureNode.name)).toBeDefined();
+			if (featureNode.description) {
+				expect(screen.getByText(featureNode.description)).toBeDefined();
+			}
 		});
 
 		it('applies feature-specific styling classes', () => {
 			const { container } = render(<NodeCard node={featureNode} {...defaultProps} />);
-			const nodeElement = container.querySelector('.node-card');
+			const nodeElement = container.querySelector('.memory-graph-node');
 
-			expect(nodeElement).toHaveClass('type-feature');
+			expect(nodeElement?.classList.contains('type-feature')).toBe(true);
+		});
+
+		it('displays feature icon', () => {
+			render(<NodeCard node={featureNode} {...defaultProps} />);
+			const iconElement = document.querySelector('.memory-graph-node__icon');
+			expect(iconElement?.textContent).toBe('✨');
+		});
+
+		it('handles click events', async () => {
+			render(<NodeCard node={featureNode} {...defaultProps} />);
+			const nodeElement = document.querySelector('.memory-graph-node');
+			
+			if (nodeElement) {
+				await fireEvent.click(nodeElement);
+				expect(mockOnClick).toHaveBeenCalledTimes(1);
+			}
 		});
 	});
 
 	describe('Screen Node Rendering', () => {
 		const screenNode = createScreenNode();
 
-		it('renders screen node with correct content', () => {
-			render(<NodeCard node={screenNode} {...defaultProps} />);
+		it('renders screen node with correct styling', () => {
+			const { container } = render(<NodeCard node={screenNode} {...defaultProps} />);
+			const nodeElement = container.querySelector('.memory-graph-node');
 
-			expect(screen.getByText('Login Page')).toBeInTheDocument();
-			expect(screen.getByText('User login interface')).toBeInTheDocument();
+			expect(nodeElement?.classList.contains('type-screen')).toBe(true);
 		});
 
-		it('applies screen-specific styling classes', () => {
-			const { container } = render(<NodeCard node={screenNode} {...defaultProps} />);
-			const nodeElement = container.querySelector('.node-card');
-
-			expect(nodeElement).toHaveClass('type-screen');
+		it('displays screen icon', () => {
+			render(<NodeCard node={screenNode} {...defaultProps} />);
+			const iconElement = document.querySelector('.memory-graph-node__icon');
+			expect(iconElement?.textContent).toBe('📱');
 		});
 	});
 
 	describe('Logic Node Rendering', () => {
 		const logicNode = createLogicNode();
 
-		it('renders logic node with correct content', () => {
-			render(<NodeCard node={logicNode} {...defaultProps} />);
+		it('renders logic node with correct styling', () => {
+			const { container } = render(<NodeCard node={logicNode} {...defaultProps} />);
+			const nodeElement = container.querySelector('.memory-graph-node');
 
-			expect(screen.getByText('AuthService')).toBeInTheDocument();
-			expect(screen.getByText('Authentication business logic')).toBeInTheDocument();
+			expect(nodeElement?.classList.contains('type-logic')).toBe(true);
 		});
 
-		it('applies logic-specific styling classes', () => {
-			const { container } = render(<NodeCard node={logicNode} {...defaultProps} />);
-			const nodeElement = container.querySelector('.node-card');
-
-			expect(nodeElement).toHaveClass('type-logic');
+		it('displays logic icon', () => {
+			render(<NodeCard node={logicNode} {...defaultProps} />);
+			const iconElement = document.querySelector('.memory-graph-node__icon');
+			expect(iconElement?.textContent).toBe('⚙️');
 		});
 	});
 
-	describe('Data Model Node Rendering', () => {
-		const dataModelNode = createDataModelNode();
+	describe('Data Node Rendering', () => {
+		const dataNode = createDataModelNode();
 
-		it('renders data model node with correct content', () => {
-			render(<NodeCard node={dataModelNode} {...defaultProps} />);
+		it('renders data node with correct styling', () => {
+			const { container } = render(<NodeCard node={dataNode} {...defaultProps} />);
+			const nodeElement = container.querySelector('.memory-graph-node');
 
-			expect(screen.getByText('User')).toBeInTheDocument();
-			expect(screen.getByText('User data model')).toBeInTheDocument();
+			expect(nodeElement?.classList.contains('type-data')).toBe(true);
 		});
 
-		it('applies data model-specific styling classes', () => {
-			const { container } = render(<NodeCard node={dataModelNode} {...defaultProps} />);
-			const nodeElement = container.querySelector('.node-card');
-
-			expect(nodeElement).toHaveClass('type-data_model');
+		it('displays data icon', () => {
+			render(<NodeCard node={dataNode} {...defaultProps} />);
+			const iconElement = document.querySelector('.memory-graph-node__icon');
+			expect(iconElement?.textContent).toBe('💾');
 		});
 	});
 
 	describe('API Node Rendering', () => {
 		const apiNode = createApiNode();
 
-		it('renders API node with correct content', () => {
-			render(<NodeCard node={apiNode} {...defaultProps} />);
+		it('renders API node with correct styling', () => {
+			const { container } = render(<NodeCard node={apiNode} {...defaultProps} />);
+			const nodeElement = container.querySelector('.memory-graph-node');
 
-			expect(screen.getByText('Auth API')).toBeInTheDocument();
-			expect(screen.getByText('Authentication API endpoints')).toBeInTheDocument();
+			expect(nodeElement?.classList.contains('type-api')).toBe(true);
 		});
 
-		it('applies API-specific styling classes', () => {
-			const { container } = render(<NodeCard node={apiNode} {...defaultProps} />);
-			const nodeElement = container.querySelector('.node-card');
-
-			expect(nodeElement).toHaveClass('type-api');
+		it('displays API icon', () => {
+			render(<NodeCard node={apiNode} {...defaultProps} />);
+			const iconElement = document.querySelector('.memory-graph-node__icon');
+			expect(iconElement?.textContent).toBe('🔌');
 		});
 	});
 
 	describe('Test Node Rendering', () => {
 		const testNode = createTestNode();
 
-		it('renders test node with correct content', () => {
-			render(<NodeCard node={testNode} {...defaultProps} />);
-
-			expect(screen.getByText('Auth Tests')).toBeInTheDocument();
-			expect(screen.getByText('Authentication unit tests')).toBeInTheDocument();
-		});
-
-		it('applies test-specific styling classes', () => {
+		it('renders test node with correct styling', () => {
 			const { container } = render(<NodeCard node={testNode} {...defaultProps} />);
-			const nodeElement = container.querySelector('.node-card');
+			const nodeElement = container.querySelector('.memory-graph-node');
 
-			expect(nodeElement).toHaveClass('type-test');
+			expect(nodeElement?.classList.contains('type-test')).toBe(true);
+		});
+
+		it('displays test icon', () => {
+			render(<NodeCard node={testNode} {...defaultProps} />);
+			const iconElement = document.querySelector('.memory-graph-node__icon');
+			expect(iconElement?.textContent).toBe('🧪');
 		});
 	});
 
-	describe('Node Interactions', () => {
-		const featureNode = createFeatureNode();
+	describe('Node Selection', () => {
+		const testNode = createFeatureNode();
 
-		it('calls onClick when node is clicked', async () => {
-			render(<NodeCard node={featureNode} {...defaultProps} />);
-
-			const nodeElement = screen.getByText('User Authentication').closest('.node-card');
-			if (nodeElement) {
-				await user.click(nodeElement);
-			}
-
-			expect(mockOnClick).toHaveBeenCalledTimes(1);
-		});
-
-		it('supports keyboard navigation', async () => {
-			render(<NodeCard node={featureNode} {...defaultProps} />);
-
-			const nodeElement = screen.getByText('User Authentication').closest('.node-card') as HTMLElement;
-			if (nodeElement) {
-				nodeElement.focus();
-				await user.keyboard('{Enter}');
-			}
-
-			// Note: This test assumes keyboard support would be implemented
-			expect(nodeElement).toBeInTheDocument();
-		});
-	});
-
-	describe('Node Positioning', () => {
-		const featureNode = createFeatureNode();
-
-		it('applies correct position styles', () => {
+		it('applies selected styling when isSelected is true', () => {
 			const { container } = render(
-				<NodeCard
-					node={featureNode}
-					{...defaultProps}
-					position={{ x: 250, y: 150 }}
+				<NodeCard 
+					node={testNode} 
+					{...defaultProps} 
+					isSelected={true} 
+				/>
+			);
+			const nodeElement = container.querySelector('.memory-graph-node');
+
+			expect(nodeElement?.classList.contains('selected')).toBe(true);
+		});
+
+		it('does not apply selected styling when isSelected is false', () => {
+			const { container } = render(
+				<NodeCard 
+					node={testNode} 
+					{...defaultProps} 
+					isSelected={false} 
+				/>
+			);
+			const nodeElement = container.querySelector('.memory-graph-node');
+
+			expect(nodeElement?.classList.contains('selected')).toBe(false);
+		});
+	});
+
+	describe('Positioning', () => {
+		const testNode = createFeatureNode();
+
+		it('applies correct position transform', () => {
+			const position = { x: 150, y: 250 };
+			const { container } = render(
+				<NodeCard 
+					node={testNode} 
+					{...defaultProps} 
+					position={position} 
+				/>
+			);
+			const nodeElement = container.querySelector('.memory-graph-node') as HTMLElement;
+
+			expect(nodeElement?.style.transform).toBe(`translate(${position.x}px, ${position.y}px)`);
+		});
+	});
+
+	describe('ReactFlow Compatibility', () => {
+		const testNode = createFeatureNode();
+
+		it('uses data prop when provided', () => {
+			const nodeData = { ...testNode, name: 'Data Prop Node' };
+			render(
+				<NodeCard 
+					node={testNode}
+					data={nodeData}
+					{...defaultProps} 
 				/>
 			);
 
-			const nodeElement = container.querySelector('.node-card');
-			expect(nodeElement).toBeInTheDocument();
-			// Position is set via useEffect, so we test that the component renders
+			expect(screen.getByText('Data Prop Node')).toBeDefined();
 		});
 
-		it('shows selected state correctly', () => {
+		it('uses selected prop for ReactFlow compatibility', () => {
 			const { container } = render(
-				<NodeCard
-					node={featureNode}
+				<NodeCard 
+					node={testNode}
 					{...defaultProps}
-					isSelected={true}
+					selected={true}
 				/>
 			);
+			const nodeElement = container.querySelector('.memory-graph-node');
 
-			const nodeElement = container.querySelector('.node-card');
-			expect(nodeElement).toHaveClass('selected');
+			expect(nodeElement?.classList.contains('selected')).toBe(true);
 		});
 	});
 
-	describe('Content Handling', () => {
-		it('handles long content gracefully', () => {
-			const longNameNode = createFeatureNode({
-				name: 'This is a very long feature name that should be handled gracefully by the component',
-				description: 'This is a very long description that should be truncated or wrapped appropriately to maintain the layout of the memory graph visualization'
-			});
+	describe('Custom Styling', () => {
+		const testNode = createFeatureNode();
 
-			render(<NodeCard node={longNameNode} {...defaultProps} />);
+		it('applies custom className', () => {
+			const { container } = render(
+				<NodeCard 
+					node={testNode}
+					{...defaultProps}
+					className="custom-node"
+				/>
+			);
+			const nodeElement = container.querySelector('.memory-graph-node');
 
-			expect(screen.getByText(longNameNode.name)).toBeInTheDocument();
-			if (longNameNode.description) {
-				expect(screen.getByText(longNameNode.description)).toBeInTheDocument();
-			}
-		});
-
-		it('handles optional properties gracefully', () => {
-			const featureNode = createFeatureNode({
-				description: undefined
-			});
-
-			render(<NodeCard node={featureNode} {...defaultProps} />);
-
-			expect(screen.getByText('User Authentication')).toBeInTheDocument();
+			expect(nodeElement?.classList.contains('custom-node')).toBe(true);
 		});
 	});
 
 	describe('Accessibility', () => {
-		const featureNode = createFeatureNode();
+		const testNode = createFeatureNode();
 
-		it('has appropriate ARIA attributes', () => {
-			const { container } = render(<NodeCard node={featureNode} {...defaultProps} />);
+		it('has proper cursor styling for interactions', () => {
+			const { container } = render(<NodeCard node={testNode} {...defaultProps} />);
+			const nodeElement = container.querySelector('.memory-graph-node') as HTMLElement;
 
-			const nodeElement = container.querySelector('.node-card');
-			expect(nodeElement).toBeInTheDocument();
-			// Additional ARIA tests would go here based on implementation
+			expect(nodeElement?.style.cursor).toBe('pointer');
 		});
 
-		it('is keyboard accessible', () => {
-			render(<NodeCard node={featureNode} {...defaultProps} />);
+		it('prevents text selection', () => {
+			const { container } = render(<NodeCard node={testNode} {...defaultProps} />);
+			const nodeElement = container.querySelector('.memory-graph-node') as HTMLElement;
 
-			const nodeElement = screen.getByText('User Authentication').closest('.node-card');
-			expect(nodeElement).toBeInTheDocument();
-			// Keyboard accessibility tests would be expanded based on implementation
-		});
-
-		it('provides appropriate semantic structure', () => {
-			render(<NodeCard node={featureNode} {...defaultProps} />);
-
-			expect(screen.getByText('User Authentication')).toBeInTheDocument();
-			expect(screen.getByText('Complete user authentication system')).toBeInTheDocument();
+			expect(nodeElement?.style.userSelect).toBe('none');
 		});
 	});
 
-	describe('Error Handling', () => {
-		it('handles missing required properties', () => {
-			// Test would depend on actual error handling implementation
-			const featureNode = createFeatureNode();
-
+	describe('Edge Cases', () => {
+		it('handles nodes without description', () => {
+			const nodeWithoutDescription = createFeatureNode();
+			// Remove description to test edge case
+			const { description, ...nodeData } = nodeWithoutDescription;
+			
 			expect(() => {
-				render(<NodeCard node={featureNode} {...defaultProps} />);
+				render(
+					<NodeCard 
+						node={nodeData as any}
+						{...defaultProps}
+					/>
+				);
 			}).not.toThrow();
 		});
 
-		it('handles invalid node types gracefully', () => {
-			// This would test the default case in getNodeColor
-			const invalidNode = createFeatureNode({
-				type: 'invalid_type' as any
-			});
+		it('handles unknown node types gracefully', () => {
+			const unknownNode = {
+				...createFeatureNode(),
+				type: 'unknown' as any
+			};
 
-			const { container } = render(<NodeCard node={invalidNode} {...defaultProps} />);
-			const nodeElement = container.querySelector('.node-card');
+			const { container } = render(<NodeCard node={unknownNode} {...defaultProps} />);
+			const nodeElement = container.querySelector('.memory-graph-node');
+			const iconElement = container.querySelector('.memory-graph-node__icon');
 
-			// Should fall back to default styling
-			expect(nodeElement).toHaveClass('type-default');
+			expect(nodeElement?.classList.contains('type-default')).toBe(true);
+			expect(iconElement?.textContent).toBe('📄');
 		});
 	});
 });

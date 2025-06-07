@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client';
 import {
 	MemoryGraphEngine,
 	GraphBuilders
-} from '@aide/memory-graph';
+} from '@codai/memory-graph';
 
 /**
  * Simple demo showcasing AIDE's memory graph capabilities

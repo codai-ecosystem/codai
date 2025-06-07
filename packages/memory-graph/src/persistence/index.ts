@@ -1,15 +1,15 @@
 /**
  * Persistence module for memory graph storage
  */
-export * from './types';
-export * from './localStorage';
-export * from './fileSystem';
-export * from './indexedDB';
+export * from './types.js';
+export * from './localStorage.js';
+export * from './fileSystem.js';
+export * from './indexedDB.js';
 
-import { PersistenceAdapter, PersistenceOptions } from './types';
-import { LocalStorageAdapter } from './localStorage';
-import { FileSystemAdapter } from './fileSystem';
-import { IndexedDBAdapter, IndexedDBOptions } from './indexedDB';
+import { PersistenceAdapter, PersistenceOptions } from './types.js';
+import { LocalStorageAdapter } from './localStorage.js';
+import { FileSystemAdapter } from './fileSystem.js';
+import { IndexedDBAdapter, IndexedDBOptions } from './indexedDB.js';
 
 /**
  * Factory function to create appropriate persistence adapter based on environment

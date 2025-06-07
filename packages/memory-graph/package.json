@@ -1,8 +1,7 @@
-{
-  "name": "@aide/memory-graph",
-  "version": "0.1.0",
+{  "name": "@codai/memory-graph",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Memory graph engine for AIDE - persistent intent and state management",
+  "description": "Memory graph engine for codai.ro - persistent intent and state management",
   "main": "dist/core-only.js",
   "types": "dist/core-only.d.ts",
   "exports": {

@@ -69,6 +69,45 @@ export class APIClient {
     return await response.json();
   }
 
+  // Generic HTTP methods
+
+  /**
+   * Make a GET request
+   */
+  public async get(endpoint: string): Promise<any> {
+    return this.fetchWithAuth(endpoint, 'GET');
+  }
+
+  /**
+   * Make a POST request
+   */
+  public async post(endpoint: string, body?: any): Promise<any> {
+    return this.fetchWithAuth(endpoint, 'POST', body);
+  }
+
+  /**
+   * Make a PUT request
+   */
+  public async put(endpoint: string, body?: any): Promise<any> {
+    return this.fetchWithAuth(endpoint, 'PUT', body);
+  }
+
+  /**
+   * Make a DELETE request
+   */
+  public async delete(endpoint: string): Promise<any> {
+    return this.fetchWithAuth(endpoint, 'DELETE');
+  }
+
+  // Admin methods
+
+  /**
+   * Get dashboard statistics (admin only)
+   */
+  public async getDashboardStats(): Promise<any> {
+    return this.fetchWithAuth('/api/admin/dashboard-stats');
+  }
+
   // User management methods
 
   /**

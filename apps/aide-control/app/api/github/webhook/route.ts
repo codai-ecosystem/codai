@@ -3,7 +3,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { getAdminApp } from '../../../../lib/firebase';
+import { getAdminApp } from '../../../../lib/firebase-admin';
 
 const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET!;
 

@@ -1,10 +1,14 @@
 /**
  * System configuration API endpoint
  * Allows admins to view and update system-wide settings
+ * Enhanced with new configuration service integration
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminApp } from '../../../../lib/firebase';
+import { getAdminApp } from '../../../../lib/firebase-admin';
 import { withAdmin } from '../../../../lib/server/auth-middleware';
+import { withAdminAuth } from '../../../../lib/auth-middleware';
+import { FirestoreService } from '../../../../lib/firebase-admin';
+import { ConfigurationService } from '../../../../lib/services/configuration';
 
 interface SystemConfig {
 	maintenance: {
@@ -41,14 +45,32 @@ interface SystemConfig {
 
 async function handleGetConfig(req: NextRequest, context: { uid: string }) {
 	try {
+		// Use the new configuration service
+		const configService = ConfigurationService.getInstance();
+		const config = await configService.getConfig();
+
+		// Also get legacy config for backwards compatibility
 		const admin = getAdminApp();
 		const db = (admin as any).firestore();
+		const legacyConfigDoc = await db.collection('system').doc('config').get();
+		const legacyConfig = legacyConfigDoc.exists ? legacyConfigDoc.data() : getDefaultConfig();
 
-		// Get system configuration from Firestore
-		const configDoc = await db.collection('system').doc('config').get();
-		const config = configDoc.exists ? configDoc.data() : getDefaultConfig();
+		// Log configuration access
+		await FirestoreService.logAudit({
+			userId: context.uid,
+			action: 'VIEW_CONFIG',
+			resource: 'configuration',
+			resourceId: 'system-config',
+			details: {
+				action: 'Viewed system configuration',
+				timestamp: new Date().toISOString()
+			}
+		});
 
-		return NextResponse.json({ config });
+		return NextResponse.json({
+			config,
+			legacyConfig
+		});
 
 	} catch (error) {
 		console.error('Get config error:', error);
@@ -61,9 +83,6 @@ async function handleGetConfig(req: NextRequest, context: { uid: string }) {
 
 async function handleUpdateConfig(req: NextRequest, context: { uid: string }) {
 	try {
-		const admin = getAdminApp();
-		const db = (admin as any).firestore();
-
 		const updates = await req.json();
 
 		// Validate the updates (basic validation)
@@ -74,15 +93,30 @@ async function handleUpdateConfig(req: NextRequest, context: { uid: string }) {
 			);
 		}
 
-		// Update the system configuration
-		await db.collection('system').doc('config').set(updates, { merge: true });
+		// Use the new configuration service for new-style updates
+		if (updates.newConfig) {
+			const configService = ConfigurationService.getInstance();
+			await configService.updateConfig(updates.newConfig);
+		}
+
+		// Handle legacy config updates
+		if (updates.legacyConfig) {
+			const admin = getAdminApp();
+			const db = (admin as any).firestore();
+			await db.collection('system').doc('config').set(updates.legacyConfig, { merge: true });
+		}
 
 		// Log the configuration change
-		await db.collection('system').doc('audit').collection('changes').add({
-			type: 'config_update',
-			adminUid: context.uid,
-			changes: updates,
-			timestamp: new Date().toISOString()
+		await FirestoreService.logAudit({
+			userId: context.uid,
+			action: 'UPDATE_CONFIG',
+			resource: 'configuration',
+			resourceId: 'system-config',
+			details: {
+				action: 'Updated system configuration',
+				updates,
+				timestamp: new Date().toISOString()
+			}
 		});
 
 		return NextResponse.json({

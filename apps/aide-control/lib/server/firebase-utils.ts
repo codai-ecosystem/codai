@@ -1,7 +1,7 @@
 /**
  * Firebase Admin utilities for server-side operations
  */
-import { getAdminApp } from '../firebase';
+import { getAdminApp } from '../firebase-admin';
 
 /**
  * Get Firestore database instance with proper typing

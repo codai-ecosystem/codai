@@ -1,7 +1,6 @@
-{
-  "name": "@aide/ui-components",
-  "version": "0.1.0",
-  "description": "Shared UI components for AIDE",
+{  "name": "@codai/ui-components",
+  "version": "1.0.0",
+  "description": "Shared UI components for codai.ro",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -24,9 +23,8 @@
     "lucide-react": "^0.379.0",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-select": "^2.0.0",
-    "@radix-ui/react-toast": "^1.1.5",
-    "@aide/memory-graph": "workspace:*",
-    "@aide/agent-runtime": "workspace:*"
+    "@radix-ui/react-toast": "^1.1.5",    "@codai/memory-graph": "workspace:*",
+    "@codai/agent-runtime": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

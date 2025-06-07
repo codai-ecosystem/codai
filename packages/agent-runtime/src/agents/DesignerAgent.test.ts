@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DesignerAgent } from './DesignerAgent';
-import { MemoryGraphEngine } from '@aide/memory-graph';
+import { MemoryGraphEngine } from '@codai/memory-graph';
 import { Task, TaskResult, AgentConfig } from '../types';
 
 describe('DesignerAgent', () => {

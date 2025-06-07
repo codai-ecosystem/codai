@@ -1,8 +1,13 @@
 import { app, BrowserWindow, Menu, dialog, ipcMain } from 'electron';
-import { join } from 'path';
-import { MemoryGraphEngine } from '@aide/memory-graph';
-import { AgentRuntime } from '@aide/agent-runtime';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { MemoryGraphEngine } from '@codai/memory-graph';
+import { AgentRuntime } from '@codai/agent-runtime';
 import Store from 'electron-store';
+
+// For ES modules, we need to use fileURLToPath
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * AIDE Electron Main Process
@@ -81,14 +86,14 @@ class AideApplication {
 			},
 			titleBarStyle: 'hiddenInset',
 			show: false,
-		});
-
-		// Load the React app
+		});		// Load the React app
 		if (process.env.NODE_ENV === 'development') {
 			this.mainWindow.loadURL('http://localhost:3000');
 			this.mainWindow.webContents.openDevTools();
 		} else {
-			this.mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+			// In a built app, the renderer files are in the dist/renderer directory
+			this.mainWindow.loadFile(join(__dirname, 'renderer/index.html'));
+			this.mainWindow.webContents.openDevTools(); // Open dev tools to debug any issues
 		}
 
 		this.mainWindow.once('ready-to-show', () => {

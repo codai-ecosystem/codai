@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MemoryGraphEngine, AnyNode, Relationship } from '@aide/memory-graph';
+import { MemoryGraphEngine, AnyNode, Relationship } from '@codai/memory-graph';
 import { Task, TaskResult, AgentRuntimeDemo } from '../utils/AgentRuntimeWrapper';
 
 interface AgentRuntimeIntegrationProps {

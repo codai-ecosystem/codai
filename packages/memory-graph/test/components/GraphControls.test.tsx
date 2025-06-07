@@ -6,12 +6,9 @@ import { GraphControls } from '../../src/components/GraphControls';
 
 describe('GraphControls Component', () => {
 	const defaultProps = {
-		layout: 'force' as const,
-		onLayoutChange: vi.fn(),
-		zoomLevel: 1,
-		onZoomChange: vi.fn(),
-		onPanReset: vi.fn(),
-		isLayouting: false
+		onFilterChange: vi.fn(),
+		currentFilter: null,
+		nodeTypes: ['data', 'api', 'processing']
 	};
 
 	beforeEach(() => {
@@ -19,362 +16,136 @@ describe('GraphControls Component', () => {
 	});
 
 	describe('Basic Rendering', () => {
-		it('renders all control elements', () => {
+		it('renders filter controls', () => {
 			render(<GraphControls {...defaultProps} />);
 
-			expect(screen.getByText('Layout')).toBeInTheDocument();
-			expect(screen.getByText('Zoom')).toBeInTheDocument();
-			expect(screen.getByText('Reset View')).toBeInTheDocument();
+			expect(screen.getByText('Filters')).toBeDefined();
+			expect(screen.getByText('All')).toBeDefined();
 		});
 
-		it('displays current layout type', () => {
-			render(<GraphControls {...defaultProps} layout="hierarchical" />);
+		it('renders node type filters', () => {
+			render(<GraphControls {...defaultProps} />);
 
-			expect(screen.getByText('hierarchical')).toBeInTheDocument();
+			expect(screen.getByText('Data')).toBeDefined();
+			expect(screen.getByText('Api')).toBeDefined();
+			expect(screen.getByText('Processing')).toBeDefined();
 		});
 
-		it('displays current zoom percentage', () => {
-			render(<GraphControls {...defaultProps} zoomLevel={1.5} />);
+		it('shows active filter count when filter is applied', () => {
+			render(<GraphControls {...defaultProps} currentFilter="data" />);
 
-			expect(screen.getByText('150%')).toBeInTheDocument();
+			expect(screen.getByText('1')).toBeDefined();
 		});
-
 		it('applies custom className', () => {
 			const { container } = render(
 				<GraphControls {...defaultProps} className="custom-controls" />
 			);
 
-			expect(container.firstChild).toHaveClass('custom-controls');
+			expect((container.firstChild as HTMLElement)?.classList.contains('custom-controls')).toBe(true);
 		});
 	});
 
-	describe('Layout Controls', () => {
-		it('calls onLayoutChange when layout button is clicked', async () => {
-			const user = userEvent.setup();
-			const onLayoutChange = vi.fn();
+	describe('Filter Functionality', () => {
+		it('calls onFilterChange when All button is clicked', async () => {
+			const onFilterChange = vi.fn();
+			render(<GraphControls {...defaultProps} onFilterChange={onFilterChange} />);
 
-			render(
-				<GraphControls
-					{...defaultProps}
-					onLayoutChange={onLayoutChange}
-				/>
-			);
+			const allButton = screen.getByText('All');
+			await fireEvent.click(allButton);
 
-			await user.click(screen.getByText('force'));
+			expect(onFilterChange).toHaveBeenCalledWith(null);
+		});
+		it('calls onFilterChange when node type button is clicked', async () => {
+			const onFilterChange = vi.fn();
+			render(<GraphControls {...defaultProps} onFilterChange={onFilterChange} />);
 
-			expect(onLayoutChange).toHaveBeenCalledTimes(1);
+			const dataButton = screen.getByTitle('Show only data nodes');
+			await fireEvent.click(dataButton);
+
+			expect(onFilterChange).toHaveBeenCalledWith('data');
+		}); it('shows active state for current filter', () => {
+			render(<GraphControls {...defaultProps} currentFilter="data" />);
+
+			const dataButton = screen.getByTitle('Show only data nodes');
+			expect(dataButton.classList.contains('memory-graph-controls__button--active')).toBe(true);
 		});
 
-		it('shows "Layouting..." when isLayouting is true', () => {
-			render(<GraphControls {...defaultProps} isLayouting={true} />);
+		it('shows active state for All button when no filter is applied', () => {
+			render(<GraphControls {...defaultProps} currentFilter={null} />);
 
-			expect(screen.getByText('Layouting...')).toBeInTheDocument();
-		});
-
-		it('disables layout button when layouting', () => {
-			render(<GraphControls {...defaultProps} isLayouting={true} />);
-
-			const layoutButton = screen.getByText('Layouting...');
-			expect(layoutButton).toBeDisabled();
-		});
-
-		it('displays different layout types correctly', () => {
-			const { rerender } = render(<GraphControls {...defaultProps} layout="force" />);
-			expect(screen.getByText('force')).toBeInTheDocument();
-
-			rerender(<GraphControls {...defaultProps} layout="hierarchical" />);
-			expect(screen.getByText('hierarchical')).toBeInTheDocument();
-
-			rerender(<GraphControls {...defaultProps} layout="circular" />);
-			expect(screen.getByText('circular')).toBeInTheDocument();
+			const allButton = screen.getByText('All');
+			expect(allButton.classList.contains('memory-graph-controls__button--active')).toBe(true);
 		});
 	});
 
-	describe('Zoom Controls', () => {
-		it('calls onZoomChange with decreased value when zoom out is clicked', async () => {
-			const user = userEvent.setup();
-			const onZoomChange = vi.fn();
-
-			render(
-				<GraphControls
-					{...defaultProps}
-					zoomLevel={1}
-					onZoomChange={onZoomChange}
-				/>
-			);
-
-			await user.click(screen.getByText('-'));
-
-			expect(onZoomChange).toHaveBeenCalledWith(0.9);
-		});
-
-		it('calls onZoomChange with increased value when zoom in is clicked', async () => {
-			const user = userEvent.setup();
-			const onZoomChange = vi.fn();
-
-			render(
-				<GraphControls
-					{...defaultProps}
-					zoomLevel={1}
-					onZoomChange={onZoomChange}
-				/>
-			);
-
-			await user.click(screen.getByText('+'));
-
-			expect(onZoomChange).toHaveBeenCalledWith(1.1);
-		});
-
-		it('respects minimum zoom level (0.1)', async () => {
-			const user = userEvent.setup();
-			const onZoomChange = vi.fn();
-
-			render(
-				<GraphControls
-					{...defaultProps}
-					zoomLevel={0.1}
-					onZoomChange={onZoomChange}
-				/>
-			);
-
-			await user.click(screen.getByText('-'));
-
-			expect(onZoomChange).toHaveBeenCalledWith(0.1);
-		});
-
-		it('respects maximum zoom level (3.0)', async () => {
-			const user = userEvent.setup();
-			const onZoomChange = vi.fn();
-
-			render(
-				<GraphControls
-					{...defaultProps}
-					zoomLevel={3}
-					onZoomChange={onZoomChange}
-				/>
-			);
-
-			await user.click(screen.getByText('+'));
-
-			expect(onZoomChange).toHaveBeenCalledWith(3);
-		});
-
-		it('displays zoom percentage correctly for various levels', () => {
-			const testCases = [
-				{ zoom: 0.5, expected: '50%' },
-				{ zoom: 1, expected: '100%' },
-				{ zoom: 1.25, expected: '125%' },
-				{ zoom: 2.5, expected: '250%' }
-			];
-
-			testCases.forEach(({ zoom, expected }) => {
-				const { rerender } = render(
-					<GraphControls {...defaultProps} zoomLevel={zoom} />
-				);
-				expect(screen.getByText(expected)).toBeInTheDocument();
-				rerender(<div />); // Clear between tests
-			});
-		});
-
-		it('rounds zoom percentage to nearest integer', () => {
-			render(<GraphControls {...defaultProps} zoomLevel={1.237} />);
-
-			expect(screen.getByText('124%')).toBeInTheDocument();
-		});
-	});
-
-	describe('Pan Reset', () => {
-		it('calls onPanReset when reset button is clicked', async () => {
-			const user = userEvent.setup();
-			const onPanReset = vi.fn();
-
-			render(
-				<GraphControls
-					{...defaultProps}
-					onPanReset={onPanReset}
-				/>
-			);
-
-			await user.click(screen.getByText('Reset View'));
-
-			expect(onPanReset).toHaveBeenCalledTimes(1);
-		});
-
-		it('has correct styling for reset button', () => {
+	describe('Collapsible Panel', () => {
+		it('can be collapsed and expanded', async () => {
 			render(<GraphControls {...defaultProps} />);
 
-			const resetButton = screen.getByText('Reset View');
-			expect(resetButton).toHaveClass('bg-blue-100');
-			expect(resetButton).toHaveClass('text-blue-700');
-		});
-	});
+			const toggleButton = screen.getByTitle('Collapse filters');
+			await fireEvent.click(toggleButton);
 
-	describe('Interaction and Accessibility', () => {
-		it('provides proper button roles for interactive elements', () => {
+			// After collapse, content should be hidden
+			expect(screen.queryByText('All')).toBeNull();
+
+			// Button text should change
+			expect(screen.getByTitle('Expand filters')).toBeDefined();
+		});
+
+		it('starts expanded by default', () => {
 			render(<GraphControls {...defaultProps} />);
 
-			const buttons = screen.getAllByRole('button');
-			expect(buttons).toHaveLength(4); // Layout, zoom-, zoom+, reset
+			expect(screen.getByText('All')).toBeDefined();
+			expect(screen.getByTitle('Collapse filters')).toBeDefined();
 		});
+	});
 
-		it('supports keyboard navigation', async () => {
-			const user = userEvent.setup();
-			const onZoomChange = vi.fn();
+	describe('Node Type Icons', () => {
+		it('displays icons when provided', () => {
+			const nodeTypeIcons = {
+				data: '📊',
+				api: '🔌',
+				processing: '⚙️'
+			};
 
 			render(
 				<GraphControls
 					{...defaultProps}
-					onZoomChange={onZoomChange}
+					nodeTypeIcons={nodeTypeIcons}
 				/>
 			);
 
-			const zoomInButton = screen.getByText('+');
-			zoomInButton.focus();
-			await user.keyboard('{Enter}');
-
-			expect(onZoomChange).toHaveBeenCalledWith(1.1);
+			expect(screen.getByText('📊')).toBeDefined();
+			expect(screen.getByText('🔌')).toBeDefined();
+			expect(screen.getByText('⚙️')).toBeDefined();
 		});
 
-		it('has hover states for buttons', () => {
+		it('works without icons', () => {
 			render(<GraphControls {...defaultProps} />);
 
-			const zoomInButton = screen.getByText('+');
-			expect(zoomInButton).toHaveClass('hover:bg-gray-200');
-
-			const resetButton = screen.getByText('Reset View');
-			expect(resetButton).toHaveClass('hover:bg-blue-200');
+			// Should still render node type buttons without icons
+			expect(screen.getByText('Data')).toBeDefined();
+			expect(screen.getByText('Api')).toBeDefined();
+			expect(screen.getByText('Processing')).toBeDefined();
 		});
 	});
 
-	describe('Layout States', () => {
-		it('shows correct button state when not layouting', () => {
-			render(<GraphControls {...defaultProps} isLayouting={false} />);
-
-			const layoutButton = screen.getByText('force');
-			expect(layoutButton).not.toBeDisabled();
-			expect(layoutButton).toHaveClass('hover:bg-gray-200');
-		});
-
-		it('prevents interaction when layouting', async () => {
-			const user = userEvent.setup();
-			const onLayoutChange = vi.fn();
-
-			render(
-				<GraphControls
-					{...defaultProps}
-					isLayouting={true}
-					onLayoutChange={onLayoutChange}
-				/>
-			);
-
-			const layoutButton = screen.getByText('Layouting...');
-			await user.click(layoutButton);
-
-			expect(onLayoutChange).not.toHaveBeenCalled();
-		});
-	});
-
-	describe('Visual Styling', () => {
-		it('applies correct CSS classes for container', () => {
-			const { container } = render(<GraphControls {...defaultProps} />);
-
-			const controlsContainer = container.firstChild;
-			expect(controlsContainer).toHaveClass('graph-controls');
-			expect(controlsContainer).toHaveClass('bg-white');
-			expect(controlsContainer).toHaveClass('rounded-lg');
-			expect(controlsContainer).toHaveClass('shadow-lg');
-		});
-
-		it('has proper spacing for control elements', () => {
-			const { container } = render(<GraphControls {...defaultProps} />);
-
-			const controlsDiv = container.querySelector('.space-y-2');
-			expect(controlsDiv).toBeInTheDocument();
-		});
-
-		it('displays labels with correct styling', () => {
+	describe('Accessibility', () => {
+		it('provides appropriate button titles', () => {
 			render(<GraphControls {...defaultProps} />);
 
-			const layoutLabel = screen.getByText('Layout');
-			expect(layoutLabel).toHaveClass('text-xs');
-			expect(layoutLabel).toHaveClass('font-medium');
-			expect(layoutLabel).toHaveClass('text-gray-600');
-		});
-	});
+			expect(screen.getByTitle('Show all node types')).toBeDefined();
+			expect(screen.getByTitle('Show only data nodes')).toBeDefined();
+			expect(screen.getByTitle('Show only api nodes')).toBeDefined();
+			expect(screen.getByTitle('Show only processing nodes')).toBeDefined();
+		}); it('includes data attributes for node type buttons', () => {
+			render(<GraphControls {...defaultProps} />);
 
-	describe('Edge Cases', () => {
-		it('handles extreme zoom values gracefully', async () => {
-			const user = userEvent.setup();
-			const onZoomChange = vi.fn();
+			const dataButton = screen.getByTitle('Show only data nodes');
+			expect(dataButton.getAttribute('data-node-type')).toBe('data');
 
-			render(
-				<GraphControls
-					{...defaultProps}
-					zoomLevel={0.01}
-					onZoomChange={onZoomChange}
-				/>
-			);
-
-			await user.click(screen.getByText('-'));
-
-			// Should clamp to minimum
-			expect(onZoomChange).toHaveBeenCalledWith(0.1);
-		});
-
-		it('handles very high zoom levels', () => {
-			render(<GraphControls {...defaultProps} zoomLevel={10} />);
-
-			expect(screen.getByText('1000%')).toBeInTheDocument();
-		});
-
-		it('works without optional className', () => {
-			expect(() => {
-				render(<GraphControls {...defaultProps} />);
-			}).not.toThrow();
-		});
-	});
-
-	describe('Multiple Rapid Interactions', () => {
-		it('handles rapid zoom clicks correctly', async () => {
-			const user = userEvent.setup();
-			const onZoomChange = vi.fn();
-
-			render(
-				<GraphControls
-					{...defaultProps}
-					onZoomChange={onZoomChange}
-				/>
-			);
-
-			const zoomInButton = screen.getByText('+');
-
-			// Rapid clicks
-			await user.click(zoomInButton);
-			await user.click(zoomInButton);
-			await user.click(zoomInButton);
-
-			expect(onZoomChange).toHaveBeenCalledTimes(3);
-		});
-
-		it('handles mixed zoom and reset interactions', async () => {
-			const user = userEvent.setup();
-			const onZoomChange = vi.fn();
-			const onPanReset = vi.fn();
-
-			render(
-				<GraphControls
-					{...defaultProps}
-					onZoomChange={onZoomChange}
-					onPanReset={onPanReset}
-				/>
-			);
-
-			await user.click(screen.getByText('+'));
-			await user.click(screen.getByText('Reset View'));
-			await user.click(screen.getByText('-'));
-
-			expect(onZoomChange).toHaveBeenCalledTimes(2);
-			expect(onPanReset).toHaveBeenCalledTimes(1);
+			const apiButton = screen.getByTitle('Show only api nodes');
+			expect(apiButton.getAttribute('data-node-type')).toBe('api');
 		});
 	});
 });

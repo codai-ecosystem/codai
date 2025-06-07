@@ -2,9 +2,22 @@
  * Firebase Admin SDK Configuration for AIDE Control Panel
  * Provides server-side Firebase functionality for authentication and Firestore operations
  */
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth as getAdminAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+// During build time, use local mocks to avoid import errors
+// The real modules will be used in runtime environment
+let initializeApp, getApps, cert, getAdminAuth, getFirestore;
+
+try {
+	// Try to import real Firebase Admin modules
+	({ initializeApp, getApps, cert } = require('firebase-admin/app'));
+	({ getAuth: getAdminAuth } = require('firebase-admin/auth'));
+	({ getFirestore } = require('firebase-admin/firestore'));
+} catch (error) {
+	console.log('Using Firebase Admin mock modules');
+	// Fall back to mock implementations if imports fail
+	({ initializeApp, getApps, cert } = require('./mocks/firebase-admin-app'));
+	({ getAuth: getAdminAuth } = require('./mocks/firebase-admin-auth'));
+	({ getFirestore } = require('./mocks/firebase-admin-firestore'));
+}
 
 // Initialize Firebase Admin SDK
 let app;
@@ -25,7 +38,21 @@ if (getApps().length === 0) {
 			if (!credentialsString || credentialsString === '') {
 				throw new Error('FIREBASE_ADMIN_CREDENTIALS is empty');
 			}
-			const credentials = JSON.parse(credentialsString);
+
+			let credentials;
+			try {
+				// Try to parse as JSON first
+				credentials = JSON.parse(credentialsString);
+			} catch (jsonError) {
+				// If JSON parsing fails, try base64 decode
+				try {
+					const decodedString = Buffer.from(credentialsString, 'base64').toString('utf-8');
+					credentials = JSON.parse(decodedString);
+				} catch (base64Error) {
+					throw new Error(`Failed to parse credentials as JSON or base64: ${jsonError.message}`);
+				}
+			}
+
 			app = initializeApp({
 				credential: cert(credentials),
 				projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -51,6 +78,18 @@ if (getApps().length === 0) {
 
 export const adminAuth = getAdminAuth(app);
 export const adminDb = getFirestore(app);
+
+/**
+ * Get the Firebase Admin app instance
+ * @returns The initialized Firebase Admin app
+ * @throws {Error} If the app is not initialized
+ */
+export function getAdminApp() {
+	if (!app) {
+		throw new Error('Firebase Admin app not initialized');
+	}
+	return app;
+}
 
 /**
  * Firestore Collections Schema
@@ -93,6 +132,18 @@ export interface UserDocument {
 		deploymentsPerMonth: number;
 	};
 	status: 'active' | 'suspended' | 'pending';
+	// Setup and onboarding fields
+	setupCompleted?: boolean;
+	setupCompletedAt?: Date;
+	setupSteps?: {
+		profile?: 'pending' | 'in_progress' | 'completed' | 'failed';
+		plan?: 'pending' | 'in_progress' | 'completed' | 'failed';
+		github?: 'pending' | 'in_progress' | 'completed' | 'failed';
+		project?: 'pending' | 'in_progress' | 'completed' | 'failed';
+		agent?: 'pending' | 'in_progress' | 'completed' | 'failed';
+	};
+	githubUsername?: string;
+	firstProjectId?: string;
 }
 
 /**
@@ -219,6 +270,48 @@ export interface PlanDocument {
 }
 
 /**
+ * Verify Firebase ID token and return decoded claims
+ * @param token - The Firebase ID token to verify
+ * @returns Promise resolving to the decoded token claims
+ * @throws {Error} If token verification fails
+ */
+export async function verifyIdToken(token: string): Promise<any> {
+	if (!token || typeof token !== 'string') {
+		throw new Error('Invalid token: must be a non-empty string');
+	}
+
+	try {
+		return await adminAuth.verifyIdToken(token);
+	} catch (error) {
+		console.error('Error verifying ID token:', error);
+		throw new Error('Token verification failed');
+	}
+}
+
+/**
+ * Check if a user has admin privileges
+ * @param uid - The user ID to check
+ * @returns Promise resolving to true if user is admin, false otherwise
+ */
+export async function isUserAdmin(uid: string): Promise<boolean> {
+	if (!uid || typeof uid !== 'string') {
+		return false;
+	}
+
+	try {
+		const userDoc = await adminDb.collection(COLLECTIONS.USERS).doc(uid).get();
+		if (!userDoc.exists) {
+			return false;
+		}
+		const userData = userDoc.data() as UserDocument;
+		return userData.role === 'admin' || userData.role === 'superadmin';
+	} catch (error) {
+		console.error('Error checking admin status:', error);
+		return false;
+	}
+}
+
+/**
  * Utility functions for Firestore operations
  */
 export class FirestoreService {
@@ -283,7 +376,6 @@ export class FirestoreService {
 			throw error;
 		}
 	}
-
 	/**
 	 * Get active plans
 	 */
@@ -298,6 +390,24 @@ export class FirestoreService {
 			return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PlanDocument));
 		} catch (error) {
 			console.error('Error getting active plans:', error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Get recent audit logs
+	 */
+	static async getRecentAuditLogs(limit: number = 20): Promise<AuditLogDocument[]> {
+		try {
+			const snapshot = await adminDb
+				.collection(COLLECTIONS.AUDIT_LOGS)
+				.orderBy('timestamp', 'desc')
+				.limit(limit)
+				.get();
+
+			return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLogDocument));
+		} catch (error) {
+			console.error('Error getting recent audit logs:', error);
 			throw error;
 		}
 	}

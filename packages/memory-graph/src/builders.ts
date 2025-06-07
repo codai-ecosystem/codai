@@ -11,8 +11,8 @@ import {
 	IntentNode,
 	ConversationNode,
 	Relationship
-} from './schemas';
-import { MemoryGraphEngine } from './engine';
+} from './schemas.js';
+import { MemoryGraphEngine } from './engine.js';
 
 /**
  * Memory Graph Builder utilities

@@ -8,7 +8,7 @@ import {
 	ApiNode,
 	LogicNode,
 	FeatureNode
-} from '@aide/memory-graph';
+} from '@codai/memory-graph';
 import { v4 as uuid } from 'uuid';
 import {
 	Globe,

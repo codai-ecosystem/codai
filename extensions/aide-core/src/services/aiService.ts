@@ -158,9 +158,7 @@ export class AIService {
 			if (!response.ok) {
 				const error = await response.text();
 				throw new Error(`AI API request failed: ${response.status} ${error}`);
-			}
-
-			const data = await response.json();
+			}			const data = await response.json() as any;
 
 			return {
 				content: data.choices[0].message.content,
@@ -224,9 +222,7 @@ export class AIService {
 			if (!response.ok) {
 				const error = await response.text();
 				throw new Error(`Anthropic API request failed: ${response.status} ${error}`);
-			}
-
-			const data = await response.json();
+			}			const data = await response.json() as any;
 
 			return {
 				content: data.content[0].text,

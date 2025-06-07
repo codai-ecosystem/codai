@@ -4,18 +4,18 @@
 // @ts-ignore - Next.js types
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '../../../../../../../lib/server/auth-middleware';
-import { getAdminApp } from '../../../../../../../lib/firebase';
+import { getAdminApp } from '../../../../../../../lib/firebase-admin';
 
 /**
  * DELETE /api/users/[uid]/services/[type]/[provider] - Delete a service configuration
  */
 export function DELETE(
   req: NextRequest,
-  { params }: { params: { uid: string; type: string; provider: string } }
+  { params }: { params: Promise<{ uid: string; type: string; provider: string }> }
 ) {
   return withAuth(async (_, { uid }) => {
     try {
-      const { uid: userUid, type: serviceType, provider: providerId } = params;      // Only allow users to delete their own data unless they're an admin
+      const { uid: userUid, type: serviceType, provider: providerId } = await params;// Only allow users to delete their own data unless they're an admin
       const admin = getAdminApp();
       const firestore = (admin as any).firestore();
 
@@ -90,11 +90,11 @@ export function DELETE(
  */
 export function PUT(
   req: NextRequest,
-  { params }: { params: { uid: string; type: string; provider: string } }
+  { params }: { params: Promise<{ uid: string; type: string; provider: string }> }
 ) {
   return withAuth(async (req, { uid }) => {
     try {
-      const { uid: userUid, type: serviceType, provider: providerId } = params;
+      const { uid: userUid, type: serviceType, provider: providerId } = await params;
       const updateData = await req.json();      // Only allow users to update their own data unless they're an admin
       const admin = getAdminApp();
       const firestore = (admin as any).firestore();

@@ -1,0 +1,23 @@
+{
+  "id": "d8cbad98-ae86-48ac-aaf1-3b93b0e4c2e6",
+  "name": "New AIDE Project",
+  "version": "0.2.0",
+  "createdAt": "2025-06-05T06:12:26.989Z",
+  "updatedAt": "2025-06-05T06:32:27.025Z",
+  "nodes": [],
+  "relationships": [],
+  "metadata": {
+    "aiProvider": "openai",
+    "lastInteractionAt": "2025-06-05T06:12:26.989Z",
+    "tags": [],
+    "stats": {
+      "nodeCount": 0,
+      "edgeCount": 0,
+      "complexity": 0
+    }
+  },
+  "settings": {
+    "autoSave": true,
+    "persistLocation": "local"
+  }
+}

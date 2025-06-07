@@ -7,6 +7,13 @@ export default defineConfig({
 		environment: 'jsdom',
 		setupFiles: ['./test/setup.ts'],
 		css: true,
+		deps: {
+			inline: ['uuid']
+		}, alias: {
+			crypto: 'crypto-browserify',
+			'@': './src',
+			process: 'process/browser'
+		},
 		coverage: {
 			provider: 'v8',
 			reporter: ['text', 'json', 'html'],
@@ -19,9 +26,8 @@ export default defineConfig({
 			]
 		}
 	},
-	resolve: {
-		alias: {
-			'@': './src'
-		}
+	define: {
+		'process.env': {},
+		'global': {}
 	}
 });

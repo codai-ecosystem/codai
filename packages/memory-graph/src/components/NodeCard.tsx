@@ -27,13 +27,13 @@ export const NodeCard: React.FC<NodeCardProps> = ({
 	// Otherwise, use the node prop from our own implementation
 	const nodeData = data || node;
 	const isNodeSelected = selected || isSelected;
-
 	const getNodeColor = (type: string) => {
 		switch (type) {
 			case 'feature': return 'type-feature';
 			case 'screen': return 'type-screen';
 			case 'logic': return 'type-logic';
-			case 'data': return 'type-data';
+			case 'data':
+			case 'data_model': return 'type-data';
 			case 'api': return 'type-api';
 			case 'test': return 'type-test';
 			case 'decision': return 'type-decision';
@@ -42,13 +42,13 @@ export const NodeCard: React.FC<NodeCardProps> = ({
 			default: return 'type-default';
 		}
 	};
-
 	const getNodeIcon = (type: string) => {
 		switch (type) {
 			case 'feature': return '✨';
 			case 'screen': return '📱';
 			case 'logic': return '⚙️';
-			case 'data': return '💾';
+			case 'data':
+			case 'data_model': return '💾';
 			case 'api': return '🔌';
 			case 'test': return '🧪';
 			case 'decision': return '🔀';

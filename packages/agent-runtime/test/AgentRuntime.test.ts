@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AgentRuntime } from '../src/AgentRuntime';
-import { MemoryGraphEngine } from '@aide/memory-graph';
+import { MemoryGraphEngine } from '@codai/memory-graph';
 import { LLMService, LLMResponse } from '../src/llm';
 
 // Mock MemoryGraphEngine
-vi.mock('@aide/memory-graph', () => {
+vi.mock('@codai/memory-graph', () => {
   return {
     MemoryGraphEngine: vi.fn().mockImplementation(() => ({
       currentGraph: { id: 'test-graph', nodes: [], relationships: [] },

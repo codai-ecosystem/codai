@@ -1,8 +1,8 @@
 {
-  "name": "@aide/agent-runtime",
-  "version": "0.1.0",
+  "name": "@codai/agent-runtime",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Agent orchestration and execution runtime for AIDE",
+  "description": "Agent orchestration and execution runtime for codai.ro",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -23,14 +23,10 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@aide/memory-graph": "workspace:*",
-    "@ai-sdk/openai": "^0.0.66",
-    "@ai-sdk/anthropic": "^0.0.54",
-    "@ai-sdk/google": "^0.0.52",
-    "ai": "^4.0.12",
+    "@codai/memory-graph": "workspace:*",
+    "rxjs": "^7.8.1",
     "uuid": "^9.0.1",
-    "zod": "^3.23.8",
-    "rxjs": "^7.8.1"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/uuid": "^9.0.8",

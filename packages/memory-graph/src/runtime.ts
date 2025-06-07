@@ -1,6 +1,6 @@
-import { MemoryGraphEngine } from './engine';
-import { AnyNode, Relationship, MemoryGraph } from './schemas';
-import { GraphBuilders } from './builders';
+import { MemoryGraphEngine } from './engine.js';
+import { AnyNode, Relationship, MemoryGraph } from './schemas.js';
+import { GraphBuilders } from './builders.js';
 
 // Conversation entry for tracking agent-user interactions
 export interface ConversationEntry {
@@ -32,9 +32,8 @@ export class AgentMemoryRuntime {
 	get graph(): MemoryGraphEngine {
 		return this.engine;
 	}
-
 	get currentGraph(): MemoryGraph {
-		return this.engine.currentGraph;
+		return this.engine.graph;
 	}
 
 	/**

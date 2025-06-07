@@ -1,0 +1,7 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/stripe/create-checkout-session/route": "app/api/stripe/create-checkout-session/route.js",
+  "/api/stripe/verify-session/route": "app/api/stripe/verify-session/route.js",
+  "/success/page": "app/success/page.js",
+  "/page": "app/page.js"
+}

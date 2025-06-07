@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Subject, BehaviorSubject, Observable } from 'rxjs';
+import { Subject, BehaviorSubject, Observable, bufferTime, filter } from 'rxjs';
 import {
 	AnyNode,
 	Relationship,
@@ -7,17 +7,19 @@ import {
 	MemoryGraphSchema,
 	AnyNodeSchema,
 	RelationshipSchema,
-	GraphChange
-} from './schemas';
+	GraphChange,
+	NodeChange,
+	RelationshipChange
+} from './schemas.js';
 import {
 	PersistenceAdapter,
 	PersistenceOptions,
 	createPersistenceAdapter
-} from './persistence';
+} from './persistence/index.js';
 import {
 	MigrationSystem,
 	createMigrationSystem
-} from './migrations';
+} from './migrations/index.js';
 
 /**
  * Memory Graph Engine - Core state management for AIDE
@@ -26,11 +28,13 @@ import {
 export class MemoryGraphEngine {
 	private _graph: BehaviorSubject<MemoryGraph>;
 	private _changes: Subject<GraphChange>;
+	private _bufferedChanges: Observable<GraphChange[]>;
 	private _persistenceAdapter: PersistenceAdapter;
 	private _migrationSystem: MigrationSystem;
 	private _autosaveEnabled: boolean = true;
 	private _backupInterval: NodeJS.Timeout | null = null;
 	private _currentSchemaVersion = '0.2.0'; // Current schema version
+
 	constructor(
 		initialGraph?: Partial<MemoryGraph>,
 		persistenceAdapter?: PersistenceAdapter,
@@ -63,6 +67,13 @@ export class MemoryGraphEngine {
 
 		this._graph = new BehaviorSubject(MemoryGraphSchema.parse(defaultGraph));
 		this._changes = new Subject<GraphChange>();
+
+		// Buffer changes to improve performance with high-frequency updates
+		this._bufferedChanges = this._changes.pipe(
+			bufferTime(300), // Buffer changes for 300ms
+			filter(changes => changes.length > 0) // Only emit when there are changes
+		);
+
 		this._migrationSystem = createMigrationSystem();
 
 		// Use provided adapter or create a default one
@@ -75,7 +86,7 @@ export class MemoryGraphEngine {
 	}
 
 	// Configure auto-save behavior
-	private setupAutoSave(intervalMinutes = 5) {
+	private setupAutoSave(intervalMinutes = 5): void {
 		if (this._backupInterval) {
 			clearInterval(this._backupInterval);
 		}
@@ -107,185 +118,122 @@ export class MemoryGraphEngine {
 		}));
 	}
 
-	// Observable streams
-	get graph$(): Observable<MemoryGraph> {
-		return this._graph.asObservable();
-	}
-
+	// Getter for graph changes observable
 	get changes$(): Observable<GraphChange> {
 		return this._changes.asObservable();
 	}
 
-	// Current state accessors
-	get currentGraph(): MemoryGraph {
-		return this._graph.value;
+	// Getter for buffered changes observable (more performant for UI updates)
+	get bufferedChanges$(): Observable<GraphChange[]> {
+		return this._bufferedChanges;
 	}
 
+	// Getter for the current graph
+	get graph(): MemoryGraph {
+		return this._graph.getValue();
+	}
+
+	// Getter for graph as observable
+	get graph$(): Observable<MemoryGraph> {
+		return this._graph.asObservable();
+	}
+
+	// Getters for current graph properties
 	get nodes(): AnyNode[] {
-		return this.currentGraph.nodes;
+		return this.graph.nodes;
 	}
 
 	get relationships(): Relationship[] {
-		return this.currentGraph.relationships;
+		return this.graph.relationships;
 	}
 
-	// Graph update helper
+	get metadata() {
+		return this.graph.metadata;
+	}
+
+	// Update graph utility method
 	private updateGraph(updateFn: (graph: MemoryGraph) => MemoryGraph): void {
-		const updatedGraph = updateFn(this.currentGraph);
-		this._graph.next(MemoryGraphSchema.parse(updatedGraph));
-	}
+		const currentGraph = this._graph.getValue();
+		const updatedGraph = updateFn(currentGraph);
 
-	// Persistence methods
-	async saveGraph(): Promise<boolean> {
+		// Validate graph with schema before updating
 		try {
-			const result = await this._persistenceAdapter.save(this.currentGraph);
-			return result;
+			const validGraph = MemoryGraphSchema.parse(updatedGraph);
+			this._graph.next(validGraph);
 		} catch (error) {
-			console.error('Failed to save graph', error);
-			return false;
-		}
-	}
-	async loadGraph(graphId?: string): Promise<boolean> {
-		try {
-			const loadedGraph = await this._persistenceAdapter.load(graphId);
-			if (loadedGraph) {
-				// Check if migration is needed
-				if (loadedGraph.version !== this._currentSchemaVersion) {
-					console.log(`Migrating graph from version ${loadedGraph.version} to ${this._currentSchemaVersion}`);
-
-					// Apply migrations
-					const migratedGraph = this._migrationSystem.migrateGraph(loadedGraph, this._currentSchemaVersion);
-
-					// Update and save migrated graph
-					this._graph.next(migratedGraph);
-					await this.saveGraph(); // Save the migrated version
-				} else {
-					// No migration needed
-					this._graph.next(loadedGraph);
-				}
-				return true;
-			}
-			return false;
-		} catch (error) {
-			console.error('Failed to load graph', error);
-			return false;
-		}
-	}
-	async exportGraph(format = 'json'): Promise<string> {
-		try {
-			return await this._persistenceAdapter.exportGraph(format);
-		} catch (error) {
-			console.error('Failed to export graph', error);
-			throw new Error(`Graph export failed: ${error instanceof Error ? error.message : String(error)}`);
+			console.error('Invalid graph update:', error);
+			throw new Error('Invalid graph structure after update');
 		}
 	}
 
-	async importGraph(data: string, format = 'json'): Promise<boolean> {
-		try {
-			const importedGraph = await this._persistenceAdapter.importGraph(data, format);
-			if (importedGraph) {
-				this._graph.next(importedGraph);
-				return true;
-			}
-			return false;
-		} catch (error) {
-			console.error('Failed to import graph', error);
-			return false;
-		}
-	}
-
-	// Graph statistics and metadata
-	updateGraphMetadata(): void {
-		const nodeCount = this.nodes.length;
-		const edgeCount = this.relationships.length;
-		// Calculate graph complexity based on node and edge counts and types
-		const complexity = this.calculateGraphComplexity();
-
+	// Helper to update metadata stats
+	private updateGraphMetadata(): void {
 		this.updateGraph((graph: MemoryGraph) => ({
 			...graph,
+			updatedAt: new Date(),
 			metadata: {
 				...graph.metadata,
 				lastInteractionAt: new Date(),
 				stats: {
-					nodeCount,
-					edgeCount,
-					complexity
+					nodeCount: graph.nodes.length,
+					edgeCount: graph.relationships.length,
+					complexity: this.calculateGraphComplexity()
 				}
 			}
 		}));
 	}
+	// Persistence operations
+	async saveGraph(location?: string): Promise<boolean> {
+		try {
+			const result = await this._persistenceAdapter.save(this.graph);
+			return result;
+		} catch (error) {
+			console.error('Failed to save graph:', error);
+			return false;
+		}
+	}
+	async loadGraph(location?: string): Promise<boolean> {
+		try {
+			const loadedGraph = await this._persistenceAdapter.load(location);
 
-	private calculateGraphComplexity(): number {
-		// Basic complexity measure based on number of nodes, edges, and their types
-		const nodeComplexity = this.nodes.reduce((sum, node) => {
-			// Different node types contribute differently to complexity
-			switch (node.type) {
-				case 'logic': return sum + 2;
-				case 'data': return sum + 1.5;
-				case 'screen': return sum + 1.5;
-				case 'api': return sum + 1.8;
-				default: return sum + 1;
+			if (loadedGraph) {
+				// Check for version migration needs
+				const needsMigration = this._migrationSystem.needsMigration(loadedGraph, this._currentSchemaVersion);
+				const finalGraph = needsMigration ?
+					await this._migrationSystem.migrateGraph(loadedGraph, this._currentSchemaVersion) :
+					loadedGraph;
+
+				// Update the current graph
+				this._graph.next(finalGraph);
+				this.updateGraphMetadata();
+				return true;
 			}
-		}, 0);
-
-		const edgeComplexity = this.relationships.length * 0.5;
-
-		// Calculate connected components as a measure of cohesion
-		const connectedSets = this.findConnectedComponents();
-		const cohesionFactor = connectedSets.length > 0 ?
-			1 + (0.2 * (1 - (connectedSets.length / this.nodes.length))) : 1;
-
-		return (nodeComplexity + edgeComplexity) * cohesionFactor;
+			return false;
+		} catch (error) {
+			console.error('Failed to load graph:', error);
+			return false;
+		}
 	}
 
-	// Find connected components in the graph
-	private findConnectedComponents(): Set<string>[] {
-		const visited = new Set<string>();
-		const components: Set<string>[] = [];
+	// Graph complexity calculation
+	calculateGraphComplexity(): number {
+		// Basic complexity - square root of (nodes * relationships)
+		const nodeCount = this.nodes.length;
+		const relCount = this.relationships.length;
+		const rawComplexity = Math.sqrt(nodeCount * (relCount + 1));
 
-		// For each node, if not visited, do a traversal to find its connected component
-		for (const node of this.nodes) {
-			if (!visited.has(node.id)) {
-				const component = new Set<string>();
-				this.depthFirstTraversal(node.id, visited, component);
-				components.push(component);
-			}
-		}
-
-		return components;
-	}
-
-	// DFS traversal helper
-	private depthFirstTraversal(
-		nodeId: string,
-		visited: Set<string>,
-		component: Set<string>
-	): void {
-		visited.add(nodeId);
-		component.add(nodeId);
-
-		// Find all relationships involving this node
-		const connectedEdges = this.relationships.filter(
-			r => r.fromNodeId === nodeId || r.toNodeId === nodeId
-		);
-
-		// Visit all connected nodes
-		for (const edge of connectedEdges) {
-			const connectedNodeId = edge.fromNodeId === nodeId ? edge.toNodeId : edge.fromNodeId;
-			if (!visited.has(connectedNodeId)) {
-				this.depthFirstTraversal(connectedNodeId, visited, component);
-			}
-		}
+		// Normalize to a 0-100 scale
+		return Math.min(Math.round(rawComplexity * 5), 100);
 	}
 
 	// Node operations
-	addNode(node: Omit<AnyNode, 'id' | 'createdAt' | 'updatedAt' | 'version'>): AnyNode {
+	addNode(nodeData: Omit<AnyNode, 'id'>): AnyNode {
 		const newNode: AnyNode = AnyNodeSchema.parse({
-			...node,
+			...nodeData,
 			id: uuidv4(),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			version: '1.0.0',
+			createdAt: nodeData.createdAt || new Date(),
+			updatedAt: nodeData.updatedAt || new Date(),
+			version: nodeData.version || '0.1.0',
 		});
 
 		this.updateGraph((graph: MemoryGraph) => ({
@@ -294,11 +242,12 @@ export class MemoryGraphEngine {
 			updatedAt: new Date(),
 		}));
 
-		this._changes.next({
+		const nodeChange: NodeChange = {
 			type: 'add',
 			node: newNode,
-		});
+		};
 
+		this._changes.next(nodeChange);
 		this.updateGraphMetadata();
 		return newNode;
 	}
@@ -308,6 +257,8 @@ export class MemoryGraphEngine {
 		if (nodeIndex === -1) return null;
 
 		const currentNode = this.nodes[nodeIndex];
+		if (!currentNode) return null;
+
 		const updatedNode: AnyNode = AnyNodeSchema.parse({
 			...currentNode,
 			...updates,
@@ -322,12 +273,13 @@ export class MemoryGraphEngine {
 			updatedAt: new Date(),
 		}));
 
-		this._changes.next({
+		const nodeChange: NodeChange = {
 			type: 'update',
 			node: updatedNode,
 			previousNode: currentNode,
-		});
+		};
 
+		this._changes.next(nodeChange);
 		this.updateGraphMetadata();
 		return updatedNode;
 	}
@@ -337,6 +289,7 @@ export class MemoryGraphEngine {
 		if (nodeIndex === -1) return false;
 
 		const nodeToRemove = this.nodes[nodeIndex];
+		if (!nodeToRemove) return false;
 
 		// Also remove any relationships involving this node
 		const remainingRelationships = this.relationships.filter(
@@ -350,11 +303,12 @@ export class MemoryGraphEngine {
 			updatedAt: new Date(),
 		}));
 
-		this._changes.next({
+		const nodeChange: NodeChange = {
 			type: 'remove',
 			node: nodeToRemove,
-		});
+		};
 
+		this._changes.next(nodeChange);
 		this.updateGraphMetadata();
 		return true;
 	}
@@ -372,11 +326,12 @@ export class MemoryGraphEngine {
 			updatedAt: new Date(),
 		}));
 
-		this._changes.next({
+		const relChange: RelationshipChange = {
 			type: 'add',
 			relationship: newRelationship,
-		});
+		};
 
+		this._changes.next(relChange);
 		this.updateGraphMetadata();
 		return newRelationship;
 	}
@@ -386,6 +341,8 @@ export class MemoryGraphEngine {
 		if (relIndex === -1) return null;
 
 		const currentRel = this.relationships[relIndex];
+		if (!currentRel) return null;
+
 		const updatedRel: Relationship = RelationshipSchema.parse({
 			...currentRel,
 			...updates,
@@ -398,12 +355,13 @@ export class MemoryGraphEngine {
 			updatedAt: new Date(),
 		}));
 
-		this._changes.next({
+		const relChange: RelationshipChange = {
 			type: 'update',
 			relationship: updatedRel,
 			previousRelationship: currentRel,
-		});
+		};
 
+		this._changes.next(relChange);
 		this.updateGraphMetadata();
 		return updatedRel;
 	}
@@ -413,6 +371,7 @@ export class MemoryGraphEngine {
 		if (relIndex === -1) return false;
 
 		const relToRemove = this.relationships[relIndex];
+		if (!relToRemove) return false;
 
 		this.updateGraph((graph: MemoryGraph) => ({
 			...graph,
@@ -420,11 +379,12 @@ export class MemoryGraphEngine {
 			updatedAt: new Date(),
 		}));
 
-		this._changes.next({
+		const relChange: RelationshipChange = {
 			type: 'remove',
 			relationship: relToRemove,
-		});
+		};
 
+		this._changes.next(relChange);
 		this.updateGraphMetadata();
 		return true;
 	}
@@ -442,93 +402,49 @@ export class MemoryGraphEngine {
 		return this.relationships.find(r => r.id === relationshipId);
 	}
 
-	getRelationshipsByType(relType: string): Relationship[] {
-		return this.relationships.filter(r => r.type === relType);
-	}
-
 	getRelationshipsForNode(nodeId: string): Relationship[] {
-		return this.relationships.filter(r => r.fromNodeId === nodeId || r.toNodeId === nodeId);
+		return this.relationships.filter(
+			r => r.fromNodeId === nodeId || r.toNodeId === nodeId
+		);
 	}
 
-	// Connected nodes
 	getConnectedNodes(nodeId: string): AnyNode[] {
-		const rels = this.getRelationshipsForNode(nodeId);
-		const connectedNodeIds = rels.flatMap(r => {
-			if (r.fromNodeId === nodeId) return [r.toNodeId];
-			return [r.fromNodeId];
-		});
+		const nodeRelationships = this.getRelationshipsForNode(nodeId);
+		const connectedNodeIds = new Set<string>();
 
-		return this.nodes.filter(n => connectedNodeIds.includes(n.id));
-	}
-
-	// Get subgraph
-	getSubgraph(nodeIds: string[]): { nodes: AnyNode[], relationships: Relationship[] } {
-		// Get all nodes in the set
-		const nodes = this.nodes.filter(n => nodeIds.includes(n.id));
-
-		// Get all relationships between these nodes
-		const relationships = this.relationships.filter(
-			r => nodeIds.includes(r.fromNodeId) && nodeIds.includes(r.toNodeId)
-		);
-
-		return { nodes, relationships };
-	}
-
-	// Similar nodes based on connections and type
-	findSimilarNodes(nodeId: string, limit = 5): AnyNode[] {
-		const sourceNode = this.getNodeById(nodeId);
-		if (!sourceNode) return [];
-
-		// Get nodes of same type
-		const sameTypeNodes = this.getNodesByType(sourceNode.type)
-			.filter(n => n.id !== nodeId);
-
-		// Get connected nodes
-		const directlyConnected = this.getConnectedNodes(nodeId);
-
-		// Calculate similarity score for each node
-		const scoredNodes = sameTypeNodes.map(node => {
-			// Start with base score
-			let score = 0;
-
-			// Increase score for shared connections
-			const nodeConnections = this.getConnectedNodes(node.id);
-			const sharedConnections = nodeConnections.filter(
-				conn => directlyConnected.some(dc => dc.id === conn.id)
-			);
-
-			score += sharedConnections.length * 2;
-
-			// Increase score for same name pattern
-			if (node.name.includes(sourceNode.name) ||
-				sourceNode.name.includes(node.name)) {
-				score += 1;
+		for (const rel of nodeRelationships) {
+			if (rel.fromNodeId === nodeId) {
+				connectedNodeIds.add(rel.toNodeId);
+			} else {
+				connectedNodeIds.add(rel.fromNodeId);
 			}
+		}
 
-			return { node, score };
-		});
-
-		// Sort by score and take top results
-		return scoredNodes
-			.sort((a, b) => b.score - a.score)
-			.slice(0, limit)
-			.map(item => item.node);
+		return this.nodes.filter(node => connectedNodeIds.has(node.id));
 	}
 
-	// Search nodes by name or description
-	searchNodes(query: string): AnyNode[] {
-		const lowerQuery = query.toLowerCase();
-		return this.nodes.filter(node =>
-			node.name.toLowerCase().includes(lowerQuery) ||
-			(node.description && node.description.toLowerCase().includes(lowerQuery))
-		);
-	}
-
-	// Version helper
+	// Version control helpers
 	private incrementVersion(version: string): string {
+		if (!version) {
+			return '0.0.1';
+		}
+
 		const parts = version.split('.');
-		const lastPart = parseInt(parts[parts.length - 1], 10);
-		parts[parts.length - 1] = (lastPart + 1).toString();
+		const lastPartIndex = parts.length - 1;
+
+		if (lastPartIndex < 0 || !parts[lastPartIndex]) {
+			// If version is empty or invalid, return a default
+			return '0.0.1';
+		}
+
+		const lastPart = parseInt(parts[lastPartIndex], 10);
+
+		if (isNaN(lastPart)) {
+			// If version can't be parsed, just append .1
+			return `${version}.1`;
+		}
+
+		parts[lastPartIndex] = (lastPart + 1).toString();
 		return parts.join('.');
 	}
 
@@ -557,7 +473,7 @@ export class MemoryGraphEngine {
 	// Graph as JSON
 	toJSON(): string {
 		try {
-			return JSON.stringify(this.currentGraph);
+			return JSON.stringify(this.graph);
 		} catch (error) {
 			console.error('Failed to convert graph to JSON', error);
 			return '{}';

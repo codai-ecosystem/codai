@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { AgentRuntime, SettingsManager } from '@aide/agent-runtime';
-import { MemoryGraphEngine } from '@aide/memory-graph';
+import { AgentRuntime, SettingsManager } from '@codai/agent-runtime';
+import { MemoryGraphEngine } from '@codai/memory-graph';
 
 /**
  * AI-Native Conversational Interface Panel
