@@ -6,9 +6,9 @@ echo 🔧 Setting up Vercel Environment Variables for AIDE Landing Page
 echo ================================================================
 
 echo Setting up Stripe Configuration...
-echo NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY | vercel env add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production - <<< "pk_test_51Hq9X2KpV1ZMxPLJ0bV2WkV2C3X6s7T8uP9Q0qR1S2t3U4v5W6x7Y8z9A0b1C2d3E4f5G6h7I8j9K0l1M2n3O4p5Q6r"
+echo NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY | vercel env add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production - <<< "pk_test_PLACEHOLDER_REPLACE_WITH_ACTUAL_KEY"
 
-echo STRIPE_SECRET_KEY | vercel env add STRIPE_SECRET_KEY production - <<< "sk_test_51Hq9X2KpV1ZMxPLJ0bV2WkV2C3X6s7T8uP9Q0qR1S2t3U4v5W6x7Y8z9A0b1C2d3E4f5G6h7I8j9K0l1M2n3O4p5Q6r"
+echo STRIPE_SECRET_KEY | vercel env add STRIPE_SECRET_KEY production - <<< "sk_test_PLACEHOLDER_REPLACE_WITH_ACTUAL_KEY"
 
 echo Setting up Price IDs (placeholder values)...
 echo NEXT_PUBLIC_STRIPE_PROFESSIONAL_PRICE_ID | vercel env add NEXT_PUBLIC_STRIPE_PROFESSIONAL_PRICE_ID production - <<< "price_professional_monthly"

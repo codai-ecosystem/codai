@@ -13,8 +13,8 @@ import {
 	type LogicNode,
 	type DataNode,
 	type Relationship
-} from '@codai/memory-graph';
-import { MemoryGraphVisualization } from '@codai/ui-components';
+} from '@dragoscatalin/memory-graph';
+import { MemoryGraphVisualization } from '@dragoscatalin/ui-components';
 
 /**
  * Comprehensive demo showcasing AIDE's memory graph capabilities

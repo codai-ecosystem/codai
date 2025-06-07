@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { ReactNode } from 'react';
-import { AgentMessage, Task, AgentStatus } from '@codai/agent-runtime';
-import { AnyNode, Relationship } from '@codai/memory-graph';
+import { AgentMessage, Task, AgentStatus } from '@dragoscatalin/agent-runtime';
+import { AnyNode, Relationship } from '@dragoscatalin/memory-graph';
 
 /**
  * Component prop types for AIDE UI components

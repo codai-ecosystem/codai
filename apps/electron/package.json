@@ -1,4 +1,4 @@
-{  "name": "@codai/electron",
+{  "name": "@dragoscatalin/electron",
   "version": "1.0.0",
   "type": "module",
   "description": "codai.ro Electron desktop application",
@@ -37,9 +37,9 @@
       "target": "AppImage"
     }
   },
-  "dependencies": {    "@codai/memory-graph": "workspace:*",
-    "@codai/agent-runtime": "workspace:*",
-    "@codai/ui-components": "workspace:*",
+  "dependencies": {    "@dragoscatalin/memory-graph": "workspace:*",
+    "@dragoscatalin/agent-runtime": "workspace:*",
+    "@dragoscatalin/ui-components": "workspace:*",
     "electron-store": "^8.2.0",
     "electron-updater": "^6.2.1",
     "react": "^18.3.1",

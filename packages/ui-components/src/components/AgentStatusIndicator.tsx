@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Bot, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { AgentRuntime, AgentStatus } from '@codai/agent-runtime';
+import { AgentRuntime, AgentStatus } from '@dragoscatalin/agent-runtime';
 import { Badge } from './ui/Badge';
 
 interface AgentStatusIndicatorProps {

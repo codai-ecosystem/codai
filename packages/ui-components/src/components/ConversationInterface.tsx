@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Loader2, Bot, User, Zap, Archive, Settings } from 'lucide-react';
-import { AgentMessage, AgentRuntime, ConversationContext, AgentStatus } from '@codai/agent-runtime';
-import { MemoryGraphEngine } from '@codai/memory-graph';
+import { AgentMessage, AgentRuntime, ConversationContext, AgentStatus } from '@dragoscatalin/agent-runtime';
+import { MemoryGraphEngine } from '@dragoscatalin/memory-graph';
 import { MessageBubble } from './MessageBubble';
 import { StreamingMessageRenderer } from './StreamingMessageRenderer';
 import { AgentStatusIndicator } from './AgentStatusIndicator';

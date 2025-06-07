@@ -47,9 +47,9 @@ export default defineConfig({
 		},
 	},
 	resolve: {
-		alias: {			'@codai/memory-graph': resolve(__dirname, './packages/memory-graph/src'),
-			'@codai/agent-runtime': resolve(__dirname, './packages/agent-runtime/src'),
-			'@codai/ui-components': resolve(__dirname, './packages/ui-components/src'),
+		alias: {			'@dragoscatalin/memory-graph': resolve(__dirname, './packages/memory-graph/src'),
+			'@dragoscatalin/agent-runtime': resolve(__dirname, './packages/agent-runtime/src'),
+			'@dragoscatalin/ui-components': resolve(__dirname, './packages/ui-components/src'),
 		},
 	},
 });

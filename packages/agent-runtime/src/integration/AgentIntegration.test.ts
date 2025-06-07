@@ -13,7 +13,7 @@ import { HistoryAgent } from '../agents/HistoryAgent';
 import { MemoryGraph } from '../memory/MemoryGraph';
 import { AgentCoordinator } from '../coordination/AgentCoordinator';
 import { AgentAdapter } from '../coordination/AgentAdapter';
-import { MemoryGraphEngine } from '@codai/memory-graph';
+import { MemoryGraphEngine } from '@dragoscatalin/memory-graph';
 import {
 	AgentRequest,
 	AgentResponse,

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Observable, BehaviorSubject, Subject } from 'rxjs';
-import { MemoryGraphEngine, AnyNode } from '@codai/memory-graph';
+import { MemoryGraphEngine, AnyNode } from '@dragoscatalin/memory-graph';
 import {
 	BaseAgent,
 	AgentConfig,

@@ -1,4 +1,4 @@
-{  "name": "@codai/memory-graph",
+{  "name": "@dragoscatalin/memory-graph",
   "version": "1.0.0",
   "type": "module",
   "description": "Memory graph engine for codai.ro - persistent intent and state management",

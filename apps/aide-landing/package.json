@@ -1,4 +1,4 @@
-{	"name": "@codai/landing",
+{	"name": "@dragoscatalin/landing",
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {
@@ -11,7 +11,7 @@
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"next": "^14.1.0",
-		"@codai/ui-components": "workspace:*",
+		"@dragoscatalin/ui-components": "workspace:*",
 		"@radix-ui/react-avatar": "^1.1.1",
 		"@radix-ui/react-dialog": "^1.1.2",
 		"@radix-ui/react-dropdown-menu": "^2.1.2",

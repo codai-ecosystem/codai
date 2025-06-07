@@ -1,6 +1,6 @@
 import React from 'react';
 import { Edit2, Trash2, ExternalLink, Calendar } from 'lucide-react';
-import { AnyNode } from '@codai/memory-graph';
+import { AnyNode } from '@dragoscatalin/memory-graph';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { NodeCardProps } from '../types';

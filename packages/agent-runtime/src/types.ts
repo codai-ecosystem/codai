@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Observable } from 'rxjs';
-import { MemoryGraphEngine, AnyNode } from '@codai/memory-graph';
+import { MemoryGraphEngine, AnyNode } from '@dragoscatalin/memory-graph';
 
 /**
  * Core agent interfaces and types for AIDE

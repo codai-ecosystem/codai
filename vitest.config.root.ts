@@ -36,9 +36,9 @@ export default defineConfig({
 		hookTimeout: 10000
 	},
 	resolve: {
-		alias: {			'@codai/memory-graph': './packages/memory-graph/src',
-			'@codai/agent-runtime': './packages/agent-runtime/src',
-			'@codai/ui-components': './packages/ui-components/src'
+		alias: {			'@dragoscatalin/memory-graph': './packages/memory-graph/src',
+			'@dragoscatalin/agent-runtime': './packages/agent-runtime/src',
+			'@dragoscatalin/ui-components': './packages/ui-components/src'
 		}
 	}
 });

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, MouseEvent, WheelEvent, KeyboardEvent } from 'react';
 import { Search, Filter, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
-import { AnyNode, Relationship } from '@codai/memory-graph';
+import { AnyNode, Relationship } from '@dragoscatalin/memory-graph';
 import { NodeCard } from './NodeCard';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';

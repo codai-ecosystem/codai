@@ -18,9 +18,9 @@ export default defineConfig({
 		}
 	}, resolve: {
 		alias: {
-			'@': resolve(__dirname, 'src/renderer'),			'@codai/memory-graph': resolve(__dirname, '../../packages/memory-graph/dist'),
-			'@codai/agent-runtime': resolve(__dirname, '../../packages/agent-runtime/dist'),
-			'@codai/ui-components': resolve(__dirname, '../../packages/ui-components/dist')
+			'@': resolve(__dirname, 'src/renderer'),			'@dragoscatalin/memory-graph': resolve(__dirname, '../../packages/memory-graph/dist'),
+			'@dragoscatalin/agent-runtime': resolve(__dirname, '../../packages/agent-runtime/dist'),
+			'@dragoscatalin/ui-components': resolve(__dirname, '../../packages/ui-components/dist')
 		}
 	},
 	define: {

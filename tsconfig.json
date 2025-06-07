@@ -9,10 +9,10 @@
 		"incremental": true,
 		"tsBuildInfoFile": ".tsbuildinfo",
 		"baseUrl": ".",
-		"paths": {			"@codai/*": ["packages/*/src"],
-			"@codai/memory-graph": ["packages/memory-graph/src"],
-			"@codai/agent-runtime": ["packages/agent-runtime/src"],
-			"@codai/ui-components": ["packages/ui-components/src"]
+		"paths": {			"@dragoscatalin/*": ["packages/*/src"],
+			"@dragoscatalin/memory-graph": ["packages/memory-graph/src"],
+			"@dragoscatalin/agent-runtime": ["packages/agent-runtime/src"],
+			"@dragoscatalin/ui-components": ["packages/ui-components/src"]
 		}
 	},	"include": ["packages/*/src/**/*", "apps/*/src/**/*"],
 	"exclude": [

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PlannerAgent } from './PlannerAgent';
 import type { Task, AgentConfig } from '../types';
-import type { MemoryGraphEngine } from '@codai/memory-graph';
+import type { MemoryGraphEngine } from '@dragoscatalin/memory-graph';
 
 // Mock MemoryGraphEngine
 const mockMemoryGraph = {

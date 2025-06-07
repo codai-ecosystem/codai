@@ -49,3 +49,56 @@ temp/
 # Testing
 jest_*/
 .jest/
+
+# Secrets and Credentials (DO NOT COMMIT)
+secrets/
+credentials/
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*-key.json
+*-service-account.json
+*-credentials.json
+service-account-*.json
+google-cloud-*.json
+firebase-*.json
+gcp-*.json
+aws-*.json
+azure-*.json
+
+# API Keys and Tokens
+*api-key*
+*secret-key*
+*access-token*
+*refresh-token*
+*.token
+*.secret
+
+# Database connections
+database.json
+db-config.json
+connection-string*
+
+# OAuth and Auth configs
+oauth-*.json
+auth-config*.json
+client-secret*.json
+
+# SSH Keys
+id_rsa*
+id_ecdsa*
+id_ed25519*
+*.ssh
+ssh_config
+known_hosts
+
+# SSL/TLS Certificates
+*.crt
+*.cert
+*.cer
+*.ca-bundle
+*.p7b
+*.p7s
+*.spc

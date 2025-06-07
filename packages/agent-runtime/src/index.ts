@@ -25,7 +25,7 @@ export { DeployerAgent } from './agents/DeployerAgent.js';
 export { HistoryAgent } from './agents/HistoryAgent.js';
 
 // Re-export memory graph types for convenience
-export type { MemoryGraphEngine, AnyNode } from '@codai/memory-graph';
+export type { MemoryGraphEngine, AnyNode } from '@dragoscatalin/memory-graph';
 
 // LLM integration
 export * from './llm/index.js';

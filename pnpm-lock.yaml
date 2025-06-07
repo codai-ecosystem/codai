@@ -685,7 +685,7 @@ importers:
 
   apps/aide-landing:
     dependencies:
-      '@codai/ui-components':
+      '@dragoscatalin/ui-components':
         specifier: workspace:*
         version: link:../../packages/ui-components
       '@radix-ui/react-avatar':
@@ -785,13 +785,13 @@ importers:
 
   apps/electron:
     dependencies:
-      '@codai/agent-runtime':
+      '@dragoscatalin/agent-runtime':
         specifier: workspace:*
         version: link:../../packages/agent-runtime
-      '@codai/memory-graph':
+      '@dragoscatalin/memory-graph':
         specifier: workspace:*
         version: link:../../packages/memory-graph
-      '@codai/ui-components':
+      '@dragoscatalin/ui-components':
         specifier: workspace:*
         version: link:../../packages/ui-components
       electron-store:
@@ -855,10 +855,10 @@ importers:
 
   extensions/aide-core:
     dependencies:
-      '@codai/agent-runtime':
+      '@dragoscatalin/agent-runtime':
         specifier: workspace:*
         version: link:../../packages/agent-runtime
-      '@codai/memory-graph':
+      '@dragoscatalin/memory-graph':
         specifier: workspace:*
         version: link:../../packages/memory-graph
       '@octokit/rest':
@@ -919,13 +919,13 @@ importers:
 
   extensions/copilot:
     dependencies:
-      '@codai/agent-runtime':
+      '@dragoscatalin/agent-runtime':
         specifier: workspace:*
         version: link:../../packages/agent-runtime
-      '@codai/memory-graph':
+      '@dragoscatalin/memory-graph':
         specifier: workspace:*
         version: link:../../packages/memory-graph
-      '@codai/ui-components':
+      '@dragoscatalin/ui-components':
         specifier: workspace:*
         version: link:../../packages/ui-components
       vscode:
@@ -1152,7 +1152,7 @@ importers:
 
   packages/agent-runtime:
     dependencies:
-      '@codai/memory-graph':
+      '@dragoscatalin/memory-graph':
         specifier: workspace:*
         version: link:../memory-graph
       rxjs:
@@ -1268,7 +1268,7 @@ importers:
 
   packages/memory-graph/examples/advanced-demo:
     dependencies:
-      '@codai/memory-graph':
+      '@dragoscatalin/memory-graph':
         specifier: workspace:*
         version: link:../..
       framer-motion:
@@ -1302,7 +1302,7 @@ importers:
 
   packages/memory-graph/examples/basic-demo:
     dependencies:
-      '@codai/memory-graph':
+      '@dragoscatalin/memory-graph':
         specifier: workspace:*
         version: link:../..
       react:
@@ -1330,10 +1330,10 @@ importers:
 
   packages/ui-components:
     dependencies:
-      '@codai/agent-runtime':
+      '@dragoscatalin/agent-runtime':
         specifier: workspace:*
         version: link:../agent-runtime
-      '@codai/memory-graph':
+      '@dragoscatalin/memory-graph':
         specifier: workspace:*
         version: link:../memory-graph
       '@radix-ui/react-dialog':
@@ -16184,7 +16184,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       sirv: 2.0.4
-      vitest: 1.6.1(@types/node@22.15.30)(@vitest/ui@1.6.1)(jsdom@24.1.3)(terser@5.41.0)
+      vitest: 1.6.1(@types/node@20.19.0)(@vitest/ui@1.6.1)(jsdom@24.1.3)(terser@5.41.0)
 
   '@vitest/utils@1.6.1':
     dependencies:
@@ -16549,19 +16549,19 @@ snapshots:
 
   '@webgpu/types@0.1.61': {}
 
-  '@webpack-cli/configtest@2.1.1(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9)))':
+  '@webpack-cli/configtest@2.1.1(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4))':
     dependencies:
-      webpack: 5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9))
+      webpack: 5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4)
       webpack-cli: 5.1.4(webpack@5.99.9)
 
-  '@webpack-cli/info@2.0.2(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9)))':
+  '@webpack-cli/info@2.0.2(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4))':
     dependencies:
-      webpack: 5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9))
+      webpack: 5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4)
       webpack-cli: 5.1.4(webpack@5.99.9)
 
-  '@webpack-cli/serve@2.0.5(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9)))':
+  '@webpack-cli/serve@2.0.5(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4))':
     dependencies:
-      webpack: 5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9))
+      webpack: 5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4)
       webpack-cli: 5.1.4(webpack@5.99.9)
 
   '@wolfy1339/lru-cache@11.0.2-patch.1': {}
@@ -25331,9 +25331,9 @@ snapshots:
   webpack-cli@5.1.4(webpack@5.99.9):
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
-      '@webpack-cli/configtest': 2.1.1(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9)))
-      '@webpack-cli/info': 2.0.2(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9)))
-      '@webpack-cli/serve': 2.0.5(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9)))
+      '@webpack-cli/configtest': 2.1.1(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4))
+      '@webpack-cli/info': 2.0.2(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4))
+      '@webpack-cli/serve': 2.0.5(webpack-cli@5.1.4(webpack@5.99.9))(webpack@5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4))
       colorette: 2.0.20
       commander: 10.0.1
       cross-spawn: 7.0.6
@@ -25342,7 +25342,7 @@ snapshots:
       import-local: 3.2.0
       interpret: 3.1.1
       rechoir: 0.8.0
-      webpack: 5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4(webpack@5.99.9))
+      webpack: 5.99.9(esbuild@0.25.5)(webpack-cli@5.1.4)
       webpack-merge: 5.10.0
 
   webpack-merge@5.10.0:

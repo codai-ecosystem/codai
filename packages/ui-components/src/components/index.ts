@@ -1,4 +1,4 @@
-// Main components exports for @codai/ui-components
+// Main components exports for @dragoscatalin/ui-components
 
 // Legacy components
 export { AgentIndicator } from './AgentIndicator';
