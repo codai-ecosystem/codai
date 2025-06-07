@@ -51,9 +51,9 @@
 ### ❌ Blocked Tasks
 
 1. **GitHub Repository Push**
-   - Issue: Target repository `https://github.com/dragoscv/codai.git` does not exist
-   - Status: Repository needs to be created on GitHub first
-   - Ready to push: All changes committed locally
+   - Issue: Target repository `https://github.com/dragoscv/AIDE.git` does not exist
+   - Status: Repository needs to be created on GitHub under dragoscv personal account
+   - Ready to push: All changes committed locally on aide-main branch
 
 2. **NPM Package Publishing**
    - Blocked by: Repository push requirement
