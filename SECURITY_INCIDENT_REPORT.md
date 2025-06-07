@@ -3,11 +3,11 @@
 **Date**: June 7, 2025  
 **Incident ID**: SEC-001  
 **Severity**: CRITICAL  
-**Status**: REMEDIATED  
+**Status**: ESCALATED - GOOGLE CLOUD RESPONSE RECEIVED  
 
 ## Summary
 
-GitHub Security Alert detected exposed secrets in the dragoscv/AIDE repository. The following credentials were publicly accessible:
+GitHub Security Alert detected exposed secrets in the dragoscv/AIDE repository. **GOOGLE CLOUD PLATFORM HAS TAKEN IMMEDIATE ACTION** and disabled the exposed service account credentials. The following credentials were publicly accessible:
 
 1. **Google Cloud Service Account Credentials**
    - File: `secrets/aide-dev-461602-37d8be2d8a83.json`
@@ -29,6 +29,29 @@ Google Cloud detected the exposure and took immediate action:
 - Service Account key was disabled
 - GCP Case #60327692 was opened
 - Resources associated with project `aide-dev-461602` are being restricted
+
+## Google Cloud Platform Response - ESCALATED ⚠️
+
+**IMMEDIATE ACTION TAKEN BY GOOGLE CLOUD:**
+
+### GCP Security Case #60327692
+- **Case Subject**: "Immediate action required: Resources associated with your Google Cloud Platform / API project aide-dev-461602 are being restricted"
+- **Action Taken**: Service Account authentication credential **DISABLED** by Google Cloud
+- **Detection Method**: Automated abuse detection system
+- **Public URL Detected**: `https://github.com/dragoscv/AIDE/blob/af164bd69f60f22c337b484f283afe8ce1e98ca1/secrets/aide-dev-461602-37d8be2d8a83.json`
+
+### GitHub Security Alert - NEW DETECTION
+**Additional secrets detected in commits:**
+- **Highnote SK Test Key** in `scripts/setup-vercel-env.sh#L20` • commit `56d870e8`  
+- **Google Cloud Service Account Credentials** in `aide-dev-461602-37d8be2d8a83.json#L1` • commit `af164bd6`
+
+**Impact**: Anyone with read access to the repository could view these exposed secrets.
+
+### Critical Security Recommendations from Google Cloud:
+1. **Log in to Google Cloud Console** and review account activity
+2. **Rotate the credential** for the disabled Service Account  
+3. **Prevent future exposure** by ensuring credentials are not embedded in public source code
+4. **Review organizational policies** for Service account key exposure response
 
 ## Immediate Actions Taken
 
@@ -75,6 +98,35 @@ Google Cloud detected the exposure and took immediate action:
   - Configure CI/CD to use secure secret injection
   - Remove all hardcoded secrets from codebase
 
+## URGENT ACTION ITEMS - GOOGLE CLOUD ESCALATION ⚠️
+
+### Immediate Requirements (Within 24 Hours)
+- [ ] **Rotate Google Cloud Service Account Key**
+  - Create new service account key for `aide-deployer@aide-dev-461602.iam.gserviceaccount.com`
+  - Update all deployment systems with new credentials
+  - Verify disabled key is fully revoked
+
+- [ ] **Review GCP Account Activity**
+  - Login to Google Cloud Console: https://console.cloud.google.com/logs/query;query=jsonPayload.@type%3D%22type.googleapis.com%2Fgoogle.cloud.abuseevent.logging.v1.AbuseEvent%22;project=aide-dev-461602
+  - Check for any unauthorized access or activity
+  - Review project resources and permissions
+
+- [ ] **Stripe Key Rotation**  
+  - Rotate any Stripe test keys that may have been exposed
+  - Update deployment configurations with new keys
+  - Verify webhook endpoints are secure
+
+- [ ] **Repository History Audit**
+  - Use tools like `git-secrets` or `truffleHog` to scan entire repository history
+  - Check for any other exposed secrets in previous commits
+  - Consider using `BFG Repo-Cleaner` to remove sensitive data from history
+
+### Medium Priority Actions (Within 48 Hours)
+- [ ] **Implement Secret Management**
+  - Set up proper secret management system (AWS Secrets Manager, GCP Secret Manager, etc.)
+  - Remove all hardcoded credentials from configuration files
+  - Update deployment pipelines to use secret management
+
 - [ ] **Security Audit**
   - Conduct full security audit of the codebase
   - Implement pre-commit hooks to prevent secret commits
@@ -114,4 +166,9 @@ Google Cloud detected the exposure and took immediate action:
 
 ---
 
-**This incident has been resolved at the repository level. Follow-up actions for credential rotation and security hardening are required.**
+**ESCALATED SECURITY INCIDENT - GOOGLE CLOUD RESPONSE RECEIVED**
+
+**This incident has been escalated due to Google Cloud Platform taking immediate action to disable compromised credentials. All urgent action items above must be completed within 24-48 hours to secure the infrastructure and prevent further compromise.**
+
+**Last Updated**: June 7, 2025 10:50 AM  
+**Next Review**: June 8, 2025  
