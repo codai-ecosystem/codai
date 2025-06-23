@@ -1,29 +1,52 @@
 /**
- * Configuration for the AIDE Control Panel
- * This Next.js application serves as the administrative interface
- * for managing the dual-mode infrastructure system
+ * Configuration for the Codai Control Panel
+ * This Next.js application serves as the central platform and AIDE hub
+ * for the Codai ecosystem
  */
 const nextConfig = {
-  // Configure environment variables
+  // Configure environment variables for Codai ecosystem
   env: {
-    // API configuration
-    API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.aide.example.com',
-
+    // Codai ecosystem configuration
+    CODAI_DOMAIN: process.env.CODAI_DOMAIN || 'codai.ro',
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    
+    // LogAI authentication service
+    LOGAI_API_URL: process.env.LOGAI_API_URL || 'https://logai.codai.ro',
+    
+    // MemorAI memory service
+    MEMORAI_API_URL: process.env.MEMORAI_API_URL || 'https://memorai.codai.ro',
+    
+    // Central Codai platform API
+    CODAI_API_URL: process.env.CODAI_API_URL || 'https://api.codai.ro',
+    
     // Default service mode
     DEFAULT_SERVICE_MODE: process.env.DEFAULT_SERVICE_MODE || 'managed',
   },
 
-  // Image domains for Next.js Image component
+  // Image domains for Next.js Image component (Codai ecosystem)
   images: {
-    domains: ['firebasestorage.googleapis.com'],
+    domains: [
+      'firebasestorage.googleapis.com',
+      'cdn.codai.ro',
+      'assets.codai.ro',
+      'images.codai.ro'
+    ],
   },
 
-  // API routes rewrite rules
+  // API routes rewrite rules for Codai ecosystem
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://api.aide.example.com'}/:path*`,
+        source: '/api/logai/:path*',
+        destination: `${process.env.LOGAI_API_URL || 'https://logai.codai.ro'}/api/:path*`,
+      },
+      {
+        source: '/api/memorai/:path*',
+        destination: `${process.env.MEMORAI_API_URL || 'https://memorai.codai.ro'}/api/:path*`,
+      },
+      {
+        source: '/api/codai/:path*',
+        destination: `${process.env.CODAI_API_URL || 'https://api.codai.ro'}/:path*`,
       },
     ];
   },

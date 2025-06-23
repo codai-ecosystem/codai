@@ -1,9 +1,9 @@
 {
-  "name": "@dragoscatalin/web",
+  "name": "@codai/aide-control",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -46,7 +46,10 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8",
-    "zustand": "^5.0.1"
+    "zustand": "^5.0.1",
+    "next-auth": "^4.24.8",
+    "axios": "^1.7.2",
+    "@types/node": "^20.14.0"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

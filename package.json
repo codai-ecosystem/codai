@@ -8,7 +8,7 @@
   "homepage": "https://codai.ro",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dragoscv/AIDE.git"
+    "url": "https://github.com/codai-ecosystem/codai.git"
   },
   "license": "MIT",
   "engines": {
@@ -20,16 +20,6 @@
     "packages/*",
     "extensions/aide-core",
     "extensions/copilot",
-    "extensions/github",
-    "extensions/json-language-features",
-    "extensions/markdown-language-features",
-    "extensions/yaml",
-    "extensions/html-language-features",
-    "extensions/css-language-features",
-    "extensions/npm",
-    "extensions/simple-browser",
-    "extensions/docker",
-    "extensions/theme-defaults",
     "apps/*"
   ],
   "scripts": {

@@ -1,0 +1,57 @@
+{
+  "name": "Codai",
+  "description": "Central Platform & AIDE Hub - The main orchestration platform for the Codai ecosystem",
+  "version": "2.0.0",
+  "type": "platform",
+  "priority": 1,
+  "domain": "codai.ro",
+  "serviceType": "central-platform",
+  "port": 3000,
+  "framework": "turborepo",
+  "language": "typescript",
+  "architecture": {
+    "type": "monorepo",
+    "packageManager": "pnpm",
+    "buildSystem": "turbo",
+    "structure": {
+      "apps": "Individual applications",
+      "packages": "Shared packages and libraries", 
+      "extensions": "VS Code extensions",
+      "cli": "Command line tools"
+    }
+  },
+  "aiCapabilities": {
+    "memory": true,
+    "reasoning": true,
+    "planning": true,
+    "codeGeneration": true,
+    "vscodeIntegration": true,
+    "aideRuntime": true
+  },
+  "dependencies": [
+    "memorai",
+    "logai"
+  ],
+  "relatedServices": [
+    "memorai",
+    "logai",
+    "fabricai"
+  ],
+  "developmentStatus": "production",
+  "features": [
+    "VS Code Extension Development",
+    "AIDE Runtime Environment", 
+    "Central Platform Orchestration",
+    "Developer Tools & CLI",
+    "Multi-App Architecture"
+  ],
+  "lastUpdated": "2025-06-23T18:30:00.000Z",
+  "owner": "codai-ecosystem",
+  "repository": "https://github.com/codai-ecosystem/codai",
+  "documentation": "docs/codai/README.md",
+  "deployment": {
+    "production": "https://codai.ro",
+    "staging": "https://staging.codai.ro",
+    "development": "http://localhost:3000"
+  }
+}

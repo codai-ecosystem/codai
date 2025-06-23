@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  aide-control:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: codai-aide-control
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - CODAI_DOMAIN=localhost
+      # LogAI configuration
+      - LOGAI_API_URL=https://logai.codai.ro
+      - LOGAI_CLIENT_ID=codai-web-client
+      - LOGAI_CLIENT_SECRET=${LOGAI_CLIENT_SECRET}
+      # MemorAI configuration  
+      - MEMORAI_API_URL=https://memorai.codai.ro
+      - MEMORAI_AGENT_ID=codai-web-agent
+      - MEMORAI_API_KEY=${MEMORAI_API_KEY}
+      # Central API configuration
+      - CODAI_CENTRAL_API=https://api.codai.ro
+      - CODAI_API_KEY=${CODAI_API_KEY}
+      # NextAuth configuration
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "org.label-schema.name=Codai AIDE Control"
+      - "org.label-schema.description=Central platform and AIDE hub for the Codai ecosystem"
+      - "org.label-schema.url=https://codai.ro"
+      - "org.label-schema.schema-version=1.0"
+
+  # Optional: Add reverse proxy for production-like setup
+  nginx:
+    image: nginx:alpine
+    container_name: codai-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - aide-control
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  logs:
+    driver: local
+
+networks:
+  default:
+    name: codai-network
+    driver: bridge

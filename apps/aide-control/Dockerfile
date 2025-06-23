@@ -1,5 +1,5 @@
-# Use the official Node.js 18 image
-FROM node:18-alpine AS base
+# Use the official Node.js 20 image for better performance and security
+FROM node:20-alpine AS base
 
 # Set common environment variables
 ENV NEXT_TELEMETRY_DISABLED=1 \
@@ -41,10 +41,10 @@ RUN echo "AIDE Control Panel - Build date: $(date)" > ./build-info.txt
 FROM base AS runner
 WORKDIR /app
 
-# Set production environment variables
+# Set production environment variables for Codai ecosystem
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
-    PORT=8080 \
+    PORT=3000 \
     HOSTNAME="0.0.0.0"
 
 # Create non-root user for security
@@ -69,14 +69,18 @@ USER nextjs
 # Create health check endpoint
 RUN echo '// Simple health check endpoint\nmodule.exports = function(req, res) { res.status(200).send("OK"); };' > ./health.js
 
-# Expose the port the app will run on
-EXPOSE 8080
+# Add health check for Codai ecosystem monitoring
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl --fail http://localhost:3000/api/health || exit 1
+
+# Expose the port the app will run on (Codai standard: 3000)
+EXPOSE 3000
 
 # Add Docker labels for better image management
-LABEL org.opencontainers.image.title="AIDE Control Panel" \
-      org.opencontainers.image.description="Admin control panel for AIDE self-hosted deployments" \
+LABEL org.opencontainers.image.title="Codai AIDE Control Panel" \
+      org.opencontainers.image.description="Central platform and AIDE hub for the Codai ecosystem" \
       org.opencontainers.image.created="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-      org.opencontainers.image.source="https://github.com/microsoft/AIDE"
+      org.opencontainers.image.source="https://github.com/codai-ecosystem/codai"
 
 # Start the application
 # server.js is created by next build from the standalone output

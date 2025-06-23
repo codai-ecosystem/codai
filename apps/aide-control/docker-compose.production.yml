@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  aide-control:
+    image: codai/aide-control:${IMAGE_TAG:-latest}
+    container_name: codai-aide-control-prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Load from .env.production file
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - CODAI_DOMAIN=${CODAI_DOMAIN}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      # LogAI configuration
+      - LOGAI_API_URL=${LOGAI_API_URL}
+      - LOGAI_CLIENT_ID=${LOGAI_CLIENT_ID}
+      - LOGAI_CLIENT_SECRET=${LOGAI_CLIENT_SECRET}
+      # MemorAI configuration  
+      - MEMORAI_API_URL=${MEMORAI_API_URL}
+      - MEMORAI_AGENT_ID=${MEMORAI_AGENT_ID}
+      - MEMORAI_API_KEY=${MEMORAI_API_KEY}
+      # Central API configuration
+      - CODAI_CENTRAL_API=${CODAI_CENTRAL_API}
+      - CODAI_API_KEY=${CODAI_API_KEY}
+      # NextAuth configuration
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      # Database configuration
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      # Storage configuration
+      - STORAGE_PROVIDER=${STORAGE_PROVIDER}
+      - STORAGE_BUCKET=${STORAGE_BUCKET}
+      # GitHub integration
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      # Analytics and monitoring
+      - ANALYTICS_ID=${ANALYTICS_ID}
+      - SENTRY_DSN=${SENTRY_DSN}
+      # Security configuration
+      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-1000}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW:-3600}
+      - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS:-true}
+      - HSTS_MAX_AGE=${HSTS_MAX_AGE:-31536000}
+      - CSP_ENABLED=${CSP_ENABLED:-true}
+      # Performance configuration
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_FORMAT=${LOG_FORMAT:-json}
+      - HEALTH_CHECK_INTERVAL=${HEALTH_CHECK_INTERVAL:-30}
+      - HEALTH_CHECK_TIMEOUT=${HEALTH_CHECK_TIMEOUT:-5}
+      # CDN configuration
+      - CDN_URL=${CDN_URL}
+      - STATIC_ASSETS_URL=${STATIC_ASSETS_URL}
+      # Feature flags
+      - FEATURE_AUTH_ENABLED=${FEATURE_AUTH_ENABLED:-true}
+      - FEATURE_MEMORY_ENABLED=${FEATURE_MEMORY_ENABLED:-true}
+      - FEATURE_ANALYTICS_ENABLED=${FEATURE_ANALYTICS_ENABLED:-true}
+      - FEATURE_DEBUG_MODE=${FEATURE_DEBUG_MODE:-false}
+    volumes:
+      - app-logs:/app/logs
+      - app-cache:/app/.next/cache
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.aide-control.rule=Host(`codai.ro`)"
+      - "traefik.http.routers.aide-control.tls=true"
+      - "traefik.http.routers.aide-control.tls.certresolver=letsencrypt"
+      - "traefik.http.services.aide-control.loadbalancer.server.port=3000"
+      - "org.label-schema.name=Codai AIDE Control"
+      - "org.label-schema.description=Central platform and AIDE hub for the Codai ecosystem"
+      - "org.label-schema.url=https://codai.ro"
+      - "org.label-schema.version=${IMAGE_TAG:-latest}"
+      - "org.label-schema.schema-version=1.0"
+
+  # Redis for session storage and caching
+  redis:
+    image: redis:7-alpine
+    container_name: codai-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+  # Nginx reverse proxy (optional, for advanced routing)
+  nginx:
+    image: nginx:alpine
+    container_name: codai-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-cache:/var/cache/nginx
+    depends_on:
+      - aide-control
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 32M
+    profiles:
+      - nginx
+
+volumes:
+  app-logs:
+    driver: local
+  app-cache:
+    driver: local
+  redis-data:
+    driver: local
+  nginx-cache:
+    driver: local
+
+networks:
+  default:
+    name: codai-production
+    driver: bridge
