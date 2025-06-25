@@ -30,7 +30,6 @@ export interface IRemoteTunnelService {
 	startTunnel(mode: ActiveTunnelMode): Promise<TunnelStatus>;
 	stopTunnel(): Promise<void>;
 	getTunnelName(): Promise<string | undefined>;
-
 }
 
 export interface ActiveTunnelMode {
@@ -48,7 +47,11 @@ export const INACTIVE_TUNNEL_MODE: InactiveTunnelMode = { active: false };
 /** Saved mode for the tunnel. */
 export type TunnelMode = ActiveTunnelMode | InactiveTunnelMode;
 
-export type TunnelStatus = TunnelStates.Connected | TunnelStates.Disconnected | TunnelStates.Connecting | TunnelStates.Uninitialized;
+export type TunnelStatus =
+	| TunnelStates.Connected
+	| TunnelStates.Disconnected
+	| TunnelStates.Connecting
+	| TunnelStates.Uninitialized;
 
 export namespace TunnelStates {
 	export interface Uninitialized {
@@ -67,11 +70,17 @@ export namespace TunnelStates {
 		readonly type: 'disconnected';
 		readonly onTokenFailed?: IRemoteTunnelSession;
 	}
-	export const disconnected = (onTokenFailed?: IRemoteTunnelSession): Disconnected => ({ type: 'disconnected', onTokenFailed });
-	export const connected = (info: ConnectionInfo, serviceInstallFailed: boolean): Connected => ({ type: 'connected', info, serviceInstallFailed });
+	export const disconnected = (onTokenFailed?: IRemoteTunnelSession): Disconnected => ({
+		type: 'disconnected',
+		onTokenFailed,
+	});
+	export const connected = (info: ConnectionInfo, serviceInstallFailed: boolean): Connected => ({
+		type: 'connected',
+		info,
+		serviceInstallFailed,
+	});
 	export const connecting = (progress?: string): Connecting => ({ type: 'connecting', progress });
 	export const uninitialized: Uninitialized = { type: 'uninitialized' };
-
 }
 
 export interface ConnectionInfo {
@@ -86,4 +95,4 @@ export const CONFIGURATION_KEY_HOST_NAME = CONFIGURATION_KEY_PREFIX + '.hostName
 export const CONFIGURATION_KEY_PREVENT_SLEEP = CONFIGURATION_KEY_PREFIX + '.preventSleep';
 
 export const LOG_ID = 'remoteTunnelService';
-export const LOGGER_NAME = localize('remoteTunnelLog', "Remote Tunnel Service");
+export const LOGGER_NAME = localize('remoteTunnelLog', 'Remote Tunnel Service');

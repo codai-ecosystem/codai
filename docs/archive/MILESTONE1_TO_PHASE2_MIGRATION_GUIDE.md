@@ -46,15 +46,12 @@ pnpm add -D vitest @testing-library/react @testing-library/user-event @playwrigh
 ```json
 // package.json in root
 {
-  "name": "aide-monorepo",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "dependencies": {
-    // Core dependencies for all workspaces
-  }
+	"name": "aide-monorepo",
+	"private": true,
+	"workspaces": ["apps/*", "packages/*"],
+	"dependencies": {
+		// Core dependencies for all workspaces
+	}
 }
 ```
 
@@ -79,10 +76,10 @@ touch tsconfig.json
 ```json
 // apps/aide-control/package.json
 {
-  "dependencies": {
-    "@aide/memory-graph": "workspace:*",
-    "@aide/agent-runtime": "workspace:*"
-  }
+	"dependencies": {
+		"@aide/memory-graph": "workspace:*",
+		"@aide/agent-runtime": "workspace:*"
+	}
 }
 ```
 
@@ -96,49 +93,46 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp, cert } from 'firebase-admin/app';
 
 async function migrateSchema() {
-  try {
-    // Initialize Firebase Admin
-    const credentials = JSON.parse(
-      process.env.FIREBASE_ADMIN_CREDENTIALS || '{}'
-    );
+	try {
+		// Initialize Firebase Admin
+		const credentials = JSON.parse(process.env.FIREBASE_ADMIN_CREDENTIALS || '{}');
 
-    initializeApp({
-      credential: cert(credentials)
-    });
+		initializeApp({
+			credential: cert(credentials),
+		});
 
-    const db = getFirestore();
+		const db = getFirestore();
 
-    // Migrate agent_tasks collection
-    const taskDocs = await db.collection('agent_tasks').get();
-    const batch = db.batch();
+		// Migrate agent_tasks collection
+		const taskDocs = await db.collection('agent_tasks').get();
+		const batch = db.batch();
 
-    taskDocs.forEach(doc => {
-      const data = doc.data();
+		taskDocs.forEach(doc => {
+			const data = doc.data();
 
-      // Add new fields required in Phase 2
-      batch.update(doc.ref, {
-        executionGraph: data.executionGraph || { nodes: [], edges: [] },
-        metrics: data.metrics || {
-          tokensUsed: 0,
-          executionTimeMs: 0,
-          stepCount: 0
-        },
-        updatedAt: new Date().toISOString(),
-        // Convert string dates to timestamps if needed
-        createdAt: data.createdAt
-      });
-    });
+			// Add new fields required in Phase 2
+			batch.update(doc.ref, {
+				executionGraph: data.executionGraph || { nodes: [], edges: [] },
+				metrics: data.metrics || {
+					tokensUsed: 0,
+					executionTimeMs: 0,
+					stepCount: 0,
+				},
+				updatedAt: new Date().toISOString(),
+				// Convert string dates to timestamps if needed
+				createdAt: data.createdAt,
+			});
+		});
 
-    // Apply migrations in batches
-    await batch.commit();
-    console.log(`Migrated ${taskDocs.size} task documents`);
+		// Apply migrations in batches
+		await batch.commit();
+		console.log(`Migrated ${taskDocs.size} task documents`);
 
-    // Add more collection migrations as needed...
-
-  } catch (error) {
-    console.error('Migration failed:', error);
-    process.exit(1);
-  }
+		// Add more collection migrations as needed...
+	} catch (error) {
+		console.error('Migration failed:', error);
+		process.exit(1);
+	}
 }
 
 migrateSchema();
@@ -160,48 +154,48 @@ pnpm tsx scripts/migrate-schema.ts
 import { gql } from '@apollo/server';
 
 export const typeDefs = gql`
-  type Agent {
-    id: ID!
-    name: String!
-    description: String
-    status: String!
-    capabilities: [String!]
-  }
+	type Agent {
+		id: ID!
+		name: String!
+		description: String
+		status: String!
+		capabilities: [String!]
+	}
 
-  type Task {
-    id: ID!
-    title: String!
-    description: String!
-    status: String!
-    agentId: String
-    userId: String!
-    projectId: String
-    priority: String!
-    progress: Float!
-    createdAt: String!
-    startedAt: String
-    completedAt: String
-    error: String
-  }
+	type Task {
+		id: ID!
+		title: String!
+		description: String!
+		status: String!
+		agentId: String
+		userId: String!
+		projectId: String
+		priority: String!
+		progress: Float!
+		createdAt: String!
+		startedAt: String
+		completedAt: String
+		error: String
+	}
 
-  type Query {
-    agents(status: String): [Agent!]!
-    tasks(status: String): [Task!]!
-    task(id: ID!): Task
-  }
+	type Query {
+		agents(status: String): [Agent!]!
+		tasks(status: String): [Task!]!
+		task(id: ID!): Task
+	}
 
-  type Mutation {
-    createTask(input: CreateTaskInput!): Task!
-    cancelTask(id: ID!): Task!
-  }
+	type Mutation {
+		createTask(input: CreateTaskInput!): Task!
+		cancelTask(id: ID!): Task!
+	}
 
-  input CreateTaskInput {
-    title: String!
-    description: String!
-    agentId: String
-    projectId: String
-    priority: String
-  }
+	input CreateTaskInput {
+		title: String!
+		description: String!
+		agentId: String
+		projectId: String
+		priority: String
+	}
 `;
 ```
 
@@ -212,30 +206,30 @@ export const typeDefs = gql`
 import { AgentRuntimeService } from '../services/agent-runtime-service';
 
 export const resolvers = {
-  Query: {
-    agents: async (_, { status }, { userId }) => {
-      const runtimeService = AgentRuntimeService.getInstance();
-      return await runtimeService.getAvailableAgents(userId);
-    },
-    tasks: async (_, { status }, { userId }) => {
-      const runtimeService = AgentRuntimeService.getInstance();
-      return await runtimeService.getUserTasks(userId, status);
-    },
-    task: async (_, { id }, { userId }) => {
-      const runtimeService = AgentRuntimeService.getInstance();
-      return await runtimeService.getTask(id, userId);
-    }
-  },
-  Mutation: {
-    createTask: async (_, { input }, { userId }) => {
-      const runtimeService = AgentRuntimeService.getInstance();
-      return await runtimeService.createTask(userId, input);
-    },
-    cancelTask: async (_, { id }, { userId }) => {
-      const runtimeService = AgentRuntimeService.getInstance();
-      return await runtimeService.cancelTask(id, userId);
-    }
-  }
+	Query: {
+		agents: async (_, { status }, { userId }) => {
+			const runtimeService = AgentRuntimeService.getInstance();
+			return await runtimeService.getAvailableAgents(userId);
+		},
+		tasks: async (_, { status }, { userId }) => {
+			const runtimeService = AgentRuntimeService.getInstance();
+			return await runtimeService.getUserTasks(userId, status);
+		},
+		task: async (_, { id }, { userId }) => {
+			const runtimeService = AgentRuntimeService.getInstance();
+			return await runtimeService.getTask(id, userId);
+		},
+	},
+	Mutation: {
+		createTask: async (_, { input }, { userId }) => {
+			const runtimeService = AgentRuntimeService.getInstance();
+			return await runtimeService.createTask(userId, input);
+		},
+		cancelTask: async (_, { id }, { userId }) => {
+			const runtimeService = AgentRuntimeService.getInstance();
+			return await runtimeService.cancelTask(id, userId);
+		},
+	},
 };
 ```
 
@@ -250,15 +244,15 @@ import { resolvers } from '../../../lib/graphql/resolvers';
 import { withAuth } from '../../../lib/auth-middleware';
 
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
+	typeDefs,
+	resolvers,
 });
 
 const handler = startServerAndCreateNextHandler(server, {
-  context: async (req) => {
-    // Context will be set by withAuth middleware
-    return {};
-  },
+	context: async req => {
+		// Context will be set by withAuth middleware
+		return {};
+	},
 });
 
 export const GET = withAuth(handler);
@@ -272,49 +266,54 @@ export const POST = withAuth(handler);
 ```typescript
 // packages/memory-graph/src/types.ts
 export interface Entity {
-  id: string;
-  type: string;
-  properties: Record<string, any>;
-  createdAt: string;
-  updatedAt: string;
+	id: string;
+	type: string;
+	properties: Record<string, any>;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface Relation {
-  id: string;
-  sourceId: string;
-  targetId: string;
-  type: string;
-  properties?: Record<string, any>;
-  createdAt: string;
-  updatedAt: string;
+	id: string;
+	sourceId: string;
+	targetId: string;
+	type: string;
+	properties?: Record<string, any>;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface MemoryGraphQuery {
-  entities?: {
-    types?: string[];
-    ids?: string[];
-    properties?: Record<string, any>;
-  };
-  relations?: {
-    types?: string[];
-    sourceIds?: string[];
-    targetIds?: string[];
-  };
-  limit?: number;
-  orderBy?: string;
-  orderDir?: 'asc' | 'desc';
+	entities?: {
+		types?: string[];
+		ids?: string[];
+		properties?: Record<string, any>;
+	};
+	relations?: {
+		types?: string[];
+		sourceIds?: string[];
+		targetIds?: string[];
+	};
+	limit?: number;
+	orderBy?: string;
+	orderDir?: 'asc' | 'desc';
 }
 
 export interface MemoryGraph {
-  createEntity(type: string, properties: Record<string, any>): Promise<Entity>;
-  getEntity(id: string): Promise<Entity | null>;
-  updateEntity(id: string, properties: Record<string, any>): Promise<Entity>;
-  deleteEntity(id: string): Promise<void>;
-  createRelation(sourceId: string, targetId: string, type: string, properties?: Record<string, any>): Promise<Relation>;
-  getRelation(id: string): Promise<Relation | null>;
-  updateRelation(id: string, properties: Record<string, any>): Promise<Relation>;
-  deleteRelation(id: string): Promise<void>;
-  query(query: MemoryGraphQuery): Promise<{ entities: Entity[]; relations: Relation[] }>;
+	createEntity(type: string, properties: Record<string, any>): Promise<Entity>;
+	getEntity(id: string): Promise<Entity | null>;
+	updateEntity(id: string, properties: Record<string, any>): Promise<Entity>;
+	deleteEntity(id: string): Promise<void>;
+	createRelation(
+		sourceId: string,
+		targetId: string,
+		type: string,
+		properties?: Record<string, any>
+	): Promise<Relation>;
+	getRelation(id: string): Promise<Relation | null>;
+	updateRelation(id: string, properties: Record<string, any>): Promise<Relation>;
+	deleteRelation(id: string): Promise<void>;
+	query(query: MemoryGraphQuery): Promise<{ entities: Entity[]; relations: Relation[] }>;
 }
 ```
 
@@ -326,64 +325,66 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { Entity, MemoryGraph, MemoryGraphQuery, Relation } from '../types';
 
 export class FirestoreMemoryGraph implements MemoryGraph {
-  private db: FirebaseFirestore.Firestore;
-  private entitiesCollection: string;
-  private relationsCollection: string;
+	private db: FirebaseFirestore.Firestore;
+	private entitiesCollection: string;
+	private relationsCollection: string;
 
-  constructor(options: {
-    db?: FirebaseFirestore.Firestore;
-    entitiesCollection?: string;
-    relationsCollection?: string;
-  } = {}) {
-    this.db = options.db || getFirestore();
-    this.entitiesCollection = options.entitiesCollection || 'memory_entities';
-    this.relationsCollection = options.relationsCollection || 'memory_relations';
-  }
+	constructor(
+		options: {
+			db?: FirebaseFirestore.Firestore;
+			entitiesCollection?: string;
+			relationsCollection?: string;
+		} = {}
+	) {
+		this.db = options.db || getFirestore();
+		this.entitiesCollection = options.entitiesCollection || 'memory_entities';
+		this.relationsCollection = options.relationsCollection || 'memory_relations';
+	}
 
-  async createEntity(type: string, properties: Record<string, any>): Promise<Entity> {
-    const now = new Date().toISOString();
-    const entityRef = this.db.collection(this.entitiesCollection).doc();
+	async createEntity(type: string, properties: Record<string, any>): Promise<Entity> {
+		const now = new Date().toISOString();
+		const entityRef = this.db.collection(this.entitiesCollection).doc();
 
-    const entity: Entity = {
-      id: entityRef.id,
-      type,
-      properties,
-      createdAt: now,
-      updatedAt: now
-    };
+		const entity: Entity = {
+			id: entityRef.id,
+			type,
+			properties,
+			createdAt: now,
+			updatedAt: now,
+		};
 
-    await entityRef.set(entity);
-    return entity;
-  }
+		await entityRef.set(entity);
+		return entity;
+	}
 
-  async getEntity(id: string): Promise<Entity | null> {
-    const doc = await this.db.collection(this.entitiesCollection).doc(id).get();
-    return doc.exists ? doc.data() as Entity : null;
-  }
+	async getEntity(id: string): Promise<Entity | null> {
+		const doc = await this.db.collection(this.entitiesCollection).doc(id).get();
+		return doc.exists ? (doc.data() as Entity) : null;
+	}
 
-  async updateEntity(id: string, properties: Record<string, any>): Promise<Entity> {
-    const entityRef = this.db.collection(this.entitiesCollection).doc(id);
-    const now = new Date().toISOString();
+	async updateEntity(id: string, properties: Record<string, any>): Promise<Entity> {
+		const entityRef = this.db.collection(this.entitiesCollection).doc(id);
+		const now = new Date().toISOString();
 
-    await entityRef.update({
-      properties: { ...properties },
-      updatedAt: now
-    });
+		await entityRef.update({
+			properties: { ...properties },
+			updatedAt: now,
+		});
 
-    const updated = await entityRef.get();
-    return updated.data() as Entity;
-  }
+		const updated = await entityRef.get();
+		return updated.data() as Entity;
+	}
 
-  async deleteEntity(id: string): Promise<void> {
-    await this.db.collection(this.entitiesCollection).doc(id).delete();
-  }
+	async deleteEntity(id: string): Promise<void> {
+		await this.db.collection(this.entitiesCollection).doc(id).delete();
+	}
 
-  // Implementation for relations methods...
+	// Implementation for relations methods...
 
-  async query(query: MemoryGraphQuery): Promise<{ entities: Entity[]; relations: Relation[] }> {
-    // Implementation for querying...
-    return { entities: [], relations: [] };
-  }
+	async query(query: MemoryGraphQuery): Promise<{ entities: Entity[]; relations: Relation[] }> {
+		// Implementation for querying...
+		return { entities: [], relations: [] };
+	}
 }
 ```
 
@@ -398,20 +399,20 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-    include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    coverage: {
-      reporter: ['text', 'json', 'html'],
-    },
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    },
-  },
+	plugins: [react()],
+	test: {
+		environment: 'jsdom',
+		setupFiles: ['./vitest.setup.ts'],
+		include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+		coverage: {
+			reporter: ['text', 'json', 'html'],
+		},
+	},
+	resolve: {
+		alias: {
+			'@': resolve(__dirname, './src'),
+		},
+	},
 });
 ```
 
@@ -424,20 +425,20 @@ import { vi } from 'vitest';
 
 // Mock Firebase
 vi.mock('firebase/app', () => ({
-  initializeApp: vi.fn(),
-  getApps: vi.fn(() => []),
+	initializeApp: vi.fn(),
+	getApps: vi.fn(() => []),
 }));
 
 vi.mock('firebase/auth', () => ({
-  getAuth: vi.fn(),
-  signInWithEmailAndPassword: vi.fn(),
-  createUserWithEmailAndPassword: vi.fn(),
-  onAuthStateChanged: vi.fn(),
+	getAuth: vi.fn(),
+	signInWithEmailAndPassword: vi.fn(),
+	createUserWithEmailAndPassword: vi.fn(),
+	onAuthStateChanged: vi.fn(),
 }));
 
 // Setup global test utilities
 global.mockFirestoreService = () => ({
-  logAudit: vi.fn(),
+	logAudit: vi.fn(),
 });
 ```
 
@@ -446,12 +447,12 @@ global.mockFirestoreService = () => ({
 ```json
 // package.json
 {
-  "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
-  }
+	"scripts": {
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"test:e2e": "playwright test"
+	}
 }
 ```
 
@@ -624,6 +625,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=your-ga-id
 In case of critical issues during migration, follow these rollback steps:
 
 1. **Code Rollback**:
+
    ```bash
    git checkout main
    git revert <problematic-commit>
@@ -661,5 +663,5 @@ The migration is considered successful when:
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: June 5, 2024*
+_Document Version: 1.0_
+_Last Updated: June 5, 2024_

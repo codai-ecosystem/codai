@@ -32,12 +32,12 @@ suite('snapshot', () => {
 	});
 
 	const makeContext = (test: Partial<Mocha.Test> | undefined) => {
-		return new class extends SnapshotContext {
+		return new (class extends SnapshotContext {
 			constructor() {
 				super(test as Mocha.Test);
 				this.snapshotsDir = URI.file(testDir);
 			}
-		};
+		})();
 	};
 
 	const snapshotFileTree = async () => {
@@ -67,7 +67,7 @@ suite('snapshot', () => {
 	test('creates a snapshot', async () => {
 		const ctx = makeContext({
 			file: 'foo/bar',
-			fullTitle: () => 'hello world!'
+			fullTitle: () => 'hello world!',
 		});
 
 		await ctx.assert({ cool: true });
@@ -77,14 +77,14 @@ suite('snapshot', () => {
 	test('validates a snapshot', async () => {
 		const ctx1 = makeContext({
 			file: 'foo/bar',
-			fullTitle: () => 'hello world!'
+			fullTitle: () => 'hello world!',
 		});
 
 		await ctx1.assert({ cool: true });
 
 		const ctx2 = makeContext({
 			file: 'foo/bar',
-			fullTitle: () => 'hello world!'
+			fullTitle: () => 'hello world!',
 		});
 
 		// should pass:
@@ -92,7 +92,7 @@ suite('snapshot', () => {
 
 		const ctx3 = makeContext({
 			file: 'foo/bar',
-			fullTitle: () => 'hello world!'
+			fullTitle: () => 'hello world!',
 		});
 
 		// should fail:
@@ -102,7 +102,7 @@ suite('snapshot', () => {
 	test('cleans up old snapshots', async () => {
 		const ctx1 = makeContext({
 			file: 'foo/bar',
-			fullTitle: () => 'hello world!'
+			fullTitle: () => 'hello world!',
 		});
 
 		await ctx1.assert({ cool: true });
@@ -114,7 +114,7 @@ suite('snapshot', () => {
 
 		const ctx2 = makeContext({
 			file: 'foo/bar',
-			fullTitle: () => 'hello world!'
+			fullTitle: () => 'hello world!',
 		});
 
 		await ctx2.assert({ cool: true });
@@ -138,12 +138,19 @@ suite('snapshot', () => {
 			'hello',
 			{ hello: 'world' },
 			circular,
-			new Map([['hello', 1], ['goodbye', 2]]),
+			new Map([
+				['hello', 1],
+				['goodbye', 2],
+			]),
 			new Set([1, 2, 3]),
-			function helloWorld() { },
+			function helloWorld() {},
 			/hello/g,
 			new Array(10).fill('long string'.repeat(10)),
-			{ [Symbol.for('debug.description')]() { return `Range [1 -> 5]`; } },
+			{
+				[Symbol.for('debug.description')]() {
+					return `Range [1 -> 5]`;
+				},
+			},
 		]);
 	});
 });

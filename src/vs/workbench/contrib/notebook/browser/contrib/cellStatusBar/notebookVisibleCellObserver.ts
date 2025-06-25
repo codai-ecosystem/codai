@@ -16,7 +16,9 @@ export interface ICellVisibilityChangeEvent {
 }
 
 export class NotebookVisibleCellObserver extends Disposable {
-	private readonly _onDidChangeVisibleCells = this._register(new Emitter<ICellVisibilityChangeEvent>());
+	private readonly _onDidChangeVisibleCells = this._register(
+		new Emitter<ICellVisibilityChangeEvent>()
+	);
 	readonly onDidChangeVisibleCells = this._onDidChangeVisibleCells.event;
 
 	private readonly _viewModelDisposables = this._register(new DisposableStore());
@@ -38,7 +40,9 @@ export class NotebookVisibleCellObserver extends Disposable {
 	private _onModelChange() {
 		this._viewModelDisposables.clear();
 		if (this._notebookEditor.hasModel()) {
-			this._viewModelDisposables.add(this._notebookEditor.onDidChangeViewCells(() => this.updateEverything()));
+			this._viewModelDisposables.add(
+				this._notebookEditor.onDidChangeViewCells(() => this.updateEverything())
+			);
 		}
 
 		this.updateEverything();
@@ -72,7 +76,7 @@ export class NotebookVisibleCellObserver extends Disposable {
 		this._visibleCells = newVisibleCells;
 		this._onDidChangeVisibleCells.fire({
 			added,
-			removed
+			removed,
 		});
 	}
 }

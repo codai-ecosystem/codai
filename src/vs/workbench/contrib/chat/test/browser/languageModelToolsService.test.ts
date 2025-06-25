@@ -8,12 +8,20 @@ import { CancellationToken } from '../../../../../base/common/cancellation.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { ContextKeyService } from '../../../../../platform/contextkey/browser/contextKeyService.js';
-import { ContextKeyEqualsExpr, IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
+import {
+	ContextKeyEqualsExpr,
+	IContextKeyService,
+} from '../../../../../platform/contextkey/common/contextkey.js';
 import { workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
 import { LanguageModelToolsService } from '../../browser/languageModelToolsService.js';
 import { IChatModel } from '../../common/chatModel.js';
 import { IChatService } from '../../common/chatService.js';
-import { IToolData, IToolImpl, IToolInvocation, ToolDataSource } from '../../common/languageModelToolsService.js';
+import {
+	IToolData,
+	IToolImpl,
+	IToolInvocation,
+	ToolDataSource,
+} from '../../common/languageModelToolsService.js';
 import { MockChatService } from '../common/mockChatService.js';
 import { CancellationError, isCancellationError } from '../../../../../base/common/errors.js';
 import { Barrier } from '../../../../../base/common/async.js';
@@ -26,9 +34,12 @@ suite('LanguageModelToolsService', () => {
 	let chatService: MockChatService;
 
 	setup(() => {
-		const instaService = workbenchInstantiationService({
-			contextKeyService: () => store.add(new ContextKeyService(new TestConfigurationService)),
-		}, store);
+		const instaService = workbenchInstantiationService(
+			{
+				contextKeyService: () => store.add(new ContextKeyService(new TestConfigurationService())),
+			},
+			store
+		);
 		contextKeyService = instaService.get(IContextKeyService);
 		chatService = new MockChatService();
 		instaService.stub(IChatService, chatService);
@@ -113,12 +124,12 @@ suite('LanguageModelToolsService', () => {
 		store.add(service.registerToolData(toolData));
 
 		const toolImpl: IToolImpl = {
-			invoke: async (invocation) => {
+			invoke: async invocation => {
 				assert.strictEqual(invocation.callId, '1');
 				assert.strictEqual(invocation.toolId, 'testTool');
 				assert.deepStrictEqual(invocation.parameters, { a: 1 });
 				return { content: [{ kind: 'text', value: 'result' }] };
-			}
+			},
 		};
 
 		store.add(service.registerToolImplementation('testTool', toolImpl));
@@ -128,7 +139,7 @@ suite('LanguageModelToolsService', () => {
 			toolId: 'testTool',
 			tokenBudget: 100,
 			parameters: {
-				a: 1
+				a: 1,
 			},
 			context: undefined,
 		};
@@ -159,7 +170,7 @@ suite('LanguageModelToolsService', () => {
 				} else {
 					throw new Error('Tool call should be cancelled');
 				}
-			}
+			},
 		};
 
 		store.add(service.registerToolImplementation('testTool', toolImpl));
@@ -171,27 +182,33 @@ suite('LanguageModelToolsService', () => {
 			toolId: 'testTool',
 			tokenBudget: 100,
 			parameters: {
-				a: 1
+				a: 1,
 			},
 			context: {
-				sessionId
+				sessionId,
 			},
 		};
 		chatService.addSession({
 			sessionId: sessionId,
 			getRequests: () => {
-				return [{
-					id: requestId
-				}];
+				return [
+					{
+						id: requestId,
+					},
+				];
 			},
-			acceptResponseProgress: () => { }
+			acceptResponseProgress: () => {},
 		} as any as IChatModel);
 
 		const toolPromise = service.invokeTool(dto, async () => 0, CancellationToken.None);
 		service.cancelToolCallsForRequest(requestId);
 		toolBarrier.open();
-		await assert.rejects(toolPromise, err => {
-			return isCancellationError(err);
-		}, 'Expected tool call to be cancelled');
+		await assert.rejects(
+			toolPromise,
+			err => {
+				return isCancellationError(err);
+			},
+			'Expected tool call to be cancelled'
+		);
 	});
 });

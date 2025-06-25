@@ -6,12 +6,14 @@
 import assert from 'assert';
 import { URI } from '../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { IUserDataProfile, toUserDataProfile } from '../../../userDataProfile/common/userDataProfile.js';
+import {
+	IUserDataProfile,
+	toUserDataProfile,
+} from '../../../userDataProfile/common/userDataProfile.js';
 import { merge } from '../../common/userDataProfilesManifestMerge.js';
 import { ISyncUserDataProfile } from '../../common/userDataSync.js';
 
 suite('UserDataProfilesManifestMerge', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('merge returns local profiles if remote does not exist', () => {
@@ -74,8 +76,12 @@ suite('UserDataProfilesManifestMerge', () => {
 			toUserDataProfile('5', '5', URI.file('5'), URI.file('cache')),
 			toUserDataProfile('6', '6', URI.file('6'), URI.file('cache')),
 			toUserDataProfile('8', '8', URI.file('8'), URI.file('cache')),
-			toUserDataProfile('10', '10', URI.file('8'), URI.file('cache'), { useDefaultFlags: { tasks: true } }),
-			toUserDataProfile('11', '11', URI.file('1'), URI.file('cache'), { useDefaultFlags: { keybindings: true } }),
+			toUserDataProfile('10', '10', URI.file('8'), URI.file('cache'), {
+				useDefaultFlags: { tasks: true },
+			}),
+			toUserDataProfile('11', '11', URI.file('1'), URI.file('cache'), {
+				useDefaultFlags: { keybindings: true },
+			}),
 		];
 		const base: ISyncUserDataProfile[] = [
 			{ id: '1', name: '1', collection: '1' },
@@ -149,9 +155,7 @@ suite('UserDataProfilesManifestMerge', () => {
 		const localProfiles: IUserDataProfile[] = [
 			toUserDataProfile('1', '1', URI.file('1'), URI.file('cache')),
 		];
-		const base: ISyncUserDataProfile[] = [
-			{ id: '1', name: '1', collection: '1' },
-		];
+		const base: ISyncUserDataProfile[] = [{ id: '1', name: '1', collection: '1' }];
 		const remoteProfiles: ISyncUserDataProfile[] = [
 			{ id: '1', name: 'name changed', collection: '1' },
 		];
@@ -168,12 +172,8 @@ suite('UserDataProfilesManifestMerge', () => {
 		const localProfiles: IUserDataProfile[] = [
 			toUserDataProfile('1', '1', URI.file('1'), URI.file('cache')),
 		];
-		const base: ISyncUserDataProfile[] = [
-			{ id: '1', name: '1', collection: '1' },
-		];
-		const remoteProfiles: ISyncUserDataProfile[] = [
-			{ id: '1', name: '1', collection: '1' },
-		];
+		const base: ISyncUserDataProfile[] = [{ id: '1', name: '1', collection: '1' }];
+		const remoteProfiles: ISyncUserDataProfile[] = [{ id: '1', name: '1', collection: '1' }];
 
 		const actual = merge(localProfiles, remoteProfiles, base, []);
 
@@ -191,9 +191,7 @@ suite('UserDataProfilesManifestMerge', () => {
 			{ id: '1', name: '1', collection: '1' },
 			{ id: '2', name: '2', collection: '2' },
 		];
-		const remoteProfiles: ISyncUserDataProfile[] = [
-			{ id: '1', name: '3', collection: '1' },
-		];
+		const remoteProfiles: ISyncUserDataProfile[] = [{ id: '1', name: '3', collection: '1' }];
 
 		const actual = merge(localProfiles, remoteProfiles, base, []);
 
@@ -202,5 +200,4 @@ suite('UserDataProfilesManifestMerge', () => {
 		assert.deepStrictEqual(actual.local.updated, remoteProfiles);
 		assert.strictEqual(actual.remote, null);
 	});
-
 });

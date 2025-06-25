@@ -21,7 +21,10 @@ import { SyncDescriptor } from '../../../../../platform/instantiation/common/des
 import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 import { MockContextKeyService } from '../../../../../platform/keybinding/test/common/mockKeybindingService.js';
-import { IEditorProgressService, IProgressRunner } from '../../../../../platform/progress/common/progress.js';
+import {
+	IEditorProgressService,
+	IProgressRunner,
+} from '../../../../../platform/progress/common/progress.js';
 import { IViewDescriptorService } from '../../../../common/views.js';
 import { AccessibilityVerbositySettingId } from '../../../accessibility/browser/accessibilityConfiguration.js';
 import { IChatAccessibilityService, IChatWidgetService } from '../../../chat/browser/chat.js';
@@ -36,7 +39,10 @@ import { EditOperation } from '../../../../../editor/common/core/editOperation.j
 import { Position } from '../../../../../editor/common/core/position.js';
 import { IEditorWorkerService } from '../../../../../editor/common/services/editorWorker.js';
 import { TestWorkerService } from './testWorkerService.js';
-import { IExtensionService, nullExtensionDescription } from '../../../../services/extensions/common/extensions.js';
+import {
+	IExtensionService,
+	nullExtensionDescription,
+} from '../../../../services/extensions/common/extensions.js';
 import { ILogService, NullLogService } from '../../../../../platform/log/common/log.js';
 import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
 import { NullTelemetryService } from '../../../../../platform/telemetry/common/telemetryUtils.js';
@@ -44,11 +50,20 @@ import { IWorkspaceContextService } from '../../../../../platform/workspace/comm
 import { ChatWidgetService } from '../../../chat/browser/chatWidget.js';
 import { IChatService } from '../../../chat/common/chatService.js';
 import { ChatService } from '../../../chat/common/chatServiceImpl.js';
-import { IChatSlashCommandService, ChatSlashCommandService } from '../../../chat/common/chatSlashCommands.js';
+import {
+	IChatSlashCommandService,
+	ChatSlashCommandService,
+} from '../../../chat/common/chatSlashCommands.js';
 import { IChatVariablesService } from '../../../chat/common/chatVariables.js';
-import { IChatWidgetHistoryService, ChatWidgetHistoryService } from '../../../chat/common/chatWidgetHistoryService.js';
+import {
+	IChatWidgetHistoryService,
+	ChatWidgetHistoryService,
+} from '../../../chat/common/chatWidgetHistoryService.js';
 import { IViewsService } from '../../../../services/views/common/viewsService.js';
-import { TestExtensionService, TestContextService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	TestExtensionService,
+	TestContextService,
+} from '../../../../test/common/workbenchTestServices.js';
 import { IChatAgentService, ChatAgentService } from '../../../chat/common/chatAgents.js';
 import { ChatVariablesService } from '../../../chat/browser/chatVariables.js';
 import { ICommandService } from '../../../../../platform/commands/common/commands.js';
@@ -61,14 +76,19 @@ import { MockLanguageModelToolsService } from '../../../chat/test/common/mockLan
 import { IChatRequestModel } from '../../../chat/common/chatModel.js';
 import { assertSnapshot } from '../../../../../base/test/common/snapshot.js';
 import { IObservable, constObservable } from '../../../../../base/common/observable.js';
-import { IChatEditingService, IChatEditingSession } from '../../../chat/common/chatEditingService.js';
+import {
+	IChatEditingService,
+	IChatEditingSession,
+} from '../../../chat/common/chatEditingService.js';
 import { ChatAgentLocation, ChatMode } from '../../../chat/common/constants.js';
-import { ChatTransferService, IChatTransferService } from '../../../chat/common/chatTransferService.js';
+import {
+	ChatTransferService,
+	IChatTransferService,
+} from '../../../chat/common/chatTransferService.js';
 import { NullLanguageModelsService } from '../../../chat/test/common/languageModels.js';
 import { ILanguageModelsService } from '../../../chat/common/languageModels.js';
 
 suite('InlineChatSession', function () {
-
 	const store = new DisposableStore();
 	let editor: IActiveCodeEditor;
 	let model: ITextModel;
@@ -78,7 +98,6 @@ suite('InlineChatSession', function () {
 
 	setup(function () {
 		const contextKeyService = new MockContextKeyService();
-
 
 		const serviceCollection = new ServiceCollection(
 			[IConfigurationService, new TestConfigurationService()],
@@ -102,60 +121,89 @@ suite('InlineChatSession', function () {
 			[IInlineChatSessionService, new SyncDescriptor(InlineChatSessionServiceImpl)],
 			[ICommandService, new SyncDescriptor(TestCommandService)],
 			[ILanguageModelToolsService, new MockLanguageModelToolsService()],
-			[IEditorProgressService, new class extends mock<IEditorProgressService>() {
-				override show(total: unknown, delay?: unknown): IProgressRunner {
-					return {
-						total() { },
-						worked(value) { },
-						done() { },
-					};
-				}
-			}],
-			[IChatEditingService, new class extends mock<IChatEditingService>() {
-				override editingSessionsObs: IObservable<readonly IChatEditingSession[]> = constObservable([]);
-			}],
-			[IChatAccessibilityService, new class extends mock<IChatAccessibilityService>() {
-				override acceptResponse(response: IChatResponseViewModel | undefined, requestId: number): void { }
-				override acceptRequest(): number { return -1; }
-			}],
-			[IAccessibleViewService, new class extends mock<IAccessibleViewService>() {
-				override getOpenAriaHint(verbositySettingKey: AccessibilityVerbositySettingId): string | null {
-					return null;
-				}
-			}],
+			[
+				IEditorProgressService,
+				new (class extends mock<IEditorProgressService>() {
+					override show(total: unknown, delay?: unknown): IProgressRunner {
+						return {
+							total() {},
+							worked(value) {},
+							done() {},
+						};
+					}
+				})(),
+			],
+			[
+				IChatEditingService,
+				new (class extends mock<IChatEditingService>() {
+					override editingSessionsObs: IObservable<readonly IChatEditingSession[]> =
+						constObservable([]);
+				})(),
+			],
+			[
+				IChatAccessibilityService,
+				new (class extends mock<IChatAccessibilityService>() {
+					override acceptResponse(
+						response: IChatResponseViewModel | undefined,
+						requestId: number
+					): void {}
+					override acceptRequest(): number {
+						return -1;
+					}
+				})(),
+			],
+			[
+				IAccessibleViewService,
+				new (class extends mock<IAccessibleViewService>() {
+					override getOpenAriaHint(
+						verbositySettingKey: AccessibilityVerbositySettingId
+					): string | null {
+						return null;
+					}
+				})(),
+			],
 			[IConfigurationService, new TestConfigurationService()],
-			[IViewDescriptorService, new class extends mock<IViewDescriptorService>() {
-				override onDidChangeLocation = Event.None;
-			}],
+			[
+				IViewDescriptorService,
+				new (class extends mock<IViewDescriptorService>() {
+					override onDidChangeLocation = Event.None;
+				})(),
+			],
 			[IWorkbenchAssignmentService, new NullWorkbenchAssignmentService()]
 		);
 
-
-
-		instaService = store.add(workbenchInstantiationService(undefined, store).createChild(serviceCollection));
+		instaService = store.add(
+			workbenchInstantiationService(undefined, store).createChild(serviceCollection)
+		);
 		inlineChatSessionService = store.add(instaService.get(IInlineChatSessionService));
 
-		instaService.get(IChatAgentService).registerDynamicAgent({
-			extensionId: nullExtensionDescription.identifier,
-			publisherDisplayName: '',
-			extensionDisplayName: '',
-			extensionPublisherId: '',
-			id: 'testAgent',
-			name: 'testAgent',
-			isDefault: true,
-			locations: [ChatAgentLocation.Editor],
-			modes: [ChatMode.Ask],
-			metadata: {},
-			slashCommands: [],
-			disambiguation: [],
-		}, {
-			async invoke() {
-				return {};
+		instaService.get(IChatAgentService).registerDynamicAgent(
+			{
+				extensionId: nullExtensionDescription.identifier,
+				publisherDisplayName: '',
+				extensionDisplayName: '',
+				extensionPublisherId: '',
+				id: 'testAgent',
+				name: 'testAgent',
+				isDefault: true,
+				locations: [ChatAgentLocation.Editor],
+				modes: [ChatMode.Ask],
+				metadata: {},
+				slashCommands: [],
+				disambiguation: [],
+			},
+			{
+				async invoke() {
+					return {};
+				},
 			}
-		});
+		);
 
-
-		model = store.add(instaService.get(IModelService).createModel('one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven', null));
+		model = store.add(
+			instaService
+				.get(IModelService)
+				.createModel('one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven', null)
+		);
 		editor = store.add(instantiateTestCodeEditor(instaService, model));
 	});
 
@@ -182,22 +230,27 @@ suite('InlineChatSession', function () {
 	}
 
 	test('Create, release', async function () {
-
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 		inlineChatSessionService.releaseSession(session);
 	});
 
 	test('HunkData, info', async function () {
-
 		const decorationCountThen = model.getAllDecorations().length;
 
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 		assert.ok(session.textModelN === model);
 
 		await makeEditAsAi(EditOperation.insert(new Position(1, 1), 'AI_EDIT\n'));
-
 
 		assert.strictEqual(session.hunkData.size, 1);
 		let [hunk] = session.hunkData.getInfo();
@@ -205,11 +258,19 @@ suite('InlineChatSession', function () {
 
 		assert.ok(!session.textModel0.equalsTextBuffer(session.textModelN.getTextBuffer()));
 		assert.strictEqual(hunk.getState(), HunkState.Pending);
-		assert.ok(hunk.getRangesN()[0].equalsRange({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 8 }));
+		assert.ok(
+			hunk
+				.getRangesN()[0]
+				.equalsRange({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 8 })
+		);
 
 		await makeEditAsAi(EditOperation.insert(new Position(1, 3), 'foobar'));
 		[hunk] = session.hunkData.getInfo();
-		assert.ok(hunk.getRangesN()[0].equalsRange({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 14 }));
+		assert.ok(
+			hunk
+				.getRangesN()[0]
+				.equalsRange({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 14 })
+		);
 
 		inlineChatSessionService.releaseSession(session);
 
@@ -217,11 +278,17 @@ suite('InlineChatSession', function () {
 	});
 
 	test('HunkData, accept', async function () {
-
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
-		await makeEditAsAi([EditOperation.insert(new Position(1, 1), 'AI_EDIT\n'), EditOperation.insert(new Position(10, 1), 'AI_EDIT\n')]);
+		await makeEditAsAi([
+			EditOperation.insert(new Position(1, 1), 'AI_EDIT\n'),
+			EditOperation.insert(new Position(10, 1), 'AI_EDIT\n'),
+		]);
 
 		assert.strictEqual(session.hunkData.size, 2);
 		assert.ok(!session.textModel0.equalsTextBuffer(session.textModelN.getTextBuffer()));
@@ -238,11 +305,17 @@ suite('InlineChatSession', function () {
 	});
 
 	test('HunkData, reject', async function () {
-
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
-		await makeEditAsAi([EditOperation.insert(new Position(1, 1), 'AI_EDIT\n'), EditOperation.insert(new Position(10, 1), 'AI_EDIT\n')]);
+		await makeEditAsAi([
+			EditOperation.insert(new Position(1, 1), 'AI_EDIT\n'),
+			EditOperation.insert(new Position(10, 1), 'AI_EDIT\n'),
+		]);
 
 		assert.strictEqual(session.hunkData.size, 2);
 		assert.ok(!session.textModel0.equalsTextBuffer(session.textModelN.getTextBuffer()));
@@ -259,10 +332,15 @@ suite('InlineChatSession', function () {
 	});
 
 	test('HunkData, N rounds', async function () {
+		model.setValue(
+			'one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\ntwelwe\nthirteen\nfourteen\nfifteen\nsixteen\nseventeen\neighteen\nnineteen\n'
+		);
 
-		model.setValue('one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\ntwelwe\nthirteen\nfourteen\nfifteen\nsixteen\nseventeen\neighteen\nnineteen\n');
-
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
 		assert.ok(session.textModel0.equalsTextBuffer(session.textModelN.getTextBuffer()));
@@ -273,7 +351,7 @@ suite('InlineChatSession', function () {
 		await makeEditAsAi([
 			EditOperation.insert(new Position(1, 1), 'AI1'),
 			EditOperation.insert(new Position(4, 1), 'AI2'),
-			EditOperation.insert(new Position(19, 1), 'AI3')
+			EditOperation.insert(new Position(19, 1), 'AI3'),
 		]);
 
 		assert.strictEqual(session.hunkData.size, 2); // AI1, AI2 are merged into one hunk, AI3 is a separate hunk
@@ -293,11 +371,8 @@ suite('InlineChatSession', function () {
 		assert.ok(session.textModel0.getValueInRange(first.getRangesN()[0]).includes('AI2'));
 		assert.ok(!session.textModel0.getValueInRange(second.getRangesN()[0]).includes('AI3'));
 
-
 		// ROUND #2
-		await makeEditAsAi([
-			EditOperation.insert(new Position(7, 1), 'AI4'),
-		]);
+		await makeEditAsAi([EditOperation.insert(new Position(7, 1), 'AI4')]);
 		assert.strictEqual(session.hunkData.size, 2);
 
 		[first, second] = session.hunkData.getInfo();
@@ -308,27 +383,39 @@ suite('InlineChatSession', function () {
 	});
 
 	test('HunkData, (mirror) edit before', async function () {
-
 		const lines = ['one', 'two', 'three'];
 		model.setValue(lines.join('\n'));
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
 		await makeEditAsAi([EditOperation.insert(new Position(3, 1), 'AI WAS HERE\n')]);
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'two', 'AI WAS HERE', 'three'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'two', 'AI WAS HERE', 'three'].join('\n')
+		);
 		assert.strictEqual(session.textModel0.getValue(), lines.join('\n'));
 
 		makeEdit([EditOperation.replace(new Range(1, 1, 1, 4), 'ONE')]);
-		assert.strictEqual(session.textModelN.getValue(), ['ONE', 'two', 'AI WAS HERE', 'three'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['ONE', 'two', 'AI WAS HERE', 'three'].join('\n')
+		);
 		assert.strictEqual(session.textModel0.getValue(), ['ONE', 'two', 'three'].join('\n'));
 	});
 
 	test('HunkData, (mirror) edit after', async function () {
-
 		const lines = ['one', 'two', 'three', 'four', 'five'];
 		model.setValue(lines.join('\n'));
 
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
 		await makeEditAsAi([EditOperation.insert(new Position(3, 1), 'AI_EDIT\n')]);
@@ -337,43 +424,76 @@ suite('InlineChatSession', function () {
 		const [hunk] = session.hunkData.getInfo();
 
 		makeEdit([EditOperation.insert(new Position(1, 1), 'USER1')]);
-		assert.strictEqual(session.textModelN.getValue(), ['USER1one', 'two', 'AI_EDIT', 'three', 'four', 'five'].join('\n'));
-		assert.strictEqual(session.textModel0.getValue(), ['USER1one', 'two', 'three', 'four', 'five'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['USER1one', 'two', 'AI_EDIT', 'three', 'four', 'five'].join('\n')
+		);
+		assert.strictEqual(
+			session.textModel0.getValue(),
+			['USER1one', 'two', 'three', 'four', 'five'].join('\n')
+		);
 
 		makeEdit([EditOperation.insert(new Position(5, 1), 'USER2')]);
-		assert.strictEqual(session.textModelN.getValue(), ['USER1one', 'two', 'AI_EDIT', 'three', 'USER2four', 'five'].join('\n'));
-		assert.strictEqual(session.textModel0.getValue(), ['USER1one', 'two', 'three', 'USER2four', 'five'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['USER1one', 'two', 'AI_EDIT', 'three', 'USER2four', 'five'].join('\n')
+		);
+		assert.strictEqual(
+			session.textModel0.getValue(),
+			['USER1one', 'two', 'three', 'USER2four', 'five'].join('\n')
+		);
 
 		hunk.acceptChanges();
-		assert.strictEqual(session.textModelN.getValue(), ['USER1one', 'two', 'AI_EDIT', 'three', 'USER2four', 'five'].join('\n'));
-		assert.strictEqual(session.textModel0.getValue(), ['USER1one', 'two', 'AI_EDIT', 'three', 'USER2four', 'five'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['USER1one', 'two', 'AI_EDIT', 'three', 'USER2four', 'five'].join('\n')
+		);
+		assert.strictEqual(
+			session.textModel0.getValue(),
+			['USER1one', 'two', 'AI_EDIT', 'three', 'USER2four', 'five'].join('\n')
+		);
 	});
 
 	test('HunkData, (mirror) edit inside ', async function () {
-
 		const lines = ['one', 'two', 'three'];
 		model.setValue(lines.join('\n'));
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
 		await makeEditAsAi([EditOperation.insert(new Position(3, 1), 'AI WAS HERE\n')]);
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'two', 'AI WAS HERE', 'three'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'two', 'AI WAS HERE', 'three'].join('\n')
+		);
 		assert.strictEqual(session.textModel0.getValue(), lines.join('\n'));
 
 		makeEdit([EditOperation.replace(new Range(3, 4, 3, 7), 'wwaaassss')]);
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'two', 'AI wwaaassss HERE', 'three'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'two', 'AI wwaaassss HERE', 'three'].join('\n')
+		);
 		assert.strictEqual(session.textModel0.getValue(), ['one', 'two', 'three'].join('\n'));
 	});
 
 	test('HunkData, (mirror) edit after dicard ', async function () {
-
 		const lines = ['one', 'two', 'three'];
 		model.setValue(lines.join('\n'));
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
 		await makeEditAsAi([EditOperation.insert(new Position(3, 1), 'AI WAS HERE\n')]);
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'two', 'AI WAS HERE', 'three'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'two', 'AI WAS HERE', 'three'].join('\n')
+		);
 		assert.strictEqual(session.textModel0.getValue(), lines.join('\n'));
 
 		assert.strictEqual(session.hunkData.size, 1);
@@ -388,11 +508,14 @@ suite('InlineChatSession', function () {
 	});
 
 	test('HunkData, (mirror) edit after, multi turn', async function () {
-
 		const lines = ['one', 'two', 'three', 'four', 'five'];
 		model.setValue(lines.join('\n'));
 
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
 		await makeEditAsAi([EditOperation.insert(new Position(3, 1), 'AI_EDIT\n')]);
@@ -400,26 +523,47 @@ suite('InlineChatSession', function () {
 		assert.strictEqual(session.hunkData.size, 1);
 
 		makeEdit([EditOperation.insert(new Position(5, 1), 'FOO')]);
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'two', 'AI_EDIT', 'three', 'FOOfour', 'five'].join('\n'));
-		assert.strictEqual(session.textModel0.getValue(), ['one', 'two', 'three', 'FOOfour', 'five'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'two', 'AI_EDIT', 'three', 'FOOfour', 'five'].join('\n')
+		);
+		assert.strictEqual(
+			session.textModel0.getValue(),
+			['one', 'two', 'three', 'FOOfour', 'five'].join('\n')
+		);
 
 		await makeEditAsAi([EditOperation.insert(new Position(2, 4), ' zwei')]);
 		assert.strictEqual(session.hunkData.size, 1);
 
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'two zwei', 'AI_EDIT', 'three', 'FOOfour', 'five'].join('\n'));
-		assert.strictEqual(session.textModel0.getValue(), ['one', 'two', 'three', 'FOOfour', 'five'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'two zwei', 'AI_EDIT', 'three', 'FOOfour', 'five'].join('\n')
+		);
+		assert.strictEqual(
+			session.textModel0.getValue(),
+			['one', 'two', 'three', 'FOOfour', 'five'].join('\n')
+		);
 
 		makeEdit([EditOperation.replace(new Range(6, 3, 6, 5), 'vefivefi')]);
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'two zwei', 'AI_EDIT', 'three', 'FOOfour', 'fivefivefi'].join('\n'));
-		assert.strictEqual(session.textModel0.getValue(), ['one', 'two', 'three', 'FOOfour', 'fivefivefi'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'two zwei', 'AI_EDIT', 'three', 'FOOfour', 'fivefivefi'].join('\n')
+		);
+		assert.strictEqual(
+			session.textModel0.getValue(),
+			['one', 'two', 'three', 'FOOfour', 'fivefivefi'].join('\n')
+		);
 	});
 
 	test('HunkData, (mirror) edit after, multi turn 2', async function () {
-
 		const lines = ['one', 'two', 'three', 'four', 'five'];
 		model.setValue(lines.join('\n'));
 
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
 		await makeEditAsAi([EditOperation.insert(new Position(3, 1), 'AI_EDIT\n')]);
@@ -427,18 +571,36 @@ suite('InlineChatSession', function () {
 		assert.strictEqual(session.hunkData.size, 1);
 
 		makeEdit([EditOperation.insert(new Position(5, 1), 'FOO')]);
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'two', 'AI_EDIT', 'three', 'FOOfour', 'five'].join('\n'));
-		assert.strictEqual(session.textModel0.getValue(), ['one', 'two', 'three', 'FOOfour', 'five'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'two', 'AI_EDIT', 'three', 'FOOfour', 'five'].join('\n')
+		);
+		assert.strictEqual(
+			session.textModel0.getValue(),
+			['one', 'two', 'three', 'FOOfour', 'five'].join('\n')
+		);
 
 		await makeEditAsAi([EditOperation.insert(new Position(2, 4), 'zwei')]);
 		assert.strictEqual(session.hunkData.size, 1);
 
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'twozwei', 'AI_EDIT', 'three', 'FOOfour', 'five'].join('\n'));
-		assert.strictEqual(session.textModel0.getValue(), ['one', 'two', 'three', 'FOOfour', 'five'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'twozwei', 'AI_EDIT', 'three', 'FOOfour', 'five'].join('\n')
+		);
+		assert.strictEqual(
+			session.textModel0.getValue(),
+			['one', 'two', 'three', 'FOOfour', 'five'].join('\n')
+		);
 
 		makeEdit([EditOperation.replace(new Range(6, 3, 6, 5), 'vefivefi')]);
-		assert.strictEqual(session.textModelN.getValue(), ['one', 'twozwei', 'AI_EDIT', 'three', 'FOOfour', 'fivefivefi'].join('\n'));
-		assert.strictEqual(session.textModel0.getValue(), ['one', 'two', 'three', 'FOOfour', 'fivefivefi'].join('\n'));
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			['one', 'twozwei', 'AI_EDIT', 'three', 'FOOfour', 'fivefivefi'].join('\n')
+		);
+		assert.strictEqual(
+			session.textModel0.getValue(),
+			['one', 'two', 'three', 'FOOfour', 'fivefivefi'].join('\n')
+		);
 
 		session.hunkData.getInfo()[0].acceptChanges();
 		assert.strictEqual(session.textModelN.getValue(), session.textModel0.getValue());
@@ -448,11 +610,17 @@ suite('InlineChatSession', function () {
 	});
 
 	test('HunkData, accept, discardAll', async function () {
-
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
-		await makeEditAsAi([EditOperation.insert(new Position(1, 1), 'AI_EDIT\n'), EditOperation.insert(new Position(10, 1), 'AI_EDIT\n')]);
+		await makeEditAsAi([
+			EditOperation.insert(new Position(1, 1), 'AI_EDIT\n'),
+			EditOperation.insert(new Position(10, 1), 'AI_EDIT\n'),
+		]);
 
 		assert.strictEqual(session.hunkData.size, 2);
 		assert.ok(!session.textModel0.equalsTextBuffer(session.textModelN.getTextBuffer()));
@@ -463,18 +631,27 @@ suite('InlineChatSession', function () {
 		assert.strictEqual(textModeNNow, session.textModelN.getValue());
 
 		session.hunkData.discardAll(); // all remaining
-		assert.strictEqual(session.textModelN.getValue(), 'AI_EDIT\none\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven');
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			'AI_EDIT\none\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven'
+		);
 		assert.strictEqual(session.textModelN.getValue(), session.textModel0.getValue());
 
 		inlineChatSessionService.releaseSession(session);
 	});
 
 	test('HunkData, discardAll return undo edits', async function () {
-
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
-		await makeEditAsAi([EditOperation.insert(new Position(1, 1), 'AI_EDIT\n'), EditOperation.insert(new Position(10, 1), 'AI_EDIT\n')]);
+		await makeEditAsAi([
+			EditOperation.insert(new Position(1, 1), 'AI_EDIT\n'),
+			EditOperation.insert(new Position(10, 1), 'AI_EDIT\n'),
+		]);
 
 		assert.strictEqual(session.hunkData.size, 2);
 		assert.ok(!session.textModel0.equalsTextBuffer(session.textModelN.getTextBuffer()));
@@ -485,7 +662,10 @@ suite('InlineChatSession', function () {
 		assert.strictEqual(textModeNNow, session.textModelN.getValue());
 
 		const undoEdits = session.hunkData.discardAll(); // all remaining
-		assert.strictEqual(session.textModelN.getValue(), 'AI_EDIT\none\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven');
+		assert.strictEqual(
+			session.textModelN.getValue(),
+			'AI_EDIT\none\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven'
+		);
 		assert.strictEqual(session.textModelN.getValue(), session.textModel0.getValue());
 
 		// undo the discards
@@ -496,7 +676,6 @@ suite('InlineChatSession', function () {
 	});
 
 	test('Pressing Escape after inline chat errored with "response filtered" leaves document dirty #7764', async function () {
-
 		const origValue = `class Foo {
 	private onError(error: string): void {
 		if (/The request timed out|The network connection was lost/i.test(error)) {
@@ -514,20 +693,31 @@ suite('InlineChatSession', function () {
 }`;
 		model.setValue(origValue);
 
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
-		const fakeRequest = new class extends mock<IChatRequestModel>() {
-			override get id() { return 'one'; }
-		};
+		const fakeRequest = new (class extends mock<IChatRequestModel>() {
+			override get id() {
+				return 'one';
+			}
+		})();
 		session.markModelVersion(fakeRequest);
 
 		assert.strictEqual(editor.getModel().getLineCount(), 15);
 
-		await makeEditAsAi([EditOperation.replace(new Range(7, 1, 7, Number.MAX_SAFE_INTEGER), `error = error.replace(
+		await makeEditAsAi([
+			EditOperation.replace(
+				new Range(7, 1, 7, Number.MAX_SAFE_INTEGER),
+				`error = error.replace(
 			/See https:\/\/github\.com\/Squirrel\/Squirrel\.Mac\/issues\/182 for more information/,
 			'This might mean the application was put on quarantine by macOS. See [this link](https://github.com/microsoft/vscode/issues/7426#issuecomment-425093469) for more information'
-		);`)]);
+		);`
+			),
+		]);
 
 		assert.strictEqual(editor.getModel().getLineCount(), 18);
 
@@ -541,17 +731,24 @@ suite('InlineChatSession', function () {
 		assert.strictEqual(editor.getModel().getValue(), origValue);
 	});
 
-	test('Apply Code\'s preview should be easier to undo/esc #7537', async function () {
+	test("Apply Code's preview should be easier to undo/esc #7537", async function () {
 		model.setValue(`export function fib(n) {
 	if (n <= 0) return 0;
 	if (n === 1) return 0;
 	if (n === 2) return 1;
 	return fib(n - 1) + fib(n - 2);
 }`);
-		const session = await inlineChatSessionService.createSession(editor, {}, CancellationToken.None);
+		const session = await inlineChatSessionService.createSession(
+			editor,
+			{},
+			CancellationToken.None
+		);
 		assertType(session);
 
-		await makeEditAsAi([EditOperation.replace(new Range(5, 1, 6, Number.MAX_SAFE_INTEGER), `
+		await makeEditAsAi([
+			EditOperation.replace(
+				new Range(5, 1, 6, Number.MAX_SAFE_INTEGER),
+				`
 	let a = 0, b = 1, c;
 	for (let i = 3; i <= n; i++) {
 		c = a + b;
@@ -559,7 +756,9 @@ suite('InlineChatSession', function () {
 		b = c;
 	}
 	return b;
-}`)]);
+}`
+			),
+		]);
 
 		assert.strictEqual(session.hunkData.size, 1);
 		assert.strictEqual(session.hunkData.pending, 1);
@@ -579,5 +778,4 @@ suite('InlineChatSession', function () {
 		session.hunkData.discardAll(); // CANCEL
 		await assertSnapshot(editor.getModel().getValue(), { name: '2' });
 	});
-
 });

@@ -12,14 +12,20 @@ import { randomPath } from '../../../common/extpath.js';
 import { FileAccess } from '../../../common/network.js';
 import { basename, dirname, join, sep } from '../../../common/path.js';
 import { isWindows } from '../../../common/platform.js';
-import { configureFlushOnWrite, Promises, RimRafMode, rimrafSync, SymlinkSupport, writeFileSync } from '../../../node/pfs.js';
+import {
+	configureFlushOnWrite,
+	Promises,
+	RimRafMode,
+	rimrafSync,
+	SymlinkSupport,
+	writeFileSync,
+} from '../../../node/pfs.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../common/utils.js';
 import { flakySuite, getRandomTestPath } from '../testUtils.js';
 
 configureFlushOnWrite(false); // speed up all unit tests by disabling flush on write
 
 flakySuite('PFS', function () {
-
 	let testDir: string;
 
 	setup(() => {
@@ -37,7 +43,7 @@ flakySuite('PFS', function () {
 
 		assert.ok(!(await Promises.exists(testFile)));
 
-		await Promises.writeFile(testFile, 'Hello World', (null!));
+		await Promises.writeFile(testFile, 'Hello World', null!);
 
 		assert.strictEqual((await fs.promises.readFile(testFile)).toString(), 'Hello World');
 	});
@@ -50,11 +56,11 @@ flakySuite('PFS', function () {
 		const testFile5 = join(testDir, 'writefile5.txt');
 
 		await Promise.all([
-			Promises.writeFile(testFile1, 'Hello World 1', (null!)),
-			Promises.writeFile(testFile2, 'Hello World 2', (null!)),
-			Promises.writeFile(testFile3, 'Hello World 3', (null!)),
-			Promises.writeFile(testFile4, 'Hello World 4', (null!)),
-			Promises.writeFile(testFile5, 'Hello World 5', (null!))
+			Promises.writeFile(testFile1, 'Hello World 1', null!),
+			Promises.writeFile(testFile2, 'Hello World 2', null!),
+			Promises.writeFile(testFile3, 'Hello World 3', null!),
+			Promises.writeFile(testFile4, 'Hello World 4', null!),
+			Promises.writeFile(testFile5, 'Hello World 5', null!),
 		]);
 		assert.strictEqual(fs.readFileSync(testFile1).toString(), 'Hello World 1');
 		assert.strictEqual(fs.readFileSync(testFile2).toString(), 'Hello World 2');
@@ -71,7 +77,7 @@ flakySuite('PFS', function () {
 			Promises.writeFile(testFile, 'Hello World 2', undefined),
 			timeout(10).then(() => Promises.writeFile(testFile, 'Hello World 3', undefined)),
 			Promises.writeFile(testFile, 'Hello World 4', undefined),
-			timeout(10).then(() => Promises.writeFile(testFile, 'Hello World 5', undefined))
+			timeout(10).then(() => Promises.writeFile(testFile, 'Hello World 5', undefined)),
 		]);
 		assert.strictEqual(fs.readFileSync(testFile).toString(), 'Hello World 5');
 	});
@@ -96,7 +102,11 @@ flakySuite('PFS', function () {
 		fs.writeFileSync(join(testDir, 'somefile.txt'), 'Contents');
 		fs.writeFileSync(join(testDir, 'someOtherFile.txt'), 'Contents');
 
-		await Promises.rm(testDir, RimRafMode.MOVE, join(dirname(testDir), `${basename(testDir)}.vsctmp`));
+		await Promises.rm(
+			testDir,
+			RimRafMode.MOVE,
+			join(dirname(testDir), `${basename(testDir)}.vsctmp`)
+		);
 		assert.ok(!fs.existsSync(testDir));
 	});
 
@@ -226,7 +236,11 @@ flakySuite('PFS', function () {
 		assert.ok(fs.statSync(join(targetDir2, 'examples')).isDirectory());
 		assert.ok(fs.existsSync(join(targetDir2, 'examples', 'small.jxs')));
 
-		await Promises.rename(join(targetDir2, 'index.html'), join(targetDir2, 'index_moved.html'), false);
+		await Promises.rename(
+			join(targetDir2, 'index.html'),
+			join(targetDir2, 'index_moved.html'),
+			false
+		);
 
 		assert.ok(!fs.existsSync(join(targetDir2, 'index.html')));
 		assert.ok(fs.existsSync(join(targetDir2, 'index_moved.html')));
@@ -288,23 +302,22 @@ flakySuite('PFS', function () {
 	});
 
 	test('copy handles symbolic links when the reference is inside source', async () => {
-
 		// Source Folder
-		const sourceFolder = join(randomPath(testDir), 'copy-test'); 		// copy-test
-		const sourceLinkTestFolder = join(sourceFolder, 'link-test');		// copy-test/link-test
-		const sourceLinkMD5JSFolder = join(sourceLinkTestFolder, 'md5');	// copy-test/link-test/md5
-		const sourceLinkMD5JSFile = join(sourceLinkMD5JSFolder, 'md5.js');	// copy-test/link-test/md5/md5.js
+		const sourceFolder = join(randomPath(testDir), 'copy-test'); // copy-test
+		const sourceLinkTestFolder = join(sourceFolder, 'link-test'); // copy-test/link-test
+		const sourceLinkMD5JSFolder = join(sourceLinkTestFolder, 'md5'); // copy-test/link-test/md5
+		const sourceLinkMD5JSFile = join(sourceLinkMD5JSFolder, 'md5.js'); // copy-test/link-test/md5/md5.js
 		await fs.promises.mkdir(sourceLinkMD5JSFolder, { recursive: true });
 		await Promises.writeFile(sourceLinkMD5JSFile, 'Hello from MD5');
 
-		const sourceLinkMD5JSFolderLinked = join(sourceLinkTestFolder, 'md5-linked');	// copy-test/link-test/md5-linked
+		const sourceLinkMD5JSFolderLinked = join(sourceLinkTestFolder, 'md5-linked'); // copy-test/link-test/md5-linked
 		fs.symlinkSync(sourceLinkMD5JSFolder, sourceLinkMD5JSFolderLinked, 'junction');
 
 		// Target Folder
-		const targetLinkTestFolder = join(sourceFolder, 'link-test copy');				// copy-test/link-test copy
-		const targetLinkMD5JSFolder = join(targetLinkTestFolder, 'md5');				// copy-test/link-test copy/md5
-		const targetLinkMD5JSFile = join(targetLinkMD5JSFolder, 'md5.js');				// copy-test/link-test copy/md5/md5.js
-		const targetLinkMD5JSFolderLinked = join(targetLinkTestFolder, 'md5-linked');	// copy-test/link-test copy/md5-linked
+		const targetLinkTestFolder = join(sourceFolder, 'link-test copy'); // copy-test/link-test copy
+		const targetLinkMD5JSFolder = join(targetLinkTestFolder, 'md5'); // copy-test/link-test copy/md5
+		const targetLinkMD5JSFile = join(targetLinkMD5JSFolder, 'md5.js'); // copy-test/link-test copy/md5/md5.js
+		const targetLinkMD5JSFolderLinked = join(targetLinkTestFolder, 'md5-linked'); // copy-test/link-test copy/md5-linked
 
 		// Copy with `preserveSymlinks: true` and verify result
 		//
@@ -390,7 +403,10 @@ flakySuite('PFS', function () {
 			assert.ok(fs.existsSync(newDir));
 
 			const children = await Promises.readdir(parent);
-			assert.strictEqual(children.some(n => n === 'öäü'), true); // Mac always converts to NFD, so
+			assert.strictEqual(
+				children.some(n => n === 'öäü'),
+				true
+			); // Mac always converts to NFD, so
 		}
 	});
 
@@ -405,17 +421,29 @@ flakySuite('PFS', function () {
 
 			const children = await Promises.readdir(testDir, { withFileTypes: true });
 
-			assert.strictEqual(children.some(n => n.name === 'öäü'), true); // Mac always converts to NFD, so
-			assert.strictEqual(children.some(n => n.isDirectory()), true);
+			assert.strictEqual(
+				children.some(n => n.name === 'öäü'),
+				true
+			); // Mac always converts to NFD, so
+			assert.strictEqual(
+				children.some(n => n.isDirectory()),
+				true
+			);
 
-			assert.strictEqual(children.some(n => n.name === 'somefile.txt'), true);
-			assert.strictEqual(children.some(n => n.isFile()), true);
+			assert.strictEqual(
+				children.some(n => n.name === 'somefile.txt'),
+				true
+			);
+			assert.strictEqual(
+				children.some(n => n.isFile()),
+				true
+			);
 		}
 	});
 
 	test('writeFile (string)', async () => {
 		const smallData = 'Hello World';
-		const bigData = (new Array(100 * 1024)).join('Large String\n');
+		const bigData = new Array(100 * 1024).join('Large String\n');
 
 		return testWriteFile(smallData, smallData, bigData, bigData);
 	});
@@ -424,7 +452,7 @@ flakySuite('PFS', function () {
 		configureFlushOnWrite(true);
 		try {
 			const smallData = 'Hello World';
-			const bigData = (new Array(100 * 1024)).join('Large String\n');
+			const bigData = new Array(100 * 1024).join('Large String\n');
 
 			return await testWriteFile(smallData, smallData, bigData, bigData);
 		} finally {
@@ -434,16 +462,21 @@ flakySuite('PFS', function () {
 
 	test('writeFile (Buffer)', async () => {
 		const smallData = 'Hello World';
-		const bigData = (new Array(100 * 1024)).join('Large String\n');
+		const bigData = new Array(100 * 1024).join('Large String\n');
 
 		return testWriteFile(Buffer.from(smallData), smallData, Buffer.from(bigData), bigData);
 	});
 
 	test('writeFile (UInt8Array)', async () => {
 		const smallData = 'Hello World';
-		const bigData = (new Array(100 * 1024)).join('Large String\n');
+		const bigData = new Array(100 * 1024).join('Large String\n');
 
-		return testWriteFile(VSBuffer.fromString(smallData).buffer, smallData, VSBuffer.fromString(bigData).buffer, bigData);
+		return testWriteFile(
+			VSBuffer.fromString(smallData).buffer,
+			smallData,
+			VSBuffer.fromString(bigData).buffer,
+			bigData
+		);
 	});
 
 	async function testWriteFile(
@@ -484,7 +517,7 @@ flakySuite('PFS', function () {
 		writeFileSync(testFile, 'Hello World');
 		assert.strictEqual(fs.readFileSync(testFile).toString(), 'Hello World');
 
-		const largeString = (new Array(100 * 1024)).join('Large String\n');
+		const largeString = new Array(100 * 1024).join('Large String\n');
 
 		writeFileSync(testFile, largeString);
 		assert.strictEqual(fs.readFileSync(testFile).toString(), largeString);

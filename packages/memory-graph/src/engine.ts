@@ -9,17 +9,14 @@ import {
 	RelationshipSchema,
 	GraphChange,
 	NodeChange,
-	RelationshipChange
+	RelationshipChange,
 } from './schemas.js';
 import {
 	PersistenceAdapter,
 	PersistenceOptions,
-	createPersistenceAdapter
+	createPersistenceAdapter,
 } from './persistence/index.js';
-import {
-	MigrationSystem,
-	createMigrationSystem
-} from './migrations/index.js';
+import { MigrationSystem, createMigrationSystem } from './migrations/index.js';
 
 /**
  * Memory Graph Engine - Core state management for AIDE
@@ -55,12 +52,12 @@ export class MemoryGraphEngine {
 				stats: {
 					nodeCount: 0,
 					edgeCount: 0,
-					complexity: 0
-				}
+					complexity: 0,
+				},
 			},
 			settings: {
 				autoSave: true,
-				persistLocation: 'local'
+				persistLocation: 'local',
 			},
 			...initialGraph,
 		};
@@ -77,7 +74,8 @@ export class MemoryGraphEngine {
 		this._migrationSystem = createMigrationSystem();
 
 		// Use provided adapter or create a default one
-		this._persistenceAdapter = persistenceAdapter || createPersistenceAdapter('auto', persistenceOptions);
+		this._persistenceAdapter =
+			persistenceAdapter || createPersistenceAdapter('auto', persistenceOptions);
 
 		// Setup auto-save if enabled
 		if (this._autosaveEnabled) {
@@ -92,9 +90,12 @@ export class MemoryGraphEngine {
 		}
 
 		if (this._autosaveEnabled) {
-			this._backupInterval = setInterval(() => {
-				this.saveGraph().catch(err => console.error('Auto-save failed:', err));
-			}, intervalMinutes * 60 * 1000);
+			this._backupInterval = setInterval(
+				() => {
+					this.saveGraph().catch(err => console.error('Auto-save failed:', err));
+				},
+				intervalMinutes * 60 * 1000
+			);
 		}
 	}
 
@@ -113,8 +114,8 @@ export class MemoryGraphEngine {
 			...graph,
 			settings: {
 				...graph.settings,
-				autoSave: enabled
-			}
+				autoSave: enabled,
+			},
 		}));
 	}
 
@@ -177,9 +178,9 @@ export class MemoryGraphEngine {
 				stats: {
 					nodeCount: graph.nodes.length,
 					edgeCount: graph.relationships.length,
-					complexity: this.calculateGraphComplexity()
-				}
-			}
+					complexity: this.calculateGraphComplexity(),
+				},
+			},
 		}));
 	}
 	// Persistence operations
@@ -198,10 +199,13 @@ export class MemoryGraphEngine {
 
 			if (loadedGraph) {
 				// Check for version migration needs
-				const needsMigration = this._migrationSystem.needsMigration(loadedGraph, this._currentSchemaVersion);
-				const finalGraph = needsMigration ?
-					await this._migrationSystem.migrateGraph(loadedGraph, this._currentSchemaVersion) :
-					loadedGraph;
+				const needsMigration = this._migrationSystem.needsMigration(
+					loadedGraph,
+					this._currentSchemaVersion
+				);
+				const finalGraph = needsMigration
+					? await this._migrationSystem.migrateGraph(loadedGraph, this._currentSchemaVersion)
+					: loadedGraph;
 
 				// Update the current graph
 				this._graph.next(finalGraph);
@@ -269,7 +273,7 @@ export class MemoryGraphEngine {
 
 		this.updateGraph((graph: MemoryGraph) => ({
 			...graph,
-			nodes: graph.nodes.map(n => n.id === nodeId ? updatedNode : n),
+			nodes: graph.nodes.map(n => (n.id === nodeId ? updatedNode : n)),
 			updatedAt: new Date(),
 		}));
 
@@ -351,7 +355,7 @@ export class MemoryGraphEngine {
 
 		this.updateGraph((graph: MemoryGraph) => ({
 			...graph,
-			relationships: graph.relationships.map(r => r.id === relationshipId ? updatedRel : r),
+			relationships: graph.relationships.map(r => (r.id === relationshipId ? updatedRel : r)),
 			updatedAt: new Date(),
 		}));
 
@@ -403,9 +407,7 @@ export class MemoryGraphEngine {
 	}
 
 	getRelationshipsForNode(nodeId: string): Relationship[] {
-		return this.relationships.filter(
-			r => r.fromNodeId === nodeId || r.toNodeId === nodeId
-		);
+		return this.relationships.filter(r => r.fromNodeId === nodeId || r.toNodeId === nodeId);
 	}
 
 	getConnectedNodes(nodeId: string): AnyNode[] {

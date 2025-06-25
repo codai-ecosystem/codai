@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	export interface CodeAction {
 		/**
 		 * The ranges to which this Code Action applies to, which will be highlighted.

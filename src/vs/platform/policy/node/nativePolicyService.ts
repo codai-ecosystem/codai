@@ -11,7 +11,6 @@ import { MutableDisposable } from '../../../base/common/lifecycle.js';
 import { ILogService } from '../../log/common/log.js';
 
 export class NativePolicyService extends AbstractPolicyService implements IPolicyService {
-
 	private throttler = new Throttler();
 	private readonly watcher = this._register(new MutableDisposable<Watcher>());
 
@@ -22,26 +21,38 @@ export class NativePolicyService extends AbstractPolicyService implements IPolic
 		super();
 	}
 
-	protected async _updatePolicyDefinitions(policyDefinitions: IStringDictionary<PolicyDefinition>): Promise<void> {
-		this.logService.trace(`NativePolicyService#_updatePolicyDefinitions - Found ${Object.keys(policyDefinitions).length} policy definitions`);
+	protected async _updatePolicyDefinitions(
+		policyDefinitions: IStringDictionary<PolicyDefinition>
+	): Promise<void> {
+		this.logService.trace(
+			`NativePolicyService#_updatePolicyDefinitions - Found ${Object.keys(policyDefinitions).length} policy definitions`
+		);
 
 		const { createWatcher } = await import('@vscode/policy-watcher');
 
-		await this.throttler.queue(() => new Promise<void>((c, e) => {
-			try {
-				this.watcher.value = createWatcher(this.productName, policyDefinitions, update => {
-					this._onDidPolicyChange(update);
-					c();
-				});
-			} catch (err) {
-				this.logService.error(`NativePolicyService#_updatePolicyDefinitions - Error creating watcher:`, err);
-				e(err);
-			}
-		}));
+		await this.throttler.queue(
+			() =>
+				new Promise<void>((c, e) => {
+					try {
+						this.watcher.value = createWatcher(this.productName, policyDefinitions, update => {
+							this._onDidPolicyChange(update);
+							c();
+						});
+					} catch (err) {
+						this.logService.error(
+							`NativePolicyService#_updatePolicyDefinitions - Error creating watcher:`,
+							err
+						);
+						e(err);
+					}
+				})
+		);
 	}
 
 	private _onDidPolicyChange(update: PolicyUpdate<IStringDictionary<PolicyDefinition>>): void {
-		this.logService.trace(`NativePolicyService#_onDidPolicyChange - Updated policy values: ${JSON.stringify(update)}`);
+		this.logService.trace(
+			`NativePolicyService#_onDidPolicyChange - Updated policy values: ${JSON.stringify(update)}`
+		);
 
 		for (const key in update) {
 			const value = update[key] as any;

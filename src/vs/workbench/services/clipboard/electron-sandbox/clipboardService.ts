@@ -6,19 +6,19 @@
 import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
 import { URI } from '../../../../base/common/uri.js';
 import { isMacintosh } from '../../../../base/common/platform.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { INativeHostService } from '../../../../platform/native/common/native.js';
 import { VSBuffer } from '../../../../base/common/buffer.js';
 
 export class NativeClipboardService implements IClipboardService {
-
 	private static readonly FILE_FORMAT = 'code/file-list'; // Clipboard format for files
 
 	declare readonly _serviceBrand: undefined;
 
-	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService
-	) { }
+	constructor(@INativeHostService private readonly nativeHostService: INativeHostService) {}
 
 	async triggerPaste(targetWindowId: number): Promise<void> {
 		return this.nativeHostService.triggerPaste({ targetWindowId });
@@ -52,12 +52,17 @@ export class NativeClipboardService implements IClipboardService {
 
 	async writeResources(resources: URI[]): Promise<void> {
 		if (resources.length) {
-			return this.nativeHostService.writeClipboardBuffer(NativeClipboardService.FILE_FORMAT, this.resourcesToBuffer(resources));
+			return this.nativeHostService.writeClipboardBuffer(
+				NativeClipboardService.FILE_FORMAT,
+				this.resourcesToBuffer(resources)
+			);
 		}
 	}
 
 	async readResources(): Promise<URI[]> {
-		return this.bufferToResources(await this.nativeHostService.readClipboardBuffer(NativeClipboardService.FILE_FORMAT));
+		return this.bufferToResources(
+			await this.nativeHostService.readClipboardBuffer(NativeClipboardService.FILE_FORMAT)
+		);
 	}
 
 	async hasResources(): Promise<boolean> {

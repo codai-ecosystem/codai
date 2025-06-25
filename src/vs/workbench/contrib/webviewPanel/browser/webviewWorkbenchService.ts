@@ -3,23 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancelablePromise, createCancelablePromise, DeferredPromise } from '../../../../base/common/async.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../base/common/cancellation.js';
+import {
+	CancelablePromise,
+	createCancelablePromise,
+	DeferredPromise,
+} from '../../../../base/common/async.js';
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from '../../../../base/common/cancellation.js';
 import { memoize } from '../../../../base/common/decorators.js';
 import { isCancellationError } from '../../../../base/common/errors.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { Iterable } from '../../../../base/common/iterator.js';
-import { combinedDisposable, Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	combinedDisposable,
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { EditorActivation } from '../../../../platform/editor/common/editor.js';
-import { createDecorator, IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import {
+	createDecorator,
+	IInstantiationService,
+} from '../../../../platform/instantiation/common/instantiation.js';
 import { GroupIdentifier } from '../../../common/editor.js';
 import { DiffEditorInput } from '../../../common/editor/diffEditorInput.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
-import { IOverlayWebview, IWebviewService, WebviewInitInfo } from '../../webview/browser/webview.js';
+import {
+	IOverlayWebview,
+	IWebviewService,
+	WebviewInitInfo,
+} from '../../webview/browser/webview.js';
 import { CONTEXT_ACTIVE_WEBVIEW_PANEL_ID } from './webviewEditor.js';
 import { WebviewIconManager, WebviewIcons } from './webviewIconManager.js';
-import { IEditorGroup, IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
-import { ACTIVE_GROUP_TYPE, IEditorService, SIDE_GROUP_TYPE } from '../../../services/editor/common/editorService.js';
+import {
+	IEditorGroup,
+	IEditorGroupsService,
+} from '../../../services/editor/common/editorGroupsService.js';
+import {
+	ACTIVE_GROUP_TYPE,
+	IEditorService,
+	SIDE_GROUP_TYPE,
+} from '../../../services/editor/common/editorService.js';
 import { WebviewInput, WebviewInputInitInfo } from './webviewEditorInput.js';
 
 export interface IWebViewShowOptions {
@@ -27,7 +53,8 @@ export interface IWebViewShowOptions {
 	readonly preserveFocus?: boolean;
 }
 
-export const IWebviewWorkbenchService = createDecorator<IWebviewWorkbenchService>('webviewEditorService');
+export const IWebviewWorkbenchService =
+	createDecorator<IWebviewWorkbenchService>('webviewEditorService');
 
 /**
  * Service responsible for showing and managing webview editors in the workbench.
@@ -54,7 +81,7 @@ export interface IWebviewWorkbenchService {
 		webviewInitInfo: WebviewInitInfo,
 		viewType: string,
 		title: string,
-		showOptions: IWebViewShowOptions,
+		showOptions: IWebViewShowOptions
 	): WebviewInput;
 
 	/**
@@ -116,14 +143,13 @@ function canRevive(reviver: WebviewResolver, webview: WebviewInput): boolean {
 }
 
 export class LazilyResolvedWebviewEditorInput extends WebviewInput {
-
 	private _resolved = false;
 	private _resolvePromise?: CancelablePromise<void>;
 
 	constructor(
 		init: WebviewInputInitInfo,
 		webview: IOverlayWebview,
-		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
+		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService
 	) {
 		super(init, webview, _webviewWorkbenchService.iconManager);
 	}
@@ -138,7 +164,9 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 	public override async resolve() {
 		if (!this._resolved) {
 			this._resolved = true;
-			this._resolvePromise = createCancelablePromise(token => this._webviewWorkbenchService.resolveWebview(this, token));
+			this._resolvePromise = createCancelablePromise(token =>
+				this._webviewWorkbenchService.resolveWebview(this, token)
+			);
 			try {
 				await this._resolvePromise;
 			} catch (e) {
@@ -159,7 +187,6 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 		return other;
 	}
 }
-
 
 class RevivalPool {
 	private _awaitingRevival: Array<{
@@ -183,7 +210,7 @@ class RevivalPool {
 			token.onCancellationRequested(() => {
 				remove();
 				promise.cancel();
-			}),
+			})
 		);
 
 		this._awaitingRevival.push({ input, promise, disposable });
@@ -196,13 +223,18 @@ class RevivalPool {
 		this._awaitingRevival = this._awaitingRevival.filter(({ input }) => !canRevive(reviver, input));
 
 		for (const { input, promise: resolve, disposable } of toRevive) {
-			reviver.resolveWebview(input, token).then(x => resolve.complete(x), err => resolve.error(err)).finally(() => {
-				disposable.dispose();
-			});
+			reviver
+				.resolveWebview(input, token)
+				.then(
+					x => resolve.complete(x),
+					err => resolve.error(err)
+				)
+				.finally(() => {
+					disposable.dispose();
+				});
 		}
 	}
 }
-
 
 export class WebviewEditorService extends Disposable implements IWebviewWorkbenchService {
 	declare readonly _serviceBrand: undefined;
@@ -216,25 +248,33 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
 		@IEditorGroupsService editorGroupsService: IEditorGroupsService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IWebviewService private readonly _webviewService: IWebviewService,
+		@IWebviewService private readonly _webviewService: IWebviewService
 	) {
 		super();
 
-		this._iconManager = this._register(this._instantiationService.createInstance(WebviewIconManager));
+		this._iconManager = this._register(
+			this._instantiationService.createInstance(WebviewIconManager)
+		);
 
-		this._register(editorGroupsService.registerContextKeyProvider({
-			contextKey: CONTEXT_ACTIVE_WEBVIEW_PANEL_ID,
-			getGroupContextKeyValue: (group) => this.getWebviewId(group.activeEditor),
-		}));
+		this._register(
+			editorGroupsService.registerContextKeyProvider({
+				contextKey: CONTEXT_ACTIVE_WEBVIEW_PANEL_ID,
+				getGroupContextKeyValue: group => this.getWebviewId(group.activeEditor),
+			})
+		);
 
-		this._register(_editorService.onDidActiveEditorChange(() => {
-			this.updateActiveWebview();
-		}));
+		this._register(
+			_editorService.onDidActiveEditorChange(() => {
+				this.updateActiveWebview();
+			})
+		);
 
 		// The user may have switched focus between two sides of a diff editor
-		this._register(_webviewService.onDidChangeActiveWebview(() => {
-			this.updateActiveWebview();
-		}));
+		this._register(
+			_webviewService.onDidChangeActiveWebview(() => {
+				this.updateActiveWebview();
+			})
+		);
 
 		this.updateActiveWebview();
 	}
@@ -245,7 +285,9 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
 
 	private _activeWebview: WebviewInput | undefined;
 
-	private readonly _onDidChangeActiveWebviewEditor = this._register(new Emitter<WebviewInput | undefined>());
+	private readonly _onDidChangeActiveWebviewEditor = this._register(
+		new Emitter<WebviewInput | undefined>()
+	);
 	public readonly onDidChangeActiveWebviewEditor = this._onDidChangeActiveWebviewEditor.event;
 
 	private getWebviewId(input: EditorInput | null): string {
@@ -270,9 +312,15 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
 		if (activeInput instanceof WebviewInput) {
 			newActiveWebview = activeInput;
 		} else if (activeInput instanceof DiffEditorInput) {
-			if (activeInput.primary instanceof WebviewInput && activeInput.primary.webview === this._webviewService.activeWebview) {
+			if (
+				activeInput.primary instanceof WebviewInput &&
+				activeInput.primary.webview === this._webviewService.activeWebview
+			) {
 				newActiveWebview = activeInput.primary;
-			} else if (activeInput.secondary instanceof WebviewInput && activeInput.secondary.webview === this._webviewService.activeWebview) {
+			} else if (
+				activeInput.secondary instanceof WebviewInput &&
+				activeInput.secondary.webview === this._webviewService.activeWebview
+			) {
 				newActiveWebview = activeInput.secondary;
 			}
 		}
@@ -286,17 +334,26 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
 		webviewInitInfo: WebviewInitInfo,
 		viewType: string,
 		title: string,
-		showOptions: IWebViewShowOptions,
+		showOptions: IWebViewShowOptions
 	): WebviewInput {
 		const webview = this._webviewService.createWebviewOverlay(webviewInitInfo);
-		const webviewInput = this._instantiationService.createInstance(WebviewInput, { viewType, name: title, providedId: webviewInitInfo.providedViewType }, webview, this.iconManager);
-		this._editorService.openEditor(webviewInput, {
-			pinned: true,
-			preserveFocus: showOptions.preserveFocus,
-			// preserve pre 1.38 behaviour to not make group active when preserveFocus: true
-			// but make sure to restore the editor to fix https://github.com/microsoft/vscode/issues/79633
-			activation: showOptions.preserveFocus ? EditorActivation.RESTORE : undefined
-		}, showOptions.group);
+		const webviewInput = this._instantiationService.createInstance(
+			WebviewInput,
+			{ viewType, name: title, providedId: webviewInitInfo.providedViewType },
+			webview,
+			this.iconManager
+		);
+		this._editorService.openEditor(
+			webviewInput,
+			{
+				pinned: true,
+				preserveFocus: showOptions.preserveFocus,
+				// preserve pre 1.38 behaviour to not make group active when preserveFocus: true
+				// but make sure to restore the editor to fix https://github.com/microsoft/vscode/issues/79633
+				activation: showOptions.preserveFocus ? EditorActivation.RESTORE : undefined,
+			},
+			showOptions.group
+		);
 		return webviewInput;
 	}
 
@@ -307,12 +364,16 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
 	): void {
 		const topLevelEditor = this.findTopLevelEditorForWebview(webview);
 
-		this._editorService.openEditor(topLevelEditor, {
-			preserveFocus,
-			// preserve pre 1.38 behaviour to not make group active when preserveFocus: true
-			// but make sure to restore the editor to fix https://github.com/microsoft/vscode/issues/79633
-			activation: preserveFocus ? EditorActivation.RESTORE : undefined
-		}, group);
+		this._editorService.openEditor(
+			topLevelEditor,
+			{
+				preserveFocus,
+				// preserve pre 1.38 behaviour to not make group active when preserveFocus: true
+				// but make sure to restore the editor to fix https://github.com/microsoft/vscode/issues/79633
+				activation: preserveFocus ? EditorActivation.RESTORE : undefined,
+			},
+			group
+		);
 	}
 
 	private findTopLevelEditorForWebview(webview: WebviewInput): EditorInput {
@@ -340,7 +401,15 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
 		const webview = this._webviewService.createWebviewOverlay(options.webviewInitInfo);
 		webview.state = options.state;
 
-		const webviewInput = this._instantiationService.createInstance(LazilyResolvedWebviewEditorInput, { viewType: options.viewType, providedId: options.webviewInitInfo.providedViewType, name: options.title }, webview);
+		const webviewInput = this._instantiationService.createInstance(
+			LazilyResolvedWebviewEditorInput,
+			{
+				viewType: options.viewType,
+				providedId: options.webviewInitInfo.providedViewType,
+				name: options.title,
+			},
+			webview
+		);
 		webviewInput.iconPath = options.iconPath;
 
 		if (typeof options.group === 'number') {

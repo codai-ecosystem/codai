@@ -8,7 +8,11 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { ContextKeyExpression } from '../../../../../platform/contextkey/common/contextkey.js';
 import { ExtensionIdentifier } from '../../../../../platform/extensions/common/extensions.js';
 import { MockContextKeyService } from '../../../../../platform/keybinding/test/common/mockKeybindingService.js';
-import { ChatAgentService, IChatAgentData, IChatAgentImplementation } from '../../common/chatAgents.js';
+import {
+	ChatAgentService,
+	IChatAgentData,
+	IChatAgentImplementation,
+} from '../../common/chatAgents.js';
 
 const testAgentId = 'testAgent';
 const testAgentData: IChatAgentData = {
@@ -48,7 +52,6 @@ suite('ChatAgents', function () {
 	test('registerAgent', async () => {
 		assert.strictEqual(chatAgentService.getAgents().length, 0);
 
-
 		const agentRegistration = chatAgentService.registerAgent(testAgentId, testAgentData);
 
 		assert.strictEqual(chatAgentService.getAgents().length, 1);
@@ -63,10 +66,12 @@ suite('ChatAgents', function () {
 	test('agent when clause', async () => {
 		assert.strictEqual(chatAgentService.getAgents().length, 0);
 
-		store.add(chatAgentService.registerAgent(testAgentId, {
-			...testAgentData,
-			when: 'myKey'
-		}));
+		store.add(
+			chatAgentService.registerAgent(testAgentId, {
+				...testAgentData,
+				when: 'myKey',
+			})
+		);
 		assert.strictEqual(chatAgentService.getAgents().length, 0);
 
 		contextKeyService.contextMatchesRulesReturnsTrue();
@@ -75,8 +80,12 @@ suite('ChatAgents', function () {
 
 	suite('registerAgentImplementation', function () {
 		const agentImpl: IChatAgentImplementation = {
-			invoke: async () => { return {}; },
-			provideFollowups: async () => { return []; },
+			invoke: async () => {
+				return {};
+			},
+			provideFollowups: async () => {
+				return [];
+			},
 		};
 
 		test('should register an agent implementation', () => {
@@ -98,7 +107,9 @@ suite('ChatAgents', function () {
 		});
 
 		test('should throw error if agent does not exist', () => {
-			assert.throws(() => chatAgentService.registerAgentImplementation('nonexistentAgent', agentImpl));
+			assert.throws(() =>
+				chatAgentService.registerAgentImplementation('nonexistentAgent', agentImpl)
+			);
 		});
 
 		test('should throw error if agent already has an implementation', () => {

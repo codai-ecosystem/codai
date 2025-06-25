@@ -4,10 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import {
-	MemoryGraphEngine,
-	GraphBuilders
-} from '@codai/memory-graph';
+import { MemoryGraphEngine, GraphBuilders } from '@codai/memory-graph';
 
 /**
  * Simple demo showcasing AIDE's memory graph capabilities
@@ -82,9 +79,9 @@ class SimpleAIDEDemo {
 					requirements: [
 						'Email/password registration',
 						'Social login (Google, GitHub)',
-						'Password reset functionality'
+						'Password reset functionality',
 					],
-					estimatedComplexity: 7
+					estimatedComplexity: 7,
 				})
 				.build()
 		);
@@ -95,20 +92,18 @@ class SimpleAIDEDemo {
 				.withDescription('User authentication interface')
 				.withMetadata({
 					uiFramework: 'React',
-					responsiveBreakpoints: ['mobile', 'tablet', 'desktop']
+					responsiveBreakpoints: ['mobile', 'tablet', 'desktop'],
 				})
 				.build()
 		);
 
 		// Create relationships
 		this.engine.addRelationship(
-			GraphBuilders.relationship(mainIntent.id, authFeature.id, 'contains')
-				.build()
+			GraphBuilders.relationship(mainIntent.id, authFeature.id, 'contains').build()
 		);
 
 		this.engine.addRelationship(
-			GraphBuilders.relationship(authFeature.id, loginScreen.id, 'implements')
-				.build()
+			GraphBuilders.relationship(authFeature.id, loginScreen.id, 'implements').build()
 		);
 	}
 
@@ -127,28 +122,34 @@ class SimpleAIDEDemo {
 				<div class="graph-info">
 					<h3>Nodes:</h3>
 					<ul class="node-list">
-						${nodes.map(node => `
+						${nodes
+							.map(
+								node => `
 							<li class="node-item">
 								<strong>${node.name}</strong> (${node.type})
 								<br><small>${node.description || 'No description'}</small>
 							</li>
-						`).join('')}
+						`
+							)
+							.join('')}
 					</ul>
 				</div>
 				<div class="graph-info">
 					<h3>Relationships:</h3>
 					<ul class="node-list">
-						${relationships.map(rel => {
-			const fromNode = nodes.find(n => n.id === rel.fromNodeId);
-			const toNode = nodes.find(n => n.id === rel.toNodeId);
-			return `
+						${relationships
+							.map(rel => {
+								const fromNode = nodes.find(n => n.id === rel.fromNodeId);
+								const toNode = nodes.find(n => n.id === rel.toNodeId);
+								return `
 								<li class="node-item">
 									<strong>${fromNode?.name || 'Unknown'}</strong>
 									→ ${rel.type} →
 									<strong>${toNode?.name || 'Unknown'}</strong>
 								</li>
 							`;
-		}).join('')}
+							})
+							.join('')}
 					</ul>
 				</div>
 			</div>

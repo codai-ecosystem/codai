@@ -42,7 +42,7 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 		@IMenuService private readonly menuService: IMenuService,
 		@IFileService private readonly fileService: IFileService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IModelService private readonly modelService: IModelService,
+		@IModelService private readonly modelService: IModelService
 	) {
 		super();
 
@@ -56,27 +56,35 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 
 		this.domNode.classList.add('disabled');
 		const label = this.resourceLabels.create(this.domNode, { supportIcons: true });
-		const file = URI.isUri(this.attachment.value) ? this.attachment.value : this.attachment.value!.uri;
+		const file = URI.isUri(this.attachment.value)
+			? this.attachment.value
+			: this.attachment.value!.uri;
 		const range = undefined;
 
-		const attachmentTypeName = (this.attachment.isPromptFile === false)
-			? file.scheme === Schemas.vscodeNotebookCell ? localize('cell.lowercase', "cell") : localize('file.lowercase', "file")
-			: localize('prompt.lowercase', "prompt");
+		const attachmentTypeName =
+			this.attachment.isPromptFile === false
+				? file.scheme === Schemas.vscodeNotebookCell
+					? localize('cell.lowercase', 'cell')
+					: localize('file.lowercase', 'file')
+				: localize('prompt.lowercase', 'prompt');
 
 		const fileBasename = basename(file);
 		const fileDirname = dirname(file);
 		const friendlyName = `${fileBasename} ${fileDirname}`;
-		const ariaLabel = localize('chat.fileAttachment', "Attached {0}, {1}", attachmentTypeName, friendlyName);
+		const ariaLabel = localize(
+			'chat.fileAttachment',
+			'Attached {0}, {1}',
+			attachmentTypeName,
+			friendlyName
+		);
 
 		const uriLabel = this.labelService.getUriLabel(file, { relative: true });
-		const currentFile = localize('openEditor', "Current {0} context", attachmentTypeName);
-		const inactive = localize('enableHint', "disabled");
+		const currentFile = localize('openEditor', 'Current {0} context', attachmentTypeName);
+		const inactive = localize('enableHint', 'disabled');
 		const currentFileHint = currentFile + (this.attachment.enabled ? '' : ` (${inactive})`);
 		const title = `${currentFileHint}\n${uriLabel}`;
 
-		const icon = this.attachment.isPromptFile
-			? ThemeIcon.fromId(Codicon.bookmark.id)
-			: undefined;
+		const icon = this.attachment.isPromptFile ? ThemeIcon.fromId(Codicon.bookmark.id) : undefined;
 
 		label.setFile(file, {
 			fileKind: FileKind.FILE,
@@ -88,36 +96,55 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 		this.domNode.ariaLabel = ariaLabel;
 		this.domNode.tabIndex = 0;
 
-		this.renderDisposables.add(dom.addDisposableListener(this.domNode, dom.EventType.CLICK, e => {
-			this.convertToRegularAttachment();
-		}));
-
-		this.renderDisposables.add(dom.addDisposableListener(this.domNode, dom.EventType.KEY_DOWN, e => {
-			const event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
+		this.renderDisposables.add(
+			dom.addDisposableListener(this.domNode, dom.EventType.CLICK, e => {
 				this.convertToRegularAttachment();
-			}
-		}));
+			})
+		);
+
+		this.renderDisposables.add(
+			dom.addDisposableListener(this.domNode, dom.EventType.KEY_DOWN, e => {
+				const event = new StandardKeyboardEvent(e);
+				if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
+					this.convertToRegularAttachment();
+				}
+			})
+		);
 
 		// Context menu
-		const scopedContextKeyService = this.renderDisposables.add(this.contextKeyService.createScoped(this.domNode));
+		const scopedContextKeyService = this.renderDisposables.add(
+			this.contextKeyService.createScoped(this.domNode)
+		);
 
-		const resourceContextKey = this.renderDisposables.add(new ResourceContextKey(scopedContextKeyService, this.fileService, this.languageService, this.modelService));
+		const resourceContextKey = this.renderDisposables.add(
+			new ResourceContextKey(
+				scopedContextKeyService,
+				this.fileService,
+				this.languageService,
+				this.modelService
+			)
+		);
 		resourceContextKey.set(file);
 
-		this.renderDisposables.add(dom.addDisposableListener(this.domNode, dom.EventType.CONTEXT_MENU, async domEvent => {
-			const event = new StandardMouseEvent(dom.getWindow(domEvent), domEvent);
-			dom.EventHelper.stop(domEvent, true);
+		this.renderDisposables.add(
+			dom.addDisposableListener(this.domNode, dom.EventType.CONTEXT_MENU, async domEvent => {
+				const event = new StandardMouseEvent(dom.getWindow(domEvent), domEvent);
+				dom.EventHelper.stop(domEvent, true);
 
-			this.contextMenuService.showContextMenu({
-				contextKeyService: scopedContextKeyService,
-				getAnchor: () => event,
-				getActions: () => {
-					const menu = this.menuService.getMenuActions(MenuId.ChatInputResourceAttachmentContext, scopedContextKeyService, { arg: file });
-					return getFlatContextMenuActions(menu);
-				},
-			});
-		}));
+				this.contextMenuService.showContextMenu({
+					contextKeyService: scopedContextKeyService,
+					getAnchor: () => event,
+					getActions: () => {
+						const menu = this.menuService.getMenuActions(
+							MenuId.ChatInputResourceAttachmentContext,
+							scopedContextKeyService,
+							{ arg: file }
+						);
+						return getFlatContextMenuActions(menu);
+					},
+				});
+			})
+		);
 	}
 
 	private convertToRegularAttachment(): void {
@@ -125,7 +152,9 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 			return;
 		}
 
-		const file = URI.isUri(this.attachment.value) ? this.attachment.value : this.attachment.value.uri;
+		const file = URI.isUri(this.attachment.value)
+			? this.attachment.value
+			: this.attachment.value.uri;
 		this.attachmentModel.addFile(file);
 	}
 }

@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 // #######################################################################
 // ###                                                                 ###
 // ### !!! PLEASE ADD COMMON IMPORTS INTO WORKBENCH.COMMON.MAIN.TS !!! ###
@@ -16,7 +15,6 @@ import './workbench.common.main.js';
 
 //#endregion
 
-
 //#region --- workbench (desktop main)
 
 import './electron-sandbox/desktop.main.js';
@@ -24,13 +22,11 @@ import './electron-sandbox/desktop.contribution.js';
 
 //#endregion
 
-
 //#region --- workbench parts
 
 import './electron-sandbox/parts/dialogs/dialog.contribution.js';
 
 //#endregion
-
 
 //#region --- workbench services
 
@@ -90,14 +86,18 @@ import '../platform/webContentExtractor/electron-sandbox/webContentExtractorServ
 import './services/process/electron-sandbox/processService.js';
 
 import { registerSingleton } from '../platform/instantiation/common/extensions.js';
-import { IUserDataInitializationService, UserDataInitializationService } from './services/userData/browser/userDataInit.js';
+import {
+	IUserDataInitializationService,
+	UserDataInitializationService,
+} from './services/userData/browser/userDataInit.js';
 import { SyncDescriptor } from '../platform/instantiation/common/descriptors.js';
 
-registerSingleton(IUserDataInitializationService, new SyncDescriptor(UserDataInitializationService, [[]], true));
-
+registerSingleton(
+	IUserDataInitializationService,
+	new SyncDescriptor(UserDataInitializationService, [[]], true)
+);
 
 //#endregion
-
 
 //#region --- workbench contributions
 
@@ -180,6 +180,5 @@ import './contrib/emergencyAlert/electron-sandbox/emergencyAlert.contribution.js
 import './contrib/mcp/electron-sandbox/mcp.contribution.js';
 
 //#endregion
-
 
 export { main } from './electron-sandbox/desktop.main.js';

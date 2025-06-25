@@ -63,21 +63,17 @@ async function handleGetConfig(req: NextRequest, context: { uid: string }) {
 			resourceId: 'system-config',
 			details: {
 				action: 'Viewed system configuration',
-				timestamp: new Date().toISOString()
-			}
+				timestamp: new Date().toISOString(),
+			},
 		});
 
 		return NextResponse.json({
 			config,
-			legacyConfig
+			legacyConfig,
 		});
-
 	} catch (error) {
 		console.error('Get config error:', error);
-		return NextResponse.json(
-			{ error: 'Failed to fetch system configuration' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to fetch system configuration' }, { status: 500 });
 	}
 }
 
@@ -87,10 +83,7 @@ async function handleUpdateConfig(req: NextRequest, context: { uid: string }) {
 
 		// Validate the updates (basic validation)
 		if (!isValidConfigUpdate(updates)) {
-			return NextResponse.json(
-				{ error: 'Invalid configuration data' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Invalid configuration data' }, { status: 400 });
 		}
 
 		// Use the new configuration service for new-style updates
@@ -115,21 +108,17 @@ async function handleUpdateConfig(req: NextRequest, context: { uid: string }) {
 			details: {
 				action: 'Updated system configuration',
 				updates,
-				timestamp: new Date().toISOString()
-			}
+				timestamp: new Date().toISOString(),
+			},
 		});
 
 		return NextResponse.json({
 			success: true,
-			message: 'Configuration updated successfully'
+			message: 'Configuration updated successfully',
 		});
-
 	} catch (error) {
 		console.error('Update config error:', error);
-		return NextResponse.json(
-			{ error: 'Failed to update system configuration' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to update system configuration' }, { status: 500 });
 	}
 }
 
@@ -137,13 +126,13 @@ function getDefaultConfig(): SystemConfig {
 	return {
 		maintenance: {
 			enabled: false,
-			message: 'System maintenance in progress. Please try again later.'
+			message: 'System maintenance in progress. Please try again later.',
 		},
 		features: {
 			newUserRegistration: true,
 			selfServiceBilling: true,
 			apiKeyGeneration: true,
-			usageReporting: true
+			usageReporting: true,
 		},
 		limits: {
 			maxUsersPerOrg: 100,
@@ -151,19 +140,19 @@ function getDefaultConfig(): SystemConfig {
 			defaultQuota: {
 				apiCalls: 10000,
 				computeMinutes: 60,
-				storageGB: 5
-			}
+				storageGB: 5,
+			},
 		},
 		integrations: {
 			stripe: {
 				enabled: !!process.env.STRIPE_SECRET_KEY,
-				webhookConfigured: !!process.env.STRIPE_WEBHOOK_SECRET
+				webhookConfigured: !!process.env.STRIPE_WEBHOOK_SECRET,
 			},
 			firebase: {
 				enabled: !!process.env.FIREBASE_ADMIN_CREDENTIALS,
-				authConfigured: true
-			}
-		}
+				authConfigured: true,
+			},
+		},
 	};
 }
 
@@ -180,7 +169,10 @@ function isValidConfigUpdate(updates: any): boolean {
 
 	if (updates.features) {
 		const features = updates.features;
-		if (typeof features.newUserRegistration !== 'undefined' && typeof features.newUserRegistration !== 'boolean') {
+		if (
+			typeof features.newUserRegistration !== 'undefined' &&
+			typeof features.newUserRegistration !== 'boolean'
+		) {
 			return false;
 		}
 	}

@@ -6,36 +6,42 @@
 import { WebContents, webContents, WebFrameMain } from 'electron';
 import { Emitter } from '../../../base/common/event.js';
 import { Disposable } from '../../../base/common/lifecycle.js';
-import { FindInFrameOptions, FoundInFrameResult, IWebviewManagerService, WebviewWebContentsId, WebviewWindowId } from '../common/webviewManagerService.js';
+import {
+	FindInFrameOptions,
+	FoundInFrameResult,
+	IWebviewManagerService,
+	WebviewWebContentsId,
+	WebviewWindowId,
+} from '../common/webviewManagerService.js';
 import { WebviewProtocolProvider } from './webviewProtocolProvider.js';
 import { IWindowsMainService } from '../../windows/electron-main/windows.js';
 
 export class WebviewMainService extends Disposable implements IWebviewManagerService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onFoundInFrame = this._register(new Emitter<FoundInFrameResult>());
 	public onFoundInFrame = this._onFoundInFrame.event;
 
-	constructor(
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-	) {
+	constructor(@IWindowsMainService private readonly windowsMainService: IWindowsMainService) {
 		super();
 		this._register(new WebviewProtocolProvider());
 	}
 
-	public async setIgnoreMenuShortcuts(id: WebviewWebContentsId | WebviewWindowId, enabled: boolean): Promise<void> {
+	public async setIgnoreMenuShortcuts(
+		id: WebviewWebContentsId | WebviewWindowId,
+		enabled: boolean
+	): Promise<void> {
 		let contents: WebContents | undefined;
 
 		if (typeof (id as WebviewWindowId).windowId === 'number') {
-			const { windowId } = (id as WebviewWindowId);
+			const { windowId } = id as WebviewWindowId;
 			const window = this.windowsMainService.getWindowById(windowId);
 			if (!window?.win) {
 				throw new Error(`Invalid windowId: ${windowId}`);
 			}
 			contents = window.win.webContents;
 		} else {
-			const { webContentsId } = (id as WebviewWebContentsId);
+			const { webContentsId } = id as WebviewWebContentsId;
 			contents = webContents.fromId(webContentsId);
 			if (!contents) {
 				throw new Error(`Invalid webContentsId: ${webContentsId}`);
@@ -47,7 +53,12 @@ export class WebviewMainService extends Disposable implements IWebviewManagerSer
 		}
 	}
 
-	public async findInFrame(windowId: WebviewWindowId, frameName: string, text: string, options: { findNext?: boolean; forward?: boolean }): Promise<void> {
+	public async findInFrame(
+		windowId: WebviewWindowId,
+		frameName: string,
+		text: string,
+		options: { findNext?: boolean; forward?: boolean }
+	): Promise<void> {
 		const initialFrame = this.getFrameByName(windowId, frameName);
 
 		type WebFrameMainWithFindSupport = WebFrameMain & {
@@ -71,7 +82,11 @@ export class WebviewMainService extends Disposable implements IWebviewManagerSer
 		}
 	}
 
-	public async stopFindInFrame(windowId: WebviewWindowId, frameName: string, options: { keepSelection?: boolean }): Promise<void> {
+	public async stopFindInFrame(
+		windowId: WebviewWindowId,
+		frameName: string,
+		options: { keepSelection?: boolean }
+	): Promise<void> {
 		const initialFrame = this.getFrameByName(windowId, frameName);
 
 		type WebFrameMainWithFindSupport = WebFrameMain & {

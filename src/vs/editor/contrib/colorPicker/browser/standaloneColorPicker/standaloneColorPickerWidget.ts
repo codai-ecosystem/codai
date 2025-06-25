@@ -6,7 +6,12 @@
 import '../colorPicker.css';
 import { Disposable, MutableDisposable } from '../../../../../base/common/lifecycle.js';
 import { IEditorHoverRenderContext } from '../../../hover/browser/hoverTypes.js';
-import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from '../../../../browser/editorBrowser.js';
+import {
+	ContentWidgetPositionPreference,
+	ICodeEditor,
+	IContentWidget,
+	IContentWidgetPosition,
+} from '../../../../browser/editorBrowser.js';
 import { PositionAffinity } from '../../../../common/model.js';
 import { Position } from '../../../../common/core/position.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
@@ -20,7 +25,11 @@ import { IContextKey } from '../../../../../platform/contextkey/common/contextke
 import { IRange } from '../../../../common/core/range.js';
 import { DefaultDocumentColorProvider } from '../defaultDocumentColorProvider.js';
 import { IEditorWorkerService } from '../../../../common/services/editorWorker.js';
-import { StandaloneColorPickerHover, StandaloneColorPickerParticipant, StandaloneColorPickerRenderedParts } from './standaloneColorPickerParticipant.js';
+import {
+	StandaloneColorPickerHover,
+	StandaloneColorPickerParticipant,
+	StandaloneColorPickerRenderedParts,
+} from './standaloneColorPickerParticipant.js';
 import * as dom from '../../../../../base/browser/dom.js';
 import { InsertButton } from '../colorPickerParts/colorPickerInsertButton.js';
 import { IHoverService } from '../../../../../platform/hover/browser/hover.js';
@@ -30,14 +39,13 @@ class StandaloneColorPickerResult {
 	constructor(
 		public readonly value: StandaloneColorPickerHover,
 		public readonly foundInEditor: boolean
-	) { }
+	) {}
 }
 
 const PADDING = 8;
 const CLOSE_BUTTON_WIDTH = 22;
 
 export class StandaloneColorPickerWidget extends Disposable implements IContentWidget {
-
 	static readonly ID = 'editor.contrib.standaloneColorPickerWidget';
 	readonly allowEditorOverflow = true;
 
@@ -51,8 +59,11 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 	private readonly _onResult = this._register(new Emitter<StandaloneColorPickerResult>());
 	public readonly onResult = this._onResult.event;
 
-	private readonly _renderedHoverParts: MutableDisposable<StandaloneColorPickerRenderedParts> = this._register(new MutableDisposable());
-	private readonly _renderedStatusBar: MutableDisposable<EditorHoverStatusBar> = this._register(new MutableDisposable());
+	private readonly _renderedHoverParts: MutableDisposable<StandaloneColorPickerRenderedParts> =
+		this._register(new MutableDisposable());
+	private readonly _renderedStatusBar: MutableDisposable<EditorHoverStatusBar> = this._register(
+		new MutableDisposable()
+	);
 
 	constructor(
 		private readonly _editor: ICodeEditor,
@@ -66,41 +77,55 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 	) {
 		super();
 		this._standaloneColorPickerVisible.set(true);
-		this._standaloneColorPickerParticipant = _instantiationService.createInstance(StandaloneColorPickerParticipant, this._editor);
+		this._standaloneColorPickerParticipant = _instantiationService.createInstance(
+			StandaloneColorPickerParticipant,
+			this._editor
+		);
 		this._position = this._editor._getViewModel()?.getPrimaryCursorState().modelState.position;
 		const editorSelection = this._editor.getSelection();
-		const selection = editorSelection ?
-			{
-				startLineNumber: editorSelection.startLineNumber,
-				startColumn: editorSelection.startColumn,
-				endLineNumber: editorSelection.endLineNumber,
-				endColumn: editorSelection.endColumn
-			} : { startLineNumber: 0, endLineNumber: 0, endColumn: 0, startColumn: 0 };
+		const selection = editorSelection
+			? {
+					startLineNumber: editorSelection.startLineNumber,
+					startColumn: editorSelection.startColumn,
+					endLineNumber: editorSelection.endLineNumber,
+					endColumn: editorSelection.endColumn,
+				}
+			: { startLineNumber: 0, endLineNumber: 0, endColumn: 0, startColumn: 0 };
 		const focusTracker = this._register(dom.trackFocus(this._body));
-		this._register(focusTracker.onDidBlur(_ => {
-			this.hide();
-		}));
-		this._register(focusTracker.onDidFocus(_ => {
-			this.focus();
-		}));
+		this._register(
+			focusTracker.onDidBlur(_ => {
+				this.hide();
+			})
+		);
+		this._register(
+			focusTracker.onDidFocus(_ => {
+				this.focus();
+			})
+		);
 		// When the cursor position changes, hide the color picker
-		this._register(this._editor.onDidChangeCursorPosition(() => {
-			// Do not hide the color picker when the cursor changes position due to the keybindings
-			if (!this._selectionSetInEditor) {
-				this.hide();
-			} else {
-				this._selectionSetInEditor = false;
-			}
-		}));
-		this._register(this._editor.onMouseMove((e) => {
-			const classList = e.target.element?.classList;
-			if (classList && classList.contains('colorpicker-color-decoration')) {
-				this.hide();
-			}
-		}));
-		this._register(this.onResult((result) => {
-			this._render(result.value, result.foundInEditor);
-		}));
+		this._register(
+			this._editor.onDidChangeCursorPosition(() => {
+				// Do not hide the color picker when the cursor changes position due to the keybindings
+				if (!this._selectionSetInEditor) {
+					this.hide();
+				} else {
+					this._selectionSetInEditor = false;
+				}
+			})
+		);
+		this._register(
+			this._editor.onMouseMove(e => {
+				const classList = e.target.element?.classList;
+				if (classList && classList.contains('colorpicker-color-decoration')) {
+					this.hide();
+				}
+			})
+		);
+		this._register(
+			this.onResult(result => {
+				this._render(result.value, result.foundInEditor);
+			})
+		);
 		this._start(selection);
 		this._body.style.zIndex = '50';
 		this._editor.addContentWidget(this);
@@ -128,8 +153,10 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 		return {
 			position: this._position,
 			secondaryPosition: this._position,
-			preference: positionPreference ? [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW] : [ContentWidgetPositionPreference.BELOW, ContentWidgetPositionPreference.ABOVE],
-			positionAffinity: PositionAffinity.None
+			preference: positionPreference
+				? [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW]
+				: [ContentWidgetPositionPreference.BELOW, ContentWidgetPositionPreference.ABOVE],
+			positionAffinity: PositionAffinity.None,
 		};
 	}
 
@@ -151,18 +178,29 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 		if (!computeAsyncResult) {
 			return;
 		}
-		this._onResult.fire(new StandaloneColorPickerResult(computeAsyncResult.result, computeAsyncResult.foundInEditor));
+		this._onResult.fire(
+			new StandaloneColorPickerResult(computeAsyncResult.result, computeAsyncResult.foundInEditor)
+		);
 	}
 
-	private async _computeAsync(range: IRange): Promise<{ result: StandaloneColorPickerHover; foundInEditor: boolean } | null> {
+	private async _computeAsync(
+		range: IRange
+	): Promise<{ result: StandaloneColorPickerHover; foundInEditor: boolean } | null> {
 		if (!this._editor.hasModel()) {
 			return null;
 		}
 		const colorInfo: IColorInformation = {
 			range: range,
-			color: { red: 0, green: 0, blue: 0, alpha: 1 }
+			color: { red: 0, green: 0, blue: 0, alpha: 1 },
 		};
-		const colorHoverResult: { colorHover: StandaloneColorPickerHover; foundInEditor: boolean } | null = await this._standaloneColorPickerParticipant.createColorHover(colorInfo, new DefaultDocumentColorProvider(this._editorWorkerService), this._languageFeaturesService.colorProvider);
+		const colorHoverResult: {
+			colorHover: StandaloneColorPickerHover;
+			foundInEditor: boolean;
+		} | null = await this._standaloneColorPickerParticipant.createColorHover(
+			colorInfo,
+			new DefaultDocumentColorProvider(this._editorWorkerService),
+			this._languageFeaturesService.colorProvider
+		);
 		if (!colorHoverResult) {
 			return null;
 		}
@@ -171,19 +209,24 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 
 	private _render(colorHover: StandaloneColorPickerHover, foundInEditor: boolean) {
 		const fragment = document.createDocumentFragment();
-		this._renderedStatusBar.value = this._register(new EditorHoverStatusBar(this._keybindingService, this._hoverService));
+		this._renderedStatusBar.value = this._register(
+			new EditorHoverStatusBar(this._keybindingService, this._hoverService)
+		);
 
 		const context: IEditorHoverRenderContext = {
 			fragment,
 			statusBar: this._renderedStatusBar.value,
-			onContentsChanged: () => { },
-			setMinimumDimensions: () => { },
+			onContentsChanged: () => {},
+			setMinimumDimensions: () => {},
 			hide: () => this.hide(),
-			focus: () => this.focus()
+			focus: () => this.focus(),
 		};
 
 		this._colorHover = colorHover;
-		this._renderedHoverParts.value = this._standaloneColorPickerParticipant.renderHoverParts(context, [colorHover]);
+		this._renderedHoverParts.value = this._standaloneColorPickerParticipant.renderHoverParts(
+			context,
+			[colorHover]
+		);
 		if (!this._renderedHoverParts.value) {
 			this._renderedStatusBar.clear();
 			this._renderedHoverParts.clear();
@@ -199,7 +242,8 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 
 		const colorPickerBody = colorPicker.body;
 		const saturationBoxWidth = colorPickerBody.saturationBox.domNode.clientWidth;
-		const widthOfOriginalColorBox = colorPickerBody.domNode.clientWidth - saturationBoxWidth - CLOSE_BUTTON_WIDTH - PADDING;
+		const widthOfOriginalColorBox =
+			colorPickerBody.domNode.clientWidth - saturationBoxWidth - CLOSE_BUTTON_WIDTH - PADDING;
 		const enterButton: InsertButton | null = colorPicker.body.enterButton;
 		enterButton?.onClicked(() => {
 			this.updateEditor();

@@ -4,11 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { FindSectionHeaderOptions, ISectionHeaderFinderTarget, findSectionHeaders } from '../../../common/services/findSectionHeaders.js';
+import {
+	FindSectionHeaderOptions,
+	ISectionHeaderFinderTarget,
+	findSectionHeaders,
+} from '../../../common/services/findSectionHeaders.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 class TestSectionHeaderFinderTarget implements ISectionHeaderFinderTarget {
-	constructor(private readonly lines: string[]) { }
+	constructor(private readonly lines: string[]) {}
 
 	getLineCount(): number {
 		return this.lines.length;
@@ -20,7 +24,6 @@ class TestSectionHeaderFinderTarget implements ISectionHeaderFinderTarget {
 }
 
 suite('FindSectionHeaders', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('finds simple section headers', () => {
@@ -29,13 +32,13 @@ suite('FindSectionHeaders', () => {
 			'MARK: My Section',
 			'another line',
 			'MARK: Another Section',
-			'last line'
+			'last line',
 		]);
 
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: 'MARK:\\s*(?<label>.*)$'
+			markSectionHeaderRegex: 'MARK:\\s*(?<label>.*)$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -56,13 +59,13 @@ suite('FindSectionHeaders', () => {
 			'MARK: -My Section',
 			'another line',
 			'MARK: - Another Section',
-			'last line'
+			'last line',
 		]);
 
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: 'MARK:\\s*(?<separator>-?)\\s*(?<label>.*)$'
+			markSectionHeaderRegex: 'MARK:\\s*(?<separator>-?)\\s*(?<label>.*)$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -85,13 +88,13 @@ suite('FindSectionHeaders', () => {
 			'// ==========',
 			'// Another Section',
 			'// ==========',
-			'more code...'
+			'more code...',
 		]);
 
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$'
+			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -119,7 +122,7 @@ suite('FindSectionHeaders', () => {
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$'
+			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -137,17 +140,17 @@ suite('FindSectionHeaders', () => {
 	test('section headers must be in comments when specified', () => {
 		const model = new TestSectionHeaderFinderTarget([
 			'// ==========',
-			'// Section 1',  // This one is in a comment
+			'// Section 1', // This one is in a comment
 			'// ==========',
-			'==========',    // This one isn't
+			'==========', // This one isn't
 			'Section 2',
-			'=========='
+			'==========',
 		]);
 
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^(?:\/\/ )?=+\\n^(?:\/\/ )?(?<label>[^\\n]+?)\\n^(?:\/\/ )?=+$'
+			markSectionHeaderRegex: '^(?:\/\/ )?=+\\n^(?:\/\/ )?(?<label>[^\\n]+?)\\n^(?:\/\/ )?=+$',
 		};
 
 		// Both patterns match, but the second one should be filtered out by the token check
@@ -175,7 +178,7 @@ suite('FindSectionHeaders', () => {
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$'
+			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -208,7 +211,7 @@ suite('FindSectionHeaders', () => {
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$'
+			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -231,7 +234,7 @@ suite('FindSectionHeaders', () => {
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$'
+			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -254,7 +257,7 @@ suite('FindSectionHeaders', () => {
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^\/\/ [-=]+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ [-=]+$'
+			markSectionHeaderRegex: '^\/\/ [-=]+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ [-=]+$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -271,7 +274,7 @@ suite('FindSectionHeaders', () => {
 		}
 
 		// Add a section header that would cross the chunk boundary
-		lines.push('// ==========');  // line 97
+		lines.push('// =========='); // line 97
 		lines.push('// Section 1'); // line 98
 		lines.push('// =========='); // line 99
 		lines.push('// =========='); // line 100 (chunk boundary)
@@ -288,7 +291,7 @@ suite('FindSectionHeaders', () => {
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$'
+			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -305,20 +308,20 @@ suite('FindSectionHeaders', () => {
 
 	test('handles overlapping section headers without duplicates', () => {
 		const model = new TestSectionHeaderFinderTarget([
-			'// ==========',  // Line 1
-			'// Section 1',   // Line 2 - This is part of first header
-			'// ==========',  // Line 3 - This is the end of first
-			'// Section 2',   // Line 4 - This is not a header
-			'// ==========',  // Line 5
-			'// ==========',  // Line 6 - Start of second header
-			'// Section 3',   // Line 7
-			'// ==========='  // Line 8
+			'// ==========', // Line 1
+			'// Section 1', // Line 2 - This is part of first header
+			'// ==========', // Line 3 - This is the end of first
+			'// Section 2', // Line 4 - This is not a header
+			'// ==========', // Line 5
+			'// ==========', // Line 6 - Start of second header
+			'// Section 3', // Line 7
+			'// ===========', // Line 8
 		]);
 
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$'
+			markSectionHeaderRegex: '^\/\/ =+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ =+$',
 		};
 
 		const headers = findSectionHeaders(model, options);
@@ -339,21 +342,21 @@ suite('FindSectionHeaders', () => {
 
 	test('handles partially overlapping multiline section headers correctly', () => {
 		const model = new TestSectionHeaderFinderTarget([
-			'// ================',  // Line 1
-			'// Major Section 1',   // Line 2
-			'// ================',  // Line 3
-			'// --------',         // Line 4 - Start of subsection that overlaps with end of major section
-			'// Subsection 1.1',   // Line 5
-			'// --------',         // Line 6
-			'// ================',  // Line 7
-			'// Major Section 2',   // Line 8
-			'// ================',  // Line 9
+			'// ================', // Line 1
+			'// Major Section 1', // Line 2
+			'// ================', // Line 3
+			'// --------', // Line 4 - Start of subsection that overlaps with end of major section
+			'// Subsection 1.1', // Line 5
+			'// --------', // Line 6
+			'// ================', // Line 7
+			'// Major Section 2', // Line 8
+			'// ================', // Line 9
 		]);
 
 		const options: FindSectionHeaderOptions = {
 			findRegionSectionHeaders: false,
 			findMarkSectionHeaders: true,
-			markSectionHeaderRegex: '^\/\/ [-=]+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ [-=]+$'
+			markSectionHeaderRegex: '^\/\/ [-=]+\\n^\/\/ (?<label>[^\\n]+?)\\n^\/\/ [-=]+$',
 		};
 
 		const headers = findSectionHeaders(model, options);

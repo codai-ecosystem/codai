@@ -15,17 +15,22 @@ const enum DisplayProtocolType {
 	Wayland = 'wayland',
 	XWayland = 'xwayland',
 	X11 = 'x11',
-	Unknown = 'unknown'
+	Unknown = 'unknown',
 }
 
-export async function getDisplayProtocol(errorLogger: (error: any) => void): Promise<DisplayProtocolType> {
+export async function getDisplayProtocol(
+	errorLogger: (error: any) => void
+): Promise<DisplayProtocolType> {
 	const xdgSessionType = env[XDG_SESSION_TYPE];
 
 	if (xdgSessionType) {
 		// If XDG_SESSION_TYPE is set, return its value if it's either 'wayland' or 'x11'.
 		// We assume that any value other than 'wayland' or 'x11' is an error or unexpected,
 		// hence 'unknown' is returned.
-		return xdgSessionType === DisplayProtocolType.Wayland || xdgSessionType === DisplayProtocolType.X11 ? xdgSessionType : DisplayProtocolType.Unknown;
+		return xdgSessionType === DisplayProtocolType.Wayland ||
+			xdgSessionType === DisplayProtocolType.X11
+			? xdgSessionType
+			: DisplayProtocolType.Unknown;
 	} else {
 		const waylandDisplay = env[WAYLAND_DISPLAY];
 
@@ -58,16 +63,22 @@ export async function getDisplayProtocol(errorLogger: (error: any) => void): Pro
 	}
 }
 
-
-export function getCodeDisplayProtocol(displayProtocol: DisplayProtocolType, ozonePlatform: string | undefined): DisplayProtocolType {
+export function getCodeDisplayProtocol(
+	displayProtocol: DisplayProtocolType,
+	ozonePlatform: string | undefined
+): DisplayProtocolType {
 	if (!ozonePlatform) {
-		return displayProtocol === DisplayProtocolType.Wayland ? DisplayProtocolType.XWayland : DisplayProtocolType.X11;
+		return displayProtocol === DisplayProtocolType.Wayland
+			? DisplayProtocolType.XWayland
+			: DisplayProtocolType.X11;
 	} else {
 		switch (ozonePlatform) {
 			case 'auto':
 				return displayProtocol;
 			case 'x11':
-				return displayProtocol === DisplayProtocolType.Wayland ? DisplayProtocolType.XWayland : DisplayProtocolType.X11;
+				return displayProtocol === DisplayProtocolType.Wayland
+					? DisplayProtocolType.XWayland
+					: DisplayProtocolType.X11;
 			case 'wayland':
 				return DisplayProtocolType.Wayland;
 			default:

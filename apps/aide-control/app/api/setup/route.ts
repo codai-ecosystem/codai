@@ -34,14 +34,14 @@ async function getSetupStatus(request: NextRequest, user: UserDocument) {
 				title: 'Complete Profile',
 				description: 'Add your display name and basic information',
 				status: userDoc?.displayName ? 'completed' : 'pending',
-				optional: false
+				optional: false,
 			},
 			{
 				id: 'plan',
 				title: 'Choose Your Plan',
 				description: 'Select a subscription plan that fits your needs',
 				status: userDoc?.plan && userDoc.plan !== 'free' ? 'completed' : 'pending',
-				optional: false
+				optional: false,
 			},
 			{
 				id: 'github',
@@ -49,7 +49,7 @@ async function getSetupStatus(request: NextRequest, user: UserDocument) {
 				description: 'Link your GitHub account for repository management',
 				status: setupSteps.github || 'pending',
 				optional: false,
-				dependencies: ['profile', 'plan']
+				dependencies: ['profile', 'plan'],
 			},
 			{
 				id: 'project',
@@ -57,7 +57,7 @@ async function getSetupStatus(request: NextRequest, user: UserDocument) {
 				description: 'Set up your first AIDE project and development environment',
 				status: setupSteps.project || 'pending',
 				optional: false,
-				dependencies: ['github']
+				dependencies: ['github'],
 			},
 			{
 				id: 'agent',
@@ -65,8 +65,8 @@ async function getSetupStatus(request: NextRequest, user: UserDocument) {
 				description: 'Try out the AI agents with a simple task',
 				status: setupSteps.agent || 'pending',
 				optional: true,
-				dependencies: ['project']
-			}
+				dependencies: ['project'],
+			},
 		];
 
 		// Calculate overall progress
@@ -75,11 +75,11 @@ async function getSetupStatus(request: NextRequest, user: UserDocument) {
 		const progress = Math.round((completedSteps / totalSteps) * 100);
 
 		// Get next step
-		const nextStep = steps.find(step =>
-			step.status === 'pending' &&
-			(!step.dependencies || step.dependencies.every(dep =>
-				steps.find(s => s.id === dep)?.status === 'completed'
-			))
+		const nextStep = steps.find(
+			step =>
+				step.status === 'pending' &&
+				(!step.dependencies ||
+					step.dependencies.every(dep => steps.find(s => s.id === dep)?.status === 'completed'))
 		);
 
 		return NextResponse.json({
@@ -93,16 +93,13 @@ async function getSetupStatus(request: NextRequest, user: UserDocument) {
 					displayName: userDoc?.displayName,
 					email: userDoc?.email,
 					plan: userDoc?.plan || 'free',
-					role: userDoc?.role || 'user'
-				}
-			}
+					role: userDoc?.role || 'user',
+				},
+			},
 		});
 	} catch (error) {
 		console.error('Error getting setup status:', error);
-		return NextResponse.json(
-			{ error: 'Failed to get setup status' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to get setup status' }, { status: 500 });
 	}
 }
 
@@ -115,10 +112,7 @@ async function completeSetupStep(request: NextRequest, user: UserDocument) {
 		const { stepId, data } = body;
 
 		if (!stepId) {
-			return NextResponse.json(
-				{ error: 'Step ID is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Step ID is required' }, { status: 400 });
 		}
 
 		const provisioningService = new BackendProvisioningService();
@@ -129,15 +123,12 @@ async function completeSetupStep(request: NextRequest, user: UserDocument) {
 		switch (stepId) {
 			case 'profile':
 				if (!data?.displayName) {
-					return NextResponse.json(
-						{ error: 'Display name is required' },
-						{ status: 400 }
-					);
+					return NextResponse.json({ error: 'Display name is required' }, { status: 400 });
 				}
 
 				await FirestoreService.setUserDocument(user.uid, {
 					displayName: data.displayName,
-					setupSteps: { profile: 'completed' }
+					setupSteps: { profile: 'completed' },
 				});
 
 				result = { message: 'Profile updated successfully' };
@@ -145,48 +136,42 @@ async function completeSetupStep(request: NextRequest, user: UserDocument) {
 
 			case 'plan':
 				if (!data?.planId) {
-					return NextResponse.json(
-						{ error: 'Plan ID is required' },
-						{ status: 400 }
-					);
+					return NextResponse.json({ error: 'Plan ID is required' }, { status: 400 });
 				}
 
 				// This would normally create a Stripe checkout session
 				// For now, just update the user's plan
 				await FirestoreService.setUserDocument(user.uid, {
 					plan: data.planId,
-					setupSteps: { plan: 'completed' }
+					setupSteps: { plan: 'completed' },
 				});
 
 				result = {
 					message: 'Plan selected successfully',
-					redirectUrl: data.planId === 'free' ? null : '/billing/checkout'
+					redirectUrl: data.planId === 'free' ? null : '/billing/checkout',
 				};
 				break;
 
 			case 'github':
 				if (!data?.githubUsername) {
-					return NextResponse.json(
-						{ error: 'GitHub username is required' },
-						{ status: 400 }
-					);
+					return NextResponse.json({ error: 'GitHub username is required' }, { status: 400 });
 				}
 
 				// Mark step as in progress
 				await FirestoreService.setUserDocument(user.uid, {
-					setupSteps: { github: 'in_progress' }
+					setupSteps: { github: 'in_progress' },
 				});
 
 				// TODO: Integrate with actual GitHub OAuth flow
 				// For now, simulate GitHub connection
 				await FirestoreService.setUserDocument(user.uid, {
 					githubUsername: data.githubUsername,
-					setupSteps: { github: 'completed' }
+					setupSteps: { github: 'completed' },
 				});
 
 				result = {
 					message: 'GitHub connected successfully',
-					githubUsername: data.githubUsername
+					githubUsername: data.githubUsername,
 				};
 				break;
 
@@ -200,7 +185,7 @@ async function completeSetupStep(request: NextRequest, user: UserDocument) {
 
 				// Mark step as in progress
 				await FirestoreService.setUserDocument(user.uid, {
-					setupSteps: { project: 'in_progress' }
+					setupSteps: { project: 'in_progress' },
 				});
 
 				const userDoc = await FirestoreService.getUserDocument(user.uid);
@@ -210,18 +195,18 @@ async function completeSetupStep(request: NextRequest, user: UserDocument) {
 					userId: user.uid,
 					email: user.email,
 					displayName: userDoc?.displayName || user.email,
-					plan: userDoc?.plan as 'free' | 'professional' | 'enterprise' || 'free',
+					plan: (userDoc?.plan as 'free' | 'professional' | 'enterprise') || 'free',
 					projectName: data.projectName,
 					projectType: data.projectType,
 					projectId: `${user.uid}-${Date.now()}`,
 					services: ['github', 'firebase'],
-					environmentType: 'development'
+					environmentType: 'development',
 				});
 
 				if (provisioningResult.success) {
 					await FirestoreService.setUserDocument(user.uid, {
 						firstProjectId: provisioningResult.projectId,
-						setupSteps: { project: 'completed' }
+						setupSteps: { project: 'completed' },
 					});
 
 					result = {
@@ -230,12 +215,12 @@ async function completeSetupStep(request: NextRequest, user: UserDocument) {
 							id: provisioningResult.projectId,
 							name: data.projectName,
 							type: data.projectType,
-							services: provisioningResult.services
-						}
+							services: provisioningResult.services,
+						},
 					};
 				} else {
 					await FirestoreService.setUserDocument(user.uid, {
-						setupSteps: { project: 'failed' }
+						setupSteps: { project: 'failed' },
 					});
 
 					return NextResponse.json(
@@ -248,20 +233,17 @@ async function completeSetupStep(request: NextRequest, user: UserDocument) {
 			case 'agent':
 				// Mark agent setup as completed
 				await FirestoreService.setUserDocument(user.uid, {
-					setupSteps: { agent: 'completed' }
+					setupSteps: { agent: 'completed' },
 				});
 
 				result = {
 					message: 'Agent test completed successfully',
-					nextSteps: ['Start building with AI agents', 'Explore the dashboard']
+					nextSteps: ['Start building with AI agents', 'Explore the dashboard'],
 				};
 				break;
 
 			default:
-				return NextResponse.json(
-					{ error: `Unknown setup step: ${stepId}` },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: `Unknown setup step: ${stepId}` }, { status: 400 });
 		}
 
 		// Check if setup is now complete
@@ -273,7 +255,7 @@ async function completeSetupStep(request: NextRequest, user: UserDocument) {
 		if (allRequiredCompleted && !updatedUserDoc?.setupCompleted) {
 			await FirestoreService.setUserDocument(user.uid, {
 				setupCompleted: true,
-				setupCompletedAt: new Date()
+				setupCompletedAt: new Date(),
 			});
 		}
 
@@ -285,20 +267,17 @@ async function completeSetupStep(request: NextRequest, user: UserDocument) {
 			resourceId: stepId,
 			details: {
 				action: `Completed setup step: ${stepId}`,
-				stepData: data
-			}
+				stepData: data,
+			},
 		});
 
 		return NextResponse.json({
 			success: true,
-			data: result
+			data: result,
 		});
 	} catch (error) {
 		console.error('Error completing setup step:', error);
-		return NextResponse.json(
-			{ error: 'Failed to complete setup step' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to complete setup step' }, { status: 500 });
 	}
 }
 

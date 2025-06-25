@@ -5,8 +5,21 @@
 
 import { authentication, Command, l10n, LogOutputChannel, workspace } from 'vscode';
 import { Commit, Repository as GitHubRepository, Maybe } from '@octokit/graphql-schema';
-import { API, AvatarQuery, AvatarQueryCommit, Repository, SourceControlHistoryItemDetailsProvider } from './typings/git.js';
-import { DisposableStore, getRepositoryDefaultRemote, getRepositoryDefaultRemoteUrl, getRepositoryFromUrl, groupBy, sequentialize } from './util.js';
+import {
+	API,
+	AvatarQuery,
+	AvatarQueryCommit,
+	Repository,
+	SourceControlHistoryItemDetailsProvider,
+} from './typings/git.js';
+import {
+	DisposableStore,
+	getRepositoryDefaultRemote,
+	getRepositoryDefaultRemoteUrl,
+	getRepositoryFromUrl,
+	groupBy,
+	sequentialize,
+} from './util.js';
 import { AuthenticationError, getOctokitGraphql } from './auth.js';
 import { getAvatarLink } from './links.js';
 
@@ -77,43 +90,63 @@ function compareAvatarQuery(a: AvatarQueryCommit, b: AvatarQueryCommit): number 
 	return (a.authorName ?? '').localeCompare(b.authorName ?? '');
 }
 
-export class GitHubSourceControlHistoryItemDetailsProvider implements SourceControlHistoryItemDetailsProvider {
+export class GitHubSourceControlHistoryItemDetailsProvider
+	implements SourceControlHistoryItemDetailsProvider
+{
 	private _isUserAuthenticated = true;
 	private readonly _store = new Map<string, GitHubRepositoryStore>();
 	private readonly _disposables = new DisposableStore();
 
-	constructor(private readonly _gitAPI: API, private readonly _logger: LogOutputChannel) {
-		this._disposables.add(this._gitAPI.onDidCloseRepository(repository => this._onDidCloseRepository(repository)));
+	constructor(
+		private readonly _gitAPI: API,
+		private readonly _logger: LogOutputChannel
+	) {
+		this._disposables.add(
+			this._gitAPI.onDidCloseRepository(repository => this._onDidCloseRepository(repository))
+		);
 
-		this._disposables.add(authentication.onDidChangeSessions(e => {
-			if (e.provider.id === 'github') {
-				this._isUserAuthenticated = true;
-			}
-		}));
+		this._disposables.add(
+			authentication.onDidChangeSessions(e => {
+				if (e.provider.id === 'github') {
+					this._isUserAuthenticated = true;
+				}
+			})
+		);
 
-		this._disposables.add(workspace.onDidChangeConfiguration(e => {
-			if (!e.affectsConfiguration('github.showAvatar')) {
-				return;
-			}
+		this._disposables.add(
+			workspace.onDidChangeConfiguration(e => {
+				if (!e.affectsConfiguration('github.showAvatar')) {
+					return;
+				}
 
-			this._store.clear();
-		}));
+				this._store.clear();
+			})
+		);
 	}
 
-	async provideAvatar(repository: Repository, query: AvatarQuery): Promise<Map<string, string | undefined> | undefined> {
-		this._logger.trace(`[GitHubSourceControlHistoryItemDetailsProvider][provideAvatar] Avatar resolution for ${query.commits.length} commit(s) in ${repository.rootUri.fsPath}.`);
+	async provideAvatar(
+		repository: Repository,
+		query: AvatarQuery
+	): Promise<Map<string, string | undefined> | undefined> {
+		this._logger.trace(
+			`[GitHubSourceControlHistoryItemDetailsProvider][provideAvatar] Avatar resolution for ${query.commits.length} commit(s) in ${repository.rootUri.fsPath}.`
+		);
 
 		const config = workspace.getConfiguration('github', repository.rootUri);
 		const showAvatar = config.get<boolean>('showAvatar', true) === true;
 
 		if (!this._isUserAuthenticated || !showAvatar) {
-			this._logger.trace(`[GitHubSourceControlHistoryItemDetailsProvider][provideAvatar] Avatar resolution is disabled. (${showAvatar === false ? 'setting' : 'auth'})`);
+			this._logger.trace(
+				`[GitHubSourceControlHistoryItemDetailsProvider][provideAvatar] Avatar resolution is disabled. (${showAvatar === false ? 'setting' : 'auth'})`
+			);
 			return undefined;
 		}
 
 		const descriptor = getRepositoryDefaultRemote(repository);
 		if (!descriptor) {
-			this._logger.trace(`[GitHubSourceControlHistoryItemDetailsProvider][provideAvatar] Repository does not have a GitHub remote.`);
+			this._logger.trace(
+				`[GitHubSourceControlHistoryItemDetailsProvider][provideAvatar] Repository does not have a GitHub remote.`
+			);
 			return undefined;
 		}
 
@@ -133,61 +166,68 @@ export class GitHubSourceControlHistoryItemDetailsProvider implements SourceCont
 			const authorQuery = groupBy<AvatarQueryCommit>(query.commits, compareAvatarQuery);
 
 			const results = new Map<string, string | undefined>();
-			await Promise.all(authorQuery.map(async commits => {
-				if (commits.length === 0) {
-					return;
-				}
-
-				// Query the in-memory cache for the user
-				const avatarUrl = repositoryStore.users.find(
-					user => user.email === commits[0].authorEmail || user.name === commits[0].authorName)?.avatarUrl;
-
-				// Cache hit
-				if (avatarUrl) {
-					// Add avatar for each commit
-					logs.cached += commits.length;
-					commits.forEach(({ hash }) => results.set(hash, `${avatarUrl}&s=${query.size}`));
-					return;
-				}
-
-				// Check if any of the commit are being tracked in the list
-				// of known commits that have incomplte author information
-				if (commits.some(({ hash }) => repositoryStore.commits.has(hash))) {
-					commits.forEach(({ hash }) => results.set(hash, undefined));
-					return;
-				}
-
-				// Try to extract the user identifier from GitHub no-reply emails
-				const userIdFromEmail = getUserIdFromNoReplyEmail(commits[0].authorEmail);
-				if (userIdFromEmail) {
-					logs.email += commits.length;
-					const avatarUrl = getAvatarLink(userIdFromEmail, query.size);
-					commits.forEach(({ hash }) => results.set(hash, avatarUrl));
-					return;
-				}
-
-				// Get the commit details
-				const commitAuthor = await this._getCommitAuthor(descriptor, commits[0].hash);
-				if (!commitAuthor) {
-					// The commit has incomplete author information, so
-					// we should not try to query the authors details again
-					logs.incomplete += commits.length;
-					for (const { hash } of commits) {
-						repositoryStore.commits.add(hash);
-						results.set(hash, undefined);
+			await Promise.all(
+				authorQuery.map(async commits => {
+					if (commits.length === 0) {
+						return;
 					}
-					return;
-				}
 
-				// Save the user to the cache
-				repositoryStore.users.push(commitAuthor);
+					// Query the in-memory cache for the user
+					const avatarUrl = repositoryStore.users.find(
+						user => user.email === commits[0].authorEmail || user.name === commits[0].authorName
+					)?.avatarUrl;
 
-				// Add avatar for each commit
-				logs.github += commits.length;
-				commits.forEach(({ hash }) => results.set(hash, `${commitAuthor.avatarUrl}&s=${query.size}`));
-			}));
+					// Cache hit
+					if (avatarUrl) {
+						// Add avatar for each commit
+						logs.cached += commits.length;
+						commits.forEach(({ hash }) => results.set(hash, `${avatarUrl}&s=${query.size}`));
+						return;
+					}
 
-			this._logger.trace(`[GitHubSourceControlHistoryItemDetailsProvider][provideAvatar] Avatar resolution for ${query.commits.length} commit(s) in ${repository.rootUri.fsPath} complete: ${JSON.stringify(logs)}.`);
+					// Check if any of the commit are being tracked in the list
+					// of known commits that have incomplte author information
+					if (commits.some(({ hash }) => repositoryStore.commits.has(hash))) {
+						commits.forEach(({ hash }) => results.set(hash, undefined));
+						return;
+					}
+
+					// Try to extract the user identifier from GitHub no-reply emails
+					const userIdFromEmail = getUserIdFromNoReplyEmail(commits[0].authorEmail);
+					if (userIdFromEmail) {
+						logs.email += commits.length;
+						const avatarUrl = getAvatarLink(userIdFromEmail, query.size);
+						commits.forEach(({ hash }) => results.set(hash, avatarUrl));
+						return;
+					}
+
+					// Get the commit details
+					const commitAuthor = await this._getCommitAuthor(descriptor, commits[0].hash);
+					if (!commitAuthor) {
+						// The commit has incomplete author information, so
+						// we should not try to query the authors details again
+						logs.incomplete += commits.length;
+						for (const { hash } of commits) {
+							repositoryStore.commits.add(hash);
+							results.set(hash, undefined);
+						}
+						return;
+					}
+
+					// Save the user to the cache
+					repositoryStore.users.push(commitAuthor);
+
+					// Add avatar for each commit
+					logs.github += commits.length;
+					commits.forEach(({ hash }) =>
+						results.set(hash, `${commitAuthor.avatarUrl}&s=${query.size}`)
+					);
+				})
+			);
+
+			this._logger.trace(
+				`[GitHubSourceControlHistoryItemDetailsProvider][provideAvatar] Avatar resolution for ${query.commits.length} commit(s) in ${repository.rootUri.fsPath} complete: ${JSON.stringify(logs)}.`
+			);
 
 			return results;
 		} catch (err) {
@@ -208,12 +248,14 @@ export class GitHubSourceControlHistoryItemDetailsProvider implements SourceCont
 			return undefined;
 		}
 
-		return [{
-			title: l10n.t('{0} Open on GitHub', '$(github)'),
-			tooltip: l10n.t('Open on GitHub'),
-			command: 'github.openOnGitHub',
-			arguments: [url]
-		}];
+		return [
+			{
+				title: l10n.t('{0} Open on GitHub', '$(github)'),
+				tooltip: l10n.t('Open on GitHub'),
+				command: 'github.openOnGitHub',
+				arguments: [url],
+			},
+		];
 	}
 
 	async provideMessageLinks(repository: Repository, message: string): Promise<string | undefined> {
@@ -224,20 +266,26 @@ export class GitHubSourceControlHistoryItemDetailsProvider implements SourceCont
 
 		return message.replace(
 			ISSUE_EXPRESSION,
-			(match, _group1, owner: string | undefined, repo: string | undefined, _group2, number: string | undefined) => {
+			(
+				match,
+				_group1,
+				owner: string | undefined,
+				repo: string | undefined,
+				_group2,
+				number: string | undefined
+			) => {
 				if (!number || Number.isNaN(parseInt(number))) {
 					return match;
 				}
 
-				const label = owner && repo
-					? `${owner}/${repo}#${number}`
-					: `#${number}`;
+				const label = owner && repo ? `${owner}/${repo}#${number}` : `#${number}`;
 
 				owner = owner ?? descriptor.owner;
 				repo = repo ?? descriptor.repo;
 
 				return `[${label}](https://github.com/${owner}/${repo}/issues/${number})`;
-			});
+			}
+		);
 	}
 
 	private _onDidCloseRepository(repository: Repository) {
@@ -261,11 +309,16 @@ export class GitHubSourceControlHistoryItemDetailsProvider implements SourceCont
 			return;
 		}
 
-		this._logger.trace(`[GitHubSourceControlHistoryItemDetailsProvider][_loadAssignableUsers] Querying assignable user(s) for ${descriptor.owner}/${descriptor.repo}.`);
+		this._logger.trace(
+			`[GitHubSourceControlHistoryItemDetailsProvider][_loadAssignableUsers] Querying assignable user(s) for ${descriptor.owner}/${descriptor.repo}.`
+		);
 
 		try {
 			const graphql = await getOctokitGraphql();
-			const { repository } = await graphql<{ repository: GitHubRepository }>(ASSIGNABLE_USERS_QUERY, descriptor);
+			const { repository } = await graphql<{ repository: GitHubRepository }>(
+				ASSIGNABLE_USERS_QUERY,
+				descriptor
+			);
 
 			const users: GitHubUser[] = [];
 			for (const node of repository.assignableUsers.nodes ?? []) {
@@ -283,24 +336,43 @@ export class GitHubSourceControlHistoryItemDetailsProvider implements SourceCont
 			}
 
 			this._store.set(this._getRepositoryKey(descriptor), { users, commits: new Set() });
-			this._logger.trace(`[GitHubSourceControlHistoryItemDetailsProvider][_loadAssignableUsers] Successfully queried assignable user(s) for ${descriptor.owner}/${descriptor.repo}: ${users.length} user(s).`);
+			this._logger.trace(
+				`[GitHubSourceControlHistoryItemDetailsProvider][_loadAssignableUsers] Successfully queried assignable user(s) for ${descriptor.owner}/${descriptor.repo}: ${users.length} user(s).`
+			);
 		} catch (err) {
-			this._logger.warn(`[GitHubSourceControlHistoryItemDetailsProvider][_loadAssignableUsers] Failed to load assignable user(s) for ${descriptor.owner}/${descriptor.repo}: ${err}`);
+			this._logger.warn(
+				`[GitHubSourceControlHistoryItemDetailsProvider][_loadAssignableUsers] Failed to load assignable user(s) for ${descriptor.owner}/${descriptor.repo}: ${err}`
+			);
 			throw err;
 		}
 	}
 
-	private async _getCommitAuthor(descriptor: { owner: string; repo: string }, commit: string): Promise<GitHubUser | undefined> {
-		this._logger.trace(`[GitHubSourceControlHistoryItemDetailsProvider][_getCommitAuthor] Querying commit author for ${descriptor.owner}/${descriptor.repo}/${commit}.`);
+	private async _getCommitAuthor(
+		descriptor: { owner: string; repo: string },
+		commit: string
+	): Promise<GitHubUser | undefined> {
+		this._logger.trace(
+			`[GitHubSourceControlHistoryItemDetailsProvider][_getCommitAuthor] Querying commit author for ${descriptor.owner}/${descriptor.repo}/${commit}.`
+		);
 
 		try {
 			const graphql = await getOctokitGraphql();
-			const { repository } = await graphql<{ repository: GitHubRepository }>(COMMIT_AUTHOR_QUERY, { ...descriptor, commit });
+			const { repository } = await graphql<{ repository: GitHubRepository }>(COMMIT_AUTHOR_QUERY, {
+				...descriptor,
+				commit,
+			});
 
 			const commitAuthor = (repository.object as Commit).author;
-			if (!commitAuthor?.user?.id || !commitAuthor.user?.login ||
-				!commitAuthor?.name || !commitAuthor?.email || !commitAuthor?.avatarUrl) {
-				this._logger.info(`[GitHubSourceControlHistoryItemDetailsProvider][_getCommitAuthor] Incomplete commit author for ${descriptor.owner}/${descriptor.repo}/${commit}: ${JSON.stringify(repository.object)}`);
+			if (
+				!commitAuthor?.user?.id ||
+				!commitAuthor.user?.login ||
+				!commitAuthor?.name ||
+				!commitAuthor?.email ||
+				!commitAuthor?.avatarUrl
+			) {
+				this._logger.info(
+					`[GitHubSourceControlHistoryItemDetailsProvider][_getCommitAuthor] Incomplete commit author for ${descriptor.owner}/${descriptor.repo}/${commit}: ${JSON.stringify(repository.object)}`
+				);
 
 				return undefined;
 			}
@@ -313,10 +385,14 @@ export class GitHubSourceControlHistoryItemDetailsProvider implements SourceCont
 				avatarUrl: commitAuthor.avatarUrl,
 			} satisfies GitHubUser;
 
-			this._logger.trace(`[GitHubSourceControlHistoryItemDetailsProvider][_getCommitAuthor] Successfully queried commit author for ${descriptor.owner}/${descriptor.repo}/${commit}: ${user.login}.`);
+			this._logger.trace(
+				`[GitHubSourceControlHistoryItemDetailsProvider][_getCommitAuthor] Successfully queried commit author for ${descriptor.owner}/${descriptor.repo}/${commit}: ${user.login}.`
+			);
 			return user;
 		} catch (err) {
-			this._logger.warn(`[GitHubSourceControlHistoryItemDetailsProvider][_getCommitAuthor] Failed to get commit author for ${descriptor.owner}/${descriptor.repo}/${commit}: ${err}`);
+			this._logger.warn(
+				`[GitHubSourceControlHistoryItemDetailsProvider][_getCommitAuthor] Failed to get commit author for ${descriptor.owner}/${descriptor.repo}/${commit}: ${err}`
+			);
 			throw err;
 		}
 	}

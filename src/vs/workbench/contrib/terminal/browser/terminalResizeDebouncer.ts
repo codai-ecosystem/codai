@@ -27,7 +27,7 @@ export class TerminalResizeDebouncer extends Disposable {
 		private readonly _getXterm: () => XtermTerminal | undefined,
 		private readonly _resizeBothCallback: (cols: number, rows: number) => void,
 		private readonly _resizeXCallback: (cols: number) => void,
-		private readonly _resizeYCallback: (rows: number) => void,
+		private readonly _resizeYCallback: (rows: number) => void
 	) {
 		super();
 	}
@@ -37,7 +37,10 @@ export class TerminalResizeDebouncer extends Disposable {
 		this._latestY = rows;
 
 		// Resize immediately if requested explicitly or if the buffer is small
-		if (immediate || this._getXterm()!.raw.buffer.normal.length < Constants.StartDebouncingThreshold) {
+		if (
+			immediate ||
+			this._getXterm()!.raw.buffer.normal.length < Constants.StartDebouncingThreshold
+		) {
 			this._resizeXJob.clear();
 			this._resizeYJob.clear();
 			this._resizeBothCallback(cols, rows);

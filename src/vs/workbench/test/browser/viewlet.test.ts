@@ -5,15 +5,18 @@
 
 import assert from 'assert';
 import { Registry } from '../../../platform/registry/common/platform.js';
-import { PaneCompositeDescriptor, Extensions, PaneCompositeRegistry, PaneComposite } from '../../browser/panecomposite.js';
+import {
+	PaneCompositeDescriptor,
+	Extensions,
+	PaneCompositeRegistry,
+	PaneComposite,
+} from '../../browser/panecomposite.js';
 import { isFunction } from '../../../base/common/types.js';
 import { IBoundarySashes } from '../../../base/browser/ui/sash/sash.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/common/utils.js';
 
 suite('Viewlets', () => {
-
 	class TestViewlet extends PaneComposite {
-
 		constructor() {
 			super('id', null!, null!, null!, null!, null!, null!, null!);
 		}
@@ -26,7 +29,9 @@ suite('Viewlets', () => {
 			throw new Error('Method not implemented.');
 		}
 
-		protected override createViewPaneContainer() { return null!; }
+		protected override createViewPaneContainer() {
+			return null!;
+		}
 	}
 
 	test('ViewletDescriptor API', function () {
@@ -48,16 +53,24 @@ suite('Viewlets', () => {
 	});
 
 	test('Viewlet extension point and registration', function () {
-		assert(isFunction(Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).registerPaneComposite));
+		assert(
+			isFunction(Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).registerPaneComposite)
+		);
 		assert(isFunction(Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposite));
 		assert(isFunction(Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposites));
 
-		const oldCount = Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposites().length;
+		const oldCount = Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposites()
+			.length;
 		const d = PaneCompositeDescriptor.create(TestViewlet, 'reg-test-id', 'name');
 		Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).registerPaneComposite(d);
 
-		assert(d === Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposite('reg-test-id'));
-		assert.strictEqual(oldCount + 1, Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposites().length);
+		assert(
+			d === Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposite('reg-test-id')
+		);
+		assert.strictEqual(
+			oldCount + 1,
+			Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposites().length
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();

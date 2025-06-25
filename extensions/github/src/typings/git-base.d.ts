@@ -9,11 +9,12 @@ export { ProviderResult } from 'vscode';
 export interface API {
 	registerRemoteSourceProvider(provider: RemoteSourceProvider): Disposable;
 	getRemoteSourceActions(url: string): Promise<RemoteSourceAction[]>;
-	pickRemoteSource(options: PickRemoteSourceOptions): Promise<string | PickRemoteSourceResult | undefined>;
+	pickRemoteSource(
+		options: PickRemoteSourceOptions
+	): Promise<string | PickRemoteSourceResult | undefined>;
 }
 
 export interface GitBaseExtension {
-
 	readonly enabled: boolean;
 	readonly onDidChangeEnablement: Event<boolean>;
 

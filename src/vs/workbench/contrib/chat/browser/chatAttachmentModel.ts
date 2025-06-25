@@ -27,7 +27,6 @@ export interface IChatAttachmentChangeEvent {
 }
 
 export class ChatAttachmentModel extends Disposable {
-
 	readonly promptInstructions: ChatPromptAttachmentsCollection;
 	private readonly _attachments = new Map<string, IChatRequestVariableEntry>();
 
@@ -38,11 +37,14 @@ export class ChatAttachmentModel extends Disposable {
 		@IInstantiationService instaService: IInstantiationService,
 		@IFileService private readonly fileService: IFileService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@ISharedWebContentExtractorService private readonly webContentExtractorService: ISharedWebContentExtractorService,
+		@ISharedWebContentExtractorService
+		private readonly webContentExtractorService: ISharedWebContentExtractorService
 	) {
 		super();
 
-		this.promptInstructions = this._register(instaService.createInstance(ChatPromptAttachmentsCollection));
+		this.promptInstructions = this._register(
+			instaService.createInstance(ChatPromptAttachmentsCollection)
+		);
 	}
 
 	get attachments(): ReadonlyArray<IChatRequestVariableEntry> {
@@ -54,7 +56,8 @@ export class ChatAttachmentModel extends Disposable {
 	}
 
 	get fileAttachments(): URI[] {
-		return this.attachments.filter(file => file.kind === 'file' && URI.isUri(file.value))
+		return this.attachments
+			.filter(file => file.kind === 'file' && URI.isUri(file.value))
 			.map(file => file.value as URI);
 	}
 
@@ -119,7 +122,6 @@ export class ChatAttachmentModel extends Disposable {
 		}
 
 		for (const item of upsert) {
-
 			if (item.kind === 'promptFile') {
 				// TODO@jrieken @aeschli @legomushroom Let's make instructions normal
 				// attachment types so that this isn't needed
@@ -155,16 +157,23 @@ export class ChatAttachmentModel extends Disposable {
 
 	// Gets an image variable for a given URI, which may be a file or a web URL
 	async asImageVariableEntry(uri: URI): Promise<IChatRequestVariableEntry | undefined> {
-		if (uri.scheme === Schemas.file && await this.fileService.canHandleResource(uri)) {
+		if (uri.scheme === Schemas.file && (await this.fileService.canHandleResource(uri))) {
 			return await resolveImageEditorAttachContext(this.fileService, this.dialogService, uri);
 		} else if (uri.scheme === Schemas.http || uri.scheme === Schemas.https) {
-			const extractedImages = await this.webContentExtractorService.readImage(uri, CancellationToken.None);
+			const extractedImages = await this.webContentExtractorService.readImage(
+				uri,
+				CancellationToken.None
+			);
 			if (extractedImages) {
-				return await resolveImageEditorAttachContext(this.fileService, this.dialogService, uri, extractedImages);
+				return await resolveImageEditorAttachContext(
+					this.fileService,
+					this.dialogService,
+					uri,
+					extractedImages
+				);
 			}
 		}
 
 		return undefined;
 	}
-
 }

@@ -7,7 +7,6 @@ import { KeyCodeUtils, ScanCodeUtils } from './keyCodes.js';
 import { KeyCodeChord, ScanCodeChord, Keybinding, Chord } from './keybindings.js';
 
 export class KeybindingParser {
-
 	private static _readModifiers(input: string) {
 		input = input.toLowerCase().trim();
 
@@ -69,7 +68,7 @@ export class KeybindingParser {
 			shift,
 			alt,
 			meta,
-			key
+			key,
 		};
 	}
 
@@ -79,7 +78,10 @@ export class KeybindingParser {
 		if (scanCodeMatch) {
 			const strScanCode = scanCodeMatch[1];
 			const scanCode = ScanCodeUtils.lowerCaseToEnum(strScanCode);
-			return [new ScanCodeChord(mods.ctrl, mods.shift, mods.alt, mods.meta, scanCode), mods.remains];
+			return [
+				new ScanCodeChord(mods.ctrl, mods.shift, mods.alt, mods.meta, scanCode),
+				mods.remains,
+			];
 		}
 		const keyCode = KeyCodeUtils.fromUserSettings(mods.key);
 		return [new KeyCodeChord(mods.ctrl, mods.shift, mods.alt, mods.meta, keyCode), mods.remains];
@@ -97,6 +99,6 @@ export class KeybindingParser {
 			[chord, input] = this.parseChord(input);
 			chords.push(chord);
 		}
-		return (chords.length > 0 ? new Keybinding(chords) : null);
+		return chords.length > 0 ? new Keybinding(chords) : null;
 	}
 }

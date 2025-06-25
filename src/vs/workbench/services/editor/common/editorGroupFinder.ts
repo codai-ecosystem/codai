@@ -6,45 +6,104 @@
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { EditorActivation } from '../../../../platform/editor/common/editor.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
-import { EditorInputWithOptions, isEditorInputWithOptions, IUntypedEditorInput, isEditorInput, EditorInputCapabilities } from '../../../common/editor.js';
+import {
+	EditorInputWithOptions,
+	isEditorInputWithOptions,
+	IUntypedEditorInput,
+	isEditorInput,
+	EditorInputCapabilities,
+} from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
-import { IEditorGroup, GroupsOrder, preferredSideBySideGroupDirection, IEditorGroupsService } from './editorGroupsService.js';
-import { AUX_WINDOW_GROUP, AUX_WINDOW_GROUP_TYPE, PreferredGroup, SIDE_GROUP } from './editorService.js';
+import {
+	IEditorGroup,
+	GroupsOrder,
+	preferredSideBySideGroupDirection,
+	IEditorGroupsService,
+} from './editorGroupsService.js';
+import {
+	AUX_WINDOW_GROUP,
+	AUX_WINDOW_GROUP_TYPE,
+	PreferredGroup,
+	SIDE_GROUP,
+} from './editorService.js';
 
 /**
  * Finds the target `IEditorGroup` given the instructions provided
  * that is best for the editor and matches the preferred group if
  * possible.
  */
-export function findGroup(accessor: ServicesAccessor, editor: IUntypedEditorInput, preferredGroup: Exclude<PreferredGroup, AUX_WINDOW_GROUP_TYPE> | undefined): [IEditorGroup, EditorActivation | undefined];
-export function findGroup(accessor: ServicesAccessor, editor: EditorInputWithOptions, preferredGroup: Exclude<PreferredGroup, AUX_WINDOW_GROUP_TYPE> | undefined): [IEditorGroup, EditorActivation | undefined];
-export function findGroup(accessor: ServicesAccessor, editor: EditorInputWithOptions | IUntypedEditorInput, preferredGroup: Exclude<PreferredGroup, AUX_WINDOW_GROUP_TYPE> | undefined): [IEditorGroup, EditorActivation | undefined];
-export function findGroup(accessor: ServicesAccessor, editor: IUntypedEditorInput, preferredGroup: AUX_WINDOW_GROUP_TYPE): Promise<[IEditorGroup, EditorActivation | undefined]>;
-export function findGroup(accessor: ServicesAccessor, editor: EditorInputWithOptions, preferredGroup: AUX_WINDOW_GROUP_TYPE): Promise<[IEditorGroup, EditorActivation | undefined]>;
-export function findGroup(accessor: ServicesAccessor, editor: EditorInputWithOptions | IUntypedEditorInput, preferredGroup: AUX_WINDOW_GROUP_TYPE): Promise<[IEditorGroup, EditorActivation | undefined]>;
-export function findGroup(accessor: ServicesAccessor, editor: EditorInputWithOptions | IUntypedEditorInput, preferredGroup: PreferredGroup | undefined): Promise<[IEditorGroup, EditorActivation | undefined]> | [IEditorGroup, EditorActivation | undefined];
-export function findGroup(accessor: ServicesAccessor, editor: EditorInputWithOptions | IUntypedEditorInput, preferredGroup: PreferredGroup | undefined): Promise<[IEditorGroup, EditorActivation | undefined]> | [IEditorGroup, EditorActivation | undefined] {
+export function findGroup(
+	accessor: ServicesAccessor,
+	editor: IUntypedEditorInput,
+	preferredGroup: Exclude<PreferredGroup, AUX_WINDOW_GROUP_TYPE> | undefined
+): [IEditorGroup, EditorActivation | undefined];
+export function findGroup(
+	accessor: ServicesAccessor,
+	editor: EditorInputWithOptions,
+	preferredGroup: Exclude<PreferredGroup, AUX_WINDOW_GROUP_TYPE> | undefined
+): [IEditorGroup, EditorActivation | undefined];
+export function findGroup(
+	accessor: ServicesAccessor,
+	editor: EditorInputWithOptions | IUntypedEditorInput,
+	preferredGroup: Exclude<PreferredGroup, AUX_WINDOW_GROUP_TYPE> | undefined
+): [IEditorGroup, EditorActivation | undefined];
+export function findGroup(
+	accessor: ServicesAccessor,
+	editor: IUntypedEditorInput,
+	preferredGroup: AUX_WINDOW_GROUP_TYPE
+): Promise<[IEditorGroup, EditorActivation | undefined]>;
+export function findGroup(
+	accessor: ServicesAccessor,
+	editor: EditorInputWithOptions,
+	preferredGroup: AUX_WINDOW_GROUP_TYPE
+): Promise<[IEditorGroup, EditorActivation | undefined]>;
+export function findGroup(
+	accessor: ServicesAccessor,
+	editor: EditorInputWithOptions | IUntypedEditorInput,
+	preferredGroup: AUX_WINDOW_GROUP_TYPE
+): Promise<[IEditorGroup, EditorActivation | undefined]>;
+export function findGroup(
+	accessor: ServicesAccessor,
+	editor: EditorInputWithOptions | IUntypedEditorInput,
+	preferredGroup: PreferredGroup | undefined
+):
+	| Promise<[IEditorGroup, EditorActivation | undefined]>
+	| [IEditorGroup, EditorActivation | undefined];
+export function findGroup(
+	accessor: ServicesAccessor,
+	editor: EditorInputWithOptions | IUntypedEditorInput,
+	preferredGroup: PreferredGroup | undefined
+):
+	| Promise<[IEditorGroup, EditorActivation | undefined]>
+	| [IEditorGroup, EditorActivation | undefined] {
 	const editorGroupService = accessor.get(IEditorGroupsService);
 	const configurationService = accessor.get(IConfigurationService);
 
 	const group = doFindGroup(editor, preferredGroup, editorGroupService, configurationService);
 	if (group instanceof Promise) {
-		return group.then(group => handleGroupActivation(group, editor, preferredGroup, editorGroupService));
+		return group.then(group =>
+			handleGroupActivation(group, editor, preferredGroup, editorGroupService)
+		);
 	}
 
 	return handleGroupActivation(group, editor, preferredGroup, editorGroupService);
 }
 
-function handleGroupActivation(group: IEditorGroup, editor: EditorInputWithOptions | IUntypedEditorInput, preferredGroup: PreferredGroup | undefined, editorGroupService: IEditorGroupsService): [IEditorGroup, EditorActivation | undefined] {
-
+function handleGroupActivation(
+	group: IEditorGroup,
+	editor: EditorInputWithOptions | IUntypedEditorInput,
+	preferredGroup: PreferredGroup | undefined,
+	editorGroupService: IEditorGroupsService
+): [IEditorGroup, EditorActivation | undefined] {
 	// Resolve editor activation strategy
 	let activation: EditorActivation | undefined = undefined;
 	if (
-		editorGroupService.activeGroup !== group && 		// only if target group is not already active
-		editor.options && !editor.options.inactive &&		// never for inactive editors
-		editor.options.preserveFocus &&						// only if preserveFocus
-		typeof editor.options.activation !== 'number' &&	// only if activation is not already defined (either true or false)
-		preferredGroup !== SIDE_GROUP						// never for the SIDE_GROUP
+		editorGroupService.activeGroup !== group && // only if target group is not already active
+		editor.options &&
+		!editor.options.inactive && // never for inactive editors
+		editor.options.preserveFocus && // only if preserveFocus
+		typeof editor.options.activation !== 'number' && // only if activation is not already defined (either true or false)
+		preferredGroup !== SIDE_GROUP // never for the SIDE_GROUP
 	) {
 		// If the resolved group is not the active one, we typically
 		// want the group to become active. There are a few cases
@@ -61,7 +120,12 @@ function handleGroupActivation(group: IEditorGroup, editor: EditorInputWithOptio
 	return [group, activation];
 }
 
-function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, preferredGroup: PreferredGroup | undefined, editorGroupService: IEditorGroupsService, configurationService: IConfigurationService): Promise<IEditorGroup> | IEditorGroup {
+function doFindGroup(
+	input: EditorInputWithOptions | IUntypedEditorInput,
+	preferredGroup: PreferredGroup | undefined,
+	editorGroupService: IEditorGroupsService,
+	configurationService: IConfigurationService
+): Promise<IEditorGroup> | IEditorGroup {
 	let group: Promise<IEditorGroup> | IEditorGroup | undefined;
 	const editor = isEditorInputWithOptions(input) ? input.editor : input;
 	const options = input.options;
@@ -92,11 +156,13 @@ function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, prefer
 
 	// Group: Aux Window
 	else if (preferredGroup === AUX_WINDOW_GROUP) {
-		group = editorGroupService.createAuxiliaryEditorPart({
-			bounds: options?.auxiliary?.bounds,
-			compact: options?.auxiliary?.compact,
-			alwaysOnTop: options?.auxiliary?.alwaysOnTop
-		}).then(group => group.activeGroup);
+		group = editorGroupService
+			.createAuxiliaryEditorPart({
+				bounds: options?.auxiliary?.bounds,
+				compact: options?.auxiliary?.compact,
+				alwaysOnTop: options?.auxiliary?.alwaysOnTop,
+			})
+			.then(group => group.activeGroup);
 	}
 
 	// Group: Unspecified without a specific index to open
@@ -118,7 +184,11 @@ function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, prefer
 		// We also try to reveal an editor if it has the `Singleton` capability which
 		// indicates that the same editor cannot be opened across groups.
 		if (!group) {
-			if (options?.revealIfOpened || configurationService.getValue<boolean>('workbench.editor.revealIfOpen') || (isEditorInput(editor) && editor.hasCapability(EditorInputCapabilities.Singleton))) {
+			if (
+				options?.revealIfOpened ||
+				configurationService.getValue<boolean>('workbench.editor.revealIfOpen') ||
+				(isEditorInput(editor) && editor.hasCapability(EditorInputCapabilities.Singleton))
+			) {
 				let groupWithInputActive: IEditorGroup | undefined = undefined;
 				let groupWithInputOpened: IEditorGroup | undefined = undefined;
 
@@ -165,7 +235,10 @@ function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, prefer
 			if (isGroupLockedForEditor(candidateGroup, editor)) {
 				// Group is still locked, so we have to create a new
 				// group to the side of the candidate group
-				group = editorGroupService.addGroup(candidateGroup, preferredSideBySideGroupDirection(configurationService));
+				group = editorGroupService.addGroup(
+					candidateGroup,
+					preferredSideBySideGroupDirection(configurationService)
+				);
 			} else {
 				group = candidateGroup;
 			}
@@ -180,7 +253,10 @@ function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, prefer
 	return group;
 }
 
-function isGroupLockedForEditor(group: IEditorGroup, editor: EditorInput | IUntypedEditorInput): boolean {
+function isGroupLockedForEditor(
+	group: IEditorGroup,
+	editor: EditorInput | IUntypedEditorInput
+): boolean {
 	if (!group.isLocked) {
 		// only relevant for locked editor groups
 		return false;

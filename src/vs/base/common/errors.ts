@@ -17,7 +17,6 @@ export class ErrorHandler {
 	private listeners: ErrorListenerCallback[];
 
 	constructor() {
-
 		this.listeners = [];
 
 		this.unexpectedErrorHandler = function (e: any) {
@@ -44,7 +43,7 @@ export class ErrorHandler {
 	}
 
 	private emit(e: any): void {
-		this.listeners.forEach((listener) => {
+		this.listeners.forEach(listener => {
 			listener(e);
 		});
 	}
@@ -98,7 +97,7 @@ export function isSigPipeError(e: unknown): e is Error {
  * This function should only be called with errors that indicate a bug in the product.
  * E.g. buggy extensions/invalid user-input/network issues should not be able to trigger this code path.
  * If they are, this indicates there is also a bug in the product.
-*/
+ */
 export function onBugIndicatingError(e: any): undefined {
 	errorHandler.onUnexpectedError(e);
 	return undefined;
@@ -147,7 +146,7 @@ export function transformErrorForSerialization(error: any): any {
 			stack,
 			noTelemetry: ErrorNoTelemetry.isErrorNoTelemetry(error),
 			cause: cause ? transformErrorForSerialization(cause) : undefined,
-			code: (<ErrorWithCode>error).code
+			code: (<ErrorWithCode>error).code,
 		};
 	}
 

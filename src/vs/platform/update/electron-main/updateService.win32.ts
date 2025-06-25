@@ -17,14 +17,29 @@ import * as pfs from '../../../base/node/pfs.js';
 import { IConfigurationService } from '../../configuration/common/configuration.js';
 import { IEnvironmentMainService } from '../../environment/electron-main/environmentMainService.js';
 import { IFileService } from '../../files/common/files.js';
-import { ILifecycleMainService, IRelaunchHandler, IRelaunchOptions } from '../../lifecycle/electron-main/lifecycleMainService.js';
+import {
+	ILifecycleMainService,
+	IRelaunchHandler,
+	IRelaunchOptions,
+} from '../../lifecycle/electron-main/lifecycleMainService.js';
 import { ILogService } from '../../log/common/log.js';
 import { INativeHostMainService } from '../../native/electron-main/nativeHostMainService.js';
 import { IProductService } from '../../product/common/productService.js';
 import { asJson, IRequestService } from '../../request/common/request.js';
 import { ITelemetryService } from '../../telemetry/common/telemetry.js';
-import { AvailableForDownload, DisablementReason, IUpdate, State, StateType, UpdateType } from '../common/update.js';
-import { AbstractUpdateService, createUpdateURL, UpdateErrorClassification } from './abstractUpdateService.js';
+import {
+	AvailableForDownload,
+	DisablementReason,
+	IUpdate,
+	State,
+	StateType,
+	UpdateType,
+} from '../common/update.js';
+import {
+	AbstractUpdateService,
+	createUpdateURL,
+	UpdateErrorClassification,
+} from './abstractUpdateService.js';
 
 async function pollUntil(fn: () => boolean, millis = 1000): Promise<void> {
 	while (!fn()) {
@@ -49,12 +64,14 @@ function getUpdateType(): UpdateType {
 }
 
 export class Win32UpdateService extends AbstractUpdateService implements IRelaunchHandler {
-
 	private availableUpdate: IAvailableUpdate | undefined;
 
 	@memoize
 	get cachePath(): Promise<string> {
-		const result = path.join(tmpdir(), `vscode-${this.productService.quality}-${this.productService.target}-${process.arch}`);
+		const result = path.join(
+			tmpdir(),
+			`vscode-${this.productService.quality}-${this.productService.target}-${process.arch}`
+		);
 		return fs.promises.mkdir(result, { recursive: true }).then(() => result);
 	}
 
@@ -69,7 +86,14 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
 		@INativeHostMainService private readonly nativeHostMainService: INativeHostMainService,
 		@IProductService productService: IProductService
 	) {
-		super(lifecycleMainService, configurationService, environmentMainService, requestService, logService, productService);
+		super(
+			lifecycleMainService,
+			configurationService,
+			environmentMainService,
+			requestService,
+			logService,
+			productService
+		);
 
 		lifecycleMainService.setRelaunchHandler(this);
 	}
@@ -90,9 +114,14 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
 	}
 
 	protected override async initialize(): Promise<void> {
-		if (this.productService.target === 'user' && await this.nativeHostMainService.isAdmin(undefined)) {
+		if (
+			this.productService.target === 'user' &&
+			(await this.nativeHostMainService.isAdmin(undefined))
+		) {
 			this.setState(State.Disabled(DisablementReason.RunningAsAdmin));
-			this.logService.info('update#ctor - updates are disabled due to running as Admin in user setup');
+			this.logService.info(
+				'update#ctor - updates are disabled due to running as Admin in user setup'
+			);
 			return;
 		}
 
@@ -119,7 +148,8 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
 		const url = explicit ? this.url : `${this.url}?bg=true`;
 		this.setState(State.CheckingForUpdates(explicit));
 
-		this.requestService.request({ url }, CancellationToken.None)
+		this.requestService
+			.request({ url }, CancellationToken.None)
 			.then<IUpdate | null>(asJson)
 			.then(update => {
 				const updateType = getUpdateType();
@@ -137,41 +167,57 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
 				this.setState(State.Downloading);
 
 				return this.cleanup(update.version).then(() => {
-					return this.getUpdatePackagePath(update.version).then(updatePackagePath => {
-						return pfs.Promises.exists(updatePackagePath).then(exists => {
-							if (exists) {
-								return Promise.resolve(updatePackagePath);
+					return this.getUpdatePackagePath(update.version)
+						.then(updatePackagePath => {
+							return pfs.Promises.exists(updatePackagePath).then(exists => {
+								if (exists) {
+									return Promise.resolve(updatePackagePath);
+								}
+
+								const downloadPath = `${updatePackagePath}.tmp`;
+
+								return this.requestService
+									.request({ url: update.url }, CancellationToken.None)
+									.then(context =>
+										this.fileService.writeFile(URI.file(downloadPath), context.stream)
+									)
+									.then(
+										update.sha256hash
+											? () => checksum(downloadPath, update.sha256hash)
+											: () => undefined
+									)
+									.then(() =>
+										pfs.Promises.rename(downloadPath, updatePackagePath, false /* no retry */)
+									)
+									.then(() => updatePackagePath);
+							});
+						})
+						.then(packagePath => {
+							this.availableUpdate = { packagePath };
+							this.setState(State.Downloaded(update));
+
+							const fastUpdatesEnabled = this.configurationService.getValue(
+								'update.enableWindowsBackgroundUpdates'
+							);
+							if (fastUpdatesEnabled) {
+								if (this.productService.target === 'user') {
+									this.doApplyUpdate();
+								}
+							} else {
+								this.setState(State.Ready(update));
 							}
-
-							const downloadPath = `${updatePackagePath}.tmp`;
-
-							return this.requestService.request({ url: update.url }, CancellationToken.None)
-								.then(context => this.fileService.writeFile(URI.file(downloadPath), context.stream))
-								.then(update.sha256hash ? () => checksum(downloadPath, update.sha256hash) : () => undefined)
-								.then(() => pfs.Promises.rename(downloadPath, updatePackagePath, false /* no retry */))
-								.then(() => updatePackagePath);
 						});
-					}).then(packagePath => {
-						this.availableUpdate = { packagePath };
-						this.setState(State.Downloaded(update));
-
-						const fastUpdatesEnabled = this.configurationService.getValue('update.enableWindowsBackgroundUpdates');
-						if (fastUpdatesEnabled) {
-							if (this.productService.target === 'user') {
-								this.doApplyUpdate();
-							}
-						} else {
-							this.setState(State.Ready(update));
-						}
-					});
 				});
 			})
 			.then(undefined, err => {
-				this.telemetryService.publicLog2<{ messageHash: string }, UpdateErrorClassification>('update:error', { messageHash: String(hash(String(err))) });
+				this.telemetryService.publicLog2<{ messageHash: string }, UpdateErrorClassification>(
+					'update:error',
+					{ messageHash: String(hash(String(err))) }
+				);
 				this.logService.error(err);
 
 				// only show message when explicitly checking for updates
-				const message: string | undefined = explicit ? (err.message || err) : undefined;
+				const message: string | undefined = explicit ? err.message || err : undefined;
 				this.setState(State.Idle(getUpdateType(), message));
 			});
 	}
@@ -189,7 +235,10 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
 	}
 
 	private async cleanup(exceptVersion: string | null = null): Promise<void> {
-		const filter = exceptVersion ? (one: string) => !(new RegExp(`${this.productService.quality}-${exceptVersion}\\.exe$`).test(one)) : () => true;
+		const filter = exceptVersion
+			? (one: string) =>
+					!new RegExp(`${this.productService.quality}-${exceptVersion}\\.exe$`).test(one)
+			: () => true;
 
 		const cachePath = await this.cachePath;
 		const versions = await pfs.Promises.readdir(cachePath);
@@ -219,14 +268,27 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
 
 		const cachePath = await this.cachePath;
 
-		this.availableUpdate.updateFilePath = path.join(cachePath, `CodeSetup-${this.productService.quality}-${update.version}.flag`);
+		this.availableUpdate.updateFilePath = path.join(
+			cachePath,
+			`CodeSetup-${this.productService.quality}-${update.version}.flag`
+		);
 
 		await pfs.Promises.writeFile(this.availableUpdate.updateFilePath, 'flag');
-		const child = spawn(this.availableUpdate.packagePath, ['/verysilent', '/log', `/update="${this.availableUpdate.updateFilePath}"`, '/nocloseapplications', '/mergetasks=runcode,!desktopicon,!quicklaunchicon'], {
-			detached: true,
-			stdio: ['ignore', 'ignore', 'ignore'],
-			windowsVerbatimArguments: true
-		});
+		const child = spawn(
+			this.availableUpdate.packagePath,
+			[
+				'/verysilent',
+				'/log',
+				`/update="${this.availableUpdate.updateFilePath}"`,
+				'/nocloseapplications',
+				'/mergetasks=runcode,!desktopicon,!quicklaunchicon',
+			],
+			{
+				detached: true,
+				stdio: ['ignore', 'ignore', 'ignore'],
+				windowsVerbatimArguments: true,
+			}
+		);
 
 		child.once('exit', () => {
 			this.availableUpdate = undefined;
@@ -237,8 +299,7 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
 		const mutex = await import('@vscode/windows-mutex');
 
 		// poll for mutex-ready
-		pollUntil(() => mutex.isActive(readyMutexName))
-			.then(() => this.setState(State.Ready(update)));
+		pollUntil(() => mutex.isActive(readyMutexName)).then(() => this.setState(State.Ready(update)));
 	}
 
 	protected override doQuitAndInstall(): void {
@@ -251,10 +312,14 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
 		if (this.availableUpdate.updateFilePath) {
 			fs.unlinkSync(this.availableUpdate.updateFilePath);
 		} else {
-			spawn(this.availableUpdate.packagePath, ['/silent', '/log', '/mergetasks=runcode,!desktopicon,!quicklaunchicon'], {
-				detached: true,
-				stdio: ['ignore', 'ignore', 'ignore']
-			});
+			spawn(
+				this.availableUpdate.packagePath,
+				['/silent', '/log', '/mergetasks=runcode,!desktopicon,!quicklaunchicon'],
+				{
+					detached: true,
+					stdio: ['ignore', 'ignore', 'ignore'],
+				}
+			);
 		}
 	}
 
@@ -267,7 +332,9 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
 			return;
 		}
 
-		const fastUpdatesEnabled = this.configurationService.getValue('update.enableWindowsBackgroundUpdates');
+		const fastUpdatesEnabled = this.configurationService.getValue(
+			'update.enableWindowsBackgroundUpdates'
+		);
 		const update: IUpdate = { version: 'unknown', productVersion: 'unknown' };
 
 		this.setState(State.Downloading);

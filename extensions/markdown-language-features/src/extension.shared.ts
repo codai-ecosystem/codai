@@ -27,32 +27,45 @@ export function activateShared(
 	client: MdLanguageClient,
 	engine: MarkdownItEngine,
 	logger: ILogger,
-	contributions: MarkdownContributionProvider,
+	contributions: MarkdownContributionProvider
 ) {
 	const telemetryReporter = loadDefaultTelemetryReporter();
 	context.subscriptions.push(telemetryReporter);
 
-	const cspArbiter = new ExtensionContentSecurityPolicyArbiter(context.globalState, context.workspaceState);
+	const cspArbiter = new ExtensionContentSecurityPolicyArbiter(
+		context.globalState,
+		context.workspaceState
+	);
 	const commandManager = new CommandManager();
 
 	const opener = new MdLinkOpener(client);
 
-	const contentProvider = new MdDocumentRenderer(engine, context, cspArbiter, contributions, logger);
+	const contentProvider = new MdDocumentRenderer(
+		engine,
+		context,
+		cspArbiter,
+		contributions,
+		logger
+	);
 	const previewManager = new MarkdownPreviewManager(contentProvider, logger, contributions, opener);
 	context.subscriptions.push(previewManager);
 
 	context.subscriptions.push(registerMarkdownLanguageFeatures(client, commandManager, engine));
-	context.subscriptions.push(registerMarkdownCommands(commandManager, previewManager, telemetryReporter, cspArbiter, engine));
+	context.subscriptions.push(
+		registerMarkdownCommands(commandManager, previewManager, telemetryReporter, cspArbiter, engine)
+	);
 
-	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(() => {
-		previewManager.updateConfiguration();
-	}));
+	context.subscriptions.push(
+		vscode.workspace.onDidChangeConfiguration(() => {
+			previewManager.updateConfiguration();
+		})
+	);
 }
 
 function registerMarkdownLanguageFeatures(
 	client: MdLanguageClient,
 	commandManager: CommandManager,
-	parser: IMdParser,
+	parser: IMdParser
 ): vscode.Disposable {
 	const selector: vscode.DocumentSelector = { language: 'markdown', scheme: '*' };
 	return vscode.Disposable.from(
@@ -62,6 +75,6 @@ function registerMarkdownLanguageFeatures(
 		registerResourceDropOrPasteSupport(selector, parser),
 		registerPasteUrlSupport(selector, parser),
 		registerUpdateLinksOnRename(client),
-		registerUpdatePastedLinks(selector, client),
+		registerUpdatePastedLinks(selector, client)
 	);
 }

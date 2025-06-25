@@ -22,7 +22,7 @@ const windowsTerminalEncodings = {
 	'866': 'cp866', // Russian
 	'869': 'cp869', // Modern Greek
 	'936': 'cp936', // Simplified Chinese
-	'1252': 'cp1252' // West European Latin
+	'1252': 'cp1252', // West European Latin
 };
 
 function toIconvLiteEncoding(encodingName: string): string {
@@ -33,8 +33,8 @@ function toIconvLiteEncoding(encodingName: string): string {
 }
 
 const JSCHARDET_TO_ICONV_ENCODINGS: { [name: string]: string } = {
-	'ibm866': 'cp866',
-	'big5': 'cp950'
+	ibm866: 'cp866',
+	big5: 'cp950',
 };
 
 const UTF8 = 'utf8';
@@ -65,7 +65,9 @@ export async function resolveTerminalEncoding(verbose?: boolean): Promise<string
 						console.log(`Output from "chcp" command is: ${stdout}`);
 					}
 
-					const windowsTerminalEncodingKeys = Object.keys(windowsTerminalEncodings) as Array<keyof typeof windowsTerminalEncodings>;
+					const windowsTerminalEncodingKeys = Object.keys(windowsTerminalEncodings) as Array<
+						keyof typeof windowsTerminalEncodings
+					>;
 					for (const key of windowsTerminalEncodingKeys) {
 						if (stdout.indexOf(key) >= 0) {
 							return resolve(windowsTerminalEncodings[key]);

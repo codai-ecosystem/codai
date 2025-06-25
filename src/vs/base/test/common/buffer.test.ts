@@ -5,12 +5,23 @@
 
 import assert from 'assert';
 import { timeout } from '../../common/async.js';
-import { bufferedStreamToBuffer, bufferToReadable, bufferToStream, decodeBase64, decodeHex, encodeBase64, encodeHex, newWriteableBufferStream, readableToBuffer, streamToBuffer, VSBuffer } from '../../common/buffer.js';
+import {
+	bufferedStreamToBuffer,
+	bufferToReadable,
+	bufferToStream,
+	decodeBase64,
+	decodeHex,
+	encodeBase64,
+	encodeHex,
+	newWriteableBufferStream,
+	readableToBuffer,
+	streamToBuffer,
+	VSBuffer,
+} from '../../common/buffer.js';
 import { peekStream } from '../../common/stream.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('Buffer', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('issue #71993 - VSBuffer#toString returns numbers', () => {
@@ -378,7 +389,8 @@ suite('Buffer', () => {
 		assert.strictEqual(errors.length, 0);
 	});
 
-	test('Performance issue with VSBuffer#slice #76076', function () { // TODO@alexdima this test seems to fail in web (https://github.com/microsoft/vscode/issues/114042)
+	test('Performance issue with VSBuffer#slice #76076', function () {
+		// TODO@alexdima this test seems to fail in web (https://github.com/microsoft/vscode/issues/114042)
 		// Buffer#slice creates a view
 		if (typeof Buffer !== 'undefined') {
 			const buff = Buffer.from([10, 20, 30, 40]);
@@ -455,7 +467,7 @@ suite('Buffer', () => {
 		const chunks = [
 			VSBuffer.fromString('abc'),
 			VSBuffer.fromString('def'),
-			VSBuffer.fromString('ghi')
+			VSBuffer.fromString('ghi'),
 		];
 
 		// Test without total length
@@ -554,13 +566,41 @@ suite('Buffer', () => {
 			[new Uint8Array([96, 54, 130, 79, 47, 179]), 'YDaCTy+z', '6036824f2fb3'],
 			[new Uint8Array([91, 22, 68, 217, 68, 117, 116]), 'WxZE2UR1dA==', '5b1644d9447574'],
 			[new Uint8Array([184, 227, 214, 171, 244, 175, 141, 53]), 'uOPWq/SvjTU=', 'b8e3d6abf4af8d35'],
-			[new Uint8Array([53, 98, 93, 130, 71, 117, 191, 137, 156]), 'NWJdgkd1v4mc', '35625d824775bf899c'],
-			[new Uint8Array([154, 156, 60, 102, 232, 197, 92, 25, 124, 98]), 'mpw8ZujFXBl8Yg==', '9a9c3c66e8c55c197c62'],
-			[new Uint8Array([152, 131, 106, 234, 17, 183, 164, 245, 252, 67, 26]), 'mINq6hG3pPX8Qxo=', '98836aea11b7a4f5fc431a'],
-			[new Uint8Array([232, 254, 194, 234, 16, 42, 86, 135, 117, 61, 179, 4]), '6P7C6hAqVod1PbME', 'e8fec2ea102a5687753db304'],
-			[new Uint8Array([4, 199, 85, 172, 125, 171, 172, 219, 61, 47, 78, 155, 127]), 'BMdVrH2rrNs9L06bfw==', '04c755ac7dabacdb3d2f4e9b7f'],
-			[new Uint8Array([189, 67, 62, 189, 87, 171, 27, 164, 87, 142, 126, 113, 23, 182]), 'vUM+vVerG6RXjn5xF7Y=', 'bd433ebd57ab1ba4578e7e7117b6'],
-			[new Uint8Array([153, 156, 145, 240, 228, 200, 199, 158, 40, 167, 97, 52, 217, 148, 43]), 'mZyR8OTIx54op2E02ZQr', '999c91f0e4c8c79e28a76134d9942b'],
+			[
+				new Uint8Array([53, 98, 93, 130, 71, 117, 191, 137, 156]),
+				'NWJdgkd1v4mc',
+				'35625d824775bf899c',
+			],
+			[
+				new Uint8Array([154, 156, 60, 102, 232, 197, 92, 25, 124, 98]),
+				'mpw8ZujFXBl8Yg==',
+				'9a9c3c66e8c55c197c62',
+			],
+			[
+				new Uint8Array([152, 131, 106, 234, 17, 183, 164, 245, 252, 67, 26]),
+				'mINq6hG3pPX8Qxo=',
+				'98836aea11b7a4f5fc431a',
+			],
+			[
+				new Uint8Array([232, 254, 194, 234, 16, 42, 86, 135, 117, 61, 179, 4]),
+				'6P7C6hAqVod1PbME',
+				'e8fec2ea102a5687753db304',
+			],
+			[
+				new Uint8Array([4, 199, 85, 172, 125, 171, 172, 219, 61, 47, 78, 155, 127]),
+				'BMdVrH2rrNs9L06bfw==',
+				'04c755ac7dabacdb3d2f4e9b7f',
+			],
+			[
+				new Uint8Array([189, 67, 62, 189, 87, 171, 27, 164, 87, 142, 126, 113, 23, 182]),
+				'vUM+vVerG6RXjn5xF7Y=',
+				'bd433ebd57ab1ba4578e7e7117b6',
+			],
+			[
+				new Uint8Array([153, 156, 145, 240, 228, 200, 199, 158, 40, 167, 97, 52, 217, 148, 43]),
+				'mZyR8OTIx54op2E02ZQr',
+				'999c91f0e4c8c79e28a76134d9942b',
+			],
 		];
 
 		test('encodes base64', () => {

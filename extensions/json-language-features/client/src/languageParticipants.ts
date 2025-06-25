@@ -34,7 +34,8 @@ export function getLanguageParticipants(): LanguageParticipants {
 	let comments = new Set<string>();
 
 	function update() {
-		const oldLanguages = languages, oldComments = comments;
+		const oldLanguages = languages,
+			oldComments = comments;
 
 		languages = new Set();
 		languages.add('json');
@@ -45,7 +46,8 @@ export function getLanguageParticipants(): LanguageParticipants {
 		comments.add('snippets');
 
 		for (const extension of extensions.allAcrossExtensionHosts) {
-			const jsonLanguageParticipants = extension.packageJSON?.contributes?.jsonLanguageParticipants as LanguageParticipantContribution[];
+			const jsonLanguageParticipants = extension.packageJSON?.contributes
+				?.jsonLanguageParticipants as LanguageParticipantContribution[];
 			if (Array.isArray(jsonLanguageParticipants)) {
 				for (const jsonLanguageParticipant of jsonLanguageParticipants) {
 					const languageId = jsonLanguageParticipant.languageId;
@@ -70,10 +72,16 @@ export function getLanguageParticipants(): LanguageParticipants {
 
 	return {
 		onDidChange: onDidChangeEmmiter.event,
-		get documentSelector() { return Array.from(languages); },
-		hasLanguage(languageId: string) { return languages.has(languageId); },
-		useComments(languageId: string) { return comments.has(languageId); },
-		dispose: () => changeListener.dispose()
+		get documentSelector() {
+			return Array.from(languages);
+		},
+		hasLanguage(languageId: string) {
+			return languages.has(languageId);
+		},
+		useComments(languageId: string) {
+			return comments.has(languageId);
+		},
+		dispose: () => changeListener.dispose(),
 	};
 }
 

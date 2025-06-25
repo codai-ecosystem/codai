@@ -16,7 +16,6 @@ import { ResourceMap } from '../util/resourceMap';
  * This includes both opened text documents and markdown files in the workspace.
  */
 export class VsCodeMdWorkspace extends Disposable {
-
 	private _watcher: vscode.FileSystemWatcher | undefined;
 
 	private readonly _documentCache = new ResourceMap<ITextDocument>();
@@ -28,21 +27,29 @@ export class VsCodeMdWorkspace extends Disposable {
 
 		this._watcher = this._register(vscode.workspace.createFileSystemWatcher('**/*.md'));
 
-		this._register(this._watcher.onDidChange(async resource => {
-			this._documentCache.delete(resource);
-		}));
+		this._register(
+			this._watcher.onDidChange(async resource => {
+				this._documentCache.delete(resource);
+			})
+		);
 
-		this._register(this._watcher.onDidDelete(resource => {
-			this._documentCache.delete(resource);
-		}));
+		this._register(
+			this._watcher.onDidDelete(resource => {
+				this._documentCache.delete(resource);
+			})
+		);
 
-		this._register(vscode.workspace.onDidOpenTextDocument(e => {
-			this._documentCache.delete(e.uri);
-		}));
+		this._register(
+			vscode.workspace.onDidOpenTextDocument(e => {
+				this._documentCache.delete(e.uri);
+			})
+		);
 
-		this._register(vscode.workspace.onDidCloseTextDocument(e => {
-			this._documentCache.delete(e.uri);
-		}));
+		this._register(
+			vscode.workspace.onDidCloseTextDocument(e => {
+				this._documentCache.delete(e.uri);
+			})
+		);
 	}
 
 	private _isRelevantMarkdownDocument(doc: vscode.TextDocument) {
@@ -55,7 +62,9 @@ export class VsCodeMdWorkspace extends Disposable {
 			return existing;
 		}
 
-		const matchingDocument = vscode.workspace.textDocuments.find((doc) => this._isRelevantMarkdownDocument(doc) && doc.uri.toString() === resource.toString());
+		const matchingDocument = vscode.workspace.textDocuments.find(
+			doc => this._isRelevantMarkdownDocument(doc) && doc.uri.toString() === resource.toString()
+		);
 		if (matchingDocument) {
 			this._documentCache.set(resource, matchingDocument);
 			return matchingDocument;

@@ -7,7 +7,10 @@ import * as strings from '../../../../base/common/strings.js';
 import { ICodeEditor, IActiveCodeEditor } from '../../../browser/editorBrowser.js';
 import { Position } from '../../../common/core/position.js';
 import { Range, IRange } from '../../../common/core/range.js';
-import { CancellationTokenSource, CancellationToken } from '../../../../base/common/cancellation.js';
+import {
+	CancellationTokenSource,
+	CancellationToken,
+} from '../../../../base/common/cancellation.js';
 import { IDisposable, DisposableStore } from '../../../../base/common/lifecycle.js';
 import { ITextModel } from '../../../common/model.js';
 import { EditorKeybindingCancellationTokenSource } from './keybindingCancellation.js';
@@ -16,11 +19,10 @@ export const enum CodeEditorStateFlag {
 	Value = 1,
 	Selection = 2,
 	Position = 4,
-	Scroll = 8
+	Scroll = 8,
 }
 
 export class EditorState {
-
 	private readonly flags: number;
 
 	private readonly position: Position | null;
@@ -34,7 +36,9 @@ export class EditorState {
 
 		if ((this.flags & CodeEditorStateFlag.Value) !== 0) {
 			const model = editor.getModel();
-			this.modelVersionId = model ? strings.format('{0}#{1}', model.uri.toString(), model.getVersionId()) : null;
+			this.modelVersionId = model
+				? strings.format('{0}#{1}', model.uri.toString(), model.getVersionId())
+				: null;
 		} else {
 			this.modelVersionId = null;
 		}
@@ -58,7 +62,6 @@ export class EditorState {
 	}
 
 	private _equals(other: any): boolean {
-
 		if (!(other instanceof EditorState)) {
 			return false;
 		}
@@ -70,10 +73,18 @@ export class EditorState {
 		if (this.scrollLeft !== state.scrollLeft || this.scrollTop !== state.scrollTop) {
 			return false;
 		}
-		if (!this.position && state.position || this.position && !state.position || this.position && state.position && !this.position.equals(state.position)) {
+		if (
+			(!this.position && state.position) ||
+			(this.position && !state.position) ||
+			(this.position && state.position && !this.position.equals(state.position))
+		) {
 			return false;
 		}
-		if (!this.selection && state.selection || this.selection && !state.selection || this.selection && state.selection && !this.selection.equalsRange(state.selection)) {
+		if (
+			(!this.selection && state.selection) ||
+			(this.selection && !state.selection) ||
+			(this.selection && state.selection && !this.selection.equalsRange(state.selection))
+		) {
 			return false;
 		}
 		return true;
@@ -89,26 +100,37 @@ export class EditorState {
  * by the provided flags
  * @param range If provided, changes in position and selection within this range will not trigger cancellation
  */
-export class EditorStateCancellationTokenSource extends EditorKeybindingCancellationTokenSource implements IDisposable {
-
+export class EditorStateCancellationTokenSource
+	extends EditorKeybindingCancellationTokenSource
+	implements IDisposable
+{
 	private readonly _listener = new DisposableStore();
 
-	constructor(editor: IActiveCodeEditor, flags: CodeEditorStateFlag, range?: IRange, parent?: CancellationToken) {
+	constructor(
+		editor: IActiveCodeEditor,
+		flags: CodeEditorStateFlag,
+		range?: IRange,
+		parent?: CancellationToken
+	) {
 		super(editor, parent);
 
 		if (flags & CodeEditorStateFlag.Position) {
-			this._listener.add(editor.onDidChangeCursorPosition(e => {
-				if (!range || !Range.containsPosition(range, e.position)) {
-					this.cancel();
-				}
-			}));
+			this._listener.add(
+				editor.onDidChangeCursorPosition(e => {
+					if (!range || !Range.containsPosition(range, e.position)) {
+						this.cancel();
+					}
+				})
+			);
 		}
 		if (flags & CodeEditorStateFlag.Selection) {
-			this._listener.add(editor.onDidChangeCursorSelection(e => {
-				if (!range || !Range.containsRange(range, e.selection)) {
-					this.cancel();
-				}
-			}));
+			this._listener.add(
+				editor.onDidChangeCursorSelection(e => {
+					if (!range || !Range.containsRange(range, e.selection)) {
+						this.cancel();
+					}
+				})
+			);
 		}
 		if (flags & CodeEditorStateFlag.Scroll) {
 			this._listener.add(editor.onDidScrollChange(_ => this.cancel()));
@@ -128,8 +150,10 @@ export class EditorStateCancellationTokenSource extends EditorKeybindingCancella
 /**
  * A cancellation token source that cancels when the provided model changes
  */
-export class TextModelCancellationTokenSource extends CancellationTokenSource implements IDisposable {
-
+export class TextModelCancellationTokenSource
+	extends CancellationTokenSource
+	implements IDisposable
+{
 	private _listener: IDisposable;
 
 	constructor(model: ITextModel, parent?: CancellationToken) {

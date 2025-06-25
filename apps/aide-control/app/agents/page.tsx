@@ -48,7 +48,9 @@ export default function AgentsPage() {
 	const [taskTitle, setTaskTitle] = useState('');
 	const [taskDescription, setTaskDescription] = useState('');
 	const [selectedAgent, setSelectedAgent] = useState('planner');
-	const [taskPriority, setTaskPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('medium');
+	const [taskPriority, setTaskPriority] = useState<'low' | 'medium' | 'high' | 'critical'>(
+		'medium'
+	);
 
 	// Selected task state
 	const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -66,9 +68,9 @@ export default function AgentsPage() {
 			const token = localStorage.getItem('aide_auth_token');
 			const response = await fetch('/api/agents', {
 				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'
-				}
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json',
+				},
 			});
 
 			if (!response.ok) {
@@ -111,18 +113,18 @@ export default function AgentsPage() {
 			const response = await fetch('/api/agents', {
 				method: 'POST',
 				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
 					task: {
 						title: taskTitle,
 						description: taskDescription,
 						type: 'user_request',
-						priority: taskPriority
+						priority: taskPriority,
 					},
-					agentIds: [selectedAgent]
-				})
+					agentIds: [selectedAgent],
+				}),
 			});
 
 			if (!response.ok) {
@@ -153,9 +155,9 @@ export default function AgentsPage() {
 				const token = localStorage.getItem('aide_auth_token');
 				const response = await fetch(`/api/agents/${taskId}`, {
 					headers: {
-						'Authorization': `Bearer ${token}`,
-						'Content-Type': 'application/json'
-					}
+						Authorization: `Bearer ${token}`,
+						'Content-Type': 'application/json',
+					},
 				});
 
 				if (response.ok) {
@@ -164,7 +166,7 @@ export default function AgentsPage() {
 					const updatedConversation = data.data.conversation;
 
 					// Update task in list
-					setTasks(prev => prev.map(t => t.id === taskId ? updatedTask : t));
+					setTasks(prev => prev.map(t => (t.id === taskId ? updatedTask : t)));
 
 					// Update selected task if it's the same
 					if (selectedTask?.id === taskId) {
@@ -199,13 +201,13 @@ export default function AgentsPage() {
 			const response = await fetch(`/api/agents/${selectedTask.id}`, {
 				method: 'POST',
 				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
 					action: 'send_message',
-					message: message
-				})
+					message: message,
+				}),
 			});
 
 			if (response.ok) {
@@ -221,12 +223,13 @@ export default function AgentsPage() {
 	};
 
 	const getStatusBadge = (status: string) => {
-		const colors = {
-			completed: 'bg-green-100 text-green-800',
-			failed: 'bg-red-100 text-red-800',
-			in_progress: 'bg-blue-100 text-blue-800',
-			pending: 'bg-yellow-100 text-yellow-800',
-		}[status] || 'bg-gray-100 text-gray-800';
+		const colors =
+			{
+				completed: 'bg-green-100 text-green-800',
+				failed: 'bg-red-100 text-red-800',
+				in_progress: 'bg-blue-100 text-blue-800',
+				pending: 'bg-yellow-100 text-yellow-800',
+			}[status] || 'bg-gray-100 text-gray-800';
 
 		return (
 			<span className={`px-2 py-1 rounded-full text-xs font-medium ${colors}`}>
@@ -274,22 +277,31 @@ export default function AgentsPage() {
 						) : (
 							<div className="space-y-3">
 								{agents.map(agent => (
-									<div key={agent.id} className="flex items-center justify-between p-3 border rounded-lg">
+									<div
+										key={agent.id}
+										className="flex items-center justify-between p-3 border rounded-lg"
+									>
 										<div className="flex-1">
 											<h3 className="font-medium">{agent.name}</h3>
 											<p className="text-sm text-gray-600">{agent.description}</p>
 											<div className="flex gap-1 mt-1">
 												{agent.capabilities.map(cap => (
-													<span key={cap} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+													<span
+														key={cap}
+														className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+													>
 														{cap}
 													</span>
 												))}
 											</div>
 										</div>
-										<span className={`px-2 py-1 rounded text-xs font-medium ${agent.status === 'available'
-												? 'bg-green-100 text-green-800'
-												: 'bg-gray-100 text-gray-800'
-											}`}>
+										<span
+											className={`px-2 py-1 rounded text-xs font-medium ${
+												agent.status === 'available'
+													? 'bg-green-100 text-green-800'
+													: 'bg-gray-100 text-gray-800'
+											}`}
+										>
 											{agent.status}
 										</span>
 									</div>
@@ -314,20 +326,23 @@ export default function AgentsPage() {
 								id="task-title"
 								type="text"
 								value={taskTitle}
-								onChange={(e) => setTaskTitle(e.target.value)}
+								onChange={e => setTaskTitle(e.target.value)}
 								placeholder="e.g., Build a todo app"
 								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							/>
 						</div>
 
 						<div>
-							<label htmlFor="task-description" className="block text-sm font-medium text-gray-700 mb-1">
+							<label
+								htmlFor="task-description"
+								className="block text-sm font-medium text-gray-700 mb-1"
+							>
 								Description
 							</label>
 							<textarea
 								id="task-description"
 								value={taskDescription}
-								onChange={(e) => setTaskDescription(e.target.value)}
+								onChange={e => setTaskDescription(e.target.value)}
 								placeholder="Provide detailed requirements and context..."
 								rows={4}
 								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -336,13 +351,16 @@ export default function AgentsPage() {
 
 						<div className="grid grid-cols-2 gap-4">
 							<div>
-								<label htmlFor="agent-select" className="block text-sm font-medium text-gray-700 mb-1">
+								<label
+									htmlFor="agent-select"
+									className="block text-sm font-medium text-gray-700 mb-1"
+								>
 									Primary Agent
 								</label>
 								<select
 									id="agent-select"
 									value={selectedAgent}
-									onChange={(e) => setSelectedAgent(e.target.value)}
+									onChange={e => setSelectedAgent(e.target.value)}
 									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 								>
 									{agents.map(agent => (
@@ -354,13 +372,16 @@ export default function AgentsPage() {
 							</div>
 
 							<div>
-								<label htmlFor="priority-select" className="block text-sm font-medium text-gray-700 mb-1">
+								<label
+									htmlFor="priority-select"
+									className="block text-sm font-medium text-gray-700 mb-1"
+								>
 									Priority
 								</label>
 								<select
 									id="priority-select"
 									value={taskPriority}
-									onChange={(e) => setTaskPriority(e.target.value as any)}
+									onChange={e => setTaskPriority(e.target.value as any)}
 									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 								>
 									<option value="low">Low</option>
@@ -390,14 +411,17 @@ export default function AgentsPage() {
 				</div>
 				<div className="p-6">
 					{tasks.length === 0 ? (
-						<p className="text-gray-500 text-center py-8">No tasks yet. Create one above to get started!</p>
+						<p className="text-gray-500 text-center py-8">
+							No tasks yet. Create one above to get started!
+						</p>
 					) : (
 						<div className="space-y-3">
 							{tasks.map(task => (
 								<div
 									key={task.id}
-									className={`p-4 border rounded-lg cursor-pointer transition-colors ${selectedTask?.id === task.id ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'
-										}`}
+									className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+										selectedTask?.id === task.id ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'
+									}`}
 									onClick={() => setSelectedTask(task)}
 								>
 									<div className="flex items-center justify-between">
@@ -458,9 +482,7 @@ export default function AgentsPage() {
 												<span className="font-medium">{msg.agentId}</span>
 												<span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
 											</div>
-											<div className="text-sm bg-gray-100 rounded p-2">
-												{msg.content}
-											</div>
+											<div className="text-sm bg-gray-100 rounded p-2">{msg.content}</div>
 										</div>
 									))}
 								</div>
@@ -472,9 +494,9 @@ export default function AgentsPage() {
 							<input
 								type="text"
 								value={message}
-								onChange={(e) => setMessage(e.target.value)}
+								onChange={e => setMessage(e.target.value)}
 								placeholder="Send a message to the agents..."
-								onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+								onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
 								className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							/>
 							<button

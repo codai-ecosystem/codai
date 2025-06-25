@@ -3,26 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IMarkerService, IMarker, MarkerSeverity, MarkerTag } from '../../../platform/markers/common/markers.js';
+import {
+	IMarkerService,
+	IMarker,
+	MarkerSeverity,
+	MarkerTag,
+} from '../../../platform/markers/common/markers.js';
 import { Disposable, IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
 import { URI } from '../../../base/common/uri.js';
-import { IModelDeltaDecoration, ITextModel, IModelDecorationOptions, TrackedRangeStickiness, OverviewRulerLane, IModelDecoration, MinimapPosition, IModelDecorationMinimapOptions } from '../model.js';
+import {
+	IModelDeltaDecoration,
+	ITextModel,
+	IModelDecorationOptions,
+	TrackedRangeStickiness,
+	OverviewRulerLane,
+	IModelDecoration,
+	MinimapPosition,
+	IModelDecorationMinimapOptions,
+} from '../model.js';
 import { ClassName } from '../model/intervalTree.js';
 import { themeColorFromId } from '../../../platform/theme/common/themeService.js';
 import { ThemeColor } from '../../../base/common/themables.js';
-import { overviewRulerWarning, overviewRulerInfo, overviewRulerError } from '../core/editorColorRegistry.js';
+import {
+	overviewRulerWarning,
+	overviewRulerInfo,
+	overviewRulerError,
+} from '../core/editorColorRegistry.js';
 import { IModelService } from './model.js';
 import { Range } from '../core/range.js';
 import { IMarkerDecorationsService } from './markerDecorations.js';
 import { Schemas } from '../../../base/common/network.js';
 import { Emitter, Event } from '../../../base/common/event.js';
-import { minimapInfo, minimapWarning, minimapError } from '../../../platform/theme/common/colorRegistry.js';
+import {
+	minimapInfo,
+	minimapWarning,
+	minimapError,
+} from '../../../platform/theme/common/colorRegistry.js';
 import { BidirectionalMap, ResourceMap } from '../../../base/common/map.js';
 import { diffSets } from '../../../base/common/collections.js';
 import { Iterable } from '../../../base/common/iterator.js';
 
 export class MarkerDecorationsService extends Disposable implements IMarkerDecorationsService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeMarker = this._register(new Emitter<ITextModel>());
@@ -51,7 +72,7 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 
 	getMarker(uri: URI, decoration: IModelDecoration): IMarker | null {
 		const markerDecorations = this._markerDecorations.get(uri);
-		return markerDecorations ? (markerDecorations.getMarker(decoration) || null) : null;
+		return markerDecorations ? markerDecorations.getMarker(decoration) || null : null;
 	}
 
 	getLiveMarkers(uri: URI): [Range, IMarker][] {
@@ -60,7 +81,6 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 	}
 
 	addMarkerSuppression(uri: URI, range: Range): IDisposable {
-
 		let suppressedRanges = this._suppressedRanges.get(uri);
 		if (!suppressedRanges) {
 			suppressedRanges = new Set<Range>();
@@ -82,7 +102,7 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 	}
 
 	private _handleMarkerChange(changedResources: readonly URI[]): void {
-		changedResources.forEach((resource) => {
+		changedResources.forEach(resource => {
 			const markerDecorations = this._markerDecorations.get(resource);
 			if (markerDecorations) {
 				this._updateDecorations(markerDecorations);
@@ -104,10 +124,15 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 		}
 
 		// clean up markers for internal, transient models
-		if (model.uri.scheme === Schemas.inMemory
-			|| model.uri.scheme === Schemas.internal
-			|| model.uri.scheme === Schemas.vscode) {
-			this._markerService?.read({ resource: model.uri }).map(marker => marker.owner).forEach(owner => this._markerService.remove(owner, [model.uri]));
+		if (
+			model.uri.scheme === Schemas.inMemory ||
+			model.uri.scheme === Schemas.internal ||
+			model.uri.scheme === Schemas.vscode
+		) {
+			this._markerService
+				?.read({ resource: model.uri })
+				.map(marker => marker.owner)
+				.forEach(owner => this._markerService.remove(owner, [model.uri]));
 		}
 	}
 
@@ -119,7 +144,9 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 		const suppressedRanges = this._suppressedRanges.get(markerDecorations.model.uri);
 		if (suppressedRanges) {
 			markers = markers.filter(marker => {
-				return !Iterable.some(suppressedRanges, candidate => Range.areIntersectingOrTouching(candidate, marker));
+				return !Iterable.some(suppressedRanges, candidate =>
+					Range.areIntersectingOrTouching(candidate, marker)
+				);
 			});
 		}
 
@@ -130,21 +157,19 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 }
 
 class MarkerDecorations extends Disposable {
+	private readonly _map = new BidirectionalMap<IMarker, /*decoration id*/ string>();
 
-	private readonly _map = new BidirectionalMap<IMarker, /*decoration id*/string>();
-
-	constructor(
-		readonly model: ITextModel
-	) {
+	constructor(readonly model: ITextModel) {
 		super();
-		this._register(toDisposable(() => {
-			this.model.deltaDecorations([...this._map.values()], []);
-			this._map.clear();
-		}));
+		this._register(
+			toDisposable(() => {
+				this.model.deltaDecorations([...this._map.values()], []);
+				this._map.clear();
+			})
+		);
 	}
 
 	public update(markers: IMarker[]): boolean {
-
 		// We use the fact that marker instances are not recreated when different owners
 		// update. So we can compare references to find out what changed since the last update.
 
@@ -158,7 +183,7 @@ class MarkerDecorations extends Disposable {
 		const newDecorations: IModelDeltaDecoration[] = added.map(marker => {
 			return {
 				range: this._createDecorationRange(this.model, marker),
-				options: this._createDecorationOption(marker)
+				options: this._createDecorationOption(marker),
 			};
 		});
 
@@ -188,10 +213,13 @@ class MarkerDecorations extends Disposable {
 	}
 
 	private _createDecorationRange(model: ITextModel, rawMarker: IMarker): Range {
-
 		let ret = Range.lift(rawMarker);
 
-		if (rawMarker.severity === MarkerSeverity.Hint && !this._hasMarkerTag(rawMarker, MarkerTag.Unnecessary) && !this._hasMarkerTag(rawMarker, MarkerTag.Deprecated)) {
+		if (
+			rawMarker.severity === MarkerSeverity.Hint &&
+			!this._hasMarkerTag(rawMarker, MarkerTag.Unnecessary) &&
+			!this._hasMarkerTag(rawMarker, MarkerTag.Deprecated)
+		) {
 			// * never render hints on multiple lines
 			// * make enough space for three dots
 			ret = ret.setEndPosition(ret.startLineNumber, ret.startColumn + 2);
@@ -200,7 +228,8 @@ class MarkerDecorations extends Disposable {
 		ret = model.validateRange(ret);
 
 		if (ret.isEmpty()) {
-			const maxColumn = model.getLineLastNonWhitespaceColumn(ret.startLineNumber) ||
+			const maxColumn =
+				model.getLineLastNonWhitespaceColumn(ret.startLineNumber) ||
 				model.getLineMaxColumn(ret.startLineNumber);
 
 			if (maxColumn === 1 || ret.endColumn >= maxColumn) {
@@ -213,7 +242,11 @@ class MarkerDecorations extends Disposable {
 			if (word) {
 				ret = new Range(ret.startLineNumber, word.startColumn, ret.endLineNumber, word.endColumn);
 			}
-		} else if (rawMarker.endColumn === Number.MAX_VALUE && rawMarker.startColumn === 1 && ret.startLineNumber === ret.endLineNumber) {
+		} else if (
+			rawMarker.endColumn === Number.MAX_VALUE &&
+			rawMarker.startColumn === 1 &&
+			ret.startLineNumber === ret.endLineNumber
+		) {
 			const minColumn = model.getLineFirstNonWhitespaceColumn(rawMarker.startLineNumber);
 			if (minColumn < ret.endColumn) {
 				ret = new Range(ret.startLineNumber, minColumn, ret.endLineNumber, ret.endColumn);
@@ -224,7 +257,6 @@ class MarkerDecorations extends Disposable {
 	}
 
 	private _createDecorationOption(marker: IMarker): IModelDecorationOptions {
-
 		let className: string | undefined;
 		let color: ThemeColor | undefined = undefined;
 		let zIndex: number;
@@ -248,7 +280,7 @@ class MarkerDecorations extends Disposable {
 				zIndex = 10;
 				minimap = {
 					color: themeColorFromId(minimapInfo),
-					position: MinimapPosition.Inline
+					position: MinimapPosition.Inline,
 				};
 				break;
 			case MarkerSeverity.Warning:
@@ -257,7 +289,7 @@ class MarkerDecorations extends Disposable {
 				zIndex = 20;
 				minimap = {
 					color: themeColorFromId(minimapWarning),
-					position: MinimapPosition.Inline
+					position: MinimapPosition.Inline,
 				};
 				break;
 			case MarkerSeverity.Error:
@@ -267,7 +299,7 @@ class MarkerDecorations extends Disposable {
 				zIndex = 30;
 				minimap = {
 					color: themeColorFromId(minimapError),
-					position: MinimapPosition.Inline
+					position: MinimapPosition.Inline,
 				};
 				break;
 		}
@@ -288,7 +320,7 @@ class MarkerDecorations extends Disposable {
 			showIfCollapsed: true,
 			overviewRuler: {
 				color,
-				position: OverviewRulerLane.Right
+				position: OverviewRulerLane.Right,
 			},
 			minimap,
 			zIndex,

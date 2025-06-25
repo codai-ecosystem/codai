@@ -64,8 +64,14 @@ suite('SufTrie', () => {
 		assert.deepStrictEqual(t.get('.json', fakeFilenameAttributes), ['Key2..js']);
 		assert.deepStrictEqual(t.get('a.json', fakeFilenameAttributes), ['Key2.a.js']);
 		assert.deepStrictEqual(t.get('a.npmrc', fakeFilenameAttributes), ['Key1.a.js']);
-		assert.deepStrictEqual(t.get('a.b.cd.npmrc', fakeFilenameAttributes), ['Key1.a.b.cd.js', 'Key3.a.b.c.js']);
-		assert.deepStrictEqual(t.get('a.b.c.d.npmrc', fakeFilenameAttributes), ['Key1.a.b.c.d.js', 'Key3.a.b.c..js']);
+		assert.deepStrictEqual(t.get('a.b.cd.npmrc', fakeFilenameAttributes), [
+			'Key1.a.b.cd.js',
+			'Key3.a.b.c.js',
+		]);
+		assert.deepStrictEqual(t.get('a.b.c.d.npmrc', fakeFilenameAttributes), [
+			'Key1.a.b.c.d.js',
+			'Key3.a.b.c..js',
+		]);
 	});
 });
 
@@ -125,10 +131,15 @@ suite('PreTrie', () => {
 		assert.deepStrictEqual(t.get('.json', fakeFilenameAttributes), ['Key2..js']);
 		assert.deepStrictEqual(t.get('a.json', fakeFilenameAttributes), ['Key2.a.js']);
 		assert.deepStrictEqual(t.get('a.npmrc', fakeFilenameAttributes), ['Key1.a.js']);
-		assert.deepStrictEqual(t.get('a.b.cd.npmrc', fakeFilenameAttributes), ['Key1.a.b.cd.js', 'Key3.a.b.c.js']);
-		assert.deepStrictEqual(t.get('a.b.c.d.npmrc', fakeFilenameAttributes), ['Key1.a.b.c.d.js', 'Key3.a.b.c..js']);
+		assert.deepStrictEqual(t.get('a.b.cd.npmrc', fakeFilenameAttributes), [
+			'Key1.a.b.cd.js',
+			'Key3.a.b.c.js',
+		]);
+		assert.deepStrictEqual(t.get('a.b.c.d.npmrc', fakeFilenameAttributes), [
+			'Key1.a.b.c.d.js',
+			'Key3.a.b.c..js',
+		]);
 	});
-
 
 	test('emptyMatches', () => {
 		const t = new PreTrie();
@@ -142,7 +153,10 @@ suite('PreTrie', () => {
 suite('StarTrie', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	const assertMapEquals = (actual: Map<string, Set<string>>, expected: Record<string, string[]>) => {
+	const assertMapEquals = (
+		actual: Map<string, Set<string>>,
+		expected: Record<string, string[]>
+	) => {
 		const actualStr = [...actual.entries()].map(e => `${e[0]} => [${[...e[1].keys()].join()}]`);
 		const expectedStr = Object.entries(expected).map(e => `${e[0]}: [${[e[1]].join()}]`);
 		const bigMsg = actualStr + '===' + expectedStr;
@@ -160,26 +174,27 @@ suite('StarTrie', () => {
 	};
 
 	test('does added extension nesting', () => {
-		const t = new ExplorerFileNestingTrie([
-			['*', ['${capture}.*']],
-		]);
-		const nesting = t.nest([
-			'file',
-			'file.json',
-			'boop.test',
-			'boop.test1',
-			'boop.test.1',
-			'beep',
-			'beep.test1',
-			'beep.boop.test1',
-			'beep.boop.test2',
-			'beep.boop.a',
-		], 'mydir');
+		const t = new ExplorerFileNestingTrie([['*', ['${capture}.*']]]);
+		const nesting = t.nest(
+			[
+				'file',
+				'file.json',
+				'boop.test',
+				'boop.test1',
+				'boop.test.1',
+				'beep',
+				'beep.test1',
+				'beep.boop.test1',
+				'beep.boop.test2',
+				'beep.boop.a',
+			],
+			'mydir'
+		);
 		assertMapEquals(nesting, {
-			'file': ['file.json'],
+			file: ['file.json'],
 			'boop.test': ['boop.test.1'],
 			'boop.test1': [],
-			'beep': ['beep.test1', 'beep.boop.test1', 'beep.boop.test2', 'beep.boop.a']
+			beep: ['beep.test1', 'beep.boop.test1', 'beep.boop.test2', 'beep.boop.a'],
 		});
 	});
 
@@ -188,19 +203,10 @@ suite('StarTrie', () => {
 			['*.ts', ['${capture}.js']],
 			['*.js', ['${capture}.map']],
 		]);
-		const nesting = t.nest([
-			'a.ts',
-			'a.js',
-			'a.jss',
-			'ab.js',
-			'b.js',
-			'b.map',
-			'c.ts',
-			'c.js',
-			'c.map',
-			'd.ts',
-			'd.map',
-		], 'mydir');
+		const nesting = t.nest(
+			['a.ts', 'a.js', 'a.jss', 'ab.js', 'b.js', 'b.map', 'c.ts', 'c.js', 'c.map', 'd.ts', 'd.map'],
+			'mydir'
+		);
 		assertMapEquals(nesting, {
 			'a.ts': ['a.js'],
 			'ab.js': [],
@@ -223,26 +229,57 @@ suite('StarTrie', () => {
 			['*.cc', ['${capture}.aa']],
 			['*.dd', ['${capture}.ee']],
 		]);
-		const nesting = t.nest([
-			'.a', '.b', '.c', '.d',
-			'a.a', 'a.b', 'a.d',
-			'a.aa', 'a.bb', 'a.cc',
-			'b.aa', 'b.bb',
-			'c.bb', 'c.cc',
-			'd.aa', 'd.cc',
-			'e.aa', 'e.bb', 'e.dd', 'e.ee',
-			'f.aa', 'f.bb', 'f.cc', 'f.dd', 'f.ee',
-		], 'mydir');
+		const nesting = t.nest(
+			[
+				'.a',
+				'.b',
+				'.c',
+				'.d',
+				'a.a',
+				'a.b',
+				'a.d',
+				'a.aa',
+				'a.bb',
+				'a.cc',
+				'b.aa',
+				'b.bb',
+				'c.bb',
+				'c.cc',
+				'd.aa',
+				'd.cc',
+				'e.aa',
+				'e.bb',
+				'e.dd',
+				'e.ee',
+				'f.aa',
+				'f.bb',
+				'f.cc',
+				'f.dd',
+				'f.ee',
+			],
+			'mydir'
+		);
 
 		assertMapEquals(nesting, {
-			'.a': [], '.b': [], '.c': [], '.d': [],
-			'a.a': [], 'a.b': [], 'a.d': [],
-			'a.aa': [], 'a.bb': [], 'a.cc': [],
+			'.a': [],
+			'.b': [],
+			'.c': [],
+			'.d': [],
+			'a.a': [],
+			'a.b': [],
+			'a.d': [],
+			'a.aa': [],
+			'a.bb': [],
+			'a.cc': [],
 			'b.aa': ['b.bb'],
 			'c.bb': ['c.cc'],
 			'd.cc': ['d.aa'],
 			'e.aa': ['e.bb', 'e.dd', 'e.ee'],
-			'f.aa': [], 'f.bb': [], 'f.cc': [], 'f.dd': [], 'f.ee': []
+			'f.aa': [],
+			'f.bb': [],
+			'f.cc': [],
+			'f.dd': [],
+			'f.ee': [],
 		});
 	});
 
@@ -252,12 +289,7 @@ suite('StarTrie', () => {
 			['*.js', ['${capture}-vscdoc.js']],
 		]);
 
-		const nesting = t.nest([
-			'a-vsdoc.js',
-			'a.js',
-			'b.js',
-			'b-vscdoc.js',
-		], 'mydir');
+		const nesting = t.nest(['a-vsdoc.js', 'a.js', 'b.js', 'b-vscdoc.js'], 'mydir');
 
 		assertMapEquals(nesting, {
 			'a-vsdoc.js': ['a.js'],
@@ -271,12 +303,7 @@ suite('StarTrie', () => {
 			['*.js', ['vscdoc-${capture}.js']],
 		]);
 
-		const nesting = t.nest([
-			'vsdoc-a.js',
-			'a.js',
-			'b.js',
-			'vscdoc-b.js',
-		], 'mydir');
+		const nesting = t.nest(['vsdoc-a.js', 'a.js', 'b.js', 'vscdoc-b.js'], 'mydir');
 
 		assertMapEquals(nesting, {
 			'vsdoc-a.js': ['a.js'],
@@ -290,12 +317,7 @@ suite('StarTrie', () => {
 			['*.js', ['bib-${capture}-bap.js']],
 		]);
 
-		const nesting = t.nest([
-			'foo-a-bar.js',
-			'a.js',
-			'b.js',
-			'bib-b-bap.js',
-		], 'mydir');
+		const nesting = t.nest(['foo-a-bar.js', 'a.js', 'b.js', 'bib-b-bap.js'], 'mydir');
 
 		assertMapEquals(nesting, {
 			'foo-a-bar.js': ['a.js'],
@@ -304,16 +326,9 @@ suite('StarTrie', () => {
 	});
 
 	test('does extension specific path segment matching', () => {
-		const t = new ExplorerFileNestingTrie([
-			['*.js', ['${capture}.*.js']],
-		]);
+		const t = new ExplorerFileNestingTrie([['*.js', ['${capture}.*.js']]]);
 
-		const nesting = t.nest([
-			'foo.js',
-			'foo.test.js',
-			'fooTest.js',
-			'bar.js.js',
-		], 'mydir');
+		const nesting = t.nest(['foo.js', 'foo.test.js', 'fooTest.js', 'bar.js.js'], 'mydir');
 
 		assertMapEquals(nesting, {
 			'foo.js': ['foo.test.js'],
@@ -324,41 +339,42 @@ suite('StarTrie', () => {
 
 	test('does exact match nesting', () => {
 		const t = new ExplorerFileNestingTrie([
-			['package.json', ['.npmrc', 'npm-shrinkwrap.json', 'yarn.lock', '.yarnclean', '.yarnignore', '.yarn-integrity', '.yarnrc']],
+			[
+				'package.json',
+				[
+					'.npmrc',
+					'npm-shrinkwrap.json',
+					'yarn.lock',
+					'.yarnclean',
+					'.yarnignore',
+					'.yarn-integrity',
+					'.yarnrc',
+				],
+			],
 			['bower.json', ['.bowerrc']],
 		]);
 
-		const nesting = t.nest([
-			'package.json',
-			'.npmrc', 'npm-shrinkwrap.json', 'yarn.lock',
-			'.bowerrc',
-		], 'mydir');
+		const nesting = t.nest(
+			['package.json', '.npmrc', 'npm-shrinkwrap.json', 'yarn.lock', '.bowerrc'],
+			'mydir'
+		);
 
 		assertMapEquals(nesting, {
-			'package.json': [
-				'.npmrc', 'npm-shrinkwrap.json', 'yarn.lock'],
+			'package.json': ['.npmrc', 'npm-shrinkwrap.json', 'yarn.lock'],
 			'.bowerrc': [],
 		});
 	});
 
 	test('eslint test', () => {
-		const t = new ExplorerFileNestingTrie([
-			['.eslintrc*', ['.eslint*']],
-		]);
+		const t = new ExplorerFileNestingTrie([['.eslintrc*', ['.eslint*']]]);
 
-		const nesting1 = t.nest([
-			'.eslintrc.json',
-			'.eslintignore',
-		], 'mydir');
+		const nesting1 = t.nest(['.eslintrc.json', '.eslintignore'], 'mydir');
 
 		assertMapEquals(nesting1, {
 			'.eslintrc.json': ['.eslintignore'],
 		});
 
-		const nesting2 = t.nest([
-			'.eslintrc',
-			'.eslintignore',
-		], 'mydir');
+		const nesting2 = t.nest(['.eslintrc', '.eslintignore'], 'mydir');
 
 		assertMapEquals(nesting2, {
 			'.eslintrc': ['.eslintignore'],
@@ -366,15 +382,9 @@ suite('StarTrie', () => {
 	});
 
 	test('basename expansion', () => {
-		const t = new ExplorerFileNestingTrie([
-			['*-vsdoc.js', ['${basename}.doc']],
-		]);
+		const t = new ExplorerFileNestingTrie([['*-vsdoc.js', ['${basename}.doc']]]);
 
-		const nesting1 = t.nest([
-			'boop-vsdoc.js',
-			'boop-vsdoc.doc',
-			'boop.doc',
-		], 'mydir');
+		const nesting1 = t.nest(['boop-vsdoc.js', 'boop-vsdoc.doc', 'boop.doc'], 'mydir');
 
 		assertMapEquals(nesting1, {
 			'boop-vsdoc.js': ['boop-vsdoc.doc'],
@@ -383,15 +393,9 @@ suite('StarTrie', () => {
 	});
 
 	test('extname expansion', () => {
-		const t = new ExplorerFileNestingTrie([
-			['*-vsdoc.js', ['${extname}.doc']],
-		]);
+		const t = new ExplorerFileNestingTrie([['*-vsdoc.js', ['${extname}.doc']]]);
 
-		const nesting1 = t.nest([
-			'boop-vsdoc.js',
-			'js.doc',
-			'boop.doc',
-		], 'mydir');
+		const nesting1 = t.nest(['boop-vsdoc.js', 'js.doc', 'boop.doc'], 'mydir');
 
 		assertMapEquals(nesting1, {
 			'boop-vsdoc.js': ['js.doc'],
@@ -400,18 +404,19 @@ suite('StarTrie', () => {
 	});
 
 	test('added segment matcher', () => {
-		const t = new ExplorerFileNestingTrie([
-			['*', ['${basename}.*.${extname}']],
-		]);
+		const t = new ExplorerFileNestingTrie([['*', ['${basename}.*.${extname}']]]);
 
-		const nesting1 = t.nest([
-			'some.file',
-			'some.html.file',
-			'some.html.nested.file',
-			'other.file',
-			'some.thing',
-			'some.thing.else',
-		], 'mydir');
+		const nesting1 = t.nest(
+			[
+				'some.file',
+				'some.html.file',
+				'some.html.nested.file',
+				'other.file',
+				'some.thing',
+				'some.thing.else',
+			],
+			'mydir'
+		);
 
 		assertMapEquals(nesting1, {
 			'some.file': ['some.html.file', 'some.html.nested.file'],
@@ -422,18 +427,19 @@ suite('StarTrie', () => {
 	});
 
 	test('added segment matcher (old format)', () => {
-		const t = new ExplorerFileNestingTrie([
-			['*', ['$(basename).*.$(extname)']],
-		]);
+		const t = new ExplorerFileNestingTrie([['*', ['$(basename).*.$(extname)']]]);
 
-		const nesting1 = t.nest([
-			'some.file',
-			'some.html.file',
-			'some.html.nested.file',
-			'other.file',
-			'some.thing',
-			'some.thing.else',
-		], 'mydir');
+		const nesting1 = t.nest(
+			[
+				'some.file',
+				'some.html.file',
+				'some.html.nested.file',
+				'other.file',
+				'some.thing',
+				'some.thing.else',
+			],
+			'mydir'
+		);
 
 		assertMapEquals(nesting1, {
 			'some.file': ['some.html.file', 'some.html.nested.file'],
@@ -444,15 +450,9 @@ suite('StarTrie', () => {
 	});
 
 	test('dirname matching', () => {
-		const t = new ExplorerFileNestingTrie([
-			['index.ts', ['${dirname}.ts']],
-		]);
+		const t = new ExplorerFileNestingTrie([['index.ts', ['${dirname}.ts']]]);
 
-		const nesting1 = t.nest([
-			'otherFile.ts',
-			'MyComponent.ts',
-			'index.ts',
-		], 'MyComponent');
+		const nesting1 = t.nest(['otherFile.ts', 'MyComponent.ts', 'index.ts'], 'MyComponent');
 
 		assertMapEquals(nesting1, {
 			'index.ts': ['MyComponent.ts'],
@@ -488,20 +488,33 @@ suite('StarTrie', () => {
 			['*.a', ['${capture}.b']],
 			['*.b', ['${capture}.a']],
 			['*.resx', ['${capture}.designer.cs']],
-			['package.json', ['.npmrc', 'npm-shrinkwrap.json', 'yarn.lock', '.yarnclean', '.yarnignore', '.yarn-integrity', '.yarnrc']],
+			[
+				'package.json',
+				[
+					'.npmrc',
+					'npm-shrinkwrap.json',
+					'yarn.lock',
+					'.yarnclean',
+					'.yarnignore',
+					'.yarn-integrity',
+					'.yarnrc',
+				],
+			],
 			['bower.json', ['.bowerrc']],
 			['*-vsdoc.js', ['${capture}.js']],
-			['*.tt', ['${capture}.*']]
+			['*.tt', ['${capture}.*']],
 		]);
 
-		const bigFiles = Array.from({ length: 50000 / 6 }).map((_, i) => [
-			'file' + i + '.js',
-			'file' + i + '.map',
-			'file' + i + '.css',
-			'file' + i + '.ts',
-			'file' + i + '.d.ts',
-			'file' + i + '.jsx',
-		]).flat();
+		const bigFiles = Array.from({ length: 50000 / 6 })
+			.map((_, i) => [
+				'file' + i + '.js',
+				'file' + i + '.map',
+				'file' + i + '.css',
+				'file' + i + '.ts',
+				'file' + i + '.d.ts',
+				'file' + i + '.jsx',
+			])
+			.flat();
 
 		const start = performance.now();
 		// const _bigResult =

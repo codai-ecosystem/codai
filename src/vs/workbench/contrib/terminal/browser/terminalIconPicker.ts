@@ -12,7 +12,10 @@ import type { ThemeIcon } from '../../../../base/common/themables.js';
 import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { defaultInputBoxStyles } from '../../../../platform/theme/browser/defaultStyles.js';
-import { getIconRegistry, IconContribution } from '../../../../platform/theme/common/iconRegistry.js';
+import {
+	getIconRegistry,
+	IconContribution,
+} from '../../../../platform/theme/common/iconRegistry.js';
 import { WorkbenchIconSelectBox } from '../../../services/userDataProfile/browser/iconSelectBox.js';
 
 const icons = new Lazy<IconContribution[]>(() => {
@@ -46,31 +49,36 @@ export class TerminalIconPicker extends Disposable {
 		this._iconSelectBox = instantiationService.createInstance(WorkbenchIconSelectBox, {
 			icons: icons.value,
 			inputBoxStyles: defaultInputBoxStyles,
-			showIconInfo: true
+			showIconInfo: true,
 		});
 	}
 
 	async pickIcons(): Promise<ThemeIcon | undefined> {
 		const dimension = new Dimension(486, 260);
 		return new Promise<ThemeIcon | undefined>(resolve => {
-			this._register(this._iconSelectBox.onDidSelect(e => {
-				resolve(e);
-				this._iconSelectBox.dispose();
-			}));
+			this._register(
+				this._iconSelectBox.onDidSelect(e => {
+					resolve(e);
+					this._iconSelectBox.dispose();
+				})
+			);
 			this._iconSelectBox.clearInput();
-			const hoverWidget = this._hoverService.showInstantHover({
-				content: this._iconSelectBox.domNode,
-				target: getActiveDocument().body,
-				position: {
-					hoverPosition: HoverPosition.BELOW,
+			const hoverWidget = this._hoverService.showInstantHover(
+				{
+					content: this._iconSelectBox.domNode,
+					target: getActiveDocument().body,
+					position: {
+						hoverPosition: HoverPosition.BELOW,
+					},
+					persistence: {
+						sticky: true,
+					},
+					appearance: {
+						showPointer: true,
+					},
 				},
-				persistence: {
-					sticky: true,
-				},
-				appearance: {
-					showPointer: true
-				}
-			}, true);
+				true
+			);
 			if (hoverWidget) {
 				this._register(hoverWidget);
 			}

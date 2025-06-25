@@ -11,5 +11,11 @@ export const Categories = Object.freeze({
 	Test: localize2('test', 'Test'),
 	File: localize2('file', 'File'),
 	Preferences: localize2('preferences', 'Preferences'),
-	Developer: localize2({ key: 'developer', comment: ['A developer on Code itself or someone diagnosing issues in Code'] }, "Developer"),
+	Developer: localize2(
+		{
+			key: 'developer',
+			comment: ['A developer on Code itself or someone diagnosing issues in Code'],
+		},
+		'Developer'
+	),
 });

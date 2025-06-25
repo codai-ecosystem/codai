@@ -15,29 +15,22 @@ suite('terminalProfiles', () => {
 	suite('createProfileSchemaEnums', () => {
 		test('should return an empty array when there are no profiles', () => {
 			deepStrictEqual(createProfileSchemaEnums([]), {
-				values: [
-					null
-				],
-				markdownDescriptions: [
-					'Automatically detect the default'
-				]
+				values: [null],
+				markdownDescriptions: ['Automatically detect the default'],
 			});
 		});
 		test('should return a single entry when there is one profile', () => {
 			const profile: ITerminalProfile = {
 				profileName: 'name',
 				path: 'path',
-				isDefault: true
+				isDefault: true,
 			};
 			deepStrictEqual(createProfileSchemaEnums([profile]), {
-				values: [
-					null,
-					'name'
-				],
+				values: [null, 'name'],
 				markdownDescriptions: [
 					'Automatically detect the default',
-					'$(terminal) name\n- path: path'
-				]
+					'$(terminal) name\n- path: path',
+				],
 			});
 		});
 		test('should show all profile information', () => {
@@ -49,44 +42,37 @@ suite('terminalProfiles', () => {
 				color: 'terminal.ansiRed',
 				env: {
 					c: 'd',
-					e: 'f'
+					e: 'f',
 				},
 				icon: Codicon.zap,
-				overrideName: true
+				overrideName: true,
 			};
 			deepStrictEqual(createProfileSchemaEnums([profile]), {
-				values: [
-					null,
-					'name'
-				],
+				values: [null, 'name'],
 				markdownDescriptions: [
 					'Automatically detect the default',
-					`$(zap) name\n- path: path\n- args: ['a','b']\n- overrideName: true\n- color: terminal.ansiRed\n- env: {\"c\":\"d\",\"e\":\"f\"}`
-				]
+					`$(zap) name\n- path: path\n- args: ['a','b']\n- overrideName: true\n- color: terminal.ansiRed\n- env: {\"c\":\"d\",\"e\":\"f\"}`,
+				],
 			});
 		});
 		test('should return a multiple entries when there are multiple profiles', () => {
 			const profile1: ITerminalProfile = {
 				profileName: 'name',
 				path: 'path',
-				isDefault: true
+				isDefault: true,
 			};
 			const profile2: ITerminalProfile = {
 				profileName: 'foo',
 				path: 'bar',
-				isDefault: false
+				isDefault: false,
 			};
 			deepStrictEqual(createProfileSchemaEnums([profile1, profile2]), {
-				values: [
-					null,
-					'name',
-					'foo'
-				],
+				values: [null, 'name', 'foo'],
 				markdownDescriptions: [
 					'Automatically detect the default',
 					'$(terminal) name\n- path: path',
-					'$(terminal) foo\n- path: bar'
-				]
+					'$(terminal) foo\n- path: bar',
+				],
 			});
 		});
 	});

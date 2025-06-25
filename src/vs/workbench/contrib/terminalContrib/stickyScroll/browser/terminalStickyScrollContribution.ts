@@ -11,9 +11,16 @@ import { IContextKeyService } from '../../../../../platform/contextkey/common/co
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
 import { TerminalCapability } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
-import { ITerminalContribution, ITerminalInstance, IXtermTerminal } from '../../../terminal/browser/terminal.js';
+import {
+	ITerminalContribution,
+	ITerminalInstance,
+	IXtermTerminal,
+} from '../../../terminal/browser/terminal.js';
 import type { ITerminalContributionContext } from '../../../terminal/browser/terminalExtensions.js';
-import { TerminalInstance, TerminalInstanceColorProvider } from '../../../terminal/browser/terminalInstance.js';
+import {
+	TerminalInstance,
+	TerminalInstanceColorProvider,
+} from '../../../terminal/browser/terminalInstance.js';
 import { TerminalStickyScrollSettingId } from '../common/terminalStickyScrollConfiguration.js';
 import './media/stickyScroll.css';
 import { TerminalStickyScrollOverlay } from './terminalStickyScrollOverlay.js';
@@ -22,7 +29,9 @@ export class TerminalStickyScrollContribution extends Disposable implements ITer
 	static readonly ID = 'terminal.stickyScroll';
 
 	static get(instance: ITerminalInstance): TerminalStickyScrollContribution | null {
-		return instance.getContribution<TerminalStickyScrollContribution>(TerminalStickyScrollContribution.ID);
+		return instance.getContribution<TerminalStickyScrollContribution>(
+			TerminalStickyScrollContribution.ID
+		);
 	}
 
 	private _xterm?: IXtermTerminal & { raw: RawXtermTerminal };
@@ -37,15 +46,17 @@ export class TerminalStickyScrollContribution extends Disposable implements ITer
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
 		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService private readonly _keybindingService: IKeybindingService
 	) {
 		super();
 
-		this._register(Event.runAndSubscribe(this._configurationService.onDidChangeConfiguration, e => {
-			if (!e || e.affectsConfiguration(TerminalStickyScrollSettingId.Enabled)) {
-				this._refreshState();
-			}
-		}));
+		this._register(
+			Event.runAndSubscribe(this._configurationService.onDidChangeConfiguration, e => {
+				if (!e || e.affectsConfiguration(TerminalStickyScrollSettingId.Enabled)) {
+					this._refreshState();
+				}
+			})
+		);
 	}
 
 	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
@@ -95,12 +106,18 @@ export class TerminalStickyScrollContribution extends Disposable implements ITer
 
 	private _tryEnable(): void {
 		if (this._shouldBeEnabled()) {
-			const xtermCtorEventually = TerminalInstance.getXtermConstructor(this._keybindingService, this._contextKeyService);
+			const xtermCtorEventually = TerminalInstance.getXtermConstructor(
+				this._keybindingService,
+				this._contextKeyService
+			);
 			this._overlay.value = this._instantiationService.createInstance(
 				TerminalStickyScrollOverlay,
 				this._ctx.instance,
 				this._xterm!,
-				this._instantiationService.createInstance(TerminalInstanceColorProvider, this._ctx.instance.targetRef),
+				this._instantiationService.createInstance(
+					TerminalInstanceColorProvider,
+					this._ctx.instance.targetRef
+				),
 				this._ctx.instance.capabilities.get(TerminalCapability.CommandDetection)!,
 				xtermCtorEventually
 			);
@@ -115,6 +132,10 @@ export class TerminalStickyScrollContribution extends Disposable implements ITer
 
 	private _shouldBeEnabled(): boolean {
 		const capability = this._ctx.instance.capabilities.get(TerminalCapability.CommandDetection);
-		return !!(this._configurationService.getValue(TerminalStickyScrollSettingId.Enabled) && capability && this._xterm?.raw?.element);
+		return !!(
+			this._configurationService.getValue(TerminalStickyScrollSettingId.Enabled) &&
+			capability &&
+			this._xterm?.raw?.element
+		);
 	}
 }

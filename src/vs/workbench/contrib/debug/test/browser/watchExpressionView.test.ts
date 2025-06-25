@@ -21,19 +21,36 @@ import { TestConfigurationService } from '../../../../../platform/configuration/
 import { DebugExpressionRenderer } from '../../browser/debugExpressionRenderer.js';
 const $ = dom.$;
 
-function assertWatchVariable(disposables: Pick<DisposableStore, "add">, watchExpressionsRenderer: WatchExpressionsRenderer, displayType: boolean) {
+function assertWatchVariable(
+	disposables: Pick<DisposableStore, 'add'>,
+	watchExpressionsRenderer: WatchExpressionsRenderer,
+	displayType: boolean
+) {
 	const session = new MockSession();
 	const thread = new Thread(session, 'mockthread', 1);
 	const range = {
 		startLineNumber: 1,
 		startColumn: 1,
 		endLineNumber: undefined!,
-		endColumn: undefined!
+		endColumn: undefined!,
 	};
 	const stackFrame = new StackFrame(thread, 1, null!, 'app.js', 'normal', range, 0, true);
 	const scope = new Scope(stackFrame, 1, 'local', 1, false, 10, 10);
 	const node = {
-		element: new Variable(session, 1, scope, 2, 'foo', 'bar.foo', undefined, 0, 0, undefined, {}, 'string'),
+		element: new Variable(
+			session,
+			1,
+			scope,
+			2,
+			'foo',
+			'bar.foo',
+			undefined,
+			0,
+			0,
+			undefined,
+			{},
+			'string'
+		),
 		depth: 0,
 		visibleChildrenCount: 1,
 		visibleChildIndex: -1,
@@ -41,7 +58,7 @@ function assertWatchVariable(disposables: Pick<DisposableStore, "add">, watchExp
 		collapsed: false,
 		visible: true,
 		filterData: undefined,
-		children: []
+		children: [],
 	};
 	const expression = $('.');
 	const name = $('.');
@@ -63,7 +80,7 @@ function assertWatchVariable(disposables: Pick<DisposableStore, "add">, watchExp
 		inputBoxContainer,
 		elementDisposable,
 		templateDisposable,
-		currentElement
+		currentElement,
 	};
 	watchExpressionsRenderer.renderElement(node, 0, data);
 	assert.strictEqual(value.textContent, '');
@@ -90,7 +107,8 @@ suite('Debug - Watch Debug View', () => {
 		expressionRenderer = instantiationService.createInstance(DebugExpressionRenderer);
 		const debugService = new MockDebugService();
 		instantiationService.stub(IHoverService, NullHoverService);
-		debugService.getViewModel = () => <IViewModel>{ focusedStackFrame: undefined, getSelectedExpression: () => undefined };
+		debugService.getViewModel = () =>
+			<IViewModel>{ focusedStackFrame: undefined, getSelectedExpression: () => undefined };
 		debugService.getViewModel().getSelectedExpression = () => undefined;
 		instantiationService.stub(IDebugService, debugService);
 	});
@@ -98,14 +116,20 @@ suite('Debug - Watch Debug View', () => {
 	test('watch expressions with display type', () => {
 		configurationService.setUserConfiguration('debug', { showVariableTypes: true });
 		instantiationService.stub(IConfigurationService, configurationService);
-		watchExpressionsRenderer = instantiationService.createInstance(WatchExpressionsRenderer, expressionRenderer);
+		watchExpressionsRenderer = instantiationService.createInstance(
+			WatchExpressionsRenderer,
+			expressionRenderer
+		);
 		assertWatchVariable(disposables, watchExpressionsRenderer, true);
 	});
 
 	test('watch expressions', () => {
 		configurationService.setUserConfiguration('debug', { showVariableTypes: false });
 		instantiationService.stub(IConfigurationService, configurationService);
-		watchExpressionsRenderer = instantiationService.createInstance(WatchExpressionsRenderer, expressionRenderer);
+		watchExpressionsRenderer = instantiationService.createInstance(
+			WatchExpressionsRenderer,
+			expressionRenderer
+		);
 		assertWatchVariable(disposables, watchExpressionsRenderer, false);
 	});
 });

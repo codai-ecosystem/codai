@@ -36,7 +36,7 @@ describe('MemoryGraphVisualization Component', () => {
 		const relationship = createRelationship({
 			fromNodeId: featureNode.id,
 			toNodeId: screenNode.id,
-			type: 'contains'
+			type: 'contains',
 		});
 
 		return {
@@ -46,21 +46,22 @@ describe('MemoryGraphVisualization Component', () => {
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			nodes: [featureNode, screenNode],
-			relationships: [relationship]
+			relationships: [relationship],
 		};
 	};
 
 	const defaultProps = {
 		graph: createTestGraph(),
 		isEditable: false,
-		layout: 'force' as const
+		layout: 'force' as const,
 	};
 
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	describe('Basic Rendering', () => {		it('renders graph visualization with nodes and edges', () => {
+	describe('Basic Rendering', () => {
+		it('renders graph visualization with nodes and edges', () => {
 			render(<MemoryGraphVisualization {...defaultProps} />);
 
 			expect(screen.getByText('Login Feature')).toBeDefined();
@@ -69,10 +70,7 @@ describe('MemoryGraphVisualization Component', () => {
 
 		it('applies custom className', () => {
 			const { container } = render(
-				<MemoryGraphVisualization
-					{...defaultProps}
-					className="custom-graph"
-				/>
+				<MemoryGraphVisualization {...defaultProps} className="custom-graph" />
 			);
 
 			expect(container.firstChild).toHaveClass('custom-graph');
@@ -85,7 +83,7 @@ describe('MemoryGraphVisualization Component', () => {
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				nodes: [],
-				relationships: []
+				relationships: [],
 			};
 			render(<MemoryGraphVisualization {...defaultProps} graph={emptyGraph} />);
 
@@ -98,18 +96,11 @@ describe('MemoryGraphVisualization Component', () => {
 			const user = userEvent.setup();
 			const onNodeSelect = vi.fn();
 
-			render(
-				<MemoryGraphVisualization
-					{...defaultProps}
-					onNodeSelect={onNodeSelect}
-				/>
-			);
+			render(<MemoryGraphVisualization {...defaultProps} onNodeSelect={onNodeSelect} />);
 
 			await user.click(screen.getByText('Login Feature'));
 
-			expect(onNodeSelect).toHaveBeenCalledWith(
-				expect.objectContaining({ name: 'Login Feature' })
-			);
+			expect(onNodeSelect).toHaveBeenCalledWith(expect.objectContaining({ name: 'Login Feature' }));
 		});
 
 		it('shows node details panel when node is selected', async () => {
@@ -117,7 +108,8 @@ describe('MemoryGraphVisualization Component', () => {
 
 			render(<MemoryGraphVisualization {...defaultProps} />);
 
-			await user.click(screen.getByText('Login Feature')); expect(screen.getByText('Node Details')).toBeInTheDocument();
+			await user.click(screen.getByText('Login Feature'));
+			expect(screen.getByText('Node Details')).toBeInTheDocument();
 			expect(screen.getAllByText('feature')[1]).toBeInTheDocument(); // Use getAllByText to find the one in the details panel
 			expect(screen.getAllByText('Login Feature')[1]).toBeInTheDocument(); // Use getAllByText since it appears in both node card and details panel
 		});
@@ -141,11 +133,7 @@ describe('MemoryGraphVisualization Component', () => {
 			const onNodeUpdate = vi.fn();
 
 			render(
-				<MemoryGraphVisualization
-					{...defaultProps}
-					isEditable={true}
-					onNodeUpdate={onNodeUpdate}
-				/>
+				<MemoryGraphVisualization {...defaultProps} isEditable={true} onNodeUpdate={onNodeUpdate} />
 			);
 
 			// Click on node to select it
@@ -236,10 +224,13 @@ describe('MemoryGraphVisualization Component', () => {
 
 			// Then reset
 			const resetButton = screen.getByText('Reset View');
-			await user.click(resetButton);   // Should be back to 100%
-			await waitFor(() => {
-				expect(screen.getByText(/100\s*%/)).toBeInTheDocument();
-			}, { timeout: 3000 });
+			await user.click(resetButton); // Should be back to 100%
+			await waitFor(
+				() => {
+					expect(screen.getByText(/100\s*%/)).toBeInTheDocument();
+				},
+				{ timeout: 3000 }
+			);
 		});
 
 		it('handles mouse wheel zoom', () => {
@@ -333,10 +324,8 @@ describe('MemoryGraphVisualization Component', () => {
 				version: '1.0.0',
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				nodes: Array.from({ length: 100 }, (_, i) =>
-					createFeatureNode({ name: `Node ${i}` })
-				),
-				relationships: []
+				nodes: Array.from({ length: 100 }, (_, i) => createFeatureNode({ name: `Node ${i}` })),
+				relationships: [],
 			};
 
 			const startTime = performance.now();
@@ -371,11 +360,13 @@ describe('MemoryGraphVisualization Component', () => {
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				nodes: [createFeatureNode({ name: 'Test Node' })],
-				relationships: [createRelationship({
-					fromNodeId: 'nonexistent',
-					toNodeId: 'alsoNonexistent',
-					type: 'contains'
-				})]
+				relationships: [
+					createRelationship({
+						fromNodeId: 'nonexistent',
+						toNodeId: 'alsoNonexistent',
+						type: 'contains',
+					}),
+				],
 			};
 
 			expect(() => {
@@ -391,7 +382,7 @@ describe('MemoryGraphVisualization Component', () => {
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				nodes: [{} as any], // Invalid node
-				relationships: []
+				relationships: [],
 			};
 
 			expect(() => {

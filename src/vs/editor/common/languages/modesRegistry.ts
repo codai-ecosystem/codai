@@ -9,15 +9,17 @@ import { ILanguageExtensionPoint } from './language.js';
 import { Registry } from '../../../platform/registry/common/platform.js';
 import { Disposable, IDisposable } from '../../../base/common/lifecycle.js';
 import { Mimes } from '../../../base/common/mime.js';
-import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from '../../../platform/configuration/common/configurationRegistry.js';
+import {
+	IConfigurationRegistry,
+	Extensions as ConfigurationExtensions,
+} from '../../../platform/configuration/common/configurationRegistry.js';
 
 // Define extension point ids
 export const Extensions = {
-	ModesRegistry: 'editor.modesRegistry'
+	ModesRegistry: 'editor.modesRegistry',
 };
 
 export class EditorModesRegistry extends Disposable {
-
 	private readonly _languages: ILanguageExtensionPoint[];
 
 	private readonly _onDidChangeLanguages = this._register(new Emitter<void>());
@@ -39,7 +41,7 @@ export class EditorModesRegistry extends Disposable {
 						return;
 					}
 				}
-			}
+			},
 		};
 	}
 
@@ -57,30 +59,33 @@ export const PLAINTEXT_EXTENSION = '.txt';
 ModesRegistry.registerLanguage({
 	id: PLAINTEXT_LANGUAGE_ID,
 	extensions: [PLAINTEXT_EXTENSION],
-	aliases: [nls.localize('plainText.alias', "Plain Text"), 'text'],
-	mimetypes: [Mimes.text]
+	aliases: [nls.localize('plainText.alias', 'Plain Text'), 'text'],
+	mimetypes: [Mimes.text],
 });
 
-Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
-	.registerDefaultConfigurations([{
+Registry.as<IConfigurationRegistry>(
+	ConfigurationExtensions.Configuration
+).registerDefaultConfigurations([
+	{
 		overrides: {
 			'[plaintext]': {
 				'editor.unicodeHighlight.ambiguousCharacters': false,
-				'editor.unicodeHighlight.invisibleCharacters': false
+				'editor.unicodeHighlight.invisibleCharacters': false,
 			},
 			// TODO: Below is a workaround for: https://github.com/microsoft/vscode/issues/240567
 			'[go]': {
-				'editor.insertSpaces': false
+				'editor.insertSpaces': false,
 			},
 			'[makefile]': {
 				'editor.insertSpaces': false,
 			},
 			'[shellscript]': {
-				'files.eol': '\n'
+				'files.eol': '\n',
 			},
 			'[yaml]': {
 				'editor.insertSpaces': true,
-				'editor.tabSize': 2
-			}
-		}
-	}]);
+				'editor.tabSize': 2,
+			},
+		},
+	},
+]);

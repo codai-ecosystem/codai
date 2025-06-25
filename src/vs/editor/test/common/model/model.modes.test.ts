@@ -17,7 +17,6 @@ import { createTextModel } from '../testTextModel.js';
 // --------- utils
 
 suite('Editor Model - Model Modes 1', () => {
-
 	let calledFor: string[] = [];
 
 	function getAndClear(): string[] {
@@ -29,25 +28,27 @@ suite('Editor Model - Model Modes 1', () => {
 	const tokenizationSupport: languages.ITokenizationSupport = {
 		getInitialState: () => NullState,
 		tokenize: undefined!,
-		tokenizeEncoded: (line: string, hasEOL: boolean, state: languages.IState): languages.EncodedTokenizationResult => {
+		tokenizeEncoded: (
+			line: string,
+			hasEOL: boolean,
+			state: languages.IState
+		): languages.EncodedTokenizationResult => {
 			calledFor.push(line.charAt(0));
 			return new languages.EncodedTokenizationResult(new Uint32Array(0), state);
-		}
+		},
 	};
 
 	let thisModel: TextModel;
 	let languageRegistration: IDisposable;
 
 	setup(() => {
-		const TEXT =
-			'1\r\n' +
-			'2\n' +
-			'3\n' +
-			'4\r\n' +
-			'5';
+		const TEXT = '1\r\n' + '2\n' + '3\n' + '4\r\n' + '5';
 		const LANGUAGE_ID = 'modelModeTest1';
 		calledFor = [];
-		languageRegistration = languages.TokenizationRegistry.register(LANGUAGE_ID, tokenizationSupport);
+		languageRegistration = languages.TokenizationRegistry.register(
+			LANGUAGE_ID,
+			tokenizationSupport
+		);
 		thisModel = createTextModel(TEXT, LANGUAGE_ID);
 	});
 
@@ -157,7 +158,6 @@ suite('Editor Model - Model Modes 1', () => {
 });
 
 suite('Editor Model - Model Modes 2', () => {
-
 	class ModelState2 implements languages.IState {
 		prevLineContent: string;
 
@@ -170,7 +170,7 @@ suite('Editor Model - Model Modes 2', () => {
 		}
 
 		equals(other: languages.IState): boolean {
-			return (other instanceof ModelState2) && other.prevLineContent === this.prevLineContent;
+			return other instanceof ModelState2 && other.prevLineContent === this.prevLineContent;
 		}
 	}
 
@@ -185,25 +185,27 @@ suite('Editor Model - Model Modes 2', () => {
 	const tokenizationSupport: languages.ITokenizationSupport = {
 		getInitialState: () => new ModelState2(''),
 		tokenize: undefined!,
-		tokenizeEncoded: (line: string, hasEOL: boolean, state: languages.IState): languages.EncodedTokenizationResult => {
+		tokenizeEncoded: (
+			line: string,
+			hasEOL: boolean,
+			state: languages.IState
+		): languages.EncodedTokenizationResult => {
 			calledFor.push(line);
 			(<ModelState2>state).prevLineContent = line;
 			return new languages.EncodedTokenizationResult(new Uint32Array(0), state);
-		}
+		},
 	};
 
 	let thisModel: TextModel;
 	let languageRegistration: IDisposable;
 
 	setup(() => {
-		const TEXT =
-			'Line1' + '\r\n' +
-			'Line2' + '\n' +
-			'Line3' + '\n' +
-			'Line4' + '\r\n' +
-			'Line5';
+		const TEXT = 'Line1' + '\r\n' + 'Line2' + '\n' + 'Line3' + '\n' + 'Line4' + '\r\n' + 'Line5';
 		const LANGUAGE_ID = 'modelModeTest2';
-		languageRegistration = languages.TokenizationRegistry.register(LANGUAGE_ID, tokenizationSupport);
+		languageRegistration = languages.TokenizationRegistry.register(
+			LANGUAGE_ID,
+			tokenizationSupport
+		);
 		thisModel = createTextModel(TEXT, LANGUAGE_ID);
 	});
 
@@ -227,7 +229,7 @@ suite('Editor Model - Model Modes 2', () => {
 		assert.deepStrictEqual(getAndClear(), ['Line1', 'Line2', 'Line3', 'Line4', 'Line5']);
 		thisModel.applyEdits([
 			EditOperation.insert(new Position(1, 6), '-'),
-			EditOperation.insert(new Position(3, 6), '-')
+			EditOperation.insert(new Position(3, 6), '-'),
 		]);
 
 		thisModel.tokenization.forceTokenization(5);
@@ -237,10 +239,19 @@ suite('Editor Model - Model Modes 2', () => {
 	test('getTokensForInvalidLines one multi-line text insert, one small text insert', () => {
 		thisModel.tokenization.forceTokenization(5);
 		assert.deepStrictEqual(getAndClear(), ['Line1', 'Line2', 'Line3', 'Line4', 'Line5']);
-		thisModel.applyEdits([EditOperation.insert(new Position(1, 6), '\nNew line\nAnother new line')]);
+		thisModel.applyEdits([
+			EditOperation.insert(new Position(1, 6), '\nNew line\nAnother new line'),
+		]);
 		thisModel.applyEdits([EditOperation.insert(new Position(5, 6), '-')]);
 		thisModel.tokenization.forceTokenization(7);
-		assert.deepStrictEqual(getAndClear(), ['Line1', 'New line', 'Another new line', 'Line2', 'Line3-', 'Line4']);
+		assert.deepStrictEqual(getAndClear(), [
+			'Line1',
+			'New line',
+			'Another new line',
+			'Line2',
+			'Line3-',
+			'Line4',
+		]);
 	});
 
 	test('getTokensForInvalidLines one delete text', () => {

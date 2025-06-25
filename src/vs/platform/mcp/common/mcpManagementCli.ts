@@ -5,20 +5,23 @@
 
 import { IConfigurationService } from '../../configuration/common/configuration.js';
 import { ILogger } from '../../log/common/log.js';
-import { IMcpConfiguration, IMcpConfigurationHTTP, IMcpConfigurationStdio, McpConfigurationServer } from './mcpPlatformTypes.js';
+import {
+	IMcpConfiguration,
+	IMcpConfigurationHTTP,
+	IMcpConfigurationStdio,
+	McpConfigurationServer,
+} from './mcpPlatformTypes.js';
 
 type ValidatedConfig = { name: string; config: IMcpConfigurationStdio | IMcpConfigurationHTTP };
 
 export class McpManagementCli {
 	constructor(
 		private readonly _logger: ILogger,
-		@IConfigurationService private readonly _userConfigurationService: IConfigurationService,
-	) { }
+		@IConfigurationService private readonly _userConfigurationService: IConfigurationService
+	) {}
 
-	async addMcpDefinitions(
-		definitions: string[],
-	) {
-		const configs = definitions.map((config) => this.validateConfiguration(config));
+	async addMcpDefinitions(definitions: string[]) {
+		const configs = definitions.map(config => this.validateConfiguration(config));
 		await this.updateMcpInConfig(this._userConfigurationService, configs);
 		this._logger.info(`Added MCP servers: ${configs.map(c => c.name).join(', ')}`);
 	}

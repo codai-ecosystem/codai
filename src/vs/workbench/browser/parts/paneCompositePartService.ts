@@ -5,7 +5,10 @@
 
 import { Event } from '../../../base/common/event.js';
 import { assertIsDefined } from '../../../base/common/types.js';
-import { InstantiationType, registerSingleton } from '../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../platform/instantiation/common/extensions.js';
 import { IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
 import { IProgressIndicator } from '../../../platform/progress/common/progress.js';
 import { PaneCompositeDescriptor } from '../panecomposite.js';
@@ -19,17 +22,20 @@ import { Disposable, DisposableStore } from '../../../base/common/lifecycle.js';
 import { IPaneCompositePart } from './paneCompositePart.js';
 
 export class PaneCompositePartService extends Disposable implements IPaneCompositePartService {
-
 	declare readonly _serviceBrand: undefined;
 
-	readonly onDidPaneCompositeOpen: Event<{ composite: IPaneComposite; viewContainerLocation: ViewContainerLocation }>;
-	readonly onDidPaneCompositeClose: Event<{ composite: IPaneComposite; viewContainerLocation: ViewContainerLocation }>;
+	readonly onDidPaneCompositeOpen: Event<{
+		composite: IPaneComposite;
+		viewContainerLocation: ViewContainerLocation;
+	}>;
+	readonly onDidPaneCompositeClose: Event<{
+		composite: IPaneComposite;
+		viewContainerLocation: ViewContainerLocation;
+	}>;
 
 	private readonly paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>();
 
-	constructor(
-		@IInstantiationService instantiationService: IInstantiationService,
-	) {
+	constructor(@IInstantiationService instantiationService: IInstantiationService) {
 		super();
 
 		const panelPart = instantiationService.createInstance(PanelPart);
@@ -41,11 +47,35 @@ export class PaneCompositePartService extends Disposable implements IPaneComposi
 		this.paneCompositeParts.set(ViewContainerLocation.AuxiliaryBar, auxiliaryBarPart);
 
 		const eventDisposables = this._register(new DisposableStore());
-		this.onDidPaneCompositeOpen = Event.any(...ViewContainerLocations.map(loc => Event.map(this.paneCompositeParts.get(loc)!.onDidPaneCompositeOpen, composite => { return { composite, viewContainerLocation: loc }; }, eventDisposables)));
-		this.onDidPaneCompositeClose = Event.any(...ViewContainerLocations.map(loc => Event.map(this.paneCompositeParts.get(loc)!.onDidPaneCompositeClose, composite => { return { composite, viewContainerLocation: loc }; }, eventDisposables)));
+		this.onDidPaneCompositeOpen = Event.any(
+			...ViewContainerLocations.map(loc =>
+				Event.map(
+					this.paneCompositeParts.get(loc)!.onDidPaneCompositeOpen,
+					composite => {
+						return { composite, viewContainerLocation: loc };
+					},
+					eventDisposables
+				)
+			)
+		);
+		this.onDidPaneCompositeClose = Event.any(
+			...ViewContainerLocations.map(loc =>
+				Event.map(
+					this.paneCompositeParts.get(loc)!.onDidPaneCompositeClose,
+					composite => {
+						return { composite, viewContainerLocation: loc };
+					},
+					eventDisposables
+				)
+			)
+		);
 	}
 
-	openPaneComposite(id: string | undefined, viewContainerLocation: ViewContainerLocation, focus?: boolean): Promise<IPaneComposite | undefined> {
+	openPaneComposite(
+		id: string | undefined,
+		viewContainerLocation: ViewContainerLocation,
+		focus?: boolean
+	): Promise<IPaneComposite | undefined> {
 		return this.getPartByLocation(viewContainerLocation).openPaneComposite(id, focus);
 	}
 
@@ -53,7 +83,10 @@ export class PaneCompositePartService extends Disposable implements IPaneComposi
 		return this.getPartByLocation(viewContainerLocation).getActivePaneComposite();
 	}
 
-	getPaneComposite(id: string, viewContainerLocation: ViewContainerLocation): PaneCompositeDescriptor | undefined {
+	getPaneComposite(
+		id: string,
+		viewContainerLocation: ViewContainerLocation
+	): PaneCompositeDescriptor | undefined {
 		return this.getPartByLocation(viewContainerLocation).getPaneComposite(id);
 	}
 
@@ -73,7 +106,10 @@ export class PaneCompositePartService extends Disposable implements IPaneComposi
 		return this.getPartByLocation(viewContainerLocation).getPaneCompositeIds();
 	}
 
-	getProgressIndicator(id: string, viewContainerLocation: ViewContainerLocation): IProgressIndicator | undefined {
+	getProgressIndicator(
+		id: string,
+		viewContainerLocation: ViewContainerLocation
+	): IProgressIndicator | undefined {
 		return this.getPartByLocation(viewContainerLocation).getProgressIndicator(id);
 	}
 
@@ -88,7 +124,6 @@ export class PaneCompositePartService extends Disposable implements IPaneComposi
 	private getPartByLocation(viewContainerLocation: ViewContainerLocation): IPaneCompositePart {
 		return assertIsDefined(this.paneCompositeParts.get(viewContainerLocation));
 	}
-
 }
 
 registerSingleton(IPaneCompositePartService, PaneCompositePartService, InstantiationType.Delayed);

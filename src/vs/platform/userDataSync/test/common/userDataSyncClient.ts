@@ -13,12 +13,22 @@ import { Schemas } from '../../../../base/common/network.js';
 import { joinPath } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { generateUuid } from '../../../../base/common/uuid.js';
-import { IHeaders, IRequestContext, IRequestOptions } from '../../../../base/parts/request/common/request.js';
+import {
+	IHeaders,
+	IRequestContext,
+	IRequestOptions,
+} from '../../../../base/parts/request/common/request.js';
 import { IConfigurationService } from '../../../configuration/common/configuration.js';
 import { ConfigurationService } from '../../../configuration/common/configurationService.js';
 import { IEnvironmentService } from '../../../environment/common/environment.js';
 import { GlobalExtensionEnablementService } from '../../../extensionManagement/common/extensionEnablementService.js';
-import { DidUninstallExtensionEvent, IExtensionGalleryService, IExtensionManagementService, IGlobalExtensionEnablementService, InstallExtensionResult } from '../../../extensionManagement/common/extensionManagement.js';
+import {
+	DidUninstallExtensionEvent,
+	IExtensionGalleryService,
+	IExtensionManagementService,
+	IGlobalExtensionEnablementService,
+	InstallExtensionResult,
+} from '../../../extensionManagement/common/extensionManagement.js';
 import { IFileService } from '../../../files/common/files.js';
 import { FileService } from '../../../files/common/fileService.js';
 import { InMemoryFileSystemProvider } from '../../../files/common/inMemoryFilesystemProvider.js';
@@ -32,22 +42,58 @@ import { ITelemetryService } from '../../../telemetry/common/telemetry.js';
 import { NullTelemetryService } from '../../../telemetry/common/telemetryUtils.js';
 import { IUriIdentityService } from '../../../uriIdentity/common/uriIdentity.js';
 import { UriIdentityService } from '../../../uriIdentity/common/uriIdentityService.js';
-import { ExtensionStorageService, IExtensionStorageService } from '../../../extensionManagement/common/extensionStorage.js';
-import { IgnoredExtensionsManagementService, IIgnoredExtensionsManagementService } from '../../common/ignoredExtensions.js';
-import { ALL_SYNC_RESOURCES, getDefaultIgnoredSettings, IUserData, IUserDataSyncLocalStoreService, IUserDataSyncLogService, IUserDataSyncEnablementService, IUserDataSyncService, IUserDataSyncStoreManagementService, IUserDataSyncStoreService, IUserDataSyncUtilService, registerConfiguration, ServerResource, SyncResource, IUserDataSynchroniser, IUserDataResourceManifest, IUserDataCollectionManifest, USER_DATA_SYNC_SCHEME } from '../../common/userDataSync.js';
-import { IUserDataSyncAccountService, UserDataSyncAccountService } from '../../common/userDataSyncAccount.js';
+import {
+	ExtensionStorageService,
+	IExtensionStorageService,
+} from '../../../extensionManagement/common/extensionStorage.js';
+import {
+	IgnoredExtensionsManagementService,
+	IIgnoredExtensionsManagementService,
+} from '../../common/ignoredExtensions.js';
+import {
+	ALL_SYNC_RESOURCES,
+	getDefaultIgnoredSettings,
+	IUserData,
+	IUserDataSyncLocalStoreService,
+	IUserDataSyncLogService,
+	IUserDataSyncEnablementService,
+	IUserDataSyncService,
+	IUserDataSyncStoreManagementService,
+	IUserDataSyncStoreService,
+	IUserDataSyncUtilService,
+	registerConfiguration,
+	ServerResource,
+	SyncResource,
+	IUserDataSynchroniser,
+	IUserDataResourceManifest,
+	IUserDataCollectionManifest,
+	USER_DATA_SYNC_SCHEME,
+} from '../../common/userDataSync.js';
+import {
+	IUserDataSyncAccountService,
+	UserDataSyncAccountService,
+} from '../../common/userDataSyncAccount.js';
 import { UserDataSyncLocalStoreService } from '../../common/userDataSyncLocalStoreService.js';
-import { IUserDataSyncMachinesService, UserDataSyncMachinesService } from '../../common/userDataSyncMachines.js';
+import {
+	IUserDataSyncMachinesService,
+	UserDataSyncMachinesService,
+} from '../../common/userDataSyncMachines.js';
 import { UserDataSyncEnablementService } from '../../common/userDataSyncEnablementService.js';
 import { UserDataSyncService } from '../../common/userDataSyncService.js';
-import { UserDataSyncStoreManagementService, UserDataSyncStoreService } from '../../common/userDataSyncStoreService.js';
-import { InMemoryUserDataProfilesService, IUserDataProfile, IUserDataProfilesService } from '../../../userDataProfile/common/userDataProfile.js';
+import {
+	UserDataSyncStoreManagementService,
+	UserDataSyncStoreService,
+} from '../../common/userDataSyncStoreService.js';
+import {
+	InMemoryUserDataProfilesService,
+	IUserDataProfile,
+	IUserDataProfilesService,
+} from '../../../userDataProfile/common/userDataProfile.js';
 import { NullPolicyService } from '../../../policy/common/policy.js';
 import { IUserDataProfileStorageService } from '../../../userDataProfile/common/userDataProfileStorageService.js';
 import { TestUserDataProfileStorageService } from '../../../userDataProfile/test/common/userDataProfileStorageService.test.js';
 
 export class UserDataSyncClient extends Disposable {
-
 	readonly instantiationService: TestInstantiationService;
 
 	constructor(readonly testServer: UserDataSyncTestServer = new UserDataSyncTestServer()) {
@@ -71,33 +117,66 @@ export class UserDataSyncClient extends Disposable {
 		});
 
 		this.instantiationService.stub(IProductService, {
-			_serviceBrand: undefined, ...product, ...{
+			_serviceBrand: undefined,
+			...product,
+			...{
 				'configurationSync.store': {
 					url: this.testServer.url,
 					stableUrl: this.testServer.url,
 					insidersUrl: this.testServer.url,
 					canSwitch: false,
-					authenticationProviders: { 'test': { scopes: [] } }
-				}
-			}
+					authenticationProviders: { test: { scopes: [] } },
+				},
+			},
 		});
 
 		const fileService = this._register(new FileService(logService));
-		this._register(fileService.registerProvider(Schemas.inMemory, this._register(new InMemoryFileSystemProvider())));
-		this._register(fileService.registerProvider(USER_DATA_SYNC_SCHEME, this._register(new InMemoryFileSystemProvider())));
+		this._register(
+			fileService.registerProvider(
+				Schemas.inMemory,
+				this._register(new InMemoryFileSystemProvider())
+			)
+		);
+		this._register(
+			fileService.registerProvider(
+				USER_DATA_SYNC_SCHEME,
+				this._register(new InMemoryFileSystemProvider())
+			)
+		);
 		this.instantiationService.stub(IFileService, fileService);
 
-		const uriIdentityService = this._register(this.instantiationService.createInstance(UriIdentityService));
+		const uriIdentityService = this._register(
+			this.instantiationService.createInstance(UriIdentityService)
+		);
 		this.instantiationService.stub(IUriIdentityService, uriIdentityService);
 
-		const userDataProfilesService = this._register(new InMemoryUserDataProfilesService(environmentService, fileService, uriIdentityService, logService));
+		const userDataProfilesService = this._register(
+			new InMemoryUserDataProfilesService(
+				environmentService,
+				fileService,
+				uriIdentityService,
+				logService
+			)
+		);
 		this.instantiationService.stub(IUserDataProfilesService, userDataProfilesService);
 
-		const storageService = this._register(new TestStorageService(userDataProfilesService.defaultProfile));
+		const storageService = this._register(
+			new TestStorageService(userDataProfilesService.defaultProfile)
+		);
 		this.instantiationService.stub(IStorageService, this._register(storageService));
-		this.instantiationService.stub(IUserDataProfileStorageService, this._register(new TestUserDataProfileStorageService(false, storageService)));
+		this.instantiationService.stub(
+			IUserDataProfileStorageService,
+			this._register(new TestUserDataProfileStorageService(false, storageService))
+		);
 
-		const configurationService = this._register(new ConfigurationService(userDataProfilesService.defaultProfile.settingsResource, fileService, new NullPolicyService(), logService));
+		const configurationService = this._register(
+			new ConfigurationService(
+				userDataProfilesService.defaultProfile.settingsResource,
+				fileService,
+				new NullPolicyService(),
+				logService
+			)
+		);
 		await configurationService.initialize();
 		this.instantiationService.stub(IConfigurationService, configurationService);
 
@@ -105,40 +184,96 @@ export class UserDataSyncClient extends Disposable {
 
 		this.instantiationService.stub(IUserDataSyncLogService, logService);
 		this.instantiationService.stub(ITelemetryService, NullTelemetryService);
-		this.instantiationService.stub(IUserDataSyncStoreManagementService, this._register(this.instantiationService.createInstance(UserDataSyncStoreManagementService)));
-		this.instantiationService.stub(IUserDataSyncStoreService, this._register(this.instantiationService.createInstance(UserDataSyncStoreService)));
+		this.instantiationService.stub(
+			IUserDataSyncStoreManagementService,
+			this._register(this.instantiationService.createInstance(UserDataSyncStoreManagementService))
+		);
+		this.instantiationService.stub(
+			IUserDataSyncStoreService,
+			this._register(this.instantiationService.createInstance(UserDataSyncStoreService))
+		);
 
-		const userDataSyncAccountService: IUserDataSyncAccountService = this._register(this.instantiationService.createInstance(UserDataSyncAccountService));
-		await userDataSyncAccountService.updateAccount({ authenticationProviderId: 'authenticationProviderId', token: 'token' });
+		const userDataSyncAccountService: IUserDataSyncAccountService = this._register(
+			this.instantiationService.createInstance(UserDataSyncAccountService)
+		);
+		await userDataSyncAccountService.updateAccount({
+			authenticationProviderId: 'authenticationProviderId',
+			token: 'token',
+		});
 		this.instantiationService.stub(IUserDataSyncAccountService, userDataSyncAccountService);
 
-		this.instantiationService.stub(IUserDataSyncMachinesService, this._register(this.instantiationService.createInstance(UserDataSyncMachinesService)));
-		this.instantiationService.stub(IUserDataSyncLocalStoreService, this._register(this.instantiationService.createInstance(UserDataSyncLocalStoreService)));
+		this.instantiationService.stub(
+			IUserDataSyncMachinesService,
+			this._register(this.instantiationService.createInstance(UserDataSyncMachinesService))
+		);
+		this.instantiationService.stub(
+			IUserDataSyncLocalStoreService,
+			this._register(this.instantiationService.createInstance(UserDataSyncLocalStoreService))
+		);
 		this.instantiationService.stub(IUserDataSyncUtilService, new TestUserDataSyncUtilService());
-		this.instantiationService.stub(IUserDataSyncEnablementService, this._register(this.instantiationService.createInstance(UserDataSyncEnablementService)));
+		this.instantiationService.stub(
+			IUserDataSyncEnablementService,
+			this._register(this.instantiationService.createInstance(UserDataSyncEnablementService))
+		);
 
 		this.instantiationService.stub(IExtensionManagementService, {
-			async getInstalled() { return []; },
+			async getInstalled() {
+				return [];
+			},
 			onDidInstallExtensions: new Emitter<readonly InstallExtensionResult[]>().event,
 			onDidUninstallExtension: new Emitter<DidUninstallExtensionEvent>().event,
 		});
-		this.instantiationService.stub(IGlobalExtensionEnablementService, this._register(this.instantiationService.createInstance(GlobalExtensionEnablementService)));
-		this.instantiationService.stub(IExtensionStorageService, this._register(this.instantiationService.createInstance(ExtensionStorageService)));
-		this.instantiationService.stub(IIgnoredExtensionsManagementService, this.instantiationService.createInstance(IgnoredExtensionsManagementService));
+		this.instantiationService.stub(
+			IGlobalExtensionEnablementService,
+			this._register(this.instantiationService.createInstance(GlobalExtensionEnablementService))
+		);
+		this.instantiationService.stub(
+			IExtensionStorageService,
+			this._register(this.instantiationService.createInstance(ExtensionStorageService))
+		);
+		this.instantiationService.stub(
+			IIgnoredExtensionsManagementService,
+			this.instantiationService.createInstance(IgnoredExtensionsManagementService)
+		);
 		this.instantiationService.stub(IExtensionGalleryService, {
-			isEnabled() { return true; },
-			async getCompatibleExtension() { return null; }
+			isEnabled() {
+				return true;
+			},
+			async getCompatibleExtension() {
+				return null;
+			},
 		});
 
-		this.instantiationService.stub(IUserDataSyncService, this._register(this.instantiationService.createInstance(UserDataSyncService)));
+		this.instantiationService.stub(
+			IUserDataSyncService,
+			this._register(this.instantiationService.createInstance(UserDataSyncService))
+		);
 
 		if (!empty) {
-			await fileService.writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(JSON.stringify({})));
-			await fileService.writeFile(userDataProfilesService.defaultProfile.keybindingsResource, VSBuffer.fromString(JSON.stringify([])));
-			await fileService.writeFile(joinPath(userDataProfilesService.defaultProfile.snippetsHome, 'c.json'), VSBuffer.fromString(`{}`));
-			await fileService.writeFile(joinPath(userDataProfilesService.defaultProfile.promptsHome, 'c.prompt.md'), VSBuffer.fromString(' '));
-			await fileService.writeFile(userDataProfilesService.defaultProfile.tasksResource, VSBuffer.fromString(`{}`));
-			await fileService.writeFile(environmentService.argvResource, VSBuffer.fromString(JSON.stringify({ 'locale': 'en' })));
+			await fileService.writeFile(
+				userDataProfilesService.defaultProfile.settingsResource,
+				VSBuffer.fromString(JSON.stringify({}))
+			);
+			await fileService.writeFile(
+				userDataProfilesService.defaultProfile.keybindingsResource,
+				VSBuffer.fromString(JSON.stringify([]))
+			);
+			await fileService.writeFile(
+				joinPath(userDataProfilesService.defaultProfile.snippetsHome, 'c.json'),
+				VSBuffer.fromString(`{}`)
+			);
+			await fileService.writeFile(
+				joinPath(userDataProfilesService.defaultProfile.promptsHome, 'c.prompt.md'),
+				VSBuffer.fromString(' ')
+			);
+			await fileService.writeFile(
+				userDataProfilesService.defaultProfile.tasksResource,
+				VSBuffer.fromString(`{}`)
+			);
+			await fileService.writeFile(
+				environmentService.argvResource,
+				VSBuffer.fromString(JSON.stringify({ locale: 'en' }))
+			);
 		}
 		await configurationService.reloadConfiguration();
 
@@ -153,7 +288,9 @@ export class UserDataSyncClient extends Disposable {
 	}
 
 	read(resource: SyncResource, collection?: string): Promise<IUserData> {
-		return this.instantiationService.get(IUserDataSyncStoreService).readResource(resource, null, collection);
+		return this.instantiationService
+			.get(IUserDataSyncStoreService)
+			.readResource(resource, null, collection);
 	}
 
 	async getResourceManifest(): Promise<IUserDataResourceManifest | null> {
@@ -162,15 +299,18 @@ export class UserDataSyncClient extends Disposable {
 	}
 
 	getSynchronizer(source: SyncResource): IUserDataSynchroniser {
-		return (this.instantiationService.get(IUserDataSyncService) as UserDataSyncService).getOrCreateActiveProfileSynchronizer(this.instantiationService.get(IUserDataProfilesService).defaultProfile, undefined).enabled.find(s => s.resource === source)!;
+		return (this.instantiationService.get(IUserDataSyncService) as UserDataSyncService)
+			.getOrCreateActiveProfileSynchronizer(
+				this.instantiationService.get(IUserDataProfilesService).defaultProfile,
+				undefined
+			)
+			.enabled.find(s => s.resource === source)!;
 	}
-
 }
 
 const ALL_SERVER_RESOURCES: ServerResource[] = [...ALL_SYNC_RESOURCES, 'machines'];
 
 export class UserDataSyncTestServer implements IRequestService {
-
 	_serviceBrand: any;
 
 	readonly url: string = 'http://host:3000';
@@ -179,28 +319,52 @@ export class UserDataSyncTestServer implements IRequestService {
 	private readonly data = new Map<ServerResource, IUserData>();
 
 	private _requests: { url: string; type: string; headers?: IHeaders }[] = [];
-	get requests(): { url: string; type: string; headers?: IHeaders }[] { return this._requests; }
+	get requests(): { url: string; type: string; headers?: IHeaders }[] {
+		return this._requests;
+	}
 
 	private _requestsWithAllHeaders: { url: string; type: string; headers?: IHeaders }[] = [];
-	get requestsWithAllHeaders(): { url: string; type: string; headers?: IHeaders }[] { return this._requestsWithAllHeaders; }
+	get requestsWithAllHeaders(): { url: string; type: string; headers?: IHeaders }[] {
+		return this._requestsWithAllHeaders;
+	}
 
 	private _responses: { status: number }[] = [];
-	get responses(): { status: number }[] { return this._responses; }
-	reset(): void { this._requests = []; this._responses = []; this._requestsWithAllHeaders = []; }
+	get responses(): { status: number }[] {
+		return this._responses;
+	}
+	reset(): void {
+		this._requests = [];
+		this._responses = [];
+		this._requestsWithAllHeaders = [];
+	}
 
 	private manifestRef = 0;
 	private collectionCounter = 0;
 
-	constructor(private readonly rateLimit = Number.MAX_SAFE_INTEGER, private readonly retryAfter?: number) { }
+	constructor(
+		private readonly rateLimit = Number.MAX_SAFE_INTEGER,
+		private readonly retryAfter?: number
+	) {}
 
-	async resolveProxy(url: string): Promise<string | undefined> { return url; }
-	async lookupAuthorization(authInfo: AuthInfo): Promise<Credentials | undefined> { return undefined; }
-	async lookupKerberosAuthorization(url: string): Promise<string | undefined> { return undefined; }
-	async loadCertificates(): Promise<string[]> { return []; }
+	async resolveProxy(url: string): Promise<string | undefined> {
+		return url;
+	}
+	async lookupAuthorization(authInfo: AuthInfo): Promise<Credentials | undefined> {
+		return undefined;
+	}
+	async lookupKerberosAuthorization(url: string): Promise<string | undefined> {
+		return undefined;
+	}
+	async loadCertificates(): Promise<string[]> {
+		return [];
+	}
 
 	async request(options: IRequestOptions, token: CancellationToken): Promise<IRequestContext> {
 		if (this._requests.length === this.rateLimit) {
-			return this.toResponse(429, this.retryAfter ? { 'retry-after': `${this.retryAfter}` } : undefined);
+			return this.toResponse(
+				429,
+				this.retryAfter ? { 'retry-after': `${this.retryAfter}` } : undefined
+			);
 		}
 		const headers: IHeaders = {};
 		if (options.headers) {
@@ -212,7 +376,11 @@ export class UserDataSyncTestServer implements IRequestService {
 			}
 		}
 		this._requests.push({ url: options.url!, type: options.type!, headers });
-		this._requestsWithAllHeaders.push({ url: options.url!, type: options.type!, headers: options.headers });
+		this._requestsWithAllHeaders.push({
+			url: options.url!,
+			type: options.type!,
+			headers: options.headers,
+		});
 		const requestContext = await this.doRequest(options);
 		this._responses.push({ status: requestContext.res.statusCode! });
 		return requestContext;
@@ -220,22 +388,45 @@ export class UserDataSyncTestServer implements IRequestService {
 
 	private async doRequest(options: IRequestOptions): Promise<IRequestContext> {
 		const versionUrl = `${this.url}/v1/`;
-		const relativePath = options.url!.indexOf(versionUrl) === 0 ? options.url!.substring(versionUrl.length) : undefined;
+		const relativePath =
+			options.url!.indexOf(versionUrl) === 0
+				? options.url!.substring(versionUrl.length)
+				: undefined;
 		const segments = relativePath ? relativePath.split('/') : [];
 		if (options.type === 'GET' && segments.length === 1 && segments[0] === 'manifest') {
 			return this.getManifest(options.headers);
 		}
 		if (options.type === 'GET' && segments.length === 3 && segments[0] === 'resource') {
-			return this.getResourceData(undefined, segments[1], segments[2] === 'latest' ? undefined : segments[2], options.headers);
+			return this.getResourceData(
+				undefined,
+				segments[1],
+				segments[2] === 'latest' ? undefined : segments[2],
+				options.headers
+			);
 		}
 		if (options.type === 'POST' && segments.length === 2 && segments[0] === 'resource') {
 			return this.writeData(undefined, segments[1], options.data, options.headers);
 		}
 		// resources in collection
-		if (options.type === 'GET' && segments.length === 5 && segments[0] === 'collection' && segments[2] === 'resource') {
-			return this.getResourceData(segments[1], segments[3], segments[4] === 'latest' ? undefined : segments[4], options.headers);
+		if (
+			options.type === 'GET' &&
+			segments.length === 5 &&
+			segments[0] === 'collection' &&
+			segments[2] === 'resource'
+		) {
+			return this.getResourceData(
+				segments[1],
+				segments[3],
+				segments[4] === 'latest' ? undefined : segments[4],
+				options.headers
+			);
 		}
-		if (options.type === 'POST' && segments.length === 4 && segments[0] === 'collection' && segments[2] === 'resource') {
+		if (
+			options.type === 'POST' &&
+			segments.length === 4 &&
+			segments[0] === 'collection' &&
+			segments[2] === 'resource'
+		) {
 			return this.writeData(segments[1], segments[3], options.data, options.headers);
 		}
 		if (options.type === 'DELETE' && segments.length === 2 && segments[0] === 'resource') {
@@ -256,7 +447,7 @@ export class UserDataSyncTestServer implements IRequestService {
 	private async getManifest(headers?: IHeaders): Promise<IRequestContext> {
 		if (this.session) {
 			const latest: Record<ServerResource, string> = Object.create({});
-			this.data.forEach((value, key) => latest[key] = value.ref);
+			this.data.forEach((value, key) => (latest[key] = value.ref));
 			let collection: IUserDataCollectionManifest | undefined = undefined;
 			if (this.collectionCounter) {
 				collection = {};
@@ -264,18 +455,27 @@ export class UserDataSyncTestServer implements IRequestService {
 					const collectionData = this.collections.get(`${collectionId}`);
 					if (collectionData) {
 						const latest: Record<ServerResource, string> = Object.create({});
-						collectionData.forEach((value, key) => latest[key] = value.ref);
+						collectionData.forEach((value, key) => (latest[key] = value.ref));
 						collection[`${collectionId}`] = { latest };
 					}
 				}
 			}
 			const manifest = { session: this.session, latest, collection };
-			return this.toResponse(200, { 'Content-Type': 'application/json', etag: `${this.manifestRef++}` }, JSON.stringify(manifest));
+			return this.toResponse(
+				200,
+				{ 'Content-Type': 'application/json', etag: `${this.manifestRef++}` },
+				JSON.stringify(manifest)
+			);
 		}
 		return this.toResponse(204, { etag: `${this.manifestRef++}` });
 	}
 
-	private async getResourceData(collection: string | undefined, resource: string, ref?: string, headers: IHeaders = {}): Promise<IRequestContext> {
+	private async getResourceData(
+		collection: string | undefined,
+		resource: string,
+		ref?: string,
+		headers: IHeaders = {}
+	): Promise<IRequestContext> {
 		const collectionData = collection ? this.collections.get(collection) : this.data;
 		if (!collectionData) {
 			return this.toResponse(501);
@@ -298,7 +498,12 @@ export class UserDataSyncTestServer implements IRequestService {
 		return this.toResponse(204);
 	}
 
-	private async writeData(collection: string | undefined, resource: string, content: string = '', headers: IHeaders = {}): Promise<IRequestContext> {
+	private async writeData(
+		collection: string | undefined,
+		resource: string,
+		content: string = '',
+		headers: IHeaders = {}
+	): Promise<IRequestContext> {
 		if (!this.session) {
 			this.session = generateUuid();
 		}
@@ -319,7 +524,11 @@ export class UserDataSyncTestServer implements IRequestService {
 		return this.toResponse(204);
 	}
 
-	private async deleteResourceData(collection: string | undefined, resource: string, headers: IHeaders = {}): Promise<IRequestContext> {
+	private async deleteResourceData(
+		collection: string | undefined,
+		resource: string,
+		headers: IHeaders = {}
+	): Promise<IRequestContext> {
 		const collectionData = collection ? this.collections.get(collection) : this.data;
 		if (!collectionData) {
 			return this.toResponse(501);
@@ -352,15 +561,14 @@ export class UserDataSyncTestServer implements IRequestService {
 		return {
 			res: {
 				headers: headers || {},
-				statusCode
+				statusCode,
 			},
-			stream: bufferToStream(VSBuffer.fromString(data || ''))
+			stream: bufferToStream(VSBuffer.fromString(data || '')),
 		};
 	}
 }
 
 export class TestUserDataSyncUtilService implements IUserDataSyncUtilService {
-
 	_serviceBrand: any;
 
 	async resolveDefaultCoreIgnoredSettings(): Promise<string[]> {
@@ -378,7 +586,6 @@ export class TestUserDataSyncUtilService implements IUserDataSyncUtilService {
 	async resolveFormattingOptions(file?: URI): Promise<FormattingOptions> {
 		return { eol: '\n', insertSpaces: false, tabSize: 4 };
 	}
-
 }
 
 class TestStorageService extends InMemoryStorageService {

@@ -14,7 +14,12 @@ import { ILanguageService } from '../../../../../editor/common/languages/languag
 import { ICommandService } from '../../../../../platform/commands/common/commands.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
-import { IDialogService, IFileDialogService, IOpenDialogOptions, ISaveDialogOptions } from '../../../../../platform/dialogs/common/dialogs.js';
+import {
+	IDialogService,
+	IFileDialogService,
+	IOpenDialogOptions,
+	ISaveDialogOptions,
+} from '../../../../../platform/dialogs/common/dialogs.js';
 import { IFileService } from '../../../../../platform/files/common/files.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
@@ -58,8 +63,26 @@ class TestFileDialogService extends FileDialogService {
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@ILogService logService: ILogService
 	) {
-		super(hostService, contextService, historyService, environmentService, instantiationService, configurationService, fileService,
-			openerService, nativeHostService, dialogService, languageService, workspacesService, labelService, pathService, commandService, editorService, codeEditorService, logService);
+		super(
+			hostService,
+			contextService,
+			historyService,
+			environmentService,
+			instantiationService,
+			configurationService,
+			fileService,
+			openerService,
+			nativeHostService,
+			dialogService,
+			languageService,
+			workspacesService,
+			labelService,
+			pathService,
+			commandService,
+			editorService,
+			codeEditorService,
+			logService
+		);
 	}
 
 	protected override getSimpleFileDialog() {
@@ -72,17 +95,15 @@ class TestFileDialogService extends FileDialogService {
 }
 
 suite('FileDialogService', function () {
-
 	let instantiationService: TestInstantiationService;
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 	const testFile: URI = URI.file('/test/file');
 
 	setup(async function () {
-		disposables.add(instantiationService = workbenchInstantiationService(undefined, disposables));
+		disposables.add((instantiationService = workbenchInstantiationService(undefined, disposables)));
 		const configurationService = new TestConfigurationService();
 		await configurationService.setUserConfiguration('files', { simpleDialog: { enable: true } });
 		instantiationService.stub(IConfigurationService, configurationService);
-
 	});
 
 	test('Local - open/save workspaces availableFilesystems', async function () {
@@ -97,13 +118,21 @@ suite('FileDialogService', function () {
 				assert.strictEqual(options.availableFileSystems[0], Schemas.file);
 				return testFile;
 			}
-			dispose(): void { }
+			dispose(): void {}
 		}
 
-		const dialogService = instantiationService.createInstance(TestFileDialogService, new TestSimpleFileDialog());
+		const dialogService = instantiationService.createInstance(
+			TestFileDialogService,
+			new TestSimpleFileDialog()
+		);
 		instantiationService.set(IFileDialogService, dialogService);
-		const workspaceService: IWorkspaceEditingService = disposables.add(instantiationService.createInstance(BrowserWorkspaceEditingService));
-		assert.strictEqual((await workspaceService.pickNewWorkspacePath())?.path.startsWith(testFile.path), true);
+		const workspaceService: IWorkspaceEditingService = disposables.add(
+			instantiationService.createInstance(BrowserWorkspaceEditingService)
+		);
+		assert.strictEqual(
+			(await workspaceService.pickNewWorkspacePath())?.path.startsWith(testFile.path),
+			true
+		);
 		assert.strictEqual(await dialogService.pickWorkspaceAndOpen({}), undefined);
 	});
 
@@ -119,17 +148,28 @@ suite('FileDialogService', function () {
 				assert.strictEqual(options.availableFileSystems[0], Schemas.file);
 				return testFile;
 			}
-			dispose(): void { }
+			dispose(): void {}
 		}
 
-		instantiationService.stub(IPathService, new class {
-			defaultUriScheme: string = 'vscode-virtual-test';
-			userHome = async () => URI.file('/user/home');
-		} as IPathService);
-		const dialogService = instantiationService.createInstance(TestFileDialogService, new TestSimpleFileDialog());
+		instantiationService.stub(
+			IPathService,
+			new (class {
+				defaultUriScheme: string = 'vscode-virtual-test';
+				userHome = async () => URI.file('/user/home');
+			})() as IPathService
+		);
+		const dialogService = instantiationService.createInstance(
+			TestFileDialogService,
+			new TestSimpleFileDialog()
+		);
 		instantiationService.set(IFileDialogService, dialogService);
-		const workspaceService: IWorkspaceEditingService = disposables.add(instantiationService.createInstance(BrowserWorkspaceEditingService));
-		assert.strictEqual((await workspaceService.pickNewWorkspacePath())?.path.startsWith(testFile.path), true);
+		const workspaceService: IWorkspaceEditingService = disposables.add(
+			instantiationService.createInstance(BrowserWorkspaceEditingService)
+		);
+		assert.strictEqual(
+			(await workspaceService.pickNewWorkspacePath())?.path.startsWith(testFile.path),
+			true
+		);
 		assert.strictEqual(await dialogService.pickWorkspaceAndOpen({}), undefined);
 	});
 
@@ -147,22 +187,36 @@ suite('FileDialogService', function () {
 				assert.strictEqual(options.availableFileSystems[1], Schemas.file);
 				return testFile;
 			}
-			dispose(): void { }
+			dispose(): void {}
 		}
 
-		instantiationService.set(IWorkbenchEnvironmentService, new class extends mock<BrowserWorkbenchEnvironmentService>() {
-			override get remoteAuthority() {
-				return 'testRemote';
-			}
-		});
-		instantiationService.stub(IPathService, new class {
-			defaultUriScheme: string = Schemas.vscodeRemote;
-			userHome = async () => URI.file('/user/home');
-		} as IPathService);
-		const dialogService = instantiationService.createInstance(TestFileDialogService, new TestSimpleFileDialog());
+		instantiationService.set(
+			IWorkbenchEnvironmentService,
+			new (class extends mock<BrowserWorkbenchEnvironmentService>() {
+				override get remoteAuthority() {
+					return 'testRemote';
+				}
+			})()
+		);
+		instantiationService.stub(
+			IPathService,
+			new (class {
+				defaultUriScheme: string = Schemas.vscodeRemote;
+				userHome = async () => URI.file('/user/home');
+			})() as IPathService
+		);
+		const dialogService = instantiationService.createInstance(
+			TestFileDialogService,
+			new TestSimpleFileDialog()
+		);
 		instantiationService.set(IFileDialogService, dialogService);
-		const workspaceService: IWorkspaceEditingService = disposables.add(instantiationService.createInstance(BrowserWorkspaceEditingService));
-		assert.strictEqual((await workspaceService.pickNewWorkspacePath())?.path.startsWith(testFile.path), true);
+		const workspaceService: IWorkspaceEditingService = disposables.add(
+			instantiationService.createInstance(BrowserWorkspaceEditingService)
+		);
+		assert.strictEqual(
+			(await workspaceService.pickNewWorkspacePath())?.path.startsWith(testFile.path),
+			true
+		);
 		assert.strictEqual(await dialogService.pickWorkspaceAndOpen({}), undefined);
 	});
 
@@ -174,20 +228,28 @@ suite('FileDialogService', function () {
 			async showSaveDialog(): Promise<URI | undefined> {
 				return testFile;
 			}
-			dispose(): void { }
+			dispose(): void {}
 		}
-		instantiationService.set(IWorkbenchEnvironmentService, new class extends mock<BrowserWorkbenchEnvironmentService>() {
-			override get remoteAuthority() {
-				return 'testRemote';
-			}
-		});
-		instantiationService.stub(IPathService, new class {
-			defaultUriScheme: string = Schemas.vscodeRemote;
-			userHome = async () => URI.file('/user/home');
-		} as IPathService);
+		instantiationService.set(
+			IWorkbenchEnvironmentService,
+			new (class extends mock<BrowserWorkbenchEnvironmentService>() {
+				override get remoteAuthority() {
+					return 'testRemote';
+				}
+			})()
+		);
+		instantiationService.stub(
+			IPathService,
+			new (class {
+				defaultUriScheme: string = Schemas.vscodeRemote;
+				userHome = async () => URI.file('/user/home');
+			})() as IPathService
+		);
 
-
-		const dialogService = instantiationService.createInstance(TestFileDialogService, new TestSimpleFileDialog());
+		const dialogService = instantiationService.createInstance(
+			TestFileDialogService,
+			new TestSimpleFileDialog()
+		);
 		const historyService = instantiationService.get(IHistoryService);
 		const getLastActiveWorkspaceRoot = sinon.spy(historyService, 'getLastActiveWorkspaceRoot');
 		const getLastActiveFile = sinon.spy(historyService, 'getLastActiveFile');
@@ -197,6 +259,9 @@ suite('FileDialogService', function () {
 		assert.deepStrictEqual(getLastActiveWorkspaceRoot.args, [[Schemas.vscodeRemote, 'testRemote']]);
 
 		await dialogService.defaultFolderPath();
-		assert.deepStrictEqual(getLastActiveWorkspaceRoot.args[1], [Schemas.vscodeRemote, 'testRemote']);
+		assert.deepStrictEqual(getLastActiveWorkspaceRoot.args[1], [
+			Schemas.vscodeRemote,
+			'testRemote',
+		]);
 	});
 });

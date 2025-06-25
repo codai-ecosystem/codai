@@ -7,7 +7,11 @@ import { splitGlobAware } from '../../../../base/common/glob.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { ISettableObservable, observableValue } from '../../../../base/common/observable.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { IObservableValue, MutableObservableValue } from './observableValue.js';
 import { StoredValue } from './storedValue.js';
 import { namespaceTestTag } from './testTypes.js';
@@ -73,7 +77,8 @@ export interface ITestExplorerFilterState {
 	didSelectTestInExplorer(testId: string): void;
 }
 
-export const ITestExplorerFilterState = createDecorator<ITestExplorerFilterState>('testingFilterState');
+export const ITestExplorerFilterState =
+	createDecorator<ITestExplorerFilterState>('testingFilterState');
 
 const tagRe = /!?@([^ ,:]+)/g;
 const trimExtraWhitespace = (str: string) => str.replace(/\s\s+/g, ' ').trim();
@@ -101,22 +106,31 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
 	/** @inheritdoc */
 	public readonly fuzzy: MutableObservableValue<boolean>;
 
-	public readonly reveal: ISettableObservable<string | undefined> = observableValue('TestExplorerFilterState.reveal', undefined);
+	public readonly reveal: ISettableObservable<string | undefined> = observableValue(
+		'TestExplorerFilterState.reveal',
+		undefined
+	);
 
 	public readonly onDidRequestInputFocus = this.focusEmitter.event;
 
 	private selectTestInExplorerEmitter = this._register(new Emitter<string | undefined>());
 	public readonly onDidSelectTestInExplorer = this.selectTestInExplorerEmitter.event;
 
-	constructor(
-		@IStorageService storageService: IStorageService,
-	) {
+	constructor(@IStorageService storageService: IStorageService) {
 		super();
-		this.fuzzy = this._register(MutableObservableValue.stored(new StoredValue<boolean>({
-			key: 'testHistoryFuzzy',
-			scope: StorageScope.PROFILE,
-			target: StorageTarget.USER,
-		}, storageService), false));
+		this.fuzzy = this._register(
+			MutableObservableValue.stored(
+				new StoredValue<boolean>(
+					{
+						key: 'testHistoryFuzzy',
+						scope: StorageScope.PROFILE,
+						target: StorageTarget.USER,
+					},
+					storageService
+				),
+				false
+			)
+		);
 	}
 
 	/** @inheritdoc */
@@ -187,7 +201,9 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
 		globText += text.slice(lastIndex).trim();
 
 		if (globText.length) {
-			for (const filter of splitGlobAware(globText, ',').map(s => s.trim()).filter(s => !!s.length)) {
+			for (const filter of splitGlobAware(globText, ',')
+				.map(s => s.trim())
+				.filter(s => !!s.length)) {
 				if (filter.startsWith('!')) {
 					this.globList.push({ include: false, text: filter.slice(1).toLowerCase() });
 				} else {

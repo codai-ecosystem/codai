@@ -17,18 +17,18 @@ function perfSuite(name: string, callback: (this: Mocha.Suite) => void) {
 }
 
 perfSuite('Performance - fuzzyMatch', async function () {
-
 	const uri = FileAccess.asBrowserUri('vs/base/test/common/filters.perf.data').toString(true);
 	const { data } = await importAMDNodeModule<typeof import('./filters.perf.data.js')>(uri, '');
 
 	// suiteSetup(() => console.profile());
 	// suiteTeardown(() => console.profileEnd());
 
-	console.log(`Matching ${data.length} items against ${patterns.length} patterns (${data.length * patterns.length} operations) `);
+	console.log(
+		`Matching ${data.length} items against ${patterns.length} patterns (${data.length * patterns.length} operations) `
+	);
 
 	function perfTest(name: string, match: filters.FuzzyScorer) {
 		test(name, () => {
-
 			const t1 = Date.now();
 			let count = 0;
 			for (let i = 0; i < 2; i++) {
@@ -50,15 +50,12 @@ perfSuite('Performance - fuzzyMatch', async function () {
 	perfTest('fuzzyScoreGracefulAggressive', filters.fuzzyScoreGracefulAggressive);
 });
 
-
 perfSuite('Performance - IFilter', async function () {
-
 	const uri = FileAccess.asBrowserUri('vs/base/test/common/filters.perf.data').toString(true);
 	const { data } = await importAMDNodeModule<typeof import('./filters.perf.data.js')>(uri, '');
 
 	function perfTest(name: string, match: filters.IFilter) {
 		test(name, () => {
-
 			const t1 = Date.now();
 			let count = 0;
 			for (let i = 0; i < 2; i++) {

@@ -63,15 +63,22 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 
 	sendResponse(response: DebugProtocol.Response): void {
 		if (response.seq > 0) {
-			this._onError.fire(new Error(`attempt to send more than one response for command ${response.command}`));
+			this._onError.fire(
+				new Error(`attempt to send more than one response for command ${response.command}`)
+			);
 		} else {
 			this.internalSend('response', response);
 		}
 	}
 
-	sendRequest(command: string, args: any, clb: (result: DebugProtocol.Response) => void, timeout?: number): number {
+	sendRequest(
+		command: string,
+		args: any,
+		clb: (result: DebugProtocol.Response) => void,
+		timeout?: number
+	): number {
 		const request: any = {
-			command: command
+			command: command,
 		};
 		if (args && Object.keys(args).length > 0) {
 			request.arguments = args;
@@ -89,7 +96,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 						request_seq: request.seq,
 						success: false,
 						command,
-						message: localize('timeout', "Timeout after {0} ms for '{1}'", timeout, command)
+						message: localize('timeout', "Timeout after {0} ms for '{1}'", timeout, command),
 					};
 					clb(err);
 				}
@@ -134,7 +141,10 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 	 * is assigned if they're processed in the same task. Inserting a task
 	 * boundary avoids this issue.
 	 */
-	protected needsTaskBoundaryBetween(messageA: DebugProtocol.ProtocolMessage, messageB: DebugProtocol.ProtocolMessage) {
+	protected needsTaskBoundaryBetween(
+		messageA: DebugProtocol.ProtocolMessage,
+		messageB: DebugProtocol.ProtocolMessage
+	) {
 		return messageA.type !== 'event' || messageB.type !== 'event';
 	}
 
@@ -173,7 +183,10 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 		}
 	}
 
-	private internalSend(typ: 'request' | 'response' | 'event', message: DebugProtocol.ProtocolMessage): void {
+	private internalSend(
+		typ: 'request' | 'response' | 'event',
+		message: DebugProtocol.ProtocolMessage
+	): void {
 		message.type = typ;
 		message.seq = this.sequence++;
 		this.sendMessage(message);
@@ -194,7 +207,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 				request_seq,
 				success: false,
 				command: 'canceled',
-				message: 'canceled'
+				message: 'canceled',
 			};
 			callback(err);
 			this.pendingRequests.delete(request_seq);

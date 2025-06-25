@@ -8,18 +8,32 @@ import { URI } from '../../../../../../../base/common/uri.js';
 import { getCodeEditor } from '../../../../../../../editor/browser/editorBrowser.js';
 import { SnippetController2 } from '../../../../../../../editor/contrib/snippet/browser/snippetController2.js';
 import { localize } from '../../../../../../../nls.js';
-import { Action2, MenuId, registerAction2 } from '../../../../../../../platform/actions/common/actions.js';
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from '../../../../../../../platform/actions/common/actions.js';
 import { ICommandService } from '../../../../../../../platform/commands/common/commands.js';
 import { ContextKeyExpr } from '../../../../../../../platform/contextkey/common/contextkey.js';
 import { IFileService } from '../../../../../../../platform/files/common/files.js';
-import { IInstantiationService, ServicesAccessor } from '../../../../../../../platform/instantiation/common/instantiation.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../../../../../../platform/instantiation/common/instantiation.js';
 import { KeybindingWeight } from '../../../../../../../platform/keybinding/common/keybindingsRegistry.js';
 import { ILogService } from '../../../../../../../platform/log/common/log.js';
-import { INotificationService, NeverShowAgainScope, Severity } from '../../../../../../../platform/notification/common/notification.js';
+import {
+	INotificationService,
+	NeverShowAgainScope,
+	Severity,
+} from '../../../../../../../platform/notification/common/notification.js';
 import { IOpenerService } from '../../../../../../../platform/opener/common/opener.js';
 import { PromptsConfig } from '../../../../../../../platform/prompts/common/config.js';
 import { PromptsType } from '../../../../../../../platform/prompts/common/prompts.js';
-import { IUserDataSyncEnablementService, SyncResource } from '../../../../../../../platform/userDataSync/common/userDataSync.js';
+import {
+	IUserDataSyncEnablementService,
+	SyncResource,
+} from '../../../../../../../platform/userDataSync/common/userDataSync.js';
 import { IEditorService } from '../../../../../../services/editor/common/editorService.js';
 import { CONFIGURE_SYNC_COMMAND_ID } from '../../../../../../services/userDataSync/common/userDataSync.js';
 import { ISnippetsService } from '../../../../../snippets/browser/snippets.js';
@@ -31,8 +45,11 @@ import { askForPromptSourceFolder } from './dialogs/askForPromptSourceFolder.js'
 import { createPromptFile } from './utils/createPromptFile.js';
 
 class AbstractNewPromptOrInstructionsFileAction extends Action2 {
-
-	constructor(id: string, title: string, private readonly type: PromptsType) {
+	constructor(
+		id: string,
+		title: string,
+		private readonly type: PromptsType
+	) {
 		super({
 			id,
 			title,
@@ -40,12 +57,12 @@ class AbstractNewPromptOrInstructionsFileAction extends Action2 {
 			precondition: ContextKeyExpr.and(PromptsConfig.enabledCtx, ChatContextKeys.enabled),
 			category: CHAT_CATEGORY,
 			keybinding: {
-				weight: KeybindingWeight.WorkbenchContrib
+				weight: KeybindingWeight.WorkbenchContrib,
 			},
 			menu: {
 				id: MenuId.CommandPalette,
-				when: ContextKeyExpr.and(PromptsConfig.enabledCtx, ChatContextKeys.enabled)
-			}
+				when: ContextKeyExpr.and(PromptsConfig.enabledCtx, ChatContextKeys.enabled),
+			},
 		});
 	}
 
@@ -65,7 +82,11 @@ class AbstractNewPromptOrInstructionsFileAction extends Action2 {
 			return;
 		}
 
-		const fileName = await instaService.invokeFunction(askForPromptFileName, this.type, selectedFolder.uri);
+		const fileName = await instaService.invokeFunction(
+			askForPromptFileName,
+			this.type,
+			selectedFolder.uri
+		);
 		if (!fileName) {
 			return;
 		}
@@ -73,7 +94,7 @@ class AbstractNewPromptOrInstructionsFileAction extends Action2 {
 		const promptUri = await createPromptFile(fileService, {
 			fileName,
 			folder: selectedFolder.uri,
-			content: ''
+			content: '',
 		});
 
 		await openerService.open(promptUri);
@@ -82,12 +103,18 @@ class AbstractNewPromptOrInstructionsFileAction extends Action2 {
 		if (editor && editor.hasModel() && isEqual(editor.getModel().uri, promptUri)) {
 			const languageId = getLanguageIdForPromptsType(this.type);
 
-			const snippets = await snippetService.getSnippets(languageId, { fileTemplateSnippets: true, noRecencySort: true, includeNoPrefixSnippets: true });
+			const snippets = await snippetService.getSnippets(languageId, {
+				fileTemplateSnippets: true,
+				noRecencySort: true,
+				includeNoPrefixSnippets: true,
+			});
 			if (snippets.length > 0) {
-				SnippetController2.get(editor)?.apply([{
-					range: editor.getModel().getFullModelRange(),
-					template: snippets[0].body
-				}]);
+				SnippetController2.get(editor)?.apply([
+					{
+						range: editor.getModel().getFullModelRange(),
+						template: snippets[0].body,
+					},
+				]);
 			}
 		}
 
@@ -101,13 +128,14 @@ class AbstractNewPromptOrInstructionsFileAction extends Action2 {
 		// was explicitly configured before, and if it wasn't, we show a suggestion
 		// to enable the synchronization logic in the Settings Sync configuration
 
-		const isConfigured = userDataSyncEnablementService
-			.isResourceEnablementConfigured(SyncResource.Prompts);
+		const isConfigured = userDataSyncEnablementService.isResourceEnablementConfigured(
+			SyncResource.Prompts
+		);
 		const isSettingsSyncEnabled = userDataSyncEnablementService.isEnabled();
 
 		// if prompts synchronization has already been configured before or
 		// if settings sync service is currently disabled, nothing to do
-		if ((isConfigured === true) || (isSettingsSyncEnabled === false)) {
+		if (isConfigured === true || isSettingsSyncEnabled === false) {
 			return;
 		}
 
@@ -116,20 +144,19 @@ class AbstractNewPromptOrInstructionsFileAction extends Action2 {
 			Severity.Info,
 			localize(
 				'workbench.command.prompts.create.user.enable-sync-notification',
-				"Do you want to backup and sync your user prompt, instruction and mode files with Setting Sync?'",
+				"Do you want to backup and sync your user prompt, instruction and mode files with Setting Sync?'"
 			),
 			[
 				{
-					label: localize('enable.capitalized', "Enable"),
+					label: localize('enable.capitalized', 'Enable'),
 					run: () => {
-						commandService.executeCommand(CONFIGURE_SYNC_COMMAND_ID)
-							.catch((error) => {
-								logService.error(`Failed to run '${CONFIGURE_SYNC_COMMAND_ID}' command: ${error}.`);
-							});
+						commandService.executeCommand(CONFIGURE_SYNC_COMMAND_ID).catch(error => {
+							logService.error(`Failed to run '${CONFIGURE_SYNC_COMMAND_ID}' command: ${error}.`);
+						});
 					},
 				},
 				{
-					label: localize('learnMore.capitalized', "Learn More"),
+					label: localize('learnMore.capitalized', 'Learn More'),
 					run: () => {
 						openerService.open(URI.parse('https://aka.ms/vscode-settings-sync-help'));
 					},
@@ -140,11 +167,10 @@ class AbstractNewPromptOrInstructionsFileAction extends Action2 {
 					id: 'workbench.command.prompts.create.user.enable-sync-notification',
 					scope: NeverShowAgainScope.PROFILE,
 				},
-			},
+			}
 		);
 	}
 }
-
 
 export const NEW_PROMPT_COMMAND_ID = 'workbench.command.new.prompt';
 export const NEW_INSTRUCTIONS_COMMAND_ID = 'workbench.command.new.instructions';
@@ -152,19 +178,31 @@ export const NEW_MODE_COMMAND_ID = 'workbench.command.new.mode';
 
 class NewPromptFileAction extends AbstractNewPromptOrInstructionsFileAction {
 	constructor() {
-		super(NEW_PROMPT_COMMAND_ID, localize('commands.new.prompt.local.title', "New Prompt File..."), PromptsType.prompt);
+		super(
+			NEW_PROMPT_COMMAND_ID,
+			localize('commands.new.prompt.local.title', 'New Prompt File...'),
+			PromptsType.prompt
+		);
 	}
 }
 
 class NewInstructionsFileAction extends AbstractNewPromptOrInstructionsFileAction {
 	constructor() {
-		super(NEW_INSTRUCTIONS_COMMAND_ID, localize('commands.new.instructions.local.title', "New Instructions File..."), PromptsType.instructions);
+		super(
+			NEW_INSTRUCTIONS_COMMAND_ID,
+			localize('commands.new.instructions.local.title', 'New Instructions File...'),
+			PromptsType.instructions
+		);
 	}
 }
 
 class NewModeFileAction extends AbstractNewPromptOrInstructionsFileAction {
 	constructor() {
-		super(NEW_MODE_COMMAND_ID, localize('commands.new.mode.local.title', "New Mode File..."), PromptsType.mode);
+		super(
+			NEW_MODE_COMMAND_ID,
+			localize('commands.new.mode.local.title', 'New Mode File...'),
+			PromptsType.mode
+		);
 	}
 }
 

@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
-
 import assert from 'assert';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
@@ -27,10 +25,9 @@ suite('Workbench - TestProfileService', () => {
 	setup(() => {
 		idCounter = 0;
 		ds = new DisposableStore();
-		t = ds.add(new TestProfileService(
-			new MockContextKeyService(),
-			ds.add(new TestStorageService()),
-		));
+		t = ds.add(
+			new TestProfileService(new MockContextKeyService(), ds.add(new TestStorageService()))
+		);
 	});
 
 	const addProfile = (profile: Partial<ITestRunProfile>) => {
@@ -51,7 +48,10 @@ suite('Workbench - TestProfileService', () => {
 	};
 
 	const assertGroupDefaults = (group: TestRunProfileBitset, expected: ITestRunProfile[]) => {
-		assert.deepStrictEqual(t.getGroupDefaultProfiles(group).map(p => p.label), expected.map(e => e.label));
+		assert.deepStrictEqual(
+			t.getGroupDefaultProfiles(group).map(p => p.label),
+			expected.map(e => e.label)
+		);
 	};
 
 	const expectProfiles = (expected: ITestRunProfile[], actual: string[]) => {
@@ -65,7 +65,12 @@ suite('Workbench - TestProfileService', () => {
 		addProfile({ isDefault: false, group: TestRunProfileBitset.Debug, label: 'b' });
 		addProfile({ isDefault: true, group: TestRunProfileBitset.Run, label: 'c' });
 		addProfile({ isDefault: true, group: TestRunProfileBitset.Run, label: 'd', controllerId: '2' });
-		addProfile({ isDefault: false, group: TestRunProfileBitset.Run, label: 'e', controllerId: '2' });
+		addProfile({
+			isDefault: false,
+			group: TestRunProfileBitset.Run,
+			label: 'e',
+			controllerId: '2',
+		});
 		expectProfiles(t.getGroupDefaultProfiles(TestRunProfileBitset.Run), ['c', 'd']);
 		expectProfiles(t.getGroupDefaultProfiles(TestRunProfileBitset.Debug), ['a']);
 	});
@@ -99,15 +104,55 @@ suite('Workbench - TestProfileService', () => {
 
 		test('does not mess up sync for multiple controllers', () => {
 			// ctrl a and b both of have their own labels. ctrl c does not and should be unaffected
-			const p1 = addProfile({ isDefault: false, controllerId: 'a', group: TestRunProfileBitset.Debug, label: 'a' });
-			const p2 = addProfile({ isDefault: false, controllerId: 'b', group: TestRunProfileBitset.Debug, label: 'b1' });
-			const p3 = addProfile({ isDefault: false, controllerId: 'b', group: TestRunProfileBitset.Debug, label: 'b2' });
-			const p4 = addProfile({ isDefault: false, controllerId: 'c', group: TestRunProfileBitset.Debug, label: 'c1' });
+			const p1 = addProfile({
+				isDefault: false,
+				controllerId: 'a',
+				group: TestRunProfileBitset.Debug,
+				label: 'a',
+			});
+			const p2 = addProfile({
+				isDefault: false,
+				controllerId: 'b',
+				group: TestRunProfileBitset.Debug,
+				label: 'b1',
+			});
+			const p3 = addProfile({
+				isDefault: false,
+				controllerId: 'b',
+				group: TestRunProfileBitset.Debug,
+				label: 'b2',
+			});
+			const p4 = addProfile({
+				isDefault: false,
+				controllerId: 'c',
+				group: TestRunProfileBitset.Debug,
+				label: 'c1',
+			});
 
-			const p5 = addProfile({ isDefault: false, controllerId: 'a', group: TestRunProfileBitset.Run, label: 'a' });
-			const p6 = addProfile({ isDefault: false, controllerId: 'b', group: TestRunProfileBitset.Run, label: 'b1' });
-			const p7 = addProfile({ isDefault: false, controllerId: 'b', group: TestRunProfileBitset.Run, label: 'b2' });
-			const p8 = addProfile({ isDefault: false, controllerId: 'b', group: TestRunProfileBitset.Run, label: 'b3' });
+			const p5 = addProfile({
+				isDefault: false,
+				controllerId: 'a',
+				group: TestRunProfileBitset.Run,
+				label: 'a',
+			});
+			const p6 = addProfile({
+				isDefault: false,
+				controllerId: 'b',
+				group: TestRunProfileBitset.Run,
+				label: 'b1',
+			});
+			const p7 = addProfile({
+				isDefault: false,
+				controllerId: 'b',
+				group: TestRunProfileBitset.Run,
+				label: 'b2',
+			});
+			const p8 = addProfile({
+				isDefault: false,
+				controllerId: 'b',
+				group: TestRunProfileBitset.Run,
+				label: 'b3',
+			});
 
 			// same profile on both
 			t.setGroupDefaultProfiles(TestRunProfileBitset.Debug, [p3]);

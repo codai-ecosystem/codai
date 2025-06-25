@@ -10,7 +10,10 @@ import type { IBufferLine } from '@xterm/xterm';
 
 export async function assertLinkHelper(
 	text: string,
-	expected: ({ uri: URI; range: [number, number][] } | { text: string; range: [number, number][] })[],
+	expected: (
+		| { uri: URI; range: [number, number][] }
+		| { text: string; range: [number, number][] }
+	)[],
 	detector: ITerminalLinkDetector,
 	expectedType: TerminalLinkType
 ) {
@@ -19,9 +22,11 @@ export async function assertLinkHelper(
 	// Write the text and wait for the parser to finish
 	await new Promise<void>(r => detector.xterm.write(text, r));
 	const textSplit = text.split('\r\n');
-	const lastLineIndex = textSplit.filter((e, i) => i !== textSplit.length - 1).reduce((p, c) => {
-		return p + Math.max(Math.ceil(c.length / 80), 1);
-	}, 0);
+	const lastLineIndex = textSplit
+		.filter((e, i) => i !== textSplit.length - 1)
+		.reduce((p, c) => {
+			return p + Math.max(Math.ceil(c.length / 80), 1);
+		}, 0);
 
 	// Ensure all links are provided
 	const lines: IBufferLine[] = [];
@@ -30,11 +35,13 @@ export async function assertLinkHelper(
 	}
 
 	// Detect links always on the last line with content
-	const actualLinks = (await detector.detect(lines, lastLineIndex, detector.xterm.buffer.active.cursorY)).map(e => {
+	const actualLinks = (
+		await detector.detect(lines, lastLineIndex, detector.xterm.buffer.active.cursorY)
+	).map(e => {
 		return {
 			link: e.uri?.toString() ?? e.text,
 			type: expectedType,
-			bufferRange: e.bufferRange
+			bufferRange: e.bufferRange,
 		};
 	});
 	const expectedLinks = expected.map(e => {
@@ -44,7 +51,7 @@ export async function assertLinkHelper(
 			bufferRange: {
 				start: { x: e.range[0][0], y: e.range[0][1] },
 				end: { x: e.range[1][0], y: e.range[1][1] },
-			}
+			},
 		};
 	});
 	deepStrictEqual(actualLinks, expectedLinks);

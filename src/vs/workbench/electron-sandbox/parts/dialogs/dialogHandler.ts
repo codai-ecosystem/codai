@@ -7,7 +7,13 @@ import { localize } from '../../../../nls.js';
 import { fromNow } from '../../../../base/common/date.js';
 import { isLinuxSnap } from '../../../../base/common/platform.js';
 import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
-import { AbstractDialogHandler, IConfirmation, IConfirmationResult, IPrompt, IAsyncPromptResult } from '../../../../platform/dialogs/common/dialogs.js';
+import {
+	AbstractDialogHandler,
+	IConfirmation,
+	IConfirmationResult,
+	IPrompt,
+	IAsyncPromptResult,
+} from '../../../../platform/dialogs/common/dialogs.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { INativeHostService } from '../../../../platform/native/common/native.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
@@ -15,7 +21,6 @@ import { process } from '../../../../base/parts/sandbox/electron-sandbox/globals
 import { getActiveWindow } from '../../../../base/browser/dom.js';
 
 export class NativeDialogHandler extends AbstractDialogHandler {
-
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@INativeHostService private readonly nativeHostService: INativeHostService,
@@ -39,7 +44,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 			cancelId: prompt.cancelButton ? buttons.length - 1 : -1 /* Disabled */,
 			checkboxLabel: prompt.checkbox?.label,
 			checkboxChecked: prompt.checkbox?.checked,
-			targetWindowId: getActiveWindow().vscodeWindowId
+			targetWindowId: getActiveWindow().vscodeWindowId,
 		});
 
 		return this.getPromptResult(prompt, response, checkboxChecked);
@@ -59,7 +64,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 			cancelId: buttons.length - 1,
 			checkboxLabel: confirmation.checkbox?.label,
 			checkboxChecked: confirmation.checkbox?.checked,
-			targetWindowId: getActiveWindow().vscodeWindowId
+			targetWindowId: getActiveWindow().vscodeWindowId,
 		});
 
 		return { confirmed: response === 0, checkboxChecked };
@@ -80,11 +85,19 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 		const osProps = await this.nativeHostService.getOSProperties();
 
 		const detailString = (useAgo: boolean): string => {
-			return localize({ key: 'aboutDetail', comment: ['Electron, Chromium, Node.js and V8 are product names that need no translation'] },
-				"Version: {0}\nCommit: {1}\nDate: {2}\nElectron: {3}\nElectronBuildId: {4}\nChromium: {5}\nNode.js: {6}\nV8: {7}\nOS: {8}",
+			return localize(
+				{
+					key: 'aboutDetail',
+					comment: [
+						'Electron, Chromium, Node.js and V8 are product names that need no translation',
+					],
+				},
+				'Version: {0}\nCommit: {1}\nDate: {2}\nElectron: {3}\nElectronBuildId: {4}\nChromium: {5}\nNode.js: {6}\nV8: {7}\nOS: {8}',
 				version,
 				this.productService.commit || 'Unknown',
-				this.productService.date ? `${this.productService.date}${useAgo ? ' (' + fromNow(new Date(this.productService.date), true) + ')' : ''}` : 'Unknown',
+				this.productService.date
+					? `${this.productService.date}${useAgo ? ' (' + fromNow(new Date(this.productService.date), true) + ')' : ''}`
+					: 'Unknown',
 				process.versions['electron'],
 				process.versions['microsoft-build'],
 				process.versions['chrome'],
@@ -102,10 +115,10 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 			message: this.productService.nameLong,
 			detail: `\n${detail}`,
 			buttons: [
-				localize({ key: 'copy', comment: ['&& denotes a mnemonic'] }, "&&Copy"),
-				localize('okButton', "OK")
+				localize({ key: 'copy', comment: ['&& denotes a mnemonic'] }, '&&Copy'),
+				localize('okButton', 'OK'),
 			],
-			targetWindowId: getActiveWindow().vscodeWindowId
+			targetWindowId: getActiveWindow().vscodeWindowId,
 		});
 
 		if (response === 0) {

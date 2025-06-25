@@ -8,12 +8,15 @@ import type { IRasterizedGlyph } from '../../../../browser/gpu/raster/raster.js'
 import { ensureNonNullable } from '../../../../browser/gpu/gpuUtils.js';
 import type { ITextureAtlasAllocator } from '../../../../browser/gpu/atlas/atlas.js';
 import { TextureAtlasShelfAllocator } from '../../../../browser/gpu/atlas/textureAtlasShelfAllocator.js';
-import { TextureAtlasSlabAllocator, type TextureAtlasSlabAllocatorOptions } from '../../../../browser/gpu/atlas/textureAtlasSlabAllocator.js';
+import {
+	TextureAtlasSlabAllocator,
+	type TextureAtlasSlabAllocatorOptions,
+} from '../../../../browser/gpu/atlas/textureAtlasSlabAllocator.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { assertIsValidGlyph } from './testUtil.js';
 import { BugIndicatingError } from '../../../../../base/common/errors.js';
 
-const blackArr = [0x00, 0x00, 0x00, 0xFF];
+const blackArr = [0x00, 0x00, 0x00, 0xff];
 
 const pixel1x1 = createRasterizedGlyph(1, 1, [...blackArr]);
 const pixel2x1 = createRasterizedGlyph(2, 1, [...blackArr, ...blackArr]);
@@ -34,33 +37,53 @@ function createRasterizedGlyph(w: number, h: number, data: ArrayLike<number>): I
 	};
 }
 
-function allocateAndAssert(allocator: ITextureAtlasAllocator, rasterizedGlyph: IRasterizedGlyph, expected: { x: number; y: number; w: number; h: number } | undefined): void {
+function allocateAndAssert(
+	allocator: ITextureAtlasAllocator,
+	rasterizedGlyph: IRasterizedGlyph,
+	expected: { x: number; y: number; w: number; h: number } | undefined
+): void {
 	const actual = allocator.allocate(rasterizedGlyph);
 	if (!actual) {
 		strictEqual(actual, expected);
 		return;
 	}
-	deepStrictEqual({
-		x: actual.x,
-		y: actual.y,
-		w: actual.w,
-		h: actual.h,
-	}, expected);
+	deepStrictEqual(
+		{
+			x: actual.x,
+			y: actual.y,
+			w: actual.w,
+			h: actual.h,
+		},
+		expected
+	);
 }
 
-function initShelfAllocator(w: number, h: number): { canvas: OffscreenCanvas; allocator: TextureAtlasShelfAllocator } {
+function initShelfAllocator(
+	w: number,
+	h: number
+): { canvas: OffscreenCanvas; allocator: TextureAtlasShelfAllocator } {
 	const canvas = new OffscreenCanvas(w, h);
 	const allocator = new TextureAtlasShelfAllocator(canvas, 0);
 	return { canvas, allocator };
 }
 
-function initSlabAllocator(w: number, h: number, options?: TextureAtlasSlabAllocatorOptions): { canvas: OffscreenCanvas; allocator: TextureAtlasSlabAllocator } {
+function initSlabAllocator(
+	w: number,
+	h: number,
+	options?: TextureAtlasSlabAllocatorOptions
+): { canvas: OffscreenCanvas; allocator: TextureAtlasSlabAllocator } {
 	const canvas = new OffscreenCanvas(w, h);
 	const allocator = new TextureAtlasSlabAllocator(canvas, 0, options);
 	return { canvas, allocator };
 }
 
-const allocatorDefinitions: { name: string; initAllocator: (w: number, h: number) => { canvas: OffscreenCanvas; allocator: ITextureAtlasAllocator } }[] = [
+const allocatorDefinitions: {
+	name: string;
+	initAllocator: (
+		w: number,
+		h: number
+	) => { canvas: OffscreenCanvas; allocator: ITextureAtlasAllocator };
+}[] = [
 	{ name: 'shelf', initAllocator: initShelfAllocator },
 	{ name: 'slab', initAllocator: initSlabAllocator },
 ];
@@ -77,7 +100,10 @@ suite('TextureAtlasAllocator', () => {
 			// Skipping because it fails unexpectedly on web only when asserting the error message
 			test.skip(`(${name}) glyph too large for canvas`, () => {
 				const { allocator } = initAllocator(1, 1);
-				throws(() => allocateAndAssert(allocator, pixel2x1, undefined), new BugIndicatingError('Glyph is too large for the atlas page'));
+				throws(
+					() => allocateAndAssert(allocator, pixel2x1, undefined),
+					new BugIndicatingError('Glyph is too large for the atlas page')
+				);
 			});
 		}
 	});
@@ -181,7 +207,7 @@ suite('TextureAtlasAllocator', () => {
 			allocateAndAssert(allocator, pixel2x1, { x: 0, y: 0, w: 2, h: 1 });
 		});
 
-		test('glyph too large for slab (undefined as it\'s not the first glyph)', () => {
+		test("glyph too large for slab (undefined as it's not the first glyph)", () => {
 			const { allocator } = initAllocator(2, 2, { slabW: 1, slabH: 1 });
 			allocateAndAssert(allocator, pixel1x1, { x: 0, y: 0, w: 1, h: 1 });
 			allocateAndAssert(allocator, pixel2x1, undefined);

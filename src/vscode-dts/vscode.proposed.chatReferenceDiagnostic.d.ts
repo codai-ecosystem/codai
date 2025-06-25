@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	export interface ChatPromptReference {
 		/**
 		 * The value of this reference. The `string | Uri | Location` types are used today, but this could expand in the future.

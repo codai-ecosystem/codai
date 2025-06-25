@@ -11,7 +11,7 @@ export class LineSequence implements ISequence {
 	constructor(
 		private readonly trimmedHash: number[],
 		private readonly lines: string[]
-	) { }
+	) {}
 
 	getElement(offset: number): number {
 		return this.trimmedHash[offset];
@@ -38,7 +38,10 @@ export class LineSequence implements ISequence {
 
 function getIndentation(str: string): number {
 	let i = 0;
-	while (i < str.length && (str.charCodeAt(i) === CharCode.Space || str.charCodeAt(i) === CharCode.Tab)) {
+	while (
+		i < str.length &&
+		(str.charCodeAt(i) === CharCode.Space || str.charCodeAt(i) === CharCode.Tab)
+	) {
 		i++;
 	}
 	return i;

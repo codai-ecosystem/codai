@@ -1,7 +1,15 @@
 import { Subject } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import { MemoryGraphEngine } from '@codai/memory-graph';
-import { BaseAgent, AgentConfig, Task, TaskResult, AgentMessage, AgentStatus, AgentMetrics } from '../types.js';
+import {
+	BaseAgent,
+	AgentConfig,
+	Task,
+	TaskResult,
+	AgentMessage,
+	AgentStatus,
+	AgentMetrics,
+} from '../types.js';
 
 /**
  * Base implementation for all AIDE agents
@@ -30,7 +38,7 @@ export abstract class BaseAgentImpl implements BaseAgent {
 	constructor(
 		public readonly config: AgentConfig,
 		public readonly memoryGraph: MemoryGraphEngine
-	) { }
+	) {}
 
 	async initialize(): Promise<void> {
 		if (this.isInitialized) {
@@ -150,9 +158,10 @@ export abstract class BaseAgentImpl implements BaseAgent {
 		// Update average task duration
 		const currentAvg = this.metrics.averageTaskDuration;
 		const completedTasks = this.status.totalTasksCompleted;
-		this.metrics.averageTaskDuration = completedTasks > 0
-			? (currentAvg * (completedTasks - 1) + result.duration) / completedTasks
-			: result.duration;
+		this.metrics.averageTaskDuration =
+			completedTasks > 0
+				? (currentAvg * (completedTasks - 1) + result.duration) / completedTasks
+				: result.duration;
 
 		this.status.lastActivity = new Date();
 	}

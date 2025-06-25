@@ -15,12 +15,11 @@ export async function GET(request: NextRequest) {
 			const page = parseInt(searchParams.get('page') || '1', 10);
 			const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100);
 			const search = searchParams.get('search') || '';
-			const status = searchParams.get('status') as ProjectDocument['status'] || null;
-			const type = searchParams.get('type') as ProjectDocument['type'] || null;
+			const status = (searchParams.get('status') as ProjectDocument['status']) || null;
+			const type = (searchParams.get('type') as ProjectDocument['type']) || null;
 
 			// Build query
-			let query = adminDb.collection('projects')
-				.where('userId', '==', user.uid);
+			let query = adminDb.collection('projects').where('userId', '==', user.uid);
 
 			// Add status filter
 			if (status) {
@@ -45,8 +44,11 @@ export async function GET(request: NextRequest) {
 				const data = doc.data() as ProjectDocument;
 
 				// Apply search filter (client-side for now)
-				if (search && !data.name.toLowerCase().includes(search.toLowerCase()) &&
-					!data.description?.toLowerCase().includes(search.toLowerCase())) {
+				if (
+					search &&
+					!data.name.toLowerCase().includes(search.toLowerCase()) &&
+					!data.description?.toLowerCase().includes(search.toLowerCase())
+				) {
 					return;
 				}
 
@@ -54,13 +56,12 @@ export async function GET(request: NextRequest) {
 				const { stripeProductId, ...safeProject } = data;
 				projects.push({
 					id: doc.id,
-					...safeProject
+					...safeProject,
 				});
 			});
 
 			// Get total count for pagination
-			const totalQuery = adminDb.collection('projects')
-				.where('userId', '==', user.uid);
+			const totalQuery = adminDb.collection('projects').where('userId', '==', user.uid);
 			const totalSnapshot = await totalQuery.count().get();
 			const total = totalSnapshot.data().count;
 
@@ -73,15 +74,12 @@ export async function GET(request: NextRequest) {
 					total,
 					totalPages: Math.ceil(total / limit),
 					hasNextPage: page * limit < total,
-					hasPreviousPage: page > 1
-				}
+					hasPreviousPage: page > 1,
+				},
 			});
 		} catch (error) {
 			console.error('Error listing projects:', error);
-			return NextResponse.json(
-				{ error: 'Failed to list projects' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to list projects' }, { status: 500 });
 		}
 	})(request);
 }
@@ -96,31 +94,26 @@ export async function POST(request: NextRequest) {
 
 			// Validate required fields
 			if (!projectData.name || typeof projectData.name !== 'string') {
-				return NextResponse.json(
-					{ error: 'Project name is required' },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: 'Project name is required' }, { status: 400 });
 			}
 
-			if (!projectData.type || !['web-app', 'api', 'static-site', 'function', 'other'].includes(projectData.type)) {
-				return NextResponse.json(
-					{ error: 'Valid project type is required' },
-					{ status: 400 }
-				);
+			if (
+				!projectData.type ||
+				!['web-app', 'api', 'static-site', 'function', 'other'].includes(projectData.type)
+			) {
+				return NextResponse.json({ error: 'Valid project type is required' }, { status: 400 });
 			}
 
 			// Check user's project limits
-			const userProjectsQuery = adminDb.collection('projects')
+			const userProjectsQuery = adminDb
+				.collection('projects')
 				.where('userId', '==', user.uid)
 				.where('status', '!=', 'deleted');
 			const userProjectsSnapshot = await userProjectsQuery.count().get();
 			const currentProjectCount = userProjectsSnapshot.data().count;
 
 			if (currentProjectCount >= user.limits.projectsMax) {
-				return NextResponse.json(
-					{ error: 'Project limit reached for your plan' },
-					{ status: 403 }
-				);
+				return NextResponse.json({ error: 'Project limit reached for your plan' }, { status: 403 });
 			}
 
 			// Create project document
@@ -134,31 +127,32 @@ export async function POST(request: NextRequest) {
 				repository: {
 					url: projectData.repository?.url || '',
 					branch: projectData.repository?.branch || 'main',
-					path: projectData.repository?.path || ''
+					path: projectData.repository?.path || '',
 				},
 				deployment: {
 					status: 'not_deployed',
 					url: '',
 					provider: 'cloud-run',
 					lastDeployedAt: null,
-					environment: 'production'
-				}, settings: {
+					environment: 'production',
+				},
+				settings: {
 					buildCommand: projectData.settings?.buildCommand || '',
 					outputDirectory: projectData.settings?.outputDirectory || '',
 					environmentVariables: projectData.settings?.environmentVariables || {},
 					customDomain: projectData.settings?.customDomain || '',
 					autoSave: projectData.settings?.autoSave !== false,
 					backupFrequency: projectData.settings?.backupFrequency || 'daily',
-					visibility: projectData.settings?.visibility || 'private'
+					visibility: projectData.settings?.visibility || 'private',
 				},
 				usage: {
 					deploymentsThisMonth: 0,
 					storageUsed: 0,
 					bandwidthUsed: 0,
-					buildMinutesUsed: 0
+					buildMinutesUsed: 0,
 				},
 				createdAt: now,
-				updatedAt: now
+				updatedAt: now,
 			};
 
 			// Add project to Firestore
@@ -173,26 +167,26 @@ export async function POST(request: NextRequest) {
 				details: {
 					action: 'Created new project',
 					projectName: newProject.name,
-					projectType: newProject.type
-				}
+					projectType: newProject.type,
+				},
 			});
 
 			// Return created project (without sensitive data)
 			const { stripeProductId, ...safeProject } = newProject;
-			return NextResponse.json({
-				success: true,
-				message: 'Project created successfully',
-				project: {
-					id: projectRef.id,
-					...safeProject
-				}
-			}, { status: 201 });
+			return NextResponse.json(
+				{
+					success: true,
+					message: 'Project created successfully',
+					project: {
+						id: projectRef.id,
+						...safeProject,
+					},
+				},
+				{ status: 201 }
+			);
 		} catch (error) {
 			console.error('Error creating project:', error);
-			return NextResponse.json(
-				{ error: 'Failed to create project' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to create project' }, { status: 500 });
 		}
 	})(request);
 }

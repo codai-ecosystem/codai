@@ -19,43 +19,45 @@ const downloadOptions: DownloadOption[] = [
 		os: 'windows',
 		architecture: 'x64',
 		downloadUrl: 'https://github.com/aide-dev/aide/releases/latest/download/aide-windows-x64.exe',
-		fileSize: '~150MB'
+		fileSize: '~150MB',
 	},
 	{
 		label: 'Windows ARM64',
 		os: 'windows',
 		architecture: 'arm64',
 		downloadUrl: 'https://github.com/aide-dev/aide/releases/latest/download/aide-windows-arm64.exe',
-		fileSize: '~145MB'
+		fileSize: '~145MB',
 	},
 	{
 		label: 'macOS Intel',
 		os: 'mac',
 		architecture: 'x64',
 		downloadUrl: 'https://github.com/aide-dev/aide/releases/latest/download/aide-macos-x64.dmg',
-		fileSize: '~140MB'
+		fileSize: '~140MB',
 	},
 	{
 		label: 'macOS Apple Silicon',
 		os: 'mac',
 		architecture: 'arm64',
 		downloadUrl: 'https://github.com/aide-dev/aide/releases/latest/download/aide-macos-arm64.dmg',
-		fileSize: '~135MB'
+		fileSize: '~135MB',
 	},
 	{
 		label: 'Linux x64',
 		os: 'linux',
 		architecture: 'x64',
-		downloadUrl: 'https://github.com/aide-dev/aide/releases/latest/download/aide-linux-x64.AppImage',
-		fileSize: '~155MB'
+		downloadUrl:
+			'https://github.com/aide-dev/aide/releases/latest/download/aide-linux-x64.AppImage',
+		fileSize: '~155MB',
 	},
 	{
 		label: 'Linux ARM64',
 		os: 'linux',
 		architecture: 'arm64',
-		downloadUrl: 'https://github.com/aide-dev/aide/releases/latest/download/aide-linux-arm64.AppImage',
-		fileSize: '~150MB'
-	}
+		downloadUrl:
+			'https://github.com/aide-dev/aide/releases/latest/download/aide-linux-arm64.AppImage',
+		fileSize: '~150MB',
+	},
 ];
 
 interface DetectedOS {
@@ -86,7 +88,11 @@ function detectOS(): DetectedOS {
 	// Detect architecture
 	if (userAgent.includes('arm64') || userAgent.includes('aarch64') || platform.includes('arm')) {
 		architecture = 'arm64';
-	} else if (userAgent.includes('x64') || userAgent.includes('x86_64') || platform.includes('x86_64')) {
+	} else if (
+		userAgent.includes('x64') ||
+		userAgent.includes('x86_64') ||
+		platform.includes('x86_64')
+	) {
 		architecture = 'x64';
 	} else if (userAgent.includes('wow64') || platform.includes('win64')) {
 		architecture = 'x64';
@@ -106,9 +112,12 @@ export function DownloadButton({
 	variant = 'primary',
 	size = 'lg',
 	showDropdown = true,
-	className = ''
+	className = '',
 }: DownloadButtonProps) {
-	const [detectedOS, setDetectedOS] = useState<DetectedOS>({ name: 'unknown', architecture: 'unknown' });
+	const [detectedOS, setDetectedOS] = useState<DetectedOS>({
+		name: 'unknown',
+		architecture: 'unknown',
+	});
 	const [showAllOptions, setShowAllOptions] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -119,10 +128,15 @@ export function DownloadButton({
 	const getRecommendedDownload = (): DownloadOption | null => {
 		if (detectedOS.name === 'unknown') return null;
 
-		return downloadOptions.find(option =>
-			option.os === detectedOS.name &&
-			(option.architecture === detectedOS.architecture || detectedOS.architecture === 'unknown')
-		) || downloadOptions.find(option => option.os === detectedOS.name) || null;
+		return (
+			downloadOptions.find(
+				option =>
+					option.os === detectedOS.name &&
+					(option.architecture === detectedOS.architecture || detectedOS.architecture === 'unknown')
+			) ||
+			downloadOptions.find(option => option.os === detectedOS.name) ||
+			null
+		);
 	};
 
 	const handleDownload = async (downloadUrl: string) => {
@@ -132,7 +146,7 @@ export function DownloadButton({
 			if (typeof window !== 'undefined' && (window as any).gtag) {
 				(window as any).gtag('event', 'download', {
 					event_category: 'engagement',
-					event_label: downloadUrl
+					event_label: downloadUrl,
 				});
 			}
 
@@ -148,22 +162,20 @@ export function DownloadButton({
 	const recommendedDownload = getRecommendedDownload();
 
 	const buttonVariants = {
-		primary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white',
-		secondary: 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+		primary:
+			'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white',
+		secondary: 'bg-white/10 hover:bg-white/20 text-white border border-white/20',
 	};
 
 	const sizeVariants = {
 		sm: 'px-4 py-2 text-sm',
 		md: 'px-6 py-3 text-base',
-		lg: 'px-8 py-4 text-lg'
+		lg: 'px-8 py-4 text-lg',
 	};
 
 	if (!recommendedDownload && !showAllOptions) {
 		return (
-			<motion.div
-				whileHover={{ scale: 1.05 }}
-				whileTap={{ scale: 0.95 }}
-			>
+			<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 				<Button
 					onClick={() => setShowAllOptions(true)}
 					className={`${buttonVariants[variant]} ${sizeVariants[size]} ${className} font-semibold rounded-xl transition-all duration-300`}
@@ -178,11 +190,7 @@ export function DownloadButton({
 	return (
 		<div className="relative">
 			{recommendedDownload && !showAllOptions ? (
-				<motion.div
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					className="group"
-				>
+				<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="group">
 					<Button
 						onClick={() => handleDownload(recommendedDownload.downloadUrl)}
 						disabled={isLoading}

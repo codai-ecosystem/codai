@@ -8,23 +8,24 @@ import { splitLines } from '../../../../../base/common/strings.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { Position } from '../../../../common/core/position.js';
 import { IRange, Range } from '../../../../common/core/range.js';
-import { BeforeEditPositionMapper, TextEditInfo } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/beforeEditPositionMapper.js';
-import { Length, lengthOfString, lengthToObj, lengthToPosition, toLength } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/length.js';
+import {
+	BeforeEditPositionMapper,
+	TextEditInfo,
+} from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/beforeEditPositionMapper.js';
+import {
+	Length,
+	lengthOfString,
+	lengthToObj,
+	lengthToPosition,
+	toLength,
+} from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/length.js';
 
 suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('Single-Line 1', () => {
 		assert.deepStrictEqual(
-			compute(
-				[
-					'0123456789',
-				],
-				[
-					new TextEdit(toLength(0, 4), toLength(0, 7), 'xy')
-				]
-			),
+			compute(['0123456789'], [new TextEdit(toLength(0, 4), toLength(0, 7), 'xy')]),
 			[
 				'0  1  2  3  x  y  7  8  9  ', // The line
 
@@ -40,12 +41,10 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 	test('Single-Line 2', () => {
 		assert.deepStrictEqual(
 			compute(
-				[
-					'0123456789',
-				],
+				['0123456789'],
 				[
 					new TextEdit(toLength(0, 2), toLength(0, 4), 'xxxx'),
-					new TextEdit(toLength(0, 6), toLength(0, 6), 'yy')
+					new TextEdit(toLength(0, 6), toLength(0, 6), 'yy'),
 				]
 			),
 			[
@@ -63,15 +62,8 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 	test('Multi-Line Replace 1', () => {
 		assert.deepStrictEqual(
 			compute(
-				[
-					'₀₁₂₃₄₅₆₇₈₉',
-					'0123456789',
-					'⁰¹²³⁴⁵⁶⁷⁸⁹',
-
-				],
-				[
-					new TextEdit(toLength(0, 3), toLength(1, 3), 'xy'),
-				]
+				['₀₁₂₃₄₅₆₇₈₉', '0123456789', '⁰¹²³⁴⁵⁶⁷⁸⁹'],
+				[new TextEdit(toLength(0, 3), toLength(1, 3), 'xy')]
 			),
 			[
 				'₀  ₁  ₂  x  y  3  4  5  6  7  8  9  ',
@@ -79,7 +71,7 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 				'0  0  0  0  0  1  1  1  1  1  1  1  1  ',
 				'0  1  2  3  4  3  4  5  6  7  8  9  10 ',
 
-				"0  0  0  0  0  ∞  ∞  ∞  ∞  ∞  ∞  ∞  ∞  ",
+				'0  0  0  0  0  ∞  ∞  ∞  ∞  ∞  ∞  ∞  ∞  ',
 				'3  2  1  0  0  ∞  ∞  ∞  ∞  ∞  ∞  ∞  ∞  ',
 				// ------------------
 				'⁰  ¹  ²  ³  ⁴  ⁵  ⁶  ⁷  ⁸  ⁹  ',
@@ -96,12 +88,7 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 	test('Multi-Line Replace 2', () => {
 		assert.deepStrictEqual(
 			compute(
-				[
-					'₀₁₂₃₄₅₆₇₈₉',
-					'012345678',
-					'⁰¹²³⁴⁵⁶⁷⁸⁹',
-
-				],
+				['₀₁₂₃₄₅₆₇₈₉', '012345678', '⁰¹²³⁴⁵⁶⁷⁸⁹'],
 				[
 					new TextEdit(toLength(0, 3), toLength(1, 0), 'ab'),
 					new TextEdit(toLength(1, 5), toLength(1, 7), 'c'),
@@ -130,12 +117,7 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 	test('Multi-Line Replace 3', () => {
 		assert.deepStrictEqual(
 			compute(
-				[
-					'₀₁₂₃₄₅₆₇₈₉',
-					'012345678',
-					'⁰¹²³⁴⁵⁶⁷⁸⁹',
-
-				],
+				['₀₁₂₃₄₅₆₇₈₉', '012345678', '⁰¹²³⁴⁵⁶⁷⁸⁹'],
 				[
 					new TextEdit(toLength(0, 3), toLength(1, 0), 'ab'),
 					new TextEdit(toLength(1, 5), toLength(1, 7), 'c'),
@@ -156,15 +138,7 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 
 	test('Multi-Line Insert 1', () => {
 		assert.deepStrictEqual(
-			compute(
-				[
-					'012345678',
-
-				],
-				[
-					new TextEdit(toLength(0, 3), toLength(0, 5), 'a\nb'),
-				]
-			),
+			compute(['012345678'], [new TextEdit(toLength(0, 3), toLength(0, 5), 'a\nb')]),
 			[
 				'0  1  2  a  ',
 
@@ -188,10 +162,7 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 	test('Multi-Line Insert 2', () => {
 		assert.deepStrictEqual(
 			compute(
-				[
-					'012345678',
-
-				],
+				['012345678'],
 				[
 					new TextEdit(toLength(0, 3), toLength(0, 5), 'a\nb'),
 					new TextEdit(toLength(0, 7), toLength(0, 8), 'x\ny'),
@@ -228,15 +199,8 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 	test('Multi-Line Replace/Insert 1', () => {
 		assert.deepStrictEqual(
 			compute(
-				[
-					'₀₁₂₃₄₅₆₇₈₉',
-					'012345678',
-					'⁰¹²³⁴⁵⁶⁷⁸⁹',
-
-				],
-				[
-					new TextEdit(toLength(0, 3), toLength(1, 1), 'aaa\nbbb'),
-				]
+				['₀₁₂₃₄₅₆₇₈₉', '012345678', '⁰¹²³⁴⁵⁶⁷⁸⁹'],
+				[new TextEdit(toLength(0, 3), toLength(1, 1), 'aaa\nbbb')]
 			),
 			[
 				'₀  ₁  ₂  a  a  a  ',
@@ -268,12 +232,7 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 	test('Multi-Line Replace/Insert 2', () => {
 		assert.deepStrictEqual(
 			compute(
-				[
-					'₀₁₂₃₄₅₆₇₈₉',
-					'012345678',
-					'⁰¹²³⁴⁵⁶⁷⁸⁹',
-
-				],
+				['₀₁₂₃₄₅₆₇₈₉', '012345678', '⁰¹²³⁴⁵⁶⁷⁸⁹'],
 				[
 					new TextEdit(toLength(0, 3), toLength(1, 1), 'aaa\nbbb'),
 					new TextEdit(toLength(1, 5), toLength(1, 5), 'x\ny'),
@@ -319,10 +278,15 @@ suite('Bracket Pair Colorizer - BeforeEditPositionMapper', () => {
 
 /** @pure */
 function compute(inputArr: string[], edits: TextEdit[]): string[] {
-	const newLines = splitLines(applyLineColumnEdits(inputArr.join('\n'), edits.map(e => ({
-		text: e.newText,
-		range: Range.fromPositions(lengthToPosition(e.startOffset), lengthToPosition(e.endOffset))
-	}))));
+	const newLines = splitLines(
+		applyLineColumnEdits(
+			inputArr.join('\n'),
+			edits.map(e => ({
+				text: e.newText,
+				range: Range.fromPositions(lengthToPosition(e.startOffset), lengthToPosition(e.endOffset)),
+			}))
+		)
+	);
 
 	const mapper = new BeforeEditPositionMapper(edits);
 
@@ -376,11 +340,7 @@ export class TextEdit extends TextEditInfo {
 		endOffset: Length,
 		public readonly newText: string
 	) {
-		super(
-			startOffset,
-			endOffset,
-			lengthOfString(newText)
-		);
+		super(startOffset, endOffset, lengthOfString(newText));
 	}
 }
 
@@ -406,11 +366,11 @@ function applyLineColumnEdits(text: string, edits: { range: IRange; text: string
 	const transformer = new PositionOffsetTransformer(text);
 	const offsetEdits = edits.map(e => {
 		const range = Range.lift(e.range);
-		return ({
+		return {
 			startOffset: transformer.getOffset(range.getStartPosition()),
 			endOffset: transformer.getOffset(range.getEndPosition()),
-			text: e.text
-		});
+			text: e.text,
+		};
 	});
 
 	offsetEdits.sort((a, b) => b.startOffset - a.startOffset);

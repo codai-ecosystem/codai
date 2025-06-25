@@ -8,7 +8,6 @@ import { installAllHandlers } from '../../utils';
 
 export function setup(logger: Logger) {
 	describe('Extensions', () => {
-
 		// Shared before/after handling
 		installAllHandlers(logger, opts => {
 			opts.verbose = true; // enable verbose logging for tracing

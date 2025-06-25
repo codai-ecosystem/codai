@@ -60,9 +60,7 @@ export abstract class ObservableDisposable extends Disposable {
 	 * @throws If the current object was already disposed.
 	 * @param error Error message or error object to throw if assertion fails.
 	 */
-	public assertNotDisposed(
-		error: string | Error,
-	): asserts this is TNotDisposed<this> {
+	public assertNotDisposed(error: string | Error): asserts this is TNotDisposed<this> {
 		assertNotDisposed(this, error);
 	}
 }
@@ -81,15 +79,13 @@ type TNotDisposed<TObject extends { isDisposed: boolean }> = TObject & { isDispo
  */
 export function assertNotDisposed<TObject extends { isDisposed: boolean }>(
 	object: TObject,
-	error: string | Error,
+	error: string | Error
 ): asserts object is TNotDisposed<TObject> {
 	if (!object.isDisposed) {
 		return;
 	}
 
-	const errorToThrow = typeof error === 'string'
-		? new Error(error)
-		: error;
+	const errorToThrow = typeof error === 'string' ? new Error(error) : error;
 
 	throw errorToThrow;
 }

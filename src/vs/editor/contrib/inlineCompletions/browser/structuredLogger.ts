@@ -48,10 +48,9 @@ interface IFetchResult {
 	source: string;
 }
 
-
 /**
  * The sourceLabel must not contain '@'!
-*/
+ */
 export function formatRecordableLogEntry<T extends IRecordableLogEntry>(entry: T): string {
 	return entry.sourceId + ' @@ ' + JSON.stringify({ ...entry, sourceId: undefined });
 }
@@ -70,7 +69,10 @@ export class StructuredLogger<T extends IRecordableLogEntry> extends Disposable 
 		@ICommandService private readonly _commandService: ICommandService
 	) {
 		super();
-		this._contextKeyValue = observableContextKey<string>(this._contextKey, this._contextKeyService).recomputeInitiallyAndOnChange(this._store);
+		this._contextKeyValue = observableContextKey<string>(
+			this._contextKey,
+			this._contextKeyService
+		).recomputeInitiallyAndOnChange(this._store);
 		this.isEnabled = this._contextKeyValue.map(v => v !== undefined);
 	}
 
@@ -84,6 +86,11 @@ export class StructuredLogger<T extends IRecordableLogEntry> extends Disposable 
 	}
 }
 
-function observableContextKey<T>(key: string, contextKeyService: IContextKeyService): IObservable<T | undefined> {
-	return observableFromEvent(contextKeyService.onDidChangeContext, () => contextKeyService.getContextKeyValue<T>(key));
+function observableContextKey<T>(
+	key: string,
+	contextKeyService: IContextKeyService
+): IObservable<T | undefined> {
+	return observableFromEvent(contextKeyService.onDidChangeContext, () =>
+		contextKeyService.getContextKeyValue<T>(key)
+	);
 }

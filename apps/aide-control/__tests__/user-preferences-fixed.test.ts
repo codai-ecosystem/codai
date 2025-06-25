@@ -20,8 +20,8 @@ describe('userPreferences utility', () => {
 				accessibilityPreferences: {
 					reducedMotion: false,
 					highContrast: false,
-					largeText: false
-				}
+					largeText: false,
+				},
 			});
 		});
 		it('should return stored preferences when they exist', () => {
@@ -33,8 +33,8 @@ describe('userPreferences utility', () => {
 				accessibilityPreferences: {
 					reducedMotion: false,
 					highContrast: false,
-					largeText: false
-				}
+					largeText: false,
+				},
 			};
 
 			window.localStorage.setItem('codai_user_preferences', JSON.stringify(mockPrefs));
@@ -44,7 +44,8 @@ describe('userPreferences utility', () => {
 		});
 	});
 
-	describe('get', () => {		it('should get a specific preference', () => {
+	describe('get', () => {
+		it('should get a specific preference', () => {
 			const mockPrefs: UserPreferences = {
 				theme: 'dark',
 				sidebarCollapsed: true,
@@ -53,13 +54,15 @@ describe('userPreferences utility', () => {
 				accessibilityPreferences: {
 					reducedMotion: false,
 					highContrast: false,
-					largeText: false
-				}
+					largeText: false,
+				},
 			};
 
-			window.localStorage.setItem('codai_user_preferences', JSON.stringify(mockPrefs));   const theme = userPreferences.get('theme');
-   expect(theme).toBe('system');   const sidebarCollapsed = userPreferences.get('sidebarCollapsed');
-   expect(sidebarCollapsed).toBe(false);
+			window.localStorage.setItem('codai_user_preferences', JSON.stringify(mockPrefs));
+			const theme = userPreferences.get('theme');
+			expect(theme).toBe('system');
+			const sidebarCollapsed = userPreferences.get('sidebarCollapsed');
+			expect(sidebarCollapsed).toBe(false);
 		});
 
 		it('should return default value if preference does not exist', () => {
@@ -94,7 +97,7 @@ describe('userPreferences utility', () => {
 		it('should update multiple preferences at once', () => {
 			userPreferences.update({
 				theme: 'dark',
-				sidebarCollapsed: true
+				sidebarCollapsed: true,
 			});
 
 			const prefs = userPreferences.getAll();
@@ -105,7 +108,7 @@ describe('userPreferences utility', () => {
 		it('should return the updated preferences', () => {
 			const result = userPreferences.update({
 				theme: 'light',
-				sidebarCollapsed: false
+				sidebarCollapsed: false,
 			});
 
 			expect(result.theme).toBe('light');
@@ -180,16 +183,17 @@ describe('userPreferences utility', () => {
 
 			const isDismissed = userPreferences.isNotificationDismissed('test-notification');
 			expect(isDismissed).toBe(true);
-		});		it('should return false for non-dismissed notifications', () => {
+		});
+		it('should return false for non-dismissed notifications', () => {
 			// Explicitly ensure clean state
 			window.localStorage.clear();
 			vi.clearAllMocks();
 			userPreferences.reset();
-			
+
 			// Verify clean state by checking there are no dismissed notifications
 			const allPrefs = userPreferences.getAll();
 			expect(allPrefs.dismissedNotifications).toEqual([]);
-			
+
 			const isDismissed = userPreferences.isNotificationDismissed('test-notification');
 			expect(isDismissed).toBe(false);
 		});
@@ -199,26 +203,27 @@ describe('userPreferences utility', () => {
 		it('should update accessibility preferences', () => {
 			userPreferences.updateAccessibility({
 				reducedMotion: true,
-				highContrast: true
+				highContrast: true,
 			});
 
 			const prefs = userPreferences.getAll();
 			expect(prefs.accessibilityPreferences.reducedMotion).toBe(true);
 			expect(prefs.accessibilityPreferences.highContrast).toBe(true);
 			expect(prefs.accessibilityPreferences.largeText).toBe(false); // Should remain default
-		});		it('should return updated accessibility preferences', () => {
+		});
+		it('should return updated accessibility preferences', () => {
 			// Start with clean state
 			userPreferences.reset();
-			
+
 			const result = userPreferences.updateAccessibility({
 				reducedMotion: true,
-				largeText: true
+				largeText: true,
 			});
 
 			expect(result).toEqual({
 				reducedMotion: true,
 				highContrast: false, // Should remain at default
-				largeText: true
+				largeText: true,
 			});
 		});
 
@@ -227,12 +232,12 @@ describe('userPreferences utility', () => {
 			userPreferences.updateAccessibility({
 				reducedMotion: true,
 				highContrast: true,
-				largeText: true
+				largeText: true,
 			});
 
 			// Update only one value
 			userPreferences.updateAccessibility({
-				reducedMotion: false
+				reducedMotion: false,
 			});
 
 			const prefs = userPreferences.getAll();

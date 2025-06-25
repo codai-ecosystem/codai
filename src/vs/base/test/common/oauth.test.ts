@@ -18,7 +18,7 @@ import {
 	parseWWWAuthenticateHeader,
 	fetchDynamicRegistration,
 	IAuthorizationJWTClaims,
-	IAuthorizationServerMetadata
+	IAuthorizationServerMetadata,
 } from '../../common/oauth.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 import { encodeBase64, VSBuffer } from '../../common/buffer.js';
@@ -28,7 +28,10 @@ suite('OAuth', () => {
 	suite('Type Guards', () => {
 		test('isAuthorizationProtectedResourceMetadata should correctly identify protected resource metadata', () => {
 			// Valid metadata
-			assert.strictEqual(isAuthorizationProtectedResourceMetadata({ resource: 'https://example.com' }), true);
+			assert.strictEqual(
+				isAuthorizationProtectedResourceMetadata({ resource: 'https://example.com' }),
+				true
+			);
 
 			// Invalid cases
 			assert.strictEqual(isAuthorizationProtectedResourceMetadata(null), false);
@@ -39,41 +42,59 @@ suite('OAuth', () => {
 
 		test('isAuthorizationServerMetadata should correctly identify server metadata', () => {
 			// Valid metadata
-			assert.strictEqual(isAuthorizationServerMetadata({
-				issuer: 'https://example.com',
-				response_types_supported: ['code']
-			}), true);
+			assert.strictEqual(
+				isAuthorizationServerMetadata({
+					issuer: 'https://example.com',
+					response_types_supported: ['code'],
+				}),
+				true
+			);
 
 			// Invalid cases
 			assert.strictEqual(isAuthorizationServerMetadata(null), false);
 			assert.strictEqual(isAuthorizationServerMetadata(undefined), false);
 			assert.strictEqual(isAuthorizationServerMetadata({}), false);
-			assert.strictEqual(isAuthorizationServerMetadata({ response_types_supported: ['code'] }), false);
+			assert.strictEqual(
+				isAuthorizationServerMetadata({ response_types_supported: ['code'] }),
+				false
+			);
 			assert.strictEqual(isAuthorizationServerMetadata('not an object'), false);
 		});
 
 		test('isAuthorizationDynamicClientRegistrationResponse should correctly identify registration response', () => {
 			// Valid response
-			assert.strictEqual(isAuthorizationDynamicClientRegistrationResponse({
-				client_id: 'client-123',
-				client_name: 'Test Client'
-			}), true);
+			assert.strictEqual(
+				isAuthorizationDynamicClientRegistrationResponse({
+					client_id: 'client-123',
+					client_name: 'Test Client',
+				}),
+				true
+			);
 
 			// Invalid cases
 			assert.strictEqual(isAuthorizationDynamicClientRegistrationResponse(null), false);
 			assert.strictEqual(isAuthorizationDynamicClientRegistrationResponse(undefined), false);
 			assert.strictEqual(isAuthorizationDynamicClientRegistrationResponse({}), false);
-			assert.strictEqual(isAuthorizationDynamicClientRegistrationResponse({ client_id: 'missing-name' }), false);
-			assert.strictEqual(isAuthorizationDynamicClientRegistrationResponse({ client_name: 'missing-id' }), false);
+			assert.strictEqual(
+				isAuthorizationDynamicClientRegistrationResponse({ client_id: 'missing-name' }),
+				false
+			);
+			assert.strictEqual(
+				isAuthorizationDynamicClientRegistrationResponse({ client_name: 'missing-id' }),
+				false
+			);
 			assert.strictEqual(isAuthorizationDynamicClientRegistrationResponse('not an object'), false);
 		});
 
 		test('isAuthorizationAuthorizeResponse should correctly identify authorization response', () => {
 			// Valid response
-			assert.strictEqual(isAuthorizationAuthorizeResponse({
-				code: 'auth-code-123',
-				state: 'state-123'
-			}), true);
+			assert.strictEqual(
+				isAuthorizationAuthorizeResponse({
+					code: 'auth-code-123',
+					state: 'state-123',
+				}),
+				true
+			);
 
 			// Invalid cases
 			assert.strictEqual(isAuthorizationAuthorizeResponse(null), false);
@@ -86,10 +107,13 @@ suite('OAuth', () => {
 
 		test('isAuthorizationTokenResponse should correctly identify token response', () => {
 			// Valid response
-			assert.strictEqual(isAuthorizationTokenResponse({
-				access_token: 'token-123',
-				token_type: 'Bearer'
-			}), true);
+			assert.strictEqual(
+				isAuthorizationTokenResponse({
+					access_token: 'token-123',
+					token_type: 'Bearer',
+				}),
+				true
+			);
 
 			// Invalid cases
 			assert.strictEqual(isAuthorizationTokenResponse(null), false);
@@ -102,10 +126,13 @@ suite('OAuth', () => {
 
 		test('isDynamicClientRegistrationResponse should correctly identify client registration response', () => {
 			// Valid response
-			assert.strictEqual(isDynamicClientRegistrationResponse({
-				client_id: 'client-123',
-				client_name: 'Test Client'
-			}), true);
+			assert.strictEqual(
+				isDynamicClientRegistrationResponse({
+					client_id: 'client-123',
+					client_name: 'Test Client',
+				}),
+				true
+			);
 
 			// Invalid cases
 			assert.strictEqual(isDynamicClientRegistrationResponse(null), false);
@@ -126,13 +153,17 @@ suite('OAuth', () => {
 			assert.strictEqual(metadata.authorization_endpoint, 'https://auth.example.com/authorize');
 			assert.strictEqual(metadata.token_endpoint, 'https://auth.example.com/token');
 			assert.strictEqual(metadata.registration_endpoint, 'https://auth.example.com/register');
-			assert.deepStrictEqual(metadata.response_types_supported, ['code', 'id_token', 'id_token token']);
+			assert.deepStrictEqual(metadata.response_types_supported, [
+				'code',
+				'id_token',
+				'id_token token',
+			]);
 		});
 
 		test('getMetadataWithDefaultValues should fill in missing endpoints', () => {
 			const minimal: IAuthorizationServerMetadata = {
 				issuer: 'https://auth.example.com',
-				response_types_supported: ['code']
+				response_types_supported: ['code'],
 			};
 
 			const complete = getMetadataWithDefaultValues(minimal);
@@ -150,14 +181,20 @@ suite('OAuth', () => {
 				authorization_endpoint: 'https://auth.example.com/custom-authorize',
 				token_endpoint: 'https://auth.example.com/custom-token',
 				registration_endpoint: 'https://auth.example.com/custom-register',
-				response_types_supported: ['code', 'token']
+				response_types_supported: ['code', 'token'],
 			};
 
 			const complete = getMetadataWithDefaultValues(custom);
 
-			assert.strictEqual(complete.authorization_endpoint, 'https://auth.example.com/custom-authorize');
+			assert.strictEqual(
+				complete.authorization_endpoint,
+				'https://auth.example.com/custom-authorize'
+			);
 			assert.strictEqual(complete.token_endpoint, 'https://auth.example.com/custom-token');
-			assert.strictEqual(complete.registration_endpoint, 'https://auth.example.com/custom-register');
+			assert.strictEqual(
+				complete.registration_endpoint,
+				'https://auth.example.com/custom-register'
+			);
 		});
 	});
 
@@ -169,13 +206,15 @@ suite('OAuth', () => {
 		});
 
 		test('parseWWWAuthenticateHeader should correctly parse header with parameters', () => {
-			const result = parseWWWAuthenticateHeader('Bearer realm="api", error="invalid_token", error_description="The access token expired"');
+			const result = parseWWWAuthenticateHeader(
+				'Bearer realm="api", error="invalid_token", error_description="The access token expired"'
+			);
 
 			assert.strictEqual(result.scheme, 'Bearer');
 			assert.deepStrictEqual(result.params, {
 				realm: 'api',
 				error: 'invalid_token',
-				error_description: 'The access token expired'
+				error_description: 'The access token expired',
 			});
 		});
 
@@ -188,7 +227,7 @@ suite('OAuth', () => {
 				aud: 'client123',
 				exp: 1716239022,
 				iat: 1716235422,
-				name: 'Test User'
+				name: 'Test User',
 			};
 
 			// Create fake but properly formatted JWT
@@ -206,7 +245,10 @@ suite('OAuth', () => {
 			// Test with wrong number of parts - should throw "Invalid JWT token format"
 			assert.throws(() => getClaimsFromJWT('only.two'), /Invalid JWT token format.*three parts/);
 			assert.throws(() => getClaimsFromJWT('one'), /Invalid JWT token format.*three parts/);
-			assert.throws(() => getClaimsFromJWT('has.four.parts.here'), /Invalid JWT token format.*three parts/);
+			assert.throws(
+				() => getClaimsFromJWT('has.four.parts.here'),
+				/Invalid JWT token format.*three parts/
+			);
 		});
 
 		test('getClaimsFromJWT should throw for invalid header content', () => {
@@ -247,12 +289,12 @@ suite('OAuth', () => {
 			const mockResponse = {
 				client_id: 'generated-client-id',
 				client_name: 'Test Client',
-				client_uri: 'https://code.visualstudio.com'
+				client_uri: 'https://code.visualstudio.com',
 			};
 
 			fetchStub.resolves({
 				ok: true,
-				json: async () => mockResponse
+				json: async () => mockResponse,
 			} as Response);
 
 			const result = await fetchDynamicRegistration(
@@ -277,7 +319,7 @@ suite('OAuth', () => {
 			assert.deepStrictEqual(requestBody.redirect_uris, [
 				'https://insiders.vscode.dev/redirect',
 				'https://vscode.dev/redirect',
-				'https://custom-redirect.com/callback'
+				'https://custom-redirect.com/callback',
 			]);
 
 			// Verify response is processed correctly
@@ -287,11 +329,12 @@ suite('OAuth', () => {
 		test('fetchDynamicRegistration should throw error on non-OK response', async () => {
 			fetchStub.resolves({
 				ok: false,
-				statusText: 'Bad Request'
+				statusText: 'Bad Request',
 			} as Response);
 
 			await assert.rejects(
-				async () => await fetchDynamicRegistration('https://auth.example.com/register', 'Test Client'),
+				async () =>
+					await fetchDynamicRegistration('https://auth.example.com/register', 'Test Client'),
 				/Registration failed: Bad Request/
 			);
 		});
@@ -299,11 +342,12 @@ suite('OAuth', () => {
 		test('fetchDynamicRegistration should throw error on invalid response format', async () => {
 			fetchStub.resolves({
 				ok: true,
-				json: async () => ({ invalid: 'response' }) // Missing required fields
+				json: async () => ({ invalid: 'response' }), // Missing required fields
 			} as Response);
 
 			await assert.rejects(
-				async () => await fetchDynamicRegistration('https://auth.example.com/register', 'Test Client'),
+				async () =>
+					await fetchDynamicRegistration('https://auth.example.com/register', 'Test Client'),
 				/Invalid authorization dynamic client registration response/
 			);
 		});

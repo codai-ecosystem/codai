@@ -5,7 +5,10 @@
 
 import { Event } from '../../../../base/common/event.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
-import type { IPromptInputModel, ISerializedPromptInputModel } from './commandDetection/promptInputModel.js';
+import type {
+	IPromptInputModel,
+	ISerializedPromptInputModel,
+} from './commandDetection/promptInputModel.js';
 import { ICurrentPartialCommand } from './commandDetection/terminalCommand.js';
 import { ITerminalOutputMatch, ITerminalOutputMatcher } from '../terminal.js';
 import { ReplayEntry } from '../terminalProcess.js';
@@ -38,7 +41,6 @@ export interface IMarker extends IDisposable {
 	 */
 	onDispose: IEvent<void>;
 }
-
 
 /**
  * Primarily driven by the shell integration feature, a terminal capability is the mechanism for
@@ -76,7 +78,6 @@ export const enum TerminalCapability {
 	 * The terminal can detect the latest environment of user's current shell.
 	 */
 	ShellEnvDetection,
-
 }
 
 /**
@@ -189,7 +190,7 @@ export interface TerminalShellIntegration {
 
 export const enum CommandInvalidationReason {
 	Windows = 'windows',
-	NoProblemsReported = 'noProblemsReported'
+	NoProblemsReported = 'noProblemsReported',
 }
 
 export interface ICommandInvalidationRequest {

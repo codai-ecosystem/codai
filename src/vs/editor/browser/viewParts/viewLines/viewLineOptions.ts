@@ -25,7 +25,9 @@ export class ViewLineOptions {
 		this.themeType = themeType;
 		const options = config.options;
 		const fontInfo = options.get(EditorOption.fontInfo);
-		const experimentalWhitespaceRendering = options.get(EditorOption.experimentalWhitespaceRendering);
+		const experimentalWhitespaceRendering = options.get(
+			EditorOption.experimentalWhitespaceRendering
+		);
 		if (experimentalWhitespaceRendering === 'off') {
 			this.renderWhitespace = options.get(EditorOption.renderWhitespace);
 		} else {
@@ -36,10 +38,8 @@ export class ViewLineOptions {
 		this.spaceWidth = fontInfo.spaceWidth;
 		this.middotWidth = fontInfo.middotWidth;
 		this.wsmiddotWidth = fontInfo.wsmiddotWidth;
-		this.useMonospaceOptimizations = (
-			fontInfo.isMonospace
-			&& !options.get(EditorOption.disableMonospaceOptimizations)
-		);
+		this.useMonospaceOptimizations =
+			fontInfo.isMonospace && !options.get(EditorOption.disableMonospaceOptimizations);
 		this.canUseHalfwidthRightwardsArrow = fontInfo.canUseHalfwidthRightwardsArrow;
 		this.lineHeight = options.get(EditorOption.lineHeight);
 		this.stopRenderingLineAfter = options.get(EditorOption.stopRenderingLineAfter);
@@ -49,18 +49,18 @@ export class ViewLineOptions {
 
 	public equals(other: ViewLineOptions): boolean {
 		return (
-			this.themeType === other.themeType
-			&& this.renderWhitespace === other.renderWhitespace
-			&& this.renderControlCharacters === other.renderControlCharacters
-			&& this.spaceWidth === other.spaceWidth
-			&& this.middotWidth === other.middotWidth
-			&& this.wsmiddotWidth === other.wsmiddotWidth
-			&& this.useMonospaceOptimizations === other.useMonospaceOptimizations
-			&& this.canUseHalfwidthRightwardsArrow === other.canUseHalfwidthRightwardsArrow
-			&& this.lineHeight === other.lineHeight
-			&& this.stopRenderingLineAfter === other.stopRenderingLineAfter
-			&& this.fontLigatures === other.fontLigatures
-			&& this.useGpu === other.useGpu
+			this.themeType === other.themeType &&
+			this.renderWhitespace === other.renderWhitespace &&
+			this.renderControlCharacters === other.renderControlCharacters &&
+			this.spaceWidth === other.spaceWidth &&
+			this.middotWidth === other.middotWidth &&
+			this.wsmiddotWidth === other.wsmiddotWidth &&
+			this.useMonospaceOptimizations === other.useMonospaceOptimizations &&
+			this.canUseHalfwidthRightwardsArrow === other.canUseHalfwidthRightwardsArrow &&
+			this.lineHeight === other.lineHeight &&
+			this.stopRenderingLineAfter === other.stopRenderingLineAfter &&
+			this.fontLigatures === other.fontLigatures &&
+			this.useGpu === other.useGpu
 		);
 	}
 }

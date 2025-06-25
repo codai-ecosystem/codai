@@ -5,7 +5,7 @@
 
 import { CancellationToken } from './cancellation.js';
 
-type SparseEmbedding = Record</* word */ string, /* weight */number>;
+type SparseEmbedding = Record</* word */ string, /* weight */ number>;
 type TermFrequencies = Map</* word */ string, /*occurrences*/ number>;
 type DocumentOccurrences = Map</* word */ string, /*documentOccurrences*/ number>;
 
@@ -105,11 +105,17 @@ export class TfIdfCalculator {
 	 */
 	private chunkCount = 0;
 
-	private readonly chunkOccurrences: DocumentOccurrences = new Map</* word */ string, /*documentOccurrences*/ number>();
+	private readonly chunkOccurrences: DocumentOccurrences = new Map<
+		/* word */ string,
+		/*documentOccurrences*/ number
+	>();
 
-	private readonly documents = new Map</* key */ string, {
-		readonly chunks: ReadonlyArray<DocumentChunkEntry>;
-	}>();
+	private readonly documents = new Map<
+		/* key */ string,
+		{
+			readonly chunks: ReadonlyArray<DocumentChunkEntry>;
+		}
+	>();
 
 	updateDocuments(documents: ReadonlyArray<TfIdfDocument>): this {
 		for (const { key } of documents) {
@@ -164,7 +170,11 @@ export class TfIdfCalculator {
 		}
 	}
 
-	private computeSimilarityScore(chunk: DocumentChunkEntry, queryEmbedding: SparseEmbedding, idfCache: Map<string, number>): number {
+	private computeSimilarityScore(
+		chunk: DocumentChunkEntry,
+		queryEmbedding: SparseEmbedding,
+		idfCache: Map<string, number>
+	): number {
 		// Compute the dot product between the chunk's embedding and the query embedding
 
 		// Note that the chunk embedding is computed lazily on a per-term basis.
@@ -198,9 +208,7 @@ export class TfIdfCalculator {
 
 	private computeIdf(term: string): number {
 		const chunkOccurrences = this.chunkOccurrences.get(term) ?? 0;
-		return chunkOccurrences > 0
-			? Math.log((this.chunkCount + 1) / chunkOccurrences)
-			: 0;
+		return chunkOccurrences > 0 ? Math.log((this.chunkCount + 1) / chunkOccurrences) : 0;
 	}
 
 	private computeTfidf(termFrequencies: TermFrequencies): SparseEmbedding {
@@ -221,7 +229,6 @@ export class TfIdfCalculator {
  * @returns normalized scores
  */
 export function normalizeTfIdfScores(scores: TfIdfScore[]): NormalizedTfIdfScore[] {
-
 	// copy of scores
 	const result = scores.slice(0) as { score: number }[];
 

@@ -10,10 +10,7 @@ import { AgentRuntimeService } from '../../../../lib/services/agent-runtime-serv
 /**
  * GET /api/agents/[taskId] - Get task status and results
  */
-export const GET = (
-	request: NextRequest,
-	{ params }: { params: { taskId: string } }
-) => {
+export const GET = (request: NextRequest, { params }: { params: { taskId: string } }) => {
 	return withAuth(async (req, user) => {
 		try {
 			const taskId = params.taskId;
@@ -21,10 +18,7 @@ export const GET = (
 
 			const task = await runtimeService.getTask(taskId, user.uid);
 			if (!task) {
-				return NextResponse.json(
-					{ error: 'Task not found' },
-					{ status: 404 }
-				);
+				return NextResponse.json({ error: 'Task not found' }, { status: 404 });
 			}
 
 			// Get conversation if available
@@ -37,7 +31,7 @@ export const GET = (
 				resourceId: taskId,
 				details: {
 					taskId,
-					status: task.status
+					status: task.status,
 				},
 				ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
 			});
@@ -51,14 +45,11 @@ export const GET = (
 						updatedAt: task.updatedAt?.toISOString(),
 					},
 					conversation: conversation || null,
-				}
+				},
 			});
 		} catch (error) {
 			console.error('Error getting task:', error);
-			return NextResponse.json(
-				{ error: 'Failed to retrieve task' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to retrieve task' }, { status: 500 });
 		}
 	})(request);
 };
@@ -66,10 +57,7 @@ export const GET = (
 /**
  * POST /api/agents/[taskId] - Update task status or send a message
  */
-export const POST = (
-	request: NextRequest,
-	{ params }: { params: { taskId: string } }
-) => {
+export const POST = (request: NextRequest, { params }: { params: { taskId: string } }) => {
 	return withAuth(async (req, user) => {
 		try {
 			const taskId = params.taskId;
@@ -77,10 +65,7 @@ export const POST = (
 			const { action, message, agentId } = body;
 
 			if (!action) {
-				return NextResponse.json(
-					{ error: 'Action is required' },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: 'Action is required' }, { status: 400 });
 			}
 			const runtimeService = AgentRuntimeService.getInstance();
 			let result;
@@ -111,10 +96,7 @@ export const POST = (
 					result = await runtimeService.changeAgent(taskId, user.uid, agentId);
 					break;
 				default:
-					return NextResponse.json(
-						{ error: `Unknown action: ${action}` },
-						{ status: 400 }
-					);
+					return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
 			}
 
 			// Log the action for analytics and monitoring
@@ -126,20 +108,17 @@ export const POST = (
 				details: {
 					action: `Performed task action: ${action}`,
 					taskId,
-					message: message || null
-				}
+					message: message || null,
+				},
 			});
 
 			return NextResponse.json({
 				success: true,
-				data: result
+				data: result,
 			});
 		} catch (error) {
 			console.error('Error updating task:', error);
-			return NextResponse.json(
-				{ error: 'Failed to update task' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
 		}
 	})(request);
 };

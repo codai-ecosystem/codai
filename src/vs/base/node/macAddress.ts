@@ -8,7 +8,7 @@ import { networkInterfaces } from 'os';
 const invalidMacAddresses = new Set([
 	'00:00:00:00:00:00',
 	'ff:ff:ff:ff:ff:ff',
-	'ac:de:48:00:11:22'
+	'ac:de:48:00:11:22',
 ]);
 
 function validateMacAddress(candidate: string): boolean {

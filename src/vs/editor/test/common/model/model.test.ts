@@ -10,12 +10,23 @@ import { EditOperation } from '../../../common/core/editOperation.js';
 import { Position } from '../../../common/core/position.js';
 import { Range } from '../../../common/core/range.js';
 import { MetadataConsts } from '../../../common/encodedTokenAttributes.js';
-import { EncodedTokenizationResult, IState, TokenizationRegistry } from '../../../common/languages.js';
+import {
+	EncodedTokenizationResult,
+	IState,
+	TokenizationRegistry,
+} from '../../../common/languages.js';
 import { ILanguageService } from '../../../common/languages/language.js';
 import { ILanguageConfigurationService } from '../../../common/languages/languageConfigurationRegistry.js';
 import { NullState } from '../../../common/languages/nullTokenize.js';
 import { TextModel } from '../../../common/model/textModel.js';
-import { InternalModelContentChangeEvent, ModelRawContentChangedEvent, ModelRawFlush, ModelRawLineChanged, ModelRawLinesDeleted, ModelRawLinesInserted } from '../../../common/textModelEvents.js';
+import {
+	InternalModelContentChangeEvent,
+	ModelRawContentChangedEvent,
+	ModelRawFlush,
+	ModelRawLineChanged,
+	ModelRawLinesDeleted,
+	ModelRawLinesInserted,
+} from '../../../common/textModelEvents.js';
 import { createModelServices, createTextModel, instantiateTextModel } from '../testTextModel.js';
 
 // --------- utils
@@ -27,16 +38,10 @@ const LINE4 = '';
 const LINE5 = '1';
 
 suite('Editor Model - Model', () => {
-
 	let thisModel: TextModel;
 
 	setup(() => {
-		const text =
-			LINE1 + '\r\n' +
-			LINE2 + '\n' +
-			LINE3 + '\n' +
-			LINE4 + '\r\n' +
-			LINE5;
+		const text = LINE1 + '\r\n' + LINE2 + '\n' + LINE3 + '\n' + LINE4 + '\r\n' + LINE5;
 		thisModel = createTextModel(text);
 	});
 
@@ -49,7 +54,10 @@ suite('Editor Model - Model', () => {
 	// --------- insert text
 
 	test('model getValue', () => {
-		assert.strictEqual(thisModel.getValue(), 'My First Line\n\t\tMy Second Line\n    Third Line\n\n1');
+		assert.strictEqual(
+			thisModel.getValue(),
+			'My First Line\n\t\tMy Second Line\n    Third Line\n\n1'
+		);
 	});
 
 	test('model insert empty text', () => {
@@ -78,7 +86,9 @@ suite('Editor Model - Model', () => {
 	});
 
 	test('model insert text with two newlines', () => {
-		thisModel.applyEdits([EditOperation.insert(new Position(1, 3), ' new line\nOne more line in the middle\nNo longer')]);
+		thisModel.applyEdits([
+			EditOperation.insert(new Position(1, 3), ' new line\nOne more line in the middle\nNo longer'),
+		]);
 		assert.strictEqual(thisModel.getLineCount(), 7);
 		assert.strictEqual(thisModel.getLineContent(1), 'My new line');
 		assert.strictEqual(thisModel.getLineContent(2), 'One more line in the middle');
@@ -95,11 +105,10 @@ suite('Editor Model - Model', () => {
 		assert.strictEqual(thisModel.getLineContent(5), ' First Line');
 	});
 
-
 	// --------- insert text eventing
 
 	test('model insert empty text does not trigger eventing', () => {
-		const disposable = thisModel.onDidChangeContentOrInjectedText((e) => {
+		const disposable = thisModel.onDidChangeContentOrInjectedText(e => {
 			assert.ok(false, 'was not expecting event');
 		});
 		thisModel.applyEdits([EditOperation.insert(new Position(1, 1), '')]);
@@ -108,45 +117,48 @@ suite('Editor Model - Model', () => {
 
 	test('model insert text without newline eventing', () => {
 		let e: ModelRawContentChangedEvent | null = null;
-		const disposable = thisModel.onDidChangeContentOrInjectedText((_e) => {
+		const disposable = thisModel.onDidChangeContentOrInjectedText(_e => {
 			if (e !== null || !(_e instanceof InternalModelContentChangeEvent)) {
 				assert.fail('Unexpected assertion error');
 			}
 			e = _e.rawContentChangedEvent;
 		});
 		thisModel.applyEdits([EditOperation.insert(new Position(1, 1), 'foo ')]);
-		assert.deepStrictEqual(e, new ModelRawContentChangedEvent(
-			[
-				new ModelRawLineChanged(1, 'foo My First Line', null)
-			],
-			2,
-			false,
-			false
-		));
+		assert.deepStrictEqual(
+			e,
+			new ModelRawContentChangedEvent(
+				[new ModelRawLineChanged(1, 'foo My First Line', null)],
+				2,
+				false,
+				false
+			)
+		);
 		disposable.dispose();
 	});
 
 	test('model insert text with one newline eventing', () => {
 		let e: ModelRawContentChangedEvent | null = null;
-		const disposable = thisModel.onDidChangeContentOrInjectedText((_e) => {
+		const disposable = thisModel.onDidChangeContentOrInjectedText(_e => {
 			if (e !== null || !(_e instanceof InternalModelContentChangeEvent)) {
 				assert.fail('Unexpected assertion error');
 			}
 			e = _e.rawContentChangedEvent;
 		});
 		thisModel.applyEdits([EditOperation.insert(new Position(1, 3), ' new line\nNo longer')]);
-		assert.deepStrictEqual(e, new ModelRawContentChangedEvent(
-			[
-				new ModelRawLineChanged(1, 'My new line', null),
-				new ModelRawLinesInserted(2, 2, ['No longer First Line'], [null]),
-			],
-			2,
-			false,
-			false
-		));
+		assert.deepStrictEqual(
+			e,
+			new ModelRawContentChangedEvent(
+				[
+					new ModelRawLineChanged(1, 'My new line', null),
+					new ModelRawLinesInserted(2, 2, ['No longer First Line'], [null]),
+				],
+				2,
+				false,
+				false
+			)
+		);
 		disposable.dispose();
 	});
-
 
 	// --------- delete text
 
@@ -198,7 +210,7 @@ suite('Editor Model - Model', () => {
 	// --------- delete text eventing
 
 	test('model delete empty text does not trigger eventing', () => {
-		const disposable = thisModel.onDidChangeContentOrInjectedText((e) => {
+		const disposable = thisModel.onDidChangeContentOrInjectedText(e => {
 			assert.ok(false, 'was not expecting event');
 		});
 		thisModel.applyEdits([EditOperation.delete(new Range(1, 1, 1, 1))]);
@@ -207,83 +219,80 @@ suite('Editor Model - Model', () => {
 
 	test('model delete text from one line eventing', () => {
 		let e: ModelRawContentChangedEvent | null = null;
-		const disposable = thisModel.onDidChangeContentOrInjectedText((_e) => {
+		const disposable = thisModel.onDidChangeContentOrInjectedText(_e => {
 			if (e !== null || !(_e instanceof InternalModelContentChangeEvent)) {
 				assert.fail('Unexpected assertion error');
 			}
 			e = _e.rawContentChangedEvent;
 		});
 		thisModel.applyEdits([EditOperation.delete(new Range(1, 1, 1, 2))]);
-		assert.deepStrictEqual(e, new ModelRawContentChangedEvent(
-			[
-				new ModelRawLineChanged(1, 'y First Line', null),
-			],
-			2,
-			false,
-			false
-		));
+		assert.deepStrictEqual(
+			e,
+			new ModelRawContentChangedEvent(
+				[new ModelRawLineChanged(1, 'y First Line', null)],
+				2,
+				false,
+				false
+			)
+		);
 		disposable.dispose();
 	});
 
 	test('model delete all text from a line eventing', () => {
 		let e: ModelRawContentChangedEvent | null = null;
-		const disposable = thisModel.onDidChangeContentOrInjectedText((_e) => {
+		const disposable = thisModel.onDidChangeContentOrInjectedText(_e => {
 			if (e !== null || !(_e instanceof InternalModelContentChangeEvent)) {
 				assert.fail('Unexpected assertion error');
 			}
 			e = _e.rawContentChangedEvent;
 		});
 		thisModel.applyEdits([EditOperation.delete(new Range(1, 1, 1, 14))]);
-		assert.deepStrictEqual(e, new ModelRawContentChangedEvent(
-			[
-				new ModelRawLineChanged(1, '', null),
-			],
-			2,
-			false,
-			false
-		));
+		assert.deepStrictEqual(
+			e,
+			new ModelRawContentChangedEvent([new ModelRawLineChanged(1, '', null)], 2, false, false)
+		);
 		disposable.dispose();
 	});
 
 	test('model delete text from two lines eventing', () => {
 		let e: ModelRawContentChangedEvent | null = null;
-		const disposable = thisModel.onDidChangeContentOrInjectedText((_e) => {
+		const disposable = thisModel.onDidChangeContentOrInjectedText(_e => {
 			if (e !== null || !(_e instanceof InternalModelContentChangeEvent)) {
 				assert.fail('Unexpected assertion error');
 			}
 			e = _e.rawContentChangedEvent;
 		});
 		thisModel.applyEdits([EditOperation.delete(new Range(1, 4, 2, 6))]);
-		assert.deepStrictEqual(e, new ModelRawContentChangedEvent(
-			[
-				new ModelRawLineChanged(1, 'My Second Line', null),
-				new ModelRawLinesDeleted(2, 2),
-			],
-			2,
-			false,
-			false
-		));
+		assert.deepStrictEqual(
+			e,
+			new ModelRawContentChangedEvent(
+				[new ModelRawLineChanged(1, 'My Second Line', null), new ModelRawLinesDeleted(2, 2)],
+				2,
+				false,
+				false
+			)
+		);
 		disposable.dispose();
 	});
 
 	test('model delete text from many lines eventing', () => {
 		let e: ModelRawContentChangedEvent | null = null;
-		const disposable = thisModel.onDidChangeContentOrInjectedText((_e) => {
+		const disposable = thisModel.onDidChangeContentOrInjectedText(_e => {
 			if (e !== null || !(_e instanceof InternalModelContentChangeEvent)) {
 				assert.fail('Unexpected assertion error');
 			}
 			e = _e.rawContentChangedEvent;
 		});
 		thisModel.applyEdits([EditOperation.delete(new Range(1, 4, 3, 5))]);
-		assert.deepStrictEqual(e, new ModelRawContentChangedEvent(
-			[
-				new ModelRawLineChanged(1, 'My Third Line', null),
-				new ModelRawLinesDeleted(2, 3),
-			],
-			2,
-			false,
-			false
-		));
+		assert.deepStrictEqual(
+			e,
+			new ModelRawContentChangedEvent(
+				[new ModelRawLineChanged(1, 'My Third Line', null), new ModelRawLinesDeleted(2, 3)],
+				2,
+				false,
+				false
+			)
+		);
 		disposable.dispose();
 	});
 
@@ -297,9 +306,18 @@ suite('Editor Model - Model', () => {
 		assert.strictEqual(thisModel.getValueInRange(new Range(1, 1, 2, 1)), 'My First Line\n');
 		assert.strictEqual(thisModel.getValueInRange(new Range(1, 1, 2, 2)), 'My First Line\n\t');
 		assert.strictEqual(thisModel.getValueInRange(new Range(1, 1, 2, 3)), 'My First Line\n\t\t');
-		assert.strictEqual(thisModel.getValueInRange(new Range(1, 1, 2, 17)), 'My First Line\n\t\tMy Second Line');
-		assert.strictEqual(thisModel.getValueInRange(new Range(1, 1, 3, 1)), 'My First Line\n\t\tMy Second Line\n');
-		assert.strictEqual(thisModel.getValueInRange(new Range(1, 1, 4, 1)), 'My First Line\n\t\tMy Second Line\n    Third Line\n');
+		assert.strictEqual(
+			thisModel.getValueInRange(new Range(1, 1, 2, 17)),
+			'My First Line\n\t\tMy Second Line'
+		);
+		assert.strictEqual(
+			thisModel.getValueInRange(new Range(1, 1, 3, 1)),
+			'My First Line\n\t\tMy Second Line\n'
+		);
+		assert.strictEqual(
+			thisModel.getValueInRange(new Range(1, 1, 4, 1)),
+			'My First Line\n\t\tMy Second Line\n    Third Line\n'
+		);
 	});
 
 	// --------- getValueLengthInRange
@@ -308,60 +326,73 @@ suite('Editor Model - Model', () => {
 		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 1, 1, 1)), ''.length);
 		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 1, 1, 2)), 'M'.length);
 		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 2, 1, 3)), 'y'.length);
-		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 1, 1, 14)), 'My First Line'.length);
-		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 1, 2, 1)), 'My First Line\n'.length);
-		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 1, 2, 2)), 'My First Line\n\t'.length);
-		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 1, 2, 3)), 'My First Line\n\t\t'.length);
-		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 1, 2, 17)), 'My First Line\n\t\tMy Second Line'.length);
-		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 1, 3, 1)), 'My First Line\n\t\tMy Second Line\n'.length);
-		assert.strictEqual(thisModel.getValueLengthInRange(new Range(1, 1, 4, 1)), 'My First Line\n\t\tMy Second Line\n    Third Line\n'.length);
+		assert.strictEqual(
+			thisModel.getValueLengthInRange(new Range(1, 1, 1, 14)),
+			'My First Line'.length
+		);
+		assert.strictEqual(
+			thisModel.getValueLengthInRange(new Range(1, 1, 2, 1)),
+			'My First Line\n'.length
+		);
+		assert.strictEqual(
+			thisModel.getValueLengthInRange(new Range(1, 1, 2, 2)),
+			'My First Line\n\t'.length
+		);
+		assert.strictEqual(
+			thisModel.getValueLengthInRange(new Range(1, 1, 2, 3)),
+			'My First Line\n\t\t'.length
+		);
+		assert.strictEqual(
+			thisModel.getValueLengthInRange(new Range(1, 1, 2, 17)),
+			'My First Line\n\t\tMy Second Line'.length
+		);
+		assert.strictEqual(
+			thisModel.getValueLengthInRange(new Range(1, 1, 3, 1)),
+			'My First Line\n\t\tMy Second Line\n'.length
+		);
+		assert.strictEqual(
+			thisModel.getValueLengthInRange(new Range(1, 1, 4, 1)),
+			'My First Line\n\t\tMy Second Line\n    Third Line\n'.length
+		);
 	});
 
 	// --------- setValue
 	test('setValue eventing', () => {
 		let e: ModelRawContentChangedEvent | null = null;
-		const disposable = thisModel.onDidChangeContentOrInjectedText((_e) => {
+		const disposable = thisModel.onDidChangeContentOrInjectedText(_e => {
 			if (e !== null || !(_e instanceof InternalModelContentChangeEvent)) {
 				assert.fail('Unexpected assertion error');
 			}
 			e = _e.rawContentChangedEvent;
 		});
 		thisModel.setValue('new value');
-		assert.deepStrictEqual(e, new ModelRawContentChangedEvent(
-			[
-				new ModelRawFlush()
-			],
-			2,
-			false,
-			false
-		));
+		assert.deepStrictEqual(
+			e,
+			new ModelRawContentChangedEvent([new ModelRawFlush()], 2, false, false)
+		);
 		disposable.dispose();
 	});
 
 	test('issue #46342: Maintain edit operation order in applyEdits', () => {
-		const res = thisModel.applyEdits([
-			{ range: new Range(2, 1, 2, 1), text: 'a' },
-			{ range: new Range(1, 1, 1, 1), text: 'b' },
-		], true);
+		const res = thisModel.applyEdits(
+			[
+				{ range: new Range(2, 1, 2, 1), text: 'a' },
+				{ range: new Range(1, 1, 1, 1), text: 'b' },
+			],
+			true
+		);
 
 		assert.deepStrictEqual(res[0].range, new Range(2, 1, 2, 2));
 		assert.deepStrictEqual(res[1].range, new Range(1, 1, 1, 2));
 	});
 });
 
-
 // --------- Special Unicode LINE SEPARATOR character
 suite('Editor Model - Model Line Separators', () => {
-
 	let thisModel: TextModel;
 
 	setup(() => {
-		const text =
-			LINE1 + '\u2028' +
-			LINE2 + '\n' +
-			LINE3 + '\u2028' +
-			LINE4 + '\r\n' +
-			LINE5;
+		const text = LINE1 + '\u2028' + LINE2 + '\n' + LINE3 + '\u2028' + LINE4 + '\r\n' + LINE5;
 		thisModel = createTextModel(text);
 	});
 
@@ -372,7 +403,10 @@ suite('Editor Model - Model Line Separators', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('model getValue', () => {
-		assert.strictEqual(thisModel.getValue(), 'My First Line\u2028\t\tMy Second Line\n    Third Line\u2028\n1');
+		assert.strictEqual(
+			thisModel.getValue(),
+			'My First Line\u2028\t\tMy Second Line\n    Third Line\u2028\n1'
+		);
 	});
 
 	test('model lines', () => {
@@ -387,16 +421,13 @@ suite('Editor Model - Model Line Separators', () => {
 	});
 });
 
-
 // --------- Words
 
 suite('Editor Model - Words', () => {
-
 	const OUTER_LANGUAGE_ID = 'outerMode';
 	const INNER_LANGUAGE_ID = 'innerMode';
 
 	class OuterMode extends Disposable {
-
 		public readonly languageId = OUTER_LANGUAGE_ID;
 
 		constructor(
@@ -408,34 +439,39 @@ suite('Editor Model - Words', () => {
 			this._register(languageConfigurationService.register(this.languageId, {}));
 
 			const languageIdCodec = languageService.languageIdCodec;
-			this._register(TokenizationRegistry.register(this.languageId, {
-				getInitialState: (): IState => NullState,
-				tokenize: undefined!,
-				tokenizeEncoded: (line: string, hasEOL: boolean, state: IState): EncodedTokenizationResult => {
-					const tokensArr: number[] = [];
-					let prevLanguageId: string | undefined = undefined;
-					for (let i = 0; i < line.length; i++) {
-						const languageId = (line.charAt(i) === 'x' ? INNER_LANGUAGE_ID : OUTER_LANGUAGE_ID);
-						const encodedLanguageId = languageIdCodec.encodeLanguageId(languageId);
-						if (prevLanguageId !== languageId) {
-							tokensArr.push(i);
-							tokensArr.push((encodedLanguageId << MetadataConsts.LANGUAGEID_OFFSET));
+			this._register(
+				TokenizationRegistry.register(this.languageId, {
+					getInitialState: (): IState => NullState,
+					tokenize: undefined!,
+					tokenizeEncoded: (
+						line: string,
+						hasEOL: boolean,
+						state: IState
+					): EncodedTokenizationResult => {
+						const tokensArr: number[] = [];
+						let prevLanguageId: string | undefined = undefined;
+						for (let i = 0; i < line.length; i++) {
+							const languageId = line.charAt(i) === 'x' ? INNER_LANGUAGE_ID : OUTER_LANGUAGE_ID;
+							const encodedLanguageId = languageIdCodec.encodeLanguageId(languageId);
+							if (prevLanguageId !== languageId) {
+								tokensArr.push(i);
+								tokensArr.push(encodedLanguageId << MetadataConsts.LANGUAGEID_OFFSET);
+							}
+							prevLanguageId = languageId;
 						}
-						prevLanguageId = languageId;
-					}
 
-					const tokens = new Uint32Array(tokensArr.length);
-					for (let i = 0; i < tokens.length; i++) {
-						tokens[i] = tokensArr[i];
-					}
-					return new EncodedTokenizationResult(tokens, state);
-				}
-			}));
+						const tokens = new Uint32Array(tokensArr.length);
+						for (let i = 0; i < tokens.length; i++) {
+							tokens[i] = tokensArr[i];
+						}
+						return new EncodedTokenizationResult(tokens, state);
+					},
+				})
+			);
 		}
 	}
 
 	class InnerMode extends Disposable {
-
 		public readonly languageId = INNER_LANGUAGE_ID;
 
 		constructor(
@@ -466,15 +502,47 @@ suite('Editor Model - Words', () => {
 		const thisModel = createTextModel(text.join('\n'));
 		disposables.push(thisModel);
 
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 1)), { word: 'This', startColumn: 1, endColumn: 5 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 2)), { word: 'This', startColumn: 1, endColumn: 5 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 4)), { word: 'This', startColumn: 1, endColumn: 5 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 5)), { word: 'This', startColumn: 1, endColumn: 5 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 6)), { word: 'text', startColumn: 6, endColumn: 10 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 19)), { word: 'some', startColumn: 15, endColumn: 19 });
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 1)), {
+			word: 'This',
+			startColumn: 1,
+			endColumn: 5,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 2)), {
+			word: 'This',
+			startColumn: 1,
+			endColumn: 5,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 4)), {
+			word: 'This',
+			startColumn: 1,
+			endColumn: 5,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 5)), {
+			word: 'This',
+			startColumn: 1,
+			endColumn: 5,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 6)), {
+			word: 'text',
+			startColumn: 6,
+			endColumn: 10,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 19)), {
+			word: 'some',
+			startColumn: 15,
+			endColumn: 19,
+		});
 		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 20)), null);
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 21)), { word: 'words', startColumn: 21, endColumn: 26 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 26)), { word: 'words', startColumn: 21, endColumn: 26 });
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 21)), {
+			word: 'words',
+			startColumn: 21,
+			endColumn: 26,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 26)), {
+			word: 'words',
+			startColumn: 21,
+			endColumn: 26,
+		});
 		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 27)), null);
 		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 28)), null);
 	});
@@ -485,15 +553,45 @@ suite('Editor Model - Words', () => {
 		const outerMode = disposables.add(instantiationService.createInstance(OuterMode));
 		disposables.add(instantiationService.createInstance(InnerMode));
 
-		const model = disposables.add(instantiateTextModel(instantiationService, 'ab<xx>ab<x>', outerMode.languageId));
+		const model = disposables.add(
+			instantiateTextModel(instantiationService, 'ab<xx>ab<x>', outerMode.languageId)
+		);
 
-		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 1)), { word: 'ab', startColumn: 1, endColumn: 3 });
-		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 2)), { word: 'ab', startColumn: 1, endColumn: 3 });
-		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 3)), { word: 'ab', startColumn: 1, endColumn: 3 });
-		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 4)), { word: 'xx', startColumn: 4, endColumn: 6 });
-		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 5)), { word: 'xx', startColumn: 4, endColumn: 6 });
-		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 6)), { word: 'xx', startColumn: 4, endColumn: 6 });
-		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 7)), { word: 'ab', startColumn: 7, endColumn: 9 });
+		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 1)), {
+			word: 'ab',
+			startColumn: 1,
+			endColumn: 3,
+		});
+		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 2)), {
+			word: 'ab',
+			startColumn: 1,
+			endColumn: 3,
+		});
+		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 3)), {
+			word: 'ab',
+			startColumn: 1,
+			endColumn: 3,
+		});
+		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 4)), {
+			word: 'xx',
+			startColumn: 4,
+			endColumn: 6,
+		});
+		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 5)), {
+			word: 'xx',
+			startColumn: 4,
+			endColumn: 6,
+		});
+		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 6)), {
+			word: 'xx',
+			startColumn: 4,
+			endColumn: 6,
+		});
+		assert.deepStrictEqual(model.getWordAtPosition(new Position(1, 7)), {
+			word: 'ab',
+			startColumn: 7,
+			endColumn: 9,
+		});
 
 		disposables.dispose();
 	});
@@ -506,20 +604,52 @@ suite('Editor Model - Words', () => {
 		const languageService = instantiationService.get(ILanguageService);
 
 		disposables.add(languageService.registerLanguage({ id: MODE_ID }));
-		disposables.add(languageConfigurationService.register(MODE_ID, {
-			wordPattern: /(#?-?\d*\.\d\w*%?)|(::?[\w-]*(?=[^,{;]*[,{]))|(([@#.!])?[\w-?]+%?|[@#!.])/g
-		}));
+		disposables.add(
+			languageConfigurationService.register(MODE_ID, {
+				wordPattern: /(#?-?\d*\.\d\w*%?)|(::?[\w-]*(?=[^,{;]*[,{]))|(([@#.!])?[\w-?]+%?|[@#!.])/g,
+			})
+		);
 
-		const thisModel = disposables.add(instantiateTextModel(instantiationService, '.🐷-a-b', MODE_ID));
+		const thisModel = disposables.add(
+			instantiateTextModel(instantiationService, '.🐷-a-b', MODE_ID)
+		);
 
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 1)), { word: '.', startColumn: 1, endColumn: 2 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 2)), { word: '.', startColumn: 1, endColumn: 2 });
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 1)), {
+			word: '.',
+			startColumn: 1,
+			endColumn: 2,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 2)), {
+			word: '.',
+			startColumn: 1,
+			endColumn: 2,
+		});
 		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 3)), null);
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 4)), { word: '-a-b', startColumn: 4, endColumn: 8 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 5)), { word: '-a-b', startColumn: 4, endColumn: 8 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 6)), { word: '-a-b', startColumn: 4, endColumn: 8 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 7)), { word: '-a-b', startColumn: 4, endColumn: 8 });
-		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 8)), { word: '-a-b', startColumn: 4, endColumn: 8 });
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 4)), {
+			word: '-a-b',
+			startColumn: 4,
+			endColumn: 8,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 5)), {
+			word: '-a-b',
+			startColumn: 4,
+			endColumn: 8,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 6)), {
+			word: '-a-b',
+			startColumn: 4,
+			endColumn: 8,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 7)), {
+			word: '-a-b',
+			startColumn: 4,
+			endColumn: 8,
+		});
+		assert.deepStrictEqual(thisModel.getWordAtPosition(new Position(1, 8)), {
+			word: '-a-b',
+			startColumn: 4,
+			endColumn: 8,
+		});
 
 		disposables.dispose();
 	});

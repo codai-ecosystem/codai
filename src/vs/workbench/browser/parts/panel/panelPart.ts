@@ -8,14 +8,28 @@ import { localize } from '../../../../nls.js';
 import { IAction, Separator, SubmenuAction, toAction } from '../../../../base/common/actions.js';
 import { ActionsOrientation } from '../../../../base/browser/ui/actionbar/actionbar.js';
 import { ActivePanelContext, PanelFocusContext } from '../../../common/contextkeys.js';
-import { IWorkbenchLayoutService, Parts, Position } from '../../../services/layout/browser/layoutService.js';
+import {
+	IWorkbenchLayoutService,
+	Parts,
+	Position,
+} from '../../../services/layout/browser/layoutService.js';
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { TogglePanelAction } from './panelActions.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
-import { PANEL_BACKGROUND, PANEL_BORDER, PANEL_TITLE_BORDER, PANEL_ACTIVE_TITLE_FOREGROUND, PANEL_INACTIVE_TITLE_FOREGROUND, PANEL_ACTIVE_TITLE_BORDER, PANEL_DRAG_AND_DROP_BORDER, PANEL_TITLE_BADGE_BACKGROUND, PANEL_TITLE_BADGE_FOREGROUND } from '../../../common/theme.js';
+import {
+	PANEL_BACKGROUND,
+	PANEL_BORDER,
+	PANEL_TITLE_BORDER,
+	PANEL_ACTIVE_TITLE_FOREGROUND,
+	PANEL_INACTIVE_TITLE_FOREGROUND,
+	PANEL_ACTIVE_TITLE_BORDER,
+	PANEL_DRAG_AND_DROP_BORDER,
+	PANEL_TITLE_BADGE_BACKGROUND,
+	PANEL_TITLE_BADGE_FOREGROUND,
+} from '../../../common/theme.js';
 import { contrastBorder } from '../../../../platform/theme/common/colorRegistry.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { Dimension } from '../../../../base/browser/dom.js';
@@ -33,7 +47,6 @@ import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 
 export class PanelPart extends AbstractPaneCompositePart {
-
 	//#region IView
 
 	readonly minimumWidth: number = 300;
@@ -103,14 +116,16 @@ export class PanelPart extends AbstractPaneCompositePart {
 			viewDescriptorService,
 			contextKeyService,
 			extensionService,
-			menuService,
+			menuService
 		);
 
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('workbench.panel.showLabels')) {
-				this.updateCompositeBar(true);
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('workbench.panel.showLabels')) {
+					this.updateCompositeBar(true);
+				}
+			})
+		);
 	}
 
 	override updateStyles(): void {
@@ -125,7 +140,8 @@ export class PanelPart extends AbstractPaneCompositePart {
 
 		const title = this.getTitleArea();
 		if (title) {
-			title.style.borderTopColor = this.getColor(PANEL_BORDER) || this.getColor(contrastBorder) || '';
+			title.style.borderTopColor =
+				this.getColor(PANEL_BORDER) || this.getColor(contrastBorder) || '';
 		}
 	}
 
@@ -139,7 +155,11 @@ export class PanelPart extends AbstractPaneCompositePart {
 			orientation: ActionsOrientation.HORIZONTAL,
 			recomputeSizes: true,
 			activityHoverOptions: {
-				position: () => this.layoutService.getPanelPosition() === Position.BOTTOM && !this.layoutService.isPanelMaximized() ? HoverPosition.ABOVE : HoverPosition.BELOW,
+				position: () =>
+					this.layoutService.getPanelPosition() === Position.BOTTOM &&
+					!this.layoutService.isPanelMaximized()
+						? HoverPosition.ABOVE
+						: HoverPosition.BELOW,
 			},
 			fillExtraContextMenuActions: actions => this.fillExtraContextMenuActions(actions),
 			compositeSize: 0,
@@ -154,8 +174,8 @@ export class PanelPart extends AbstractPaneCompositePart {
 				inactiveForegroundColor: theme.getColor(PANEL_INACTIVE_TITLE_FOREGROUND),
 				badgeBackground: theme.getColor(PANEL_TITLE_BADGE_BACKGROUND),
 				badgeForeground: theme.getColor(PANEL_TITLE_BADGE_FOREGROUND),
-				dragAndDropBorder: theme.getColor(PANEL_DRAG_AND_DROP_BORDER)
-			})
+				dragAndDropBorder: theme.getColor(PANEL_DRAG_AND_DROP_BORDER),
+			}),
 		};
 	}
 
@@ -168,25 +188,52 @@ export class PanelPart extends AbstractPaneCompositePart {
 			}
 		}
 
-		const panelPositionMenu = this.menuService.getMenuActions(MenuId.PanelPositionMenu, this.contextKeyService, { shouldForwardArgs: true });
-		const panelAlignMenu = this.menuService.getMenuActions(MenuId.PanelAlignmentMenu, this.contextKeyService, { shouldForwardArgs: true });
+		const panelPositionMenu = this.menuService.getMenuActions(
+			MenuId.PanelPositionMenu,
+			this.contextKeyService,
+			{ shouldForwardArgs: true }
+		);
+		const panelAlignMenu = this.menuService.getMenuActions(
+			MenuId.PanelAlignmentMenu,
+			this.contextKeyService,
+			{ shouldForwardArgs: true }
+		);
 		const positionActions = getContextMenuActions(panelPositionMenu).secondary;
 		const alignActions = getContextMenuActions(panelAlignMenu).secondary;
 
-		const panelShowLabels = this.configurationService.getValue<boolean | undefined>('workbench.panel.showLabels');
+		const panelShowLabels = this.configurationService.getValue<boolean | undefined>(
+			'workbench.panel.showLabels'
+		);
 		const toggleShowLabelsAction = toAction({
 			id: 'workbench.action.panel.toggleShowLabels',
-			label: panelShowLabels ? localize('showIcons', "Show Icons") : localize('showLabels', "Show Labels"),
-			run: () => this.configurationService.updateValue('workbench.panel.showLabels', !panelShowLabels)
+			label: panelShowLabels
+				? localize('showIcons', 'Show Icons')
+				: localize('showLabels', 'Show Labels'),
+			run: () =>
+				this.configurationService.updateValue('workbench.panel.showLabels', !panelShowLabels),
 		});
 
-		actions.push(...[
-			new Separator(),
-			new SubmenuAction('workbench.action.panel.position', localize('panel position', "Panel Position"), positionActions),
-			new SubmenuAction('workbench.action.panel.align', localize('align panel', "Align Panel"), alignActions),
-			toggleShowLabelsAction,
-			toAction({ id: TogglePanelAction.ID, label: localize('hidePanel', "Hide Panel"), run: () => this.commandService.executeCommand(TogglePanelAction.ID) }),
-		]);
+		actions.push(
+			...[
+				new Separator(),
+				new SubmenuAction(
+					'workbench.action.panel.position',
+					localize('panel position', 'Panel Position'),
+					positionActions
+				),
+				new SubmenuAction(
+					'workbench.action.panel.align',
+					localize('align panel', 'Align Panel'),
+					alignActions
+				),
+				toggleShowLabelsAction,
+				toAction({
+					id: TogglePanelAction.ID,
+					label: localize('hidePanel', 'Hide Panel'),
+					run: () => this.commandService.executeCommand(TogglePanelAction.ID),
+				}),
+			]
+		);
 	}
 
 	override layout(width: number, height: number, top: number, left: number): void {
@@ -217,7 +264,7 @@ export class PanelPart extends AbstractPaneCompositePart {
 
 	toJSON(): object {
 		return {
-			type: Parts.PANEL_PART
+			type: Parts.PANEL_PART,
 		};
 	}
 }

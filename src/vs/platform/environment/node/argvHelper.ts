@@ -11,38 +11,72 @@ import { ErrorReporter, NATIVE_CLI_COMMANDS, OPTIONS, parseArgs } from './argv.j
 
 function parseAndValidate(cmdLineArgs: string[], reportWarnings: boolean): NativeParsedArgs {
 	const onMultipleValues = (id: string, val: string) => {
-		console.warn(localize('multipleValues', "Option '{0}' is defined more than once. Using value '{1}'.", id, val));
+		console.warn(
+			localize(
+				'multipleValues',
+				"Option '{0}' is defined more than once. Using value '{1}'.",
+				id,
+				val
+			)
+		);
 	};
 	const onEmptyValue = (id: string) => {
-		console.warn(localize('emptyValue', "Option '{0}' requires a non empty value. Ignoring the option.", id));
+		console.warn(
+			localize('emptyValue', "Option '{0}' requires a non empty value. Ignoring the option.", id)
+		);
 	};
 	const onDeprecatedOption = (deprecatedOption: string, message: string) => {
-		console.warn(localize('deprecatedArgument', "Option '{0}' is deprecated: {1}", deprecatedOption, message));
+		console.warn(
+			localize('deprecatedArgument', "Option '{0}' is deprecated: {1}", deprecatedOption, message)
+		);
 	};
 	const getSubcommandReporter = (command: string) => ({
 		onUnknownOption: (id: string) => {
 			if (!(NATIVE_CLI_COMMANDS as readonly string[]).includes(command)) {
-				console.warn(localize('unknownSubCommandOption', "Warning: '{0}' is not in the list of known options for subcommand '{1}'", id, command));
+				console.warn(
+					localize(
+						'unknownSubCommandOption',
+						"Warning: '{0}' is not in the list of known options for subcommand '{1}'",
+						id,
+						command
+					)
+				);
 			}
 		},
 		onMultipleValues,
 		onEmptyValue,
 		onDeprecatedOption,
-		getSubcommandReporter: (NATIVE_CLI_COMMANDS as readonly string[]).includes(command) ? getSubcommandReporter : undefined
+		getSubcommandReporter: (NATIVE_CLI_COMMANDS as readonly string[]).includes(command)
+			? getSubcommandReporter
+			: undefined,
 	});
 	const errorReporter: ErrorReporter = {
-		onUnknownOption: (id) => {
-			console.warn(localize('unknownOption', "Warning: '{0}' is not in the list of known options, but still passed to Electron/Chromium.", id));
+		onUnknownOption: id => {
+			console.warn(
+				localize(
+					'unknownOption',
+					"Warning: '{0}' is not in the list of known options, but still passed to Electron/Chromium.",
+					id
+				)
+			);
 		},
 		onMultipleValues,
 		onEmptyValue,
 		onDeprecatedOption,
-		getSubcommandReporter
+		getSubcommandReporter,
 	};
 
 	const args = parseArgs(cmdLineArgs, OPTIONS, reportWarnings ? errorReporter : undefined);
 	if (args.goto) {
-		args._.forEach(arg => assert(/^(\w:)?[^:]+(:\d*){0,2}:?$/.test(arg), localize('gotoValidation', "Arguments in `--goto` mode should be in the format of `FILE(:LINE(:CHARACTER))`.")));
+		args._.forEach(arg =>
+			assert(
+				/^(\w:)?[^:]+(:\d*){0,2}:?$/.test(arg),
+				localize(
+					'gotoValidation',
+					'Arguments in `--goto` mode should be in the format of `FILE(:LINE(:CHARACTER))`.'
+				)
+			)
+		);
 	}
 
 	return args;

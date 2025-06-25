@@ -7,12 +7,11 @@ import { Code } from './code';
 
 export const enum ActivityBarPosition {
 	LEFT = 0,
-	RIGHT = 1
+	RIGHT = 1,
 }
 
 export class ActivityBar {
-
-	constructor(private code: Code) { }
+	constructor(private code: Code) {}
 
 	async waitForActivityBar(position: ActivityBarPosition): Promise<void> {
 		let positionClass: string;

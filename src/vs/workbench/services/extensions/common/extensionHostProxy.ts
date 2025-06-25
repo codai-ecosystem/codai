@@ -6,7 +6,11 @@
 import { VSBuffer } from '../../../../base/common/buffer.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
-import { IRemoteConnectionData, RemoteAuthorityResolverErrorCode, ResolverResult } from '../../../../platform/remote/common/remoteAuthorityResolver.js';
+import {
+	IRemoteConnectionData,
+	RemoteAuthorityResolverErrorCode,
+	ResolverResult,
+} from '../../../../platform/remote/common/remoteAuthorityResolver.js';
 import { IExtensionDescriptionDelta } from './extensionHostProtocol.js';
 import { ActivationKind, ExtensionActivationReason } from './extensions.js';
 
@@ -27,7 +31,10 @@ export interface IResolveAuthorityOKResult {
 export type IResolveAuthorityResult = IResolveAuthorityErrorResult | IResolveAuthorityOKResult;
 
 export interface IExtensionHostProxy {
-	resolveAuthority(remoteAuthority: string, resolveAttempt: number): Promise<IResolveAuthorityResult>;
+	resolveAuthority(
+		remoteAuthority: string,
+		resolveAttempt: number
+	): Promise<IResolveAuthorityResult>;
 	/**
 	 * Returns `null` if no resolver for `remoteAuthority` is found.
 	 */

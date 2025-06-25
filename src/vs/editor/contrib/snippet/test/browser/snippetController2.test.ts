@@ -25,17 +25,24 @@ import { EndOfLineSequence } from '../../../../common/model.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('SnippetController2', function () {
-
 	/** @deprecated */
 	function assertSelections(editor: ICodeEditor, ...s: Selection[]) {
 		for (const selection of editor.getSelections()!) {
 			const actual = s.shift()!;
-			assert.ok(selection.equalsSelection(actual), `actual=${selection.toString()} <> expected=${actual.toString()}`);
+			assert.ok(
+				selection.equalsSelection(actual),
+				`actual=${selection.toString()} <> expected=${actual.toString()}`
+			);
 		}
 		assert.strictEqual(s.length, 0);
 	}
 
-	function assertContextKeys(service: MockContextKeyService, inSnippet: boolean, hasPrev: boolean, hasNext: boolean): void {
+	function assertContextKeys(
+		service: MockContextKeyService,
+		inSnippet: boolean,
+		hasPrev: boolean,
+		hasNext: boolean
+	): void {
 		const state = getContextState(service);
 		assert.strictEqual(state.inSnippet, inSnippet, `inSnippetMode`);
 		assert.strictEqual(state.hasPrev, hasPrev, `HasPrevTabstop`);
@@ -60,14 +67,17 @@ suite('SnippetController2', function () {
 		contextKeys = new MockContextKeyService();
 		model = createTextModel('if\n    $state\nfi');
 		const serviceCollection = new ServiceCollection(
-			[ILabelService, new class extends mock<ILabelService>() { }],
-			[IWorkspaceContextService, new class extends mock<IWorkspaceContextService>() {
-				override getWorkspace() {
-					return { id: 'foo', folders: [] };
-				}
-			}],
+			[ILabelService, new (class extends mock<ILabelService>() {})()],
+			[
+				IWorkspaceContextService,
+				new (class extends mock<IWorkspaceContextService>() {
+					override getWorkspace() {
+						return { id: 'foo', folders: [] };
+					}
+				})(),
+			],
 			[ILogService, new NullLogService()],
-			[IContextKeyService, contextKeys],
+			[IContextKeyService, contextKeys]
 		);
 		instaService = new InstantiationService(serviceCollection);
 		editor = createTestCodeEditor(model, { serviceCollection });
@@ -255,12 +265,12 @@ suite('SnippetController2', function () {
 
 	test('Inconsistent tab stop behaviour with recursive snippets and tab / shift tab, #27543', function () {
 		ctrl = instaService.createInstance(SnippetController2, editor);
-		ctrl.insert('1_calize(${1:nl}, \'${2:value}\')$0');
+		ctrl.insert("1_calize(${1:nl}, '${2:value}')$0");
 
 		assertContextKeys(contextKeys, true, false, true);
 		assertSelections(editor, new Selection(1, 10, 1, 12), new Selection(2, 14, 2, 16));
 
-		ctrl.insert('2_calize(${1:nl}, \'${2:value}\')$0');
+		ctrl.insert("2_calize(${1:nl}, '${2:value}')$0");
 
 		assertSelections(editor, new Selection(1, 19, 1, 21), new Selection(2, 23, 2, 25));
 
@@ -283,7 +293,7 @@ suite('SnippetController2', function () {
 		model.setValue('');
 		editor.setSelection(new Selection(1, 1, 1, 1));
 
-		ctrl.insert('import ${2:${1:module}} from \'${1:module}\'$0');
+		ctrl.insert("import ${2:${1:module}} from '${1:module}'$0");
 
 		assertContextKeys(contextKeys, true, false, true);
 		assertSelections(editor, new Selection(1, 8, 1, 14), new Selection(1, 21, 1, 27));
@@ -355,7 +365,6 @@ suite('SnippetController2', function () {
 	});
 
 	test('“Nested” snippets terminating abruptly in VSCode 1.19.2. #42012', function () {
-
 		ctrl = instaService.createInstance(SnippetController2, editor);
 		model.setValue('');
 		editor.setSelection(new Selection(1, 1, 1, 1));
@@ -369,7 +378,6 @@ suite('SnippetController2', function () {
 	});
 
 	test('Placeholders order #58267', function () {
-
 		ctrl = instaService.createInstance(SnippetController2, editor);
 		model.setValue('');
 		editor.setSelection(new Selection(1, 1, 1, 1));
@@ -418,7 +426,9 @@ suite('SnippetController2', function () {
 		model.setValue('');
 		editor.setSelection(new Selection(1, 1, 1, 1));
 
-		ctrl.insert('.REGION ${2:FUNCTION_NAME}\nCREATE.FUNCTION ${1:VOID} ${2:FUNCTION_NAME}(${3:})\n\t${4:}\nEND\n.ENDREGION$0');
+		ctrl.insert(
+			'.REGION ${2:FUNCTION_NAME}\nCREATE.FUNCTION ${1:VOID} ${2:FUNCTION_NAME}(${3:})\n\t${4:}\nEND\n.ENDREGION$0'
+		);
 		assertSelections(editor, new Selection(2, 17, 2, 21));
 
 		ctrl.next();
@@ -438,7 +448,9 @@ suite('SnippetController2', function () {
 		model.setValue('');
 		editor.setSelection(new Selection(1, 1, 1, 1));
 
-		ctrl.insert('.REGION ${2:FUNCTION_NAME}\nCREATE.FUNCTION ${1:VOID} ${2:FUNCTION_NAME}(${3:})\n\t${4:}\nEND\n.ENDREGION$0');
+		ctrl.insert(
+			'.REGION ${2:FUNCTION_NAME}\nCREATE.FUNCTION ${1:VOID} ${2:FUNCTION_NAME}(${3:})\n\t${4:}\nEND\n.ENDREGION$0'
+		);
 		assertSelections(editor, new Selection(2, 17, 2, 21));
 
 		ctrl.next();
@@ -494,7 +506,9 @@ suite('SnippetController2', function () {
 		model.setValue('');
 		CoreEditingCommands.Tab.runEditorCommand(null, editor, null);
 
-		ctrl.insert('\naProperty: aClass<${2:boolean}> = new aClass<${2:boolean}>();\n', { adjustWhitespace: false });
+		ctrl.insert('\naProperty: aClass<${2:boolean}> = new aClass<${2:boolean}>();\n', {
+			adjustWhitespace: false,
+		});
 		assertSelections(editor, new Selection(2, 19, 2, 26), new Selection(2, 41, 2, 48));
 	});
 
@@ -508,7 +522,7 @@ suite('SnippetController2', function () {
 		assertSelections(editor, new Selection(2, 23, 2, 30), new Selection(2, 45, 2, 52));
 	});
 
-	test('leading TAB by snippets won\'t replace by spaces #101870', function () {
+	test("leading TAB by snippets won't replace by spaces #101870", function () {
 		ctrl = instaService.createInstance(SnippetController2, editor);
 		model.setValue('');
 		model.updateOptions({ insertSpaces: true, tabSize: 4 });
@@ -516,7 +530,7 @@ suite('SnippetController2', function () {
 		assert.strictEqual(model.getValue(), '    Hello World\n    New Line');
 	});
 
-	test('leading TAB by snippets won\'t replace by spaces #101870 (part 2)', function () {
+	test("leading TAB by snippets won't replace by spaces #101870 (part 2)", function () {
 		ctrl = instaService.createInstance(SnippetController2, editor);
 		model.setValue('');
 		model.updateOptions({ insertSpaces: true, tabSize: 4 });
@@ -525,13 +539,12 @@ suite('SnippetController2', function () {
 	});
 
 	test.skip('Snippet transformation does not work after inserting variable using intellisense, #112362', function () {
-
 		{
 			// HAPPY - no nested snippet
 			ctrl = instaService.createInstance(SnippetController2, editor);
 			model.setValue('');
 			model.updateOptions({ insertSpaces: true, tabSize: 4 });
-			ctrl.insert('$1\n\n${1/([A-Za-z0-9]+): ([A-Za-z]+).*/$1: \'$2\',/gm}');
+			ctrl.insert("$1\n\n${1/([A-Za-z0-9]+): ([A-Za-z]+).*/$1: '$2',/gm}");
 
 			assertSelections(editor, new Selection(1, 1, 1, 1), new Selection(3, 1, 3, 1));
 			editor.trigger('test', 'type', { text: 'foo: number;' });
@@ -542,7 +555,7 @@ suite('SnippetController2', function () {
 		ctrl = instaService.createInstance(SnippetController2, editor);
 		model.setValue('');
 		model.updateOptions({ insertSpaces: true, tabSize: 4 });
-		ctrl.insert('$1\n\n${1/([A-Za-z0-9]+): ([A-Za-z]+).*/$1: \'$2\',/gm}');
+		ctrl.insert("$1\n\n${1/([A-Za-z0-9]+): ([A-Za-z]+).*/$1: '$2',/gm}");
 
 		assertSelections(editor, new Selection(1, 1, 1, 1), new Selection(3, 1, 3, 1));
 		editor.trigger('test', 'type', { text: 'foo: ' });
@@ -553,21 +566,22 @@ suite('SnippetController2', function () {
 	});
 
 	suite('createEditsAndSnippetsFromEdits', function () {
-
 		test('apply, tab, done', function () {
-
 			ctrl = instaService.createInstance(SnippetController2, editor);
 
 			model.setValue('foo("bar")');
 
 			ctrl.apply([
 				{ range: new Range(1, 5, 1, 10), template: '$1' },
-				{ range: new Range(1, 1, 1, 1), template: 'const ${1:new_const} = "bar";\n' }
+				{ range: new Range(1, 1, 1, 1), template: 'const ${1:new_const} = "bar";\n' },
 			]);
 
-			assert.strictEqual(model.getValue(), "const new_const = \"bar\";\nfoo(new_const)");
+			assert.strictEqual(model.getValue(), 'const new_const = "bar";\nfoo(new_const)');
 			assertContextKeys(contextKeys, true, false, true);
-			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 7, 1, 16), new Selection(2, 5, 2, 14)]);
+			assert.deepStrictEqual(editor.getSelections(), [
+				new Selection(1, 7, 1, 16),
+				new Selection(2, 5, 2, 14),
+			]);
 
 			ctrl.next();
 			assertContextKeys(contextKeys, false, false, false);
@@ -575,18 +589,20 @@ suite('SnippetController2', function () {
 		});
 
 		test('apply, tab, done with special final tabstop', function () {
-
 			model.setValue('foo("bar")');
 
 			ctrl = instaService.createInstance(SnippetController2, editor);
 			ctrl.apply([
 				{ range: new Range(1, 5, 1, 10), template: '$1' },
-				{ range: new Range(1, 1, 1, 1), template: 'const ${1:new_const}$0 = "bar";\n' }
+				{ range: new Range(1, 1, 1, 1), template: 'const ${1:new_const}$0 = "bar";\n' },
 			]);
 
-			assert.strictEqual(model.getValue(), "const new_const = \"bar\";\nfoo(new_const)");
+			assert.strictEqual(model.getValue(), 'const new_const = "bar";\nfoo(new_const)');
 			assertContextKeys(contextKeys, true, false, true);
-			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 7, 1, 16), new Selection(2, 5, 2, 14)]);
+			assert.deepStrictEqual(editor.getSelections(), [
+				new Selection(1, 7, 1, 16),
+				new Selection(2, 5, 2, 14),
+			]);
 
 			ctrl.next();
 			assertContextKeys(contextKeys, false, false, false);
@@ -594,40 +610,47 @@ suite('SnippetController2', function () {
 		});
 
 		test('apply, tab, tab, done', function () {
-
 			model.setValue('foo\nbar');
 
 			ctrl = instaService.createInstance(SnippetController2, editor);
 			ctrl.apply([
 				{ range: new Range(1, 4, 1, 4), template: '${3}' },
 				{ range: new Range(2, 4, 2, 4), template: '$3' },
-				{ range: new Range(1, 1, 1, 1), template: '### ${2:Header}\n' }
+				{ range: new Range(1, 1, 1, 1), template: '### ${2:Header}\n' },
 			]);
 
-			assert.strictEqual(model.getValue(), "### Header\nfoo\nbar");
+			assert.strictEqual(model.getValue(), '### Header\nfoo\nbar');
 			assert.deepStrictEqual(getContextState(), { inSnippet: true, hasPrev: false, hasNext: true });
 			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 5, 1, 11)]);
 
 			ctrl.next();
 			assert.deepStrictEqual(getContextState(), { inSnippet: true, hasPrev: true, hasNext: true });
-			assert.deepStrictEqual(editor.getSelections(), [new Selection(2, 4, 2, 4), new Selection(3, 4, 3, 4)]);
+			assert.deepStrictEqual(editor.getSelections(), [
+				new Selection(2, 4, 2, 4),
+				new Selection(3, 4, 3, 4),
+			]);
 
 			ctrl.next();
-			assert.deepStrictEqual(getContextState(), { inSnippet: false, hasPrev: false, hasNext: false });
+			assert.deepStrictEqual(getContextState(), {
+				inSnippet: false,
+				hasPrev: false,
+				hasNext: false,
+			});
 			assert.deepStrictEqual(editor.getSelections(), [new Selection(3, 4, 3, 4)]);
 		});
 
 		test('nested into apply works', function () {
-
 			ctrl = instaService.createInstance(SnippetController2, editor);
 			model.setValue('onetwo');
 
 			editor.setSelections([new Selection(1, 1, 1, 1), new Selection(2, 1, 2, 1)]);
 
-			ctrl.apply([{
-				range: new Range(1, 7, 1, 7),
-				template: '$0${1:three}'
-			}]);
+			ctrl.apply([
+				{
+					range: new Range(1, 7, 1, 7),
+					template: '$0${1:three}',
+				},
+			]);
 
 			assert.strictEqual(model.getValue(), 'onetwothree');
 			assert.deepStrictEqual(getContextState(), { inSnippet: true, hasPrev: false, hasNext: true });
@@ -635,74 +658,107 @@ suite('SnippetController2', function () {
 
 			ctrl.insert('foo$1bar$1');
 			assert.strictEqual(model.getValue(), 'onetwofoobar');
-			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 10, 1, 10), new Selection(1, 13, 1, 13)]);
-			assert.deepStrictEqual(getContextState(), ({ inSnippet: true, hasPrev: false, hasNext: true }));
+			assert.deepStrictEqual(editor.getSelections(), [
+				new Selection(1, 10, 1, 10),
+				new Selection(1, 13, 1, 13),
+			]);
+			assert.deepStrictEqual(getContextState(), { inSnippet: true, hasPrev: false, hasNext: true });
 
 			ctrl.next();
-			assert.deepStrictEqual(getContextState(), ({ inSnippet: true, hasPrev: true, hasNext: true }));
+			assert.deepStrictEqual(getContextState(), { inSnippet: true, hasPrev: true, hasNext: true });
 			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 13, 1, 13)]);
 
 			ctrl.next();
-			assert.deepStrictEqual(getContextState(), { inSnippet: false, hasPrev: false, hasNext: false });
+			assert.deepStrictEqual(getContextState(), {
+				inSnippet: false,
+				hasPrev: false,
+				hasNext: false,
+			});
 			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 7, 1, 7)]);
-
 		});
 
 		test('nested into insert abort "outer" snippet', function () {
-
 			ctrl = instaService.createInstance(SnippetController2, editor);
 			model.setValue('one\ntwo');
 
 			editor.setSelections([new Selection(1, 1, 1, 1), new Selection(2, 1, 2, 1)]);
 
 			ctrl.insert('foo${1:bar}bazz${1:bang}');
-			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 4, 1, 7), new Selection(1, 11, 1, 14), new Selection(2, 4, 2, 7), new Selection(2, 11, 2, 14)]);
+			assert.deepStrictEqual(editor.getSelections(), [
+				new Selection(1, 4, 1, 7),
+				new Selection(1, 11, 1, 14),
+				new Selection(2, 4, 2, 7),
+				new Selection(2, 11, 2, 14),
+			]);
 			assert.deepStrictEqual(getContextState(), { inSnippet: true, hasPrev: false, hasNext: true });
 
-			ctrl.apply([{
-				range: new Range(1, 4, 1, 7),
-				template: '$0A'
-			}]);
+			ctrl.apply([
+				{
+					range: new Range(1, 4, 1, 7),
+					template: '$0A',
+				},
+			]);
 
 			assert.strictEqual(model.getValue(), 'fooAbazzbarone\nfoobarbazzbartwo');
-			assert.deepStrictEqual(getContextState(), { inSnippet: false, hasPrev: false, hasNext: false });
+			assert.deepStrictEqual(getContextState(), {
+				inSnippet: false,
+				hasPrev: false,
+				hasNext: false,
+			});
 			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 4, 1, 4)]);
 		});
 
 		test('nested into "insert" abort "outer" snippet (2)', function () {
-
 			ctrl = instaService.createInstance(SnippetController2, editor);
 			model.setValue('one\ntwo');
 
 			editor.setSelections([new Selection(1, 1, 1, 1), new Selection(2, 1, 2, 1)]);
 
 			ctrl.insert('foo${1:bar}bazz${1:bang}');
-			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 4, 1, 7), new Selection(1, 11, 1, 14), new Selection(2, 4, 2, 7), new Selection(2, 11, 2, 14)]);
+			assert.deepStrictEqual(editor.getSelections(), [
+				new Selection(1, 4, 1, 7),
+				new Selection(1, 11, 1, 14),
+				new Selection(2, 4, 2, 7),
+				new Selection(2, 11, 2, 14),
+			]);
 			assert.deepStrictEqual(getContextState(), { inSnippet: true, hasPrev: false, hasNext: true });
 
-			const edits = [{
-				range: new Range(1, 4, 1, 7),
-				template: 'A'
-			}, {
-				range: new Range(1, 11, 1, 14),
-				template: 'B'
-			}, {
-				range: new Range(2, 4, 2, 7),
-				template: 'C'
-			}, {
-				range: new Range(2, 11, 2, 14),
-				template: 'D'
-			}];
+			const edits = [
+				{
+					range: new Range(1, 4, 1, 7),
+					template: 'A',
+				},
+				{
+					range: new Range(1, 11, 1, 14),
+					template: 'B',
+				},
+				{
+					range: new Range(2, 4, 2, 7),
+					template: 'C',
+				},
+				{
+					range: new Range(2, 11, 2, 14),
+					template: 'D',
+				},
+			];
 			ctrl.apply(edits);
 
-			assert.strictEqual(model.getValue(), "fooAbazzBone\nfooCbazzDtwo");
-			assert.deepStrictEqual(getContextState(), { inSnippet: false, hasPrev: false, hasNext: false });
-			assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 5, 1, 5), new Selection(1, 10, 1, 10), new Selection(2, 5, 2, 5), new Selection(2, 10, 2, 10)]);
+			assert.strictEqual(model.getValue(), 'fooAbazzBone\nfooCbazzDtwo');
+			assert.deepStrictEqual(getContextState(), {
+				inSnippet: false,
+				hasPrev: false,
+				hasNext: false,
+			});
+			assert.deepStrictEqual(editor.getSelections(), [
+				new Selection(1, 5, 1, 5),
+				new Selection(1, 10, 1, 10),
+				new Selection(2, 5, 2, 5),
+				new Selection(2, 10, 2, 10),
+			]);
 		});
 	});
 
 	test('Bug: cursor position $0 with user snippets #163808', function () {
-
 		ctrl = instaService.createInstance(SnippetController2, editor);
 		model.setValue('');
 
@@ -710,9 +766,11 @@ suite('SnippetController2', function () {
 		assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 23, 1, 23)]);
 
 		ctrl.insert('Qualifier="$0"');
-		assert.strictEqual(model.getValue(), '<Element1 Attr1="foo" Qualifier="">\n  <Element2 Attr1=""/>\n"\n</Element1>');
+		assert.strictEqual(
+			model.getValue(),
+			'<Element1 Attr1="foo" Qualifier="">\n  <Element2 Attr1=""/>\n"\n</Element1>'
+		);
 		assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 34, 1, 34)]);
-
 	});
 
 	test('EOL-Sequence (CRLF) shifts tab stop in isFileTemplate snippets #167386', function () {
@@ -720,13 +778,19 @@ suite('SnippetController2', function () {
 		model.setValue('');
 		model.setEOL(EndOfLineSequence.CRLF);
 
-		ctrl.apply([{
-			range: model.getFullModelRange(),
-			template: 'line 54321${1:FOO}\nline 54321${1:FOO}\n(no tab stop)\nline 54321${1:FOO}\nline 54321'
-		}]);
+		ctrl.apply([
+			{
+				range: model.getFullModelRange(),
+				template:
+					'line 54321${1:FOO}\nline 54321${1:FOO}\n(no tab stop)\nline 54321${1:FOO}\nline 54321',
+			},
+		]);
 
-		assert.deepStrictEqual(editor.getSelections(), [new Selection(1, 11, 1, 14), new Selection(2, 11, 2, 14), new Selection(4, 11, 4, 14)]);
-
+		assert.deepStrictEqual(editor.getSelections(), [
+			new Selection(1, 11, 1, 14),
+			new Selection(2, 11, 2, 14),
+			new Selection(4, 11, 4, 14),
+		]);
 	});
 
 	test('"Surround With" code action snippets use incorrect indentation levels and styles #169319', function () {
@@ -734,11 +798,16 @@ suite('SnippetController2', function () {
 		const sel = new Range(2, 5, 3, 14);
 		editor.setSelection(sel);
 		ctrl = instaService.createInstance(SnippetController2, editor);
-		ctrl.apply([{
-			range: sel,
-			template: 'if (${1:condition}) {\n\t$TM_SELECTED_TEXT$0\n}'
-		}]);
+		ctrl.apply([
+			{
+				range: sel,
+				template: 'if (${1:condition}) {\n\t$TM_SELECTED_TEXT$0\n}',
+			},
+		]);
 
-		assert.strictEqual(model.getValue(), `function foo(f, x, condition) {\n    if (condition) {\n        f();\n        return x;\n    }\n}`);
+		assert.strictEqual(
+			model.getValue(),
+			`function foo(f, x, condition) {\n    if (condition) {\n        f();\n        return x;\n    }\n}`
+		);
 	});
 });

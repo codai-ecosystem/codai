@@ -10,7 +10,10 @@ import { IWorkspaceContextService } from '../../../../platform/workspace/common/
 import { IEditorService } from '../../editor/common/editorService.js';
 import { IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
 import { IConfigurationResolverService } from '../common/configurationResolver.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { BaseConfigurationResolverService } from '../browser/baseConfigurationResolverService.js';
 import { ILabelService } from '../../../../platform/label/common/label.js';
 import { IShellEnvironmentService } from '../../environment/electron-sandbox/shellEnvironmentService.js';
@@ -19,7 +22,6 @@ import { IExtensionService } from '../../extensions/common/extensions.js';
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 
 export class ConfigurationResolverService extends BaseConfigurationResolverService {
-
 	constructor(
 		@IEditorService editorService: IEditorService,
 		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
@@ -31,18 +33,33 @@ export class ConfigurationResolverService extends BaseConfigurationResolverServi
 		@IShellEnvironmentService shellEnvironmentService: IShellEnvironmentService,
 		@IPathService pathService: IPathService,
 		@IExtensionService extensionService: IExtensionService,
-		@IStorageService storageService: IStorageService,
+		@IStorageService storageService: IStorageService
 	) {
-		super({
-			getAppRoot: (): string | undefined => {
-				return environmentService.appRoot;
+		super(
+			{
+				getAppRoot: (): string | undefined => {
+					return environmentService.appRoot;
+				},
+				getExecPath: (): string | undefined => {
+					return environmentService.execPath;
+				},
 			},
-			getExecPath: (): string | undefined => {
-				return environmentService.execPath;
-			},
-		}, shellEnvironmentService.getShellEnv(), editorService, configurationService, commandService,
-			workspaceContextService, quickInputService, labelService, pathService, extensionService, storageService);
+			shellEnvironmentService.getShellEnv(),
+			editorService,
+			configurationService,
+			commandService,
+			workspaceContextService,
+			quickInputService,
+			labelService,
+			pathService,
+			extensionService,
+			storageService
+		);
 	}
 }
 
-registerSingleton(IConfigurationResolverService, ConfigurationResolverService, InstantiationType.Delayed);
+registerSingleton(
+	IConfigurationResolverService,
+	ConfigurationResolverService,
+	InstantiationType.Delayed
+);

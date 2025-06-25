@@ -8,7 +8,11 @@ import { Disposable } from '../../../../../base/common/lifecycle.js';
 import { observableValue } from '../../../../../base/common/observable.js';
 import { ICellOutputViewModel, IGenericCellViewModel } from '../notebookBrowser.js';
 import { NotebookTextModel } from '../../common/model/notebookTextModel.js';
-import { ICellOutput, IOrderedMimeType, RENDERER_NOT_AVAILABLE } from '../../common/notebookCommon.js';
+import {
+	ICellOutput,
+	IOrderedMimeType,
+	RENDERER_NOT_AVAILABLE,
+} from '../../common/notebookCommon.js';
 import { INotebookService } from '../../common/notebookService.js';
 
 let handle = 0;
@@ -62,9 +66,18 @@ export class CellOutputViewModel extends Disposable implements ICellOutputViewMo
 		return this._outputRawData.outputs.some(output => output.mime !== firstMimeType);
 	}
 
-	resolveMimeTypes(textModel: NotebookTextModel, kernelProvides: readonly string[] | undefined): [readonly IOrderedMimeType[], number] {
-		const mimeTypes = this._notebookService.getOutputMimeTypeInfo(textModel, kernelProvides, this.model);
-		const index = mimeTypes.findIndex(mimeType => mimeType.rendererId !== RENDERER_NOT_AVAILABLE && mimeType.isTrusted);
+	resolveMimeTypes(
+		textModel: NotebookTextModel,
+		kernelProvides: readonly string[] | undefined
+	): [readonly IOrderedMimeType[], number] {
+		const mimeTypes = this._notebookService.getOutputMimeTypeInfo(
+			textModel,
+			kernelProvides,
+			this.model
+		);
+		const index = mimeTypes.findIndex(
+			mimeType => mimeType.rendererId !== RENDERER_NOT_AVAILABLE && mimeType.isTrusted
+		);
 
 		return [mimeTypes, Math.max(index, 0)];
 	}

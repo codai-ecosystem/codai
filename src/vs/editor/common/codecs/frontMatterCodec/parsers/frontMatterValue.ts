@@ -21,26 +21,28 @@ import { assertNotConsumed, ParserBase, TAcceptTokenResult } from '../../simpleC
  * - {@link Quote}, {@link DoubleQuote} - can start a `string` value
  * - {@link LeftBracket} - can start an `array` value
  */
-export const VALID_VALUE_START_TOKENS = Object.freeze([
-	Quote,
-	DoubleQuote,
-	LeftBracket,
-]);
+export const VALID_VALUE_START_TOKENS = Object.freeze([Quote, DoubleQuote, LeftBracket]);
 
 /**
  * Type alias for a token that can start a "value" sequence.
  */
-type TValueStartToken = InstanceType<typeof VALID_VALUE_START_TOKENS[number]>;
+type TValueStartToken = InstanceType<(typeof VALID_VALUE_START_TOKENS)[number]>;
 
 /**
  * Parser responsible for parsing a "value" sequence in a Front Matter header.
  */
-export class PartialFrontMatterValue extends ParserBase<TSimpleDecoderToken, PartialFrontMatterValue | FrontMatterValueToken> {
+export class PartialFrontMatterValue extends ParserBase<
+	TSimpleDecoderToken,
+	PartialFrontMatterValue | FrontMatterValueToken
+> {
 	/**
 	 * Current parser reference responsible for parsing
 	 * a specific "value" sequence.
 	 */
-	private currentValueParser?: PartialFrontMatterString | PartialFrontMatterArray | PartialFrontMatterSequence;
+	private currentValueParser?:
+		| PartialFrontMatterString
+		| PartialFrontMatterArray
+		| PartialFrontMatterSequence;
 
 	/**
 	 * Get the tokens that were accumulated so far.
@@ -58,13 +60,15 @@ export class PartialFrontMatterValue extends ParserBase<TSimpleDecoderToken, Par
 		 * Callback function to pass to the {@link PartialFrontMatterSequence}
 		 * if the current "value" sequence is not of a specific type.
 		 */
-		private readonly shouldStop: (token: BaseToken) => boolean,
+		private readonly shouldStop: (token: BaseToken) => boolean
 	) {
 		super();
 	}
 
 	@assertNotConsumed
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialFrontMatterValue | FrontMatterValueToken> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<PartialFrontMatterValue | FrontMatterValueToken> {
 		if (this.currentValueParser !== undefined) {
 			const acceptResult = this.currentValueParser.accept(token);
 			const { result, wasTokenConsumed } = acceptResult;
@@ -98,7 +102,7 @@ export class PartialFrontMatterValue extends ParserBase<TSimpleDecoderToken, Par
 		}
 
 		// if the first token represents a `quote` character, try to parse a string value
-		if ((token instanceof Quote) || (token instanceof DoubleQuote)) {
+		if (token instanceof Quote || token instanceof DoubleQuote) {
 			this.currentValueParser = new PartialFrontMatterString(token);
 
 			return {
@@ -134,9 +138,7 @@ export class PartialFrontMatterValue extends ParserBase<TSimpleDecoderToken, Par
 		// in all other cases, collect all the subsequent tokens into
 		// a generic sequence of tokens until stopped by the `this.shouldStop`
 		// callback or the call to the 'this.asSequenceToken' method
-		this.currentValueParser = new PartialFrontMatterSequence(
-			this.shouldStop,
-		);
+		this.currentValueParser = new PartialFrontMatterSequence(this.shouldStop);
 
 		return this.accept(token);
 	}
@@ -146,7 +148,7 @@ export class PartialFrontMatterValue extends ParserBase<TSimpleDecoderToken, Par
 	 * See {@link VALID_VALUE_START_TOKENS} for the list of valid tokens.
 	 */
 	public static isValueStartToken(
-		token: BaseToken,
+		token: BaseToken
 	): token is TValueStartToken | Word<'true' | 'false'> {
 		for (const ValidToken of VALID_VALUE_START_TOKENS) {
 			if (token instanceof ValidToken) {
@@ -155,9 +157,7 @@ export class PartialFrontMatterValue extends ParserBase<TSimpleDecoderToken, Par
 		}
 
 		if (token instanceof Word) {
-			return ['true', 'false'].includes(
-				token.text.toLowerCase(),
-			);
+			return ['true', 'false'].includes(token.text.toLowerCase());
 		}
 
 		return false;
@@ -172,7 +172,7 @@ export class PartialFrontMatterValue extends ParserBase<TSimpleDecoderToken, Par
 			return false;
 		}
 
-		return (this.currentValueParser instanceof PartialFrontMatterSequence);
+		return this.currentValueParser instanceof PartialFrontMatterSequence;
 	}
 
 	/**

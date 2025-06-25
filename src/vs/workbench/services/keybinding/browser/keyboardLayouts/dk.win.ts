@@ -5,7 +5,6 @@
 
 import { KeyboardLayoutContribution } from './_.contribution.js';
 
-
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 	layout: { name: '00000406', id: '', text: 'Danish' },
 	secondaryLayouts: [],
@@ -57,7 +56,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		Equal: ['´', '`', '|', '', 0, 'VK_OEM_4'],
 		BracketLeft: ['å', 'Å', '', '', 0, 'VK_OEM_6'],
 		BracketRight: ['¨', '^', '~', '', 0, 'VK_OEM_1'],
-		Backslash: ['\'', '*', '', '', 0, 'VK_OEM_2'],
+		Backslash: ["'", '*', '', '', 0, 'VK_OEM_2'],
 		Semicolon: ['æ', 'Æ', '', '', 0, 'VK_OEM_3'],
 		Quote: ['ø', 'Ø', '', '', 0, 'VK_OEM_7'],
 		Backquote: ['½', '§', '', '', 0, 'VK_OEM_5'],
@@ -164,7 +163,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		BrowserForward: [],
 		BrowserStop: [],
 		BrowserRefresh: [],
-		BrowserFavorites: []
-	}
-
+		BrowserFavorites: [],
+	},
 });

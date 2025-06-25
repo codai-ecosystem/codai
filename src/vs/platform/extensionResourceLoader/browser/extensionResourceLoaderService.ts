@@ -12,11 +12,13 @@ import { IStorageService } from '../../storage/common/storage.js';
 import { IEnvironmentService } from '../../environment/common/environment.js';
 import { ILogService } from '../../log/common/log.js';
 import { IConfigurationService } from '../../configuration/common/configuration.js';
-import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from '../common/extensionResourceLoader.js';
+import {
+	AbstractExtensionResourceLoaderService,
+	IExtensionResourceLoaderService,
+} from '../common/extensionResourceLoader.js';
 import { IExtensionGalleryManifestService } from '../../extensionManagement/common/extensionGalleryManifest.js';
 
 class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
-
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
@@ -25,16 +27,29 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 		@IProductService productService: IProductService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IExtensionGalleryManifestService extensionGalleryManifestService: IExtensionGalleryManifestService,
-		@ILogService logService: ILogService,
+		@IExtensionGalleryManifestService
+		extensionGalleryManifestService: IExtensionGalleryManifestService,
+		@ILogService logService: ILogService
 	) {
-		super(fileService, storageService, productService, environmentService, configurationService, extensionGalleryManifestService, logService);
+		super(
+			fileService,
+			storageService,
+			productService,
+			environmentService,
+			configurationService,
+			extensionGalleryManifestService,
+			logService
+		);
 	}
 
 	async readExtensionResource(uri: URI): Promise<string> {
 		uri = FileAccess.uriToBrowserUri(uri);
 
-		if (uri.scheme !== Schemas.http && uri.scheme !== Schemas.https && uri.scheme !== Schemas.data) {
+		if (
+			uri.scheme !== Schemas.http &&
+			uri.scheme !== Schemas.https &&
+			uri.scheme !== Schemas.data
+		) {
 			const result = await this._fileService.readFile(uri);
 			return result.value.toString();
 		}
@@ -47,11 +62,17 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 
 		const response = await fetch(uri.toString(true), requestInit);
 		if (response.status !== 200) {
-			this._logService.info(`Request to '${uri.toString(true)}' failed with status code ${response.status}`);
+			this._logService.info(
+				`Request to '${uri.toString(true)}' failed with status code ${response.status}`
+			);
 			throw new Error(response.statusText);
 		}
 		return response.text();
 	}
 }
 
-registerSingleton(IExtensionResourceLoaderService, ExtensionResourceLoaderService, InstantiationType.Delayed);
+registerSingleton(
+	IExtensionResourceLoaderService,
+	ExtensionResourceLoaderService,
+	InstantiationType.Delayed
+);

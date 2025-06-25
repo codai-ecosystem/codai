@@ -10,7 +10,7 @@ import { Range } from '../range.js';
 /**
  * Represents a 1-based range of columns.
  * Use {@lik OffsetRange} to represent a 0-based range.
-*/
+ */
 export class ColumnRange {
 	public static fromOffsetRange(offsetRange: OffsetRange): ColumnRange {
 		return new ColumnRange(offsetRange.start + 1, offsetRange.endExclusive + 1);
@@ -22,7 +22,9 @@ export class ColumnRange {
 		public readonly endColumnExclusive: number
 	) {
 		if (startColumn > endColumnExclusive) {
-			throw new BugIndicatingError(`startColumn ${startColumn} cannot be after endColumnExclusive ${endColumnExclusive}`);
+			throw new BugIndicatingError(
+				`startColumn ${startColumn} cannot be after endColumnExclusive ${endColumnExclusive}`
+			);
 		}
 	}
 
@@ -31,8 +33,9 @@ export class ColumnRange {
 	}
 
 	equals(other: ColumnRange): boolean {
-		return this.startColumn === other.startColumn
-			&& this.endColumnExclusive === other.endColumnExclusive;
+		return (
+			this.startColumn === other.startColumn && this.endColumnExclusive === other.endColumnExclusive
+		);
 	}
 
 	toZeroBasedOffsetRange(): OffsetRange {

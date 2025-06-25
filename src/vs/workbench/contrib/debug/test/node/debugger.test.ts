@@ -6,15 +6,23 @@
 import assert from 'assert';
 import { join, normalize } from '../../../../../base/common/path.js';
 import * as platform from '../../../../../base/common/platform.js';
-import { IDebugAdapterExecutable, IConfig, IDebugSession, IAdapterManager } from '../../common/debug.js';
+import {
+	IDebugAdapterExecutable,
+	IConfig,
+	IDebugSession,
+	IAdapterManager,
+} from '../../common/debug.js';
 import { Debugger } from '../../common/debugger.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { ExecutableDebugAdapter } from '../../node/debugAdapter.js';
 import { TestTextResourcePropertiesService } from '../../../../../editor/test/common/services/testTextResourcePropertiesService.js';
-import { ExtensionIdentifier, IExtensionDescription, TargetPlatform } from '../../../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionIdentifier,
+	IExtensionDescription,
+	TargetPlatform,
+} from '../../../../../platform/extensions/common/extensions.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-
 
 suite('Debug - Debugger', () => {
 	let _debugger: Debugger;
@@ -30,12 +38,12 @@ suite('Debug - Debugger', () => {
 				required: ['program'],
 				properties: {
 					program: {
-						'type': 'string',
-						'description': 'Workspace relative path to a text file.',
-						'default': 'readme.md'
-					}
-				}
-			}
+						type: 'string',
+						description: 'Workspace relative path to a text file.',
+						default: 'readme.md',
+					},
+				},
+			},
 		},
 		variables: null!,
 		initialConfigurations: [
@@ -43,9 +51,9 @@ suite('Debug - Debugger', () => {
 				name: 'Mock-Debug',
 				type: 'mock',
 				request: 'launch',
-				program: 'readme.md'
-			}
-		]
+				program: 'readme.md',
+			},
+		],
 	};
 
 	const extensionDescriptor0 = <IExtensionDescription>{
@@ -61,9 +69,7 @@ suite('Debug - Debugger', () => {
 		engines: null!,
 		targetPlatform: TargetPlatform.UNDEFINED,
 		contributes: {
-			'debuggers': [
-				debuggerContribution
-			]
+			debuggers: [debuggerContribution],
 		},
 		enabledApiProposals: undefined,
 		preRelease: false,
@@ -82,15 +88,15 @@ suite('Debug - Debugger', () => {
 		engines: null!,
 		targetPlatform: TargetPlatform.UNDEFINED,
 		contributes: {
-			'debuggers': [
+			debuggers: [
 				{
 					type: 'mock',
 					runtime: 'runtime',
 					runtimeArgs: ['rarg'],
 					program: 'mockprogram',
-					args: ['parg']
-				}
-			]
+					args: ['parg'],
+				},
+			],
 		},
 		enabledApiProposals: undefined,
 		preRelease: false,
@@ -109,33 +115,35 @@ suite('Debug - Debugger', () => {
 		engines: null!,
 		targetPlatform: TargetPlatform.UNDEFINED,
 		contributes: {
-			'debuggers': [
+			debuggers: [
 				{
 					type: 'mock',
 					win: {
 						runtime: 'winRuntime',
-						program: 'winProgram'
+						program: 'winProgram',
 					},
 					linux: {
 						runtime: 'linuxRuntime',
-						program: 'linuxProgram'
+						program: 'linuxProgram',
 					},
 					osx: {
 						runtime: 'osxRuntime',
-						program: 'osxProgram'
-					}
-				}
-			]
+						program: 'osxProgram',
+					},
+				},
+			],
 		},
 		enabledApiProposals: undefined,
 		preRelease: false,
 	};
 
-
 	const adapterManager = <IAdapterManager>{
-		getDebugAdapterDescriptor(session: IDebugSession, config: IConfig): Promise<IDebugAdapterExecutable | undefined> {
+		getDebugAdapterDescriptor(
+			session: IDebugSession,
+			config: IConfig
+		): Promise<IDebugAdapterExecutable | undefined> {
 			return Promise.resolve(undefined);
-		}
+		},
 	};
 
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -144,7 +152,17 @@ suite('Debug - Debugger', () => {
 	const testResourcePropertiesService = new TestTextResourcePropertiesService(configurationService);
 
 	setup(() => {
-		_debugger = new Debugger(adapterManager, debuggerContribution, extensionDescriptor0, configurationService, testResourcePropertiesService, undefined!, undefined!, undefined!, undefined!);
+		_debugger = new Debugger(
+			adapterManager,
+			debuggerContribution,
+			extensionDescriptor0,
+			configurationService,
+			testResourcePropertiesService,
+			undefined!,
+			undefined!,
+			undefined!,
+			undefined!
+		);
 	});
 
 	teardown(() => {
@@ -165,15 +183,25 @@ suite('Debug - Debugger', () => {
 		if (!process.versions.electron) {
 			this.skip(); //TODO@debug this test fails when run in node.js environments
 		}
-		const ae = ExecutableDebugAdapter.platformAdapterExecutable([extensionDescriptor1, extensionDescriptor2], 'mock')!;
-		assert.strictEqual(ae.command, platform.isLinux ? 'linuxRuntime' : (platform.isMacintosh ? 'osxRuntime' : 'winRuntime'));
-		const xprogram = platform.isLinux ? 'linuxProgram' : (platform.isMacintosh ? 'osxProgram' : 'winProgram');
+		const ae = ExecutableDebugAdapter.platformAdapterExecutable(
+			[extensionDescriptor1, extensionDescriptor2],
+			'mock'
+		)!;
+		assert.strictEqual(
+			ae.command,
+			platform.isLinux ? 'linuxRuntime' : platform.isMacintosh ? 'osxRuntime' : 'winRuntime'
+		);
+		const xprogram = platform.isLinux
+			? 'linuxProgram'
+			: platform.isMacintosh
+				? 'osxProgram'
+				: 'winProgram';
 		assert.deepStrictEqual(ae.args, ['rarg', normalize('/e2/b/c/') + xprogram, 'parg']);
 	});
 
 	test('initial config file content', () => {
-
-		const expected = ['{',
+		const expected = [
+			'{',
 			'	// Use IntelliSense to learn about possible attributes.',
 			'	// Hover to view descriptions of existing attributes.',
 			'	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
@@ -186,10 +214,14 @@ suite('Debug - Debugger', () => {
 			'			"program": "readme.md"',
 			'		}',
 			'	]',
-			'}'].join(testResourcePropertiesService.getEOL(URI.file('somefile')));
+			'}',
+		].join(testResourcePropertiesService.getEOL(URI.file('somefile')));
 
-		return _debugger.getInitialConfigurationContent().then(content => {
-			assert.strictEqual(content, expected);
-		}, err => assert.fail(err));
+		return _debugger.getInitialConfigurationContent().then(
+			content => {
+				assert.strictEqual(content, expected);
+			},
+			err => assert.fail(err)
+		);
 	});
 });

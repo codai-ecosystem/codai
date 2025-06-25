@@ -21,22 +21,9 @@ export interface NavigationProps {
  * Navigation component for CODAI.RO interface
  * Provides modern navigation with icons, badges, and nested items
  */
-export function Navigation({
-	items,
-	collapsed = false,
-	className = ''
-}: NavigationProps) {
+export function Navigation({ items, collapsed = false, className = '' }: NavigationProps) {
 	const renderNavItem = (item: NavItem, depth = 0) => {
-		const {
-			id,
-			label,
-			icon,
-			href,
-			onClick,
-			active = false,
-			badge,
-			children
-		} = item;
+		const { id, label, icon, href, onClick, active = false, badge, children } = item;
 
 		const handleClick = (e: React.MouseEvent) => {
 			if (onClick) {
@@ -55,14 +42,8 @@ export function Navigation({
 
 		const content = (
 			<>
-				{icon && (
-					<div className="flex-shrink-0 w-5 h-5">
-						{icon}
-					</div>
-				)}
-				{!collapsed && (
-					<span className="flex-1 font-medium">{label}</span>
-				)}
+				{icon && <div className="flex-shrink-0 w-5 h-5">{icon}</div>}
+				{!collapsed && <span className="flex-1 font-medium">{label}</span>}
 				{!collapsed && badge && (
 					<span className="bg-codai-accent text-codai-accent-foreground px-2 py-1 rounded-full text-xs font-medium">
 						{badge}

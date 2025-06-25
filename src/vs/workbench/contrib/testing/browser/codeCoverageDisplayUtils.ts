@@ -6,16 +6,24 @@
 import { assertNever } from '../../../../base/common/assert.js';
 import { clamp } from '../../../../base/common/numbers.js';
 import { localize } from '../../../../nls.js';
-import { chartsGreen, chartsRed, chartsYellow } from '../../../../platform/theme/common/colorRegistry.js';
+import {
+	chartsGreen,
+	chartsRed,
+	chartsYellow,
+} from '../../../../platform/theme/common/colorRegistry.js';
 import { asCssVariableName } from '../../../../platform/theme/common/colorUtils.js';
 import { CoverageBarSource } from './testCoverageBars.js';
-import { ITestingCoverageBarThresholds, TestingDisplayedCoveragePercent } from '../common/configuration.js';
+import {
+	ITestingCoverageBarThresholds,
+	TestingDisplayedCoveragePercent,
+} from '../common/configuration.js';
 import { getTotalCoveragePercent } from '../common/testCoverage.js';
 import { TestId } from '../common/testId.js';
 import { LiveTestResult } from '../common/testResult.js';
 import { ICoverageCount } from '../common/testTypes.js';
 
-export const percent = (cc: ICoverageCount) => clamp(cc.total === 0 ? 1 : cc.covered / cc.total, 0, 1);
+export const percent = (cc: ICoverageCount) =>
+	clamp(cc.total === 0 ? 1 : cc.covered / cc.total, 0, 1);
 
 const colorThresholds = [
 	{ color: `var(${asCssVariableName(chartsRed)})`, key: 'red' },
@@ -36,7 +44,6 @@ export const getCoverageColor = (pct: number, thresholds: ITestingCoverageBarThr
 	return best;
 };
 
-
 const epsilon = 10e-8;
 
 export const displayPercent = (value: number, precision = 2) => {
@@ -44,20 +51,27 @@ export const displayPercent = (value: number, precision = 2) => {
 
 	// avoid showing 100% coverage if it just rounds up:
 	if (value < 1 - epsilon && display === '100') {
-		return `${100 - (10 ** -precision)}%`;
+		return `${100 - 10 ** -precision}%`;
 	}
 
 	return `${display}%`;
 };
 
-export const calculateDisplayedStat = (coverage: CoverageBarSource, method: TestingDisplayedCoveragePercent) => {
+export const calculateDisplayedStat = (
+	coverage: CoverageBarSource,
+	method: TestingDisplayedCoveragePercent
+) => {
 	switch (method) {
 		case TestingDisplayedCoveragePercent.Statement:
 			return percent(coverage.statement);
 		case TestingDisplayedCoveragePercent.Minimum: {
 			let value = percent(coverage.statement);
-			if (coverage.branch) { value = Math.min(value, percent(coverage.branch)); }
-			if (coverage.declaration) { value = Math.min(value, percent(coverage.declaration)); }
+			if (coverage.branch) {
+				value = Math.min(value, percent(coverage.branch));
+			}
+			if (coverage.declaration) {
+				value = Math.min(value, percent(coverage.declaration));
+			}
 			return value;
 		}
 		case TestingDisplayedCoveragePercent.TotalCoverage:
@@ -82,9 +96,14 @@ export function getLabelForItem(result: LiveTestResult, testId: TestId, commonPr
 }
 
 export namespace labels {
-	export const showingFilterFor = (label: string) => localize('testing.coverageForTest', "Showing \"{0}\"", label);
-	export const clickToChangeFiltering = localize('changePerTestFilter', 'Click to view coverage for a single test');
-	export const percentCoverage = (percent: number, precision?: number) => localize('testing.percentCoverage', '{0} Coverage', displayPercent(percent, precision));
+	export const showingFilterFor = (label: string) =>
+		localize('testing.coverageForTest', 'Showing "{0}"', label);
+	export const clickToChangeFiltering = localize(
+		'changePerTestFilter',
+		'Click to view coverage for a single test'
+	);
+	export const percentCoverage = (percent: number, precision?: number) =>
+		localize('testing.percentCoverage', '{0} Coverage', displayPercent(percent, precision));
 	export const allTests = localize('testing.allTests', 'All tests');
 	export const pickShowCoverage = localize('testing.pickTest', 'Pick a test to show coverage for');
 }

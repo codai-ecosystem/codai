@@ -15,7 +15,11 @@ import { LiveTestResult } from './testResult.js';
 import { CoverageDetails, DetailType, ICoverageCount, IFileCoverage } from './testTypes.js';
 
 export interface ICoverageAccessor {
-	getCoverageDetails: (id: string, testId: string | undefined, token: CancellationToken) => Promise<CoverageDetails[]>;
+	getCoverageDetails: (
+		id: string,
+		testId: string | undefined,
+		token: CancellationToken
+	) => Promise<CoverageDetails[]>;
 }
 
 let incId = 0;
@@ -33,8 +37,8 @@ export class TestCoverage {
 		public readonly result: LiveTestResult,
 		public readonly fromTaskId: string,
 		private readonly uriIdentityService: IUriIdentityService,
-		private readonly accessor: ICoverageAccessor,
-	) { }
+		private readonly accessor: ICoverageAccessor
+	) {}
 
 	/** Gets all test IDs that were included in this test run. */
 	public *allPerTestIDs() {
@@ -54,7 +58,10 @@ export class TestCoverage {
 	public append(coverage: IFileCoverage, tx: ITransaction | undefined) {
 		const previous = this.getComputedForUri(coverage.uri);
 		const result = this.result;
-		const applyDelta = (kind: 'statement' | 'branch' | 'declaration', node: ComputedFileCoverage) => {
+		const applyDelta = (
+			kind: 'statement' | 'branch' | 'declaration',
+			node: ComputedFileCoverage
+		) => {
 			if (!node[kind]) {
 				if (coverage[kind]) {
 					node[kind] = { ...coverage[kind]! };
@@ -84,7 +91,7 @@ export class TestCoverage {
 					v.branch = coverage.branch;
 					v.declaration = coverage.declaration;
 				} else {
-					const v = node.value = new FileCoverage(coverage, result, this.accessor);
+					const v = (node.value = new FileCoverage(coverage, result, this.accessor));
 					this.fileCoverage.set(coverage.uri, v);
 				}
 			} else {
@@ -133,7 +140,10 @@ export class TestCoverage {
 				const chain: IPrefixTreeNode<AbstractFileCoverage>[] = [];
 				tree.mutatePath(this.treePathForUri(node.uri, /* canonical = */ false), n => {
 					chain.push(n);
-					n.value ??= new BypassedFileCoverage(this.treePathToUri(canonical.slice(0, chain.length)), node.fromResult);
+					n.value ??= new BypassedFileCoverage(
+						this.treePathToUri(canonical.slice(0, chain.length)),
+						node.fromResult
+					);
 				});
 			}
 		}
@@ -167,7 +177,10 @@ export class TestCoverage {
 		yield uri.scheme;
 		yield uri.authority;
 
-		const path = !canconicalPath && this.uriIdentityService.extUri.ignorePathCasing(uri) ? uri.path.toLowerCase() : uri.path;
+		const path =
+			!canconicalPath && this.uriIdentityService.extUri.ignorePathCasing(uri)
+				? uri.path.toLowerCase()
+				: uri.path;
 		yield* path.split('/');
 	}
 
@@ -176,7 +189,11 @@ export class TestCoverage {
 	}
 }
 
-export const getTotalCoveragePercent = (statement: ICoverageCount, branch: ICoverageCount | undefined, function_: ICoverageCount | undefined) => {
+export const getTotalCoveragePercent = (
+	statement: ICoverageCount,
+	branch: ICoverageCount | undefined,
+	function_: ICoverageCount | undefined
+) => {
 	let numerator = statement.covered;
 	let denominator = statement.total;
 
@@ -214,7 +231,10 @@ export abstract class AbstractFileCoverage {
 	 */
 	public perTestData?: Set<string>;
 
-	constructor(coverage: IFileCoverage, public readonly fromResult: LiveTestResult) {
+	constructor(
+		coverage: IFileCoverage,
+		public readonly fromResult: LiveTestResult
+	) {
 		this.id = coverage.id;
 		this.uri = coverage.uri;
 		this.statement = coverage.statement;
@@ -227,7 +247,7 @@ export abstract class AbstractFileCoverage {
  * File coverage info computed from children in the tree, not provided by the
  * extension.
  */
-export class ComputedFileCoverage extends AbstractFileCoverage { }
+export class ComputedFileCoverage extends AbstractFileCoverage {}
 
 /**
  * A virtual node that doesn't have any added coverage info.
@@ -248,7 +268,11 @@ export class FileCoverage extends AbstractFileCoverage {
 		return this._details instanceof Array || this.resolved;
 	}
 
-	constructor(coverage: IFileCoverage, fromResult: LiveTestResult, private readonly accessor: ICoverageAccessor) {
+	constructor(
+		coverage: IFileCoverage,
+		fromResult: LiveTestResult,
+		private readonly accessor: ICoverageAccessor
+	) {
 		super(coverage, fromResult);
 	}
 

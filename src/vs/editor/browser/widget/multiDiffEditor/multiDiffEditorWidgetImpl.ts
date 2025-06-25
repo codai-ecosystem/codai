@@ -3,17 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Dimension, getWindow, h, scheduleAtNextAnimationFrame } from '../../../../base/browser/dom.js';
+import {
+	Dimension,
+	getWindow,
+	h,
+	scheduleAtNextAnimationFrame,
+} from '../../../../base/browser/dom.js';
 import { SmoothScrollableElement } from '../../../../base/browser/ui/scrollbar/scrollableElement.js';
 import { compareBy, numberComparator } from '../../../../base/common/arrays.js';
 import { findFirstMax } from '../../../../base/common/arraysFind.js';
 import { BugIndicatingError } from '../../../../base/common/errors.js';
 import { Disposable, IReference, toDisposable } from '../../../../base/common/lifecycle.js';
-import { IObservable, IReader, ITransaction, autorun, autorunWithStore, derived, disposableObservableValue, globalTransaction, observableFromEvent, observableValue, transaction } from '../../../../base/common/observable.js';
+import {
+	IObservable,
+	IReader,
+	ITransaction,
+	autorun,
+	autorunWithStore,
+	derived,
+	disposableObservableValue,
+	globalTransaction,
+	observableFromEvent,
+	observableValue,
+	transaction,
+} from '../../../../base/common/observable.js';
 import { Scrollable, ScrollbarVisibility } from '../../../../base/common/scrollable.js';
 import { URI } from '../../../../base/common/uri.js';
 import { localize } from '../../../../nls.js';
-import { ContextKeyValue, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	ContextKeyValue,
+	IContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { ITextEditorOptions } from '../../../../platform/editor/common/editor.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
@@ -66,175 +86,243 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		private readonly _viewModel: IObservable<MultiDiffEditorViewModel | undefined>,
 		private readonly _workbenchUIElementFactory: IWorkbenchUIElementFactory,
 		@IContextKeyService private readonly _parentContextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _parentInstantiationService: IInstantiationService,
+		@IInstantiationService private readonly _parentInstantiationService: IInstantiationService
 	) {
 		super();
 		this._scrollableElements = h('div.scrollContent', [
 			h('div@content', {
 				style: {
 					overflow: 'hidden',
-				}
+				},
 			}),
-			h('div.monaco-editor@overflowWidgetsDomNode', {
-			}),
+			h('div.monaco-editor@overflowWidgetsDomNode', {}),
 		]);
-		this._scrollable = this._register(new Scrollable({
-			forceIntegerValues: false,
-			scheduleAtNextAnimationFrame: (cb) => scheduleAtNextAnimationFrame(getWindow(this._element), cb),
-			smoothScrollDuration: 100,
-		}));
-		this._scrollableElement = this._register(new SmoothScrollableElement(this._scrollableElements.root, {
-			vertical: ScrollbarVisibility.Auto,
-			horizontal: ScrollbarVisibility.Auto,
-			useShadows: false,
-		}, this._scrollable));
+		this._scrollable = this._register(
+			new Scrollable({
+				forceIntegerValues: false,
+				scheduleAtNextAnimationFrame: cb =>
+					scheduleAtNextAnimationFrame(getWindow(this._element), cb),
+				smoothScrollDuration: 100,
+			})
+		);
+		this._scrollableElement = this._register(
+			new SmoothScrollableElement(
+				this._scrollableElements.root,
+				{
+					vertical: ScrollbarVisibility.Auto,
+					horizontal: ScrollbarVisibility.Auto,
+					useShadows: false,
+				},
+				this._scrollable
+			)
+		);
 		this._elements = h('div.monaco-component.multiDiffEditor', {}, [
 			h('div', {}, [this._scrollableElement.getDomNode()]),
 			h('div.placeholder@placeholder', {}, [h('div')]),
 		]);
-		this._sizeObserver = this._register(new ObservableElementSizeObserver(this._element, undefined));
-		this._objectPool = this._register(new ObjectPool<TemplateData, DiffEditorItemTemplate>((data) => {
-			const template = this._instantiationService.createInstance(
-				DiffEditorItemTemplate,
-				this._scrollableElements.content,
-				this._scrollableElements.overflowWidgetsDomNode,
-				this._workbenchUIElementFactory
-			);
-			template.setData(data);
-			return template;
-		}));
-		this.scrollTop = observableFromEvent(this, this._scrollableElement.onScroll, () => /** @description scrollTop */ this._scrollableElement.getScrollPosition().scrollTop);
-		this.scrollLeft = observableFromEvent(this, this._scrollableElement.onScroll, () => /** @description scrollLeft */ this._scrollableElement.getScrollPosition().scrollLeft);
-		this._viewItemsInfo = derived<{ items: readonly VirtualizedViewItem[]; getItem: (viewModel: DocumentDiffItemViewModel) => VirtualizedViewItem }>(this,
-			(reader) => {
-				const vm = this._viewModel.read(reader);
-				if (!vm) {
-					return { items: [], getItem: _d => { throw new BugIndicatingError(); } };
-				}
-				const viewModels = vm.items.read(reader);
-				const map = new Map<DocumentDiffItemViewModel, VirtualizedViewItem>();
-				const items = viewModels.map(d => {
-					const item = reader.store.add(new VirtualizedViewItem(d, this._objectPool, this.scrollLeft, delta => {
-						this._scrollableElement.setScrollPosition({ scrollTop: this._scrollableElement.getScrollPosition().scrollTop + delta });
-					}));
-					const data = this._lastDocStates?.[item.getKey()];
-					if (data) {
-						transaction(tx => {
-							item.setViewState(data, tx);
-						});
-					}
-					map.set(d, item);
-					return item;
-				});
-				return { items, getItem: d => map.get(d)! };
-			}
+		this._sizeObserver = this._register(
+			new ObservableElementSizeObserver(this._element, undefined)
 		);
+		this._objectPool = this._register(
+			new ObjectPool<TemplateData, DiffEditorItemTemplate>(data => {
+				const template = this._instantiationService.createInstance(
+					DiffEditorItemTemplate,
+					this._scrollableElements.content,
+					this._scrollableElements.overflowWidgetsDomNode,
+					this._workbenchUIElementFactory
+				);
+				template.setData(data);
+				return template;
+			})
+		);
+		this.scrollTop = observableFromEvent(
+			this,
+			this._scrollableElement.onScroll,
+			() => /** @description scrollTop */ this._scrollableElement.getScrollPosition().scrollTop
+		);
+		this.scrollLeft = observableFromEvent(
+			this,
+			this._scrollableElement.onScroll,
+			() => /** @description scrollLeft */ this._scrollableElement.getScrollPosition().scrollLeft
+		);
+		this._viewItemsInfo = derived<{
+			items: readonly VirtualizedViewItem[];
+			getItem: (viewModel: DocumentDiffItemViewModel) => VirtualizedViewItem;
+		}>(this, reader => {
+			const vm = this._viewModel.read(reader);
+			if (!vm) {
+				return {
+					items: [],
+					getItem: _d => {
+						throw new BugIndicatingError();
+					},
+				};
+			}
+			const viewModels = vm.items.read(reader);
+			const map = new Map<DocumentDiffItemViewModel, VirtualizedViewItem>();
+			const items = viewModels.map(d => {
+				const item = reader.store.add(
+					new VirtualizedViewItem(d, this._objectPool, this.scrollLeft, delta => {
+						this._scrollableElement.setScrollPosition({
+							scrollTop: this._scrollableElement.getScrollPosition().scrollTop + delta,
+						});
+					})
+				);
+				const data = this._lastDocStates?.[item.getKey()];
+				if (data) {
+					transaction(tx => {
+						item.setViewState(data, tx);
+					});
+				}
+				map.set(d, item);
+				return item;
+			});
+			return { items, getItem: d => map.get(d)! };
+		});
 		this._viewItems = this._viewItemsInfo.map(this, items => items.items);
 		this._spaceBetweenPx = 0;
-		this._totalHeight = this._viewItems.map(this, (items, reader) => items.reduce((r, i) => r + i.contentHeight.read(reader) + this._spaceBetweenPx, 0));
+		this._totalHeight = this._viewItems.map(this, (items, reader) =>
+			items.reduce((r, i) => r + i.contentHeight.read(reader) + this._spaceBetweenPx, 0)
+		);
 		this.activeControl = derived(this, reader => {
 			const activeDiffItem = this._viewModel.read(reader)?.activeDiffItem.read(reader);
-			if (!activeDiffItem) { return undefined; }
+			if (!activeDiffItem) {
+				return undefined;
+			}
 			const viewItem = this._viewItemsInfo.read(reader).getItem(activeDiffItem);
 			return viewItem.template.read(reader)?.editor;
 		});
-		this._contextKeyService = this._register(this._parentContextKeyService.createScoped(this._element));
-		this._instantiationService = this._register(this._parentInstantiationService.createChild(
-			new ServiceCollection([IContextKeyService, this._contextKeyService])
-		));
+		this._contextKeyService = this._register(
+			this._parentContextKeyService.createScoped(this._element)
+		);
+		this._instantiationService = this._register(
+			this._parentInstantiationService.createChild(
+				new ServiceCollection([IContextKeyService, this._contextKeyService])
+			)
+		);
 		this._lastDocStates = {};
 
-		this._register(autorunWithStore((reader, store) => {
-			const viewModel = this._viewModel.read(reader);
-			if (viewModel && viewModel.contextKeys) {
-				for (const [key, value] of Object.entries(viewModel.contextKeys)) {
-					const contextKey = this._contextKeyService.createKey<ContextKeyValue>(key, undefined);
-					contextKey.set(value);
-					store.add(toDisposable(() => contextKey.reset()));
+		this._register(
+			autorunWithStore((reader, store) => {
+				const viewModel = this._viewModel.read(reader);
+				if (viewModel && viewModel.contextKeys) {
+					for (const [key, value] of Object.entries(viewModel.contextKeys)) {
+						const contextKey = this._contextKeyService.createKey<ContextKeyValue>(key, undefined);
+						contextKey.set(value);
+						store.add(toDisposable(() => contextKey.reset()));
+					}
 				}
-			}
-		}));
+			})
+		);
 
-		const ctxAllCollapsed = this._parentContextKeyService.createKey<boolean>(EditorContextKeys.multiDiffEditorAllCollapsed.key, false);
-		this._register(autorun((reader) => {
-			const viewModel = this._viewModel.read(reader);
-			if (viewModel) {
-				const allCollapsed = viewModel.items.read(reader).every(item => item.collapsed.read(reader));
-				ctxAllCollapsed.set(allCollapsed);
-			}
-		}));
+		const ctxAllCollapsed = this._parentContextKeyService.createKey<boolean>(
+			EditorContextKeys.multiDiffEditorAllCollapsed.key,
+			false
+		);
+		this._register(
+			autorun(reader => {
+				const viewModel = this._viewModel.read(reader);
+				if (viewModel) {
+					const allCollapsed = viewModel.items
+						.read(reader)
+						.every(item => item.collapsed.read(reader));
+					ctxAllCollapsed.set(allCollapsed);
+				}
+			})
+		);
 
-		this._register(autorun((reader) => {
-			/** @description Update widget dimension */
-			const dimension = this._dimension.read(reader);
-			this._sizeObserver.observe(dimension);
-		}));
+		this._register(
+			autorun(reader => {
+				/** @description Update widget dimension */
+				const dimension = this._dimension.read(reader);
+				this._sizeObserver.observe(dimension);
+			})
+		);
 
 		const placeholderMessage = derived(reader => {
 			const items = this._viewItems.read(reader);
-			if (items.length > 0) { return undefined; }
+			if (items.length > 0) {
+				return undefined;
+			}
 
 			const vm = this._viewModel.read(reader);
-			return (!vm || vm.isLoading.read(reader))
+			return !vm || vm.isLoading.read(reader)
 				? localize('loading', 'Loading...')
 				: localize('noChangedFiles', 'No Changed Files');
 		});
 
-		this._register(autorun((reader) => {
-			const message = placeholderMessage.read(reader);
-			this._elements.placeholder.innerText = message ?? '';
-			this._elements.placeholder.classList.toggle('visible', !!message);
-		}));
+		this._register(
+			autorun(reader => {
+				const message = placeholderMessage.read(reader);
+				this._elements.placeholder.innerText = message ?? '';
+				this._elements.placeholder.classList.toggle('visible', !!message);
+			})
+		);
 
 		this._scrollableElements.content.style.position = 'relative';
 
-		this._register(autorun((reader) => {
-			/** @description Update scroll dimensions */
-			const height = this._sizeObserver.height.read(reader);
-			this._scrollableElements.root.style.height = `${height}px`;
-			const totalHeight = this._totalHeight.read(reader);
-			this._scrollableElements.content.style.height = `${totalHeight}px`;
+		this._register(
+			autorun(reader => {
+				/** @description Update scroll dimensions */
+				const height = this._sizeObserver.height.read(reader);
+				this._scrollableElements.root.style.height = `${height}px`;
+				const totalHeight = this._totalHeight.read(reader);
+				this._scrollableElements.content.style.height = `${totalHeight}px`;
 
-			const width = this._sizeObserver.width.read(reader);
+				const width = this._sizeObserver.width.read(reader);
 
-			let scrollWidth = width;
-			const viewItems = this._viewItems.read(reader);
-			const max = findFirstMax(viewItems, compareBy(i => i.maxScroll.read(reader).maxScroll, numberComparator));
-			if (max) {
-				const maxScroll = max.maxScroll.read(reader);
-				scrollWidth = width + maxScroll.maxScroll;
-			}
+				let scrollWidth = width;
+				const viewItems = this._viewItems.read(reader);
+				const max = findFirstMax(
+					viewItems,
+					compareBy(i => i.maxScroll.read(reader).maxScroll, numberComparator)
+				);
+				if (max) {
+					const maxScroll = max.maxScroll.read(reader);
+					scrollWidth = width + maxScroll.maxScroll;
+				}
 
-			this._scrollableElement.setScrollDimensions({
-				width: width,
-				height: height,
-				scrollHeight: totalHeight,
-				scrollWidth,
-			});
-		}));
+				this._scrollableElement.setScrollDimensions({
+					width: width,
+					height: height,
+					scrollHeight: totalHeight,
+					scrollWidth,
+				});
+			})
+		);
 
 		_element.replaceChildren(this._elements.root);
-		this._register(toDisposable(() => {
-			_element.replaceChildren();
-		}));
+		this._register(
+			toDisposable(() => {
+				_element.replaceChildren();
+			})
+		);
 
-		this._register(this._register(autorun(reader => {
-			/** @description Render all */
-			globalTransaction(tx => {
-				this.render(reader);
-			});
-		})));
+		this._register(
+			this._register(
+				autorun(reader => {
+					/** @description Render all */
+					globalTransaction(tx => {
+						this.render(reader);
+					});
+				})
+			)
+		);
 	}
 
 	public setScrollState(scrollState: { top?: number; left?: number }): void {
-		this._scrollableElement.setScrollPosition({ scrollLeft: scrollState.left, scrollTop: scrollState.top });
+		this._scrollableElement.setScrollPosition({
+			scrollLeft: scrollState.left,
+			scrollTop: scrollState.top,
+		});
 	}
 
 	public reveal(resource: IMultiDiffResourceId, options?: RevealOptions): void {
 		const viewItems = this._viewItems.get();
 		const index = viewItems.findIndex(
-			(item) => item.viewModel.originalUri?.toString() === resource.original?.toString()
-				&& item.viewModel.modifiedUri?.toString() === resource.modified?.toString()
+			item =>
+				item.viewModel.originalUri?.toString() === resource.original?.toString() &&
+				item.viewModel.modifiedUri?.toString() === resource.modified?.toString()
 		);
 		if (index === -1) {
 			throw new BugIndicatingError('Resource not found in diff editor');
@@ -249,7 +337,8 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		this._scrollableElement.setScrollPosition({ scrollTop });
 
 		const diffEditor = viewItem.template.get()?.editor;
-		const editor = 'original' in resource ? diffEditor?.getOriginalEditor() : diffEditor?.getModifiedEditor();
+		const editor =
+			'original' in resource ? diffEditor?.getOriginalEditor() : diffEditor?.getModifiedEditor();
 		if (editor && options?.range) {
 			editor.revealRangeInCenter(options.range);
 			highlightRange(editor, options.range);
@@ -288,18 +377,26 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 	}
 
 	public findDocumentDiffItem(resource: URI): IDocumentDiffItem | undefined {
-		const item = this._viewItems.get().find(v =>
-			v.viewModel.diffEditorViewModel.model.modified.uri.toString() === resource.toString()
-			|| v.viewModel.diffEditorViewModel.model.original.uri.toString() === resource.toString()
-		);
+		const item = this._viewItems
+			.get()
+			.find(
+				v =>
+					v.viewModel.diffEditorViewModel.model.modified.uri.toString() === resource.toString() ||
+					v.viewModel.diffEditorViewModel.model.original.uri.toString() === resource.toString()
+			);
 		return item?.viewModel.documentDiffItem;
 	}
 
-	public tryGetCodeEditor(resource: URI): { diffEditor: IDiffEditor; editor: ICodeEditor } | undefined {
-		const item = this._viewItems.get().find(v =>
-			v.viewModel.diffEditorViewModel.model.modified.uri.toString() === resource.toString()
-			|| v.viewModel.diffEditorViewModel.model.original.uri.toString() === resource.toString()
-		);
+	public tryGetCodeEditor(
+		resource: URI
+	): { diffEditor: IDiffEditor; editor: ICodeEditor } | undefined {
+		const item = this._viewItems
+			.get()
+			.find(
+				v =>
+					v.viewModel.diffEditorViewModel.model.modified.uri.toString() === resource.toString() ||
+					v.viewModel.diffEditorViewModel.model.original.uri.toString() === resource.toString()
+			);
 		const editor = item?.template.get()?.editor;
 		if (!editor) {
 			return undefined;
@@ -326,7 +423,10 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			const itemContentHeight = v.contentHeight.read(reader);
 			const itemHeight = Math.min(itemContentHeight, viewPortHeight);
 			const itemRange = OffsetRange.ofStartAndLength(itemHeightSumBefore, itemHeight);
-			const itemContentRange = OffsetRange.ofStartAndLength(itemContentHeightSumBefore, itemContentHeight);
+			const itemContentRange = OffsetRange.ofStartAndLength(
+				itemContentHeightSumBefore,
+				itemContentHeight
+			);
 
 			if (itemContentRange.isBefore(contentViewPort)) {
 				contentScrollOffsetToScrollOffset -= itemContentHeight - itemHeight;
@@ -334,9 +434,15 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			} else if (itemContentRange.isAfter(contentViewPort)) {
 				v.hide();
 			} else {
-				const scroll = Math.max(0, Math.min(contentViewPort.start - itemContentRange.start, itemContentHeight - itemHeight));
+				const scroll = Math.max(
+					0,
+					Math.min(contentViewPort.start - itemContentRange.start, itemContentHeight - itemHeight)
+				);
 				contentScrollOffsetToScrollOffset -= scroll;
-				const viewPort = OffsetRange.ofStartAndLength(scrollTop + contentScrollOffsetToScrollOffset, viewPortHeight);
+				const viewPort = OffsetRange.ofStartAndLength(
+					scrollTop + contentScrollOffsetToScrollOffset,
+					viewPortHeight
+				);
 				v.render(itemRange, scroll, width, viewPort);
 			}
 
@@ -350,7 +456,12 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 
 function highlightRange(targetEditor: ICodeEditor, range: IRange) {
 	const modelNow = targetEditor.getModel();
-	const decorations = targetEditor.createDecorationsCollection([{ range, options: { description: 'symbol-navigate-action-highlight', className: 'symbolHighlight' } }]);
+	const decorations = targetEditor.createDecorationsCollection([
+		{
+			range,
+			options: { description: 'symbol-navigate-action-highlight', className: 'symbolHighlight' },
+		},
+	]);
 	setTimeout(() => {
 		if (targetEditor.getModel() === modelNow) {
 			decorations.clear();
@@ -382,45 +493,70 @@ export interface IMultiDiffEditorOptionsViewState {
 export type IMultiDiffResourceId = { original: URI | undefined; modified: URI | undefined };
 
 class VirtualizedViewItem extends Disposable {
-	private readonly _templateRef = this._register(disposableObservableValue<IReference<DiffEditorItemTemplate> | undefined>(this, undefined));
-
-	public readonly contentHeight = derived(this, reader =>
-		this._templateRef.read(reader)?.object.contentHeight?.read(reader) ?? this.viewModel.lastTemplateData.read(reader).contentHeight
+	private readonly _templateRef = this._register(
+		disposableObservableValue<IReference<DiffEditorItemTemplate> | undefined>(this, undefined)
 	);
 
-	public readonly maxScroll = derived(this, reader => this._templateRef.read(reader)?.object.maxScroll.read(reader) ?? { maxScroll: 0, scrollWidth: 0 });
+	public readonly contentHeight = derived(
+		this,
+		reader =>
+			this._templateRef.read(reader)?.object.contentHeight?.read(reader) ??
+			this.viewModel.lastTemplateData.read(reader).contentHeight
+	);
+
+	public readonly maxScroll = derived(
+		this,
+		reader =>
+			this._templateRef.read(reader)?.object.maxScroll.read(reader) ?? {
+				maxScroll: 0,
+				scrollWidth: 0,
+			}
+	);
 
 	public readonly template = derived(this, reader => this._templateRef.read(reader)?.object);
 	private _isHidden = observableValue(this, false);
 
-	private readonly _isFocused = derived(this, reader => this.template.read(reader)?.isFocused.read(reader) ?? false);
+	private readonly _isFocused = derived(
+		this,
+		reader => this.template.read(reader)?.isFocused.read(reader) ?? false
+	);
 
 	constructor(
 		public readonly viewModel: DocumentDiffItemViewModel,
 		private readonly _objectPool: ObjectPool<TemplateData, DiffEditorItemTemplate>,
 		private readonly _scrollLeft: IObservable<number>,
-		private readonly _deltaScrollVertical: (delta: number) => void,
+		private readonly _deltaScrollVertical: (delta: number) => void
 	) {
 		super();
 
 		this.viewModel.setIsFocused(this._isFocused, undefined);
 
-		this._register(autorun((reader) => {
-			const scrollLeft = this._scrollLeft.read(reader);
-			this._templateRef.read(reader)?.object.setScrollLeft(scrollLeft);
-		}));
+		this._register(
+			autorun(reader => {
+				const scrollLeft = this._scrollLeft.read(reader);
+				this._templateRef.read(reader)?.object.setScrollLeft(scrollLeft);
+			})
+		);
 
-		this._register(autorun(reader => {
-			const ref = this._templateRef.read(reader);
-			if (!ref) { return; }
-			const isHidden = this._isHidden.read(reader);
-			if (!isHidden) { return; }
+		this._register(
+			autorun(reader => {
+				const ref = this._templateRef.read(reader);
+				if (!ref) {
+					return;
+				}
+				const isHidden = this._isHidden.read(reader);
+				if (!isHidden) {
+					return;
+				}
 
-			const isFocused = ref.object.isFocused.read(reader);
-			if (isFocused) { return; }
+				const isFocused = ref.object.isFocused.read(reader);
+				if (isFocused) {
+					return;
+				}
 
-			this._clear();
-		}));
+				this._clear();
+			})
+		);
 	}
 
 	override dispose(): void {
@@ -452,10 +588,13 @@ class VirtualizedViewItem extends Disposable {
 		this._updateTemplateData(tx);
 		const data = this.viewModel.lastTemplateData.get();
 		const selections = viewState.selections?.map(Selection.liftSelection);
-		this.viewModel.lastTemplateData.set({
-			...data,
-			selections,
-		}, tx);
+		this.viewModel.lastTemplateData.set(
+			{
+				...data,
+				selections,
+			},
+			tx
+		);
 		const ref = this._templateRef.get();
 		if (ref) {
 			if (selections) {
@@ -466,16 +605,23 @@ class VirtualizedViewItem extends Disposable {
 
 	private _updateTemplateData(tx: ITransaction): void {
 		const ref = this._templateRef.get();
-		if (!ref) { return; }
-		this.viewModel.lastTemplateData.set({
-			contentHeight: ref.object.contentHeight.get(),
-			selections: ref.object.editor.getSelections() ?? undefined,
-		}, tx);
+		if (!ref) {
+			return;
+		}
+		this.viewModel.lastTemplateData.set(
+			{
+				contentHeight: ref.object.contentHeight.get(),
+				selections: ref.object.editor.getSelections() ?? undefined,
+			},
+			tx
+		);
 	}
 
 	private _clear(): void {
 		const ref = this._templateRef.get();
-		if (!ref) { return; }
+		if (!ref) {
+			return;
+		}
 		transaction(tx => {
 			this._updateTemplateData(tx);
 			ref.object.hide();
@@ -487,12 +633,19 @@ class VirtualizedViewItem extends Disposable {
 		this._isHidden.set(true, undefined);
 	}
 
-	public render(verticalSpace: OffsetRange, offset: number, width: number, viewPort: OffsetRange): void {
+	public render(
+		verticalSpace: OffsetRange,
+		offset: number,
+		width: number,
+		viewPort: OffsetRange
+	): void {
 		this._isHidden.set(false, undefined);
 
 		let ref = this._templateRef.get();
 		if (!ref) {
-			ref = this._objectPool.getUnusedObj(new TemplateData(this.viewModel, this._deltaScrollVertical));
+			ref = this._objectPool.getUnusedObj(
+				new TemplateData(this.viewModel, this._deltaScrollVertical)
+			);
 			this._templateRef.set(ref, undefined);
 
 			const selections = this.viewModel.lastTemplateData.get().selections;

@@ -6,7 +6,11 @@
 import * as strings from '../../../../base/common/strings.js';
 import { CursorColumns } from '../cursorColumns.js';
 
-function _normalizeIndentationFromWhitespace(str: string, indentSize: number, insertSpaces: boolean): string {
+function _normalizeIndentationFromWhitespace(
+	str: string,
+	indentSize: number,
+	insertSpaces: boolean
+): string {
 	let spacesCnt = 0;
 	for (let i = 0; i < str.length; i++) {
 		if (str.charAt(i) === '\t') {
@@ -32,10 +36,20 @@ function _normalizeIndentationFromWhitespace(str: string, indentSize: number, in
 	return result;
 }
 
-export function normalizeIndentation(str: string, indentSize: number, insertSpaces: boolean): string {
+export function normalizeIndentation(
+	str: string,
+	indentSize: number,
+	insertSpaces: boolean
+): string {
 	let firstNonWhitespaceIndex = strings.firstNonWhitespaceIndex(str);
 	if (firstNonWhitespaceIndex === -1) {
 		firstNonWhitespaceIndex = str.length;
 	}
-	return _normalizeIndentationFromWhitespace(str.substring(0, firstNonWhitespaceIndex), indentSize, insertSpaces) + str.substring(firstNonWhitespaceIndex);
+	return (
+		_normalizeIndentationFromWhitespace(
+			str.substring(0, firstNonWhitespaceIndex),
+			indentSize,
+			insertSpaces
+		) + str.substring(firstNonWhitespaceIndex)
+	);
 }

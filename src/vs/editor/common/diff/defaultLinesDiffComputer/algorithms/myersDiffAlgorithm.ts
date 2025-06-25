@@ -4,13 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { OffsetRange } from '../../../core/ranges/offsetRange.js';
-import { DiffAlgorithmResult, IDiffAlgorithm, ISequence, ITimeout, InfiniteTimeout, SequenceDiff } from './diffAlgorithm.js';
+import {
+	DiffAlgorithmResult,
+	IDiffAlgorithm,
+	ISequence,
+	ITimeout,
+	InfiniteTimeout,
+	SequenceDiff,
+} from './diffAlgorithm.js';
 
 /**
  * An O(ND) diff algorithm that has a quadratic space worst-case complexity.
-*/
+ */
 export class MyersDiffAlgorithm implements IDiffAlgorithm {
-	compute(seq1: ISequence, seq2: ISequence, timeout: ITimeout = InfiniteTimeout.instance): DiffAlgorithmResult {
+	compute(
+		seq1: ISequence,
+		seq2: ISequence,
+		timeout: ITimeout = InfiniteTimeout.instance
+	): DiffAlgorithmResult {
 		// These are common special cases.
 		// The early return improves performance dramatically.
 		if (seq1.length === 0 || seq2.length === 0) {
@@ -84,10 +95,12 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 			const endY = path ? path.y + path.length : 0;
 
 			if (endX !== lastAligningPosS1 || endY !== lastAligningPosS2) {
-				result.push(new SequenceDiff(
-					new OffsetRange(endX, lastAligningPosS1),
-					new OffsetRange(endY, lastAligningPosS2),
-				));
+				result.push(
+					new SequenceDiff(
+						new OffsetRange(endX, lastAligningPosS1),
+						new OffsetRange(endY, lastAligningPosS2)
+					)
+				);
 			}
 			if (!path) {
 				break;
@@ -109,13 +122,12 @@ class SnakePath {
 		public readonly x: number,
 		public readonly y: number,
 		public readonly length: number
-	) {
-	}
+	) {}
 }
 
 /**
  * An array that supports fast negative indices.
-*/
+ */
 class FastInt32Array {
 	private positiveArr: Int32Array = new Int32Array(10);
 	private negativeArr: Int32Array = new Int32Array(10);
@@ -151,7 +163,7 @@ class FastInt32Array {
 
 /**
  * An array that supports fast negative indices.
-*/
+ */
 class FastArrayNegativeIndices<T> {
 	private readonly positiveArr: T[] = [];
 	private readonly negativeArr: T[] = [];

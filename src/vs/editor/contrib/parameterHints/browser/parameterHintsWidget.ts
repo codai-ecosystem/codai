@@ -13,27 +13,48 @@ import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.j
 import { escapeRegExpCharacters } from '../../../../base/common/strings.js';
 import { assertIsDefined } from '../../../../base/common/types.js';
 import './parameterHints.css';
-import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from '../../../browser/editorBrowser.js';
+import {
+	ContentWidgetPositionPreference,
+	ICodeEditor,
+	IContentWidget,
+	IContentWidgetPosition,
+} from '../../../browser/editorBrowser.js';
 import { EDITOR_FONT_DEFAULTS, EditorOption } from '../../../common/config/editorOptions.js';
 import * as languages from '../../../common/languages.js';
 import { ILanguageService } from '../../../common/languages/language.js';
-import { IMarkdownRenderResult, MarkdownRenderer } from '../../../browser/widget/markdownRenderer/browser/markdownRenderer.js';
+import {
+	IMarkdownRenderResult,
+	MarkdownRenderer,
+} from '../../../browser/widget/markdownRenderer/browser/markdownRenderer.js';
 import { ParameterHintsModel } from './parameterHintsModel.js';
 import { Context } from './provideSignatureHelp.js';
 import * as nls from '../../../../nls.js';
-import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
-import { listHighlightForeground, registerColor } from '../../../../platform/theme/common/colorRegistry.js';
+import {
+	listHighlightForeground,
+	registerColor,
+} from '../../../../platform/theme/common/colorRegistry.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 
 const $ = dom.$;
 
-const parameterHintsNextIcon = registerIcon('parameter-hints-next', Codicon.chevronDown, nls.localize('parameterHintsNextIcon', 'Icon for show next parameter hint.'));
-const parameterHintsPreviousIcon = registerIcon('parameter-hints-previous', Codicon.chevronUp, nls.localize('parameterHintsPreviousIcon', 'Icon for show previous parameter hint.'));
+const parameterHintsNextIcon = registerIcon(
+	'parameter-hints-next',
+	Codicon.chevronDown,
+	nls.localize('parameterHintsNextIcon', 'Icon for show next parameter hint.')
+);
+const parameterHintsPreviousIcon = registerIcon(
+	'parameter-hints-previous',
+	Codicon.chevronUp,
+	nls.localize('parameterHintsPreviousIcon', 'Icon for show previous parameter hint.')
+);
 
 export class ParameterHintsWidget extends Disposable implements IContentWidget {
-
 	private static readonly ID = 'editor.widget.parameterHintsWidget';
 
 	private readonly markdownRenderer: MarkdownRenderer;
@@ -76,19 +97,29 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		wrapper.tabIndex = -1;
 
 		const controls = dom.append(wrapper, $('.controls'));
-		const previous = dom.append(controls, $('.button' + ThemeIcon.asCSSSelector(parameterHintsPreviousIcon)));
+		const previous = dom.append(
+			controls,
+			$('.button' + ThemeIcon.asCSSSelector(parameterHintsPreviousIcon))
+		);
 		const overloads = dom.append(controls, $('.overloads'));
-		const next = dom.append(controls, $('.button' + ThemeIcon.asCSSSelector(parameterHintsNextIcon)));
+		const next = dom.append(
+			controls,
+			$('.button' + ThemeIcon.asCSSSelector(parameterHintsNextIcon))
+		);
 
-		this._register(dom.addDisposableListener(previous, 'click', e => {
-			dom.EventHelper.stop(e);
-			this.previous();
-		}));
+		this._register(
+			dom.addDisposableListener(previous, 'click', e => {
+				dom.EventHelper.stop(e);
+				this.previous();
+			})
+		);
 
-		this._register(dom.addDisposableListener(next, 'click', e => {
-			dom.EventHelper.stop(e);
-			this.next();
-		}));
+		this._register(
+			dom.addDisposableListener(next, 'click', e => {
+				dom.EventHelper.stop(e);
+				this.next();
+			})
+		);
 
 		const body = $('.body');
 		const scrollbar = new DomScrollableElement(body, {
@@ -113,11 +144,13 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		this.editor.addContentWidget(this);
 		this.hide();
 
-		this._register(this.editor.onDidChangeCursorSelection(e => {
-			if (this.visible) {
-				this.editor.layoutContentWidget(this);
-			}
-		}));
+		this._register(
+			this.editor.onDidChangeCursorSelection(e => {
+				if (this.visible) {
+					this.editor.layoutContentWidget(this);
+				}
+			})
+		);
 
 		const updateFont = () => {
 			if (!this.domNodes) {
@@ -128,16 +161,23 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			const element = this.domNodes.element;
 			element.style.fontSize = `${fontInfo.fontSize}px`;
 			element.style.lineHeight = `${fontInfo.lineHeight / fontInfo.fontSize}`;
-			element.style.setProperty('--vscode-parameterHintsWidget-editorFontFamily', fontInfo.fontFamily);
-			element.style.setProperty('--vscode-parameterHintsWidget-editorFontFamilyDefault', EDITOR_FONT_DEFAULTS.fontFamily);
+			element.style.setProperty(
+				'--vscode-parameterHintsWidget-editorFontFamily',
+				fontInfo.fontFamily
+			);
+			element.style.setProperty(
+				'--vscode-parameterHintsWidget-editorFontFamilyDefault',
+				EDITOR_FONT_DEFAULTS.fontFamily
+			);
 		};
 
 		updateFont();
 
-		this._register(Event.chain(
-			this.editor.onDidChangeConfiguration.bind(this.editor),
-			$ => $.filter(e => e.hasChanged(EditorOption.fontInfo))
-		)(updateFont));
+		this._register(
+			Event.chain(this.editor.onDidChangeConfiguration.bind(this.editor), $ =>
+				$.filter(e => e.hasChanged(EditorOption.fontInfo))
+			)(updateFont)
+		);
 
 		this._register(this.editor.onDidLayoutChange(e => this.updateMaxHeight()));
 		this.updateMaxHeight();
@@ -178,7 +218,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		if (this.visible) {
 			return {
 				position: this.editor.getPosition(),
-				preference: [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW]
+				preference: [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW],
 			};
 		}
 		return null;
@@ -214,7 +254,8 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			this.renderParameters(code, signature, activeParameterIndex);
 		}
 
-		const activeParameter: languages.ParameterInformation | undefined = signature.parameters[activeParameterIndex];
+		const activeParameter: languages.ParameterInformation | undefined =
+			signature.parameters[activeParameterIndex];
 		if (activeParameter?.documentation) {
 			const documentation = $('span.documentation');
 			if (typeof activeParameter.documentation === 'string') {
@@ -241,7 +282,9 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		this.domNodes.docs.classList.toggle('empty', !hasDocs);
 
 		this.domNodes.overloads.textContent =
-			String(hints.activeSignature + 1).padStart(hints.signatures.length.toString().length, '0') + '/' + hints.signatures.length;
+			String(hints.activeSignature + 1).padStart(hints.signatures.length.toString().length, '0') +
+			'/' +
+			hints.signatures.length;
 
 		if (activeParameter) {
 			let labelToAnnounce = '';
@@ -252,17 +295,23 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 				labelToAnnounce = param.label;
 			}
 			if (param.documentation) {
-				labelToAnnounce += typeof param.documentation === 'string' ? `, ${param.documentation}` : `, ${param.documentation.value}`;
+				labelToAnnounce +=
+					typeof param.documentation === 'string'
+						? `, ${param.documentation}`
+						: `, ${param.documentation.value}`;
 			}
 			if (signature.documentation) {
-				labelToAnnounce += typeof signature.documentation === 'string' ? `, ${signature.documentation}` : `, ${signature.documentation.value}`;
+				labelToAnnounce +=
+					typeof signature.documentation === 'string'
+						? `, ${signature.documentation}`
+						: `, ${signature.documentation.value}`;
 			}
 
 			// Select method gets called on every user type while parameter hints are visible.
 			// We do not want to spam the user with same announcements, so we only announce if the current parameter changed.
 
 			if (this.announcedLabel !== labelToAnnounce) {
-				aria.alert(nls.localize('hint', "{0}, hint", labelToAnnounce));
+				aria.alert(nls.localize('hint', '{0}, hint', labelToAnnounce));
 				this.announcedLabel = labelToAnnounce;
 			}
 		}
@@ -272,32 +321,57 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 	}
 
 	private renderMarkdownDocs(markdown: IMarkdownString | undefined): IMarkdownRenderResult {
-		const renderedContents = this.renderDisposeables.add(this.markdownRenderer.render(markdown, {
-			asyncRenderCallback: () => {
-				this.domNodes?.scrollbar.scanDomNode();
-			}
-		}));
+		const renderedContents = this.renderDisposeables.add(
+			this.markdownRenderer.render(markdown, {
+				asyncRenderCallback: () => {
+					this.domNodes?.scrollbar.scanDomNode();
+				},
+			})
+		);
 		renderedContents.element.classList.add('markdown-docs');
 		return renderedContents;
 	}
 
-	private hasDocs(signature: languages.SignatureInformation, activeParameter: languages.ParameterInformation | undefined): boolean {
-		if (activeParameter && typeof activeParameter.documentation === 'string' && assertIsDefined(activeParameter.documentation).length > 0) {
+	private hasDocs(
+		signature: languages.SignatureInformation,
+		activeParameter: languages.ParameterInformation | undefined
+	): boolean {
+		if (
+			activeParameter &&
+			typeof activeParameter.documentation === 'string' &&
+			assertIsDefined(activeParameter.documentation).length > 0
+		) {
 			return true;
 		}
-		if (activeParameter && typeof activeParameter.documentation === 'object' && assertIsDefined(activeParameter.documentation).value.length > 0) {
+		if (
+			activeParameter &&
+			typeof activeParameter.documentation === 'object' &&
+			assertIsDefined(activeParameter.documentation).value.length > 0
+		) {
 			return true;
 		}
-		if (signature.documentation && typeof signature.documentation === 'string' && assertIsDefined(signature.documentation).length > 0) {
+		if (
+			signature.documentation &&
+			typeof signature.documentation === 'string' &&
+			assertIsDefined(signature.documentation).length > 0
+		) {
 			return true;
 		}
-		if (signature.documentation && typeof signature.documentation === 'object' && assertIsDefined(signature.documentation.value).length > 0) {
+		if (
+			signature.documentation &&
+			typeof signature.documentation === 'object' &&
+			assertIsDefined(signature.documentation.value).length > 0
+		) {
 			return true;
 		}
 		return false;
 	}
 
-	private renderParameters(parent: HTMLElement, signature: languages.SignatureInformation, activeParameterIndex: number): void {
+	private renderParameters(
+		parent: HTMLElement,
+		signature: languages.SignatureInformation,
+		activeParameterIndex: number
+	): void {
 		const [start, end] = this.getParameterLabelOffsets(signature, activeParameterIndex);
 
 		const beforeSpan = document.createElement('span');
@@ -313,7 +387,10 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		dom.append(parent, beforeSpan, paramSpan, afterSpan);
 	}
 
-	private getParameterLabelOffsets(signature: languages.SignatureInformation, paramIdx: number): [number, number] {
+	private getParameterLabelOffsets(
+		signature: languages.SignatureInformation,
+		paramIdx: number
+	): [number, number] {
 		const param = signature.parameters[paramIdx];
 		if (!param) {
 			return [0, 0];
@@ -325,9 +402,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			const regex = new RegExp(`(\\W|^)${escapeRegExpCharacters(param.label)}(?=\\W|$)`, 'g');
 			regex.test(signature.label);
 			const idx = regex.lastIndex - param.label.length;
-			return idx >= 0
-				? [idx, regex.lastIndex]
-				: [0, 0];
+			return idx >= 0 ? [idx, regex.lastIndex] : [0, 0];
 		}
 	}
 
@@ -359,11 +434,20 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		const height = Math.max(this.editor.getLayoutInfo().height / 4, 250);
 		const maxHeight = `${height}px`;
 		this.domNodes.element.style.maxHeight = maxHeight;
-		const wrapper = this.domNodes.element.getElementsByClassName('phwrapper') as HTMLCollectionOf<HTMLElement>;
+		const wrapper = this.domNodes.element.getElementsByClassName(
+			'phwrapper'
+		) as HTMLCollectionOf<HTMLElement>;
 		if (wrapper.length) {
 			wrapper[0].style.maxHeight = maxHeight;
 		}
 	}
 }
 
-registerColor('editorHoverWidget.highlightForeground', listHighlightForeground, nls.localize('editorHoverWidgetHighlightForeground', 'Foreground color of the active item in the parameter hint.'));
+registerColor(
+	'editorHoverWidget.highlightForeground',
+	listHighlightForeground,
+	nls.localize(
+		'editorHoverWidgetHighlightForeground',
+		'Foreground color of the active item in the parameter hint.'
+	)
+);

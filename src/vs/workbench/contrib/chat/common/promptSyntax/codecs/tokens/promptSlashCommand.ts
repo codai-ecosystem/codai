@@ -22,14 +22,14 @@ export class PromptSlashCommand extends PromptToken {
 		/**
 		 * The name of a command, excluding the `/` character at the start.
 		 */
-		public readonly name: string,
+		public readonly name: string
 	) {
 		// sanity check of characters used in the provided command name
 		for (const character of name) {
 			assert(
-				(INVALID_NAME_CHARACTERS.includes(character) === false) &&
-				(STOP_CHARACTERS.includes(character) === false),
-				`Slash command 'name' cannot contain character '${character}', got '${name}'.`,
+				INVALID_NAME_CHARACTERS.includes(character) === false &&
+					STOP_CHARACTERS.includes(character) === false,
+				`Slash command 'name' cannot contain character '${character}', got '${name}'.`
 			);
 		}
 

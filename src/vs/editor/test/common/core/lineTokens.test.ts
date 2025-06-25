@@ -10,7 +10,6 @@ import { LanguageIdCodec } from '../../../common/services/languagesRegistry.js';
 import { IViewLineTokens, LineTokens } from '../../../common/tokens/lineTokens.js';
 
 suite('LineTokens', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	interface ILineToken {
@@ -22,28 +21,23 @@ suite('LineTokens', () => {
 		const binTokens = new Uint32Array(tokens.length << 1);
 
 		for (let i = 0, len = tokens.length; i < len; i++) {
-			binTokens[(i << 1)] = (i + 1 < len ? tokens[i + 1].startIndex : text.length);
-			binTokens[(i << 1) + 1] = (
-				tokens[i].foreground << MetadataConsts.FOREGROUND_OFFSET
-			) >>> 0;
+			binTokens[i << 1] = i + 1 < len ? tokens[i + 1].startIndex : text.length;
+			binTokens[(i << 1) + 1] = (tokens[i].foreground << MetadataConsts.FOREGROUND_OFFSET) >>> 0;
 		}
 
 		return new LineTokens(binTokens, text, new LanguageIdCodec());
 	}
 
 	function createTestLineTokens(): LineTokens {
-		return createLineTokens(
-			'Hello world, this is a lovely day',
-			[
-				{ startIndex: 0, foreground: 1 }, // Hello_
-				{ startIndex: 6, foreground: 2 }, // world,_
-				{ startIndex: 13, foreground: 3 }, // this_
-				{ startIndex: 18, foreground: 4 }, // is_
-				{ startIndex: 21, foreground: 5 }, // a_
-				{ startIndex: 23, foreground: 6 }, // lovely_
-				{ startIndex: 30, foreground: 7 }, // day
-			]
-		);
+		return createLineTokens('Hello world, this is a lovely day', [
+			{ startIndex: 0, foreground: 1 }, // Hello_
+			{ startIndex: 6, foreground: 2 }, // world,_
+			{ startIndex: 13, foreground: 3 }, // this_
+			{ startIndex: 18, foreground: 4 }, // is_
+			{ startIndex: 21, foreground: 5 }, // a_
+			{ startIndex: 23, foreground: 6 }, // lovely_
+			{ startIndex: 30, foreground: 7 }, // day
+		]);
 	}
 
 	function renderLineTokens(tokens: LineTokens): string {
@@ -60,40 +54,58 @@ suite('LineTokens', () => {
 
 	test('withInserted 1', () => {
 		const lineTokens = createTestLineTokens();
-		assert.strictEqual(renderLineTokens(lineTokens), 'Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)');
+		assert.strictEqual(
+			renderLineTokens(lineTokens),
+			'Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)'
+		);
 
 		const lineTokens2 = lineTokens.withInserted([
-			{ offset: 0, text: '1', tokenMetadata: 0, },
-			{ offset: 6, text: '2', tokenMetadata: 0, },
-			{ offset: 9, text: '3', tokenMetadata: 0, },
+			{ offset: 0, text: '1', tokenMetadata: 0 },
+			{ offset: 6, text: '2', tokenMetadata: 0 },
+			{ offset: 9, text: '3', tokenMetadata: 0 },
 		]);
 
-		assert.strictEqual(renderLineTokens(lineTokens2), '1(0)Hello (32768)2(0)wor(65536)3(0)ld, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)');
+		assert.strictEqual(
+			renderLineTokens(lineTokens2),
+			'1(0)Hello (32768)2(0)wor(65536)3(0)ld, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)'
+		);
 	});
 
 	test('withInserted (tokens at the same position)', () => {
 		const lineTokens = createTestLineTokens();
-		assert.strictEqual(renderLineTokens(lineTokens), 'Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)');
+		assert.strictEqual(
+			renderLineTokens(lineTokens),
+			'Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)'
+		);
 
 		const lineTokens2 = lineTokens.withInserted([
-			{ offset: 0, text: '1', tokenMetadata: 0, },
-			{ offset: 0, text: '2', tokenMetadata: 0, },
-			{ offset: 0, text: '3', tokenMetadata: 0, },
+			{ offset: 0, text: '1', tokenMetadata: 0 },
+			{ offset: 0, text: '2', tokenMetadata: 0 },
+			{ offset: 0, text: '3', tokenMetadata: 0 },
 		]);
 
-		assert.strictEqual(renderLineTokens(lineTokens2), '1(0)2(0)3(0)Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)');
+		assert.strictEqual(
+			renderLineTokens(lineTokens2),
+			'1(0)2(0)3(0)Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)'
+		);
 	});
 
 	test('withInserted (tokens at the end)', () => {
 		const lineTokens = createTestLineTokens();
-		assert.strictEqual(renderLineTokens(lineTokens), 'Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)');
+		assert.strictEqual(
+			renderLineTokens(lineTokens),
+			'Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)day(229376)'
+		);
 
 		const lineTokens2 = lineTokens.withInserted([
-			{ offset: 'Hello world, this is a lovely day'.length - 1, text: '1', tokenMetadata: 0, },
-			{ offset: 'Hello world, this is a lovely day'.length, text: '2', tokenMetadata: 0, },
+			{ offset: 'Hello world, this is a lovely day'.length - 1, text: '1', tokenMetadata: 0 },
+			{ offset: 'Hello world, this is a lovely day'.length, text: '2', tokenMetadata: 0 },
 		]);
 
-		assert.strictEqual(renderLineTokens(lineTokens2), 'Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)da(229376)1(0)y(229376)2(0)');
+		assert.strictEqual(
+			renderLineTokens(lineTokens2),
+			'Hello (32768)world, (65536)this (98304)is (131072)a (163840)lovely (196608)da(229376)1(0)y(229376)2(0)'
+		);
 	});
 
 	test('basics', () => {
@@ -169,7 +181,7 @@ suite('LineTokens', () => {
 		for (let i = 0, len = _actual.getCount(); i < len; i++) {
 			actual[i] = {
 				endIndex: _actual.getEndOffset(i),
-				foreground: _actual.getForeground(i)
+				foreground: _actual.getForeground(i),
 			};
 		}
 		assert.deepStrictEqual(actual, expected);
@@ -216,7 +228,7 @@ suite('LineTokens', () => {
 			{ endIndex: 18, foreground: 3 },
 			{ endIndex: 21, foreground: 4 },
 			{ endIndex: 23, foreground: 5 },
-			{ endIndex: 30, foreground: 6 }
+			{ endIndex: 30, foreground: 6 },
 		]);
 
 		assertViewLineTokens(lineTokens.sliceAndInflate(0, 30, 1), [
@@ -225,22 +237,22 @@ suite('LineTokens', () => {
 			{ endIndex: 19, foreground: 3 },
 			{ endIndex: 22, foreground: 4 },
 			{ endIndex: 24, foreground: 5 },
-			{ endIndex: 31, foreground: 6 }
+			{ endIndex: 31, foreground: 6 },
 		]);
 
 		assertViewLineTokens(lineTokens.sliceAndInflate(6, 18, 0), [
 			{ endIndex: 7, foreground: 2 },
-			{ endIndex: 12, foreground: 3 }
+			{ endIndex: 12, foreground: 3 },
 		]);
 
 		assertViewLineTokens(lineTokens.sliceAndInflate(7, 18, 0), [
 			{ endIndex: 6, foreground: 2 },
-			{ endIndex: 11, foreground: 3 }
+			{ endIndex: 11, foreground: 3 },
 		]);
 
 		assertViewLineTokens(lineTokens.sliceAndInflate(6, 17, 0), [
 			{ endIndex: 7, foreground: 2 },
-			{ endIndex: 11, foreground: 3 }
+			{ endIndex: 11, foreground: 3 },
 		]);
 
 		assertViewLineTokens(lineTokens.sliceAndInflate(6, 19, 0), [

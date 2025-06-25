@@ -24,7 +24,7 @@ export const HISTORY_VIEW_PANE_ID = 'workbench.scm.history';
 
 export const enum ViewMode {
 	List = 'list',
-	Tree = 'tree'
+	Tree = 'tree',
 }
 
 export interface IBaselineResourceProvider {
@@ -98,7 +98,7 @@ export interface ISCMInputValueProviderContext {
 export const enum InputValidationType {
 	Error = 0,
 	Warning = 1,
-	Information = 2
+	Information = 2,
 }
 
 export interface IInputValidation {
@@ -112,7 +112,7 @@ export interface IInputValidator {
 
 export enum SCMInputChangeReason {
 	HistoryPrevious,
-	HistoryNext
+	HistoryNext,
 }
 
 export interface ISCMInputChangeEvent {
@@ -168,7 +168,6 @@ export interface ISCMRepository extends IDisposable {
 }
 
 export interface ISCMService {
-
 	readonly _serviceBrand: undefined;
 	readonly onDidAddRepository: Event<ISCMRepository>;
 	readonly onDidRemoveRepository: Event<ISCMRepository>;
@@ -204,7 +203,7 @@ export interface ISCMMenus {
 export const enum ISCMRepositorySortKey {
 	DiscoveryTime = 'discoveryTime',
 	Name = 'name',
-	Path = 'path'
+	Path = 'path',
 }
 
 export const ISCMViewService = createDecorator<ISCMViewService>('scmView');
@@ -243,4 +242,4 @@ export interface ISCMViewService {
 
 export const SCM_CHANGES_EDITOR_ID = 'workbench.editor.scmChangesEditor';
 
-export interface ISCMChangesEditor { }
+export interface ISCMChangesEditor {}

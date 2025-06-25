@@ -7,7 +7,9 @@ import { FeatureNode, TestNode, LogicNode, DataNode, ApiNode, Relationship } fro
 /**
  * Creates a feature node with all required properties
  */
-export function createFeatureNode(overrides: Partial<Omit<FeatureNode, 'id'>> = {}): Omit<FeatureNode, 'id'> {
+export function createFeatureNode(
+	overrides: Partial<Omit<FeatureNode, 'id'>> = {}
+): Omit<FeatureNode, 'id'> {
 	return {
 		type: 'feature',
 		name: 'Test Feature',
@@ -23,7 +25,9 @@ export function createFeatureNode(overrides: Partial<Omit<FeatureNode, 'id'>> = 
 /**
  * Creates a test node with all required properties
  */
-export function createTestNode(overrides: Partial<Omit<TestNode, 'id'>> = {}): Omit<TestNode, 'id'> {
+export function createTestNode(
+	overrides: Partial<Omit<TestNode, 'id'>> = {}
+): Omit<TestNode, 'id'> {
 	return {
 		type: 'test',
 		name: 'Test Case',
@@ -40,7 +44,9 @@ export function createTestNode(overrides: Partial<Omit<TestNode, 'id'>> = {}): O
 /**
  * Creates a logic node with all required properties
  */
-export function createLogicNode(overrides: Partial<Omit<LogicNode, 'id'>> = {}): Omit<LogicNode, 'id'> {
+export function createLogicNode(
+	overrides: Partial<Omit<LogicNode, 'id'>> = {}
+): Omit<LogicNode, 'id'> {
 	return {
 		type: 'logic',
 		name: 'Test Logic',
@@ -55,7 +61,9 @@ export function createLogicNode(overrides: Partial<Omit<LogicNode, 'id'>> = {}):
 /**
  * Creates a data node with all required properties
  */
-export function createDataNode(overrides: Partial<Omit<DataNode, 'id'>> = {}): Omit<DataNode, 'id'> {
+export function createDataNode(
+	overrides: Partial<Omit<DataNode, 'id'>> = {}
+): Omit<DataNode, 'id'> {
 	return {
 		type: 'data',
 		name: 'Test Data',
@@ -87,7 +95,9 @@ export function createApiNode(overrides: Partial<Omit<ApiNode, 'id'>> = {}): Omi
 /**
  * Creates a relationship with required properties
  */
-export function createRelationship(overrides: Partial<Omit<Relationship, 'id'>>): Omit<Relationship, 'id'> {
+export function createRelationship(
+	overrides: Partial<Omit<Relationship, 'id'>>
+): Omit<Relationship, 'id'> {
 	return {
 		fromNodeId: 'test-from-id',
 		toNodeId: 'test-to-id',

@@ -9,7 +9,12 @@ import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { mockObject } from '../../../../../base/test/common/mock.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { NullLogService } from '../../../../../platform/log/common/log.js';
-import { DebugModel, ExceptionBreakpoint, FunctionBreakpoint, Thread } from '../../common/debugModel.js';
+import {
+	DebugModel,
+	ExceptionBreakpoint,
+	FunctionBreakpoint,
+	Thread,
+} from '../../common/debugModel.js';
 import { MockDebugStorage } from './mockDebug.js';
 import { TestStorageService } from '../../../../test/common/workbenchTestServices.js';
 
@@ -18,7 +23,13 @@ suite('DebugModel', () => {
 
 	suite('FunctionBreakpoint', () => {
 		test('Id is saved', () => {
-			const fbp = new FunctionBreakpoint({ name: 'function', enabled: true, hitCondition: 'hit condition', condition: 'condition', logMessage: 'log message' });
+			const fbp = new FunctionBreakpoint({
+				name: 'function',
+				enabled: true,
+				hitCondition: 'hit condition',
+				condition: 'condition',
+				logMessage: 'log message',
+			});
 			const strigified = JSON.stringify(fbp);
 			const parsed = JSON.parse(strigified);
 			assert.equal(parsed.id, fbp.getId());
@@ -27,14 +38,17 @@ suite('DebugModel', () => {
 
 	suite('ExceptionBreakpoint', () => {
 		test('Restored matches new', () => {
-			const ebp = new ExceptionBreakpoint({
-				conditionDescription: 'condition description',
-				description: 'description',
-				filter: 'condition',
-				label: 'label',
-				supportsCondition: true,
-				enabled: true,
-			}, 'id');
+			const ebp = new ExceptionBreakpoint(
+				{
+					conditionDescription: 'condition description',
+					description: 'description',
+					filter: 'condition',
+					label: 'label',
+					supportsCondition: true,
+					enabled: true,
+				},
+				'id'
+			);
 			const strigified = JSON.stringify(ebp);
 			const parsed = JSON.parse(strigified);
 			const newEbp = new ExceptionBreakpoint(parsed);
@@ -58,7 +72,12 @@ suite('DebugModel', () => {
 
 			const disposable = new DisposableStore();
 			const storage = disposable.add(new TestStorageService());
-			const model = new DebugModel(disposable.add(new MockDebugStorage(storage)), <any>{ isDirty: (e: any) => false }, undefined!, new NullLogService());
+			const model = new DebugModel(
+				disposable.add(new MockDebugStorage(storage)),
+				<any>{ isDirty: (e: any) => false },
+				undefined!,
+				new NullLogService()
+			);
 			disposable.add(model);
 
 			let top1Resolved = false;
@@ -66,12 +85,12 @@ suite('DebugModel', () => {
 			let top2Resolved = false;
 			let whole2Resolved = false;
 			const result1 = model.refreshTopOfCallstack(fakeThread as any);
-			result1.topCallStack.then(() => top1Resolved = true);
-			result1.wholeCallStack.then(() => whole1Resolved = true);
+			result1.topCallStack.then(() => (top1Resolved = true));
+			result1.wholeCallStack.then(() => (whole1Resolved = true));
 
 			const result2 = model.refreshTopOfCallstack(fakeThread as any);
-			result2.topCallStack.then(() => top2Resolved = true);
-			result2.wholeCallStack.then(() => whole2Resolved = true);
+			result2.topCallStack.then(() => (top2Resolved = true));
+			result2.wholeCallStack.then(() => (whole2Resolved = true));
 
 			assert.ok(!top1Resolved);
 			assert.ok(!whole1Resolved);

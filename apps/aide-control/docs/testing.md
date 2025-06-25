@@ -48,6 +48,7 @@ npx vitest watch
 ### Object Reference Mutation in User Preferences
 
 **Problem**: The `DEFAULT_PREFERENCES` object was being mutated during operations, causing:
+
 - Reset function to use corrupted defaults instead of original values
 - Cross-test contamination in accessibility preference tests
 - Inconsistent behavior between test runs
@@ -74,19 +75,19 @@ Example structure:
 describe('Component', () => {
   // Setup common test data, mocks
   const mockData = {...};
-  
+
   beforeEach(() => {
     // Reset mocks, setup environment
   });
-  
+
   it('renders correctly', () => {
     // Render component, check elements exist
   });
-  
+
   it('responds to user events', async () => {
     // Simulate user actions, check results
   });
-  
+
   // Additional tests...
 });
 ```
@@ -112,15 +113,15 @@ Example:
 ```typescript
 // Mock localStorage
 const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  clear: vi.fn()
+	getItem: vi.fn(),
+	setItem: vi.fn(),
+	clear: vi.fn(),
 };
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 // Mock Next.js router
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+	useRouter: () => ({ push: vi.fn() }),
 }));
 ```
 
@@ -164,7 +165,7 @@ fireEvent.click(screen.getByText('Button text'));
 
 // Type in an input
 fireEvent.change(screen.getByPlaceholderText('Search...'), {
-  target: { value: 'search term' }
+	target: { value: 'search term' },
 });
 
 // Using user-event (more realistic)
@@ -193,6 +194,7 @@ If you encounter issues running tests:
 4. Verify mocks for external dependencies are up to date
 
 For workspace-level dependency issues:
+
 - Use specific test command with explicit dependency paths
 - Consider isolating test dependencies to avoid conflicts
 

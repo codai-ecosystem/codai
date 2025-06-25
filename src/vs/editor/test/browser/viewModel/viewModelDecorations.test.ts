@@ -11,16 +11,13 @@ import { InlineDecoration, InlineDecorationType } from '../../../common/viewMode
 import { testViewModel } from './testViewModel.js';
 
 suite('ViewModelDecorations', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('getDecorationsViewportData', () => {
-		const text = [
-			'hello world, this is a buffer that will be wrapped'
-		];
+		const text = ['hello world, this is a buffer that will be wrapped'];
 		const opts: IEditorOptions = {
 			wordWrap: 'wordWrapColumn',
-			wordWrapColumn: 13
+			wordWrapColumn: 13,
 		};
 		testViewModel(text, opts, (viewModel, model) => {
 			assert.strictEqual(viewModel.getLineContent(1), 'hello world, ');
@@ -29,14 +26,14 @@ suite('ViewModelDecorations', () => {
 			assert.strictEqual(viewModel.getLineContent(4), 'will be ');
 			assert.strictEqual(viewModel.getLineContent(5), 'wrapped');
 
-			model.changeDecorations((accessor) => {
+			model.changeDecorations(accessor => {
 				const createOpts = (id: string) => {
 					return {
 						description: 'test',
 						className: id,
 						inlineClassName: 'i-' + id,
 						beforeContentClassName: 'b-' + id,
-						afterContentClassName: 'a-' + id
+						afterContentClassName: 'a-' + id,
 					};
 				};
 
@@ -78,11 +75,14 @@ suite('ViewModelDecorations', () => {
 				accessor.addDecoration(new Range(1, 40, 1, 51), createOpts('dec15'));
 			});
 
-			const actualDecorations = viewModel.getDecorationsInViewport(
-				new Range(2, viewModel.getLineMinColumn(2), 3, viewModel.getLineMaxColumn(3))
-			).map((dec) => {
-				return dec.options.className;
-			}).filter(Boolean);
+			const actualDecorations = viewModel
+				.getDecorationsInViewport(
+					new Range(2, viewModel.getLineMinColumn(2), 3, viewModel.getLineMaxColumn(3))
+				)
+				.map(dec => {
+					return dec.options.className;
+				})
+				.filter(Boolean);
 
 			assert.deepStrictEqual(actualDecorations, [
 				'dec1',
@@ -173,12 +173,10 @@ suite('ViewModelDecorations', () => {
 	});
 
 	test('issue #17208: Problem scrolling in 1.8.0', () => {
-		const text = [
-			'hello world, this is a buffer that will be wrapped'
-		];
+		const text = ['hello world, this is a buffer that will be wrapped'];
 		const opts: IEditorOptions = {
 			wordWrap: 'wordWrapColumn',
-			wordWrapColumn: 13
+			wordWrapColumn: 13,
 		};
 		testViewModel(text, opts, (viewModel, model) => {
 			assert.strictEqual(viewModel.getLineContent(1), 'hello world, ');
@@ -187,19 +185,18 @@ suite('ViewModelDecorations', () => {
 			assert.strictEqual(viewModel.getLineContent(4), 'will be ');
 			assert.strictEqual(viewModel.getLineContent(5), 'wrapped');
 
-			model.changeDecorations((accessor) => {
-				accessor.addDecoration(
-					new Range(1, 50, 1, 51),
-					{
-						description: 'test',
-						beforeContentClassName: 'dec1'
-					}
-				);
+			model.changeDecorations(accessor => {
+				accessor.addDecoration(new Range(1, 50, 1, 51), {
+					description: 'test',
+					beforeContentClassName: 'dec1',
+				});
 			});
 
-			const decorations = viewModel.getDecorationsInViewport(
-				new Range(2, viewModel.getLineMinColumn(2), 3, viewModel.getLineMaxColumn(3))
-			).filter(x => Boolean(x.options.beforeContentClassName));
+			const decorations = viewModel
+				.getDecorationsInViewport(
+					new Range(2, viewModel.getLineMinColumn(2), 3, viewModel.getLineMaxColumn(3))
+				)
+				.filter(x => Boolean(x.options.beforeContentClassName));
 			assert.deepStrictEqual(decorations, []);
 
 			const inlineDecorations1 = viewModel.getViewportViewLineRenderingData(
@@ -217,20 +214,14 @@ suite('ViewModelDecorations', () => {
 	});
 
 	test('issue #37401: Allow both before and after decorations on empty line', () => {
-		const text = [
-			''
-		];
+		const text = [''];
 		testViewModel(text, {}, (viewModel, model) => {
-
-			model.changeDecorations((accessor) => {
-				accessor.addDecoration(
-					new Range(1, 1, 1, 1),
-					{
-						description: 'test',
-						beforeContentClassName: 'before1',
-						afterContentClassName: 'after1'
-					}
-				);
+			model.changeDecorations(accessor => {
+				accessor.addDecoration(new Range(1, 1, 1, 1), {
+					description: 'test',
+					beforeContentClassName: 'before1',
+					afterContentClassName: 'after1',
+				});
 			});
 
 			const inlineDecorations = viewModel.getViewportViewLineRenderingData(
@@ -239,7 +230,7 @@ suite('ViewModelDecorations', () => {
 			).inlineDecorations;
 			assert.deepStrictEqual(inlineDecorations, [
 				new InlineDecoration(new Range(1, 1, 1, 1), 'before1', InlineDecorationType.Before),
-				new InlineDecoration(new Range(1, 1, 1, 1), 'after1', InlineDecorationType.After)
+				new InlineDecoration(new Range(1, 1, 1, 1), 'after1', InlineDecorationType.After),
 			]);
 		});
 	});

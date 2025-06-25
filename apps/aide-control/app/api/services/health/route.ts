@@ -16,7 +16,7 @@ export function GET(req: NextRequest) {
 			return NextResponse.json({
 				status: 'healthy',
 				services: health,
-				timestamp: new Date().toISOString()
+				timestamp: new Date().toISOString(),
 			});
 		} catch (error) {
 			console.error('Error checking service health:', error);
@@ -24,7 +24,7 @@ export function GET(req: NextRequest) {
 				{
 					status: 'unhealthy',
 					error: 'Failed to check service health',
-					timestamp: new Date().toISOString()
+					timestamp: new Date().toISOString(),
 				},
 				{ status: 500 }
 			);

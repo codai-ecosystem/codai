@@ -11,12 +11,14 @@ export function isHotReloadEnabled(): boolean {
 }
 export function registerHotReloadHandler(handler: HotReloadHandler): IDisposable {
 	if (!isHotReloadEnabled()) {
-		return { dispose() { } };
+		return { dispose() {} };
 	} else {
 		const handlers = registerGlobalHotReloadHandler();
 		handlers.add(handler);
 		return {
-			dispose() { handlers.delete(handler); }
+			dispose() {
+				handlers.delete(handler);
+			},
 		};
 	}
 }
@@ -27,7 +29,11 @@ export function registerHotReloadHandler(handler: HotReloadHandler): IDisposable
  *
  * If no handler can apply the new exports, the module will not be reloaded.
  */
-export type HotReloadHandler = (args: { oldExports: Record<string, unknown>; newSrc: string; config: IHotReloadConfig }) => AcceptNewExportsHandler | undefined;
+export type HotReloadHandler = (args: {
+	oldExports: Record<string, unknown>;
+	newSrc: string;
+	config: IHotReloadConfig;
+}) => AcceptNewExportsHandler | undefined;
 export type AcceptNewExportsHandler = (newExports: Record<string, unknown>) => boolean;
 export type IHotReloadConfig = HotReloadConfig;
 
@@ -66,14 +72,26 @@ function registerGlobalHotReloadHandler() {
 	return hotReloadHandlers;
 }
 
-let hotReloadHandlers: Set<(args: { oldExports: Record<string, unknown>; newSrc: string; config: HotReloadConfig }) => AcceptNewExportsFn | undefined> | undefined = undefined;
+let hotReloadHandlers:
+	| Set<
+			(args: {
+				oldExports: Record<string, unknown>;
+				newSrc: string;
+				config: HotReloadConfig;
+			}) => AcceptNewExportsFn | undefined
+	  >
+	| undefined = undefined;
 
 interface HotReloadConfig {
 	mode?: 'patch-prototype' | undefined;
 }
 
 interface GlobalThisAddition {
-	$hotReload_applyNewExports?(args: { oldExports: Record<string, unknown>; newSrc: string; config?: HotReloadConfig }): AcceptNewExportsFn | undefined;
+	$hotReload_applyNewExports?(args: {
+		oldExports: Record<string, unknown>;
+		newSrc: string;
+		config?: HotReloadConfig;
+	}): AcceptNewExportsFn | undefined;
 }
 
 type AcceptNewExportsFn = (newExports: Record<string, unknown>) => boolean;
@@ -94,7 +112,10 @@ if (isHotReloadEnabled()) {
 					if (oldExportedItem) {
 						for (const prop of Object.getOwnPropertyNames(exportedItem.prototype)) {
 							const descriptor = Object.getOwnPropertyDescriptor(exportedItem.prototype, prop)!;
-							const oldDescriptor = Object.getOwnPropertyDescriptor((oldExportedItem as any).prototype, prop);
+							const oldDescriptor = Object.getOwnPropertyDescriptor(
+								(oldExportedItem as any).prototype,
+								prop
+							);
 
 							if (descriptor?.value?.toString() !== oldDescriptor?.value?.toString()) {
 								console.log(`[hot-reload] Patching prototype method '${key}.${prop}'`);

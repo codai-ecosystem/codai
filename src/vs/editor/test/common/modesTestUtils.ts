@@ -21,11 +21,9 @@ export function createFakeScopedLineTokens(rawTokens: TokenText[]): ScopedLineTo
 		const rawToken = rawTokens[i];
 
 		const startOffset = line.length;
-		const metadata = (
-			(rawToken.type << MetadataConsts.TOKEN_TYPE_OFFSET)
-		) >>> 0;
+		const metadata = (rawToken.type << MetadataConsts.TOKEN_TYPE_OFFSET) >>> 0;
 
-		tokens[(i << 1)] = startOffset;
+		tokens[i << 1] = startOffset;
 		tokens[(i << 1) + 1] = metadata;
 		line += rawToken.text;
 	}

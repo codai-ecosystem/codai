@@ -9,7 +9,11 @@ import { Codicon } from '../../../../../base/common/codicons.js';
 import { Emitter } from '../../../../../base/common/event.js';
 import { IMarkdownString } from '../../../../../base/common/htmlContent.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { autorun, ISettableObservable, observableValue } from '../../../../../base/common/observable.js';
+import {
+	autorun,
+	ISettableObservable,
+	observableValue,
+} from '../../../../../base/common/observable.js';
 import { ThemeIcon } from '../../../../../base/common/themables.js';
 import { generateUuid } from '../../../../../base/common/uuid.js';
 import { MarkdownRenderer } from '../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
@@ -41,7 +45,7 @@ export interface IChatCollapsibleIODataPart {
 	mimeType: string;
 }
 
-export interface IChatCollapsibleInputData extends IChatCollapsibleIOCodePart { }
+export interface IChatCollapsibleInputData extends IChatCollapsibleIOCodePart {}
 export interface IChatCollapsibleOutputData {
 	// todo: show images etc. here
 	parts: (IChatCollapsibleIOCodePart | IChatCollapsibleIODataPart)[];
@@ -82,7 +86,7 @@ export class ChatCollapsibleInputOutputContentPart extends Disposable {
 		isError: boolean,
 		initiallyExpanded: boolean,
 		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -91,12 +95,14 @@ export class ChatCollapsibleInputOutputContentPart extends Disposable {
 		const elements = dom.h('.chat-confirmation-widget');
 		this.domNode = elements.root;
 
-		const titlePart = this._titlePart = this._register(_instantiationService.createInstance(
-			ChatQueryTitlePart,
-			titleEl.root,
-			title,
-			subtitle,
-			_instantiationService.createInstance(MarkdownRenderer, {}),
+		const titlePart = (this._titlePart = this._register(
+			_instantiationService.createInstance(
+				ChatQueryTitlePart,
+				titleEl.root,
+				title,
+				subtitle,
+				_instantiationService.createInstance(MarkdownRenderer, {})
+			)
 		));
 		this._register(titlePart.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
 
@@ -107,21 +113,24 @@ export class ChatCollapsibleInputOutputContentPart extends Disposable {
 		btn.element.classList.add('chat-confirmation-widget-title', 'monaco-text-button');
 		btn.labelElement.append(titleEl.root, iconEl.root);
 
-		const check = dom.h(isError
-			? ThemeIcon.asCSSSelector(Codicon.error)
-			: output
-				? ThemeIcon.asCSSSelector(Codicon.check)
-				: ThemeIcon.asCSSSelector(ThemeIcon.modify(Codicon.loading, 'spin'))
+		const check = dom.h(
+			isError
+				? ThemeIcon.asCSSSelector(Codicon.error)
+				: output
+					? ThemeIcon.asCSSSelector(Codicon.check)
+					: ThemeIcon.asCSSSelector(ThemeIcon.modify(Codicon.loading, 'spin'))
 		);
 		iconEl.root.appendChild(check.root);
 
-		const expanded = this._expanded = observableValue(this, initiallyExpanded);
-		this._register(autorun(r => {
-			const value = expanded.read(r);
-			btn.icon = value ? Codicon.chevronDown : Codicon.chevronRight;
-			elements.root.classList.toggle('collapsed', !value);
-			this._onDidChangeHeight.fire();
-		}));
+		const expanded = (this._expanded = observableValue(this, initiallyExpanded));
+		this._register(
+			autorun(r => {
+				const value = expanded.read(r);
+				btn.icon = value ? Codicon.chevronDown : Codicon.chevronRight;
+				elements.root.classList.toggle('collapsed', !value);
+				this._onDidChangeHeight.fire();
+			})
+		);
 
 		const toggle = (e: Event) => {
 			if (!e.defaultPrevented) {
@@ -148,22 +157,33 @@ export class ChatCollapsibleInputOutputContentPart extends Disposable {
 
 		const { input, output } = this;
 
-		contents.inputTitle.textContent = localize('chat.input', "Input");
+		contents.inputTitle.textContent = localize('chat.input', 'Input');
 		this.addCodeBlock(input, contents.input);
 
 		if (!output) {
 			contents.output.remove();
 			contents.outputTitle.remove();
 		} else {
-			contents.outputTitle.textContent = localize('chat.output', "Output");
+			contents.outputTitle.textContent = localize('chat.output', 'Output');
 			for (const part of output.parts) {
 				if (part.kind === 'data' && getAttachableImageExtension(part.mimeType)) {
-					const n = this._register(this._instantiationService.createInstance(
-						ChatAttachmentsContentPart,
-						[{ kind: 'image', id: generateUuid(), name: `image.${getAttachableImageExtension(part.mimeType)}`, value: part.value, mimeType: part.mimeType, isURL: false }],
-						undefined,
-						undefined,
-					));
+					const n = this._register(
+						this._instantiationService.createInstance(
+							ChatAttachmentsContentPart,
+							[
+								{
+									kind: 'image',
+									id: generateUuid(),
+									name: `image.${getAttachableImageExtension(part.mimeType)}`,
+									value: part.value,
+									mimeType: part.mimeType,
+									isURL: false,
+								},
+							],
+							undefined,
+							undefined
+						)
+					);
 					contents.output.appendChild(n.domNode!);
 				} else if (part.kind === 'code') {
 					this.addCodeBlock(part, contents.output);
@@ -187,12 +207,18 @@ export class ChatCollapsibleInputOutputContentPart extends Disposable {
 		};
 		const editorReference = this._register(this.editorPool.get());
 		editorReference.object.render(data, this._currentWidth || 300);
-		this._register(editorReference.object.onDidChangeContentHeight(() => this._onDidChangeHeight.fire()));
+		this._register(
+			editorReference.object.onDidChangeContentHeight(() => this._onDidChangeHeight.fire())
+		);
 		container.appendChild(editorReference.object.element);
 		this._editorReferences.push(editorReference);
 	}
 
-	hasSameContent(other: IChatRendererContent, followingContent: IChatRendererContent[], element: ChatTreeItem): boolean {
+	hasSameContent(
+		other: IChatRendererContent,
+		followingContent: IChatRendererContent[],
+		element: ChatTreeItem
+	): boolean {
 		// For now, we consider content different unless it's exactly the same instance
 		return false;
 	}

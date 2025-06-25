@@ -11,9 +11,7 @@ import { ChatDynamicVariableModel } from './contrib/chatDynamicVariables.js';
 export class ChatVariablesService implements IChatVariablesService {
 	declare _serviceBrand: undefined;
 
-	constructor(
-		@IChatWidgetService private readonly chatWidgetService: IChatWidgetService,
-	) { }
+	constructor(@IChatWidgetService private readonly chatWidgetService: IChatWidgetService) {}
 
 	getDynamicVariables(sessionId: string): ReadonlyArray<IDynamicVariable> {
 		// This is slightly wrong... the parser pulls dynamic references from the input widget, but there is no guarantee that message came from the input here.
@@ -38,17 +36,17 @@ export class ChatVariablesService implements IChatVariablesService {
 		if (!widget) {
 			return [];
 		}
-		return Array.from(widget.input.selectedToolsModel.entries.get())
-			.filter((t): t is IToolData => !(t instanceof ToolSet));
-
+		return Array.from(widget.input.selectedToolsModel.entries.get()).filter(
+			(t): t is IToolData => !(t instanceof ToolSet)
+		);
 	}
 	getSelectedToolSets(sessionId: string): ReadonlyArray<ToolSet> {
 		const widget = this.chatWidgetService.getWidgetBySessionId(sessionId);
 		if (!widget) {
 			return [];
 		}
-		return Array.from(widget.input.selectedToolsModel.entries.get())
-			.filter((t): t is ToolSet => t instanceof ToolSet);
+		return Array.from(widget.input.selectedToolsModel.entries.get()).filter(
+			(t): t is ToolSet => t instanceof ToolSet
+		);
 	}
-
 }

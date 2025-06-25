@@ -4,13 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { UriComponents } from '../../../../../base/common/uri.js';
-import { IShellLaunchConfigDto, ITerminalProcessOptions } from '../../../../../platform/terminal/common/terminal.js';
+import {
+	IShellLaunchConfigDto,
+	ITerminalProcessOptions,
+} from '../../../../../platform/terminal/common/terminal.js';
 import { ICompleteTerminalConfiguration } from '../terminal.js';
-import { ISerializableEnvironmentDescriptionMap as ISerializableEnvironmentDescriptionMap, ISerializableEnvironmentVariableCollection } from '../../../../../platform/terminal/common/environmentVariable.js';
+import {
+	ISerializableEnvironmentDescriptionMap as ISerializableEnvironmentDescriptionMap,
+	ISerializableEnvironmentVariableCollection,
+} from '../../../../../platform/terminal/common/environmentVariable.js';
 
 export const REMOTE_TERMINAL_CHANNEL_NAME = 'remoteterminal';
 
-export type ITerminalEnvironmentVariableCollections = [string, ISerializableEnvironmentVariableCollection, ISerializableEnvironmentDescriptionMap][];
+export type ITerminalEnvironmentVariableCollections = [
+	string,
+	ISerializableEnvironmentVariableCollection,
+	ISerializableEnvironmentDescriptionMap,
+][];
 
 export interface IWorkspaceFolderData {
 	uri: UriComponents;

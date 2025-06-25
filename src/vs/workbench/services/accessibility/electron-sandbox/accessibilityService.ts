@@ -3,16 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IAccessibilityService, AccessibilitySupport } from '../../../../platform/accessibility/common/accessibility.js';
+import {
+	IAccessibilityService,
+	AccessibilitySupport,
+} from '../../../../platform/accessibility/common/accessibility.js';
 import { isWindows, isLinux } from '../../../../base/common/platform.js';
 import { INativeWorkbenchEnvironmentService } from '../../environment/electron-sandbox/environmentService.js';
 import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { AccessibilityService } from '../../../../platform/accessibility/browser/accessibilityService.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { IJSONEditingService } from '../../configuration/common/jsonEditing.js';
-import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
+import {
+	IWorkbenchContribution,
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from '../../../common/contributions.js';
 import { INativeHostService } from '../../../../platform/native/common/native.js';
 import { ILayoutService } from '../../../../platform/layout/browser/layoutService.js';
 
@@ -22,11 +32,17 @@ interface AccessibilityMetrics {
 type AccessibilityMetricsClassification = {
 	owner: 'isidorn';
 	comment: 'Helps gain an understanding of when accessibility features are being used';
-	enabled: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Whether or not accessibility features are enabled' };
+	enabled: {
+		classification: 'SystemMetaData';
+		purpose: 'FeatureInsight';
+		comment: 'Whether or not accessibility features are enabled';
+	};
 };
 
-export class NativeAccessibilityService extends AccessibilityService implements IAccessibilityService {
-
+export class NativeAccessibilityService
+	extends AccessibilityService
+	implements IAccessibilityService
+{
 	private didSendTelemetry = false;
 	private shouldAlwaysUnderlineAccessKeys: boolean | undefined = undefined;
 
@@ -39,7 +55,11 @@ export class NativeAccessibilityService extends AccessibilityService implements 
 		@INativeHostService private readonly nativeHostService: INativeHostService
 	) {
 		super(contextKeyService, _layoutService, configurationService);
-		this.setAccessibilitySupport(environmentService.window.accessibilitySupport ? AccessibilitySupport.Enabled : AccessibilitySupport.Disabled);
+		this.setAccessibilitySupport(
+			environmentService.window.accessibilitySupport
+				? AccessibilitySupport.Enabled
+				: AccessibilitySupport.Disabled
+		);
 	}
 
 	override async alwaysUnderlineAccessKeys(): Promise<boolean> {
@@ -48,8 +68,12 @@ export class NativeAccessibilityService extends AccessibilityService implements 
 		}
 
 		if (typeof this.shouldAlwaysUnderlineAccessKeys !== 'boolean') {
-			const windowsKeyboardAccessibility = await this.nativeHostService.windowsGetStringRegKey('HKEY_CURRENT_USER', 'Control Panel\\Accessibility\\Keyboard Preference', 'On');
-			this.shouldAlwaysUnderlineAccessKeys = (windowsKeyboardAccessibility === '1');
+			const windowsKeyboardAccessibility = await this.nativeHostService.windowsGetStringRegKey(
+				'HKEY_CURRENT_USER',
+				'Control Panel\\Accessibility\\Keyboard Preference',
+				'On'
+			);
+			this.shouldAlwaysUnderlineAccessKeys = windowsKeyboardAccessibility === '1';
 		}
 
 		return this.shouldAlwaysUnderlineAccessKeys;
@@ -59,7 +83,10 @@ export class NativeAccessibilityService extends AccessibilityService implements 
 		super.setAccessibilitySupport(accessibilitySupport);
 
 		if (!this.didSendTelemetry && accessibilitySupport === AccessibilitySupport.Enabled) {
-			this._telemetryService.publicLog2<AccessibilityMetrics, AccessibilityMetricsClassification>('accessibility', { enabled: true });
+			this._telemetryService.publicLog2<AccessibilityMetrics, AccessibilityMetricsClassification>(
+				'accessibility',
+				{ enabled: true }
+			);
 			this.didSendTelemetry = true;
 		}
 	}
@@ -69,7 +96,6 @@ registerSingleton(IAccessibilityService, NativeAccessibilityService, Instantiati
 
 // On linux we do not automatically detect that a screen reader is detected, thus we have to implicitly notify the renderer to enable accessibility when user configures it in settings
 class LinuxAccessibilityContribution implements IWorkbenchContribution {
-
 	static readonly ID = 'workbench.contrib.linuxAccessibility';
 
 	constructor(
@@ -79,7 +105,11 @@ class LinuxAccessibilityContribution implements IWorkbenchContribution {
 	) {
 		const forceRendererAccessibility = () => {
 			if (accessibilityService.isScreenReaderOptimized()) {
-				jsonEditingService.write(environmentService.argvResource, [{ path: ['force-renderer-accessibility'], value: true }], true);
+				jsonEditingService.write(
+					environmentService.argvResource,
+					[{ path: ['force-renderer-accessibility'], value: true }],
+					true
+				);
 			}
 		};
 		forceRendererAccessibility();
@@ -88,5 +118,9 @@ class LinuxAccessibilityContribution implements IWorkbenchContribution {
 }
 
 if (isLinux) {
-	registerWorkbenchContribution2(LinuxAccessibilityContribution.ID, LinuxAccessibilityContribution, WorkbenchPhase.BlockRestore);
+	registerWorkbenchContribution2(
+		LinuxAccessibilityContribution.ID,
+		LinuxAccessibilityContribution,
+		WorkbenchPhase.BlockRestore
+	);
 }

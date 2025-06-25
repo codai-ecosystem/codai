@@ -24,7 +24,12 @@ suite('TestCoverage', () => {
 		coverageAccessor = {
 			getCoverageDetails: sandbox.stub().resolves([]),
 		};
-		testCoverage = new TestCoverage({} as LiveTestResult, 'taskId', { extUri: { ignorePathCasing: () => true } } as any, coverageAccessor);
+		testCoverage = new TestCoverage(
+			{} as LiveTestResult,
+			'taskId',
+			{ extUri: { ignorePathCasing: () => true } } as any,
+			coverageAccessor
+		);
 	});
 
 	teardown(() => {
@@ -102,27 +107,30 @@ suite('TestCoverage', () => {
 
 	test('should emit changes', async () => {
 		const changes: string[][] = [];
-		ds.add(onObservableChange(testCoverage.didAddCoverage, value =>
-			changes.push(value.map(v => v.value!.uri.toString()))));
+		ds.add(
+			onObservableChange(testCoverage.didAddCoverage, value =>
+				changes.push(value.map(v => v.value!.uri.toString()))
+			)
+		);
 
 		addTests();
 
 		assert.deepStrictEqual(changes, [
 			[
-				"file:///",
-				"file:///",
-				"file:///",
-				"file:///path",
-				"file:///path/to",
-				"file:///path/to/file",
+				'file:///',
+				'file:///',
+				'file:///',
+				'file:///path',
+				'file:///path/to',
+				'file:///path/to/file',
 			],
 			[
-				"file:///",
-				"file:///",
-				"file:///",
-				"file:///path",
-				"file:///path/to",
-				"file:///path/to/file2",
+				'file:///',
+				'file:///',
+				'file:///',
+				'file:///path',
+				'file:///path/to',
+				'file:///path/to/file2',
 			],
 		]);
 	});

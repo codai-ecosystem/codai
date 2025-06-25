@@ -13,7 +13,9 @@ type ReleaseInfo = {
 	version_id?: string;
 };
 
-export async function getOSReleaseInfo(errorLogger: (error: any) => void): Promise<ReleaseInfo | undefined> {
+export async function getOSReleaseInfo(
+	errorLogger: (error: any) => void
+): Promise<ReleaseInfo | undefined> {
 	if (Platform.isMacintosh || Platform.isWindows) {
 		return;
 	}
@@ -26,7 +28,7 @@ export async function getOSReleaseInfo(errorLogger: (error: any) => void): Promi
 		try {
 			handle = await FSPromises.open(filePath, FSConstants.R_OK);
 			break;
-		} catch (err) { }
+		} catch (err) {}
 	}
 
 	if (!handle) {
@@ -35,15 +37,9 @@ export async function getOSReleaseInfo(errorLogger: (error: any) => void): Promi
 	}
 
 	try {
-		const osReleaseKeys = new Set([
-			'ID',
-			'DISTRIB_ID',
-			'ID_LIKE',
-			'VERSION_ID',
-			'DISTRIB_RELEASE',
-		]);
+		const osReleaseKeys = new Set(['ID', 'DISTRIB_ID', 'ID_LIKE', 'VERSION_ID', 'DISTRIB_RELEASE']);
 		const releaseInfo: ReleaseInfo = {
-			id: 'unknown'
+			id: 'unknown',
 		};
 
 		for await (const line of readLines({ input: handle.createReadStream(), crlfDelay: Infinity })) {

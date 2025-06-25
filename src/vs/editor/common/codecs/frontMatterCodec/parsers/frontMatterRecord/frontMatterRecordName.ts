@@ -7,7 +7,11 @@ import { type TSimpleDecoderToken } from '../../../simpleCodec/simpleDecoder.js'
 import { FrontMatterRecordName, type TRecordNameToken } from '../../tokens/index.js';
 import { Colon, Word, Dash, SpacingToken } from '../../../simpleCodec/tokens/index.js';
 import { PartialFrontMatterRecordNameWithDelimiter } from './frontMatterRecordNameWithDelimiter.js';
-import { assertNotConsumed, ParserBase, type TAcceptTokenResult } from '../../../simpleCodec/parserBase.js';
+import {
+	assertNotConsumed,
+	ParserBase,
+	type TAcceptTokenResult,
+} from '../../../simpleCodec/parserBase.js';
 
 /**
  * Tokens that can be used inside a record name.
@@ -29,9 +33,7 @@ type TNextParser = PartialFrontMatterRecordName | PartialFrontMatterRecordNameWi
  * ```
  */
 export class PartialFrontMatterRecordName extends ParserBase<TRecordNameToken, TNextParser> {
-	constructor(
-		startToken: Word,
-	) {
+	constructor(startToken: Word) {
 		super([startToken]);
 	}
 
@@ -51,7 +53,7 @@ export class PartialFrontMatterRecordName extends ParserBase<TRecordNameToken, T
 
 		// once name is followed by a "space" token or a "colon", we have the full
 		// record name hence can transition to the next parser
-		if ((token instanceof Colon) || (token instanceof SpacingToken)) {
+		if (token instanceof Colon || token instanceof SpacingToken) {
 			const recordName = new FrontMatterRecordName(this.currentTokens);
 
 			this.isConsumed = true;

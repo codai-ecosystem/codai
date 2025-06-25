@@ -5,14 +5,20 @@
 
 import { SequencerByKey } from '../../../../base/common/async.js';
 import { IEncryptionService } from '../../../../platform/encryption/common/encryptionService.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
-import { ISecretStorageProvider, ISecretStorageService, BaseSecretStorageService } from '../../../../platform/secrets/common/secrets.js';
+import {
+	ISecretStorageProvider,
+	ISecretStorageService,
+	BaseSecretStorageService,
+} from '../../../../platform/secrets/common/secrets.js';
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 import { IBrowserWorkbenchEnvironmentService } from '../../environment/browser/environmentService.js';
 
 export class BrowserSecretStorageService extends BaseSecretStorageService {
-
 	private readonly _secretStorageProvider: ISecretStorageProvider | undefined;
 	private readonly _embedderSequencer: SequencerByKey<string> | undefined;
 

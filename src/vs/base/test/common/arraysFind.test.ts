@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { MonotonousArray, findFirstMonotonous, findLastMonotonous } from '../../common/arraysFind.js';
+import {
+	MonotonousArray,
+	findFirstMonotonous,
+	findLastMonotonous,
+} from '../../common/arraysFind.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('Arrays', () => {
@@ -50,12 +54,33 @@ suite('Arrays', () => {
 
 	test('MonotonousArray', () => {
 		const arr = new MonotonousArray([1, 4, 5, 7, 55, 59, 60, 61, 64, 69]);
-		assert.strictEqual(arr.findLastMonotonous(n => n <= 0), undefined);
-		assert.strictEqual(arr.findLastMonotonous(n => n <= 0), undefined);
-		assert.strictEqual(arr.findLastMonotonous(n => n <= 5), 5);
-		assert.strictEqual(arr.findLastMonotonous(n => n <= 6), 5);
-		assert.strictEqual(arr.findLastMonotonous(n => n <= 55), 55);
-		assert.strictEqual(arr.findLastMonotonous(n => n <= 60), 60);
-		assert.strictEqual(arr.findLastMonotonous(n => n <= 80), 69);
+		assert.strictEqual(
+			arr.findLastMonotonous(n => n <= 0),
+			undefined
+		);
+		assert.strictEqual(
+			arr.findLastMonotonous(n => n <= 0),
+			undefined
+		);
+		assert.strictEqual(
+			arr.findLastMonotonous(n => n <= 5),
+			5
+		);
+		assert.strictEqual(
+			arr.findLastMonotonous(n => n <= 6),
+			5
+		);
+		assert.strictEqual(
+			arr.findLastMonotonous(n => n <= 55),
+			55
+		);
+		assert.strictEqual(
+			arr.findLastMonotonous(n => n <= 60),
+			60
+		);
+		assert.strictEqual(
+			arr.findLastMonotonous(n => n <= 80),
+			69
+		);
 	});
 });

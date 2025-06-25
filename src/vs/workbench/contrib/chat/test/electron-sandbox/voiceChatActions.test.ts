@@ -8,8 +8,11 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { parseNextChatResponseChunk } from '../../electron-sandbox/actions/voiceChatActions.js';
 
 suite('VoiceChatActions', function () {
-
-	function assertChunk(text: string, expected: string | undefined, offset: number): { chunk: string | undefined; offset: number } {
+	function assertChunk(
+		text: string,
+		expected: string | undefined,
+		offset: number
+	): { chunk: string | undefined; offset: number } {
 		const res = parseNextChatResponseChunk(text, offset);
 		assert.strictEqual(res.chunk, expected);
 
@@ -17,7 +20,6 @@ suite('VoiceChatActions', function () {
 	}
 
 	test('parseNextChatResponseChunk', function () {
-
 		// Simple, no offset
 		assertChunk('Hello World', undefined, 0);
 		assertChunk('Hello World.', undefined, 0);
@@ -31,8 +33,16 @@ suite('VoiceChatActions', function () {
 
 		// Ensure chunks are parsed from the end, with offset
 		let offset = assertChunk('Hello World. How is your ', 'Hello World.', 0).offset;
-		offset = assertChunk('Hello World. How is your day? And more...', 'How is your day?', offset).offset;
-		offset = assertChunk('Hello World. How is your day? And more to come! ', 'And more to come!', offset).offset;
+		offset = assertChunk(
+			'Hello World. How is your day? And more...',
+			'How is your day?',
+			offset
+		).offset;
+		offset = assertChunk(
+			'Hello World. How is your day? And more to come! ',
+			'And more to come!',
+			offset
+		).offset;
 		assertChunk('Hello World. How is your day? And more to come! ', undefined, offset);
 
 		// Sparted by newlines

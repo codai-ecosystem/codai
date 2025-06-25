@@ -12,7 +12,11 @@ import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js'
 import { EditorInputCapabilities, IUntypedEditorInput } from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
 
-const WorkspaceTrustEditorIcon = registerIcon('workspace-trust-editor-label-icon', Codicon.shield, localize('workspaceTrustEditorLabelIcon', 'Icon of the workspace trust editor label.'));
+const WorkspaceTrustEditorIcon = registerIcon(
+	'workspace-trust-editor-label-icon',
+	Codicon.shield,
+	localize('workspaceTrustEditorLabelIcon', 'Icon of the workspace trust editor label.')
+);
 
 export class WorkspaceTrustEditorInput extends EditorInput {
 	static readonly ID: string = 'workbench.input.workspaceTrust';
@@ -27,7 +31,7 @@ export class WorkspaceTrustEditorInput extends EditorInput {
 
 	readonly resource: URI = URI.from({
 		scheme: Schemas.vscodeWorkspaceTrust,
-		path: `workspaceTrustEditor`
+		path: `workspaceTrustEditor`,
 	});
 
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
@@ -35,7 +39,7 @@ export class WorkspaceTrustEditorInput extends EditorInput {
 	}
 
 	override getName(): string {
-		return localize('workspaceTrustEditorInputName', "Workspace Trust");
+		return localize('workspaceTrustEditorInputName', 'Workspace Trust');
 	}
 
 	override getIcon(): ThemeIcon {

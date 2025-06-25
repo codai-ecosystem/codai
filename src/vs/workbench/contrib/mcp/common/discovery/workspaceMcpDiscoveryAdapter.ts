@@ -10,16 +10,25 @@ import { URI } from '../../../../../base/common/uri.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { IFileService } from '../../../../../platform/files/common/files.js';
 import { StorageScope } from '../../../../../platform/storage/common/storage.js';
-import { IWorkspaceContextService, IWorkspaceFolder } from '../../../../../platform/workspace/common/workspace.js';
+import {
+	IWorkspaceContextService,
+	IWorkspaceFolder,
+} from '../../../../../platform/workspace/common/workspace.js';
 import { IRemoteAgentService } from '../../../../services/remote/common/remoteAgentService.js';
 import { DiscoverySource } from '../mcpConfiguration.js';
 import { IMcpRegistry } from '../mcpRegistryTypes.js';
 import { McpCollectionSortOrder } from '../mcpTypes.js';
 import { IMcpDiscovery } from './mcpDiscovery.js';
-import { FilesystemMcpDiscovery, WritableMcpCollectionDefinition } from './nativeMcpDiscoveryAbstract.js';
+import {
+	FilesystemMcpDiscovery,
+	WritableMcpCollectionDefinition,
+} from './nativeMcpDiscoveryAbstract.js';
 import { claudeConfigToServerDefinition } from './nativeMcpDiscoveryAdapters.js';
 
-export class CursorWorkspaceMcpDiscoveryAdapter extends FilesystemMcpDiscovery implements IMcpDiscovery {
+export class CursorWorkspaceMcpDiscoveryAdapter
+	extends FilesystemMcpDiscovery
+	implements IMcpDiscovery
+{
 	private readonly _collections = this._register(new DisposableMap<string, IDisposable>());
 
 	constructor(
@@ -27,20 +36,22 @@ export class CursorWorkspaceMcpDiscoveryAdapter extends FilesystemMcpDiscovery i
 		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
 		@IMcpRegistry mcpRegistry: IMcpRegistry,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
+		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService
 	) {
 		super(configurationService, fileService, mcpRegistry);
 	}
 
 	start(): void {
-		this._register(this._workspaceContextService.onDidChangeWorkspaceFolders(e => {
-			for (const removed of e.removed) {
-				this._collections.deleteAndDispose(removed.uri.toString());
-			}
-			for (const added of e.added) {
-				this.watchFolder(added);
-			}
-		}));
+		this._register(
+			this._workspaceContextService.onDidChangeWorkspaceFolders(e => {
+				for (const removed of e.removed) {
+					this._collections.deleteAndDispose(removed.uri.toString());
+				}
+				for (const added of e.added) {
+					this.watchFolder(added);
+				}
+			})
+		);
 
 		for (const folder of this._workspaceContextService.getWorkspace().folders) {
 			this.watchFolder(folder);
@@ -62,15 +73,18 @@ export class CursorWorkspaceMcpDiscoveryAdapter extends FilesystemMcpDiscovery i
 			},
 		};
 
-		this._collections.set(folder.uri.toString(), this.watchFile(
-			URI.joinPath(folder.uri, '.cursor', 'mcp.json'),
-			collection,
-			DiscoverySource.CursorWorkspace,
-			contents => {
-				const defs = claudeConfigToServerDefinition(collection.id, contents, folder.uri);
-				defs?.forEach(d => d.roots = [folder.uri]);
-				return defs;
-			}
-		));
+		this._collections.set(
+			folder.uri.toString(),
+			this.watchFile(
+				URI.joinPath(folder.uri, '.cursor', 'mcp.json'),
+				collection,
+				DiscoverySource.CursorWorkspace,
+				contents => {
+					const defs = claudeConfigToServerDefinition(collection.id, contents, folder.uri);
+					defs?.forEach(d => (d.roots = [folder.uri]));
+					return defs;
+				}
+			)
+		);
 	}
 }

@@ -9,16 +9,16 @@ const mockVscode = {
 				accessToken: 'mock-access-token',
 				account: {
 					id: 'mock-user-id',
-					label: 'Mock User'
-				}
+					label: 'Mock User',
+				},
 			};
-		}
+		},
 	},
 	window: {
-		showInformationMessage: (message) => console.log(`Info: ${message}`),
-		showErrorMessage: (message) => console.log(`Error: ${message}`),
-		showWarningMessage: (message) => console.log(`Warning: ${message}`)
-	}
+		showInformationMessage: message => console.log(`Info: ${message}`),
+		showErrorMessage: message => console.log(`Error: ${message}`),
+		showWarningMessage: message => console.log(`Warning: ${message}`),
+	},
 };
 
 // Test GitHub Service functionality
@@ -48,7 +48,6 @@ async function testGitHubService() {
 		console.log('User info:', userInfo);
 
 		console.log('\n🎉 GitHub Service tests completed successfully!');
-
 	} catch (error) {
 		console.error('❌ GitHub Service test failed:', error.message);
 		console.error('Full error:', error);
@@ -83,7 +82,6 @@ async function testDeploymentService() {
 		console.log('API recommendations:', apiRec);
 
 		console.log('\n🎉 Deployment Service tests completed successfully!');
-
 	} catch (error) {
 		console.error('❌ Deployment Service test failed:', error.message);
 		console.error('Full error:', error);

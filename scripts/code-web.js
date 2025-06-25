@@ -23,27 +23,17 @@ const WEB_DEV_EXTENSIONS_ROOT = path.join(APP_ROOT, '.build', 'builtInWebDevExte
 const WEB_PLAYGROUND_VERSION = '0.0.13';
 
 async function main() {
-
 	const args = minimist(process.argv.slice(2), {
-		boolean: [
-			'help',
-			'playground'
-		],
-		string: [
-			'host',
-			'port',
-			'extensionPath',
-			'browser',
-			'browserType'
-		],
+		boolean: ['help', 'playground'],
+		string: ['host', 'port', 'extensionPath', 'browser', 'browserType'],
 	});
 
 	if (args.help) {
 		console.log(
 			'./scripts/code-web.sh|bat[, folderMountPath[, options]]\n' +
-			'                           Start with an empty workspace and no folder opened in explorer\n' +
-			'  folderMountPath          Open local folder (eg: use `.` to open current directory)\n' +
-			'  --playground             Include the vscode-web-playground extension\n'
+				'                           Start with an empty workspace and no folder opened in explorer\n' +
+				'  folderMountPath          Open local folder (eg: use `.` to open current directory)\n' +
+				'  --playground             Include the vscode-web-playground extension\n'
 		);
 		startServer(['--help']);
 		return;
@@ -76,7 +66,9 @@ async function main() {
 
 	serverArgs.push('--sourcesPath', APP_ROOT);
 
-	serverArgs.push(...process.argv.slice(2).filter(v => !v.startsWith('--playground') && v !== '--no-playground'));
+	serverArgs.push(
+		...process.argv.slice(2).filter(v => !v.startsWith('--playground') && v !== '--no-playground')
+	);
 
 	startServer(serverArgs);
 	if (openSystemBrowser) {
@@ -88,9 +80,12 @@ function startServer(runnerArguments) {
 	const env = { ...process.env };
 
 	console.log(`Starting @vscode/test-web: ${testWebLocation} ${runnerArguments.join(' ')}`);
-	const proc = cp.spawn(process.execPath, [testWebLocation, ...runnerArguments], { env, stdio: 'inherit' });
+	const proc = cp.spawn(process.execPath, [testWebLocation, ...runnerArguments], {
+		env,
+		stdio: 'inherit',
+	});
 
-	proc.on('exit', (code) => process.exit(code));
+	proc.on('exit', code => process.exit(code));
 
 	process.on('exit', () => proc.kill());
 	process.on('SIGINT', () => {
@@ -116,7 +111,7 @@ async function downloadPlaygroundFile(fileName, httpsLocation, destinationRoot) 
 	const destination = path.join(destinationRoot, fileName);
 	await fs.promises.mkdir(path.dirname(destination), { recursive: true });
 	const fileStream = fs.createWriteStream(destination);
-	return (new Promise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		const request = https.get(path.posix.join(httpsLocation, fileName), response => {
 			response.pipe(fileStream);
 			fileStream.on('finish', () => {
@@ -125,11 +120,10 @@ async function downloadPlaygroundFile(fileName, httpsLocation, destinationRoot) 
 			});
 		});
 		request.on('error', reject);
-	}));
+	});
 }
 
 async function ensureWebDevExtensions(verbose) {
-
 	// Playground (https://github.com/microsoft/vscode-web-playground)
 	const webDevPlaygroundRoot = path.join(WEB_DEV_EXTENSIONS_ROOT, 'vscode-web-playground');
 	const webDevPlaygroundExists = await directoryExists(webDevPlaygroundRoot);
@@ -137,7 +131,9 @@ async function ensureWebDevExtensions(verbose) {
 	let downloadPlayground = false;
 	if (webDevPlaygroundExists) {
 		try {
-			const webDevPlaygroundPackageJson = JSON.parse(((await fs.promises.readFile(path.join(webDevPlaygroundRoot, 'package.json'))).toString()));
+			const webDevPlaygroundPackageJson = JSON.parse(
+				(await fs.promises.readFile(path.join(webDevPlaygroundRoot, 'package.json'))).toString()
+			);
 			if (webDevPlaygroundPackageJson.version !== WEB_PLAYGROUND_VERSION) {
 				downloadPlayground = true;
 			}
@@ -150,16 +146,21 @@ async function ensureWebDevExtensions(verbose) {
 
 	if (downloadPlayground) {
 		if (verbose) {
-			fancyLog(`${ansiColors.magenta('Web Development extensions')}: Downloading vscode-web-playground to ${webDevPlaygroundRoot}`);
+			fancyLog(
+				`${ansiColors.magenta('Web Development extensions')}: Downloading vscode-web-playground to ${webDevPlaygroundRoot}`
+			);
 		}
 		const playgroundRepo = `https://raw.githubusercontent.com/microsoft/vscode-web-playground/main/`;
-		await Promise.all(['package.json', 'dist/extension.js', 'dist/extension.js.map'].map(
-			fileName => downloadPlaygroundFile(fileName, playgroundRepo, webDevPlaygroundRoot)
-		));
-
+		await Promise.all(
+			['package.json', 'dist/extension.js', 'dist/extension.js.map'].map(fileName =>
+				downloadPlaygroundFile(fileName, playgroundRepo, webDevPlaygroundRoot)
+			)
+		);
 	} else {
 		if (verbose) {
-			fancyLog(`${ansiColors.magenta('Web Development extensions')}: Using existing vscode-web-playground in ${webDevPlaygroundRoot}`);
+			fancyLog(
+				`${ansiColors.magenta('Web Development extensions')}: Using existing vscode-web-playground in ${webDevPlaygroundRoot}`
+			);
 		}
 	}
 }

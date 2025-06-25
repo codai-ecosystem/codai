@@ -14,9 +14,7 @@ import { isOneOf } from '../../../../../base/common/types.js';
  *
  * @throws Reading non-overridden property or function on `TObject` throws an error.
  */
-export function mockObject<TObject extends object>(
-	overrides: Partial<TObject>,
-): TObject {
+export function mockObject<TObject extends object>(overrides: Partial<TObject>): TObject {
 	// ensure that the overrides object cannot be modified afterward
 	overrides = Object.freeze(overrides);
 
@@ -32,18 +30,16 @@ export function mockObject<TObject extends object>(
 		{
 			get: <T extends keyof TObject>(
 				_target: TObject,
-				key: string | number | Symbol,
+				key: string | number | Symbol
 			): TObject[T] => {
-				assert(
-					isOneOf(key, keys),
-					`The '${key}' is not mocked.`,
-				);
+				assert(isOneOf(key, keys), `The '${key}' is not mocked.`);
 
 				// note! it's ok to type assert here, because of the explicit runtime
 				//       assertion  above
 				return overrides[key as T] as TObject[T];
 			},
-		});
+		}
+	);
 
 	// note! it's ok to type assert here, because of the runtime checks in
 	//       the `Proxy` getter
@@ -65,8 +61,6 @@ type TAnyService = {
  * @throws Reading non-overridden property or function
  * 		   on `TService` throws an error.
  */
-export function mockService<TService extends TAnyService>(
-	overrides: Partial<TService>,
-): TService {
+export function mockService<TService extends TAnyService>(overrides: Partial<TService>): TService {
 	return mockObject(overrides);
 }

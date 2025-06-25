@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { IDisposable, IReference } from '../../../../base/common/lifecycle.js';
 
-export class ObjectPool<TData extends IObjectData, T extends IPooledObject<TData>> implements IDisposable {
+export class ObjectPool<TData extends IObjectData, T extends IPooledObject<TData>>
+	implements IDisposable
+{
 	private readonly _unused = new Set<T>();
 	private readonly _used = new Set<T>();
 	private readonly _itemData = new Map<T, TData>();
 
-	constructor(
-		private readonly _create: (data: TData) => T,
-	) { }
+	constructor(private readonly _create: (data: TData) => T) {}
 
 	public getUnusedObj(data: TData): IReference<T> {
 		let obj: T;
@@ -36,7 +36,7 @@ export class ObjectPool<TData extends IObjectData, T extends IPooledObject<TData
 				} else {
 					this._unused.add(obj);
 				}
-			}
+			},
 		};
 	}
 

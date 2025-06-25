@@ -37,7 +37,7 @@ export class FileAnalysisPlugin {
 			duplicateLines: this.findDuplicateLines(lines),
 			functionCount: this.countFunctions(content),
 			classCount: this.countClasses(content),
-			importCount: this.countImports(content)
+			importCount: this.countImports(content),
 		};
 
 		const issues = this.detectIssues(content, document.languageId);
@@ -48,7 +48,7 @@ export class FileAnalysisPlugin {
 			metrics,
 			issues,
 			suggestions,
-			analysisDate: new Date()
+			analysisDate: new Date(),
 		};
 	}
 
@@ -72,7 +72,19 @@ export class FileAnalysisPlugin {
 
 	private calculateComplexity(content: string): number {
 		// Cyclomatic complexity calculation
-		const keywords = ['if', 'else', 'while', 'for', 'switch', 'case', 'catch', 'try', '&&', '||', '?'];
+		const keywords = [
+			'if',
+			'else',
+			'while',
+			'for',
+			'switch',
+			'case',
+			'catch',
+			'try',
+			'&&',
+			'||',
+			'?',
+		];
 		let complexity = 1; // Base complexity
 
 		keywords.forEach(keyword => {
@@ -134,7 +146,8 @@ export class FileAnalysisPlugin {
 	}
 
 	private countFunctions(content: string): number {
-		const functionRegex = /\b(?:function|def|fn|func)\s+\w+|(?:const|let|var)\s+\w+\s*=\s*(?:\([^)]*\)\s*=>|function)/g;
+		const functionRegex =
+			/\b(?:function|def|fn|func)\s+\w+|(?:const|let|var)\s+\w+\s*=\s*(?:\([^)]*\)\s*=>|function)/g;
 		return (content.match(functionRegex) || []).length;
 	}
 
@@ -160,7 +173,7 @@ export class FileAnalysisPlugin {
 					severity: 'warning',
 					message: `Line ${index + 1} is too long (${line.length} characters)`,
 					line: index + 1,
-					column: 120
+					column: 120,
 				});
 			}
 		});
@@ -183,7 +196,7 @@ export class FileAnalysisPlugin {
 				severity: 'warning',
 				message: `Code is deeply nested (depth: ${maxDepth}). Consider refactoring.`,
 				line: 1,
-				column: 1
+				column: 1,
 			});
 		}
 
@@ -197,7 +210,7 @@ export class FileAnalysisPlugin {
 				severity: 'info',
 				message: 'TODO comment found',
 				line: lineNumber,
-				column: match.index
+				column: match.index,
 			});
 		}
 
@@ -208,15 +221,21 @@ export class FileAnalysisPlugin {
 		const suggestions: string[] = [];
 
 		if (metrics.complexity > 20) {
-			suggestions.push('Consider breaking down complex functions into smaller, more manageable pieces');
+			suggestions.push(
+				'Consider breaking down complex functions into smaller, more manageable pieces'
+			);
 		}
 
 		if (metrics.maintainabilityIndex < 50) {
-			suggestions.push('This file may be difficult to maintain. Consider refactoring for better readability');
+			suggestions.push(
+				'This file may be difficult to maintain. Consider refactoring for better readability'
+			);
 		}
 
 		if (metrics.duplicateLines > 10) {
-			suggestions.push('Consider extracting common code into reusable functions to reduce duplication');
+			suggestions.push(
+				'Consider extracting common code into reusable functions to reduce duplication'
+			);
 		}
 
 		if (metrics.totalLines > 500) {
@@ -266,18 +285,31 @@ export class FileAnalysisPlugin {
 			totalFiles: allFiles.length,
 			totalLinesOfCode,
 			languages: Array.from(fileExtensions),
-			averageComplexity: allFiles.reduce((sum, f) => sum + f.metrics.complexity, 0) / allFiles.length,
-			averageMaintainability: allFiles.reduce((sum, f) => sum + f.metrics.maintainabilityIndex, 0) / allFiles.length,
+			averageComplexity:
+				allFiles.reduce((sum, f) => sum + f.metrics.complexity, 0) / allFiles.length,
+			averageMaintainability:
+				allFiles.reduce((sum, f) => sum + f.metrics.maintainabilityIndex, 0) / allFiles.length,
 			filesWithIssues: allFiles.filter(f => f.issues.length > 0).length,
 			topComplexFiles: allFiles
 				.sort((a, b) => b.metrics.complexity - a.metrics.complexity)
 				.slice(0, 10),
-			fileDetails: allFiles
+			fileDetails: allFiles,
 		};
 	}
 
 	private async findSourceFiles(rootPath: string): Promise<string[]> {
-		const sourceExtensions = ['.ts', '.js', '.py', '.java', '.cpp', '.c', '.cs', '.go', '.rs', '.php'];
+		const sourceExtensions = [
+			'.ts',
+			'.js',
+			'.py',
+			'.java',
+			'.cpp',
+			'.c',
+			'.cs',
+			'.go',
+			'.rs',
+			'.php',
+		];
 		const files: string[] = [];
 
 		const searchPattern = `**/*{${sourceExtensions.join(',')}}`;

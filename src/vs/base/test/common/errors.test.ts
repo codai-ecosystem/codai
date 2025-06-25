@@ -6,7 +6,10 @@
 import assert from 'assert';
 import { toErrorMessage } from '../../common/errorMessage.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
-import { transformErrorForSerialization, transformErrorFromSerialization } from '../../common/errors.js';
+import {
+	transformErrorForSerialization,
+	transformErrorFromSerialization,
+} from '../../common/errors.js';
 import { assertType } from '../../common/types.js';
 
 suite('Errors', () => {
@@ -31,8 +34,14 @@ suite('Errors', () => {
 		try {
 			throw new Error();
 		} catch (error) {
-			assert.strictEqual(toErrorMessage(error), 'An unknown error occurred. Please consult the log for more details.');
-			assert.ok(toErrorMessage(error, true).length > 'An unknown error occurred. Please consult the log for more details.'.length);
+			assert.strictEqual(
+				toErrorMessage(error),
+				'An unknown error occurred. Please consult the log for more details.'
+			);
+			assert.ok(
+				toErrorMessage(error, true).length >
+					'An unknown error occurred. Please consult the log for more details.'.length
+			);
 		}
 	});
 

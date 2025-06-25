@@ -19,9 +19,7 @@ type TToken = NewLine | Space | Word | Text<TToken[]>;
 /**
  * Test utility to clone a list of provided tokens.
  */
-export const cloneTokens = (
-	tokens: TToken[],
-): TToken[] => {
+export const cloneTokens = (tokens: TToken[]): TToken[] => {
 	const clonedTokens: TToken[] = [];
 
 	for (const token of tokens) {
@@ -46,21 +44,15 @@ export const cloneTokens = (
 			continue;
 		}
 
-		assertNever(
-			token,
-			`Unexpected token type '${token}'.`,
-		);
+		assertNever(token, `Unexpected token type '${token}'.`);
 	}
 
 	for (let i = 0; i < tokens.length; i++) {
-		assert(
-			tokens[i].equals(clonedTokens[i]),
-			`Original and cloned tokens #${i} must be equal.`,
-		);
+		assert(tokens[i].equals(clonedTokens[i]), `Original and cloned tokens #${i} must be equal.`);
 
 		assert(
 			tokens[i] !== clonedTokens[i],
-			`Original and cloned tokens #${i} must not be strict equal.`,
+			`Original and cloned tokens #${i} must not be strict equal.`
 		);
 	}
 
@@ -73,7 +65,7 @@ export const cloneTokens = (
 export const randomTokens = (
 	tokenCount: number = randomInt(20, 10),
 	startLine: number = randomInt(100, 1),
-	startColumn: number = randomInt(100, 1),
+	startColumn: number = randomInt(100, 1)
 ): TToken[] => {
 	const tokens = [];
 
@@ -83,28 +75,14 @@ export const randomTokens = (
 		switch (caseNumber) {
 			case 1:
 			case 2: {
-				tokens.push(
-					new NewLine(new Range(
-						startLine,
-						startColumn,
-						startLine,
-						startColumn + 1,
-					)),
-				);
+				tokens.push(new NewLine(new Range(startLine, startColumn, startLine, startColumn + 1)));
 				startLine++;
 				startColumn = 1;
 				break;
 			}
 			case 3:
 			case 4: {
-				tokens.push(
-					new Space(new Range(
-						startLine,
-						startColumn,
-						startLine,
-						startColumn + 1,
-					)),
-				);
+				tokens.push(new Space(new Range(startLine, startColumn, startLine, startColumn + 1)));
 				startColumn++;
 				break;
 			}
@@ -114,24 +92,14 @@ export const randomTokens = (
 				const text = `word${randomInt(Number.MAX_SAFE_INTEGER, 1)}`;
 				const endColumn = startColumn + text.length;
 
-				tokens.push(
-					new Word(
-						new Range(
-							startLine, startColumn,
-							startLine, endColumn,
-						),
-						text,
-					),
-				);
+				tokens.push(new Word(new Range(startLine, startColumn, startLine, endColumn), text));
 
 				startColumn = endColumn;
 				break;
 			}
 
 			case 7: {
-				const token = new Text(
-					randomTokens(randomInt(3, 1), startLine, startColumn),
-				);
+				const token = new Text(randomTokens(randomInt(3, 1), startLine, startColumn));
 
 				tokens.push(token);
 

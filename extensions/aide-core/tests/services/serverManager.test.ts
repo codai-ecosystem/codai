@@ -42,7 +42,8 @@ describe('ServerManager Functionality', () => {
 
 			assert.strictEqual(parsed.name, 'test-api');
 		});
-	}); describe('generateExpressServerCode', () => {
+	});
+	describe('generateExpressServerCode', () => {
 		it('should generate Express server code', () => {
 			const port = 3000;
 
@@ -51,7 +52,8 @@ describe('ServerManager Functionality', () => {
 			assert.ok(code.includes('const express = require'));
 			assert.ok(code.includes(`const PORT = ${port}`));
 			assert.ok(code.includes('app.listen'));
-		}); it('should generate NestJS server code', () => {
+		});
+		it('should generate NestJS server code', () => {
 			const port = 3000;
 
 			const code = serverManager.generateNestJsServerCode(port);
@@ -60,7 +62,8 @@ describe('ServerManager Functionality', () => {
 			assert.ok(code.includes('bootstrap'));
 			assert.ok(code.includes(`await app.listen(${port})`));
 		});
-	}); describe('startDevServer', () => {
+	});
+	describe('startDevServer', () => {
 		it('should start a dev server and return server info', async () => {
 			const projectPath = 'test-api';
 			const port = '3000';

@@ -12,7 +12,6 @@ interface ILog {
 }
 
 export class BufferLogger extends AbstractMessageLogger {
-
 	declare readonly _serviceBrand: undefined;
 	private buffer: ILog[] = [];
 	private _logger: ILogger | undefined = undefined;

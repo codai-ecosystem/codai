@@ -11,7 +11,7 @@ import {
 	Sidebar,
 	StatusBar,
 	Button,
-	useMemoryGraph
+	useMemoryGraph,
 } from '@codai/ui-components';
 import { ipcRenderer } from 'electron';
 
@@ -38,7 +38,7 @@ const sampleNodes = [
 		version: '1.0.0',
 		category: 'goal' as const,
 		priority: 'high' as const,
-		status: 'active' as const
+		status: 'active' as const,
 	},
 	{
 		id: 'node-2',
@@ -49,7 +49,7 @@ const sampleNodes = [
 		updatedAt: new Date(),
 		version: '1.0.0',
 		status: 'implemented' as const,
-		priority: 'high' as const
+		priority: 'high' as const,
 	},
 	{
 		id: 'node-3',
@@ -60,7 +60,7 @@ const sampleNodes = [
 		updatedAt: new Date(),
 		version: '1.0.0',
 		status: 'implemented' as const,
-		priority: 'high' as const
+		priority: 'high' as const,
 	},
 	{
 		id: 'node-4',
@@ -71,8 +71,8 @@ const sampleNodes = [
 		updatedAt: new Date(),
 		version: '1.0.0',
 		status: 'implemented' as const,
-		priority: 'high' as const
-	}
+		priority: 'high' as const,
+	},
 ];
 
 // Sample relationships between nodes with proper types
@@ -83,7 +83,7 @@ const sampleRelationships = [
 		toNodeId: 'node-2',
 		type: 'contains' as const,
 		strength: 1.0,
-		createdAt: new Date()
+		createdAt: new Date(),
 	},
 	{
 		id: 'rel-2',
@@ -91,7 +91,7 @@ const sampleRelationships = [
 		toNodeId: 'node-3',
 		type: 'contains' as const,
 		strength: 1.0,
-		createdAt: new Date()
+		createdAt: new Date(),
 	},
 	{
 		id: 'rel-3',
@@ -99,7 +99,7 @@ const sampleRelationships = [
 		toNodeId: 'node-4',
 		type: 'contains' as const,
 		strength: 1.0,
-		createdAt: new Date()
+		createdAt: new Date(),
 	},
 	{
 		id: 'rel-4',
@@ -107,8 +107,8 @@ const sampleRelationships = [
 		toNodeId: 'node-4',
 		type: 'uses' as const,
 		strength: 1.0,
-		createdAt: new Date()
-	}
+		createdAt: new Date(),
+	},
 ];
 
 const App: React.FC = () => {
@@ -123,8 +123,8 @@ const App: React.FC = () => {
 			content: 'Welcome to AIDE! How can I help you today?',
 			type: 'response',
 			agentId: 'system',
-			timestamp: new Date()
-		}
+			timestamp: new Date(),
+		},
 	]);
 
 	// Listen for messages from the main process
@@ -134,13 +134,15 @@ const App: React.FC = () => {
 		};
 
 		const handleNewConversation = () => {
-			setMessages([{
-				id: Date.now().toString(),
-				content: 'Welcome to AIDE! How can I help you today?',
-				type: 'response',
-				agentId: 'system',
-				timestamp: new Date()
-			}]);
+			setMessages([
+				{
+					id: Date.now().toString(),
+					content: 'Welcome to AIDE! How can I help you today?',
+					type: 'response',
+					agentId: 'system',
+					timestamp: new Date(),
+				},
+			]);
 		};
 
 		const handleClearConversation = () => {
@@ -167,7 +169,7 @@ const App: React.FC = () => {
 			content,
 			type: 'request',
 			agentId: 'user',
-			timestamp: new Date()
+			timestamp: new Date(),
 		};
 
 		setMessages([...messages, userMessage]);
@@ -178,10 +180,11 @@ const App: React.FC = () => {
 			setIsLoading(false);
 			const assistantMessage: Message = {
 				id: (Date.now() + 1).toString(),
-				content: 'I received your message and I\'m working on implementing this feature. The Electron app is working!',
+				content:
+					"I received your message and I'm working on implementing this feature. The Electron app is working!",
 				type: 'response',
 				agentId: 'assistant',
-				timestamp: new Date()
+				timestamp: new Date(),
 			};
 			setMessages(prev => [...prev, assistantMessage]);
 		}, 1500);
@@ -225,24 +228,26 @@ const App: React.FC = () => {
 			header={<Header title="AIDE" subtitle="AI Development Environment" actions={headerActions} />}
 			sidebar={sidebarContent}
 			statusBar={statusBarContent}
-		>			{showGraph ? (
-			<MemoryGraphVisualization
-				nodes={sampleNodes}
-				relationships={sampleRelationships}
-				{...(selectedNodeId && { selectedNodeId })}
-				onNodeSelect={(id) => setSelectedNodeId(id)}
-				layout="force"
-				className="h-full"
-			/>
-		) : (
-			<ConversationView
-				messages={messages}
-				onSendMessage={handleSendMessage}
-				isLoading={isLoading}
-				placeholder="Describe what you'd like to build..."
-				className="h-full"
-			/>
-		)}
+		>
+			{' '}
+			{showGraph ? (
+				<MemoryGraphVisualization
+					nodes={sampleNodes}
+					relationships={sampleRelationships}
+					{...(selectedNodeId && { selectedNodeId })}
+					onNodeSelect={id => setSelectedNodeId(id)}
+					layout="force"
+					className="h-full"
+				/>
+			) : (
+				<ConversationView
+					messages={messages}
+					onSendMessage={handleSendMessage}
+					isLoading={isLoading}
+					placeholder="Describe what you'd like to build..."
+					className="h-full"
+				/>
+			)}
 		</Layout>
 	);
 };

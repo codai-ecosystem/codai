@@ -8,7 +8,8 @@ import { Application, Logger } from '../../../../automation';
 import { installAllHandlers } from '../../utils';
 
 export function setup(logger: Logger) {
-	describe('Notebooks', () => { // https://github.com/microsoft/vscode/issues/140575
+	describe('Notebooks', () => {
+		// https://github.com/microsoft/vscode/issues/140575
 
 		// Shared before/after handling
 		installAllHandlers(logger);
@@ -27,20 +28,26 @@ export function setup(logger: Logger) {
 
 		it.skip('check heap leaks', async function () {
 			const app = this.app as Application;
-			await app.profiler.checkHeapLeaks(['NotebookTextModel', 'NotebookCellTextModel', 'NotebookEventDispatcher'], async () => {
-				await app.workbench.notebook.openNotebook();
-				await app.workbench.quickaccess.runCommand('workbench.action.files.save');
-				await app.workbench.quickaccess.runCommand('workbench.action.closeActiveEditor');
-			});
+			await app.profiler.checkHeapLeaks(
+				['NotebookTextModel', 'NotebookCellTextModel', 'NotebookEventDispatcher'],
+				async () => {
+					await app.workbench.notebook.openNotebook();
+					await app.workbench.quickaccess.runCommand('workbench.action.files.save');
+					await app.workbench.quickaccess.runCommand('workbench.action.closeActiveEditor');
+				}
+			);
 		});
 
 		it('check object leaks', async function () {
 			const app = this.app as Application;
-			await app.profiler.checkObjectLeaks(['NotebookTextModel', 'NotebookCellTextModel', 'NotebookEventDispatcher'], async () => {
-				await app.workbench.notebook.openNotebook();
-				await app.workbench.quickaccess.runCommand('workbench.action.files.save');
-				await app.workbench.quickaccess.runCommand('workbench.action.closeActiveEditor');
-			});
+			await app.profiler.checkObjectLeaks(
+				['NotebookTextModel', 'NotebookCellTextModel', 'NotebookEventDispatcher'],
+				async () => {
+					await app.workbench.notebook.openNotebook();
+					await app.workbench.quickaccess.runCommand('workbench.action.files.save');
+					await app.workbench.quickaccess.runCommand('workbench.action.closeActiveEditor');
+				}
+			);
 		});
 
 		it.skip('inserts/edits code cell', async function () {
@@ -72,7 +79,8 @@ export function setup(logger: Logger) {
 			await app.workbench.notebook.waitForMarkdownContents('p', 'Markdown Cell');
 		});
 
-		it.skip('moves focus in and out of output', async function () { // TODO@rebornix https://github.com/microsoft/vscode/issues/139270
+		it.skip('moves focus in and out of output', async function () {
+			// TODO@rebornix https://github.com/microsoft/vscode/issues/139270
 			const app = this.app as Application;
 			await app.workbench.notebook.openNotebook();
 			await app.workbench.notebook.executeActiveCell();
@@ -81,11 +89,14 @@ export function setup(logger: Logger) {
 			await app.workbench.notebook.waitForActiveCellEditorContents('code()');
 		});
 
-		it.skip('cell action execution', async function () { // TODO@rebornix https://github.com/microsoft/vscode/issues/139270
+		it.skip('cell action execution', async function () {
+			// TODO@rebornix https://github.com/microsoft/vscode/issues/139270
 			const app = this.app as Application;
 			await app.workbench.notebook.openNotebook();
 			await app.workbench.notebook.insertNotebookCell('code');
-			await app.workbench.notebook.executeCellAction('.notebook-editor .monaco-list-row.focused div.monaco-toolbar .codicon-debug');
+			await app.workbench.notebook.executeCellAction(
+				'.notebook-editor .monaco-list-row.focused div.monaco-toolbar .codicon-debug'
+			);
 			await app.workbench.notebook.waitForActiveCellEditorContents('test');
 		});
 	});

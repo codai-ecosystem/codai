@@ -9,7 +9,11 @@ import { IInstantiationService } from '../../../../../platform/instantiation/com
 import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
 import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
 import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
-import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '../../../../../platform/workspace/common/workspace.js';
+import {
+	isTemporaryWorkspace,
+	IWorkspaceContextService,
+	WorkbenchState,
+} from '../../../../../platform/workspace/common/workspace.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { ViewPane } from '../../../../browser/parts/views/viewPane.js';
 import { ResourcesDropHandler } from '../../../../browser/dnd.js';
@@ -24,9 +28,8 @@ import { ILocalizedString } from '../../../../../platform/action/common/action.j
 import { IHoverService } from '../../../../../platform/hover/browser/hover.js';
 
 export class EmptyView extends ViewPane {
-
 	static readonly ID: string = 'workbench.explorer.emptyView';
-	static readonly NAME: ILocalizedString = nls.localize2('noWorkspace', "No Folder Opened");
+	static readonly NAME: ILocalizedString = nls.localize2('noWorkspace', 'No Folder Opened');
 	private _disposed: boolean = false;
 
 	constructor(
@@ -41,9 +44,20 @@ export class EmptyView extends ViewPane {
 		@ILabelService private labelService: ILabelService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IOpenerService openerService: IOpenerService,
-		@IHoverService hoverService: IHoverService,
+		@IHoverService hoverService: IHoverService
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			hoverService
+		);
 
 		this._register(this.contextService.onDidChangeWorkbenchState(() => this.refreshTitle()));
 		this._register(this.labelService.onDidChangeFormatters(() => this.refreshTitle()));
@@ -56,28 +70,32 @@ export class EmptyView extends ViewPane {
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 
-		this._register(new DragAndDropObserver(container, {
-			onDrop: e => {
-				container.style.backgroundColor = '';
-				const dropHandler = this.instantiationService.createInstance(ResourcesDropHandler, { allowWorkspaceOpen: !isWeb || isTemporaryWorkspace(this.contextService.getWorkspace()) });
-				dropHandler.handleDrop(e, getWindow(container));
-			},
-			onDragEnter: () => {
-				const color = this.themeService.getColorTheme().getColor(listDropOverBackground);
-				container.style.backgroundColor = color ? color.toString() : '';
-			},
-			onDragEnd: () => {
-				container.style.backgroundColor = '';
-			},
-			onDragLeave: () => {
-				container.style.backgroundColor = '';
-			},
-			onDragOver: e => {
-				if (e.dataTransfer) {
-					e.dataTransfer.dropEffect = 'copy';
-				}
-			}
-		}));
+		this._register(
+			new DragAndDropObserver(container, {
+				onDrop: e => {
+					container.style.backgroundColor = '';
+					const dropHandler = this.instantiationService.createInstance(ResourcesDropHandler, {
+						allowWorkspaceOpen: !isWeb || isTemporaryWorkspace(this.contextService.getWorkspace()),
+					});
+					dropHandler.handleDrop(e, getWindow(container));
+				},
+				onDragEnter: () => {
+					const color = this.themeService.getColorTheme().getColor(listDropOverBackground);
+					container.style.backgroundColor = color ? color.toString() : '';
+				},
+				onDragEnd: () => {
+					container.style.backgroundColor = '';
+				},
+				onDragLeave: () => {
+					container.style.backgroundColor = '';
+				},
+				onDragOver: e => {
+					if (e.dataTransfer) {
+						e.dataTransfer.dropEffect = 'copy';
+					}
+				},
+			})
+		);
 
 		this.refreshTitle();
 	}

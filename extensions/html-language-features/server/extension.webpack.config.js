@@ -20,6 +20,6 @@ module.exports = withDefaults({
 		path: path.join(__dirname, 'dist', 'node'),
 	},
 	externals: {
-		'typescript': 'commonjs typescript'
-	}
+		typescript: 'commonjs typescript',
+	},
 });

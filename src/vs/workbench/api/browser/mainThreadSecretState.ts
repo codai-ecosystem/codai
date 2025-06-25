@@ -4,8 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../base/common/lifecycle.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
-import { ExtHostContext, ExtHostSecretStateShape, MainContext, MainThreadSecretStateShape } from '../common/extHost.protocol.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
+import {
+	ExtHostContext,
+	ExtHostSecretStateShape,
+	MainContext,
+	MainThreadSecretStateShape,
+} from '../common/extHost.protocol.js';
 import { ILogService } from '../../../platform/log/common/log.js';
 import { SequencerByKey } from '../../../base/common/async.js';
 import { ISecretStorageService } from '../../../platform/secrets/common/secrets.js';
@@ -27,32 +35,44 @@ export class MainThreadSecretState extends Disposable implements MainThreadSecre
 
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostSecretState);
 
-		this._register(this.secretStorageService.onDidChangeSecret((e: string) => {
-			try {
-				const { extensionId, key } = this.parseKey(e);
-				if (extensionId && key) {
-					this._proxy.$onDidChangePassword({ extensionId, key });
+		this._register(
+			this.secretStorageService.onDidChangeSecret((e: string) => {
+				try {
+					const { extensionId, key } = this.parseKey(e);
+					if (extensionId && key) {
+						this._proxy.$onDidChangePassword({ extensionId, key });
+					}
+				} catch (e) {
+					// Core can use non-JSON values as keys, so we may not be able to parse them.
 				}
-			} catch (e) {
-				// Core can use non-JSON values as keys, so we may not be able to parse them.
-			}
-		}));
+			})
+		);
 	}
 
 	$getPassword(extensionId: string, key: string): Promise<string | undefined> {
-		this.logService.trace(`[mainThreadSecretState] Getting password for ${extensionId} extension: `, key);
+		this.logService.trace(
+			`[mainThreadSecretState] Getting password for ${extensionId} extension: `,
+			key
+		);
 		return this._sequencer.queue(extensionId, () => this.doGetPassword(extensionId, key));
 	}
 
 	private async doGetPassword(extensionId: string, key: string): Promise<string | undefined> {
 		const fullKey = this.getKey(extensionId, key);
 		const password = await this.secretStorageService.get(fullKey);
-		this.logService.trace(`[mainThreadSecretState] ${password ? 'P' : 'No p'}assword found for: `, extensionId, key);
+		this.logService.trace(
+			`[mainThreadSecretState] ${password ? 'P' : 'No p'}assword found for: `,
+			extensionId,
+			key
+		);
 		return password;
 	}
 
 	$setPassword(extensionId: string, key: string, value: string): Promise<void> {
-		this.logService.trace(`[mainThreadSecretState] Setting password for ${extensionId} extension: `, key);
+		this.logService.trace(
+			`[mainThreadSecretState] Setting password for ${extensionId} extension: `,
+			key
+		);
 		return this._sequencer.queue(extensionId, () => this.doSetPassword(extensionId, key, value));
 	}
 
@@ -63,7 +83,10 @@ export class MainThreadSecretState extends Disposable implements MainThreadSecre
 	}
 
 	$deletePassword(extensionId: string, key: string): Promise<void> {
-		this.logService.trace(`[mainThreadSecretState] Deleting password for ${extensionId} extension: `, key);
+		this.logService.trace(
+			`[mainThreadSecretState] Deleting password for ${extensionId} extension: `,
+			key
+		);
 		return this._sequencer.queue(extensionId, () => this.doDeletePassword(extensionId, key));
 	}
 

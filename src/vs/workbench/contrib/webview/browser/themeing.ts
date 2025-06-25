@@ -6,11 +6,17 @@
 import { DEFAULT_FONT_FAMILY } from '../../../../base/browser/fonts.js';
 import { Emitter } from '../../../../base/common/event.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { EDITOR_FONT_DEFAULTS, IEditorOptions } from '../../../../editor/common/config/editorOptions.js';
+import {
+	EDITOR_FONT_DEFAULTS,
+	IEditorOptions,
+} from '../../../../editor/common/config/editorOptions.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import * as colorRegistry from '../../../../platform/theme/common/colorRegistry.js';
 import { ColorScheme } from '../../../../platform/theme/common/theme.js';
-import { IWorkbenchColorTheme, IWorkbenchThemeService } from '../../../services/themes/common/workbenchThemeService.js';
+import {
+	IWorkbenchColorTheme,
+	IWorkbenchThemeService,
+} from '../../../services/themes/common/workbenchThemeService.js';
 import { WebviewStyles } from './webview.js';
 
 interface WebviewThemeData {
@@ -21,7 +27,6 @@ interface WebviewThemeData {
 }
 
 export class WebviewThemeDataProvider extends Disposable {
-
 	private _cachedWebViewThemeData: WebviewThemeData | undefined = undefined;
 
 	private readonly _onThemeDataChanged = this._register(new Emitter<void>());
@@ -29,20 +34,29 @@ export class WebviewThemeDataProvider extends Disposable {
 
 	constructor(
 		@IWorkbenchThemeService private readonly _themeService: IWorkbenchThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService private readonly _configurationService: IConfigurationService
 	) {
 		super();
 
-		this._register(this._themeService.onDidColorThemeChange(() => {
-			this._reset();
-		}));
-
-		const webviewConfigurationKeys = ['editor.fontFamily', 'editor.fontWeight', 'editor.fontSize', 'accessibility.underlineLinks'];
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (webviewConfigurationKeys.some(key => e.affectsConfiguration(key))) {
+		this._register(
+			this._themeService.onDidColorThemeChange(() => {
 				this._reset();
-			}
-		}));
+			})
+		);
+
+		const webviewConfigurationKeys = [
+			'editor.fontFamily',
+			'editor.fontWeight',
+			'editor.fontSize',
+			'accessibility.underlineLinks',
+		];
+		this._register(
+			this._configurationService.onDidChangeConfiguration(e => {
+				if (webviewConfigurationKeys.some(key => e.affectsConfiguration(key))) {
+					this._reset();
+				}
+			})
+		);
 	}
 
 	public getTheme(): IWorkbenchColorTheme {
@@ -58,13 +72,16 @@ export class WebviewThemeDataProvider extends Disposable {
 			const linkUnderlines = this._configurationService.getValue('accessibility.underlineLinks');
 
 			const theme = this._themeService.getColorTheme();
-			const exportedColors = colorRegistry.getColorRegistry().getColors().reduce<Record<string, string>>((colors, entry) => {
-				const color = theme.getColor(entry.id);
-				if (color) {
-					colors['vscode-' + entry.id.replace('.', '-')] = color.toString();
-				}
-				return colors;
-			}, {});
+			const exportedColors = colorRegistry
+				.getColorRegistry()
+				.getColors()
+				.reduce<Record<string, string>>((colors, entry) => {
+					const color = theme.getColor(entry.id);
+					if (color) {
+						colors['vscode-' + entry.id.replace('.', '-')] = color.toString();
+					}
+					return colors;
+				}, {});
 
 			const styles = {
 				'vscode-font-family': DEFAULT_FONT_FAMILY,
@@ -74,11 +91,16 @@ export class WebviewThemeDataProvider extends Disposable {
 				'vscode-editor-font-weight': editorFontWeight,
 				'vscode-editor-font-size': editorFontSize + 'px',
 				'text-link-decoration': linkUnderlines ? 'underline' : 'none',
-				...exportedColors
+				...exportedColors,
 			};
 
 			const activeTheme = ApiThemeClassName.fromTheme(theme);
-			this._cachedWebViewThemeData = { styles, activeTheme, themeLabel: theme.label, themeId: theme.settingsId };
+			this._cachedWebViewThemeData = {
+				styles,
+				activeTheme,
+				themeLabel: theme.label,
+				themeId: theme.settingsId,
+			};
 		}
 
 		return this._cachedWebViewThemeData;
@@ -100,10 +122,14 @@ enum ApiThemeClassName {
 namespace ApiThemeClassName {
 	export function fromTheme(theme: IWorkbenchColorTheme): ApiThemeClassName {
 		switch (theme.type) {
-			case ColorScheme.LIGHT: return ApiThemeClassName.light;
-			case ColorScheme.DARK: return ApiThemeClassName.dark;
-			case ColorScheme.HIGH_CONTRAST_DARK: return ApiThemeClassName.highContrast;
-			case ColorScheme.HIGH_CONTRAST_LIGHT: return ApiThemeClassName.highContrastLight;
+			case ColorScheme.LIGHT:
+				return ApiThemeClassName.light;
+			case ColorScheme.DARK:
+				return ApiThemeClassName.dark;
+			case ColorScheme.HIGH_CONTRAST_DARK:
+				return ApiThemeClassName.highContrast;
+			case ColorScheme.HIGH_CONTRAST_LIGHT:
+				return ApiThemeClassName.highContrastLight;
 		}
 	}
 }

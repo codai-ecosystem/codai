@@ -7,18 +7,22 @@ import { adminAuth, adminDb, COLLECTIONS } from '../../../lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
 	try {
-		const { email, password, displayName = 'Test User', role = 'user', plan = 'free' } = await request.json();
+		const {
+			email,
+			password,
+			displayName = 'Test User',
+			role = 'user',
+			plan = 'free',
+		} = await request.json();
 
 		// Validate input
 		if (!email || !password) {
-			return NextResponse.json(
-				{ error: 'Email and password are required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
 		}
 
 		// Check if this is a development environment or if we're allowing test user creation
-		const isDevOrTestMode = process.env.NODE_ENV === 'development' ||
+		const isDevOrTestMode =
+			process.env.NODE_ENV === 'development' ||
 			process.env.ALLOW_TEST_USERS === 'true' ||
 			email.includes('@aide-dev.com');
 
@@ -64,16 +68,12 @@ export async function POST(request: NextRequest) {
 				plan,
 			},
 		});
-
 	} catch (error: any) {
 		console.error('Error creating test user:', error);
 
 		// Handle specific Firebase errors
 		if (error.code === 'auth/email-already-exists') {
-			return NextResponse.json(
-				{ error: 'User with this email already exists' },
-				{ status: 409 }
-			);
+			return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
 		}
 
 		return NextResponse.json(
@@ -85,14 +85,14 @@ export async function POST(request: NextRequest) {
 
 // GET endpoint to check if test user creation is available
 export async function GET() {
-	const isDevOrTestMode = process.env.NODE_ENV === 'development' ||
-		process.env.ALLOW_TEST_USERS === 'true';
+	const isDevOrTestMode =
+		process.env.NODE_ENV === 'development' || process.env.ALLOW_TEST_USERS === 'true';
 
 	return NextResponse.json({
 		testUserCreationAvailable: isDevOrTestMode,
 		environment: process.env.NODE_ENV,
 		message: isDevOrTestMode
 			? 'Test user creation is available'
-			: 'Test user creation is disabled in production'
+			: 'Test user creation is disabled in production',
 	});
 }

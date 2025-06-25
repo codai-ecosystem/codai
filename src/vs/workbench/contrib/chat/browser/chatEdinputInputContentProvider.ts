@@ -8,9 +8,11 @@ import { URI } from '../../../../base/common/uri.js';
 import { ILanguageService } from '../../../../editor/common/languages/language.js';
 import { ITextModel } from '../../../../editor/common/model.js';
 import { IModelService } from '../../../../editor/common/services/model.js';
-import { ITextModelContentProvider, ITextModelService } from '../../../../editor/common/services/resolverService.js';
+import {
+	ITextModelContentProvider,
+	ITextModelService,
+} from '../../../../editor/common/services/resolverService.js';
 import { ChatInputPart } from './chatInputPart.js';
-
 
 export class ChatInputBoxContentProvider extends Disposable implements ITextModelContentProvider {
 	constructor(
@@ -19,7 +21,9 @@ export class ChatInputBoxContentProvider extends Disposable implements ITextMode
 		@ILanguageService private readonly languageService: ILanguageService
 	) {
 		super();
-		this._register(textModelService.registerTextModelContentProvider(ChatInputPart.INPUT_SCHEME, this));
+		this._register(
+			textModelService.registerTextModelContentProvider(ChatInputPart.INPUT_SCHEME, this)
+		);
 	}
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
@@ -27,6 +31,10 @@ export class ChatInputBoxContentProvider extends Disposable implements ITextMode
 		if (existing) {
 			return existing;
 		}
-		return this.modelService.createModel('', this.languageService.createById('chatinput'), resource);
+		return this.modelService.createModel(
+			'',
+			this.languageService.createById('chatinput'),
+			resource
+		);
 	}
 }

@@ -15,7 +15,12 @@ import { ThemeIcon } from '../../../../base/common/themables.js';
 import { URI } from '../../../../base/common/uri.js';
 import { localize } from '../../../../nls.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
-import { getFullyQualifiedId, IChatAgentData, IChatAgentNameService, IChatAgentService } from '../common/chatAgents.js';
+import {
+	getFullyQualifiedId,
+	IChatAgentData,
+	IChatAgentNameService,
+	IChatAgentService,
+} from '../common/chatAgents.js';
 import { showExtensionsWithIdsCommandId } from '../../extensions/browser/extensionsActions.js';
 import { IExtensionsWorkbenchService } from '../../extensions/common/extensions.js';
 import { verifiedPublisherIcon } from '../../../services/extensionManagement/common/extensionsIcons.js';
@@ -35,27 +40,25 @@ export class ChatAgentHover extends Disposable {
 	constructor(
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 		@IExtensionsWorkbenchService private readonly extensionService: IExtensionsWorkbenchService,
-		@IChatAgentNameService private readonly chatAgentNameService: IChatAgentNameService,
+		@IChatAgentNameService private readonly chatAgentNameService: IChatAgentNameService
 	) {
 		super();
 
-		const hoverElement = dom.h(
-			'.chat-agent-hover@root',
-			[
-				dom.h('.chat-agent-hover-header', [
-					dom.h('.chat-agent-hover-icon@icon'),
-					dom.h('.chat-agent-hover-details', [
-						dom.h('.chat-agent-hover-name@name'),
-						dom.h('.chat-agent-hover-extension', [
-							dom.h('.chat-agent-hover-extension-name@extensionName'),
-							dom.h('.chat-agent-hover-separator@separator'),
-							dom.h('.chat-agent-hover-publisher@publisher'),
-						]),
+		const hoverElement = dom.h('.chat-agent-hover@root', [
+			dom.h('.chat-agent-hover-header', [
+				dom.h('.chat-agent-hover-icon@icon'),
+				dom.h('.chat-agent-hover-details', [
+					dom.h('.chat-agent-hover-name@name'),
+					dom.h('.chat-agent-hover-extension', [
+						dom.h('.chat-agent-hover-extension-name@extensionName'),
+						dom.h('.chat-agent-hover-separator@separator'),
+						dom.h('.chat-agent-hover-publisher@publisher'),
 					]),
 				]),
-				dom.h('.chat-agent-hover-warning@warning'),
-				dom.h('span.chat-agent-hover-description@description'),
-			]);
+			]),
+			dom.h('.chat-agent-hover-warning@warning'),
+			dom.h('span.chat-agent-hover-description@description'),
+		]);
 		this.domNode = hoverElement.root;
 
 		this.icon = hoverElement.icon;
@@ -65,16 +68,23 @@ export class ChatAgentHover extends Disposable {
 
 		hoverElement.separator.textContent = '|';
 
-		const verifiedBadge = dom.$('span.extension-verified-publisher', undefined, renderIcon(verifiedPublisherIcon));
+		const verifiedBadge = dom.$(
+			'span.extension-verified-publisher',
+			undefined,
+			renderIcon(verifiedPublisherIcon)
+		);
 
 		this.publisherName = dom.$('span.chat-agent-hover-publisher-name');
-		dom.append(
-			hoverElement.publisher,
-			verifiedBadge,
-			this.publisherName);
+		dom.append(hoverElement.publisher, verifiedBadge, this.publisherName);
 
 		hoverElement.warning.appendChild(renderIcon(Codicon.warning));
-		hoverElement.warning.appendChild(dom.$('span', undefined, localize('reservedName', "This chat extension is using a reserved name.")));
+		hoverElement.warning.appendChild(
+			dom.$(
+				'span',
+				undefined,
+				localize('reservedName', 'This chat extension is using a reserved name.')
+			)
+		);
 	}
 
 	setAgent(id: string): void {
@@ -108,31 +118,38 @@ export class ChatAgentHover extends Disposable {
 		this.domNode.classList.toggle('verifiedPublisher', false);
 		if (!agent.isDynamic) {
 			const cancel = this._register(new CancellationTokenSource());
-			this.extensionService.getExtensions([{ id: agent.extensionId.value }], cancel.token).then(extensions => {
-				cancel.dispose();
-				const extension = extensions[0];
-				if (extension?.publisherDomain?.verified) {
-					this.domNode.classList.toggle('verifiedPublisher', true);
-					this._onDidChangeContents.fire();
-				}
-			});
+			this.extensionService
+				.getExtensions([{ id: agent.extensionId.value }], cancel.token)
+				.then(extensions => {
+					cancel.dispose();
+					const extension = extensions[0];
+					if (extension?.publisherDomain?.verified) {
+						this.domNode.classList.toggle('verifiedPublisher', true);
+						this._onDidChangeContents.fire();
+					}
+				});
 		}
 	}
 }
 
-export function getChatAgentHoverOptions(getAgent: () => IChatAgentData | undefined, commandService: ICommandService): IManagedHoverOptions {
+export function getChatAgentHoverOptions(
+	getAgent: () => IChatAgentData | undefined,
+	commandService: ICommandService
+): IManagedHoverOptions {
 	return {
 		actions: [
 			{
 				commandId: showExtensionsWithIdsCommandId,
-				label: localize('viewExtensionLabel', "View Extension"),
+				label: localize('viewExtensionLabel', 'View Extension'),
 				run: () => {
 					const agent = getAgent();
 					if (agent) {
-						commandService.executeCommand(showExtensionsWithIdsCommandId, [agent.extensionId.value]);
+						commandService.executeCommand(showExtensionsWithIdsCommandId, [
+							agent.extensionId.value,
+						]);
 					}
 				},
-			}
-		]
+			},
+		],
 	};
 }

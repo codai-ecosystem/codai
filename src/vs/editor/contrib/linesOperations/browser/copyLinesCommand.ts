@@ -5,11 +5,14 @@
 
 import { Range } from '../../../common/core/range.js';
 import { Selection, SelectionDirection } from '../../../common/core/selection.js';
-import { ICommand, ICursorStateComputerData, IEditOperationBuilder } from '../../../common/editorCommon.js';
+import {
+	ICommand,
+	ICursorStateComputerData,
+	IEditOperationBuilder,
+} from '../../../common/editorCommon.js';
 import { ITextModel } from '../../../common/model.js';
 
 export class CopyLinesCommand implements ICommand {
-
 	private readonly _selection: Selection;
 	private readonly _isCopyingDown: boolean;
 	private readonly _noop: boolean;
@@ -54,12 +57,26 @@ export class CopyLinesCommand implements ICommand {
 		}
 
 		if (this._noop) {
-			builder.addEditOperation(new Range(s.endLineNumber, model.getLineMaxColumn(s.endLineNumber), s.endLineNumber + 1, 1), s.endLineNumber === model.getLineCount() ? '' : '\n');
+			builder.addEditOperation(
+				new Range(s.endLineNumber, model.getLineMaxColumn(s.endLineNumber), s.endLineNumber + 1, 1),
+				s.endLineNumber === model.getLineCount() ? '' : '\n'
+			);
 		} else {
 			if (!this._isCopyingDown) {
-				builder.addEditOperation(new Range(s.endLineNumber, model.getLineMaxColumn(s.endLineNumber), s.endLineNumber, model.getLineMaxColumn(s.endLineNumber)), '\n' + sourceText);
+				builder.addEditOperation(
+					new Range(
+						s.endLineNumber,
+						model.getLineMaxColumn(s.endLineNumber),
+						s.endLineNumber,
+						model.getLineMaxColumn(s.endLineNumber)
+					),
+					'\n' + sourceText
+				);
 			} else {
-				builder.addEditOperation(new Range(s.startLineNumber, 1, s.startLineNumber, 1), sourceText + '\n');
+				builder.addEditOperation(
+					new Range(s.startLineNumber, 1, s.startLineNumber, 1),
+					sourceText + '\n'
+				);
 			}
 		}
 
@@ -86,7 +103,13 @@ export class CopyLinesCommand implements ICommand {
 				endColumn = 1;
 			}
 
-			result = Selection.createWithDirection(startLineNumber, startColumn, endLineNumber, endColumn, this._selectionDirection);
+			result = Selection.createWithDirection(
+				startLineNumber,
+				startColumn,
+				endLineNumber,
+				endColumn,
+				this._selectionDirection
+			);
 		}
 
 		return result;

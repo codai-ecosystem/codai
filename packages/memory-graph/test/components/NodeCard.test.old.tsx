@@ -12,7 +12,7 @@ import {
 	createLogicNode,
 	createDataModelNode,
 	createApiNode,
-	createTestNode
+	createTestNode,
 } from '../utils/testHelpers';
 
 describe('NodeCard Component', () => {
@@ -157,7 +157,9 @@ describe('NodeCard Component', () => {
 		it('supports keyboard navigation', async () => {
 			render(<NodeCard node={featureNode} {...defaultProps} />);
 
-			const nodeElement = screen.getByText('User Authentication').closest('.node-card') as HTMLElement;
+			const nodeElement = screen
+				.getByText('User Authentication')
+				.closest('.node-card') as HTMLElement;
 			if (nodeElement) {
 				nodeElement.focus();
 				await user.keyboard('{Enter}');
@@ -173,11 +175,7 @@ describe('NodeCard Component', () => {
 
 		it('applies correct position styles', () => {
 			const { container } = render(
-				<NodeCard
-					node={featureNode}
-					{...defaultProps}
-					position={{ x: 250, y: 150 }}
-				/>
+				<NodeCard node={featureNode} {...defaultProps} position={{ x: 250, y: 150 }} />
 			);
 
 			const nodeElement = container.querySelector('.node-card');
@@ -187,11 +185,7 @@ describe('NodeCard Component', () => {
 
 		it('shows selected state correctly', () => {
 			const { container } = render(
-				<NodeCard
-					node={featureNode}
-					{...defaultProps}
-					isSelected={true}
-				/>
+				<NodeCard node={featureNode} {...defaultProps} isSelected={true} />
 			);
 
 			const nodeElement = container.querySelector('.node-card');
@@ -203,7 +197,8 @@ describe('NodeCard Component', () => {
 		it('handles long content gracefully', () => {
 			const longNameNode = createFeatureNode({
 				name: 'This is a very long feature name that should be handled gracefully by the component',
-				description: 'This is a very long description that should be truncated or wrapped appropriately to maintain the layout of the memory graph visualization'
+				description:
+					'This is a very long description that should be truncated or wrapped appropriately to maintain the layout of the memory graph visualization',
 			});
 
 			render(<NodeCard node={longNameNode} {...defaultProps} />);
@@ -216,7 +211,7 @@ describe('NodeCard Component', () => {
 
 		it('handles optional properties gracefully', () => {
 			const featureNode = createFeatureNode({
-				description: undefined
+				description: undefined,
 			});
 
 			render(<NodeCard node={featureNode} {...defaultProps} />);
@@ -265,7 +260,7 @@ describe('NodeCard Component', () => {
 		it('handles invalid node types gracefully', () => {
 			// This would test the default case in getNodeColor
 			const invalidNode = createFeatureNode({
-				type: 'invalid_type' as any
+				type: 'invalid_type' as any,
 			});
 
 			const { container } = render(<NodeCard node={invalidNode} {...defaultProps} />);

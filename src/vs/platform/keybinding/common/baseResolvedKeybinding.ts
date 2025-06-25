@@ -4,12 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { illegalArgument } from '../../../base/common/errors.js';
-import { AriaLabelProvider, ElectronAcceleratorLabelProvider, UILabelProvider, UserSettingsLabelProvider } from '../../../base/common/keybindingLabels.js';
-import { Chord, SingleModifierChord, ResolvedKeybinding, ResolvedChord } from '../../../base/common/keybindings.js';
+import {
+	AriaLabelProvider,
+	ElectronAcceleratorLabelProvider,
+	UILabelProvider,
+	UserSettingsLabelProvider,
+} from '../../../base/common/keybindingLabels.js';
+import {
+	Chord,
+	SingleModifierChord,
+	ResolvedKeybinding,
+	ResolvedChord,
+} from '../../../base/common/keybindings.js';
 import { OperatingSystem } from '../../../base/common/platform.js';
 
 export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKeybinding {
-
 	protected readonly _os: OperatingSystem;
 	protected readonly _chords: readonly T[];
 
@@ -23,11 +32,15 @@ export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKe
 	}
 
 	public getLabel(): string | null {
-		return UILabelProvider.toLabel(this._os, this._chords, (keybinding) => this._getLabel(keybinding));
+		return UILabelProvider.toLabel(this._os, this._chords, keybinding =>
+			this._getLabel(keybinding)
+		);
 	}
 
 	public getAriaLabel(): string | null {
-		return AriaLabelProvider.toLabel(this._os, this._chords, (keybinding) => this._getAriaLabel(keybinding));
+		return AriaLabelProvider.toLabel(this._os, this._chords, keybinding =>
+			this._getAriaLabel(keybinding)
+		);
 	}
 
 	public getElectronAccelerator(): string | null {
@@ -40,23 +53,27 @@ export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKe
 			// e.g. "shift shift"
 			return null;
 		}
-		return ElectronAcceleratorLabelProvider.toLabel(this._os, this._chords, (keybinding) => this._getElectronAccelerator(keybinding));
+		return ElectronAcceleratorLabelProvider.toLabel(this._os, this._chords, keybinding =>
+			this._getElectronAccelerator(keybinding)
+		);
 	}
 
 	public getUserSettingsLabel(): string | null {
-		return UserSettingsLabelProvider.toLabel(this._os, this._chords, (keybinding) => this._getUserSettingsLabel(keybinding));
+		return UserSettingsLabelProvider.toLabel(this._os, this._chords, keybinding =>
+			this._getUserSettingsLabel(keybinding)
+		);
 	}
 
 	public isWYSIWYG(): boolean {
-		return this._chords.every((keybinding) => this._isWYSIWYG(keybinding));
+		return this._chords.every(keybinding => this._isWYSIWYG(keybinding));
 	}
 
 	public hasMultipleChords(): boolean {
-		return (this._chords.length > 1);
+		return this._chords.length > 1;
 	}
 
 	public getChords(): ResolvedChord[] {
-		return this._chords.map((keybinding) => this._getChord(keybinding));
+		return this._chords.map(keybinding => this._getChord(keybinding));
 	}
 
 	private _getChord(keybinding: T): ResolvedChord {
@@ -71,11 +88,11 @@ export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKe
 	}
 
 	public getDispatchChords(): (string | null)[] {
-		return this._chords.map((keybinding) => this._getChordDispatch(keybinding));
+		return this._chords.map(keybinding => this._getChordDispatch(keybinding));
 	}
 
 	public getSingleModifierDispatchChords(): (SingleModifierChord | null)[] {
-		return this._chords.map((keybinding) => this._getSingleModifierChordDispatch(keybinding));
+		return this._chords.map(keybinding => this._getSingleModifierChordDispatch(keybinding));
 	}
 
 	protected abstract _getLabel(keybinding: T): string | null;

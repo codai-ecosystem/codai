@@ -25,14 +25,14 @@ This document outlines a comprehensive security audit plan for Phase 2 of the AI
 
 #### Phase 2 Security Enhancements
 
-| Security Control | Implementation | Priority |
-|-----------------|----------------|----------|
-| Multi-factor Authentication | Add optional SMS or authenticator app verification | High |
-| Advanced Role-Based Access | Implement fine-grained permissions system | High |
-| Token Security | Implement proper token expiration, rotation and revocation | High |
-| Session Management | Add session tracking and forced logout capabilities | Medium |
-| Auth Rate Limiting | Add protection against brute force attempts | High |
-| Login Auditing | Log all authentication attempts with IP and device info | Medium |
+| Security Control            | Implementation                                             | Priority |
+| --------------------------- | ---------------------------------------------------------- | -------- |
+| Multi-factor Authentication | Add optional SMS or authenticator app verification         | High     |
+| Advanced Role-Based Access  | Implement fine-grained permissions system                  | High     |
+| Token Security              | Implement proper token expiration, rotation and revocation | High     |
+| Session Management          | Add session tracking and forced logout capabilities        | Medium   |
+| Auth Rate Limiting          | Add protection against brute force attempts                | High     |
+| Login Auditing              | Log all authentication attempts with IP and device info    | Medium   |
 
 #### Assessment Methods
 
@@ -113,14 +113,14 @@ describe('Authorization Security Tests', () => {
 
 #### Phase 2 Security Enhancements
 
-| Security Control | Implementation | Priority |
-|-----------------|----------------|----------|
-| Field-level Encryption | Encrypt sensitive fields before storage | High |
-| Data Classification | Implement data classification for PII handling | Medium |
-| Firestore Security Rules | Enhance rules with advanced patterns | High |
-| Secure Data Deletion | Implement proper data wiping procedures | Medium |
-| PII Data Minimization | Reduce collection and storage of personal data | High |
-| Data Access Auditing | Log all sensitive data access | Medium |
+| Security Control         | Implementation                                 | Priority |
+| ------------------------ | ---------------------------------------------- | -------- |
+| Field-level Encryption   | Encrypt sensitive fields before storage        | High     |
+| Data Classification      | Implement data classification for PII handling | Medium   |
+| Firestore Security Rules | Enhance rules with advanced patterns           | High     |
+| Secure Data Deletion     | Implement proper data wiping procedures        | Medium   |
+| PII Data Minimization    | Reduce collection and storage of personal data | High     |
+| Data Access Auditing     | Log all sensitive data access                  | Medium   |
 
 #### Implementation Example
 
@@ -148,7 +148,7 @@ export class FieldEncryption {
 		return {
 			encryptedData: encrypted,
 			iv: iv.toString('hex'),
-			authTag
+			authTag,
 		};
 	}
 
@@ -177,13 +177,16 @@ export async function saveUserProfile(userId: string, profile: UserProfile) {
 	const encryptedPhone = fieldEncryption.encrypt(profile.phoneNumber);
 
 	// Store in database with encrypted fields
-	await db.collection('users').doc(userId).set({
-		...profile,
-		phoneNumber: {
-			_encrypted: true,
-			...encryptedPhone
-		}
-	});
+	await db
+		.collection('users')
+		.doc(userId)
+		.set({
+			...profile,
+			phoneNumber: {
+				_encrypted: true,
+				...encryptedPhone,
+			},
+		});
 }
 
 // Decrypt when retrieving
@@ -209,14 +212,14 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
 
 #### Phase 2 Security Enhancements
 
-| Security Control | Implementation | Priority |
-|-----------------|----------------|----------|
-| API Rate Limiting | Implement tiered rate limiting by user | High |
-| Input Validation | Comprehensive validation with Zod | High |
-| CORS Policy | Strict CORS policy configuration | High |
-| Request Sanitization | Sanitize all inputs against XSS | High |
-| CSP Headers | Implement Content Security Policy | Medium |
-| API Versioning | Add API versioning for better security lifecycle | Low |
+| Security Control     | Implementation                                   | Priority |
+| -------------------- | ------------------------------------------------ | -------- |
+| API Rate Limiting    | Implement tiered rate limiting by user           | High     |
+| Input Validation     | Comprehensive validation with Zod                | High     |
+| CORS Policy          | Strict CORS policy configuration                 | High     |
+| Request Sanitization | Sanitize all inputs against XSS                  | High     |
+| CSP Headers          | Implement Content Security Policy                | Medium   |
+| API Versioning       | Add API versioning for better security lifecycle | Low      |
 
 #### Implementation Examples
 
@@ -229,10 +232,7 @@ import { getUserDocumentFromToken } from '../lib/firebase-admin';
 export async function rateLimitMiddleware(req: NextRequest) {
 	const token = req.headers.get('Authorization')?.split(' ')[1];
 	if (!token) {
-		return NextResponse.json(
-			{ error: 'Unauthorized' },
-			{ status: 401 }
-		);
+		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
 	try {
@@ -240,8 +240,7 @@ export async function rateLimitMiddleware(req: NextRequest) {
 		const user = await getUserDocumentFromToken(token);
 
 		// Different limits based on user role/plan
-		const limit = user.role === 'admin' ? 1000 :
-			user.subscription?.plan === 'pro' ? 500 : 100;
+		const limit = user.role === 'admin' ? 1000 : user.subscription?.plan === 'pro' ? 500 : 100;
 
 		// Check if limit exceeded using Redis or similar
 		const currentUsage = await getUserApiUsage(user.uid);
@@ -252,7 +251,7 @@ export async function rateLimitMiddleware(req: NextRequest) {
 					error: 'Rate limit exceeded',
 					limit,
 					current: currentUsage,
-					reset: getNextResetTime()
+					reset: getNextResetTime(),
 				},
 				{ status: 429 }
 			);
@@ -265,10 +264,7 @@ export async function rateLimitMiddleware(req: NextRequest) {
 		return null;
 	} catch (error) {
 		console.error('Rate limiting error:', error);
-		return NextResponse.json(
-			{ error: 'Rate limit check failed' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Rate limit check failed' }, { status: 500 });
 	}
 }
 
@@ -281,7 +277,7 @@ export const taskSchema = z.object({
 	priority: z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
 	agentId: z.string().optional(),
 	projectId: z.string().optional(),
-	inputs: z.record(z.unknown()).optional()
+	inputs: z.record(z.unknown()).optional(),
 });
 
 export async function validateTaskInput(req: NextRequest) {
@@ -293,7 +289,7 @@ export async function validateTaskInput(req: NextRequest) {
 			return NextResponse.json(
 				{
 					error: 'Validation failed',
-					details: result.error.errors
+					details: result.error.errors,
 				},
 				{ status: 400 }
 			);
@@ -302,10 +298,7 @@ export async function validateTaskInput(req: NextRequest) {
 		// Continue to the next middleware or handler with validated data
 		return null;
 	} catch (error) {
-		return NextResponse.json(
-			{ error: 'Invalid request body' },
-			{ status: 400 }
-		);
+		return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
 	}
 }
 ```
@@ -318,13 +311,13 @@ export async function validateTaskInput(req: NextRequest) {
 
 #### Phase 2 Security Enhancements
 
-| Security Control | Implementation | Priority |
-|-----------------|----------------|----------|
-| Dependency Scanning | Regular scanning with npm audit | High |
-| Automatic Updates | Automated security patches | Medium |
-| Vulnerability Monitoring | Integration with security advisories | Medium |
-| SCA Integration | Software Composition Analysis in CI/CD | High |
-| Lockfile Security | Properly managed lockfiles | High |
+| Security Control         | Implementation                         | Priority |
+| ------------------------ | -------------------------------------- | -------- |
+| Dependency Scanning      | Regular scanning with npm audit        | High     |
+| Automatic Updates        | Automated security patches             | Medium   |
+| Vulnerability Monitoring | Integration with security advisories   | Medium   |
+| SCA Integration          | Software Composition Analysis in CI/CD | High     |
+| Lockfile Security        | Properly managed lockfiles             | High     |
 
 #### Implementation Strategy
 
@@ -340,7 +333,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: '0 0 * * 0'  # Weekly scan on Sundays
+    - cron: '0 0 * * 0' # Weekly scan on Sundays
 
 jobs:
   security-scan:
@@ -378,9 +371,9 @@ jobs:
 ```json
 // .husky/pre-commit
 {
-  "scripts": {
-    "pre-commit": "pnpm audit && lint-staged"
-  }
+	"scripts": {
+		"pre-commit": "pnpm audit && lint-staged"
+	}
 }
 ```
 
@@ -393,14 +386,14 @@ jobs:
 
 #### Phase 2 Security Enhancements
 
-| Security Control | Implementation | Priority |
-|-----------------|----------------|----------|
-| Secrets Management | Move secrets to secure storage | High |
-| IAM & Permissions | Minimize service account permissions | High |
-| Environment Isolation | Separate dev/staging/prod environments | Medium |
-| Infrastructure as Code | Use Terraform for infrastructure management | Medium |
-| Firewall Rules | Configure network security | High |
-| Security Monitoring | Add logging and alerting for security events | High |
+| Security Control       | Implementation                               | Priority |
+| ---------------------- | -------------------------------------------- | -------- |
+| Secrets Management     | Move secrets to secure storage               | High     |
+| IAM & Permissions      | Minimize service account permissions         | High     |
+| Environment Isolation  | Separate dev/staging/prod environments       | Medium   |
+| Infrastructure as Code | Use Terraform for infrastructure management  | Medium   |
+| Firewall Rules         | Configure network security                   | High     |
+| Security Monitoring    | Add logging and alerting for security events | High     |
 
 #### Implementation Example
 
@@ -478,14 +471,14 @@ resource "google_secret_manager_secret_iam_binding" "firebase_admin_credentials_
 
 #### Phase 2 Security Enhancements
 
-| Security Control | Implementation | Priority |
-|-----------------|----------------|----------|
-| XSS Protection | Implement Content Security Policy | High |
-| CSRF Protection | Add anti-CSRF tokens | High |
-| Secure Headers | Add security headers with Helmet.js | High |
-| Error Handling | Secure error handling and logging | Medium |
-| Audit Logging | Track security-relevant events | Medium |
-| Secure Defaults | Security-focused configuration | High |
+| Security Control | Implementation                      | Priority |
+| ---------------- | ----------------------------------- | -------- |
+| XSS Protection   | Implement Content Security Policy   | High     |
+| CSRF Protection  | Add anti-CSRF tokens                | High     |
+| Secure Headers   | Add security headers with Helmet.js | High     |
+| Error Handling   | Secure error handling and logging   | Medium   |
+| Audit Logging    | Track security-relevant events      | Medium   |
+| Secure Defaults  | Security-focused configuration      | High     |
 
 #### Implementation Example
 
@@ -555,14 +548,14 @@ export const config = {
 
 ### Compliance Checklist
 
-| Requirement | Implementation | Status |
-|-------------|---------------|--------|
-| Data Processing Records | Document all data processing activities | To Do |
-| Privacy Policy | Create comprehensive privacy policy | To Do |
-| Data Subject Rights | Implement data portability and deletion | To Do |
-| Access Controls | Role-based access control system | In Progress |
-| Audit Logging | Security event logging and alerting | To Do |
-| Data Encryption | Encryption at rest and in transit | In Progress |
+| Requirement             | Implementation                          | Status      |
+| ----------------------- | --------------------------------------- | ----------- |
+| Data Processing Records | Document all data processing activities | To Do       |
+| Privacy Policy          | Create comprehensive privacy policy     | To Do       |
+| Data Subject Rights     | Implement data portability and deletion | To Do       |
+| Access Controls         | Role-based access control system        | In Progress |
+| Audit Logging           | Security event logging and alerting     | To Do       |
+| Data Encryption         | Encryption at rest and in transit       | In Progress |
 
 ## Incident Response Plan
 
@@ -612,15 +605,15 @@ export const config = {
 
 ## Implementation Timeline
 
-| Phase | Activities | Timeframe |
-|-------|------------|-----------|
-| 1 | Security requirements gathering | Week 1 |
-| 2 | Authentication & authorization enhancements | Weeks 2-3 |
-| 3 | API security implementation | Weeks 3-4 |
-| 4 | Data security controls | Weeks 4-5 |
-| 5 | Infrastructure security hardening | Weeks 5-6 |
-| 6 | Security testing | Weeks 6-7 |
-| 7 | Documentation and training | Week 8 |
+| Phase | Activities                                  | Timeframe |
+| ----- | ------------------------------------------- | --------- |
+| 1     | Security requirements gathering             | Week 1    |
+| 2     | Authentication & authorization enhancements | Weeks 2-3 |
+| 3     | API security implementation                 | Weeks 3-4 |
+| 4     | Data security controls                      | Weeks 4-5 |
+| 5     | Infrastructure security hardening           | Weeks 5-6 |
+| 6     | Security testing                            | Weeks 6-7 |
+| 7     | Documentation and training                  | Week 8    |
 
 ## Conclusion
 
@@ -628,6 +621,6 @@ This security audit plan provides a comprehensive approach to ensuring that Phas
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: June 5, 2024*
-*Author: Security Team*
+_Document Version: 1.0_
+_Last Updated: June 5, 2024_
+_Author: Security Team_

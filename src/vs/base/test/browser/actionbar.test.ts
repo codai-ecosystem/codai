@@ -9,7 +9,6 @@ import { Action, Separator } from '../../common/actions.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../common/utils.js';
 
 suite('Actionbar', () => {
-
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('prepareActions()', function () {

@@ -7,16 +7,25 @@ import * as net from 'net';
 import { ISocket } from '../../../base/parts/ipc/common/ipc.net.js';
 import { NodeSocket } from '../../../base/parts/ipc/node/ipc.net.js';
 import { makeRawSocketHeaders } from '../common/managedSocket.js';
-import { RemoteConnectionType, WebSocketRemoteConnection } from '../common/remoteAuthorityResolver.js';
+import {
+	RemoteConnectionType,
+	WebSocketRemoteConnection,
+} from '../common/remoteAuthorityResolver.js';
 import { ISocketFactory } from '../common/remoteSocketFactoryService.js';
 
-export const nodeSocketFactory = new class implements ISocketFactory<RemoteConnectionType.WebSocket> {
-
+export const nodeSocketFactory = new (class
+	implements ISocketFactory<RemoteConnectionType.WebSocket>
+{
 	supports(connectTo: WebSocketRemoteConnection): boolean {
 		return true;
 	}
 
-	connect({ host, port }: WebSocketRemoteConnection, path: string, query: string, debugLabel: string): Promise<ISocket> {
+	connect(
+		{ host, port }: WebSocketRemoteConnection,
+		path: string,
+		query: string,
+		debugLabel: string
+	): Promise<ISocket> {
 		return new Promise<ISocket>((resolve, reject) => {
 			const socket = net.createConnection({ host: host, port: port }, () => {
 				socket.removeListener('error', reject);
@@ -38,4 +47,4 @@ export const nodeSocketFactory = new class implements ISocketFactory<RemoteConne
 			socket.once('error', reject);
 		});
 	}
-};
+})();

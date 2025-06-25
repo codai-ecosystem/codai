@@ -15,7 +15,9 @@ import { ITerminalBackend } from '../../../../../platform/terminal/common/termin
 import { ITextEditorSelection } from '../../../../../platform/editor/common/editor.js';
 import type { IHoverAction } from '../../../../../base/browser/ui/hover/hover.js';
 
-export const ITerminalLinkProviderService = createDecorator<ITerminalLinkProviderService>('terminalLinkProviderService');
+export const ITerminalLinkProviderService = createDecorator<ITerminalLinkProviderService>(
+	'terminalLinkProviderService'
+);
 export interface ITerminalLinkProviderService {
 	readonly _serviceBrand: undefined;
 
@@ -29,7 +31,14 @@ export interface ITerminalLinkProviderService {
 }
 
 export interface ITerminalLinkResolver {
-	resolveLink(processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & { backend?: Pick<ITerminalBackend, 'getWslPath'> }, link: string, uri?: URI): Promise<ResolvedLink>;
+	resolveLink(
+		processManager: Pick<
+			ITerminalProcessManager,
+			'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'
+		> & { backend?: Pick<ITerminalBackend, 'getWslPath'> },
+		link: string,
+		uri?: URI
+	): Promise<ResolvedLink>;
 }
 
 /**
@@ -57,7 +66,11 @@ export interface ITerminalLinkDetector {
 	 * @param endLine The end of the wrapped line.  This _will not_ be validated that it is indeed
 	 * the end of a wrapped line.
 	 */
-	detect(lines: IBufferLine[], startLine: number, endLine: number): ITerminalSimpleLink[] | Promise<ITerminalSimpleLink[]>;
+	detect(
+		lines: IBufferLine[],
+		startLine: number,
+		endLine: number
+	): ITerminalSimpleLink[] | Promise<ITerminalSimpleLink[]>;
 }
 
 export interface ITerminalSimpleLink {
@@ -144,7 +157,7 @@ export const enum TerminalBuiltinLinkType {
 	/**
 	 * A link whose text is a valid URI.
 	 */
-	Url = 'Url'
+	Url = 'Url',
 }
 
 export interface ITerminalExternalLinkType {
@@ -163,4 +176,6 @@ export interface IResolvedValidLink {
 	isDirectory: boolean;
 }
 
-export type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;
+export type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R
+	? (...args: P) => R
+	: never;

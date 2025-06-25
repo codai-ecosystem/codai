@@ -134,7 +134,7 @@ The following checks will be automated:
  * const result = functionName(param);
  */
 function functionName(paramName: ParamType): ReturnType {
-  // Implementation
+	// Implementation
 }
 ```
 
@@ -149,12 +149,12 @@ function functionName(paramName: ParamType): ReturnType {
  * <ComponentName prop="value" />
  */
 interface ComponentNameProps {
-  /** Description of this prop */
-  propName: PropType;
+	/** Description of this prop */
+	propName: PropType;
 }
 
 function ComponentName({ propName }: ComponentNameProps): JSX.Element {
-  // Implementation
+	// Implementation
 }
 ```
 

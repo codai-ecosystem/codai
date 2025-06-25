@@ -87,7 +87,7 @@ export class ConfigurationService {
 	private readonly CONFIG_COLLECTION = 'configuration';
 	private readonly CONFIG_DOC = 'app-config';
 
-	private constructor() { }
+	private constructor() {}
 
 	public static getInstance(): ConfigurationService {
 		if (!ConfigurationService.instance) {
@@ -103,7 +103,7 @@ export class ConfigurationService {
 		const now = Date.now();
 
 		// Return cached config if still valid
-		if (this.config && (now - this.lastFetchTime) < this.CACHE_DURATION) {
+		if (this.config && now - this.lastFetchTime < this.CACHE_DURATION) {
 			return this.config;
 		}
 
@@ -130,10 +130,7 @@ export class ConfigurationService {
 	 */
 	private async fetchRemoteConfig(): Promise<AppConfig> {
 		try {
-			const configDoc = await adminDb
-				.collection(this.CONFIG_COLLECTION)
-				.doc(this.CONFIG_DOC)
-				.get();
+			const configDoc = await adminDb.collection(this.CONFIG_COLLECTION).doc(this.CONFIG_DOC).get();
 
 			if (configDoc.exists) {
 				const remoteConfig = configDoc.data() as Partial<AppConfig>;
@@ -176,7 +173,7 @@ export class ConfigurationService {
 				stripeIntegration: true,
 				usageTracking: true,
 				adminDashboard: true,
-				autoProvisioning: false
+				autoProvisioning: false,
 			},
 			plans: {
 				free: {
@@ -190,9 +187,9 @@ export class ConfigurationService {
 						computeMinutesPerMonth: 60,
 						storageMBLimit: 100,
 						projectsMax: 3,
-						collaboratorsMax: 1
+						collaboratorsMax: 1,
 					},
-					features: ['Basic IDE', 'GitHub Integration', 'Community Support']
+					features: ['Basic IDE', 'GitHub Integration', 'Community Support'],
 				},
 				professional: {
 					name: 'professional',
@@ -205,9 +202,9 @@ export class ConfigurationService {
 						computeMinutesPerMonth: 300,
 						storageMBLimit: 1000,
 						projectsMax: 10,
-						collaboratorsMax: 5
+						collaboratorsMax: 5,
 					},
-					features: ['Advanced IDE', 'All Integrations', 'Priority Support', 'Custom Environments']
+					features: ['Advanced IDE', 'All Integrations', 'Priority Support', 'Custom Environments'],
 				},
 				enterprise: {
 					name: 'enterprise',
@@ -220,40 +217,46 @@ export class ConfigurationService {
 						computeMinutesPerMonth: 1500,
 						storageMBLimit: 10000,
 						projectsMax: 50,
-						collaboratorsMax: 25
+						collaboratorsMax: 25,
 					},
-					features: ['Enterprise IDE', 'All Integrations', 'Dedicated Support', 'Custom Solutions', 'SLA']
-				}
+					features: [
+						'Enterprise IDE',
+						'All Integrations',
+						'Dedicated Support',
+						'Custom Solutions',
+						'SLA',
+					],
+				},
 			},
 			quotas: {
 				apiCallsWarningThreshold: 0.8,
 				computeWarningThreshold: 0.8,
 				storageWarningThreshold: 0.8,
-				quotaResetCronSchedule: '0 0 1 * *' // First day of each month
+				quotaResetCronSchedule: '0 0 1 * *', // First day of each month
 			},
 			services: {
 				github: {
 					enabled: true,
 					defaultTemplate: 'basic-project',
-					defaultVisibility: 'private'
+					defaultVisibility: 'private',
 				},
 				firebase: {
 					enabled: true,
 					defaultRegion: 'us-central1',
-					defaultPlan: 'spark'
+					defaultPlan: 'spark',
 				},
 				stripe: {
 					enabled: true,
-					defaultCurrency: 'usd'
-				}
+					defaultCurrency: 'usd',
+				},
 			},
 			system: {
 				maintenanceMode: false,
 				newUserRegistration: true,
 				requireEmailVerification: true,
 				sessionTimeoutMinutes: 60,
-				auditLogRetentionDays: 90
-			}
+				auditLogRetentionDays: 90,
+			},
 		};
 	}
 
@@ -268,15 +271,15 @@ export class ConfigurationService {
 			plans: {
 				free: { ...defaultConfig.plans.free, ...remoteConfig.plans?.free },
 				professional: { ...defaultConfig.plans.professional, ...remoteConfig.plans?.professional },
-				enterprise: { ...defaultConfig.plans.enterprise, ...remoteConfig.plans?.enterprise }
+				enterprise: { ...defaultConfig.plans.enterprise, ...remoteConfig.plans?.enterprise },
 			},
 			quotas: { ...defaultConfig.quotas, ...remoteConfig.quotas },
 			services: {
 				github: { ...defaultConfig.services.github, ...remoteConfig.services?.github },
 				firebase: { ...defaultConfig.services.firebase, ...remoteConfig.services?.firebase },
-				stripe: { ...defaultConfig.services.stripe, ...remoteConfig.services?.stripe }
+				stripe: { ...defaultConfig.services.stripe, ...remoteConfig.services?.stripe },
 			},
-			system: { ...defaultConfig.system, ...remoteConfig.system }
+			system: { ...defaultConfig.system, ...remoteConfig.system },
 		};
 	}
 
@@ -359,17 +362,11 @@ export class ConfigurationService {
 	 */
 	async initializeConfiguration(): Promise<void> {
 		try {
-			const configDoc = await adminDb
-				.collection(this.CONFIG_COLLECTION)
-				.doc(this.CONFIG_DOC)
-				.get();
+			const configDoc = await adminDb.collection(this.CONFIG_COLLECTION).doc(this.CONFIG_DOC).get();
 
 			if (!configDoc.exists) {
 				const defaultConfig = this.getDefaultConfig();
-				await adminDb
-					.collection(this.CONFIG_COLLECTION)
-					.doc(this.CONFIG_DOC)
-					.set(defaultConfig);
+				await adminDb.collection(this.CONFIG_COLLECTION).doc(this.CONFIG_DOC).set(defaultConfig);
 
 				console.log('Default configuration initialized');
 			}

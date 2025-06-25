@@ -4,17 +4,51 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from '../../../base/common/event.js';
-import { IDisposable, toDisposable, DisposableStore, DisposableMap } from '../../../base/common/lifecycle.js';
+import {
+	IDisposable,
+	toDisposable,
+	DisposableStore,
+	DisposableMap,
+} from '../../../base/common/lifecycle.js';
 import { URI, UriComponents } from '../../../base/common/uri.js';
-import { IFileWriteOptions, FileSystemProviderCapabilities, IFileChange, IFileService, IStat, IWatchOptions, FileType, IFileOverwriteOptions, IFileDeleteOptions, IFileOpenOptions, FileOperationError, FileOperationResult, FileSystemProviderErrorCode, IFileSystemProviderWithOpenReadWriteCloseCapability, IFileSystemProviderWithFileReadWriteCapability, IFileSystemProviderWithFileFolderCopyCapability, FilePermission, toFileSystemProviderErrorCode, IFileStatWithPartialMetadata, IFileStat } from '../../../platform/files/common/files.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
-import { ExtHostContext, ExtHostFileSystemShape, IFileChangeDto, MainContext, MainThreadFileSystemShape } from '../common/extHost.protocol.js';
+import {
+	IFileWriteOptions,
+	FileSystemProviderCapabilities,
+	IFileChange,
+	IFileService,
+	IStat,
+	IWatchOptions,
+	FileType,
+	IFileOverwriteOptions,
+	IFileDeleteOptions,
+	IFileOpenOptions,
+	FileOperationError,
+	FileOperationResult,
+	FileSystemProviderErrorCode,
+	IFileSystemProviderWithOpenReadWriteCloseCapability,
+	IFileSystemProviderWithFileReadWriteCapability,
+	IFileSystemProviderWithFileFolderCopyCapability,
+	FilePermission,
+	toFileSystemProviderErrorCode,
+	IFileStatWithPartialMetadata,
+	IFileStat,
+} from '../../../platform/files/common/files.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
+import {
+	ExtHostContext,
+	ExtHostFileSystemShape,
+	IFileChangeDto,
+	MainContext,
+	MainThreadFileSystemShape,
+} from '../common/extHost.protocol.js';
 import { VSBuffer } from '../../../base/common/buffer.js';
 import { IMarkdownString } from '../../../base/common/htmlContent.js';
 
 @extHostNamedCustomer(MainContext.MainThreadFileSystem)
 export class MainThreadFileSystem implements MainThreadFileSystemShape {
-
 	private readonly _proxy: ExtHostFileSystemShape;
 	private readonly _fileProvider = new DisposableMap<number, RemoteFileSystemProvider>();
 	private readonly _disposables = new DisposableStore();
@@ -28,10 +62,27 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		const infoProxy = extHostContext.getProxy(ExtHostContext.ExtHostFileSystemInfo);
 
 		for (const entry of _fileService.listCapabilities()) {
-			infoProxy.$acceptProviderInfos(URI.from({ scheme: entry.scheme, path: '/dummy' }), entry.capabilities);
+			infoProxy.$acceptProviderInfos(
+				URI.from({ scheme: entry.scheme, path: '/dummy' }),
+				entry.capabilities
+			);
 		}
-		this._disposables.add(_fileService.onDidChangeFileSystemProviderRegistrations(e => infoProxy.$acceptProviderInfos(URI.from({ scheme: e.scheme, path: '/dummy' }), e.provider?.capabilities ?? null)));
-		this._disposables.add(_fileService.onDidChangeFileSystemProviderCapabilities(e => infoProxy.$acceptProviderInfos(URI.from({ scheme: e.scheme, path: '/dummy' }), e.provider.capabilities)));
+		this._disposables.add(
+			_fileService.onDidChangeFileSystemProviderRegistrations(e =>
+				infoProxy.$acceptProviderInfos(
+					URI.from({ scheme: e.scheme, path: '/dummy' }),
+					e.provider?.capabilities ?? null
+				)
+			)
+		);
+		this._disposables.add(
+			_fileService.onDidChangeFileSystemProviderCapabilities(e =>
+				infoProxy.$acceptProviderInfos(
+					URI.from({ scheme: e.scheme, path: '/dummy' }),
+					e.provider.capabilities
+				)
+			)
+		);
 	}
 
 	dispose(): void {
@@ -39,8 +90,23 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		this._fileProvider.dispose();
 	}
 
-	async $registerFileSystemProvider(handle: number, scheme: string, capabilities: FileSystemProviderCapabilities, readonlyMessage?: IMarkdownString): Promise<void> {
-		this._fileProvider.set(handle, new RemoteFileSystemProvider(this._fileService, scheme, capabilities, readonlyMessage, handle, this._proxy));
+	async $registerFileSystemProvider(
+		handle: number,
+		scheme: string,
+		capabilities: FileSystemProviderCapabilities,
+		readonlyMessage?: IMarkdownString
+	): Promise<void> {
+		this._fileProvider.set(
+			handle,
+			new RemoteFileSystemProvider(
+				this._fileService,
+				scheme,
+				capabilities,
+				readonlyMessage,
+				handle,
+				this._proxy
+			)
+		);
 	}
 
 	$unregisterProvider(handle: number): void {
@@ -55,7 +121,6 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		fileProvider.$onFileSystemChange(changes);
 	}
 
-
 	// --- consumer fs, vscode.workspace.fs
 
 	async $stat(uri: UriComponents): Promise<IStat> {
@@ -66,7 +131,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 				mtime: stat.mtime,
 				size: stat.size,
 				permissions: stat.readonly ? FilePermission.Readonly : undefined,
-				type: MainThreadFileSystem._asFileType(stat)
+				type: MainThreadFileSystem._asFileType(stat),
 			};
 		} catch (err) {
 			return MainThreadFileSystem._handleError(err);
@@ -81,7 +146,11 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 				err.name = FileSystemProviderErrorCode.FileNotADirectory;
 				throw err;
 			}
-			return !stat.children ? [] : stat.children.map(child => [child.name, MainThreadFileSystem._asFileType(child)] as [string, FileType]);
+			return !stat.children
+				? []
+				: stat.children.map(
+						child => [child.name, MainThreadFileSystem._asFileType(child)] as [string, FileType]
+					);
 		} catch (err) {
 			return MainThreadFileSystem._handleError(err);
 		}
@@ -91,7 +160,6 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		let res = 0;
 		if (stat.isFile) {
 			res += FileType.File;
-
 		} else if (stat.isDirectory) {
 			res += FileType.Directory;
 		}
@@ -118,7 +186,11 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		}
 	}
 
-	async $rename(source: UriComponents, target: UriComponents, opts: IFileOverwriteOptions): Promise<void> {
+	async $rename(
+		source: UriComponents,
+		target: UriComponents,
+		opts: IFileOverwriteOptions
+	): Promise<void> {
 		try {
 			await this._fileService.move(URI.revive(source), URI.revive(target), opts.overwrite);
 		} catch (err) {
@@ -126,7 +198,11 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		}
 	}
 
-	async $copy(source: UriComponents, target: UriComponents, opts: IFileOverwriteOptions): Promise<void> {
+	async $copy(
+		source: UriComponents,
+		target: UriComponents,
+		opts: IFileOverwriteOptions
+	): Promise<void> {
 		try {
 			await this._fileService.copy(URI.revive(source), URI.revive(target), opts.overwrite);
 		} catch (err) {
@@ -181,8 +257,12 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 	}
 }
 
-class RemoteFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability, IFileSystemProviderWithOpenReadWriteCloseCapability, IFileSystemProviderWithFileFolderCopyCapability {
-
+class RemoteFileSystemProvider
+	implements
+		IFileSystemProviderWithFileReadWriteCapability,
+		IFileSystemProviderWithOpenReadWriteCloseCapability,
+		IFileSystemProviderWithFileFolderCopyCapability
+{
 	private readonly _onDidChange = new Emitter<readonly IFileChange[]>();
 	private readonly _registration: IDisposable;
 
@@ -271,13 +351,30 @@ class RemoteFileSystemProvider implements IFileSystemProviderWithFileReadWriteCa
 		return this._proxy.$close(this._handle, fd);
 	}
 
-	async read(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
+	async read(
+		fd: number,
+		pos: number,
+		data: Uint8Array,
+		offset: number,
+		length: number
+	): Promise<number> {
 		const readData = await this._proxy.$read(this._handle, fd, pos, length);
 		data.set(readData.buffer, offset);
 		return readData.byteLength;
 	}
 
-	write(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
-		return this._proxy.$write(this._handle, fd, pos, VSBuffer.wrap(data).slice(offset, offset + length));
+	write(
+		fd: number,
+		pos: number,
+		data: Uint8Array,
+		offset: number,
+		length: number
+	): Promise<number> {
+		return this._proxy.$write(
+			this._handle,
+			fd,
+			pos,
+			VSBuffer.wrap(data).slice(offset, offset + length)
+		);
 	}
 }

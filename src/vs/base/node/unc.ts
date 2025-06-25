@@ -13,7 +13,6 @@ export function getUNCHostAllowlist(): string[] {
 }
 
 function processUNCHostAllowlist(): Set<string> {
-
 	// The property `process.uncHostAllowlist` is not available in official node.js
 	// releases, only in our own builds, so we have to probe for availability
 
@@ -57,9 +56,9 @@ export function getUNCHost(maybeUNCPath: string | undefined | null): string | un
 	}
 
 	const uncRoots = [
-		'\\\\.\\UNC\\',	// DOS Device paths (https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats)
+		'\\\\.\\UNC\\', // DOS Device paths (https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats)
 		'\\\\?\\UNC\\',
-		'\\\\'			// standard UNC path
+		'\\\\', // standard UNC path
 	];
 
 	let host = undefined;

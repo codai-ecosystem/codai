@@ -15,21 +15,27 @@ import { IHistoryService } from '../../../services/history/common/history.js';
 export function registerRemoteContributions() {
 	registerTerminalAction({
 		id: TerminalCommandId.NewLocal,
-		title: localize2('workbench.action.terminal.newLocal', 'Create New Integrated Terminal (Local)'),
+		title: localize2(
+			'workbench.action.terminal.newLocal',
+			'Create New Integrated Terminal (Local)'
+		),
 		run: async (c, accessor) => {
 			const historyService = accessor.get(IHistoryService);
 			const remoteAuthorityResolverService = accessor.get(IRemoteAuthorityResolverService);
 			const nativeEnvironmentService = accessor.get(INativeEnvironmentService);
 			let cwd: URI | undefined;
 			try {
-				const activeWorkspaceRootUri = historyService.getLastActiveWorkspaceRoot(Schemas.vscodeRemote);
+				const activeWorkspaceRootUri = historyService.getLastActiveWorkspaceRoot(
+					Schemas.vscodeRemote
+				);
 				if (activeWorkspaceRootUri) {
-					const canonicalUri = await remoteAuthorityResolverService.getCanonicalURI(activeWorkspaceRootUri);
+					const canonicalUri =
+						await remoteAuthorityResolverService.getCanonicalURI(activeWorkspaceRootUri);
 					if (canonicalUri.scheme === Schemas.file) {
 						cwd = canonicalUri;
 					}
 				}
-			} catch { }
+			} catch {}
 			if (!cwd) {
 				cwd = nativeEnvironmentService.userHome;
 			}
@@ -40,6 +46,6 @@ export function registerRemoteContributions() {
 
 			c.service.setActiveInstance(instance);
 			return c.groupService.showPanel(true);
-		}
+		},
 	});
 }

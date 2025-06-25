@@ -7,16 +7,36 @@ import { findFirstIdxMonotonousOrArrLen } from '../../../../base/common/arraysFi
 import { RunOnceScheduler } from '../../../../base/common/async.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { createSingleCallFunction } from '../../../../base/common/functional.js';
-import { Disposable, DisposableStore, dispose, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	dispose,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { generateUuid } from '../../../../base/common/uuid.js';
-import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { TestingContextKeys } from './testingContextKeys.js';
 import { ITestProfileService } from './testProfileService.js';
-import { ITestResult, LiveTestResult, TestResultItemChange, TestResultItemChangeReason } from './testResult.js';
+import {
+	ITestResult,
+	LiveTestResult,
+	TestResultItemChange,
+	TestResultItemChangeReason,
+} from './testResult.js';
 import { ITestResultStorage, RETAIN_MAX_RESULTS } from './testResultStorage.js';
-import { ExtensionRunTestsRequest, ITestRunProfile, ResolvedTestRunRequest, TestResultItem, TestResultState, TestRunProfileBitset } from './testTypes.js';
+import {
+	ExtensionRunTestsRequest,
+	ITestRunProfile,
+	ResolvedTestRunRequest,
+	TestResultItem,
+	TestResultState,
+	TestRunProfileBitset,
+} from './testTypes.js';
 
 export type ResultChangeEvent =
 	| { completed: LiveTestResult }
@@ -100,11 +120,13 @@ export class TestResultService extends Disposable implements ITestResultService 
 
 	private readonly isRunning: IContextKey<boolean>;
 	private readonly hasAnyResults: IContextKey<boolean>;
-	private readonly loadResults = createSingleCallFunction(() => this.storage.read().then(loaded => {
-		for (let i = loaded.length - 1; i >= 0; i--) {
-			this.push(loaded[i]);
-		}
-	}));
+	private readonly loadResults = createSingleCallFunction(() =>
+		this.storage.read().then(loaded => {
+			for (let i = loaded.length - 1; i >= 0; i--) {
+				this.push(loaded[i]);
+			}
+		})
+	);
 
 	protected readonly persistScheduler = new RunOnceScheduler(() => this.persistImmediately(), 500);
 
@@ -112,7 +134,7 @@ export class TestResultService extends Disposable implements ITestResultService 
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ITestResultStorage private readonly storage: ITestResultStorage,
 		@ITestProfileService private readonly testProfiles: ITestProfileService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService,
+		@ITelemetryService private readonly telemetryService: ITelemetryService
 	) {
 		super();
 		this._register(toDisposable(() => dispose(this._resultsDisposables)));
@@ -140,7 +162,9 @@ export class TestResultService extends Disposable implements ITestResultService 
 	public createLiveResult(req: ResolvedTestRunRequest | ExtensionRunTestsRequest) {
 		if ('targets' in req) {
 			const id = generateUuid();
-			return this.push(new LiveTestResult(id, true, req, this.insertOrderCounter++, this.telemetryService));
+			return this.push(
+				new LiveTestResult(id, true, req, this.insertOrderCounter++, this.telemetryService)
+			);
 		}
 
 		let profile: ITestRunProfile | undefined;
@@ -165,7 +189,15 @@ export class TestResultService extends Disposable implements ITestResultService 
 			});
 		}
 
-		return this.push(new LiveTestResult(req.id, req.persist, resolved, this.insertOrderCounter++, this.telemetryService));
+		return this.push(
+			new LiveTestResult(
+				req.id,
+				req.persist,
+				resolved,
+				this.insertOrderCounter++,
+				this.telemetryService
+			)
+		);
 	}
 
 	/**
@@ -175,7 +207,10 @@ export class TestResultService extends Disposable implements ITestResultService 
 		if (result.completedAt === undefined) {
 			this.results.unshift(result);
 		} else {
-			const index = findFirstIdxMonotonousOrArrLen(this.results, r => r.completedAt !== undefined && r.completedAt <= result.completedAt!);
+			const index = findFirstIdxMonotonousOrArrLen(
+				this.results,
+				r => r.completedAt !== undefined && r.completedAt <= result.completedAt!
+			);
 			this.results.splice(index, 0, result);
 			this.persistScheduler.schedule();
 		}
@@ -203,7 +238,11 @@ export class TestResultService extends Disposable implements ITestResultService 
 			for (const item of result.tests) {
 				for (const otherResult of this.results) {
 					if (otherResult === result) {
-						this.testChangeEmitter.fire({ item, result, reason: TestResultItemChangeReason.ComputedStateChange });
+						this.testChangeEmitter.fire({
+							item,
+							result,
+							reason: TestResultItemChangeReason.ComputedStateChange,
+						});
 						break;
 					} else if (otherResult.getStateById(item.item.extId) !== undefined) {
 						break;

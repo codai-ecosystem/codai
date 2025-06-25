@@ -10,16 +10,15 @@ import { EditorAutoIndentStrategy } from '../../../../common/config/editorOption
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('OnEnter', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('uses brackets', () => {
 		const brackets: CharacterPair[] = [
 			['(', ')'],
-			['begin', 'end']
+			['begin', 'end'],
 		];
 		const support = new OnEnterSupport({
-			brackets: brackets
+			brackets: brackets,
 		});
 		const testIndentAction = (beforeText: string, afterText: string, expected: IndentAction) => {
 			const actual = support.onEnter(EditorAutoIndentStrategy.Advanced, '', beforeText, afterText);
@@ -50,27 +49,42 @@ suite('OnEnter', () => {
 		testIndentAction('begin', '', IndentAction.Indent);
 	});
 
-
 	test('Issue #121125: onEnterRules with global modifier', () => {
 		const support = new OnEnterSupport({
 			onEnterRules: [
 				{
 					action: {
 						appendText: '/// ',
-						indentAction: IndentAction.Outdent
+						indentAction: IndentAction.Outdent,
 					},
-					beforeText: /^\s*\/{3}.*$/gm
-				}
-			]
+					beforeText: /^\s*\/{3}.*$/gm,
+				},
+			],
 		});
 
-		const testIndentAction = (previousLineText: string, beforeText: string, afterText: string, expectedIndentAction: IndentAction | null, expectedAppendText: string | null, removeText: number = 0) => {
-			const actual = support.onEnter(EditorAutoIndentStrategy.Advanced, previousLineText, beforeText, afterText);
+		const testIndentAction = (
+			previousLineText: string,
+			beforeText: string,
+			afterText: string,
+			expectedIndentAction: IndentAction | null,
+			expectedAppendText: string | null,
+			removeText: number = 0
+		) => {
+			const actual = support.onEnter(
+				EditorAutoIndentStrategy.Advanced,
+				previousLineText,
+				beforeText,
+				afterText
+			);
 			if (expectedIndentAction === null) {
 				assert.strictEqual(actual, null, 'isNull:' + beforeText);
 			} else {
 				assert.strictEqual(actual !== null, true, 'isNotNull:' + beforeText);
-				assert.strictEqual(actual!.indentAction, expectedIndentAction, 'indentAction:' + beforeText);
+				assert.strictEqual(
+					actual!.indentAction,
+					expectedIndentAction,
+					'indentAction:' + beforeText
+				);
 				if (expectedAppendText !== null) {
 					assert.strictEqual(actual!.appendText, expectedAppendText, 'appendText:' + beforeText);
 				}
@@ -86,15 +100,31 @@ suite('OnEnter', () => {
 
 	test('uses regExpRules', () => {
 		const support = new OnEnterSupport({
-			onEnterRules: javascriptOnEnterRules
+			onEnterRules: javascriptOnEnterRules,
 		});
-		const testIndentAction = (previousLineText: string, beforeText: string, afterText: string, expectedIndentAction: IndentAction | null, expectedAppendText: string | null, removeText: number = 0) => {
-			const actual = support.onEnter(EditorAutoIndentStrategy.Advanced, previousLineText, beforeText, afterText);
+		const testIndentAction = (
+			previousLineText: string,
+			beforeText: string,
+			afterText: string,
+			expectedIndentAction: IndentAction | null,
+			expectedAppendText: string | null,
+			removeText: number = 0
+		) => {
+			const actual = support.onEnter(
+				EditorAutoIndentStrategy.Advanced,
+				previousLineText,
+				beforeText,
+				afterText
+			);
 			if (expectedIndentAction === null) {
 				assert.strictEqual(actual, null, 'isNull:' + beforeText);
 			} else {
 				assert.strictEqual(actual !== null, true, 'isNotNull:' + beforeText);
-				assert.strictEqual(actual!.indentAction, expectedIndentAction, 'indentAction:' + beforeText);
+				assert.strictEqual(
+					actual!.indentAction,
+					expectedIndentAction,
+					'indentAction:' + beforeText
+				);
 				if (expectedAppendText !== null) {
 					assert.strictEqual(actual!.appendText, expectedAppendText, 'appendText:' + beforeText);
 				}
@@ -161,7 +191,14 @@ suite('OnEnter', () => {
 		testIndentAction('', '   */', '', IndentAction.None, null, 1);
 		testIndentAction('', '     */', '', IndentAction.None, null, 1);
 		testIndentAction('', '\t     */', '', IndentAction.None, null, 1);
-		testIndentAction('', ' *--------------------------------------------------------------------------------------------*/', '', IndentAction.None, null, 1);
+		testIndentAction(
+			'',
+			' *--------------------------------------------------------------------------------------------*/',
+			'',
+			IndentAction.None,
+			null,
+			1
+		);
 
 		// issue #43469
 		testIndentAction('class A {', '    * test() {', '', IndentAction.Indent, null, 0);
@@ -174,7 +211,7 @@ suite('OnEnter', () => {
 
 	test('issue #141816', () => {
 		const support = new OnEnterSupport({
-			onEnterRules: javascriptOnEnterRules
+			onEnterRules: javascriptOnEnterRules,
 		});
 		const testIndentAction = (beforeText: string, afterText: string, expected: IndentAction) => {
 			const actual = support.onEnter(EditorAutoIndentStrategy.Advanced, '', beforeText, afterText);

@@ -24,6 +24,7 @@ function example(param: string): void {
 We've implemented the following naming standards:
 
 - **PascalCase** for types, interfaces, and classes:
+
   ```typescript
   interface UserProfile {}
   class AgentRuntimeService {}
@@ -31,6 +32,7 @@ We've implemented the following naming standards:
   ```
 
 - **camelCase** for functions, methods, properties, and variables:
+
   ```typescript
   const userProfile = getUserProfile(userId);
   function createTask() {}
@@ -38,12 +40,13 @@ We've implemented the following naming standards:
   ```
 
 - **Using whole words** in names for clarity:
+
   ```typescript
   // Good
-  function getUserAuthentication()
+  function getUserAuthentication();
 
   // Avoid
-  function getUsrAuth()
+  function getUsrAuth();
   ```
 
 ### 3. Type Safety
@@ -52,10 +55,7 @@ We've prioritized TypeScript's type system for safety and clarity:
 
 ```typescript
 // Strong typing for function parameters and returns
-function createTask(
-  userId: string,
-  taskDetails: TaskDetails
-): Promise<Task> {
+function createTask(userId: string, taskDetails: TaskDetails): Promise<Task> {
 	// Implementation
 }
 
@@ -81,10 +81,7 @@ We've implemented JSDoc style comments for all public APIs:
  * @returns A Promise resolving to the created Task
  * @throws {Error} If the user does not have permission
  */
-function createTask(
-  userId: string,
-  taskDetails: TaskDetails
-): Promise<Task> {
+function createTask(userId: string, taskDetails: TaskDetails): Promise<Task> {
 	// Implementation
 }
 ```
@@ -95,7 +92,7 @@ We've followed the string conventions:
 
 ```typescript
 // Double quotes for user-facing strings (for localization)
-const errorMessage = "An error occurred while processing your request";
+const errorMessage = 'An error occurred while processing your request';
 
 // Single quotes for internal strings
 const apiPath = '/api/tasks';
@@ -169,7 +166,10 @@ export class APIClient {
 
 	private constructor() {
 		// Use current origin for client-side or a default for server-side
-		this.baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+		this.baseUrl =
+			typeof window !== 'undefined'
+				? window.location.origin
+				: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 	}
 
 	public static getInstance(): APIClient {
@@ -205,16 +205,13 @@ async function getAgents(request: NextRequest, user: UserDocument) {
 				agents,
 				runtime: {
 					status: 'ready',
-					version: '0.1.0'
-				}
-			}
+					version: '0.1.0',
+				},
+			},
 		});
 	} catch (error) {
 		console.error('Error getting agents:', error);
-		return NextResponse.json(
-			{ error: 'Failed to get agents' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to get agents' }, { status: 500 });
 	}
 }
 
@@ -236,7 +233,7 @@ module.exports = {
 	],
 	rules: {
 		indent: ['error', 'tab'],
-		'quotes': ['error', 'single', { 'avoidEscape': true, 'allowTemplateLiterals': true }],
+		quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
 		'@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
 		'react/prop-types': 'off',
 		'react-hooks/rules-of-hooks': 'error',
@@ -265,4 +262,4 @@ The AIDE platform has successfully implemented coding standards that align with 
 
 ---
 
-*Last updated: June 5, 2024*
+_Last updated: June 5, 2024_

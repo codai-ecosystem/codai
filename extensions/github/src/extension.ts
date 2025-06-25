@@ -3,7 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { commands, Disposable, ExtensionContext, extensions, l10n, LogLevel, LogOutputChannel, window } from 'vscode';
+import {
+	commands,
+	Disposable,
+	ExtensionContext,
+	extensions,
+	l10n,
+	LogLevel,
+	LogOutputChannel,
+	window,
+} from 'vscode';
 import { TelemetryReporter } from '@vscode/extension-telemetry';
 import { GithubRemoteSourceProvider } from './remoteSourceProvider.js';
 import { API, GitExtension } from './typings/git.js';
@@ -47,8 +56,7 @@ function initializeGitBaseExtension(): Disposable {
 			const gitBaseAPI = gitBaseExtension.getAPI(1);
 
 			disposables.add(gitBaseAPI.registerRemoteSourceProvider(new GithubRemoteSourceProvider()));
-		}
-		catch (err) {
+		} catch (err) {
 			console.error('Could not initialize GitHub extension');
 			console.warn(err);
 		}
@@ -84,37 +92,55 @@ function setGitHubContext(gitAPI: API, disposables: DisposableStore) {
 	}
 }
 
-function initializeGitExtension(context: ExtensionContext, telemetryReporter: TelemetryReporter, logger: LogOutputChannel): Disposable {
+function initializeGitExtension(
+	context: ExtensionContext,
+	telemetryReporter: TelemetryReporter,
+	logger: LogOutputChannel
+): Disposable {
 	const disposables = new DisposableStore();
 
 	let gitExtension = extensions.getExtension<GitExtension>('vscode.git');
 
 	const initialize = () => {
-		gitExtension!.activate()
-			.then(extension => {
-				const onDidChangeGitExtensionEnablement = (enabled: boolean) => {
-					if (enabled) {
-						const gitAPI = extension.getAPI(1);
+		gitExtension!.activate().then(extension => {
+			const onDidChangeGitExtensionEnablement = (enabled: boolean) => {
+				if (enabled) {
+					const gitAPI = extension.getAPI(1);
 
-						disposables.add(registerCommands(gitAPI));
-						disposables.add(new GithubCredentialProviderManager(gitAPI));
-						disposables.add(new GitHubBranchProtectionProviderManager(gitAPI, context.globalState, logger, telemetryReporter));
-						disposables.add(gitAPI.registerPushErrorHandler(new GithubPushErrorHandler(telemetryReporter)));
-						disposables.add(gitAPI.registerRemoteSourcePublisher(new GithubRemoteSourcePublisher(gitAPI)));
-						disposables.add(gitAPI.registerSourceControlHistoryItemDetailsProvider(new GitHubSourceControlHistoryItemDetailsProvider(gitAPI, logger)));
-						disposables.add(new GitHubCanonicalUriProvider(gitAPI));
-						disposables.add(new VscodeDevShareProvider(gitAPI));
-						setGitHubContext(gitAPI, disposables);
+					disposables.add(registerCommands(gitAPI));
+					disposables.add(new GithubCredentialProviderManager(gitAPI));
+					disposables.add(
+						new GitHubBranchProtectionProviderManager(
+							gitAPI,
+							context.globalState,
+							logger,
+							telemetryReporter
+						)
+					);
+					disposables.add(
+						gitAPI.registerPushErrorHandler(new GithubPushErrorHandler(telemetryReporter))
+					);
+					disposables.add(
+						gitAPI.registerRemoteSourcePublisher(new GithubRemoteSourcePublisher(gitAPI))
+					);
+					disposables.add(
+						gitAPI.registerSourceControlHistoryItemDetailsProvider(
+							new GitHubSourceControlHistoryItemDetailsProvider(gitAPI, logger)
+						)
+					);
+					disposables.add(new GitHubCanonicalUriProvider(gitAPI));
+					disposables.add(new VscodeDevShareProvider(gitAPI));
+					setGitHubContext(gitAPI, disposables);
 
-						commands.executeCommand('setContext', 'git-base.gitEnabled', true);
-					} else {
-						disposables.dispose();
-					}
-				};
+					commands.executeCommand('setContext', 'git-base.gitEnabled', true);
+				} else {
+					disposables.dispose();
+				}
+			};
 
-				disposables.add(extension.onDidChangeEnablement(onDidChangeGitExtensionEnablement));
-				onDidChangeGitExtensionEnablement(extension.enabled);
-			});
+			disposables.add(extension.onDidChangeEnablement(onDidChangeGitExtensionEnablement));
+			onDidChangeGitExtensionEnablement(extension.enabled);
+		});
 	};
 
 	if (gitExtension) {

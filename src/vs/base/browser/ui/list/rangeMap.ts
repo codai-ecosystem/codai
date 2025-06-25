@@ -38,7 +38,7 @@ export function groupIntersect(range: IRange, groups: IRangedGroup[]): IRangedGr
 
 		result.push({
 			range: intersection,
-			size: r.size
+			size: r.size,
 		});
 	}
 
@@ -98,7 +98,6 @@ export interface IRangeMap {
 }
 
 export class RangeMap implements IRangeMap {
-
 	private groups: IRangedGroup[] = [];
 	private _size = 0;
 	private _paddingTop = 0;
@@ -120,16 +119,20 @@ export class RangeMap implements IRangeMap {
 	splice(index: number, deleteCount: number, items: IItem[] = []): void {
 		const diff = items.length - deleteCount;
 		const before = groupIntersect({ start: 0, end: index }, this.groups);
-		const after = groupIntersect({ start: index + deleteCount, end: Number.POSITIVE_INFINITY }, this.groups)
-			.map<IRangedGroup>(g => ({ range: shift(g.range, diff), size: g.size }));
+		const after = groupIntersect(
+			{ start: index + deleteCount, end: Number.POSITIVE_INFINITY },
+			this.groups
+		).map<IRangedGroup>(g => ({ range: shift(g.range, diff), size: g.size }));
 
 		const middle = items.map<IRangedGroup>((item, i) => ({
 			range: { start: index + i, end: index + i + 1 },
-			size: item.size
+			size: item.size,
 		}));
 
 		this.groups = concat(before, middle, after);
-		this._size = this._paddingTop + this.groups.reduce((t, g) => t + (g.size * (g.range.end - g.range.start)), 0);
+		this._size =
+			this._paddingTop +
+			this.groups.reduce((t, g) => t + g.size * (g.range.end - g.range.start), 0);
 	}
 
 	/**
@@ -169,7 +172,7 @@ export class RangeMap implements IRangeMap {
 
 		for (const group of this.groups) {
 			const count = group.range.end - group.range.start;
-			const newSize = size + (count * group.size);
+			const newSize = size + count * group.size;
 
 			if (position < newSize) {
 				return index + Math.floor((position - size) / group.size);
@@ -206,7 +209,7 @@ export class RangeMap implements IRangeMap {
 			const newCount = count + groupCount;
 
 			if (index < newCount) {
-				return this._paddingTop + position + ((index - count) * group.size);
+				return this._paddingTop + position + (index - count) * group.size;
 			}
 
 			position += groupCount * group.size;

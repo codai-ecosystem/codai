@@ -12,35 +12,52 @@ import { IStorageService } from '../../storage/common/storage.js';
 import { IEnvironmentService } from '../../environment/common/environment.js';
 import { IConfigurationService } from '../../configuration/common/configuration.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
-import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from './extensionResourceLoader.js';
+import {
+	AbstractExtensionResourceLoaderService,
+	IExtensionResourceLoaderService,
+} from './extensionResourceLoader.js';
 import { IExtensionGalleryManifestService } from '../../extensionManagement/common/extensionGalleryManifest.js';
 import { ILogService } from '../../log/common/log.js';
 
 export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
-
 	constructor(
 		@IFileService fileService: IFileService,
 		@IStorageService storageService: IStorageService,
 		@IProductService productService: IProductService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IExtensionGalleryManifestService extensionGalleryManifestService: IExtensionGalleryManifestService,
+		@IExtensionGalleryManifestService
+		extensionGalleryManifestService: IExtensionGalleryManifestService,
 		@IRequestService private readonly _requestService: IRequestService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
-		super(fileService, storageService, productService, environmentService, configurationService, extensionGalleryManifestService, logService);
+		super(
+			fileService,
+			storageService,
+			productService,
+			environmentService,
+			configurationService,
+			extensionGalleryManifestService,
+			logService
+		);
 	}
 
 	async readExtensionResource(uri: URI): Promise<string> {
 		if (await this.isExtensionGalleryResource(uri)) {
 			const headers = await this.getExtensionGalleryRequestHeaders();
-			const requestContext = await this._requestService.request({ url: uri.toString(), headers }, CancellationToken.None);
+			const requestContext = await this._requestService.request(
+				{ url: uri.toString(), headers },
+				CancellationToken.None
+			);
 			return (await asTextOrError(requestContext)) || '';
 		}
 		const result = await this._fileService.readFile(uri);
 		return result.value.toString();
 	}
-
 }
 
-registerSingleton(IExtensionResourceLoaderService, ExtensionResourceLoaderService, InstantiationType.Delayed);
+registerSingleton(
+	IExtensionResourceLoaderService,
+	ExtensionResourceLoaderService,
+	InstantiationType.Delayed
+);

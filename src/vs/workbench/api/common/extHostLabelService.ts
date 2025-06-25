@@ -5,10 +5,14 @@
 
 import { ResourceLabelFormatter } from '../../../platform/label/common/label.js';
 import { IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
-import { MainThreadLabelServiceShape, ExtHostLabelServiceShape, MainContext, IMainContext } from './extHost.protocol.js';
+import {
+	MainThreadLabelServiceShape,
+	ExtHostLabelServiceShape,
+	MainContext,
+	IMainContext,
+} from './extHost.protocol.js';
 
 export class ExtHostLabelService implements ExtHostLabelServiceShape {
-
 	private readonly _proxy: MainThreadLabelServiceShape;
 	private _handlePool: number = 0;
 

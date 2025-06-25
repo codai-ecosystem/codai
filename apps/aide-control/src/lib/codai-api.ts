@@ -69,12 +69,15 @@ export class CodaiAPI {
 	/**
 	 * Create new project
 	 */
-	async createProject(projectData: {
-		name: string;
-		description?: string;
-		template?: string;
-		visibility: 'public' | 'private';
-	}, accessToken: string) {
+	async createProject(
+		projectData: {
+			name: string;
+			description?: string;
+			template?: string;
+			visibility: 'public' | 'private';
+		},
+		accessToken: string
+	) {
 		try {
 			const response = await fetch(`${this.baseUrl}/projects`, {
 				method: 'POST',
@@ -117,11 +120,15 @@ export class CodaiAPI {
 	/**
 	 * Update project
 	 */
-	async updateProject(projectId: string, updateData: Partial<{
-		name: string;
-		description: string;
-		visibility: 'public' | 'private';
-	}>, accessToken: string) {
+	async updateProject(
+		projectId: string,
+		updateData: Partial<{
+			name: string;
+			description: string;
+			visibility: 'public' | 'private';
+		}>,
+		accessToken: string
+	) {
 		try {
 			const response = await fetch(`${this.baseUrl}/projects/${projectId}`, {
 				method: 'PATCH',

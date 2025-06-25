@@ -31,7 +31,8 @@ export function GET(req: NextRequest) {
 export function POST(req: NextRequest) {
 	return withAuth(async (req, { uid }) => {
 		try {
-			const { serviceType, config }: { serviceType: ServiceType; config: ServiceConfig } = await req.json();
+			const { serviceType, config }: { serviceType: ServiceType; config: ServiceConfig } =
+				await req.json();
 
 			if (!serviceType || !config || !config.providerId) {
 				return NextResponse.json(
@@ -54,7 +55,7 @@ export function POST(req: NextRequest) {
 			return NextResponse.json({
 				message: 'Service configuration updated successfully',
 				serviceType,
-				providerId: config.providerId
+				providerId: config.providerId,
 			});
 		} catch (error) {
 			console.error('Error updating user service config:', error);
@@ -97,7 +98,7 @@ export function DELETE(req: NextRequest) {
 			return NextResponse.json({
 				message: 'Service configuration removed successfully',
 				serviceType,
-				providerId
+				providerId,
 			});
 		} catch (error) {
 			console.error('Error removing user service config:', error);

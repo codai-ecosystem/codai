@@ -7,8 +7,16 @@ import { h } from '../../../../../../base/browser/dom.js';
 import { IView, IViewSize } from '../../../../../../base/browser/ui/grid/grid.js';
 import { Emitter, Event } from '../../../../../../base/common/event.js';
 import { Disposable, IDisposable } from '../../../../../../base/common/lifecycle.js';
-import { IObservable, autorun, derived, observableFromEvent } from '../../../../../../base/common/observable.js';
-import { EditorExtensionsRegistry, IEditorContributionDescription } from '../../../../../../editor/browser/editorExtensions.js';
+import {
+	IObservable,
+	autorun,
+	derived,
+	observableFromEvent,
+} from '../../../../../../base/common/observable.js';
+import {
+	EditorExtensionsRegistry,
+	IEditorContributionDescription,
+} from '../../../../../../editor/browser/editorExtensions.js';
 import { CodeEditorWidget } from '../../../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
 import { IEditorOptions } from '../../../../../../editor/common/config/editorOptions.js';
 import { Range } from '../../../../../../editor/common/core/range.js';
@@ -19,7 +27,10 @@ import { MenuWorkbenchToolBar } from '../../../../../../platform/actions/browser
 import { MenuId } from '../../../../../../platform/actions/common/actions.js';
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
-import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from '../../../../../browser/parts/editor/editor.js';
+import {
+	DEFAULT_EDITOR_MAX_DIMENSIONS,
+	DEFAULT_EDITOR_MIN_DIMENSIONS,
+} from '../../../../../browser/parts/editor/editor.js';
 import { setStyle } from '../../utils.js';
 import { observableConfigValue } from '../../../../../../platform/observable/common/platformObservableUtils.js';
 import { MergeEditorViewModel } from '../viewModel.js';
@@ -54,7 +65,7 @@ export abstract class CodeEditorView extends Disposable {
 	constructor(
 		private readonly instantiationService: IInstantiationService,
 		public readonly viewModel: IObservable<undefined | MergeEditorViewModel>,
-		private readonly configurationService: IConfigurationService,
+		private readonly configurationService: IConfigurationService
 	) {
 		super();
 		this.model = this.viewModel.map(m => /** @description model */ m?.model);
@@ -65,10 +76,7 @@ export abstract class CodeEditorView extends Disposable {
 				h('span.detail@detail'),
 				h('span.toolbar@toolbar'),
 			]),
-			h('div.container', [
-				h('div.gutter@gutterDiv'),
-				h('div@editor'),
-			]),
+			h('div.container', [h('div.gutter@gutterDiv'), h('div@editor')]),
 		]);
 		this._onDidViewChange = new Emitter<IViewSize | undefined>();
 		this.view = {
@@ -84,15 +92,27 @@ export abstract class CodeEditorView extends Disposable {
 					width: width - this.htmlElements.gutterDiv.clientWidth,
 					height: height - this.htmlElements.header.clientHeight,
 				});
-			}
+			},
 			// preferredWidth?: number | undefined;
 			// preferredHeight?: number | undefined;
 			// priority?: LayoutPriority | undefined;
 			// snap?: boolean | undefined;
 		};
-		this.checkboxesVisible = observableConfigValue<boolean>('mergeEditor.showCheckboxes', false, this.configurationService);
-		this.showDeletionMarkers = observableConfigValue<boolean>('mergeEditor.showDeletionMarkers', true, this.configurationService);
-		this.useSimplifiedDecorations = observableConfigValue<boolean>('mergeEditor.useSimplifiedDecorations', false, this.configurationService);
+		this.checkboxesVisible = observableConfigValue<boolean>(
+			'mergeEditor.showCheckboxes',
+			false,
+			this.configurationService
+		);
+		this.showDeletionMarkers = observableConfigValue<boolean>(
+			'mergeEditor.showDeletionMarkers',
+			true,
+			this.configurationService
+		);
+		this.useSimplifiedDecorations = observableConfigValue<boolean>(
+			'mergeEditor.useSimplifiedDecorations',
+			false,
+			this.configurationService
+		);
 		this.editor = this.instantiationService.createInstance(
 			CodeEditorWidget,
 			this.htmlElements.editor,
@@ -101,24 +121,26 @@ export abstract class CodeEditorView extends Disposable {
 				contributions: this.getEditorContributions(),
 			}
 		);
-		this.isFocused = observableFromEvent(this,
+		this.isFocused = observableFromEvent(
+			this,
 			Event.any(this.editor.onDidBlurEditorWidget, this.editor.onDidFocusEditorWidget),
 			() => /** @description editor.hasWidgetFocus */ this.editor.hasWidgetFocus()
 		);
-		this.cursorPosition = observableFromEvent(this,
-			this.editor.onDidChangeCursorPosition,
-			() => /** @description editor.getPosition */ this.editor.getPosition()
+		this.cursorPosition = observableFromEvent(this, this.editor.onDidChangeCursorPosition, () =>
+			/** @description editor.getPosition */ this.editor.getPosition()
 		);
-		this.selection = observableFromEvent(this,
-			this.editor.onDidChangeCursorSelection,
-			() => /** @description editor.getSelections */ this.editor.getSelections()
+		this.selection = observableFromEvent(this, this.editor.onDidChangeCursorSelection, () =>
+			/** @description editor.getSelections */ this.editor.getSelections()
 		);
-		this.cursorLineNumber = this.cursorPosition.map(p => /** @description cursorPosition.lineNumber */ p?.lineNumber);
-
+		this.cursorLineNumber = this.cursorPosition.map(
+			p => /** @description cursorPosition.lineNumber */ p?.lineNumber
+		);
 	}
 
 	protected getEditorContributions(): IEditorContributionDescription[] {
-		return EditorExtensionsRegistry.getEditorContributions().filter(c => c.id !== FoldingController.ID && c.id !== CodeLensContribution.ID);
+		return EditorExtensionsRegistry.getEditorContributions().filter(
+			c => c.id !== FoldingController.ID && c.id !== CodeLensContribution.ID
+		);
 	}
 }
 
@@ -145,7 +167,9 @@ export function createSelectionsAutorun(
 		if (ranges.length === 0) {
 			return;
 		}
-		codeEditorView.editor.setSelections(ranges.map(r => new Selection(r.startLineNumber, r.startColumn, r.endLineNumber, r.endColumn)));
+		codeEditorView.editor.setSelections(
+			ranges.map(r => new Selection(r.startLineNumber, r.startColumn, r.endLineNumber, r.endColumn))
+		);
 	});
 }
 
@@ -153,14 +177,19 @@ export class TitleMenu extends Disposable {
 	constructor(
 		menuId: MenuId,
 		targetHtmlElement: HTMLElement,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 
-		const toolbar = instantiationService.createInstance(MenuWorkbenchToolBar, targetHtmlElement, menuId, {
-			menuOptions: { renderShortTitle: true },
-			toolbarOptions: { primaryGroup: (g) => g === 'primary' }
-		});
+		const toolbar = instantiationService.createInstance(
+			MenuWorkbenchToolBar,
+			targetHtmlElement,
+			menuId,
+			{
+				menuOptions: { renderShortTitle: true },
+				toolbarOptions: { primaryGroup: g => g === 'primary' },
+			}
+		);
 		this._store.add(toolbar);
 	}
 }

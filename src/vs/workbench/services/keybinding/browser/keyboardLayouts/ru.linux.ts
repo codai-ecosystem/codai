@@ -5,7 +5,6 @@
 
 import { KeyboardLayoutContribution } from './_.contribution.js';
 
-
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 	layout: { model: 'pc104', group: 0, layout: 'ru', variant: ',', options: '', rules: 'base' },
 	secondaryLayouts: [],
@@ -182,6 +181,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		BrowserFavorites: [],
 		MailReply: [],
 		MailForward: [],
-		MailSend: []
-	}
+		MailSend: [],
+	},
 });

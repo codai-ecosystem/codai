@@ -5,49 +5,79 @@
 
 import * as arrays from '../../../../base/common/arrays.js';
 import { Delayer, first } from '../../../../base/common/async.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../base/common/cancellation.js';
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from '../../../../base/common/cancellation.js';
 import { Color } from '../../../../base/common/color.js';
-import { isCancellationError, onUnexpectedError, onUnexpectedExternalError } from '../../../../base/common/errors.js';
+import {
+	isCancellationError,
+	onUnexpectedError,
+	onUnexpectedExternalError,
+} from '../../../../base/common/errors.js';
 import { Event } from '../../../../base/common/event.js';
 import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
 import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
 import * as strings from '../../../../base/common/strings.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { EditorAction, EditorCommand, EditorContributionInstantiation, registerEditorAction, registerEditorCommand, registerEditorContribution, registerModelAndPositionCommand, ServicesAccessor } from '../../../browser/editorExtensions.js';
+import {
+	EditorAction,
+	EditorCommand,
+	EditorContributionInstantiation,
+	registerEditorAction,
+	registerEditorCommand,
+	registerEditorContribution,
+	registerModelAndPositionCommand,
+	ServicesAccessor,
+} from '../../../browser/editorExtensions.js';
 import { ICodeEditorService } from '../../../browser/services/codeEditorService.js';
 import { EditorOption } from '../../../common/config/editorOptions.js';
 import { IPosition, Position } from '../../../common/core/position.js';
 import { IRange, Range } from '../../../common/core/range.js';
 import { IEditorContribution, IEditorDecorationsCollection } from '../../../common/editorCommon.js';
 import { EditorContextKeys } from '../../../common/editorContextKeys.js';
-import { IModelDeltaDecoration, ITextModel, TrackedRangeStickiness } from '../../../common/model.js';
+import {
+	IModelDeltaDecoration,
+	ITextModel,
+	TrackedRangeStickiness,
+} from '../../../common/model.js';
 import { ModelDecorationOptions } from '../../../common/model/textModel.js';
 import { LinkedEditingRangeProvider, LinkedEditingRanges } from '../../../common/languages.js';
 import { ILanguageConfigurationService } from '../../../common/languages/languageConfigurationRegistry.js';
 import * as nls from '../../../../nls.js';
-import { ContextKeyExpr, IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	ContextKeyExpr,
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
 import { ILanguageFeaturesService } from '../../../common/services/languageFeatures.js';
 import { registerColor } from '../../../../platform/theme/common/colorRegistry.js';
 import { LanguageFeatureRegistry } from '../../../common/languageFeatureRegistry.js';
 import { ISingleEditOperation } from '../../../common/core/editOperation.js';
-import { IFeatureDebounceInformation, ILanguageFeatureDebounceService } from '../../../common/services/languageFeatureDebounce.js';
+import {
+	IFeatureDebounceInformation,
+	ILanguageFeatureDebounceService,
+} from '../../../common/services/languageFeatureDebounce.js';
 import { StopWatch } from '../../../../base/common/stopwatch.js';
 import './linkedEditing.css';
 
-export const CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE = new RawContextKey<boolean>('LinkedEditingInputVisible', false);
+export const CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE = new RawContextKey<boolean>(
+	'LinkedEditingInputVisible',
+	false
+);
 
 const DECORATION_CLASS_NAME = 'linked-editing-decoration';
 
 export class LinkedEditingContribution extends Disposable implements IEditorContribution {
-
 	public static readonly ID = 'editor.contrib.linkedEditing';
 
 	private static readonly DECORATION = ModelDecorationOptions.register({
 		description: 'linked-editing',
 		stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
-		className: DECORATION_CLASS_NAME
+		className: DECORATION_CLASS_NAME,
 	});
 
 	static get(editor: ICodeEditor): LinkedEditingContribution | null {
@@ -83,7 +113,8 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
 		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService
 	) {
 		super();
@@ -91,7 +122,11 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		this._providers = languageFeaturesService.linkedEditingRangeProvider;
 		this._enabled = false;
 		this._visibleContextKey = CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE.bindTo(contextKeyService);
-		this._debounceInformation = languageFeatureDebounceService.for(this._providers, 'Linked Editing', { max: 200 });
+		this._debounceInformation = languageFeatureDebounceService.for(
+			this._providers,
+			'Linked Editing',
+			{ max: 200 }
+		);
 
 		this._currentDecorations = this._editor.createDecorationsCollection();
 		this._languageWordPattern = null;
@@ -108,11 +143,13 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 
 		this._register(this._editor.onDidChangeModel(() => this.reinitialize(true)));
 
-		this._register(this._editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.linkedEditing) || e.hasChanged(EditorOption.renameOnType)) {
-				this.reinitialize(false);
-			}
-		}));
+		this._register(
+			this._editor.onDidChangeConfiguration(e => {
+				if (e.hasChanged(EditorOption.linkedEditing) || e.hasChanged(EditorOption.renameOnType)) {
+					this.reinitialize(false);
+				}
+			})
+		);
 		this._register(this._providers.onDidChange(() => this.reinitialize(false)));
 		this._register(this._editor.onDidChangeModelLanguage(() => this.reinitialize(true)));
 
@@ -121,7 +158,11 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 
 	private reinitialize(forceRefresh: boolean) {
 		const model = this._editor.getModel();
-		const isEnabled = model !== null && (this._editor.getOption(EditorOption.linkedEditing) || this._editor.getOption(EditorOption.renameOnType)) && this._providers.has(model);
+		const isEnabled =
+			model !== null &&
+			(this._editor.getOption(EditorOption.linkedEditing) ||
+				this._editor.getOption(EditorOption.renameOnType)) &&
+			this._providers.has(model);
 		if (isEnabled === this._enabled && !forceRefresh) {
 			return;
 		}
@@ -136,49 +177,59 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		}
 
 		this._localToDispose.add(
-			Event.runAndSubscribe(
-				model.onDidChangeLanguageConfiguration,
-				() => {
-					this._languageWordPattern = this.languageConfigurationService.getLanguageConfiguration(model.getLanguageId()).getWordDefinition();
-				}
-			)
+			Event.runAndSubscribe(model.onDidChangeLanguageConfiguration, () => {
+				this._languageWordPattern = this.languageConfigurationService
+					.getLanguageConfiguration(model.getLanguageId())
+					.getWordDefinition();
+			})
 		);
 
 		const rangeUpdateScheduler = new Delayer(this._debounceInformation.get(model));
 		const triggerRangeUpdate = () => {
-			this._rangeUpdateTriggerPromise = rangeUpdateScheduler.trigger(() => this.updateRanges(), this._debounceDuration ?? this._debounceInformation.get(model));
+			this._rangeUpdateTriggerPromise = rangeUpdateScheduler.trigger(
+				() => this.updateRanges(),
+				this._debounceDuration ?? this._debounceInformation.get(model)
+			);
 		};
 		const rangeSyncScheduler = new Delayer(0);
 		const triggerRangeSync = (token: number) => {
 			this._rangeSyncTriggerPromise = rangeSyncScheduler.trigger(() => this._syncRanges(token));
 		};
-		this._localToDispose.add(this._editor.onDidChangeCursorPosition(() => {
-			triggerRangeUpdate();
-		}));
-		this._localToDispose.add(this._editor.onDidChangeModelContent((e) => {
-			if (!this._ignoreChangeEvent) {
-				if (this._currentDecorations.length > 0) {
-					const referenceRange = this._currentDecorations.getRange(0);
-					if (referenceRange && e.changes.every(c => referenceRange.intersectRanges(c.range))) {
-						triggerRangeSync(this._syncRangesToken);
-						return;
+		this._localToDispose.add(
+			this._editor.onDidChangeCursorPosition(() => {
+				triggerRangeUpdate();
+			})
+		);
+		this._localToDispose.add(
+			this._editor.onDidChangeModelContent(e => {
+				if (!this._ignoreChangeEvent) {
+					if (this._currentDecorations.length > 0) {
+						const referenceRange = this._currentDecorations.getRange(0);
+						if (referenceRange && e.changes.every(c => referenceRange.intersectRanges(c.range))) {
+							triggerRangeSync(this._syncRangesToken);
+							return;
+						}
 					}
 				}
-			}
-			triggerRangeUpdate();
-		}));
+				triggerRangeUpdate();
+			})
+		);
 		this._localToDispose.add({
 			dispose: () => {
 				rangeUpdateScheduler.dispose();
 				rangeSyncScheduler.dispose();
-			}
+			},
 		});
 		this.updateRanges();
 	}
 
 	private _syncRanges(token: number): void {
 		// delayed invocation, make sure we're still on
-		if (!this._editor.hasModel() || token !== this._syncRangesToken || this._currentDecorations.length === 0) {
+		if (
+			!this._editor.hasModel() ||
+			token !== this._syncRangesToken ||
+			this._currentDecorations.length === 0
+		) {
 			// nothing to do
 			return;
 		}
@@ -208,7 +259,7 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 			if (mirrorRange.startLineNumber !== mirrorRange.endLineNumber) {
 				edits.push({
 					range: mirrorRange,
-					text: referenceValue
+					text: referenceValue,
 				});
 			} else {
 				let oldValue = model.getValueInRange(mirrorRange);
@@ -228,8 +279,13 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 
 				if (rangeStartColumn !== rangeEndColumn || newValue.length !== 0) {
 					edits.push({
-						range: new Range(mirrorRange.startLineNumber, rangeStartColumn, mirrorRange.endLineNumber, rangeEndColumn),
-						text: newValue
+						range: new Range(
+							mirrorRange.startLineNumber,
+							rangeStartColumn,
+							mirrorRange.endLineNumber,
+							rangeEndColumn
+						),
+						text: newValue,
 					});
 				}
 			}
@@ -280,7 +336,7 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		}
 
 		const position = this._editor.getPosition();
-		if (!this._enabled && !force || this._editor.getSelections().length > 1) {
+		if ((!this._enabled && !force) || this._editor.getSelections().length > 1) {
 			// disabled or multicursor
 			this.clearRanges();
 			return;
@@ -306,10 +362,15 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		this._currentRequestPosition = position;
 		this._currentRequestModelVersion = modelVersionId;
 
-		const currentRequestCts = this._currentRequestCts = new CancellationTokenSource();
+		const currentRequestCts = (this._currentRequestCts = new CancellationTokenSource());
 		try {
 			const sw = new StopWatch(false);
-			const response = await getLinkedEditingRanges(this._providers, model, position, currentRequestCts.token);
+			const response = await getLinkedEditingRanges(
+				this._providers,
+				model,
+				position,
+				currentRequestCts.token
+			);
 			this._debounceInformation.update(model, sw.elapsed());
 			if (currentRequestCts !== this._currentRequestCts) {
 				return;
@@ -345,7 +406,10 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 				return;
 			}
 
-			const decorations: IModelDeltaDecoration[] = ranges.map(range => ({ range: range, options: LinkedEditingContribution.DECORATION }));
+			const decorations: IModelDeltaDecoration[] = ranges.map(range => ({
+				range: range,
+				options: LinkedEditingContribution.DECORATION,
+			}));
 			this._visibleContextKey.set(true);
 			this._currentDecorations.set(decorations);
 			this._syncRangesToken++; // cancel any pending syncRanges call
@@ -358,7 +422,6 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 				this.clearRanges();
 			}
 		}
-
 	}
 
 	// for testing
@@ -392,31 +455,36 @@ export class LinkedEditingAction extends EditorAction {
 	constructor() {
 		super({
 			id: 'editor.action.linkedEditing',
-			label: nls.localize2('linkedEditing.label', "Start Linked Editing"),
-			precondition: ContextKeyExpr.and(EditorContextKeys.writable, EditorContextKeys.hasRenameProvider),
+			label: nls.localize2('linkedEditing.label', 'Start Linked Editing'),
+			precondition: ContextKeyExpr.and(
+				EditorContextKeys.writable,
+				EditorContextKeys.hasRenameProvider
+			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.F2,
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
 	override runCommand(accessor: ServicesAccessor, args: [URI, IPosition]): void | Promise<void> {
 		const editorService = accessor.get(ICodeEditorService);
-		const [uri, pos] = Array.isArray(args) && args || [undefined, undefined];
+		const [uri, pos] = (Array.isArray(args) && args) || [undefined, undefined];
 
 		if (URI.isUri(uri) && Position.isIPosition(pos)) {
-			return editorService.openCodeEditor({ resource: uri }, editorService.getActiveCodeEditor()).then(editor => {
-				if (!editor) {
-					return;
-				}
-				editor.setPosition(pos);
-				editor.invokeWithinContext(accessor => {
-					this.reportTelemetry(accessor, editor);
-					return this.run(accessor, editor);
-				});
-			}, onUnexpectedError);
+			return editorService
+				.openCodeEditor({ resource: uri }, editorService.getActiveCodeEditor())
+				.then(editor => {
+					if (!editor) {
+						return;
+					}
+					editor.setPosition(pos);
+					editor.invokeWithinContext(accessor => {
+						this.reportTelemetry(accessor, editor);
+						return this.run(accessor, editor);
+					});
+				}, onUnexpectedError);
 		}
 
 		return super.runCommand(accessor, args);
@@ -431,42 +499,74 @@ export class LinkedEditingAction extends EditorAction {
 	}
 }
 
-const LinkedEditingCommand = EditorCommand.bindToContribution<LinkedEditingContribution>(LinkedEditingContribution.get);
-registerEditorCommand(new LinkedEditingCommand({
-	id: 'cancelLinkedEditingInput',
-	precondition: CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE,
-	handler: x => x.clearRanges(),
-	kbOpts: {
-		kbExpr: EditorContextKeys.editorTextFocus,
-		weight: KeybindingWeight.EditorContrib + 99,
-		primary: KeyCode.Escape,
-		secondary: [KeyMod.Shift | KeyCode.Escape]
-	}
-}));
+const LinkedEditingCommand = EditorCommand.bindToContribution<LinkedEditingContribution>(
+	LinkedEditingContribution.get
+);
+registerEditorCommand(
+	new LinkedEditingCommand({
+		id: 'cancelLinkedEditingInput',
+		precondition: CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE,
+		handler: x => x.clearRanges(),
+		kbOpts: {
+			kbExpr: EditorContextKeys.editorTextFocus,
+			weight: KeybindingWeight.EditorContrib + 99,
+			primary: KeyCode.Escape,
+			secondary: [KeyMod.Shift | KeyCode.Escape],
+		},
+	})
+);
 
-
-function getLinkedEditingRanges(providers: LanguageFeatureRegistry<LinkedEditingRangeProvider>, model: ITextModel, position: Position, token: CancellationToken): Promise<LinkedEditingRanges | undefined | null> {
+function getLinkedEditingRanges(
+	providers: LanguageFeatureRegistry<LinkedEditingRangeProvider>,
+	model: ITextModel,
+	position: Position,
+	token: CancellationToken
+): Promise<LinkedEditingRanges | undefined | null> {
 	const orderedByScore = providers.ordered(model);
 
 	// in order of score ask the linked editing range provider
 	// until someone response with a good result
 	// (good = not null)
-	return first<LinkedEditingRanges | undefined | null>(orderedByScore.map(provider => async () => {
-		try {
-			return await provider.provideLinkedEditingRanges(model, position, token);
-		} catch (e) {
-			onUnexpectedExternalError(e);
-			return undefined;
-		}
-	}), result => !!result && arrays.isNonEmptyArray(result?.ranges));
+	return first<LinkedEditingRanges | undefined | null>(
+		orderedByScore.map(provider => async () => {
+			try {
+				return await provider.provideLinkedEditingRanges(model, position, token);
+			} catch (e) {
+				onUnexpectedExternalError(e);
+				return undefined;
+			}
+		}),
+		result => !!result && arrays.isNonEmptyArray(result?.ranges)
+	);
 }
 
-export const editorLinkedEditingBackground = registerColor('editor.linkedEditingBackground', { dark: Color.fromHex('#f00').transparent(0.3), light: Color.fromHex('#f00').transparent(0.3), hcDark: Color.fromHex('#f00').transparent(0.3), hcLight: Color.white }, nls.localize('editorLinkedEditingBackground', 'Background color when the editor auto renames on type.'));
+export const editorLinkedEditingBackground = registerColor(
+	'editor.linkedEditingBackground',
+	{
+		dark: Color.fromHex('#f00').transparent(0.3),
+		light: Color.fromHex('#f00').transparent(0.3),
+		hcDark: Color.fromHex('#f00').transparent(0.3),
+		hcLight: Color.white,
+	},
+	nls.localize(
+		'editorLinkedEditingBackground',
+		'Background color when the editor auto renames on type.'
+	)
+);
 
 registerModelAndPositionCommand('_executeLinkedEditingProvider', (_accessor, model, position) => {
 	const { linkedEditingRangeProvider } = _accessor.get(ILanguageFeaturesService);
-	return getLinkedEditingRanges(linkedEditingRangeProvider, model, position, CancellationToken.None);
+	return getLinkedEditingRanges(
+		linkedEditingRangeProvider,
+		model,
+		position,
+		CancellationToken.None
+	);
 });
 
-registerEditorContribution(LinkedEditingContribution.ID, LinkedEditingContribution, EditorContributionInstantiation.AfterFirstRender);
+registerEditorContribution(
+	LinkedEditingContribution.ID,
+	LinkedEditingContribution,
+	EditorContributionInstantiation.AfterFirstRender
+);
 registerEditorAction(LinkedEditingAction);

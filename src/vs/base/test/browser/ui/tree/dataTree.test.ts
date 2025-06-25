@@ -23,12 +23,12 @@ suite('DataTree', function () {
 			{ value: 0, children: [{ value: 10 }, { value: 11 }, { value: 12 }] },
 			{ value: 1 },
 			{ value: 2 },
-		]
+		],
 	};
 
 	const empty: E = {
 		value: -1,
-		children: []
+		children: [],
 	};
 
 	teardown(() => tree.dispose());
@@ -40,12 +40,16 @@ suite('DataTree', function () {
 		container.style.width = '200px';
 		container.style.height = '200px';
 
-		const delegate = new class implements IListVirtualDelegate<E> {
-			getHeight() { return 20; }
-			getTemplateId(): string { return 'default'; }
-		};
+		const delegate = new (class implements IListVirtualDelegate<E> {
+			getHeight() {
+				return 20;
+			}
+			getTemplateId(): string {
+				return 'default';
+			}
+		})();
 
-		const renderer = new class implements ITreeRenderer<E, void, HTMLElement> {
+		const renderer = new (class implements ITreeRenderer<E, void, HTMLElement> {
 			readonly templateId = 'default';
 			renderTemplate(container: HTMLElement): HTMLElement {
 				return container;
@@ -53,22 +57,24 @@ suite('DataTree', function () {
 			renderElement(element: ITreeNode<E, void>, index: number, templateData: HTMLElement): void {
 				templateData.textContent = `${element.element.value}`;
 			}
-			disposeTemplate(): void { }
-		};
+			disposeTemplate(): void {}
+		})();
 
-		const dataSource = new class implements IDataSource<E, E> {
+		const dataSource = new (class implements IDataSource<E, E> {
 			getChildren(element: E): E[] {
 				return element.children || [];
 			}
-		};
+		})();
 
-		const identityProvider = new class implements IIdentityProvider<E> {
+		const identityProvider = new (class implements IIdentityProvider<E> {
 			getId(element: E): { toString(): string } {
 				return `${element.value}`;
 			}
-		};
+		})();
 
-		tree = new DataTree<E, E>('test', container, delegate, [renderer], dataSource, { identityProvider });
+		tree = new DataTree<E, E>('test', container, delegate, [renderer], dataSource, {
+			identityProvider,
+		});
 		tree.layout(200);
 	});
 

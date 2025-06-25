@@ -4,24 +4,34 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
-import { IUserDataSyncUtilService, getDefaultIgnoredSettings } from '../../../../platform/userDataSync/common/userDataSync.js';
+import {
+	IUserDataSyncUtilService,
+	getDefaultIgnoredSettings,
+} from '../../../../platform/userDataSync/common/userDataSync.js';
 import { IStringDictionary } from '../../../../base/common/collections.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { FormattingOptions } from '../../../../base/common/jsonFormatter.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ITextModelService } from '../../../../editor/common/services/resolverService.js';
-import { ITextResourcePropertiesService, ITextResourceConfigurationService } from '../../../../editor/common/services/textResourceConfiguration.js';
+import {
+	ITextResourcePropertiesService,
+	ITextResourceConfigurationService,
+} from '../../../../editor/common/services/textResourceConfiguration.js';
 
 class UserDataSyncUtilService implements IUserDataSyncUtilService {
-
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
 		@IKeybindingService private readonly keybindingsService: IKeybindingService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@ITextResourcePropertiesService private readonly textResourcePropertiesService: ITextResourcePropertiesService,
-		@ITextResourceConfigurationService private readonly textResourceConfigurationService: ITextResourceConfigurationService,
-	) { }
+		@ITextResourcePropertiesService
+		private readonly textResourcePropertiesService: ITextResourcePropertiesService,
+		@ITextResourceConfigurationService
+		private readonly textResourceConfigurationService: ITextResourceConfigurationService
+	) {}
 
 	async resolveDefaultCoreIgnoredSettings(): Promise<string[]> {
 		return getDefaultIgnoredSettings(true);
@@ -30,7 +40,10 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 	async resolveUserBindings(userBindings: string[]): Promise<IStringDictionary<string>> {
 		const keys: IStringDictionary<string> = {};
 		for (const userbinding of userBindings) {
-			keys[userbinding] = this.keybindingsService.resolveUserBinding(userbinding).map(part => part.getUserSettingsLabel()).join(' ');
+			keys[userbinding] = this.keybindingsService
+				.resolveUserBinding(userbinding)
+				.map(part => part.getUserSettingsLabel())
+				.join(' ');
 		}
 		return keys;
 	}
@@ -42,15 +55,16 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 			const eol = modelReference.object.textEditorModel.getEOL();
 			modelReference.dispose();
 			return { eol, insertSpaces, tabSize };
-		} catch (e) {
-		}
+		} catch (e) {}
 		return {
 			eol: this.textResourcePropertiesService.getEOL(resource),
-			insertSpaces: !!this.textResourceConfigurationService.getValue(resource, 'editor.insertSpaces'),
-			tabSize: this.textResourceConfigurationService.getValue(resource, 'editor.tabSize')
+			insertSpaces: !!this.textResourceConfigurationService.getValue(
+				resource,
+				'editor.insertSpaces'
+			),
+			tabSize: this.textResourceConfigurationService.getValue(resource, 'editor.tabSize'),
 		};
 	}
-
 }
 
 registerSingleton(IUserDataSyncUtilService, UserDataSyncUtilService, InstantiationType.Delayed);

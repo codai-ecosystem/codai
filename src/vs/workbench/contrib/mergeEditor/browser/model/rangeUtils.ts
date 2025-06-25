@@ -47,7 +47,6 @@ export function addLength(position: Position, length: TextLength): Position {
 export function rangeIsBeforeOrTouching(range: Range, other: Range): boolean {
 	return (
 		range.endLineNumber < other.startLineNumber ||
-		(range.endLineNumber === other.startLineNumber &&
-			range.endColumn <= other.startColumn)
+		(range.endLineNumber === other.startLineNumber && range.endColumn <= other.startColumn)
 	);
 }

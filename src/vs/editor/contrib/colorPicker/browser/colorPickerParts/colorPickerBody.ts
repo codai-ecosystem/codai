@@ -15,14 +15,18 @@ import { ColorPickerWidgetType } from '../colorPickerParticipantUtils.js';
 const $ = dom.$;
 
 export class ColorPickerBody extends Disposable {
-
 	private readonly _domNode: HTMLElement;
 	private readonly _saturationBox: SaturationBox;
 	private readonly _hueStrip: Strip;
 	private readonly _opacityStrip: Strip;
 	private readonly _insertButton: InsertButton | null = null;
 
-	constructor(container: HTMLElement, private readonly model: ColorPickerModel, private pixelRatio: number, type: ColorPickerWidgetType) {
+	constructor(
+		container: HTMLElement,
+		private readonly model: ColorPickerModel,
+		private pixelRatio: number,
+		type: ColorPickerWidgetType
+	) {
 		super();
 
 		this._domNode = $('.colorpicker-body');

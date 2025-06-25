@@ -26,11 +26,12 @@ suite('diffing fixtures', () => {
 		});
 	});
 
-
 	const fixturesOutDir = FileAccess.asFileUri('vs/editor/test/node/diffing/fixtures').fsPath;
 	// We want the dir in src, so we can directly update the source files if they disagree and create invalid files to capture the previous state.
 	// This makes it very easy to update the fixtures.
-	const fixturesSrcDir = resolve(fixturesOutDir).replaceAll('\\', '/').replace('/out/vs/editor/', '/src/vs/editor/');
+	const fixturesSrcDir = resolve(fixturesOutDir)
+		.replaceAll('\\', '/')
+		.replace('/out/vs/editor/', '/src/vs/editor/');
 	const folders = readdirSync(fixturesSrcDir);
 
 	function runTest(folder: string, diffingAlgoName: 'legacy' | 'advanced') {
@@ -40,15 +41,24 @@ suite('diffing fixtures', () => {
 		const firstFileName = files.find(f => f.startsWith('1.'))!;
 		const secondFileName = files.find(f => f.startsWith('2.'))!;
 
-		const firstContent = readFileSync(join(folderPath, firstFileName), 'utf8').replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+		const firstContent = readFileSync(join(folderPath, firstFileName), 'utf8')
+			.replaceAll('\r\n', '\n')
+			.replaceAll('\r', '\n');
 		const firstContentLines = firstContent.split(/\n/);
-		const secondContent = readFileSync(join(folderPath, secondFileName), 'utf8').replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+		const secondContent = readFileSync(join(folderPath, secondFileName), 'utf8')
+			.replaceAll('\r\n', '\n')
+			.replaceAll('\r', '\n');
 		const secondContentLines = secondContent.split(/\n/);
 
-		const diffingAlgo = diffingAlgoName === 'legacy' ? new LegacyLinesDiffComputer() : new DefaultLinesDiffComputer();
+		const diffingAlgo =
+			diffingAlgoName === 'legacy' ? new LegacyLinesDiffComputer() : new DefaultLinesDiffComputer();
 
 		const ignoreTrimWhitespace = folder.indexOf('trimws') >= 0;
-		const diff = diffingAlgo.computeDiff(firstContentLines, secondContentLines, { ignoreTrimWhitespace, maxComputationTimeMs: Number.MAX_SAFE_INTEGER, computeMoves: true });
+		const diff = diffingAlgo.computeDiff(firstContentLines, secondContentLines, {
+			ignoreTrimWhitespace,
+			maxComputationTimeMs: Number.MAX_SAFE_INTEGER,
+			computeMoves: true,
+		});
 
 		if (diffingAlgoName === 'advanced' && !ignoreTrimWhitespace) {
 			assertDiffCorrectness(diff, firstContentLines, secondContentLines);
@@ -62,17 +72,29 @@ suite('diffing fixtures', () => {
 			return changes.map<IDetailedDiff>(c => ({
 				originalRange: c.original.toString(),
 				modifiedRange: c.modified.toString(),
-				innerChanges: c.innerChanges?.map<IDiff>(c => ({
-					originalRange: formatRange(c.originalRange, firstContentLines),
-					modifiedRange: formatRange(c.modifiedRange, secondContentLines),
-				})) || null
+				innerChanges:
+					c.innerChanges?.map<IDiff>(c => ({
+						originalRange: formatRange(c.originalRange, firstContentLines),
+						modifiedRange: formatRange(c.modifiedRange, secondContentLines),
+					})) || null,
 			}));
 		}
 
 		function formatRange(range: Range, lines: string[]): string {
 			const toLastChar = range.endColumn === lines[range.endLineNumber - 1].length + 1;
 
-			return '[' + range.startLineNumber + ',' + range.startColumn + ' -> ' + range.endLineNumber + ',' + range.endColumn + (toLastChar ? ' EOL' : '') + ']';
+			return (
+				'[' +
+				range.startLineNumber +
+				',' +
+				range.startColumn +
+				' -> ' +
+				range.endLineNumber +
+				',' +
+				range.endColumn +
+				(toLastChar ? ' EOL' : '') +
+				']'
+			);
 		}
 
 		const actualDiffingResult: DiffingResult = {
@@ -83,7 +105,7 @@ suite('diffing fixtures', () => {
 				originalRange: v.lineRangeMapping.original.toString(),
 				modifiedRange: v.lineRangeMapping.modified.toString(),
 				changes: getDiffs(v.changes),
-			}))
+			})),
 		};
 		if (actualDiffingResult.moves?.length === 0) {
 			delete actualDiffingResult.moves;
@@ -99,8 +121,11 @@ suite('diffing fixtures', () => {
 			writeFileSync(expectedFilePath, actualJsonStr);
 			// Create invalid file so that this test fails on a re-run
 			writeFileSync(invalidFilePath, '');
-			throw new Error('No expected file! Expected and invalid files were written. Delete the invalid file to make the test pass.');
-		} if (existsSync(invalidFilePath)) {
+			throw new Error(
+				'No expected file! Expected and invalid files were written. Delete the invalid file to make the test pass.'
+			);
+		}
+		if (existsSync(invalidFilePath)) {
 			const invalidJsonStr = readFileSync(invalidFilePath, 'utf8');
 			if (invalidJsonStr === '') {
 				// Update expected file
@@ -180,11 +205,13 @@ function assertDiffCorrectness(diff: LinesDiff, original: string[], modified: st
 	assert.deepStrictEqual(result, modified.join('\n'));
 }
 
-function rangeMappingsToTextEdit(rangeMappings: readonly RangeMapping[], modified: AbstractText): TextEdit {
-	return new TextEdit(rangeMappings.map(m => {
-		return new TextReplacement(
-			m.originalRange,
-			modified.getValueOfRange(m.modifiedRange)
-		);
-	}));
+function rangeMappingsToTextEdit(
+	rangeMappings: readonly RangeMapping[],
+	modified: AbstractText
+): TextEdit {
+	return new TextEdit(
+		rangeMappings.map(m => {
+			return new TextReplacement(m.originalRange, modified.getValueOfRange(m.modifiedRange));
+		})
+	);
 }

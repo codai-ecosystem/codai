@@ -27,16 +27,15 @@ export class PartialFrontMatterSequence extends ParserBase<
 		 * On the other hand, the parser will be "consumed" hence using it
 		 * to process other tokens will yield an error.
 		 */
-		private readonly shouldStop: (token: BaseToken) => boolean,
+		private readonly shouldStop: (token: BaseToken) => boolean
 	) {
 		super([]);
 	}
 
 	@assertNotConsumed
 	public accept(
-		token: TSimpleDecoderToken,
+		token: TSimpleDecoderToken
 	): TAcceptTokenResult<PartialFrontMatterSequence | FrontMatterSequence> {
-
 		// collect all tokens until an end of the sequence is found
 		if (this.shouldStop(token)) {
 			this.isConsumed = true;
@@ -59,9 +58,7 @@ export class PartialFrontMatterSequence extends ParserBase<
 	/**
 	 * Add provided tokens to the list of the current parsed tokens.
 	 */
-	public addTokens(
-		tokens: readonly TSimpleDecoderToken[],
-	): this {
+	public addTokens(tokens: readonly TSimpleDecoderToken[]): this {
 		this.currentTokens.push(...tokens);
 
 		return this;

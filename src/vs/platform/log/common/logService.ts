@@ -8,7 +8,6 @@ import { Event } from '../../../base/common/event.js';
 import { ILogger, ILogService, LogLevel, MultiplexLogger } from './log.js';
 
 export class LogService extends Disposable implements ILogService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly logger: ILogger;

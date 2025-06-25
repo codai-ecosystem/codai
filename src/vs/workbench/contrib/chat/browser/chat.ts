@@ -17,7 +17,11 @@ import { IChatAgentCommand, IChatAgentData } from '../common/chatAgents.js';
 import { IChatResponseModel } from '../common/chatModel.js';
 import { IParsedChatRequest } from '../common/chatParserTypes.js';
 import { CHAT_PROVIDER_ID } from '../common/chatParticipantContribTypes.js';
-import { IChatRequestViewModel, IChatResponseViewModel, IChatViewModel } from '../common/chatViewModel.js';
+import {
+	IChatRequestViewModel,
+	IChatResponseViewModel,
+	IChatViewModel,
+} from '../common/chatViewModel.js';
 import { ChatAgentLocation, ChatMode } from '../common/constants.js';
 import { ChatAttachmentModel } from './chatAttachmentModel.js';
 import { ChatInputPart } from './chatInputPart.js';
@@ -28,7 +32,6 @@ import { ICodeBlockActionContext } from './codeBlockPart.js';
 export const IChatWidgetService = createDecorator<IChatWidgetService>('chatWidgetService');
 
 export interface IChatWidgetService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -48,8 +51,10 @@ export async function showChatView(viewsService: IViewsService): Promise<IChatWi
 	return (await viewsService.openView<ChatViewPane>(ChatViewId))?.widget;
 }
 
-export function showCopilotView(viewsService: IViewsService, layoutService: IWorkbenchLayoutService): Promise<IChatWidget | undefined> {
-
+export function showCopilotView(
+	viewsService: IViewsService,
+	layoutService: IWorkbenchLayoutService
+): Promise<IChatWidget | undefined> {
 	// Ensure main window is in front
 	if (layoutService.activeContainer !== layoutService.mainContainer) {
 		layoutService.mainContainer.focus();
@@ -86,11 +91,17 @@ export interface IQuickChatOpenOptions {
 	selection?: Selection;
 }
 
-export const IChatAccessibilityService = createDecorator<IChatAccessibilityService>('chatAccessibilityService');
+export const IChatAccessibilityService = createDecorator<IChatAccessibilityService>(
+	'chatAccessibilityService'
+);
 export interface IChatAccessibilityService {
 	readonly _serviceBrand: undefined;
 	acceptRequest(): number;
-	acceptResponse(response: IChatResponseViewModel | string | undefined, requestId: number, isVoiceInput?: boolean): void;
+	acceptResponse(
+		response: IChatResponseViewModel | string | undefined,
+		requestId: number,
+		isVoiceInput?: boolean
+	): void;
 }
 
 export interface IChatCodeBlockInfo {
@@ -198,7 +209,10 @@ export interface IChatWidget {
 	getInput(): string;
 	refreshParsedInput(): void;
 	logInputHistory(): void;
-	acceptInput(query?: string, options?: IChatAcceptInputOptions): Promise<IChatResponseModel | undefined>;
+	acceptInput(
+		query?: string,
+		options?: IChatAcceptInputOptions
+	): Promise<IChatResponseModel | undefined>;
 	rerunLastRequest(): Promise<void>;
 	setInputPlaceholder(placeholder: string): void;
 	resetInputPlaceholder(): void;
@@ -208,7 +222,9 @@ export interface IChatWidget {
 	getCodeBlockInfoForEditor(uri: URI): IChatCodeBlockInfo | undefined;
 	getCodeBlockInfosForResponse(response: IChatResponseViewModel): IChatCodeBlockInfo[];
 	getFileTreeInfosForResponse(response: IChatResponseViewModel): IChatFileTreeInfo[];
-	getLastFocusedFileTreeForResponse(response: IChatResponseViewModel): IChatFileTreeInfo | undefined;
+	getLastFocusedFileTreeForResponse(
+		response: IChatResponseViewModel
+	): IChatFileTreeInfo | undefined;
 	clear(): void;
 	/**
 	 * Wait for this widget to have a VM with a fully initialized model and editing session.
@@ -219,12 +235,12 @@ export interface IChatWidget {
 	togglePaused(): void;
 }
 
-
 export interface ICodeBlockActionContextProvider {
 	getCodeBlockContext(editor?: ICodeEditor): ICodeBlockActionContext | undefined;
 }
 
-export const IChatCodeBlockContextProviderService = createDecorator<IChatCodeBlockContextProviderService>('chatCodeBlockContextProviderService');
+export const IChatCodeBlockContextProviderService =
+	createDecorator<IChatCodeBlockContextProviderService>('chatCodeBlockContextProviderService');
 export interface IChatCodeBlockContextProviderService {
 	readonly _serviceBrand: undefined;
 	readonly providers: ICodeBlockActionContextProvider[];

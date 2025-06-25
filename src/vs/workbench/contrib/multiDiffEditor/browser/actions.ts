@@ -9,7 +9,10 @@ import { Selection } from '../../../../editor/common/core/selection.js';
 import { localize2 } from '../../../../nls.js';
 import { Action2, MenuId } from '../../../../platform/actions/common/actions.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
-import { ITextEditorOptions, TextEditorSelectionRevealType } from '../../../../platform/editor/common/editor.js';
+import {
+	ITextEditorOptions,
+	TextEditorSelectionRevealType,
+} from '../../../../platform/editor/common/editor.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { IListService } from '../../../../platform/list/browser/listService.js';
 import { resolveCommandsContext } from '../../../browser/parts/editor/editorCommandsContext.js';
@@ -71,19 +74,30 @@ export class CollapseAllAction extends Action2 {
 			id: 'multiDiffEditor.collapseAll',
 			title: localize2('collapseAllDiffs', 'Collapse All Diffs'),
 			icon: Codicon.collapseAll,
-			precondition: ContextKeyExpr.and(ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID), ContextKeyExpr.not('multiDiffEditorAllCollapsed')),
+			precondition: ContextKeyExpr.and(
+				ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+				ContextKeyExpr.not('multiDiffEditorAllCollapsed')
+			),
 			menu: [MenuId.EditorTitle, MenuId.CompactWindowEditorTitle].map(id => ({
 				id,
-				when: ContextKeyExpr.and(ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID), ContextKeyExpr.not('multiDiffEditorAllCollapsed')),
+				when: ContextKeyExpr.and(
+					ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+					ContextKeyExpr.not('multiDiffEditorAllCollapsed')
+				),
 				group: 'navigation',
-				order: 100
+				order: 100,
 			})),
 			f1: true,
 		});
 	}
 
 	async run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
-		const resolvedContext = resolveCommandsContext(args, accessor.get(IEditorService), accessor.get(IEditorGroupsService), accessor.get(IListService));
+		const resolvedContext = resolveCommandsContext(
+			args,
+			accessor.get(IEditorService),
+			accessor.get(IEditorGroupsService),
+			accessor.get(IListService)
+		);
 
 		const groupContext = resolvedContext.groupedEditors[0];
 		if (!groupContext) {
@@ -104,19 +118,30 @@ export class ExpandAllAction extends Action2 {
 			id: 'multiDiffEditor.expandAll',
 			title: localize2('ExpandAllDiffs', 'Expand All Diffs'),
 			icon: Codicon.expandAll,
-			precondition: ContextKeyExpr.and(ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID), ContextKeyExpr.has('multiDiffEditorAllCollapsed')),
+			precondition: ContextKeyExpr.and(
+				ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+				ContextKeyExpr.has('multiDiffEditorAllCollapsed')
+			),
 			menu: [MenuId.EditorTitle, MenuId.CompactWindowEditorTitle].map(id => ({
 				id,
-				when: ContextKeyExpr.and(ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID), ContextKeyExpr.has('multiDiffEditorAllCollapsed')),
+				when: ContextKeyExpr.and(
+					ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+					ContextKeyExpr.has('multiDiffEditorAllCollapsed')
+				),
 				group: 'navigation',
-				order: 100
+				order: 100,
 			})),
 			f1: true,
 		});
 	}
 
 	async run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
-		const resolvedContext = resolveCommandsContext(args, accessor.get(IEditorService), accessor.get(IEditorGroupsService), accessor.get(IListService));
+		const resolvedContext = resolveCommandsContext(
+			args,
+			accessor.get(IEditorService),
+			accessor.get(IEditorGroupsService),
+			accessor.get(IListService)
+		);
 
 		const groupContext = resolvedContext.groupedEditors[0];
 		if (!groupContext) {

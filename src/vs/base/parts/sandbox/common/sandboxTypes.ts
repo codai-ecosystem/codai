@@ -6,20 +6,17 @@
 import { IProcessEnvironment } from '../../../common/platform.js';
 import { IProductConfiguration } from '../../../common/product.js';
 
-
 // #######################################################################
 // ###                                                                 ###
 // ###             Types we need in a common layer for reuse    	   ###
 // ###                                                                 ###
 // #######################################################################
 
-
 /**
  * The common properties required for any sandboxed
  * renderer to function.
  */
 export interface ISandboxConfiguration {
-
 	/**
 	 * Identifier of the sandboxed renderer.
 	 */
@@ -58,7 +55,6 @@ export interface ISandboxConfiguration {
 	 * NLS support
 	 */
 	nls: {
-
 		/**
 		 * All NLS messages produced by `localize` and `localize2` calls
 		 * under `src/vs`.

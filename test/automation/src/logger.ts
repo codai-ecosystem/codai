@@ -12,14 +12,12 @@ export interface Logger {
 }
 
 export class ConsoleLogger implements Logger {
-
 	log(message: string, ...args: any[]): void {
 		console.log('**', message, ...args);
 	}
 }
 
 export class FileLogger implements Logger {
-
 	constructor(private path: string) {
 		writeFileSync(path, '');
 	}
@@ -31,8 +29,7 @@ export class FileLogger implements Logger {
 }
 
 export class MultiLogger implements Logger {
-
-	constructor(private loggers: Logger[]) { }
+	constructor(private loggers: Logger[]) {}
 
 	log(message: string, ...args: any[]): void {
 		for (const logger of this.loggers) {
@@ -41,7 +38,11 @@ export class MultiLogger implements Logger {
 	}
 }
 
-export async function measureAndLog<T>(promiseFactory: () => Promise<T>, name: string, logger: Logger): Promise<T> {
+export async function measureAndLog<T>(
+	promiseFactory: () => Promise<T>,
+	name: string,
+	logger: Logger
+): Promise<T> {
 	const now = Date.now();
 
 	logger.log(`Starting operation '${name}'...`);

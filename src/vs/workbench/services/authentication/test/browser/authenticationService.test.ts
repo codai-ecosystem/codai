@@ -9,13 +9,26 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { URI } from '../../../../../base/common/uri.js';
 import { AuthenticationAccessService } from '../../browser/authenticationAccessService.js';
 import { AuthenticationService } from '../../browser/authenticationService.js';
-import { AuthenticationProviderInformation, AuthenticationSessionsChangeEvent, IAuthenticationProvider } from '../../common/authentication.js';
+import {
+	AuthenticationProviderInformation,
+	AuthenticationSessionsChangeEvent,
+	IAuthenticationProvider,
+} from '../../common/authentication.js';
 import { TestEnvironmentService } from '../../../../test/browser/workbenchTestServices.js';
-import { TestExtensionService, TestProductService, TestStorageService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	TestExtensionService,
+	TestProductService,
+	TestStorageService,
+} from '../../../../test/common/workbenchTestServices.js';
 import { NullLogService } from '../../../../../platform/log/common/log.js';
 
 function createSession() {
-	return { id: 'session1', accessToken: 'token1', account: { id: 'account', label: 'Account' }, scopes: ['test'] };
+	return {
+		id: 'session1',
+		accessToken: 'token1',
+		account: { id: 'account', label: 'Account' },
+		scopes: ['test'],
+	};
 }
 
 function createProvider(overrides: Partial<IAuthenticationProvider> = {}): IAuthenticationProvider {
@@ -26,8 +39,8 @@ function createProvider(overrides: Partial<IAuthenticationProvider> = {}): IAuth
 		label: 'Test',
 		getSessions: async () => [],
 		createSession: async () => createSession(),
-		removeSession: async () => { },
-		...overrides
+		removeSession: async () => {},
+		...overrides,
 	};
 }
 
@@ -38,8 +51,17 @@ suite('AuthenticationService', () => {
 
 	setup(() => {
 		const storageService = disposables.add(new TestStorageService());
-		const authenticationAccessService = disposables.add(new AuthenticationAccessService(storageService, TestProductService));
-		authenticationService = disposables.add(new AuthenticationService(new TestExtensionService(), authenticationAccessService, TestEnvironmentService, new NullLogService()));
+		const authenticationAccessService = disposables.add(
+			new AuthenticationAccessService(storageService, TestProductService)
+		);
+		authenticationService = disposables.add(
+			new AuthenticationService(
+				new TestExtensionService(),
+				authenticationAccessService,
+				TestEnvironmentService,
+				new NullLogService()
+			)
+		);
 	});
 
 	teardown(() => {
@@ -52,7 +74,7 @@ suite('AuthenticationService', () => {
 			const changed = Event.toPromise(authenticationService.onDidChangeDeclaredProviders);
 			const provider: AuthenticationProviderInformation = {
 				id: 'github',
-				label: 'GitHub'
+				label: 'GitHub',
 			};
 			authenticationService.registerDeclaredAuthenticationProvider(provider);
 
@@ -65,7 +87,7 @@ suite('AuthenticationService', () => {
 		test('unregisterDeclaredAuthenticationProvider', async () => {
 			const provider: AuthenticationProviderInformation = {
 				id: 'github',
-				label: 'GitHub'
+				label: 'GitHub',
 			};
 			authenticationService.registerDeclaredAuthenticationProvider(provider);
 			const changed = Event.toPromise(authenticationService.onDidChangeDeclaredProviders);
@@ -89,7 +111,9 @@ suite('AuthenticationService', () => {
 		});
 
 		test('unregisterAuthenticationProvider', async () => {
-			const unregistered = Event.toPromise(authenticationService.onDidUnregisterAuthenticationProvider);
+			const unregistered = Event.toPromise(
+				authenticationService.onDidUnregisterAuthenticationProvider
+			);
 			const provider = createProvider();
 			authenticationService.registerAuthenticationProvider(provider.id, provider);
 			assert.equal(authenticationService.isAuthenticationProviderRegistered(provider.id), true);
@@ -102,11 +126,11 @@ suite('AuthenticationService', () => {
 		test('getProviderIds', () => {
 			const provider1 = createProvider({
 				id: 'provider1',
-				label: 'Provider 1'
+				label: 'Provider 1',
 			});
 			const provider2 = createProvider({
 				id: 'provider2',
-				label: 'Provider 2'
+				label: 'Provider 2',
 			});
 
 			authenticationService.registerAuthenticationProvider(provider1.id, provider1);
@@ -140,7 +164,7 @@ suite('AuthenticationService', () => {
 			const provider: AuthenticationProviderInformation = {
 				id: 'github',
 				label: 'GitHub',
-				issuerGlobs: ['https://github.com/*']
+				issuerGlobs: ['https://github.com/*'],
 			};
 			authenticationService.registerDeclaredAuthenticationProvider(provider);
 
@@ -148,7 +172,7 @@ suite('AuthenticationService', () => {
 			const authProvider = createProvider({
 				id: 'github',
 				label: 'GitHub',
-				issuers: [URI.parse('https://github.com/login')]
+				issuers: [URI.parse('https://github.com/login')],
 			});
 			authenticationService.registerAuthenticationProvider('github', authProvider);
 
@@ -165,7 +189,7 @@ suite('AuthenticationService', () => {
 			const provider: AuthenticationProviderInformation = {
 				id: 'github',
 				label: 'GitHub',
-				issuerGlobs: ['https://github.com/*']
+				issuerGlobs: ['https://github.com/*'],
 			};
 			authenticationService.registerDeclaredAuthenticationProvider(provider);
 
@@ -173,7 +197,7 @@ suite('AuthenticationService', () => {
 			const authProvider = createProvider({
 				id: 'github',
 				label: 'GitHub',
-				issuers: [URI.parse('https://github.com/different')]
+				issuers: [URI.parse('https://github.com/different')],
 			});
 			authenticationService.registerAuthenticationProvider('github', authProvider);
 
@@ -190,12 +214,12 @@ suite('AuthenticationService', () => {
 			const provider1: AuthenticationProviderInformation = {
 				id: 'github',
 				label: 'GitHub',
-				issuerGlobs: ['https://github.com/*']
+				issuerGlobs: ['https://github.com/*'],
 			};
 			const provider2: AuthenticationProviderInformation = {
 				id: 'microsoft',
 				label: 'Microsoft',
-				issuerGlobs: ['https://login.microsoftonline.com/*']
+				issuerGlobs: ['https://login.microsoftonline.com/*'],
 			};
 			authenticationService.registerDeclaredAuthenticationProvider(provider1);
 			authenticationService.registerDeclaredAuthenticationProvider(provider2);
@@ -204,14 +228,14 @@ suite('AuthenticationService', () => {
 			const githubProvider = createProvider({
 				id: 'github',
 				label: 'GitHub',
-				issuers: [URI.parse('https://github.com/different')]
+				issuers: [URI.parse('https://github.com/different')],
 			});
 			authenticationService.registerAuthenticationProvider('github', githubProvider);
 
 			const microsoftProvider = createProvider({
 				id: 'microsoft',
 				label: 'Microsoft',
-				issuers: [URI.parse('https://login.microsoftonline.com/common')]
+				issuers: [URI.parse('https://login.microsoftonline.com/common')],
 			});
 			authenticationService.registerAuthenticationProvider('microsoft', microsoftProvider);
 
@@ -249,7 +273,11 @@ suite('AuthenticationService', () => {
 				},
 			});
 			authenticationService.registerAuthenticationProvider(provider.id, provider);
-			assert.rejects(() => authenticationService.getSessions(provider.id, [], { issuer: URI.parse('https://example.com') }));
+			assert.rejects(() =>
+				authenticationService.getSessions(provider.id, [], {
+					issuer: URI.parse('https://example.com'),
+				})
+			);
 			assert.ok(!isCalled);
 		});
 
@@ -273,7 +301,7 @@ suite('AuthenticationService', () => {
 			assert.deepEqual(result, {
 				providerId: provider.id,
 				label: provider.label,
-				event: { added: [session], removed: [], changed: [] }
+				event: { added: [session], removed: [], changed: [] },
 			});
 		});
 
@@ -282,7 +310,7 @@ suite('AuthenticationService', () => {
 			const session = createSession();
 			const provider = createProvider({
 				onDidChangeSessions: emitter.event,
-				removeSession: async () => emitter.fire({ added: [], removed: [session], changed: [] })
+				removeSession: async () => emitter.fire({ added: [], removed: [session], changed: [] }),
 			});
 			const changed = Event.toPromise(authenticationService.onDidChangeSessions);
 			authenticationService.registerAuthenticationProvider(provider.id, provider);
@@ -292,7 +320,7 @@ suite('AuthenticationService', () => {
 			assert.deepEqual(result, {
 				providerId: provider.id,
 				label: provider.label,
-				event: { added: [], removed: [session], changed: [] }
+				event: { added: [], removed: [session], changed: [] },
 			});
 		});
 
@@ -300,7 +328,7 @@ suite('AuthenticationService', () => {
 			const emitter = new Emitter<AuthenticationSessionsChangeEvent>();
 			const provider = createProvider({
 				onDidChangeSessions: emitter.event,
-				getSessions: async () => []
+				getSessions: async () => [],
 			});
 			authenticationService.registerAuthenticationProvider(provider.id, provider);
 
@@ -312,7 +340,7 @@ suite('AuthenticationService', () => {
 			assert.deepEqual(result, {
 				providerId: provider.id,
 				label: provider.label,
-				event: { added: [], removed: [], changed: [session] }
+				event: { added: [], removed: [], changed: [session] },
 			});
 		});
 	});

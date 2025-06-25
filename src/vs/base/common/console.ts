@@ -52,7 +52,9 @@ export function parse(entry: IRemoteConsoleLog): { args: any[]; stack?: string }
 
 export function getFirstFrame(entry: IRemoteConsoleLog): IStackFrame | undefined;
 export function getFirstFrame(stack: string | undefined): IStackFrame | undefined;
-export function getFirstFrame(arg0: IRemoteConsoleLog | string | undefined): IStackFrame | undefined {
+export function getFirstFrame(
+	arg0: IRemoteConsoleLog | string | undefined
+): IStackFrame | undefined {
 	if (typeof arg0 !== 'string') {
 		return getFirstFrame(parse(arg0!).stack);
 	}
@@ -73,12 +75,14 @@ export function getFirstFrame(arg0: IRemoteConsoleLog | string | undefined): ISt
 		// (?:(?:[a-zA-Z]+:)|(?:[\/])|(?:\\\\) => windows drive letter OR unix root OR unc root
 		// (?:.+) => simple pattern for the path, only works because of the line/col pattern after
 		// :(?:\d+):(?:\d+) => :line:column data
-		const matches = /at [^\/]*((?:(?:[a-zA-Z]+:)|(?:[\/])|(?:\\\\))(?:.+)):(\d+):(\d+)/.exec(topFrame || '');
+		const matches = /at [^\/]*((?:(?:[a-zA-Z]+:)|(?:[\/])|(?:\\\\))(?:.+)):(\d+):(\d+)/.exec(
+			topFrame || ''
+		);
 		if (matches && matches.length === 4) {
 			return {
 				uri: URI.file(matches[1]),
 				line: Number(matches[2]),
-				column: Number(matches[3])
+				column: Number(matches[3]),
 			};
 		}
 	}
@@ -114,7 +118,12 @@ export function log(entry: IRemoteConsoleLog, label: string): void {
 	// First arg is a string
 	if (typeof args[0] === 'string') {
 		if (topFrame && isOneStringArg) {
-			consoleArgs = [`%c[${label}] %c${args[0]} %c${topFrame}`, color('blue'), color(''), color('grey')];
+			consoleArgs = [
+				`%c[${label}] %c${args[0]} %c${topFrame}`,
+				color('blue'),
+				color(''),
+				color('grey'),
+			];
 		} else {
 			consoleArgs = [`%c[${label}] %c${args[0]}`, color('blue'), color(''), ...args.slice(1)];
 		}

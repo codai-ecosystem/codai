@@ -5,16 +5,30 @@
 
 import type { ITerminalAddon, Terminal } from '@xterm/xterm';
 import { Disposable, IReference } from '../../../../../base/common/lifecycle.js';
-import { ITerminalCompletionProvider, type TerminalCompletionList } from './terminalCompletionService.js';
+import {
+	ITerminalCompletionProvider,
+	type TerminalCompletionList,
+} from './terminalCompletionService.js';
 import type { CancellationToken } from '../../../../../base/common/cancellation.js';
-import { ITerminalCompletion, mapLspKindToTerminalKind, TerminalCompletionItemKind } from './terminalCompletionItem.js';
+import {
+	ITerminalCompletion,
+	mapLspKindToTerminalKind,
+	TerminalCompletionItemKind,
+} from './terminalCompletionItem.js';
 import { IResolvedTextEditorModel } from '../../../../../editor/common/services/resolverService.js';
 import { Position } from '../../../../../editor/common/core/position.js';
-import { CompletionItemLabel, CompletionItemProvider, CompletionTriggerKind } from '../../../../../editor/common/languages.js';
+import {
+	CompletionItemLabel,
+	CompletionItemProvider,
+	CompletionTriggerKind,
+} from '../../../../../editor/common/languages.js';
 import { LspTerminalModelContentProvider } from './lspTerminalModelContentProvider.js';
 import { MarkdownString } from '../../../../../base/common/htmlContent.js';
 
-export class LspCompletionProviderAddon extends Disposable implements ITerminalAddon, ITerminalCompletionProvider {
+export class LspCompletionProviderAddon
+	extends Disposable
+	implements ITerminalAddon, ITerminalCompletionProvider
+{
 	readonly id = 'lsp';
 	readonly isBuiltin = true;
 	readonly triggerCharacters?: string[];
@@ -25,21 +39,27 @@ export class LspCompletionProviderAddon extends Disposable implements ITerminalA
 	constructor(
 		provider: CompletionItemProvider,
 		textVirtualModel: IReference<IResolvedTextEditorModel>,
-		lspTerminalModelContentProvider: LspTerminalModelContentProvider,
+		lspTerminalModelContentProvider: LspTerminalModelContentProvider
 	) {
 		super();
 		this._provider = provider;
 		this._textVirtualModel = textVirtualModel;
 		this._lspTerminalModelContentProvider = lspTerminalModelContentProvider;
-		this.triggerCharacters = provider.triggerCharacters ? [...provider.triggerCharacters, ' '] : [' '];
+		this.triggerCharacters = provider.triggerCharacters
+			? [...provider.triggerCharacters, ' ']
+			: [' '];
 	}
 
 	activate(terminal: Terminal): void {
 		// console.log('activate');
 	}
 
-	async provideCompletions(value: string, cursorPosition: number, allowFallbackCompletions: false, token: CancellationToken): Promise<ITerminalCompletion[] | TerminalCompletionList<ITerminalCompletion> | undefined> {
-
+	async provideCompletions(
+		value: string,
+		cursorPosition: number,
+		allowFallbackCompletions: false,
+		token: CancellationToken
+	): Promise<ITerminalCompletion[] | TerminalCompletionList<ITerminalCompletion> | undefined> {
 		// Apply edit for non-executed current commandline --> Pretend we are typing in the real-document.
 		this._lspTerminalModelContentProvider.trackPromptInputToVirtualFile(value);
 
@@ -51,34 +71,53 @@ export class LspCompletionProviderAddon extends Disposable implements ITerminalA
 		const lineNum = this._textVirtualModel.object.textEditorModel.getLineCount();
 		const positionVirtualDocument = new Position(lineNum, column);
 
-
 		// TODO: Scan back to start of nearest word like other providers? Is this needed for `ILanguageFeaturesService`?
 		const completions: ITerminalCompletion[] = [];
 		if (this._provider && this._provider._debugDisplayName !== 'wordbasedCompletions') {
+			const result = await this._provider.provideCompletionItems(
+				this._textVirtualModel.object.textEditorModel,
+				positionVirtualDocument,
+				{ triggerKind: CompletionTriggerKind.TriggerCharacter },
+				token
+			);
 
-			const result = await this._provider.provideCompletionItems(this._textVirtualModel.object.textEditorModel, positionVirtualDocument, { triggerKind: CompletionTriggerKind.TriggerCharacter }, token);
+			completions.push(
+				...(result?.suggestions || []).map((e: any) => {
+					// TODO: Support more terminalCompletionItemKind for [different LSP providers](https://github.com/microsoft/vscode/issues/249479)
+					const convertedKind = e.kind
+						? mapLspKindToTerminalKind(e.kind)
+						: TerminalCompletionItemKind.Method;
+					const completionItemTemp = createCompletionItemPython(
+						cursorPosition,
+						textBeforeCursor,
+						convertedKind,
+						'lspCompletionItem',
+						undefined
+					);
 
-			completions.push(...(result?.suggestions || []).map((e: any) => {
-				// TODO: Support more terminalCompletionItemKind for [different LSP providers](https://github.com/microsoft/vscode/issues/249479)
-				const convertedKind = e.kind ? mapLspKindToTerminalKind(e.kind) : TerminalCompletionItemKind.Method;
-				const completionItemTemp = createCompletionItemPython(cursorPosition, textBeforeCursor, convertedKind, 'lspCompletionItem', undefined);
-
-				return {
-					label: e.insertText,
-					provider: `lsp:${this._provider._debugDisplayName}`,
-					detail: e.detail,
-					kind: convertedKind,
-					replacementIndex: completionItemTemp.replacementIndex,
-					replacementLength: completionItemTemp.replacementLength,
-				};
-			}));
+					return {
+						label: e.insertText,
+						provider: `lsp:${this._provider._debugDisplayName}`,
+						detail: e.detail,
+						kind: convertedKind,
+						replacementIndex: completionItemTemp.replacementIndex,
+						replacementLength: completionItemTemp.replacementLength,
+					};
+				})
+			);
 		}
 
 		return completions;
 	}
 }
 
-export function createCompletionItemPython(cursorPosition: number, prefix: string, kind: TerminalCompletionItemKind, label: string | CompletionItemLabel, detail: string | undefined): TerminalCompletionItem {
+export function createCompletionItemPython(
+	cursorPosition: number,
+	prefix: string,
+	kind: TerminalCompletionItemKind,
+	label: string | CompletionItemLabel,
+	detail: string | undefined
+): TerminalCompletionItem {
 	const endsWithDot = prefix.endsWith('.');
 	const endsWithSpace = prefix.endsWith(' ');
 
@@ -86,24 +125,24 @@ export function createCompletionItemPython(cursorPosition: number, prefix: strin
 		// Case where user is triggering completion with space:
 		// For example, typing `import  ` to request completion for list of modules
 		// This is similar to completions we are used to seeing in upstream shell (such as typing `ls  ` inside bash).
-		const lastWord = endsWithSpace ? '' : prefix.split(' ').at(-1) ?? '';
+		const lastWord = endsWithSpace ? '' : (prefix.split(' ').at(-1) ?? '');
 		return {
 			label: label,
 			detail: detail ?? detail ?? '',
 			replacementIndex: cursorPosition - lastWord.length,
 			replacementLength: lastWord.length,
-			kind: kind ?? kind ?? TerminalCompletionItemKind.Method
+			kind: kind ?? kind ?? TerminalCompletionItemKind.Method,
 		};
 	} else {
 		// Case where user is triggering completion with dot:
 		// For example, typing `pathlib.` to request completion for list of methods, attributes from the pathlib module.
-		const lastWord = endsWithDot ? '' : prefix.split('.').at(-1) ?? '';
+		const lastWord = endsWithDot ? '' : (prefix.split('.').at(-1) ?? '');
 		return {
 			label,
 			detail: detail ?? detail ?? '',
 			replacementIndex: cursorPosition - lastWord.length,
 			replacementLength: lastWord.length,
-			kind: kind ?? kind ?? TerminalCompletionItemKind.Method
+			kind: kind ?? kind ?? TerminalCompletionItemKind.Method,
 		};
 	}
 }

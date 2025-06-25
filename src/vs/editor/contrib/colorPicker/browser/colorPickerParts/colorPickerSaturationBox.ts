@@ -13,7 +13,6 @@ import { ColorPickerModel } from '../colorPickerModel.js';
 const $ = dom.$;
 
 export class SaturationBox extends Disposable {
-
 	private readonly _domNode: HTMLElement;
 	private readonly selection: HTMLElement;
 	private readonly _canvas: HTMLCanvasElement;
@@ -27,7 +26,11 @@ export class SaturationBox extends Disposable {
 	private readonly _onColorFlushed = new Emitter<void>();
 	readonly onColorFlushed: Event<void> = this._onColorFlushed.event;
 
-	constructor(container: HTMLElement, private readonly model: ColorPickerModel, private pixelRatio: number) {
+	constructor(
+		container: HTMLElement,
+		private readonly model: ColorPickerModel,
+		private pixelRatio: number
+	) {
 		super();
 
 		this._domNode = $('.saturation-wrap');
@@ -44,7 +47,11 @@ export class SaturationBox extends Disposable {
 
 		this.layout();
 
-		this._register(dom.addDisposableListener(this._domNode, dom.EventType.POINTER_DOWN, e => this.onPointerDown(e)));
+		this._register(
+			dom.addDisposableListener(this._domNode, dom.EventType.POINTER_DOWN, e =>
+				this.onPointerDown(e)
+			)
+		);
 		this._register(this.model.onDidChangeColor(this.onDidChangeColor, this));
 		this.monitor = null;
 	}
@@ -68,21 +75,32 @@ export class SaturationBox extends Disposable {
 			this.onDidChangePosition(e.offsetX, e.offsetY);
 		}
 
-		this.monitor.startMonitoring(e.target, e.pointerId, e.buttons, event => this.onDidChangePosition(event.pageX - origin.left, event.pageY - origin.top), () => null);
+		this.monitor.startMonitoring(
+			e.target,
+			e.pointerId,
+			e.buttons,
+			event => this.onDidChangePosition(event.pageX - origin.left, event.pageY - origin.top),
+			() => null
+		);
 
-		const pointerUpListener = dom.addDisposableListener(e.target.ownerDocument, dom.EventType.POINTER_UP, () => {
-			this._onColorFlushed.fire();
-			pointerUpListener.dispose();
-			if (this.monitor) {
-				this.monitor.stopMonitoring(true);
-				this.monitor = null;
-			}
-		}, true);
+		const pointerUpListener = dom.addDisposableListener(
+			e.target.ownerDocument,
+			dom.EventType.POINTER_UP,
+			() => {
+				this._onColorFlushed.fire();
+				pointerUpListener.dispose();
+				if (this.monitor) {
+					this.monitor.stopMonitoring(true);
+					this.monitor = null;
+				}
+			},
+			true
+		);
 	}
 
 	private onDidChangePosition(left: number, top: number): void {
 		const s = Math.max(0, Math.min(1, left / this.width));
-		const v = Math.max(0, Math.min(1, 1 - (top / this.height)));
+		const v = Math.max(0, Math.min(1, 1 - top / this.height));
 
 		this.paintSelection(s, v);
 		this._onDidChange.fire({ s, v });

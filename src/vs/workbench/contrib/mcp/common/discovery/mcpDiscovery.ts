@@ -6,7 +6,6 @@
 import { IDisposable } from '../../../../../base/common/lifecycle.js';
 import { SyncDescriptor0 } from '../../../../../platform/instantiation/common/descriptors.js';
 
-
 export interface IMcpDiscovery extends IDisposable {
 	start(): void;
 }
@@ -24,6 +23,3 @@ class McpDiscoveryRegistry {
 }
 
 export const mcpDiscoveryRegistry = new McpDiscoveryRegistry();
-
-
-

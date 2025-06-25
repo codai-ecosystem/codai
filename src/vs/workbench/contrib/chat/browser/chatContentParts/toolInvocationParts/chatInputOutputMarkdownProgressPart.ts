@@ -18,12 +18,19 @@ import { IChatCodeBlockInfo } from '../../chat.js';
 import { getAttachableImageExtension } from '../../chatAttachmentResolve.js';
 import { IChatContentPartRenderContext } from '../chatContentParts.js';
 import { EditorPool } from '../chatMarkdownContentPart.js';
-import { ChatCollapsibleInputOutputContentPart, IChatCollapsibleIOCodePart, IChatCollapsibleIODataPart } from '../chatToolInputOutputContentPart.js';
+import {
+	ChatCollapsibleInputOutputContentPart,
+	IChatCollapsibleIOCodePart,
+	IChatCollapsibleIODataPart,
+} from '../chatToolInputOutputContentPart.js';
 import { BaseChatToolInvocationSubPart } from './chatToolInvocationSubPart.js';
 
 export class ChatInputOutputMarkdownProgressPart extends BaseChatToolInvocationSubPart {
 	/** Remembers expanded tool parts on re-render */
-	private static readonly _expandedByDefault = new WeakMap<IChatToolInvocation | IChatToolInvocationSerialized, boolean>();
+	private static readonly _expandedByDefault = new WeakMap<
+		IChatToolInvocation | IChatToolInvocationSerialized,
+		boolean
+	>();
 
 	public readonly domNode: HTMLElement;
 
@@ -44,18 +51,15 @@ export class ChatInputOutputMarkdownProgressPart extends BaseChatToolInvocationS
 		isError: boolean,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IModelService modelService: IModelService,
-		@ILanguageService languageService: ILanguageService,
+		@ILanguageService languageService: ILanguageService
 	) {
 		super(toolInvocation);
 
 		let codeBlockIndex = codeBlockStartIndex;
 		const toCodePart = (data: string): IChatCollapsibleIOCodePart => {
-			const model = this._register(modelService.createModel(
-				data,
-				languageService.createById('json'),
-				undefined,
-				true
-			));
+			const model = this._register(
+				modelService.createModel(data, languageService.createById('json'), undefined, true)
+			);
 
 			return {
 				kind: 'code',
@@ -67,66 +71,88 @@ export class ChatInputOutputMarkdownProgressPart extends BaseChatToolInvocationS
 					maxHeightInLines: 13,
 					verticalPadding: 5,
 					editorOptions: {
-						wordWrap: 'on'
-					}
+						wordWrap: 'on',
+					},
 				},
 				codeBlockInfo: {
 					codeBlockIndex: codeBlockIndex++,
 					codemapperUri: undefined,
 					elementId: context.element.id,
-					focus: () => { },
+					focus: () => {},
 					isStreaming: false,
 					ownerMarkdownPartId: this.codeblocksPartId,
 					uri: model.uri,
 					chatSessionId: context.element.sessionId,
-					uriPromise: Promise.resolve(model.uri)
-				}
+					uriPromise: Promise.resolve(model.uri),
+				},
 			};
 		};
 
 		let processedOutput = output;
-		if (typeof output === 'string') { // back compat with older stored versions
+		if (typeof output === 'string') {
+			// back compat with older stored versions
 			processedOutput = [{ type: 'text', value: output }];
 		}
 
-		const collapsibleListPart = this._register(instantiationService.createInstance(
-			ChatCollapsibleInputOutputContentPart,
-			message,
-			subtitle,
-			context,
-			editorPool,
-			toCodePart(input),
-			processedOutput && {
-				parts: processedOutput.map((o): IChatCollapsibleIODataPart | IChatCollapsibleIOCodePart => {
-					if (o.type === 'data') {
-						const decoded = decodeBase64(o.value64).buffer;
-						if (getAttachableImageExtension(o.mimeType)) {
-							return { kind: 'data', value: decoded, mimeType: o.mimeType };
-						} else {
-							return toCodePart(localize('toolResultData', "Data of type {0} ({1} bytes)", o.mimeType, decoded.byteLength));
+		const collapsibleListPart = this._register(
+			instantiationService.createInstance(
+				ChatCollapsibleInputOutputContentPart,
+				message,
+				subtitle,
+				context,
+				editorPool,
+				toCodePart(input),
+				processedOutput && {
+					parts: processedOutput.map(
+						(o): IChatCollapsibleIODataPart | IChatCollapsibleIOCodePart => {
+							if (o.type === 'data') {
+								const decoded = decodeBase64(o.value64).buffer;
+								if (getAttachableImageExtension(o.mimeType)) {
+									return { kind: 'data', value: decoded, mimeType: o.mimeType };
+								} else {
+									return toCodePart(
+										localize(
+											'toolResultData',
+											'Data of type {0} ({1} bytes)',
+											o.mimeType,
+											decoded.byteLength
+										)
+									);
+								}
+							} else if (o.type === 'text') {
+								return toCodePart(o.value);
+							} else {
+								assertNever(o);
+							}
 						}
-					} else if (o.type === 'text') {
-						return toCodePart(o.value);
-					} else {
-						assertNever(o);
-					}
-				}),
-			},
-			isError,
-			ChatInputOutputMarkdownProgressPart._expandedByDefault.get(toolInvocation) ?? false,
-		));
+					),
+				},
+				isError,
+				ChatInputOutputMarkdownProgressPart._expandedByDefault.get(toolInvocation) ?? false
+			)
+		);
 		this._codeblocks.push(...collapsibleListPart.codeblocks);
 		this._register(collapsibleListPart.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
-		this._register(toDisposable(() => ChatInputOutputMarkdownProgressPart._expandedByDefault.set(toolInvocation, collapsibleListPart.expanded)));
+		this._register(
+			toDisposable(() =>
+				ChatInputOutputMarkdownProgressPart._expandedByDefault.set(
+					toolInvocation,
+					collapsibleListPart.expanded
+				)
+			)
+		);
 
-		const progressObservable = toolInvocation.kind === 'toolInvocation' ? toolInvocation.progress : undefined;
+		const progressObservable =
+			toolInvocation.kind === 'toolInvocation' ? toolInvocation.progress : undefined;
 		if (progressObservable) {
-			this._register(autorun(reader => {
-				const progress = progressObservable?.read(reader);
-				if (progress.message) {
-					collapsibleListPart.title = progress.message;
-				}
-			}));
+			this._register(
+				autorun(reader => {
+					const progress = progressObservable?.read(reader);
+					if (progress.message) {
+						collapsibleListPart.title = progress.message;
+					}
+				})
+			);
 		}
 
 		this.domNode = collapsibleListPart.domNode;

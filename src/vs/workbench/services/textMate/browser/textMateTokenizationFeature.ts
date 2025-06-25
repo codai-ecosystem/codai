@@ -6,7 +6,9 @@
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import type { IGrammar } from 'vscode-textmate';
 
-export const ITextMateTokenizationService = createDecorator<ITextMateTokenizationService>('textMateTokenizationFeature');
+export const ITextMateTokenizationService = createDecorator<ITextMateTokenizationService>(
+	'textMateTokenizationFeature'
+);
 
 export interface ITextMateTokenizationService {
 	readonly _serviceBrand: undefined;

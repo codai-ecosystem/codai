@@ -3,7 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BrowserWindow, Details, MessageChannelMain, app, utilityProcess, UtilityProcess as ElectronUtilityProcess } from 'electron';
+import {
+	BrowserWindow,
+	Details,
+	MessageChannelMain,
+	app,
+	utilityProcess,
+	UtilityProcess as ElectronUtilityProcess,
+} from 'electron';
 import { Disposable } from '../../../base/common/lifecycle.js';
 import { Emitter, Event } from '../../../base/common/event.js';
 import { ILogService } from '../../log/common/log.js';
@@ -20,7 +27,6 @@ import { isWindows } from '../../../base/common/platform.js';
 import { isUNCAccessRestrictionsDisabled, getUNCHostAllowlist } from '../../../base/node/unc.js';
 
 export interface IUtilityProcessConfiguration {
-
 	/**
 	 * A way to group utility processes of same type together.
 	 */
@@ -85,7 +91,6 @@ export interface IUtilityProcessConfiguration {
 }
 
 export interface IWindowUtilityProcessConfiguration extends IUtilityProcessConfiguration {
-
 	// --- message port response related
 
 	readonly responseWindowId: number;
@@ -101,14 +106,15 @@ export interface IWindowUtilityProcessConfiguration extends IUtilityProcessConfi
 	readonly windowLifecycleBound?: boolean;
 }
 
-function isWindowUtilityProcessConfiguration(config: IUtilityProcessConfiguration): config is IWindowUtilityProcessConfiguration {
+function isWindowUtilityProcessConfiguration(
+	config: IUtilityProcessConfiguration
+): config is IWindowUtilityProcessConfiguration {
 	const candidate = config as IWindowUtilityProcessConfiguration;
 
 	return typeof candidate.responseWindowId === 'number';
 }
 
 interface IUtilityProcessExitBaseEvent {
-
 	/**
 	 * The process id of the process that exited.
 	 */
@@ -121,7 +127,6 @@ interface IUtilityProcessExitBaseEvent {
 }
 
 export interface IUtilityProcessExitEvent extends IUtilityProcessExitBaseEvent {
-
 	/**
 	 * The signal that caused the process to exit is unknown
 	 * for utility processes.
@@ -130,11 +135,17 @@ export interface IUtilityProcessExitEvent extends IUtilityProcessExitBaseEvent {
 }
 
 export interface IUtilityProcessCrashEvent extends IUtilityProcessExitBaseEvent {
-
 	/**
 	 * The reason of the utility process crash.
 	 */
-	readonly reason: 'clean-exit' | 'abnormal-exit' | 'killed' | 'crashed' | 'oom' | 'launch-failed' | 'integrity-failure';
+	readonly reason:
+		| 'clean-exit'
+		| 'abnormal-exit'
+		| 'killed'
+		| 'crashed'
+		| 'oom'
+		| 'launch-failed'
+		| 'integrity-failure';
 }
 
 export interface IUtilityProcessInfo {
@@ -143,7 +154,6 @@ export interface IUtilityProcessInfo {
 }
 
 export class UtilityProcess extends Disposable {
-
 	private static ID_COUNTER = 0;
 
 	private static readonly all = new Map<number, IUtilityProcessInfo>();
@@ -239,7 +249,8 @@ export class UtilityProcess extends Disposable {
 		const args = this.configuration.args ?? [];
 		const execArgv = this.configuration.execArgv ?? [];
 		const allowLoadingUnsignedLibraries = this.configuration.allowLoadingUnsignedLibraries;
-		const respondToAuthRequestsFromMainProcess = this.configuration.respondToAuthRequestsFromMainProcess;
+		const respondToAuthRequestsFromMainProcess =
+			this.configuration.respondToAuthRequestsFromMainProcess;
 		const stdio = 'pipe';
 		const env = this.createEnv(configuration);
 
@@ -252,7 +263,7 @@ export class UtilityProcess extends Disposable {
 			execArgv, // !!! Add `--trace-warnings` for node.js tracing !!!
 			allowLoadingUnsignedLibraries,
 			respondToAuthRequestsFromMainProcess,
-			stdio
+			stdio,
 		});
 
 		// Register to events
@@ -262,7 +273,9 @@ export class UtilityProcess extends Disposable {
 	}
 
 	private createEnv(configuration: IUtilityProcessConfiguration): { [key: string]: any } {
-		const env: { [key: string]: any } = configuration.env ? { ...configuration.env } : { ...deepClone(process.env) };
+		const env: { [key: string]: any } = configuration.env
+			? { ...configuration.env }
+			: { ...deepClone(process.env) };
 
 		// Apply supported environment variables from config
 		env['VSCODE_ESM_ENTRYPOINT'] = configuration.entryPoint;
@@ -289,127 +302,219 @@ export class UtilityProcess extends Disposable {
 		return env;
 	}
 
-	private registerListeners(process: ElectronUtilityProcess, configuration: IUtilityProcessConfiguration, serviceName: string): void {
-
+	private registerListeners(
+		process: ElectronUtilityProcess,
+		configuration: IUtilityProcessConfiguration,
+		serviceName: string
+	): void {
 		// Stdout
 		if (process.stdout) {
 			const stdoutDecoder = new StringDecoder('utf-8');
-			this._register(Event.fromNodeEventEmitter<string | Buffer>(process.stdout, 'data')(chunk => this._onStdout.fire(typeof chunk === 'string' ? chunk : stdoutDecoder.write(chunk))));
+			this._register(
+				Event.fromNodeEventEmitter<string | Buffer>(
+					process.stdout,
+					'data'
+				)(chunk =>
+					this._onStdout.fire(typeof chunk === 'string' ? chunk : stdoutDecoder.write(chunk))
+				)
+			);
 		}
 
 		// Stderr
 		if (process.stderr) {
 			const stderrDecoder = new StringDecoder('utf-8');
-			this._register(Event.fromNodeEventEmitter<string | Buffer>(process.stderr, 'data')(chunk => this._onStderr.fire(typeof chunk === 'string' ? chunk : stderrDecoder.write(chunk))));
+			this._register(
+				Event.fromNodeEventEmitter<string | Buffer>(
+					process.stderr,
+					'data'
+				)(chunk =>
+					this._onStderr.fire(typeof chunk === 'string' ? chunk : stderrDecoder.write(chunk))
+				)
+			);
 		}
 
 		// Messages
-		this._register(Event.fromNodeEventEmitter(process, 'message')(msg => this._onMessage.fire(msg)));
+		this._register(
+			Event.fromNodeEventEmitter(process, 'message')(msg => this._onMessage.fire(msg))
+		);
 
 		// Spawn
-		this._register(Event.fromNodeEventEmitter<void>(process, 'spawn')(() => {
-			this.processPid = process.pid;
+		this._register(
+			Event.fromNodeEventEmitter<void>(
+				process,
+				'spawn'
+			)(() => {
+				this.processPid = process.pid;
 
-			if (typeof process.pid === 'number') {
-				UtilityProcess.all.set(process.pid, { pid: process.pid, name: isWindowUtilityProcessConfiguration(configuration) ? `${configuration.name} [${configuration.responseWindowId}]` : configuration.name });
-			}
+				if (typeof process.pid === 'number') {
+					UtilityProcess.all.set(process.pid, {
+						pid: process.pid,
+						name: isWindowUtilityProcessConfiguration(configuration)
+							? `${configuration.name} [${configuration.responseWindowId}]`
+							: configuration.name,
+					});
+				}
 
-			this.log('successfully created', Severity.Info);
-			this._onSpawn.fire(process.pid);
-		}));
+				this.log('successfully created', Severity.Info);
+				this._onSpawn.fire(process.pid);
+			})
+		);
 
 		// Exit
-		this._register(Event.fromNodeEventEmitter<number>(process, 'exit')(code => {
-			this.log(`received exit event with code ${code}`, Severity.Info);
-
-			// Event
-			this._onExit.fire({ pid: this.processPid!, code, signal: 'unknown' });
-
-			// Cleanup
-			this.onDidExitOrCrashOrKill();
-		}));
-
-		// V8 Error
-		this._register(Event.fromNodeEventEmitter(process, 'error', (type, location, report) => ({ type, location, report }))(({ type, location, report }) => {
-			this.log(`crashed due to ${type} from V8 at ${location}`, Severity.Info);
-
-			let addons: string[] = [];
-			try {
-				const reportJSON = JSON.parse(report);
-				addons = reportJSON.sharedObjects
-					.filter((sharedObject: string) => sharedObject.endsWith('.node'))
-					.map((addon: string) => {
-						const index = addon.indexOf('extensions') === -1 ? addon.indexOf('node_modules') : addon.indexOf('extensions');
-						return addon.substring(index);
-					});
-			} catch (e) {
-				// ignore
-			}
-
-			// Telemetry
-			type UtilityProcessV8ErrorClassification = {
-				processtype: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The type of utility process to understand the origin of the crash better.' };
-				error: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The type of error from the utility process to understand the nature of the crash better.' };
-				location: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The source location that triggered the crash to understand the nature of the crash better.' };
-				addons: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The list of addons loaded in the utility process to understand the nature of the crash better' };
-				owner: 'deepak1556';
-				comment: 'Provides insight into V8 sandbox FATAL error caused by native addons.';
-			};
-			type UtilityProcessV8ErrorEvent = {
-				processtype: string;
-				error: string;
-				location: string;
-				addons: string[];
-			};
-			this.telemetryService.publicLog2<UtilityProcessV8ErrorEvent, UtilityProcessV8ErrorClassification>('utilityprocessv8error', {
-				processtype: configuration.type,
-				error: type,
-				location,
-				addons
-			});
-		}));
-
-		// Child process gone
-		this._register(Event.fromNodeEventEmitter<{ details: Details }>(app, 'child-process-gone', (event, details) => ({ event, details }))(({ details }) => {
-			if (details.type === 'Utility' && details.name === serviceName) {
-				this.log(`crashed with code ${details.exitCode} and reason '${details.reason}'`, Severity.Error);
-
-				// Telemetry
-				type UtilityProcessCrashClassification = {
-					type: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The type of utility process to understand the origin of the crash better.' };
-					reason: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The reason of the utility process crash to understand the nature of the crash better.' };
-					code: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The exit code of the utility process to understand the nature of the crash better' };
-					owner: 'bpasero';
-					comment: 'Provides insight into reasons the utility process crashed.';
-				};
-				type UtilityProcessCrashEvent = {
-					type: string;
-					reason: string;
-					code: number;
-				};
-				this.telemetryService.publicLog2<UtilityProcessCrashEvent, UtilityProcessCrashClassification>('utilityprocesscrash', {
-					type: configuration.type,
-					reason: details.reason,
-					code: details.exitCode
-				});
+		this._register(
+			Event.fromNodeEventEmitter<number>(
+				process,
+				'exit'
+			)(code => {
+				this.log(`received exit event with code ${code}`, Severity.Info);
 
 				// Event
-				this._onCrash.fire({ pid: this.processPid!, code: details.exitCode, reason: details.reason });
+				this._onExit.fire({ pid: this.processPid!, code, signal: 'unknown' });
 
 				// Cleanup
 				this.onDidExitOrCrashOrKill();
-			}
-		}));
+			})
+		);
+
+		// V8 Error
+		this._register(
+			Event.fromNodeEventEmitter(process, 'error', (type, location, report) => ({
+				type,
+				location,
+				report,
+			}))(({ type, location, report }) => {
+				this.log(`crashed due to ${type} from V8 at ${location}`, Severity.Info);
+
+				let addons: string[] = [];
+				try {
+					const reportJSON = JSON.parse(report);
+					addons = reportJSON.sharedObjects
+						.filter((sharedObject: string) => sharedObject.endsWith('.node'))
+						.map((addon: string) => {
+							const index =
+								addon.indexOf('extensions') === -1
+									? addon.indexOf('node_modules')
+									: addon.indexOf('extensions');
+							return addon.substring(index);
+						});
+				} catch (e) {
+					// ignore
+				}
+
+				// Telemetry
+				type UtilityProcessV8ErrorClassification = {
+					processtype: {
+						classification: 'SystemMetaData';
+						purpose: 'PerformanceAndHealth';
+						comment: 'The type of utility process to understand the origin of the crash better.';
+					};
+					error: {
+						classification: 'SystemMetaData';
+						purpose: 'PerformanceAndHealth';
+						comment: 'The type of error from the utility process to understand the nature of the crash better.';
+					};
+					location: {
+						classification: 'SystemMetaData';
+						purpose: 'PerformanceAndHealth';
+						comment: 'The source location that triggered the crash to understand the nature of the crash better.';
+					};
+					addons: {
+						classification: 'SystemMetaData';
+						purpose: 'PerformanceAndHealth';
+						comment: 'The list of addons loaded in the utility process to understand the nature of the crash better';
+					};
+					owner: 'deepak1556';
+					comment: 'Provides insight into V8 sandbox FATAL error caused by native addons.';
+				};
+				type UtilityProcessV8ErrorEvent = {
+					processtype: string;
+					error: string;
+					location: string;
+					addons: string[];
+				};
+				this.telemetryService.publicLog2<
+					UtilityProcessV8ErrorEvent,
+					UtilityProcessV8ErrorClassification
+				>('utilityprocessv8error', {
+					processtype: configuration.type,
+					error: type,
+					location,
+					addons,
+				});
+			})
+		);
+
+		// Child process gone
+		this._register(
+			Event.fromNodeEventEmitter<{ details: Details }>(
+				app,
+				'child-process-gone',
+				(event, details) => ({ event, details })
+			)(({ details }) => {
+				if (details.type === 'Utility' && details.name === serviceName) {
+					this.log(
+						`crashed with code ${details.exitCode} and reason '${details.reason}'`,
+						Severity.Error
+					);
+
+					// Telemetry
+					type UtilityProcessCrashClassification = {
+						type: {
+							classification: 'SystemMetaData';
+							purpose: 'PerformanceAndHealth';
+							comment: 'The type of utility process to understand the origin of the crash better.';
+						};
+						reason: {
+							classification: 'SystemMetaData';
+							purpose: 'PerformanceAndHealth';
+							comment: 'The reason of the utility process crash to understand the nature of the crash better.';
+						};
+						code: {
+							classification: 'SystemMetaData';
+							purpose: 'PerformanceAndHealth';
+							comment: 'The exit code of the utility process to understand the nature of the crash better';
+						};
+						owner: 'bpasero';
+						comment: 'Provides insight into reasons the utility process crashed.';
+					};
+					type UtilityProcessCrashEvent = {
+						type: string;
+						reason: string;
+						code: number;
+					};
+					this.telemetryService.publicLog2<
+						UtilityProcessCrashEvent,
+						UtilityProcessCrashClassification
+					>('utilityprocesscrash', {
+						type: configuration.type,
+						reason: details.reason,
+						code: details.exitCode,
+					});
+
+					// Event
+					this._onCrash.fire({
+						pid: this.processPid!,
+						code: details.exitCode,
+						reason: details.reason,
+					});
+
+					// Cleanup
+					this.onDidExitOrCrashOrKill();
+				}
+			})
+		);
 	}
 
 	once(message: unknown, callback: () => void): void {
-		const disposable = this._register(this._onMessage.event(msg => {
-			if (msg === message) {
-				disposable.dispose();
+		const disposable = this._register(
+			this._onMessage.event(msg => {
+				if (msg === message) {
+					disposable.dispose();
 
-				callback();
-			}
-		}));
+					callback();
+				}
+			})
+		);
 	}
 
 	postMessage(message: unknown, transfer?: Electron.MessagePortMain[]): boolean {
@@ -491,7 +596,6 @@ export class UtilityProcess extends Disposable {
 }
 
 export class WindowUtilityProcess extends UtilityProcess {
-
 	constructor(
 		@ILogService logService: ILogService,
 		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
@@ -503,8 +607,15 @@ export class WindowUtilityProcess extends UtilityProcess {
 
 	override start(configuration: IWindowUtilityProcessConfiguration): boolean {
 		const responseWindow = this.windowsMainService.getWindowById(configuration.responseWindowId);
-		if (!responseWindow?.win || responseWindow.win.isDestroyed() || responseWindow.win.webContents.isDestroyed()) {
-			this.log('Refusing to start utility process because requesting window cannot be found or is destroyed...', Severity.Error);
+		if (
+			!responseWindow?.win ||
+			responseWindow.win.isDestroyed() ||
+			responseWindow.win.webContents.isDestroyed()
+		) {
+			this.log(
+				'Refusing to start utility process because requesting window cannot be found or is destroyed...',
+				Severity.Error
+			);
 
 			return true;
 		}
@@ -520,18 +631,29 @@ export class WindowUtilityProcess extends UtilityProcess {
 
 		// Establish & exchange message ports
 		const windowPort = this.connect(configuration.payload);
-		responseWindow.win.webContents.postMessage(configuration.responseChannel, configuration.responseNonce, [windowPort]);
+		responseWindow.win.webContents.postMessage(
+			configuration.responseChannel,
+			configuration.responseNonce,
+			[windowPort]
+		);
 
 		return true;
 	}
 
-	private registerWindowListeners(window: BrowserWindow, configuration: IWindowUtilityProcessConfiguration): void {
-
+	private registerWindowListeners(
+		window: BrowserWindow,
+		configuration: IWindowUtilityProcessConfiguration
+	): void {
 		// If the lifecycle of the utility process is bound to the window,
 		// we kill the process if the window closes or changes
 
 		if (configuration.windowLifecycleBound) {
-			this._register(Event.filter(this.lifecycleMainService.onWillLoadWindow, e => e.window.win === window)(() => this.kill()));
+			this._register(
+				Event.filter(
+					this.lifecycleMainService.onWillLoadWindow,
+					e => e.window.win === window
+				)(() => this.kill())
+			);
 			this._register(Event.fromNodeEventEmitter(window, 'closed')(() => this.kill()));
 		}
 	}

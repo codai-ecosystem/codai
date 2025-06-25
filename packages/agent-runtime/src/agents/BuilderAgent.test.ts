@@ -21,11 +21,21 @@ const mockMemoryGraph = {
 	getDependencyChain: vi.fn(),
 	validateGraph: vi.fn(),
 	toJSON: vi.fn(),
-	get currentGraph() { return {}; },
-	get nodes() { return []; },
-	get relationships() { return []; },
-	get graph$() { return { asObservable: vi.fn() }; },
-	get changes$() { return { asObservable: vi.fn() }; }
+	get currentGraph() {
+		return {};
+	},
+	get nodes() {
+		return [];
+	},
+	get relationships() {
+		return [];
+	},
+	get graph$() {
+		return { asObservable: vi.fn() };
+	},
+	get changes$() {
+		return { asObservable: vi.fn() };
+	},
 } as any;
 
 describe('BuilderAgent', () => {
@@ -46,27 +56,27 @@ describe('BuilderAgent', () => {
 					description: 'Generate code based on specifications',
 					inputs: [
 						{ name: 'specification', type: 'object', required: true },
-						{ name: 'language', type: 'string', required: true }
+						{ name: 'language', type: 'string', required: true },
 					],
-					outputs: [{ name: 'code', type: 'object' }]
+					outputs: [{ name: 'code', type: 'object' }],
 				},
 				{
 					name: 'project_setup',
 					description: 'Set up project structure and configuration',
 					inputs: [
 						{ name: 'specification', type: 'object', required: true },
-						{ name: 'language', type: 'string', required: true }
+						{ name: 'language', type: 'string', required: true },
 					],
-					outputs: [{ name: 'project_structure', type: 'object' }]
-				}
+					outputs: [{ name: 'project_structure', type: 'object' }],
+				},
 			],
 			aiProvider: {
 				provider: 'openai',
 				model: 'gpt-4',
-				temperature: 0.7
+				temperature: 0.7,
 			},
 			priority: 5,
-			isEnabled: true
+			isEnabled: true,
 		};
 
 		builderAgent = new BuilderAgent(mockConfig, mockMemoryGraph);
@@ -83,7 +93,7 @@ describe('BuilderAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = builderAgent.canExecuteTask(task);
@@ -100,7 +110,7 @@ describe('BuilderAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = builderAgent.canExecuteTask(task);
@@ -117,7 +127,7 @@ describe('BuilderAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = builderAgent.canExecuteTask(task);
@@ -134,7 +144,7 @@ describe('BuilderAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = builderAgent.canExecuteTask(task);
@@ -151,7 +161,7 @@ describe('BuilderAgent', () => {
 				priority: 'low',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = builderAgent.canExecuteTask(task);
@@ -168,7 +178,7 @@ describe('BuilderAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = builderAgent.canExecuteTask(task);
@@ -185,7 +195,7 @@ describe('BuilderAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = builderAgent.canExecuteTask(task);
@@ -207,12 +217,12 @@ describe('BuilderAgent', () => {
 						name: 'UserCard',
 						type: 'component',
 						props: ['user', 'onClick'],
-						styling: 'Tailwind CSS'
+						styling: 'Tailwind CSS',
 					},
-					language: 'TypeScript React'
+					language: 'TypeScript React',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await builderAgent.executeTask(task);
@@ -235,12 +245,12 @@ describe('BuilderAgent', () => {
 						project_type: 'web_application',
 						name: 'my-app',
 						description: 'A new web application',
-						technical_stack: ['React', 'TypeScript', 'Tailwind CSS', 'Vite']
+						technical_stack: ['React', 'TypeScript', 'Tailwind CSS', 'Vite'],
 					},
-					language: 'TypeScript'
+					language: 'TypeScript',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await builderAgent.executeTask(task);
@@ -266,12 +276,12 @@ describe('BuilderAgent', () => {
 						name: 'Button',
 						type: 'component',
 						props: ['children', 'onClick', 'variant'],
-						styling: 'Tailwind CSS'
+						styling: 'Tailwind CSS',
 					},
-					language: 'TypeScript React'
+					language: 'TypeScript React',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await builderAgent.executeTask(task);
@@ -298,13 +308,13 @@ describe('BuilderAgent', () => {
 						endpoints: [
 							{ method: 'GET', path: '/users', description: 'Get all users' },
 							{ method: 'POST', path: '/users', description: 'Create user' },
-							{ method: 'GET', path: '/users/:id', description: 'Get user by ID' }
-						]
+							{ method: 'GET', path: '/users/:id', description: 'Get user by ID' },
+						],
 					},
-					language: 'TypeScript Node.js'
+					language: 'TypeScript Node.js',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await builderAgent.executeTask(task);
@@ -327,10 +337,10 @@ describe('BuilderAgent', () => {
 				priority: 'medium',
 				inputs: {
 					// Missing required specification
-					language: 'TypeScript'
+					language: 'TypeScript',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await builderAgent.executeTask(task);
@@ -351,12 +361,12 @@ describe('BuilderAgent', () => {
 				inputs: {
 					specification: {
 						name: 'SimpleComponent',
-						type: 'component'
+						type: 'component',
 					},
-					language: 'TypeScript React'
+					language: 'TypeScript React',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await builderAgent.executeTask(task);
@@ -379,12 +389,12 @@ describe('BuilderAgent', () => {
 					specification: {
 						project_type: 'web_application',
 						name: 'react-app',
-						technical_stack: ['React', 'TypeScript']
+						technical_stack: ['React', 'TypeScript'],
 					},
-					language: 'TypeScript'
+					language: 'TypeScript',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await builderAgent.executeTask(task);
@@ -406,12 +416,12 @@ describe('BuilderAgent', () => {
 				inputs: {
 					specification: {
 						project_type: 'web_application',
-						technical_stack: ['TypeScript', 'Tailwind CSS', 'Vite']
+						technical_stack: ['TypeScript', 'Tailwind CSS', 'Vite'],
 					},
-					language: 'TypeScript'
+					language: 'TypeScript',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await builderAgent.executeTask(task);
@@ -436,12 +446,12 @@ describe('BuilderAgent', () => {
 				inputs: {
 					specification: {
 						name: 'MemoryComponent',
-						type: 'component'
+						type: 'component',
 					},
-					language: 'TypeScript React'
+					language: 'TypeScript React',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			await builderAgent.executeTask(task);
@@ -461,12 +471,12 @@ describe('BuilderAgent', () => {
 				inputs: {
 					specification: {
 						name: 'TestAPI',
-						endpoints: [{ method: 'GET', path: '/test' }]
+						endpoints: [{ method: 'GET', path: '/test' }],
 					},
-					language: 'TypeScript Node.js'
+					language: 'TypeScript Node.js',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			await builderAgent.executeTask(task);

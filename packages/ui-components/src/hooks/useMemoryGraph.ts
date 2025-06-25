@@ -102,31 +102,34 @@ export function useMemoryGraph(): UseMemoryGraphReturn {
 		}));
 	}, []);
 
-	const getConnectedNodes = useCallback((id: string, depth: number = 1): MemoryNode[] => {
-		const visited = new Set<string>();
-		const result: MemoryNode[] = [];
+	const getConnectedNodes = useCallback(
+		(id: string, depth: number = 1): MemoryNode[] => {
+			const visited = new Set<string>();
+			const result: MemoryNode[] = [];
 
-		const traverse = (nodeId: string, currentDepth: number) => {
-			if (currentDepth > depth || visited.has(nodeId)) return;
+			const traverse = (nodeId: string, currentDepth: number) => {
+				if (currentDepth > depth || visited.has(nodeId)) return;
 
-			visited.add(nodeId);
-			const node = state.nodes.get(nodeId);
-			if (node && nodeId !== id) {
-				result.push(node);
+				visited.add(nodeId);
+				const node = state.nodes.get(nodeId);
+				if (node && nodeId !== id) {
+					result.push(node);
+				}
+
+				if (node && currentDepth < depth) {
+					node.connections.forEach(connId => traverse(connId, currentDepth + 1));
+				}
+			};
+
+			const rootNode = state.nodes.get(id);
+			if (rootNode) {
+				rootNode.connections.forEach(connId => traverse(connId, 0));
 			}
 
-			if (node && currentDepth < depth) {
-				node.connections.forEach(connId => traverse(connId, currentDepth + 1));
-			}
-		};
-
-		const rootNode = state.nodes.get(id);
-		if (rootNode) {
-			rootNode.connections.forEach(connId => traverse(connId, 0));
-		}
-
-		return result;
-	}, [state.nodes]);
+			return result;
+		},
+		[state.nodes]
+	);
 
 	return {
 		state,

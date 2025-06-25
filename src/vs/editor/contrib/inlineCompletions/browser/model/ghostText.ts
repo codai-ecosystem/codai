@@ -15,25 +15,31 @@ import { ColumnRange } from '../../../../common/core/ranges/columnRange.js';
 export class GhostText {
 	constructor(
 		public readonly lineNumber: number,
-		public readonly parts: GhostTextPart[],
-	) {
-	}
+		public readonly parts: GhostTextPart[]
+	) {}
 
 	equals(other: GhostText): boolean {
-		return this.lineNumber === other.lineNumber &&
+		return (
+			this.lineNumber === other.lineNumber &&
 			this.parts.length === other.parts.length &&
-			this.parts.every((part, index) => part.equals(other.parts[index]));
+			this.parts.every((part, index) => part.equals(other.parts[index]))
+		);
 	}
 
 	/**
 	 * Only used for testing/debugging.
-	*/
+	 */
 	render(documentText: string, debug: boolean = false): string {
 		return new TextEdit([
-			...this.parts.map(p => new TextReplacement(
-				Range.fromPositions(new Position(this.lineNumber, p.column)),
-				debug ? `[${p.lines.map(line => line.line).join('\n')}]` : p.lines.map(line => line.line).join('\n')
-			)),
+			...this.parts.map(
+				p =>
+					new TextReplacement(
+						Range.fromPositions(new Position(this.lineNumber, p.column)),
+						debug
+							? `[${p.lines.map(line => line.line).join('\n')}]`
+							: p.lines.map(line => line.line).join('\n')
+					)
+			),
 		]).applyToString(documentText);
 	}
 
@@ -45,10 +51,13 @@ export class GhostText {
 
 		const cappedLineText = lineText.substr(0, lastPart.column - 1);
 		const text = new TextEdit([
-			...this.parts.map(p => new TextReplacement(
-				Range.fromPositions(new Position(1, p.column)),
-				p.lines.map(line => line.line).join('\n')
-			)),
+			...this.parts.map(
+				p =>
+					new TextReplacement(
+						Range.fromPositions(new Position(1, p.column)),
+						p.lines.map(line => line.line).join('\n')
+					)
+			),
 		]).applyToString(cappedLineText);
 
 		return text.substring(this.parts[0].column - 1);
@@ -68,9 +77,7 @@ export interface IGhostTextLine {
 	lineDecorations: LineDecoration[];
 }
 
-
 export class GhostTextPart {
-
 	readonly lines: IGhostTextLine[];
 
 	constructor(
@@ -78,23 +85,26 @@ export class GhostTextPart {
 		readonly text: string,
 		/**
 		 * Indicates if this part is a preview of an inline suggestion when a suggestion is previewed.
-		*/
+		 */
 		readonly preview: boolean,
-		private _inlineDecorations: InlineDecoration[] = [],
+		private _inlineDecorations: InlineDecoration[] = []
 	) {
 		this.lines = splitLines(this.text).map((line, i) => ({
 			line,
-			lineDecorations: LineDecoration.filter(this._inlineDecorations, i + 1, 1, line.length + 1)
+			lineDecorations: LineDecoration.filter(this._inlineDecorations, i + 1, 1, line.length + 1),
 		}));
 	}
 
 	equals(other: GhostTextPart): boolean {
-		return this.column === other.column &&
+		return (
+			this.column === other.column &&
 			this.lines.length === other.lines.length &&
-			this.lines.every((line, index) =>
-				line.line === other.lines[index].line &&
-				LineDecoration.equalsArr(line.lineDecorations, other.lines[index].lineDecorations)
-			);
+			this.lines.every(
+				(line, index) =>
+					line.line === other.lines[index].line &&
+					LineDecoration.equalsArr(line.lineDecorations, other.lines[index].lineDecorations)
+			)
+		);
 	}
 }
 
@@ -106,15 +116,9 @@ export class GhostTextReplacement {
 		readonly lineNumber: number,
 		readonly columnRange: ColumnRange,
 		readonly text: string,
-		public readonly additionalReservedLineCount: number = 0,
+		public readonly additionalReservedLineCount: number = 0
 	) {
-		this.parts = [
-			new GhostTextPart(
-				this.columnRange.endColumnExclusive,
-				this.text,
-				false
-			),
-		];
+		this.parts = [new GhostTextPart(this.columnRange.endColumnExclusive, this.text, false)];
 		this.newLines = splitLines(this.text);
 	}
 
@@ -128,7 +132,10 @@ export class GhostTextReplacement {
 		if (debug) {
 			return new TextEdit([
 				new TextReplacement(Range.fromPositions(replaceRange.getStartPosition()), '('),
-				new TextReplacement(Range.fromPositions(replaceRange.getEndPosition()), `)[${this.newLines.join('\n')}]`),
+				new TextReplacement(
+					Range.fromPositions(replaceRange.getEndPosition()),
+					`)[${this.newLines.join('\n')}]`
+				),
 			]).applyToString(documentText);
 		} else {
 			return new TextEdit([
@@ -146,21 +153,29 @@ export class GhostTextReplacement {
 	}
 
 	equals(other: GhostTextReplacement): boolean {
-		return this.lineNumber === other.lineNumber &&
+		return (
+			this.lineNumber === other.lineNumber &&
 			this.columnRange.equals(other.columnRange) &&
 			this.newLines.length === other.newLines.length &&
 			this.newLines.every((line, index) => line === other.newLines[index]) &&
-			this.additionalReservedLineCount === other.additionalReservedLineCount;
+			this.additionalReservedLineCount === other.additionalReservedLineCount
+		);
 	}
 }
 
 export type GhostTextOrReplacement = GhostText | GhostTextReplacement;
 
-export function ghostTextsOrReplacementsEqual(a: readonly GhostTextOrReplacement[] | undefined, b: readonly GhostTextOrReplacement[] | undefined): boolean {
+export function ghostTextsOrReplacementsEqual(
+	a: readonly GhostTextOrReplacement[] | undefined,
+	b: readonly GhostTextOrReplacement[] | undefined
+): boolean {
 	return equals(a, b, ghostTextOrReplacementEquals);
 }
 
-export function ghostTextOrReplacementEquals(a: GhostTextOrReplacement | undefined, b: GhostTextOrReplacement | undefined): boolean {
+export function ghostTextOrReplacementEquals(
+	a: GhostTextOrReplacement | undefined,
+	b: GhostTextOrReplacement | undefined
+): boolean {
 	if (a === b) {
 		return true;
 	}

@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ProcessItem } from '../../../base/common/processes.js';
-import { IRemoteDiagnosticError, PerformanceInfo, SystemInfo } from '../../diagnostics/common/diagnostics.js';
+import {
+	IRemoteDiagnosticError,
+	PerformanceInfo,
+	SystemInfo,
+} from '../../diagnostics/common/diagnostics.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 
 // Since data sent through the service is serialized to JSON, functions will be lost, so Color objects
@@ -21,7 +25,7 @@ export interface WindowData {
 export enum IssueSource {
 	VSCode = 'vscode',
 	Extension = 'extension',
-	Marketplace = 'marketplace'
+	Marketplace = 'marketplace',
 }
 export interface ISettingSearchResult {
 	extensionId: string;
@@ -40,7 +44,6 @@ export interface IResolvedProcessInformation {
 }
 
 export interface IProcessService {
-
 	readonly _serviceBrand: undefined;
 
 	resolveProcesses(): Promise<IResolvedProcessInformation>;

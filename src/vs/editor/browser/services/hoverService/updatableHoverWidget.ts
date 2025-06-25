@@ -4,8 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isHTMLElement } from '../../../../base/browser/dom.js';
-import { isManagedHoverTooltipMarkdownString, type IHoverWidget, type IManagedHoverContent, type IManagedHoverOptions } from '../../../../base/browser/ui/hover/hover.js';
-import type { IHoverDelegate, IHoverDelegateOptions, IHoverDelegateTarget } from '../../../../base/browser/ui/hover/hoverDelegate.js';
+import {
+	isManagedHoverTooltipMarkdownString,
+	type IHoverWidget,
+	type IManagedHoverContent,
+	type IManagedHoverOptions,
+} from '../../../../base/browser/ui/hover/hover.js';
+import type {
+	IHoverDelegate,
+	IHoverDelegateOptions,
+	IHoverDelegateTarget,
+} from '../../../../base/browser/ui/hover/hoverDelegate.js';
 import { HoverPosition } from '../../../../base/browser/ui/hover/hoverWidget.js';
 import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
 import { isMarkdownString, type IMarkdownString } from '../../../../base/common/htmlContent.js';
@@ -16,13 +25,20 @@ import { localize } from '../../../../nls.js';
 type IManagedHoverResolvedContent = IMarkdownString | string | HTMLElement | undefined;
 
 export class ManagedHoverWidget implements IDisposable {
-
 	private _hoverWidget: IHoverWidget | undefined;
 	private _cancellationTokenSource: CancellationTokenSource | undefined;
 
-	constructor(private hoverDelegate: IHoverDelegate, private target: IHoverDelegateTarget | HTMLElement, private fadeInAnimation: boolean) { }
+	constructor(
+		private hoverDelegate: IHoverDelegate,
+		private target: IHoverDelegateTarget | HTMLElement,
+		private fadeInAnimation: boolean
+	) {}
 
-	async update(content: IManagedHoverContent, focus?: boolean, options?: IManagedHoverOptions): Promise<void> {
+	async update(
+		content: IManagedHoverContent,
+		focus?: boolean,
+		options?: IManagedHoverOptions
+	): Promise<void> {
 		if (this._cancellationTokenSource) {
 			// there's an computation ongoing, cancel it
 			this._cancellationTokenSource.dispose(true);
@@ -44,7 +60,9 @@ export class ManagedHoverWidget implements IDisposable {
 			let managedContent;
 			if (isManagedHoverTooltipMarkdownString(content)) {
 				if (isFunction(content.markdown)) {
-					managedContent = content.markdown(token).then(resolvedContent => resolvedContent ?? content.markdownNotSupportedFallback);
+					managedContent = content
+						.markdown(token)
+						.then(resolvedContent => resolvedContent ?? content.markdownNotSupportedFallback);
 				} else {
 					managedContent = content.markdown ?? content.markdownNotSupportedFallback;
 				}
@@ -54,10 +72,9 @@ export class ManagedHoverWidget implements IDisposable {
 
 			// compute the content
 			if (managedContent instanceof Promise) {
-
 				// show 'Loading' if no hover is up yet
 				if (!this._hoverWidget) {
-					this.show(localize('iconLabel.loading', "Loading..."), focus, options);
+					this.show(localize('iconLabel.loading', 'Loading...'), focus, options);
 				}
 
 				resolvedContent = await managedContent;
@@ -75,7 +92,11 @@ export class ManagedHoverWidget implements IDisposable {
 		this.show(resolvedContent, focus, options);
 	}
 
-	private show(content: IManagedHoverResolvedContent, focus?: boolean, options?: IManagedHoverOptions): void {
+	private show(
+		content: IManagedHoverResolvedContent,
+		focus?: boolean,
+		options?: IManagedHoverOptions
+	): void {
 		const oldHoverWidget = this._hoverWidget;
 
 		if (this.hasContent(content)) {
@@ -100,7 +121,9 @@ export class ManagedHoverWidget implements IDisposable {
 		oldHoverWidget?.dispose();
 	}
 
-	private hasContent(content: IManagedHoverResolvedContent): content is NonNullable<IManagedHoverResolvedContent> {
+	private hasContent(
+		content: IManagedHoverResolvedContent
+	): content is NonNullable<IManagedHoverResolvedContent> {
 		if (!content) {
 			return false;
 		}

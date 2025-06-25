@@ -15,7 +15,6 @@ import { teardown } from './processes';
 import { ChildProcess } from 'child_process';
 
 export class PlaywrightDriver {
-
 	private static traceCounter = 1;
 	private static screenShotCounter = 1;
 
@@ -30,7 +29,7 @@ export class PlaywrightDriver {
 		down: 'ArrowDown',
 		left: 'ArrowLeft',
 		home: 'Home',
-		esc: 'Escape'
+		esc: 'Escape',
 	};
 
 	constructor(
@@ -40,8 +39,7 @@ export class PlaywrightDriver {
 		private readonly serverProcess: ChildProcess | undefined,
 		private readonly whenLoaded: Promise<unknown>,
 		private readonly options: LaunchOptions
-	) {
-	}
+	) {}
 
 	async startTracing(name: string): Promise<void> {
 		if (!this.options.tracing) {
@@ -49,7 +47,11 @@ export class PlaywrightDriver {
 		}
 
 		try {
-			await measureAndLog(() => this.context.tracing.startChunk({ title: name }), `startTracing for ${name}`, this.options.logger);
+			await measureAndLog(
+				() => this.context.tracing.startChunk({ title: name }),
+				`startTracing for ${name}`,
+				this.options.logger
+			);
 		} catch (error) {
 			// Ignore
 		}
@@ -63,10 +65,17 @@ export class PlaywrightDriver {
 		try {
 			let persistPath: string | undefined = undefined;
 			if (persist) {
-				persistPath = join(this.options.logsPath, `playwright-trace-${PlaywrightDriver.traceCounter++}-${name.replace(/\s+/g, '-')}.zip`);
+				persistPath = join(
+					this.options.logsPath,
+					`playwright-trace-${PlaywrightDriver.traceCounter++}-${name.replace(/\s+/g, '-')}.zip`
+				);
 			}
 
-			await measureAndLog(() => this.context.tracing.stopChunk({ path: persistPath }), `stopTracing for ${name}`, this.options.logger);
+			await measureAndLog(
+				() => this.context.tracing.stopChunk({ path: persistPath }),
+				`stopTracing for ${name}`,
+				this.options.logger
+			);
 
 			// To ensure we have a screenshot at the end where
 			// it failed, also trigger one explicitly. Tracing
@@ -102,7 +111,9 @@ export class PlaywrightDriver {
 		await this._cdpSession.send('HeapProfiler.collectGarbage');
 	}
 
-	async evaluate(options: Protocol.Runtime.evaluateParameters): Promise<Protocol.Runtime.evaluateReturnValue> {
+	async evaluate(
+		options: Protocol.Runtime.evaluateParameters
+	): Promise<Protocol.Runtime.evaluateReturnValue> {
 		if (!this._cdpSession) {
 			throw new Error('CDP not started');
 		}
@@ -110,7 +121,9 @@ export class PlaywrightDriver {
 		return await this._cdpSession.send('Runtime.evaluate', options);
 	}
 
-	async releaseObjectGroup(parameters: Protocol.Runtime.releaseObjectGroupParameters): Promise<void> {
+	async releaseObjectGroup(
+		parameters: Protocol.Runtime.releaseObjectGroupParameters
+	): Promise<void> {
 		if (!this._cdpSession) {
 			throw new Error('CDP not started');
 		}
@@ -118,7 +131,9 @@ export class PlaywrightDriver {
 		await this._cdpSession.send('Runtime.releaseObjectGroup', parameters);
 	}
 
-	async queryObjects(parameters: Protocol.Runtime.queryObjectsParameters): Promise<Protocol.Runtime.queryObjectsReturnValue> {
+	async queryObjects(
+		parameters: Protocol.Runtime.queryObjectsParameters
+	): Promise<Protocol.Runtime.queryObjectsReturnValue> {
 		if (!this._cdpSession) {
 			throw new Error('CDP not started');
 		}
@@ -126,7 +141,9 @@ export class PlaywrightDriver {
 		return await this._cdpSession.send('Runtime.queryObjects', parameters);
 	}
 
-	async callFunctionOn(parameters: Protocol.Runtime.callFunctionOnParameters): Promise<Protocol.Runtime.callFunctionOnReturnValue> {
+	async callFunctionOn(
+		parameters: Protocol.Runtime.callFunctionOnParameters
+	): Promise<Protocol.Runtime.callFunctionOnReturnValue> {
 		if (!this._cdpSession) {
 			throw new Error('CDP not started');
 		}
@@ -152,7 +169,9 @@ export class PlaywrightDriver {
 		return snapshot;
 	}
 
-	async getProperties(parameters: Protocol.Runtime.getPropertiesParameters): Promise<Protocol.Runtime.getPropertiesReturnValue> {
+	async getProperties(
+		parameters: Protocol.Runtime.getPropertiesParameters
+	): Promise<Protocol.Runtime.getPropertiesReturnValue> {
 		if (!this._cdpSession) {
 			throw new Error('CDP not started');
 		}
@@ -162,9 +181,16 @@ export class PlaywrightDriver {
 
 	private async takeScreenshot(name: string): Promise<void> {
 		try {
-			const persistPath = join(this.options.logsPath, `playwright-screenshot-${PlaywrightDriver.screenShotCounter++}-${name.replace(/\s+/g, '-')}.png`);
+			const persistPath = join(
+				this.options.logsPath,
+				`playwright-screenshot-${PlaywrightDriver.screenShotCounter++}-${name.replace(/\s+/g, '-')}.png`
+			);
 
-			await measureAndLog(() => this.page.screenshot({ path: persistPath, type: 'png' }), 'takeScreenshot', this.options.logger);
+			await measureAndLog(
+				() => this.page.screenshot({ path: persistPath, type: 'png' }),
+				'takeScreenshot',
+				this.options.logger
+			);
 		} catch (error) {
 			// Ignore
 		}
@@ -175,7 +201,6 @@ export class PlaywrightDriver {
 	}
 
 	async close() {
-
 		// Stop tracing
 		try {
 			if (this.options.tracing) {
@@ -188,7 +213,11 @@ export class PlaywrightDriver {
 		// Web: Extract client logs
 		if (this.options.web) {
 			try {
-				await measureAndLog(() => this.saveWebClientLogs(), 'saveWebClientLogs()', this.options.logger);
+				await measureAndLog(
+					() => this.saveWebClientLogs(),
+					'saveWebClientLogs()',
+					this.options.logger
+				);
 			} catch (error) {
 				this.options.logger.log(`Error saving web client logs (${error})`);
 			}
@@ -196,14 +225,22 @@ export class PlaywrightDriver {
 
 		//  exit via `close` method
 		try {
-			await measureAndLog(() => this.application.close(), 'playwright.close()', this.options.logger);
+			await measureAndLog(
+				() => this.application.close(),
+				'playwright.close()',
+				this.options.logger
+			);
 		} catch (error) {
 			this.options.logger.log(`Error closing application (${error})`);
 		}
 
 		// Server: via `teardown`
 		if (this.serverProcess) {
-			await measureAndLog(() => teardown(this.serverProcess!, this.options.logger), 'teardown server process', this.options.logger);
+			await measureAndLog(
+				() => teardown(this.serverProcess!, this.options.logger),
+				'teardown server process',
+				this.options.logger
+			);
 		}
 	}
 
@@ -226,7 +263,11 @@ export class PlaywrightDriver {
 				await this.wait(100);
 			}
 
-			if (keybinding.startsWith('Alt') || keybinding.startsWith('Control') || keybinding.startsWith('Backspace')) {
+			if (
+				keybinding.startsWith('Alt') ||
+				keybinding.startsWith('Control') ||
+				keybinding.startsWith('Backspace')
+			) {
 				await this.page.keyboard.press(keybinding);
 				return;
 			}
@@ -256,7 +297,11 @@ export class PlaywrightDriver {
 	}
 
 	async setValue(selector: string, text: string) {
-		return this.page.evaluate(([driver, selector, text]) => driver.setValue(selector, text), [await this.getDriverHandle(), selector, text] as const);
+		return this.page.evaluate(([driver, selector, text]) => driver.setValue(selector, text), [
+			await this.getDriverHandle(),
+			selector,
+			text,
+		] as const);
 	}
 
 	async getTitle() {
@@ -264,31 +309,53 @@ export class PlaywrightDriver {
 	}
 
 	async isActiveElement(selector: string) {
-		return this.page.evaluate(([driver, selector]) => driver.isActiveElement(selector), [await this.getDriverHandle(), selector] as const);
+		return this.page.evaluate(([driver, selector]) => driver.isActiveElement(selector), [
+			await this.getDriverHandle(),
+			selector,
+		] as const);
 	}
 
 	async getElements(selector: string, recursive: boolean = false) {
-		return this.page.evaluate(([driver, selector, recursive]) => driver.getElements(selector, recursive), [await this.getDriverHandle(), selector, recursive] as const);
+		return this.page.evaluate(
+			([driver, selector, recursive]) => driver.getElements(selector, recursive),
+			[await this.getDriverHandle(), selector, recursive] as const
+		);
 	}
 
 	async getElementXY(selector: string, xoffset?: number, yoffset?: number) {
-		return this.page.evaluate(([driver, selector, xoffset, yoffset]) => driver.getElementXY(selector, xoffset, yoffset), [await this.getDriverHandle(), selector, xoffset, yoffset] as const);
+		return this.page.evaluate(
+			([driver, selector, xoffset, yoffset]) => driver.getElementXY(selector, xoffset, yoffset),
+			[await this.getDriverHandle(), selector, xoffset, yoffset] as const
+		);
 	}
 
 	async typeInEditor(selector: string, text: string) {
-		return this.page.evaluate(([driver, selector, text]) => driver.typeInEditor(selector, text), [await this.getDriverHandle(), selector, text] as const);
+		return this.page.evaluate(([driver, selector, text]) => driver.typeInEditor(selector, text), [
+			await this.getDriverHandle(),
+			selector,
+			text,
+		] as const);
 	}
 
 	async getEditorSelection(selector: string) {
-		return this.page.evaluate(([driver, selector]) => driver.getEditorSelection(selector), [await this.getDriverHandle(), selector] as const);
+		return this.page.evaluate(([driver, selector]) => driver.getEditorSelection(selector), [
+			await this.getDriverHandle(),
+			selector,
+		] as const);
 	}
 
 	async getTerminalBuffer(selector: string) {
-		return this.page.evaluate(([driver, selector]) => driver.getTerminalBuffer(selector), [await this.getDriverHandle(), selector] as const);
+		return this.page.evaluate(([driver, selector]) => driver.getTerminalBuffer(selector), [
+			await this.getDriverHandle(),
+			selector,
+		] as const);
 	}
 
 	async writeInTerminal(selector: string, text: string) {
-		return this.page.evaluate(([driver, selector, text]) => driver.writeInTerminal(selector, text), [await this.getDriverHandle(), selector, text] as const);
+		return this.page.evaluate(
+			([driver, selector, text]) => driver.writeInTerminal(selector, text),
+			[await this.getDriverHandle(), selector, text] as const
+		);
 	}
 
 	async getLocaleInfo() {
@@ -300,7 +367,9 @@ export class PlaywrightDriver {
 	}
 
 	async getLogs() {
-		return this.page.evaluate(([driver]) => driver.getLogs(), [await this.getDriverHandle()] as const);
+		return this.page.evaluate(([driver]) => driver.getLogs(), [
+			await this.getDriverHandle(),
+		] as const);
 	}
 
 	private async evaluateWithDriver<T>(pageFunction: PageFunction<IWindowDriver[], T>) {

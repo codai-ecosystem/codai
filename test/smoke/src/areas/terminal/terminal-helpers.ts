@@ -5,7 +5,10 @@
 
 import { Application } from '../../../../automation';
 
-export async function setTerminalTestSettings(app: Application, additionalSettings: [key: string, value: string][] = []) {
+export async function setTerminalTestSettings(
+	app: Application,
+	additionalSettings: [key: string, value: string][] = []
+) {
 	await app.workbench.settingsEditor.addUserSettings([
 		// Work wrap is required when calling settingsEditor.addUserSetting multiple times or the
 		// click to focus will fail
@@ -15,7 +18,7 @@ export async function setTerminalTestSettings(app: Application, additionalSettin
 		// Use the DOM renderer for smoke tests so they can be inspected in the playwright trace
 		// viewer
 		['terminal.integrated.gpuAcceleration', '"off"'],
-		...additionalSettings
+		...additionalSettings,
 	]);
 
 	// Close the settings editor

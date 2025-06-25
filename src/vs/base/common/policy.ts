@@ -6,7 +6,6 @@
 export type PolicyName = string;
 
 export interface IPolicy {
-
 	/**
 	 * The policy name.
 	 */
@@ -14,7 +13,7 @@ export interface IPolicy {
 
 	/**
 	 * The Code version in which this policy was introduced.
-	*/
+	 */
 	readonly minimumVersion: `${number}.${number}`;
 
 	/**

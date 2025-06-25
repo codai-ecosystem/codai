@@ -6,7 +6,12 @@
 import './media/customEditor.css';
 import { coalesce } from '../../../../base/common/arrays.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { extname, isEqual } from '../../../../base/common/resources.js';
 import { assertIsDefined } from '../../../../base/common/types.js';
@@ -18,13 +23,35 @@ import { IInstantiationService } from '../../../../platform/instantiation/common
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
-import { DEFAULT_EDITOR_ASSOCIATION, EditorExtensions, GroupIdentifier, IEditorFactoryRegistry, IResourceDiffEditorInput } from '../../../common/editor.js';
+import {
+	DEFAULT_EDITOR_ASSOCIATION,
+	EditorExtensions,
+	GroupIdentifier,
+	IEditorFactoryRegistry,
+	IResourceDiffEditorInput,
+} from '../../../common/editor.js';
 import { DiffEditorInput } from '../../../common/editor/diffEditorInput.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
-import { CONTEXT_ACTIVE_CUSTOM_EDITOR_ID, CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE, CustomEditorCapabilities, CustomEditorInfo, CustomEditorInfoCollection, ICustomEditorModelManager, ICustomEditorService } from '../common/customEditor.js';
+import {
+	CONTEXT_ACTIVE_CUSTOM_EDITOR_ID,
+	CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE,
+	CustomEditorCapabilities,
+	CustomEditorInfo,
+	CustomEditorInfoCollection,
+	ICustomEditorModelManager,
+	ICustomEditorService,
+} from '../common/customEditor.js';
 import { CustomEditorModelManager } from '../common/customEditorModelManager.js';
-import { IEditorGroup, IEditorGroupContextKeyProvider, IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
-import { IEditorResolverService, IEditorType, RegisteredEditorPriority } from '../../../services/editor/common/editorResolverService.js';
+import {
+	IEditorGroup,
+	IEditorGroupContextKeyProvider,
+	IEditorGroupsService,
+} from '../../../services/editor/common/editorGroupsService.js';
+import {
+	IEditorResolverService,
+	IEditorType,
+	RegisteredEditorPriority,
+} from '../../../services/editor/common/editorResolverService.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 import { ContributedCustomEditors } from '../common/contributedCustomEditors.js';
 import { CustomEditorInput } from './customEditorInput.js';
@@ -42,7 +69,9 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 	private readonly _onDidChangeEditorTypes = this._register(new Emitter<void>());
 	public readonly onDidChangeEditorTypes: Event<void> = this._onDidChangeEditorTypes.event;
 
-	private readonly _fileEditorFactory = Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).getFileEditorFactory();
+	private readonly _fileEditorFactory = Registry.as<IEditorFactoryRegistry>(
+		EditorExtensions.EditorFactory
+	).getFileEditorFactory();
 
 	constructor(
 		@IFileService fileService: IFileService,
@@ -51,7 +80,7 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
+		@IEditorResolverService private readonly editorResolverService: IEditorResolverService
 	) {
 		super();
 
@@ -61,49 +90,66 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 		// Register the contribution points only emitting one change from the resolver
 		this.editorResolverService.bufferChangeEvents(this.registerContributionPoints.bind(this));
 
-		this._register(this._contributedEditors.onChange(() => {
-			// Register the contribution points only emitting one change from the resolver
-			this.editorResolverService.bufferChangeEvents(this.registerContributionPoints.bind(this));
-			this._onDidChangeEditorTypes.fire();
-		}));
+		this._register(
+			this._contributedEditors.onChange(() => {
+				// Register the contribution points only emitting one change from the resolver
+				this.editorResolverService.bufferChangeEvents(this.registerContributionPoints.bind(this));
+				this._onDidChangeEditorTypes.fire();
+			})
+		);
 
 		// Register group context key providers.
 		// These set the context keys for each editor group and the global context
 		const activeCustomEditorContextKeyProvider: IEditorGroupContextKeyProvider<string> = {
 			contextKey: CONTEXT_ACTIVE_CUSTOM_EDITOR_ID,
 			getGroupContextKeyValue: group => this.getActiveCustomEditorId(group),
-			onDidChange: this.onDidChangeEditorTypes
+			onDidChange: this.onDidChangeEditorTypes,
 		};
 
 		const customEditorIsEditableContextKeyProvider: IEditorGroupContextKeyProvider<boolean> = {
 			contextKey: CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE,
 			getGroupContextKeyValue: group => this.getCustomEditorIsEditable(group),
-			onDidChange: this.onDidChangeEditorTypes
+			onDidChange: this.onDidChangeEditorTypes,
 		};
 
-		this._register(this.editorGroupService.registerContextKeyProvider(activeCustomEditorContextKeyProvider));
-		this._register(this.editorGroupService.registerContextKeyProvider(customEditorIsEditableContextKeyProvider));
+		this._register(
+			this.editorGroupService.registerContextKeyProvider(activeCustomEditorContextKeyProvider)
+		);
+		this._register(
+			this.editorGroupService.registerContextKeyProvider(customEditorIsEditableContextKeyProvider)
+		);
 
-		this._register(fileService.onDidRunOperation(e => {
-			if (e.isOperation(FileOperation.MOVE)) {
-				this.handleMovedFileInOpenedFileEditors(e.resource, this.uriIdentityService.asCanonicalUri(e.target.resource));
-			}
-		}));
+		this._register(
+			fileService.onDidRunOperation(e => {
+				if (e.isOperation(FileOperation.MOVE)) {
+					this.handleMovedFileInOpenedFileEditors(
+						e.resource,
+						this.uriIdentityService.asCanonicalUri(e.target.resource)
+					);
+				}
+			})
+		);
 
 		const PRIORITY = 105;
-		this._register(UndoCommand.addImplementation(PRIORITY, 'custom-editor', () => {
-			return this.withActiveCustomEditor(editor => editor.undo());
-		}));
-		this._register(RedoCommand.addImplementation(PRIORITY, 'custom-editor', () => {
-			return this.withActiveCustomEditor(editor => editor.redo());
-		}));
+		this._register(
+			UndoCommand.addImplementation(PRIORITY, 'custom-editor', () => {
+				return this.withActiveCustomEditor(editor => editor.undo());
+			})
+		);
+		this._register(
+			RedoCommand.addImplementation(PRIORITY, 'custom-editor', () => {
+				return this.withActiveCustomEditor(editor => editor.redo());
+			})
+		);
 	}
 
 	getEditorTypes(): IEditorType[] {
 		return [...this._contributedEditors];
 	}
 
-	private withActiveCustomEditor(f: (editor: CustomEditorInput) => void | Promise<void>): boolean | Promise<void> {
+	private withActiveCustomEditor(
+		f: (editor: CustomEditorInput) => void | Promise<void>
+	): boolean | Promise<void> {
 		const activeEditor = this.editorService.activeEditor;
 		if (activeEditor instanceof CustomEditorInput) {
 			const result = f(activeEditor);
@@ -125,29 +171,55 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 					continue;
 				}
 
-				this._editorResolverDisposables.add(this.editorResolverService.registerEditor(
-					globPattern.filenamePattern,
-					{
-						id: contributedEditor.id,
-						label: contributedEditor.displayName,
-						detail: contributedEditor.providerDisplayName,
-						priority: contributedEditor.priority,
-					},
-					{
-						singlePerResource: () => !(this.getCustomEditorCapabilities(contributedEditor.id)?.supportsMultipleEditorsPerDocument ?? false)
-					},
-					{
-						createEditorInput: ({ resource }, group) => {
-							return { editor: CustomEditorInput.create(this.instantiationService, resource, contributedEditor.id, group.id) };
+				this._editorResolverDisposables.add(
+					this.editorResolverService.registerEditor(
+						globPattern.filenamePattern,
+						{
+							id: contributedEditor.id,
+							label: contributedEditor.displayName,
+							detail: contributedEditor.providerDisplayName,
+							priority: contributedEditor.priority,
 						},
-						createUntitledEditorInput: ({ resource }, group) => {
-							return { editor: CustomEditorInput.create(this.instantiationService, resource ?? URI.from({ scheme: Schemas.untitled, authority: `Untitled-${this._untitledCounter++}` }), contributedEditor.id, group.id) };
+						{
+							singlePerResource: () =>
+								!(
+									this.getCustomEditorCapabilities(contributedEditor.id)
+										?.supportsMultipleEditorsPerDocument ?? false
+								),
 						},
-						createDiffEditorInput: (diffEditorInput, group) => {
-							return { editor: this.createDiffEditorInput(diffEditorInput, contributedEditor.id, group) };
-						},
-					}
-				));
+						{
+							createEditorInput: ({ resource }, group) => {
+								return {
+									editor: CustomEditorInput.create(
+										this.instantiationService,
+										resource,
+										contributedEditor.id,
+										group.id
+									),
+								};
+							},
+							createUntitledEditorInput: ({ resource }, group) => {
+								return {
+									editor: CustomEditorInput.create(
+										this.instantiationService,
+										resource ??
+											URI.from({
+												scheme: Schemas.untitled,
+												authority: `Untitled-${this._untitledCounter++}`,
+											}),
+										contributedEditor.id,
+										group.id
+									),
+								};
+							},
+							createDiffEditorInput: (diffEditorInput, group) => {
+								return {
+									editor: this.createDiffEditorInput(diffEditorInput, contributedEditor.id, group),
+								};
+							},
+						}
+					)
+				);
 			}
 		}
 	}
@@ -157,12 +229,33 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 		editorID: string,
 		group: IEditorGroup
 	): DiffEditorInput {
-		const modifiedOverride = CustomEditorInput.create(this.instantiationService, assertIsDefined(editor.modified.resource), editorID, group.id, { customClasses: 'modified' });
-		const originalOverride = CustomEditorInput.create(this.instantiationService, assertIsDefined(editor.original.resource), editorID, group.id, { customClasses: 'original' });
-		return this.instantiationService.createInstance(DiffEditorInput, editor.label, editor.description, originalOverride, modifiedOverride, true);
+		const modifiedOverride = CustomEditorInput.create(
+			this.instantiationService,
+			assertIsDefined(editor.modified.resource),
+			editorID,
+			group.id,
+			{ customClasses: 'modified' }
+		);
+		const originalOverride = CustomEditorInput.create(
+			this.instantiationService,
+			assertIsDefined(editor.original.resource),
+			editorID,
+			group.id,
+			{ customClasses: 'original' }
+		);
+		return this.instantiationService.createInstance(
+			DiffEditorInput,
+			editor.label,
+			editor.description,
+			originalOverride,
+			modifiedOverride,
+			true
+		);
 	}
 
-	public get models() { return this._models; }
+	public get models() {
+		return this._models;
+	}
 
 	public getCustomEditor(viewType: string): CustomEditorInfo | undefined {
 		return this._contributedEditors.get(viewType);
@@ -175,8 +268,10 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 	public getUserConfiguredCustomEditors(resource: URI): CustomEditorInfoCollection {
 		const resourceAssocations = this.editorResolverService.getAssociationsForResource(resource);
 		return new CustomEditorInfoCollection(
-			coalesce(resourceAssocations
-				.map(association => this._contributedEditors.get(association.viewType))));
+			coalesce(
+				resourceAssocations.map(association => this._contributedEditors.get(association.viewType))
+			)
+		);
 	}
 
 	public getAllCustomEditors(resource: URI): CustomEditorInfoCollection {
@@ -186,7 +281,10 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 		]);
 	}
 
-	public registerCustomEditorCapabilities(viewType: string, options: CustomEditorCapabilities): IDisposable {
+	public registerCustomEditorCapabilities(
+		viewType: string,
+		options: CustomEditorCapabilities
+	): IDisposable {
 		if (this._editorCapabilities.has(viewType)) {
 			throw new Error(`Capabilities for ${viewType} already set`);
 		}
@@ -207,7 +305,9 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 			return '';
 		}
 
-		return activeEditorPane?.input instanceof CustomEditorInput ? activeEditorPane.input.viewType : '';
+		return activeEditorPane?.input instanceof CustomEditorInput
+			? activeEditorPane.input.viewType
+			: '';
 	}
 
 	private getCustomEditorIsEditable(group: IEditorGroup): boolean {
@@ -220,7 +320,10 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 		return activeEditorPane?.input instanceof CustomEditorInput;
 	}
 
-	private async handleMovedFileInOpenedFileEditors(oldResource: URI, newResource: URI): Promise<void> {
+	private async handleMovedFileInOpenedFileEditors(
+		oldResource: URI,
+		newResource: URI
+	): Promise<void> {
 		if (extname(oldResource).toLowerCase() === extname(newResource).toLowerCase()) {
 			return;
 		}
@@ -228,7 +331,11 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 		const possibleEditors = this.getAllCustomEditors(newResource);
 
 		// See if we have any non-optional custom editor for this resource
-		if (!possibleEditors.allEditors.some(editor => editor.priority !== RegisteredEditorPriority.option)) {
+		if (
+			!possibleEditors.allEditors.some(
+				editor => editor.priority !== RegisteredEditorPriority.option
+			)
+		) {
 			return;
 		}
 
@@ -236,9 +343,10 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 		const editorsToReplace = new Map<GroupIdentifier, EditorInput[]>();
 		for (const group of this.editorGroupService.groups) {
 			for (const editor of group.editors) {
-				if (this._fileEditorFactory.isFileEditor(editor)
-					&& !(editor instanceof CustomEditorInput)
-					&& isEqual(editor.resource, newResource)
+				if (
+					this._fileEditorFactory.isFileEditor(editor) &&
+					!(editor instanceof CustomEditorInput) &&
+					isEqual(editor.resource, newResource)
 				) {
 					let entry = editorsToReplace.get(group.id);
 					if (!entry) {
@@ -255,23 +363,34 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
 		}
 
 		for (const [group, entries] of editorsToReplace) {
-			this.editorService.replaceEditors(entries.map(editor => {
-				let replacement: EditorInput | IResourceEditorInput;
-				if (possibleEditors.defaultEditor) {
-					const viewType = possibleEditors.defaultEditor.id;
-					replacement = CustomEditorInput.create(this.instantiationService, newResource, viewType, group);
-				} else {
-					replacement = { resource: newResource, options: { override: DEFAULT_EDITOR_ASSOCIATION.id } };
-				}
-
-				return {
-					editor,
-					replacement,
-					options: {
-						preserveFocus: true,
+			this.editorService.replaceEditors(
+				entries.map(editor => {
+					let replacement: EditorInput | IResourceEditorInput;
+					if (possibleEditors.defaultEditor) {
+						const viewType = possibleEditors.defaultEditor.id;
+						replacement = CustomEditorInput.create(
+							this.instantiationService,
+							newResource,
+							viewType,
+							group
+						);
+					} else {
+						replacement = {
+							resource: newResource,
+							options: { override: DEFAULT_EDITOR_ASSOCIATION.id },
+						};
 					}
-				};
-			}), group);
+
+					return {
+						editor,
+						replacement,
+						options: {
+							preserveFocus: true,
+						},
+					};
+				}),
+				group
+			);
 		}
 	}
 }

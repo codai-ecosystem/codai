@@ -34,7 +34,7 @@ describe('PlannerAgent', () => {
 					description: 'Plan project architecture and features',
 					inputs: [{ name: 'requirements', type: 'string', required: true }],
 					outputs: [{ name: 'analysis', type: 'object' }],
-				}
+				},
 			],
 			aiProvider: {
 				provider: 'openai',
@@ -151,12 +151,14 @@ describe('PlannerAgent', () => {
 			const task: Task = {
 				id: 'task-7',
 				title: 'Plan e-commerce application',
-				description: 'project_planning an e-commerce application with user management and payment processing',
+				description:
+					'project_planning an e-commerce application with user management and payment processing',
 				agentId: 'planner',
 				status: 'pending',
 				priority: 'high',
 				inputs: {
-					requirements: 'Build an e-commerce platform with user authentication, product catalog, shopping cart, and payment processing',
+					requirements:
+						'Build an e-commerce platform with user authentication, product catalog, shopping cart, and payment processing',
 					constraints: { budget: 50000, timeline: '3 months' },
 				},
 				createdAt: new Date(),
@@ -182,7 +184,8 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'medium',
 				inputs: {
-					requirements: 'Create a fitness tracking app with workout logging, progress tracking, and social features',
+					requirements:
+						'Create a fitness tracking app with workout logging, progress tracking, and social features',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -206,7 +209,8 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'high',
 				inputs: {
-					requirements: 'User authentication with email/password, social login, and password reset functionality',
+					requirements:
+						'User authentication with email/password, social login, and password reset functionality',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -230,7 +234,8 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'high',
 				inputs: {
-					requirements: 'Design a microservices architecture for a social media platform with user management, content management, and real-time messaging',
+					requirements:
+						'Design a microservices architecture for a social media platform with user management, content management, and real-time messaging',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -297,7 +302,8 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'medium',
 				inputs: {
-					requirements: 'Build a simple blog application with user authentication and post management',
+					requirements:
+						'Build a simple blog application with user authentication and post management',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -323,7 +329,8 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'high',
 				inputs: {
-					requirements: 'Create a social media platform with user profiles, posts, comments, likes, and real-time messaging',
+					requirements:
+						'Create a social media platform with user profiles, posts, comments, likes, and real-time messaging',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -348,8 +355,13 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'high',
 				inputs: {
-					requirements: 'Enterprise resource planning system with inventory management, HR, and financial modules',
-					constraints: { security: 'enterprise-grade', scalability: '10000+ users', compliance: 'SOX, GDPR' },
+					requirements:
+						'Enterprise resource planning system with inventory management, HR, and financial modules',
+					constraints: {
+						security: 'enterprise-grade',
+						scalability: '10000+ users',
+						compliance: 'SOX, GDPR',
+					},
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -375,7 +387,8 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'high',
 				inputs: {
-					requirements: 'Build a task management application with teams, projects, tasks, and deadline tracking',
+					requirements:
+						'Build a task management application with teams, projects, tasks, and deadline tracking',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -406,7 +419,8 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'critical',
 				inputs: {
-					requirements: 'Build an e-commerce platform with payment processing, inventory management, and customer support',
+					requirements:
+						'Build an e-commerce platform with payment processing, inventory management, and customer support',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -437,7 +451,8 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'medium',
 				inputs: {
-					requirements: 'Create a learning management system with courses, lessons, quizzes, and student progress tracking',
+					requirements:
+						'Create a learning management system with courses, lessons, quizzes, and student progress tracking',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -468,7 +483,8 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'medium',
 				inputs: {
-					requirements: 'Build a marketplace with sellers, buyers, products, orders, and payment processing',
+					requirements:
+						'Build a marketplace with sellers, buyers, products, orders, and payment processing',
 				},
 				createdAt: new Date(),
 				progress: 0,

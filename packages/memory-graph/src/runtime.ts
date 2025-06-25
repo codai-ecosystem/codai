@@ -41,9 +41,11 @@ export class AgentMemoryRuntime {
 	 */
 	private logChange(change: any): void {
 		// We could persist this to a log file or send to telemetry
-		console.log(`[MemoryGraph Change] ${change.type}`,
+		console.log(
+			`[MemoryGraph Change] ${change.type}`,
 			change.node?.type || change.relationship?.type || '',
-			change.node?.name || '');
+			change.node?.name || ''
+		);
 	}
 
 	/**
@@ -52,7 +54,7 @@ export class AgentMemoryRuntime {
 	recordConversation(entry: Omit<ConversationEntry, 'timestamp'>): string {
 		const fullEntry = {
 			...entry,
-			timestamp: new Date()
+			timestamp: new Date(),
 		};
 
 		this.conversationHistory.push(fullEntry);
@@ -68,7 +70,7 @@ export class AgentMemoryRuntime {
 				// Add the message to the existing conversation
 				this.engine.updateNode(this.currentConversationNodeId, {
 					messages: [...conversationNode.messages, fullEntry],
-					updatedAt: new Date()
+					updatedAt: new Date(),
 				});
 			}
 		}
@@ -88,12 +90,15 @@ export class AgentMemoryRuntime {
 			.map(msg => msg.content)
 			.join(' ');
 
-		const summary = userMessages.length > 50
-			? `${userMessages.substring(0, 47)}...`
-			: userMessages || 'New conversation';
+		const summary =
+			userMessages.length > 50
+				? `${userMessages.substring(0, 47)}...`
+				: userMessages || 'New conversation';
 
 		// Create the conversation node
-		const conversationNode = GraphBuilders.conversation(`Conversation: ${new Date().toLocaleString()}`)
+		const conversationNode = GraphBuilders.conversation(
+			`Conversation: ${new Date().toLocaleString()}`
+		)
 			.withMessages(recentMessages)
 			.withSummary(summary)
 			.addToGraph(this.engine);
@@ -141,11 +146,9 @@ export class AgentMemoryRuntime {
 			.addToGraph(this.engine);
 
 		if (relatedIntentId) {
-			GraphBuilders.relationship(
-				relatedIntentId,
-				featureNode.id,
-				'implements'
-			).addToGraph(this.engine);
+			GraphBuilders.relationship(relatedIntentId, featureNode.id, 'implements').addToGraph(
+				this.engine
+			);
 		}
 
 		return featureNode;
@@ -172,11 +175,9 @@ export class AgentMemoryRuntime {
 		const screenNode = builder.addToGraph(this.engine);
 
 		if (relatedFeatureId) {
-			GraphBuilders.relationship(
-				screenNode.id,
-				relatedFeatureId,
-				'implements'
-			).addToGraph(this.engine);
+			GraphBuilders.relationship(screenNode.id, relatedFeatureId, 'implements').addToGraph(
+				this.engine
+			);
 		}
 
 		return screenNode;
@@ -198,11 +199,9 @@ export class AgentMemoryRuntime {
 			.addToGraph(this.engine);
 
 		if (relatedNodeId) {
-			GraphBuilders.relationship(
-				logicNode.id,
-				relatedNodeId,
-				relationshipType
-			).addToGraph(this.engine);
+			GraphBuilders.relationship(logicNode.id, relatedNodeId, relationshipType).addToGraph(
+				this.engine
+			);
 		}
 
 		return logicNode;
@@ -225,11 +224,7 @@ export class AgentMemoryRuntime {
 			.addToGraph(this.engine);
 
 		if (relatedNodeId) {
-			GraphBuilders.relationship(
-				dataNode.id,
-				relatedNodeId,
-				'relates_to'
-			).addToGraph(this.engine);
+			GraphBuilders.relationship(dataNode.id, relatedNodeId, 'relates_to').addToGraph(this.engine);
 		}
 
 		return dataNode;
@@ -252,11 +247,7 @@ export class AgentMemoryRuntime {
 			.addToGraph(this.engine);
 
 		if (relatedNodeId) {
-			GraphBuilders.relationship(
-				apiNode.id,
-				relatedNodeId,
-				'implements'
-			).addToGraph(this.engine);
+			GraphBuilders.relationship(apiNode.id, relatedNodeId, 'implements').addToGraph(this.engine);
 		}
 
 		return apiNode;

@@ -3,12 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	MutableDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { $, append, clearNode } from '../../../../base/browser/dom.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
-import { ExtensionIdentifier, IExtensionManifest } from '../../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionIdentifier,
+	IExtensionManifest,
+} from '../../../../platform/extensions/common/extensions.js';
 import { Orientation, Sizing, SplitView } from '../../../../base/browser/ui/splitview/splitview.js';
-import { IExtensionFeatureDescriptor, Extensions, IExtensionFeaturesRegistry, IExtensionFeatureRenderer, IExtensionFeaturesManagementService, IExtensionFeatureTableRenderer, IExtensionFeatureMarkdownRenderer, ITableData, IRenderedData, IExtensionFeatureMarkdownAndTableRenderer } from '../../../services/extensionManagement/common/extensionFeatures.js';
+import {
+	IExtensionFeatureDescriptor,
+	Extensions,
+	IExtensionFeaturesRegistry,
+	IExtensionFeatureRenderer,
+	IExtensionFeaturesManagementService,
+	IExtensionFeatureTableRenderer,
+	IExtensionFeatureMarkdownRenderer,
+	ITableData,
+	IRenderedData,
+	IExtensionFeatureMarkdownAndTableRenderer,
+} from '../../../services/extensionManagement/common/extensionFeatures.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { localize } from '../../../../nls.js';
@@ -16,7 +36,10 @@ import { WorkbenchList } from '../../../../platform/list/browser/listService.js'
 import { getExtensionId } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';
 import { IListRenderer, IListVirtualDelegate } from '../../../../base/browser/ui/list/list.js';
 import { Button } from '../../../../base/browser/ui/button/button.js';
-import { defaultButtonStyles, defaultKeybindingLabelStyles } from '../../../../platform/theme/browser/defaultStyles.js';
+import {
+	defaultButtonStyles,
+	defaultKeybindingLabelStyles,
+} from '../../../../platform/theme/browser/defaultStyles.js';
 import { renderMarkdown } from '../../../../base/browser/markdownRenderer.js';
 import { getErrorMessage, onUnexpectedError } from '../../../../base/common/errors.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
@@ -30,14 +53,23 @@ import { errorIcon, infoIcon, warningIcon } from './extensionsIcons.js';
 import { SeverityIcon } from '../../../../base/browser/ui/severityIcon/severityIcon.js';
 import { KeybindingLabel } from '../../../../base/browser/ui/keybindingLabel/keybindingLabel.js';
 import { OS } from '../../../../base/common/platform.js';
-import { IMarkdownString, MarkdownString, isMarkdownString } from '../../../../base/common/htmlContent.js';
+import {
+	IMarkdownString,
+	MarkdownString,
+	isMarkdownString,
+} from '../../../../base/common/htmlContent.js';
 import { Color } from '../../../../base/common/color.js';
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { SyncDescriptor } from '../../../../platform/instantiation/common/descriptors.js';
 import { ResolvedKeybinding } from '../../../../base/common/keybindings.js';
 import { asCssVariable } from '../../../../platform/theme/common/colorUtils.js';
-import { foreground, chartAxis, chartGuide, chartLine } from '../../../../platform/theme/common/colorRegistry.js';
+import {
+	foreground,
+	chartAxis,
+	chartGuide,
+	chartLine,
+} from '../../../../platform/theme/common/colorRegistry.js';
 import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 
 interface IExtensionFeatureElementRenderer extends IExtensionFeatureRenderer {
@@ -46,7 +78,6 @@ interface IExtensionFeatureElementRenderer extends IExtensionFeatureRenderer {
 }
 
 class RuntimeStatusMarkdownRenderer extends Disposable implements IExtensionFeatureElementRenderer {
-
 	static readonly ID = 'runtimeStatus';
 	readonly type = 'element';
 
@@ -54,14 +85,19 @@ class RuntimeStatusMarkdownRenderer extends Disposable implements IExtensionFeat
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IExtensionFeaturesManagementService private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IExtensionFeaturesManagementService
+		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService
 	) {
 		super();
 	}
 
 	shouldRender(manifest: IExtensionManifest): boolean {
 		const extensionId = new ExtensionIdentifier(getExtensionId(manifest.publisher, manifest.name));
-		if (!this.extensionService.extensions.some(e => ExtensionIdentifier.equals(e.identifier, extensionId))) {
+		if (
+			!this.extensionService.extensions.some(e =>
+				ExtensionIdentifier.equals(e.identifier, extensionId)
+			)
+		) {
 			return false;
 		}
 		return !!manifest.main || !!manifest.browser;
@@ -71,16 +107,22 @@ class RuntimeStatusMarkdownRenderer extends Disposable implements IExtensionFeat
 		const disposables = new DisposableStore();
 		const extensionId = new ExtensionIdentifier(getExtensionId(manifest.publisher, manifest.name));
 		const emitter = disposables.add(new Emitter<HTMLElement>());
-		disposables.add(this.extensionService.onDidChangeExtensionsStatus(e => {
-			if (e.some(extension => ExtensionIdentifier.equals(extension, extensionId))) {
-				emitter.fire(this.createElement(manifest, disposables));
-			}
-		}));
-		disposables.add(this.extensionFeaturesManagementService.onDidChangeAccessData(e => emitter.fire(this.createElement(manifest, disposables))));
+		disposables.add(
+			this.extensionService.onDidChangeExtensionsStatus(e => {
+				if (e.some(extension => ExtensionIdentifier.equals(extension, extensionId))) {
+					emitter.fire(this.createElement(manifest, disposables));
+				}
+			})
+		);
+		disposables.add(
+			this.extensionFeaturesManagementService.onDidChangeAccessData(e =>
+				emitter.fire(this.createElement(manifest, disposables))
+			)
+		);
 		return {
 			onDidChange: emitter.event,
 			data: this.createElement(manifest, disposables),
-			dispose: () => disposables.dispose()
+			dispose: () => disposables.dispose(),
 		};
 	}
 
@@ -88,30 +130,56 @@ class RuntimeStatusMarkdownRenderer extends Disposable implements IExtensionFeat
 		const container = $('.runtime-status');
 		const extensionId = new ExtensionIdentifier(getExtensionId(manifest.publisher, manifest.name));
 		const status = this.extensionService.getExtensionsStatus()[extensionId.value];
-		if (this.extensionService.extensions.some(extension => ExtensionIdentifier.equals(extension.identifier, extensionId))) {
+		if (
+			this.extensionService.extensions.some(extension =>
+				ExtensionIdentifier.equals(extension.identifier, extensionId)
+			)
+		) {
 			const data = new MarkdownString();
-			data.appendMarkdown(`### ${localize('activation', "Activation")}\n\n`);
+			data.appendMarkdown(`### ${localize('activation', 'Activation')}\n\n`);
 			if (status.activationTimes) {
 				if (status.activationTimes.activationReason.startup) {
-					data.appendMarkdown(`Activated on Startup: \`${status.activationTimes.activateCallTime}ms\``);
+					data.appendMarkdown(
+						`Activated on Startup: \`${status.activationTimes.activateCallTime}ms\``
+					);
 				} else {
-					data.appendMarkdown(`Activated by \`${status.activationTimes.activationReason.activationEvent}\` event: \`${status.activationTimes.activateCallTime}ms\``);
+					data.appendMarkdown(
+						`Activated by \`${status.activationTimes.activationReason.activationEvent}\` event: \`${status.activationTimes.activateCallTime}ms\``
+					);
 				}
 			} else {
 				data.appendMarkdown('Not yet activated');
 			}
 			this.renderMarkdown(data, container, disposables);
 		}
-		const features = Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry).getExtensionFeatures();
+		const features = Registry.as<IExtensionFeaturesRegistry>(
+			Extensions.ExtensionFeaturesRegistry
+		).getExtensionFeatures();
 		for (const feature of features) {
-			const accessData = this.extensionFeaturesManagementService.getAccessData(extensionId, feature.id);
+			const accessData = this.extensionFeaturesManagementService.getAccessData(
+				extensionId,
+				feature.id
+			);
 			if (accessData) {
-				this.renderMarkdown(new MarkdownString(`\n ### ${localize('label', "{0} Usage", feature.label)}\n\n`), container, disposables);
+				this.renderMarkdown(
+					new MarkdownString(`\n ### ${localize('label', '{0} Usage', feature.label)}\n\n`),
+					container,
+					disposables
+				);
 				if (accessData.accessTimes.length) {
-					const description = append(container,
-						$('.feature-chart-description',
+					const description = append(
+						container,
+						$(
+							'.feature-chart-description',
 							undefined,
-							localize('chartDescription', "There were {0} {1} requests from this extension in the last 30 days.", accessData?.accessTimes.length, feature.accessDataLabel ?? feature.label)));
+							localize(
+								'chartDescription',
+								'There were {0} {1} requests from this extension in the last 30 days.',
+								accessData?.accessTimes.length,
+								feature.accessDataLabel ?? feature.label
+							)
+						)
+					);
 					description.style.marginBottom = '8px';
 					this.renderRequestsChart(container, accessData.accessTimes, disposables);
 				}
@@ -133,15 +201,21 @@ class RuntimeStatusMarkdownRenderer extends Disposable implements IExtensionFeat
 		if (status.runtimeErrors.length || status.messages.length) {
 			const data = new MarkdownString();
 			if (status.runtimeErrors.length) {
-				data.appendMarkdown(`\n ### ${localize('uncaught errors', "Uncaught Errors ({0})", status.runtimeErrors.length)}\n`);
+				data.appendMarkdown(
+					`\n ### ${localize('uncaught errors', 'Uncaught Errors ({0})', status.runtimeErrors.length)}\n`
+				);
 				for (const error of status.runtimeErrors) {
 					data.appendMarkdown(`$(${Codicon.error.id})&nbsp;${getErrorMessage(error)}\n\n`);
 				}
 			}
 			if (status.messages.length) {
-				data.appendMarkdown(`\n ### ${localize('messaages', "Messages ({0})", status.messages.length)}\n`);
+				data.appendMarkdown(
+					`\n ### ${localize('messaages', 'Messages ({0})', status.messages.length)}\n`
+				);
 				for (const message of status.messages) {
-					data.appendMarkdown(`$(${(message.type === Severity.Error ? Codicon.error : message.type === Severity.Warning ? Codicon.warning : Codicon.info).id})&nbsp;${message.message}\n\n`);
+					data.appendMarkdown(
+						`$(${(message.type === Severity.Error ? Codicon.error : message.type === Severity.Warning ? Codicon.warning : Codicon.info).id})&nbsp;${message.message}\n\n`
+					);
 				}
 			}
 			if (data.value) {
@@ -151,24 +225,36 @@ class RuntimeStatusMarkdownRenderer extends Disposable implements IExtensionFeat
 		return container;
 	}
 
-	private renderMarkdown(markdown: IMarkdownString, container: HTMLElement, disposables: DisposableStore): void {
+	private renderMarkdown(
+		markdown: IMarkdownString,
+		container: HTMLElement,
+		disposables: DisposableStore
+	): void {
 		const { element, dispose } = renderMarkdown(
 			{
 				value: markdown.value,
 				isTrusted: markdown.isTrusted,
-				supportThemeIcons: true
+				supportThemeIcons: true,
 			},
 			{
 				actionHandler: {
-					callback: (content) => this.openerService.open(content, { allowCommands: !!markdown.isTrusted }).catch(onUnexpectedError),
-					disposables
+					callback: content =>
+						this.openerService
+							.open(content, { allowCommands: !!markdown.isTrusted })
+							.catch(onUnexpectedError),
+					disposables,
 				},
-			});
+			}
+		);
 		disposables.add(toDisposable(dispose));
 		append(container, element);
 	}
 
-	private renderRequestsChart(container: HTMLElement, accessTimes: Date[], disposables: DisposableStore): void {
+	private renderRequestsChart(
+		container: HTMLElement,
+		accessTimes: Date[],
+		disposables: DisposableStore
+	): void {
 		const width = 450;
 		const height = 250;
 		const margin = { top: 0, right: 4, bottom: 20, left: 4 };
@@ -298,7 +384,7 @@ class RuntimeStatusMarkdownRenderer extends Disposable implements IExtensionFeat
 					appearance: {
 						showPointer: true,
 						skipFadeInAnimation: true,
-					}
+					},
 				});
 			} else {
 				hoverDisposable.value = undefined;
@@ -316,22 +402,20 @@ class RuntimeStatusMarkdownRenderer extends Disposable implements IExtensionFeat
 	}
 }
 
-
 interface ILayoutParticipant {
 	layout(height?: number, width?: number): void;
 }
 
 const runtimeStatusFeature = {
 	id: RuntimeStatusMarkdownRenderer.ID,
-	label: localize('runtime', "Runtime Status"),
+	label: localize('runtime', 'Runtime Status'),
 	access: {
-		canToggle: false
+		canToggle: false,
 	},
 	renderer: new SyncDescriptor(RuntimeStatusMarkdownRenderer),
 };
 
 export class ExtensionFeaturesTab extends Themable {
-
 	readonly domNode: HTMLElement;
 
 	private readonly featureView = this._register(new MutableDisposable<ExtensionFeatureView>());
@@ -360,19 +444,24 @@ export class ExtensionFeaturesTab extends Themable {
 	private create(): void {
 		const features = this.getFeatures();
 		if (features.length === 0) {
-			append($('.no-features'), this.domNode).textContent = localize('noFeatures', "No features contributed.");
+			append($('.no-features'), this.domNode).textContent = localize(
+				'noFeatures',
+				'No features contributed.'
+			);
 			return;
 		}
 
-		const splitView = this._register(new SplitView<number>(this.domNode, {
-			orientation: Orientation.HORIZONTAL,
-			proportionalLayout: true
-		}));
+		const splitView = this._register(
+			new SplitView<number>(this.domNode, {
+				orientation: Orientation.HORIZONTAL,
+				proportionalLayout: true,
+			})
+		);
 		this.layoutParticipants.push({
 			layout: (height: number, width: number) => {
 				splitView.el.style.height = `${height - 14}px`;
 				splitView.layout(width);
-			}
+			},
 		});
 
 		const featuresListContainer = $('.features-list-container');
@@ -380,66 +469,91 @@ export class ExtensionFeaturesTab extends Themable {
 		list.splice(0, list.length, features);
 
 		const featureViewContainer = $('.feature-view-container');
-		this._register(list.onDidChangeSelection(e => {
-			const feature = e.elements[0];
-			if (feature) {
-				this.showFeatureView(feature, featureViewContainer);
-			}
-		}));
+		this._register(
+			list.onDidChangeSelection(e => {
+				const feature = e.elements[0];
+				if (feature) {
+					this.showFeatureView(feature, featureViewContainer);
+				}
+			})
+		);
 
 		const index = this.feature ? features.findIndex(f => f.id === this.feature) : 0;
 		list.setSelection([index === -1 ? 0 : index]);
 
-		splitView.addView({
-			onDidChange: Event.None,
-			element: featuresListContainer,
-			minimumSize: 100,
-			maximumSize: Number.POSITIVE_INFINITY,
-			layout: (width, _, height) => {
-				featuresListContainer.style.width = `${width}px`;
-				list.layout(height, width);
-			}
-		}, 200, undefined, true);
+		splitView.addView(
+			{
+				onDidChange: Event.None,
+				element: featuresListContainer,
+				minimumSize: 100,
+				maximumSize: Number.POSITIVE_INFINITY,
+				layout: (width, _, height) => {
+					featuresListContainer.style.width = `${width}px`;
+					list.layout(height, width);
+				},
+			},
+			200,
+			undefined,
+			true
+		);
 
-		splitView.addView({
-			onDidChange: Event.None,
-			element: featureViewContainer,
-			minimumSize: 500,
-			maximumSize: Number.POSITIVE_INFINITY,
-			layout: (width, _, height) => {
-				featureViewContainer.style.width = `${width}px`;
-				this.featureViewDimension = { height, width };
-				this.layoutFeatureView();
-			}
-		}, Sizing.Distribute, undefined, true);
+		splitView.addView(
+			{
+				onDidChange: Event.None,
+				element: featureViewContainer,
+				minimumSize: 500,
+				maximumSize: Number.POSITIVE_INFINITY,
+				layout: (width, _, height) => {
+					featureViewContainer.style.width = `${width}px`;
+					this.featureViewDimension = { height, width };
+					this.layoutFeatureView();
+				},
+			},
+			Sizing.Distribute,
+			undefined,
+			true
+		);
 
 		splitView.style({
-			separatorBorder: this.theme.getColor(PANEL_SECTION_BORDER)!
+			separatorBorder: this.theme.getColor(PANEL_SECTION_BORDER)!,
 		});
 	}
 
 	private createFeaturesList(container: HTMLElement): WorkbenchList<IExtensionFeatureDescriptor> {
-		const renderer = this.instantiationService.createInstance(ExtensionFeatureItemRenderer, this.extensionId);
+		const renderer = this.instantiationService.createInstance(
+			ExtensionFeatureItemRenderer,
+			this.extensionId
+		);
 		const delegate = new ExtensionFeatureItemDelegate();
-		const list = this.instantiationService.createInstance(WorkbenchList, 'ExtensionFeaturesList', append(container, $('.features-list-wrapper')), delegate, [renderer], {
-			multipleSelectionSupport: false,
-			setRowLineHeight: false,
-			horizontalScrolling: false,
-			accessibilityProvider: {
-				getAriaLabel(extensionFeature: IExtensionFeatureDescriptor | null): string {
-					return extensionFeature?.label ?? '';
+		const list = this.instantiationService.createInstance(
+			WorkbenchList,
+			'ExtensionFeaturesList',
+			append(container, $('.features-list-wrapper')),
+			delegate,
+			[renderer],
+			{
+				multipleSelectionSupport: false,
+				setRowLineHeight: false,
+				horizontalScrolling: false,
+				accessibilityProvider: {
+					getAriaLabel(extensionFeature: IExtensionFeatureDescriptor | null): string {
+						return extensionFeature?.label ?? '';
+					},
+					getWidgetAriaLabel(): string {
+						return localize('extension features list', 'Extension Features');
+					},
 				},
-				getWidgetAriaLabel(): string {
-					return localize('extension features list', "Extension Features");
-				}
-			},
-			openOnSingleClick: true
-		}) as WorkbenchList<IExtensionFeatureDescriptor>;
+				openOnSingleClick: true,
+			}
+		) as WorkbenchList<IExtensionFeatureDescriptor>;
 		return list;
 	}
 
 	private layoutFeatureView(): void {
-		this.featureView.value?.layout(this.featureViewDimension?.height, this.featureViewDimension?.width);
+		this.featureView.value?.layout(
+			this.featureViewDimension?.height,
+			this.featureViewDimension?.width
+		);
 	}
 
 	private showFeatureView(feature: IExtensionFeatureDescriptor, container: HTMLElement): void {
@@ -447,19 +561,26 @@ export class ExtensionFeaturesTab extends Themable {
 			return;
 		}
 		clearNode(container);
-		this.featureView.value = this.instantiationService.createInstance(ExtensionFeatureView, this.extensionId, this.manifest, feature);
+		this.featureView.value = this.instantiationService.createInstance(
+			ExtensionFeatureView,
+			this.extensionId,
+			this.manifest,
+			feature
+		);
 		container.appendChild(this.featureView.value.domNode);
 		this.layoutFeatureView();
 	}
 
 	private getFeatures(): IExtensionFeatureDescriptor[] {
 		const features = Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry)
-			.getExtensionFeatures().filter(feature => {
+			.getExtensionFeatures()
+			.filter(feature => {
 				const renderer = this.getRenderer(feature);
 				const shouldRender = renderer?.shouldRender(this.manifest);
 				renderer?.dispose();
 				return shouldRender;
-			}).sort((a, b) => a.label.localeCompare(b.label));
+			})
+			.sort((a, b) => a.label.localeCompare(b.label));
 
 		const renderer = this.getRenderer(runtimeStatusFeature);
 		if (renderer?.shouldRender(this.manifest)) {
@@ -470,9 +591,10 @@ export class ExtensionFeaturesTab extends Themable {
 	}
 
 	private getRenderer(feature: IExtensionFeatureDescriptor): IExtensionFeatureRenderer | undefined {
-		return feature.renderer ? this.instantiationService.createInstance(feature.renderer) : undefined;
+		return feature.renderer
+			? this.instantiationService.createInstance(feature.renderer)
+			: undefined;
 	}
-
 }
 
 interface IExtensionFeatureItemTemplateData {
@@ -483,42 +605,63 @@ interface IExtensionFeatureItemTemplateData {
 }
 
 class ExtensionFeatureItemDelegate implements IListVirtualDelegate<IExtensionFeatureDescriptor> {
-	getHeight() { return 22; }
-	getTemplateId() { return 'extensionFeatureDescriptor'; }
+	getHeight() {
+		return 22;
+	}
+	getTemplateId() {
+		return 'extensionFeatureDescriptor';
+	}
 }
 
-class ExtensionFeatureItemRenderer implements IListRenderer<IExtensionFeatureDescriptor, IExtensionFeatureItemTemplateData> {
-
+class ExtensionFeatureItemRenderer
+	implements IListRenderer<IExtensionFeatureDescriptor, IExtensionFeatureItemTemplateData>
+{
 	readonly templateId = 'extensionFeatureDescriptor';
 
 	constructor(
 		private readonly extensionId: ExtensionIdentifier,
-		@IExtensionFeaturesManagementService private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService
-	) { }
+		@IExtensionFeaturesManagementService
+		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService
+	) {}
 
 	renderTemplate(container: HTMLElement): IExtensionFeatureItemTemplateData {
 		container.classList.add('extension-feature-list-item');
 		const label = append(container, $('.extension-feature-label'));
 		const disabledElement = append(container, $('.extension-feature-disabled-label'));
-		disabledElement.textContent = localize('revoked', "No Access");
+		disabledElement.textContent = localize('revoked', 'No Access');
 		const statusElement = append(container, $('.extension-feature-status'));
 		return { label, disabledElement, statusElement, disposables: new DisposableStore() };
 	}
 
-	renderElement(element: IExtensionFeatureDescriptor, index: number, templateData: IExtensionFeatureItemTemplateData) {
+	renderElement(
+		element: IExtensionFeatureDescriptor,
+		index: number,
+		templateData: IExtensionFeatureItemTemplateData
+	) {
 		templateData.disposables.clear();
 		templateData.label.textContent = element.label;
-		templateData.disabledElement.style.display = element.id === runtimeStatusFeature.id || this.extensionFeaturesManagementService.isEnabled(this.extensionId, element.id) ? 'none' : 'inherit';
+		templateData.disabledElement.style.display =
+			element.id === runtimeStatusFeature.id ||
+			this.extensionFeaturesManagementService.isEnabled(this.extensionId, element.id)
+				? 'none'
+				: 'inherit';
 
-		templateData.disposables.add(this.extensionFeaturesManagementService.onDidChangeEnablement(({ extension, featureId, enabled }) => {
-			if (ExtensionIdentifier.equals(extension, this.extensionId) && featureId === element.id) {
-				templateData.disabledElement.style.display = enabled ? 'none' : 'inherit';
-			}
-		}));
+		templateData.disposables.add(
+			this.extensionFeaturesManagementService.onDidChangeEnablement(
+				({ extension, featureId, enabled }) => {
+					if (ExtensionIdentifier.equals(extension, this.extensionId) && featureId === element.id) {
+						templateData.disabledElement.style.display = enabled ? 'none' : 'inherit';
+					}
+				}
+			)
+		);
 
 		const statusElementClassName = templateData.statusElement.className;
 		const updateStatus = () => {
-			const accessData = this.extensionFeaturesManagementService.getAccessData(this.extensionId, element.id);
+			const accessData = this.extensionFeaturesManagementService.getAccessData(
+				this.extensionId,
+				element.id
+			);
 			if (accessData?.current?.status) {
 				templateData.statusElement.style.display = 'inherit';
 				templateData.statusElement.className = `${statusElementClassName} ${SeverityIcon.className(accessData.current.status.severity)}`;
@@ -527,25 +670,29 @@ class ExtensionFeatureItemRenderer implements IListRenderer<IExtensionFeatureDes
 			}
 		};
 		updateStatus();
-		templateData.disposables.add(this.extensionFeaturesManagementService.onDidChangeAccessData(({ extension, featureId }) => {
-			if (ExtensionIdentifier.equals(extension, this.extensionId) && featureId === element.id) {
-				updateStatus();
-			}
-		}));
+		templateData.disposables.add(
+			this.extensionFeaturesManagementService.onDidChangeAccessData(({ extension, featureId }) => {
+				if (ExtensionIdentifier.equals(extension, this.extensionId) && featureId === element.id) {
+					updateStatus();
+				}
+			})
+		);
 	}
 
-	disposeElement(element: IExtensionFeatureDescriptor, index: number, templateData: IExtensionFeatureItemTemplateData): void {
+	disposeElement(
+		element: IExtensionFeatureDescriptor,
+		index: number,
+		templateData: IExtensionFeatureItemTemplateData
+	): void {
 		templateData.disposables.dispose();
 	}
 
 	disposeTemplate(templateData: IExtensionFeatureItemTemplateData) {
 		templateData.disposables.dispose();
 	}
-
 }
 
 class ExtensionFeatureView extends Disposable {
-
 	readonly domNode: HTMLElement;
 	private readonly layoutParticipants: ILayoutParticipant[] = [];
 
@@ -555,8 +702,9 @@ class ExtensionFeatureView extends Disposable {
 		readonly feature: IExtensionFeatureDescriptor,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IExtensionFeaturesManagementService private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
-		@IDialogService private readonly dialogService: IDialogService,
+		@IExtensionFeaturesManagementService
+		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IDialogService private readonly dialogService: IDialogService
 	) {
 		super();
 
@@ -573,26 +721,54 @@ class ExtensionFeatureView extends Disposable {
 			const actionsContainer = append(header, $('.feature-actions'));
 			const button = new Button(actionsContainer, defaultButtonStyles);
 			this.updateButtonLabel(button);
-			this._register(this.extensionFeaturesManagementService.onDidChangeEnablement(({ extension, featureId }) => {
-				if (ExtensionIdentifier.equals(extension, this.extensionId) && featureId === this.feature.id) {
-					this.updateButtonLabel(button);
-				}
-			}));
-			this._register(button.onDidClick(async () => {
-				const enabled = this.extensionFeaturesManagementService.isEnabled(this.extensionId, this.feature.id);
-				const confirmationResult = await this.dialogService.confirm({
-					title: localize('accessExtensionFeature', "Enable '{0}' Feature", this.feature.label),
-					message: enabled
-						? localize('disableAccessExtensionFeatureMessage', "Would you like to revoke '{0}' extension to access '{1}' feature?", this.manifest.displayName ?? this.extensionId.value, this.feature.label)
-						: localize('enableAccessExtensionFeatureMessage', "Would you like to allow '{0}' extension to access '{1}' feature?", this.manifest.displayName ?? this.extensionId.value, this.feature.label),
-					custom: true,
-					primaryButton: enabled ? localize('revoke', "Revoke Access") : localize('grant', "Allow Access"),
-					cancelButton: localize('cancel', "Cancel"),
-				});
-				if (confirmationResult.confirmed) {
-					this.extensionFeaturesManagementService.setEnablement(this.extensionId, this.feature.id, !enabled);
-				}
-			}));
+			this._register(
+				this.extensionFeaturesManagementService.onDidChangeEnablement(
+					({ extension, featureId }) => {
+						if (
+							ExtensionIdentifier.equals(extension, this.extensionId) &&
+							featureId === this.feature.id
+						) {
+							this.updateButtonLabel(button);
+						}
+					}
+				)
+			);
+			this._register(
+				button.onDidClick(async () => {
+					const enabled = this.extensionFeaturesManagementService.isEnabled(
+						this.extensionId,
+						this.feature.id
+					);
+					const confirmationResult = await this.dialogService.confirm({
+						title: localize('accessExtensionFeature', "Enable '{0}' Feature", this.feature.label),
+						message: enabled
+							? localize(
+									'disableAccessExtensionFeatureMessage',
+									"Would you like to revoke '{0}' extension to access '{1}' feature?",
+									this.manifest.displayName ?? this.extensionId.value,
+									this.feature.label
+								)
+							: localize(
+									'enableAccessExtensionFeatureMessage',
+									"Would you like to allow '{0}' extension to access '{1}' feature?",
+									this.manifest.displayName ?? this.extensionId.value,
+									this.feature.label
+								),
+						custom: true,
+						primaryButton: enabled
+							? localize('revoke', 'Revoke Access')
+							: localize('grant', 'Allow Access'),
+						cancelButton: localize('cancel', 'Cancel'),
+					});
+					if (confirmationResult.confirmed) {
+						this.extensionFeaturesManagementService.setEnablement(
+							this.extensionId,
+							this.feature.id,
+							!enabled
+						);
+					}
+				})
+			);
 		}
 
 		const body = append(content, $('.feature-body'));
@@ -608,22 +784,39 @@ class ExtensionFeatureView extends Disposable {
 			description.textContent = this.feature.description;
 		}
 
-		const accessData = this.extensionFeaturesManagementService.getAccessData(this.extensionId, this.feature.id);
+		const accessData = this.extensionFeaturesManagementService.getAccessData(
+			this.extensionId,
+			this.feature.id
+		);
 		if (accessData?.current?.status) {
-			append(bodyContent, $('.feature-status', undefined,
-				$(`span${ThemeIcon.asCSSSelector(accessData.current.status.severity === Severity.Error ? errorIcon : accessData.current.status.severity === Severity.Warning ? warningIcon : infoIcon)}`, undefined),
-				$('span', undefined, accessData.current.status.message)));
+			append(
+				bodyContent,
+				$(
+					'.feature-status',
+					undefined,
+					$(
+						`span${ThemeIcon.asCSSSelector(accessData.current.status.severity === Severity.Error ? errorIcon : accessData.current.status.severity === Severity.Warning ? warningIcon : infoIcon)}`,
+						undefined
+					),
+					$('span', undefined, accessData.current.status.message)
+				)
+			);
 		}
 
 		const featureContentElement = append(bodyContent, $('.feature-content'));
 		if (this.feature.renderer) {
-			const renderer = this.instantiationService.createInstance<IExtensionFeatureRenderer>(this.feature.renderer);
+			const renderer = this.instantiationService.createInstance<IExtensionFeatureRenderer>(
+				this.feature.renderer
+			);
 			if (renderer.type === 'table') {
 				this.renderTableData(featureContentElement, <IExtensionFeatureTableRenderer>renderer);
 			} else if (renderer.type === 'markdown') {
 				this.renderMarkdownData(featureContentElement, <IExtensionFeatureMarkdownRenderer>renderer);
 			} else if (renderer.type === 'markdown+table') {
-				this.renderMarkdownAndTableData(featureContentElement, <IExtensionFeatureMarkdownAndTableRenderer>renderer);
+				this.renderMarkdownAndTableData(
+					featureContentElement,
+					<IExtensionFeatureMarkdownAndTableRenderer>renderer
+				);
 			} else if (renderer.type === 'element') {
 				this.renderElementData(featureContentElement, <IExtensionFeatureElementRenderer>renderer);
 			}
@@ -631,78 +824,116 @@ class ExtensionFeatureView extends Disposable {
 	}
 
 	private updateButtonLabel(button: Button): void {
-		button.label = this.extensionFeaturesManagementService.isEnabled(this.extensionId, this.feature.id) ? localize('revoke', "Revoke Access") : localize('enable', "Allow Access");
+		button.label = this.extensionFeaturesManagementService.isEnabled(
+			this.extensionId,
+			this.feature.id
+		)
+			? localize('revoke', 'Revoke Access')
+			: localize('enable', 'Allow Access');
 	}
 
 	private renderTableData(container: HTMLElement, renderer: IExtensionFeatureTableRenderer): void {
 		const tableData = this._register(renderer.render(this.manifest));
 		const tableDisposable = this._register(new MutableDisposable());
 		if (tableData.onDidChange) {
-			this._register(tableData.onDidChange(data => {
-				clearNode(container);
-				tableDisposable.value = this.renderTable(data, container);
-			}));
+			this._register(
+				tableData.onDidChange(data => {
+					clearNode(container);
+					tableDisposable.value = this.renderTable(data, container);
+				})
+			);
 		}
 		tableDisposable.value = this.renderTable(tableData.data, container);
 	}
 
 	private renderTable(tableData: ITableData, container: HTMLElement): IDisposable {
 		const disposables = new DisposableStore();
-		append(container,
-			$('table', undefined,
-				$('tr', undefined,
-					...tableData.headers.map(header => $('th', undefined, header))
-				),
-				...tableData.rows
-					.map(row => {
-						return $('tr', undefined,
-							...row.map(rowData => {
-								if (typeof rowData === 'string') {
-									return $('td', undefined, $('p', undefined, rowData));
-								}
-								const data = Array.isArray(rowData) ? rowData : [rowData];
-								return $('td', undefined, ...data.map(item => {
-									const result: Node[] = [];
-									if (isMarkdownString(rowData)) {
-										const element = $('', undefined);
-										this.renderMarkdown(rowData, element);
-										result.push(element);
-									} else if (item instanceof ResolvedKeybinding) {
-										const element = $('');
-										const kbl = disposables.add(new KeybindingLabel(element, OS, defaultKeybindingLabelStyles));
-										kbl.set(item);
-										result.push(element);
-									} else if (item instanceof Color) {
-										result.push($('span', { class: 'colorBox', style: 'background-color: ' + Color.Format.CSS.format(item) }, ''));
-										result.push($('code', undefined, Color.Format.CSS.formatHex(item)));
-									}
-									return result;
-								}).flat());
-							})
-						);
-					})));
+		append(
+			container,
+			$(
+				'table',
+				undefined,
+				$('tr', undefined, ...tableData.headers.map(header => $('th', undefined, header))),
+				...tableData.rows.map(row => {
+					return $(
+						'tr',
+						undefined,
+						...row.map(rowData => {
+							if (typeof rowData === 'string') {
+								return $('td', undefined, $('p', undefined, rowData));
+							}
+							const data = Array.isArray(rowData) ? rowData : [rowData];
+							return $(
+								'td',
+								undefined,
+								...data
+									.map(item => {
+										const result: Node[] = [];
+										if (isMarkdownString(rowData)) {
+											const element = $('', undefined);
+											this.renderMarkdown(rowData, element);
+											result.push(element);
+										} else if (item instanceof ResolvedKeybinding) {
+											const element = $('');
+											const kbl = disposables.add(
+												new KeybindingLabel(element, OS, defaultKeybindingLabelStyles)
+											);
+											kbl.set(item);
+											result.push(element);
+										} else if (item instanceof Color) {
+											result.push(
+												$(
+													'span',
+													{
+														class: 'colorBox',
+														style: 'background-color: ' + Color.Format.CSS.format(item),
+													},
+													''
+												)
+											);
+											result.push($('code', undefined, Color.Format.CSS.formatHex(item)));
+										}
+										return result;
+									})
+									.flat()
+							);
+						})
+					);
+				})
+			)
+		);
 		return disposables;
 	}
 
-	private renderMarkdownAndTableData(container: HTMLElement, renderer: IExtensionFeatureMarkdownAndTableRenderer): void {
+	private renderMarkdownAndTableData(
+		container: HTMLElement,
+		renderer: IExtensionFeatureMarkdownAndTableRenderer
+	): void {
 		const markdownAndTableData = this._register(renderer.render(this.manifest));
 		if (markdownAndTableData.onDidChange) {
-			this._register(markdownAndTableData.onDidChange(data => {
-				clearNode(container);
-				this.renderMarkdownAndTable(data, container);
-			}));
+			this._register(
+				markdownAndTableData.onDidChange(data => {
+					clearNode(container);
+					this.renderMarkdownAndTable(data, container);
+				})
+			);
 		}
 		this.renderMarkdownAndTable(markdownAndTableData.data, container);
 	}
 
-	private renderMarkdownData(container: HTMLElement, renderer: IExtensionFeatureMarkdownRenderer): void {
+	private renderMarkdownData(
+		container: HTMLElement,
+		renderer: IExtensionFeatureMarkdownRenderer
+	): void {
 		container.classList.add('markdown');
 		const markdownData = this._register(renderer.render(this.manifest));
 		if (markdownData.onDidChange) {
-			this._register(markdownData.onDidChange(data => {
-				clearNode(container);
-				this.renderMarkdown(data, container);
-			}));
+			this._register(
+				markdownData.onDidChange(data => {
+					clearNode(container);
+					this.renderMarkdown(data, container);
+				})
+			);
 		}
 		this.renderMarkdown(markdownData.data, container);
 	}
@@ -712,19 +943,26 @@ class ExtensionFeatureView extends Disposable {
 			{
 				value: markdown.value,
 				isTrusted: markdown.isTrusted,
-				supportThemeIcons: true
+				supportThemeIcons: true,
 			},
 			{
 				actionHandler: {
-					callback: (content) => this.openerService.open(content, { allowCommands: !!markdown.isTrusted }).catch(onUnexpectedError),
-					disposables: this._store
+					callback: content =>
+						this.openerService
+							.open(content, { allowCommands: !!markdown.isTrusted })
+							.catch(onUnexpectedError),
+					disposables: this._store,
 				},
-			});
+			}
+		);
 		this._register(toDisposable(dispose));
 		append(container, element);
 	}
 
-	private renderMarkdownAndTable(data: Array<IMarkdownString | ITableData>, container: HTMLElement): void {
+	private renderMarkdownAndTable(
+		data: Array<IMarkdownString | ITableData>,
+		container: HTMLElement
+	): void {
 		for (const markdownOrTable of data) {
 			if (isMarkdownString(markdownOrTable)) {
 				const element = $('', undefined);
@@ -737,13 +975,18 @@ class ExtensionFeatureView extends Disposable {
 		}
 	}
 
-	private renderElementData(container: HTMLElement, renderer: IExtensionFeatureElementRenderer): void {
+	private renderElementData(
+		container: HTMLElement,
+		renderer: IExtensionFeatureElementRenderer
+	): void {
 		const elementData = renderer.render(this.manifest);
 		if (elementData.onDidChange) {
-			this._register(elementData.onDidChange(data => {
-				clearNode(container);
-				container.appendChild(data);
-			}));
+			this._register(
+				elementData.onDidChange(data => {
+					clearNode(container);
+					container.appendChild(data);
+				})
+			);
 		}
 		container.appendChild(elementData.data);
 	}
@@ -751,5 +994,4 @@ class ExtensionFeatureView extends Disposable {
 	layout(height?: number, width?: number): void {
 		this.layoutParticipants.forEach(p => p.layout(height, width));
 	}
-
 }

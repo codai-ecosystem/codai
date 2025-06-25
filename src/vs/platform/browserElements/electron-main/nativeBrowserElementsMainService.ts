@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BrowserType, IElementData, INativeBrowserElementsService } from '../common/browserElements.js';
+import {
+	BrowserType,
+	IElementData,
+	INativeBrowserElementsService,
+} from '../common/browserElements.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { IRectangle } from '../../window/common/window.js';
 import { BrowserWindow, webContents } from 'electron';
@@ -15,8 +19,15 @@ import { createDecorator } from '../../instantiation/common/instantiation.js';
 import { Disposable } from '../../../base/common/lifecycle.js';
 import { AddFirstParameterToFunctions } from '../../../base/common/types.js';
 
-export const INativeBrowserElementsMainService = createDecorator<INativeBrowserElementsMainService>('browserElementsMainService');
-export interface INativeBrowserElementsMainService extends AddFirstParameterToFunctions<INativeBrowserElementsService, Promise<unknown> /* only methods, not events */, number | undefined /* window ID */> { }
+export const INativeBrowserElementsMainService = createDecorator<INativeBrowserElementsMainService>(
+	'browserElementsMainService'
+);
+export interface INativeBrowserElementsMainService
+	extends AddFirstParameterToFunctions<
+		INativeBrowserElementsService,
+		Promise<unknown> /* only methods, not events */,
+		number | undefined /* window ID */
+	> {}
 
 interface NodeDataResponse {
 	outerHTML: string;
@@ -24,31 +35,46 @@ interface NodeDataResponse {
 	bounds: IRectangle;
 }
 
-export class NativeBrowserElementsMainService extends Disposable implements INativeBrowserElementsMainService {
+export class NativeBrowserElementsMainService
+	extends Disposable
+	implements INativeBrowserElementsMainService
+{
 	_serviceBrand: undefined;
 
 	currentLocalAddress: string | undefined;
 
 	constructor(
 		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-		@IAuxiliaryWindowsMainService private readonly auxiliaryWindowsMainService: IAuxiliaryWindowsMainService,
-
+		@IAuxiliaryWindowsMainService
+		private readonly auxiliaryWindowsMainService: IAuxiliaryWindowsMainService
 	) {
 		super();
 	}
 
-	get windowId(): never { throw new Error('Not implemented in electron-main'); }
+	get windowId(): never {
+		throw new Error('Not implemented in electron-main');
+	}
 
-	async findWebviewTarget(debuggers: any, windowId: number, browserType: BrowserType): Promise<string | undefined> {
+	async findWebviewTarget(
+		debuggers: any,
+		windowId: number,
+		browserType: BrowserType
+	): Promise<string | undefined> {
 		const { targetInfos } = await debuggers.sendCommand('Target.getTargets');
-		let target: typeof targetInfos[number] | undefined = undefined;
+		let target: (typeof targetInfos)[number] | undefined = undefined;
 		const matchingTarget = targetInfos.find((targetInfo: { url: string }) => {
 			try {
 				const url = new URL(targetInfo.url);
 				if (browserType === BrowserType.LiveServer) {
-					return url.searchParams.get('id') && url.searchParams.get('extensionId') === 'ms-vscode.live-server';
+					return (
+						url.searchParams.get('id') &&
+						url.searchParams.get('extensionId') === 'ms-vscode.live-server'
+					);
 				} else if (browserType === BrowserType.SimpleBrowser) {
-					return url.searchParams.get('parentId') === windowId.toString() && url.searchParams.get('extensionId') === 'vscode.simple-browser';
+					return (
+						url.searchParams.get('parentId') === windowId.toString() &&
+						url.searchParams.get('extensionId') === 'vscode.simple-browser'
+					);
 				}
 				return false;
 			} catch (err) {
@@ -70,8 +96,13 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 			target = targetInfos.find((targetInfo: { url: string }) => {
 				try {
 					const url = new URL(targetInfo.url);
-					const isLiveServer = browserType === BrowserType.LiveServer && url.searchParams.get('serverWindowId') === resultId;
-					const isSimpleBrowser = browserType === BrowserType.SimpleBrowser && url.searchParams.get('id') === resultId && url.searchParams.has('vscodeBrowserReqId');
+					const isLiveServer =
+						browserType === BrowserType.LiveServer &&
+						url.searchParams.get('serverWindowId') === resultId;
+					const isSimpleBrowser =
+						browserType === BrowserType.SimpleBrowser &&
+						url.searchParams.get('id') === resultId &&
+						url.searchParams.has('vscodeBrowserReqId');
 					if (isLiveServer || isSimpleBrowser) {
 						this.currentLocalAddress = url.origin;
 						return true;
@@ -91,7 +122,7 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 		target = targetInfos.find((targetInfo: { url: string }) => {
 			try {
 				const url = new URL(targetInfo.url);
-				return (this.currentLocalAddress === url.origin);
+				return this.currentLocalAddress === url.origin;
 			} catch (e) {
 				return false;
 			}
@@ -104,7 +135,11 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 		return target.targetId;
 	}
 
-	async waitForWebviewTargets(debuggers: any, windowId: number, browserType: BrowserType): Promise<any> {
+	async waitForWebviewTargets(
+		debuggers: any,
+		windowId: number,
+		browserType: BrowserType
+	): Promise<any> {
 		const start = Date.now();
 		const timeout = 10000;
 
@@ -122,7 +157,12 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 		return undefined;
 	}
 
-	async startDebugSession(windowId: number | undefined, token: CancellationToken, browserType: BrowserType, cancelAndDetachId?: number): Promise<void> {
+	async startDebugSession(
+		windowId: number | undefined,
+		token: CancellationToken,
+		browserType: BrowserType,
+		cancelAndDetachId?: number
+	): Promise<void> {
 		const window = this.windowById(windowId);
 		if (!window?.win) {
 			return undefined;
@@ -149,7 +189,6 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 				}
 				throw new Error('No target found');
 			}
-
 		} catch (e) {
 			if (debuggers.isAttached()) {
 				debuggers.detach();
@@ -174,20 +213,30 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 
 	async finishOverlay(debuggers: any, sessionId: string | undefined): Promise<void> {
 		if (debuggers.isAttached() && sessionId) {
-			await debuggers.sendCommand('Overlay.setInspectMode', {
-				mode: 'none',
-				highlightConfig: {
-					showInfo: false,
-					showStyles: false
-				}
-			}, sessionId);
+			await debuggers.sendCommand(
+				'Overlay.setInspectMode',
+				{
+					mode: 'none',
+					highlightConfig: {
+						showInfo: false,
+						showStyles: false,
+					},
+				},
+				sessionId
+			);
 			await debuggers.sendCommand('Overlay.hideHighlight', {}, sessionId);
 			await debuggers.sendCommand('Overlay.disable', {}, sessionId);
 			debuggers.detach();
 		}
 	}
 
-	async getElementData(windowId: number | undefined, rect: IRectangle, token: CancellationToken, browserType: BrowserType, cancellationId?: number): Promise<IElementData | undefined> {
+	async getElementData(
+		windowId: number | undefined,
+		rect: IRectangle,
+		token: CancellationToken,
+		browserType: BrowserType,
+		cancellationId?: number
+	): Promise<IElementData | undefined> {
 		const window = this.windowById(windowId);
 		if (!window?.win) {
 			return undefined;
@@ -222,86 +271,94 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 			await debuggers.sendCommand('Debugger.enable', {}, sessionId);
 			await debuggers.sendCommand('Runtime.enable', {}, sessionId);
 
-			await debuggers.sendCommand('Runtime.evaluate', {
-				expression: `(function() {
+			await debuggers.sendCommand(
+				'Runtime.evaluate',
+				{
+					expression: `(function() {
 							const style = document.createElement('style');
 							style.id = '__pseudoBlocker__';
 							style.textContent = '*::before, *::after { pointer-events: none !important; }';
 							document.head.appendChild(style);
 						})();`,
-			}, sessionId);
+				},
+				sessionId
+			);
 
 			// slightly changed default CDP debugger inspect colors
-			await debuggers.sendCommand('Overlay.setInspectMode', {
-				mode: 'searchForNode',
-				highlightConfig: {
-					showInfo: true,
-					showRulers: false,
-					showStyles: true,
-					showAccessibilityInfo: true,
-					showExtensionLines: false,
-					contrastAlgorithm: 'aa',
-					contentColor: { r: 173, g: 216, b: 255, a: 0.8 },
-					paddingColor: { r: 150, g: 200, b: 255, a: 0.5 },
-					borderColor: { r: 120, g: 180, b: 255, a: 0.7 },
-					marginColor: { r: 200, g: 220, b: 255, a: 0.4 },
-					eventTargetColor: { r: 130, g: 160, b: 255, a: 0.8 },
-					shapeColor: { r: 130, g: 160, b: 255, a: 0.8 },
-					shapeMarginColor: { r: 130, g: 160, b: 255, a: 0.5 },
-					gridHighlightConfig: {
-						rowGapColor: { r: 140, g: 190, b: 255, a: 0.3 },
-						rowHatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
-						columnGapColor: { r: 140, g: 190, b: 255, a: 0.3 },
-						columnHatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
-						rowLineColor: { r: 120, g: 180, b: 255 },
-						columnLineColor: { r: 120, g: 180, b: 255 },
-						rowLineDash: true,
-						columnLineDash: true
-					},
-					flexContainerHighlightConfig: {
-						containerBorder: {
-							color: { r: 120, g: 180, b: 255 },
-							pattern: 'solid'
+			await debuggers.sendCommand(
+				'Overlay.setInspectMode',
+				{
+					mode: 'searchForNode',
+					highlightConfig: {
+						showInfo: true,
+						showRulers: false,
+						showStyles: true,
+						showAccessibilityInfo: true,
+						showExtensionLines: false,
+						contrastAlgorithm: 'aa',
+						contentColor: { r: 173, g: 216, b: 255, a: 0.8 },
+						paddingColor: { r: 150, g: 200, b: 255, a: 0.5 },
+						borderColor: { r: 120, g: 180, b: 255, a: 0.7 },
+						marginColor: { r: 200, g: 220, b: 255, a: 0.4 },
+						eventTargetColor: { r: 130, g: 160, b: 255, a: 0.8 },
+						shapeColor: { r: 130, g: 160, b: 255, a: 0.8 },
+						shapeMarginColor: { r: 130, g: 160, b: 255, a: 0.5 },
+						gridHighlightConfig: {
+							rowGapColor: { r: 140, g: 190, b: 255, a: 0.3 },
+							rowHatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
+							columnGapColor: { r: 140, g: 190, b: 255, a: 0.3 },
+							columnHatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
+							rowLineColor: { r: 120, g: 180, b: 255 },
+							columnLineColor: { r: 120, g: 180, b: 255 },
+							rowLineDash: true,
+							columnLineDash: true,
 						},
-						itemSeparator: {
-							color: { r: 140, g: 190, b: 255 },
-							pattern: 'solid'
+						flexContainerHighlightConfig: {
+							containerBorder: {
+								color: { r: 120, g: 180, b: 255 },
+								pattern: 'solid',
+							},
+							itemSeparator: {
+								color: { r: 140, g: 190, b: 255 },
+								pattern: 'solid',
+							},
+							lineSeparator: {
+								color: { r: 140, g: 190, b: 255 },
+								pattern: 'solid',
+							},
+							mainDistributedSpace: {
+								hatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
+								fillColor: { r: 140, g: 190, b: 255, a: 0.4 },
+							},
+							crossDistributedSpace: {
+								hatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
+								fillColor: { r: 140, g: 190, b: 255, a: 0.4 },
+							},
+							rowGapSpace: {
+								hatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
+								fillColor: { r: 140, g: 190, b: 255, a: 0.4 },
+							},
+							columnGapSpace: {
+								hatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
+								fillColor: { r: 140, g: 190, b: 255, a: 0.4 },
+							},
 						},
-						lineSeparator: {
-							color: { r: 140, g: 190, b: 255 },
-							pattern: 'solid'
+						flexItemHighlightConfig: {
+							baseSizeBox: {
+								hatchColor: { r: 130, g: 170, b: 255, a: 0.6 },
+							},
+							baseSizeBorder: {
+								color: { r: 120, g: 180, b: 255 },
+								pattern: 'solid',
+							},
+							flexibilityArrow: {
+								color: { r: 130, g: 190, b: 255 },
+							},
 						},
-						mainDistributedSpace: {
-							hatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
-							fillColor: { r: 140, g: 190, b: 255, a: 0.4 }
-						},
-						crossDistributedSpace: {
-							hatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
-							fillColor: { r: 140, g: 190, b: 255, a: 0.4 }
-						},
-						rowGapSpace: {
-							hatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
-							fillColor: { r: 140, g: 190, b: 255, a: 0.4 }
-						},
-						columnGapSpace: {
-							hatchColor: { r: 140, g: 190, b: 255, a: 0.7 },
-							fillColor: { r: 140, g: 190, b: 255, a: 0.4 }
-						}
-					},
-					flexItemHighlightConfig: {
-						baseSizeBox: {
-							hatchColor: { r: 130, g: 170, b: 255, a: 0.6 }
-						},
-						baseSizeBorder: {
-							color: { r: 120, g: 180, b: 255 },
-							pattern: 'solid'
-						},
-						flexibilityArrow: {
-							color: { r: 130, g: 190, b: 255 }
-						}
 					},
 				},
-			}, sessionId);
+				sessionId
+			);
 		} catch (e) {
 			debuggers.detach();
 			throw new Error('No target found', e);
@@ -320,37 +377,58 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 			x: rect.x + nodeData.bounds.x,
 			y: rect.y + nodeData.bounds.y,
 			width: nodeData.bounds.width,
-			height: nodeData.bounds.height
+			height: nodeData.bounds.height,
 		};
 
 		const clippedBounds = {
 			x: Math.max(absoluteBounds.x, rect.x),
 			y: Math.max(absoluteBounds.y, rect.y),
-			width: Math.max(0, Math.min(absoluteBounds.x + absoluteBounds.width, rect.x + rect.width) - Math.max(absoluteBounds.x, rect.x)),
-			height: Math.max(0, Math.min(absoluteBounds.y + absoluteBounds.height, rect.y + rect.height) - Math.max(absoluteBounds.y, rect.y))
+			width: Math.max(
+				0,
+				Math.min(absoluteBounds.x + absoluteBounds.width, rect.x + rect.width) -
+					Math.max(absoluteBounds.x, rect.x)
+			),
+			height: Math.max(
+				0,
+				Math.min(absoluteBounds.y + absoluteBounds.height, rect.y + rect.height) -
+					Math.max(absoluteBounds.y, rect.y)
+			),
 		};
 
 		const scaledBounds = {
 			x: clippedBounds.x * zoomFactor,
 			y: clippedBounds.y * zoomFactor,
 			width: clippedBounds.width * zoomFactor,
-			height: clippedBounds.height * zoomFactor
+			height: clippedBounds.height * zoomFactor,
 		};
 
-		return { outerHTML: nodeData.outerHTML, computedStyle: nodeData.computedStyle, bounds: scaledBounds };
+		return {
+			outerHTML: nodeData.outerHTML,
+			computedStyle: nodeData.computedStyle,
+			bounds: scaledBounds,
+		};
 	}
 
-	async getNodeData(sessionId: string, debuggers: any, window: BrowserWindow, cancellationId?: number): Promise<NodeDataResponse> {
+	async getNodeData(
+		sessionId: string,
+		debuggers: any,
+		window: BrowserWindow,
+		cancellationId?: number
+	): Promise<NodeDataResponse> {
 		return new Promise((resolve, reject) => {
 			const onMessage = async (event: any, method: string, params: { backendNodeId: number }) => {
 				if (method === 'Overlay.inspectNodeRequested') {
 					debuggers.off('message', onMessage);
-					await debuggers.sendCommand('Runtime.evaluate', {
-						expression: `(() => {
+					await debuggers.sendCommand(
+						'Runtime.evaluate',
+						{
+							expression: `(() => {
 										const style = document.getElementById('__pseudoBlocker__');
 										if (style) style.remove();
 									})();`,
-					}, sessionId);
+						},
+						sessionId
+					);
 
 					const backendNodeId = params?.backendNodeId;
 					if (!backendNodeId) {
@@ -359,7 +437,11 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 
 					try {
 						await debuggers.sendCommand('DOM.getDocument', {}, sessionId);
-						const { nodeIds } = await debuggers.sendCommand('DOM.pushNodesByBackendIdsToFrontend', { backendNodeIds: [backendNodeId] }, sessionId);
+						const { nodeIds } = await debuggers.sendCommand(
+							'DOM.pushNodesByBackendIdsToFrontend',
+							{ backendNodeIds: [backendNodeId] },
+							sessionId
+						);
 						if (!nodeIds || nodeIds.length === 0) {
 							throw new Error('Failed to get node IDs.');
 						}
@@ -377,13 +459,21 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 						const width = Math.max(margin[2] - margin[0], content[2] - content[0]);
 						const height = Math.max(margin[5] - margin[1], content[5] - content[1]);
 
-						const matched = await debuggers.sendCommand('CSS.getMatchedStylesForNode', { nodeId }, sessionId);
+						const matched = await debuggers.sendCommand(
+							'CSS.getMatchedStylesForNode',
+							{ nodeId },
+							sessionId
+						);
 						if (!matched) {
 							throw new Error('Failed to get matched css.');
 						}
 
 						const formatted = this.formatMatchedStyles(matched);
-						const { outerHTML } = await debuggers.sendCommand('DOM.getOuterHTML', { nodeId }, sessionId);
+						const { outerHTML } = await debuggers.sendCommand(
+							'DOM.getOuterHTML',
+							{ nodeId },
+							sessionId
+						);
 						if (!outerHTML) {
 							throw new Error('Failed to get outerHTML.');
 						}
@@ -391,7 +481,7 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 						resolve({
 							outerHTML,
 							computedStyle: formatted,
-							bounds: { x, y, width, height }
+							bounds: { x, y, width, height },
 						});
 					} catch (err) {
 						debuggers.off('message', onMessage);
@@ -471,8 +561,15 @@ export class NativeBrowserElementsMainService extends Disposable implements INat
 		return '\n' + lines.join('\n');
 	}
 
-	private windowById(windowId: number | undefined, fallbackCodeWindowId?: number): ICodeWindow | IAuxiliaryWindow | undefined {
-		return this.codeWindowById(windowId) ?? this.auxiliaryWindowById(windowId) ?? this.codeWindowById(fallbackCodeWindowId);
+	private windowById(
+		windowId: number | undefined,
+		fallbackCodeWindowId?: number
+	): ICodeWindow | IAuxiliaryWindow | undefined {
+		return (
+			this.codeWindowById(windowId) ??
+			this.auxiliaryWindowById(windowId) ??
+			this.codeWindowById(fallbackCodeWindowId)
+		);
 	}
 
 	private codeWindowById(windowId: number | undefined): ICodeWindow | undefined {

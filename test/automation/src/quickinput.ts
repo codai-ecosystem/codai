@@ -6,7 +6,6 @@
 import { Code } from './code';
 
 export class QuickInput {
-
 	private static QUICK_INPUT = '.quick-input-widget';
 	private static QUICK_INPUT_INPUT = `${QuickInput.QUICK_INPUT} .quick-input-box input`;
 	private static QUICK_INPUT_ROW = `${QuickInput.QUICK_INPUT} .quick-input-list .monaco-list-row`;
@@ -15,7 +14,7 @@ export class QuickInput {
 	private static QUICK_INPUT_ENTRY_LABEL = `${QuickInput.QUICK_INPUT_ROW} .quick-input-list-row > .monaco-icon-label .label-name`;
 	private static QUICK_INPUT_ENTRY_LABEL_SPAN = `${QuickInput.QUICK_INPUT_ROW} .monaco-highlighted-label`;
 
-	constructor(private code: Code) { }
+	constructor(private code: Code) {}
 
 	async waitForQuickInputOpened(retryCount?: number): Promise<void> {
 		await this.code.waitForActiveElement(QuickInput.QUICK_INPUT_INPUT, retryCount);
@@ -38,11 +37,16 @@ export class QuickInput {
 	}
 
 	async waitForQuickInputElements(accept: (names: string[]) => boolean): Promise<void> {
-		await this.code.waitForElements(QuickInput.QUICK_INPUT_ENTRY_LABEL, false, els => accept(els.map(e => e.textContent)));
+		await this.code.waitForElements(QuickInput.QUICK_INPUT_ENTRY_LABEL, false, els =>
+			accept(els.map(e => e.textContent))
+		);
 	}
 
 	async waitForQuickInputClosed(): Promise<void> {
-		await this.code.waitForElement(QuickInput.QUICK_INPUT, r => !!r && r.attributes.style.indexOf('display: none;') !== -1);
+		await this.code.waitForElement(
+			QuickInput.QUICK_INPUT,
+			r => !!r && r.attributes.style.indexOf('display: none;') !== -1
+		);
 	}
 
 	async selectQuickInputElement(index: number, keepOpen?: boolean): Promise<void> {

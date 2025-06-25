@@ -12,16 +12,30 @@ import * as nls from '../../../../nls.js';
 import { RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { IRevertOptions, ISaveOptions } from '../../../common/editor.js';
-import { globMatchesResource, priorityToRank, RegisteredEditorPriority } from '../../../services/editor/common/editorResolverService.js';
+import {
+	globMatchesResource,
+	priorityToRank,
+	RegisteredEditorPriority,
+} from '../../../services/editor/common/editorResolverService.js';
 
 export const ICustomEditorService = createDecorator<ICustomEditorService>('customEditorService');
 
-export const CONTEXT_ACTIVE_CUSTOM_EDITOR_ID = new RawContextKey<string>('activeCustomEditorId', '', {
-	type: 'string',
-	description: nls.localize('context.customEditor', "The viewType of the currently active custom editor."),
-});
+export const CONTEXT_ACTIVE_CUSTOM_EDITOR_ID = new RawContextKey<string>(
+	'activeCustomEditorId',
+	'',
+	{
+		type: 'string',
+		description: nls.localize(
+			'context.customEditor',
+			'The viewType of the currently active custom editor.'
+		),
+	}
+);
 
-export const CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE = new RawContextKey<boolean>('focusedCustomEditorIsEditable', false);
+export const CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE = new RawContextKey<boolean>(
+	'focusedCustomEditorIsEditable',
+	false
+);
 
 export interface CustomEditorCapabilities {
 	readonly supportsMultipleEditorsPerDocument?: boolean;
@@ -37,7 +51,10 @@ export interface ICustomEditorService {
 	getContributedCustomEditors(resource: URI): CustomEditorInfoCollection;
 	getUserConfiguredCustomEditors(resource: URI): CustomEditorInfoCollection;
 
-	registerCustomEditorCapabilities(viewType: string, options: CustomEditorCapabilities): IDisposable;
+	registerCustomEditorCapabilities(
+		viewType: string,
+		options: CustomEditorCapabilities
+	): IDisposable;
 	getCustomEditorCapabilities(viewType: string): CustomEditorCapabilities | undefined;
 }
 
@@ -48,7 +65,11 @@ export interface ICustomEditorModelManager {
 
 	tryRetain(resource: URI, viewType: string): Promise<IReference<ICustomEditorModel>> | undefined;
 
-	add(resource: URI, viewType: string, model: Promise<ICustomEditorModel>): Promise<IReference<ICustomEditorModel>>;
+	add(
+		resource: URI,
+		viewType: string,
+		model: Promise<ICustomEditorModel>
+	): Promise<IReference<ICustomEditorModel>>;
 
 	disposeAllModelsForView(viewType: string): void;
 }
@@ -71,7 +92,11 @@ export interface ICustomEditorModel extends IDisposable {
 	revert(options?: IRevertOptions): Promise<void>;
 
 	saveCustomEditor(options?: ISaveOptions): Promise<URI | undefined>;
-	saveCustomEditorAs(resource: URI, targetResource: URI, currentOptions?: ISaveOptions): Promise<boolean>;
+	saveCustomEditorAs(
+		resource: URI,
+		targetResource: URI,
+		currentOptions?: ISaveOptions
+	): Promise<boolean>;
 }
 
 export const enum CustomEditorPriority {
@@ -93,7 +118,6 @@ export interface CustomEditorDescriptor {
 }
 
 export class CustomEditorInfo implements CustomEditorDescriptor {
-
 	public readonly id: string;
 	public readonly displayName: string;
 	public readonly providerDisplayName: string;
@@ -109,21 +133,23 @@ export class CustomEditorInfo implements CustomEditorDescriptor {
 	}
 
 	matches(resource: URI): boolean {
-		return this.selector.some(selector => selector.filenamePattern && globMatchesResource(selector.filenamePattern, resource));
+		return this.selector.some(
+			selector =>
+				selector.filenamePattern && globMatchesResource(selector.filenamePattern, resource)
+		);
 	}
 }
 
 export class CustomEditorInfoCollection {
-
 	public readonly allEditors: readonly CustomEditorInfo[];
 
-	constructor(
-		editors: readonly CustomEditorInfo[],
-	) {
+	constructor(editors: readonly CustomEditorInfo[]) {
 		this.allEditors = distinct(editors, editor => editor.id);
 	}
 
-	public get length(): number { return this.allEditors.length; }
+	public get length(): number {
+		return this.allEditors.length;
+	}
 
 	/**
 	 * Find the single default editor to use (if any) by looking at the editor's priority and the
@@ -135,8 +161,9 @@ export class CustomEditorInfoCollection {
 				case RegisteredEditorPriority.default:
 				case RegisteredEditorPriority.builtin:
 					// A default editor must have higher priority than all other contributed editors.
-					return this.allEditors.every(otherEditor =>
-						otherEditor === editor || isLowerPriority(otherEditor, editor));
+					return this.allEditors.every(
+						otherEditor => otherEditor === editor || isLowerPriority(otherEditor, editor)
+					);
 
 				default:
 					return false;

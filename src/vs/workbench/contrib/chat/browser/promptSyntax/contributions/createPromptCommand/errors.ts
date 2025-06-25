@@ -8,7 +8,7 @@ import { localize } from '../../../../../../../nls.js';
 /**
  * Base class for all prompt creation errors.
  */
-class BaseCreatePromptError extends Error { }
+class BaseCreatePromptError extends Error {}
 
 /**
  * Error for when a folder already exists at the provided
@@ -16,11 +16,13 @@ class BaseCreatePromptError extends Error { }
  */
 export class FolderExists extends BaseCreatePromptError {
 	constructor(path: string) {
-		super(localize(
-			'workbench.command.prompts.create.error.folder-exists',
-			"Folder already exists at '{0}'.",
-			path,
-		));
+		super(
+			localize(
+				'workbench.command.prompts.create.error.folder-exists',
+				"Folder already exists at '{0}'.",
+				path
+			)
+		);
 	}
 }
 
@@ -29,10 +31,12 @@ export class FolderExists extends BaseCreatePromptError {
  */
 export class InvalidPromptName extends BaseCreatePromptError {
 	constructor(name: string) {
-		super(localize(
-			'workbench.command.prompts.create.error.invalid-prompt-name',
-			"Invalid prompt file name '{0}'.",
-			name,
-		));
+		super(
+			localize(
+				'workbench.command.prompts.create.error.invalid-prompt-name',
+				"Invalid prompt file name '{0}'.",
+				name
+			)
+		);
 	}
 }

@@ -9,7 +9,10 @@ import { IFileService } from '../../../../../platform/files/common/files.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { ILabelService } from '../../../../../platform/label/common/label.js';
 import { ILogService } from '../../../../../platform/log/common/log.js';
-import { INativeMcpDiscoveryHelperService, NativeMcpDiscoveryHelperChannelName } from '../../../../../platform/mcp/common/nativeMcpDiscoveryHelper.js';
+import {
+	INativeMcpDiscoveryHelperService,
+	NativeMcpDiscoveryHelperChannelName,
+} from '../../../../../platform/mcp/common/nativeMcpDiscoveryHelper.js';
 import { IRemoteAgentService } from '../../../../services/remote/common/remoteAgentService.js';
 import { IMcpRegistry } from '../mcpRegistryTypes.js';
 import { NativeFilesystemMcpDiscovery } from './nativeMcpDiscoveryAbstract.js';
@@ -25,9 +28,16 @@ export class RemoteNativeMpcDiscovery extends NativeFilesystemMcpDiscovery {
 		@IFileService fileService: IFileService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IMcpRegistry mcpRegistry: IMcpRegistry,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
-		super(remoteAgent.getConnection()?.remoteAuthority || null, labelService, fileService, instantiationService, mcpRegistry, configurationService);
+		super(
+			remoteAgent.getConnection()?.remoteAuthority || null,
+			labelService,
+			fileService,
+			instantiationService,
+			mcpRegistry,
+			configurationService
+		);
 	}
 
 	public override async start() {

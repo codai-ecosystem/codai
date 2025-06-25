@@ -25,9 +25,13 @@ export interface IProductWalkthroughStep {
 	when: string;
 	description: string;
 	media:
-	| { type: 'image'; path: string | { hc: string; hcLight?: string; light: string; dark: string }; altText: string }
-	| { type: 'svg'; path: string; altText: string }
-	| { type: 'markdown'; path: string };
+		| {
+				type: 'image';
+				path: string | { hc: string; hcLight?: string; light: string; dark: string };
+				altText: string;
+		  }
+		| { type: 'svg'; path: string; altText: string }
+		| { type: 'markdown'; path: string };
 }
 
 export interface IFeaturedExtension {
@@ -174,13 +178,19 @@ export interface IProductConfiguration {
 	readonly portable?: string;
 
 	readonly extensionKind?: { readonly [extensionId: string]: ('ui' | 'workspace' | 'web')[] };
-	readonly extensionPointExtensionKind?: { readonly [extensionPointId: string]: ('ui' | 'workspace' | 'web')[] };
+	readonly extensionPointExtensionKind?: {
+		readonly [extensionPointId: string]: ('ui' | 'workspace' | 'web')[];
+	};
 	readonly extensionSyncedKeys?: { readonly [extensionId: string]: string[] };
 
 	readonly extensionsEnabledWithApiProposalVersion?: string[];
 	readonly extensionEnabledApiProposals?: { readonly [extensionId: string]: string[] };
-	readonly extensionUntrustedWorkspaceSupport?: { readonly [extensionId: string]: ExtensionUntrustedWorkspaceSupport };
-	readonly extensionVirtualWorkspacesSupport?: { readonly [extensionId: string]: ExtensionVirtualWorkspaceSupport };
+	readonly extensionUntrustedWorkspaceSupport?: {
+		readonly [extensionId: string]: ExtensionUntrustedWorkspaceSupport;
+	};
+	readonly extensionVirtualWorkspacesSupport?: {
+		readonly [extensionId: string]: ExtensionVirtualWorkspaceSupport;
+	};
 	readonly extensionProperties: IStringDictionary<{
 		readonly hasPrereleaseVersion?: boolean;
 		readonly excludeVersionRange?: string;
@@ -242,7 +252,10 @@ export interface IExtensionRecommendationCondition {
 	readonly whenNotInstalled?: string[];
 }
 
-export type IFileOpenCondition = IFileLanguageCondition | IFilePathCondition | IFileContentCondition;
+export type IFileOpenCondition =
+	| IFileLanguageCondition
+	| IFilePathCondition
+	| IFileContentCondition;
 
 export interface IFileLanguageCondition extends IExtensionRecommendationCondition {
 	readonly languages: string[];
@@ -252,13 +265,15 @@ export interface IFilePathCondition extends IExtensionRecommendationCondition {
 	readonly pathGlob: string;
 }
 
-export type IFileContentCondition = (IFileLanguageCondition | IFilePathCondition) & { readonly contentPattern: string };
+export type IFileContentCondition = (IFileLanguageCondition | IFilePathCondition) & {
+	readonly contentPattern: string;
+};
 
 export interface IAppCenterConfiguration {
 	readonly 'win32-x64': string;
 	readonly 'win32-arm64': string;
 	readonly 'linux-x64': string;
-	readonly 'darwin': string;
+	readonly darwin: string;
 	readonly 'darwin-universal': string;
 	readonly 'darwin-arm64': string;
 }
@@ -280,7 +295,12 @@ export interface IExeBasedExtensionTip {
 	friendlyName: string;
 	windowsPath?: string;
 	important?: boolean;
-	recommendations: IStringDictionary<{ name: string; important?: boolean; isExtensionPack?: boolean; whenNotInstalled?: string[] }>;
+	recommendations: IStringDictionary<{
+		name: string;
+		important?: boolean;
+		isExtensionPack?: boolean;
+		whenNotInstalled?: string[];
+	}>;
 }
 
 export interface IRemoteExtensionTip {

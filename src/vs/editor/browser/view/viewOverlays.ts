@@ -25,7 +25,7 @@ export class ViewOverlays extends ViewPart {
 		super(context);
 
 		this._visibleLines = new VisibleLinesCollection(this._context, {
-			createLine: () => new ViewOverlayLine(this._dynamicOverlays)
+			createLine: () => new ViewOverlayLine(this._dynamicOverlays),
 		});
 		this.domNode = this._visibleLines.domNode;
 
@@ -131,7 +131,6 @@ export class ViewOverlays extends ViewPart {
 }
 
 export class ViewOverlayLine implements IVisibleLine {
-
 	private readonly _dynamicOverlays: DynamicViewOverlay[];
 	private _domNode: FastDomNode<HTMLElement> | null;
 	private _renderedContent: string | null;
@@ -160,7 +159,13 @@ export class ViewOverlayLine implements IVisibleLine {
 		// Nothing
 	}
 
-	public renderLine(lineNumber: number, deltaTop: number, lineHeight: number, viewportData: ViewportData, sb: StringBuilder): boolean {
+	public renderLine(
+		lineNumber: number,
+		deltaTop: number,
+		lineHeight: number,
+		viewportData: ViewportData,
+		sb: StringBuilder
+	): boolean {
 		let result = '';
 		for (let i = 0, len = this._dynamicOverlays.length; i < len; i++) {
 			const dynamicOverlay = this._dynamicOverlays[i];
@@ -197,7 +202,6 @@ export class ViewOverlayLine implements IVisibleLine {
 }
 
 export class ContentViewOverlays extends ViewOverlays {
-
 	private _contentWidth: number;
 
 	constructor(context: ViewContext) {
@@ -231,7 +235,6 @@ export class ContentViewOverlays extends ViewOverlays {
 }
 
 export class MarginViewOverlays extends ViewOverlays {
-
 	private _contentLeft: number;
 
 	constructor(context: ViewContext) {

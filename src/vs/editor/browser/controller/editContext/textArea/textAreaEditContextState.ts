@@ -27,7 +27,6 @@ export interface ITypeData {
 }
 
 export class TextAreaState {
-
 	public static readonly EMPTY = new TextAreaState('', 0, 0, null, undefined);
 
 	constructor(
@@ -39,26 +38,38 @@ export class TextAreaState {
 		/** the editor range in the view coordinate system that matches the selection inside `value` */
 		public readonly selection: Range | null,
 		/** the visible line count (wrapped, not necessarily matching \n characters) for the text in `value` before `selectionStart` */
-		public readonly newlineCountBeforeSelection: number | undefined,
-	) { }
+		public readonly newlineCountBeforeSelection: number | undefined
+	) {}
 
 	public toString(): string {
 		return `[ <${this.value}>, selectionStart: ${this.selectionStart}, selectionEnd: ${this.selectionEnd}]`;
 	}
 
-	public static readFromTextArea(textArea: ITextAreaWrapper, previousState: TextAreaState | null): TextAreaState {
+	public static readFromTextArea(
+		textArea: ITextAreaWrapper,
+		previousState: TextAreaState | null
+	): TextAreaState {
 		const value = textArea.getValue();
 		const selectionStart = textArea.getSelectionStart();
 		const selectionEnd = textArea.getSelectionEnd();
 		let newlineCountBeforeSelection: number | undefined = undefined;
 		if (previousState) {
 			const valueBeforeSelectionStart = value.substring(0, selectionStart);
-			const previousValueBeforeSelectionStart = previousState.value.substring(0, previousState.selectionStart);
+			const previousValueBeforeSelectionStart = previousState.value.substring(
+				0,
+				previousState.selectionStart
+			);
 			if (valueBeforeSelectionStart === previousValueBeforeSelectionStart) {
 				newlineCountBeforeSelection = previousState.newlineCountBeforeSelection;
 			}
 		}
-		return new TextAreaState(value, selectionStart, selectionEnd, null, newlineCountBeforeSelection);
+		return new TextAreaState(
+			value,
+			selectionStart,
+			selectionEnd,
+			null,
+			newlineCountBeforeSelection
+		);
 	}
 
 	public collapseSelection(): TextAreaState {
@@ -73,7 +84,9 @@ export class TextAreaState {
 		if (!select) {
 			return valuesEqual;
 		}
-		const selectionsEqual = this.selectionStart === textArea.getSelectionStart() && this.selectionEnd === textArea.getSelectionEnd();
+		const selectionsEqual =
+			this.selectionStart === textArea.getSelectionStart() &&
+			this.selectionEnd === textArea.getSelectionEnd();
 		return selectionsEqual && valuesEqual;
 	}
 
@@ -104,7 +117,11 @@ export class TextAreaState {
 		return this._finishDeduceEditorPosition(this.selection?.getEndPosition() ?? null, str2, -1);
 	}
 
-	private _finishDeduceEditorPosition(anchor: Position | null, deltaText: string, signum: number): [Position | null, number, number] {
+	private _finishDeduceEditorPosition(
+		anchor: Position | null,
+		deltaText: string,
+		signum: number
+	): [Position | null, number, number] {
 		let lineFeedCnt = 0;
 		let lastLineFeedIndex = -1;
 		while ((lastLineFeedIndex = deltaText.indexOf('\n', lastLineFeedIndex + 1)) !== -1) {
@@ -113,14 +130,18 @@ export class TextAreaState {
 		return [anchor, signum * deltaText.length, lineFeedCnt];
 	}
 
-	public static deduceInput(previousState: TextAreaState, currentState: TextAreaState, couldBeEmojiInput: boolean): ITypeData {
+	public static deduceInput(
+		previousState: TextAreaState,
+		currentState: TextAreaState,
+		couldBeEmojiInput: boolean
+	): ITypeData {
 		if (!previousState) {
 			// This is the EMPTY state
 			return {
 				text: '',
 				replacePrevCharCnt: 0,
 				replaceNextCharCnt: 0,
-				positionDelta: 0
+				positionDelta: 0,
 			};
 		}
 
@@ -140,21 +161,31 @@ export class TextAreaState {
 			previousState.value.length - previousState.selectionEnd,
 			currentState.value.length - currentState.selectionEnd
 		);
-		const previousValue = previousState.value.substring(prefixLength, previousState.value.length - suffixLength);
-		const currentValue = currentState.value.substring(prefixLength, currentState.value.length - suffixLength);
+		const previousValue = previousState.value.substring(
+			prefixLength,
+			previousState.value.length - suffixLength
+		);
+		const currentValue = currentState.value.substring(
+			prefixLength,
+			currentState.value.length - suffixLength
+		);
 		const previousSelectionStart = previousState.selectionStart - prefixLength;
 		const previousSelectionEnd = previousState.selectionEnd - prefixLength;
 		const currentSelectionStart = currentState.selectionStart - prefixLength;
 		const currentSelectionEnd = currentState.selectionEnd - prefixLength;
 
 		if (_debugComposition) {
-			console.log(`AFTER DIFFING PREVIOUS STATE: <${previousValue}>, selectionStart: ${previousSelectionStart}, selectionEnd: ${previousSelectionEnd}`);
-			console.log(`AFTER DIFFING CURRENT STATE: <${currentValue}>, selectionStart: ${currentSelectionStart}, selectionEnd: ${currentSelectionEnd}`);
+			console.log(
+				`AFTER DIFFING PREVIOUS STATE: <${previousValue}>, selectionStart: ${previousSelectionStart}, selectionEnd: ${previousSelectionEnd}`
+			);
+			console.log(
+				`AFTER DIFFING CURRENT STATE: <${currentValue}>, selectionStart: ${currentSelectionStart}, selectionEnd: ${currentSelectionEnd}`
+			);
 		}
 
 		if (currentSelectionStart === currentSelectionEnd) {
 			// no current selection
-			const replacePreviousCharacters = (previousState.selectionStart - prefixLength);
+			const replacePreviousCharacters = previousState.selectionStart - prefixLength;
 			if (_debugComposition) {
 				console.log(`REMOVE PREVIOUS: ${replacePreviousCharacters} chars`);
 			}
@@ -163,7 +194,7 @@ export class TextAreaState {
 				text: currentValue,
 				replacePrevCharCnt: replacePreviousCharacters,
 				replaceNextCharCnt: 0,
-				positionDelta: 0
+				positionDelta: 0,
 			};
 		}
 
@@ -173,18 +204,21 @@ export class TextAreaState {
 			text: currentValue,
 			replacePrevCharCnt: replacePreviousCharacters,
 			replaceNextCharCnt: 0,
-			positionDelta: 0
+			positionDelta: 0,
 		};
 	}
 
-	public static deduceAndroidCompositionInput(previousState: TextAreaState, currentState: TextAreaState): ITypeData {
+	public static deduceAndroidCompositionInput(
+		previousState: TextAreaState,
+		currentState: TextAreaState
+	): ITypeData {
 		if (!previousState) {
 			// This is the EMPTY state
 			return {
 				text: '',
 				replacePrevCharCnt: 0,
 				replaceNextCharCnt: 0,
-				positionDelta: 0
+				positionDelta: 0,
 			};
 		}
 
@@ -199,29 +233,45 @@ export class TextAreaState {
 				text: '',
 				replacePrevCharCnt: 0,
 				replaceNextCharCnt: 0,
-				positionDelta: currentState.selectionEnd - previousState.selectionEnd
+				positionDelta: currentState.selectionEnd - previousState.selectionEnd,
 			};
 		}
 
-		const prefixLength = Math.min(commonPrefixLength(previousState.value, currentState.value), previousState.selectionEnd);
-		const suffixLength = Math.min(commonSuffixLength(previousState.value, currentState.value), previousState.value.length - previousState.selectionEnd);
-		const previousValue = previousState.value.substring(prefixLength, previousState.value.length - suffixLength);
-		const currentValue = currentState.value.substring(prefixLength, currentState.value.length - suffixLength);
+		const prefixLength = Math.min(
+			commonPrefixLength(previousState.value, currentState.value),
+			previousState.selectionEnd
+		);
+		const suffixLength = Math.min(
+			commonSuffixLength(previousState.value, currentState.value),
+			previousState.value.length - previousState.selectionEnd
+		);
+		const previousValue = previousState.value.substring(
+			prefixLength,
+			previousState.value.length - suffixLength
+		);
+		const currentValue = currentState.value.substring(
+			prefixLength,
+			currentState.value.length - suffixLength
+		);
 		const previousSelectionStart = previousState.selectionStart - prefixLength;
 		const previousSelectionEnd = previousState.selectionEnd - prefixLength;
 		const currentSelectionStart = currentState.selectionStart - prefixLength;
 		const currentSelectionEnd = currentState.selectionEnd - prefixLength;
 
 		if (_debugComposition) {
-			console.log(`AFTER DIFFING PREVIOUS STATE: <${previousValue}>, selectionStart: ${previousSelectionStart}, selectionEnd: ${previousSelectionEnd}`);
-			console.log(`AFTER DIFFING CURRENT STATE: <${currentValue}>, selectionStart: ${currentSelectionStart}, selectionEnd: ${currentSelectionEnd}`);
+			console.log(
+				`AFTER DIFFING PREVIOUS STATE: <${previousValue}>, selectionStart: ${previousSelectionStart}, selectionEnd: ${previousSelectionEnd}`
+			);
+			console.log(
+				`AFTER DIFFING CURRENT STATE: <${currentValue}>, selectionStart: ${currentSelectionStart}, selectionEnd: ${currentSelectionEnd}`
+			);
 		}
 
 		return {
 			text: currentValue,
 			replacePrevCharCnt: previousSelectionEnd,
 			replaceNextCharCnt: previousValue.length - previousSelectionEnd,
-			positionDelta: currentSelectionEnd - currentValue.length
+			positionDelta: currentSelectionEnd - currentValue.length,
 		};
 	}
 

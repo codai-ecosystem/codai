@@ -7,7 +7,6 @@ import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { ThreadStatusScheduler } from '../../browser/debugSession.js';
 
-
 suite('DebugSession - ThreadStatusScheduler', () => {
 	const ds = ensureNoDisposablesAreLeakedInTestSuite();
 
@@ -56,12 +55,17 @@ suite('DebugSession - ThreadStatusScheduler', () => {
 		const innerCalled2: number[] = [];
 
 		await Promise.all([
-			scheduler.run(Promise.resolve().then(() => { }).then(() => [1, 3]), async threadId => {
-				innerCalled1.push(threadId);
-			}),
+			scheduler.run(
+				Promise.resolve()
+					.then(() => {})
+					.then(() => [1, 3]),
+				async threadId => {
+					innerCalled1.push(threadId);
+				}
+			),
 			scheduler.run(Promise.resolve([1, 2]), async threadId => {
 				innerCalled2.push(threadId);
-			})
+			}),
 		]);
 
 		assert.deepEqual(innerCalled1, [3]);
@@ -89,9 +93,14 @@ suite('DebugSession - ThreadStatusScheduler', () => {
 		const scheduler = ds.add(new ThreadStatusScheduler());
 		let innerCalled = false;
 
-		await scheduler.run(Promise.resolve().then(() => scheduler.cancel([1])).then(() => [1]), async () => {
-			innerCalled = true;
-		});
+		await scheduler.run(
+			Promise.resolve()
+				.then(() => scheduler.cancel([1]))
+				.then(() => [1]),
+			async () => {
+				innerCalled = true;
+			}
+		);
 
 		assert.strictEqual(innerCalled, false);
 	});
@@ -100,9 +109,14 @@ suite('DebugSession - ThreadStatusScheduler', () => {
 		const scheduler = ds.add(new ThreadStatusScheduler());
 		let innerCalled = false;
 
-		await scheduler.run(Promise.resolve().then(() => scheduler.cancel(undefined)).then(() => [1]), async () => {
-			innerCalled = true;
-		});
+		await scheduler.run(
+			Promise.resolve()
+				.then(() => scheduler.cancel(undefined))
+				.then(() => [1]),
+			async () => {
+				innerCalled = true;
+			}
+		);
 
 		assert.strictEqual(innerCalled, false);
 	});

@@ -40,15 +40,13 @@ interface IRunPromptResult {
  */
 export const runPromptFile = async (
 	file: URI,
-	options: IRunPromptOptions,
+	options: IRunPromptOptions
 ): Promise<IRunPromptResult> => {
-
 	const widget = await getChatWidgetObject(options);
 
 	widget.setInput(`/${getPromptCommandName(file.path)}`);
 	// submit the prompt immediately
 	await widget.acceptInput();
-
 
 	return { widget };
 };

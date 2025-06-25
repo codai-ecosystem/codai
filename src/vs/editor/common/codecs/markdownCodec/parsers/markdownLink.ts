@@ -18,8 +18,14 @@ import { LeftParenthesis, RightParenthesis } from '../../simpleCodec/tokens/pare
 /**
  * List of characters that are not allowed in links so stop a markdown link sequence abruptly.
  */
-const MARKDOWN_LINK_STOP_CHARACTERS: readonly string[] = [CarriageReturn, NewLine, VerticalTab, FormFeed]
-	.map((token) => { return token.symbol; });
+const MARKDOWN_LINK_STOP_CHARACTERS: readonly string[] = [
+	CarriageReturn,
+	NewLine,
+	VerticalTab,
+	FormFeed,
+].map(token => {
+	return token.symbol;
+});
 
 /**
  * The parser responsible for parsing a `markdown link caption` part of a markdown
@@ -36,12 +42,17 @@ const MARKDOWN_LINK_STOP_CHARACTERS: readonly string[] = [CarriageReturn, NewLin
  * for re-emitting the {@link tokens} accumulated so far as standalone entities since they are no
  * longer represent a coherent token entity of a larger size.
  */
-export class PartialMarkdownLinkCaption extends ParserBase<TSimpleDecoderToken, PartialMarkdownLinkCaption | MarkdownLinkCaption> {
+export class PartialMarkdownLinkCaption extends ParserBase<
+	TSimpleDecoderToken,
+	PartialMarkdownLinkCaption | MarkdownLinkCaption
+> {
 	constructor(token: LeftBracket) {
 		super([token]);
 	}
 
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialMarkdownLinkCaption | MarkdownLinkCaption> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<PartialMarkdownLinkCaption | MarkdownLinkCaption> {
 		// any of stop characters is are breaking a markdown link caption sequence
 		if (MARKDOWN_LINK_STOP_CHARACTERS.includes(token.text)) {
 			return {
@@ -83,8 +94,13 @@ export class PartialMarkdownLinkCaption extends ParserBase<TSimpleDecoderToken, 
  * to be responsible for re-emitting the {@link tokens} accumulated so far as standalone
  * entities since they are no longer represent a coherent token entity of a larger size.
  */
-export class MarkdownLinkCaption extends ParserBase<TSimpleDecoderToken, MarkdownLinkCaption | PartialMarkdownLink> {
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<MarkdownLinkCaption | PartialMarkdownLink> {
+export class MarkdownLinkCaption extends ParserBase<
+	TSimpleDecoderToken,
+	MarkdownLinkCaption | PartialMarkdownLink
+> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<MarkdownLinkCaption | PartialMarkdownLink> {
 		// the `(` character starts the link part of a markdown link
 		// that is the only character that can follow the caption
 		if (token instanceof LeftParenthesis) {
@@ -124,7 +140,10 @@ export class MarkdownLinkCaption extends ParserBase<TSimpleDecoderToken, Markdow
  *     to be complete as soon as this requirement is met. Therefore the `final` word is used in
  *     the description comments above to highlight this important detail.
  */
-export class PartialMarkdownLink extends ParserBase<TSimpleDecoderToken, PartialMarkdownLink | MarkdownLink> {
+export class PartialMarkdownLink extends ParserBase<
+	TSimpleDecoderToken,
+	PartialMarkdownLink | MarkdownLink
+> {
 	/**
 	 * Number of open parenthesis in the sequence.
 	 * See comment in the {@link accept} method for more details.
@@ -133,7 +152,7 @@ export class PartialMarkdownLink extends ParserBase<TSimpleDecoderToken, Partial
 
 	constructor(
 		protected readonly captionTokens: TSimpleDecoderToken[],
-		token: LeftParenthesis,
+		token: LeftParenthesis
 	) {
 		super([token]);
 	}
@@ -142,7 +161,9 @@ export class PartialMarkdownLink extends ParserBase<TSimpleDecoderToken, Partial
 		return [...this.captionTokens, ...this.currentTokens];
 	}
 
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialMarkdownLink | MarkdownLink> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<PartialMarkdownLink | MarkdownLink> {
 		// markdown links allow for nested parenthesis inside the link reference part, but
 		// the number of open parenthesis must match the number of closing parenthesis, e.g.:
 		// 	- `[caption](/some/p()th/file.md)` is a valid markdown link
@@ -164,7 +185,7 @@ export class PartialMarkdownLink extends ParserBase<TSimpleDecoderToken, Partial
 			// we must never have `openParensCount` that is less than 0
 			assert(
 				this.openParensCount >= 0,
-				`Unexpected right parenthesis token encountered: '${token}'.`,
+				`Unexpected right parenthesis token encountered: '${token}'.`
 			);
 
 			// the markdown link is complete as soon as we get the same number of closing parenthesis
@@ -182,12 +203,7 @@ export class PartialMarkdownLink extends ParserBase<TSimpleDecoderToken, Partial
 				return {
 					result: 'success',
 					wasTokenConsumed: true,
-					nextParser: new MarkdownLink(
-						startLineNumber,
-						startColumn,
-						caption,
-						reference,
-					),
+					nextParser: new MarkdownLink(startLineNumber, startColumn, caption, reference),
 				};
 			}
 		}

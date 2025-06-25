@@ -17,20 +17,19 @@ suite('FolderQuerySearchTree', () => {
 	const fq4 = { folder: URI.parse('file:///folder3?query3') };
 	const fq5 = { folder: URI.parse('file:///folder3') };
 
-	const folderQueries: IFolderQuery<URI>[] = [
-		fq1,
-		fq2,
-		fq3,
-		fq4,
-		fq5,
-	];
+	const folderQueries: IFolderQuery<URI>[] = [fq1, fq2, fq3, fq4, fq5];
 
-	const getFolderQueryInfo = (fq: IFolderQuery<URI>, i: number) => ({ folder: fq.folder, index: i });
+	const getFolderQueryInfo = (fq: IFolderQuery<URI>, i: number) => ({
+		folder: fq.folder,
+		index: i,
+	});
 
 	test('find query fragment aware substr correctly', () => {
 		const tree = new FolderQuerySearchTree(folderQueries, getFolderQueryInfo);
 		const result = tree.findQueryFragmentAwareSubstr(fq1.folder);
-		const result2 = tree.findQueryFragmentAwareSubstr(URI.parse('file:///folder1/foo/bar?query1#fragment1'));
+		const result2 = tree.findQueryFragmentAwareSubstr(
+			URI.parse('file:///folder1/foo/bar?query1#fragment1')
+		);
 		assert.deepStrictEqual(result, { folder: fq1.folder, index: 0 });
 		assert.deepStrictEqual(result2, { folder: fq1.folder, index: 0 });
 	});
@@ -45,7 +44,9 @@ suite('FolderQuerySearchTree', () => {
 
 	test('match correct entry with query/fragment', () => {
 		const tree = new FolderQuerySearchTree(folderQueries, getFolderQueryInfo);
-		const result = tree.findQueryFragmentAwareSubstr(URI.parse('file:///folder3/file.txt?query3#fragment3'));
+		const result = tree.findQueryFragmentAwareSubstr(
+			URI.parse('file:///folder3/file.txt?query3#fragment3')
+		);
 		assert.deepStrictEqual(result, { folder: fq3.folder, index: 2 });
 
 		const result2 = tree.findQueryFragmentAwareSubstr(URI.parse('file:///folder3/file.txt?query3'));
@@ -68,13 +69,21 @@ suite('FolderQuerySearchTree', () => {
 		const results: any[] = [];
 		tree.forEachFolderQueryInfo(info => results.push(info));
 		assert.equal(results.length, 5);
-		assert.deepStrictEqual(results, folderQueries.map((fq, i) => getFolderQueryInfo(fq, i)));
+		assert.deepStrictEqual(
+			results,
+			folderQueries.map((fq, i) => getFolderQueryInfo(fq, i))
+		);
 	});
 
-
 	test('`/` as a path', () => {
-		const trie = new FolderQuerySearchTree([{ folder: URI.parse('memfs:/?q=1') }], getFolderQueryInfo);
+		const trie = new FolderQuerySearchTree(
+			[{ folder: URI.parse('memfs:/?q=1') }],
+			getFolderQueryInfo
+		);
 
-		assert.deepStrictEqual(trie.findQueryFragmentAwareSubstr(URI.parse('memfs:/file.txt?q=1')), { folder: URI.parse('memfs:/?q=1'), index: 0 });
+		assert.deepStrictEqual(trie.findQueryFragmentAwareSubstr(URI.parse('memfs:/file.txt?q=1')), {
+			folder: URI.parse('memfs:/?q=1'),
+			index: 0,
+		});
 	});
 });

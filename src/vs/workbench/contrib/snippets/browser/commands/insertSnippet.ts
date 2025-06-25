@@ -17,7 +17,6 @@ import { ISnippetsService } from '../snippets.js';
 import { Snippet, SnippetSource } from '../snippetsFile.js';
 
 class Args {
-
 	static fromUser(arg: any): Args {
 		if (!arg || typeof arg !== 'object') {
 			return Args._empty;
@@ -41,43 +40,42 @@ class Args {
 		public readonly snippet: string | undefined,
 		public readonly name: string | undefined,
 		public readonly langId: string | undefined
-	) { }
+	) {}
 }
 
 export class InsertSnippetAction extends SnippetEditorAction {
-
 	constructor() {
 		super({
 			id: 'editor.action.insertSnippet',
-			title: nls.localize2('snippet.suggestions.label', "Insert Snippet"),
+			title: nls.localize2('snippet.suggestions.label', 'Insert Snippet'),
 			f1: true,
 			precondition: EditorContextKeys.writable,
 			metadata: {
 				description: `Insert Snippet`,
-				args: [{
-					name: 'args',
-					schema: {
-						'type': 'object',
-						'properties': {
-							'snippet': {
-								'type': 'string'
+				args: [
+					{
+						name: 'args',
+						schema: {
+							type: 'object',
+							properties: {
+								snippet: {
+									type: 'string',
+								},
+								langId: {
+									type: 'string',
+								},
+								name: {
+									type: 'string',
+								},
 							},
-							'langId': {
-								'type': 'string',
-
-							},
-							'name': {
-								'type': 'string'
-							}
 						},
-					}
-				}]
-			}
+					},
+				],
+			},
 		});
 	}
 
 	async runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, arg: any) {
-
 		const languageService = accessor.get(ILanguageService);
 		const snippetService = accessor.get(ISnippetsService);
 
@@ -89,22 +87,23 @@ export class InsertSnippetAction extends SnippetEditorAction {
 		const instaService = accessor.get(IInstantiationService);
 
 		const snippet = await new Promise<Snippet | undefined>((resolve, reject) => {
-
 			const { lineNumber, column } = editor.getPosition();
 			const { snippet, name, langId } = Args.fromUser(arg);
 
 			if (snippet) {
-				return resolve(new Snippet(
-					false,
-					[],
-					'',
-					'',
-					'',
-					snippet,
-					'',
-					SnippetSource.User,
-					`random/${Math.random()}`
-				));
+				return resolve(
+					new Snippet(
+						false,
+						[],
+						'',
+						'',
+						'',
+						snippet,
+						'',
+						SnippetSource.User,
+						`random/${Math.random()}`
+					)
+				);
 			}
 
 			let languageId: string;
@@ -127,10 +126,10 @@ export class InsertSnippetAction extends SnippetEditorAction {
 
 			if (name) {
 				// take selected snippet
-				snippetService.getSnippets(languageId, { includeNoPrefixSnippets: true })
+				snippetService
+					.getSnippets(languageId, { includeNoPrefixSnippets: true })
 					.then(snippets => snippets.find(snippet => snippet.name === name))
 					.then(resolve, reject);
-
 			} else {
 				// let user pick a snippet
 				resolve(instaService.invokeFunction(pickSnippet, languageId));

@@ -19,33 +19,67 @@ import { VerticalTab } from '../../../../../../../editor/common/codecs/simpleCod
 import { TSimpleDecoderToken } from '../../../../../../../editor/common/codecs/simpleCodec/simpleDecoder.js';
 import { CarriageReturn } from '../../../../../../../editor/common/codecs/linesCodec/tokens/carriageReturn.js';
 import { ExclamationMark } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/exclamationMark.js';
-import { LeftBracket, RightBracket } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/brackets.js';
-import { LeftAngleBracket, RightAngleBracket } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/angleBrackets.js';
-import { assertNotConsumed, ParserBase, TAcceptTokenResult } from '../../../../../../../editor/common/codecs/simpleCodec/parserBase.js';
+import {
+	LeftBracket,
+	RightBracket,
+} from '../../../../../../../editor/common/codecs/simpleCodec/tokens/brackets.js';
+import {
+	LeftAngleBracket,
+	RightAngleBracket,
+} from '../../../../../../../editor/common/codecs/simpleCodec/tokens/angleBrackets.js';
+import {
+	assertNotConsumed,
+	ParserBase,
+	TAcceptTokenResult,
+} from '../../../../../../../editor/common/codecs/simpleCodec/parserBase.js';
 
 /**
  * List of characters that terminate the prompt at-mention sequence.
  */
-export const STOP_CHARACTERS: readonly string[] = [Space, Tab, NewLine, CarriageReturn, VerticalTab, FormFeed, Colon, At, Hash, Slash]
-	.map((token) => { return token.symbol; });
+export const STOP_CHARACTERS: readonly string[] = [
+	Space,
+	Tab,
+	NewLine,
+	CarriageReturn,
+	VerticalTab,
+	FormFeed,
+	Colon,
+	At,
+	Hash,
+	Slash,
+].map(token => {
+	return token.symbol;
+});
 
 /**
  * List of characters that cannot be in an at-mention name (excluding the {@link STOP_CHARACTERS}).
  */
-export const INVALID_NAME_CHARACTERS: readonly string[] = [ExclamationMark, LeftAngleBracket, RightAngleBracket, LeftBracket, RightBracket]
-	.map((token) => { return token.symbol; });
+export const INVALID_NAME_CHARACTERS: readonly string[] = [
+	ExclamationMark,
+	LeftAngleBracket,
+	RightAngleBracket,
+	LeftBracket,
+	RightBracket,
+].map(token => {
+	return token.symbol;
+});
 
 /**
  * The parser responsible for parsing a `prompt /command` sequences.
  * E.g., `/search` or `/explain` command.
  */
-export class PartialPromptSlashCommand extends ParserBase<TSimpleDecoderToken, PartialPromptSlashCommand | PromptSlashCommand> {
+export class PartialPromptSlashCommand extends ParserBase<
+	TSimpleDecoderToken,
+	PartialPromptSlashCommand | PromptSlashCommand
+> {
 	constructor(token: Slash) {
 		super([token]);
 	}
 
 	@assertNotConsumed
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialPromptSlashCommand | PromptSlashCommand> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<PartialPromptSlashCommand | PromptSlashCommand> {
 		// if a `stop` character is encountered, finish the parsing process
 		if (STOP_CHARACTERS.includes(token.text)) {
 			try {
@@ -99,7 +133,7 @@ export class PartialPromptSlashCommand extends ParserBase<TSimpleDecoderToken, P
 		// must be the starting `/` one), then fail
 		assert(
 			this.currentTokens.length > 1,
-			'Cannot create a prompt /command out of incomplete token sequence.',
+			'Cannot create a prompt /command out of incomplete token sequence.'
 		);
 
 		const firstToken = this.currentTokens[0];
@@ -114,9 +148,9 @@ export class PartialPromptSlashCommand extends ParserBase<TSimpleDecoderToken, P
 				firstToken.range.startLineNumber,
 				firstToken.range.startColumn,
 				lastToken.range.endLineNumber,
-				lastToken.range.endColumn,
+				lastToken.range.endColumn
 			),
-			atMentionName,
+			atMentionName
 		);
 	}
 }

@@ -9,7 +9,11 @@ import { ThemeIcon } from '../../../../../base/common/themables.js';
 import { assertType } from '../../../../../base/common/types.js';
 import { ServicesAccessor } from '../../../../../editor/browser/editorExtensions.js';
 import { localize, localize2 } from '../../../../../nls.js';
-import { Action2, MenuId, registerAction2 } from '../../../../../platform/actions/common/actions.js';
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from '../../../../../platform/actions/common/actions.js';
 import { ICommandService } from '../../../../../platform/commands/common/commands.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { ContextKeyExpr } from '../../../../../platform/contextkey/common/contextkey.js';
@@ -20,12 +24,17 @@ import { ChatContextKeys } from '../../common/chatContextKeys.js';
 import { ChatMode2, IChatMode, validateChatMode2 } from '../../common/chatModes.js';
 import { chatVariableLeader } from '../../common/chatParserTypes.js';
 import { IChatService } from '../../common/chatService.js';
-import { ChatAgentLocation, ChatConfiguration, ChatMode, } from '../../common/constants.js';
+import { ChatAgentLocation, ChatConfiguration, ChatMode } from '../../common/constants.js';
 import { ILanguageModelChatMetadata } from '../../common/languageModels.js';
 import { ILanguageModelToolsService } from '../../common/languageModelToolsService.js';
 import { IChatWidget, IChatWidgetService } from '../chat.js';
 import { getEditingSessionContext } from '../chatEditing/chatEditingActions.js';
-import { ACTION_ID_NEW_CHAT, CHAT_CATEGORY, handleCurrentEditingSession, handleModeSwitch } from './chatActions.js';
+import {
+	ACTION_ID_NEW_CHAT,
+	CHAT_CATEGORY,
+	handleCurrentEditingSession,
+	handleModeSwitch,
+} from './chatActions.js';
 
 export interface IVoiceChatExecuteActionContext {
 	readonly disableTimeout?: boolean;
@@ -47,7 +56,10 @@ abstract class SubmitAction extends Action2 {
 	}
 }
 
-const whenNotInProgressOrPaused = ContextKeyExpr.or(ChatContextKeys.isRequestPaused, ChatContextKeys.requestInProgress.negate());
+const whenNotInProgressOrPaused = ContextKeyExpr.or(
+	ChatContextKeys.isRequestPaused,
+	ChatContextKeys.requestInProgress.negate()
+);
 
 export class ChatSubmitAction extends SubmitAction {
 	static readonly ID = 'workbench.action.chat.submit';
@@ -57,7 +69,7 @@ export class ChatSubmitAction extends SubmitAction {
 
 		super({
 			id: ChatSubmitAction.ID,
-			title: localize2('interactive.submit.label', "Send and Dispatch"),
+			title: localize2('interactive.submit.label', 'Send and Dispatch'),
 			f1: false,
 			category: CHAT_CATEGORY,
 			icon: Codicon.send,
@@ -65,25 +77,22 @@ export class ChatSubmitAction extends SubmitAction {
 			keybinding: {
 				when: ChatContextKeys.inChatInput,
 				primary: KeyCode.Enter,
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menu: [
 				{
 					id: MenuId.ChatExecuteSecondary,
 					group: 'group_1',
 					order: 1,
-					when: precondition
+					when: precondition,
 				},
 				{
 					id: MenuId.ChatExecute,
 					order: 4,
-					when: ContextKeyExpr.and(
-						whenNotInProgressOrPaused,
-						precondition,
-					),
+					when: ContextKeyExpr.and(whenNotInProgressOrPaused, precondition),
 					group: 'navigation',
 				},
-			]
+			],
 		});
 	}
 }
@@ -95,25 +104,26 @@ export interface IToggleChatModeArgs {
 }
 
 class ToggleChatModeAction extends Action2 {
-
 	static readonly ID = ToggleAgentModeActionId;
 
 	constructor() {
 		super({
 			id: ToggleChatModeAction.ID,
-			title: localize2('interactive.toggleAgent.label', "Set Chat Mode"),
+			title: localize2('interactive.toggleAgent.label', 'Set Chat Mode'),
 			f1: true,
 			category: CHAT_CATEGORY,
 			precondition: ContextKeyExpr.and(
 				ChatContextKeys.enabled,
-				ChatContextKeys.requestInProgress.negate()),
-			tooltip: localize('setChatMode', "Set Mode"),
+				ChatContextKeys.requestInProgress.negate()
+			),
+			tooltip: localize('setChatMode', 'Set Mode'),
 			keybinding: {
 				when: ContextKeyExpr.and(
 					ChatContextKeys.inChatInput,
-					ChatContextKeys.location.isEqualTo(ChatAgentLocation.Panel)),
+					ChatContextKeys.location.isEqualTo(ChatAgentLocation.Panel)
+				),
 				primary: KeyMod.CtrlCmd | KeyCode.Period,
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menu: [
 				{
@@ -122,11 +132,11 @@ class ToggleChatModeAction extends Action2 {
 					when: ContextKeyExpr.and(
 						ChatContextKeys.enabled,
 						ChatContextKeys.location.isEqualTo(ChatAgentLocation.Panel),
-						ChatContextKeys.inQuickChat.negate(),
+						ChatContextKeys.inQuickChat.negate()
 					),
 					group: 'navigation',
 				},
-			]
+			],
 		});
 	}
 
@@ -143,13 +153,21 @@ class ToggleChatModeAction extends Action2 {
 		const arg = args.at(0) as IToggleChatModeArgs | undefined;
 		const chatSession = context.chatWidget.viewModel?.model;
 		const requestCount = chatSession?.getRequests().length ?? 0;
-		const switchToMode = validateChatMode2(arg?.mode) ?? this.getNextMode(context.chatWidget, requestCount, configurationService);
+		const switchToMode =
+			validateChatMode2(arg?.mode) ??
+			this.getNextMode(context.chatWidget, requestCount, configurationService);
 
 		if (switchToMode.id === context.chatWidget.input.currentMode2.id) {
 			return;
 		}
 
-		const chatModeCheck = await instaService.invokeFunction(handleModeSwitch, context.chatWidget.input.currentMode, switchToMode.kind, requestCount, context.editingSession);
+		const chatModeCheck = await instaService.invokeFunction(
+			handleModeSwitch,
+			context.chatWidget.input.currentMode,
+			switchToMode.kind,
+			requestCount,
+			context.editingSession
+		);
 		if (!chatModeCheck) {
 			return;
 		}
@@ -161,7 +179,11 @@ class ToggleChatModeAction extends Action2 {
 		}
 	}
 
-	private getNextMode(chatWidget: IChatWidget, requestCount: number, configurationService: IConfigurationService): IChatMode {
+	private getNextMode(
+		chatWidget: IChatWidget,
+		requestCount: number,
+		configurationService: IConfigurationService
+	): IChatMode {
 		const modes = [ChatMode2.Ask];
 		if (configurationService.getValue(ChatConfiguration.Edits2Enabled) || requestCount === 0) {
 			modes.push(ChatMode2.Edit);
@@ -181,15 +203,15 @@ export class ToggleRequestPausedAction extends Action2 {
 	constructor() {
 		super({
 			id: ToggleRequestPausedAction.ID,
-			title: localize2('interactive.toggleRequestPausd.label', "Toggle Request Paused"),
+			title: localize2('interactive.toggleRequestPausd.label', 'Toggle Request Paused'),
 			category: CHAT_CATEGORY,
 			icon: Codicon.debugPause,
 			toggled: {
 				condition: ChatContextKeys.isRequestPaused,
 				icon: Codicon.play,
-				tooltip: localize('requestIsPaused', "Resume Request"),
+				tooltip: localize('requestIsPaused', 'Resume Request'),
 			},
-			tooltip: localize('requestNotPaused', "Pause Request"),
+			tooltip: localize('requestNotPaused', 'Pause Request'),
 			menu: [
 				{
 					id: MenuId.ChatExecute,
@@ -198,11 +220,14 @@ export class ToggleRequestPausedAction extends Action2 {
 						ChatContextKeys.canRequestBePaused,
 						ChatContextKeys.chatMode.isEqualTo(ChatMode.Agent),
 						ChatContextKeys.location.isEqualTo(ChatAgentLocation.Panel),
-						ContextKeyExpr.or(ChatContextKeys.isRequestPaused.negate(), ChatContextKeys.inputHasText.negate()),
+						ContextKeyExpr.or(
+							ChatContextKeys.isRequestPaused.negate(),
+							ChatContextKeys.inputHasText.negate()
+						)
 					),
 					group: 'navigation',
 				},
-			]
+			],
 		});
 	}
 
@@ -220,7 +245,7 @@ class SwitchToNextModelAction extends Action2 {
 	constructor() {
 		super({
 			id: SwitchToNextModelAction.ID,
-			title: localize2('interactive.switchToNextModel.label', "Switch to Next Model"),
+			title: localize2('interactive.switchToNextModel.label', 'Switch to Next Model'),
 			category: CHAT_CATEGORY,
 			f1: true,
 			precondition: ChatContextKeys.enabled,
@@ -241,13 +266,13 @@ class OpenModelPickerAction extends Action2 {
 	constructor() {
 		super({
 			id: OpenModelPickerAction.ID,
-			title: localize2('interactive.openModelPicker.label', "Open Model Picker"),
+			title: localize2('interactive.openModelPicker.label', 'Open Model Picker'),
 			category: CHAT_CATEGORY,
 			f1: false,
 			keybinding: {
 				primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.Period,
 				weight: KeybindingWeight.WorkbenchContrib,
-				when: ChatContextKeys.inChatInput
+				when: ChatContextKeys.inChatInput,
 			},
 			precondition: ChatContextKeys.enabled,
 			menu: {
@@ -263,7 +288,7 @@ class OpenModelPickerAction extends Action2 {
 						ContextKeyExpr.equals(ChatContextKeys.location.key, ChatAgentLocation.Terminal)
 					)
 				),
-			}
+			},
 		});
 	}
 
@@ -283,7 +308,7 @@ class ChangeChatModelAction extends Action2 {
 	constructor() {
 		super({
 			id: ChangeChatModelAction.ID,
-			title: localize2('interactive.changeModel.label', "Change Model"),
+			title: localize2('interactive.changeModel.label', 'Change Model'),
 			category: CHAT_CATEGORY,
 			f1: false,
 			precondition: ChatContextKeys.enabled,
@@ -293,7 +318,11 @@ class ChangeChatModelAction extends Action2 {
 	override run(accessor: ServicesAccessor, ...args: any[]): void {
 		const modelInfo: Pick<ILanguageModelChatMetadata, 'vendor' | 'id' | 'family'> = args[0];
 		// Type check the arg
-		assertType(typeof modelInfo.vendor === 'string' && typeof modelInfo.id === 'string' && typeof modelInfo.family === 'string');
+		assertType(
+			typeof modelInfo.vendor === 'string' &&
+				typeof modelInfo.id === 'string' &&
+				typeof modelInfo.family === 'string'
+		);
 		const widgetService = accessor.get(IChatWidgetService);
 		const widgets = widgetService.getAllWidgets();
 		for (const widget of widgets) {
@@ -310,7 +339,7 @@ export class ChatEditingSessionSubmitAction extends SubmitAction {
 
 		super({
 			id: ChatEditingSessionSubmitAction.ID,
-			title: localize2('edits.submit.label', "Send"),
+			title: localize2('edits.submit.label', 'Send'),
 			f1: false,
 			category: CHAT_CATEGORY,
 			icon: Codicon.send,
@@ -318,14 +347,14 @@ export class ChatEditingSessionSubmitAction extends SubmitAction {
 			keybinding: {
 				when: ChatContextKeys.inChatInput,
 				primary: KeyCode.Enter,
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menu: [
 				{
 					id: MenuId.ChatExecuteSecondary,
 					group: 'group_1',
 					when: ContextKeyExpr.and(whenNotInProgressOrPaused, precondition),
-					order: 1
+					order: 1,
 				},
 				{
 					id: MenuId.ChatExecute,
@@ -333,12 +362,13 @@ export class ChatEditingSessionSubmitAction extends SubmitAction {
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.or(
 							ContextKeyExpr.and(ChatContextKeys.isRequestPaused, ChatContextKeys.inputHasText),
-							ChatContextKeys.requestInProgress.negate(),
+							ChatContextKeys.requestInProgress.negate()
 						),
-						precondition),
+						precondition
+					),
 					group: 'navigation',
 				},
-			]
+			],
 		});
 	}
 }
@@ -352,19 +382,19 @@ class SubmitWithoutDispatchingAction extends Action2 {
 			// without text present - having instructions is enough context for a request
 			ContextKeyExpr.or(ChatContextKeys.inputHasText, ChatContextKeys.hasPromptFile),
 			whenNotInProgressOrPaused,
-			ChatContextKeys.chatMode.isEqualTo(ChatMode.Ask),
+			ChatContextKeys.chatMode.isEqualTo(ChatMode.Ask)
 		);
 
 		super({
 			id: SubmitWithoutDispatchingAction.ID,
-			title: localize2('interactive.submitWithoutDispatch.label', "Send"),
+			title: localize2('interactive.submitWithoutDispatch.label', 'Send'),
 			f1: false,
 			category: CHAT_CATEGORY,
 			precondition,
 			keybinding: {
 				when: ChatContextKeys.inChatInput,
 				primary: KeyMod.Alt | KeyMod.Shift | KeyCode.Enter,
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menu: [
 				{
@@ -372,8 +402,8 @@ class SubmitWithoutDispatchingAction extends Action2 {
 					group: 'group_1',
 					order: 2,
 					when: ChatContextKeys.chatMode.isEqualTo(ChatMode.Ask),
-				}
-			]
+				},
+			],
 		});
 	}
 
@@ -394,12 +424,16 @@ export class ChatSubmitWithCodebaseAction extends Action2 {
 			// if the input has prompt instructions attached, allow submitting requests even
 			// without text present - having instructions is enough context for a request
 			ContextKeyExpr.or(ChatContextKeys.inputHasText, ChatContextKeys.hasPromptFile),
-			whenNotInProgressOrPaused,
+			whenNotInProgressOrPaused
 		);
 
 		super({
 			id: ChatSubmitWithCodebaseAction.ID,
-			title: localize2('actions.chat.submitWithCodebase', "Send with {0}", `${chatVariableLeader}codebase`),
+			title: localize2(
+				'actions.chat.submitWithCodebase',
+				'Send with {0}',
+				`${chatVariableLeader}codebase`
+			),
 			precondition,
 			menu: {
 				id: MenuId.ChatExecuteSecondary,
@@ -410,7 +444,7 @@ export class ChatSubmitWithCodebaseAction extends Action2 {
 			keybinding: {
 				when: ChatContextKeys.inChatInput,
 				primary: KeyMod.CtrlCmd | KeyCode.Enter,
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 		});
 	}
@@ -436,7 +470,7 @@ export class ChatSubmitWithCodebaseAction extends Action2 {
 			fullName: codebaseTool.displayName ?? '',
 			value: undefined,
 			icon: ThemeIcon.isThemeIcon(codebaseTool.icon) ? codebaseTool.icon : undefined,
-			kind: 'tool'
+			kind: 'tool',
 		});
 		widget.acceptInput();
 	}
@@ -448,26 +482,25 @@ class SendToNewChatAction extends Action2 {
 			// if the input has prompt instructions attached, allow submitting requests even
 			// without text present - having instructions is enough context for a request
 			ContextKeyExpr.or(ChatContextKeys.inputHasText, ChatContextKeys.hasPromptFile),
-			whenNotInProgressOrPaused,
+			whenNotInProgressOrPaused
 		);
 
 		super({
 			id: 'workbench.action.chat.sendToNewChat',
-			title: localize2('chat.newChat.label', "Send to New Chat"),
+			title: localize2('chat.newChat.label', 'Send to New Chat'),
 			precondition,
 			category: CHAT_CATEGORY,
 			f1: false,
 			menu: {
 				id: MenuId.ChatExecuteSecondary,
 				group: 'group_2',
-				when: ContextKeyExpr.equals(ChatContextKeys.location.key, ChatAgentLocation.Panel)
-
+				when: ContextKeyExpr.equals(ChatContextKeys.location.key, ChatAgentLocation.Panel),
 			},
 			keybinding: {
 				weight: KeybindingWeight.WorkbenchContrib,
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter,
 				when: ChatContextKeys.inChatInput,
-			}
+			},
 		});
 	}
 
@@ -500,13 +533,16 @@ export class CancelAction extends Action2 {
 	constructor() {
 		super({
 			id: CancelAction.ID,
-			title: localize2('interactive.cancel.label', "Cancel"),
+			title: localize2('interactive.cancel.label', 'Cancel'),
 			f1: false,
 			category: CHAT_CATEGORY,
 			icon: Codicon.stopCircle,
 			menu: {
 				id: MenuId.ChatExecute,
-				when: ContextKeyExpr.and(ChatContextKeys.isRequestPaused.negate(), ChatContextKeys.requestInProgress),
+				when: ContextKeyExpr.and(
+					ChatContextKeys.isRequestPaused.negate(),
+					ChatContextKeys.requestInProgress
+				),
 				order: 4,
 				group: 'navigation',
 			},
@@ -514,7 +550,7 @@ export class CancelAction extends Action2 {
 				weight: KeybindingWeight.WorkbenchContrib,
 				primary: KeyMod.CtrlCmd | KeyCode.Escape,
 				win: { primary: KeyMod.Alt | KeyCode.Backspace },
-			}
+			},
 		});
 	}
 

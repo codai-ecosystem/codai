@@ -13,10 +13,7 @@ export async function GET(request: NextRequest) {
 		const sessionId = searchParams.get('session_id');
 
 		if (!sessionId) {
-			return NextResponse.json(
-				{ error: 'Session ID is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
 		}
 
 		const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -35,16 +32,10 @@ export async function GET(request: NextRequest) {
 
 			return NextResponse.json(sessionData);
 		} else {
-			return NextResponse.json(
-				{ error: 'Payment not completed' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Payment not completed' }, { status: 400 });
 		}
 	} catch (error) {
 		console.error('Error verifying session:', error);
-		return NextResponse.json(
-			{ error: 'Failed to verify session' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to verify session' }, { status: 500 });
 	}
 }

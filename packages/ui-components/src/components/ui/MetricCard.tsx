@@ -24,58 +24,64 @@ export function MetricCard({
 	icon,
 	loading = false,
 	className = '',
-	onClick
+	onClick,
 }: MetricCardProps) {
 	const isInteractive = Boolean(onClick);
 
 	const changeColors = {
 		increase: 'text-green-600 dark:text-green-400',
 		decrease: 'text-red-600 dark:text-red-400',
-		neutral: 'text-codai-muted-foreground'
+		neutral: 'text-codai-muted-foreground',
 	};
 
 	const changeIcons = {
 		increase: (
 			<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17l9.2-9.2M17 17V7H7" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={2}
+					d="M7 17l9.2-9.2M17 17V7H7"
+				/>
 			</svg>
 		),
 		decrease: (
 			<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 7l-9.2 9.2M7 7v10h10" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={2}
+					d="M17 7l-9.2 9.2M7 7v10h10"
+				/>
 			</svg>
 		),
-		neutral: null
+		neutral: null,
 	};
 
 	const content = (
 		<>
 			<div className="flex items-center justify-between">
 				<div className="flex-1">
-					<p className="text-sm font-medium text-codai-muted-foreground mb-2">
-						{title}
-					</p>
+					<p className="text-sm font-medium text-codai-muted-foreground mb-2">{title}</p>
 					<p className="text-3xl font-bold text-codai-foreground">
 						{loading ? (
 							<div className="w-20 h-8 bg-codai-muted/20 rounded animate-pulse" />
+						) : typeof value === 'number' ? (
+							value.toLocaleString()
 						) : (
-							typeof value === 'number' ? value.toLocaleString() : value
+							value
 						)}
 					</p>
 					{change && !loading && (
 						<div className={`flex items-center space-x-1 mt-2 ${changeColors[change.type]}`}>
 							{changeIcons[change.type]}
-							<span className="text-sm font-medium">
-								{change.value}
-							</span>
+							<span className="text-sm font-medium">{change.value}</span>
 						</div>
 					)}
 				</div>
 				{icon && (
 					<div className="flex-shrink-0 p-4 bg-gradient-to-br from-codai-primary/10 to-codai-accent/10 rounded-2xl">
-						<div className="w-7 h-7 text-codai-primary">
-							{icon}
-						</div>
+						<div className="w-7 h-7 text-codai-primary">{icon}</div>
 					</div>
 				)}
 			</div>

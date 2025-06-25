@@ -6,7 +6,12 @@
 import { Event } from '../../../base/common/event.js';
 import { Disposable } from '../../../base/common/lifecycle.js';
 import { IProductService } from '../../product/common/productService.js';
-import { ExtensionGalleryResourceType, Flag, IExtensionGalleryManifest, IExtensionGalleryManifestService } from './extensionGalleryManifest.js';
+import {
+	ExtensionGalleryResourceType,
+	Flag,
+	IExtensionGalleryManifest,
+	IExtensionGalleryManifestService,
+} from './extensionGalleryManifest.js';
 import { FilterType, SortBy } from './extensionManagement.js';
 
 type ExtensionGalleryConfig = {
@@ -19,14 +24,14 @@ type ExtensionGalleryConfig = {
 	readonly nlsBaseUrl: string;
 };
 
-export class ExtensionGalleryManifestService extends Disposable implements IExtensionGalleryManifestService {
-
+export class ExtensionGalleryManifestService
+	extends Disposable
+	implements IExtensionGalleryManifestService
+{
 	readonly _serviceBrand: undefined;
 	readonly onDidChangeExtensionGalleryManifest = Event.None;
 
-	constructor(
-		@IProductService protected readonly productService: IProductService,
-	) {
+	constructor(@IProductService protected readonly productService: IProductService) {
 		super();
 	}
 
@@ -35,7 +40,9 @@ export class ExtensionGalleryManifestService extends Disposable implements IExte
 	}
 
 	async getExtensionGalleryManifest(): Promise<IExtensionGalleryManifest | null> {
-		const extensionsGallery = this.productService.extensionsGallery as ExtensionGalleryConfig | undefined;
+		const extensionsGallery = this.productService.extensionsGallery as
+			| ExtensionGalleryConfig
+			| undefined;
 		if (!extensionsGallery?.serviceUrl) {
 			return null;
 		}
@@ -43,44 +50,44 @@ export class ExtensionGalleryManifestService extends Disposable implements IExte
 		const resources = [
 			{
 				id: `${extensionsGallery.serviceUrl}/extensionquery`,
-				type: ExtensionGalleryResourceType.ExtensionQueryService
+				type: ExtensionGalleryResourceType.ExtensionQueryService,
 			},
 			{
 				id: `${extensionsGallery.serviceUrl}/vscode/{publisher}/{name}/latest`,
-				type: ExtensionGalleryResourceType.ExtensionLatestVersionUri
+				type: ExtensionGalleryResourceType.ExtensionLatestVersionUri,
 			},
 			{
 				id: `${extensionsGallery.serviceUrl}/publishers/{publisher}/extensions/{name}/{version}/stats?statType={statTypeName}`,
-				type: ExtensionGalleryResourceType.ExtensionStatisticsUri
+				type: ExtensionGalleryResourceType.ExtensionStatisticsUri,
 			},
 			{
 				id: `${extensionsGallery.serviceUrl}/itemName/{publisher}.{name}/version/{version}/statType/{statTypeValue}/vscodewebextension`,
-				type: ExtensionGalleryResourceType.WebExtensionStatisticsUri
+				type: ExtensionGalleryResourceType.WebExtensionStatisticsUri,
 			},
 		];
 
 		if (extensionsGallery.publisherUrl) {
 			resources.push({
 				id: `${extensionsGallery.publisherUrl}/{publisher}`,
-				type: ExtensionGalleryResourceType.PublisherViewUri
+				type: ExtensionGalleryResourceType.PublisherViewUri,
 			});
 		}
 
 		if (extensionsGallery.itemUrl) {
 			resources.push({
 				id: `${extensionsGallery.itemUrl}?itemName={publisher}.{name}`,
-				type: ExtensionGalleryResourceType.ExtensionDetailsViewUri
+				type: ExtensionGalleryResourceType.ExtensionDetailsViewUri,
 			});
 			resources.push({
 				id: `${extensionsGallery.itemUrl}?itemName={publisher}.{name}&ssr=false#review-details`,
-				type: ExtensionGalleryResourceType.ExtensionRatingViewUri
+				type: ExtensionGalleryResourceType.ExtensionRatingViewUri,
 			});
 		}
 
 		if (extensionsGallery.resourceUrlTemplate) {
 			resources.push({
 				id: extensionsGallery.resourceUrlTemplate,
-				type: ExtensionGalleryResourceType.ExtensionResourceUri
+				type: ExtensionGalleryResourceType.ExtensionResourceUri,
 			});
 		}
 
@@ -224,8 +231,8 @@ export class ExtensionGalleryManifestService extends Disposable implements IExte
 				},
 				signing: {
 					allPublicRepositorySigned: true,
-				}
-			}
+				},
+			},
 		};
 	}
 }

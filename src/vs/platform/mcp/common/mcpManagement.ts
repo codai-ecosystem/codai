@@ -147,7 +147,6 @@ export interface DidUninstallMcpServerEvent {
 	readonly workspaceScoped?: boolean;
 }
 
-
 export const IMcpGalleryService = createDecorator<IMcpGalleryService>('IMcpGalleryService');
 export interface IMcpGalleryService {
 	readonly _serviceBrand: undefined;
@@ -157,7 +156,8 @@ export interface IMcpGalleryService {
 	getReadme(extension: IGalleryMcpServer, token: CancellationToken): Promise<string>;
 }
 
-export const IMcpManagementService = createDecorator<IMcpManagementService>('IMcpManagementService');
+export const IMcpManagementService =
+	createDecorator<IMcpManagementService>('IMcpManagementService');
 export interface IMcpManagementService {
 	readonly _serviceBrand: undefined;
 	readonly onInstallMcpServer: Event<InstallMcpServerEvent>;

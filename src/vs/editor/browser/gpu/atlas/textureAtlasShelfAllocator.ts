@@ -6,20 +6,23 @@
 import { BugIndicatingError } from '../../../../base/common/errors.js';
 import { ensureNonNullable } from '../gpuUtils.js';
 import type { IRasterizedGlyph } from '../raster/raster.js';
-import { UsagePreviewColors, type ITextureAtlasAllocator, type ITextureAtlasPageGlyph } from './atlas.js';
+import {
+	UsagePreviewColors,
+	type ITextureAtlasAllocator,
+	type ITextureAtlasPageGlyph,
+} from './atlas.js';
 
 /**
  * The shelf allocator is a simple allocator that places glyphs in rows, starting a new row when the
  * current row is full. Due to its simplicity, it can waste space but it is very fast.
  */
 export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
-
 	private readonly _ctx: OffscreenCanvasRenderingContext2D;
 
 	private _currentRow: ITextureAtlasShelf = {
 		x: 0,
 		y: 0,
-		h: 0
+		h: 0,
 	};
 
 	/** A set of all glyphs allocated, this is only tracked to enable debug related functionality */
@@ -29,11 +32,13 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 
 	constructor(
 		private readonly _canvas: OffscreenCanvas,
-		private readonly _textureIndex: number,
+		private readonly _textureIndex: number
 	) {
-		this._ctx = ensureNonNullable(this._canvas.getContext('2d', {
-			willReadFrequently: true
-		}));
+		this._ctx = ensureNonNullable(
+			this._canvas.getContext('2d', {
+				willReadFrequently: true,
+			})
+		);
 	}
 
 	public allocate(rasterizedGlyph: IRasterizedGlyph): ITextureAtlasPageGlyph | undefined {
@@ -45,14 +50,23 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 		}
 
 		// Finalize and increment row if it doesn't fix horizontally
-		if (rasterizedGlyph.boundingBox.right - rasterizedGlyph.boundingBox.left + 1 > this._canvas.width - this._currentRow.x) {
+		if (
+			rasterizedGlyph.boundingBox.right - rasterizedGlyph.boundingBox.left + 1 >
+			this._canvas.width - this._currentRow.x
+		) {
 			this._currentRow.x = 0;
 			this._currentRow.y += this._currentRow.h;
 			this._currentRow.h = 1;
 		}
 
 		// Return undefined if there isn't any room left
-		if (this._currentRow.y + rasterizedGlyph.boundingBox.bottom - rasterizedGlyph.boundingBox.top + 1 > this._canvas.height) {
+		if (
+			this._currentRow.y +
+				rasterizedGlyph.boundingBox.bottom -
+				rasterizedGlyph.boundingBox.top +
+				1 >
+			this._canvas.height
+		) {
 			return undefined;
 		}
 

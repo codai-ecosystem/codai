@@ -28,7 +28,7 @@ export class ExtensionsInstallConfirmationWidgetSubPart extends BaseChatToolInvo
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IChatWidgetService chatWidgetService: IChatWidgetService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super(toolInvocation);
 
@@ -37,16 +37,27 @@ export class ExtensionsInstallConfirmationWidgetSubPart extends BaseChatToolInvo
 		}
 
 		this.domNode = dom.$('');
-		const chatExtensionsContentPart = this._register(instantiationService.createInstance(ChatExtensionsContentPart, toolInvocation.toolSpecificData));
-		this._register(chatExtensionsContentPart.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
+		const chatExtensionsContentPart = this._register(
+			instantiationService.createInstance(
+				ChatExtensionsContentPart,
+				toolInvocation.toolSpecificData
+			)
+		);
+		this._register(
+			chatExtensionsContentPart.onDidChangeHeight(() => this._onDidChangeHeight.fire())
+		);
 		dom.append(this.domNode, chatExtensionsContentPart.domNode);
 
 		if (toolInvocation.isConfirmed === undefined) {
-			const continueLabel = localize('continue', "Continue");
-			const continueKeybinding = keybindingService.lookupKeybinding(AcceptToolConfirmationActionId)?.getLabel();
-			const continueTooltip = continueKeybinding ? `${continueLabel} (${continueKeybinding})` : continueLabel;
+			const continueLabel = localize('continue', 'Continue');
+			const continueKeybinding = keybindingService
+				.lookupKeybinding(AcceptToolConfirmationActionId)
+				?.getLabel();
+			const continueTooltip = continueKeybinding
+				? `${continueLabel} (${continueKeybinding})`
+				: continueLabel;
 
-			const cancelLabel = localize('cancel', "Cancel");
+			const cancelLabel = localize('cancel', 'Cancel');
 			const cancelKeybinding = keybindingService.lookupKeybinding(CancelChatActionId)?.getLabel();
 			const cancelTooltip = cancelKeybinding ? `${cancelLabel} (${cancelKeybinding})` : cancelLabel;
 
@@ -54,35 +65,43 @@ export class ExtensionsInstallConfirmationWidgetSubPart extends BaseChatToolInvo
 				{
 					label: continueLabel,
 					data: true,
-					tooltip: continueTooltip
+					tooltip: continueTooltip,
 				},
 				{
 					label: cancelLabel,
 					data: false,
 					isSecondary: true,
-					tooltip: cancelTooltip
-				}
+					tooltip: cancelTooltip,
+				},
 			];
 
-			const confirmWidget = this._register(instantiationService.createInstance(
-				ChatConfirmationWidget,
-				toolInvocation.confirmationMessages?.title ?? localize('installExtensions', "Install Extensions"),
-				undefined,
-				toolInvocation.confirmationMessages?.message ?? localize('installExtensionsConfirmation', "Click the Install button on the extension and then press Continue when finished."),
-				buttons,
-				context.container,
-			));
+			const confirmWidget = this._register(
+				instantiationService.createInstance(
+					ChatConfirmationWidget,
+					toolInvocation.confirmationMessages?.title ??
+						localize('installExtensions', 'Install Extensions'),
+					undefined,
+					toolInvocation.confirmationMessages?.message ??
+						localize(
+							'installExtensionsConfirmation',
+							'Click the Install button on the extension and then press Continue when finished.'
+						),
+					buttons,
+					context.container
+				)
+			);
 			this._register(confirmWidget.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
 			dom.append(this.domNode, confirmWidget.domNode);
-			this._register(confirmWidget.onDidClick(button => {
-				toolInvocation.confirmed.complete(button.data);
-				chatWidgetService.getWidgetBySessionId(context.element.sessionId)?.focusInput();
-			}));
+			this._register(
+				confirmWidget.onDidClick(button => {
+					toolInvocation.confirmed.complete(button.data);
+					chatWidgetService.getWidgetBySessionId(context.element.sessionId)?.focusInput();
+				})
+			);
 			toolInvocation.confirmed.p.then(() => {
 				ChatContextKeys.Editing.hasToolConfirmation.bindTo(contextKeyService).set(false);
 				this._onNeedsRerender.fire();
 			});
 		}
-
 	}
 }

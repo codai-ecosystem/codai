@@ -11,7 +11,6 @@ import { generateUuid } from '../../../../../base/common/uuid.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('Snippets', function () {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	class TestSnippetFile extends SnippetFile {
@@ -28,12 +27,72 @@ suite('Snippets', function () {
 		assert.strictEqual(bucket.length, 0);
 
 		file = new TestSnippetFile(URI.file('somepath/foo.code-snippets'), [
-			new Snippet(false, ['foo'], 'FooSnippet1', 'foo', '', 'snippet', 'test', SnippetSource.User, generateUuid()),
-			new Snippet(false, ['foo'], 'FooSnippet2', 'foo', '', 'snippet', 'test', SnippetSource.User, generateUuid()),
-			new Snippet(false, ['bar'], 'BarSnippet1', 'foo', '', 'snippet', 'test', SnippetSource.User, generateUuid()),
-			new Snippet(false, ['bar.comment'], 'BarSnippet2', 'foo', '', 'snippet', 'test', SnippetSource.User, generateUuid()),
-			new Snippet(false, ['bar.strings'], 'BarSnippet2', 'foo', '', 'snippet', 'test', SnippetSource.User, generateUuid()),
-			new Snippet(false, ['bazz', 'bazz'], 'BazzSnippet1', 'foo', '', 'snippet', 'test', SnippetSource.User, generateUuid()),
+			new Snippet(
+				false,
+				['foo'],
+				'FooSnippet1',
+				'foo',
+				'',
+				'snippet',
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			),
+			new Snippet(
+				false,
+				['foo'],
+				'FooSnippet2',
+				'foo',
+				'',
+				'snippet',
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			),
+			new Snippet(
+				false,
+				['bar'],
+				'BarSnippet1',
+				'foo',
+				'',
+				'snippet',
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			),
+			new Snippet(
+				false,
+				['bar.comment'],
+				'BarSnippet2',
+				'foo',
+				'',
+				'snippet',
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			),
+			new Snippet(
+				false,
+				['bar.strings'],
+				'BarSnippet2',
+				'foo',
+				'',
+				'snippet',
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			),
+			new Snippet(
+				false,
+				['bazz', 'bazz'],
+				'BazzSnippet1',
+				'foo',
+				'',
+				'snippet',
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			),
 		]);
 
 		bucket = [];
@@ -58,22 +117,49 @@ suite('Snippets', function () {
 	});
 
 	test('SnippetFile#select - any scope', function () {
-
 		const file = new TestSnippetFile(URI.file('somepath/foo.code-snippets'), [
-			new Snippet(false, [], 'AnySnippet1', 'foo', '', 'snippet', 'test', SnippetSource.User, generateUuid()),
-			new Snippet(false, ['foo'], 'FooSnippet1', 'foo', '', 'snippet', 'test', SnippetSource.User, generateUuid()),
+			new Snippet(
+				false,
+				[],
+				'AnySnippet1',
+				'foo',
+				'',
+				'snippet',
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			),
+			new Snippet(
+				false,
+				['foo'],
+				'FooSnippet1',
+				'foo',
+				'',
+				'snippet',
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			),
 		]);
 
 		const bucket: Snippet[] = [];
 		file.select('foo', bucket);
 		assert.strictEqual(bucket.length, 2);
-
 	});
 
 	test('Snippet#needsClipboard', function () {
-
 		function assertNeedsClipboard(body: string, expected: boolean): void {
-			const snippet = new Snippet(false, ['foo'], 'FooSnippet1', 'foo', '', body, 'test', SnippetSource.User, generateUuid());
+			const snippet = new Snippet(
+				false,
+				['foo'],
+				'FooSnippet1',
+				'foo',
+				'',
+				body,
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			);
 			assert.strictEqual(snippet.needsClipboard, expected);
 
 			assert.strictEqual(SnippetParser.guessNeedsClipboard(body), expected);
@@ -88,9 +174,18 @@ suite('Snippets', function () {
 	});
 
 	test('Snippet#isTrivial', function () {
-
 		function assertIsTrivial(body: string, expected: boolean): void {
-			const snippet = new Snippet(false, ['foo'], 'FooSnippet1', 'foo', '', body, 'test', SnippetSource.User, generateUuid());
+			const snippet = new Snippet(
+				false,
+				['foo'],
+				'FooSnippet1',
+				'foo',
+				'',
+				body,
+				'test',
+				SnippetSource.User,
+				generateUuid()
+			);
 			assert.strictEqual(snippet.isTrivial, expected);
 		}
 
@@ -101,5 +196,4 @@ suite('Snippets', function () {
 		assertIsTrivial('foo$1$0', false);
 		assertIsTrivial('${1:foo}', false);
 	});
-
 });

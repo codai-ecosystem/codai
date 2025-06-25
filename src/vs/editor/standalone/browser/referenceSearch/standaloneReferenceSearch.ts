@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { EditorContributionInstantiation, registerEditorContribution } from '../../../browser/editorExtensions.js';
+import {
+	EditorContributionInstantiation,
+	registerEditorContribution,
+} from '../../../browser/editorExtensions.js';
 import { ICodeEditorService } from '../../../browser/services/codeEditorService.js';
 import { ReferencesController } from '../../../contrib/gotoSymbol/browser/peek/referencesController.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
@@ -14,7 +17,6 @@ import { INotificationService } from '../../../../platform/notification/common/n
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 
 export class StandaloneReferencesController extends ReferencesController {
-
 	public constructor(
 		editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
@@ -22,7 +24,7 @@ export class StandaloneReferencesController extends ReferencesController {
 		@INotificationService notificationService: INotificationService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(
 			true,
@@ -37,4 +39,8 @@ export class StandaloneReferencesController extends ReferencesController {
 	}
 }
 
-registerEditorContribution(ReferencesController.ID, StandaloneReferencesController, EditorContributionInstantiation.Lazy);
+registerEditorContribution(
+	ReferencesController.ID,
+	StandaloneReferencesController,
+	EditorContributionInstantiation.Lazy
+);

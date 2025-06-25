@@ -8,7 +8,10 @@ import { localize } from '../../../../../../../../../nls.js';
 import { assert } from '../../../../../../../../../base/common/assert.js';
 import { isOneOf } from '../../../../../../../../../base/common/types.js';
 import { PromptMetadataDiagnostic, PromptMetadataError } from '../../diagnostics.js';
-import { FrontMatterRecord, FrontMatterString } from '../../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
+import {
+	FrontMatterRecord,
+	FrontMatterString,
+} from '../../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
 import { FrontMatterSequence } from '../../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/frontMatterSequence.js';
 
 /**
@@ -22,7 +25,7 @@ export abstract class PromptEnumMetadata<
 		private readonly validValues: readonly TValidValues[],
 		expectedRecordName: string,
 		recordToken: FrontMatterRecord,
-		languageId: string,
+		languageId: string
 	) {
 		super(expectedRecordName, recordToken, languageId);
 	}
@@ -50,9 +53,9 @@ export abstract class PromptEnumMetadata<
 
 		// sanity check for our expectations about the validate call
 		assert(
-			this.valueToken instanceof FrontMatterString
-			|| this.valueToken instanceof FrontMatterSequence,
-			`Record token must be 'string', got '${this.valueToken}'.`,
+			this.valueToken instanceof FrontMatterString ||
+				this.valueToken instanceof FrontMatterSequence,
+			`Record token must be 'string', got '${this.valueToken}'.`
 		);
 
 		const { cleanText } = this.valueToken;
@@ -70,12 +73,13 @@ export abstract class PromptEnumMetadata<
 					"The '{0}' metadata must be one of {1}, got '{2}'.",
 					this.recordName,
 					this.validValues
-						.map((value) => {
+						.map(value => {
 							return `'${value}'`;
-						}).join(' | '),
-					cleanText,
-				),
-			),
+						})
+						.join(' | '),
+					cleanText
+				)
+			)
 		);
 
 		delete this.valueToken;

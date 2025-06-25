@@ -14,16 +14,11 @@ import { ViewModel } from '../../../common/viewModel/viewModelImpl.js';
 import { ITestCodeEditor, withTestCodeEditor } from '../testCodeEditor.js';
 
 suite('Cursor move command test', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	const TEXT = [
-		'    \tMy First Line\t ',
-		'\tMy Second Line',
-		'    Third Line🐶',
-		'',
-		'1'
-	].join('\n');
+	const TEXT = ['    \tMy First Line\t ', '\tMy Second Line', '    Third Line🐶', '', '1'].join(
+		'\n'
+	);
 
 	function executeTest(callback: (editor: ITestCodeEditor, viewModel: ViewModel) => void): void {
 		withTestCodeEditor(TEXT, {}, (editor, viewModel) => {
@@ -420,7 +415,6 @@ suite('Cursor move command test', () => {
 });
 
 suite('Cursor move by blankline test', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	const TEXT = [
@@ -541,11 +535,20 @@ function moveRight(viewModel: ViewModel, value?: number, by?: string, select?: b
 }
 
 function moveUp(viewModel: ViewModel, noOfLines: number = 1, select?: boolean) {
-	move(viewModel, { to: CursorMove.RawDirection.Up, by: CursorMove.RawUnit.WrappedLine, value: noOfLines, select: select });
+	move(viewModel, {
+		to: CursorMove.RawDirection.Up,
+		by: CursorMove.RawUnit.WrappedLine,
+		value: noOfLines,
+		select: select,
+	});
 }
 
 function moveUpByBlankLine(viewModel: ViewModel, select?: boolean) {
-	move(viewModel, { to: CursorMove.RawDirection.PrevBlankLine, by: CursorMove.RawUnit.WrappedLine, select: select });
+	move(viewModel, {
+		to: CursorMove.RawDirection.PrevBlankLine,
+		by: CursorMove.RawUnit.WrappedLine,
+		select: select,
+	});
 }
 
 function moveUpByModelLine(viewModel: ViewModel, noOfLines: number = 1, select?: boolean) {
@@ -553,11 +556,20 @@ function moveUpByModelLine(viewModel: ViewModel, noOfLines: number = 1, select?:
 }
 
 function moveDown(viewModel: ViewModel, noOfLines: number = 1, select?: boolean) {
-	move(viewModel, { to: CursorMove.RawDirection.Down, by: CursorMove.RawUnit.WrappedLine, value: noOfLines, select: select });
+	move(viewModel, {
+		to: CursorMove.RawDirection.Down,
+		by: CursorMove.RawUnit.WrappedLine,
+		value: noOfLines,
+		select: select,
+	});
 }
 
 function moveDownByBlankLine(viewModel: ViewModel, select?: boolean) {
-	move(viewModel, { to: CursorMove.RawDirection.NextBlankLine, by: CursorMove.RawUnit.WrappedLine, select: select });
+	move(viewModel, {
+		to: CursorMove.RawDirection.NextBlankLine,
+		by: CursorMove.RawUnit.WrappedLine,
+		select: select,
+	});
 }
 
 function moveDownByModelLine(viewModel: ViewModel, noOfLines: number = 1, select?: boolean) {
@@ -576,7 +588,13 @@ function moveToBottom(viewModel: ViewModel, noOfLines: number = 1, select?: bool
 	move(viewModel, { to: CursorMove.RawDirection.ViewPortBottom, value: noOfLines, select: select });
 }
 
-function cursorEqual(viewModel: ViewModel, posLineNumber: number, posColumn: number, selLineNumber: number = posLineNumber, selColumn: number = posColumn) {
+function cursorEqual(
+	viewModel: ViewModel,
+	posLineNumber: number,
+	posColumn: number,
+	selLineNumber: number = posLineNumber,
+	selColumn: number = posColumn
+) {
 	positionEqual(viewModel.getPosition(), posLineNumber, posColumn);
 	selectionEqual(viewModel.getSelection(), posLineNumber, posColumn, selLineNumber, selColumn);
 }
@@ -585,28 +603,43 @@ function positionEqual(position: Position, lineNumber: number, column: number) {
 	assert.deepStrictEqual(position, new Position(lineNumber, column), 'position equal');
 }
 
-function selectionEqual(selection: Selection, posLineNumber: number, posColumn: number, selLineNumber: number, selColumn: number) {
-	assert.deepStrictEqual({
-		selectionStartLineNumber: selection.selectionStartLineNumber,
-		selectionStartColumn: selection.selectionStartColumn,
-		positionLineNumber: selection.positionLineNumber,
-		positionColumn: selection.positionColumn
-	}, {
-		selectionStartLineNumber: selLineNumber,
-		selectionStartColumn: selColumn,
-		positionLineNumber: posLineNumber,
-		positionColumn: posColumn
-	}, 'selection equal');
+function selectionEqual(
+	selection: Selection,
+	posLineNumber: number,
+	posColumn: number,
+	selLineNumber: number,
+	selColumn: number
+) {
+	assert.deepStrictEqual(
+		{
+			selectionStartLineNumber: selection.selectionStartLineNumber,
+			selectionStartColumn: selection.selectionStartColumn,
+			positionLineNumber: selection.positionLineNumber,
+			positionColumn: selection.positionColumn,
+		},
+		{
+			selectionStartLineNumber: selLineNumber,
+			selectionStartColumn: selColumn,
+			positionLineNumber: posLineNumber,
+			positionColumn: posColumn,
+		},
+		'selection equal'
+	);
 }
 
-function moveTo(viewModel: ViewModel, lineNumber: number, column: number, inSelectionMode: boolean = false) {
+function moveTo(
+	viewModel: ViewModel,
+	lineNumber: number,
+	column: number,
+	inSelectionMode: boolean = false
+) {
 	if (inSelectionMode) {
 		CoreNavigationCommands.MoveToSelect.runCoreEditorCommand(viewModel, {
-			position: new Position(lineNumber, column)
+			position: new Position(lineNumber, column),
 		});
 	} else {
 		CoreNavigationCommands.MoveTo.runCoreEditorCommand(viewModel, {
-			position: new Position(lineNumber, column)
+			position: new Position(lineNumber, column),
 		});
 	}
 }

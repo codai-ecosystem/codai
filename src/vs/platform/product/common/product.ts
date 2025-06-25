@@ -35,7 +35,9 @@ else if (globalThis._VSCODE_PRODUCT_JSON && globalThis._VSCODE_PACKAGE_JSON) {
 			nameShort: `${product.nameShort} Dev`,
 			nameLong: `${product.nameLong} Dev`,
 			dataFolderName: `${product.dataFolderName}-dev`,
-			serverDataFolderName: product.serverDataFolderName ? `${product.serverDataFolderName}-dev` : undefined
+			serverDataFolderName: product.serverDataFolderName
+				? `${product.serverDataFolderName}-dev`
+				: undefined,
 		});
 	}
 
@@ -46,16 +48,17 @@ else if (globalThis._VSCODE_PRODUCT_JSON && globalThis._VSCODE_PACKAGE_JSON) {
 		const pkg = globalThis._VSCODE_PACKAGE_JSON as { version: string };
 
 		Object.assign(product, {
-			version: pkg.version
+			version: pkg.version,
 		});
 	}
 }
 
 // Web environment or unknown
 else {
-
 	// Built time configuration (do NOT modify)
-	product = { /*BUILD->INSERT_PRODUCT_CONFIGURATION*/ } as any;
+	product = {
+		/*BUILD->INSERT_PRODUCT_CONFIGURATION*/
+	} as any;
 
 	// Running out of sources
 	if (Object.keys(product).length === 0) {
@@ -69,7 +72,7 @@ else {
 			reportIssueUrl: 'https://github.com/microsoft/vscode/issues/new',
 			licenseName: 'MIT',
 			licenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
-			serverLicenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt'
+			serverLicenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
 		});
 	}
 }

@@ -22,7 +22,10 @@ suite('MainThreadWorkspace', () => {
 	let instantiationService: TestInstantiationService;
 
 	setup(() => {
-		instantiationService = workbenchInstantiationService(undefined, disposables) as TestInstantiationService;
+		instantiationService = workbenchInstantiationService(
+			undefined,
+			disposables
+		) as TestInstantiationService;
 
 		configService = instantiationService.get(IConfigurationService) as TestConfigurationService;
 		configService.setUserConfiguration('search', {});
@@ -34,23 +37,32 @@ suite('MainThreadWorkspace', () => {
 				assert.strictEqual(query.folderQueries.length, 1);
 				assert.strictEqual(query.folderQueries[0].disregardIgnoreFiles, true);
 
-				assert.deepStrictEqual({ ...query.includePattern }, { 'foo': true });
+				assert.deepStrictEqual({ ...query.includePattern }, { foo: true });
 				assert.strictEqual(query.maxResults, 10);
 
 				return Promise.resolve({ results: [], messages: [] });
-			}
+			},
 		});
 
-		const mtw = disposables.add(instantiationService.createInstance(MainThreadWorkspace, SingleProxyRPCProtocol({ $initializeWorkspace: () => { } })));
-		return mtw.$startFileSearch(null, { maxResults: 10, includePattern: 'foo', disregardSearchExcludeSettings: true }, CancellationToken.None);
+		const mtw = disposables.add(
+			instantiationService.createInstance(
+				MainThreadWorkspace,
+				SingleProxyRPCProtocol({ $initializeWorkspace: () => {} })
+			)
+		);
+		return mtw.$startFileSearch(
+			null,
+			{ maxResults: 10, includePattern: 'foo', disregardSearchExcludeSettings: true },
+			CancellationToken.None
+		);
 	});
 
 	test('exclude defaults', () => {
 		configService.setUserConfiguration('search', {
-			'exclude': { 'searchExclude': true }
+			exclude: { searchExclude: true },
 		});
 		configService.setUserConfiguration('files', {
-			'exclude': { 'filesExclude': true }
+			exclude: { filesExclude: true },
 		});
 
 		instantiationService.stub(ISearchService, {
@@ -58,22 +70,33 @@ suite('MainThreadWorkspace', () => {
 				assert.strictEqual(query.folderQueries.length, 1);
 				assert.strictEqual(query.folderQueries[0].disregardIgnoreFiles, true);
 				assert.strictEqual(query.folderQueries[0].excludePattern?.length, 1);
-				assert.deepStrictEqual(query.folderQueries[0].excludePattern[0].pattern, { 'filesExclude': true });
+				assert.deepStrictEqual(query.folderQueries[0].excludePattern[0].pattern, {
+					filesExclude: true,
+				});
 
 				return Promise.resolve({ results: [], messages: [] });
-			}
+			},
 		});
 
-		const mtw = disposables.add(instantiationService.createInstance(MainThreadWorkspace, SingleProxyRPCProtocol({ $initializeWorkspace: () => { } })));
-		return mtw.$startFileSearch(null, { maxResults: 10, includePattern: '', disregardSearchExcludeSettings: true }, CancellationToken.None);
+		const mtw = disposables.add(
+			instantiationService.createInstance(
+				MainThreadWorkspace,
+				SingleProxyRPCProtocol({ $initializeWorkspace: () => {} })
+			)
+		);
+		return mtw.$startFileSearch(
+			null,
+			{ maxResults: 10, includePattern: '', disregardSearchExcludeSettings: true },
+			CancellationToken.None
+		);
 	});
 
 	test('disregard excludes', () => {
 		configService.setUserConfiguration('search', {
-			'exclude': { 'searchExclude': true }
+			exclude: { searchExclude: true },
 		});
 		configService.setUserConfiguration('files', {
-			'exclude': { 'filesExclude': true }
+			exclude: { filesExclude: true },
 		});
 
 		instantiationService.stub(ISearchService, {
@@ -82,19 +105,33 @@ suite('MainThreadWorkspace', () => {
 				assert.deepStrictEqual(query.excludePattern, undefined);
 
 				return Promise.resolve({ results: [], messages: [] });
-			}
+			},
 		});
 
-		const mtw = disposables.add(instantiationService.createInstance(MainThreadWorkspace, SingleProxyRPCProtocol({ $initializeWorkspace: () => { } })));
-		return mtw.$startFileSearch(null, { maxResults: 10, includePattern: '', disregardSearchExcludeSettings: true, disregardExcludeSettings: true }, CancellationToken.None);
+		const mtw = disposables.add(
+			instantiationService.createInstance(
+				MainThreadWorkspace,
+				SingleProxyRPCProtocol({ $initializeWorkspace: () => {} })
+			)
+		);
+		return mtw.$startFileSearch(
+			null,
+			{
+				maxResults: 10,
+				includePattern: '',
+				disregardSearchExcludeSettings: true,
+				disregardExcludeSettings: true,
+			},
+			CancellationToken.None
+		);
 	});
 
 	test('do not disregard anything if disregardExcludeSettings is true', () => {
 		configService.setUserConfiguration('search', {
-			'exclude': { 'searchExclude': true }
+			exclude: { searchExclude: true },
 		});
 		configService.setUserConfiguration('files', {
-			'exclude': { 'filesExclude': true }
+			exclude: { filesExclude: true },
 		});
 
 		instantiationService.stub(ISearchService, {
@@ -104,11 +141,25 @@ suite('MainThreadWorkspace', () => {
 				assert.deepStrictEqual(query.folderQueries[0].excludePattern, []);
 
 				return Promise.resolve({ results: [], messages: [] });
-			}
+			},
 		});
 
-		const mtw = disposables.add(instantiationService.createInstance(MainThreadWorkspace, SingleProxyRPCProtocol({ $initializeWorkspace: () => { } })));
-		return mtw.$startFileSearch(null, { maxResults: 10, includePattern: '', disregardExcludeSettings: true, disregardSearchExcludeSettings: false }, CancellationToken.None);
+		const mtw = disposables.add(
+			instantiationService.createInstance(
+				MainThreadWorkspace,
+				SingleProxyRPCProtocol({ $initializeWorkspace: () => {} })
+			)
+		);
+		return mtw.$startFileSearch(
+			null,
+			{
+				maxResults: 10,
+				includePattern: '',
+				disregardExcludeSettings: true,
+				disregardSearchExcludeSettings: false,
+			},
+			CancellationToken.None
+		);
 	});
 
 	test('exclude string', () => {
@@ -118,11 +169,25 @@ suite('MainThreadWorkspace', () => {
 				assert.deepStrictEqual({ ...query.excludePattern }, { 'exclude/**': true });
 
 				return Promise.resolve({ results: [], messages: [] });
-			}
+			},
 		});
 
-		const mtw = disposables.add(instantiationService.createInstance(MainThreadWorkspace, SingleProxyRPCProtocol({ $initializeWorkspace: () => { } })));
-		return mtw.$startFileSearch(null, { maxResults: 10, includePattern: '', excludePattern: [{ pattern: 'exclude/**' }], disregardSearchExcludeSettings: true }, CancellationToken.None);
+		const mtw = disposables.add(
+			instantiationService.createInstance(
+				MainThreadWorkspace,
+				SingleProxyRPCProtocol({ $initializeWorkspace: () => {} })
+			)
+		);
+		return mtw.$startFileSearch(
+			null,
+			{
+				maxResults: 10,
+				includePattern: '',
+				excludePattern: [{ pattern: 'exclude/**' }],
+				disregardSearchExcludeSettings: true,
+			},
+			CancellationToken.None
+		);
 	});
 	test('Valid revived URI after moving to EH', () => {
 		const uriComponents: UriComponents = {
@@ -137,10 +202,15 @@ suite('MainThreadWorkspace', () => {
 				assert.strictEqual(query.folderQueries[0].folder.scheme, 'test');
 
 				return Promise.resolve({ results: [], messages: [] });
-			}
+			},
 		});
 
-		const mtw = disposables.add(instantiationService.createInstance(MainThreadWorkspace, SingleProxyRPCProtocol({ $initializeWorkspace: () => { } })));
+		const mtw = disposables.add(
+			instantiationService.createInstance(
+				MainThreadWorkspace,
+				SingleProxyRPCProtocol({ $initializeWorkspace: () => {} })
+			)
+		);
 		return mtw.$startFileSearch(uriComponents, { filePattern: '*.md' }, CancellationToken.None);
 	});
 });

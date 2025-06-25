@@ -82,7 +82,8 @@ export function POST(req: NextRequest) {
 			if (requestDetails.inputTokens || requestDetails.outputTokens) {
 				// Get pricing information from service config
 				const admin = getAdminApp();
-				const serviceDoc = await admin.firestore()
+				const serviceDoc = await admin
+					.firestore()
 					.collection('services')
 					.where('providerId', '==', providerId)
 					.where('serviceType', '==', serviceType)
@@ -103,18 +104,13 @@ export function POST(req: NextRequest) {
 
 			// Store detailed usage record
 			const admin = getAdminApp();
-			await admin.firestore()
-				.collection('users')
-				.doc(uid)
-				.collection('usage_log')
-				.add(usageRecord);
+			await admin.firestore().collection('users').doc(uid).collection('usage_log').add(usageRecord);
 
 			return NextResponse.json({
 				success: true,
 				message: 'Usage logged successfully',
-				usageId: usageRecord.timestamp.getTime().toString()
+				usageId: usageRecord.timestamp.getTime().toString(),
 			});
-
 		} catch (error: any) {
 			console.error('Error logging usage:', error);
 
@@ -123,16 +119,13 @@ export function POST(req: NextRequest) {
 				return NextResponse.json(
 					{
 						error: 'Quota exceeded',
-						details: error.message
+						details: error.message,
 					},
 					{ status: 429 }
 				);
 			}
 
-			return NextResponse.json(
-				{ error: 'Failed to log usage' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to log usage' }, { status: 500 });
 		}
 	})(req);
 }
@@ -152,30 +145,34 @@ export function GET(req: NextRequest) {
 
 			if (period === 'current') {
 				// Get current month's usage summary
-				const usageDoc = await admin.firestore()
+				const usageDoc = await admin
+					.firestore()
 					.collection('users')
 					.doc(uid)
 					.collection('usage')
 					.doc('current')
 					.get();
 
-				const currentUsage = usageDoc.exists ? usageDoc.data() : {
-					apiCalls: 0,
-					computeMinutes: 0,
-					storageMB: 0,
-					deployments: 0,
-					lastReset: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
-				};
+				const currentUsage = usageDoc.exists
+					? usageDoc.data()
+					: {
+							apiCalls: 0,
+							computeMinutes: 0,
+							storageMB: 0,
+							deployments: 0,
+							lastReset: new Date().toISOString(),
+							updatedAt: new Date().toISOString(),
+						};
 
 				return NextResponse.json({
 					success: true,
 					period: 'current',
-					data: currentUsage
+					data: currentUsage,
 				});
 			} else {
 				// Get usage log entries
-				usageQuery = admin.firestore()
+				usageQuery = admin
+					.firestore()
 					.collection('users')
 					.doc(uid)
 					.collection('usage_log')
@@ -185,23 +182,19 @@ export function GET(req: NextRequest) {
 				const usageSnapshot = await usageQuery.get();
 				const usageLog = usageSnapshot.docs.map(doc => ({
 					id: doc.id,
-					...doc.data()
+					...doc.data(),
 				}));
 
 				return NextResponse.json({
 					success: true,
 					period: 'log',
 					data: usageLog,
-					count: usageLog.length
+					count: usageLog.length,
 				});
 			}
-
 		} catch (error) {
 			console.error('Error fetching usage:', error);
-			return NextResponse.json(
-				{ error: 'Failed to fetch usage data' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to fetch usage data' }, { status: 500 });
 		}
 	})(req);
 }

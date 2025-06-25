@@ -38,5 +38,4 @@ export interface IStandaloneThemeService extends IThemeService {
 	getColorTheme(): IStandaloneTheme;
 
 	setColorMapOverride(colorMapOverride: Color[] | null): void;
-
 }

@@ -45,8 +45,7 @@ export class TreeItemCheckbox extends Disposable {
 		if (node.checkbox) {
 			if (!this.toggle) {
 				this.createCheckbox(node);
-			}
-			else {
+			} else {
 				this.toggle.checked = node.checkbox.isChecked;
 				this.toggle.setIcon(this.toggle.checked ? Codicon.check : undefined);
 			}
@@ -59,7 +58,7 @@ export class TreeItemCheckbox extends Disposable {
 				isChecked: node.checkbox.isChecked,
 				title: '',
 				icon: node.checkbox.isChecked ? Codicon.check : undefined,
-				...defaultToggleStyles
+				...defaultToggleStyles,
 			});
 			this.setHover(node.checkbox);
 			this.setAccessibilityInformation(node.checkbox);
@@ -74,16 +73,24 @@ export class TreeItemCheckbox extends Disposable {
 		if (this.toggle) {
 			this._register({ dispose: () => this.removeCheckbox() });
 			this._register(this.toggle);
-			this._register(this.toggle.onChange(() => {
-				this.setCheckbox(node);
-			}));
+			this._register(
+				this.toggle.onChange(() => {
+					this.setCheckbox(node);
+				})
+			);
 		}
 	}
 
 	private setHover(checkbox: ITreeItemCheckboxState) {
 		if (this.toggle) {
 			if (!this.hover) {
-				this.hover = this._register(this.hoverService.setupManagedHover(this.hoverDelegate, this.toggle.domNode, this.checkboxHoverContent(checkbox)));
+				this.hover = this._register(
+					this.hoverService.setupManagedHover(
+						this.hoverDelegate,
+						this.toggle.domNode,
+						this.checkboxHoverContent(checkbox)
+					)
+				);
 			} else {
 				this.hover.update(checkbox.tooltip);
 			}
@@ -102,8 +109,11 @@ export class TreeItemCheckbox extends Disposable {
 	}
 
 	private checkboxHoverContent(checkbox: ITreeItemCheckboxState): string {
-		return checkbox.tooltip ? checkbox.tooltip :
-			checkbox.isChecked ? localize('checked', 'Checked') : localize('unchecked', 'Unchecked');
+		return checkbox.tooltip
+			? checkbox.tooltip
+			: checkbox.isChecked
+				? localize('checked', 'Checked')
+				: localize('unchecked', 'Unchecked');
 	}
 
 	private setAccessibilityInformation(checkbox: ITreeItemCheckboxState) {

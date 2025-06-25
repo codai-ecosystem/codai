@@ -3,31 +3,16 @@
 	"ui": "tui",
 	"tasks": {
 		"build": {
-			"dependsOn": [
-				"^build"
-			],
-			"inputs": [
-				"src/**/*.ts",
-				"src/**/*.tsx",
-				"src/**/*.js",
-				"src/**/*.jsx",
-				"package.json"
-			],
-			"outputs": [
-				"dist/**",
-				".next/**",
-				"out/**",
-				"build/**"
-			]
+			"dependsOn": ["^build"],
+			"inputs": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx", "package.json"],
+			"outputs": ["dist/**", ".next/**", "out/**", "build/**"]
 		},
 		"dev": {
 			"cache": false,
 			"persistent": true
 		},
 		"test": {
-			"dependsOn": [
-				"^build"
-			],
+			"dependsOn": ["^build"],
 			"inputs": [
 				"src/**/*.ts",
 				"src/**/*.tsx",
@@ -38,9 +23,7 @@
 			]
 		},
 		"lint": {
-			"dependsOn": [
-				"^build"
-			],
+			"dependsOn": ["^build"],
 			"inputs": [
 				"src/**/*.ts",
 				"src/**/*.tsx",
@@ -51,15 +34,8 @@
 			]
 		},
 		"typecheck": {
-			"dependsOn": [
-				"^build"
-			],
-			"inputs": [
-				"src/**/*.ts",
-				"src/**/*.tsx",
-				"tsconfig.json",
-				"tsconfig.*.json"
-			]
+			"dependsOn": ["^build"],
+			"inputs": ["src/**/*.ts", "src/**/*.tsx", "tsconfig.json", "tsconfig.*.json"]
 		},
 		"clean": {
 			"cache": false

@@ -19,34 +19,43 @@ import { INotebookEditorModelResolverService } from '../../common/notebookEditor
 import { NotebookProviderInfo } from '../../common/notebookProvider.js';
 import { EditorResolverService } from '../../../../services/editor/browser/editorResolverService.js';
 import { RegisteredEditorPriority } from '../../../../services/editor/common/editorResolverService.js';
-import { IExtensionService, nullExtensionDescription } from '../../../../services/extensions/common/extensions.js';
+import {
+	IExtensionService,
+	nullExtensionDescription,
+} from '../../../../services/extensions/common/extensions.js';
 import { workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
 
 suite('NotebookProviderInfoStore', function () {
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite() as Pick<DisposableStore, 'add'>;
 
-	test('Can\'t open untitled notebooks in test #119363', function () {
+	test("Can't open untitled notebooks in test #119363", function () {
 		const instantiationService = workbenchInstantiationService(undefined, disposables);
 		const store = new NotebookProviderInfoStore(
-			new class extends mock<IStorageService>() {
-				override get() { return ''; }
-				override store() { }
-				override getObject() { return {}; }
-			},
-			new class extends mock<IExtensionService>() {
+			new (class extends mock<IStorageService>() {
+				override get() {
+					return '';
+				}
+				override store() {}
+				override getObject() {
+					return {};
+				}
+			})(),
+			new (class extends mock<IExtensionService>() {
 				override onDidRegisterExtensions = Event.None;
-			},
+			})(),
 			disposables.add(instantiationService.createInstance(EditorResolverService)),
 			new TestConfigurationService(),
-			new class extends mock<IAccessibilityService>() {
+			new (class extends mock<IAccessibilityService>() {
 				override onDidChangeScreenReaderOptimized: Event<void> = Event.None;
-			},
+			})(),
 			instantiationService,
-			new class extends mock<IFileService>() {
-				override hasProvider() { return true; }
-			},
-			new class extends mock<INotebookEditorModelResolverService>() { },
-			new class extends mock<IUriIdentityService>() { }
+			new (class extends mock<IFileService>() {
+				override hasProvider() {
+					return true;
+				}
+			})(),
+			new (class extends mock<INotebookEditorModelResolverService>() {})(),
+			new (class extends mock<IUriIdentityService>() {})()
 		);
 		disposables.add(store);
 
@@ -91,5 +100,4 @@ suite('NotebookProviderInfoStore', function () {
 		assert.strictEqual(providers.length, 1);
 		assert.strictEqual(providers[0] === barInfo, true);
 	});
-
 });

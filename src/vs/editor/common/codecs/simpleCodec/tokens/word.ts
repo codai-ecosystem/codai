@@ -22,7 +22,7 @@ export class Word<TText extends string = string> extends BaseToken<TText> {
 		/**
 		 * The string value of the word.
 		 */
-		public readonly text: TText,
+		public readonly text: TText
 	) {
 		super(range);
 	}
@@ -31,24 +31,17 @@ export class Word<TText extends string = string> extends BaseToken<TText> {
 	 * Create new `Word` token with the given `text` and the range
 	 * inside the given `Line` at the specified `column number`.
 	 */
-	public static newOnLine(
-		text: string,
-		line: Line | number,
-		atColumnNumber: number,
-	): Word {
-		const startLineNumber = (typeof line === 'number')
-			? line
-			: line.range.startLineNumber;
+	public static newOnLine(text: string, line: Line | number, atColumnNumber: number): Word {
+		const startLineNumber = typeof line === 'number' ? line : line.range.startLineNumber;
 
 		const range = new Range(
-			startLineNumber, atColumnNumber,
-			startLineNumber, atColumnNumber + text.length
+			startLineNumber,
+			atColumnNumber,
+			startLineNumber,
+			atColumnNumber + text.length
 		);
 
-		return new Word(
-			range,
-			text,
-		);
+		return new Word(range, text);
 	}
 
 	/**

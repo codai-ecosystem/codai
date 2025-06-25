@@ -13,7 +13,10 @@ export class MinimapCharRenderer {
 	private readonly charDataNormal: Uint8ClampedArray;
 	private readonly charDataLight: Uint8ClampedArray;
 
-	constructor(charData: Uint8ClampedArray, public readonly scale: number) {
+	constructor(
+		charData: Uint8ClampedArray,
+		public readonly scale: number
+	) {
 		this.charDataNormal = MinimapCharRenderer.soften(charData, 12 / 15);
 		this.charDataLight = MinimapCharRenderer.soften(charData, 50 / 60);
 	}
@@ -41,7 +44,7 @@ export class MinimapCharRenderer {
 	): void {
 		const charWidth = Constants.BASE_CHAR_WIDTH * this.scale;
 		const charHeight = Constants.BASE_CHAR_HEIGHT * this.scale;
-		const renderHeight = (force1pxHeight ? 1 : charHeight);
+		const renderHeight = force1pxHeight ? 1 : charHeight;
 		if (dx + charWidth > target.width || dy + renderHeight > target.height) {
 			console.warn('bad render request outside image data');
 			return;
@@ -92,7 +95,7 @@ export class MinimapCharRenderer {
 	): void {
 		const charWidth = Constants.BASE_CHAR_WIDTH * this.scale;
 		const charHeight = Constants.BASE_CHAR_HEIGHT * this.scale;
-		const renderHeight = (force1pxHeight ? 1 : charHeight);
+		const renderHeight = force1pxHeight ? 1 : charHeight;
 		if (dx + charWidth > target.width || dy + renderHeight > target.height) {
 			console.warn('bad render request outside image data');
 			return;

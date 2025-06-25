@@ -13,14 +13,13 @@ export const enum StatusBarElement {
 	INDENTATION_STATUS = 4,
 	ENCODING_STATUS = 5,
 	EOL_STATUS = 6,
-	LANGUAGE_STATUS = 7
+	LANGUAGE_STATUS = 7,
 }
 
 export class StatusBar {
-
 	private readonly mainSelector = 'footer[id="workbench.parts.statusbar"]';
 
-	constructor(private code: Code) { }
+	constructor(private code: Code) {}
 
 	async waitForStatusbarElement(element: StatusBarElement): Promise<void> {
 		await this.code.waitForElement(this.getSelector(element));
@@ -35,7 +34,10 @@ export class StatusBar {
 	}
 
 	async waitForStatusbarText(title: string, text: string): Promise<void> {
-		await this.code.waitForTextContent(`${this.mainSelector} .statusbar-item[aria-label="${title}"]`, text);
+		await this.code.waitForTextContent(
+			`${this.mainSelector} .statusbar-item[aria-label="${title}"]`,
+			text
+		);
 	}
 
 	private getSelector(element: StatusBarElement): string {

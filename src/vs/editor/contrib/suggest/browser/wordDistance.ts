@@ -13,13 +13,13 @@ import { IEditorWorkerService } from '../../../common/services/editorWorker.js';
 import { BracketSelectionRangeProvider } from '../../smartSelect/browser/bracketSelections.js';
 
 export abstract class WordDistance {
-
-	static readonly None = new class extends WordDistance {
-		distance() { return 0; }
-	};
+	static readonly None = new (class extends WordDistance {
+		distance() {
+			return 0;
+		}
+	})();
 
 	static async create(service: IEditorWorkerService, editor: ICodeEditor): Promise<WordDistance> {
-
 		if (!editor.getOption(EditorOption.suggest).localityBonus) {
 			return WordDistance.None;
 		}
@@ -35,7 +35,9 @@ export abstract class WordDistance {
 			return WordDistance.None;
 		}
 
-		const [ranges] = await new BracketSelectionRangeProvider().provideSelectionRanges(model, [position]);
+		const [ranges] = await new BracketSelectionRangeProvider().provideSelectionRanges(model, [
+			position,
+		]);
 		if (ranges.length === 0) {
 			return WordDistance.None;
 		}
@@ -49,7 +51,7 @@ export abstract class WordDistance {
 		const wordUntilPos = model.getWordUntilPosition(position);
 		delete wordRanges[wordUntilPos.word];
 
-		return new class extends WordDistance {
+		return new (class extends WordDistance {
 			distance(anchor: IPosition, item: CompletionItem) {
 				if (!position.equals(editor.getPosition())) {
 					return 0;
@@ -62,7 +64,11 @@ export abstract class WordDistance {
 				if (isFalsyOrEmpty(wordLines)) {
 					return 2 << 20;
 				}
-				const idx = binarySearch(wordLines, Range.fromPositions(anchor), Range.compareRangesUsingStarts);
+				const idx = binarySearch(
+					wordLines,
+					Range.fromPositions(anchor),
+					Range.compareRangesUsingStarts
+				);
 				const bestWordRange = idx >= 0 ? wordLines[idx] : wordLines[Math.max(0, ~idx - 1)];
 				let blockDistance = ranges.length;
 				for (const range of ranges) {
@@ -73,7 +79,7 @@ export abstract class WordDistance {
 				}
 				return blockDistance;
 			}
-		};
+		})();
 	}
 
 	abstract distance(anchor: IPosition, suggestion: CompletionItem): number;

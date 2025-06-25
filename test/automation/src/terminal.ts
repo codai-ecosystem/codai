@@ -27,7 +27,7 @@ export enum Selector {
 	SplitButton = '.editor .codicon-split-horizontal',
 	XtermSplitIndex0 = '#terminal .terminal-groups-container .split-view-view:nth-child(1) .terminal-wrapper',
 	XtermSplitIndex1 = '#terminal .terminal-groups-container .split-view-view:nth-child(2) .terminal-wrapper',
-	Hide = '.hide'
+	Hide = '.hide',
 }
 
 /**
@@ -40,7 +40,7 @@ export enum TerminalCommandIdWithValue {
 	NewWithProfile = 'workbench.action.terminal.newWithProfile',
 	SelectDefaultProfile = 'workbench.action.terminal.selectDefaultShell',
 	AttachToSession = 'workbench.action.terminal.attachToSession',
-	WriteDataToTerminal = 'workbench.action.terminal.writeDataToTerminal'
+	WriteDataToTerminal = 'workbench.action.terminal.writeDataToTerminal',
 }
 
 /**
@@ -59,7 +59,7 @@ export enum TerminalCommandId {
 	NewWithProfile = 'workbench.action.terminal.newWithProfile',
 	SelectDefaultProfile = 'workbench.action.terminal.selectDefaultShell',
 	DetachSession = 'workbench.action.terminal.detachSession',
-	CreateNew = 'workbench.action.terminal.new'
+	CreateNew = 'workbench.action.terminal.new',
 }
 interface TerminalLabel {
 	name?: string;
@@ -76,10 +76,16 @@ interface ICommandDecorationCounts {
 }
 
 export class Terminal {
+	constructor(
+		private code: Code,
+		private quickaccess: QuickAccess,
+		private quickinput: QuickInput
+	) {}
 
-	constructor(private code: Code, private quickaccess: QuickAccess, private quickinput: QuickInput) { }
-
-	async runCommand(commandId: TerminalCommandId, expectedLocation?: 'editor' | 'panel'): Promise<void> {
+	async runCommand(
+		commandId: TerminalCommandId,
+		expectedLocation?: 'editor' | 'panel'
+	): Promise<void> {
 		const keepOpen = commandId === TerminalCommandId.Join;
 		await this.quickaccess.runCommand(commandId, { keepOpen });
 		if (keepOpen) {
@@ -93,7 +99,11 @@ export class Terminal {
 			case TerminalCommandId.CreateNewEditor:
 			case TerminalCommandId.CreateNew:
 			case TerminalCommandId.NewWithProfile:
-				await this._waitForTerminal(expectedLocation === 'editor' || commandId === TerminalCommandId.CreateNewEditor ? 'editor' : 'panel');
+				await this._waitForTerminal(
+					expectedLocation === 'editor' || commandId === TerminalCommandId.CreateNewEditor
+						? 'editor'
+						: 'panel'
+				);
 				break;
 			case TerminalCommandId.KillAll:
 				// HACK: Attempt to kill all terminals to clean things up, this is known to be flaky
@@ -102,14 +112,22 @@ export class Terminal {
 				// after 2 seconds.
 				await Promise.race([
 					this.code.waitForElements(Selector.Xterm, true, e => e.length === 0),
-					this.code.wait(2000)
+					this.code.wait(2000),
 				]);
 				break;
 		}
 	}
 
-	async runCommandWithValue(commandId: TerminalCommandIdWithValue, value?: string, altKey?: boolean): Promise<void> {
-		const keepOpen = !!value || commandId === TerminalCommandIdWithValue.NewWithProfile || commandId === TerminalCommandIdWithValue.Rename || (commandId === TerminalCommandIdWithValue.SelectDefaultProfile && value !== 'PowerShell');
+	async runCommandWithValue(
+		commandId: TerminalCommandIdWithValue,
+		value?: string,
+		altKey?: boolean
+	): Promise<void> {
+		const keepOpen =
+			!!value ||
+			commandId === TerminalCommandIdWithValue.NewWithProfile ||
+			commandId === TerminalCommandIdWithValue.Rename ||
+			(commandId === TerminalCommandIdWithValue.SelectDefaultProfile && value !== 'PowerShell');
 		await this.quickaccess.runCommand(commandId, { keepOpen });
 		// Running the command should hide the quick input in the following frame, this next wait
 		// ensures that the quick input is opened again before proceeding to avoid a race condition
@@ -166,16 +184,26 @@ export class Terminal {
 		await this.waitForTerminalText(buffer => buffer.some(line => line.startsWith('initialized')));
 
 		// Erase all content and reset cursor to top
-		await this.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `${csi('2J')}${csi('H')}`);
+		await this.runCommandWithValue(
+			TerminalCommandIdWithValue.WriteDataToTerminal,
+			`${csi('2J')}${csi('H')}`
+		);
 
 		// Force windows pty mode off; assume all sequences are rendered in correct position
 		if (process.platform === 'win32') {
-			await this.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `${vsc('P;IsWindows=False')}`);
+			await this.runCommandWithValue(
+				TerminalCommandIdWithValue.WriteDataToTerminal,
+				`${vsc('P;IsWindows=False')}`
+			);
 		}
 	}
 
 	async assertEditorGroupCount(count: number): Promise<void> {
-		await this.code.waitForElements(Selector.EditorGroups, true, editorGroups => editorGroups && editorGroups.length === count);
+		await this.code.waitForElements(
+			Selector.EditorGroups,
+			true,
+			editorGroups => editorGroups && editorGroups.length === count
+		);
 	}
 
 	async assertSingleTab(label: TerminalLabel, editor?: boolean): Promise<void> {
@@ -185,12 +213,18 @@ export class Terminal {
 		} else if (label.name) {
 			regex = new RegExp(label.name);
 		}
-		await this.assertTabExpected(editor ? Selector.EditorTab : Selector.SingleTab, undefined, regex, label.icon, label.color);
+		await this.assertTabExpected(
+			editor ? Selector.EditorTab : Selector.SingleTab,
+			undefined,
+			regex,
+			label.icon,
+			label.color
+		);
 	}
 
 	async assertTerminalGroups(expectedGroups: TerminalGroup[]): Promise<void> {
 		let expectedCount = 0;
-		expectedGroups.forEach(g => expectedCount += g.length);
+		expectedGroups.forEach(g => (expectedCount += g.length));
 		let index = 0;
 		while (index < expectedCount) {
 			for (let groupIndex = 0; groupIndex < expectedGroups.length; groupIndex++) {
@@ -199,8 +233,20 @@ export class Terminal {
 				const isSplit = terminalsInGroup > 1;
 				while (indexInGroup < terminalsInGroup) {
 					const instance = expectedGroups[groupIndex][indexInGroup];
-					const nameRegex = instance.name && isSplit ? new RegExp('\\s*[├┌└]\\s*' + instance.name) : instance.name ? new RegExp(/^\s*/ + instance.name) : undefined;
-					await this.assertTabExpected(undefined, index, nameRegex, instance.icon, instance.color, instance.description);
+					const nameRegex =
+						instance.name && isSplit
+							? new RegExp('\\s*[├┌└]\\s*' + instance.name)
+							: instance.name
+								? new RegExp(/^\s*/ + instance.name)
+								: undefined;
+					await this.assertTabExpected(
+						undefined,
+						index,
+						nameRegex,
+						instance.icon,
+						instance.color,
+						instance.description
+					);
 					indexInGroup++;
 					index++;
 				}
@@ -212,12 +258,18 @@ export class Terminal {
 		const tabCount = (await this.code.waitForElements(Selector.Tabs, true)).length;
 		const groups: TerminalGroup[] = [];
 		for (let i = 0; i < tabCount; i++) {
-			const title = await this.code.waitForElement(`${Selector.Tabs}[data-index="${i}"] ${Selector.TabsEntry}`, e => e?.textContent?.length ? e?.textContent?.length > 1 : false);
-			const description: IElement | undefined = await this.code.waitForElement(`${Selector.Tabs}[data-index="${i}"] ${Selector.TabsEntry} ${Selector.Description}`, () => true);
+			const title = await this.code.waitForElement(
+				`${Selector.Tabs}[data-index="${i}"] ${Selector.TabsEntry}`,
+				e => (e?.textContent?.length ? e?.textContent?.length > 1 : false)
+			);
+			const description: IElement | undefined = await this.code.waitForElement(
+				`${Selector.Tabs}[data-index="${i}"] ${Selector.TabsEntry} ${Selector.Description}`,
+				() => true
+			);
 
 			const label: TerminalLabel = {
 				name: title.textContent.replace(/^[├┌└]\s*/, ''),
-				description: description?.textContent
+				description: description?.textContent,
 			};
 			// It's a new group if the tab does not start with ├ or └
 			if (title.textContent.match(/^[├└]/)) {
@@ -230,34 +282,64 @@ export class Terminal {
 	}
 
 	async getSingleTabName(): Promise<string> {
-		const tab = await this.code.waitForElement(Selector.SingleTab, singleTab => !!singleTab && singleTab?.textContent.length > 1);
+		const tab = await this.code.waitForElement(
+			Selector.SingleTab,
+			singleTab => !!singleTab && singleTab?.textContent.length > 1
+		);
 		return tab.textContent;
 	}
 
-	private async assertTabExpected(selector?: string, listIndex?: number, nameRegex?: RegExp, icon?: string, color?: string, description?: string): Promise<void> {
+	private async assertTabExpected(
+		selector?: string,
+		listIndex?: number,
+		nameRegex?: RegExp,
+		icon?: string,
+		color?: string,
+		description?: string
+	): Promise<void> {
 		if (listIndex) {
 			if (nameRegex) {
-				await this.code.waitForElement(`${Selector.Tabs}[data-index="${listIndex}"] ${Selector.TabsEntry}`, entry => !!entry && !!entry?.textContent.match(nameRegex));
+				await this.code.waitForElement(
+					`${Selector.Tabs}[data-index="${listIndex}"] ${Selector.TabsEntry}`,
+					entry => !!entry && !!entry?.textContent.match(nameRegex)
+				);
 				if (description) {
-					await this.code.waitForElement(`${Selector.Tabs}[data-index="${listIndex}"] ${Selector.TabsEntry} ${Selector.Description}`, e => !!e && e.textContent === description);
+					await this.code.waitForElement(
+						`${Selector.Tabs}[data-index="${listIndex}"] ${Selector.TabsEntry} ${Selector.Description}`,
+						e => !!e && e.textContent === description
+					);
 				}
 			}
 			if (color) {
-				await this.code.waitForElement(`${Selector.Tabs}[data-index="${listIndex}"] ${Selector.TabsEntry} .monaco-icon-label.terminal-icon-terminal_ansi${color}`);
+				await this.code.waitForElement(
+					`${Selector.Tabs}[data-index="${listIndex}"] ${Selector.TabsEntry} .monaco-icon-label.terminal-icon-terminal_ansi${color}`
+				);
 			}
 			if (icon) {
-				await this.code.waitForElement(`${Selector.Tabs}[data-index="${listIndex}"] ${Selector.TabsEntry} .codicon-${icon}`);
+				await this.code.waitForElement(
+					`${Selector.Tabs}[data-index="${listIndex}"] ${Selector.TabsEntry} .codicon-${icon}`
+				);
 			}
 		} else if (selector) {
 			if (nameRegex) {
-				await this.code.waitForElement(`${selector}`, singleTab => !!singleTab && !!singleTab?.textContent.match(nameRegex));
+				await this.code.waitForElement(
+					`${selector}`,
+					singleTab => !!singleTab && !!singleTab?.textContent.match(nameRegex)
+				);
 			}
 			if (color) {
-				await this.code.waitForElement(`${selector}`, singleTab => !!singleTab && !!singleTab.className.includes(`terminal-icon-terminal_ansi${color}`));
+				await this.code.waitForElement(
+					`${selector}`,
+					singleTab =>
+						!!singleTab && !!singleTab.className.includes(`terminal-icon-terminal_ansi${color}`)
+				);
 			}
 			if (icon) {
 				selector = selector === Selector.EditorTab ? selector : `${selector} .codicon`;
-				await this.code.waitForElement(`${selector}`, singleTab => !!singleTab && !!singleTab.className.includes(icon));
+				await this.code.waitForElement(
+					`${selector}`,
+					singleTab => !!singleTab && !!singleTab.className.includes(icon)
+				);
 			}
 		}
 	}
@@ -266,18 +348,47 @@ export class Terminal {
 		await this.code.waitForElement(Selector.TerminalView, result => result === undefined);
 	}
 
-	async assertCommandDecorations(expectedCounts?: ICommandDecorationCounts, customIcon?: { updatedIcon: string; count: number }, showDecorations?: 'both' | 'gutter' | 'overviewRuler' | 'never'): Promise<void> {
+	async assertCommandDecorations(
+		expectedCounts?: ICommandDecorationCounts,
+		customIcon?: { updatedIcon: string; count: number },
+		showDecorations?: 'both' | 'gutter' | 'overviewRuler' | 'never'
+	): Promise<void> {
 		if (expectedCounts) {
-			const placeholderSelector = showDecorations === 'overviewRuler' ? `${Selector.CommandDecorationPlaceholder}${Selector.Hide}` : Selector.CommandDecorationPlaceholder;
-			await this.code.waitForElements(placeholderSelector, true, decorations => decorations && decorations.length === expectedCounts.placeholder);
-			const successSelector = showDecorations === 'overviewRuler' ? `${Selector.CommandDecorationSuccess}${Selector.Hide}` : Selector.CommandDecorationSuccess;
-			await this.code.waitForElements(successSelector, true, decorations => decorations && decorations.length === expectedCounts.success);
-			const errorSelector = showDecorations === 'overviewRuler' ? `${Selector.CommandDecorationError}${Selector.Hide}` : Selector.CommandDecorationError;
-			await this.code.waitForElements(errorSelector, true, decorations => decorations && decorations.length === expectedCounts.error);
+			const placeholderSelector =
+				showDecorations === 'overviewRuler'
+					? `${Selector.CommandDecorationPlaceholder}${Selector.Hide}`
+					: Selector.CommandDecorationPlaceholder;
+			await this.code.waitForElements(
+				placeholderSelector,
+				true,
+				decorations => decorations && decorations.length === expectedCounts.placeholder
+			);
+			const successSelector =
+				showDecorations === 'overviewRuler'
+					? `${Selector.CommandDecorationSuccess}${Selector.Hide}`
+					: Selector.CommandDecorationSuccess;
+			await this.code.waitForElements(
+				successSelector,
+				true,
+				decorations => decorations && decorations.length === expectedCounts.success
+			);
+			const errorSelector =
+				showDecorations === 'overviewRuler'
+					? `${Selector.CommandDecorationError}${Selector.Hide}`
+					: Selector.CommandDecorationError;
+			await this.code.waitForElements(
+				errorSelector,
+				true,
+				decorations => decorations && decorations.length === expectedCounts.error
+			);
 		}
 
 		if (customIcon) {
-			await this.code.waitForElements(`.terminal-command-decoration.codicon-${customIcon.updatedIcon}`, true, decorations => decorations && decorations.length === customIcon.count);
+			await this.code.waitForElements(
+				`.terminal-command-decoration.codicon-${customIcon.updatedIcon}`,
+				true,
+				decorations => decorations && decorations.length === customIcon.count
+			);
 		}
 	}
 
@@ -293,7 +404,11 @@ export class Terminal {
 		await this.code.waitAndClick(Selector.SingleTab);
 	}
 
-	async waitForTerminalText(accept: (buffer: string[]) => boolean, message?: string, splitIndex?: 0 | 1): Promise<void> {
+	async waitForTerminalText(
+		accept: (buffer: string[]) => boolean,
+		message?: string,
+		splitIndex?: 0 | 1
+	): Promise<void> {
 		try {
 			let selector: string = Selector.Xterm;
 			if (splitIndex !== undefined) {
@@ -318,7 +433,10 @@ export class Terminal {
 	 */
 	private async _waitForTerminal(expectedLocation?: 'editor' | 'panel'): Promise<void> {
 		await this.code.waitForElement(Selector.XtermFocused);
-		await this.code.waitForTerminalBuffer(expectedLocation === 'editor' ? Selector.XtermEditor : Selector.Xterm, lines => lines.some(line => line.length > 0));
+		await this.code.waitForTerminalBuffer(
+			expectedLocation === 'editor' ? Selector.XtermEditor : Selector.Xterm,
+			lines => lines.some(line => line.length > 0)
+		);
 	}
 }
 

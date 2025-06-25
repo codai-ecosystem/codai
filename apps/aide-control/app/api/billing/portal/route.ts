@@ -14,10 +14,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 		const { userId } = await req.json();
 
 		if (!userId) {
-			return NextResponse.json(
-				{ error: 'User ID is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
 		}
 
 		const admin = getAdminApp();
@@ -26,20 +23,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 		// Get user data
 		const userDoc = await db.collection('users').doc(userId).get();
 		if (!userDoc.exists) {
-			return NextResponse.json(
-				{ error: 'User not found' },
-				{ status: 404 }
-			);
+			return NextResponse.json({ error: 'User not found' }, { status: 404 });
 		}
 
 		const userData = userDoc.data();
 		const customerId = userData.stripeCustomerId;
 
 		if (!customerId) {
-			return NextResponse.json(
-				{ error: 'No Stripe customer found for user' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'No Stripe customer found for user' }, { status: 400 });
 		}
 
 		// Create customer portal session
@@ -49,9 +40,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 		});
 
 		return NextResponse.json({
-			url: session.url
+			url: session.url,
 		});
-
 	} catch (error) {
 		console.error('Error creating customer portal session:', error);
 		return NextResponse.json(

@@ -65,7 +65,9 @@ export interface IExtensionGalleryManifest {
 	};
 }
 
-export const IExtensionGalleryManifestService = createDecorator<IExtensionGalleryManifestService>('IExtensionGalleryManifestService');
+export const IExtensionGalleryManifestService = createDecorator<IExtensionGalleryManifestService>(
+	'IExtensionGalleryManifestService'
+);
 
 export interface IExtensionGalleryManifestService {
 	readonly _serviceBrand: undefined;
@@ -75,7 +77,10 @@ export interface IExtensionGalleryManifestService {
 	getExtensionGalleryManifest(): Promise<IExtensionGalleryManifest | null>;
 }
 
-export function getExtensionGalleryManifestResourceUri(manifest: IExtensionGalleryManifest, type: string): string | undefined {
+export function getExtensionGalleryManifestResourceUri(
+	manifest: IExtensionGalleryManifest,
+	type: string
+): string | undefined {
 	const [name, version] = type.split('/');
 	for (const resource of manifest.resources) {
 		const [r, v] = resource.type.split('/');

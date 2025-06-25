@@ -12,15 +12,35 @@ import { mark } from '../../base/common/performance.js';
 import { onUnexpectedError, setUnexpectedErrorHandler } from '../../base/common/errors.js';
 import { Registry } from '../../platform/registry/common/platform.js';
 import { isWindows, isLinux, isWeb, isNative, isMacintosh } from '../../base/common/platform.js';
-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../common/contributions.js';
+import {
+	IWorkbenchContributionsRegistry,
+	Extensions as WorkbenchExtensions,
+} from '../common/contributions.js';
 import { IEditorFactoryRegistry, EditorExtensions } from '../common/editor.js';
 import { getSingletonServiceDescriptors } from '../../platform/instantiation/common/extensions.js';
-import { Position, Parts, IWorkbenchLayoutService, positionToString } from '../services/layout/browser/layoutService.js';
-import { IStorageService, WillSaveStateReason, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
-import { IConfigurationChangeEvent, IConfigurationService } from '../../platform/configuration/common/configuration.js';
+import {
+	Position,
+	Parts,
+	IWorkbenchLayoutService,
+	positionToString,
+} from '../services/layout/browser/layoutService.js';
+import {
+	IStorageService,
+	WillSaveStateReason,
+	StorageScope,
+	StorageTarget,
+} from '../../platform/storage/common/storage.js';
+import {
+	IConfigurationChangeEvent,
+	IConfigurationService,
+} from '../../platform/configuration/common/configuration.js';
 import { IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
 import { ServiceCollection } from '../../platform/instantiation/common/serviceCollection.js';
-import { LifecyclePhase, ILifecycleService, WillShutdownEvent } from '../services/lifecycle/common/lifecycle.js';
+import {
+	LifecyclePhase,
+	ILifecycleService,
+	WillShutdownEvent,
+} from '../services/lifecycle/common/lifecycle.js';
 import { INotificationService } from '../../platform/notification/common/notification.js';
 import { NotificationService } from '../services/notification/common/notificationService.js';
 import { NotificationsCenter } from './parts/notifications/notificationsCenter.js';
@@ -50,7 +70,6 @@ import { AccessibleViewRegistry } from '../../platform/accessibility/browser/acc
 import { NotificationAccessibleView } from './parts/notifications/notificationAccessibleView.js';
 
 export interface IWorkbenchOptions {
-
 	/**
 	 * Extra classes to be added to the workbench container.
 	 */
@@ -58,7 +77,6 @@ export interface IWorkbenchOptions {
 }
 
 export class Workbench extends Layout {
-
 	private readonly _onWillShutdown = this._register(new Emitter<WillShutdownEvent>());
 	readonly onWillShutdown = this._onWillShutdown.event;
 
@@ -80,12 +98,10 @@ export class Workbench extends Layout {
 	}
 
 	private registerErrorHandler(logService: ILogService): void {
-
 		// Listen on unhandled rejection events
 		// Note: intentionally not registered as disposable to handle
 		//       errors that can occur during shutdown phase.
-		mainWindow.addEventListener('unhandledrejection', (event) => {
-
+		mainWindow.addEventListener('unhandledrejection', event => {
 			// See https://developer.mozilla.org/en-US/docs/Web/API/PromiseRejectionEvent
 			onUnexpectedError(event.reason);
 
@@ -97,7 +113,10 @@ export class Workbench extends Layout {
 		setUnexpectedErrorHandler(error => this.handleUnexpectedError(error, logService));
 	}
 
-	private previousUnexpectedError: { message: string | undefined; time: number } = { message: undefined, time: 0 };
+	private previousUnexpectedError: { message: string | undefined; time: number } = {
+		message: undefined,
+		time: 0,
+	};
 	private handleUnexpectedError(error: unknown, logService: ILogService): void {
 		const message = toErrorMessage(error, true);
 		if (!message) {
@@ -105,7 +124,10 @@ export class Workbench extends Layout {
 		}
 
 		const now = Date.now();
-		if (message === this.previousUnexpectedError.message && now - this.previousUnexpectedError.time <= 1000) {
+		if (
+			message === this.previousUnexpectedError.message &&
+			now - this.previousUnexpectedError.time <= 1000
+		) {
 			return; // Return if error message identical to previous and shorter than 1 second
 		}
 
@@ -118,7 +140,6 @@ export class Workbench extends Layout {
 
 	startup(): IInstantiationService {
 		try {
-
 			// Configure emitter leak warning threshold
 			this._register(setGlobalLeakWarningThreshold(175));
 
@@ -136,7 +157,14 @@ export class Workbench extends Layout {
 
 				// Default Hover Delegate must be registered before creating any workbench/layout components
 				// as these possibly will use the default hover delegate
-				setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, { instantHover: enableInstantHover }, {}));
+				setHoverDelegateFactory((placement, enableInstantHover) =>
+					instantiationService.createInstance(
+						WorkbenchHoverDelegate,
+						placement,
+						{ instantHover: enableInstantHover },
+						{}
+					)
+				);
 				setBaseLayerHoverDelegate(hoverService);
 
 				// Layout
@@ -150,10 +178,21 @@ export class Workbench extends Layout {
 				this._register(instantiationService.createInstance(WorkbenchContextKeysHandler));
 
 				// Register Listeners
-				this.registerListeners(lifecycleService, storageService, configurationService, hostService, dialogService);
+				this.registerListeners(
+					lifecycleService,
+					storageService,
+					configurationService,
+					hostService,
+					dialogService
+				);
 
 				// Render Workbench
-				this.renderWorkbench(instantiationService, notificationService, storageService, configurationService);
+				this.renderWorkbench(
+					instantiationService,
+					notificationService,
+					storageService,
+					configurationService
+				);
 
 				// Workbench Layout
 				this.createWorkbenchLayout();
@@ -174,7 +213,6 @@ export class Workbench extends Layout {
 	}
 
 	private initServices(serviceCollection: ServiceCollection): IInstantiationService {
-
 		// Layout Service
 		serviceCollection.set(IWorkbenchLayoutService, this);
 
@@ -212,47 +250,71 @@ export class Workbench extends Layout {
 		return instantiationService;
 	}
 
-	private registerListeners(lifecycleService: ILifecycleService, storageService: IStorageService, configurationService: IConfigurationService, hostService: IHostService, dialogService: IDialogService): void {
-
+	private registerListeners(
+		lifecycleService: ILifecycleService,
+		storageService: IStorageService,
+		configurationService: IConfigurationService,
+		hostService: IHostService,
+		dialogService: IDialogService
+	): void {
 		// Configuration changes
-		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
+		this._register(
+			configurationService.onDidChangeConfiguration(e =>
+				this.updateFontAliasing(e, configurationService)
+			)
+		);
 
 		// Font Info
 		if (isNative) {
-			this._register(storageService.onWillSaveState(e => {
-				if (e.reason === WillSaveStateReason.SHUTDOWN) {
-					this.storeFontInfo(storageService);
-				}
-			}));
+			this._register(
+				storageService.onWillSaveState(e => {
+					if (e.reason === WillSaveStateReason.SHUTDOWN) {
+						this.storeFontInfo(storageService);
+					}
+				})
+			);
 		} else {
 			this._register(lifecycleService.onWillShutdown(() => this.storeFontInfo(storageService)));
 		}
 
 		// Lifecycle
 		this._register(lifecycleService.onWillShutdown(event => this._onWillShutdown.fire(event)));
-		this._register(lifecycleService.onDidShutdown(() => {
-			this._onDidShutdown.fire();
-			this.dispose();
-		}));
+		this._register(
+			lifecycleService.onDidShutdown(() => {
+				this._onDidShutdown.fire();
+				this.dispose();
+			})
+		);
 
 		// In some environments we do not get enough time to persist state on shutdown.
 		// In other cases, VSCode might crash, so we periodically save state to reduce
 		// the chance of loosing any state.
 		// The window loosing focus is a good indication that the user has stopped working
 		// in that window so we pick that at a time to collect state.
-		this._register(hostService.onDidChangeFocus(focus => {
-			if (!focus) {
-				storageService.flush();
-			}
-		}));
+		this._register(
+			hostService.onDidChangeFocus(focus => {
+				if (!focus) {
+					storageService.flush();
+				}
+			})
+		);
 
 		// Dialogs showing/hiding
-		this._register(dialogService.onWillShowDialog(() => this.mainContainer.classList.add('modal-dialog-visible')));
-		this._register(dialogService.onDidShowDialog(() => this.mainContainer.classList.remove('modal-dialog-visible')));
+		this._register(
+			dialogService.onWillShowDialog(() => this.mainContainer.classList.add('modal-dialog-visible'))
+		);
+		this._register(
+			dialogService.onDidShowDialog(() =>
+				this.mainContainer.classList.remove('modal-dialog-visible')
+			)
+		);
 	}
 
 	private fontAliasing: 'default' | 'antialiased' | 'none' | 'auto' | undefined;
-	private updateFontAliasing(e: IConfigurationChangeEvent | undefined, configurationService: IConfigurationService) {
+	private updateFontAliasing(
+		e: IConfigurationChangeEvent | undefined,
+		configurationService: IConfigurationService
+	) {
 		if (!isMacintosh) {
 			return; // macOS only
 		}
@@ -261,7 +323,9 @@ export class Workbench extends Layout {
 			return;
 		}
 
-		const aliasing = configurationService.getValue<'default' | 'antialiased' | 'none' | 'auto'>('workbench.fontAliasing');
+		const aliasing = configurationService.getValue<'default' | 'antialiased' | 'none' | 'auto'>(
+			'workbench.fontAliasing'
+		);
 		if (this.fontAliasing === aliasing) {
 			return;
 		}
@@ -270,7 +334,9 @@ export class Workbench extends Layout {
 
 		// Remove all
 		const fontAliasingValues: (typeof aliasing)[] = ['antialiased', 'none', 'auto'];
-		this.mainContainer.classList.remove(...fontAliasingValues.map(value => `monaco-font-aliasing-${value}`));
+		this.mainContainer.classList.remove(
+			...fontAliasingValues.map(value => `monaco-font-aliasing-${value}`)
+		);
 
 		// Add specific
 		if (fontAliasingValues.some(option => option === aliasing)) {
@@ -278,7 +344,10 @@ export class Workbench extends Layout {
 		}
 	}
 
-	private restoreFontInfo(storageService: IStorageService, configurationService: IConfigurationService): void {
+	private restoreFontInfo(
+		storageService: IStorageService,
+		configurationService: IConfigurationService
+	): void {
 		const storedFontInfoRaw = storageService.get('editorFontInfo', StorageScope.APPLICATION);
 		if (storedFontInfoRaw) {
 			try {
@@ -291,21 +360,42 @@ export class Workbench extends Layout {
 			}
 		}
 
-		FontMeasurements.readFontInfo(mainWindow, BareFontInfo.createFromRawSettings(configurationService.getValue('editor'), PixelRatio.getInstance(mainWindow).value));
+		FontMeasurements.readFontInfo(
+			mainWindow,
+			BareFontInfo.createFromRawSettings(
+				configurationService.getValue('editor'),
+				PixelRatio.getInstance(mainWindow).value
+			)
+		);
 	}
 
 	private storeFontInfo(storageService: IStorageService): void {
 		const serializedFontInfo = FontMeasurements.serializeFontInfo(mainWindow);
 		if (serializedFontInfo) {
-			storageService.store('editorFontInfo', JSON.stringify(serializedFontInfo), StorageScope.APPLICATION, StorageTarget.MACHINE);
+			storageService.store(
+				'editorFontInfo',
+				JSON.stringify(serializedFontInfo),
+				StorageScope.APPLICATION,
+				StorageTarget.MACHINE
+			);
 		}
 	}
 
-	private renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
-
+	private renderWorkbench(
+		instantiationService: IInstantiationService,
+		notificationService: NotificationService,
+		storageService: IStorageService,
+		configurationService: IConfigurationService
+	): void {
 		// ARIA & Signals
 		setARIAContainer(this.mainContainer);
-		setProgressAcccessibilitySignalScheduler((msDelayTime: number, msLoopTime?: number) => instantiationService.createInstance(AccessibilityProgressSignalScheduler, msDelayTime, msLoopTime));
+		setProgressAcccessibilitySignalScheduler((msDelayTime: number, msLoopTime?: number) =>
+			instantiationService.createInstance(
+				AccessibilityProgressSignalScheduler,
+				msDelayTime,
+				msLoopTime
+			)
+		);
 
 		// State specific classes
 		const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac';
@@ -315,7 +405,7 @@ export class Workbench extends Layout {
 			isWeb ? 'web' : undefined,
 			isChrome ? 'chromium' : isFirefox ? 'firefox' : isSafari ? 'safari' : undefined,
 			...this.getLayoutClasses(),
-			...(this.options?.extraClasses ? this.options.extraClasses : [])
+			...(this.options?.extraClasses ? this.options.extraClasses : []),
 		]);
 
 		this.mainContainer.classList.add(...workbenchClasses);
@@ -330,12 +420,37 @@ export class Workbench extends Layout {
 		for (const { id, role, classes, options } of [
 			{ id: Parts.TITLEBAR_PART, role: 'none', classes: ['titlebar'] },
 			{ id: Parts.BANNER_PART, role: 'banner', classes: ['banner'] },
-			{ id: Parts.ACTIVITYBAR_PART, role: 'none', classes: ['activitybar', this.getSideBarPosition() === Position.LEFT ? 'left' : 'right'] }, // Use role 'none' for some parts to make screen readers less chatty #114892
-			{ id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', this.getSideBarPosition() === Position.LEFT ? 'left' : 'right'] },
-			{ id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: { restorePreviousState: this.willRestoreEditors() } },
-			{ id: Parts.PANEL_PART, role: 'none', classes: ['panel', 'basepanel', positionToString(this.getPanelPosition())] },
-			{ id: Parts.AUXILIARYBAR_PART, role: 'none', classes: ['auxiliarybar', 'basepanel', this.getSideBarPosition() === Position.LEFT ? 'right' : 'left'] },
-			{ id: Parts.STATUSBAR_PART, role: 'status', classes: ['statusbar'] }
+			{
+				id: Parts.ACTIVITYBAR_PART,
+				role: 'none',
+				classes: ['activitybar', this.getSideBarPosition() === Position.LEFT ? 'left' : 'right'],
+			}, // Use role 'none' for some parts to make screen readers less chatty #114892
+			{
+				id: Parts.SIDEBAR_PART,
+				role: 'none',
+				classes: ['sidebar', this.getSideBarPosition() === Position.LEFT ? 'left' : 'right'],
+			},
+			{
+				id: Parts.EDITOR_PART,
+				role: 'main',
+				classes: ['editor'],
+				options: { restorePreviousState: this.willRestoreEditors() },
+			},
+			{
+				id: Parts.PANEL_PART,
+				role: 'none',
+				classes: ['panel', 'basepanel', positionToString(this.getPanelPosition())],
+			},
+			{
+				id: Parts.AUXILIARYBAR_PART,
+				role: 'none',
+				classes: [
+					'auxiliarybar',
+					'basepanel',
+					this.getSideBarPosition() === Position.LEFT ? 'right' : 'left',
+				],
+			},
+			{ id: Parts.STATUSBAR_PART, role: 'status', classes: ['statusbar'] },
 		]) {
 			const partContainer = this.createPart(id, role, classes);
 
@@ -352,7 +467,9 @@ export class Workbench extends Layout {
 	}
 
 	private createPart(id: string, role: string, classes: string[]): HTMLElement {
-		const part = document.createElement(role === 'status' ? 'footer' /* Use footer element for status bar #98376 */ : 'div');
+		const part = document.createElement(
+			role === 'status' ? 'footer' /* Use footer element for status bar #98376 */ : 'div'
+		);
 		part.classList.add('part', ...classes);
 		part.id = id;
 		part.setAttribute('role', role);
@@ -363,38 +480,70 @@ export class Workbench extends Layout {
 		return part;
 	}
 
-	private createNotificationsHandlers(instantiationService: IInstantiationService, notificationService: NotificationService): void {
-
+	private createNotificationsHandlers(
+		instantiationService: IInstantiationService,
+		notificationService: NotificationService
+	): void {
 		// Instantiate Notification components
-		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-		const notificationsToasts = this._register(instantiationService.createInstance(NotificationsToasts, this.mainContainer, notificationService.model));
-		this._register(instantiationService.createInstance(NotificationsAlerts, notificationService.model));
-		const notificationsStatus = instantiationService.createInstance(NotificationsStatus, notificationService.model);
+		const notificationsCenter = this._register(
+			instantiationService.createInstance(
+				NotificationsCenter,
+				this.mainContainer,
+				notificationService.model
+			)
+		);
+		const notificationsToasts = this._register(
+			instantiationService.createInstance(
+				NotificationsToasts,
+				this.mainContainer,
+				notificationService.model
+			)
+		);
+		this._register(
+			instantiationService.createInstance(NotificationsAlerts, notificationService.model)
+		);
+		const notificationsStatus = instantiationService.createInstance(
+			NotificationsStatus,
+			notificationService.model
+		);
 
 		// Visibility
-		this._register(notificationsCenter.onDidChangeVisibility(() => {
-			notificationsStatus.update(notificationsCenter.isVisible, notificationsToasts.isVisible);
-			notificationsToasts.update(notificationsCenter.isVisible);
-		}));
+		this._register(
+			notificationsCenter.onDidChangeVisibility(() => {
+				notificationsStatus.update(notificationsCenter.isVisible, notificationsToasts.isVisible);
+				notificationsToasts.update(notificationsCenter.isVisible);
+			})
+		);
 
-		this._register(notificationsToasts.onDidChangeVisibility(() => {
-			notificationsStatus.update(notificationsCenter.isVisible, notificationsToasts.isVisible);
-		}));
+		this._register(
+			notificationsToasts.onDidChangeVisibility(() => {
+				notificationsStatus.update(notificationsCenter.isVisible, notificationsToasts.isVisible);
+			})
+		);
 
 		// Register Commands
-		registerNotificationCommands(notificationsCenter, notificationsToasts, notificationService.model);
+		registerNotificationCommands(
+			notificationsCenter,
+			notificationsToasts,
+			notificationService.model
+		);
 
 		// Register notification accessible view
 		AccessibleViewRegistry.register(new NotificationAccessibleView());
 
 		// Register with Layout
 		this.registerNotifications({
-			onDidChangeNotificationsVisibility: Event.map(Event.any(notificationsToasts.onDidChangeVisibility, notificationsCenter.onDidChangeVisibility), () => notificationsToasts.isVisible || notificationsCenter.isVisible)
+			onDidChangeNotificationsVisibility: Event.map(
+				Event.any(
+					notificationsToasts.onDidChangeVisibility,
+					notificationsCenter.onDidChangeVisibility
+				),
+				() => notificationsToasts.isVisible || notificationsCenter.isVisible
+			),
 		});
 	}
 
 	private restore(lifecycleService: ILifecycleService): void {
-
 		// Ask each part to restore
 		try {
 			this.restoreParts();
@@ -412,18 +561,18 @@ export class Workbench extends Layout {
 		// instantiated, so we find a middle ground solution via
 		// `Promise.race`
 		this.whenReady.finally(() =>
-			Promise.race([
-				this.whenRestored,
-				timeout(2000)
-			]).finally(() => {
-
+			Promise.race([this.whenRestored, timeout(2000)]).finally(() => {
 				// Update perf marks only when the layout is fully
 				// restored. We want the time it takes to restore
 				// editors to be included in these numbers
 
 				function markDidStartWorkbench() {
 					mark('code/didStartWorkbench');
-					performance.measure('perf: workbench create & restore', 'code/didLoadWorkbenchMain', 'code/didStartWorkbench');
+					performance.measure(
+						'perf: workbench create & restore',
+						'code/didLoadWorkbenchMain',
+						'code/didStartWorkbench'
+					);
 				}
 
 				if (this.isRestored()) {
@@ -436,9 +585,17 @@ export class Workbench extends Layout {
 				lifecycleService.phase = LifecyclePhase.Restored;
 
 				// Set lifecycle phase to `Eventually` after a short delay and when idle (min 2.5sec, max 5sec)
-				const eventuallyPhaseScheduler = this._register(new RunOnceScheduler(() => {
-					this._register(runWhenWindowIdle(mainWindow, () => lifecycleService.phase = LifecyclePhase.Eventually, 2500));
-				}, 2500));
+				const eventuallyPhaseScheduler = this._register(
+					new RunOnceScheduler(() => {
+						this._register(
+							runWhenWindowIdle(
+								mainWindow,
+								() => (lifecycleService.phase = LifecyclePhase.Eventually),
+								2500
+							)
+						);
+					}, 2500)
+				);
 				eventuallyPhaseScheduler.schedule();
 			})
 		);

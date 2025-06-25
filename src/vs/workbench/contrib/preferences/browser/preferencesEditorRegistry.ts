@@ -16,17 +16,14 @@ export namespace Extensions {
 }
 
 export interface IPreferencesEditorPane extends IDisposable {
-
 	getDomNode(): HTMLElement;
 
 	layout(dimension: DOM.Dimension): void;
 
 	search(text: string): void;
-
 }
 
 export interface IPreferencesEditorPaneDescriptor {
-
 	/**
 	 * The id of the view container
 	 */
@@ -68,15 +65,22 @@ export interface IPreferencesEditorPaneRegistry {
 	getPreferencesEditorPanes(): readonly IPreferencesEditorPaneDescriptor[];
 }
 
-class PreferencesEditorPaneRegistryImpl extends Disposable implements IPreferencesEditorPaneRegistry {
-
+class PreferencesEditorPaneRegistryImpl
+	extends Disposable
+	implements IPreferencesEditorPaneRegistry
+{
 	private readonly descriptors = new Map<string, IPreferencesEditorPaneDescriptor>();
 
-	private readonly _onDidRegisterPreferencesEditorPanes = this._register(new Emitter<IPreferencesEditorPaneDescriptor[]>());
+	private readonly _onDidRegisterPreferencesEditorPanes = this._register(
+		new Emitter<IPreferencesEditorPaneDescriptor[]>()
+	);
 	readonly onDidRegisterPreferencesEditorPanes = this._onDidRegisterPreferencesEditorPanes.event;
 
-	private readonly _onDidDeregisterPreferencesEditorPanes = this._register(new Emitter<IPreferencesEditorPaneDescriptor[]>());
-	readonly onDidDeregisterPreferencesEditorPanes = this._onDidDeregisterPreferencesEditorPanes.event;
+	private readonly _onDidDeregisterPreferencesEditorPanes = this._register(
+		new Emitter<IPreferencesEditorPaneDescriptor[]>()
+	);
+	readonly onDidDeregisterPreferencesEditorPanes =
+		this._onDidDeregisterPreferencesEditorPanes.event;
 
 	constructor() {
 		super();
@@ -93,14 +97,13 @@ class PreferencesEditorPaneRegistryImpl extends Disposable implements IPreferenc
 				if (this.descriptors.delete(descriptor.id)) {
 					this._onDidDeregisterPreferencesEditorPanes.fire([descriptor]);
 				}
-			}
+			},
 		};
 	}
 
 	getPreferencesEditorPanes(): readonly IPreferencesEditorPaneDescriptor[] {
 		return [...this.descriptors.values()].sort((a, b) => a.order - b.order);
 	}
-
 }
 
 Registry.add(Extensions.PreferencesEditorPane, new PreferencesEditorPaneRegistryImpl());

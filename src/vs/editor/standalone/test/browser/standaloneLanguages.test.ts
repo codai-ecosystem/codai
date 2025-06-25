@@ -12,15 +12,28 @@ import { LanguageId, MetadataConsts } from '../../../common/encodedTokenAttribut
 import { IState, Token } from '../../../common/languages.js';
 import { TokenTheme } from '../../../common/languages/supports/tokenization.js';
 import { LanguageService } from '../../../common/services/languageService.js';
-import { ILineTokens, IToken, TokenizationSupportAdapter, TokensProvider } from '../../browser/standaloneLanguages.js';
-import { IStandaloneTheme, IStandaloneThemeData, IStandaloneThemeService } from '../../common/standaloneTheme.js';
+import {
+	ILineTokens,
+	IToken,
+	TokenizationSupportAdapter,
+	TokensProvider,
+} from '../../browser/standaloneLanguages.js';
+import {
+	IStandaloneTheme,
+	IStandaloneThemeData,
+	IStandaloneThemeService,
+} from '../../common/standaloneTheme.js';
 import { UnthemedProductIconTheme } from '../../../../platform/theme/browser/iconsStyleSheet.js';
 import { ColorIdentifier } from '../../../../platform/theme/common/colorRegistry.js';
 import { ColorScheme } from '../../../../platform/theme/common/theme.js';
-import { IColorTheme, IFileIconTheme, IProductIconTheme, ITokenStyle } from '../../../../platform/theme/common/themeService.js';
+import {
+	IColorTheme,
+	IFileIconTheme,
+	IProductIconTheme,
+	ITokenStyle,
+} from '../../../../platform/theme/common/themeService.js';
 
 suite('TokenizationSupport2Adapter', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	const languageId = 'tttt';
@@ -33,9 +46,10 @@ suite('TokenizationSupport2Adapter', () => {
 		}
 		public override match(languageId: LanguageId, token: string): number {
 			return (
-				((this.counter++) << MetadataConsts.FOREGROUND_OFFSET)
-				| (languageId << MetadataConsts.LANGUAGEID_OFFSET)
-			) >>> 0;
+				((this.counter++ << MetadataConsts.FOREGROUND_OFFSET) |
+					(languageId << MetadataConsts.LANGUAGEID_OFFSET)) >>>
+				0
+			);
 		}
 	}
 
@@ -68,22 +82,25 @@ suite('TokenizationSupport2Adapter', () => {
 					throw new Error('Not implemented');
 				},
 
-				getTokenStyleMetadata: (type: string, modifiers: string[], modelLanguage: string): ITokenStyle | undefined => {
+				getTokenStyleMetadata: (
+					type: string,
+					modifiers: string[],
+					modelLanguage: string
+				): ITokenStyle | undefined => {
 					return undefined;
 				},
 
 				semanticHighlighting: false,
 
-				tokenColorMap: []
+				tokenColorMap: [],
 			};
 		}
-		setColorMapOverride(colorMapOverride: Color[] | null): void {
-		}
+		setColorMapOverride(colorMapOverride: Color[] | null): void {}
 		public getFileIconTheme(): IFileIconTheme {
 			return {
 				hasFileIcons: false,
 				hasFolderIcons: false,
-				hidesExplorerArrows: false
+				hidesExplorerArrows: false,
 			};
 		}
 
@@ -99,7 +116,7 @@ suite('TokenizationSupport2Adapter', () => {
 
 	class MockState implements IState {
 		public static readonly INSTANCE = new MockState();
-		private constructor() { }
+		private constructor() {}
 		public clone(): IState {
 			return this;
 		}
@@ -108,8 +125,11 @@ suite('TokenizationSupport2Adapter', () => {
 		}
 	}
 
-	function testBadTokensProvider(providerTokens: IToken[], expectedClassicTokens: Token[], expectedModernTokens: number[]): void {
-
+	function testBadTokensProvider(
+		providerTokens: IToken[],
+		expectedClassicTokens: Token[],
+		expectedModernTokens: number[]
+	): void {
 		class BadTokensProvider implements TokensProvider {
 			public getInitialState(): IState {
 				return MockState.INSTANCE;
@@ -117,7 +137,7 @@ suite('TokenizationSupport2Adapter', () => {
 			public tokenize(line: string, state: IState): ILineTokens {
 				return {
 					tokens: providerTokens,
-					endState: MockState.INSTANCE
+					endState: MockState.INSTANCE,
 				};
 			}
 		}
@@ -143,7 +163,7 @@ suite('TokenizationSupport2Adapter', () => {
 
 		// Add the encoded language id to the expected tokens
 		const encodedLanguageId = languageService.languageIdCodec.encodeLanguageId(languageId);
-		const tokenLanguageMetadata = (encodedLanguageId << MetadataConsts.LANGUAGEID_OFFSET);
+		const tokenLanguageMetadata = encodedLanguageId << MetadataConsts.LANGUAGEID_OFFSET;
 		for (let i = 1; i < expectedModernTokens.length; i += 2) {
 			expectedModernTokens[i] |= tokenLanguageMetadata;
 		}
@@ -156,15 +176,14 @@ suite('TokenizationSupport2Adapter', () => {
 		testBadTokensProvider(
 			[
 				{ startIndex: 7, scopes: 'foo' },
-				{ startIndex: 0, scopes: 'bar' }
+				{ startIndex: 0, scopes: 'bar' },
 			],
+			[new Token(0, 'foo', languageId), new Token(0, 'bar', languageId)],
 			[
-				new Token(0, 'foo', languageId),
-				new Token(0, 'bar', languageId),
-			],
-			[
-				0, (0 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK,
-				0, (1 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK
+				0,
+				(0 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK,
+				0,
+				(1 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK,
 			]
 		);
 	});
@@ -182,9 +201,12 @@ suite('TokenizationSupport2Adapter', () => {
 				new Token(5, 'foo', languageId),
 			],
 			[
-				0, (0 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK,
-				5, (1 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK,
-				5, (2 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK
+				0,
+				(0 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK,
+				5,
+				(1 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK,
+				5,
+				(2 << MetadataConsts.FOREGROUND_OFFSET) | MetadataConsts.BALANCED_BRACKETS_MASK,
 			]
 		);
 	});

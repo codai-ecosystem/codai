@@ -8,12 +8,14 @@ import { ICommandService } from '../../../../platform/commands/common/commands.j
 import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { INativeHostService } from '../../../../platform/native/common/native.js';
-import { IProcessService, IResolvedProcessInformation } from '../../../../platform/process/common/process.js';
+import {
+	IProcessService,
+	IResolvedProcessInformation,
+} from '../../../../platform/process/common/process.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { ProcessExplorerControl } from '../browser/processExplorerControl.js';
 
 export class NativeProcessExplorerControl extends ProcessExplorerControl {
-
 	constructor(
 		container: HTMLElement,
 		@IInstantiationService instantiationService: IInstantiationService,
@@ -24,7 +26,13 @@ export class NativeProcessExplorerControl extends ProcessExplorerControl {
 		@IProcessService private readonly processService: IProcessService,
 		@IClipboardService clipboardService: IClipboardService
 	) {
-		super(instantiationService, productService, contextMenuService, commandService, clipboardService);
+		super(
+			instantiationService,
+			productService,
+			contextMenuService,
+			commandService,
+			clipboardService
+		);
 
 		this.create(container);
 	}

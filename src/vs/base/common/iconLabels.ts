@@ -9,11 +9,14 @@ import { ThemeIcon } from './themables.js';
 
 const iconStartMarker = '$(';
 
-const iconsRegex = new RegExp(`\\$\\(${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?\\)`, 'g'); // no capturing groups
+const iconsRegex = new RegExp(
+	`\\$\\(${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?\\)`,
+	'g'
+); // no capturing groups
 
 const escapeIconsRegex = new RegExp(`(\\\\)?${iconsRegex.source}`, 'g');
 export function escapeIcons(text: string): string {
-	return text.replace(escapeIconsRegex, (match, escaped) => escaped ? match : `\\${match}`);
+	return text.replace(escapeIconsRegex, (match, escaped) => (escaped ? match : `\\${match}`));
 }
 
 const markdownEscapedIconsRegex = new RegExp(`\\\\${iconsRegex.source}`, 'g');
@@ -32,9 +35,10 @@ export function stripIcons(text: string): string {
 		return text;
 	}
 
-	return text.replace(stripIconsRegex, (match, preWhitespace, escaped, postWhitespace) => escaped ? match : preWhitespace || postWhitespace || '');
+	return text.replace(stripIconsRegex, (match, preWhitespace, escaped, postWhitespace) =>
+		escaped ? match : preWhitespace || postWhitespace || ''
+	);
 }
-
 
 /**
  * Takes a label with icons (`$(iconId)xyz`), removes the icon syntax adds whitespace so that screen readers can read the text better.
@@ -47,7 +51,6 @@ export function getCodiconAriaLabel(text: string | undefined) {
 	return text.replace(/\$\((.*?)\)/g, (_match, codiconName) => ` ${codiconName} `).trim();
 }
 
-
 export interface IParsedLabelWithIcons {
 	readonly text: string;
 	readonly iconOffsets?: readonly number[];
@@ -59,7 +62,6 @@ const _parseIconsRegex = new RegExp(`\\$\\(${ThemeIcon.iconNameCharacter}+\\)`, 
  * Takes a label with icons (`abc $(iconId)xyz`) and returns the text (`abc xyz`) and the offsets of the icons (`[3]`)
  */
 export function parseLabelWithIcons(input: string): IParsedLabelWithIcons {
-
 	_parseIconsRegex.lastIndex = 0;
 
 	let text = '';
@@ -86,8 +88,11 @@ export function parseLabelWithIcons(input: string): IParsedLabelWithIcons {
 	return { text, iconOffsets };
 }
 
-
-export function matchesFuzzyIconAware(query: string, target: IParsedLabelWithIcons, enableSeparateSubstringMatching = false): IMatch[] | null {
+export function matchesFuzzyIconAware(
+	query: string,
+	target: IParsedLabelWithIcons,
+	enableSeparateSubstringMatching = false
+): IMatch[] | null {
 	const { text, iconOffsets } = target;
 
 	// Return early if there are no icon markers in the word to match against
@@ -101,12 +106,18 @@ export function matchesFuzzyIconAware(query: string, target: IParsedLabelWithIco
 	const leadingWhitespaceOffset = text.length - wordToMatchAgainstWithoutIconsTrimmed.length;
 
 	// match on value without icon
-	const matches = matchesFuzzy(query, wordToMatchAgainstWithoutIconsTrimmed, enableSeparateSubstringMatching);
+	const matches = matchesFuzzy(
+		query,
+		wordToMatchAgainstWithoutIconsTrimmed,
+		enableSeparateSubstringMatching
+	);
 
 	// Map matches back to offsets with icon and trimming
 	if (matches) {
 		for (const match of matches) {
-			const iconOffset = iconOffsets[match.start + leadingWhitespaceOffset] /* icon offsets at index */ + leadingWhitespaceOffset /* overall leading whitespace offset */;
+			const iconOffset =
+				iconOffsets[match.start + leadingWhitespaceOffset] /* icon offsets at index */ +
+				leadingWhitespaceOffset; /* overall leading whitespace offset */
 			match.start += iconOffset;
 			match.end += iconOffset;
 		}

@@ -9,7 +9,6 @@ import { createDecorator } from '../../instantiation/common/instantiation.js';
 export const IClipboardService = createDecorator<IClipboardService>('clipboardService');
 
 export interface IClipboardService {
-
 	readonly _serviceBrand: undefined;
 
 	/**

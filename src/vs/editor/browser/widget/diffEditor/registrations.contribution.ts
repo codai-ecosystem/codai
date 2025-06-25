@@ -19,17 +19,31 @@ export const diffMoveBorder = registerColor(
 export const diffMoveBorderActive = registerColor(
 	'diffEditor.moveActive.border',
 	'#FFA500',
-	localize('diffEditor.moveActive.border', 'The active border color for text that got moved in the diff editor.')
+	localize(
+		'diffEditor.moveActive.border',
+		'The active border color for text that got moved in the diff editor.'
+	)
 );
 
 export const diffEditorUnchangedRegionShadow = registerColor(
 	'diffEditor.unchangedRegionShadow',
-	{ dark: '#000000', light: '#737373BF', hcDark: '#000000', hcLight: '#737373BF', },
-	localize('diffEditor.unchangedRegionShadow', 'The color of the shadow around unchanged region widgets.')
+	{ dark: '#000000', light: '#737373BF', hcDark: '#000000', hcLight: '#737373BF' },
+	localize(
+		'diffEditor.unchangedRegionShadow',
+		'The color of the shadow around unchanged region widgets.'
+	)
 );
 
-export const diffInsertIcon = registerIcon('diff-insert', Codicon.add, localize('diffInsertIcon', 'Line decoration for inserts in the diff editor.'));
-export const diffRemoveIcon = registerIcon('diff-remove', Codicon.remove, localize('diffRemoveIcon', 'Line decoration for removals in the diff editor.'));
+export const diffInsertIcon = registerIcon(
+	'diff-insert',
+	Codicon.add,
+	localize('diffInsertIcon', 'Line decoration for inserts in the diff editor.')
+);
+export const diffRemoveIcon = registerIcon(
+	'diff-remove',
+	Codicon.remove,
+	localize('diffRemoveIcon', 'Line decoration for removals in the diff editor.')
+);
 
 export const diffLineAddDecorationBackgroundWithIndicator = ModelDecorationOptions.register({
 	className: 'line-insert',

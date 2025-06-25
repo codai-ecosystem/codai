@@ -30,7 +30,7 @@ export abstract class BaseAgent {
 		const decisionId = this.memoryGraph.addNode('decision', decision, {
 			agent: this.agentType,
 			reasoning,
-			timestamp: new Date().toISOString()
+			timestamp: new Date().toISOString(),
 		});
 
 		if (intentId) {
@@ -48,7 +48,7 @@ export abstract class BaseAgent {
 			description,
 			agent: this.agentType,
 			status: 'planned',
-			timestamp: new Date().toISOString()
+			timestamp: new Date().toISOString(),
 		});
 
 		if (intentId) {
@@ -68,7 +68,11 @@ export abstract class BaseAgent {
 	/**
 	 * Generate AI response using the configured AI service
 	 */
-	protected async generateAIResponse(prompt: string, context: string[] = [], systemPrompt?: string): Promise<string> {
+	protected async generateAIResponse(
+		prompt: string,
+		context: string[] = [],
+		systemPrompt?: string
+	): Promise<string> {
 		try {
 			const messages: AIMessage[] = [];
 
@@ -82,7 +86,7 @@ export abstract class BaseAgent {
 				const contextStr = context.join('\n\n');
 				messages.push({
 					role: 'system',
-					content: `Relevant context from memory:\n${contextStr}`
+					content: `Relevant context from memory:\n${contextStr}`,
 				});
 			}
 
@@ -91,7 +95,6 @@ export abstract class BaseAgent {
 
 			const response = await this.aiService.generateResponse(messages, 2000, 0.7);
 			return response.content;
-
 		} catch (error) {
 			// Fallback to a helpful error message if AI is not configured
 			return `I'm unable to process your request because the AI service is not properly configured. Please set up your API keys in the AIDE settings. Error: ${error}`;

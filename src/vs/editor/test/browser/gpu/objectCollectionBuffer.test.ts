@@ -5,7 +5,10 @@
 
 import { deepStrictEqual, strictEqual } from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { createObjectCollectionBuffer, type IObjectCollectionBuffer } from '../../../browser/gpu/objectCollectionBuffer.js';
+import {
+	createObjectCollectionBuffer,
+	type IObjectCollectionBuffer,
+} from '../../../browser/gpu/objectCollectionBuffer.js';
 
 suite('ObjectCollectionBuffer', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
@@ -15,10 +18,9 @@ suite('ObjectCollectionBuffer', () => {
 	}
 
 	test('createEntry', () => {
-		const buffer = store.add(createObjectCollectionBuffer([
-			{ name: 'a' },
-			{ name: 'b' },
-		] as const, 5));
+		const buffer = store.add(
+			createObjectCollectionBuffer([{ name: 'a' }, { name: 'b' }] as const, 5)
+		);
 		assertUsedData(buffer, []);
 
 		store.add(buffer.createEntry({ a: 1, b: 2 }));
@@ -30,10 +32,9 @@ suite('ObjectCollectionBuffer', () => {
 	});
 
 	test('createEntry beyond capacity', () => {
-		const buffer = store.add(createObjectCollectionBuffer([
-			{ name: 'a' },
-			{ name: 'b' },
-		] as const, 1));
+		const buffer = store.add(
+			createObjectCollectionBuffer([{ name: 'a' }, { name: 'b' }] as const, 1)
+		);
 		store.add(buffer.createEntry({ a: 1, b: 2 }));
 		strictEqual(buffer.entryCount, 1);
 		strictEqual(buffer.buffer.byteLength, 8);
@@ -43,10 +44,9 @@ suite('ObjectCollectionBuffer', () => {
 	});
 
 	test('dispose entry', () => {
-		const buffer = store.add(createObjectCollectionBuffer([
-			{ name: 'a' },
-			{ name: 'b' },
-		] as const, 5));
+		const buffer = store.add(
+			createObjectCollectionBuffer([{ name: 'a' }, { name: 'b' }] as const, 5)
+		);
 		store.add(buffer.createEntry({ a: 1, b: 2 }));
 		const entry1 = buffer.createEntry({ a: 3, b: 4 });
 		store.add(buffer.createEntry({ a: 5, b: 6 }));
@@ -59,10 +59,9 @@ suite('ObjectCollectionBuffer', () => {
 	});
 
 	test('entryCount, viewUsedSize, bufferUsedSize', () => {
-		const buffer = store.add(createObjectCollectionBuffer([
-			{ name: 'foo' },
-			{ name: 'bar' },
-		] as const, 5));
+		const buffer = store.add(
+			createObjectCollectionBuffer([{ name: 'foo' }, { name: 'bar' }] as const, 5)
+		);
 		strictEqual(buffer.entryCount, 0);
 		strictEqual(buffer.bufferUsedSize, 0);
 		strictEqual(buffer.viewUsedSize, 0);
@@ -81,20 +80,18 @@ suite('ObjectCollectionBuffer', () => {
 	});
 
 	test('entry.get', () => {
-		const buffer = store.add(createObjectCollectionBuffer([
-			{ name: 'foo' },
-			{ name: 'bar' },
-		] as const, 5));
+		const buffer = store.add(
+			createObjectCollectionBuffer([{ name: 'foo' }, { name: 'bar' }] as const, 5)
+		);
 		const entry = store.add(buffer.createEntry({ foo: 1, bar: 2 }));
 		strictEqual(entry.get('foo'), 1);
 		strictEqual(entry.get('bar'), 2);
 	});
 
 	test('entry.set', () => {
-		const buffer = store.add(createObjectCollectionBuffer([
-			{ name: 'foo' },
-			{ name: 'bar' },
-		] as const, 5));
+		const buffer = store.add(
+			createObjectCollectionBuffer([{ name: 'foo' }, { name: 'bar' }] as const, 5)
+		);
 		const entry = store.add(buffer.createEntry({ foo: 1, bar: 2 }));
 		let changeCount = 0;
 		store.add(buffer.onDidChange(() => changeCount++));

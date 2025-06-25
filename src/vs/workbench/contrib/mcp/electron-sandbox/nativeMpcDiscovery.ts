@@ -10,7 +10,10 @@ import { IInstantiationService } from '../../../../platform/instantiation/common
 import { IMainProcessService } from '../../../../platform/ipc/common/mainProcessService.js';
 import { ILabelService } from '../../../../platform/label/common/label.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
-import { INativeMcpDiscoveryHelperService, NativeMcpDiscoveryHelperChannelName } from '../../../../platform/mcp/common/nativeMcpDiscoveryHelper.js';
+import {
+	INativeMcpDiscoveryHelperService,
+	NativeMcpDiscoveryHelperChannelName,
+} from '../../../../platform/mcp/common/nativeMcpDiscoveryHelper.js';
 import { NativeFilesystemMcpDiscovery } from '../common/discovery/nativeMcpDiscoveryAbstract.js';
 import { IMcpRegistry } from '../common/mcpRegistryTypes.js';
 
@@ -22,14 +25,15 @@ export class NativeMcpDiscovery extends NativeFilesystemMcpDiscovery {
 		@IFileService fileService: IFileService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IMcpRegistry mcpRegistry: IMcpRegistry,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(null, labelService, fileService, instantiationService, mcpRegistry, configurationService);
 	}
 
 	public override start(): void {
 		const service = ProxyChannel.toService<INativeMcpDiscoveryHelperService>(
-			this.mainProcess.getChannel(NativeMcpDiscoveryHelperChannelName));
+			this.mainProcess.getChannel(NativeMcpDiscoveryHelperChannelName)
+		);
 
 		service.load().then(
 			data => this.setDetails(data),

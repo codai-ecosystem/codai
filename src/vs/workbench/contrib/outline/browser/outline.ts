@@ -9,7 +9,7 @@ import type { IView } from '../../../common/views.js';
 export const enum OutlineSortOrder {
 	ByPosition,
 	ByName,
-	ByKind
+	ByKind,
 }
 
 export interface IOutlineViewState {
@@ -32,6 +32,9 @@ export interface IOutlinePane extends IView {
 
 export const ctxFollowsCursor = new RawContextKey<boolean>('outlineFollowsCursor', false);
 export const ctxFilterOnType = new RawContextKey<boolean>('outlineFiltersOnType', false);
-export const ctxSortMode = new RawContextKey<OutlineSortOrder>('outlineSortMode', OutlineSortOrder.ByPosition);
+export const ctxSortMode = new RawContextKey<OutlineSortOrder>(
+	'outlineSortMode',
+	OutlineSortOrder.ByPosition
+);
 export const ctxAllCollapsed = new RawContextKey<boolean>('outlineAllCollapsed', false);
 export const ctxFocused = new RawContextKey<boolean>('outlineFocused', true);

@@ -64,83 +64,97 @@ export class ToolBar extends Disposable {
 	readonly onDidChangeDropdownVisibility = this._onDidChangeDropdownVisibility.event;
 	private readonly disposables = this._register(new DisposableStore());
 
-	constructor(container: HTMLElement, contextMenuProvider: IContextMenuProvider, options: IToolBarOptions = { orientation: ActionsOrientation.HORIZONTAL }) {
+	constructor(
+		container: HTMLElement,
+		contextMenuProvider: IContextMenuProvider,
+		options: IToolBarOptions = { orientation: ActionsOrientation.HORIZONTAL }
+	) {
 		super();
 
 		options.hoverDelegate = options.hoverDelegate ?? this._register(createInstantHoverDelegate());
 		this.options = options;
 
-		this.toggleMenuAction = this._register(new ToggleMenuAction(() => this.toggleMenuActionViewItem?.show(), options.toggleMenuTitle));
+		this.toggleMenuAction = this._register(
+			new ToggleMenuAction(() => this.toggleMenuActionViewItem?.show(), options.toggleMenuTitle)
+		);
 
 		this.element = document.createElement('div');
 		this.element.className = 'monaco-toolbar';
 		container.appendChild(this.element);
 
-		this.actionBar = this._register(new ActionBar(this.element, {
-			orientation: options.orientation,
-			ariaLabel: options.ariaLabel,
-			actionRunner: options.actionRunner,
-			allowContextMenu: options.allowContextMenu,
-			highlightToggledItems: options.highlightToggledItems,
-			hoverDelegate: options.hoverDelegate,
-			actionViewItemProvider: (action, viewItemOptions) => {
-				if (action.id === ToggleMenuAction.ID) {
-					this.toggleMenuActionViewItem = new DropdownMenuActionViewItem(
-						action,
-						(<ToggleMenuAction>action).menuActions,
-						contextMenuProvider,
-						{
-							actionViewItemProvider: this.options.actionViewItemProvider,
-							actionRunner: this.actionRunner,
-							keybindingProvider: this.options.getKeyBinding,
-							classNames: ThemeIcon.asClassNameArray(options.moreIcon ?? Codicon.toolBarMore),
-							anchorAlignmentProvider: this.options.anchorAlignmentProvider,
-							menuAsChild: !!this.options.renderDropdownAsChildElement,
-							skipTelemetry: this.options.skipTelemetry,
-							isMenu: true,
-							hoverDelegate: this.options.hoverDelegate
+		this.actionBar = this._register(
+			new ActionBar(this.element, {
+				orientation: options.orientation,
+				ariaLabel: options.ariaLabel,
+				actionRunner: options.actionRunner,
+				allowContextMenu: options.allowContextMenu,
+				highlightToggledItems: options.highlightToggledItems,
+				hoverDelegate: options.hoverDelegate,
+				actionViewItemProvider: (action, viewItemOptions) => {
+					if (action.id === ToggleMenuAction.ID) {
+						this.toggleMenuActionViewItem = new DropdownMenuActionViewItem(
+							action,
+							(<ToggleMenuAction>action).menuActions,
+							contextMenuProvider,
+							{
+								actionViewItemProvider: this.options.actionViewItemProvider,
+								actionRunner: this.actionRunner,
+								keybindingProvider: this.options.getKeyBinding,
+								classNames: ThemeIcon.asClassNameArray(options.moreIcon ?? Codicon.toolBarMore),
+								anchorAlignmentProvider: this.options.anchorAlignmentProvider,
+								menuAsChild: !!this.options.renderDropdownAsChildElement,
+								skipTelemetry: this.options.skipTelemetry,
+								isMenu: true,
+								hoverDelegate: this.options.hoverDelegate,
+							}
+						);
+						this.toggleMenuActionViewItem.setActionContext(this.actionBar.context);
+						this.disposables.add(
+							this._onDidChangeDropdownVisibility.add(
+								this.toggleMenuActionViewItem.onDidChangeVisibility
+							)
+						);
+
+						return this.toggleMenuActionViewItem;
+					}
+
+					if (options.actionViewItemProvider) {
+						const result = options.actionViewItemProvider(action, viewItemOptions);
+
+						if (result) {
+							return result;
 						}
-					);
-					this.toggleMenuActionViewItem.setActionContext(this.actionBar.context);
-					this.disposables.add(this._onDidChangeDropdownVisibility.add(this.toggleMenuActionViewItem.onDidChangeVisibility));
+					}
 
-					return this.toggleMenuActionViewItem;
-				}
+					if (action instanceof SubmenuAction) {
+						const result = new DropdownMenuActionViewItem(
+							action,
+							action.actions,
+							contextMenuProvider,
+							{
+								actionViewItemProvider: this.options.actionViewItemProvider,
+								actionRunner: this.actionRunner,
+								keybindingProvider: this.options.getKeyBinding,
+								classNames: action.class,
+								anchorAlignmentProvider: this.options.anchorAlignmentProvider,
+								menuAsChild: !!this.options.renderDropdownAsChildElement,
+								skipTelemetry: this.options.skipTelemetry,
+								hoverDelegate: this.options.hoverDelegate,
+							}
+						);
+						result.setActionContext(this.actionBar.context);
+						this.submenuActionViewItems.push(result);
+						this.disposables.add(
+							this._onDidChangeDropdownVisibility.add(result.onDidChangeVisibility)
+						);
 
-				if (options.actionViewItemProvider) {
-					const result = options.actionViewItemProvider(action, viewItemOptions);
-
-					if (result) {
 						return result;
 					}
-				}
 
-				if (action instanceof SubmenuAction) {
-					const result = new DropdownMenuActionViewItem(
-						action,
-						action.actions,
-						contextMenuProvider,
-						{
-							actionViewItemProvider: this.options.actionViewItemProvider,
-							actionRunner: this.actionRunner,
-							keybindingProvider: this.options.getKeyBinding,
-							classNames: action.class,
-							anchorAlignmentProvider: this.options.anchorAlignmentProvider,
-							menuAsChild: !!this.options.renderDropdownAsChildElement,
-							skipTelemetry: this.options.skipTelemetry,
-							hoverDelegate: this.options.hoverDelegate
-						}
-					);
-					result.setActionContext(this.actionBar.context);
-					this.submenuActionViewItems.push(result);
-					this.disposables.add(this._onDidChangeDropdownVisibility.add(result.onDidChangeVisibility));
-
-					return result;
-				}
-
-				return undefined;
-			}
-		}));
+					return undefined;
+				},
+			})
+		);
 	}
 
 	set actionRunner(actionRunner: IActionRunner) {
@@ -191,7 +205,10 @@ export class ToolBar extends Disposable {
 		this.actionBar.setAriaLabel(label);
 	}
 
-	setActions(primaryActions: ReadonlyArray<IAction>, secondaryActions?: ReadonlyArray<IAction>): void {
+	setActions(
+		primaryActions: ReadonlyArray<IAction>,
+		secondaryActions?: ReadonlyArray<IAction>
+	): void {
 		this.clear();
 
 		const primaryActionsToSet = primaryActions ? primaryActions.slice(0) : [];
@@ -204,7 +221,11 @@ export class ToolBar extends Disposable {
 		}
 
 		primaryActionsToSet.forEach(action => {
-			this.actionBar.push(action, { icon: this.options.icon ?? true, label: this.options.label ?? false, keybinding: this.getKeybindingLabel(action) });
+			this.actionBar.push(action, {
+				icon: this.options.icon ?? true,
+				label: this.options.label ?? false,
+				keybinding: this.getKeybindingLabel(action),
+			});
 		});
 	}
 
@@ -232,14 +253,13 @@ export class ToolBar extends Disposable {
 }
 
 export class ToggleMenuAction extends Action {
-
 	static readonly ID = 'toolbar.toggle.more';
 
 	private _menuActions: ReadonlyArray<IAction>;
 	private toggleDropdownMenu: () => void;
 
 	constructor(toggleDropdownMenu: () => void, title?: string) {
-		title = title || nls.localize('moreActions', "More Actions...");
+		title = title || nls.localize('moreActions', 'More Actions...');
 		super(ToggleMenuAction.ID, title, undefined, true);
 
 		this._menuActions = [];

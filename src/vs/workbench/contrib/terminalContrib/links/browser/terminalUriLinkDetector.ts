@@ -5,21 +5,32 @@
 
 import { Schemas } from '../../../../../base/common/network.js';
 import { URI } from '../../../../../base/common/uri.js';
-import { ILinkComputerTarget, LinkComputer } from '../../../../../editor/common/languages/linkComputer.js';
+import {
+	ILinkComputerTarget,
+	LinkComputer,
+} from '../../../../../editor/common/languages/linkComputer.js';
 import { IUriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentity.js';
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
-import { ITerminalLinkDetector, ITerminalLinkResolver, ITerminalSimpleLink, TerminalBuiltinLinkType } from './links.js';
+import {
+	ITerminalLinkDetector,
+	ITerminalLinkResolver,
+	ITerminalSimpleLink,
+	TerminalBuiltinLinkType,
+} from './links.js';
 import { convertLinkRangeToBuffer, getXtermLineContent } from './terminalLinkHelpers.js';
 import { ITerminalProcessManager } from '../../../terminal/common/terminal.js';
 import type { IBufferLine, Terminal } from '@xterm/xterm';
-import { ITerminalBackend, ITerminalLogService } from '../../../../../platform/terminal/common/terminal.js';
+import {
+	ITerminalBackend,
+	ITerminalLogService,
+} from '../../../../../platform/terminal/common/terminal.js';
 
 const enum Constants {
 	/**
 	 * The maximum number of links in a line to resolve against the file system. This limit is put
 	 * in place to avoid sending excessive data when remote connections are in place.
 	 */
-	MaxResolvedLinksInLine = 10
+	MaxResolvedLinksInLine = 10,
 }
 
 export class TerminalUriLinkDetector implements ITerminalLinkDetector {
@@ -30,15 +41,21 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 
 	constructor(
 		readonly xterm: Terminal,
-		private readonly _processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & { backend?: Pick<ITerminalBackend, 'getWslPath'> },
+		private readonly _processManager: Pick<
+			ITerminalProcessManager,
+			'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'
+		> & { backend?: Pick<ITerminalBackend, 'getWslPath'> },
 		private readonly _linkResolver: ITerminalLinkResolver,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
 		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService,
 		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService
-	) {
-	}
+	) {}
 
-	async detect(lines: IBufferLine[], startLine: number, endLine: number): Promise<ITerminalSimpleLink[]> {
+	async detect(
+		lines: IBufferLine[],
+		startLine: number,
+		endLine: number
+	): Promise<ITerminalSimpleLink[]> {
 		const links: ITerminalSimpleLink[] = [];
 
 		const linkComputerTarget = new TerminalLinkAdapter(this.xterm, startLine, endLine);
@@ -47,11 +64,18 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 		let resolvedLinkCount = 0;
 		this._logService.trace('terminalUriLinkDetector#detect computedLinks', computedLinks);
 		for (const computedLink of computedLinks) {
-			const bufferRange = convertLinkRangeToBuffer(lines, this.xterm.cols, computedLink.range, startLine);
+			const bufferRange = convertLinkRangeToBuffer(
+				lines,
+				this.xterm.cols,
+				computedLink.range,
+				startLine
+			);
 
 			// Check if the link is within the mouse position
 			const uri = computedLink.url
-				? (typeof computedLink.url === 'string' ? URI.parse(this._excludeLineAndColSuffix(computedLink.url)) : computedLink.url)
+				? typeof computedLink.url === 'string'
+					? URI.parse(this._excludeLineAndColSuffix(computedLink.url))
+					: computedLink.url
 				: undefined;
 
 			if (!uri) {
@@ -71,7 +95,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 					text,
 					uri,
 					bufferRange,
-					type: TerminalBuiltinLinkType.Url
+					type: TerminalBuiltinLinkType.Url,
 				});
 				continue;
 			}
@@ -92,7 +116,11 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 			// Iterate over all candidates, pushing the candidate on the first that's verified
 			this._logService.trace('terminalUriLinkDetector#detect uriCandidates', uriCandidates);
 			for (const uriCandidate of uriCandidates) {
-				const linkStat = await this._linkResolver.resolveLink(this._processManager, text, uriCandidate);
+				const linkStat = await this._linkResolver.resolveLink(
+					this._processManager,
+					text,
+					uriCandidate
+				);
 
 				// Create the link if validated
 				if (linkStat) {
@@ -111,7 +139,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 						text: typeof computedLink.url === 'string' ? computedLink.url : linkStat.link,
 						uri: uriCandidate,
 						bufferRange,
-						type
+						type,
 					};
 					this._logService.trace('terminalUriLinkDetector#detect verified link', simpleLink);
 					links.push(simpleLink);
@@ -149,13 +177,18 @@ class TerminalLinkAdapter implements ILinkComputerTarget {
 		private _xterm: Terminal,
 		private _lineStart: number,
 		private _lineEnd: number
-	) { }
+	) {}
 
 	getLineCount(): number {
 		return 1;
 	}
 
 	getLineContent(): string {
-		return getXtermLineContent(this._xterm.buffer.active, this._lineStart, this._lineEnd, this._xterm.cols);
+		return getXtermLineContent(
+			this._xterm.buffer.active,
+			this._lineStart,
+			this._lineEnd,
+			this._xterm.cols
+		);
 	}
 }

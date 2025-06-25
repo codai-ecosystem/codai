@@ -23,9 +23,18 @@ import { ExclamationMark } from '../../../common/codecs/simpleCodec/tokens/excla
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { MarkdownComment } from '../../../common/codecs/markdownCodec/tokens/markdownComment.js';
 import { LeftBracket, RightBracket } from '../../../common/codecs/simpleCodec/tokens/brackets.js';
-import { MarkdownDecoder, TMarkdownToken } from '../../../common/codecs/markdownCodec/markdownDecoder.js';
-import { LeftParenthesis, RightParenthesis } from '../../../common/codecs/simpleCodec/tokens/parentheses.js';
-import { LeftAngleBracket, RightAngleBracket } from '../../../common/codecs/simpleCodec/tokens/angleBrackets.js';
+import {
+	MarkdownDecoder,
+	TMarkdownToken,
+} from '../../../common/codecs/markdownCodec/markdownDecoder.js';
+import {
+	LeftParenthesis,
+	RightParenthesis,
+} from '../../../common/codecs/simpleCodec/tokens/parentheses.js';
+import {
+	LeftAngleBracket,
+	RightAngleBracket,
+} from '../../../common/codecs/simpleCodec/tokens/angleBrackets.js';
 
 /**
  * A reusable test utility that asserts that a `TestMarkdownDecoder` instance
@@ -63,9 +72,7 @@ suite('MarkdownDecoder', () => {
 
 	suite('• general', () => {
 		test('• base cases', async () => {
-			const test = testDisposables.add(
-				new TestMarkdownDecoder(),
-			);
+			const test = testDisposables.add(new TestMarkdownDecoder());
 
 			await test.run(
 				[
@@ -120,17 +127,18 @@ suite('MarkdownDecoder', () => {
 					new Space(new Range(6, 12, 6, 13)),
 					new Word(new Range(6, 13, 6, 17), 'must'),
 					new Space(new Range(6, 17, 6, 18)),
-					new MarkdownComment(new Range(6, 18, 6, 18 + 41), '<!-- [computer rights](/do/not/exist) -->'),
+					new MarkdownComment(
+						new Range(6, 18, 6, 18 + 41),
+						'<!-- [computer rights](/do/not/exist) -->'
+					),
 					new Space(new Range(6, 59, 6, 60)),
 					new Word(new Range(6, 60, 6, 66), 'suffer'),
-				],
+				]
 			);
 		});
 
 		test('• nuanced', async () => {
-			const test = testDisposables.add(
-				new TestMarkdownDecoder(),
-			);
+			const test = testDisposables.add(new TestMarkdownDecoder());
 
 			const inputLines = [
 				// tests that the link caption contain a chat prompt `#file:` reference, while
@@ -146,40 +154,45 @@ suite('MarkdownDecoder', () => {
 				'[<test>](./s[]me/pa[h!) ',
 			];
 
-			await test.run(
-				inputLines,
-				[
-					// `1st` line
-					new VerticalTab(new Range(1, 1, 1, 2)),
-					new Tab(new Range(1, 2, 1, 3)),
-					new MarkdownLink(1, 3, '[#file:./another/path/to/file.txt]', '(./real/file!path/file◆name.md)'),
-					new NewLine(new Range(1, 68, 1, 69)),
-					// `2nd` line
-					new Space(new Range(2, 1, 2, 2)),
-					new MarkdownLink(2, 2, '[reference ∘ label]', '(/absolute/pa th/to-#file:file.txt/f🥸⚡️le.md)'),
-					new NewLine(new Range(2, 67, 2, 68)),
-					// `3rd` line
-					new FormFeed(new Range(3, 1, 3, 2)),
-					new MarkdownLink(3, 2, '[!(hello)!]', '(./w(())rld/nice-🦚-filen(a)<me>.git)'),
-					new RightParenthesis(new Range(3, 50, 3, 51)),
-					new NewLine(new Range(3, 51, 3, 52)),
-					// `4th` line
-					new Tab(new Range(4, 1, 4, 2)),
-					new NewLine(new Range(4, 2, 4, 3)),
-					// `5th` line
-					new MarkdownLink(5, 1, '[<test>]', '(./s[]me/pa[h!)'),
-					new Space(new Range(5, 24, 5, 25)),
-				],
-			);
+			await test.run(inputLines, [
+				// `1st` line
+				new VerticalTab(new Range(1, 1, 1, 2)),
+				new Tab(new Range(1, 2, 1, 3)),
+				new MarkdownLink(
+					1,
+					3,
+					'[#file:./another/path/to/file.txt]',
+					'(./real/file!path/file◆name.md)'
+				),
+				new NewLine(new Range(1, 68, 1, 69)),
+				// `2nd` line
+				new Space(new Range(2, 1, 2, 2)),
+				new MarkdownLink(
+					2,
+					2,
+					'[reference ∘ label]',
+					'(/absolute/pa th/to-#file:file.txt/f🥸⚡️le.md)'
+				),
+				new NewLine(new Range(2, 67, 2, 68)),
+				// `3rd` line
+				new FormFeed(new Range(3, 1, 3, 2)),
+				new MarkdownLink(3, 2, '[!(hello)!]', '(./w(())rld/nice-🦚-filen(a)<me>.git)'),
+				new RightParenthesis(new Range(3, 50, 3, 51)),
+				new NewLine(new Range(3, 51, 3, 52)),
+				// `4th` line
+				new Tab(new Range(4, 1, 4, 2)),
+				new NewLine(new Range(4, 2, 4, 3)),
+				// `5th` line
+				new MarkdownLink(5, 1, '[<test>]', '(./s[]me/pa[h!)'),
+				new Space(new Range(5, 24, 5, 25)),
+			]);
 		});
 	});
 
 	suite('• links', () => {
 		suite('• broken', () => {
 			test('• invalid', async () => {
-				const test = testDisposables.add(
-					new TestMarkdownDecoder(),
-				);
+				const test = testDisposables.add(new TestMarkdownDecoder());
 
 				const inputLines = [
 					// incomplete link reference with empty caption
@@ -188,42 +201,39 @@ suite('MarkdownDecoder', () => {
 					'[link text] (./file path/name.txt)',
 				];
 
-				await test.run(
-					inputLines,
-					[
-						// `1st` line
-						new LeftBracket(new Range(1, 1, 1, 2)),
-						new Space(new Range(1, 2, 1, 3)),
-						new RightBracket(new Range(1, 3, 1, 4)),
-						new LeftParenthesis(new Range(1, 4, 1, 5)),
-						new Word(new Range(1, 5, 1, 5 + 1), '.'),
-						new Slash(new Range(1, 6, 1, 7)),
-						new Word(new Range(1, 7, 1, 7 + 4), 'real'),
-						new Slash(new Range(1, 11, 1, 12)),
-						new Word(new Range(1, 12, 1, 12 + 4), 'file'),
-						new Space(new Range(1, 16, 1, 17)),
-						new Word(new Range(1, 17, 1, 17 + 4), 'path'),
-						new Slash(new Range(1, 21, 1, 22)),
-						new Word(new Range(1, 22, 1, 22 + 12), 'file⇧name.md'),
-						new NewLine(new Range(1, 34, 1, 35)),
-						// `2nd` line
-						new LeftBracket(new Range(2, 1, 2, 2)),
-						new Word(new Range(2, 2, 2, 2 + 4), 'link'),
-						new Space(new Range(2, 6, 2, 7)),
-						new Word(new Range(2, 7, 2, 7 + 4), 'text'),
-						new RightBracket(new Range(2, 11, 2, 12)),
-						new Space(new Range(2, 12, 2, 13)),
-						new LeftParenthesis(new Range(2, 13, 2, 14)),
-						new Word(new Range(2, 14, 2, 14 + 1), '.'),
-						new Slash(new Range(2, 15, 2, 16)),
-						new Word(new Range(2, 16, 2, 16 + 4), 'file'),
-						new Space(new Range(2, 20, 2, 21)),
-						new Word(new Range(2, 21, 2, 21 + 4), 'path'),
-						new Slash(new Range(2, 25, 2, 26)),
-						new Word(new Range(2, 26, 2, 26 + 8), 'name.txt'),
-						new RightParenthesis(new Range(2, 34, 2, 35)),
-					],
-				);
+				await test.run(inputLines, [
+					// `1st` line
+					new LeftBracket(new Range(1, 1, 1, 2)),
+					new Space(new Range(1, 2, 1, 3)),
+					new RightBracket(new Range(1, 3, 1, 4)),
+					new LeftParenthesis(new Range(1, 4, 1, 5)),
+					new Word(new Range(1, 5, 1, 5 + 1), '.'),
+					new Slash(new Range(1, 6, 1, 7)),
+					new Word(new Range(1, 7, 1, 7 + 4), 'real'),
+					new Slash(new Range(1, 11, 1, 12)),
+					new Word(new Range(1, 12, 1, 12 + 4), 'file'),
+					new Space(new Range(1, 16, 1, 17)),
+					new Word(new Range(1, 17, 1, 17 + 4), 'path'),
+					new Slash(new Range(1, 21, 1, 22)),
+					new Word(new Range(1, 22, 1, 22 + 12), 'file⇧name.md'),
+					new NewLine(new Range(1, 34, 1, 35)),
+					// `2nd` line
+					new LeftBracket(new Range(2, 1, 2, 2)),
+					new Word(new Range(2, 2, 2, 2 + 4), 'link'),
+					new Space(new Range(2, 6, 2, 7)),
+					new Word(new Range(2, 7, 2, 7 + 4), 'text'),
+					new RightBracket(new Range(2, 11, 2, 12)),
+					new Space(new Range(2, 12, 2, 13)),
+					new LeftParenthesis(new Range(2, 13, 2, 14)),
+					new Word(new Range(2, 14, 2, 14 + 1), '.'),
+					new Slash(new Range(2, 15, 2, 16)),
+					new Word(new Range(2, 16, 2, 16 + 4), 'file'),
+					new Space(new Range(2, 20, 2, 21)),
+					new Word(new Range(2, 21, 2, 21 + 4), 'path'),
+					new Slash(new Range(2, 25, 2, 26)),
+					new Word(new Range(2, 26, 2, 26 + 8), 'name.txt'),
+					new RightParenthesis(new Range(2, 34, 2, 35)),
+				]);
 			});
 
 			suite('• stop characters inside caption/reference (new lines)', () => {
@@ -237,15 +247,10 @@ suite('MarkdownDecoder', () => {
 						characterName = '\\n';
 					}
 
-					assert(
-						characterName !== '',
-						'The "characterName" must be set, got "empty line".',
-					);
+					assert(characterName !== '', 'The "characterName" must be set, got "empty line".');
 
 					test(`• stop character - "${characterName}"`, async () => {
-						const test = testDisposables.add(
-							new TestMarkdownDecoder(),
-						);
+						const test = testDisposables.add(new TestMarkdownDecoder());
 
 						const inputLines = [
 							// stop character inside link caption
@@ -256,61 +261,57 @@ suite('MarkdownDecoder', () => {
 							`[text]${StopCharacter.symbol}(/etc/ path/main.mdc)`,
 						];
 
-
-						await test.run(
-							inputLines,
-							[
-								// `1st` input line
-								new LeftBracket(new Range(1, 1, 1, 2)),
-								new Word(new Range(1, 2, 1, 2 + 3), 'haa'),
-								new NewLine(new Range(1, 5, 1, 6)), // a single CR token is treated as a `new line`
-								new Word(new Range(2, 1, 2, 1 + 3), 'loů'),
-								new RightBracket(new Range(2, 4, 2, 5)),
-								new LeftParenthesis(new Range(2, 5, 2, 6)),
-								new Word(new Range(2, 6, 2, 6 + 1), '.'),
-								new Slash(new Range(2, 7, 2, 8)),
-								new Word(new Range(2, 8, 2, 8 + 4), 'real'),
-								new Slash(new Range(2, 12, 2, 13)),
-								new Word(new Range(2, 13, 2, 13 + 2), '💁'),
-								new Slash(new Range(2, 15, 2, 16)),
-								new Word(new Range(2, 16, 2, 16 + 8), 'name.txt'),
-								new RightParenthesis(new Range(2, 24, 2, 25)),
-								new NewLine(new Range(2, 25, 2, 26)),
-								// `2nd` input line
-								new LeftBracket(new Range(3, 1, 3, 2)),
-								new Word(new Range(3, 2, 3, 2 + 3), 'ref'),
-								new Space(new Range(3, 5, 3, 6)),
-								new Word(new Range(3, 6, 3, 6 + 4), 'text'),
-								new RightBracket(new Range(3, 10, 3, 11)),
-								new LeftParenthesis(new Range(3, 11, 3, 12)),
-								new Slash(new Range(3, 12, 3, 13)),
-								new Word(new Range(3, 13, 3, 13 + 3), 'etc'),
-								new Slash(new Range(3, 16, 3, 17)),
-								new Word(new Range(3, 17, 3, 17 + 3), 'pat'),
-								new NewLine(new Range(3, 20, 3, 21)), // a single CR token is treated as a `new line`
-								new Word(new Range(4, 1, 4, 1 + 1), 'h'),
-								new Slash(new Range(4, 2, 4, 3)),
-								new Word(new Range(4, 3, 4, 3 + 2), 'to'),
-								new Slash(new Range(4, 5, 4, 6)),
-								new Word(new Range(4, 6, 4, 6 + 7), 'file.md'),
-								new RightParenthesis(new Range(4, 13, 4, 14)),
-								new NewLine(new Range(4, 14, 4, 15)),
-								// `3nd` input line
-								new LeftBracket(new Range(5, 1, 5, 2)),
-								new Word(new Range(5, 2, 5, 2 + 4), 'text'),
-								new RightBracket(new Range(5, 6, 5, 7)),
-								new NewLine(new Range(5, 7, 5, 8)), // a single CR token is treated as a `new line`
-								new LeftParenthesis(new Range(6, 1, 6, 2)),
-								new Slash(new Range(6, 2, 6, 3)),
-								new Word(new Range(6, 3, 6, 3 + 3), 'etc'),
-								new Slash(new Range(6, 6, 6, 7)),
-								new Space(new Range(6, 7, 6, 8)),
-								new Word(new Range(6, 8, 6, 8 + 4), 'path'),
-								new Slash(new Range(6, 12, 6, 13)),
-								new Word(new Range(6, 13, 6, 13 + 8), 'main.mdc'),
-								new RightParenthesis(new Range(6, 21, 6, 22)),
-							],
-						);
+						await test.run(inputLines, [
+							// `1st` input line
+							new LeftBracket(new Range(1, 1, 1, 2)),
+							new Word(new Range(1, 2, 1, 2 + 3), 'haa'),
+							new NewLine(new Range(1, 5, 1, 6)), // a single CR token is treated as a `new line`
+							new Word(new Range(2, 1, 2, 1 + 3), 'loů'),
+							new RightBracket(new Range(2, 4, 2, 5)),
+							new LeftParenthesis(new Range(2, 5, 2, 6)),
+							new Word(new Range(2, 6, 2, 6 + 1), '.'),
+							new Slash(new Range(2, 7, 2, 8)),
+							new Word(new Range(2, 8, 2, 8 + 4), 'real'),
+							new Slash(new Range(2, 12, 2, 13)),
+							new Word(new Range(2, 13, 2, 13 + 2), '💁'),
+							new Slash(new Range(2, 15, 2, 16)),
+							new Word(new Range(2, 16, 2, 16 + 8), 'name.txt'),
+							new RightParenthesis(new Range(2, 24, 2, 25)),
+							new NewLine(new Range(2, 25, 2, 26)),
+							// `2nd` input line
+							new LeftBracket(new Range(3, 1, 3, 2)),
+							new Word(new Range(3, 2, 3, 2 + 3), 'ref'),
+							new Space(new Range(3, 5, 3, 6)),
+							new Word(new Range(3, 6, 3, 6 + 4), 'text'),
+							new RightBracket(new Range(3, 10, 3, 11)),
+							new LeftParenthesis(new Range(3, 11, 3, 12)),
+							new Slash(new Range(3, 12, 3, 13)),
+							new Word(new Range(3, 13, 3, 13 + 3), 'etc'),
+							new Slash(new Range(3, 16, 3, 17)),
+							new Word(new Range(3, 17, 3, 17 + 3), 'pat'),
+							new NewLine(new Range(3, 20, 3, 21)), // a single CR token is treated as a `new line`
+							new Word(new Range(4, 1, 4, 1 + 1), 'h'),
+							new Slash(new Range(4, 2, 4, 3)),
+							new Word(new Range(4, 3, 4, 3 + 2), 'to'),
+							new Slash(new Range(4, 5, 4, 6)),
+							new Word(new Range(4, 6, 4, 6 + 7), 'file.md'),
+							new RightParenthesis(new Range(4, 13, 4, 14)),
+							new NewLine(new Range(4, 14, 4, 15)),
+							// `3nd` input line
+							new LeftBracket(new Range(5, 1, 5, 2)),
+							new Word(new Range(5, 2, 5, 2 + 4), 'text'),
+							new RightBracket(new Range(5, 6, 5, 7)),
+							new NewLine(new Range(5, 7, 5, 8)), // a single CR token is treated as a `new line`
+							new LeftParenthesis(new Range(6, 1, 6, 2)),
+							new Slash(new Range(6, 2, 6, 3)),
+							new Word(new Range(6, 3, 6, 3 + 3), 'etc'),
+							new Slash(new Range(6, 6, 6, 7)),
+							new Space(new Range(6, 7, 6, 8)),
+							new Word(new Range(6, 8, 6, 8 + 4), 'path'),
+							new Slash(new Range(6, 12, 6, 13)),
+							new Word(new Range(6, 13, 6, 13 + 8), 'main.mdc'),
+							new RightParenthesis(new Range(6, 21, 6, 22)),
+						]);
 					});
 				}
 			});
@@ -329,15 +330,10 @@ suite('MarkdownDecoder', () => {
 						characterName = '\\f';
 					}
 
-					assert(
-						characterName !== '',
-						'The "characterName" must be set, got "empty line".',
-					);
+					assert(characterName !== '', 'The "characterName" must be set, got "empty line".');
 
 					test(`• stop character - "${characterName}"`, async () => {
-						const test = testDisposables.add(
-							new TestMarkdownDecoder(),
-						);
+						const test = testDisposables.add(new TestMarkdownDecoder());
 
 						const inputLines = [
 							// stop character inside link caption
@@ -348,74 +344,67 @@ suite('MarkdownDecoder', () => {
 							`[text]${StopCharacter.symbol}(/etc/ path/file.md)`,
 						];
 
-
-						await test.run(
-							inputLines,
-							[
-								// `1st` input line
-								new LeftBracket(new Range(1, 1, 1, 2)),
-								new Word(new Range(1, 2, 1, 2 + 3), 'haa'),
-								new StopCharacter(new Range(1, 5, 1, 6)), // <- stop character
-								new Word(new Range(1, 6, 1, 6 + 3), 'loů'),
-								new RightBracket(new Range(1, 9, 1, 10)),
-								new LeftParenthesis(new Range(1, 10, 1, 11)),
-								new Word(new Range(1, 11, 1, 11 + 1), '.'),
-								new Slash(new Range(1, 12, 1, 13)),
-								new Word(new Range(1, 13, 1, 13 + 4), 'real'),
-								new Slash(new Range(1, 17, 1, 18)),
-								new Word(new Range(1, 18, 1, 18 + 2), '💁'),
-								new Slash(new Range(1, 20, 1, 21)),
-								new Word(new Range(1, 21, 1, 21 + 8), 'name.txt'),
-								new RightParenthesis(new Range(1, 29, 1, 30)),
-								new NewLine(new Range(1, 30, 1, 31)),
-								// `2nd` input line
-								new LeftBracket(new Range(2, 1, 2, 2)),
-								new Word(new Range(2, 2, 2, 2 + 3), 'ref'),
-								new Space(new Range(2, 5, 2, 6)),
-								new Word(new Range(2, 6, 2, 6 + 4), 'text'),
-								new RightBracket(new Range(2, 10, 2, 11)),
-								new LeftParenthesis(new Range(2, 11, 2, 12)),
-								new Slash(new Range(2, 12, 2, 13)),
-								new Word(new Range(2, 13, 2, 13 + 3), 'etc'),
-								new Slash(new Range(2, 16, 2, 17)),
-								new Word(new Range(2, 17, 2, 17 + 3), 'pat'),
-								new StopCharacter(new Range(2, 20, 2, 21)), // <- stop character
-								new Word(new Range(2, 21, 2, 21 + 1), 'h'),
-								new Slash(new Range(2, 22, 2, 23)),
-								new Word(new Range(2, 23, 2, 23 + 2), 'to'),
-								new Slash(new Range(2, 25, 2, 26)),
-								new Word(new Range(2, 26, 2, 26 + 7), 'file.md'),
-								new RightParenthesis(new Range(2, 33, 2, 34)),
-								new NewLine(new Range(2, 34, 2, 35)),
-								// `3nd` input line
-								new LeftBracket(new Range(3, 1, 3, 2)),
-								new Word(new Range(3, 2, 3, 2 + 4), 'text'),
-								new RightBracket(new Range(3, 6, 3, 7)),
-								new StopCharacter(new Range(3, 7, 3, 8)), // <- stop character
-								new LeftParenthesis(new Range(3, 8, 3, 9)),
-								new Slash(new Range(3, 9, 3, 10)),
-								new Word(new Range(3, 10, 3, 10 + 3), 'etc'),
-								new Slash(new Range(3, 13, 3, 14)),
-								new Space(new Range(3, 14, 3, 15)),
-								new Word(new Range(3, 15, 3, 15 + 4), 'path'),
-								new Slash(new Range(3, 19, 3, 20)),
-								new Word(new Range(3, 20, 3, 20 + 7), 'file.md'),
-								new RightParenthesis(new Range(3, 27, 3, 28)),
-							],
-						);
+						await test.run(inputLines, [
+							// `1st` input line
+							new LeftBracket(new Range(1, 1, 1, 2)),
+							new Word(new Range(1, 2, 1, 2 + 3), 'haa'),
+							new StopCharacter(new Range(1, 5, 1, 6)), // <- stop character
+							new Word(new Range(1, 6, 1, 6 + 3), 'loů'),
+							new RightBracket(new Range(1, 9, 1, 10)),
+							new LeftParenthesis(new Range(1, 10, 1, 11)),
+							new Word(new Range(1, 11, 1, 11 + 1), '.'),
+							new Slash(new Range(1, 12, 1, 13)),
+							new Word(new Range(1, 13, 1, 13 + 4), 'real'),
+							new Slash(new Range(1, 17, 1, 18)),
+							new Word(new Range(1, 18, 1, 18 + 2), '💁'),
+							new Slash(new Range(1, 20, 1, 21)),
+							new Word(new Range(1, 21, 1, 21 + 8), 'name.txt'),
+							new RightParenthesis(new Range(1, 29, 1, 30)),
+							new NewLine(new Range(1, 30, 1, 31)),
+							// `2nd` input line
+							new LeftBracket(new Range(2, 1, 2, 2)),
+							new Word(new Range(2, 2, 2, 2 + 3), 'ref'),
+							new Space(new Range(2, 5, 2, 6)),
+							new Word(new Range(2, 6, 2, 6 + 4), 'text'),
+							new RightBracket(new Range(2, 10, 2, 11)),
+							new LeftParenthesis(new Range(2, 11, 2, 12)),
+							new Slash(new Range(2, 12, 2, 13)),
+							new Word(new Range(2, 13, 2, 13 + 3), 'etc'),
+							new Slash(new Range(2, 16, 2, 17)),
+							new Word(new Range(2, 17, 2, 17 + 3), 'pat'),
+							new StopCharacter(new Range(2, 20, 2, 21)), // <- stop character
+							new Word(new Range(2, 21, 2, 21 + 1), 'h'),
+							new Slash(new Range(2, 22, 2, 23)),
+							new Word(new Range(2, 23, 2, 23 + 2), 'to'),
+							new Slash(new Range(2, 25, 2, 26)),
+							new Word(new Range(2, 26, 2, 26 + 7), 'file.md'),
+							new RightParenthesis(new Range(2, 33, 2, 34)),
+							new NewLine(new Range(2, 34, 2, 35)),
+							// `3nd` input line
+							new LeftBracket(new Range(3, 1, 3, 2)),
+							new Word(new Range(3, 2, 3, 2 + 4), 'text'),
+							new RightBracket(new Range(3, 6, 3, 7)),
+							new StopCharacter(new Range(3, 7, 3, 8)), // <- stop character
+							new LeftParenthesis(new Range(3, 8, 3, 9)),
+							new Slash(new Range(3, 9, 3, 10)),
+							new Word(new Range(3, 10, 3, 10 + 3), 'etc'),
+							new Slash(new Range(3, 13, 3, 14)),
+							new Space(new Range(3, 14, 3, 15)),
+							new Word(new Range(3, 15, 3, 15 + 4), 'path'),
+							new Slash(new Range(3, 19, 3, 20)),
+							new Word(new Range(3, 20, 3, 20 + 7), 'file.md'),
+							new RightParenthesis(new Range(3, 27, 3, 28)),
+						]);
 					});
 				}
 			});
 		});
 	});
 
-
 	suite('• images', () => {
 		suite('• general', () => {
 			test('• base cases', async () => {
-				const test = testDisposables.add(
-					new TestMarkdownDecoder(),
-				);
+				const test = testDisposables.add(new TestMarkdownDecoder());
 
 				const inputData = [
 					'\t![alt text](./some/path/to/file.jpg) ',
@@ -423,43 +412,38 @@ suite('MarkdownDecoder', () => {
 					'![](/var/images/default) following text',
 				];
 
-				await test.run(
-					inputData,
-					[
-						// `1st`
-						new Tab(new Range(1, 1, 1, 2)),
-						new MarkdownImage(1, 2, '![alt text]', '(./some/path/to/file.jpg)'),
-						new Space(new Range(1, 38, 1, 39)),
-						new NewLine(new Range(1, 39, 1, 40)),
-						// `2nd`
-						new Word(new Range(2, 1, 2, 6), 'plain'),
-						new Space(new Range(2, 6, 2, 7)),
-						new Word(new Range(2, 7, 2, 11), 'text'),
-						new Space(new Range(2, 11, 2, 12)),
-						new FormFeed(new Range(2, 12, 2, 13)),
-						new MarkdownImage(2, 13, '![label]', '(./image.png)'),
-						new VerticalTab(new Range(2, 34, 2, 35)),
-						new Space(new Range(2, 35, 2, 36)),
-						new Word(new Range(2, 36, 2, 39), 'and'),
-						new Space(new Range(2, 39, 2, 40)),
-						new Word(new Range(2, 40, 2, 44), 'more'),
-						new Space(new Range(2, 44, 2, 45)),
-						new Word(new Range(2, 45, 2, 49), 'text'),
-						new NewLine(new Range(2, 49, 2, 50)),
-						// `3rd`
-						new MarkdownImage(3, 1, '![]', '(/var/images/default)'),
-						new Space(new Range(3, 25, 3, 26)),
-						new Word(new Range(3, 26, 3, 35), 'following'),
-						new Space(new Range(3, 35, 3, 36)),
-						new Word(new Range(3, 36, 3, 40), 'text'),
-					],
-				);
+				await test.run(inputData, [
+					// `1st`
+					new Tab(new Range(1, 1, 1, 2)),
+					new MarkdownImage(1, 2, '![alt text]', '(./some/path/to/file.jpg)'),
+					new Space(new Range(1, 38, 1, 39)),
+					new NewLine(new Range(1, 39, 1, 40)),
+					// `2nd`
+					new Word(new Range(2, 1, 2, 6), 'plain'),
+					new Space(new Range(2, 6, 2, 7)),
+					new Word(new Range(2, 7, 2, 11), 'text'),
+					new Space(new Range(2, 11, 2, 12)),
+					new FormFeed(new Range(2, 12, 2, 13)),
+					new MarkdownImage(2, 13, '![label]', '(./image.png)'),
+					new VerticalTab(new Range(2, 34, 2, 35)),
+					new Space(new Range(2, 35, 2, 36)),
+					new Word(new Range(2, 36, 2, 39), 'and'),
+					new Space(new Range(2, 39, 2, 40)),
+					new Word(new Range(2, 40, 2, 44), 'more'),
+					new Space(new Range(2, 44, 2, 45)),
+					new Word(new Range(2, 45, 2, 49), 'text'),
+					new NewLine(new Range(2, 49, 2, 50)),
+					// `3rd`
+					new MarkdownImage(3, 1, '![]', '(/var/images/default)'),
+					new Space(new Range(3, 25, 3, 26)),
+					new Word(new Range(3, 26, 3, 35), 'following'),
+					new Space(new Range(3, 35, 3, 36)),
+					new Word(new Range(3, 36, 3, 40), 'text'),
+				]);
 			});
 
 			test('• nuanced', async () => {
-				const test = testDisposables.add(
-					new TestMarkdownDecoder(),
-				);
+				const test = testDisposables.add(new TestMarkdownDecoder());
 
 				const inputData = [
 					'\t![<!-- comment -->](./s☻me/path/to/file.jpeg) ',
@@ -467,38 +451,33 @@ suite('MarkdownDecoder', () => {
 					// '![](/var/images/default) following text',
 				];
 
-				await test.run(
-					inputData,
-					[
-						// `1st`
-						new Tab(new Range(1, 1, 1, 2)),
-						new MarkdownImage(1, 2, '![<!-- comment -->]', '(./s☻me/path/to/file.jpeg)'),
-						new Space(new Range(1, 47, 1, 48)),
-						new NewLine(new Range(1, 48, 1, 49)),
-						// `2nd`
-						new Word(new Range(2, 1, 2, 4), 'raw'),
-						new Space(new Range(2, 4, 2, 5)),
-						new Word(new Range(2, 5, 2, 9), 'text'),
-						new Space(new Range(2, 9, 2, 10)),
-						new FormFeed(new Range(2, 10, 2, 11)),
-						new MarkdownImage(2, 11, '![(/1.png)]', '(./image-🥸.png)'),
-						new VerticalTab(new Range(2, 38, 2, 39)),
-						new Space(new Range(2, 39, 2, 40)),
-						new Word(new Range(2, 40, 2, 43), 'and'),
-						new Space(new Range(2, 43, 2, 44)),
-						new Word(new Range(2, 44, 2, 48), 'more'),
-						new Space(new Range(2, 48, 2, 49)),
-						new Word(new Range(2, 49, 2, 53), 'text'),
-					],
-				);
+				await test.run(inputData, [
+					// `1st`
+					new Tab(new Range(1, 1, 1, 2)),
+					new MarkdownImage(1, 2, '![<!-- comment -->]', '(./s☻me/path/to/file.jpeg)'),
+					new Space(new Range(1, 47, 1, 48)),
+					new NewLine(new Range(1, 48, 1, 49)),
+					// `2nd`
+					new Word(new Range(2, 1, 2, 4), 'raw'),
+					new Space(new Range(2, 4, 2, 5)),
+					new Word(new Range(2, 5, 2, 9), 'text'),
+					new Space(new Range(2, 9, 2, 10)),
+					new FormFeed(new Range(2, 10, 2, 11)),
+					new MarkdownImage(2, 11, '![(/1.png)]', '(./image-🥸.png)'),
+					new VerticalTab(new Range(2, 38, 2, 39)),
+					new Space(new Range(2, 39, 2, 40)),
+					new Word(new Range(2, 40, 2, 43), 'and'),
+					new Space(new Range(2, 43, 2, 44)),
+					new Word(new Range(2, 44, 2, 48), 'more'),
+					new Space(new Range(2, 48, 2, 49)),
+					new Word(new Range(2, 49, 2, 53), 'text'),
+				]);
 			});
 		});
 
 		suite('• broken', () => {
 			test('• invalid', async () => {
-				const test = testDisposables.add(
-					new TestMarkdownDecoder(),
-				);
+				const test = testDisposables.add(new TestMarkdownDecoder());
 
 				const inputLines = [
 					// incomplete link reference with empty caption
@@ -509,62 +488,59 @@ suite('MarkdownDecoder', () => {
 					'\v![ ](./file\npath/name.jpeg )',
 				];
 
-				await test.run(
-					inputLines,
-					[
-						// `1st` line
-						new ExclamationMark(new Range(1, 1, 1, 2)),
-						new LeftBracket(new Range(1, 2, 1, 3)),
-						new Space(new Range(1, 3, 1, 4)),
-						new RightBracket(new Range(1, 4, 1, 5)),
-						new LeftParenthesis(new Range(1, 5, 1, 6)),
-						new Word(new Range(1, 6, 1, 6 + 1), '.'),
-						new Slash(new Range(1, 7, 1, 8)),
-						new Word(new Range(1, 8, 1, 8 + 4), 'real'),
-						new Slash(new Range(1, 12, 1, 13)),
-						new Word(new Range(1, 13, 1, 13 + 4), 'file'),
-						new Space(new Range(1, 17, 1, 18)),
-						new Word(new Range(1, 18, 1, 18 + 4), 'path'),
-						new Slash(new Range(1, 22, 1, 23)),
-						new Word(new Range(1, 23, 1, 23 + 14), 'file★name.webp'),
-						new NewLine(new Range(1, 37, 1, 38)),
-						// `2nd` line
-						new FormFeed(new Range(2, 1, 2, 2)),
-						new ExclamationMark(new Range(2, 2, 2, 3)),
-						new LeftBracket(new Range(2, 3, 2, 4)),
-						new Word(new Range(2, 4, 2, 4 + 4), 'link'),
-						new Space(new Range(2, 8, 2, 9)),
-						new Word(new Range(2, 9, 2, 9 + 4), 'text'),
-						new RightBracket(new Range(2, 13, 2, 14)),
-						new Space(new Range(2, 14, 2, 15)),
-						new LeftParenthesis(new Range(2, 15, 2, 16)),
-						new Word(new Range(2, 16, 2, 16 + 1), '.'),
-						new Slash(new Range(2, 17, 2, 18)),
-						new Word(new Range(2, 18, 2, 18 + 4), 'file'),
-						new Space(new Range(2, 22, 2, 23)),
-						new Word(new Range(2, 23, 2, 23 + 4), 'path'),
-						new Slash(new Range(2, 27, 2, 28)),
-						new Word(new Range(2, 28, 2, 28 + 8), 'name.jpg'),
-						new RightParenthesis(new Range(2, 36, 2, 37)),
-						new NewLine(new Range(2, 37, 2, 38)),
-						// `3rd` line
-						new VerticalTab(new Range(3, 1, 3, 2)),
-						new ExclamationMark(new Range(3, 2, 3, 3)),
-						new LeftBracket(new Range(3, 3, 3, 4)),
-						new Space(new Range(3, 4, 3, 5)),
-						new RightBracket(new Range(3, 5, 3, 6)),
-						new LeftParenthesis(new Range(3, 6, 3, 7)),
-						new Word(new Range(3, 7, 3, 7 + 1), '.'),
-						new Slash(new Range(3, 8, 3, 9)),
-						new Word(new Range(3, 9, 3, 9 + 4), 'file'),
-						new NewLine(new Range(3, 13, 3, 14)),
-						new Word(new Range(4, 1, 4, 1 + 4), 'path'),
-						new Slash(new Range(4, 5, 4, 6)),
-						new Word(new Range(4, 6, 4, 6 + 9), 'name.jpeg'),
-						new Space(new Range(4, 15, 4, 16)),
-						new RightParenthesis(new Range(4, 16, 4, 17)),
-					],
-				);
+				await test.run(inputLines, [
+					// `1st` line
+					new ExclamationMark(new Range(1, 1, 1, 2)),
+					new LeftBracket(new Range(1, 2, 1, 3)),
+					new Space(new Range(1, 3, 1, 4)),
+					new RightBracket(new Range(1, 4, 1, 5)),
+					new LeftParenthesis(new Range(1, 5, 1, 6)),
+					new Word(new Range(1, 6, 1, 6 + 1), '.'),
+					new Slash(new Range(1, 7, 1, 8)),
+					new Word(new Range(1, 8, 1, 8 + 4), 'real'),
+					new Slash(new Range(1, 12, 1, 13)),
+					new Word(new Range(1, 13, 1, 13 + 4), 'file'),
+					new Space(new Range(1, 17, 1, 18)),
+					new Word(new Range(1, 18, 1, 18 + 4), 'path'),
+					new Slash(new Range(1, 22, 1, 23)),
+					new Word(new Range(1, 23, 1, 23 + 14), 'file★name.webp'),
+					new NewLine(new Range(1, 37, 1, 38)),
+					// `2nd` line
+					new FormFeed(new Range(2, 1, 2, 2)),
+					new ExclamationMark(new Range(2, 2, 2, 3)),
+					new LeftBracket(new Range(2, 3, 2, 4)),
+					new Word(new Range(2, 4, 2, 4 + 4), 'link'),
+					new Space(new Range(2, 8, 2, 9)),
+					new Word(new Range(2, 9, 2, 9 + 4), 'text'),
+					new RightBracket(new Range(2, 13, 2, 14)),
+					new Space(new Range(2, 14, 2, 15)),
+					new LeftParenthesis(new Range(2, 15, 2, 16)),
+					new Word(new Range(2, 16, 2, 16 + 1), '.'),
+					new Slash(new Range(2, 17, 2, 18)),
+					new Word(new Range(2, 18, 2, 18 + 4), 'file'),
+					new Space(new Range(2, 22, 2, 23)),
+					new Word(new Range(2, 23, 2, 23 + 4), 'path'),
+					new Slash(new Range(2, 27, 2, 28)),
+					new Word(new Range(2, 28, 2, 28 + 8), 'name.jpg'),
+					new RightParenthesis(new Range(2, 36, 2, 37)),
+					new NewLine(new Range(2, 37, 2, 38)),
+					// `3rd` line
+					new VerticalTab(new Range(3, 1, 3, 2)),
+					new ExclamationMark(new Range(3, 2, 3, 3)),
+					new LeftBracket(new Range(3, 3, 3, 4)),
+					new Space(new Range(3, 4, 3, 5)),
+					new RightBracket(new Range(3, 5, 3, 6)),
+					new LeftParenthesis(new Range(3, 6, 3, 7)),
+					new Word(new Range(3, 7, 3, 7 + 1), '.'),
+					new Slash(new Range(3, 8, 3, 9)),
+					new Word(new Range(3, 9, 3, 9 + 4), 'file'),
+					new NewLine(new Range(3, 13, 3, 14)),
+					new Word(new Range(4, 1, 4, 1 + 4), 'path'),
+					new Slash(new Range(4, 5, 4, 6)),
+					new Word(new Range(4, 6, 4, 6 + 9), 'name.jpeg'),
+					new Space(new Range(4, 15, 4, 16)),
+					new RightParenthesis(new Range(4, 16, 4, 17)),
+				]);
 			});
 
 			suite('• stop characters inside caption/reference (new lines)', () => {
@@ -578,15 +554,10 @@ suite('MarkdownDecoder', () => {
 						characterName = '\\n';
 					}
 
-					assert(
-						characterName !== '',
-						'The "characterName" must be set, got "empty line".',
-					);
+					assert(characterName !== '', 'The "characterName" must be set, got "empty line".');
 
 					test(`• stop character - "${characterName}"`, async () => {
-						const test = testDisposables.add(
-							new TestMarkdownDecoder(),
-						);
+						const test = testDisposables.add(new TestMarkdownDecoder());
 
 						const inputLines = [
 							// stop character inside link caption
@@ -597,64 +568,60 @@ suite('MarkdownDecoder', () => {
 							`![text]${StopCharacter.symbol}(/etc/ path/file.jpeg)`,
 						];
 
-
-						await test.run(
-							inputLines,
-							[
-								// `1st` input line
-								new ExclamationMark(new Range(1, 1, 1, 2)),
-								new LeftBracket(new Range(1, 2, 1, 3)),
-								new Word(new Range(1, 3, 1, 3 + 3), 'haa'),
-								new NewLine(new Range(1, 6, 1, 7)), // a single CR token is treated as a `new line`
-								new Word(new Range(2, 1, 2, 1 + 3), 'loů'),
-								new RightBracket(new Range(2, 4, 2, 5)),
-								new LeftParenthesis(new Range(2, 5, 2, 6)),
-								new Word(new Range(2, 6, 2, 6 + 1), '.'),
-								new Slash(new Range(2, 7, 2, 8)),
-								new Word(new Range(2, 8, 2, 8 + 4), 'real'),
-								new Slash(new Range(2, 12, 2, 13)),
-								new Word(new Range(2, 13, 2, 13 + 2), '💁'),
-								new Slash(new Range(2, 15, 2, 16)),
-								new Word(new Range(2, 16, 2, 16 + 8), 'name.png'),
-								new RightParenthesis(new Range(2, 24, 2, 25)),
-								new NewLine(new Range(2, 25, 2, 26)),
-								// `2nd` input line
-								new ExclamationMark(new Range(3, 1, 3, 2)),
-								new LeftBracket(new Range(3, 2, 3, 3)),
-								new Word(new Range(3, 3, 3, 3 + 3), 'ref'),
-								new Space(new Range(3, 6, 3, 7)),
-								new Word(new Range(3, 7, 3, 7 + 4), 'text'),
-								new RightBracket(new Range(3, 11, 3, 12)),
-								new LeftParenthesis(new Range(3, 12, 3, 13)),
-								new Slash(new Range(3, 13, 3, 14)),
-								new Word(new Range(3, 14, 3, 14 + 3), 'etc'),
-								new Slash(new Range(3, 17, 3, 18)),
-								new Word(new Range(3, 18, 3, 18 + 3), 'pat'),
-								new NewLine(new Range(3, 21, 3, 22)), // a single CR token is treated as a `new line`
-								new Word(new Range(4, 1, 4, 1 + 1), 'h'),
-								new Slash(new Range(4, 2, 4, 3)),
-								new Word(new Range(4, 3, 4, 3 + 2), 'to'),
-								new Slash(new Range(4, 5, 4, 6)),
-								new Word(new Range(4, 6, 4, 6 + 9), 'file.webp'),
-								new RightParenthesis(new Range(4, 15, 4, 16)),
-								new NewLine(new Range(4, 16, 4, 17)),
-								// `3nd` input line
-								new ExclamationMark(new Range(5, 1, 5, 2)),
-								new LeftBracket(new Range(5, 2, 5, 3)),
-								new Word(new Range(5, 3, 5, 3 + 4), 'text'),
-								new RightBracket(new Range(5, 7, 5, 8)),
-								new NewLine(new Range(5, 8, 5, 9)), // a single CR token is treated as a `new line`
-								new LeftParenthesis(new Range(6, 1, 6, 2)),
-								new Slash(new Range(6, 2, 6, 3)),
-								new Word(new Range(6, 3, 6, 3 + 3), 'etc'),
-								new Slash(new Range(6, 6, 6, 7)),
-								new Space(new Range(6, 7, 6, 8)),
-								new Word(new Range(6, 8, 6, 8 + 4), 'path'),
-								new Slash(new Range(6, 12, 6, 13)),
-								new Word(new Range(6, 13, 6, 13 + 9), 'file.jpeg'),
-								new RightParenthesis(new Range(6, 22, 6, 23)),
-							],
-						);
+						await test.run(inputLines, [
+							// `1st` input line
+							new ExclamationMark(new Range(1, 1, 1, 2)),
+							new LeftBracket(new Range(1, 2, 1, 3)),
+							new Word(new Range(1, 3, 1, 3 + 3), 'haa'),
+							new NewLine(new Range(1, 6, 1, 7)), // a single CR token is treated as a `new line`
+							new Word(new Range(2, 1, 2, 1 + 3), 'loů'),
+							new RightBracket(new Range(2, 4, 2, 5)),
+							new LeftParenthesis(new Range(2, 5, 2, 6)),
+							new Word(new Range(2, 6, 2, 6 + 1), '.'),
+							new Slash(new Range(2, 7, 2, 8)),
+							new Word(new Range(2, 8, 2, 8 + 4), 'real'),
+							new Slash(new Range(2, 12, 2, 13)),
+							new Word(new Range(2, 13, 2, 13 + 2), '💁'),
+							new Slash(new Range(2, 15, 2, 16)),
+							new Word(new Range(2, 16, 2, 16 + 8), 'name.png'),
+							new RightParenthesis(new Range(2, 24, 2, 25)),
+							new NewLine(new Range(2, 25, 2, 26)),
+							// `2nd` input line
+							new ExclamationMark(new Range(3, 1, 3, 2)),
+							new LeftBracket(new Range(3, 2, 3, 3)),
+							new Word(new Range(3, 3, 3, 3 + 3), 'ref'),
+							new Space(new Range(3, 6, 3, 7)),
+							new Word(new Range(3, 7, 3, 7 + 4), 'text'),
+							new RightBracket(new Range(3, 11, 3, 12)),
+							new LeftParenthesis(new Range(3, 12, 3, 13)),
+							new Slash(new Range(3, 13, 3, 14)),
+							new Word(new Range(3, 14, 3, 14 + 3), 'etc'),
+							new Slash(new Range(3, 17, 3, 18)),
+							new Word(new Range(3, 18, 3, 18 + 3), 'pat'),
+							new NewLine(new Range(3, 21, 3, 22)), // a single CR token is treated as a `new line`
+							new Word(new Range(4, 1, 4, 1 + 1), 'h'),
+							new Slash(new Range(4, 2, 4, 3)),
+							new Word(new Range(4, 3, 4, 3 + 2), 'to'),
+							new Slash(new Range(4, 5, 4, 6)),
+							new Word(new Range(4, 6, 4, 6 + 9), 'file.webp'),
+							new RightParenthesis(new Range(4, 15, 4, 16)),
+							new NewLine(new Range(4, 16, 4, 17)),
+							// `3nd` input line
+							new ExclamationMark(new Range(5, 1, 5, 2)),
+							new LeftBracket(new Range(5, 2, 5, 3)),
+							new Word(new Range(5, 3, 5, 3 + 4), 'text'),
+							new RightBracket(new Range(5, 7, 5, 8)),
+							new NewLine(new Range(5, 8, 5, 9)), // a single CR token is treated as a `new line`
+							new LeftParenthesis(new Range(6, 1, 6, 2)),
+							new Slash(new Range(6, 2, 6, 3)),
+							new Word(new Range(6, 3, 6, 3 + 3), 'etc'),
+							new Slash(new Range(6, 6, 6, 7)),
+							new Space(new Range(6, 7, 6, 8)),
+							new Word(new Range(6, 8, 6, 8 + 4), 'path'),
+							new Slash(new Range(6, 12, 6, 13)),
+							new Word(new Range(6, 13, 6, 13 + 9), 'file.jpeg'),
+							new RightParenthesis(new Range(6, 22, 6, 23)),
+						]);
 					});
 				}
 			});
@@ -673,15 +640,10 @@ suite('MarkdownDecoder', () => {
 						characterName = '\\f';
 					}
 
-					assert(
-						characterName !== '',
-						'The "characterName" must be set, got "empty line".',
-					);
+					assert(characterName !== '', 'The "characterName" must be set, got "empty line".');
 
 					test(`• stop character - "${characterName}"`, async () => {
-						const test = testDisposables.add(
-							new TestMarkdownDecoder(),
-						);
+						const test = testDisposables.add(new TestMarkdownDecoder());
 
 						const inputLines = [
 							// stop character inside link caption
@@ -692,64 +654,60 @@ suite('MarkdownDecoder', () => {
 							`![text]${stopCharacter.symbol}(/etc/ path/image.gif)`,
 						];
 
-
-						await test.run(
-							inputLines,
-							[
-								// `1st` input line
-								new ExclamationMark(new Range(1, 1, 1, 2)),
-								new LeftBracket(new Range(1, 2, 1, 3)),
-								new Word(new Range(1, 3, 1, 3 + 3), 'haa'),
-								new stopCharacter(new Range(1, 6, 1, 7)), // <- stop character
-								new Word(new Range(1, 7, 1, 7 + 3), 'loů'),
-								new RightBracket(new Range(1, 10, 1, 11)),
-								new LeftParenthesis(new Range(1, 11, 1, 12)),
-								new Word(new Range(1, 12, 1, 12 + 1), '.'),
-								new Slash(new Range(1, 13, 1, 14)),
-								new Word(new Range(1, 14, 1, 14 + 4), 'real'),
-								new Slash(new Range(1, 18, 1, 19)),
-								new Word(new Range(1, 19, 1, 19 + 2), '💁'),
-								new Slash(new Range(1, 21, 1, 22)),
-								new Word(new Range(1, 22, 1, 22 + 4), 'name'),
-								new RightParenthesis(new Range(1, 26, 1, 27)),
-								new NewLine(new Range(1, 27, 1, 28)),
-								// `2nd` input line
-								new ExclamationMark(new Range(2, 1, 2, 2)),
-								new LeftBracket(new Range(2, 2, 2, 3)),
-								new Word(new Range(2, 3, 2, 3 + 3), 'ref'),
-								new Space(new Range(2, 6, 2, 7)),
-								new Word(new Range(2, 7, 2, 7 + 4), 'text'),
-								new RightBracket(new Range(2, 11, 2, 12)),
-								new LeftParenthesis(new Range(2, 12, 2, 13)),
-								new Slash(new Range(2, 13, 2, 14)),
-								new Word(new Range(2, 14, 2, 14 + 3), 'etc'),
-								new Slash(new Range(2, 17, 2, 18)),
-								new Word(new Range(2, 18, 2, 18 + 3), 'pat'),
-								new stopCharacter(new Range(2, 21, 2, 22)), // <- stop character
-								new Word(new Range(2, 22, 2, 22 + 1), 'h'),
-								new Slash(new Range(2, 23, 2, 24)),
-								new Word(new Range(2, 24, 2, 24 + 2), 'to'),
-								new Slash(new Range(2, 26, 2, 27)),
-								new Word(new Range(2, 27, 2, 27 + 9), 'file.webp'),
-								new RightParenthesis(new Range(2, 36, 2, 37)),
-								new NewLine(new Range(2, 37, 2, 38)),
-								// `3nd` input line
-								new ExclamationMark(new Range(3, 1, 3, 2)),
-								new LeftBracket(new Range(3, 2, 3, 3)),
-								new Word(new Range(3, 3, 3, 3 + 4), 'text'),
-								new RightBracket(new Range(3, 7, 3, 8)),
-								new stopCharacter(new Range(3, 8, 3, 9)), // <- stop character
-								new LeftParenthesis(new Range(3, 9, 3, 10)),
-								new Slash(new Range(3, 10, 3, 11)),
-								new Word(new Range(3, 11, 3, 11 + 3), 'etc'),
-								new Slash(new Range(3, 14, 3, 15)),
-								new Space(new Range(3, 15, 3, 16)),
-								new Word(new Range(3, 16, 3, 16 + 4), 'path'),
-								new Slash(new Range(3, 20, 3, 21)),
-								new Word(new Range(3, 21, 3, 21 + 9), 'image.gif'),
-								new RightParenthesis(new Range(3, 30, 3, 31)),
-							],
-						);
+						await test.run(inputLines, [
+							// `1st` input line
+							new ExclamationMark(new Range(1, 1, 1, 2)),
+							new LeftBracket(new Range(1, 2, 1, 3)),
+							new Word(new Range(1, 3, 1, 3 + 3), 'haa'),
+							new stopCharacter(new Range(1, 6, 1, 7)), // <- stop character
+							new Word(new Range(1, 7, 1, 7 + 3), 'loů'),
+							new RightBracket(new Range(1, 10, 1, 11)),
+							new LeftParenthesis(new Range(1, 11, 1, 12)),
+							new Word(new Range(1, 12, 1, 12 + 1), '.'),
+							new Slash(new Range(1, 13, 1, 14)),
+							new Word(new Range(1, 14, 1, 14 + 4), 'real'),
+							new Slash(new Range(1, 18, 1, 19)),
+							new Word(new Range(1, 19, 1, 19 + 2), '💁'),
+							new Slash(new Range(1, 21, 1, 22)),
+							new Word(new Range(1, 22, 1, 22 + 4), 'name'),
+							new RightParenthesis(new Range(1, 26, 1, 27)),
+							new NewLine(new Range(1, 27, 1, 28)),
+							// `2nd` input line
+							new ExclamationMark(new Range(2, 1, 2, 2)),
+							new LeftBracket(new Range(2, 2, 2, 3)),
+							new Word(new Range(2, 3, 2, 3 + 3), 'ref'),
+							new Space(new Range(2, 6, 2, 7)),
+							new Word(new Range(2, 7, 2, 7 + 4), 'text'),
+							new RightBracket(new Range(2, 11, 2, 12)),
+							new LeftParenthesis(new Range(2, 12, 2, 13)),
+							new Slash(new Range(2, 13, 2, 14)),
+							new Word(new Range(2, 14, 2, 14 + 3), 'etc'),
+							new Slash(new Range(2, 17, 2, 18)),
+							new Word(new Range(2, 18, 2, 18 + 3), 'pat'),
+							new stopCharacter(new Range(2, 21, 2, 22)), // <- stop character
+							new Word(new Range(2, 22, 2, 22 + 1), 'h'),
+							new Slash(new Range(2, 23, 2, 24)),
+							new Word(new Range(2, 24, 2, 24 + 2), 'to'),
+							new Slash(new Range(2, 26, 2, 27)),
+							new Word(new Range(2, 27, 2, 27 + 9), 'file.webp'),
+							new RightParenthesis(new Range(2, 36, 2, 37)),
+							new NewLine(new Range(2, 37, 2, 38)),
+							// `3nd` input line
+							new ExclamationMark(new Range(3, 1, 3, 2)),
+							new LeftBracket(new Range(3, 2, 3, 3)),
+							new Word(new Range(3, 3, 3, 3 + 4), 'text'),
+							new RightBracket(new Range(3, 7, 3, 8)),
+							new stopCharacter(new Range(3, 8, 3, 9)), // <- stop character
+							new LeftParenthesis(new Range(3, 9, 3, 10)),
+							new Slash(new Range(3, 10, 3, 11)),
+							new Word(new Range(3, 11, 3, 11 + 3), 'etc'),
+							new Slash(new Range(3, 14, 3, 15)),
+							new Space(new Range(3, 15, 3, 16)),
+							new Word(new Range(3, 16, 3, 16 + 4), 'path'),
+							new Slash(new Range(3, 20, 3, 21)),
+							new Word(new Range(3, 21, 3, 21 + 9), 'image.gif'),
+							new RightParenthesis(new Range(3, 30, 3, 31)),
+						]);
 					});
 				}
 			});
@@ -759,9 +717,7 @@ suite('MarkdownDecoder', () => {
 	suite('• comments', () => {
 		suite('• general', () => {
 			test('• base cases', async () => {
-				const test = testDisposables.add(
-					new TestMarkdownDecoder(),
-				);
+				const test = testDisposables.add(new TestMarkdownDecoder());
 
 				const inputData = [
 					// comment with text inside it
@@ -776,52 +732,56 @@ suite('MarkdownDecoder', () => {
 					'haalo\t<!-- [link label](/some/path/to/file.md)',
 				];
 
-				await test.run(
-					inputData,
-					[
-						// `1st`
-						new Tab(new Range(1, 1, 1, 2)),
-						new MarkdownComment(new Range(1, 2, 1, 2 + 20), '<!-- hello world -->'),
-						new NewLine(new Range(1, 22, 1, 23)),
-						// `2nd`
-						new Word(new Range(2, 1, 2, 5), 'some'),
-						new Space(new Range(2, 5, 2, 6)),
-						new Word(new Range(2, 6, 2, 10), 'text'),
-						new MarkdownComment(new Range(2, 10, 2, 10 + 46), '<!-- \v[link label](/some/path/to/file.md)\f -->'),
-						new Space(new Range(2, 56, 2, 57)),
-						new Word(new Range(2, 57, 2, 60), 'and'),
-						new Space(new Range(2, 60, 2, 61)),
-						new Word(new Range(2, 61, 2, 65), 'more'),
-						new Space(new Range(2, 65, 2, 66)),
-						new Word(new Range(2, 66, 2, 70), 'text'),
-						new Space(new Range(2, 70, 2, 71)),
-						new NewLine(new Range(2, 71, 2, 72)),
-						// `3rd`
-						new MarkdownComment(new Range(3, 1, 3 + 3, 1 + 13), '<!-- comment\r\ntext\n\ngoes here -->'),
-						new Space(new Range(6, 14, 6, 15)),
-						new Word(new Range(6, 15, 6, 15 + 5), 'usual'),
-						new Space(new Range(6, 20, 6, 21)),
-						new Word(new Range(6, 21, 6, 21 + 4), 'text'),
-						new Space(new Range(6, 25, 6, 26)),
-						new Word(new Range(6, 26, 6, 26 + 7), 'follows'),
-						new NewLine(new Range(6, 33, 6, 34)),
-						// `4rd`
-						new Tab(new Range(7, 1, 7, 2)),
-						new MarkdownComment(new Range(7, 2, 7, 2 + 7), '<!---->'),
-						new Tab(new Range(7, 9, 7, 10)),
-						new NewLine(new Range(7, 10, 7, 11)),
-						// `5th`
-						new Word(new Range(8, 1, 8, 6), 'haalo'),
-						new Tab(new Range(8, 6, 8, 7)),
-						new MarkdownComment(new Range(8, 7, 8, 7 + 40), '<!-- [link label](/some/path/to/file.md)'),
-					],
-				);
+				await test.run(inputData, [
+					// `1st`
+					new Tab(new Range(1, 1, 1, 2)),
+					new MarkdownComment(new Range(1, 2, 1, 2 + 20), '<!-- hello world -->'),
+					new NewLine(new Range(1, 22, 1, 23)),
+					// `2nd`
+					new Word(new Range(2, 1, 2, 5), 'some'),
+					new Space(new Range(2, 5, 2, 6)),
+					new Word(new Range(2, 6, 2, 10), 'text'),
+					new MarkdownComment(
+						new Range(2, 10, 2, 10 + 46),
+						'<!-- \v[link label](/some/path/to/file.md)\f -->'
+					),
+					new Space(new Range(2, 56, 2, 57)),
+					new Word(new Range(2, 57, 2, 60), 'and'),
+					new Space(new Range(2, 60, 2, 61)),
+					new Word(new Range(2, 61, 2, 65), 'more'),
+					new Space(new Range(2, 65, 2, 66)),
+					new Word(new Range(2, 66, 2, 70), 'text'),
+					new Space(new Range(2, 70, 2, 71)),
+					new NewLine(new Range(2, 71, 2, 72)),
+					// `3rd`
+					new MarkdownComment(
+						new Range(3, 1, 3 + 3, 1 + 13),
+						'<!-- comment\r\ntext\n\ngoes here -->'
+					),
+					new Space(new Range(6, 14, 6, 15)),
+					new Word(new Range(6, 15, 6, 15 + 5), 'usual'),
+					new Space(new Range(6, 20, 6, 21)),
+					new Word(new Range(6, 21, 6, 21 + 4), 'text'),
+					new Space(new Range(6, 25, 6, 26)),
+					new Word(new Range(6, 26, 6, 26 + 7), 'follows'),
+					new NewLine(new Range(6, 33, 6, 34)),
+					// `4rd`
+					new Tab(new Range(7, 1, 7, 2)),
+					new MarkdownComment(new Range(7, 2, 7, 2 + 7), '<!---->'),
+					new Tab(new Range(7, 9, 7, 10)),
+					new NewLine(new Range(7, 10, 7, 11)),
+					// `5th`
+					new Word(new Range(8, 1, 8, 6), 'haalo'),
+					new Tab(new Range(8, 6, 8, 7)),
+					new MarkdownComment(
+						new Range(8, 7, 8, 7 + 40),
+						'<!-- [link label](/some/path/to/file.md)'
+					),
+				]);
 			});
 
 			test('• nuanced', async () => {
-				const test = testDisposables.add(
-					new TestMarkdownDecoder(),
-				);
+				const test = testDisposables.add(new TestMarkdownDecoder());
 
 				const inputData = [
 					// comment inside `<>` brackets
@@ -834,42 +794,40 @@ suite('MarkdownDecoder', () => {
 					' <!--<!--inner\r\ntext-- >\t\v\f ',
 				];
 
-				await test.run(
-					inputData,
-					[
-						// `1st`
-						new Space(new Range(1, 1, 1, 2)),
-						new FormFeed(new Range(1, 2, 1, 3)),
-						new Space(new Range(1, 3, 1, 4)),
-						new LeftAngleBracket(new Range(1, 4, 1, 5)),
-						new MarkdownComment(new Range(1, 5, 1, 5 + 14), '<!--commen\t-->'),
-						new RightAngleBracket(new Range(1, 19, 1, 20)),
-						new NewLine(new Range(1, 20, 1, 21)),
-						// `2nd`
-						new MarkdownComment(new Range(2, 1, 2, 1 + 21), '<!--<[!c⚽︎mment!]>-->'),
-						new Tab(new Range(2, 22, 2, 23)),
-						new Tab(new Range(2, 23, 2, 24)),
-						new NewLine(new Range(2, 24, 2, 25)),
-						// `3rd`
-						new VerticalTab(new Range(3, 1, 3, 2)),
-						new MarkdownComment(new Range(3, 2, 3 + 3, 1 + 7), '<!--some\r\ntext\n\t<!--inner\r\ntext-->'),
-						new Tab(new Range(6, 8, 6, 9)),
-						new Tab(new Range(6, 9, 6, 10)),
-						new NewLine(new Range(6, 10, 6, 11)),
-						// `4rd`
-						new Space(new Range(7, 1, 7, 2)),
-						// note! comment does not have correct closing `-->`, hence the comment extends
-						//       to the end of the text, and therefore includes the \t\v\f and space at the end
-						new MarkdownComment(new Range(7, 2, 8, 1 + 12), '<!--<!--inner\r\ntext-- >\t\v\f '),
-					],
-				);
+				await test.run(inputData, [
+					// `1st`
+					new Space(new Range(1, 1, 1, 2)),
+					new FormFeed(new Range(1, 2, 1, 3)),
+					new Space(new Range(1, 3, 1, 4)),
+					new LeftAngleBracket(new Range(1, 4, 1, 5)),
+					new MarkdownComment(new Range(1, 5, 1, 5 + 14), '<!--commen\t-->'),
+					new RightAngleBracket(new Range(1, 19, 1, 20)),
+					new NewLine(new Range(1, 20, 1, 21)),
+					// `2nd`
+					new MarkdownComment(new Range(2, 1, 2, 1 + 21), '<!--<[!c⚽︎mment!]>-->'),
+					new Tab(new Range(2, 22, 2, 23)),
+					new Tab(new Range(2, 23, 2, 24)),
+					new NewLine(new Range(2, 24, 2, 25)),
+					// `3rd`
+					new VerticalTab(new Range(3, 1, 3, 2)),
+					new MarkdownComment(
+						new Range(3, 2, 3 + 3, 1 + 7),
+						'<!--some\r\ntext\n\t<!--inner\r\ntext-->'
+					),
+					new Tab(new Range(6, 8, 6, 9)),
+					new Tab(new Range(6, 9, 6, 10)),
+					new NewLine(new Range(6, 10, 6, 11)),
+					// `4rd`
+					new Space(new Range(7, 1, 7, 2)),
+					// note! comment does not have correct closing `-->`, hence the comment extends
+					//       to the end of the text, and therefore includes the \t\v\f and space at the end
+					new MarkdownComment(new Range(7, 2, 8, 1 + 12), '<!--<!--inner\r\ntext-- >\t\v\f '),
+				]);
 			});
 		});
 
 		test('• invalid', async () => {
-			const test = testDisposables.add(
-				new TestMarkdownDecoder(),
-			);
+			const test = testDisposables.add(new TestMarkdownDecoder());
 
 			const inputData = [
 				'\t<! -- mondo --> ',
@@ -878,60 +836,57 @@ suite('MarkdownDecoder', () => {
 				'<!--mundo - -> ',
 			];
 
-			await test.run(
-				inputData,
-				[
-					// `1st`
-					new Tab(new Range(1, 1, 1, 2)),
-					new LeftAngleBracket(new Range(1, 2, 1, 3)),
-					new ExclamationMark(new Range(1, 3, 1, 4)),
-					new Space(new Range(1, 4, 1, 5)),
-					new Dash(new Range(1, 5, 1, 6)),
-					new Dash(new Range(1, 6, 1, 7)),
-					new Space(new Range(1, 7, 1, 8)),
-					new Word(new Range(1, 8, 1, 8 + 5), 'mondo'),
-					new Space(new Range(1, 13, 1, 14)),
-					new Dash(new Range(1, 14, 1, 15)),
-					new Dash(new Range(1, 15, 1, 16)),
-					new RightAngleBracket(new Range(1, 16, 1, 17)),
-					new Space(new Range(1, 17, 1, 18)),
-					new NewLine(new Range(1, 18, 1, 19)),
-					// `2nd`
-					new Space(new Range(2, 1, 2, 2)),
-					new LeftAngleBracket(new Range(2, 2, 2, 3)),
-					new Space(new Range(2, 3, 2, 4)),
-					new ExclamationMark(new Range(2, 4, 2, 5)),
-					new Dash(new Range(2, 5, 2, 6)),
-					new Dash(new Range(2, 6, 2, 7)),
-					new Space(new Range(2, 7, 2, 8)),
-					new Word(new Range(2, 8, 2, 8 + 4), 'світ'),
-					new Space(new Range(2, 12, 2, 13)),
-					new Dash(new Range(2, 13, 2, 14)),
-					new Dash(new Range(2, 14, 2, 15)),
-					new RightAngleBracket(new Range(2, 15, 2, 16)),
-					new Tab(new Range(2, 16, 2, 17)),
-					new NewLine(new Range(2, 17, 2, 18)),
-					// `3rd`
-					new VerticalTab(new Range(3, 1, 3, 2)),
-					new LeftAngleBracket(new Range(3, 2, 3, 3)),
-					new ExclamationMark(new Range(3, 3, 3, 4)),
-					new Dash(new Range(3, 4, 3, 5)),
-					new Space(new Range(3, 5, 3, 6)),
-					new Dash(new Range(3, 6, 3, 7)),
-					new Space(new Range(3, 7, 3, 8)),
-					new Word(new Range(3, 8, 3, 8 + 5), 'terra'),
-					new Space(new Range(3, 13, 3, 14)),
-					new Dash(new Range(3, 14, 3, 15)),
-					new Dash(new Range(3, 15, 3, 16)),
-					new RightAngleBracket(new Range(3, 16, 3, 17)),
-					new FormFeed(new Range(3, 17, 3, 18)),
-					new NewLine(new Range(3, 18, 3, 19)),
-					// `4rd`
-					// note! comment does not have correct closing `-->`, hence the comment extends
-					//       to the end of the text, and therefore includes the `space` at the end
-					new MarkdownComment(new Range(4, 1, 4, 1 + 15), '<!--mundo - -> '),
-				],
-			);
+			await test.run(inputData, [
+				// `1st`
+				new Tab(new Range(1, 1, 1, 2)),
+				new LeftAngleBracket(new Range(1, 2, 1, 3)),
+				new ExclamationMark(new Range(1, 3, 1, 4)),
+				new Space(new Range(1, 4, 1, 5)),
+				new Dash(new Range(1, 5, 1, 6)),
+				new Dash(new Range(1, 6, 1, 7)),
+				new Space(new Range(1, 7, 1, 8)),
+				new Word(new Range(1, 8, 1, 8 + 5), 'mondo'),
+				new Space(new Range(1, 13, 1, 14)),
+				new Dash(new Range(1, 14, 1, 15)),
+				new Dash(new Range(1, 15, 1, 16)),
+				new RightAngleBracket(new Range(1, 16, 1, 17)),
+				new Space(new Range(1, 17, 1, 18)),
+				new NewLine(new Range(1, 18, 1, 19)),
+				// `2nd`
+				new Space(new Range(2, 1, 2, 2)),
+				new LeftAngleBracket(new Range(2, 2, 2, 3)),
+				new Space(new Range(2, 3, 2, 4)),
+				new ExclamationMark(new Range(2, 4, 2, 5)),
+				new Dash(new Range(2, 5, 2, 6)),
+				new Dash(new Range(2, 6, 2, 7)),
+				new Space(new Range(2, 7, 2, 8)),
+				new Word(new Range(2, 8, 2, 8 + 4), 'світ'),
+				new Space(new Range(2, 12, 2, 13)),
+				new Dash(new Range(2, 13, 2, 14)),
+				new Dash(new Range(2, 14, 2, 15)),
+				new RightAngleBracket(new Range(2, 15, 2, 16)),
+				new Tab(new Range(2, 16, 2, 17)),
+				new NewLine(new Range(2, 17, 2, 18)),
+				// `3rd`
+				new VerticalTab(new Range(3, 1, 3, 2)),
+				new LeftAngleBracket(new Range(3, 2, 3, 3)),
+				new ExclamationMark(new Range(3, 3, 3, 4)),
+				new Dash(new Range(3, 4, 3, 5)),
+				new Space(new Range(3, 5, 3, 6)),
+				new Dash(new Range(3, 6, 3, 7)),
+				new Space(new Range(3, 7, 3, 8)),
+				new Word(new Range(3, 8, 3, 8 + 5), 'terra'),
+				new Space(new Range(3, 13, 3, 14)),
+				new Dash(new Range(3, 14, 3, 15)),
+				new Dash(new Range(3, 15, 3, 16)),
+				new RightAngleBracket(new Range(3, 16, 3, 17)),
+				new FormFeed(new Range(3, 17, 3, 18)),
+				new NewLine(new Range(3, 18, 3, 19)),
+				// `4rd`
+				// note! comment does not have correct closing `-->`, hence the comment extends
+				//       to the end of the text, and therefore includes the `space` at the end
+				new MarkdownComment(new Range(4, 1, 4, 1 + 15), '<!--mundo - -> '),
+			]);
 		});
 	});
 });

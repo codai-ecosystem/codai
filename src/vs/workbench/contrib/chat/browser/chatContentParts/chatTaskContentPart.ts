@@ -12,7 +12,10 @@ import { IChatProgressRenderableResponseContent } from '../../common/chatModel.j
 import { IChatTask, IChatTaskSerialized } from '../../common/chatService.js';
 import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
 import { ChatProgressContentPart } from './chatProgressContentPart.js';
-import { ChatCollapsibleListContentPart, CollapsibleListPool } from './chatReferencesContentPart.js';
+import {
+	ChatCollapsibleListContentPart,
+	CollapsibleListPool,
+} from './chatReferencesContentPart.js';
 
 export class ChatTaskContentPart extends Disposable implements IChatContentPart {
 	public readonly domNode: HTMLElement;
@@ -25,23 +28,39 @@ export class ChatTaskContentPart extends Disposable implements IChatContentPart 
 		contentReferencesListPool: CollapsibleListPool,
 		renderer: MarkdownRenderer,
 		context: IChatContentPartRenderContext,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 
 		if (task.progress.length) {
 			this.isSettled = true;
-			const refsPart = this._register(instantiationService.createInstance(ChatCollapsibleListContentPart, task.progress, task.content.value, context, contentReferencesListPool));
+			const refsPart = this._register(
+				instantiationService.createInstance(
+					ChatCollapsibleListContentPart,
+					task.progress,
+					task.content.value,
+					context,
+					contentReferencesListPool
+				)
+			);
 			this.domNode = dom.$('.chat-progress-task');
 			this.domNode.appendChild(refsPart.domNode);
 			this.onDidChangeHeight = refsPart.onDidChangeHeight;
 		} else {
-			const isSettled = task.kind === 'progressTask' ?
-				task.isSettled() :
-				true;
+			const isSettled = task.kind === 'progressTask' ? task.isSettled() : true;
 			this.isSettled = isSettled;
 			const showSpinner = !isSettled && !context.element.isComplete;
-			const progressPart = this._register(instantiationService.createInstance(ChatProgressContentPart, task, renderer, context, showSpinner, true, undefined));
+			const progressPart = this._register(
+				instantiationService.createInstance(
+					ChatProgressContentPart,
+					task,
+					renderer,
+					context,
+					showSpinner,
+					true,
+					undefined
+				)
+			);
 			this.domNode = progressPart.domNode;
 			this.onDidChangeHeight = Event.None;
 		}
@@ -56,8 +75,7 @@ export class ChatTaskContentPart extends Disposable implements IChatContentPart 
 			return false;
 		}
 
-		return other.kind === this.task.kind &&
-			other.progress.length === this.task.progress.length;
+		return other.kind === this.task.kind && other.progress.length === this.task.progress.length;
 	}
 
 	addDisposable(disposable: IDisposable): void {

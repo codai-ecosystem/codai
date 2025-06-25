@@ -10,8 +10,7 @@ interface IVerifier<T> {
 }
 
 abstract class Verifier<T> implements IVerifier<T> {
-
-	constructor(protected readonly defaultValue: T) { }
+	constructor(protected readonly defaultValue: T) {}
 
 	verify(value: unknown): T {
 		if (!this.isType(value)) {
@@ -56,8 +55,10 @@ export class EnumVerifier<T> extends Verifier<T> {
 }
 
 export class ObjectVerifier<T extends Object> extends Verifier<T> {
-
-	constructor(defaultValue: T, private readonly verifier: { [K in keyof T]: IVerifier<T[K]> }) {
+	constructor(
+		defaultValue: T,
+		private readonly verifier: { [K in keyof T]: IVerifier<T[K]> }
+	) {
 		super(defaultValue);
 	}
 
@@ -73,7 +74,10 @@ export class ObjectVerifier<T extends Object> extends Verifier<T> {
 	}
 }
 
-export function verifyObject<T extends Object>(verifiers: { [K in keyof T]: IVerifier<T[K]> }, value: Object): T {
+export function verifyObject<T extends Object>(
+	verifiers: { [K in keyof T]: IVerifier<T[K]> },
+	value: Object
+): T {
 	const result = Object.create(null);
 
 	for (const key in verifiers) {

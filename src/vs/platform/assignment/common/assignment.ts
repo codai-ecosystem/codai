@@ -17,7 +17,7 @@ export interface IAssignmentService {
 export enum TargetPopulation {
 	Insiders = 'insider',
 	Public = 'public',
-	Exploration = 'exploration'
+	Exploration = 'exploration',
 }
 
 /*
@@ -88,7 +88,7 @@ export class AssignmentFilterProvider implements IExperimentationFilterProvider 
 		private appName: string,
 		private machineId: string,
 		private targetPopulation: TargetPopulation
-	) { }
+	) {}
 
 	/**
 	 * Returns a version string that can be parsed by the TAS client.
@@ -96,7 +96,7 @@ export class AssignmentFilterProvider implements IExperimentationFilterProvider 
 	 * Ref: https://github.com/microsoft/tas-client/blob/30340d5e1da37c2789049fcf45928b954680606f/vscode-tas-client/src/vscode-tas-client/VSCodeFilterProvider.ts#L35
 	 *
 	 * @param version Version string to be trimmed.
-	*/
+	 */
 	private static trimVersionSuffix(version: string): string {
 		const regex = /\-[a-zA-Z0-9]+$/;
 		const result = version.split(regex);

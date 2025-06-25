@@ -18,7 +18,6 @@ export function originalFSPath(uri: URI): string {
 //#region IExtUri
 
 export interface IExtUri {
-
 	// --- identity
 
 	/**
@@ -137,14 +136,16 @@ export interface IExtUri {
 }
 
 export class ExtUri implements IExtUri {
-
-	constructor(private _ignorePathCasing: (uri: URI) => boolean) { }
+	constructor(private _ignorePathCasing: (uri: URI) => boolean) {}
 
 	compare(uri1: URI, uri2: URI, ignoreFragment: boolean = false): number {
 		if (uri1 === uri2) {
 			return 0;
 		}
-		return strCompare(this.getComparisonKey(uri1, ignoreFragment), this.getComparisonKey(uri2, ignoreFragment));
+		return strCompare(
+			this.getComparisonKey(uri1, ignoreFragment),
+			this.getComparisonKey(uri2, ignoreFragment)
+		);
 	}
 
 	isEqual(uri1: URI | undefined, uri2: URI | undefined, ignoreFragment: boolean = false): boolean {
@@ -154,14 +155,18 @@ export class ExtUri implements IExtUri {
 		if (!uri1 || !uri2) {
 			return false;
 		}
-		return this.getComparisonKey(uri1, ignoreFragment) === this.getComparisonKey(uri2, ignoreFragment);
+		return (
+			this.getComparisonKey(uri1, ignoreFragment) === this.getComparisonKey(uri2, ignoreFragment)
+		);
 	}
 
 	getComparisonKey(uri: URI, ignoreFragment: boolean = false): string {
-		return uri.with({
-			path: this._ignorePathCasing(uri) ? uri.path.toLowerCase() : undefined,
-			fragment: ignoreFragment ? null : undefined
-		}).toString();
+		return uri
+			.with({
+				path: this._ignorePathCasing(uri) ? uri.path.toLowerCase() : undefined,
+				fragment: ignoreFragment ? null : undefined,
+			})
+			.toString();
 	}
 
 	ignorePathCasing(uri: URI): boolean {
@@ -171,10 +176,27 @@ export class ExtUri implements IExtUri {
 	isEqualOrParent(base: URI, parentCandidate: URI, ignoreFragment: boolean = false): boolean {
 		if (base.scheme === parentCandidate.scheme) {
 			if (base.scheme === Schemas.file) {
-				return extpath.isEqualOrParent(originalFSPath(base), originalFSPath(parentCandidate), this._ignorePathCasing(base)) && base.query === parentCandidate.query && (ignoreFragment || base.fragment === parentCandidate.fragment);
+				return (
+					extpath.isEqualOrParent(
+						originalFSPath(base),
+						originalFSPath(parentCandidate),
+						this._ignorePathCasing(base)
+					) &&
+					base.query === parentCandidate.query &&
+					(ignoreFragment || base.fragment === parentCandidate.fragment)
+				);
 			}
 			if (isEqualAuthority(base.authority, parentCandidate.authority)) {
-				return extpath.isEqualOrParent(base.path, parentCandidate.path, this._ignorePathCasing(base), '/') && base.query === parentCandidate.query && (ignoreFragment || base.fragment === parentCandidate.fragment);
+				return (
+					extpath.isEqualOrParent(
+						base.path,
+						parentCandidate.path,
+						this._ignorePathCasing(base),
+						'/'
+					) &&
+					base.query === parentCandidate.query &&
+					(ignoreFragment || base.fragment === parentCandidate.fragment)
+				);
 			}
 		}
 		return false;
@@ -213,7 +235,7 @@ export class ExtUri implements IExtUri {
 			}
 		}
 		return resource.with({
-			path: dirname
+			path: dirname,
 		});
 	}
 
@@ -228,7 +250,7 @@ export class ExtUri implements IExtUri {
 			normalizedPath = paths.posix.normalize(resource.path);
 		}
 		return resource.with({
-			path: normalizedPath
+			path: normalizedPath,
 		});
 	}
 
@@ -262,12 +284,12 @@ export class ExtUri implements IExtUri {
 			const newURI = URI.file(paths.resolve(originalFSPath(base), path));
 			return base.with({
 				authority: newURI.authority,
-				path: newURI.path
+				path: newURI.path,
 			});
 		}
 		path = extpath.toPosixPath(path); // we allow path to be a windows path
 		return base.with({
-			path: paths.posix.resolve(base.path, path)
+			path: paths.posix.resolve(base.path, path),
 		});
 	}
 
@@ -287,7 +309,11 @@ export class ExtUri implements IExtUri {
 			return fsp.length > extpath.getRoot(fsp).length && fsp[fsp.length - 1] === sep;
 		} else {
 			const p = resource.path;
-			return (p.length > 1 && p.charCodeAt(p.length - 1) === CharCode.Slash) && !(/^[a-zA-Z]:(\/$|\\$)/.test(resource.fsPath)); // ignore the slash at offset 0
+			return (
+				p.length > 1 &&
+				p.charCodeAt(p.length - 1) === CharCode.Slash &&
+				!/^[a-zA-Z]:(\/$|\\$)/.test(resource.fsPath)
+			); // ignore the slash at offset 0
 		}
 	}
 
@@ -303,7 +329,10 @@ export class ExtUri implements IExtUri {
 		let isRootSep: boolean = false;
 		if (resource.scheme === Schemas.file) {
 			const fsp = originalFSPath(resource);
-			isRootSep = ((fsp !== undefined) && (fsp.length === extpath.getRoot(fsp).length) && (fsp[fsp.length - 1] === sep));
+			isRootSep =
+				fsp !== undefined &&
+				fsp.length === extpath.getRoot(fsp).length &&
+				fsp[fsp.length - 1] === sep;
 		} else {
 			sep = '/';
 			const p = resource.path;
@@ -315,7 +344,6 @@ export class ExtUri implements IExtUri {
 		return resource;
 	}
 }
-
 
 /**
  * Unbiased utility that takes uris "as they are". This means it can be interchanged with
@@ -342,7 +370,6 @@ export const extUriBiasedIgnorePathCase = new ExtUri(uri => {
 	// Resource can be from another platform. Lowering the case as an hack. Should come from File system provider
 	return uri.scheme === Schemas.file ? !isLinux : true;
 });
-
 
 /**
  * BIASED utility that always ignores the casing of uris paths. ONLY use this util if you
@@ -380,13 +407,15 @@ export function distinctParents<T>(items: T[], resourceAccessor: (item: T) => UR
 	const distinctParents: T[] = [];
 	for (let i = 0; i < items.length; i++) {
 		const candidateResource = resourceAccessor(items[i]);
-		if (items.some((otherItem, index) => {
-			if (index === i) {
-				return false;
-			}
+		if (
+			items.some((otherItem, index) => {
+				if (index === i) {
+					return false;
+				}
 
-			return isEqualOrParent(candidateResource, resourceAccessor(otherItem));
-		})) {
+				return isEqualOrParent(candidateResource, resourceAccessor(otherItem));
+			})
+		) {
 			continue;
 		}
 
@@ -400,7 +429,6 @@ export function distinctParents<T>(items: T[], resourceAccessor: (item: T) => UR
  * Data URI related helpers.
  */
 export namespace DataUri {
-
 	export const META_DATA_LABEL = 'label';
 	export const META_DATA_DESCRIPTION = 'description';
 	export const META_DATA_SIZE = 'size';
@@ -411,7 +439,10 @@ export namespace DataUri {
 
 		// Given a URI of:  data:image/png;size:2313;label:SomeLabel;description:SomeDescription;base64,77+9UE5...
 		// the metadata is: size:2313;label:SomeLabel;description:SomeDescription
-		const meta = dataUri.path.substring(dataUri.path.indexOf(';') + 1, dataUri.path.lastIndexOf(';'));
+		const meta = dataUri.path.substring(
+			dataUri.path.indexOf(';') + 1,
+			dataUri.path.lastIndexOf(';')
+		);
 		meta.split(';').forEach(property => {
 			const [key, value] = property.split(':');
 			if (key && value) {
@@ -430,7 +461,11 @@ export namespace DataUri {
 	}
 }
 
-export function toLocalResource(resource: URI, authority: string | undefined, localScheme: string): URI {
+export function toLocalResource(
+	resource: URI,
+	authority: string | undefined,
+	localScheme: string
+): URI {
 	if (authority) {
 		let path = resource.path;
 		if (path && path[0] !== paths.posix.sep) {

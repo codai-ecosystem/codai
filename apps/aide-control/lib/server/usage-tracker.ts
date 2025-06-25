@@ -32,11 +32,7 @@ export async function trackUsage(tracker: UsageTracker): Promise<void> {
 		const admin = getAdminApp();
 		const db = (admin as any).firestore();
 
-		const usageRef = db
-			.collection('users')
-			.doc(tracker.userId)
-			.collection('usage')
-			.doc('current');
+		const usageRef = db.collection('users').doc(tracker.userId).collection('usage').doc('current');
 
 		const amount = tracker.amount || 1;
 
@@ -68,7 +64,6 @@ export async function trackUsage(tracker: UsageTracker): Promise<void> {
 			metadata: tracker.metadata || {},
 			timestamp: new Date().toISOString(),
 		});
-
 	} catch (error) {
 		console.error('Error tracking usage:', error);
 		throw error;
@@ -155,10 +150,7 @@ export async function checkQuotaExceeded(
 	amount: number = 1
 ): Promise<{ exceeded: boolean; remaining: number }> {
 	try {
-		const [usage, quotas] = await Promise.all([
-			getCurrentUsage(userId),
-			getUserQuotas(userId),
-		]);
+		const [usage, quotas] = await Promise.all([getCurrentUsage(userId), getUserQuotas(userId)]);
 
 		let currentUsage: number;
 		let quota: number;
@@ -191,10 +183,7 @@ export async function checkQuotaExceeded(
 /**
  * Middleware to enforce quotas before processing requests
  */
-export function withQuotaCheck(
-	action: UsageTracker['action'],
-	amount: number = 1
-) {
+export function withQuotaCheck(action: UsageTracker['action'], amount: number = 1) {
 	return function (handler: (req: NextRequest, context: any) => Promise<NextResponse>) {
 		return async function (req: NextRequest, context: any) {
 			try {
@@ -202,10 +191,7 @@ export function withQuotaCheck(
 				const userId = context.uid || context.userId;
 
 				if (!userId) {
-					return NextResponse.json(
-						{ error: 'Authentication required' },
-						{ status: 401 }
-					);
+					return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 				}
 
 				// Check quota before proceeding
@@ -241,10 +227,7 @@ export function withQuotaCheck(
 				return response;
 			} catch (error) {
 				console.error('Quota check middleware error:', error);
-				return NextResponse.json(
-					{ error: 'Internal server error' },
-					{ status: 500 }
-				);
+				return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 			}
 		};
 	};

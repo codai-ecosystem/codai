@@ -56,21 +56,21 @@ export type Token =
 
 type KeywordTokenType = TokenType.Not | TokenType.In | TokenType.False | TokenType.True;
 type TokenTypeWithoutLexeme =
-	TokenType.LParen |
-	TokenType.RParen |
-	TokenType.Neg |
-	TokenType.Lt |
-	TokenType.LtEq |
-	TokenType.Gt |
-	TokenType.GtEq |
-	TokenType.RegexOp |
-	TokenType.True |
-	TokenType.False |
-	TokenType.In |
-	TokenType.Not |
-	TokenType.And |
-	TokenType.Or |
-	TokenType.EOF;
+	| TokenType.LParen
+	| TokenType.RParen
+	| TokenType.Neg
+	| TokenType.Lt
+	| TokenType.LtEq
+	| TokenType.Gt
+	| TokenType.GtEq
+	| TokenType.RegexOp
+	| TokenType.True
+	| TokenType.False
+	| TokenType.In
+	| TokenType.Not
+	| TokenType.And
+	| TokenType.Or
+	| TokenType.EOF;
 
 /**
  * Example:
@@ -78,7 +78,7 @@ type TokenTypeWithoutLexeme =
  * so it's reported as unexpected
  */
 export type LexingError = {
-	offset: number; /** note that this doesn't take into account escape characters from the original encoding of the string, e.g., within an extension manifest file's JSON encoding  */
+	offset: number /** note that this doesn't take into account escape characters from the original encoding of the string, e.g., within an extension manifest file's JSON encoding  */;
 	lexeme: string;
 	additionalInfo?: string;
 };
@@ -86,18 +86,35 @@ export type LexingError = {
 function hintDidYouMean(...meant: string[]) {
 	switch (meant.length) {
 		case 1:
-			return localize('contextkey.scanner.hint.didYouMean1', "Did you mean {0}?", meant[0]);
+			return localize('contextkey.scanner.hint.didYouMean1', 'Did you mean {0}?', meant[0]);
 		case 2:
-			return localize('contextkey.scanner.hint.didYouMean2', "Did you mean {0} or {1}?", meant[0], meant[1]);
+			return localize(
+				'contextkey.scanner.hint.didYouMean2',
+				'Did you mean {0} or {1}?',
+				meant[0],
+				meant[1]
+			);
 		case 3:
-			return localize('contextkey.scanner.hint.didYouMean3', "Did you mean {0}, {1} or {2}?", meant[0], meant[1], meant[2]);
+			return localize(
+				'contextkey.scanner.hint.didYouMean3',
+				'Did you mean {0}, {1} or {2}?',
+				meant[0],
+				meant[1],
+				meant[2]
+			);
 		default: // we just don't expect that many
 			return undefined;
 	}
 }
 
-const hintDidYouForgetToOpenOrCloseQuote = localize('contextkey.scanner.hint.didYouForgetToOpenOrCloseQuote', "Did you forget to open or close the quote?");
-const hintDidYouForgetToEscapeSlash = localize('contextkey.scanner.hint.didYouForgetToEscapeSlash', "Did you forget to escape the '/' (slash) character? Put two backslashes before it to escape, e.g., '\\\\/\'.");
+const hintDidYouForgetToOpenOrCloseQuote = localize(
+	'contextkey.scanner.hint.didYouForgetToOpenOrCloseQuote',
+	'Did you forget to open or close the quote?'
+);
+const hintDidYouForgetToEscapeSlash = localize(
+	'contextkey.scanner.hint.didYouForgetToEscapeSlash',
+	"Did you forget to escape the '/' (slash) character? Put two backslashes before it to escape, e.g., '\\\\/\'."
+);
 
 /**
  * A simple scanner for context keys.
@@ -115,7 +132,6 @@ const hintDidYouForgetToEscapeSlash = localize('contextkey.scanner.hint.didYouFo
  * ```
  */
 export class Scanner {
-
 	static getLexeme(token: Token): string {
 		switch (token.type) {
 			case TokenType.LParen:
@@ -161,7 +177,9 @@ export class Scanner {
 			case TokenType.EOF:
 				return 'EOF';
 			default:
-				throw illegalState(`unhandled token type: ${JSON.stringify(token)}; have you forgotten to add a case?`);
+				throw illegalState(
+					`unhandled token type: ${JSON.stringify(token)}; have you forgotten to add a case?`
+				);
 		}
 	}
 
@@ -197,13 +215,16 @@ export class Scanner {
 
 	scan() {
 		while (!this._isAtEnd()) {
-
 			this._start = this._current;
 
 			const ch = this._advance();
 			switch (ch) {
-				case CharCode.OpenParen: this._addToken(TokenType.LParen); break;
-				case CharCode.CloseParen: this._addToken(TokenType.RParen); break;
+				case CharCode.OpenParen:
+					this._addToken(TokenType.LParen);
+					break;
+				case CharCode.CloseParen:
+					this._addToken(TokenType.RParen);
+					break;
 
 				case CharCode.ExclamationMark:
 					if (this._match(CharCode.Equals)) {
@@ -214,11 +235,16 @@ export class Scanner {
 					}
 					break;
 
-				case CharCode.SingleQuote: this._quotedString(); break;
-				case CharCode.Slash: this._regex(); break;
+				case CharCode.SingleQuote:
+					this._quotedString();
+					break;
+				case CharCode.Slash:
+					this._regex();
+					break;
 
 				case CharCode.Equals:
-					if (this._match(CharCode.Equals)) { // support `==`
+					if (this._match(CharCode.Equals)) {
+						// support `==`
 						const isTripleEq = this._match(CharCode.Equals); // eat last `=` if `===`
 						this._tokens.push({ type: TokenType.Eq, offset: this._start, isTripleEq });
 					} else if (this._match(CharCode.Tilde)) {
@@ -228,9 +254,13 @@ export class Scanner {
 					}
 					break;
 
-				case CharCode.LessThan: this._addToken(this._match(CharCode.Equals) ? TokenType.LtEq : TokenType.Lt); break;
+				case CharCode.LessThan:
+					this._addToken(this._match(CharCode.Equals) ? TokenType.LtEq : TokenType.Lt);
+					break;
 
-				case CharCode.GreaterThan: this._addToken(this._match(CharCode.Equals) ? TokenType.GtEq : TokenType.Gt); break;
+				case CharCode.GreaterThan:
+					this._addToken(this._match(CharCode.Equals) ? TokenType.GtEq : TokenType.Gt);
+					break;
 
 				case CharCode.Ampersand:
 					if (this._match(CharCode.Ampersand)) {
@@ -317,7 +347,8 @@ export class Scanner {
 
 	// captures the lexeme without the leading and trailing '
 	private _quotedString() {
-		while (this._peek() !== CharCode.SingleQuote && !this._isAtEnd()) { // TODO@ulugbekna: add support for escaping ' ?
+		while (this._peek() !== CharCode.SingleQuote && !this._isAtEnd()) {
+			// TODO@ulugbekna: add support for escaping ' ?
 			this._advance();
 		}
 
@@ -329,7 +360,11 @@ export class Scanner {
 		// consume the closing '
 		this._advance();
 
-		this._tokens.push({ type: TokenType.QuotedStr, lexeme: this._input.substring(this._start + 1, this._current - 1), offset: this._start + 1 });
+		this._tokens.push({
+			type: TokenType.QuotedStr,
+			lexeme: this._input.substring(this._start + 1, this._current - 1),
+			offset: this._start + 1,
+		});
 	}
 
 	/*
@@ -352,9 +387,11 @@ export class Scanner {
 
 			const ch = this._input.charCodeAt(p);
 
-			if (inEscape) { // parsing an escape character
+			if (inEscape) {
+				// parsing an escape character
 				inEscape = false;
-			} else if (ch === CharCode.Slash && !inCharacterClass) { // end of regex
+			} else if (ch === CharCode.Slash && !inCharacterClass) {
+				// end of regex
 				p++;
 				break;
 			} else if (ch === CharCode.OpenSquareBracket) {

@@ -25,7 +25,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 
 	constructor(
 		private _history: IHistory<T> = new Set(),
-		limit: number = 10,
+		limit: number = 10
 	) {
 		this._limit = limit;
 		this._onChange();
@@ -141,25 +141,33 @@ interface HistoryNode<T> {
  * the user can navigate away from the last item through the list, and back to it. When updating the last item, call replaceLast.
  */
 export class HistoryNavigator2<T> {
-
 	private valueSet: Set<T>;
 	private head: HistoryNode<T>;
 	private tail: HistoryNode<T>;
 	private cursor: HistoryNode<T>;
 	private _size: number;
-	get size(): number { return this._size; }
+	get size(): number {
+		return this._size;
+	}
 
-	constructor(history: readonly T[], private capacity: number = 10, private identityFn: (t: T) => unknown = t => t) {
+	constructor(
+		history: readonly T[],
+		private capacity: number = 10,
+		private identityFn: (t: T) => unknown = t => t
+	) {
 		if (history.length < 1) {
 			throw new Error('not supported');
 		}
 
 		this._size = 1;
-		this.head = this.tail = this.cursor = {
-			value: history[0],
-			previous: undefined,
-			next: undefined
-		};
+		this.head =
+			this.tail =
+			this.cursor =
+				{
+					value: history[0],
+					previous: undefined,
+					next: undefined,
+				};
 
 		this.valueSet = new SetWithKey<T>([history[0]], identityFn);
 		for (let i = 1; i < history.length; i++) {
@@ -171,7 +179,7 @@ export class HistoryNavigator2<T> {
 		const node: HistoryNode<T> = {
 			value,
 			previous: this.tail,
-			next: undefined
+			next: undefined,
 		};
 
 		this.tail.next = node;
@@ -223,7 +231,7 @@ export class HistoryNavigator2<T> {
 		const node: HistoryNode<T> = {
 			value,
 			previous: undefined,
-			next: this.head
+			next: this.head,
 		};
 
 		this.head.previous = node;

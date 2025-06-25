@@ -22,7 +22,13 @@ async function testConversationManager() {
 
 		// Test graph data
 		const graphData = memoryGraph.getGraphData();
-		console.log('✅ Graph data:', graphData.nodes.length, 'nodes,', graphData.edges.length, 'edges');
+		console.log(
+			'✅ Graph data:',
+			graphData.nodes.length,
+			'nodes,',
+			graphData.edges.length,
+			'edges'
+		);
 
 		// Test adding an edge
 		const nodeId2 = memoryGraph.addNode('feature', 'Add state management', { priority: 'medium' });
@@ -38,7 +44,6 @@ async function testConversationManager() {
 		console.log('✅ Search results:', searchResults.length);
 
 		console.log('🎉 All tests passed! SimpleMemoryGraph implementation is working.');
-
 	} catch (error) {
 		console.error('❌ Test failed:', error.message);
 		console.error(error.stack);

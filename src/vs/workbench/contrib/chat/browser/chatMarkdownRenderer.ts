@@ -9,7 +9,11 @@ import { getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hover
 import { IMarkdownString } from '../../../../base/common/htmlContent.js';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
-import { IMarkdownRendererOptions, IMarkdownRenderResult, MarkdownRenderer } from '../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
+import {
+	IMarkdownRendererOptions,
+	IMarkdownRenderResult,
+	MarkdownRenderer,
+} from '../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
 import { ILanguageService } from '../../../../editor/common/languages/language.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 import { IFileService } from '../../../../platform/files/common/files.js';
@@ -64,30 +68,35 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
 		@IOpenerService openerService: IOpenerService,
 		@IHoverService private readonly hoverService: IHoverService,
 		@IFileService private readonly fileService: IFileService,
-		@ICommandService private readonly commandService: ICommandService,
+		@ICommandService private readonly commandService: ICommandService
 	) {
 		super(options ?? {}, languageService, openerService);
 	}
 
-	override render(markdown: IMarkdownString | undefined, options?: MarkdownRenderOptions, markedOptions?: MarkedOptions): IMarkdownRenderResult {
+	override render(
+		markdown: IMarkdownString | undefined,
+		options?: MarkdownRenderOptions,
+		markedOptions?: MarkedOptions
+	): IMarkdownRenderResult {
 		options = {
 			...options,
-			remoteImageIsAllowed: (_uri) => false,
+			remoteImageIsAllowed: _uri => false,
 			sanitizerOptions: {
 				replaceWithPlaintext: true,
 				allowedTags: allowedHtmlTags,
-			}
+			},
 		};
 
-		const mdWithBody: IMarkdownString | undefined = (markdown && markdown.supportHtml) ?
-			{
-				...markdown,
+		const mdWithBody: IMarkdownString | undefined =
+			markdown && markdown.supportHtml
+				? {
+						...markdown,
 
-				// dompurify uses DOMParser, which strips leading comments. Wrapping it all in 'body' prevents this.
-				// The \n\n prevents marked.js from parsing the body contents as just text in an 'html' token, instead of actual markdown.
-				value: `<body>\n\n${markdown.value}</body>`,
-			}
-			: markdown;
+						// dompurify uses DOMParser, which strips leading comments. Wrapping it all in 'body' prevents this.
+						// The \n\n prevents marked.js from parsing the body contents as just text in an 'html' token, instead of actual markdown.
+						value: `<body>\n\n${markdown.value}</body>`,
+					}
+				: markdown;
 		const result = super.render(mdWithBody, options, markedOptions);
 
 		// In some cases, the renderer can return text that is not inside a <p>,
@@ -102,11 +111,13 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
 
 	private attachCustomHover(result: IMarkdownRenderResult): IMarkdownRenderResult {
 		const store = new DisposableStore();
-		result.element.querySelectorAll('a').forEach((element) => {
+		result.element.querySelectorAll('a').forEach(element => {
 			if (element.title) {
 				const title = element.title;
 				element.title = '';
-				store.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), element, title));
+				store.add(
+					this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), element, title)
+				);
 			}
 		});
 
@@ -115,7 +126,7 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
 			dispose: () => {
 				result.dispose();
 				store.dispose();
-			}
+			},
 		};
 	}
 

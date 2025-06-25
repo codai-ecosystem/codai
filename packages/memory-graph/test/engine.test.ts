@@ -13,27 +13,29 @@ vi.mock('../src/persistence', () => {
 				version: '0.2.0',
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				nodes: [{
-					id: 'node-1',
-					type: 'feature',
-					name: 'Persistent Feature',
-					status: 'planned',
-					priority: 'high',
-					createdAt: new Date(),
-					updatedAt: new Date(),
-					version: '1.0.0'
-				}],
+				nodes: [
+					{
+						id: 'node-1',
+						type: 'feature',
+						name: 'Persistent Feature',
+						status: 'planned',
+						priority: 'high',
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						version: '1.0.0',
+					},
+				],
 				relationships: [],
 				metadata: {
 					aiProvider: 'test',
 					lastInteractionAt: new Date(),
 					tags: [],
-					stats: { nodeCount: 1, edgeCount: 0, complexity: 0 }
+					stats: { nodeCount: 1, edgeCount: 0, complexity: 0 },
 				},
-				settings: { autoSave: true }
+				settings: { autoSave: true },
 			}),
 			exportGraph: vi.fn().mockResolvedValue('{}'),
-			importGraph: vi.fn().mockResolvedValue(true)
+			importGraph: vi.fn().mockResolvedValue(true),
 		}),
 	};
 });
@@ -43,7 +45,7 @@ vi.mock('../src/migrations', () => {
 	return {
 		createMigrationSystem: () => ({
 			needsMigration: vi.fn().mockReturnValue(false),
-			migrateGraph: vi.fn().mockImplementation((graph) => graph)
+			migrateGraph: vi.fn().mockImplementation(graph => graph),
 		}),
 	};
 });
@@ -65,11 +67,14 @@ describe('MemoryGraphEngine', () => {
 		expect(graph.nodes).toEqual([]);
 		expect(graph.relationships).toEqual([]);
 		expect(graph.version).toBe('0.2.0');
-	}); it('should add and retrieve nodes', () => {
+	});
+	it('should add and retrieve nodes', () => {
 		// Add a feature node
-		const newNode = engine.addNode(createFeatureNode({
-			name: 'Test Feature'
-		}));
+		const newNode = engine.addNode(
+			createFeatureNode({
+				name: 'Test Feature',
+			})
+		);
 
 		// Check that the node was added
 		expect(newNode).toBeDefined();
@@ -84,21 +89,25 @@ describe('MemoryGraphEngine', () => {
 		// Check that the graph was updated
 		expect(engine.nodes.length).toBe(1);
 		expect(engine.nodes[0]).toEqual(newNode);
-	}); it('should update nodes correctly', () => {
+	});
+	it('should update nodes correctly', () => {
 		// Add a node first
-		const node = engine.addNode(createFeatureNode({
-			name: 'Original Feature'
-		}));
+		const node = engine.addNode(
+			createFeatureNode({
+				name: 'Original Feature',
+			})
+		);
 
 		// Now update it
 		const updatedNode = engine.updateNode(node.id, {
 			name: 'Updated Feature',
-			priority: 'high' as const
+			priority: 'high' as const,
 		});
 
 		// Check the update worked
 		expect(updatedNode).toBeDefined();
-		if (updatedNode && updatedNode.type === 'feature') { // TypeScript check
+		if (updatedNode && updatedNode.type === 'feature') {
+			// TypeScript check
 			expect(updatedNode.name).toBe('Updated Feature');
 			expect(updatedNode.priority).toBe('high');
 			expect(updatedNode.version).not.toBe(node.version); // Version should be incremented
@@ -107,11 +116,14 @@ describe('MemoryGraphEngine', () => {
 		// Check the stored node was updated
 		const retrievedNode = engine.getNodeById(node.id);
 		expect(retrievedNode?.name).toBe('Updated Feature');
-	}); it('should remove nodes', () => {
+	});
+	it('should remove nodes', () => {
 		// Add a node
-		const node = engine.addNode(createFeatureNode({
-			name: 'Feature to Remove'
-		}));
+		const node = engine.addNode(
+			createFeatureNode({
+				name: 'Feature to Remove',
+			})
+		);
 
 		// Verify it exists
 		expect(engine.nodes.length).toBe(1);
@@ -123,12 +135,15 @@ describe('MemoryGraphEngine', () => {
 		expect(result).toBe(true);
 		expect(engine.nodes.length).toBe(0);
 		expect(engine.getNodeById(node.id)).toBeUndefined();
-	}); it('should handle version incrementing correctly', () => {
+	});
+	it('should handle version incrementing correctly', () => {
 		// Test with standard version
-		const node = engine.addNode(createFeatureNode({
-			name: 'Version Test',
-			version: '1.2.3'
-		}));
+		const node = engine.addNode(
+			createFeatureNode({
+				name: 'Version Test',
+				version: '1.2.3',
+			})
+		);
 
 		const updated = engine.updateNode(node.id, { name: 'Updated' });
 		if (updated) {
@@ -141,18 +156,23 @@ describe('MemoryGraphEngine', () => {
 			expect(updatedAgain.version).toBe('1.2.5');
 		}
 	});
-	it('should handle relationships between nodes', () => {    // Add two nodes
-		const featureNode = engine.addNode(createFeatureNode({
-			name: 'Parent Feature',
-			priority: 'high'
-		}));
+	it('should handle relationships between nodes', () => {
+		// Add two nodes
+		const featureNode = engine.addNode(
+			createFeatureNode({
+				name: 'Parent Feature',
+				priority: 'high',
+			})
+		);
 
-		const testNode = engine.addNode(createTestNode({
-			name: 'Feature Test',
-			testType: 'unit',
-			status: 'pending',
-			coverage: ['feature-1']
-		}));
+		const testNode = engine.addNode(
+			createTestNode({
+				name: 'Feature Test',
+				testType: 'unit',
+				status: 'pending',
+				coverage: ['feature-1'],
+			})
+		);
 
 		// Create a relationship
 		const relationship = engine.addRelationship({
@@ -160,7 +180,7 @@ describe('MemoryGraphEngine', () => {
 			toNodeId: featureNode.id,
 			type: 'tests' as const,
 			strength: 1.0,
-			createdAt: new Date()
+			createdAt: new Date(),
 		});
 
 		// Verify the relationship
@@ -187,19 +207,24 @@ describe('MemoryGraphEngine', () => {
 		// Check the data was loaded
 		expect(engine.nodes.length).toBe(1);
 		expect(engine.nodes[0].name).toBe('Persistent Feature');
-	}); it('should calculate graph complexity', () => {
+	});
+	it('should calculate graph complexity', () => {
 		// Add some data
-		engine.addNode(createFeatureNode({
-			name: 'Feature 1',
-			status: 'planned',
-			priority: 'high'
-		}));
+		engine.addNode(
+			createFeatureNode({
+				name: 'Feature 1',
+				status: 'planned',
+				priority: 'high',
+			})
+		);
 
-		engine.addNode(createFeatureNode({
-			name: 'Feature 2',
-			status: 'planned',
-			priority: 'medium'
-		}));
+		engine.addNode(
+			createFeatureNode({
+				name: 'Feature 2',
+				status: 'planned',
+				priority: 'medium',
+			})
+		);
 
 		// Complexity should be calculated
 		const complexity = engine.calculateGraphComplexity();

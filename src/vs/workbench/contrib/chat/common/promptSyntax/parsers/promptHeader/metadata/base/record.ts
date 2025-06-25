@@ -5,14 +5,17 @@
 
 import { assert } from '../../../../../../../../../base/common/assert.js';
 import { Range } from '../../../../../../../../../editor/common/core/range.js';
-import { PromptMetadataDiagnostic, PromptMetadataError, PromptMetadataWarning } from '../../diagnostics.js';
+import {
+	PromptMetadataDiagnostic,
+	PromptMetadataError,
+	PromptMetadataWarning,
+} from '../../diagnostics.js';
 import { FrontMatterRecord } from '../../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
 
 /**
  * Abstract class for all metadata records in the prompt header.
  */
 export abstract class PromptMetadataRecord {
-
 	/**
 	 * Private field for tracking all diagnostic issues
 	 * related to this metadata record.
@@ -29,13 +32,13 @@ export abstract class PromptMetadataRecord {
 	constructor(
 		protected readonly expectedRecordName: string,
 		protected readonly recordToken: FrontMatterRecord,
-		protected readonly languageId: string,
+		protected readonly languageId: string
 	) {
 		// validate that the record name has the expected name
 		const recordName = recordToken.nameToken.text;
 		assert(
 			recordName === expectedRecordName,
-			`Record name must be '${expectedRecordName}', got '${recordName}'.`,
+			`Record name must be '${expectedRecordName}', got '${recordName}'.`
 		);
 
 		this.issues = [];
@@ -65,19 +68,17 @@ export abstract class PromptMetadataRecord {
 	 * List of all `error` issue diagnostics.
 	 */
 	public get errorDiagnostics(): readonly PromptMetadataError[] {
-		return this.diagnostics
-			.filter((diagnostic) => {
-				return (diagnostic instanceof PromptMetadataError);
-			});
+		return this.diagnostics.filter(diagnostic => {
+			return diagnostic instanceof PromptMetadataError;
+		});
 	}
 
 	/**
 	 * List of all `warning` issue diagnostics.
 	 */
 	public get warningDiagnostics(): readonly PromptMetadataWarning[] {
-		return this.diagnostics
-			.filter((diagnostic) => {
-				return (diagnostic instanceof PromptMetadataWarning);
-			});
+		return this.diagnostics.filter(diagnostic => {
+			return diagnostic instanceof PromptMetadataWarning;
+		});
 	}
 }

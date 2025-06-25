@@ -19,7 +19,11 @@ export class AtomicTabMoveOperations {
 	 *
 	 * **Note** `position` and the return value are 0-based.
 	 */
-	public static whitespaceVisibleColumn(lineContent: string, position: number, tabSize: number): [number, number, number] {
+	public static whitespaceVisibleColumn(
+		lineContent: string,
+		position: number,
+		tabSize: number
+	): [number, number, number] {
 		const lineLength = lineContent.length;
 		let visibleColumn = 0;
 		let prevTabStopPosition = -1;
@@ -60,12 +64,18 @@ export class AtomicTabMoveOperations {
 	 *
 	 * **Note**: `position` and the return value are 0-based.
 	 */
-	public static atomicPosition(lineContent: string, position: number, tabSize: number, direction: Direction): number {
+	public static atomicPosition(
+		lineContent: string,
+		position: number,
+		tabSize: number,
+		direction: Direction
+	): number {
 		const lineLength = lineContent.length;
 
 		// Get the 0-based visible column corresponding to the position, or return
 		// -1 if it is not in the initial whitespace.
-		const [prevTabStopPosition, prevTabStopVisibleColumn, visibleColumn] = AtomicTabMoveOperations.whitespaceVisibleColumn(lineContent, position, tabSize);
+		const [prevTabStopPosition, prevTabStopVisibleColumn, visibleColumn] =
+			AtomicTabMoveOperations.whitespaceVisibleColumn(lineContent, position, tabSize);
 
 		if (visibleColumn === -1) {
 			return -1;
@@ -88,7 +98,7 @@ export class AtomicTabMoveOperations {
 					return position;
 				}
 				// Go to the nearest indentation.
-				left = visibleColumn % tabSize <= (tabSize / 2);
+				left = visibleColumn % tabSize <= tabSize / 2;
 				break;
 		}
 

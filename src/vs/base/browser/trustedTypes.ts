@@ -7,14 +7,23 @@ import { onUnexpectedError } from '../common/errors.js';
 
 export function createTrustedTypesPolicy<Options extends TrustedTypePolicyOptions>(
 	policyName: string,
-	policyOptions?: Options,
-): undefined | Pick<TrustedTypePolicy<Options>, 'name' | Extract<keyof Options, keyof TrustedTypePolicyOptions>> {
-
+	policyOptions?: Options
+):
+	| undefined
+	| Pick<
+			TrustedTypePolicy<Options>,
+			'name' | Extract<keyof Options, keyof TrustedTypePolicyOptions>
+	  > {
 	interface IMonacoEnvironment {
 		createTrustedTypesPolicy<Options extends TrustedTypePolicyOptions>(
 			policyName: string,
-			policyOptions?: Options,
-		): undefined | Pick<TrustedTypePolicy<Options>, 'name' | Extract<keyof Options, keyof TrustedTypePolicyOptions>>;
+			policyOptions?: Options
+		):
+			| undefined
+			| Pick<
+					TrustedTypePolicy<Options>,
+					'name' | Extract<keyof Options, keyof TrustedTypePolicyOptions>
+			  >;
 	}
 	const monacoEnvironment: IMonacoEnvironment | undefined = (globalThis as any).MonacoEnvironment;
 

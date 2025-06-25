@@ -9,6 +9,7 @@ This document provides a comprehensive guide for the Codai ecosystem integration
 ### Implemented Components
 
 #### 1. Environment Configuration
+
 - **Files**: `.env.local`, `.env.production`
 - **Purpose**: Centralized environment variable management for all ecosystem services
 - **Key Variables**:
@@ -17,6 +18,7 @@ This document provides a comprehensive guide for the Codai ecosystem integration
   - `CODAI_CENTRAL_API`, `NEXT_PUBLIC_APP_URL`
 
 #### 2. Authentication Integration (LogAI)
+
 - **Files**: `src/lib/auth.ts`, `src/app/api/auth/[...nextauth]/route.ts`
 - **Technology**: NextAuth.js with custom LogAI provider
 - **Features**:
@@ -25,6 +27,7 @@ This document provides a comprehensive guide for the Codai ecosystem integration
   - Integration with LogAI authentication service
 
 #### 3. Memory System Integration (MemorAI)
+
 - **Files**: `src/lib/memorai.ts`
 - **Technology**: Native fetch API with MCP protocol
 - **Methods**:
@@ -34,6 +37,7 @@ This document provides a comprehensive guide for the Codai ecosystem integration
   - `getContext(contextSize)` - Get context summary
 
 #### 4. Central Platform Integration
+
 - **Files**: `src/lib/codai-api.ts`
 - **Purpose**: Project management and user operations
 - **Endpoints**:
@@ -42,6 +46,7 @@ This document provides a comprehensive guide for the Codai ecosystem integration
   - System health monitoring
 
 #### 5. Integration Status Dashboard
+
 - **Files**: `src/components/ecosystem-integration-dashboard.tsx`
 - **Features**:
   - Real-time service health monitoring
@@ -50,6 +55,7 @@ This document provides a comprehensive guide for the Codai ecosystem integration
   - Auto-refresh capabilities
 
 #### 6. Configuration Management
+
 - **Files**: `src/lib/ecosystem-config.ts`
 - **Features**:
   - Type-safe configuration
@@ -60,6 +66,7 @@ This document provides a comprehensive guide for the Codai ecosystem integration
 ## Development Setup
 
 ### Prerequisites
+
 - Node.js 20+
 - pnpm 8+
 - Access to LogAI, MemorAI, and Central Platform services
@@ -67,11 +74,13 @@ This document provides a comprehensive guide for the Codai ecosystem integration
 ### Environment Setup
 
 1. Copy environment template:
+
 ```bash
 cp .env.local.example .env.local
 ```
 
 2. Configure service endpoints:
+
 ```env
 # LogAI Authentication
 LOGAI_API_URL=https://logai.codai.ro
@@ -107,6 +116,7 @@ pnpm build
 ## Integration Testing
 
 ### Service Health Checks
+
 The integration dashboard provides real-time monitoring of all ecosystem services:
 
 1. **LogAI Authentication**: Verifies user session status
@@ -116,6 +126,7 @@ The integration dashboard provides real-time monitoring of all ecosystem service
 ### Manual Testing
 
 #### Authentication Flow
+
 ```typescript
 // Test LogAI integration
 import { signIn, signOut } from 'next-auth/react';
@@ -128,6 +139,7 @@ await signOut();
 ```
 
 #### Memory Operations
+
 ```typescript
 // Test MemorAI integration
 import { memoraiService } from '@/lib/memorai';
@@ -143,6 +155,7 @@ const context = await memoraiService.getContext(5);
 ```
 
 #### Platform API
+
 ```typescript
 // Test Central Platform integration
 import { codaiAPI } from '@/lib/codai-api';
@@ -159,14 +172,17 @@ const projects = await codaiAPI.getUserProjects(userId, accessToken);
 ### Common Issues
 
 #### 1. Authentication Failures
+
 - **Symptom**: Login redirects fail or tokens invalid
 - **Solution**: Verify LogAI service configuration and client credentials
 
 #### 2. Memory Service Errors
+
 - **Symptom**: MemorAI operations timeout or fail
 - **Solution**: Check API key, agent ID, and network connectivity
 
 #### 3. Platform API Issues
+
 - **Symptom**: Central platform API calls fail
 - **Solution**: Verify API endpoint and authentication tokens
 
@@ -185,18 +201,22 @@ curl -H "Authorization: Bearer $MEMORAI_API_KEY" $MEMORAI_API_URL/health
 ### Upcoming Implementations
 
 #### 1. Port Standardization
+
 - Configure all services to use port 3000
 - Update development and production configurations
 
 #### 2. Domain Configuration
+
 - Set up routing for codai.ro domain
 - Configure SSL certificates and DNS
 
 #### 3. Package Migration
+
 - Migrate from `@dragoscatalin/*` to `@codai/*` namespace
 - Update all package references and dependencies
 
 #### 4. Extension Cleanup
+
 - Implement minimal extension strategy
 - Remove 45+ unnecessary VS Code extensions
 - Keep only GitHub Copilot and Chat
@@ -204,6 +224,7 @@ curl -H "Authorization: Bearer $MEMORAI_API_KEY" $MEMORAI_API_URL/health
 ## Production Deployment
 
 ### Environment Variables
+
 Ensure all production environment variables are configured:
 
 ```env
@@ -215,6 +236,7 @@ CODAI_CENTRAL_API=https://api.codai.ro
 ```
 
 ### Build Commands
+
 ```bash
 # Production build
 pnpm build
@@ -224,7 +246,9 @@ pnpm start
 ```
 
 ### Health Monitoring
+
 The integration dashboard provides production monitoring capabilities:
+
 - Service availability checks
 - Error tracking and reporting
 - Performance metrics
@@ -232,12 +256,14 @@ The integration dashboard provides production monitoring capabilities:
 ## Architecture Notes
 
 ### Design Patterns
+
 - **Service Layer**: Clean separation between UI and API integration
 - **Error Handling**: Comprehensive error handling with user-friendly messages
 - **Configuration**: Environment-based configuration with validation
 - **Type Safety**: Full TypeScript implementation with strict typing
 
 ### Security Considerations
+
 - JWT token management with automatic refresh
 - API key protection through environment variables
 - HTTPS-only production configuration

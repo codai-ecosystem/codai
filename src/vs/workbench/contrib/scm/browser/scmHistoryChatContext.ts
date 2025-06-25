@@ -13,22 +13,35 @@ import { ThemeIcon } from '../../../../base/common/themables.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ITextModel } from '../../../../editor/common/model.js';
 import { IModelService } from '../../../../editor/common/services/model.js';
-import { ITextModelContentProvider, ITextModelService } from '../../../../editor/common/services/resolverService.js';
+import {
+	ITextModelContentProvider,
+	ITextModelService,
+} from '../../../../editor/common/services/resolverService.js';
 import { localize } from '../../../../nls.js';
 import { Action2, MenuId, registerAction2 } from '../../../../platform/actions/common/actions.js';
-import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../../../platform/instantiation/common/instantiation.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { IViewsService } from '../../../services/views/common/viewsService.js';
 import { IChatWidget, showChatView } from '../../chat/browser/chat.js';
-import { IChatContextPickerItem, IChatContextPickerPickItem, IChatContextPickService, picksWithPromiseFn } from '../../chat/browser/chatContextPickService.js';
+import {
+	IChatContextPickerItem,
+	IChatContextPickerPickItem,
+	IChatContextPickService,
+	picksWithPromiseFn,
+} from '../../chat/browser/chatContextPickService.js';
 import { ChatContextKeys } from '../../chat/common/chatContextKeys.js';
 import { ISCMHistoryItemVariableEntry } from '../../chat/common/chatModel.js';
 import { ScmHistoryItemResolver } from '../../multiDiffEditor/browser/scmMultiDiffSourceResolver.js';
 import { ISCMHistoryItem } from '../common/history.js';
 import { ISCMProvider, ISCMService, ISCMViewService } from '../common/scm.js';
 
-export class SCMHistoryItemContextContribution extends Disposable implements IWorkbenchContribution {
-
+export class SCMHistoryItemContextContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
 	static readonly ID = 'workbench.contrib.chat.scmHistoryItemContextContribution';
 
 	constructor(
@@ -37,12 +50,18 @@ export class SCMHistoryItemContextContribution extends Disposable implements IWo
 		@ITextModelService textModelResolverService: ITextModelService
 	) {
 		super();
-		this._store.add(contextPickService.registerChatContextItem(
-			instantiationService.createInstance(SCMHistoryItemContext)));
+		this._store.add(
+			contextPickService.registerChatContextItem(
+				instantiationService.createInstance(SCMHistoryItemContext)
+			)
+		);
 
-		this._store.add(textModelResolverService.registerTextModelContentProvider(
-			ScmHistoryItemResolver.scheme,
-			instantiationService.createInstance(SCMHistoryItemContextContentProvider)));
+		this._store.add(
+			textModelResolverService.registerTextModelContentProvider(
+				ScmHistoryItemResolver.scheme,
+				instantiationService.createInstance(SCMHistoryItemContextContentProvider)
+			)
+		);
 	}
 }
 
@@ -53,7 +72,10 @@ class SCMHistoryItemContext implements IChatContextPickerItem {
 
 	private readonly _delayer = new ThrottledDelayer<IChatContextPickerPickItem[]>(200);
 
-	public static asAttachment(provider: ISCMProvider, historyItem: ISCMHistoryItem): ISCMHistoryItemVariableEntry {
+	public static asAttachment(
+		provider: ISCMProvider,
+		historyItem: ISCMHistoryItem
+	): ISCMHistoryItemVariableEntry {
 		const multiDiffSourceUri = ScmHistoryItemResolver.getMultiDiffSourceUri(provider, historyItem);
 		const attachmentName = `$(${Codicon.repo.id})\u00A0${provider.name}\u00A0$(${Codicon.gitCommit.id})\u00A0${historyItem.displayId ?? historyItem.id}`;
 
@@ -63,15 +85,13 @@ class SCMHistoryItemContext implements IChatContextPickerItem {
 			value: multiDiffSourceUri,
 			historyItem: {
 				...historyItem,
-				references: []
+				references: [],
 			},
-			kind: 'scmHistoryItem'
+			kind: 'scmHistoryItem',
 		} satisfies ISCMHistoryItemVariableEntry;
 	}
 
-	constructor(
-		@ISCMViewService private readonly _scmViewService: ISCMViewService
-	) { }
+	constructor(@ISCMViewService private readonly _scmViewService: ISCMViewService) {}
 
 	isEnabled(_widget: IChatWidget): Promise<boolean> | boolean {
 		const activeRepository = this._scmViewService.activeRepository.get();
@@ -96,7 +116,8 @@ class SCMHistoryItemContext implements IChatContextPickerItem {
 				]).map(ref => ref.id);
 
 				return this._delayer.trigger(() => {
-					return historyProvider.provideHistoryItems({ historyItemRefs, filterText, limit: 100 }, token)
+					return historyProvider
+						.provideHistoryItems({ historyItemRefs, filterText, limit: 100 }, token)
 						.then(historyItems => {
 							if (!historyItems) {
 								return [];
@@ -118,12 +139,13 @@ class SCMHistoryItemContext implements IChatContextPickerItem {
 									iconClass: ThemeIcon.asClassName(Codicon.gitCommit),
 									label: historyItem.subject,
 									detail: details.join(`$(${Codicon.circleSmallFilled.id})`),
-									asAttachment: () => SCMHistoryItemContext.asAttachment(activeRepository.provider, historyItem)
+									asAttachment: () =>
+										SCMHistoryItemContext.asAttachment(activeRepository.provider, historyItem),
 								} satisfies IChatContextPickerPickItem;
 							});
 						});
 				});
-			})
+			}),
 		};
 	}
 }
@@ -132,7 +154,7 @@ class SCMHistoryItemContextContentProvider implements ITextModelContentProvider 
 	constructor(
 		@IModelService private readonly _modelService: IModelService,
 		@ISCMService private readonly _scmService: ISCMService
-	) { }
+	) {}
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const uriFields = ScmHistoryItemResolver.parseUri(resource);
@@ -161,51 +183,63 @@ class SCMHistoryItemContextContentProvider implements ITextModelContentProvider 
 	}
 }
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'workbench.scm.action.graph.addHistoryItemToChat',
-			title: localize('chat.action.scmHistoryItemContext', 'Add History Item to Chat'),
-			f1: false,
-			menu: {
-				id: MenuId.SCMHistoryItemChatContext,
-				when: ChatContextKeys.Setup.installed
-			}
-		});
-	}
-
-	override async run(accessor: ServicesAccessor, provider: ISCMProvider, historyItem: ISCMHistoryItem): Promise<void> {
-		const viewsService = accessor.get(IViewsService);
-		const widget = await showChatView(viewsService);
-		if (!provider || !historyItem || !widget) {
-			return;
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'workbench.scm.action.graph.addHistoryItemToChat',
+				title: localize('chat.action.scmHistoryItemContext', 'Add History Item to Chat'),
+				f1: false,
+				menu: {
+					id: MenuId.SCMHistoryItemChatContext,
+					when: ChatContextKeys.Setup.installed,
+				},
+			});
 		}
 
-		widget.attachmentModel.addContext(SCMHistoryItemContext.asAttachment(provider, historyItem));
-	}
-});
-
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'workbench.scm.action.graph.summarizeHistoryItem',
-			title: localize('chat.action.scmHistoryItemSummarize', 'Summarize History Item'),
-			f1: false,
-			menu: {
-				id: MenuId.SCMHistoryItemChatContext,
-				when: ChatContextKeys.Setup.installed
+		override async run(
+			accessor: ServicesAccessor,
+			provider: ISCMProvider,
+			historyItem: ISCMHistoryItem
+		): Promise<void> {
+			const viewsService = accessor.get(IViewsService);
+			const widget = await showChatView(viewsService);
+			if (!provider || !historyItem || !widget) {
+				return;
 			}
-		});
-	}
 
-	override async run(accessor: ServicesAccessor, provider: ISCMProvider, historyItem: ISCMHistoryItem): Promise<void> {
-		const viewsService = accessor.get(IViewsService);
-		const widget = await showChatView(viewsService);
-		if (!provider || !historyItem || !widget) {
-			return;
+			widget.attachmentModel.addContext(SCMHistoryItemContext.asAttachment(provider, historyItem));
+		}
+	}
+);
+
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'workbench.scm.action.graph.summarizeHistoryItem',
+				title: localize('chat.action.scmHistoryItemSummarize', 'Summarize History Item'),
+				f1: false,
+				menu: {
+					id: MenuId.SCMHistoryItemChatContext,
+					when: ChatContextKeys.Setup.installed,
+				},
+			});
 		}
 
-		widget.attachmentModel.addContext(SCMHistoryItemContext.asAttachment(provider, historyItem));
-		await widget.acceptInput('Summarize the attached history item');
+		override async run(
+			accessor: ServicesAccessor,
+			provider: ISCMProvider,
+			historyItem: ISCMHistoryItem
+		): Promise<void> {
+			const viewsService = accessor.get(IViewsService);
+			const widget = await showChatView(viewsService);
+			if (!provider || !historyItem || !widget) {
+				return;
+			}
+
+			widget.attachmentModel.addContext(SCMHistoryItemContext.asAttachment(provider, historyItem));
+			await widget.acceptInput('Summarize the attached history item');
+		}
 	}
-});
+);

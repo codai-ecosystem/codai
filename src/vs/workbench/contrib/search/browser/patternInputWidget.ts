@@ -32,7 +32,6 @@ export interface IOptions {
 }
 
 export class PatternInputWidget extends Widget {
-
 	static OPTION_CHANGE: string = 'optionChange';
 
 	inputFocusTracker!: dom.IFocusTracker;
@@ -48,15 +47,18 @@ export class PatternInputWidget extends Widget {
 	private _onCancel = this._register(new Emitter<void>());
 	onCancel: CommonEvent<void> = this._onCancel.event;
 
-	constructor(parent: HTMLElement, private contextViewProvider: IContextViewProvider, options: IOptions,
+	constructor(
+		parent: HTMLElement,
+		private contextViewProvider: IContextViewProvider,
+		options: IOptions,
 		@IContextKeyService private readonly contextKeyService: IContextKeyService,
 		@IConfigurationService protected readonly configurationService: IConfigurationService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService private readonly keybindingService: IKeybindingService
 	) {
 		super();
 		options = {
 			...{
-				ariaLabel: nls.localize('defaultLabel', "input")
+				ariaLabel: nls.localize('defaultLabel', 'input'),
 			},
 			...options,
 		};
@@ -87,7 +89,6 @@ export class PatternInputWidget extends Widget {
 			this.inputBox.value = value;
 		}
 	}
-
 
 	select(): void {
 		this.inputBox.select();
@@ -142,22 +143,27 @@ export class PatternInputWidget extends Widget {
 		this.domNode.classList.add('monaco-findInput');
 		const history = options.history || [];
 
-		this.inputBox = new ContextScopedHistoryInputBox(this.domNode, this.contextViewProvider, {
-			placeholder: options.placeholder,
-			showPlaceholderOnFocus: options.showPlaceholderOnFocus,
-			tooltip: options.tooltip,
-			ariaLabel: options.ariaLabel,
-			validationOptions: {
-				validation: undefined
+		this.inputBox = new ContextScopedHistoryInputBox(
+			this.domNode,
+			this.contextViewProvider,
+			{
+				placeholder: options.placeholder,
+				showPlaceholderOnFocus: options.showPlaceholderOnFocus,
+				tooltip: options.tooltip,
+				ariaLabel: options.ariaLabel,
+				validationOptions: {
+					validation: undefined,
+				},
+				history: new Set(history),
+				showHistoryHint: () => showHistoryKeybindingHint(this.keybindingService),
+				inputBoxStyles: options.inputBoxStyles,
 			},
-			history: new Set(history),
-			showHistoryHint: () => showHistoryKeybindingHint(this.keybindingService),
-			inputBoxStyles: options.inputBoxStyles
-		}, this.contextKeyService);
+			this.contextKeyService
+		);
 		this._register(this.inputBox.onDidChange(() => this._onSubmit.fire(true)));
 
 		this.inputFocusTracker = dom.trackFocus(this.inputBox.inputElement);
-		this.onkeyup(this.inputBox.inputElement, (keyboardEvent) => this.onInputKeyUp(keyboardEvent));
+		this.onkeyup(this.inputBox.inputElement, keyboardEvent => this.onInputKeyUp(keyboardEvent));
 
 		const controls = document.createElement('div');
 		controls.className = 'controls';
@@ -167,8 +173,7 @@ export class PatternInputWidget extends Widget {
 		this.setInputWidth();
 	}
 
-	protected renderSubcontrols(_controlsDiv: HTMLDivElement): void {
-	}
+	protected renderSubcontrols(_controlsDiv: HTMLDivElement): void {}
 
 	private onInputKeyUp(keyboardEvent: IKeyboardEvent) {
 		switch (keyboardEvent.keyCode) {
@@ -184,16 +189,25 @@ export class PatternInputWidget extends Widget {
 }
 
 export class IncludePatternInputWidget extends PatternInputWidget {
-
 	private _onChangeSearchInEditorsBoxEmitter = this._register(new Emitter<void>());
 	onChangeSearchInEditorsBox = this._onChangeSearchInEditorsBoxEmitter.event;
 
-	constructor(parent: HTMLElement, contextViewProvider: IContextViewProvider, options: IOptions,
+	constructor(
+		parent: HTMLElement,
+		contextViewProvider: IContextViewProvider,
+		options: IOptions,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IKeybindingService keybindingService: IKeybindingService,
+		@IKeybindingService keybindingService: IKeybindingService
 	) {
-		super(parent, contextViewProvider, options, contextKeyService, configurationService, keybindingService);
+		super(
+			parent,
+			contextViewProvider,
+			options,
+			contextKeyService,
+			configurationService,
+			keybindingService
+		);
 	}
 
 	private useSearchInEditorsBox!: Toggle;
@@ -217,35 +231,48 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 	}
 
 	protected override renderSubcontrols(controlsDiv: HTMLDivElement): void {
-		this.useSearchInEditorsBox = this._register(new Toggle({
-			icon: Codicon.book,
-			title: nls.localize('onlySearchInOpenEditors', "Search only in Open Editors"),
-			isChecked: false,
-			hoverDelegate: getDefaultHoverDelegate('element'),
-			...defaultToggleStyles
-		}));
-		this._register(this.useSearchInEditorsBox.onChange(viaKeyboard => {
-			this._onChangeSearchInEditorsBoxEmitter.fire();
-			if (!viaKeyboard) {
-				this.inputBox.focus();
-			}
-		}));
+		this.useSearchInEditorsBox = this._register(
+			new Toggle({
+				icon: Codicon.book,
+				title: nls.localize('onlySearchInOpenEditors', 'Search only in Open Editors'),
+				isChecked: false,
+				hoverDelegate: getDefaultHoverDelegate('element'),
+				...defaultToggleStyles,
+			})
+		);
+		this._register(
+			this.useSearchInEditorsBox.onChange(viaKeyboard => {
+				this._onChangeSearchInEditorsBoxEmitter.fire();
+				if (!viaKeyboard) {
+					this.inputBox.focus();
+				}
+			})
+		);
 		controlsDiv.appendChild(this.useSearchInEditorsBox.domNode);
 		super.renderSubcontrols(controlsDiv);
 	}
 }
 
 export class ExcludePatternInputWidget extends PatternInputWidget {
-
 	private _onChangeIgnoreBoxEmitter = this._register(new Emitter<void>());
 	onChangeIgnoreBox = this._onChangeIgnoreBoxEmitter.event;
 
-	constructor(parent: HTMLElement, contextViewProvider: IContextViewProvider, options: IOptions,
+	constructor(
+		parent: HTMLElement,
+		contextViewProvider: IContextViewProvider,
+		options: IOptions,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IKeybindingService keybindingService: IKeybindingService,
+		@IKeybindingService keybindingService: IKeybindingService
 	) {
-		super(parent, contextViewProvider, options, contextKeyService, configurationService, keybindingService);
+		super(
+			parent,
+			contextViewProvider,
+			options,
+			contextKeyService,
+			configurationService,
+			keybindingService
+		);
 	}
 
 	private useExcludesAndIgnoreFilesBox!: Toggle;
@@ -269,20 +296,27 @@ export class ExcludePatternInputWidget extends PatternInputWidget {
 	}
 
 	protected override renderSubcontrols(controlsDiv: HTMLDivElement): void {
-		this.useExcludesAndIgnoreFilesBox = this._register(new Toggle({
-			icon: Codicon.exclude,
-			actionClassName: 'useExcludesAndIgnoreFiles',
-			title: nls.localize('useExcludesAndIgnoreFilesDescription', "Use Exclude Settings and Ignore Files"),
-			isChecked: true,
-			hoverDelegate: getDefaultHoverDelegate('element'),
-			...defaultToggleStyles
-		}));
-		this._register(this.useExcludesAndIgnoreFilesBox.onChange(viaKeyboard => {
-			this._onChangeIgnoreBoxEmitter.fire();
-			if (!viaKeyboard) {
-				this.inputBox.focus();
-			}
-		}));
+		this.useExcludesAndIgnoreFilesBox = this._register(
+			new Toggle({
+				icon: Codicon.exclude,
+				actionClassName: 'useExcludesAndIgnoreFiles',
+				title: nls.localize(
+					'useExcludesAndIgnoreFilesDescription',
+					'Use Exclude Settings and Ignore Files'
+				),
+				isChecked: true,
+				hoverDelegate: getDefaultHoverDelegate('element'),
+				...defaultToggleStyles,
+			})
+		);
+		this._register(
+			this.useExcludesAndIgnoreFilesBox.onChange(viaKeyboard => {
+				this._onChangeIgnoreBoxEmitter.fire();
+				if (!viaKeyboard) {
+					this.inputBox.focus();
+				}
+			})
+		);
 
 		controlsDiv.appendChild(this.useExcludesAndIgnoreFilesBox.domNode);
 		super.renderSubcontrols(controlsDiv);

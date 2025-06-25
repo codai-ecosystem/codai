@@ -11,15 +11,17 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 
 class ToggleRenderWhitespaceAction extends Action2 {
-
 	static readonly ID = 'editor.action.toggleRenderWhitespace';
 
 	constructor() {
 		super({
 			id: ToggleRenderWhitespaceAction.ID,
 			title: {
-				...localize2('toggleRenderWhitespace', "Toggle Render Whitespace"),
-				mnemonicTitle: localize({ key: 'miToggleRenderWhitespace', comment: ['&& denotes a mnemonic'] }, "&&Render Whitespace"),
+				...localize2('toggleRenderWhitespace', 'Toggle Render Whitespace'),
+				mnemonicTitle: localize(
+					{ key: 'miToggleRenderWhitespace', comment: ['&& denotes a mnemonic'] },
+					'&&Render Whitespace'
+				),
 			},
 			category: Categories.View,
 			f1: true,
@@ -27,8 +29,8 @@ class ToggleRenderWhitespaceAction extends Action2 {
 			menu: {
 				id: MenuId.MenubarAppearanceMenu,
 				group: '4_editor',
-				order: 4
-			}
+				order: 4,
+			},
 		});
 	}
 

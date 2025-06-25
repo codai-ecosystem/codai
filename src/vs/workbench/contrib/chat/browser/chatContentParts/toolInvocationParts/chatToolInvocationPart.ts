@@ -5,7 +5,11 @@
 
 import * as dom from '../../../../../../base/browser/dom.js';
 import { Emitter } from '../../../../../../base/common/event.js';
-import { Disposable, DisposableStore, IDisposable } from '../../../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+} from '../../../../../../base/common/lifecycle.js';
 import { MarkdownRenderer } from '../../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
 import { IChatToolInvocation, IChatToolInvocationSerialized } from '../../../common/chatService.js';
@@ -50,7 +54,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
 		private readonly currentWidthDelegate: () => number,
 		private readonly codeBlockModelCollection: CodeBlockModelCollection,
 		private readonly codeBlockStartIndex: number,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -70,10 +74,12 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
 			this.subPart = partStore.add(this.createToolInvocationSubPart());
 			this.domNode.appendChild(this.subPart.domNode);
 			partStore.add(this.subPart.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
-			partStore.add(this.subPart.onNeedsRerender(() => {
-				render();
-				this._onDidChangeHeight.fire();
-			}));
+			partStore.add(
+				this.subPart.onNeedsRerender(() => {
+					render();
+					this._onDidChangeHeight.fire();
+				})
+			);
 		};
 		render();
 	}
@@ -81,23 +87,65 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
 	createToolInvocationSubPart(): BaseChatToolInvocationSubPart {
 		if (this.toolInvocation.kind === 'toolInvocation') {
 			if (this.toolInvocation.toolSpecificData?.kind === 'extensions') {
-				return this.instantiationService.createInstance(ExtensionsInstallConfirmationWidgetSubPart, this.toolInvocation, this.context);
+				return this.instantiationService.createInstance(
+					ExtensionsInstallConfirmationWidgetSubPart,
+					this.toolInvocation,
+					this.context
+				);
 			}
 			if (this.toolInvocation.confirmationMessages) {
 				if (this.toolInvocation.toolSpecificData?.kind === 'terminal') {
-					return this.instantiationService.createInstance(TerminalConfirmationWidgetSubPart, this.toolInvocation, this.toolInvocation.toolSpecificData, this.context, this.renderer, this.editorPool, this.currentWidthDelegate, this.codeBlockStartIndex);
+					return this.instantiationService.createInstance(
+						TerminalConfirmationWidgetSubPart,
+						this.toolInvocation,
+						this.toolInvocation.toolSpecificData,
+						this.context,
+						this.renderer,
+						this.editorPool,
+						this.currentWidthDelegate,
+						this.codeBlockStartIndex
+					);
 				} else {
-					return this.instantiationService.createInstance(ToolConfirmationSubPart, this.toolInvocation, this.context, this.renderer, this.editorPool, this.currentWidthDelegate, this.codeBlockModelCollection, this.codeBlockStartIndex);
+					return this.instantiationService.createInstance(
+						ToolConfirmationSubPart,
+						this.toolInvocation,
+						this.context,
+						this.renderer,
+						this.editorPool,
+						this.currentWidthDelegate,
+						this.codeBlockModelCollection,
+						this.codeBlockStartIndex
+					);
 				}
 			}
 		}
 
 		if (this.toolInvocation.toolSpecificData?.kind === 'terminal') {
-			return this.instantiationService.createInstance(ChatTerminalMarkdownProgressPart, this.toolInvocation, this.toolInvocation.toolSpecificData, this.context, this.renderer, this.editorPool, this.currentWidthDelegate, this.codeBlockStartIndex, this.codeBlockModelCollection);
+			return this.instantiationService.createInstance(
+				ChatTerminalMarkdownProgressPart,
+				this.toolInvocation,
+				this.toolInvocation.toolSpecificData,
+				this.context,
+				this.renderer,
+				this.editorPool,
+				this.currentWidthDelegate,
+				this.codeBlockStartIndex,
+				this.codeBlockModelCollection
+			);
 		}
 
-		if (Array.isArray(this.toolInvocation.resultDetails) && this.toolInvocation.resultDetails?.length) {
-			return this.instantiationService.createInstance(ChatResultListSubPart, this.toolInvocation, this.context, this.toolInvocation.pastTenseMessage ?? this.toolInvocation.invocationMessage, this.toolInvocation.resultDetails, this.listPool);
+		if (
+			Array.isArray(this.toolInvocation.resultDetails) &&
+			this.toolInvocation.resultDetails?.length
+		) {
+			return this.instantiationService.createInstance(
+				ChatResultListSubPart,
+				this.toolInvocation,
+				this.context,
+				this.toolInvocation.pastTenseMessage ?? this.toolInvocation.invocationMessage,
+				this.toolInvocation.resultDetails,
+				this.listPool
+			);
 		}
 
 		if (isToolResultInputOutputDetails(this.toolInvocation.resultDetails)) {
@@ -115,7 +163,11 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
 			);
 		}
 
-		if (this.toolInvocation.kind === 'toolInvocation' && this.toolInvocation.toolSpecificData?.kind === 'input' && !this.toolInvocation.isComplete) {
+		if (
+			this.toolInvocation.kind === 'toolInvocation' &&
+			this.toolInvocation.toolSpecificData?.kind === 'input' &&
+			!this.toolInvocation.isComplete
+		) {
 			return this.instantiationService.createInstance(
 				ChatInputOutputMarkdownProgressPart,
 				this.toolInvocation,
@@ -124,17 +176,31 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
 				this.codeBlockStartIndex,
 				this.toolInvocation.invocationMessage,
 				this.toolInvocation.originMessage,
-				typeof this.toolInvocation.toolSpecificData.rawInput === 'string' ? this.toolInvocation.toolSpecificData.rawInput : JSON.stringify(this.toolInvocation.toolSpecificData.rawInput, null, 2),
+				typeof this.toolInvocation.toolSpecificData.rawInput === 'string'
+					? this.toolInvocation.toolSpecificData.rawInput
+					: JSON.stringify(this.toolInvocation.toolSpecificData.rawInput, null, 2),
 				undefined,
 				false
 			);
 		}
 
-		return this.instantiationService.createInstance(ChatToolProgressSubPart, this.toolInvocation, this.context, this.renderer);
+		return this.instantiationService.createInstance(
+			ChatToolProgressSubPart,
+			this.toolInvocation,
+			this.context,
+			this.renderer
+		);
 	}
 
-	hasSameContent(other: IChatRendererContent, followingContent: IChatRendererContent[], element: ChatTreeItem): boolean {
-		return (other.kind === 'toolInvocation' || other.kind === 'toolInvocationSerialized') && this.toolInvocation.toolCallId === other.toolCallId;
+	hasSameContent(
+		other: IChatRendererContent,
+		followingContent: IChatRendererContent[],
+		element: ChatTreeItem
+	): boolean {
+		return (
+			(other.kind === 'toolInvocation' || other.kind === 'toolInvocationSerialized') &&
+			this.toolInvocation.toolCallId === other.toolCallId
+		);
 	}
 
 	addDisposable(disposable: IDisposable): void {

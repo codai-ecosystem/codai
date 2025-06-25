@@ -29,8 +29,8 @@ export class PluginGenerator {
 				'src/index.ts': this.generateAgentIndex(),
 				'src/myAgent.ts': this.generateAgentClass(),
 				'README.md': this.generateAgentReadme(),
-				'tsconfig.json': this.generateTsConfig()
-			}
+				'tsconfig.json': this.generateTsConfig(),
+			},
 		});
 
 		// Command Plugin Template
@@ -44,8 +44,8 @@ export class PluginGenerator {
 				'src/index.ts': this.generateCommandIndex(),
 				'src/commands.ts': this.generateCommandsClass(),
 				'README.md': this.generateCommandReadme(),
-				'tsconfig.json': this.generateTsConfig()
-			}
+				'tsconfig.json': this.generateTsConfig(),
+			},
 		});
 
 		// View Plugin Template
@@ -61,8 +61,8 @@ export class PluginGenerator {
 				'media/main.css': this.generateViewCSS(),
 				'media/main.js': this.generateViewJS(),
 				'README.md': this.generateViewReadme(),
-				'tsconfig.json': this.generateTsConfig()
-			}
+				'tsconfig.json': this.generateTsConfig(),
+			},
 		});
 
 		// Template Plugin Template
@@ -77,8 +77,8 @@ export class PluginGenerator {
 				'src/templates.ts': this.generateTemplatesClass(),
 				'templates/basic/package.json': this.generateBasicTemplate(),
 				'README.md': this.generateTemplateReadme(),
-				'tsconfig.json': this.generateTsConfig()
-			}
+				'tsconfig.json': this.generateTsConfig(),
+			},
 		});
 	}
 
@@ -115,7 +115,7 @@ export class PluginGenerator {
 					pluginName,
 					pluginId,
 					author,
-					description
+					description,
 				});
 
 				// Write file
@@ -125,7 +125,9 @@ export class PluginGenerator {
 				);
 			}
 
-			vscode.window.showInformationMessage(`Plugin "${pluginName}" generated successfully at ${pluginPath}`);
+			vscode.window.showInformationMessage(
+				`Plugin "${pluginName}" generated successfully at ${pluginPath}`
+			);
 			return true;
 		} catch (error) {
 			vscode.window.showErrorMessage(`Failed to generate plugin: ${error}`);

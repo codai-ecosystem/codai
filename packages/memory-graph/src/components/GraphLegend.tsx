@@ -6,11 +6,7 @@ interface GraphLegendProps {
 	className?: string;
 }
 
-export const GraphLegend: React.FC<GraphLegendProps> = ({
-	nodeTypes,
-	nodeIcons,
-	className
-}) => {
+export const GraphLegend: React.FC<GraphLegendProps> = ({ nodeTypes, nodeIcons, className }) => {
 	return (
 		<div className={`memory-graph-legend ${className || ''}`}>
 			<div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Legend</div>

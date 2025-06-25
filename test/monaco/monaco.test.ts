@@ -16,7 +16,7 @@ let page: playwright.Page;
 
 type BrowserType = 'chromium' | 'firefox' | 'webkit';
 
-const browserType: BrowserType = process.env.BROWSER as BrowserType || 'chromium';
+const browserType: BrowserType = (process.env.BROWSER as BrowserType) || 'chromium';
 
 before(async function () {
 	this.timeout(TIMEOUT);
@@ -37,16 +37,16 @@ beforeEach(async function () {
 	page = await browser.newPage({
 		viewport: {
 			width: 800,
-			height: 600
-		}
+			height: 600,
+		},
 	});
 
 	pageErrors.length = 0;
-	page.on('pageerror', (e) => {
+	page.on('pageerror', e => {
 		console.log(e);
 		pageErrors.push(e);
 	});
-	page.on('pageerror', (e) => {
+	page.on('pageerror', e => {
 		console.log(e);
 		pageErrors.push(e);
 	});
@@ -80,7 +80,10 @@ describe('API Integration Tests', function (): void {
 			});
 		})()
 		`);
-		assert.strictEqual(await page.evaluate(`instance.getModel().getLineContent(1)`), 'afrom banana import *');
+		assert.strictEqual(
+			await page.evaluate(`instance.getModel().getLineContent(1)`),
+			'afrom banana import *'
+		);
 	});
 
 	it('Type and Undo', async function (): Promise<any> {
@@ -94,7 +97,10 @@ describe('API Integration Tests', function (): void {
 			instance.getModel().undo();
 		})()
 		`);
-		assert.strictEqual(await page.evaluate(`instance.getModel().getLineContent(1)`), 'from banana import *');
+		assert.strictEqual(
+			await page.evaluate(`instance.getModel().getLineContent(1)`),
+			'from banana import *'
+		);
 	});
 
 	it('Multi Cursor', async function (): Promise<any> {
@@ -115,7 +121,8 @@ describe('API Integration Tests', function (): void {
 
 		await page.waitForTimeout(1000);
 
-		assert.deepStrictEqual(await page.evaluate(`
+		assert.deepStrictEqual(
+			await page.evaluate(`
 			[
 				instance.getModel().getLineContent(1),
 				instance.getModel().getLineContent(2),
@@ -125,14 +132,16 @@ describe('API Integration Tests', function (): void {
 				instance.getModel().getLineContent(6),
 				instance.getModel().getLineContent(7),
 			]
-		`), [
-			'# from banana import *',
-			'# ',
-			'# class Monkey:',
-			'# 	# Bananas the monkey can eat.',
-			'# 	capacity = 10',
-			'# 	def eat(self, N):',
-			'\t\t\'\'\'Make the monkey eat N bananas!\'\'\''
-		]);
+		`),
+			[
+				'# from banana import *',
+				'# ',
+				'# class Monkey:',
+				'# 	# Bananas the monkey can eat.',
+				'# 	capacity = 10',
+				'# 	def eat(self, N):',
+				"\t\t'''Make the monkey eat N bananas!'''",
+			]
+		);
 	});
 });

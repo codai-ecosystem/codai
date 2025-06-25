@@ -9,16 +9,31 @@ import { Codicon } from '../../../../../base/common/codicons.js';
 import { Emitter } from '../../../../../base/common/event.js';
 import { isLinux, isWindows, OperatingSystem } from '../../../../../base/common/platform.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { ConfigurationTarget, IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
+import {
+	ConfigurationTarget,
+	IConfigurationService,
+} from '../../../../../platform/configuration/common/configuration.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
-import { IPickOptions, IQuickInputService, Omit, QuickPickInput } from '../../../../../platform/quickinput/common/quickInput.js';
+import {
+	IPickOptions,
+	IQuickInputService,
+	Omit,
+	QuickPickInput,
+} from '../../../../../platform/quickinput/common/quickInput.js';
 import { IRemoteAgentEnvironment } from '../../../../../platform/remote/common/remoteAgentEnvironment.js';
-import { IExtensionTerminalProfile, ITerminalBackend, ITerminalProfile } from '../../../../../platform/terminal/common/terminal.js';
+import {
+	IExtensionTerminalProfile,
+	ITerminalBackend,
+	ITerminalProfile,
+} from '../../../../../platform/terminal/common/terminal.js';
 import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
 import { TestThemeService } from '../../../../../platform/theme/test/common/testThemeService.js';
 import { ITerminalInstanceService } from '../../browser/terminal.js';
-import { IProfileQuickPickItem, TerminalProfileQuickpick } from '../../browser/terminalProfileQuickpick.js';
+import {
+	IProfileQuickPickItem,
+	TerminalProfileQuickpick,
+} from '../../browser/terminalProfileQuickpick.js';
 import { TerminalProfileService } from '../../browser/terminalProfileService.js';
 import { ITerminalConfiguration, ITerminalProfileService } from '../../common/terminal.js';
 import { ITerminalContributionService } from '../../common/terminalExtensionPoints.js';
@@ -28,7 +43,10 @@ import { IRemoteAgentService } from '../../../../services/remote/common/remoteAg
 import { workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
 import { TestExtensionService } from '../../../../test/common/workbenchTestServices.js';
 
-class TestTerminalProfileService extends TerminalProfileService implements Partial<ITerminalProfileService> {
+class TestTerminalProfileService
+	extends TerminalProfileService
+	implements Partial<ITerminalProfileService>
+{
 	hasRefreshedProfiles: Promise<void> | undefined;
 	override refreshAvailableProfiles(): void {
 		this.hasRefreshedProfiles = this._refreshAvailableProfilesNow();
@@ -62,13 +80,34 @@ class MockTerminalProfileService implements Partial<ITerminalProfileService> {
 	}
 }
 
-
 class MockQuickInputService implements Partial<IQuickInputService> {
 	_pick: IProfileQuickPickItem = powershellPick;
-	pick(picks: QuickPickInput<IProfileQuickPickItem>[] | Promise<QuickPickInput<IProfileQuickPickItem>[]>, options?: IPickOptions<IProfileQuickPickItem> & { canPickMany: true }, token?: CancellationToken): Promise<IProfileQuickPickItem[] | undefined>;
-	pick(picks: QuickPickInput<IProfileQuickPickItem>[] | Promise<QuickPickInput<IProfileQuickPickItem>[]>, options?: IPickOptions<IProfileQuickPickItem> & { canPickMany: false }, token?: CancellationToken): Promise<IProfileQuickPickItem | undefined>;
-	pick(picks: QuickPickInput<IProfileQuickPickItem>[] | Promise<QuickPickInput<IProfileQuickPickItem>[]>, options?: Omit<IPickOptions<IProfileQuickPickItem>, 'canPickMany'>, token?: CancellationToken): Promise<IProfileQuickPickItem | undefined>;
-	async pick(picks: any, options?: any, token?: any): Promise<IProfileQuickPickItem | IProfileQuickPickItem[] | undefined> {
+	pick(
+		picks:
+			| QuickPickInput<IProfileQuickPickItem>[]
+			| Promise<QuickPickInput<IProfileQuickPickItem>[]>,
+		options?: IPickOptions<IProfileQuickPickItem> & { canPickMany: true },
+		token?: CancellationToken
+	): Promise<IProfileQuickPickItem[] | undefined>;
+	pick(
+		picks:
+			| QuickPickInput<IProfileQuickPickItem>[]
+			| Promise<QuickPickInput<IProfileQuickPickItem>[]>,
+		options?: IPickOptions<IProfileQuickPickItem> & { canPickMany: false },
+		token?: CancellationToken
+	): Promise<IProfileQuickPickItem | undefined>;
+	pick(
+		picks:
+			| QuickPickInput<IProfileQuickPickItem>[]
+			| Promise<QuickPickInput<IProfileQuickPickItem>[]>,
+		options?: Omit<IPickOptions<IProfileQuickPickItem>, 'canPickMany'>,
+		token?: CancellationToken
+	): Promise<IProfileQuickPickItem | undefined>;
+	async pick(
+		picks: any,
+		options?: any,
+		token?: any
+	): Promise<IProfileQuickPickItem | IProfileQuickPickItem[] | undefined> {
 		Promise.resolve(picks);
 		return this._pick;
 	}
@@ -78,9 +117,7 @@ class MockQuickInputService implements Partial<IQuickInputService> {
 	}
 }
 
-class TestTerminalProfileQuickpick extends TerminalProfileQuickpick {
-
-}
+class TestTerminalProfileQuickpick extends TerminalProfileQuickpick {}
 
 class TestTerminalExtensionService extends TestExtensionService {
 	readonly _onDidChangeExtensions = new Emitter<void>();
@@ -106,7 +143,7 @@ class TestTerminalInstanceService implements Partial<ITerminalInstanceService> {
 					this._hasReturnedNone = true;
 					return [];
 				}
-			}
+			},
 		} satisfies Partial<ITerminalBackend> as any;
 	}
 	setProfiles(remoteAuthority: string | undefined, profiles: ITerminalProfile[]) {
@@ -127,21 +164,31 @@ class TestRemoteAgentService implements Partial<IRemoteAgentService> {
 	}
 }
 
-const defaultTerminalConfig: Partial<ITerminalConfiguration> = { profiles: { windows: {}, linux: {}, osx: {} } };
+const defaultTerminalConfig: Partial<ITerminalConfiguration> = {
+	profiles: { windows: {}, linux: {}, osx: {} },
+};
 let powershellProfile = {
 	profileName: 'PowerShell',
 	path: 'C:\\Powershell.exe',
 	isDefault: true,
-	icon: Codicon.terminalPowershell
+	icon: Codicon.terminalPowershell,
 };
 let jsdebugProfile = {
 	extensionIdentifier: 'ms-vscode.js-debug-nightly',
 	icon: 'debug',
 	id: 'extension.js-debug.debugTerminal',
-	title: 'JavaScript Debug Terminal'
+	title: 'JavaScript Debug Terminal',
 };
-const powershellPick = { label: 'Powershell', profile: powershellProfile, profileName: powershellProfile.profileName };
-const jsdebugPick = { label: 'Javascript Debug Terminal', profile: jsdebugProfile, profileName: jsdebugProfile.title };
+const powershellPick = {
+	label: 'Powershell',
+	profile: powershellProfile,
+	profileName: powershellProfile.profileName,
+};
+const jsdebugPick = {
+	label: 'Javascript Debug Terminal',
+	profile: jsdebugProfile,
+	profileName: jsdebugProfile.title,
+};
 
 suite('TerminalProfileService', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
@@ -158,16 +205,21 @@ suite('TerminalProfileService', () => {
 		configurationService = new TestConfigurationService({
 			files: {},
 			terminal: {
-				integrated: defaultTerminalConfig
-			}
+				integrated: defaultTerminalConfig,
+			},
 		});
-		instantiationService = workbenchInstantiationService({
-			configurationService: () => configurationService
-		}, store);
+		instantiationService = workbenchInstantiationService(
+			{
+				configurationService: () => configurationService,
+			},
+			store
+		);
 		remoteAgentService = new TestRemoteAgentService();
 		terminalInstanceService = new TestTerminalInstanceService();
 		extensionService = new TestTerminalExtensionService();
-		environmentService = { remoteAuthority: undefined } satisfies Partial<IWorkbenchEnvironmentService> as any;
+		environmentService = {
+			remoteAuthority: undefined,
+		} satisfies Partial<IWorkbenchEnvironmentService> as any;
 
 		const themeService = new TestThemeService();
 		const terminalContributionService = new TestTerminalContributionService();
@@ -180,20 +232,22 @@ suite('TerminalProfileService', () => {
 		instantiationService.stub(IWorkbenchEnvironmentService, environmentService);
 		instantiationService.stub(IThemeService, themeService);
 
-		terminalProfileService = store.add(instantiationService.createInstance(TestTerminalProfileService));
+		terminalProfileService = store.add(
+			instantiationService.createInstance(TestTerminalProfileService)
+		);
 
 		//reset as these properties are changed in each test
 		powershellProfile = {
 			profileName: 'PowerShell',
 			path: 'C:\\Powershell.exe',
 			isDefault: true,
-			icon: Codicon.terminalPowershell
+			icon: Codicon.terminalPowershell,
 		};
 		jsdebugProfile = {
 			extensionIdentifier: 'ms-vscode.js-debug-nightly',
 			icon: 'debug',
 			id: 'extension.js-debug.debugTerminal',
-			title: 'JavaScript Debug Terminal'
+			title: 'JavaScript Debug Terminal',
 		};
 
 		terminalInstanceService.setProfiles(undefined, [powershellProfile]);
@@ -216,12 +270,15 @@ suite('TerminalProfileService', () => {
 				integrated: {
 					profiles: {
 						linux: {
-							'JavaScript Debug Terminal': null
-						}
-					}
-				}
+							'JavaScript Debug Terminal': null,
+						},
+					},
+				},
 			});
-			configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true, source: ConfigurationTarget.USER } as any);
+			configurationService.onDidChangeConfigurationEmitter.fire({
+				affectsConfiguration: () => true,
+				source: ConfigurationTarget.USER,
+			} as any);
 			await terminalProfileService.refreshAndAwaitAvailableProfiles();
 			deepStrictEqual(terminalProfileService.availableProfiles, [powershellProfile]);
 			deepStrictEqual(terminalProfileService.contributedProfiles, []);
@@ -232,12 +289,15 @@ suite('TerminalProfileService', () => {
 				integrated: {
 					profiles: {
 						windows: {
-							'JavaScript Debug Terminal': null
-						}
-					}
-				}
+							'JavaScript Debug Terminal': null,
+						},
+					},
+				},
 			});
-			configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true, source: ConfigurationTarget.USER } as any);
+			configurationService.onDidChangeConfigurationEmitter.fire({
+				affectsConfiguration: () => true,
+				source: ConfigurationTarget.USER,
+			} as any);
 			await terminalProfileService.refreshAndAwaitAvailableProfiles();
 			deepStrictEqual(terminalProfileService.availableProfiles, [powershellProfile]);
 			deepStrictEqual(terminalProfileService.contributedProfiles, []);
@@ -248,12 +308,15 @@ suite('TerminalProfileService', () => {
 				integrated: {
 					profiles: {
 						osx: {
-							'JavaScript Debug Terminal': null
-						}
-					}
-				}
+							'JavaScript Debug Terminal': null,
+						},
+					},
+				},
 			});
-			configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true, source: ConfigurationTarget.USER } as any);
+			configurationService.onDidChangeConfigurationEmitter.fire({
+				affectsConfiguration: () => true,
+				source: ConfigurationTarget.USER,
+			} as any);
 			await terminalProfileService.refreshAndAwaitAvailableProfiles();
 			deepStrictEqual(terminalProfileService.availableProfiles, [powershellProfile]);
 			deepStrictEqual(terminalProfileService.contributedProfiles, []);
@@ -266,9 +329,13 @@ suite('TerminalProfileService', () => {
 	});
 
 	test('should get profiles from remoteTerminalService when there is a remote authority', async () => {
-		environmentService = { remoteAuthority: 'fakeremote' } satisfies Partial<IWorkbenchEnvironmentService> as any;
+		environmentService = {
+			remoteAuthority: 'fakeremote',
+		} satisfies Partial<IWorkbenchEnvironmentService> as any;
 		instantiationService.stub(IWorkbenchEnvironmentService, environmentService);
-		terminalProfileService = store.add(instantiationService.createInstance(TestTerminalProfileService));
+		terminalProfileService = store.add(
+			instantiationService.createInstance(TestTerminalProfileService)
+		);
 		await terminalProfileService.hasRefreshedProfiles;
 		deepStrictEqual(terminalProfileService.availableProfiles, []);
 		deepStrictEqual(terminalProfileService.contributedProfiles, [jsdebugProfile]);
@@ -287,14 +354,12 @@ suite('TerminalProfileService', () => {
 				profiles: {
 					windows: powershellProfile,
 					linux: powershellProfile,
-					osx: powershellProfile
-				}
-			}
+					osx: powershellProfile,
+				},
+			},
 		});
 		await terminalProfileService.hasRefreshedProfiles;
-		deepStrictEqual(calls, [
-			[powershellProfile]
-		]);
+		deepStrictEqual(calls, [[powershellProfile]]);
 		deepStrictEqual(terminalProfileService.availableProfiles, [powershellProfile]);
 		deepStrictEqual(terminalProfileService.contributedProfiles, [jsdebugProfile]);
 		calls = [];
@@ -308,9 +373,7 @@ suite('TerminalProfileService', () => {
 		const calls: ITerminalProfile[][] = [];
 		store.add(terminalProfileService.onDidChangeAvailableProfiles(e => calls.push(e)));
 		await terminalProfileService.hasRefreshedProfiles;
-		deepStrictEqual(calls, [
-			[powershellProfile]
-		]);
+		deepStrictEqual(calls, [[powershellProfile]]);
 		deepStrictEqual(terminalProfileService.availableProfiles, [powershellProfile]);
 		deepStrictEqual(terminalProfileService.contributedProfiles, [jsdebugProfile]);
 	});
@@ -320,9 +383,7 @@ suite('TerminalProfileService', () => {
 		const calls: ITerminalProfile[][] = [];
 		store.add(terminalProfileService.onDidChangeAvailableProfiles(e => calls.push(e)));
 		await terminalProfileService.hasRefreshedProfiles;
-		deepStrictEqual(calls, [
-			[powershellProfile]
-		]);
+		deepStrictEqual(calls, [[powershellProfile]]);
 		deepStrictEqual(terminalProfileService.availableProfiles, [powershellProfile]);
 		deepStrictEqual(terminalProfileService.contributedProfiles, [jsdebugProfile]);
 	});
@@ -355,7 +416,7 @@ suite('TerminalProfileService', () => {
 					options: { color: undefined, icon: 'debug' },
 					title: jsdebugProfile.title,
 				},
-				keyMods: undefined
+				keyMods: undefined,
 			};
 			deepStrictEqual(result, expected);
 		});
@@ -365,7 +426,10 @@ suite('TerminalProfileService', () => {
 			const pick = { ...powershellPick, keyMods: { alt: true, ctrlCmd: false } };
 			quickInputService.setPick(pick);
 			const result = await terminalProfileQuickpick.showAndGetResult('createInstance');
-			deepStrictEqual(result, { config: powershellProfile, keyMods: { alt: true, ctrlCmd: false } });
+			deepStrictEqual(result, {
+				config: powershellProfile,
+				keyMods: { alt: true, ctrlCmd: false },
+			});
 		});
 
 		test('createInstance with contributed', async () => {
@@ -379,7 +443,7 @@ suite('TerminalProfileService', () => {
 					options: { color: undefined, icon: 'debug' },
 					title: jsdebugProfile.title,
 				},
-				keyMods: { alt: true, ctrlCmd: false }
+				keyMods: { alt: true, ctrlCmd: false },
 			};
 			deepStrictEqual(result, expected);
 		});

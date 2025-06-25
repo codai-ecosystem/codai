@@ -29,7 +29,9 @@ export class MockGoogleAuth implements GoogleAuthMock {
 	 */
 	constructor(config?: any) {
 		this.config = config;
-		console.warn('Using MockGoogleAuth - not suitable for production. Install google-auth-library.');
+		console.warn(
+			'Using MockGoogleAuth - not suitable for production. Install google-auth-library.'
+		);
 
 		if (config?.keyFile) {
 			console.log(`Mock using configuration from: ${config.keyFile}`);
@@ -59,8 +61,10 @@ export class MockGoogleAuth implements GoogleAuthMock {
 		console.warn('MockGoogleAuth.getClient() - Using development mock');
 		// Return a minimal mock client
 		return {
-			request: async () => ({ data: { name: `projects/${this.mockProjectId}`, projectId: this.mockProjectId } }),
-			projectId: this.mockProjectId
+			request: async () => ({
+				data: { name: `projects/${this.mockProjectId}`, projectId: this.mockProjectId },
+			}),
+			projectId: this.mockProjectId,
 		};
 	}
 }

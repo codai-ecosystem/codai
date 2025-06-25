@@ -28,7 +28,6 @@ export interface ICodec<T, K> {
 	decode: (value: ReadableStream<T>) => ReadableStream<K>;
 }
 
-
 /**
  * `ChatPromptCodec` type is a `ICodec<T, K>` with specific types for
  * stream messages and return types of the `encode`/`decode` functions.

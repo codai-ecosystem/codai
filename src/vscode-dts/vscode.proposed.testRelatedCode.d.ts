@@ -22,7 +22,11 @@ declare module 'vscode' {
 		 * @param token A cancellation token.
 		 * @returns A list of tests related to the position in the code.
 		 */
-		provideRelatedTests?(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<TestItem[]>;
+		provideRelatedTests?(
+			document: TextDocument,
+			position: Position,
+			token: CancellationToken
+		): ProviderResult<TestItem[]>;
 
 		/**
 		 * Returns the code related to the given test case.

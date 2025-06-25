@@ -33,7 +33,7 @@ export class MemoryVisualization {
 			vscode.ViewColumn.Two,
 			{
 				enableScripts: true,
-				retainContextWhenHidden: true
+				retainContextWhenHidden: true,
 			}
 		);
 
@@ -41,9 +41,13 @@ export class MemoryVisualization {
 		this.setupMessageHandlers();
 		this.refreshVisualization();
 
-		this.panel.onDidDispose(() => {
-			this.panel = undefined;
-		}, null, context.subscriptions);
+		this.panel.onDidDispose(
+			() => {
+				this.panel = undefined;
+			},
+			null,
+			context.subscriptions
+		);
 	}
 
 	/**
@@ -56,7 +60,7 @@ export class MemoryVisualization {
 		this.panel.webview.postMessage({
 			type: 'updateGraph',
 			nodes: graphData.nodes,
-			edges: graphData.edges
+			edges: graphData.edges,
 		});
 	}
 
@@ -64,7 +68,7 @@ export class MemoryVisualization {
 	 * Sets up message handlers for webview communication
 	 */
 	private setupMessageHandlers(): void {
-		this.panel!.webview.onDidReceiveMessage(async (message) => {
+		this.panel!.webview.onDidReceiveMessage(async message => {
 			switch (message.type) {
 				case 'nodeSelected':
 					await this.handleNodeSelection(message.nodeId);
@@ -94,7 +98,7 @@ export class MemoryVisualization {
 		this.panel!.webview.postMessage({
 			type: 'nodeDetails',
 			node: node,
-			connectedNodes: connectedNodes
+			connectedNodes: connectedNodes,
 		});
 	}
 
@@ -125,8 +129,8 @@ export class MemoryVisualization {
 		const uri = await vscode.window.showSaveDialog({
 			defaultUri: vscode.Uri.file('aide-memory-graph.json'),
 			filters: {
-				'JSON Files': ['json']
-			}
+				'JSON Files': ['json'],
+			},
 		});
 
 		if (uri) {

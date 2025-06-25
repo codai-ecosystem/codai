@@ -17,11 +17,21 @@ import { IConfigurationService } from '../../../../platform/configuration/common
 import { NullLogService } from '../../../../platform/log/common/log.js';
 
 suite('Monarch', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function createMonarchTokenizer(languageService: ILanguageService, languageId: string, language: IMonarchLanguage, configurationService: IConfigurationService): MonarchTokenizer {
-		return new MonarchTokenizer(languageService, null!, languageId, compile(languageId, language), configurationService);
+	function createMonarchTokenizer(
+		languageService: ILanguageService,
+		languageId: string,
+		language: IMonarchLanguage,
+		configurationService: IConfigurationService
+	): MonarchTokenizer {
+		return new MonarchTokenizer(
+			languageService,
+			null!,
+			languageId,
+			compile(languageId, language),
+			configurationService
+		);
 	}
 
 	function getTokens(tokenizer: MonarchTokenizer, lines: string[]): Token[][] {
@@ -40,37 +50,69 @@ suite('Monarch', () => {
 		const languageService = disposables.add(new LanguageService());
 		const configurationService = new StandaloneConfigurationService(new NullLogService());
 		disposables.add(languageService.registerLanguage({ id: 'sql' }));
-		disposables.add(TokenizationRegistry.register('sql', disposables.add(createMonarchTokenizer(languageService, 'sql', {
-			tokenizer: {
-				root: [
-					[/./, 'token']
-				]
-			}
-		}, configurationService))));
+		disposables.add(
+			TokenizationRegistry.register(
+				'sql',
+				disposables.add(
+					createMonarchTokenizer(
+						languageService,
+						'sql',
+						{
+							tokenizer: {
+								root: [[/./, 'token']],
+							},
+						},
+						configurationService
+					)
+				)
+			)
+		);
 		const SQL_QUERY_START = '(SELECT|INSERT|UPDATE|DELETE|CREATE|REPLACE|ALTER|WITH)';
-		const tokenizer = disposables.add(createMonarchTokenizer(languageService, 'test1', {
-			tokenizer: {
-				root: [
-					[`(\"\"\")${SQL_QUERY_START}`, [{ 'token': 'string.quote', }, { token: '@rematch', next: '@endStringWithSQL', nextEmbedded: 'sql', },]],
-					[/(""")$/, [{ token: 'string.quote', next: '@maybeStringIsSQL', },]],
-				],
-				maybeStringIsSQL: [
-					[/(.*)/, {
-						cases: {
-							[`${SQL_QUERY_START}\\b.*`]: { token: '@rematch', next: '@endStringWithSQL', nextEmbedded: 'sql', },
-							'@default': { token: '@rematch', switchTo: '@endDblDocString', },
-						}
-					}],
-				],
-				endDblDocString: [
-					['[^\']+', 'string'],
-					['\\\\\'', 'string'],
-					['\'\'\'', 'string', '@popall'],
-					['\'', 'string']
-				],
-				endStringWithSQL: [[/"""/, { token: 'string.quote', next: '@popall', nextEmbedded: '@pop', },]],
-			}
-		}, configurationService));
+		const tokenizer = disposables.add(
+			createMonarchTokenizer(
+				languageService,
+				'test1',
+				{
+					tokenizer: {
+						root: [
+							[
+								`(\"\"\")${SQL_QUERY_START}`,
+								[
+									{ token: 'string.quote' },
+									{ token: '@rematch', next: '@endStringWithSQL', nextEmbedded: 'sql' },
+								],
+							],
+							[/(""")$/, [{ token: 'string.quote', next: '@maybeStringIsSQL' }]],
+						],
+						maybeStringIsSQL: [
+							[
+								/(.*)/,
+								{
+									cases: {
+										[`${SQL_QUERY_START}\\b.*`]: {
+											token: '@rematch',
+											next: '@endStringWithSQL',
+											nextEmbedded: 'sql',
+										},
+										'@default': { token: '@rematch', switchTo: '@endDblDocString' },
+									},
+								},
+							],
+						],
+						endDblDocString: [
+							["[^']+", 'string'],
+							["\\\\'", 'string'],
+							["'''", 'string', '@popall'],
+							["'", 'string'],
+						],
+						endStringWithSQL: [
+							[/"""/, { token: 'string.quote', next: '@popall', nextEmbedded: '@pop' }],
+						],
+					},
+				},
+				configurationService
+			)
+		);
 
 		const lines = [
 			`mysql_query("""SELECT * FROM table_name WHERE ds = '<DATEID>'""")`,
@@ -89,25 +131,13 @@ suite('Monarch', () => {
 				new Token(12, 'string.quote.test1', 'test1'),
 				new Token(15, 'token.sql', 'sql'),
 				new Token(61, 'string.quote.test1', 'test1'),
-				new Token(64, 'source.test1', 'test1')
+				new Token(64, 'source.test1', 'test1'),
 			],
-			[
-				new Token(0, 'source.test1', 'test1'),
-				new Token(12, 'string.quote.test1', 'test1')
-			],
-			[
-				new Token(0, 'token.sql', 'sql')
-			],
-			[
-				new Token(0, 'token.sql', 'sql')
-			],
-			[
-				new Token(0, 'token.sql', 'sql')
-			],
-			[
-				new Token(0, 'string.quote.test1', 'test1'),
-				new Token(3, 'source.test1', 'test1')
-			]
+			[new Token(0, 'source.test1', 'test1'), new Token(12, 'string.quote.test1', 'test1')],
+			[new Token(0, 'token.sql', 'sql')],
+			[new Token(0, 'token.sql', 'sql')],
+			[new Token(0, 'token.sql', 'sql')],
+			[new Token(0, 'string.quote.test1', 'test1'), new Token(3, 'source.test1', 'test1')],
 		]);
 		disposables.dispose();
 	});
@@ -116,25 +146,30 @@ suite('Monarch', () => {
 		const disposables = new DisposableStore();
 		const configurationService = new StandaloneConfigurationService(new NullLogService());
 		const languageService = disposables.add(new LanguageService());
-		const tokenizer = disposables.add(createMonarchTokenizer(languageService, 'test', {
-			tokenizer: {
-				root: [
-					{ include: '@comments' },
-				],
+		const tokenizer = disposables.add(
+			createMonarchTokenizer(
+				languageService,
+				'test',
+				{
+					tokenizer: {
+						root: [{ include: '@comments' }],
 
-				comments: [
-					[/\/\/$/, 'comment'], // empty single-line comment
-					[/\/\//, 'comment', '@comment_cpp'],
-				],
+						comments: [
+							[/\/\/$/, 'comment'], // empty single-line comment
+							[/\/\//, 'comment', '@comment_cpp'],
+						],
 
-				comment_cpp: [
-					[/(?:[^\\]|(?:\\.))+$/, 'comment', '@pop'],
-					[/.+$/, 'comment'],
-					[/$/, 'comment', '@pop']
-					// No possible rule to detect an empty line and @pop?
-				],
-			},
-		}, configurationService));
+						comment_cpp: [
+							[/(?:[^\\]|(?:\\.))+$/, 'comment', '@pop'],
+							[/.+$/, 'comment'],
+							[/$/, 'comment', '@pop'],
+							// No possible rule to detect an empty line and @pop?
+						],
+					},
+				},
+				configurationService
+			)
+		);
 
 		const lines = [
 			`// This comment \\`,
@@ -165,7 +200,7 @@ suite('Monarch', () => {
 			[],
 			[new Token(0, 'comment.test', 'test')],
 			[],
-			[new Token(0, 'source.test', 'test')]
+			[new Token(0, 'source.test', 'test')],
 		]);
 
 		disposables.dispose();
@@ -175,35 +210,36 @@ suite('Monarch', () => {
 		const disposables = new DisposableStore();
 		const configurationService = new StandaloneConfigurationService(new NullLogService());
 		const languageService = disposables.add(new LanguageService());
-		const tokenizer = disposables.add(createMonarchTokenizer(languageService, 'test', {
-			includeLF: true,
-			tokenizer: {
-				root: [
-					[/^\*/, '', '@inner'],
-					[/\:\*/, '', '@inner'],
-					[/[^*:]+/, 'string'],
-					[/[*:]/, 'string']
-				],
-				inner: [
-					[/\n/, '', '@pop'],
-					[/\d+/, 'number'],
-					[/[^\d]+/, '']
-				]
-			}
-		}, configurationService));
+		const tokenizer = disposables.add(
+			createMonarchTokenizer(
+				languageService,
+				'test',
+				{
+					includeLF: true,
+					tokenizer: {
+						root: [
+							[/^\*/, '', '@inner'],
+							[/\:\*/, '', '@inner'],
+							[/[^*:]+/, 'string'],
+							[/[*:]/, 'string'],
+						],
+						inner: [
+							[/\n/, '', '@pop'],
+							[/\d+/, 'number'],
+							[/[^\d]+/, ''],
+						],
+					},
+				},
+				configurationService
+			)
+		);
 
-		const lines = [
-			`PRINT 10 * 20`,
-			`*FX200, 3`,
-			`PRINT 2*3:*FX200, 3`
-		];
+		const lines = [`PRINT 10 * 20`, `*FX200, 3`, `PRINT 2*3:*FX200, 3`];
 
 		const actualTokens = getTokens(tokenizer, lines);
 
 		assert.deepStrictEqual(actualTokens, [
-			[
-				new Token(0, 'string.test', 'test'),
-			],
+			[new Token(0, 'string.test', 'test')],
 			[
 				new Token(0, '', 'test'),
 				new Token(3, 'number.test', 'test'),
@@ -216,7 +252,7 @@ suite('Monarch', () => {
 				new Token(13, 'number.test', 'test'),
 				new Token(16, '', 'test'),
 				new Token(18, 'number.test', 'test'),
-			]
+			],
 		]);
 
 		disposables.dispose();
@@ -227,54 +263,58 @@ suite('Monarch', () => {
 		const configurationService = new StandaloneConfigurationService(new NullLogService());
 		const languageService = disposables.add(new LanguageService());
 
-		const tokenizer1 = disposables.add(createMonarchTokenizer(languageService, 'test', {
-			ignoreCase: false,
-			uselessReplaceKey1: '@uselessReplaceKey2',
-			uselessReplaceKey2: '@uselessReplaceKey3',
-			uselessReplaceKey3: '@uselessReplaceKey4',
-			uselessReplaceKey4: '@uselessReplaceKey5',
-			uselessReplaceKey5: '@ham',
-			tokenizer: {
-				root: [
-					{
-						regex: /@\w+/.test('@ham')
-							? new RegExp(`^${'@uselessReplaceKey1'}$`)
-							: new RegExp(`^${'@ham'}$`),
-						action: { token: 'ham' }
+		const tokenizer1 = disposables.add(
+			createMonarchTokenizer(
+				languageService,
+				'test',
+				{
+					ignoreCase: false,
+					uselessReplaceKey1: '@uselessReplaceKey2',
+					uselessReplaceKey2: '@uselessReplaceKey3',
+					uselessReplaceKey3: '@uselessReplaceKey4',
+					uselessReplaceKey4: '@uselessReplaceKey5',
+					uselessReplaceKey5: '@ham',
+					tokenizer: {
+						root: [
+							{
+								regex: /@\w+/.test('@ham')
+									? new RegExp(`^${'@uselessReplaceKey1'}$`)
+									: new RegExp(`^${'@ham'}$`),
+								action: { token: 'ham' },
+							},
+						],
 					},
-				],
-			},
-		}, configurationService));
+				},
+				configurationService
+			)
+		);
 
-		const tokenizer2 = disposables.add(createMonarchTokenizer(languageService, 'test', {
-			ignoreCase: false,
-			tokenizer: {
-				root: [
-					{
-						regex: /@@ham/,
-						action: { token: 'ham' }
+		const tokenizer2 = disposables.add(
+			createMonarchTokenizer(
+				languageService,
+				'test',
+				{
+					ignoreCase: false,
+					tokenizer: {
+						root: [
+							{
+								regex: /@@ham/,
+								action: { token: 'ham' },
+							},
+						],
 					},
-				],
-			},
-		}, configurationService));
+				},
+				configurationService
+			)
+		);
 
-		const lines = [
-			`@ham`
-		];
+		const lines = [`@ham`];
 
 		const actualTokens1 = getTokens(tokenizer1, lines);
-		assert.deepStrictEqual(actualTokens1, [
-			[
-				new Token(0, 'ham.test', 'test'),
-			]
-		]);
+		assert.deepStrictEqual(actualTokens1, [[new Token(0, 'ham.test', 'test')]]);
 
 		const actualTokens2 = getTokens(tokenizer2, lines);
-		assert.deepStrictEqual(actualTokens2, [
-			[
-				new Token(0, 'ham.test', 'test'),
-			]
-		]);
+		assert.deepStrictEqual(actualTokens2, [[new Token(0, 'ham.test', 'test')]]);
 
 		disposables.dispose();
 	});
@@ -284,28 +324,29 @@ suite('Monarch', () => {
 		const configurationService = new StandaloneConfigurationService(new NullLogService());
 		const languageService = disposables.add(new LanguageService());
 
-		const tokenizer = disposables.add(createMonarchTokenizer(languageService, 'test', {
-			ignoreCase: false,
-			tokenizer: {
-				root: [
-					{
-						regex: /@@@@/,
-						action: { token: 'ham' }
+		const tokenizer = disposables.add(
+			createMonarchTokenizer(
+				languageService,
+				'test',
+				{
+					ignoreCase: false,
+					tokenizer: {
+						root: [
+							{
+								regex: /@@@@/,
+								action: { token: 'ham' },
+							},
+						],
 					},
-				],
-			},
-		}, configurationService));
+				},
+				configurationService
+			)
+		);
 
-		const lines = [
-			`@@`
-		];
+		const lines = [`@@`];
 
 		const actualTokens = getTokens(tokenizer, lines);
-		assert.deepStrictEqual(actualTokens, [
-			[
-				new Token(0, 'ham.test', 'test'),
-			]
-		]);
+		assert.deepStrictEqual(actualTokens, [[new Token(0, 'ham.test', 'test')]]);
 
 		disposables.dispose();
 	});
@@ -319,29 +360,33 @@ suite('Monarch', () => {
 		// Set maxTokenizationLineLength to 4 so that "ham" works but "hamham" would fail
 		await configurationService.updateValue('editor.maxTokenizationLineLength', 4);
 
-		const tokenizer = disposables.add(createMonarchTokenizer(languageService, 'test', {
-			tokenizer: {
-				root: [
-					{
-						regex: /ham/,
-						action: { token: 'ham' }
+		const tokenizer = disposables.add(
+			createMonarchTokenizer(
+				languageService,
+				'test',
+				{
+					tokenizer: {
+						root: [
+							{
+								regex: /ham/,
+								action: { token: 'ham' },
+							},
+						],
 					},
-				],
-			},
-		}, configurationService));
+				},
+				configurationService
+			)
+		);
 
 		const lines = [
 			'ham', // length 3, should be tokenized
-			'hamham' // length 6, should NOT be tokenized
+			'hamham', // length 6, should NOT be tokenized
 		];
 
 		const actualTokens = getTokens(tokenizer, lines);
 		assert.deepStrictEqual(actualTokens, [
-			[
-				new Token(0, 'ham.test', 'test'),
-			], [
-				new Token(0, '', 'test')
-			]
+			[new Token(0, 'ham.test', 'test')],
+			[new Token(0, '', 'test')],
 		]);
 
 		disposables.dispose();
@@ -352,21 +397,28 @@ suite('Monarch', () => {
 		const configurationService = new StandaloneConfigurationService(new NullLogService());
 		const languageService = disposables.add(new LanguageService());
 
-		const tokenizer = disposables.add(createMonarchTokenizer(languageService, 'test', {
-			ignoreCase: false,
-			encoding: /u|u8|U|L/,
-			tokenizer: {
-				root: [
-					// C++ 11 Raw String
-					[/@encoding?R\"(?:([^ ()\\\t]*))\(/, { token: 'string.raw.begin', next: '@raw.$1' }],
-				],
+		const tokenizer = disposables.add(
+			createMonarchTokenizer(
+				languageService,
+				'test',
+				{
+					ignoreCase: false,
+					encoding: /u|u8|U|L/,
+					tokenizer: {
+						root: [
+							// C++ 11 Raw String
+							[/@encoding?R\"(?:([^ ()\\\t]*))\(/, { token: 'string.raw.begin', next: '@raw.$1' }],
+						],
 
-				raw: [
-					[/.*\)$S2\"/, 'string.raw', '@pop'],
-					[/.*/, 'string.raw']
-				],
-			},
-		}, configurationService));
+						raw: [
+							[/.*\)$S2\"/, 'string.raw', '@pop'],
+							[/.*/, 'string.raw'],
+						],
+					},
+				},
+				configurationService
+			)
+		);
 
 		const lines = [
 			`int main(){`,
@@ -395,5 +447,4 @@ suite('Monarch', () => {
 
 		disposables.dispose();
 	});
-
 });

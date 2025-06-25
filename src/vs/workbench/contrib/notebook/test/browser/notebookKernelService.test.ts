@@ -8,7 +8,11 @@ import { URI } from '../../../../../base/common/uri.js';
 import { ExtensionIdentifier } from '../../../../../platform/extensions/common/extensions.js';
 import { setupInstantiationService } from './testNotebookEditor.js';
 import { Emitter, Event } from '../../../../../base/common/event.js';
-import { INotebookKernel, INotebookKernelService, VariablesResult } from '../../common/notebookKernelService.js';
+import {
+	INotebookKernel,
+	INotebookKernelService,
+	VariablesResult,
+} from '../../common/notebookKernelService.js';
 import { NotebookKernelService } from '../../browser/services/notebookKernelServiceImpl.js';
 import { INotebookService } from '../../common/notebookService.js';
 import { mock } from '../../../../../base/test/common/mock.js';
@@ -23,7 +27,6 @@ import { CancellationToken } from '../../../../../base/common/cancellation.js';
 import { AsyncIterableObject } from '../../../../../base/common/async.js';
 
 suite('NotebookKernelService', () => {
-
 	let instantiationService: TestInstantiationService;
 	let kernelService: INotebookKernelService;
 	let disposables: DisposableStore;
@@ -42,26 +45,35 @@ suite('NotebookKernelService', () => {
 		disposables.add(onDidAddNotebookDocument);
 
 		instantiationService = setupInstantiationService(disposables);
-		instantiationService.stub(INotebookService, new class extends mock<INotebookService>() {
-			override onDidAddNotebookDocument = onDidAddNotebookDocument.event;
-			override onWillRemoveNotebookDocument = Event.None;
-			override getNotebookTextModels() { return []; }
-		});
-		instantiationService.stub(IMenuService, new class extends mock<IMenuService>() {
-			override createMenu() {
-				return new class extends mock<IMenu>() {
-					override onDidChange = Event.None;
-					override getActions() { return []; }
-					override dispose() { }
-				};
-			}
-		});
+		instantiationService.stub(
+			INotebookService,
+			new (class extends mock<INotebookService>() {
+				override onDidAddNotebookDocument = onDidAddNotebookDocument.event;
+				override onWillRemoveNotebookDocument = Event.None;
+				override getNotebookTextModels() {
+					return [];
+				}
+			})()
+		);
+		instantiationService.stub(
+			IMenuService,
+			new (class extends mock<IMenuService>() {
+				override createMenu() {
+					return new (class extends mock<IMenu>() {
+						override onDidChange = Event.None;
+						override getActions() {
+							return [];
+						}
+						override dispose() {}
+					})();
+				}
+			})()
+		);
 		kernelService = disposables.add(instantiationService.createInstance(NotebookKernelService));
 		instantiationService.set(INotebookKernelService, kernelService);
 	});
 
 	test('notebook priorities', function () {
-
 		const u1 = URI.parse('foo:///one');
 		const u2 = URI.parse('foo:///two');
 
@@ -121,7 +133,6 @@ suite('NotebookKernelService', () => {
 	});
 
 	test('onDidChangeSelectedNotebooks not fired on initial notebook open #121904', function () {
-
 		const uri = URI.parse('foo:///one');
 		const jupyter = { uri, viewType: 'jupyter', notebookType: 'jupyter' };
 		const dotnet = { uri, viewType: 'dotnet', notebookType: 'dotnet' };
@@ -142,7 +153,6 @@ suite('NotebookKernelService', () => {
 	});
 
 	test('onDidChangeSelectedNotebooks not fired on initial notebook open #121904, p2', async function () {
-
 		const uri = URI.parse('foo:///one');
 		const jupyter = { uri, viewType: 'jupyter', notebookType: 'jupyter' };
 		const dotnet = { uri, viewType: 'dotnet', notebookType: 'dotnet' };
@@ -165,7 +175,16 @@ suite('NotebookKernelService', () => {
 		{
 			// open as jupyter -> bind event
 			const p1 = Event.toPromise(kernelService.onDidChangeSelectedNotebooks);
-			const d1 = disposables.add(instantiationService.createInstance(NotebookTextModel, jupyter.viewType, jupyter.uri, [], {}, transientOptions));
+			const d1 = disposables.add(
+				instantiationService.createInstance(
+					NotebookTextModel,
+					jupyter.viewType,
+					jupyter.uri,
+					[],
+					{},
+					transientOptions
+				)
+			);
 			onDidAddNotebookDocument.fire(d1);
 			const event = await p1;
 			assert.strictEqual(event.newKernel, jupyterKernel.id);
@@ -173,7 +192,16 @@ suite('NotebookKernelService', () => {
 		{
 			// RE-open as dotnet -> bind event
 			const p2 = Event.toPromise(kernelService.onDidChangeSelectedNotebooks);
-			const d2 = disposables.add(instantiationService.createInstance(NotebookTextModel, dotnet.viewType, dotnet.uri, [], {}, transientOptions));
+			const d2 = disposables.add(
+				instantiationService.createInstance(
+					NotebookTextModel,
+					dotnet.viewType,
+					dotnet.uri,
+					[],
+					{},
+					transientOptions
+				)
+			);
 			onDidAddNotebookDocument.fire(d2);
 			const event2 = await p2;
 			assert.strictEqual(event2.newKernel, dotnetKernel.id);
@@ -199,7 +227,13 @@ class TestNotebookKernel implements INotebookKernel {
 	cancelNotebookCellExecution(): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
-	provideVariables(notebookUri: URI, parentId: number | undefined, kind: 'named' | 'indexed', start: number, token: CancellationToken): AsyncIterableObject<VariablesResult> {
+	provideVariables(
+		notebookUri: URI,
+		parentId: number | undefined,
+		kind: 'named' | 'indexed',
+		start: number,
+		token: CancellationToken
+	): AsyncIterableObject<VariablesResult> {
 		return AsyncIterableObject.EMPTY;
 	}
 

@@ -11,7 +11,7 @@ describe('LLM Factory', () => {
 			const config: LLMModelConfig = {
 				provider: 'openai',
 				model: 'gpt-4o',
-				apiKey: 'test-key'
+				apiKey: 'test-key',
 			};
 
 			const service = createLLMService(config);
@@ -22,7 +22,7 @@ describe('LLM Factory', () => {
 			const config: LLMModelConfig = {
 				provider: 'anthropic',
 				model: 'claude-3-opus-20240229',
-				apiKey: 'test-key'
+				apiKey: 'test-key',
 			};
 
 			const service = createLLMService(config);
@@ -33,7 +33,7 @@ describe('LLM Factory', () => {
 			const config: LLMModelConfig = {
 				provider: 'ollama',
 				model: 'llama3',
-				baseUrl: 'http://localhost:11434'
+				baseUrl: 'http://localhost:11434',
 			};
 
 			const service = createLLMService(config);
@@ -43,7 +43,7 @@ describe('LLM Factory', () => {
 		it('should throw error for local provider (not implemented)', () => {
 			const config: LLMModelConfig = {
 				provider: 'local',
-				model: 'mixtral-8x7b'
+				model: 'mixtral-8x7b',
 			};
 
 			expect(() => createLLMService(config)).toThrow('Local provider not implemented yet');
@@ -52,7 +52,7 @@ describe('LLM Factory', () => {
 		it('should throw error for custom provider (not implemented)', () => {
 			const config: LLMModelConfig = {
 				provider: 'custom',
-				model: 'custom-model'
+				model: 'custom-model',
 			};
 
 			expect(() => createLLMService(config)).toThrow('Custom provider requires implementation');
@@ -61,7 +61,7 @@ describe('LLM Factory', () => {
 		it('should throw error for unknown provider', () => {
 			const config = {
 				provider: 'unknown' as any,
-				model: 'test-model'
+				model: 'test-model',
 			};
 
 			expect(() => createLLMService(config)).toThrow('Unknown LLM provider: unknown');
@@ -76,7 +76,7 @@ describe('LLM Factory', () => {
 				provider: 'openai',
 				model: 'gpt-4o',
 				maxTokens: 2048,
-				temperature: 0.7
+				temperature: 0.7,
 			});
 		});
 
@@ -87,7 +87,7 @@ describe('LLM Factory', () => {
 				provider: 'anthropic',
 				model: 'claude-3-opus-20240229',
 				maxTokens: 4096,
-				temperature: 0.7
+				temperature: 0.7,
 			});
 		});
 
@@ -99,7 +99,7 @@ describe('LLM Factory', () => {
 				model: 'llama3',
 				baseUrl: 'http://localhost:11434/api',
 				maxTokens: 2048,
-				temperature: 0.7
+				temperature: 0.7,
 			});
 		});
 
@@ -111,7 +111,7 @@ describe('LLM Factory', () => {
 				model: 'mixtral-8x7b',
 				baseUrl: 'http://localhost:8080/v1',
 				maxTokens: 2048,
-				temperature: 0.7
+				temperature: 0.7,
 			});
 		});
 
@@ -120,7 +120,7 @@ describe('LLM Factory', () => {
 
 			expect(customConfig).toEqual({
 				provider: 'custom',
-				model: 'custom-model'
+				model: 'custom-model',
 			});
 		});
 
@@ -145,7 +145,7 @@ describe('LLM Factory', () => {
 		it('should create planner agent system prompt with context', () => {
 			const context = {
 				projectType: 'React Web Application',
-				constraints: 'Must be mobile-responsive'
+				constraints: 'Must be mobile-responsive',
 			};
 
 			const prompt = createSystemPrompt('planner', context);
@@ -167,7 +167,7 @@ describe('LLM Factory', () => {
 		it('should create builder agent system prompt with context', () => {
 			const context = {
 				language: 'TypeScript',
-				framework: 'Next.js'
+				framework: 'Next.js',
 			};
 
 			const prompt = createSystemPrompt('builder', context);
@@ -189,7 +189,7 @@ describe('LLM Factory', () => {
 		it('should create designer agent system prompt with context', () => {
 			const context = {
 				designSystem: 'Material Design',
-				brandGuidelines: 'Corporate blue theme'
+				brandGuidelines: 'Corporate blue theme',
 			};
 
 			const prompt = createSystemPrompt('designer', context);
@@ -236,7 +236,7 @@ describe('LLM Factory', () => {
 
 		it('should handle partial context', () => {
 			const context = {
-				projectType: 'Mobile App'
+				projectType: 'Mobile App',
 				// constraints omitted
 			};
 

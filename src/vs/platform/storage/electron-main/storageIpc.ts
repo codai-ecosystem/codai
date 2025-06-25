@@ -8,19 +8,29 @@ import { Disposable } from '../../../base/common/lifecycle.js';
 import { revive } from '../../../base/common/marshalling.js';
 import { IServerChannel } from '../../../base/parts/ipc/common/ipc.js';
 import { ILogService } from '../../log/common/log.js';
-import { IBaseSerializableStorageRequest, ISerializableItemsChangeEvent, ISerializableUpdateRequest, Key, Value } from '../common/storageIpc.js';
+import {
+	IBaseSerializableStorageRequest,
+	ISerializableItemsChangeEvent,
+	ISerializableUpdateRequest,
+	Key,
+	Value,
+} from '../common/storageIpc.js';
 import { IStorageChangeEvent, IStorageMain } from './storageMain.js';
 import { IStorageMainService } from './storageMainService.js';
 import { IUserDataProfile } from '../../userDataProfile/common/userDataProfile.js';
 import { reviveIdentifier, IAnyWorkspaceIdentifier } from '../../workspace/common/workspace.js';
 
 export class StorageDatabaseChannel extends Disposable implements IServerChannel {
-
 	private static readonly STORAGE_CHANGE_DEBOUNCE_TIME = 100;
 
-	private readonly onDidChangeApplicationStorageEmitter = this._register(new Emitter<ISerializableItemsChangeEvent>());
+	private readonly onDidChangeApplicationStorageEmitter = this._register(
+		new Emitter<ISerializableItemsChangeEvent>()
+	);
 
-	private readonly mapProfileToOnDidChangeProfileStorageEmitter = new Map<string /* profile ID */, Emitter<ISerializableItemsChangeEvent>>();
+	private readonly mapProfileToOnDidChangeProfileStorageEmitter = new Map<
+		string /* profile ID */,
+		Emitter<ISerializableItemsChangeEvent>
+	>();
 
 	constructor(
 		private readonly logService: ILogService,
@@ -28,32 +38,46 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
 	) {
 		super();
 
-		this.registerStorageChangeListeners(storageMainService.applicationStorage, this.onDidChangeApplicationStorageEmitter);
+		this.registerStorageChangeListeners(
+			storageMainService.applicationStorage,
+			this.onDidChangeApplicationStorageEmitter
+		);
 	}
 
 	//#region Storage Change Events
 
-	private registerStorageChangeListeners(storage: IStorageMain, emitter: Emitter<ISerializableItemsChangeEvent>): void {
-
+	private registerStorageChangeListeners(
+		storage: IStorageMain,
+		emitter: Emitter<ISerializableItemsChangeEvent>
+	): void {
 		// Listen for changes in provided storage to send to listeners
 		// that are listening. Use a debouncer to reduce IPC traffic.
 
-		this._register(Event.debounce(storage.onDidChangeStorage, (prev: IStorageChangeEvent[] | undefined, cur: IStorageChangeEvent) => {
-			if (!prev) {
-				prev = [cur];
-			} else {
-				prev.push(cur);
-			}
+		this._register(
+			Event.debounce(
+				storage.onDidChangeStorage,
+				(prev: IStorageChangeEvent[] | undefined, cur: IStorageChangeEvent) => {
+					if (!prev) {
+						prev = [cur];
+					} else {
+						prev.push(cur);
+					}
 
-			return prev;
-		}, StorageDatabaseChannel.STORAGE_CHANGE_DEBOUNCE_TIME)(events => {
-			if (events.length) {
-				emitter.fire(this.serializeStorageChangeEvents(events, storage));
-			}
-		}));
+					return prev;
+				},
+				StorageDatabaseChannel.STORAGE_CHANGE_DEBOUNCE_TIME
+			)(events => {
+				if (events.length) {
+					emitter.fire(this.serializeStorageChangeEvents(events, storage));
+				}
+			})
+		);
 	}
 
-	private serializeStorageChangeEvents(events: IStorageChangeEvent[], storage: IStorageMain): ISerializableItemsChangeEvent {
+	private serializeStorageChangeEvents(
+		events: IStorageChangeEvent[],
+		storage: IStorageMain
+	): ISerializableItemsChangeEvent {
 		const changed = new Map<Key, Value>();
 		const deleted = new Set<Key>();
 		events.forEach(event => {
@@ -67,7 +91,7 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
 
 		return {
 			changed: Array.from(changed.entries()),
-			deleted: Array.from(deleted.values())
+			deleted: Array.from(deleted.values()),
 		};
 	}
 
@@ -82,11 +106,21 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
 				}
 
 				// With profile: profile scope for the profile
-				let profileStorageChangeEmitter = this.mapProfileToOnDidChangeProfileStorageEmitter.get(profile.id);
+				let profileStorageChangeEmitter = this.mapProfileToOnDidChangeProfileStorageEmitter.get(
+					profile.id
+				);
 				if (!profileStorageChangeEmitter) {
-					profileStorageChangeEmitter = this._register(new Emitter<ISerializableItemsChangeEvent>());
-					this.registerStorageChangeListeners(this.storageMainService.profileStorage(profile), profileStorageChangeEmitter);
-					this.mapProfileToOnDidChangeProfileStorageEmitter.set(profile.id, profileStorageChangeEmitter);
+					profileStorageChangeEmitter = this._register(
+						new Emitter<ISerializableItemsChangeEvent>()
+					);
+					this.registerStorageChangeListeners(
+						this.storageMainService.profileStorage(profile),
+						profileStorageChangeEmitter
+					);
+					this.mapProfileToOnDidChangeProfileStorageEmitter.set(
+						profile.id,
+						profileStorageChangeEmitter
+					);
 				}
 
 				return profileStorageChangeEmitter.event;
@@ -141,7 +175,10 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
 		}
 	}
 
-	private async withStorageInitialized(profile: IUserDataProfile | undefined, workspace: IAnyWorkspaceIdentifier | undefined): Promise<IStorageMain> {
+	private async withStorageInitialized(
+		profile: IUserDataProfile | undefined,
+		workspace: IAnyWorkspaceIdentifier | undefined
+	): Promise<IStorageMain> {
 		let storage: IStorageMain;
 		if (workspace) {
 			storage = this.storageMainService.workspaceStorage(workspace);
@@ -154,7 +191,9 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
 		try {
 			await storage.init();
 		} catch (error) {
-			this.logService.error(`StorageIPC#init: Unable to init ${workspace ? 'workspace' : profile ? 'profile' : 'application'} storage due to ${error}`);
+			this.logService.error(
+				`StorageIPC#init: Unable to init ${workspace ? 'workspace' : profile ? 'profile' : 'application'} storage due to ${error}`
+			);
 		}
 
 		return storage;

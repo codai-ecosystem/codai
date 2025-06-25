@@ -82,11 +82,16 @@ export interface AgentConfig {
  * but with simplified implementation
  */
 export class AgentRuntimeDemo {
-	private taskSubject = new Subject<{ type: 'started' | 'completed' | 'failed'; task: Task; result?: TaskResult; error?: string }>();
+	private taskSubject = new Subject<{
+		type: 'started' | 'completed' | 'failed';
+		task: Task;
+		result?: TaskResult;
+		error?: string;
+	}>();
 	private messageSubject = new Subject<AgentMessage>();
 	private statusSubject = new BehaviorSubject<{ agentId: string; status: AgentStatus }>({
 		agentId: '',
-		status: { isActive: false }
+		status: { isActive: false },
 	});
 
 	public tasks$ = this.taskSubject.asObservable();
@@ -98,28 +103,28 @@ export class AgentRuntimeDemo {
 		{
 			id: 'planner',
 			name: 'Project Planner',
-			description: 'Plans and breaks down project requirements into actionable tasks'
+			description: 'Plans and breaks down project requirements into actionable tasks',
 		},
 		{
 			id: 'builder',
 			name: 'Code Builder',
-			description: 'Implements code based on specifications'
+			description: 'Implements code based on specifications',
 		},
 		{
 			id: 'designer',
 			name: 'UI/UX Designer',
-			description: 'Creates user interface and experience designs'
+			description: 'Creates user interface and experience designs',
 		},
 		{
 			id: 'tester',
 			name: 'Quality Tester',
-			description: 'Tests implementations and provides quality feedback'
+			description: 'Tests implementations and provides quality feedback',
 		},
 		{
 			id: 'deployer',
 			name: 'Deployment Engineer',
-			description: 'Handles deployment and infrastructure configuration'
-		}
+			description: 'Handles deployment and infrastructure configuration',
+		},
 	];
 
 	constructor(private memoryGraph: MemoryGraphEngine) {
@@ -127,7 +132,10 @@ export class AgentRuntimeDemo {
 		for (const agent of this.agents) {
 			this.statusSubject.next({
 				agentId: agent.id,
-				status: { isActive: false, metrics: { tasksCompleted: 0, successRate: 0, averageTaskTime: 0 } }
+				status: {
+					isActive: false,
+					metrics: { tasksCompleted: 0, successRate: 0, averageTaskTime: 0 },
+				},
 			});
 		}
 	}
@@ -143,7 +151,7 @@ export class AgentRuntimeDemo {
 		// Notify that the task has started
 		this.taskSubject.next({
 			type: 'started',
-			task: { ...task, status: 'in_progress' }
+			task: { ...task, status: 'in_progress' },
 		});
 
 		// Set the agent to active
@@ -152,8 +160,8 @@ export class AgentRuntimeDemo {
 			status: {
 				isActive: true,
 				currentTask: task,
-				metrics: { tasksCompleted: 0, successRate: 0, averageTaskTime: 0 }
-			}
+				metrics: { tasksCompleted: 0, successRate: 0, averageTaskTime: 0 },
+			},
 		});
 
 		// Simulate task processing time
@@ -166,7 +174,7 @@ export class AgentRuntimeDemo {
 			success: Math.random() > 0.2, // 80% success rate for demo
 			summary: `Completed ${task.type} task: ${task.description.slice(0, 50)}...`,
 			output: {},
-			completedAt: new Date()
+			completedAt: new Date(),
 		};
 
 		if (result.success) {
@@ -174,8 +182,8 @@ export class AgentRuntimeDemo {
 			this.taskSubject.next({
 				type: 'completed',
 				task: { ...task, status: 'completed' },
-				result
-			});      // Update memory graph with a new node
+				result,
+			}); // Update memory graph with a new node
 			if (task.type === 'planner') {
 				const node = this.memoryGraph.addNode({
 					type: 'feature',
@@ -185,8 +193,8 @@ export class AgentRuntimeDemo {
 						agent: task.type,
 						taskId: task.id,
 						priority: task.priority,
-						status: 'planned'
-					}
+						status: 'planned',
+					},
 				});
 				result.nodes = [node];
 			}
@@ -196,7 +204,7 @@ export class AgentRuntimeDemo {
 			this.taskSubject.next({
 				type: 'failed',
 				task: { ...task, status: 'failed', error },
-				error
+				error,
 			});
 		}
 
@@ -208,9 +216,9 @@ export class AgentRuntimeDemo {
 				metrics: {
 					tasksCompleted: 1,
 					successRate: result.success ? 100 : 0,
-					averageTaskTime: 3000
-				}
-			}
+					averageTaskTime: 3000,
+				},
+			},
 		});
 	}
 

@@ -14,18 +14,26 @@ export const RelationshipEdge: React.FC<RelationshipEdgeProps> = ({
 	fromPosition,
 	toPosition,
 	isSelected,
-	onDelete
+	onDelete,
 }) => {
 	const getEdgeColor = (type: string) => {
 		switch (type) {
-			case 'contains': return '#3B82F6';
-			case 'depends_on': return '#EF4444';
-			case 'implements': return '#10B981';
-			case 'extends': return '#8B5CF6';
-			case 'uses': return '#F59E0B';
-			case 'configures': return '#6B7280';
-			case 'tests': return '#EC4899';
-			default: return '#6B7280';
+			case 'contains':
+				return '#3B82F6';
+			case 'depends_on':
+				return '#EF4444';
+			case 'implements':
+				return '#10B981';
+			case 'extends':
+				return '#8B5CF6';
+			case 'uses':
+				return '#F59E0B';
+			case 'configures':
+				return '#6B7280';
+			case 'tests':
+				return '#EC4899';
+			default:
+				return '#6B7280';
 		}
 	};
 

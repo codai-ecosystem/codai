@@ -7,7 +7,12 @@ import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { EditOperation } from '../../../common/core/editOperation.js';
 import { Range } from '../../../common/core/range.js';
-import { InternalModelContentChangeEvent, LineInjectedText, ModelRawChange, RawContentChangedType } from '../../../common/textModelEvents.js';
+import {
+	InternalModelContentChangeEvent,
+	LineInjectedText,
+	ModelRawChange,
+	RawContentChangedType,
+} from '../../../common/textModelEvents.js';
 import { createTextModel } from '../testTextModel.js';
 
 suite('Editor Model - Injected Text Events', () => {
@@ -18,46 +23,59 @@ suite('Editor Model - Injected Text Events', () => {
 
 		const recordedChanges = new Array<unknown>();
 
-		store.add(thisModel.onDidChangeContentOrInjectedText((e) => {
-			const changes = (e instanceof InternalModelContentChangeEvent ? e.rawContentChangedEvent.changes : e.changes);
-			for (const change of changes) {
-				recordedChanges.push(mapChange(change));
-			}
-		}));
+		store.add(
+			thisModel.onDidChangeContentOrInjectedText(e => {
+				const changes =
+					e instanceof InternalModelContentChangeEvent
+						? e.rawContentChangedEvent.changes
+						: e.changes;
+				for (const change of changes) {
+					recordedChanges.push(mapChange(change));
+				}
+			})
+		);
 
 		// Initial decoration
-		let decorations = thisModel.deltaDecorations([], [{
-			options: {
-				after: { content: 'injected1' },
-				description: 'test1',
-				showIfCollapsed: true
-			},
-			range: new Range(1, 1, 1, 1),
-		}]);
+		let decorations = thisModel.deltaDecorations(
+			[],
+			[
+				{
+					options: {
+						after: { content: 'injected1' },
+						description: 'test1',
+						showIfCollapsed: true,
+					},
+					range: new Range(1, 1, 1, 1),
+				},
+			]
+		);
 		assert.deepStrictEqual(recordedChanges.splice(0), [
 			{
 				kind: 'lineChanged',
 				line: '[injected1]First Line',
 				lineNumber: 1,
-			}
+			},
 		]);
 
 		// Decoration change
-		decorations = thisModel.deltaDecorations(decorations, [{
-			options: {
-				after: { content: 'injected1' },
-				description: 'test1',
-				showIfCollapsed: true
+		decorations = thisModel.deltaDecorations(decorations, [
+			{
+				options: {
+					after: { content: 'injected1' },
+					description: 'test1',
+					showIfCollapsed: true,
+				},
+				range: new Range(2, 1, 2, 1),
 			},
-			range: new Range(2, 1, 2, 1),
-		}, {
-			options: {
-				after: { content: 'injected2' },
-				description: 'test2',
-				showIfCollapsed: true
+			{
+				options: {
+					after: { content: 'injected2' },
+					description: 'test2',
+					showIfCollapsed: true,
+				},
+				range: new Range(2, 2, 2, 2),
 			},
-			range: new Range(2, 2, 2, 2),
-		}]);
+		]);
 		assert.deepStrictEqual(recordedChanges.splice(0), [
 			{
 				kind: 'lineChanged',
@@ -68,7 +86,7 @@ suite('Editor Model - Injected Text Events', () => {
 				kind: 'lineChanged',
 				line: '[injected1]S[injected2]econd Line',
 				lineNumber: 2,
-			}
+			},
 		]);
 
 		// Simple Insert
@@ -78,19 +96,30 @@ suite('Editor Model - Injected Text Events', () => {
 				kind: 'lineChanged',
 				line: '[injected1]SHello[injected2]econd Line',
 				lineNumber: 2,
-			}
+			},
 		]);
 
 		// Multi-Line Insert
-		thisModel.pushEditOperations(null, [EditOperation.replace(new Range(2, 2, 2, 2), '\n\n\n')], null);
-		assert.deepStrictEqual(thisModel.getAllDecorations(undefined).map(d => ({ description: d.options.description, range: d.range.toString() })), [{
-			'description': 'test1',
-			'range': '[2,1 -> 2,1]'
-		},
-		{
-			'description': 'test2',
-			'range': '[2,2 -> 5,6]'
-		}]);
+		thisModel.pushEditOperations(
+			null,
+			[EditOperation.replace(new Range(2, 2, 2, 2), '\n\n\n')],
+			null
+		);
+		assert.deepStrictEqual(
+			thisModel
+				.getAllDecorations(undefined)
+				.map(d => ({ description: d.options.description, range: d.range.toString() })),
+			[
+				{
+					description: 'test1',
+					range: '[2,1 -> 2,1]',
+				},
+				{
+					description: 'test2',
+					range: '[2,2 -> 5,6]',
+				},
+			]
+		);
 		assert.deepStrictEqual(recordedChanges.splice(0), [
 			{
 				kind: 'lineChanged',
@@ -100,50 +129,37 @@ suite('Editor Model - Injected Text Events', () => {
 			{
 				fromLineNumber: 3,
 				kind: 'linesInserted',
-				lines: [
-					'',
-					'',
-					'Hello[injected2]econd Line',
-				]
-			}
+				lines: ['', '', 'Hello[injected2]econd Line'],
+			},
 		]);
 
-
 		// Multi-Line Replace
-		thisModel.pushEditOperations(null, [EditOperation.replace(new Range(3, 1, 5, 1), '\n\n\n\n\n\n\n\n\n\n\n\n\n')], null);
+		thisModel.pushEditOperations(
+			null,
+			[EditOperation.replace(new Range(3, 1, 5, 1), '\n\n\n\n\n\n\n\n\n\n\n\n\n')],
+			null
+		);
 		assert.deepStrictEqual(recordedChanges.splice(0), [
 			{
-				'kind': 'lineChanged',
-				'line': '',
-				'lineNumber': 5,
+				kind: 'lineChanged',
+				line: '',
+				lineNumber: 5,
 			},
 			{
-				'kind': 'lineChanged',
-				'line': '',
-				'lineNumber': 4,
+				kind: 'lineChanged',
+				line: '',
+				lineNumber: 4,
 			},
 			{
-				'kind': 'lineChanged',
-				'line': '',
-				'lineNumber': 3,
+				kind: 'lineChanged',
+				line: '',
+				lineNumber: 3,
 			},
 			{
-				'fromLineNumber': 6,
-				'kind': 'linesInserted',
-				'lines': [
-					'',
-					'',
-					'',
-					'',
-					'',
-					'',
-					'',
-					'',
-					'',
-					'',
-					'Hello[injected2]econd Line',
-				]
-			}
+				fromLineNumber: 6,
+				kind: 'linesInserted',
+				lines: ['', '', '', '', '', '', '', '', '', '', 'Hello[injected2]econd Line'],
+			},
 		]);
 
 		// Multi-Line Replace undo
@@ -156,7 +172,7 @@ suite('Editor Model - Injected Text Events', () => {
 			},
 			{
 				kind: 'linesDeleted',
-			}
+			},
 		]);
 	});
 });
@@ -176,7 +192,7 @@ function mapChange(change: ModelRawChange): unknown {
 		return {
 			kind: 'linesInserted',
 			lines: change.detail.map((e, idx) => getDetail(e, change.injectedTexts[idx])),
-			fromLineNumber: change.fromLineNumber
+			fromLineNumber: change.fromLineNumber,
 		};
 	} else if (change.changeType === RawContentChangedType.LinesDeleted) {
 		return {
@@ -184,16 +200,19 @@ function mapChange(change: ModelRawChange): unknown {
 		};
 	} else if (change.changeType === RawContentChangedType.EOLChanged) {
 		return {
-			kind: 'eolChanged'
+			kind: 'eolChanged',
 		};
 	} else if (change.changeType === RawContentChangedType.Flush) {
 		return {
-			kind: 'flush'
+			kind: 'flush',
 		};
 	}
 	return { kind: 'unknown' };
 }
 
 function getDetail(line: string, injectedTexts: LineInjectedText[] | null): string {
-	return LineInjectedText.applyInjectedText(line, (injectedTexts || []).map(t => t.withText(`[${t.options.content}]`)));
+	return LineInjectedText.applyInjectedText(
+		line,
+		(injectedTexts || []).map(t => t.withText(`[${t.options.content}]`))
+	);
 }

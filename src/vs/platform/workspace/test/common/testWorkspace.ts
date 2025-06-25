@@ -5,7 +5,11 @@
 
 import { isLinux, isWindows } from '../../../../base/common/platform.js';
 import { URI } from '../../../../base/common/uri.js';
-import { toWorkspaceFolder, Workspace as BaseWorkspace, WorkspaceFolder } from '../../common/workspace.js';
+import {
+	toWorkspaceFolder,
+	Workspace as BaseWorkspace,
+	WorkspaceFolder,
+} from '../../common/workspace.js';
 
 export class Workspace extends BaseWorkspace {
 	constructor(

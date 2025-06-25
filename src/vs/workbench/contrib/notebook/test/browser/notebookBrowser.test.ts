@@ -12,7 +12,10 @@ import { ICellRange } from '../../common/notebookRange.js';
 /**
  * Return a set of ranges for the cells matching the given predicate
  */
-function getRanges(cells: ICellViewModel[], included: (cell: ICellViewModel) => boolean): ICellRange[] {
+function getRanges(
+	cells: ICellViewModel[],
+	included: (cell: ICellViewModel) => boolean
+): ICellRange[] {
 	const ranges: ICellRange[] = [];
 	let currentRange: ICellRange | undefined;
 
@@ -32,7 +35,6 @@ function getRanges(cells: ICellViewModel[], included: (cell: ICellViewModel) => 
 	return ranges;
 }
 
-
 suite('notebookBrowser', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
@@ -40,27 +42,22 @@ suite('notebookBrowser', () => {
 		const predicate = (cell: ICellViewModel) => cell.cellKind === CellKind.Code;
 
 		test('all code', function () {
-			const cells = [
-				{ cellKind: CellKind.Code },
-				{ cellKind: CellKind.Code },
-			];
-			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [{ start: 0, end: 2 }]);
+			const cells = [{ cellKind: CellKind.Code }, { cellKind: CellKind.Code }];
+			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [
+				{ start: 0, end: 2 },
+			]);
 		});
 
 		test('none code', function () {
-			const cells = [
-				{ cellKind: CellKind.Markup },
-				{ cellKind: CellKind.Markup },
-			];
+			const cells = [{ cellKind: CellKind.Markup }, { cellKind: CellKind.Markup }];
 			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), []);
 		});
 
 		test('start code', function () {
-			const cells = [
-				{ cellKind: CellKind.Code },
-				{ cellKind: CellKind.Markup },
-			];
-			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [{ start: 0, end: 1 }]);
+			const cells = [{ cellKind: CellKind.Code }, { cellKind: CellKind.Markup }];
+			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [
+				{ start: 0, end: 1 },
+			]);
 		});
 
 		test('random', function () {
@@ -73,7 +70,11 @@ suite('notebookBrowser', () => {
 				{ cellKind: CellKind.Markup },
 				{ cellKind: CellKind.Code },
 			];
-			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [{ start: 0, end: 2 }, { start: 3, end: 4 }, { start: 6, end: 7 }]);
+			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [
+				{ start: 0, end: 2 },
+				{ start: 3, end: 4 },
+				{ start: 6, end: 7 },
+			]);
 		});
 	});
 });

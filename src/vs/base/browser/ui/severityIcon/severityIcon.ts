@@ -9,7 +9,6 @@ import { ThemeIcon } from '../../../common/themables.js';
 import Severity from '../../../common/severity.js';
 
 export namespace SeverityIcon {
-
 	export function className(severity: Severity): string {
 		switch (severity) {
 			case Severity.Ignore:

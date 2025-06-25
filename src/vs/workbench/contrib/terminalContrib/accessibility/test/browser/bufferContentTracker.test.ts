@@ -26,7 +26,10 @@ import { XtermTerminal } from '../../../../terminal/browser/xterm/xtermTerminal.
 import { ITerminalConfiguration } from '../../../../terminal/common/terminal.js';
 import { BufferContentTracker } from '../../browser/bufferContentTracker.js';
 import { ILifecycleService } from '../../../../../services/lifecycle/common/lifecycle.js';
-import { TestLayoutService, TestLifecycleService } from '../../../../../test/browser/workbenchTestServices.js';
+import {
+	TestLayoutService,
+	TestLifecycleService,
+} from '../../../../../test/browser/workbenchTestServices.js';
 import { TestLoggerService } from '../../../../../test/common/workbenchTestServices.js';
 import type { Terminal } from '@xterm/xterm';
 import { IAccessibilitySignalService } from '../../../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
@@ -41,7 +44,7 @@ const defaultTerminalConfig: Partial<ITerminalConfiguration> = {
 	scrollback: 1000,
 	fastScrollSensitivity: 2,
 	mouseWheelScrollSensitivity: 1,
-	unicodeVersion: '6'
+	unicodeVersion: '6',
 };
 
 suite('Buffer Content Tracker', () => {
@@ -57,20 +60,30 @@ suite('Buffer Content Tracker', () => {
 	const promptPlusData = 'vscode-git:(prompt/more-tests) ' + 'some data';
 
 	setup(async () => {
-		configurationService = new TestConfigurationService({ terminal: { integrated: defaultTerminalConfig } });
+		configurationService = new TestConfigurationService({
+			terminal: { integrated: defaultTerminalConfig },
+		});
 		instantiationService = store.add(new TestInstantiationService());
 		themeService = new TestThemeService();
 		instantiationService.stub(IConfigurationService, configurationService);
-		instantiationService.stub(ITerminalConfigurationService, store.add(instantiationService.createInstance(TerminalConfigurationService)));
+		instantiationService.stub(
+			ITerminalConfigurationService,
+			store.add(instantiationService.createInstance(TerminalConfigurationService))
+		);
 		instantiationService.stub(IThemeService, themeService);
 		instantiationService.stub(ITerminalLogService, new NullLogService());
 		instantiationService.stub(ILoggerService, store.add(new TestLoggerService()));
-		instantiationService.stub(IContextMenuService, store.add(instantiationService.createInstance(ContextMenuService)));
+		instantiationService.stub(
+			IContextMenuService,
+			store.add(instantiationService.createInstance(ContextMenuService))
+		);
 		instantiationService.stub(ILifecycleService, store.add(new TestLifecycleService()));
 		instantiationService.stub(IContextKeyService, store.add(new MockContextKeyService()));
 		instantiationService.stub(IAccessibilitySignalService, {
-			playSignal: async () => { },
-			isSoundEnabled(signal: unknown) { return false; },
+			playSignal: async () => {},
+			isSoundEnabled(signal: unknown) {
+				return false;
+			},
 		} as any);
 
 		instantiationService.stub(ILayoutService, new TestLayoutService());
@@ -78,17 +91,25 @@ suite('Buffer Content Tracker', () => {
 		if (!isWindows) {
 			capabilities.add(TerminalCapability.NaiveCwdDetection, null!);
 		}
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
-		xterm = store.add(instantiationService.createInstance(XtermTerminal, TerminalCtor, {
-			cols: 80,
-			rows: 30,
-			xtermColorProvider: { getBackgroundColor: () => undefined },
-			capabilities,
-			disableShellIntegrationReporting: true
-		}));
+		const TerminalCtor = (
+			await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')
+		).Terminal;
+		xterm = store.add(
+			instantiationService.createInstance(XtermTerminal, TerminalCtor, {
+				cols: 80,
+				rows: 30,
+				xtermColorProvider: { getBackgroundColor: () => undefined },
+				capabilities,
+				disableShellIntegrationReporting: true,
+			})
+		);
 		const container = document.createElement('div');
 		xterm.raw.open(container);
-		configurationService = new TestConfigurationService({ terminal: { integrated: { tabs: { separator: ' - ', title: '${cwd}', description: '${cwd}' } } } });
+		configurationService = new TestConfigurationService({
+			terminal: {
+				integrated: { tabs: { separator: ' - ', title: '${cwd}', description: '${cwd}' } },
+			},
+		});
 		bufferTracker = store.add(instantiationService.createInstance(BufferContentTracker, xterm));
 	});
 
@@ -119,7 +140,14 @@ suite('Buffer Content Tracker', () => {
 		await writeAndAssertBufferState(promptPlusData, 6, xterm.raw, bufferTracker);
 		await writeP(xterm.raw, '\x1b[3Ainserteddata');
 		bufferTracker.update();
-		assert.deepStrictEqual(bufferTracker.lines, [promptPlusData, promptPlusData, `${promptPlusData}inserteddata`, promptPlusData, promptPlusData, promptPlusData]);
+		assert.deepStrictEqual(bufferTracker.lines, [
+			promptPlusData,
+			promptPlusData,
+			`${promptPlusData}inserteddata`,
+			promptPlusData,
+			promptPlusData,
+			promptPlusData,
+		]);
 	});
 	test('should refresh viewport with full scrollback', async () => {
 		const content = `${prompt}\r\n`.repeat(1030).trimEnd();
@@ -149,7 +177,12 @@ suite('Buffer Content Tracker', () => {
 	});
 });
 
-async function writeAndAssertBufferState(data: string, rows: number, terminal: Terminal, bufferTracker: BufferContentTracker): Promise<void> {
+async function writeAndAssertBufferState(
+	data: string,
+	rows: number,
+	terminal: Terminal,
+	bufferTracker: BufferContentTracker
+): Promise<void> {
 	const content = `${data}\r\n`.repeat(rows).trimEnd();
 	await writeP(terminal, content);
 	bufferTracker.update();

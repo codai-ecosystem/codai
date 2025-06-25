@@ -17,14 +17,17 @@ import { TextModel } from '../../../common/model/textModel.js';
 import { ModelLineProjectionData } from '../../../common/modelLineProjectionData.js';
 import { IViewLineTokens } from '../../../common/tokens/lineTokens.js';
 import { ViewLineData } from '../../../common/viewModel.js';
-import { IModelLineProjection, ISimpleModel, createModelLineProjection } from '../../../common/viewModel/modelLineProjection.js';
+import {
+	IModelLineProjection,
+	ISimpleModel,
+	createModelLineProjection,
+} from '../../../common/viewModel/modelLineProjection.js';
 import { MonospaceLineBreaksComputerFactory } from '../../../common/viewModel/monospaceLineBreaksComputer.js';
 import { ViewModelLinesFromProjectedModel } from '../../../common/viewModel/viewModelLines.js';
 import { TestConfiguration } from '../config/testConfiguration.js';
 import { createTextModel } from '../../common/testTextModel.js';
 
 suite('Editor ViewModel - SplitLinesCollection', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('SplitLine', () => {
@@ -39,22 +42,46 @@ suite('Editor ViewModel - SplitLinesCollection', () => {
 		assert.strictEqual(line1.getViewLineMaxColumn(model1, 1, 1), 15);
 		assert.strictEqual(line1.getViewLineMaxColumn(model1, 1, 2), 16);
 		for (let col = 1; col <= 14; col++) {
-			assert.strictEqual(line1.getModelColumnOfViewPosition(0, col), col, 'getInputColumnOfOutputPosition(0, ' + col + ')');
+			assert.strictEqual(
+				line1.getModelColumnOfViewPosition(0, col),
+				col,
+				'getInputColumnOfOutputPosition(0, ' + col + ')'
+			);
 		}
 		for (let col = 1; col <= 15; col++) {
-			assert.strictEqual(line1.getModelColumnOfViewPosition(1, col), 13 + col, 'getInputColumnOfOutputPosition(1, ' + col + ')');
+			assert.strictEqual(
+				line1.getModelColumnOfViewPosition(1, col),
+				13 + col,
+				'getInputColumnOfOutputPosition(1, ' + col + ')'
+			);
 		}
 		for (let col = 1; col <= 16; col++) {
-			assert.strictEqual(line1.getModelColumnOfViewPosition(2, col), 13 + 14 + col, 'getInputColumnOfOutputPosition(2, ' + col + ')');
+			assert.strictEqual(
+				line1.getModelColumnOfViewPosition(2, col),
+				13 + 14 + col,
+				'getInputColumnOfOutputPosition(2, ' + col + ')'
+			);
 		}
 		for (let col = 1; col <= 13; col++) {
-			assert.deepStrictEqual(line1.getViewPositionOfModelPosition(0, col), pos(0, col), 'getOutputPositionOfInputPosition(' + col + ')');
+			assert.deepStrictEqual(
+				line1.getViewPositionOfModelPosition(0, col),
+				pos(0, col),
+				'getOutputPositionOfInputPosition(' + col + ')'
+			);
 		}
 		for (let col = 1 + 13; col <= 14 + 13; col++) {
-			assert.deepStrictEqual(line1.getViewPositionOfModelPosition(0, col), pos(1, col - 13), 'getOutputPositionOfInputPosition(' + col + ')');
+			assert.deepStrictEqual(
+				line1.getViewPositionOfModelPosition(0, col),
+				pos(1, col - 13),
+				'getOutputPositionOfInputPosition(' + col + ')'
+			);
 		}
 		for (let col = 1 + 13 + 14; col <= 15 + 14 + 13; col++) {
-			assert.deepStrictEqual(line1.getViewPositionOfModelPosition(0, col), pos(2, col - 13 - 14), 'getOutputPositionOfInputPosition(' + col + ')');
+			assert.deepStrictEqual(
+				line1.getViewPositionOfModelPosition(0, col),
+				pos(2, col - 13 - 14),
+				'getOutputPositionOfInputPosition(' + col + ')'
+			);
 		}
 
 		model1 = createModel('My First LineMy Second LineAnd another one');
@@ -83,34 +110,58 @@ suite('Editor ViewModel - SplitLinesCollection', () => {
 		]);
 
 		for (let col = 1; col <= 13; col++) {
-			assert.deepStrictEqual(line1.getViewPositionOfModelPosition(0, col), pos(0, col), '6.getOutputPositionOfInputPosition(' + col + ')');
+			assert.deepStrictEqual(
+				line1.getViewPositionOfModelPosition(0, col),
+				pos(0, col),
+				'6.getOutputPositionOfInputPosition(' + col + ')'
+			);
 		}
 		for (let col = 1 + 13; col <= 14 + 13; col++) {
-			assert.deepStrictEqual(line1.getViewPositionOfModelPosition(0, col), pos(1, 4 + col - 13), '7.getOutputPositionOfInputPosition(' + col + ')');
+			assert.deepStrictEqual(
+				line1.getViewPositionOfModelPosition(0, col),
+				pos(1, 4 + col - 13),
+				'7.getOutputPositionOfInputPosition(' + col + ')'
+			);
 		}
 		for (let col = 1 + 13 + 14; col <= 15 + 14 + 13; col++) {
-			assert.deepStrictEqual(line1.getViewPositionOfModelPosition(0, col), pos(2, 4 + col - 13 - 14), '8.getOutputPositionOfInputPosition(' + col + ')');
+			assert.deepStrictEqual(
+				line1.getViewPositionOfModelPosition(0, col),
+				pos(2, 4 + col - 13 - 14),
+				'8.getOutputPositionOfInputPosition(' + col + ')'
+			);
 		}
 	});
 
-	function withSplitLinesCollection(text: string, callback: (model: TextModel, linesCollection: ViewModelLinesFromProjectedModel) => void): void {
+	function withSplitLinesCollection(
+		text: string,
+		callback: (model: TextModel, linesCollection: ViewModelLinesFromProjectedModel) => void
+	): void {
 		const config = new TestConfiguration({});
 		const wrappingInfo = config.options.get(EditorOption.wrappingInfo);
 		const fontInfo = config.options.get(EditorOption.fontInfo);
-		const wordWrapBreakAfterCharacters = config.options.get(EditorOption.wordWrapBreakAfterCharacters);
-		const wordWrapBreakBeforeCharacters = config.options.get(EditorOption.wordWrapBreakBeforeCharacters);
+		const wordWrapBreakAfterCharacters = config.options.get(
+			EditorOption.wordWrapBreakAfterCharacters
+		);
+		const wordWrapBreakBeforeCharacters = config.options.get(
+			EditorOption.wordWrapBreakBeforeCharacters
+		);
 		const wrappingIndent = config.options.get(EditorOption.wrappingIndent);
 		const wordBreak = config.options.get(EditorOption.wordBreak);
-		const lineBreaksComputerFactory = new MonospaceLineBreaksComputerFactory(wordWrapBreakBeforeCharacters, wordWrapBreakAfterCharacters);
+		const lineBreaksComputerFactory = new MonospaceLineBreaksComputerFactory(
+			wordWrapBreakBeforeCharacters,
+			wordWrapBreakAfterCharacters
+		);
 
-		const model = createTextModel([
-			'int main() {',
-			'\tprintf("Hello world!");',
-			'}',
-			'int main() {',
-			'\tprintf("Hello world!");',
-			'}',
-		].join('\n'));
+		const model = createTextModel(
+			[
+				'int main() {',
+				'\tprintf("Hello world!");',
+				'}',
+				'int main() {',
+				'\tprintf("Hello world!");',
+				'}',
+			].join('\n')
+		);
 
 		const linesCollection = new ViewModelLinesFromProjectedModel(
 			1,
@@ -133,7 +184,6 @@ suite('Editor ViewModel - SplitLinesCollection', () => {
 	}
 
 	test('Invalid line numbers', () => {
-
 		const text = [
 			'int main() {',
 			'\tprintf("Hello world!");',
@@ -193,21 +243,50 @@ suite('Editor ViewModel - SplitLinesCollection', () => {
 			assert.strictEqual(linesCollection.getViewLineMaxColumn(7), 2);
 
 			// convertOutputPositionToInputPosition
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(-1, 1), new Position(1, 1));
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(0, 1), new Position(1, 1));
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(1, 1), new Position(1, 1));
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(2, 1), new Position(2, 1));
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(3, 1), new Position(3, 1));
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(4, 1), new Position(4, 1));
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(5, 1), new Position(5, 1));
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(6, 1), new Position(6, 1));
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(7, 1), new Position(6, 1));
-			assert.deepStrictEqual(linesCollection.convertViewPositionToModelPosition(8, 1), new Position(6, 1));
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(-1, 1),
+				new Position(1, 1)
+			);
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(0, 1),
+				new Position(1, 1)
+			);
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(1, 1),
+				new Position(1, 1)
+			);
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(2, 1),
+				new Position(2, 1)
+			);
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(3, 1),
+				new Position(3, 1)
+			);
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(4, 1),
+				new Position(4, 1)
+			);
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(5, 1),
+				new Position(5, 1)
+			);
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(6, 1),
+				new Position(6, 1)
+			);
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(7, 1),
+				new Position(6, 1)
+			);
+			assert.deepStrictEqual(
+				linesCollection.convertViewPositionToModelPosition(8, 1),
+				new Position(6, 1)
+			);
 		});
 	});
 
 	test('issue #3662', () => {
-
 		const text = [
 			'int main() {',
 			'\tprintf("Hello world!");',
@@ -218,20 +297,22 @@ suite('Editor ViewModel - SplitLinesCollection', () => {
 		].join('\n');
 
 		withSplitLinesCollection(text, (model, linesCollection) => {
-			linesCollection.setHiddenAreas([
-				new Range(1, 1, 3, 1),
-				new Range(5, 1, 6, 1)
-			]);
+			linesCollection.setHiddenAreas([new Range(1, 1, 3, 1), new Range(5, 1, 6, 1)]);
 
 			const viewLineCount = linesCollection.getViewLineCount();
 			assert.strictEqual(viewLineCount, 1, 'getOutputLineCount()');
 
 			const modelLineCount = model.getLineCount();
 			for (let lineNumber = 0; lineNumber <= modelLineCount + 1; lineNumber++) {
-				const lineMinColumn = (lineNumber >= 1 && lineNumber <= modelLineCount) ? model.getLineMinColumn(lineNumber) : 1;
-				const lineMaxColumn = (lineNumber >= 1 && lineNumber <= modelLineCount) ? model.getLineMaxColumn(lineNumber) : 1;
+				const lineMinColumn =
+					lineNumber >= 1 && lineNumber <= modelLineCount ? model.getLineMinColumn(lineNumber) : 1;
+				const lineMaxColumn =
+					lineNumber >= 1 && lineNumber <= modelLineCount ? model.getLineMaxColumn(lineNumber) : 1;
 				for (let column = lineMinColumn - 1; column <= lineMaxColumn + 1; column++) {
-					const viewPosition = linesCollection.convertModelPositionToViewPosition(lineNumber, column);
+					const viewPosition = linesCollection.convertModelPositionToViewPosition(
+						lineNumber,
+						column
+					);
 
 					// validate view position
 					let viewLineNumber = viewPosition.lineNumber;
@@ -252,7 +333,11 @@ suite('Editor ViewModel - SplitLinesCollection', () => {
 						viewColumn = viewMaxColumn;
 					}
 					const validViewPosition = new Position(viewLineNumber, viewColumn);
-					assert.strictEqual(viewPosition.toString(), validViewPosition.toString(), 'model->view for ' + lineNumber + ', ' + column);
+					assert.strictEqual(
+						viewPosition.toString(),
+						validViewPosition.toString(),
+						'model->view for ' + lineNumber + ', ' + column
+					);
 				}
 			}
 
@@ -260,18 +345,23 @@ suite('Editor ViewModel - SplitLinesCollection', () => {
 				const lineMinColumn = linesCollection.getViewLineMinColumn(lineNumber);
 				const lineMaxColumn = linesCollection.getViewLineMaxColumn(lineNumber);
 				for (let column = lineMinColumn - 1; column <= lineMaxColumn + 1; column++) {
-					const modelPosition = linesCollection.convertViewPositionToModelPosition(lineNumber, column);
+					const modelPosition = linesCollection.convertViewPositionToModelPosition(
+						lineNumber,
+						column
+					);
 					const validModelPosition = model.validatePosition(modelPosition);
-					assert.strictEqual(modelPosition.toString(), validModelPosition.toString(), 'view->model for ' + lineNumber + ', ' + column);
+					assert.strictEqual(
+						modelPosition.toString(),
+						validModelPosition.toString(),
+						'view->model for ' + lineNumber + ', ' + column
+					);
 				}
 			}
 		});
 	});
-
 });
 
 suite('SplitLinesCollection', () => {
-
 	const _text = [
 		'class Nice {',
 		'	function hi() {',
@@ -306,9 +396,7 @@ suite('SplitLinesCollection', () => {
 			{ startIndex: 14, value: 15 },
 			{ startIndex: 27, value: 16 },
 		],
-		[
-			{ startIndex: 0, value: 17 },
-		],
+		[{ startIndex: 0, value: 17 }],
 		[
 			{ startIndex: 0, value: 18 },
 			{ startIndex: 1, value: 19 },
@@ -325,12 +413,8 @@ suite('SplitLinesCollection', () => {
 			{ startIndex: 14, value: 28 },
 			{ startIndex: 59, value: 29 },
 		],
-		[
-			{ startIndex: 0, value: 30 },
-		],
-		[
-			{ startIndex: 0, value: 31 },
-		]
+		[{ startIndex: 0, value: 30 }],
+		[{ startIndex: 0, value: 31 }],
 	];
 
 	let model: TextModel;
@@ -341,21 +425,26 @@ suite('SplitLinesCollection', () => {
 		const tokenizationSupport: languages.ITokenizationSupport = {
 			getInitialState: () => NullState,
 			tokenize: undefined!,
-			tokenizeEncoded: (line: string, hasEOL: boolean, state: languages.IState): languages.EncodedTokenizationResult => {
+			tokenizeEncoded: (
+				line: string,
+				hasEOL: boolean,
+				state: languages.IState
+			): languages.EncodedTokenizationResult => {
 				const tokens = _tokens[_lineIndex++];
 
 				const result = new Uint32Array(2 * tokens.length);
 				for (let i = 0; i < tokens.length; i++) {
 					result[2 * i] = tokens[i].startIndex;
-					result[2 * i + 1] = (
-						tokens[i].value << MetadataConsts.FOREGROUND_OFFSET
-					);
+					result[2 * i + 1] = tokens[i].value << MetadataConsts.FOREGROUND_OFFSET;
 				}
 				return new languages.EncodedTokenizationResult(result, state);
-			}
+			},
 		};
 		const LANGUAGE_ID = 'modelModeTest1';
-		languageRegistration = languages.TokenizationRegistry.register(LANGUAGE_ID, tokenizationSupport);
+		languageRegistration = languages.TokenizationRegistry.register(
+			LANGUAGE_ID,
+			tokenizationSupport
+		);
 		model = createTextModel(_text.join('\n'), LANGUAGE_ID);
 		// force tokenization
 		model.tokenization.forceTokenization(model.getLineCount());
@@ -378,7 +467,7 @@ suite('SplitLinesCollection', () => {
 		for (let i = 0, len = _actual.getCount(); i < len; i++) {
 			actual[i] = {
 				endIndex: _actual.getEndOffset(i),
-				value: _actual.getForeground(i)
+				value: _actual.getForeground(i),
 			};
 		}
 		assert.deepStrictEqual(actual, expected);
@@ -391,7 +480,10 @@ suite('SplitLinesCollection', () => {
 		tokens: ITestViewLineToken[];
 	}
 
-	function assertMinimapLineRenderingData(actual: ViewLineData, expected: ITestMinimapLineRenderingData | null): void {
+	function assertMinimapLineRenderingData(
+		actual: ViewLineData,
+		expected: ITestMinimapLineRenderingData | null
+	): void {
 		if (actual === null && expected === null) {
 			assert.ok(true);
 			return;
@@ -405,17 +497,26 @@ suite('SplitLinesCollection', () => {
 		assertViewLineTokens(actual.tokens, expected.tokens);
 	}
 
-	function assertMinimapLinesRenderingData(actual: ViewLineData[], expected: Array<ITestMinimapLineRenderingData | null>): void {
+	function assertMinimapLinesRenderingData(
+		actual: ViewLineData[],
+		expected: Array<ITestMinimapLineRenderingData | null>
+	): void {
 		assert.strictEqual(actual.length, expected.length);
 		for (let i = 0; i < expected.length; i++) {
 			assertMinimapLineRenderingData(actual[i], expected[i]);
 		}
 	}
 
-	function assertAllMinimapLinesRenderingData(splitLinesCollection: ViewModelLinesFromProjectedModel, all: ITestMinimapLineRenderingData[]): void {
+	function assertAllMinimapLinesRenderingData(
+		splitLinesCollection: ViewModelLinesFromProjectedModel,
+		all: ITestMinimapLineRenderingData[]
+	): void {
 		const lineCount = all.length;
 		for (let line = 1; line <= lineCount; line++) {
-			assert.strictEqual(splitLinesCollection.getViewLineData(line).content, splitLinesCollection.getViewLineContent(line));
+			assert.strictEqual(
+				splitLinesCollection.getViewLineData(line).content,
+				splitLinesCollection.getViewLineContent(line)
+			);
 		}
 
 		for (let start = 1; start <= lineCount; start++) {
@@ -425,8 +526,8 @@ suite('SplitLinesCollection', () => {
 					const needed: boolean[] = [];
 					const expected: Array<ITestMinimapLineRenderingData | null> = [];
 					for (let i = 0; i < count; i++) {
-						needed[i] = (desired & (1 << i)) ? true : false;
-						expected[i] = (needed[i] ? all[start - 1 + i] : null);
+						needed[i] = desired & (1 << i) ? true : false;
+						expected[i] = needed[i] ? all[start - 1 + i] : null;
 					}
 					const actual = splitLinesCollection.getViewLinesData(start, end, needed);
 
@@ -439,7 +540,7 @@ suite('SplitLinesCollection', () => {
 	}
 
 	test('getViewLinesData - no wrapping', () => {
-		withSplitLinesCollection(model, 'off', 0, (splitLinesCollection) => {
+		withSplitLinesCollection(model, 'off', 0, splitLinesCollection => {
 			assert.strictEqual(splitLinesCollection.getViewLineCount(), 8);
 			assert.strictEqual(splitLinesCollection.modelPositionIsVisible(1, 1), true);
 			assert.strictEqual(splitLinesCollection.modelPositionIsVisible(2, 1), true);
@@ -460,7 +561,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 6, value: 2 },
 						{ endIndex: 10, value: 3 },
 						{ endIndex: 12, value: 4 },
-					]
+					],
 				},
 				{
 					content: '	function hi() {',
@@ -472,7 +573,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 10, value: 7 },
 						{ endIndex: 12, value: 8 },
 						{ endIndex: 16, value: 9 },
-					]
+					],
 				},
 				{
 					content: '		console.log("Hello world");',
@@ -486,15 +587,13 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 14, value: 14 },
 						{ endIndex: 27, value: 15 },
 						{ endIndex: 29, value: 16 },
-					]
+					],
 				},
 				{
 					content: '	}',
 					minColumn: 1,
 					maxColumn: 3,
-					tokens: [
-						{ endIndex: 2, value: 17 },
-					]
+					tokens: [{ endIndex: 2, value: 17 }],
 				},
 				{
 					content: '	function hello() {',
@@ -506,7 +605,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 10, value: 20 },
 						{ endIndex: 15, value: 21 },
 						{ endIndex: 19, value: 22 },
-					]
+					],
 				},
 				{
 					content: '		console.log("Hello world, this is a somewhat longer line");',
@@ -520,24 +619,20 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 14, value: 27 },
 						{ endIndex: 59, value: 28 },
 						{ endIndex: 61, value: 29 },
-					]
+					],
 				},
 				{
 					minColumn: 1,
 					maxColumn: 3,
 					content: '	}',
-					tokens: [
-						{ endIndex: 2, value: 30 },
-					]
+					tokens: [{ endIndex: 2, value: 30 }],
 				},
 				{
 					minColumn: 1,
 					maxColumn: 2,
 					content: '}',
-					tokens: [
-						{ endIndex: 1, value: 31 },
-					]
-				}
+					tokens: [{ endIndex: 1, value: 31 }],
+				},
 			];
 
 			assertAllMinimapLinesRenderingData(splitLinesCollection, [
@@ -573,7 +668,7 @@ suite('SplitLinesCollection', () => {
 	});
 
 	test('getViewLinesData - with wrapping', () => {
-		withSplitLinesCollection(model, 'wordWrapColumn', 30, (splitLinesCollection) => {
+		withSplitLinesCollection(model, 'wordWrapColumn', 30, splitLinesCollection => {
 			assert.strictEqual(splitLinesCollection.getViewLineCount(), 12);
 			assert.strictEqual(splitLinesCollection.modelPositionIsVisible(1, 1), true);
 			assert.strictEqual(splitLinesCollection.modelPositionIsVisible(2, 1), true);
@@ -594,7 +689,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 6, value: 2 },
 						{ endIndex: 10, value: 3 },
 						{ endIndex: 12, value: 4 },
-					]
+					],
 				},
 				{
 					content: '	function hi() {',
@@ -606,7 +701,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 10, value: 7 },
 						{ endIndex: 12, value: 8 },
 						{ endIndex: 16, value: 9 },
-					]
+					],
 				},
 				{
 					content: '		console.log("Hello ',
@@ -619,7 +714,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 13, value: 13 },
 						{ endIndex: 14, value: 14 },
 						{ endIndex: 21, value: 15 },
-					]
+					],
 				},
 				{
 					content: '            world");',
@@ -628,15 +723,13 @@ suite('SplitLinesCollection', () => {
 					tokens: [
 						{ endIndex: 18, value: 15 },
 						{ endIndex: 20, value: 16 },
-					]
+					],
 				},
 				{
 					content: '	}',
 					minColumn: 1,
 					maxColumn: 3,
-					tokens: [
-						{ endIndex: 2, value: 17 },
-					]
+					tokens: [{ endIndex: 2, value: 17 }],
 				},
 				{
 					content: '	function hello() {',
@@ -648,7 +741,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 10, value: 20 },
 						{ endIndex: 15, value: 21 },
 						{ endIndex: 19, value: 22 },
-					]
+					],
 				},
 				{
 					content: '		console.log("Hello ',
@@ -661,23 +754,19 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 13, value: 26 },
 						{ endIndex: 14, value: 27 },
 						{ endIndex: 21, value: 28 },
-					]
+					],
 				},
 				{
 					content: '            world, this is a ',
 					minColumn: 13,
 					maxColumn: 30,
-					tokens: [
-						{ endIndex: 29, value: 28 },
-					]
+					tokens: [{ endIndex: 29, value: 28 }],
 				},
 				{
 					content: '            somewhat longer ',
 					minColumn: 13,
 					maxColumn: 29,
-					tokens: [
-						{ endIndex: 28, value: 28 },
-					]
+					tokens: [{ endIndex: 28, value: 28 }],
 				},
 				{
 					content: '            line");',
@@ -686,24 +775,20 @@ suite('SplitLinesCollection', () => {
 					tokens: [
 						{ endIndex: 17, value: 28 },
 						{ endIndex: 19, value: 29 },
-					]
+					],
 				},
 				{
 					content: '	}',
 					minColumn: 1,
 					maxColumn: 3,
-					tokens: [
-						{ endIndex: 2, value: 30 },
-					]
+					tokens: [{ endIndex: 2, value: 30 }],
 				},
 				{
 					content: '}',
 					minColumn: 1,
 					maxColumn: 2,
-					tokens: [
-						{ endIndex: 1, value: 31 },
-					]
-				}
+					tokens: [{ endIndex: 1, value: 31 }],
+				},
 			];
 
 			assertAllMinimapLinesRenderingData(splitLinesCollection, [
@@ -746,19 +831,24 @@ suite('SplitLinesCollection', () => {
 	});
 
 	test('getViewLinesData - with wrapping and injected text', () => {
-		model.deltaDecorations([], [{
-			range: new Range(1, 9, 1, 9),
-			options: {
-				description: 'example',
-				after: {
-					content: 'very very long injected text that causes a line break',
-					inlineClassName: 'myClassName'
+		model.deltaDecorations(
+			[],
+			[
+				{
+					range: new Range(1, 9, 1, 9),
+					options: {
+						description: 'example',
+						after: {
+							content: 'very very long injected text that causes a line break',
+							inlineClassName: 'myClassName',
+						},
+						showIfCollapsed: true,
+					},
 				},
-				showIfCollapsed: true,
-			}
-		}]);
+			]
+		);
 
-		withSplitLinesCollection(model, 'wordWrapColumn', 30, (splitLinesCollection) => {
+		withSplitLinesCollection(model, 'wordWrapColumn', 30, splitLinesCollection => {
 			assert.strictEqual(splitLinesCollection.getViewLineCount(), 14);
 
 			assert.strictEqual(splitLinesCollection.getViewLineMaxColumn(1), 24);
@@ -773,13 +863,13 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 6, value: 2 },
 						{ endIndex: 8, value: 3 },
 						{ endIndex: 23, value: 1 },
-					]
+					],
 				},
 				{
 					content: '    injected text that causes ',
 					minColumn: 5,
 					maxColumn: 31,
-					tokens: [{ endIndex: 30, value: 1 }]
+					tokens: [{ endIndex: 30, value: 1 }],
 				},
 				{
 					content: '    a line breakce {',
@@ -788,8 +878,8 @@ suite('SplitLinesCollection', () => {
 					tokens: [
 						{ endIndex: 16, value: 1 },
 						{ endIndex: 18, value: 3 },
-						{ endIndex: 20, value: 4 }
-					]
+						{ endIndex: 20, value: 4 },
+					],
 				},
 				{
 					content: '	function hi() {',
@@ -801,7 +891,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 10, value: 7 },
 						{ endIndex: 12, value: 8 },
 						{ endIndex: 16, value: 9 },
-					]
+					],
 				},
 				{
 					content: '		console.log("Hello ',
@@ -814,7 +904,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 13, value: 13 },
 						{ endIndex: 14, value: 14 },
 						{ endIndex: 21, value: 15 },
-					]
+					],
 				},
 				{
 					content: '            world");',
@@ -823,15 +913,13 @@ suite('SplitLinesCollection', () => {
 					tokens: [
 						{ endIndex: 18, value: 15 },
 						{ endIndex: 20, value: 16 },
-					]
+					],
 				},
 				{
 					content: '	}',
 					minColumn: 1,
 					maxColumn: 3,
-					tokens: [
-						{ endIndex: 2, value: 17 },
-					]
+					tokens: [{ endIndex: 2, value: 17 }],
 				},
 				{
 					content: '	function hello() {',
@@ -843,7 +931,7 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 10, value: 20 },
 						{ endIndex: 15, value: 21 },
 						{ endIndex: 19, value: 22 },
-					]
+					],
 				},
 				{
 					content: '		console.log("Hello ',
@@ -856,23 +944,19 @@ suite('SplitLinesCollection', () => {
 						{ endIndex: 13, value: 26 },
 						{ endIndex: 14, value: 27 },
 						{ endIndex: 21, value: 28 },
-					]
+					],
 				},
 				{
 					content: '            world, this is a ',
 					minColumn: 13,
 					maxColumn: 30,
-					tokens: [
-						{ endIndex: 29, value: 28 },
-					]
+					tokens: [{ endIndex: 29, value: 28 }],
 				},
 				{
 					content: '            somewhat longer ',
 					minColumn: 13,
 					maxColumn: 29,
-					tokens: [
-						{ endIndex: 28, value: 28 },
-					]
+					tokens: [{ endIndex: 28, value: 28 }],
 				},
 				{
 					content: '            line");',
@@ -881,24 +965,20 @@ suite('SplitLinesCollection', () => {
 					tokens: [
 						{ endIndex: 17, value: 28 },
 						{ endIndex: 19, value: 29 },
-					]
+					],
 				},
 				{
 					content: '	}',
 					minColumn: 1,
 					maxColumn: 3,
-					tokens: [
-						{ endIndex: 2, value: 30 },
-					]
+					tokens: [{ endIndex: 2, value: 30 }],
 				},
 				{
 					content: '}',
 					minColumn: 1,
 					maxColumn: 2,
-					tokens: [
-						{ endIndex: 1, value: 31 },
-					]
-				}
+					tokens: [{ endIndex: 1, value: 31 }],
+				},
 			];
 
 			assertAllMinimapLinesRenderingData(splitLinesCollection, [
@@ -918,8 +998,8 @@ suite('SplitLinesCollection', () => {
 
 			const data = splitLinesCollection.getViewLinesData(1, 14, new Array(14).fill(true));
 			assert.deepStrictEqual(
-				data.map((d) => ({
-					inlineDecorations: d.inlineDecorations?.map((d) => ({
+				data.map(d => ({
+					inlineDecorations: d.inlineDecorations?.map(d => ({
 						startOffset: d.startOffset,
 						endOffset: d.endOffset,
 					})),
@@ -944,20 +1024,32 @@ suite('SplitLinesCollection', () => {
 		});
 	});
 
-	function withSplitLinesCollection(model: TextModel, wordWrap: 'on' | 'off' | 'wordWrapColumn' | 'bounded', wordWrapColumn: number, callback: (splitLinesCollection: ViewModelLinesFromProjectedModel) => void): void {
+	function withSplitLinesCollection(
+		model: TextModel,
+		wordWrap: 'on' | 'off' | 'wordWrapColumn' | 'bounded',
+		wordWrapColumn: number,
+		callback: (splitLinesCollection: ViewModelLinesFromProjectedModel) => void
+	): void {
 		const configuration = new TestConfiguration({
 			wordWrap: wordWrap,
 			wordWrapColumn: wordWrapColumn,
-			wrappingIndent: 'indent'
+			wrappingIndent: 'indent',
 		});
 		const wrappingInfo = configuration.options.get(EditorOption.wrappingInfo);
 		const fontInfo = configuration.options.get(EditorOption.fontInfo);
-		const wordWrapBreakAfterCharacters = configuration.options.get(EditorOption.wordWrapBreakAfterCharacters);
-		const wordWrapBreakBeforeCharacters = configuration.options.get(EditorOption.wordWrapBreakBeforeCharacters);
+		const wordWrapBreakAfterCharacters = configuration.options.get(
+			EditorOption.wordWrapBreakAfterCharacters
+		);
+		const wordWrapBreakBeforeCharacters = configuration.options.get(
+			EditorOption.wordWrapBreakBeforeCharacters
+		);
 		const wrappingIndent = configuration.options.get(EditorOption.wrappingIndent);
 		const wordBreak = configuration.options.get(EditorOption.wordBreak);
 
-		const lineBreaksComputerFactory = new MonospaceLineBreaksComputerFactory(wordWrapBreakBeforeCharacters, wordWrapBreakAfterCharacters);
+		const lineBreaksComputerFactory = new MonospaceLineBreaksComputerFactory(
+			wordWrapBreakBeforeCharacters,
+			wordWrapBreakAfterCharacters
+		);
 
 		const linesCollection = new ViewModelLinesFromProjectedModel(
 			1,
@@ -978,21 +1070,38 @@ suite('SplitLinesCollection', () => {
 	}
 });
 
-
 function pos(lineNumber: number, column: number): Position {
 	return new Position(lineNumber, column);
 }
 
-function createSplitLine(splitLengths: number[], breakingOffsetsVisibleColumn: number[], wrappedTextIndentWidth: number, isVisible: boolean = true): IModelLineProjection {
-	return createModelLineProjection(createLineBreakData(splitLengths, breakingOffsetsVisibleColumn, wrappedTextIndentWidth), isVisible);
+function createSplitLine(
+	splitLengths: number[],
+	breakingOffsetsVisibleColumn: number[],
+	wrappedTextIndentWidth: number,
+	isVisible: boolean = true
+): IModelLineProjection {
+	return createModelLineProjection(
+		createLineBreakData(splitLengths, breakingOffsetsVisibleColumn, wrappedTextIndentWidth),
+		isVisible
+	);
 }
 
-function createLineBreakData(breakingLengths: number[], breakingOffsetsVisibleColumn: number[], wrappedTextIndentWidth: number): ModelLineProjectionData {
+function createLineBreakData(
+	breakingLengths: number[],
+	breakingOffsetsVisibleColumn: number[],
+	wrappedTextIndentWidth: number
+): ModelLineProjectionData {
 	const sums: number[] = [];
 	for (let i = 0; i < breakingLengths.length; i++) {
 		sums[i] = (i > 0 ? sums[i - 1] : 0) + breakingLengths[i];
 	}
-	return new ModelLineProjectionData(null, null, sums, breakingOffsetsVisibleColumn, wrappedTextIndentWidth);
+	return new ModelLineProjectionData(
+		null,
+		null,
+		sums,
+		breakingOffsetsVisibleColumn,
+		wrappedTextIndentWidth
+	);
 }
 
 function createModel(text: string): ISimpleModel {
@@ -1016,6 +1125,6 @@ function createModel(text: string): ISimpleModel {
 		},
 		getValueInRange: (range: IRange, eol?: EndOfLinePreference) => {
 			return text.substring(range.startColumn - 1, range.endColumn - 1);
-		}
+		},
 	};
 }

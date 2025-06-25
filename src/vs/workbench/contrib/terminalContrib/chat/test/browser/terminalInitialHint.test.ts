@@ -35,7 +35,9 @@ suite('Terminal Initial Hint Addon', () => {
 		disambiguation: [],
 		locations: [ChatAgentLocation.fromRaw('terminal')],
 		modes: [ChatMode.Ask],
-		invoke: async () => { return {}; }
+		invoke: async () => {
+			return {};
+		},
 	};
 	const editorAgent: IChatAgent = {
 		id: 'editor',
@@ -48,14 +50,26 @@ suite('Terminal Initial Hint Addon', () => {
 		locations: [ChatAgentLocation.fromRaw('editor')],
 		modes: [ChatMode.Ask],
 		disambiguation: [],
-		invoke: async () => { return {}; }
+		invoke: async () => {
+			return {};
+		},
 	};
 	setup(async () => {
 		const instantiationService = workbenchInstantiationService({}, store);
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (
+			await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')
+		).Terminal;
 		xterm = store.add(new TerminalCtor());
-		const shellIntegrationAddon = store.add(new ShellIntegrationAddon('', true, undefined, new NullLogService));
-		initialHintAddon = store.add(instantiationService.createInstance(InitialHintAddon, shellIntegrationAddon.capabilities, onDidChangeAgents));
+		const shellIntegrationAddon = store.add(
+			new ShellIntegrationAddon('', true, undefined, new NullLogService())
+		);
+		initialHintAddon = store.add(
+			instantiationService.createInstance(
+				InitialHintAddon,
+				shellIntegrationAddon.capabilities,
+				onDidChangeAgents
+			)
+		);
 		store.add(initialHintAddon.onDidRequestCreateHint(() => eventCount++));
 		const testContainer = document.createElement('div');
 		getActiveDocument().body.append(testContainer);

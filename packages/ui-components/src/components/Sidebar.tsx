@@ -11,12 +11,7 @@ export interface SidebarProps {
  * Sidebar component for CODAI.RO interface
  * Provides collapsible navigation and tool panels with modern styling
  */
-export function Sidebar({
-	isOpen = true,
-	onToggle,
-	children,
-	className = ''
-}: SidebarProps) {
+export function Sidebar({ isOpen = true, onToggle, children, className = '' }: SidebarProps) {
 	return (
 		<aside
 			className={`
@@ -41,13 +36,18 @@ export function Sidebar({
 					onClick={onToggle}
 					aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
 				>
-					<svg 
+					<svg
 						className={`w-5 h-5 transition-transform duration-200 ${isOpen ? 'rotate-0' : 'rotate-180'}`}
-						fill="none" 
-						stroke="currentColor" 
+						fill="none"
+						stroke="currentColor"
 						viewBox="0 0 24 24"
 					>
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M15 19l-7-7 7-7"
+						/>
 					</svg>
 				</button>
 			)}

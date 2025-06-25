@@ -3,17 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IFileService, IFileStatResult, IFileStat } from '../../../../platform/files/common/files.js';
-import { IWorkspaceContextService, WorkbenchState, IWorkspace } from '../../../../platform/workspace/common/workspace.js';
+import {
+	IFileService,
+	IFileStatResult,
+	IFileStat,
+} from '../../../../platform/files/common/files.js';
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+	IWorkspace,
+} from '../../../../platform/workspace/common/workspace.js';
 import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
 import { ITextFileService, ITextFileContent } from '../../../services/textfile/common/textfiles.js';
 import { URI } from '../../../../base/common/uri.js';
 import { Schemas } from '../../../../base/common/network.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IWorkspaceTagsService, Tags } from '../common/workspaceTags.js';
 import { getHashedRemotesFromConfig } from './workspaceTags.js';
 import { splitLines } from '../../../../base/common/strings.js';
-import { MavenArtifactIdRegex, MavenDependenciesRegex, MavenDependencyRegex, GradleDependencyCompactRegex, GradleDependencyLooseRegex, MavenGroupIdRegex, JavaLibrariesToLookFor } from '../common/javaWorkspaceTags.js';
+import {
+	MavenArtifactIdRegex,
+	MavenDependenciesRegex,
+	MavenDependencyRegex,
+	GradleDependencyCompactRegex,
+	GradleDependencyLooseRegex,
+	MavenGroupIdRegex,
+	JavaLibrariesToLookFor,
+} from '../common/javaWorkspaceTags.js';
 import { hashAsync } from '../../../../base/common/hash.js';
 
 const MetaModulesToLookFor = [
@@ -26,7 +45,7 @@ const MetaModulesToLookFor = [
 	'@azure/identity',
 	'@azure/keyvault',
 	'@azure/search',
-	'@azure/storage'
+	'@azure/storage',
 ];
 
 const ModulesToLookFor = [
@@ -235,7 +254,7 @@ const ModulesToLookFor = [
 	'@azure/cognitiveservices-face',
 	'@azure/cognitiveservices-translatortext',
 	'microsoft-cognitiveservices-speech-sdk',
-	'@google/generative-ai'
+	'@google/generative-ai',
 ];
 
 const PyMetaModulesToLookFor = [
@@ -249,7 +268,7 @@ const PyMetaModulesToLookFor = [
 	'azure-mgmt',
 	'azure-ml',
 	'azure-search',
-	'azure-storage'
+	'azure-storage',
 ];
 
 const PyModulesToLookFor = [
@@ -415,7 +434,7 @@ const PyModulesToLookFor = [
 	'azure-cognitiveservices-vision-face',
 	'azure-mgmt-cognitiveservices',
 	'azure-mgmt-search',
-	'google-generativeai'
+	'google-generativeai',
 ];
 
 const GoModulesToLookFor = [
@@ -439,9 +458,8 @@ const GoModulesToLookFor = [
 	'github.com/Azure/azure-sdk-for-go/sdk/ai/azopenai',
 	'github.com/Azure/azure-sdk-for-go/sdk/azidentity',
 	'github.com/Azure/azure-sdk-for-go/sdk/azcore',
-	'github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/'
+	'github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/',
 ];
-
 
 export class WorkspaceTagsService implements IWorkspaceTagsService {
 	declare readonly _serviceBrand: undefined;
@@ -452,7 +470,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
 		@ITextFileService private readonly textFileService: ITextFileService
-	) { }
+	) {}
 
 	async getTags(): Promise<Tags> {
 		if (!this._tags) {
@@ -462,7 +480,10 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 		return this._tags;
 	}
 
-	async getTelemetryWorkspaceId(workspace: IWorkspace, state: WorkbenchState): Promise<string | undefined> {
+	async getTelemetryWorkspaceId(
+		workspace: IWorkspace,
+		state: WorkbenchState
+	): Promise<string | undefined> {
 		function createHash(uri: URI): Promise<string> {
 			return hashAsync(uri.scheme === Schemas.file ? uri.fsPath : uri.toString());
 		}
@@ -484,7 +505,10 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 		return workspaceId;
 	}
 
-	getHashedRemotesFromUri(workspaceUri: URI, stripEndingDotGit: boolean = false): Promise<string[]> {
+	getHashedRemotesFromUri(
+		workspaceUri: URI,
+		stripEndingDotGit: boolean = false
+	): Promise<string[]> {
 		const path = workspaceUri.path;
 		const uri = workspaceUri.with({ path: `${path !== '/' ? path : ''}/.git/config` });
 		return this.fileService.exists(uri).then(exists => {
@@ -1229,9 +1253,10 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 		tags['workspace.id'] = await this.getTelemetryWorkspaceId(workspace, state);
 
 		const { filesToOpenOrCreate, filesToDiff, filesToMerge } = this.environmentService;
-		tags['workbench.filesToOpenOrCreate'] = filesToOpenOrCreate && filesToOpenOrCreate.length || 0;
-		tags['workbench.filesToDiff'] = filesToDiff && filesToDiff.length || 0;
-		tags['workbench.filesToMerge'] = filesToMerge && filesToMerge.length || 0;
+		tags['workbench.filesToOpenOrCreate'] =
+			(filesToOpenOrCreate && filesToOpenOrCreate.length) || 0;
+		tags['workbench.filesToDiff'] = (filesToDiff && filesToDiff.length) || 0;
+		tags['workbench.filesToMerge'] = (filesToMerge && filesToMerge.length) || 0;
 
 		const isEmpty = state === WorkbenchState.EMPTY;
 		tags['workspace.roots'] = isEmpty ? 0 : workspace.folders.length;
@@ -1242,7 +1267,10 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 			return Promise.resolve(tags);
 		}
 
-		const aiGeneratedWorkspaces = URI.joinPath(this.environmentService.workspaceStorageHome, 'aiGeneratedWorkspaces.json');
+		const aiGeneratedWorkspaces = URI.joinPath(
+			this.environmentService.workspaceStorageHome,
+			'aiGeneratedWorkspaces.json'
+		);
 		await this.fileService.exists(aiGeneratedWorkspaces).then(async result => {
 			if (result) {
 				try {
@@ -1257,249 +1285,329 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 			}
 		});
 
-		return this.fileService.resolveAll(folders.map(resource => ({ resource }))).then((files: IFileStatResult[]) => {
-			const names = (<IFileStat[]>[]).concat(...files.map(result => result.success ? (result.stat!.children || []) : [])).map(c => c.name);
-			const nameSet = names.reduce((s, n) => s.add(n.toLowerCase()), new Set());
+		return this.fileService
+			.resolveAll(folders.map(resource => ({ resource })))
+			.then((files: IFileStatResult[]) => {
+				const names = (<IFileStat[]>[])
+					.concat(...files.map(result => (result.success ? result.stat!.children || [] : [])))
+					.map(c => c.name);
+				const nameSet = names.reduce((s, n) => s.add(n.toLowerCase()), new Set());
 
-			tags['workspace.grunt'] = nameSet.has('gruntfile.js');
-			tags['workspace.gulp'] = nameSet.has('gulpfile.js');
-			tags['workspace.jake'] = nameSet.has('jakefile.js');
+				tags['workspace.grunt'] = nameSet.has('gruntfile.js');
+				tags['workspace.gulp'] = nameSet.has('gulpfile.js');
+				tags['workspace.jake'] = nameSet.has('jakefile.js');
 
-			tags['workspace.tsconfig'] = nameSet.has('tsconfig.json');
-			tags['workspace.jsconfig'] = nameSet.has('jsconfig.json');
-			tags['workspace.config.xml'] = nameSet.has('config.xml');
-			tags['workspace.vsc.extension'] = nameSet.has('vsc-extension-quickstart.md');
+				tags['workspace.tsconfig'] = nameSet.has('tsconfig.json');
+				tags['workspace.jsconfig'] = nameSet.has('jsconfig.json');
+				tags['workspace.config.xml'] = nameSet.has('config.xml');
+				tags['workspace.vsc.extension'] = nameSet.has('vsc-extension-quickstart.md');
 
-			tags['workspace.ASP5'] = nameSet.has('project.json') && this.searchArray(names, /^.+\.cs$/i);
-			tags['workspace.sln'] = this.searchArray(names, /^.+\.sln$|^.+\.csproj$/i);
-			tags['workspace.unity'] = nameSet.has('assets') && nameSet.has('library') && nameSet.has('projectsettings');
-			tags['workspace.npm'] = nameSet.has('package.json') || nameSet.has('node_modules');
-			tags['workspace.bower'] = nameSet.has('bower.json') || nameSet.has('bower_components');
+				tags['workspace.ASP5'] =
+					nameSet.has('project.json') && this.searchArray(names, /^.+\.cs$/i);
+				tags['workspace.sln'] = this.searchArray(names, /^.+\.sln$|^.+\.csproj$/i);
+				tags['workspace.unity'] =
+					nameSet.has('assets') && nameSet.has('library') && nameSet.has('projectsettings');
+				tags['workspace.npm'] = nameSet.has('package.json') || nameSet.has('node_modules');
+				tags['workspace.bower'] = nameSet.has('bower.json') || nameSet.has('bower_components');
 
-			tags['workspace.java.pom'] = nameSet.has('pom.xml');
-			tags['workspace.java.gradle'] = nameSet.has('build.gradle') || nameSet.has('settings.gradle') || nameSet.has('build.gradle.kts') || nameSet.has('settings.gradle.kts') || nameSet.has('gradlew') || nameSet.has('gradlew.bat');
+				tags['workspace.java.pom'] = nameSet.has('pom.xml');
+				tags['workspace.java.gradle'] =
+					nameSet.has('build.gradle') ||
+					nameSet.has('settings.gradle') ||
+					nameSet.has('build.gradle.kts') ||
+					nameSet.has('settings.gradle.kts') ||
+					nameSet.has('gradlew') ||
+					nameSet.has('gradlew.bat');
 
-			tags['workspace.yeoman.code.ext'] = nameSet.has('vsc-extension-quickstart.md');
+				tags['workspace.yeoman.code.ext'] = nameSet.has('vsc-extension-quickstart.md');
 
-			tags['workspace.py.requirements'] = nameSet.has('requirements.txt');
-			tags['workspace.py.requirements.star'] = this.searchArray(names, /^(.*)requirements(.*)\.txt$/i);
-			tags['workspace.py.Pipfile'] = nameSet.has('pipfile');
-			tags['workspace.py.conda'] = this.searchArray(names, /^environment(\.yml$|\.yaml$)/i);
-			tags['workspace.py.setup'] = nameSet.has('setup.py');
-			tags['workspace.py.manage'] = nameSet.has('manage.py');
-			tags['workspace.py.setupcfg'] = nameSet.has('setup.cfg');
-			tags['workspace.py.app'] = nameSet.has('app.py');
-			tags['workspace.py.pyproject'] = nameSet.has('pyproject.toml');
+				tags['workspace.py.requirements'] = nameSet.has('requirements.txt');
+				tags['workspace.py.requirements.star'] = this.searchArray(
+					names,
+					/^(.*)requirements(.*)\.txt$/i
+				);
+				tags['workspace.py.Pipfile'] = nameSet.has('pipfile');
+				tags['workspace.py.conda'] = this.searchArray(names, /^environment(\.yml$|\.yaml$)/i);
+				tags['workspace.py.setup'] = nameSet.has('setup.py');
+				tags['workspace.py.manage'] = nameSet.has('manage.py');
+				tags['workspace.py.setupcfg'] = nameSet.has('setup.cfg');
+				tags['workspace.py.app'] = nameSet.has('app.py');
+				tags['workspace.py.pyproject'] = nameSet.has('pyproject.toml');
 
-			tags['workspace.go.mod'] = nameSet.has('go.mod');
+				tags['workspace.go.mod'] = nameSet.has('go.mod');
 
-			const mainActivity = nameSet.has('mainactivity.cs') || nameSet.has('mainactivity.fs');
-			const appDelegate = nameSet.has('appdelegate.cs') || nameSet.has('appdelegate.fs');
-			const androidManifest = nameSet.has('androidmanifest.xml');
+				const mainActivity = nameSet.has('mainactivity.cs') || nameSet.has('mainactivity.fs');
+				const appDelegate = nameSet.has('appdelegate.cs') || nameSet.has('appdelegate.fs');
+				const androidManifest = nameSet.has('androidmanifest.xml');
 
-			const platforms = nameSet.has('platforms');
-			const plugins = nameSet.has('plugins');
-			const www = nameSet.has('www');
-			const properties = nameSet.has('properties');
-			const resources = nameSet.has('resources');
-			const jni = nameSet.has('jni');
+				const platforms = nameSet.has('platforms');
+				const plugins = nameSet.has('plugins');
+				const www = nameSet.has('www');
+				const properties = nameSet.has('properties');
+				const resources = nameSet.has('resources');
+				const jni = nameSet.has('jni');
 
-			if (tags['workspace.config.xml'] &&
-				!tags['workspace.language.cs'] && !tags['workspace.language.vb'] && !tags['workspace.language.aspx']) {
-				if (platforms && plugins && www) {
-					tags['workspace.cordova.high'] = true;
-				} else {
-					tags['workspace.cordova.low'] = true;
-				}
-			}
-
-			if (tags['workspace.config.xml'] &&
-				!tags['workspace.language.cs'] && !tags['workspace.language.vb'] && !tags['workspace.language.aspx']) {
-
-				if (nameSet.has('ionic.config.json')) {
-					tags['workspace.ionic'] = true;
-				}
-			}
-
-			if (mainActivity && properties && resources) {
-				tags['workspace.xamarin.android'] = true;
-			}
-
-			if (appDelegate && resources) {
-				tags['workspace.xamarin.ios'] = true;
-			}
-
-			if (androidManifest && jni) {
-				tags['workspace.android.cpp'] = true;
-			}
-
-			function getFilePromises(filename: string, fileService: IFileService, textFileService: ITextFileService, contentHandler: (content: ITextFileContent) => void): Promise<void>[] {
-				return !nameSet.has(filename) ? [] : (folders as URI[]).map(workspaceUri => {
-					const uri = workspaceUri.with({ path: `${workspaceUri.path !== '/' ? workspaceUri.path : ''}/${filename}` });
-					return fileService.exists(uri).then(exists => {
-						if (!exists) {
-							return undefined;
-						}
-
-						return textFileService.read(uri, { acceptTextOnly: true }).then(contentHandler);
-					}, err => {
-						// Ignore missing file
-					});
-				});
-			}
-
-			function addPythonTags(packageName: string): void {
-				if (PyModulesToLookFor.indexOf(packageName) > -1) {
-					tags['workspace.py.' + packageName] = true;
-				}
-
-				for (const metaModule of PyMetaModulesToLookFor) {
-					if (packageName.startsWith(metaModule)) {
-						tags['workspace.py.' + metaModule] = true;
+				if (
+					tags['workspace.config.xml'] &&
+					!tags['workspace.language.cs'] &&
+					!tags['workspace.language.vb'] &&
+					!tags['workspace.language.aspx']
+				) {
+					if (platforms && plugins && www) {
+						tags['workspace.cordova.high'] = true;
+					} else {
+						tags['workspace.cordova.low'] = true;
 					}
 				}
 
-				if (!tags['workspace.py.any-azure']) {
-					tags['workspace.py.any-azure'] = /azure/i.test(packageName);
-				}
-			}
-
-			const requirementsTxtPromises = getFilePromises('requirements.txt', this.fileService, this.textFileService, content => {
-				const dependencies: string[] = splitLines(content.value);
-				for (const dependency of dependencies) {
-					// Dependencies in requirements.txt can have 3 formats: `foo==3.1, foo>=3.1, foo`
-					const format1 = dependency.split('==');
-					const format2 = dependency.split('>=');
-					const packageName = (format1.length === 2 ? format1[0] : format2[0]).trim();
-					addPythonTags(packageName);
-				}
-			});
-
-			const pipfilePromises = getFilePromises('pipfile', this.fileService, this.textFileService, content => {
-				let dependencies: string[] = splitLines(content.value);
-
-				// We're only interested in the '[packages]' section of the Pipfile
-				dependencies = dependencies.slice(dependencies.indexOf('[packages]') + 1);
-
-				for (const dependency of dependencies) {
-					if (dependency.trim().indexOf('[') > -1) {
-						break;
+				if (
+					tags['workspace.config.xml'] &&
+					!tags['workspace.language.cs'] &&
+					!tags['workspace.language.vb'] &&
+					!tags['workspace.language.aspx']
+				) {
+					if (nameSet.has('ionic.config.json')) {
+						tags['workspace.ionic'] = true;
 					}
-					// All dependencies in Pipfiles follow the format: `<package> = <version, or git repo, or something else>`
-					if (dependency.indexOf('=') === -1) {
-						continue;
-					}
-					const packageName = dependency.split('=')[0].trim();
-					addPythonTags(packageName);
 				}
 
-			});
+				if (mainActivity && properties && resources) {
+					tags['workspace.xamarin.android'] = true;
+				}
 
-			const packageJsonPromises = getFilePromises('package.json', this.fileService, this.textFileService, content => {
-				try {
-					const packageJsonContents = JSON.parse(content.value);
-					const dependencies = Object.keys(packageJsonContents['dependencies'] || {}).concat(Object.keys(packageJsonContents['devDependencies'] || {}));
+				if (appDelegate && resources) {
+					tags['workspace.xamarin.ios'] = true;
+				}
 
-					for (const dependency of dependencies) {
-						if (dependency.startsWith('react-native')) {
-							tags['workspace.reactNative'] = true;
-						} else if ('tns-core-modules' === dependency || '@nativescript/core' === dependency) {
-							tags['workspace.nativescript'] = true;
-						} else if (ModulesToLookFor.indexOf(dependency) > -1) {
-							tags['workspace.npm.' + dependency] = true;
-						} else {
-							for (const metaModule of MetaModulesToLookFor) {
-								if (dependency.startsWith(metaModule)) {
-									tags['workspace.npm.' + metaModule] = true;
-								}
-							}
+				if (androidManifest && jni) {
+					tags['workspace.android.cpp'] = true;
+				}
+
+				function getFilePromises(
+					filename: string,
+					fileService: IFileService,
+					textFileService: ITextFileService,
+					contentHandler: (content: ITextFileContent) => void
+				): Promise<void>[] {
+					return !nameSet.has(filename)
+						? []
+						: (folders as URI[]).map(workspaceUri => {
+								const uri = workspaceUri.with({
+									path: `${workspaceUri.path !== '/' ? workspaceUri.path : ''}/${filename}`,
+								});
+								return fileService.exists(uri).then(
+									exists => {
+										if (!exists) {
+											return undefined;
+										}
+
+										return textFileService.read(uri, { acceptTextOnly: true }).then(contentHandler);
+									},
+									err => {
+										// Ignore missing file
+									}
+								);
+							});
+				}
+
+				function addPythonTags(packageName: string): void {
+					if (PyModulesToLookFor.indexOf(packageName) > -1) {
+						tags['workspace.py.' + packageName] = true;
+					}
+
+					for (const metaModule of PyMetaModulesToLookFor) {
+						if (packageName.startsWith(metaModule)) {
+							tags['workspace.py.' + metaModule] = true;
 						}
 					}
-				}
-				catch (e) {
-					// Ignore errors when resolving file or parsing file contents
-				}
-			});
 
-			const goModPromises = getFilePromises('go.mod', this.fileService, this.textFileService, content => {
-				try {
-					const lines: string[] = splitLines(content.value);
-					let firstRequireBlockFound: boolean = false;
-					for (let i = 0; i < lines.length; i++) {
-						const line: string = lines[i].trim();
-						if (line.startsWith('require (')) {
-							if (!firstRequireBlockFound) {
-								firstRequireBlockFound = true;
-								continue;
-							} else {
+					if (!tags['workspace.py.any-azure']) {
+						tags['workspace.py.any-azure'] = /azure/i.test(packageName);
+					}
+				}
+
+				const requirementsTxtPromises = getFilePromises(
+					'requirements.txt',
+					this.fileService,
+					this.textFileService,
+					content => {
+						const dependencies: string[] = splitLines(content.value);
+						for (const dependency of dependencies) {
+							// Dependencies in requirements.txt can have 3 formats: `foo==3.1, foo>=3.1, foo`
+							const format1 = dependency.split('==');
+							const format2 = dependency.split('>=');
+							const packageName = (format1.length === 2 ? format1[0] : format2[0]).trim();
+							addPythonTags(packageName);
+						}
+					}
+				);
+
+				const pipfilePromises = getFilePromises(
+					'pipfile',
+					this.fileService,
+					this.textFileService,
+					content => {
+						let dependencies: string[] = splitLines(content.value);
+
+						// We're only interested in the '[packages]' section of the Pipfile
+						dependencies = dependencies.slice(dependencies.indexOf('[packages]') + 1);
+
+						for (const dependency of dependencies) {
+							if (dependency.trim().indexOf('[') > -1) {
 								break;
 							}
+							// All dependencies in Pipfiles follow the format: `<package> = <version, or git repo, or something else>`
+							if (dependency.indexOf('=') === -1) {
+								continue;
+							}
+							const packageName = dependency.split('=')[0].trim();
+							addPythonTags(packageName);
 						}
-						if (line.startsWith(')')) {
-							break;
-						}
-						if (firstRequireBlockFound && line !== '') {
-							const packageName: string = line.split(' ')[0].trim();
-							for (const module of GoModulesToLookFor) {
-								if (packageName.startsWith(module)) {
-									tags['workspace.go.mod.' + packageName] = true;
+					}
+				);
+
+				const packageJsonPromises = getFilePromises(
+					'package.json',
+					this.fileService,
+					this.textFileService,
+					content => {
+						try {
+							const packageJsonContents = JSON.parse(content.value);
+							const dependencies = Object.keys(packageJsonContents['dependencies'] || {}).concat(
+								Object.keys(packageJsonContents['devDependencies'] || {})
+							);
+
+							for (const dependency of dependencies) {
+								if (dependency.startsWith('react-native')) {
+									tags['workspace.reactNative'] = true;
+								} else if (
+									'tns-core-modules' === dependency ||
+									'@nativescript/core' === dependency
+								) {
+									tags['workspace.nativescript'] = true;
+								} else if (ModulesToLookFor.indexOf(dependency) > -1) {
+									tags['workspace.npm.' + dependency] = true;
+								} else {
+									for (const metaModule of MetaModulesToLookFor) {
+										if (dependency.startsWith(metaModule)) {
+											tags['workspace.npm.' + metaModule] = true;
+										}
+									}
 								}
 							}
+						} catch (e) {
+							// Ignore errors when resolving file or parsing file contents
 						}
 					}
-				}
-				catch (e) {
-					// Ignore errors when resolving file or parsing file contents
-				}
-			});
+				);
 
-			const pomPromises = getFilePromises('pom.xml', this.fileService, this.textFileService, content => {
-				try {
-					let dependenciesContent;
-					while (dependenciesContent = MavenDependenciesRegex.exec(content.value)) {
-						let dependencyContent;
-						while (dependencyContent = MavenDependencyRegex.exec(dependenciesContent[1])) {
-							const groupIdContent = MavenGroupIdRegex.exec(dependencyContent[1]);
-							const artifactIdContent = MavenArtifactIdRegex.exec(dependencyContent[1]);
-							if (groupIdContent && artifactIdContent) {
-								this.tagJavaDependency(groupIdContent[1], artifactIdContent[1], 'workspace.pom.', tags);
+				const goModPromises = getFilePromises(
+					'go.mod',
+					this.fileService,
+					this.textFileService,
+					content => {
+						try {
+							const lines: string[] = splitLines(content.value);
+							let firstRequireBlockFound: boolean = false;
+							for (let i = 0; i < lines.length; i++) {
+								const line: string = lines[i].trim();
+								if (line.startsWith('require (')) {
+									if (!firstRequireBlockFound) {
+										firstRequireBlockFound = true;
+										continue;
+									} else {
+										break;
+									}
+								}
+								if (line.startsWith(')')) {
+									break;
+								}
+								if (firstRequireBlockFound && line !== '') {
+									const packageName: string = line.split(' ')[0].trim();
+									for (const module of GoModulesToLookFor) {
+										if (packageName.startsWith(module)) {
+											tags['workspace.go.mod.' + packageName] = true;
+										}
+									}
+								}
 							}
+						} catch (e) {
+							// Ignore errors when resolving file or parsing file contents
 						}
 					}
-				}
-				catch (e) {
-					// Ignore errors when resolving maven dependencies
-				}
-			});
+				);
 
-			const gradlePromises = getFilePromises('build.gradle', this.fileService, this.textFileService, content => {
-				try {
-					this.processGradleDependencies(content.value, GradleDependencyLooseRegex, tags);
-					this.processGradleDependencies(content.value, GradleDependencyCompactRegex, tags);
-				}
-				catch (e) {
-					// Ignore errors when resolving gradle dependencies
-				}
-			});
-
-			const androidPromises = folders.map(workspaceUri => {
-				const manifest = URI.joinPath(workspaceUri, '/app/src/main/AndroidManifest.xml');
-				return this.fileService.exists(manifest).then(result => {
-					if (result) {
-						tags['workspace.java.android'] = true;
+				const pomPromises = getFilePromises(
+					'pom.xml',
+					this.fileService,
+					this.textFileService,
+					content => {
+						try {
+							let dependenciesContent;
+							while ((dependenciesContent = MavenDependenciesRegex.exec(content.value))) {
+								let dependencyContent;
+								while ((dependencyContent = MavenDependencyRegex.exec(dependenciesContent[1]))) {
+									const groupIdContent = MavenGroupIdRegex.exec(dependencyContent[1]);
+									const artifactIdContent = MavenArtifactIdRegex.exec(dependencyContent[1]);
+									if (groupIdContent && artifactIdContent) {
+										this.tagJavaDependency(
+											groupIdContent[1],
+											artifactIdContent[1],
+											'workspace.pom.',
+											tags
+										);
+									}
+								}
+							}
+						} catch (e) {
+							// Ignore errors when resolving maven dependencies
+						}
 					}
-				}, err => {
-					// Ignore errors when resolving android
-				});
-			});
+				);
 
-			return Promise.all([...packageJsonPromises, ...requirementsTxtPromises, ...pipfilePromises, ...pomPromises, ...gradlePromises, ...androidPromises, ...goModPromises]).then(() => tags);
-		});
+				const gradlePromises = getFilePromises(
+					'build.gradle',
+					this.fileService,
+					this.textFileService,
+					content => {
+						try {
+							this.processGradleDependencies(content.value, GradleDependencyLooseRegex, tags);
+							this.processGradleDependencies(content.value, GradleDependencyCompactRegex, tags);
+						} catch (e) {
+							// Ignore errors when resolving gradle dependencies
+						}
+					}
+				);
+
+				const androidPromises = folders.map(workspaceUri => {
+					const manifest = URI.joinPath(workspaceUri, '/app/src/main/AndroidManifest.xml');
+					return this.fileService.exists(manifest).then(
+						result => {
+							if (result) {
+								tags['workspace.java.android'] = true;
+							}
+						},
+						err => {
+							// Ignore errors when resolving android
+						}
+					);
+				});
+
+				return Promise.all([
+					...packageJsonPromises,
+					...requirementsTxtPromises,
+					...pipfilePromises,
+					...pomPromises,
+					...gradlePromises,
+					...androidPromises,
+					...goModPromises,
+				]).then(() => tags);
+			});
 	}
 
 	private processGradleDependencies(content: string, regex: RegExp, tags: Tags): void {
 		let dependencyContent;
-		while (dependencyContent = regex.exec(content)) {
+		while ((dependencyContent = regex.exec(content))) {
 			const groupId = dependencyContent[1];
 			const artifactId = dependencyContent[2];
 			if (groupId && artifactId) {

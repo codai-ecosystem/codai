@@ -36,7 +36,7 @@ class OpenAILLMService implements LLMService {
 		const response = await fetch(`${this.baseUrl}/chat/completions`, {
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${this.apiKey}`,
+				Authorization: `Bearer ${this.apiKey}`,
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
@@ -57,11 +57,15 @@ class OpenAILLMService implements LLMService {
 		return this.generateCompletion(prompt);
 	}
 
-	async generateCompletion(prompt: string, model = 'gpt-3.5-turbo', options: any = {}): Promise<string> {
+	async generateCompletion(
+		prompt: string,
+		model = 'gpt-3.5-turbo',
+		options: any = {}
+	): Promise<string> {
 		const response = await fetch(`${this.baseUrl}/chat/completions`, {
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${this.apiKey}`,
+				Authorization: `Bearer ${this.apiKey}`,
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
@@ -79,11 +83,15 @@ class OpenAILLMService implements LLMService {
 		return data.choices[0]?.message?.content || '';
 	}
 
-	async *generateStreamingCompletion(prompt: string, model = 'gpt-3.5-turbo', options: any = {}): AsyncIterable<string> {
+	async *generateStreamingCompletion(
+		prompt: string,
+		model = 'gpt-3.5-turbo',
+		options: any = {}
+	): AsyncIterable<string> {
 		const response = await fetch(`${this.baseUrl}/chat/completions`, {
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${this.apiKey}`,
+				Authorization: `Bearer ${this.apiKey}`,
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
@@ -134,10 +142,10 @@ class OpenAILLMService implements LLMService {
 	getUsageCost(inputTokens: number, outputTokens: number, model = 'gpt-3.5-turbo'): number {
 		// Pricing in cents per 1K tokens (as of 2024)
 		const pricing: Record<string, { input: number; output: number }> = {
-			'gpt-3.5-turbo': { input: 0.15, output: 0.20 },
+			'gpt-3.5-turbo': { input: 0.15, output: 0.2 },
 			'gpt-4': { input: 3.0, output: 6.0 },
 			'gpt-4-turbo': { input: 1.0, output: 3.0 },
-			'gpt-4o': { input: 0.50, output: 1.50 },
+			'gpt-4o': { input: 0.5, output: 1.5 },
 			'gpt-4o-mini': { input: 0.015, output: 0.06 },
 		};
 
@@ -199,7 +207,11 @@ class AzureOpenAILLMService implements LLMService {
 		return this.generateCompletion(prompt);
 	}
 
-	async generateCompletion(prompt: string, model = 'gpt-35-turbo', options: any = {}): Promise<string> {
+	async generateCompletion(
+		prompt: string,
+		model = 'gpt-35-turbo',
+		options: any = {}
+	): Promise<string> {
 		const deploymentName = model;
 		const url = `${this.endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${this.apiVersion}`;
 
@@ -223,7 +235,11 @@ class AzureOpenAILLMService implements LLMService {
 		return data.choices[0]?.message?.content || '';
 	}
 
-	async *generateStreamingCompletion(prompt: string, model = 'gpt-35-turbo', options: any = {}): AsyncIterable<string> {
+	async *generateStreamingCompletion(
+		prompt: string,
+		model = 'gpt-35-turbo',
+		options: any = {}
+	): AsyncIterable<string> {
 		const deploymentName = model;
 		const url = `${this.endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${this.apiVersion}`;
 
@@ -280,10 +296,10 @@ class AzureOpenAILLMService implements LLMService {
 	getUsageCost(inputTokens: number, outputTokens: number, model = 'gpt-35-turbo'): number {
 		// Azure OpenAI pricing in cents per 1K tokens (as of 2024)
 		const pricing: Record<string, { input: number; output: number }> = {
-			'gpt-35-turbo': { input: 0.15, output: 0.20 },
+			'gpt-35-turbo': { input: 0.15, output: 0.2 },
 			'gpt-4': { input: 3.0, output: 6.0 },
 			'gpt-4-turbo': { input: 1.0, output: 3.0 },
-			'gpt-4o': { input: 0.50, output: 1.50 },
+			'gpt-4o': { input: 0.5, output: 1.5 },
 		};
 
 		const modelPricing = pricing[model] || pricing['gpt-35-turbo'];
@@ -321,7 +337,7 @@ class AnthropicLLMService implements LLMService {
 		const response = await fetch(`${this.baseUrl}/v1/messages`, {
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${this.apiKey}`,
+				Authorization: `Bearer ${this.apiKey}`,
 				'Content-Type': 'application/json',
 				'anthropic-version': '2023-06-01',
 			},
@@ -345,11 +361,15 @@ class AnthropicLLMService implements LLMService {
 		return this.generateCompletion(prompt);
 	}
 
-	async generateCompletion(prompt: string, model = 'claude-3-sonnet-20240229', options: any = {}): Promise<string> {
+	async generateCompletion(
+		prompt: string,
+		model = 'claude-3-sonnet-20240229',
+		options: any = {}
+	): Promise<string> {
 		const response = await fetch(`${this.baseUrl}/v1/messages`, {
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${this.apiKey}`,
+				Authorization: `Bearer ${this.apiKey}`,
 				'Content-Type': 'application/json',
 				'anthropic-version': '2023-06-01',
 			},
@@ -369,11 +389,15 @@ class AnthropicLLMService implements LLMService {
 		return data.content[0]?.text || '';
 	}
 
-	async *generateStreamingCompletion(prompt: string, model = 'claude-3-sonnet-20240229', options: any = {}): AsyncIterable<string> {
+	async *generateStreamingCompletion(
+		prompt: string,
+		model = 'claude-3-sonnet-20240229',
+		options: any = {}
+	): AsyncIterable<string> {
 		const response = await fetch(`${this.baseUrl}/v1/messages`, {
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${this.apiKey}`,
+				Authorization: `Bearer ${this.apiKey}`,
 				'Content-Type': 'application/json',
 				'anthropic-version': '2023-06-01',
 			},
@@ -425,7 +449,11 @@ class AnthropicLLMService implements LLMService {
 		}
 	}
 
-	getUsageCost(inputTokens: number, outputTokens: number, model = 'claude-3-sonnet-20240229'): number {
+	getUsageCost(
+		inputTokens: number,
+		outputTokens: number,
+		model = 'claude-3-sonnet-20240229'
+	): number {
 		// Anthropic pricing in cents per 1K tokens (as of 2024)
 		const pricing: Record<string, { input: number; output: number }> = {
 			'claude-3-haiku-20240307': { input: 0.25, output: 1.25 },

@@ -11,7 +11,6 @@ const perf = require('@vscode/vscode-perf');
 const VSCODE_FOLDER = path.join(__dirname, '..');
 
 async function main() {
-
 	const args = process.argv;
 	/** @type {string | undefined} */
 	let build = undefined;
@@ -24,7 +23,9 @@ async function main() {
 			let runtimeArgIndex = args.indexOf('--runtime');
 			runtimeArgIndex = runtimeArgIndex === -1 ? args.indexOf('-r') : runtimeArgIndex;
 			if (runtimeArgIndex !== -1 && args[runtimeArgIndex + 1] !== 'desktop') {
-				console.error('Please provide the --build argument. It is an executable file for desktop or a URL for web');
+				console.error(
+					'Please provide the --build argument. It is an executable file for desktop or a URL for web'
+				);
 				process.exit(1);
 			}
 			build = getLocalCLIPath();
@@ -85,7 +86,9 @@ function getExePath(buildPath) {
  * @returns {string}
  */
 function getLocalCLIPath() {
-	return process.platform === 'win32' ? path.join(VSCODE_FOLDER, 'scripts', 'code.bat') : path.join(VSCODE_FOLDER, 'scripts', 'code.sh');
+	return process.platform === 'win32'
+		? path.join(VSCODE_FOLDER, 'scripts', 'code.bat')
+		: path.join(VSCODE_FOLDER, 'scripts', 'code.sh');
 }
 
 main();

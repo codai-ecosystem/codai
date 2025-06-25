@@ -11,7 +11,8 @@ import { IAction } from '../../../base/common/actions.js';
 import { IQuickPickItem } from '../../quickinput/common/quickInput.js';
 import { IDisposable, Disposable } from '../../../base/common/lifecycle.js';
 
-export const IAccessibleViewService = createDecorator<IAccessibleViewService>('accessibleViewService');
+export const IAccessibleViewService =
+	createDecorator<IAccessibleViewService>('accessibleViewService');
 
 export const enum AccessibleViewProviderId {
 	Terminal = 'terminal',
@@ -37,17 +38,17 @@ export const enum AccessibleViewProviderId {
 	ReplHelp = 'replHelp',
 	RunAndDebug = 'runAndDebug',
 	Walkthrough = 'walkthrough',
-	SourceControl = 'scm'
+	SourceControl = 'scm',
 }
 
 export const enum AccessibleViewType {
 	Help = 'help',
-	View = 'view'
+	View = 'view',
 }
 
 export const enum NavigationType {
 	Previous = 'previous',
-	Next = 'next'
+	Next = 'next',
 }
 
 export interface IAccessibleViewOptions {
@@ -84,7 +85,6 @@ export interface IAccessibleViewOptions {
 	configuredKeybindingItems?: IQuickPickItem[];
 }
 
-
 export interface IAccessibleViewContentProvider extends IBasicContentProvider, IDisposable {
 	id: AccessibleViewProviderId;
 	verbositySettingKey: string;
@@ -102,7 +102,6 @@ export interface IAccessibleViewContentProvider extends IBasicContentProvider, I
 	 */
 	onDidRequestClearLastProvider?: Event<AccessibleViewProviderId>;
 }
-
 
 export interface IAccessibleViewSymbol extends IPickerQuickAccessItem {
 	markdownToParse?: string;
@@ -140,7 +139,6 @@ export interface IAccessibleViewService {
 	openHelpLink(): void;
 }
 
-
 export interface ICodeBlockActionContext {
 	code: string;
 	languageId?: string;
@@ -150,8 +148,10 @@ export interface ICodeBlockActionContext {
 
 export type AccesibleViewContentProvider = AccessibleContentProvider | ExtensionContentProvider;
 
-export class AccessibleContentProvider extends Disposable implements IAccessibleViewContentProvider {
-
+export class AccessibleContentProvider
+	extends Disposable
+	implements IAccessibleViewContentProvider
+{
 	constructor(
 		public id: AccessibleViewProviderId,
 		public options: IAccessibleViewOptions,
@@ -165,18 +165,19 @@ export class AccessibleContentProvider extends Disposable implements IAccessible
 		public onDidChangeContent?: Event<void>,
 		public onKeyDown?: (e: IKeyboardEvent) => void,
 		public getSymbols?: () => IAccessibleViewSymbol[],
-		public onDidRequestClearLastProvider?: Event<AccessibleViewProviderId>,
+		public onDidRequestClearLastProvider?: Event<AccessibleViewProviderId>
 	) {
 		super();
 	}
 }
 
 export function isIAccessibleViewContentProvider(obj: any): obj is IAccessibleViewContentProvider {
-	return obj && obj.id && obj.options && obj.provideContent && obj.onClose && obj.verbositySettingKey;
+	return (
+		obj && obj.id && obj.options && obj.provideContent && obj.onClose && obj.verbositySettingKey
+	);
 }
 
 export class ExtensionContentProvider extends Disposable implements IBasicContentProvider {
-
 	constructor(
 		public readonly id: string,
 		public options: IAccessibleViewOptions,
@@ -186,7 +187,7 @@ export class ExtensionContentProvider extends Disposable implements IBasicConten
 		public provideNextContent?: () => string | undefined,
 		public providePreviousContent?: () => string | undefined,
 		public actions?: IAction[],
-		public onDidChangeContent?: Event<void>,
+		public onDidChangeContent?: Event<void>
 	) {
 		super();
 	}

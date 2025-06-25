@@ -9,8 +9,17 @@ import { Disposable, DisposableStore } from '../../../../../base/common/lifecycl
 import { CoreEditingCommands, CoreNavigationCommands } from '../../../../browser/coreCommands.js';
 import { Position } from '../../../../common/core/position.js';
 import { ITextModel } from '../../../../common/model.js';
-import { InlineCompletion, InlineCompletionContext, InlineCompletions, InlineCompletionsProvider } from '../../../../common/languages.js';
-import { ITestCodeEditor, TestCodeEditorInstantiationOptions, withAsyncTestCodeEditor } from '../../../../test/browser/testCodeEditor.js';
+import {
+	InlineCompletion,
+	InlineCompletionContext,
+	InlineCompletions,
+	InlineCompletionsProvider,
+} from '../../../../common/languages.js';
+import {
+	ITestCodeEditor,
+	TestCodeEditorInstantiationOptions,
+	withAsyncTestCodeEditor,
+} from '../../../../test/browser/testCodeEditor.js';
 import { InlineCompletionsModel } from '../../browser/model/inlineCompletionsModel.js';
 import { autorun, derived } from '../../../../../base/common/observable.js';
 import { runWithFakedTimers } from '../../../../../base/test/common/timeTravelScheduler.js';
@@ -50,13 +59,20 @@ export class MockInlineCompletionsProvider implements InlineCompletionsProvider 
 
 	public assertNotCalledTwiceWithin50ms() {
 		if (this.calledTwiceIn50Ms) {
-			throw new Error('provideInlineCompletions has been called at least twice within 50ms. This should not happen.');
+			throw new Error(
+				'provideInlineCompletions has been called at least twice within 50ms. This should not happen.'
+			);
 		}
 	}
 
 	private lastTimeMs: number | undefined = undefined;
 
-	async provideInlineCompletions(model: ITextModel, position: Position, context: InlineCompletionContext, token: CancellationToken) {
+	async provideInlineCompletions(
+		model: ITextModel,
+		position: Position,
+		context: InlineCompletionContext,
+		token: CancellationToken
+	) {
 		const currentTimeMs = new Date().getTime();
 		if (this.lastTimeMs && currentTimeMs - this.lastTimeMs < 50) {
 			this.calledTwiceIn50Ms = true;
@@ -66,7 +82,7 @@ export class MockInlineCompletionsProvider implements InlineCompletionsProvider 
 		this.callHistory.push({
 			position: position.toString(),
 			triggerKind: context.triggerKind,
-			text: model.getValue()
+			text: model.getValue(),
 		});
 		const result = new Array<InlineCompletion>();
 		for (const v of this.returnValue) {
@@ -83,8 +99,8 @@ export class MockInlineCompletionsProvider implements InlineCompletionsProvider 
 
 		return { items: result };
 	}
-	freeInlineCompletions() { }
-	handleItemDidShow() { }
+	freeInlineCompletions() {}
+	handleItemDidShow() {}
 }
 
 export class MockSearchReplaceCompletionsProvider implements InlineCompletionsProvider {
@@ -94,30 +110,39 @@ export class MockSearchReplaceCompletionsProvider implements InlineCompletionsPr
 		this._map.set(search, replace);
 	}
 
-	async provideInlineCompletions(model: ITextModel, position: Position, context: InlineCompletionContext, token: CancellationToken): Promise<InlineCompletions> {
+	async provideInlineCompletions(
+		model: ITextModel,
+		position: Position,
+		context: InlineCompletionContext,
+		token: CancellationToken
+	): Promise<InlineCompletions> {
 		const text = model.getValue();
 		for (const [search, replace] of this._map) {
 			const idx = text.indexOf(search);
 			// replace idx...idx+text.length with replace
 			if (idx !== -1) {
-				const range = Range.fromPositions(model.getPositionAt(idx), model.getPositionAt(idx + search.length));
+				const range = Range.fromPositions(
+					model.getPositionAt(idx),
+					model.getPositionAt(idx + search.length)
+				);
 				return {
-					items: [
-						{ range, insertText: replace, isInlineEdit: true }
-					]
+					items: [{ range, insertText: replace, isInlineEdit: true }],
 				};
 			}
 		}
 		return { items: [] };
 	}
-	freeInlineCompletions() { }
-	handleItemDidShow() { }
+	freeInlineCompletions() {}
+	handleItemDidShow() {}
 }
 
 export class InlineEditContext extends Disposable {
 	public readonly prettyViewStates = new Array<string | undefined>();
 
-	constructor(model: InlineCompletionsModel, private readonly editor: ITestCodeEditor) {
+	constructor(
+		model: InlineCompletionsModel,
+		private readonly editor: ITestCodeEditor
+	) {
 		super();
 
 		const edit = derived(reader => {
@@ -125,19 +150,21 @@ export class InlineEditContext extends Disposable {
 			return state ? new TextEdit(state.edits) : undefined;
 		});
 
-		this._register(autorun(reader => {
-			/** @description update */
-			const e = edit.read(reader);
-			let view: string | undefined;
+		this._register(
+			autorun(reader => {
+				/** @description update */
+				const e = edit.read(reader);
+				let view: string | undefined;
 
-			if (e) {
-				view = e.toString(this.editor.getValue());
-			} else {
-				view = undefined;
-			}
+				if (e) {
+					view = e.toString(this.editor.getValue());
+				} else {
+					view = undefined;
+				}
 
-			this.prettyViewStates.push(view);
-		}));
+				this.prettyViewStates.push(view);
+			})
+		);
 	}
 
 	public getAndClearViewStates(): (string | undefined)[] {
@@ -154,24 +181,29 @@ export class GhostTextContext extends Disposable {
 		return this._currentPrettyViewState;
 	}
 
-	constructor(model: InlineCompletionsModel, private readonly editor: ITestCodeEditor) {
+	constructor(
+		model: InlineCompletionsModel,
+		private readonly editor: ITestCodeEditor
+	) {
 		super();
 
-		this._register(autorun(reader => {
-			/** @description update */
-			const ghostText = model.primaryGhostText.read(reader);
-			let view: string | undefined;
-			if (ghostText) {
-				view = ghostText.render(this.editor.getValue(), true);
-			} else {
-				view = this.editor.getValue();
-			}
+		this._register(
+			autorun(reader => {
+				/** @description update */
+				const ghostText = model.primaryGhostText.read(reader);
+				let view: string | undefined;
+				if (ghostText) {
+					view = ghostText.render(this.editor.getValue(), true);
+				} else {
+					view = this.editor.getValue();
+				}
 
-			if (this._currentPrettyViewState !== view) {
-				this.prettyViewStates.push(view);
-			}
-			this._currentPrettyViewState = view;
-		}));
+				if (this._currentPrettyViewState !== view) {
+					this.prettyViewStates.push(view);
+				}
+				this._currentPrettyViewState = view;
+			})
+		);
 	}
 
 	public getAndClearViewStates(): (string | undefined)[] {
@@ -219,52 +251,77 @@ export interface IWithAsyncTestCodeEditorAndInlineCompletionsModel {
 
 export async function withAsyncTestCodeEditorAndInlineCompletionsModel<T>(
 	text: string,
-	options: TestCodeEditorInstantiationOptions & { provider?: InlineCompletionsProvider; fakeClock?: boolean },
-	callback: (args: IWithAsyncTestCodeEditorAndInlineCompletionsModel) => Promise<T>): Promise<T> {
-	return await runWithFakedTimers({
-		useFakeTimers: options.fakeClock,
-	}, async () => {
-		const disposableStore = new DisposableStore();
+	options: TestCodeEditorInstantiationOptions & {
+		provider?: InlineCompletionsProvider;
+		fakeClock?: boolean;
+	},
+	callback: (args: IWithAsyncTestCodeEditorAndInlineCompletionsModel) => Promise<T>
+): Promise<T> {
+	return await runWithFakedTimers(
+		{
+			useFakeTimers: options.fakeClock,
+		},
+		async () => {
+			const disposableStore = new DisposableStore();
 
-		try {
-			if (options.provider) {
-				const languageFeaturesService = new LanguageFeaturesService();
-				if (!options.serviceCollection) {
-					options.serviceCollection = new ServiceCollection();
+			try {
+				if (options.provider) {
+					const languageFeaturesService = new LanguageFeaturesService();
+					if (!options.serviceCollection) {
+						options.serviceCollection = new ServiceCollection();
+					}
+					options.serviceCollection.set(ILanguageFeaturesService, languageFeaturesService);
+					options.serviceCollection.set(IAccessibilitySignalService, {
+						playSignal: async () => {},
+						isSoundEnabled(signal: unknown) {
+							return false;
+						},
+					} as any);
+					const d = languageFeaturesService.inlineCompletionsProvider.register(
+						{ pattern: '**' },
+						options.provider
+					);
+					disposableStore.add(d);
 				}
-				options.serviceCollection.set(ILanguageFeaturesService, languageFeaturesService);
-				options.serviceCollection.set(IAccessibilitySignalService, {
-					playSignal: async () => { },
-					isSoundEnabled(signal: unknown) { return false; },
-				} as any);
-				const d = languageFeaturesService.inlineCompletionsProvider.register({ pattern: '**' }, options.provider);
-				disposableStore.add(d);
-			}
 
-			let result: T;
-			await withAsyncTestCodeEditor(text, options, async (editor, editorViewModel, instantiationService) => {
-				const controller = instantiationService.createInstance(InlineCompletionsController, editor);
-				controller.testOnlyDisableUi();
-				const model = controller.model.get()!;
-				const context = new GhostTextContext(model, editor);
-				try {
-					result = await callback({ editor, editorViewModel, model, context, store: disposableStore });
-				} finally {
-					context.dispose();
-					model.dispose();
-					controller.dispose();
+				let result: T;
+				await withAsyncTestCodeEditor(
+					text,
+					options,
+					async (editor, editorViewModel, instantiationService) => {
+						const controller = instantiationService.createInstance(
+							InlineCompletionsController,
+							editor
+						);
+						controller.testOnlyDisableUi();
+						const model = controller.model.get()!;
+						const context = new GhostTextContext(model, editor);
+						try {
+							result = await callback({
+								editor,
+								editorViewModel,
+								model,
+								context,
+								store: disposableStore,
+							});
+						} finally {
+							context.dispose();
+							model.dispose();
+							controller.dispose();
+						}
+					}
+				);
+
+				if (options.provider instanceof MockInlineCompletionsProvider) {
+					options.provider.assertNotCalledTwiceWithin50ms();
 				}
-			});
 
-			if (options.provider instanceof MockInlineCompletionsProvider) {
-				options.provider.assertNotCalledTwiceWithin50ms();
+				return result!;
+			} finally {
+				disposableStore.dispose();
 			}
-
-			return result!;
-		} finally {
-			disposableStore.dispose();
 		}
-	});
+	);
 }
 
 export class AnnotatedString {
@@ -285,7 +342,10 @@ export class AnnotatedString {
 	}
 }
 
-function findMarkers(text: string, markers: string[]): {
+function findMarkers(
+	text: string,
+	markers: string[]
+): {
 	results: { mark: string; idx: number }[];
 	textWithoutMarkers: string;
 } {
@@ -295,7 +355,7 @@ function findMarkers(text: string, markers: string[]): {
 	markers.sort((a, b) => b.length - a.length);
 
 	let pos = 0;
-	for (let i = 0; i < text.length;) {
+	for (let i = 0; i < text.length; ) {
 		let foundMarker = false;
 		for (const marker of markers) {
 			if (text.startsWith(marker, i)) {

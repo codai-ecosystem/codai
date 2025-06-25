@@ -25,8 +25,8 @@ export class CommentFormActions implements IDisposable {
 		private container: HTMLElement,
 		private actionHandler: (action: IAction) => void,
 		private readonly maxActions?: number,
-		private readonly supportDropdowns?: boolean,
-	) { }
+		private readonly supportDropdowns?: boolean
+	) {}
 
 	setActions(menu: IMenu, hasOnlySecondaryActions: boolean = false) {
 		this._toDispose.clear();
@@ -41,27 +41,39 @@ export class CommentFormActions implements IDisposable {
 
 			this._actions = actions;
 			for (const current of actions) {
-				const dropDownActions = this.supportDropdowns && current instanceof SubmenuItemAction ? current.actions : [];
+				const dropDownActions =
+					this.supportDropdowns && current instanceof SubmenuItemAction ? current.actions : [];
 				const action = dropDownActions.length ? dropDownActions[0] : current;
-				let keybinding = this.keybindingService.lookupKeybinding(action.id, this.contextKeyService)?.getLabel();
+				let keybinding = this.keybindingService
+					.lookupKeybinding(action.id, this.contextKeyService)
+					?.getLabel();
 				if (!keybinding && isPrimary) {
-					keybinding = this.keybindingService.lookupKeybinding(CommentCommandId.Submit, this.contextKeyService)?.getLabel();
+					keybinding = this.keybindingService
+						.lookupKeybinding(CommentCommandId.Submit, this.contextKeyService)
+						?.getLabel();
 				}
 				const title = keybinding ? `${action.label} (${keybinding})` : action.label;
 				const actionHandler = this.actionHandler;
-				const button = dropDownActions.length ? new ButtonWithDropdown(this.container, {
-					contextMenuProvider: this.contextMenuService,
-					actions: dropDownActions,
-					actionRunner: this._toDispose.add(new class extends ActionRunner {
-						protected override async runAction(action: IAction, context?: unknown): Promise<void> {
-							return actionHandler(action);
-						}
-					}),
-					secondary: !isPrimary,
-					title,
-					addPrimaryActionToDropdown: false,
-					...defaultButtonStyles
-				}) : new Button(this.container, { secondary: !isPrimary, title, ...defaultButtonStyles });
+				const button = dropDownActions.length
+					? new ButtonWithDropdown(this.container, {
+							contextMenuProvider: this.contextMenuService,
+							actions: dropDownActions,
+							actionRunner: this._toDispose.add(
+								new (class extends ActionRunner {
+									protected override async runAction(
+										action: IAction,
+										context?: unknown
+									): Promise<void> {
+										return actionHandler(action);
+									}
+								})()
+							),
+							secondary: !isPrimary,
+							title,
+							addPrimaryActionToDropdown: false,
+							...defaultButtonStyles,
+						})
+					: new Button(this.container, { secondary: !isPrimary, title, ...defaultButtonStyles });
 
 				isPrimary = false;
 				this._buttonElements.push(button.element);
@@ -71,8 +83,10 @@ export class CommentFormActions implements IDisposable {
 
 				button.enabled = action.enabled;
 				button.label = action.label;
-				if ((this.maxActions !== undefined) && (this._buttonElements.length >= this.maxActions)) {
-					console.warn(`An extension has contributed more than the allowable number of actions to a comments menu.`);
+				if (this.maxActions !== undefined && this._buttonElements.length >= this.maxActions) {
+					console.warn(
+						`An extension has contributed more than the allowable number of actions to a comments menu.`
+					);
 					return;
 				}
 			}

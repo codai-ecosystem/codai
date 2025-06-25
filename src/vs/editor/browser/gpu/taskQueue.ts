@@ -101,7 +101,9 @@ abstract class TaskQueue extends Disposable implements ITaskQueue {
 				// Warn when the time exceeding the deadline is over 20ms, if this happens in practice the
 				// task should be split into sub-tasks to ensure the UI remains responsive.
 				if (lastDeadlineRemaining - taskDuration < -20) {
-					console.warn(`task queue exceeded allotted deadline by ${Math.abs(Math.round(lastDeadlineRemaining - taskDuration))}ms`);
+					console.warn(
+						`task queue exceeded allotted deadline by ${Math.abs(Math.round(lastDeadlineRemaining - taskDuration))}ms`
+					);
 				}
 				this._start();
 				return;
@@ -129,7 +131,7 @@ export class PriorityTaskQueue extends TaskQueue {
 	private _createDeadline(duration: number): ITaskDeadline {
 		const end = Date.now() + duration;
 		return {
-			timeRemaining: () => Math.max(0, end - Date.now())
+			timeRemaining: () => Math.max(0, end - Date.now()),
 		};
 	}
 }
@@ -152,7 +154,8 @@ class IdleTaskQueueInternal extends TaskQueue {
  *
  * This reverts to a {@link PriorityTaskQueue} if the environment does not support idle callbacks.
  */
-export const IdleTaskQueue = ('requestIdleCallback' in getActiveWindow()) ? IdleTaskQueueInternal : PriorityTaskQueue;
+export const IdleTaskQueue =
+	'requestIdleCallback' in getActiveWindow() ? IdleTaskQueueInternal : PriorityTaskQueue;
 
 /**
  * An object that tracks a single debounced task that will run on the next idle frame. When called

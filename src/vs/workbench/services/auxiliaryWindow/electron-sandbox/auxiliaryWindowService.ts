@@ -4,9 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from '../../../../nls.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IWorkbenchLayoutService } from '../../layout/browser/layoutService.js';
-import { AuxiliaryWindow, AuxiliaryWindowMode, BrowserAuxiliaryWindowService, IAuxiliaryWindowOpenOptions, IAuxiliaryWindowService } from '../browser/auxiliaryWindowService.js';
+import {
+	AuxiliaryWindow,
+	AuxiliaryWindowMode,
+	BrowserAuxiliaryWindowService,
+	IAuxiliaryWindowOpenOptions,
+	IAuxiliaryWindowService,
+} from '../browser/auxiliaryWindowService.js';
 import { ISandboxGlobals } from '../../../../base/parts/sandbox/electron-sandbox/globals.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
@@ -30,7 +39,6 @@ type NativeCodeWindow = CodeWindow & {
 };
 
 export class NativeAuxiliaryWindow extends AuxiliaryWindow {
-
 	private skipUnloadConfirmation = false;
 
 	private maximized = false;
@@ -47,7 +55,14 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
 		@IDialogService private readonly dialogService: IDialogService
 	) {
-		super(window, container, stylesHaveLoaded, configurationService, hostService, environmentService);
+		super(
+			window,
+			container,
+			stylesHaveLoaded,
+			configurationService,
+			hostService,
+			environmentService
+		);
 
 		if (!isMacintosh) {
 			// For now, limit this to platforms that have clear maximised
@@ -61,45 +76,66 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 
 	private handleMaximizedState(): void {
 		(async () => {
-			this.maximized = await this.nativeHostService.isMaximized({ targetWindowId: this.window.vscodeWindowId });
+			this.maximized = await this.nativeHostService.isMaximized({
+				targetWindowId: this.window.vscodeWindowId,
+			});
 		})();
 
-		this._register(this.nativeHostService.onDidMaximizeWindow(windowId => {
-			if (windowId === this.window.vscodeWindowId) {
-				this.maximized = true;
-			}
-		}));
+		this._register(
+			this.nativeHostService.onDidMaximizeWindow(windowId => {
+				if (windowId === this.window.vscodeWindowId) {
+					this.maximized = true;
+				}
+			})
+		);
 
-		this._register(this.nativeHostService.onDidUnmaximizeWindow(windowId => {
-			if (windowId === this.window.vscodeWindowId) {
-				this.maximized = false;
-			}
-		}));
+		this._register(
+			this.nativeHostService.onDidUnmaximizeWindow(windowId => {
+				if (windowId === this.window.vscodeWindowId) {
+					this.maximized = false;
+				}
+			})
+		);
 	}
 
 	private handleAlwaysOnTopState(): void {
 		(async () => {
-			this.alwaysOnTop = await this.nativeHostService.isWindowAlwaysOnTop({ targetWindowId: this.window.vscodeWindowId });
+			this.alwaysOnTop = await this.nativeHostService.isWindowAlwaysOnTop({
+				targetWindowId: this.window.vscodeWindowId,
+			});
 		})();
 
-		this._register(this.nativeHostService.onDidChangeWindowAlwaysOnTop(({ windowId, alwaysOnTop }) => {
-			if (windowId === this.window.vscodeWindowId) {
-				this.alwaysOnTop = alwaysOnTop;
-			}
-		}));
+		this._register(
+			this.nativeHostService.onDidChangeWindowAlwaysOnTop(({ windowId, alwaysOnTop }) => {
+				if (windowId === this.window.vscodeWindowId) {
+					this.alwaysOnTop = alwaysOnTop;
+				}
+			})
+		);
 	}
 
 	private async handleFullScreenState(): Promise<void> {
-		const fullscreen = await this.nativeHostService.isFullScreen({ targetWindowId: this.window.vscodeWindowId });
+		const fullscreen = await this.nativeHostService.isFullScreen({
+			targetWindowId: this.window.vscodeWindowId,
+		});
 		if (fullscreen) {
 			setFullscreen(true, this.window);
 		}
 	}
 
-	protected override async handleVetoBeforeClose(e: BeforeUnloadEvent, veto: string): Promise<void> {
+	protected override async handleVetoBeforeClose(
+		e: BeforeUnloadEvent,
+		veto: string
+	): Promise<void> {
 		this.preventUnload(e);
 
-		await this.dialogService.error(veto, localize('backupErrorDetails', "Try saving or reverting the editors with unsaved changes first and then try again."));
+		await this.dialogService.error(
+			veto,
+			localize(
+				'backupErrorDetails',
+				'Try saving or reverting the editors with unsaved changes first and then try again.'
+			)
+		);
 	}
 
 	protected override async confirmBeforeClose(e: BeforeUnloadEvent): Promise<void> {
@@ -109,7 +145,9 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 
 		this.preventUnload(e);
 
-		const confirmed = await this.instantiationService.invokeFunction(accessor => NativeAuxiliaryWindow.confirmOnShutdown(accessor, ShutdownReason.CLOSE));
+		const confirmed = await this.instantiationService.invokeFunction(accessor =>
+			NativeAuxiliaryWindow.confirmOnShutdown(accessor, ShutdownReason.CLOSE)
+		);
 		if (confirmed) {
 			this.skipUnloadConfirmation = true;
 			this.nativeHostService.closeWindow({ targetWindowId: this.window.vscodeWindowId });
@@ -127,14 +165,17 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 		return {
 			...state,
 			bounds: state.bounds,
-			mode: this.maximized ? AuxiliaryWindowMode.Maximized : fullscreen ? AuxiliaryWindowMode.Fullscreen : AuxiliaryWindowMode.Normal,
-			alwaysOnTop: this.alwaysOnTop
+			mode: this.maximized
+				? AuxiliaryWindowMode.Maximized
+				: fullscreen
+					? AuxiliaryWindowMode.Fullscreen
+					: AuxiliaryWindowMode.Normal,
+			alwaysOnTop: this.alwaysOnTop,
 		};
 	}
 }
 
 export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService {
-
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IConfigurationService configurationService: IConfigurationService,
@@ -145,19 +186,32 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 		@IHostService hostService: IHostService,
 		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService
 	) {
-		super(layoutService, dialogService, configurationService, telemetryService, hostService, environmentService);
+		super(
+			layoutService,
+			dialogService,
+			configurationService,
+			telemetryService,
+			hostService,
+			environmentService
+		);
 	}
 
 	protected override async resolveWindowId(auxiliaryWindow: NativeCodeWindow): Promise<number> {
 		mark('code/auxiliaryWindow/willResolveWindowId');
-		const windowId = await auxiliaryWindow.vscode.ipcRenderer.invoke('vscode:registerAuxiliaryWindow', this.nativeHostService.windowId);
+		const windowId = await auxiliaryWindow.vscode.ipcRenderer.invoke(
+			'vscode:registerAuxiliaryWindow',
+			this.nativeHostService.windowId
+		);
 		mark('code/auxiliaryWindow/didResolveWindowId');
 
 		return windowId;
 	}
 
-	protected override createContainer(auxiliaryWindow: NativeCodeWindow, disposables: DisposableStore, options?: IAuxiliaryWindowOpenOptions) {
-
+	protected override createContainer(
+		auxiliaryWindow: NativeCodeWindow,
+		disposables: DisposableStore,
+		options?: IAuxiliaryWindowOpenOptions
+	) {
 		// Zoom level (either explicitly provided or inherited from main window)
 		let windowZoomLevel: number;
 		if (typeof options?.zoomLevel === 'number') {
@@ -171,8 +225,22 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 		return super.createContainer(auxiliaryWindow, disposables);
 	}
 
-	protected override createAuxiliaryWindow(targetWindow: CodeWindow, container: HTMLElement, stylesHaveLoaded: Barrier): AuxiliaryWindow {
-		return new NativeAuxiliaryWindow(targetWindow, container, stylesHaveLoaded, this.configurationService, this.nativeHostService, this.instantiationService, this.hostService, this.environmentService, this.dialogService);
+	protected override createAuxiliaryWindow(
+		targetWindow: CodeWindow,
+		container: HTMLElement,
+		stylesHaveLoaded: Barrier
+	): AuxiliaryWindow {
+		return new NativeAuxiliaryWindow(
+			targetWindow,
+			container,
+			stylesHaveLoaded,
+			this.configurationService,
+			this.nativeHostService,
+			this.instantiationService,
+			this.hostService,
+			this.environmentService,
+			this.dialogService
+		);
 	}
 }
 

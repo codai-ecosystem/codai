@@ -27,12 +27,26 @@ suite('Debug - View Model', () => {
 		assert.strictEqual(model.focusedThread, undefined);
 		const session = new MockSession();
 		const thread = new Thread(session, 'myThread', 1);
-		const source = new Source({
-			name: 'internalModule.js',
-			sourceReference: 11,
-			presentationHint: 'deemphasize'
-		}, 'aDebugSessionId', mockUriIdentityService, new NullLogService());
-		const frame = new StackFrame(thread, 1, source, 'app.js', 'normal', { startColumn: 1, startLineNumber: 1, endColumn: 1, endLineNumber: 1 }, 0, true);
+		const source = new Source(
+			{
+				name: 'internalModule.js',
+				sourceReference: 11,
+				presentationHint: 'deemphasize',
+			},
+			'aDebugSessionId',
+			mockUriIdentityService,
+			new NullLogService()
+		);
+		const frame = new StackFrame(
+			thread,
+			1,
+			source,
+			'app.js',
+			'normal',
+			{ startColumn: 1, startLineNumber: 1, endColumn: 1, endLineNumber: 1 },
+			0,
+			true
+		);
 		model.setFocus(frame, thread, session, false);
 
 		assert.strictEqual(model.focusedStackFrame!.getId(), frame.getId());

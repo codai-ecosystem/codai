@@ -8,13 +8,14 @@ import * as collections from '../../common/collections.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('Collections', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('groupBy', () => {
-
-		const group1 = 'a', group2 = 'b';
-		const value1 = 1, value2 = 2, value3 = 3;
+		const group1 = 'a',
+			group2 = 'b';
+		const value1 = 1,
+			value2 = 2,
+			value3 = 3;
 		const source = [
 			{ key: group1, value: value1 },
 			{ key: group1, value: value2 },
@@ -38,7 +39,10 @@ suite('Collections', () => {
 
 		const initialValues = ['a', 'b', 'c'].map(s => ({ someProp: s }));
 		setup(() => {
-			setWithKey = new collections.SetWithKey<{ someProp: string }>(initialValues, value => value.someProp);
+			setWithKey = new collections.SetWithKey<{ someProp: string }>(
+				initialValues,
+				value => value.someProp
+			);
 		});
 
 		test('size', () => {
@@ -65,7 +69,10 @@ suite('Collections', () => {
 
 		test('entries', () => {
 			const entries = Array.from(setWithKey.entries());
-			assert.deepStrictEqual(entries, initialValues.map(value => [value, value]));
+			assert.deepStrictEqual(
+				entries,
+				initialValues.map(value => [value, value])
+			);
 		});
 
 		test('keys and values', () => {

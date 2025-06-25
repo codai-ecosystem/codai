@@ -8,11 +8,14 @@ import { Lazy } from '../../../../base/common/lazy.js';
 import { EditOperation, ISingleEditOperation } from '../../../common/core/editOperation.js';
 import { Range } from '../../../common/core/range.js';
 import { Selection } from '../../../common/core/selection.js';
-import { ICommand, ICursorStateComputerData, IEditOperationBuilder } from '../../../common/editorCommon.js';
+import {
+	ICommand,
+	ICursorStateComputerData,
+	IEditOperationBuilder,
+} from '../../../common/editorCommon.js';
 import { ITextModel } from '../../../common/model.js';
 
 export class SortLinesCommand implements ICommand {
-
 	static _COLLATOR: Lazy<Intl.Collator> = safeIntl.Collator();
 
 	private readonly selection: Selection;
@@ -38,7 +41,11 @@ export class SortLinesCommand implements ICommand {
 		return helper.getTrackedSelection(this.selectionId!);
 	}
 
-	public static canRun(model: ITextModel | null, selection: Selection, descending: boolean): boolean {
+	public static canRun(
+		model: ITextModel | null,
+		selection: Selection,
+		descending: boolean
+	): boolean {
 		if (model === null) {
 			return false;
 		}
@@ -91,14 +98,18 @@ function getSortData(model: ITextModel, selection: Selection, descending: boolea
 		startLineNumber: startLineNumber,
 		endLineNumber: endLineNumber,
 		before: linesToSort,
-		after: sorted
+		after: sorted,
 	};
 }
 
 /**
  * Generate commands for sorting lines on a model.
  */
-function sortLines(model: ITextModel, selection: Selection, descending: boolean): ISingleEditOperation | null {
+function sortLines(
+	model: ITextModel,
+	selection: Selection,
+	descending: boolean
+): ISingleEditOperation | null {
 	const data = getSortData(model, selection, descending);
 
 	if (!data) {
@@ -106,7 +117,12 @@ function sortLines(model: ITextModel, selection: Selection, descending: boolean)
 	}
 
 	return EditOperation.replace(
-		new Range(data.startLineNumber, 1, data.endLineNumber, model.getLineMaxColumn(data.endLineNumber)),
+		new Range(
+			data.startLineNumber,
+			1,
+			data.endLineNumber,
+			model.getLineMaxColumn(data.endLineNumber)
+		),
 		data.after.join('\n')
 	);
 }

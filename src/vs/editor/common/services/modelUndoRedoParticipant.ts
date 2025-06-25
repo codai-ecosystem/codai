@@ -13,26 +13,28 @@ export class ModelUndoRedoParticipant extends Disposable implements IUndoRedoDel
 	constructor(
 		@IModelService private readonly _modelService: IModelService,
 		@ITextModelService private readonly _textModelService: ITextModelService,
-		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService,
+		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService
 	) {
 		super();
-		this._register(this._modelService.onModelRemoved((model) => {
-			// a model will get disposed, so let's check if the undo redo stack is maintained
-			const elements = this._undoRedoService.getElements(model.uri);
-			if (elements.past.length === 0 && elements.future.length === 0) {
-				return;
-			}
-			for (const element of elements.past) {
-				if (element instanceof MultiModelEditStackElement) {
-					element.setDelegate(this);
+		this._register(
+			this._modelService.onModelRemoved(model => {
+				// a model will get disposed, so let's check if the undo redo stack is maintained
+				const elements = this._undoRedoService.getElements(model.uri);
+				if (elements.past.length === 0 && elements.future.length === 0) {
+					return;
 				}
-			}
-			for (const element of elements.future) {
-				if (element instanceof MultiModelEditStackElement) {
-					element.setDelegate(this);
+				for (const element of elements.past) {
+					if (element instanceof MultiModelEditStackElement) {
+						element.setDelegate(this);
+					}
 				}
-			}
-		}));
+				for (const element of elements.future) {
+					if (element instanceof MultiModelEditStackElement) {
+						element.setDelegate(this);
+					}
+				}
+			})
+		);
 	}
 
 	public prepareUndoRedo(element: MultiModelEditStackElement): IDisposable | Promise<IDisposable> {
@@ -43,7 +45,7 @@ export class ModelUndoRedoParticipant extends Disposable implements IUndoRedoDel
 			return Disposable.None;
 		}
 
-		const disposablesPromises = missingModels.map(async (uri) => {
+		const disposablesPromises = missingModels.map(async uri => {
 			try {
 				const reference = await this._textModelService.createModelReference(uri);
 				return <IDisposable>reference;
@@ -55,7 +57,7 @@ export class ModelUndoRedoParticipant extends Disposable implements IUndoRedoDel
 
 		return Promise.all(disposablesPromises).then(disposables => {
 			return {
-				dispose: () => dispose(disposables)
+				dispose: () => dispose(disposables),
 			};
 		});
 	}

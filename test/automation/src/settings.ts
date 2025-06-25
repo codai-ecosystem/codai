@@ -9,11 +9,17 @@ import { Code } from './code';
 import { QuickAccess } from './quickaccess';
 import { Quality } from './application';
 
-const SEARCH_BOX_NATIVE_EDIT_CONTEXT = '.settings-editor .suggest-input-container .monaco-editor .native-edit-context';
+const SEARCH_BOX_NATIVE_EDIT_CONTEXT =
+	'.settings-editor .suggest-input-container .monaco-editor .native-edit-context';
 const SEARCH_BOX_TEXTAREA = '.settings-editor .suggest-input-container .monaco-editor textarea';
 
 export class SettingsEditor {
-	constructor(private code: Code, private editors: Editors, private editor: Editor, private quickaccess: QuickAccess) { }
+	constructor(
+		private code: Code,
+		private editors: Editors,
+		private editor: Editor,
+		private quickaccess: QuickAccess
+	) {}
 
 	/**
 	 * Write a single setting key value pair.
@@ -26,7 +32,10 @@ export class SettingsEditor {
 
 		await this.editors.selectTab('settings.json');
 		await this.code.sendKeybinding('right', () =>
-			this.editor.waitForEditorSelection('settings.json', (s) => this._acceptEditorSelection(this.code.quality, s)));
+			this.editor.waitForEditorSelection('settings.json', s =>
+				this._acceptEditorSelection(this.code.quality, s)
+			)
+		);
 		await this.editor.waitForTypeInEditor('settings.json', `"${setting}": ${value},`);
 		await this.editors.saveOpenedFile();
 	}
@@ -42,8 +51,14 @@ export class SettingsEditor {
 
 		await this.editors.selectTab('settings.json');
 		await this.code.sendKeybinding('right', () =>
-			this.editor.waitForEditorSelection('settings.json', (s) => this._acceptEditorSelection(this.code.quality, s)));
-		await this.editor.waitForTypeInEditor('settings.json', settings.map(v => `"${v[0]}": ${v[1]},`).join(''));
+			this.editor.waitForEditorSelection('settings.json', s =>
+				this._acceptEditorSelection(this.code.quality, s)
+			)
+		);
+		await this.editor.waitForTypeInEditor(
+			'settings.json',
+			settings.map(v => `"${v[0]}": ${v[1]},`).join('')
+		);
 		await this.editors.saveOpenedFile();
 	}
 
@@ -78,17 +93,30 @@ export class SettingsEditor {
 			await this.code.sendKeybinding('ctrl+a');
 		}
 		await this.code.sendKeybinding('Delete', async () => {
-			await this.code.waitForElements('.settings-editor .settings-count-widget', false, results => !results || (results?.length === 1 && !results[0].textContent));
+			await this.code.waitForElements(
+				'.settings-editor .settings-count-widget',
+				false,
+				results => !results || (results?.length === 1 && !results[0].textContent)
+			);
 		});
 		await this.code.waitForTypeInEditor(this._editContextSelector(), query);
-		await this.code.waitForElements('.settings-editor .settings-count-widget', false, results => results?.length === 1 && results[0].textContent.includes('Found'));
+		await this.code.waitForElements(
+			'.settings-editor .settings-count-widget',
+			false,
+			results => results?.length === 1 && results[0].textContent.includes('Found')
+		);
 	}
 
 	private _editContextSelector() {
-		return this.code.quality === Quality.Stable ? SEARCH_BOX_TEXTAREA : SEARCH_BOX_NATIVE_EDIT_CONTEXT;
+		return this.code.quality === Quality.Stable
+			? SEARCH_BOX_TEXTAREA
+			: SEARCH_BOX_NATIVE_EDIT_CONTEXT;
 	}
 
-	private _acceptEditorSelection(quality: Quality, s: { selectionStart: number; selectionEnd: number }): boolean {
+	private _acceptEditorSelection(
+		quality: Quality,
+		s: { selectionStart: number; selectionEnd: number }
+	): boolean {
 		if (quality === Quality.Stable) {
 			return true;
 		}

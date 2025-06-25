@@ -10,15 +10,13 @@ import { ILogService } from '../../log/common/log.js';
 import { IV8Profile } from '../common/profiling.js';
 
 export class WindowProfiler {
-
 	constructor(
 		private readonly _window: BrowserWindow,
 		private readonly _sessionId: string,
-		@ILogService private readonly _logService: ILogService,
-	) { }
+		@ILogService private readonly _logService: ILogService
+	) {}
 
 	async inspect(duration: number): Promise<IV8Profile> {
-
 		await this._connect();
 
 		const inspector = this._window.webContents.debugger;

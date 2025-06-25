@@ -13,7 +13,10 @@ import { TextModel } from '../../../../../../editor/common/model/textModel.js';
 import { CancellationToken } from '../../../../../../base/common/cancellation.js';
 import { IModelContentChangedEvent } from '../../../../../../editor/common/textModelEvents.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
-import { IPromptContentsProviderOptions, PromptContentsProviderBase } from './promptContentsProviderBase.js';
+import {
+	IPromptContentsProviderOptions,
+	PromptContentsProviderBase,
+} from './promptContentsProviderBase.js';
 import { objectStreamFromTextModel } from '../../../../../../editor/common/codecs/utils/objectStreamFromTextModel.js';
 
 /**
@@ -38,13 +41,13 @@ export class TextModelContentsProvider extends PromptContentsProviderBase<IModel
 	constructor(
 		private readonly model: ITextModel,
 		options: Partial<IPromptContentsProviderOptions>,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super(options);
 
 		this._register(this.model.onWillDispose(this.dispose.bind(this)));
 		this._register(
-			this.model.onDidChangeContent(this.onChangeEmitter.fire.bind(this.onChangeEmitter)),
+			this.model.onDidChangeContent(this.onChangeEmitter.fire.bind(this.onChangeEmitter))
 		);
 	}
 
@@ -61,27 +64,27 @@ export class TextModelContentsProvider extends PromptContentsProviderBase<IModel
 	 */
 	protected override async getContentsStream(
 		_event: IModelContentChangedEvent | 'full',
-		cancellationToken?: CancellationToken,
+		cancellationToken?: CancellationToken
 	): Promise<ReadableStream<VSBuffer>> {
 		return objectStreamFromTextModel(this.model, cancellationToken);
 	}
 
 	public override createNew(
 		promptContentsSource: TextModel | { uri: URI },
-		options: Partial<IPromptContentsProviderOptions> = {},
+		options: Partial<IPromptContentsProviderOptions> = {}
 	): IPromptContentsProvider {
 		if (promptContentsSource instanceof TextModel) {
 			return this.instantiationService.createInstance(
 				TextModelContentsProvider,
 				promptContentsSource,
-				options,
+				options
 			);
 		}
 
 		return this.instantiationService.createInstance(
 			FilePromptContentProvider,
 			promptContentsSource.uri,
-			options,
+			options
 		);
 	}
 

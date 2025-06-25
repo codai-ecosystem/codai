@@ -5,7 +5,6 @@
 
 import { l10n } from 'vscode';
 
-
 const minute = 60;
 const hour = minute * 60;
 const day = hour * 24;
@@ -22,7 +21,12 @@ const year = day * 365;
  * @param disallowNow Whether to disallow the string "now" when the difference
  * is less than 30 seconds.
  */
-export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTimeWords?: boolean, disallowNow?: boolean): string {
+export function fromNow(
+	date: number | Date,
+	appendAgoLabel?: boolean,
+	useFullTimeWords?: boolean,
+	disallowNow?: boolean
+): string {
 	if (typeof date !== 'number') {
 		date = date.getTime();
 	}
@@ -42,23 +46,15 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 		if (appendAgoLabel) {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} second ago', value)
-					: l10n.t('{0} sec ago', value);
+				return useFullTimeWords ? l10n.t('{0} second ago', value) : l10n.t('{0} sec ago', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} seconds ago', value)
-					: l10n.t('{0} secs ago', value);
+				return useFullTimeWords ? l10n.t('{0} seconds ago', value) : l10n.t('{0} secs ago', value);
 			}
 		} else {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} second', value)
-					: l10n.t('{0} sec', value);
+				return useFullTimeWords ? l10n.t('{0} second', value) : l10n.t('{0} sec', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} seconds', value)
-					: l10n.t('{0} secs', value);
+				return useFullTimeWords ? l10n.t('{0} seconds', value) : l10n.t('{0} secs', value);
 			}
 		}
 	}
@@ -67,23 +63,15 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 		value = Math.floor(seconds / minute);
 		if (appendAgoLabel) {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} minute ago', value)
-					: l10n.t('{0} min ago', value);
+				return useFullTimeWords ? l10n.t('{0} minute ago', value) : l10n.t('{0} min ago', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} minutes ago', value)
-					: l10n.t('{0} mins ago', value);
+				return useFullTimeWords ? l10n.t('{0} minutes ago', value) : l10n.t('{0} mins ago', value);
 			}
 		} else {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} minute', value)
-					: l10n.t('{0} min', value);
+				return useFullTimeWords ? l10n.t('{0} minute', value) : l10n.t('{0} min', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} minutes', value)
-					: l10n.t('{0} mins', value);
+				return useFullTimeWords ? l10n.t('{0} minutes', value) : l10n.t('{0} mins', value);
 			}
 		}
 	}
@@ -92,23 +80,15 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 		value = Math.floor(seconds / hour);
 		if (appendAgoLabel) {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} hour ago', value)
-					: l10n.t('{0} hr ago', value);
+				return useFullTimeWords ? l10n.t('{0} hour ago', value) : l10n.t('{0} hr ago', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} hours ago', value)
-					: l10n.t('{0} hrs ago', value);
+				return useFullTimeWords ? l10n.t('{0} hours ago', value) : l10n.t('{0} hrs ago', value);
 			}
 		} else {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} hour', value)
-					: l10n.t('{0} hr', value);
+				return useFullTimeWords ? l10n.t('{0} hour', value) : l10n.t('{0} hr', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} hours', value)
-					: l10n.t('{0} hrs', value);
+				return useFullTimeWords ? l10n.t('{0} hours', value) : l10n.t('{0} hrs', value);
 			}
 		}
 	}
@@ -116,13 +96,9 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 	if (seconds < week) {
 		value = Math.floor(seconds / day);
 		if (appendAgoLabel) {
-			return value === 1
-				? l10n.t('{0} day ago', value)
-				: l10n.t('{0} days ago', value);
+			return value === 1 ? l10n.t('{0} day ago', value) : l10n.t('{0} days ago', value);
 		} else {
-			return value === 1
-				? l10n.t('{0} day', value)
-				: l10n.t('{0} days', value);
+			return value === 1 ? l10n.t('{0} day', value) : l10n.t('{0} days', value);
 		}
 	}
 
@@ -130,23 +106,15 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 		value = Math.floor(seconds / week);
 		if (appendAgoLabel) {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} week ago', value)
-					: l10n.t('{0} wk ago', value);
+				return useFullTimeWords ? l10n.t('{0} week ago', value) : l10n.t('{0} wk ago', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} weeks ago', value)
-					: l10n.t('{0} wks ago', value);
+				return useFullTimeWords ? l10n.t('{0} weeks ago', value) : l10n.t('{0} wks ago', value);
 			}
 		} else {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} week', value)
-					: l10n.t('{0} wk', value);
+				return useFullTimeWords ? l10n.t('{0} week', value) : l10n.t('{0} wk', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} weeks', value)
-					: l10n.t('{0} wks', value);
+				return useFullTimeWords ? l10n.t('{0} weeks', value) : l10n.t('{0} wks', value);
 			}
 		}
 	}
@@ -155,23 +123,15 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 		value = Math.floor(seconds / month);
 		if (appendAgoLabel) {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} month ago', value)
-					: l10n.t('{0} mo ago', value);
+				return useFullTimeWords ? l10n.t('{0} month ago', value) : l10n.t('{0} mo ago', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} months ago', value)
-					: l10n.t('{0} mos ago', value);
+				return useFullTimeWords ? l10n.t('{0} months ago', value) : l10n.t('{0} mos ago', value);
 			}
 		} else {
 			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t('{0} month', value)
-					: l10n.t('{0} mo', value);
+				return useFullTimeWords ? l10n.t('{0} month', value) : l10n.t('{0} mo', value);
 			} else {
-				return useFullTimeWords
-					? l10n.t('{0} months', value)
-					: l10n.t('{0} mos', value);
+				return useFullTimeWords ? l10n.t('{0} months', value) : l10n.t('{0} mos', value);
 			}
 		}
 	}
@@ -179,23 +139,15 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 	value = Math.floor(seconds / year);
 	if (appendAgoLabel) {
 		if (value === 1) {
-			return useFullTimeWords
-				? l10n.t('{0} year ago', value)
-				: l10n.t('{0} yr ago', value);
+			return useFullTimeWords ? l10n.t('{0} year ago', value) : l10n.t('{0} yr ago', value);
 		} else {
-			return useFullTimeWords
-				? l10n.t('{0} years ago', value)
-				: l10n.t('{0} yrs ago', value);
+			return useFullTimeWords ? l10n.t('{0} years ago', value) : l10n.t('{0} yrs ago', value);
 		}
 	} else {
 		if (value === 1) {
-			return useFullTimeWords
-				? l10n.t('{0} year', value)
-				: l10n.t('{0} yr', value);
+			return useFullTimeWords ? l10n.t('{0} year', value) : l10n.t('{0} yr', value);
 		} else {
-			return useFullTimeWords
-				? l10n.t('{0} years', value)
-				: l10n.t('{0} yrs', value);
+			return useFullTimeWords ? l10n.t('{0} years', value) : l10n.t('{0} yrs', value);
 		}
 	}
 }

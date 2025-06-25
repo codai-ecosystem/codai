@@ -44,14 +44,32 @@ import { ISimpleTokenClass, SimpleToken } from './tokens/simpleToken.js';
 /**
  * Type for all simple tokens.
  */
-export type TSimpleToken = Space | Tab | VerticalTab | At | Quote | DoubleQuote
-	| CarriageReturn | NewLine | FormFeed | TBracket | TAngleBracket | TCurlyBrace
-	| TParenthesis | Colon | Hash | Dash | ExclamationMark | Slash | DollarSign | Comma
+export type TSimpleToken =
+	| Space
+	| Tab
+	| VerticalTab
+	| At
+	| Quote
+	| DoubleQuote
+	| CarriageReturn
+	| NewLine
+	| FormFeed
+	| TBracket
+	| TAngleBracket
+	| TCurlyBrace
+	| TParenthesis
+	| Colon
+	| Hash
+	| Dash
+	| ExclamationMark
+	| Slash
+	| DollarSign
+	| Comma
 	| TLineBreakToken;
 
 /**
-* Type of tokens emitted by this decoder.
-*/
+ * Type of tokens emitted by this decoder.
+ */
 export type TSimpleDecoderToken = TSimpleToken | Word;
 
 /**
@@ -60,9 +78,28 @@ export type TSimpleDecoderToken = TSimpleToken | Word;
  * an arbitrary "text" sequence and is emitted as a single {@link Word} token.
  */
 export const WELL_KNOWN_TOKENS: readonly ISimpleTokenClass<TSimpleToken>[] = Object.freeze([
-	LeftParenthesis, RightParenthesis, LeftBracket, RightBracket, LeftCurlyBrace, RightCurlyBrace,
-	LeftAngleBracket, RightAngleBracket, Space, Tab, VerticalTab, FormFeed, Colon, Hash, Dash,
-	ExclamationMark, At, Slash, DollarSign, Quote, DoubleQuote, Comma,
+	LeftParenthesis,
+	RightParenthesis,
+	LeftBracket,
+	RightBracket,
+	LeftCurlyBrace,
+	RightCurlyBrace,
+	LeftAngleBracket,
+	RightAngleBracket,
+	Space,
+	Tab,
+	VerticalTab,
+	FormFeed,
+	Colon,
+	Hash,
+	Dash,
+	ExclamationMark,
+	At,
+	Slash,
+	DollarSign,
+	Quote,
+	DoubleQuote,
+	Comma,
 ]);
 
 /**
@@ -71,7 +108,7 @@ export const WELL_KNOWN_TOKENS: readonly ISimpleTokenClass<TSimpleToken>[] = Obj
  *       the {@link LinesDecoder} which emits {@link Line} tokens without them.
  */
 const WORD_STOP_CHARACTERS: readonly string[] = Object.freeze(
-	WELL_KNOWN_TOKENS.map(pick('symbol')),
+	WELL_KNOWN_TOKENS.map(pick('symbol'))
 );
 
 /**
@@ -79,9 +116,7 @@ const WORD_STOP_CHARACTERS: readonly string[] = Object.freeze(
  * of simple token, - `Word`, `Space`, `Tab`, `NewLine`, etc.
  */
 export class SimpleDecoder extends BaseDecoder<TSimpleDecoderToken, TLineToken> {
-	constructor(
-		stream: ReadableStream<VSBuffer>,
-	) {
+	constructor(stream: ReadableStream<VSBuffer>) {
 		super(new LinesDecoder(stream));
 	}
 
@@ -102,10 +137,9 @@ export class SimpleDecoder extends BaseDecoder<TSimpleDecoderToken, TLineToken> 
 			const character = lineText[i];
 
 			// check if the current character is a well-known token
-			const tokenConstructor = WELL_KNOWN_TOKENS
-				.find((wellKnownToken) => {
-					return wellKnownToken.symbol === character;
-				});
+			const tokenConstructor = WELL_KNOWN_TOKENS.find(wellKnownToken => {
+				return wellKnownToken.symbol === character;
+			});
 
 			// if it is a well-known token, emit it and continue to the next one
 			if (tokenConstructor) {
@@ -119,15 +153,13 @@ export class SimpleDecoder extends BaseDecoder<TSimpleDecoderToken, TLineToken> 
 			// that needs to be collected into a single `Word` token, hence
 			// read all the characters until a stop character is encountered
 			let word = '';
-			while (i < lineText.length && !(WORD_STOP_CHARACTERS.includes(lineText[i]))) {
+			while (i < lineText.length && !WORD_STOP_CHARACTERS.includes(lineText[i])) {
 				word += lineText[i];
 				i++;
 			}
 
 			// emit a "text" sequence of characters as a single `Word` token
-			this._onData.fire(
-				Word.newOnLine(word, line, columnNumber),
-			);
+			this._onData.fire(Word.newOnLine(word, line, columnNumber));
 		}
 	}
 }

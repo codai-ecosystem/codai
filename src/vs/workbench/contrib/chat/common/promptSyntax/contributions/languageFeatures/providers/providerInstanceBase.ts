@@ -6,7 +6,10 @@
 import { IPromptsService, TSharedPrompt } from '../../../service/types.js';
 import { ITextModel } from '../../../../../../../../editor/common/model.js';
 import { ObservableDisposable } from '../../../../../../../../base/common/observableDisposable.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../../../../../base/common/cancellation.js';
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from '../../../../../../../../base/common/cancellation.js';
 
 /**
  * Abstract base class for all reusable prompt file providers.
@@ -29,24 +32,22 @@ export abstract class ProviderInstanceBase extends ObservableDisposable {
 
 	constructor(
 		protected readonly model: ITextModel,
-		@IPromptsService promptsService: IPromptsService,
+		@IPromptsService promptsService: IPromptsService
 	) {
 		super();
 
 		this.parser = promptsService.getSyntaxParserFor(model);
 
-		this._register(
-			this.parser.onDispose(this.dispose.bind(this)),
-		);
+		this._register(this.parser.onDispose(this.dispose.bind(this)));
 
 		let cancellationSource = new CancellationTokenSource();
 		this._register(
-			this.parser.onSettled((error) => {
+			this.parser.onSettled(error => {
 				cancellationSource.dispose(true);
 				cancellationSource = new CancellationTokenSource();
 
 				this.onPromptSettled(error, cancellationSource.token);
-			}),
+			})
 		);
 
 		this.parser.start();

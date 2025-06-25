@@ -18,7 +18,10 @@ function addSettingMapping(settingId: string, colorId: string) {
 	colorIds.push(colorId);
 }
 
-export function convertSettings(oldSettings: ITextMateThemingRule[], result: { textMateRules: ITextMateThemingRule[]; colors: IColorMap }): void {
+export function convertSettings(
+	oldSettings: ITextMateThemingRule[],
+	result: { textMateRules: ITextMateThemingRule[]; colors: IColorMap }
+): void {
 	for (const rule of oldSettings) {
 		result.textMateRules.push(rule);
 		if (!rule.scope) {
@@ -67,8 +70,23 @@ addSettingMapping('invisibles', editorColorRegistry.editorWhitespaces);
 addSettingMapping('guide', editorColorRegistry.editorIndentGuide1);
 addSettingMapping('activeGuide', editorColorRegistry.editorActiveIndentGuide1);
 
-const ansiColorMap = ['ansiBlack', 'ansiRed', 'ansiGreen', 'ansiYellow', 'ansiBlue', 'ansiMagenta', 'ansiCyan', 'ansiWhite',
-	'ansiBrightBlack', 'ansiBrightRed', 'ansiBrightGreen', 'ansiBrightYellow', 'ansiBrightBlue', 'ansiBrightMagenta', 'ansiBrightCyan', 'ansiBrightWhite'
+const ansiColorMap = [
+	'ansiBlack',
+	'ansiRed',
+	'ansiGreen',
+	'ansiYellow',
+	'ansiBlue',
+	'ansiMagenta',
+	'ansiCyan',
+	'ansiWhite',
+	'ansiBrightBlack',
+	'ansiBrightRed',
+	'ansiBrightGreen',
+	'ansiBrightYellow',
+	'ansiBrightBlue',
+	'ansiBrightMagenta',
+	'ansiBrightCyan',
+	'ansiBrightWhite',
 ];
 
 for (const color of ansiColorMap) {

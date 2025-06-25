@@ -13,7 +13,7 @@ const root = path.dirname(path.dirname(path.dirname(__dirname)));
 const driverPath = path.join(root, 'src/vs/workbench/services/driver/common/driver.ts');
 
 let contents = fs.readFileSync(driverPath, 'utf8');
-contents = /\/\/\*START([\s\S]*)\/\/\*END/mi.exec(contents)[1].trim();
+contents = /\/\/\*START([\s\S]*)\/\/\*END/im.exec(contents)[1].trim();
 contents = contents.replace(/\bTPromise\b/g, 'Promise');
 
 contents = `/*---------------------------------------------------------------------------------------------

@@ -7,18 +7,45 @@ import { isNonEmptyArray } from '../../../base/common/arrays.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { onUnexpectedError } from '../../../base/common/errors.js';
 import { Emitter, Event } from '../../../base/common/event.js';
-import { DisposableMap, DisposableStore, IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
+import {
+	DisposableMap,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from '../../../base/common/lifecycle.js';
 import { URI, UriComponents } from '../../../base/common/uri.js';
 import { ILanguageService } from '../../../editor/common/languages/language.js';
 import { ExtensionIdentifier } from '../../../platform/extensions/common/extensions.js';
 import { NotebookDto } from './mainThreadNotebookDto.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
 import { INotebookEditor } from '../../contrib/notebook/browser/notebookBrowser.js';
 import { INotebookEditorService } from '../../contrib/notebook/browser/services/notebookEditorService.js';
-import { INotebookCellExecution, INotebookExecution, INotebookExecutionStateService } from '../../contrib/notebook/common/notebookExecutionStateService.js';
-import { IKernelSourceActionProvider, INotebookKernel, INotebookKernelChangeEvent, INotebookKernelDetectionTask, INotebookKernelService, VariablesResult } from '../../contrib/notebook/common/notebookKernelService.js';
+import {
+	INotebookCellExecution,
+	INotebookExecution,
+	INotebookExecutionStateService,
+} from '../../contrib/notebook/common/notebookExecutionStateService.js';
+import {
+	IKernelSourceActionProvider,
+	INotebookKernel,
+	INotebookKernelChangeEvent,
+	INotebookKernelDetectionTask,
+	INotebookKernelService,
+	VariablesResult,
+} from '../../contrib/notebook/common/notebookKernelService.js';
 import { SerializableObjectWithBuffers } from '../../services/extensions/common/proxyIdentifier.js';
-import { ExtHostContext, ExtHostNotebookKernelsShape, ICellExecuteUpdateDto, ICellExecutionCompleteDto, INotebookKernelDto2, MainContext, MainThreadNotebookKernelsShape } from '../common/extHost.protocol.js';
+import {
+	ExtHostContext,
+	ExtHostNotebookKernelsShape,
+	ICellExecuteUpdateDto,
+	ICellExecutionCompleteDto,
+	INotebookKernelDto2,
+	MainContext,
+	MainThreadNotebookKernelsShape,
+} from '../common/extHost.protocol.js';
 import { INotebookService } from '../../contrib/notebook/common/notebookService.js';
 import { AsyncIterableObject, AsyncIterableSource } from '../../../base/common/async.js';
 
@@ -48,7 +75,10 @@ abstract class MainThreadKernel implements INotebookKernel {
 		return this.preloads.flatMap(p => p.provides);
 	}
 
-	constructor(data: INotebookKernelDto2, private _languageService: ILanguageService) {
+	constructor(
+		data: INotebookKernelDto2,
+		private _languageService: ILanguageService
+	) {
 		this.id = data.id;
 		this.viewType = data.notebookType;
 		this.extension = data.extensionId;
@@ -57,16 +87,17 @@ abstract class MainThreadKernel implements INotebookKernel {
 		this.label = data.label;
 		this.description = data.description;
 		this.detail = data.detail;
-		this.supportedLanguages = isNonEmptyArray(data.supportedLanguages) ? data.supportedLanguages : _languageService.getRegisteredLanguageIds();
+		this.supportedLanguages = isNonEmptyArray(data.supportedLanguages)
+			? data.supportedLanguages
+			: _languageService.getRegisteredLanguageIds();
 		this.implementsExecutionOrder = data.supportsExecutionOrder ?? false;
 		this.hasVariableProvider = data.hasVariableProvider ?? false;
 		this.localResourceRoot = URI.revive(data.extensionLocation);
-		this.preloads = data.preloads?.map(u => ({ uri: URI.revive(u.uri), provides: u.provides })) ?? [];
+		this.preloads =
+			data.preloads?.map(u => ({ uri: URI.revive(u.uri), provides: u.provides })) ?? [];
 	}
 
-
 	update(data: Partial<INotebookKernelDto2>) {
-
 		const event: INotebookKernelChangeEvent = Object.create(null);
 		if (data.label !== undefined) {
 			this.label = data.label;
@@ -81,7 +112,9 @@ abstract class MainThreadKernel implements INotebookKernel {
 			event.detail = true;
 		}
 		if (data.supportedLanguages !== undefined) {
-			this.supportedLanguages = isNonEmptyArray(data.supportedLanguages) ? data.supportedLanguages : this._languageService.getRegisteredLanguageIds();
+			this.supportedLanguages = isNonEmptyArray(data.supportedLanguages)
+				? data.supportedLanguages
+				: this._languageService.getRegisteredLanguageIds();
 			event.supportedLanguages = true;
 		}
 		if (data.supportsExecutionOrder !== undefined) {
@@ -101,22 +134,36 @@ abstract class MainThreadKernel implements INotebookKernel {
 
 	abstract executeNotebookCellsRequest(uri: URI, cellHandles: number[]): Promise<void>;
 	abstract cancelNotebookCellExecution(uri: URI, cellHandles: number[]): Promise<void>;
-	abstract provideVariables(notebookUri: URI, parentId: number | undefined, kind: 'named' | 'indexed', start: number, token: CancellationToken): AsyncIterableObject<VariablesResult>;
+	abstract provideVariables(
+		notebookUri: URI,
+		parentId: number | undefined,
+		kind: 'named' | 'indexed',
+		start: number,
+		token: CancellationToken
+	): AsyncIterableObject<VariablesResult>;
 }
 
 class MainThreadKernelDetectionTask implements INotebookKernelDetectionTask {
-	constructor(readonly notebookType: string) { }
+	constructor(readonly notebookType: string) {}
 }
 
 @extHostNamedCustomer(MainContext.MainThreadNotebookKernels)
 export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape {
-
 	private readonly _editors = new DisposableMap<INotebookEditor>();
 	private readonly _disposables = new DisposableStore();
 
-	private readonly _kernels = new Map<number, [kernel: MainThreadKernel, registraion: IDisposable]>();
-	private readonly _kernelDetectionTasks = new Map<number, [task: MainThreadKernelDetectionTask, registraion: IDisposable]>();
-	private readonly _kernelSourceActionProviders = new Map<number, [provider: IKernelSourceActionProvider, registraion: IDisposable]>();
+	private readonly _kernels = new Map<
+		number,
+		[kernel: MainThreadKernel, registraion: IDisposable]
+	>();
+	private readonly _kernelDetectionTasks = new Map<
+		number,
+		[task: MainThreadKernelDetectionTask, registraion: IDisposable]
+	>();
+	private readonly _kernelSourceActionProviders = new Map<
+		number,
+		[provider: IKernelSourceActionProvider, registraion: IDisposable]
+	>();
 	private readonly _kernelSourceActionProvidersEventRegistrations = new Map<number, IDisposable>();
 
 	private readonly _proxy: ExtHostNotebookKernelsShape;
@@ -128,7 +175,8 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 		extHostContext: IExtHostContext,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 		@INotebookService private readonly _notebookService: INotebookService,
 		@INotebookEditorService notebookEditorService: INotebookEditorService
 	) {
@@ -138,23 +186,27 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 		notebookEditorService.onDidAddNotebookEditor(this._onEditorAdd, this, this._disposables);
 		notebookEditorService.onDidRemoveNotebookEditor(this._onEditorRemove, this, this._disposables);
 
-		this._disposables.add(toDisposable(() => {
-			// EH shut down, complete all executions started by this EH
-			this._executions.forEach(e => {
-				e.complete({});
-			});
-			this._notebookExecutions.forEach(e => e.complete());
-		}));
+		this._disposables.add(
+			toDisposable(() => {
+				// EH shut down, complete all executions started by this EH
+				this._executions.forEach(e => {
+					e.complete({});
+				});
+				this._notebookExecutions.forEach(e => e.complete());
+			})
+		);
 
-		this._disposables.add(this._notebookKernelService.onDidChangeSelectedNotebooks(e => {
-			for (const [handle, [kernel,]] of this._kernels) {
-				if (e.oldKernel === kernel.id) {
-					this._proxy.$acceptNotebookAssociation(handle, e.notebook, false);
-				} else if (e.newKernel === kernel.id) {
-					this._proxy.$acceptNotebookAssociation(handle, e.notebook, true);
+		this._disposables.add(
+			this._notebookKernelService.onDidChangeSelectedNotebooks(e => {
+				for (const [handle, [kernel]] of this._kernels) {
+					if (e.oldKernel === kernel.id) {
+						this._proxy.$acceptNotebookAssociation(handle, e.notebook, false);
+					} else if (e.newKernel === kernel.id) {
+						this._proxy.$acceptNotebookAssociation(handle, e.notebook, true);
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	dispose(): void {
@@ -174,7 +226,6 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 	// --- kernel ipc
 
 	private _onEditorAdd(editor: INotebookEditor) {
-
 		const ipcListener = editor.onDidReceiveMessage(e => {
 			if (!editor.hasModel()) {
 				return;
@@ -239,14 +290,20 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 
 	async $addKernel(handle: number, data: INotebookKernelDto2): Promise<void> {
 		const that = this;
-		const kernel = new class extends MainThreadKernel {
+		const kernel = new (class extends MainThreadKernel {
 			async executeNotebookCellsRequest(uri: URI, handles: number[]): Promise<void> {
 				await that._proxy.$executeCells(handle, uri, handles);
 			}
 			async cancelNotebookCellExecution(uri: URI, handles: number[]): Promise<void> {
 				await that._proxy.$cancelCells(handle, uri, handles);
 			}
-			provideVariables(notebookUri: URI, parentId: number | undefined, kind: 'named' | 'indexed', start: number, token: CancellationToken): AsyncIterableObject<VariablesResult> {
+			provideVariables(
+				notebookUri: URI,
+				parentId: number | undefined,
+				kind: 'named' | 'indexed',
+				start: number,
+				token: CancellationToken
+			): AsyncIterableObject<VariablesResult> {
 				const requestId = `${handle}variables${that.variableRequestIndex++}`;
 				if (that.variableRequestMap.has(requestId)) {
 					return that.variableRequestMap.get(requestId)!.asyncIterable;
@@ -254,17 +311,20 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 
 				const source = new AsyncIterableSource<VariablesResult>();
 				that.variableRequestMap.set(requestId, source);
-				that._proxy.$provideVariables(handle, requestId, notebookUri, parentId, kind, start, token).then(() => {
-					source.resolve();
-					that.variableRequestMap.delete(requestId);
-				}).catch((err) => {
-					source.reject(err);
-					that.variableRequestMap.delete(requestId);
-				});
+				that._proxy
+					.$provideVariables(handle, requestId, notebookUri, parentId, kind, start, token)
+					.then(() => {
+						source.resolve();
+						that.variableRequestMap.delete(requestId);
+					})
+					.catch(err => {
+						source.reject(err);
+						that.variableRequestMap.delete(requestId);
+					});
 
 				return source.asyncIterable;
 			}
-		}(data, this._languageService);
+		})(data, this._languageService);
 
 		const disposables = this._disposables.add(new DisposableStore());
 		// Ensure _kernels is up to date before we register a kernel.
@@ -287,16 +347,29 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 		}
 	}
 
-	$updateNotebookPriority(handle: number, notebook: UriComponents, value: number | undefined): void {
+	$updateNotebookPriority(
+		handle: number,
+		notebook: UriComponents,
+		value: number | undefined
+	): void {
 		const tuple = this._kernels.get(handle);
 		if (tuple) {
-			this._notebookKernelService.updateKernelNotebookAffinity(tuple[0], URI.revive(notebook), value);
+			this._notebookKernelService.updateKernelNotebookAffinity(
+				tuple[0],
+				URI.revive(notebook),
+				value
+			);
 		}
 	}
 
 	// --- Cell execution
 
-	$createExecution(handle: number, controllerId: string, rawUri: UriComponents, cellHandle: number): void {
+	$createExecution(
+		handle: number,
+		controllerId: string,
+		rawUri: UriComponents,
+		cellHandle: number
+	): void {
 		const uri = URI.revive(rawUri);
 		const notebook = this._notebookService.getNotebookTextModel(uri);
 		if (!notebook) {
@@ -312,7 +385,10 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 		this._executions.set(handle, execution);
 	}
 
-	$updateExecution(handle: number, data: SerializableObjectWithBuffers<ICellExecuteUpdateDto[]>): void {
+	$updateExecution(
+		handle: number,
+		data: SerializableObjectWithBuffers<ICellExecuteUpdateDto[]>
+	): void {
 		const updates = data.value;
 		try {
 			const execution = this._executions.get(handle);
@@ -322,7 +398,10 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 		}
 	}
 
-	$completeExecution(handle: number, data: SerializableObjectWithBuffers<ICellExecutionCompleteDto>): void {
+	$completeExecution(
+		handle: number,
+		data: SerializableObjectWithBuffers<ICellExecutionCompleteDto>
+	): void {
 		try {
 			const execution = this._executions.get(handle);
 			execution?.complete(NotebookDto.fromCellExecuteCompleteDto(data.value));
@@ -374,7 +453,8 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 	// --- notebook kernel detection task
 	async $addKernelDetectionTask(handle: number, notebookType: string): Promise<void> {
 		const kernelDetectionTask = new MainThreadKernelDetectionTask(notebookType);
-		const registration = this._notebookKernelService.registerNotebookKernelDetectionTask(kernelDetectionTask);
+		const registration =
+			this._notebookKernelService.registerNotebookKernelDetectionTask(kernelDetectionTask);
 		this._kernelDetectionTasks.set(handle, [kernelDetectionTask, registration]);
 	}
 
@@ -388,11 +468,18 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 
 	// --- notebook kernel source action provider
 
-	async $addKernelSourceActionProvider(handle: number, eventHandle: number, notebookType: string): Promise<void> {
+	async $addKernelSourceActionProvider(
+		handle: number,
+		eventHandle: number,
+		notebookType: string
+	): Promise<void> {
 		const kernelSourceActionProvider: IKernelSourceActionProvider = {
 			viewType: notebookType,
 			provideKernelSourceActions: async () => {
-				const actions = await this._proxy.$provideKernelSourceActions(handle, CancellationToken.None);
+				const actions = await this._proxy.$provideKernelSourceActions(
+					handle,
+					CancellationToken.None
+				);
 
 				return actions.map(action => {
 					let documentation = action.documentation;
@@ -408,7 +495,7 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 						documentation,
 					};
 				});
-			}
+			},
 		};
 
 		if (typeof eventHandle === 'number') {
@@ -417,7 +504,10 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 			kernelSourceActionProvider.onDidChangeSourceActions = emitter.event;
 		}
 
-		const registration = this._notebookKernelService.registerKernelSourceActionProvider(notebookType, kernelSourceActionProvider);
+		const registration = this._notebookKernelService.registerKernelSourceActionProvider(
+			notebookType,
+			kernelSourceActionProvider
+		);
 		this._kernelSourceActionProviders.set(handle, [kernelSourceActionProvider, registration]);
 	}
 

@@ -17,26 +17,13 @@ export class Line extends BaseToken {
 		// Note! 1-based indexing
 		lineNumber: number,
 		// the line contents
-		public readonly text: string,
+		public readonly text: string
 	) {
-		assert(
-			!isNaN(lineNumber),
-			`The line number must not be a NaN.`,
-		);
+		assert(!isNaN(lineNumber), `The line number must not be a NaN.`);
 
-		assert(
-			lineNumber > 0,
-			`The line number must be >= 1, got "${lineNumber}".`,
-		);
+		assert(lineNumber > 0, `The line number must be >= 1, got "${lineNumber}".`);
 
-		super(
-			new Range(
-				lineNumber,
-				1,
-				lineNumber,
-				text.length + 1,
-			),
-		);
+		super(new Range(lineNumber, 1, lineNumber, text.length + 1));
 	}
 
 	/**

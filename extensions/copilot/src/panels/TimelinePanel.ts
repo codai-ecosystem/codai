@@ -9,19 +9,19 @@ export class TimelinePanel {
 	private disposables: vscode.Disposable[] = [];
 	private timeline: TimelineEvent[] = [];
 
-	constructor(
-		private context: vscode.ExtensionContext
-	) {
+	constructor(private context: vscode.ExtensionContext) {
 		// Initialize with a welcome event
-		this.timeline = [{
-			id: Date.now().toString(),
-			timestamp: new Date(),
-			type: 'system',
-			title: 'AIDE Session Started',
-			description: 'Welcome to AIDE! Your development journey begins here.',
-			icon: '🚀',
-			data: {}
-		}];
+		this.timeline = [
+			{
+				id: Date.now().toString(),
+				timestamp: new Date(),
+				type: 'system',
+				title: 'AIDE Session Started',
+				description: 'Welcome to AIDE! Your development journey begins here.',
+				icon: '🚀',
+				data: {},
+			},
+		];
 	}
 
 	public show(): void {
@@ -39,8 +39,8 @@ export class TimelinePanel {
 				retainContextWhenHidden: true,
 				localResourceRoots: [
 					vscode.Uri.file(this.context.asAbsolutePath('dist')),
-					vscode.Uri.file(this.context.asAbsolutePath('assets'))
-				]
+					vscode.Uri.file(this.context.asAbsolutePath('assets')),
+				],
 			}
 		);
 
@@ -48,7 +48,7 @@ export class TimelinePanel {
 
 		// Handle messages from the webview
 		this.panel.webview.onDidReceiveMessage(
-			(message) => {
+			message => {
 				switch (message.type) {
 					case 'get_timeline':
 						this.sendTimeline();
@@ -93,7 +93,7 @@ export class TimelinePanel {
 		const timelineEvent: TimelineEvent = {
 			...event,
 			id: Date.now().toString(),
-			timestamp: new Date()
+			timestamp: new Date(),
 		};
 
 		this.timeline.unshift(timelineEvent); // Add to beginning for chronological order
@@ -106,7 +106,7 @@ export class TimelinePanel {
 			title: 'User Request',
 			description: message,
 			icon: '💬',
-			data: { message }
+			data: { message },
 		});
 	}
 
@@ -116,7 +116,7 @@ export class TimelinePanel {
 			title: `${agent} Response`,
 			description: response,
 			icon: '🤖',
-			data: { agent, response }
+			data: { agent, response },
 		});
 	}
 
@@ -127,7 +127,7 @@ export class TimelinePanel {
 			title: `File ${action}`,
 			description: filePath,
 			icon: icons[action],
-			data: { action, filePath }
+			data: { action, filePath },
 		});
 	}
 
@@ -137,7 +137,7 @@ export class TimelinePanel {
 			title: success ? 'Build Successful' : 'Build Failed',
 			description: details,
 			icon: success ? '✅' : '❌',
-			data: { success, details }
+			data: { success, details },
 		});
 	}
 
@@ -147,27 +147,29 @@ export class TimelinePanel {
 			title: 'Memory Graph Updated',
 			description: `${action} ${nodeType} node`,
 			icon: '🧠',
-			data: { nodeType, action }
+			data: { nodeType, action },
 		});
 	}
 
 	private sendTimeline(): void {
 		this.postMessage({
 			type: 'timeline_data',
-			data: this.timeline
+			data: this.timeline,
 		});
 	}
 
 	private clearTimeline(): void {
-		this.timeline = [{
-			id: Date.now().toString(),
-			timestamp: new Date(),
-			type: 'system',
-			title: 'Timeline Cleared',
-			description: 'Timeline has been reset.',
-			icon: '🔄',
-			data: {}
-		}];
+		this.timeline = [
+			{
+				id: Date.now().toString(),
+				timestamp: new Date(),
+				type: 'system',
+				title: 'Timeline Cleared',
+				description: 'Timeline has been reset.',
+				icon: '🔄',
+				data: {},
+			},
+		];
 		this.sendTimeline();
 	}
 
@@ -176,7 +178,7 @@ export class TimelinePanel {
 			const timelineData = JSON.stringify(this.timeline, null, 2);
 			const document = await vscode.workspace.openTextDocument({
 				content: timelineData,
-				language: 'json'
+				language: 'json',
 			});
 			await vscode.window.showTextDocument(document);
 		} catch (error) {
@@ -193,7 +195,7 @@ export class TimelinePanel {
 
 		this.postMessage({
 			type: 'filtered_timeline_data',
-			data: filteredTimeline
+			data: filteredTimeline,
 		});
 	}
 

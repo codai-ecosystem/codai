@@ -45,7 +45,11 @@ async function runVersionManagerTests() {
 				return true;
 			} else {
 				console.log(`❌ ❌ FAILED: ${testName}`);
-				testResults.push({ name: testName, status: 'FAILED', error: result.error || 'Unknown error' });
+				testResults.push({
+					name: testName,
+					status: 'FAILED',
+					error: result.error || 'Unknown error',
+				});
 				return false;
 			}
 		} catch (error) {
@@ -121,9 +125,11 @@ async function runVersionManagerTests() {
 			const versionManager = new VersionManager();
 
 			return versionManager.checkUpstreamUpdates().then(upstreamInfo => {
-				return upstreamInfo &&
+				return (
+					upstreamInfo &&
 					typeof upstreamInfo.vscodeVersion === 'string' &&
-					['compatible', 'needs-review', 'incompatible'].includes(upstreamInfo.compatibilityStatus);
+					['compatible', 'needs-review', 'incompatible'].includes(upstreamInfo.compatibilityStatus)
+				);
 			});
 		} catch (error) {
 			return { success: false, error: error.message };
@@ -158,7 +164,7 @@ async function runVersionManagerTests() {
 				'aide.showVersionHistory',
 				'aide.generateVersionBump',
 				'aide.viewChangelog',
-				'aide.checkUpstreamUpdates'
+				'aide.checkUpstreamUpdates',
 			];
 
 			return versionCommands.every(cmd => extensionContent.includes(cmd));
@@ -177,7 +183,7 @@ async function runVersionManagerTests() {
 				'aide.showVersionHistory',
 				'aide.generateVersionBump',
 				'aide.viewChangelog',
-				'aide.checkUpstreamUpdates'
+				'aide.checkUpstreamUpdates',
 			];
 
 			const actualCommands = packageContent.contributes?.commands?.map(cmd => cmd.command) || [];
@@ -192,10 +198,7 @@ async function runVersionManagerTests() {
 	runTest('TypeScript Compilation Success', () => {
 		try {
 			// Check if compiled files exist
-			const compiledFiles = [
-				'./out/services/versionManager.js',
-				'./out/extension.js'
-			];
+			const compiledFiles = ['./out/services/versionManager.js', './out/extension.js'];
 
 			return compiledFiles.every(file => fs.existsSync(file));
 		} catch (error) {
@@ -209,7 +212,8 @@ async function runVersionManagerTests() {
 			const packagePath = './package.json';
 			const packageContent = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 
-			const hasSemver = packageContent.dependencies?.semver || packageContent.devDependencies?.semver;
+			const hasSemver =
+				packageContent.dependencies?.semver || packageContent.devDependencies?.semver;
 			const hasTypeSemver = packageContent.devDependencies?.['@types/semver'];
 
 			return Boolean(hasSemver && hasTypeSemver);
@@ -229,9 +233,11 @@ async function runVersionManagerTests() {
 	if (totalTests > passedTests) {
 		console.log(`❌ Failed: ${totalTests - passedTests}`);
 		console.log('\nFailed Tests:');
-		testResults.filter(t => t.status === 'FAILED').forEach(test => {
-			console.log(`  - ${test.name}: ${test.error}`);
-		});
+		testResults
+			.filter(t => t.status === 'FAILED')
+			.forEach(test => {
+				console.log(`  - ${test.name}: ${test.error}`);
+			});
 	}
 
 	const successRate = ((passedTests / totalTests) * 100).toFixed(1);
@@ -254,12 +260,14 @@ async function runVersionManagerTests() {
 
 // Run the tests
 if (require.main === module) {
-	runVersionManagerTests().then(success => {
-		process.exit(success ? 0 : 1);
-	}).catch(error => {
-		console.error('Test suite failed:', error);
-		process.exit(1);
-	});
+	runVersionManagerTests()
+		.then(success => {
+			process.exit(success ? 0 : 1);
+		})
+		.catch(error => {
+			console.error('Test suite failed:', error);
+			process.exit(1);
+		});
 }
 
 module.exports = { runVersionManagerTests };

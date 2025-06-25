@@ -5,7 +5,15 @@
 
 import { IObservable, IObservableWithChange, IObserver, IReaderWithStore } from '../base.js';
 import { DebugNameData } from '../debugName.js';
-import { assertFn, BugIndicatingError, DisposableStore, IDisposable, markAsDisposed, onBugIndicatingError, trackDisposable } from '../commonFacade/deps.js';
+import {
+	assertFn,
+	BugIndicatingError,
+	DisposableStore,
+	IDisposable,
+	markAsDisposed,
+	onBugIndicatingError,
+	trackDisposable,
+} from '../commonFacade/deps.js';
 import { getLogger } from '../logging/logging.js';
 import { IChangeTracker } from '../changeTracker.js';
 
@@ -23,7 +31,9 @@ export const enum AutorunState {
 	upToDate = 3,
 }
 
-export class AutorunObserver<TChangeSummary = any> implements IObserver, IReaderWithStore, IDisposable {
+export class AutorunObserver<TChangeSummary = any>
+	implements IObserver, IReaderWithStore, IDisposable
+{
 	private _state = AutorunState.stale;
 	private _updateCount = 0;
 	private _disposed = false;
@@ -39,7 +49,7 @@ export class AutorunObserver<TChangeSummary = any> implements IObserver, IReader
 	constructor(
 		public readonly _debugNameData: DebugNameData,
 		public readonly _runFn: (reader: IReaderWithStore, changeSummary: TChangeSummary) => void,
-		private readonly _changeTracker: IChangeTracker<TChangeSummary> | undefined,
+		private readonly _changeTracker: IChangeTracker<TChangeSummary> | undefined
 	) {
 		this._changeSummary = this._changeTracker?.createChangeSummary(undefined);
 		getLogger()?.handleAutorunCreated(this);
@@ -138,7 +148,7 @@ export class AutorunObserver<TChangeSummary = any> implements IObserver, IReader
 						this._state = AutorunState.upToDate;
 						for (const d of this._dependencies) {
 							d.reportChanges(); // Warning: external call!
-							if (this._state as AutorunState === AutorunState.stale) {
+							if ((this._state as AutorunState) === AutorunState.stale) {
 								// The other dependencies will refresh on demand
 								break;
 							}
@@ -163,16 +173,24 @@ export class AutorunObserver<TChangeSummary = any> implements IObserver, IReader
 		}
 	}
 
-	public handleChange<T, TChange>(observable: IObservableWithChange<T, TChange>, change: TChange): void {
+	public handleChange<T, TChange>(
+		observable: IObservableWithChange<T, TChange>,
+		change: TChange
+	): void {
 		if (this._isDependency(observable)) {
 			getLogger()?.handleAutorunDependencyChanged(this, observable, change);
 			try {
 				// Warning: external call!
-				const shouldReact = this._changeTracker ? this._changeTracker.handleChange({
-					changedObservable: observable,
-					change,
-					didChange: (o): this is any => o === observable as any,
-				}, this._changeSummary!) : true;
+				const shouldReact = this._changeTracker
+					? this._changeTracker.handleChange(
+							{
+								changedObservable: observable,
+								change,
+								didChange: (o): this is any => o === (observable as any),
+							},
+							this._changeSummary!
+						)
+					: true;
 				if (shouldReact) {
 					this._state = AutorunState.stale;
 				}
@@ -189,7 +207,11 @@ export class AutorunObserver<TChangeSummary = any> implements IObserver, IReader
 	// IReader implementation
 
 	private _ensureNoRunning(): void {
-		if (!this._isRunning) { throw new BugIndicatingError('The reader object cannot be used outside its compute function!'); }
+		if (!this._isRunning) {
+			throw new BugIndicatingError(
+				'The reader object cannot be used outside its compute function!'
+			);
+		}
 	}
 
 	public readObservable<T>(observable: IObservable<T>): T {

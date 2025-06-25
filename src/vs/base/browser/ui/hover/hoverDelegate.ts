@@ -72,4 +72,4 @@ export interface IHoverDelegate {
 	showNativeHover?: boolean; // TODO@benibenj remove this, only temp fix for contextviews
 }
 
-export interface IScopedHoverDelegate extends IHoverDelegate, IDisposable { }
+export interface IScopedHoverDelegate extends IHoverDelegate, IDisposable {}

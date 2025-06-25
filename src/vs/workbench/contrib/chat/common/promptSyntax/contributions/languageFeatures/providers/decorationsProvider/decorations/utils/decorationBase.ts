@@ -53,7 +53,7 @@ export abstract class DecorationBase<
 
 	constructor(
 		accessor: TAddAccessor,
-		protected readonly token: TPromptToken,
+		protected readonly token: TPromptToken
 	) {
 		this.id = accessor.addDecoration(this.range, this.decorationOptions);
 	}
@@ -68,13 +68,8 @@ export abstract class DecorationBase<
 	/**
 	 * Changes the decoration in the editor.
 	 */
-	public change(
-		accessor: TChangeAccessor,
-	): this {
-		accessor.changeDecorationOptions(
-			this.id,
-			this.decorationOptions,
-		);
+	public change(accessor: TChangeAccessor): this {
+		accessor.changeDecorationOptions(this.id, this.decorationOptions);
 
 		return this;
 	}
@@ -82,9 +77,7 @@ export abstract class DecorationBase<
 	/**
 	 * Removes associated editor decoration(s).
 	 */
-	public remove(
-		accessor: TRemoveAccessor,
-	): this {
+	public remove(accessor: TRemoveAccessor): this {
 		accessor.removeDecoration(this.id);
 
 		return this;
@@ -110,10 +103,7 @@ export abstract class DecorationBase<
  * Type of a generic decoration class.
  */
 export type TDecorationClass<TPromptToken extends BaseToken = BaseToken> = {
-	new(
-		accessor: TAddAccessor,
-		token: TPromptToken,
-	): DecorationBase<TPromptToken>;
+	new (accessor: TAddAccessor, token: TPromptToken): DecorationBase<TPromptToken>;
 
 	/**
 	 * CSS styles for the decoration.

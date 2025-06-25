@@ -5,8 +5,17 @@
 
 import { Event, Emitter } from '../../../../base/common/event.js';
 import { VSBufferReadableStream } from '../../../../base/common/buffer.js';
-import { IWorkingCopyBackup, IWorkingCopySaveEvent, WorkingCopyCapabilities } from './workingCopy.js';
-import { IFileWorkingCopy, IFileWorkingCopyModel, IFileWorkingCopyModelFactory, SnapshotContext } from './fileWorkingCopy.js';
+import {
+	IWorkingCopyBackup,
+	IWorkingCopySaveEvent,
+	WorkingCopyCapabilities,
+} from './workingCopy.js';
+import {
+	IFileWorkingCopy,
+	IFileWorkingCopyModel,
+	IFileWorkingCopyModelFactory,
+	SnapshotContext,
+} from './fileWorkingCopy.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
 import { IWorkingCopyService } from './workingCopyService.js';
@@ -20,7 +29,8 @@ import { emptyStream } from '../../../../base/common/stream.js';
 /**
  * Untitled file specific working copy model factory.
  */
-export interface IUntitledFileWorkingCopyModelFactory<M extends IUntitledFileWorkingCopyModel> extends IFileWorkingCopyModelFactory<M> { }
+export interface IUntitledFileWorkingCopyModelFactory<M extends IUntitledFileWorkingCopyModel>
+	extends IFileWorkingCopyModelFactory<M> {}
 
 /**
  * The underlying model of a untitled file working copy provides
@@ -29,12 +39,10 @@ export interface IUntitledFileWorkingCopyModelFactory<M extends IUntitledFileWor
  * has been resolved via it's `resolve()` method.
  */
 export interface IUntitledFileWorkingCopyModel extends IFileWorkingCopyModel {
-
 	readonly onDidChangeContent: Event<IUntitledFileWorkingCopyModelContentChangedEvent>;
 }
 
 export interface IUntitledFileWorkingCopyModelContentChangedEvent {
-
 	/**
 	 * Flag that indicates that the content change should
 	 * clear the dirty/modified flags, e.g. because the contents are
@@ -44,8 +52,8 @@ export interface IUntitledFileWorkingCopyModelContentChangedEvent {
 	readonly isInitial: boolean;
 }
 
-export interface IUntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> extends IFileWorkingCopy<M> {
-
+export interface IUntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
+	extends IFileWorkingCopy<M> {
 	/**
 	 * Whether this untitled file working copy model has an associated file path.
 	 */
@@ -57,8 +65,8 @@ export interface IUntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyMode
 	isResolved(): this is IResolvedUntitledFileWorkingCopy<M>;
 }
 
-export interface IResolvedUntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> extends IUntitledFileWorkingCopy<M> {
-
+export interface IResolvedUntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
+	extends IUntitledFileWorkingCopy<M> {
 	/**
 	 * A resolved untitled file working copy has a resolved model.
 	 */
@@ -66,7 +74,6 @@ export interface IResolvedUntitledFileWorkingCopy<M extends IUntitledFileWorking
 }
 
 export interface IUntitledFileWorkingCopySaveDelegate<M extends IUntitledFileWorkingCopyModel> {
-
 	/**
 	 * A delegate to enable saving of untitled file working copies.
 	 */
@@ -74,7 +81,6 @@ export interface IUntitledFileWorkingCopySaveDelegate<M extends IUntitledFileWor
 }
 
 export interface IUntitledFileWorkingCopyInitialContents {
-
 	/**
 	 * The initial contents of the untitled file working copy.
 	 */
@@ -90,12 +96,16 @@ export interface IUntitledFileWorkingCopyInitialContents {
 	readonly markModified?: boolean;
 }
 
-export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> extends Disposable implements IUntitledFileWorkingCopy<M> {
-
+export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
+	extends Disposable
+	implements IUntitledFileWorkingCopy<M>
+{
 	readonly capabilities: WorkingCopyCapabilities;
 
 	private _model: M | undefined = undefined;
-	get model(): M | undefined { return this._model; }
+	get model(): M | undefined {
+		return this._model;
+	}
 
 	//#region Events
 
@@ -131,8 +141,12 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
 	) {
 		super();
 
-		this.capabilities = this.isScratchpad ? WorkingCopyCapabilities.Untitled | WorkingCopyCapabilities.Scratchpad : WorkingCopyCapabilities.Untitled;
-		this.modified = this.hasAssociatedFilePath || Boolean(this.initialContents && this.initialContents.markModified !== false);
+		this.capabilities = this.isScratchpad
+			? WorkingCopyCapabilities.Untitled | WorkingCopyCapabilities.Scratchpad
+			: WorkingCopyCapabilities.Untitled;
+		this.modified =
+			this.hasAssociatedFilePath ||
+			Boolean(this.initialContents && this.initialContents.markModified !== false);
 
 		// Make known to working copy service
 		this._register(workingCopyService.registerWorkingCopy(this));
@@ -162,7 +176,6 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
 	}
 
 	//#endregion
-
 
 	//#region Resolve
 
@@ -200,7 +213,11 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
 		await this.doCreateModel(untitledContents);
 
 		// Untitled associated to file path are modified right away as well as untitled with content
-		this.setModified(this.hasAssociatedFilePath || !!backup || Boolean(this.initialContents && this.initialContents.markModified !== false));
+		this.setModified(
+			this.hasAssociatedFilePath ||
+				!!backup ||
+				Boolean(this.initialContents && this.initialContents.markModified !== false)
+		);
 
 		// If we have initial contents, make sure to emit this
 		// as the appropriate events to the outside.
@@ -213,14 +230,15 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
 		this.trace('doCreateModel()');
 
 		// Create model and dispose it when we get disposed
-		this._model = this._register(await this.modelFactory.createModel(this.resource, contents, CancellationToken.None));
+		this._model = this._register(
+			await this.modelFactory.createModel(this.resource, contents, CancellationToken.None)
+		);
 
 		// Model listeners
 		this.installModelListeners(this._model);
 	}
 
 	private installModelListeners(model: M): void {
-
 		// Content Change
 		this._register(model.onDidChangeContent(e => this.onModelContentChanged(e)));
 
@@ -229,7 +247,6 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
 	}
 
 	private onModelContentChanged(e: IUntitledFileWorkingCopyModelContentChangedEvent): void {
-
 		// Mark the untitled file working copy as non-modified once its
 		// in case provided by the change event and in case we do not
 		// have an associated path set
@@ -251,7 +268,6 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
 	}
 
 	//#endregion
-
 
 	//#region Backup
 
@@ -277,7 +293,6 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
 
 	//#endregion
 
-
 	//#region Save
 
 	async save(options?: ISaveOptions): Promise<boolean> {
@@ -294,7 +309,6 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
 	}
 
 	//#endregion
-
 
 	//#region Revert
 
@@ -324,6 +338,10 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
 	}
 
 	private trace(msg: string): void {
-		this.logService.trace(`[untitled file working copy] ${msg}`, this.resource.toString(), this.typeId);
+		this.logService.trace(
+			`[untitled file working copy] ${msg}`,
+			this.resource.toString(),
+			this.typeId
+		);
 	}
 }

@@ -6,18 +6,28 @@
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { FontStyle } from '../../../../common/encodedTokenAttributes.js';
-import { ColorMap, ExternalThemeTrieElement, ParsedTokenThemeRule, ThemeTrieElementRule, TokenTheme, parseTokenTheme, strcmp } from '../../../../common/languages/supports/tokenization.js';
+import {
+	ColorMap,
+	ExternalThemeTrieElement,
+	ParsedTokenThemeRule,
+	ThemeTrieElementRule,
+	TokenTheme,
+	parseTokenTheme,
+	strcmp,
+} from '../../../../common/languages/supports/tokenization.js';
 
 suite('Token theme matching', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('gives higher priority to deeper matches', () => {
-		const theme = TokenTheme.createFromRawTokenTheme([
-			{ token: '', foreground: '100000', background: '200000' },
-			{ token: 'punctuation.definition.string.begin.html', foreground: '300000' },
-			{ token: 'punctuation.definition.string', foreground: '400000' },
-		], []);
+		const theme = TokenTheme.createFromRawTokenTheme(
+			[
+				{ token: '', foreground: '100000', background: '200000' },
+				{ token: 'punctuation.definition.string.begin.html', foreground: '300000' },
+				{ token: 'punctuation.definition.string', foreground: '400000' },
+			],
+			[]
+		);
 
 		const colorMap = new ColorMap();
 		colorMap.getId('100000');
@@ -31,21 +41,24 @@ suite('Token theme matching', () => {
 	});
 
 	test('can match', () => {
-		const theme = TokenTheme.createFromRawTokenTheme([
-			{ token: '', foreground: 'F8F8F2', background: '272822' },
-			{ token: 'source', background: '100000' },
-			{ token: 'something', background: '100000' },
-			{ token: 'bar', background: '200000' },
-			{ token: 'baz', background: '200000' },
-			{ token: 'bar', fontStyle: 'bold' },
-			{ token: 'constant', fontStyle: 'italic', foreground: '300000' },
-			{ token: 'constant.numeric', foreground: '400000' },
-			{ token: 'constant.numeric.hex', fontStyle: 'bold' },
-			{ token: 'constant.numeric.oct', fontStyle: 'bold italic underline' },
-			{ token: 'constant.numeric.bin', fontStyle: 'bold strikethrough' },
-			{ token: 'constant.numeric.dec', fontStyle: '', foreground: '500000' },
-			{ token: 'storage.object.bar', fontStyle: '', foreground: '600000' },
-		], []);
+		const theme = TokenTheme.createFromRawTokenTheme(
+			[
+				{ token: '', foreground: 'F8F8F2', background: '272822' },
+				{ token: 'source', background: '100000' },
+				{ token: 'something', background: '100000' },
+				{ token: 'bar', background: '200000' },
+				{ token: 'baz', background: '200000' },
+				{ token: 'bar', fontStyle: 'bold' },
+				{ token: 'constant', fontStyle: 'italic', foreground: '300000' },
+				{ token: 'constant.numeric', foreground: '400000' },
+				{ token: 'constant.numeric.hex', fontStyle: 'bold' },
+				{ token: 'constant.numeric.oct', fontStyle: 'bold italic underline' },
+				{ token: 'constant.numeric.bin', fontStyle: 'bold strikethrough' },
+				{ token: 'constant.numeric.dec', fontStyle: '', foreground: '500000' },
+				{ token: 'storage.object.bar', fontStyle: '', foreground: '600000' },
+			],
+			[]
+		);
 
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('F8F8F2');
@@ -62,7 +75,12 @@ suite('Token theme matching', () => {
 			assert.deepStrictEqual(actual, expected, 'when matching <<' + scopeName + '>>');
 		}
 
-		function assertSimpleMatch(scopeName: string, fontStyle: FontStyle, foreground: number, background: number): void {
+		function assertSimpleMatch(
+			scopeName: string,
+			fontStyle: FontStyle,
+			foreground: number,
+			background: number
+		): void {
 			assertMatch(scopeName, new ThemeTrieElementRule(fontStyle, foreground, background));
 		}
 
@@ -104,8 +122,18 @@ suite('Token theme matching', () => {
 		assertSimpleMatch('constant.numeric.hex.baz', FontStyle.Bold, _E, _B);
 
 		// matches constant.numeric.oct
-		assertSimpleMatch('constant.numeric.oct', FontStyle.Bold | FontStyle.Italic | FontStyle.Underline, _E, _B);
-		assertSimpleMatch('constant.numeric.oct.baz', FontStyle.Bold | FontStyle.Italic | FontStyle.Underline, _E, _B);
+		assertSimpleMatch(
+			'constant.numeric.oct',
+			FontStyle.Bold | FontStyle.Italic | FontStyle.Underline,
+			_E,
+			_B
+		);
+		assertSimpleMatch(
+			'constant.numeric.oct.baz',
+			FontStyle.Bold | FontStyle.Italic | FontStyle.Underline,
+			_E,
+			_B
+		);
 
 		// matches constant.numeric.bin
 		assertSimpleMatch('constant.numeric.bin', FontStyle.Bold | FontStyle.Strikethrough, _E, _B);
@@ -129,11 +157,9 @@ suite('Token theme matching', () => {
 });
 
 suite('Token theme parsing', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('can parse', () => {
-
 		const actual = parseTokenTheme([
 			{ token: '', foreground: 'F8F8F2', background: '272822' },
 			{ token: 'source', background: '100000' },
@@ -158,7 +184,13 @@ suite('Token theme parsing', () => {
 			new ParsedTokenThemeRule('constant', 6, FontStyle.Italic, 'ff0000', null),
 			new ParsedTokenThemeRule('constant.numeric', 7, FontStyle.NotSet, '00ff00', null),
 			new ParsedTokenThemeRule('constant.numeric.hex', 8, FontStyle.Bold, null, null),
-			new ParsedTokenThemeRule('constant.numeric.oct', 9, FontStyle.Bold | FontStyle.Italic | FontStyle.Underline, null, null),
+			new ParsedTokenThemeRule(
+				'constant.numeric.oct',
+				9,
+				FontStyle.Bold | FontStyle.Italic | FontStyle.Underline,
+				null,
+				null
+			),
 			new ParsedTokenThemeRule('constant.numeric.dec', 10, FontStyle.None, '0000ff', null),
 		];
 
@@ -167,7 +199,6 @@ suite('Token theme parsing', () => {
 });
 
 suite('Token theme resolving', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('strcmp works', () => {
@@ -183,116 +214,154 @@ suite('Token theme resolving', () => {
 		const _A = colorMap.getId('000000');
 		const _B = colorMap.getId('ffffff');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
-		assert.deepStrictEqual(actual.getThemeTrieElement(), new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B)));
+		assert.deepStrictEqual(
+			actual.getThemeTrieElement(),
+			new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B))
+		);
 	});
 
 	test('respects incoming defaults 1', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.NotSet, null, null)
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[new ParsedTokenThemeRule('', -1, FontStyle.NotSet, null, null)],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('000000');
 		const _B = colorMap.getId('ffffff');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
-		assert.deepStrictEqual(actual.getThemeTrieElement(), new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B)));
+		assert.deepStrictEqual(
+			actual.getThemeTrieElement(),
+			new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B))
+		);
 	});
 
 	test('respects incoming defaults 2', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.None, null, null)
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[new ParsedTokenThemeRule('', -1, FontStyle.None, null, null)],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('000000');
 		const _B = colorMap.getId('ffffff');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
-		assert.deepStrictEqual(actual.getThemeTrieElement(), new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B)));
+		assert.deepStrictEqual(
+			actual.getThemeTrieElement(),
+			new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B))
+		);
 	});
 
 	test('respects incoming defaults 3', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.Bold, null, null)
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[new ParsedTokenThemeRule('', -1, FontStyle.Bold, null, null)],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('000000');
 		const _B = colorMap.getId('ffffff');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
-		assert.deepStrictEqual(actual.getThemeTrieElement(), new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _A, _B)));
+		assert.deepStrictEqual(
+			actual.getThemeTrieElement(),
+			new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _A, _B))
+		);
 	});
 
 	test('respects incoming defaults 4', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'ff0000', null)
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'ff0000', null)],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('ff0000');
 		const _B = colorMap.getId('ffffff');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
-		assert.deepStrictEqual(actual.getThemeTrieElement(), new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B)));
+		assert.deepStrictEqual(
+			actual.getThemeTrieElement(),
+			new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B))
+		);
 	});
 
 	test('respects incoming defaults 5', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.NotSet, null, 'ff0000')
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[new ParsedTokenThemeRule('', -1, FontStyle.NotSet, null, 'ff0000')],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('000000');
 		const _B = colorMap.getId('ff0000');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
-		assert.deepStrictEqual(actual.getThemeTrieElement(), new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B)));
+		assert.deepStrictEqual(
+			actual.getThemeTrieElement(),
+			new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B))
+		);
 	});
 
 	test('can merge incoming defaults', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.NotSet, null, 'ff0000'),
-			new ParsedTokenThemeRule('', -1, FontStyle.NotSet, '00ff00', null),
-			new ParsedTokenThemeRule('', -1, FontStyle.Bold, null, null),
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[
+				new ParsedTokenThemeRule('', -1, FontStyle.NotSet, null, 'ff0000'),
+				new ParsedTokenThemeRule('', -1, FontStyle.NotSet, '00ff00', null),
+				new ParsedTokenThemeRule('', -1, FontStyle.Bold, null, null),
+			],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('00ff00');
 		const _B = colorMap.getId('ff0000');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
-		assert.deepStrictEqual(actual.getThemeTrieElement(), new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _A, _B)));
+		assert.deepStrictEqual(
+			actual.getThemeTrieElement(),
+			new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _A, _B))
+		);
 	});
 
 	test('defaults are inherited', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'F8F8F2', '272822'),
-			new ParsedTokenThemeRule('var', -1, FontStyle.NotSet, 'ff0000', null)
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[
+				new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'F8F8F2', '272822'),
+				new ParsedTokenThemeRule('var', -1, FontStyle.NotSet, 'ff0000', null),
+			],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('F8F8F2');
 		const _B = colorMap.getId('272822');
 		const _C = colorMap.getId('ff0000');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
 		const root = new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B), {
-			'var': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _C, _B))
+			var: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _C, _B)),
 		});
 		assert.deepStrictEqual(actual.getThemeTrieElement(), root);
 	});
 
 	test('same rules get merged', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'F8F8F2', '272822'),
-			new ParsedTokenThemeRule('var', 1, FontStyle.Bold, null, null),
-			new ParsedTokenThemeRule('var', 0, FontStyle.NotSet, 'ff0000', null),
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[
+				new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'F8F8F2', '272822'),
+				new ParsedTokenThemeRule('var', 1, FontStyle.Bold, null, null),
+				new ParsedTokenThemeRule('var', 0, FontStyle.NotSet, 'ff0000', null),
+			],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('F8F8F2');
 		const _B = colorMap.getId('272822');
 		const _C = colorMap.getId('ff0000');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
 		const root = new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B), {
-			'var': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _C, _B))
+			var: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _C, _B)),
 		});
 		assert.deepStrictEqual(actual.getThemeTrieElement(), root);
 	});
 
 	test('rules are inherited 1', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'F8F8F2', '272822'),
-			new ParsedTokenThemeRule('var', -1, FontStyle.Bold, 'ff0000', null),
-			new ParsedTokenThemeRule('var.identifier', -1, FontStyle.NotSet, '00ff00', null),
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[
+				new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'F8F8F2', '272822'),
+				new ParsedTokenThemeRule('var', -1, FontStyle.Bold, 'ff0000', null),
+				new ParsedTokenThemeRule('var.identifier', -1, FontStyle.NotSet, '00ff00', null),
+			],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('F8F8F2');
 		const _B = colorMap.getId('272822');
@@ -300,24 +369,33 @@ suite('Token theme resolving', () => {
 		const _D = colorMap.getId('00ff00');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
 		const root = new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B), {
-			'var': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _C, _B), {
-				'identifier': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _D, _B))
-			})
+			var: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _C, _B), {
+				identifier: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _D, _B)),
+			}),
 		});
 		assert.deepStrictEqual(actual.getThemeTrieElement(), root);
 	});
 
 	test('rules are inherited 2', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'F8F8F2', '272822'),
-			new ParsedTokenThemeRule('var', -1, FontStyle.Bold, 'ff0000', null),
-			new ParsedTokenThemeRule('var.identifier', -1, FontStyle.NotSet, '00ff00', null),
-			new ParsedTokenThemeRule('constant', 4, FontStyle.Italic, '100000', null),
-			new ParsedTokenThemeRule('constant.numeric', 5, FontStyle.NotSet, '200000', null),
-			new ParsedTokenThemeRule('constant.numeric.hex', 6, FontStyle.Bold, null, null),
-			new ParsedTokenThemeRule('constant.numeric.oct', 7, FontStyle.Bold | FontStyle.Italic | FontStyle.Underline, null, null),
-			new ParsedTokenThemeRule('constant.numeric.dec', 8, FontStyle.None, '300000', null),
-		], []);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[
+				new ParsedTokenThemeRule('', -1, FontStyle.NotSet, 'F8F8F2', '272822'),
+				new ParsedTokenThemeRule('var', -1, FontStyle.Bold, 'ff0000', null),
+				new ParsedTokenThemeRule('var.identifier', -1, FontStyle.NotSet, '00ff00', null),
+				new ParsedTokenThemeRule('constant', 4, FontStyle.Italic, '100000', null),
+				new ParsedTokenThemeRule('constant.numeric', 5, FontStyle.NotSet, '200000', null),
+				new ParsedTokenThemeRule('constant.numeric.hex', 6, FontStyle.Bold, null, null),
+				new ParsedTokenThemeRule(
+					'constant.numeric.oct',
+					7,
+					FontStyle.Bold | FontStyle.Italic | FontStyle.Underline,
+					null,
+					null
+				),
+				new ParsedTokenThemeRule('constant.numeric.dec', 8, FontStyle.None, '300000', null),
+			],
+			[]
+		);
 		const colorMap = new ColorMap();
 		const _A = colorMap.getId('F8F8F2');
 		const _B = colorMap.getId('272822');
@@ -328,26 +406,31 @@ suite('Token theme resolving', () => {
 		const _G = colorMap.getId('00ff00');
 		assert.deepStrictEqual(actual.getColorMap(), colorMap.getColorMap());
 		const root = new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _A, _B), {
-			'var': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _F, _B), {
-				'identifier': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _G, _B))
+			var: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _F, _B), {
+				identifier: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _G, _B)),
 			}),
-			'constant': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Italic, _C, _B), {
-				'numeric': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Italic, _D, _B), {
-					'hex': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _D, _B)),
-					'oct': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold | FontStyle.Italic | FontStyle.Underline, _D, _B)),
-					'dec': new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _E, _B)),
-				})
-			})
+			constant: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Italic, _C, _B), {
+				numeric: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Italic, _D, _B), {
+					hex: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.Bold, _D, _B)),
+					oct: new ExternalThemeTrieElement(
+						new ThemeTrieElementRule(
+							FontStyle.Bold | FontStyle.Italic | FontStyle.Underline,
+							_D,
+							_B
+						)
+					),
+					dec: new ExternalThemeTrieElement(new ThemeTrieElementRule(FontStyle.None, _E, _B)),
+				}),
+			}),
 		});
 		assert.deepStrictEqual(actual.getThemeTrieElement(), root);
 	});
 
 	test('custom colors are first in color map', () => {
-		const actual = TokenTheme.createFromParsedTokenTheme([
-			new ParsedTokenThemeRule('var', -1, FontStyle.NotSet, 'F8F8F2', null)
-		], [
-			'000000', 'FFFFFF', '0F0F0F'
-		]);
+		const actual = TokenTheme.createFromParsedTokenTheme(
+			[new ParsedTokenThemeRule('var', -1, FontStyle.NotSet, 'F8F8F2', null)],
+			['000000', 'FFFFFF', '0F0F0F']
+		);
 		const colorMap = new ColorMap();
 		colorMap.getId('000000');
 		colorMap.getId('FFFFFF');

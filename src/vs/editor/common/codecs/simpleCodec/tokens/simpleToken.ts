@@ -19,7 +19,7 @@ export interface ISimpleTokenClass<TSimpleToken extends SimpleToken<string>> {
 	/**
 	 * Constructor for the token.
 	 */
-	new(...args: any[]): TSimpleToken;
+	new (...args: any[]): TSimpleToken;
 }
 
 /**
@@ -39,16 +39,18 @@ export abstract class SimpleToken<TSymbol extends string> extends BaseToken<TSym
 	public static newOnLine<TSimpleToken extends SimpleToken<string>>(
 		line: Line,
 		atColumnNumber: number,
-		Constructor: ISimpleTokenClass<TSimpleToken>,
+		Constructor: ISimpleTokenClass<TSimpleToken>
 	): TSimpleToken {
 		const { range } = line;
 
-		return new Constructor(new Range(
-			range.startLineNumber,
-			atColumnNumber,
-			range.startLineNumber,
-			atColumnNumber + Constructor.symbol.length,
-		));
+		return new Constructor(
+			new Range(
+				range.startLineNumber,
+				atColumnNumber,
+				range.startLineNumber,
+				atColumnNumber + Constructor.symbol.length
+			)
+		);
 	}
 }
 
@@ -56,4 +58,4 @@ export abstract class SimpleToken<TSymbol extends string> extends BaseToken<TSym
  * Base class for all tokens that represent some form of
  * a spacing character, e.g. 'space', 'tab', etc.
  */
-export abstract class SpacingToken<TSymbol extends string = string> extends SimpleToken<TSymbol> { }
+export abstract class SpacingToken<TSymbol extends string = string> extends SimpleToken<TSymbol> {}

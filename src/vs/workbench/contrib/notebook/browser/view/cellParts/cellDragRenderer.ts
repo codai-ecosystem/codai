@@ -17,9 +17,10 @@ import { ITextModel } from '../../../../../../editor/common/model.js';
 import { BaseCellRenderTemplate } from '../notebookRenderingCommon.js';
 
 class EditorTextRenderer {
-
 	private static _ttPolicy = createTrustedTypesPolicy('cellRendererEditorText', {
-		createHTML(input) { return input; }
+		createHTML(input) {
+			return input;
+		},
 	});
 
 	getRichText(editor: ICodeEditor, modelRange: Range): HTMLElement | null {
@@ -34,14 +35,15 @@ class EditorTextRenderer {
 		const fontSizeVar = '--notebook-editor-font-size';
 		const fontWeightVar = '--notebook-editor-font-weight';
 
-		const style = ``
-			+ `color: ${colorMap[ColorId.DefaultForeground]};`
-			+ `background-color: ${colorMap[ColorId.DefaultBackground]};`
-			+ `font-family: var(${fontFamilyVar});`
-			+ `font-weight: var(${fontWeightVar});`
-			+ `font-size: var(${fontSizeVar});`
-			+ `line-height: ${fontInfo.lineHeight}px;`
-			+ `white-space: pre;`;
+		const style =
+			`` +
+			`color: ${colorMap[ColorId.DefaultForeground]};` +
+			`background-color: ${colorMap[ColorId.DefaultBackground]};` +
+			`font-family: var(${fontFamilyVar});` +
+			`font-weight: var(${fontWeightVar});` +
+			`font-size: var(${fontSizeVar});` +
+			`line-height: ${fontInfo.lineHeight}px;` +
+			`white-space: pre;`;
 
 		const element = DOM.$('div', { style });
 
@@ -56,7 +58,11 @@ class EditorTextRenderer {
 		return element;
 	}
 
-	private getRichTextLinesAsHtml(model: ITextModel, modelRange: Range, colorMap: string[]): string | TrustedHTML {
+	private getRichTextLinesAsHtml(
+		model: ITextModel,
+		modelRange: Range,
+		colorMap: string[]
+	): string | TrustedHTML {
 		const startLineNumber = modelRange.startLineNumber;
 		const startColumn = modelRange.startColumn;
 		const endLineNumber = modelRange.endLineNumber;
@@ -69,13 +75,21 @@ class EditorTextRenderer {
 		for (let lineNumber = startLineNumber; lineNumber <= endLineNumber; lineNumber++) {
 			const lineTokens = model.tokenization.getLineTokens(lineNumber);
 			const lineContent = lineTokens.getLineContent();
-			const startOffset = (lineNumber === startLineNumber ? startColumn - 1 : 0);
-			const endOffset = (lineNumber === endLineNumber ? endColumn - 1 : lineContent.length);
+			const startOffset = lineNumber === startLineNumber ? startColumn - 1 : 0;
+			const endOffset = lineNumber === endLineNumber ? endColumn - 1 : lineContent.length;
 
 			if (lineContent === '') {
 				result += '<br>';
 			} else {
-				result += tokenizeLineToHTML(lineContent, lineTokens.inflate(), colorMap, startOffset, endOffset, tabSize, platform.isWindows);
+				result += tokenizeLineToHTML(
+					lineContent,
+					lineTokens.inflate(),
+					colorMap,
+					startOffset,
+					endOffset,
+					tabSize,
+					platform.isWindows
+				);
 			}
 		}
 
@@ -95,7 +109,11 @@ class EditorTextRenderer {
 }
 
 export class CodeCellDragImageRenderer {
-	getDragImage(templateData: BaseCellRenderTemplate, editor: ICodeEditor, type: 'code' | 'markdown'): HTMLElement {
+	getDragImage(
+		templateData: BaseCellRenderTemplate,
+		editor: ICodeEditor,
+		type: 'code' | 'markdown'
+	): HTMLElement {
 		let dragImage = this.getDragImageImpl(templateData, editor, type);
 		if (!dragImage) {
 			// TODO@roblourens I don't think this can happen
@@ -106,12 +124,22 @@ export class CodeCellDragImageRenderer {
 		return dragImage;
 	}
 
-	private getDragImageImpl(templateData: BaseCellRenderTemplate, editor: ICodeEditor, type: 'code' | 'markdown'): HTMLElement | null {
+	private getDragImageImpl(
+		templateData: BaseCellRenderTemplate,
+		editor: ICodeEditor,
+		type: 'code' | 'markdown'
+	): HTMLElement | null {
 		const dragImageContainer = templateData.container.cloneNode(true) as HTMLElement;
 		dragImageContainer.classList.forEach(c => dragImageContainer.classList.remove(c));
-		dragImageContainer.classList.add('cell-drag-image', 'monaco-list-row', 'focused', `${type}-cell-row`);
+		dragImageContainer.classList.add(
+			'cell-drag-image',
+			'monaco-list-row',
+			'focused',
+			`${type}-cell-row`
+		);
 
-		const editorContainer: HTMLElement | null = dragImageContainer.querySelector('.cell-editor-container');
+		const editorContainer: HTMLElement | null =
+			dragImageContainer.querySelector('.cell-editor-container');
 		if (!editorContainer) {
 			return null;
 		}

@@ -10,9 +10,7 @@ import { MarkdownPreviewManager } from '../preview/previewManager';
 export class OpenImageCommand implements Command {
 	public readonly id = '_markdown.openImage';
 
-	public constructor(
-		private readonly _webviewManager: MarkdownPreviewManager,
-	) { }
+	public constructor(private readonly _webviewManager: MarkdownPreviewManager) {}
 
 	public execute(args: { resource: string; imageSource: string }) {
 		const source = vscode.Uri.parse(args.resource);

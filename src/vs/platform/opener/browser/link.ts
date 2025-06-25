@@ -31,7 +31,6 @@ export interface ILinkOptions {
 }
 
 export class Link extends Disposable {
-
 	private el: HTMLAnchorElement;
 	private hover?: IManagedHover;
 	private hoverDelegate: IHoverDelegate;
@@ -90,10 +89,17 @@ export class Link extends Disposable {
 	) {
 		super();
 
-		this.el = append(container, $('a.monaco-link', {
-			tabIndex: _link.tabIndex ?? 0,
-			href: _link.href,
-		}, _link.label));
+		this.el = append(
+			container,
+			$(
+				'a.monaco-link',
+				{
+					tabIndex: _link.tabIndex ?? 0,
+					href: _link.href,
+				},
+				_link.label
+			)
+		);
 
 		this.hoverDelegate = options.hoverDelegate ?? getDefaultHoverDelegate('mouse');
 		this.setTooltip(_link.title);
@@ -103,26 +109,27 @@ export class Link extends Disposable {
 		const onClickEmitter = this._register(new DomEmitter(this.el, 'click'));
 		const onKeyPress = this._register(new DomEmitter(this.el, 'keypress'));
 		const onEnterPress = Event.chain(onKeyPress.event, $ =>
-			$.map(e => new StandardKeyboardEvent(e))
-				.filter(e => e.keyCode === KeyCode.Enter)
+			$.map(e => new StandardKeyboardEvent(e)).filter(e => e.keyCode === KeyCode.Enter)
 		);
 		const onTap = this._register(new DomEmitter(this.el, TouchEventType.Tap)).event;
 		this._register(Gesture.addTarget(this.el));
 		const onOpen = Event.any<EventLike>(onClickEmitter.event, onEnterPress, onTap);
 
-		this._register(onOpen(e => {
-			if (!this.enabled) {
-				return;
-			}
+		this._register(
+			onOpen(e => {
+				if (!this.enabled) {
+					return;
+				}
 
-			EventHelper.stop(e, true);
+				EventHelper.stop(e, true);
 
-			if (options?.opener) {
-				options.opener(this._link.href);
-			} else {
-				openerService.open(this._link.href, { allowCommands: true });
-			}
-		}));
+				if (options?.opener) {
+					options.opener(this._link.href);
+				} else {
+					openerService.open(this._link.href, { allowCommands: true });
+				}
+			})
+		);
 
 		this.enabled = true;
 	}
@@ -131,7 +138,9 @@ export class Link extends Disposable {
 		if (this.hoverDelegate.showNativeHover) {
 			this.el.title = title ?? '';
 		} else if (!this.hover && title) {
-			this.hover = this._register(this._hoverService.setupManagedHover(this.hoverDelegate, this.el, title));
+			this.hover = this._register(
+				this._hoverService.setupManagedHover(this.hoverDelegate, this.el, title)
+			);
 		} else if (this.hover) {
 			this.hover.update(title);
 		}

@@ -11,8 +11,10 @@ import * as vscode from 'vscode';
 import { ExtHostNotebookDocument } from './extHostNotebookDocument.js';
 
 export class ExtHostNotebookEditor {
-
-	public static readonly apiEditorsToExtHost = new WeakMap<vscode.NotebookEditor, ExtHostNotebookEditor>();
+	public static readonly apiEditorsToExtHost = new WeakMap<
+		vscode.NotebookEditor,
+		ExtHostNotebookEditor
+	>();
 
 	private _visible: boolean = false;
 
@@ -26,7 +28,7 @@ export class ExtHostNotebookEditor {
 		private _selections: vscode.NotebookRange[],
 		private _viewColumn: vscode.ViewColumn | undefined,
 		private readonly viewType: string
-	) { }
+	) {}
 
 	get apiEditor(): vscode.NotebookEditor {
 		if (!this._editor) {
@@ -72,7 +74,7 @@ export class ExtHostNotebookEditor {
 				},
 				[Symbol.for('debug.description')]() {
 					return `NotebookEditor(${this.notebook.uri.toString()})`;
-				}
+				},
 			};
 
 			ExtHostNotebookEditor.apiEditorsToExtHost.set(this._editor, this);

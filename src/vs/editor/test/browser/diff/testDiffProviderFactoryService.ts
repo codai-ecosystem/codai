@@ -5,7 +5,11 @@
 
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { toDisposable } from '../../../../base/common/lifecycle.js';
-import { IDocumentDiff, IDocumentDiffProvider, IDocumentDiffProviderOptions } from '../../../common/diff/documentDiffProvider.js';
+import {
+	IDocumentDiff,
+	IDocumentDiffProvider,
+	IDocumentDiffProviderOptions,
+} from '../../../common/diff/documentDiffProvider.js';
 import { linesDiffComputers } from '../../../common/diff/linesDiffComputers.js';
 import { ITextModel } from '../../../common/model.js';
 import { Event } from '../../../../base/common/event.js';
@@ -19,8 +23,15 @@ export class TestDiffProviderFactoryService implements IDiffProviderFactoryServi
 }
 
 class SyncDocumentDiffProvider implements IDocumentDiffProvider {
-	computeDiff(original: ITextModel, modified: ITextModel, options: IDocumentDiffProviderOptions, cancellationToken: CancellationToken): Promise<IDocumentDiff> {
-		const result = linesDiffComputers.getDefault().computeDiff(original.getLinesContent(), modified.getLinesContent(), options);
+	computeDiff(
+		original: ITextModel,
+		modified: ITextModel,
+		options: IDocumentDiffProviderOptions,
+		cancellationToken: CancellationToken
+	): Promise<IDocumentDiff> {
+		const result = linesDiffComputers
+			.getDefault()
+			.computeDiff(original.getLinesContent(), modified.getLinesContent(), options);
 		return Promise.resolve({
 			changes: result.changes,
 			quitEarly: result.hitTimeout,
@@ -29,5 +40,5 @@ class SyncDocumentDiffProvider implements IDocumentDiffProvider {
 		});
 	}
 
-	onDidChange: Event<void> = () => toDisposable(() => { });
+	onDidChange: Event<void> = () => toDisposable(() => {});
 }

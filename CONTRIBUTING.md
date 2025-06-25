@@ -52,8 +52,8 @@ Be sure to scan through the most popular feature requests.
 
 If you find your issue already exists, make relevant comments and add your reaction. Use a reaction in place of a "+1" comment:
 
-* 👍 - upvote
-* 👎 - downvote
+- 👍 - upvote
+- 👎 - downvote
 
 ### Writing Good Bug Reports and Feature Requests
 

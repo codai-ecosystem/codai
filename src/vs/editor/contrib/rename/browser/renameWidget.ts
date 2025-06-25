@@ -12,7 +12,10 @@ import { IListRenderer, IListVirtualDelegate } from '../../../../base/browser/ui
 import { List } from '../../../../base/browser/ui/list/listWidget.js';
 import * as arrays from '../../../../base/common/arrays.js';
 import { DeferredPromise, raceCancellation } from '../../../../base/common/async.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../base/common/cancellation.js';
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from '../../../../base/common/cancellation.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { Emitter } from '../../../../base/common/event.js';
 import { KeyCode } from '../../../../base/common/keyCodes.js';
@@ -21,16 +24,30 @@ import { StopWatch } from '../../../../base/common/stopwatch.js';
 import { assertType, isDefined } from '../../../../base/common/types.js';
 import './renameWidget.css';
 import * as domFontInfo from '../../../browser/config/domFontInfo.js';
-import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from '../../../browser/editorBrowser.js';
+import {
+	ContentWidgetPositionPreference,
+	ICodeEditor,
+	IContentWidget,
+	IContentWidgetPosition,
+} from '../../../browser/editorBrowser.js';
 import { EditorOption } from '../../../common/config/editorOptions.js';
 import { FontInfo } from '../../../common/config/fontInfo.js';
 import { IDimension } from '../../../common/core/2d/dimension.js';
 import { Position } from '../../../common/core/position.js';
 import { IRange, Range } from '../../../common/core/range.js';
 import { ScrollType } from '../../../common/editorCommon.js';
-import { NewSymbolName, NewSymbolNameTag, NewSymbolNameTriggerKind, ProviderResult } from '../../../common/languages.js';
+import {
+	NewSymbolName,
+	NewSymbolNameTag,
+	NewSymbolNameTriggerKind,
+	ProviderResult,
+} from '../../../common/languages.js';
 import * as nls from '../../../../nls.js';
-import { IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { getListStyles } from '../../../../platform/theme/browser/defaultStyles.js';
@@ -42,18 +59,23 @@ import {
 	quickInputListFocusBackground,
 	quickInputListFocusForeground,
 	widgetBorder,
-	widgetShadow
+	widgetShadow,
 } from '../../../../platform/theme/common/colorRegistry.js';
 import { IColorTheme, IThemeService } from '../../../../platform/theme/common/themeService.js';
 
 /** for debugging */
-const _sticky = false
-	// || Boolean("true") // done "weirdly" so that a lint warning prevents you from pushing this
-	;
-
-
-export const CONTEXT_RENAME_INPUT_VISIBLE = new RawContextKey<boolean>('renameInputVisible', false, nls.localize('renameInputVisible', "Whether the rename input widget is visible"));
-export const CONTEXT_RENAME_INPUT_FOCUSED = new RawContextKey<boolean>('renameInputFocused', false, nls.localize('renameInputFocused', "Whether the rename input widget is focused"));
+const _sticky = false;
+// || Boolean("true") // done "weirdly" so that a lint warning prevents you from pushing this
+export const CONTEXT_RENAME_INPUT_VISIBLE = new RawContextKey<boolean>(
+	'renameInputVisible',
+	false,
+	nls.localize('renameInputVisible', 'Whether the rename input widget is visible')
+);
+export const CONTEXT_RENAME_INPUT_FOCUSED = new RawContextKey<boolean>(
+	'renameInputFocused',
+	false,
+	nls.localize('renameInputFocused', 'Whether the rename input widget is focused')
+);
 
 /**
  * "Source" of the new name:
@@ -94,7 +116,10 @@ interface IRenameWidget {
 		where: IRange,
 		currentName: string,
 		supportPreview: boolean,
-		requestRenameSuggestions: (triggerKind: NewSymbolNameTriggerKind, cts: CancellationToken) => ProviderResult<NewSymbolName[]>[],
+		requestRenameSuggestions: (
+			triggerKind: NewSymbolNameTriggerKind,
+			cts: CancellationToken
+		) => ProviderResult<NewSymbolName[]>[],
 		cts: CancellationTokenSource
 	): Promise<RenameWidgetResult | boolean>;
 
@@ -106,7 +131,6 @@ interface IRenameWidget {
 }
 
 export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable {
-
 	// implement IContentWidget
 	readonly allowEditorOverflow: boolean = true;
 
@@ -156,7 +180,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		@IThemeService private readonly _themeService: IThemeService,
 		@IKeybindingService private readonly _keybindingService: IKeybindingService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILogService private readonly _logService: ILogService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		this._visibleContextKey = CONTEXT_RENAME_INPUT_VISIBLE.bindTo(contextKeyService);
 
@@ -175,11 +199,13 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 
 		this._editor.addContentWidget(this);
 
-		this._disposables.add(this._editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.fontInfo)) {
-				this._updateFont();
-			}
-		}));
+		this._disposables.add(
+			this._editor.onDidChangeConfiguration(e => {
+				if (e.hasChanged(EditorOption.fontInfo)) {
+					this._updateFont();
+				}
+			})
+		);
 
 		this._disposables.add(_themeService.onDidColorThemeChange(this._updateStyles, this));
 	}
@@ -210,7 +236,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 					onSelectionChange: () => {
 						this._isEditingRenameCandidate = false; // @ulugbekna: because user picked a rename suggestion
 						this.acceptInput(false); // we don't allow preview with mouse click for now
-					}
+					},
 				})
 			);
 
@@ -251,8 +277,12 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 
 		const border = theme.getColor(inputBorder);
 
-		this._inputWithButton.domNode.style.backgroundColor = String(theme.getColor(inputBackground) ?? '');
-		this._inputWithButton.input.style.backgroundColor = String(theme.getColor(inputBackground) ?? '');
+		this._inputWithButton.domNode.style.backgroundColor = String(
+			theme.getColor(inputBackground) ?? ''
+		);
+		this._inputWithButton.input.style.backgroundColor = String(
+			theme.getColor(inputBackground) ?? ''
+		);
 		this._inputWithButton.domNode.style.borderWidth = border ? '1px' : '0px';
 		this._inputWithButton.domNode.style.borderStyle = border ? 'solid' : 'none';
 		this._inputWithButton.domNode.style.borderColor = border?.toString() ?? 'none';
@@ -262,7 +292,10 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		if (this._domNode === undefined) {
 			return;
 		}
-		assertType(this._label !== undefined, 'RenameWidget#_updateFont: _label must not be undefined given _domNode is defined');
+		assertType(
+			this._label !== undefined,
+			'RenameWidget#_updateFont: _label must not be undefined given _domNode is defined'
+		);
 
 		this._editor.applyFontInfo(this._inputWithButton.input);
 
@@ -279,7 +312,8 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 			return null;
 		}
 
-		if (!this._editor.hasModel() || // @ulugbekna: shouldn't happen
+		if (
+			!this._editor.hasModel() || // @ulugbekna: shouldn't happen
 			!this._editor.getDomNode() // @ulugbekna: can happen during tests based on suggestWidget's similar predicate check
 		) {
 			return null;
@@ -296,9 +330,12 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		const lineHeight = this._editor.getOption(EditorOption.lineHeight);
 		const { totalHeight: candidateViewHeight } = RenameCandidateView.getLayoutInfo({ lineHeight });
 
-		const positionPreference = this._nPxAvailableBelow > candidateViewHeight * 6 /* approximate # of candidates to fit in (inclusive of rename input box & rename label) */
-			? [ContentWidgetPositionPreference.BELOW, ContentWidgetPositionPreference.ABOVE]
-			: [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW];
+		const positionPreference =
+			this._nPxAvailableBelow >
+			candidateViewHeight *
+				6 /* approximate # of candidates to fit in (inclusive of rename input box & rename label) */
+				? [ContentWidgetPositionPreference.BELOW, ContentWidgetPositionPreference.ABOVE]
+				: [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW];
 
 		return {
 			position: this._position!,
@@ -308,7 +345,15 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 
 	beforeRender(): IDimension | null {
 		const [accept, preview] = this._acceptKeybindings;
-		this._label!.innerText = nls.localize({ key: 'label', comment: ['placeholders are keybindings, e.g "F2 to Rename, Shift+F2 to Preview"'] }, "{0} to Rename, {1} to Preview", this._keybindingService.lookupKeybinding(accept)?.getLabel(), this._keybindingService.lookupKeybinding(preview)?.getLabel());
+		this._label!.innerText = nls.localize(
+			{
+				key: 'label',
+				comment: ['placeholders are keybindings, e.g "F2 to Rename, Shift+F2 to Preview"'],
+			},
+			'{0} to Rename, {1} to Preview',
+			this._keybindingService.lookupKeybinding(accept)?.getLabel(),
+			this._keybindingService.lookupKeybinding(preview)?.getLabel()
+		);
 
 		this._domNode!.style.minWidth = `200px`; // to prevent from widening when candidates come in
 
@@ -324,7 +369,8 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 			return;
 		}
 
-		if (!this._editor.hasModel() || // shouldn't happen
+		if (
+			!this._editor.hasModel() || // shouldn't happen
 			!this._editor.getDomNode() // can happen during tests based on suggestWidget's similar predicate check
 		) {
 			return;
@@ -351,10 +397,12 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		});
 	}
 
-
 	private _currentAcceptInput?: (wantsPreview: boolean) => void;
 	private _currentCancelInput?: (focusEditor: boolean) => void;
-	private _requestRenameCandidatesOnce?: (triggerKind: NewSymbolNameTriggerKind, cts: CancellationToken) => ProviderResult<NewSymbolName[]>[];
+	private _requestRenameCandidatesOnce?: (
+		triggerKind: NewSymbolNameTriggerKind,
+		cts: CancellationToken
+	) => ProviderResult<NewSymbolName[]>[];
 
 	acceptInput(wantsPreview: boolean): void {
 		this._trace(`invoking acceptInput`);
@@ -372,7 +420,8 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		}
 	}
 
-	focusPreviousRenameSuggestion() { // TODO@ulugbekna: this and focusNext should set the original name if no candidate is focused
+	focusPreviousRenameSuggestion() {
+		// TODO@ulugbekna: this and focusNext should set the original name if no candidate is focused
 		if (!this._renameCandidateListView?.focusPrevious()) {
 			this._inputWithButton.input.value = this._currentName!;
 		}
@@ -385,10 +434,14 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		where: IRange,
 		currentName: string,
 		supportPreview: boolean,
-		requestRenameCandidates: undefined | ((triggerKind: NewSymbolNameTriggerKind, cts: CancellationToken) => ProviderResult<NewSymbolName[]>[]),
+		requestRenameCandidates:
+			| undefined
+			| ((
+					triggerKind: NewSymbolNameTriggerKind,
+					cts: CancellationToken
+			  ) => ProviderResult<NewSymbolName[]>[]),
 		cts: CancellationTokenSource
 	): Promise<RenameWidgetResult | boolean> {
-
 		const { start: selectionStart, end: selectionEnd } = this._getSelection(where, currentName);
 
 		this._renameCts = cts;
@@ -408,15 +461,13 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 
 			this._requestRenameCandidates(currentName, false);
 
-			disposeOnDone.add(dom.addDisposableListener(
-				this._inputWithButton.button,
-				'click',
-				() => this._requestRenameCandidates(currentName, true)
-			));
-			disposeOnDone.add(dom.addDisposableListener(
-				this._inputWithButton.button,
-				dom.EventType.KEY_DOWN,
-				(e) => {
+			disposeOnDone.add(
+				dom.addDisposableListener(this._inputWithButton.button, 'click', () =>
+					this._requestRenameCandidates(currentName, true)
+				)
+			);
+			disposeOnDone.add(
+				dom.addDisposableListener(this._inputWithButton.button, dom.EventType.KEY_DOWN, e => {
 					const keyEvent = new StandardKeyboardEvent(e);
 
 					if (keyEvent.equals(KeyCode.Enter) || keyEvent.equals(KeyCode.Space)) {
@@ -424,8 +475,8 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 						keyEvent.preventDefault();
 						this._requestRenameCandidates(currentName, true);
 					}
-				}
-			));
+				})
+			);
 		}
 
 		this._isEditingRenameCandidate = false;
@@ -442,17 +493,20 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 
 		this._beforeFirstInputFieldEditSW.reset();
 
-
-		disposeOnDone.add(toDisposable(() => {
-			this._renameCts = undefined;
-			cts.dispose(true);
-		})); // @ulugbekna: this may result in `this.cancelInput` being called twice, but it should be safe since we set it to undefined after 1st call
-		disposeOnDone.add(toDisposable(() => {
-			if (this._renameCandidateProvidersCts !== undefined) {
-				this._renameCandidateProvidersCts.dispose(true);
-				this._renameCandidateProvidersCts = undefined;
-			}
-		}));
+		disposeOnDone.add(
+			toDisposable(() => {
+				this._renameCts = undefined;
+				cts.dispose(true);
+			})
+		); // @ulugbekna: this may result in `this.cancelInput` being called twice, but it should be safe since we set it to undefined after 1st call
+		disposeOnDone.add(
+			toDisposable(() => {
+				if (this._renameCandidateProvidersCts !== undefined) {
+					this._renameCandidateProvidersCts.dispose(true);
+					this._renameCandidateProvidersCts = undefined;
+				}
+			})
+		);
 
 		disposeOnDone.add(toDisposable(() => this._candidates.clear()));
 
@@ -463,7 +517,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 			this._hide();
 		});
 
-		this._currentCancelInput = (focusEditor) => {
+		this._currentCancelInput = focusEditor => {
 			this._trace('invoking _currentCancelInput');
 			this._currentAcceptInput = undefined;
 			this._currentCancelInput = undefined;
@@ -473,7 +527,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 			return true;
 		};
 
-		this._currentAcceptInput = (wantsPreview) => {
+		this._currentAcceptInput = wantsPreview => {
 			this._trace('invoking _currentAcceptInput');
 			assertType(this._renameCandidateListView !== undefined);
 
@@ -489,11 +543,16 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 			} else {
 				this._trace('using new name from inputField');
 				newName = this._inputWithButton.input.value;
-				source = this._isEditingRenameCandidate ? { k: 'userEditedRenameSuggestion' } : { k: 'inputField' };
+				source = this._isEditingRenameCandidate
+					? { k: 'userEditedRenameSuggestion' }
+					: { k: 'inputField' };
 			}
 
 			if (newName === currentName || newName.trim().length === 0 /* is just whitespace */) {
-				this.cancelInput(true, '_currentAcceptInput (because newName === value || newName.trim().length === 0)');
+				this.cancelInput(
+					true,
+					'_currentAcceptInput (because newName === value || newName.trim().length === 0)'
+				);
 				return;
 			}
 
@@ -511,13 +570,21 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 					timeBeforeFirstInputFieldEdit: this._timeBeforeFirstInputFieldEdit,
 					nRenameSuggestionsInvocations: this._nRenameSuggestionsInvocations,
 					hadAutomaticRenameSuggestionsInvocation: this._hadAutomaticRenameSuggestionsInvocation,
-				}
+				},
 			});
 		};
 
-		disposeOnDone.add(cts.token.onCancellationRequested(() => this.cancelInput(true, 'cts.token.onCancellationRequested')));
+		disposeOnDone.add(
+			cts.token.onCancellationRequested(() =>
+				this.cancelInput(true, 'cts.token.onCancellationRequested')
+			)
+		);
 		if (!_sticky) {
-			disposeOnDone.add(this._editor.onDidBlurEditorWidget(() => this.cancelInput(!this._domNode?.ownerDocument.hasFocus(), 'editor.onDidBlurEditorWidget')));
+			disposeOnDone.add(
+				this._editor.onDidBlurEditorWidget(() =>
+					this.cancelInput(!this._domNode?.ownerDocument.hasFocus(), 'editor.onDidBlurEditorWidget')
+				)
+			);
 		}
 
 		this._show();
@@ -536,11 +603,15 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		assertType(this._renameCts);
 
 		if (this._inputWithButton.buttonState !== 'stop') {
-
 			this._renameCandidateProvidersCts = new CancellationTokenSource();
 
-			const triggerKind = isManuallyTriggered ? NewSymbolNameTriggerKind.Invoke : NewSymbolNameTriggerKind.Automatic;
-			const candidates = this._requestRenameCandidatesOnce(triggerKind, this._renameCandidateProvidersCts.token);
+			const triggerKind = isManuallyTriggered
+				? NewSymbolNameTriggerKind.Invoke
+				: NewSymbolNameTriggerKind.Automatic;
+			const candidates = this._requestRenameCandidatesOnce(
+				triggerKind,
+				this._renameCandidateProvidersCts.token
+			);
 
 			if (candidates.length === 0) {
 				this._inputWithButton.setSparkleButton();
@@ -569,7 +640,11 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		let start = 0;
 		let end = currentName.length;
 
-		if (!Range.isEmpty(selection) && !Range.spansMultipleLines(selection) && Range.containsRange(where, selection)) {
+		if (
+			!Range.isEmpty(selection) &&
+			!Range.spansMultipleLines(selection) &&
+			Range.containsRange(where, selection)
+		) {
 			start = Math.max(0, selection.startColumn - where.startColumn);
 			end = Math.min(where.endColumn, selection.endColumn) - where.startColumn;
 		}
@@ -594,7 +669,11 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		}, 100);
 	}
 
-	private async _updateRenameCandidates(candidates: ProviderResult<NewSymbolName[]>[], currentName: string, token: CancellationToken) {
+	private async _updateRenameCandidates(
+		candidates: ProviderResult<NewSymbolName[]>[],
+		currentName: string,
+		token: CancellationToken
+	) {
 		const trace = (...args: any[]) => this._trace('_updateRenameCandidates', ...args);
 
 		trace('start');
@@ -612,14 +691,22 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 				? namesListResult.value
 				: []
 		);
-		trace(`received updateRenameCandidates results - total (unfiltered) ${newNames.length} candidates.`);
+		trace(
+			`received updateRenameCandidates results - total (unfiltered) ${newNames.length} candidates.`
+		);
 
 		// deduplicate and filter out the current value
 
 		const distinctNames = arrays.distinct(newNames, v => v.newSymbolName);
 		trace(`distinct candidates - ${distinctNames.length} candidates.`);
 
-		const validDistinctNames = distinctNames.filter(({ newSymbolName }) => newSymbolName.trim().length > 0 && newSymbolName !== this._inputWithButton.input.value && newSymbolName !== currentName && !this._candidates.has(newSymbolName));
+		const validDistinctNames = distinctNames.filter(
+			({ newSymbolName }) =>
+				newSymbolName.trim().length > 0 &&
+				newSymbolName !== this._inputWithButton.input.value &&
+				newSymbolName !== currentName &&
+				!this._candidates.has(newSymbolName)
+		);
 		trace(`valid distinct candidates - ${newNames.length} candidates.`);
 
 		validDistinctNames.forEach(n => this._candidates.add(n.newSymbolName));
@@ -651,10 +738,15 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		if (visibleRanges.length > 0) {
 			firstLineInViewport = visibleRanges[0].startLineNumber;
 		} else {
-			this._logService.warn('RenameWidget#_getTopForPosition: this should not happen - visibleRanges is empty');
+			this._logService.warn(
+				'RenameWidget#_getTopForPosition: this should not happen - visibleRanges is empty'
+			);
 			firstLineInViewport = Math.max(1, this._position!.lineNumber - 5); // @ulugbekna: fallback to current line minus 5
 		}
-		return this._editor.getTopForLineNumber(this._position!.lineNumber) - this._editor.getTopForLineNumber(firstLineInViewport);
+		return (
+			this._editor.getTopForLineNumber(this._position!.lineNumber) -
+			this._editor.getTopForLineNumber(firstLineInViewport)
+		);
 	}
 
 	private _trace(...args: unknown[]) {
@@ -663,7 +755,6 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 }
 
 class RenameCandidateListView {
-
 	/** Parent node of the list widget; needed to control # of list elements visible */
 	private readonly _listContainer: HTMLDivElement;
 	private readonly _listWidget: List<NewSymbolName>;
@@ -676,8 +767,14 @@ class RenameCandidateListView {
 	private readonly _disposables: DisposableStore;
 
 	// FIXME@ulugbekna: rewrite using event emitters
-	constructor(parent: HTMLElement, opts: { fontInfo: FontInfo; onFocusChange: (newSymbolName: string) => void; onSelectionChange: () => void }) {
-
+	constructor(
+		parent: HTMLElement,
+		opts: {
+			fontInfo: FontInfo;
+			onFocusChange: (newSymbolName: string) => void;
+			onSelectionChange: () => void;
+		}
+	) {
 		this._disposables = new DisposableStore();
 
 		this._availableHeight = 0;
@@ -690,36 +787,37 @@ class RenameCandidateListView {
 		this._listContainer.className = 'rename-box rename-candidate-list-container';
 		parent.appendChild(this._listContainer);
 
-		this._listWidget = RenameCandidateListView._createListWidget(this._listContainer, this._candidateViewHeight, opts.fontInfo);
-
-		this._listWidget.onDidChangeFocus(
-			e => {
-				if (e.elements.length === 1) {
-					opts.onFocusChange(e.elements[0].newSymbolName);
-				}
-			},
-			this._disposables
+		this._listWidget = RenameCandidateListView._createListWidget(
+			this._listContainer,
+			this._candidateViewHeight,
+			opts.fontInfo
 		);
 
-		this._listWidget.onDidChangeSelection(
-			e => {
-				if (e.elements.length === 1) {
-					opts.onSelectionChange();
-				}
-			},
-			this._disposables
-		);
+		this._listWidget.onDidChangeFocus(e => {
+			if (e.elements.length === 1) {
+				opts.onFocusChange(e.elements[0].newSymbolName);
+			}
+		}, this._disposables);
+
+		this._listWidget.onDidChangeSelection(e => {
+			if (e.elements.length === 1) {
+				opts.onSelectionChange();
+			}
+		}, this._disposables);
 
 		this._disposables.add(
-			this._listWidget.onDidBlur(e => { // @ulugbekna: because list widget otherwise remembers last focused element and returns it as focused element
+			this._listWidget.onDidBlur(e => {
+				// @ulugbekna: because list widget otherwise remembers last focused element and returns it as focused element
 				this._listWidget.setFocus([]);
 			})
 		);
 
-		this._listWidget.style(getListStyles({
-			listInactiveFocusForeground: quickInputListFocusForeground,
-			listInactiveFocusBackground: quickInputListFocusBackground,
-		}));
+		this._listWidget.style(
+			getListStyles({
+				listInactiveFocusForeground: quickInputListFocusForeground,
+				listInactiveFocusBackground: quickInputListFocusBackground,
+			})
+		);
 	}
 
 	dispose() {
@@ -734,7 +832,6 @@ class RenameCandidateListView {
 	}
 
 	public setCandidates(candidates: NewSymbolName[]): void {
-
 		// insert candidates into list widget
 		this._listWidget.splice(0, 0, candidates);
 
@@ -748,7 +845,13 @@ class RenameCandidateListView {
 		this._listContainer.style.height = `${height}px`;
 		this._listContainer.style.width = `${width}px`;
 
-		aria.status(nls.localize('renameSuggestionsReceivedAria', "Received {0} rename suggestions", candidates.length));
+		aria.status(
+			nls.localize(
+				'renameSuggestionsReceivedAria',
+				'Received {0} rename suggestions',
+				candidates.length
+			)
+		);
 	}
 
 	public clearCandidates(): void {
@@ -836,22 +939,37 @@ class RenameCandidateListView {
 
 	private _pickListHeight(nCandidates: number) {
 		const heightToFitAllCandidates = this._candidateViewHeight * nCandidates;
-		const MAX_N_CANDIDATES = 7;  // @ulugbekna: max # of candidates we want to show at once
-		const height = Math.min(heightToFitAllCandidates, this._availableHeight, this._candidateViewHeight * MAX_N_CANDIDATES);
+		const MAX_N_CANDIDATES = 7; // @ulugbekna: max # of candidates we want to show at once
+		const height = Math.min(
+			heightToFitAllCandidates,
+			this._availableHeight,
+			this._candidateViewHeight * MAX_N_CANDIDATES
+		);
 		return height;
 	}
 
 	private _pickListWidth(candidates: NewSymbolName[]): number {
-		const longestCandidateWidth = Math.ceil(Math.max(...candidates.map(c => c.newSymbolName.length)) * this._typicalHalfwidthCharacterWidth);
+		const longestCandidateWidth = Math.ceil(
+			Math.max(...candidates.map(c => c.newSymbolName.length)) *
+				this._typicalHalfwidthCharacterWidth
+		);
 		const width = Math.max(
 			this._minimumWidth,
-			4 /* padding */ + 16 /* sparkle icon */ + 5 /* margin-left */ + longestCandidateWidth + 10 /* (possibly visible) scrollbar width */ // TODO@ulugbekna: approximate calc - clean this up
+			4 /* padding */ +
+				16 /* sparkle icon */ +
+				5 /* margin-left */ +
+				longestCandidateWidth +
+				10 /* (possibly visible) scrollbar width */ // TODO@ulugbekna: approximate calc - clean this up
 		);
 		return width;
 	}
 
-	private static _createListWidget(container: HTMLElement, candidateViewHeight: number, fontInfo: FontInfo) {
-		const virtualDelegate = new class implements IListVirtualDelegate<NewSymbolName> {
+	private static _createListWidget(
+		container: HTMLElement,
+		candidateViewHeight: number,
+		fontInfo: FontInfo
+	) {
+		const virtualDelegate = new (class implements IListVirtualDelegate<NewSymbolName> {
 			getTemplateId(element: NewSymbolName): string {
 				return 'candidate';
 			}
@@ -859,40 +977,37 @@ class RenameCandidateListView {
 			getHeight(element: NewSymbolName): number {
 				return candidateViewHeight;
 			}
-		};
+		})();
 
-		const renderer = new class implements IListRenderer<NewSymbolName, RenameCandidateView> {
+		const renderer = new (class implements IListRenderer<NewSymbolName, RenameCandidateView> {
 			readonly templateId = 'candidate';
 
 			renderTemplate(container: HTMLElement): RenameCandidateView {
 				return new RenameCandidateView(container, fontInfo);
 			}
 
-			renderElement(candidate: NewSymbolName, index: number, templateData: RenameCandidateView): void {
+			renderElement(
+				candidate: NewSymbolName,
+				index: number,
+				templateData: RenameCandidateView
+			): void {
 				templateData.populate(candidate);
 			}
 
 			disposeTemplate(templateData: RenameCandidateView): void {
 				templateData.dispose();
 			}
-		};
+		})();
 
-		return new List(
-			'NewSymbolNameCandidates',
-			container,
-			virtualDelegate,
-			[renderer],
-			{
-				keyboardSupport: false, // @ulugbekna: because we handle keyboard events through proper commands & keybinding service, see `rename.ts`
-				mouseSupport: true,
-				multipleSelectionSupport: false,
-			}
-		);
+		return new List('NewSymbolNameCandidates', container, virtualDelegate, [renderer], {
+			keyboardSupport: false, // @ulugbekna: because we handle keyboard events through proper commands & keybinding service, see `rename.ts`
+			mouseSupport: true,
+			multipleSelectionSupport: false,
+		});
 	}
 }
 
 class InputWithButton implements IDisposable {
-
 	private _buttonState: 'sparkle' | 'stop' | undefined;
 
 	private _domNode: HTMLDivElement | undefined;
@@ -911,7 +1026,6 @@ class InputWithButton implements IDisposable {
 
 	get domNode() {
 		if (!this._domNode) {
-
 			this._domNode = document.createElement('div');
 			this._domNode.className = 'rename-input-with-button';
 			this._domNode.style.display = 'flex';
@@ -922,7 +1036,10 @@ class InputWithButton implements IDisposable {
 			this._inputNode.className = 'rename-input';
 			this._inputNode.type = 'text';
 			this._inputNode.style.border = 'none';
-			this._inputNode.setAttribute('aria-label', nls.localize('renameAriaLabel', "Rename input. Type new name and press Enter to commit."));
+			this._inputNode.setAttribute(
+				'aria-label',
+				nls.localize('renameAriaLabel', 'Rename input. Type new name and press Enter to commit.')
+			);
 
 			this._domNode.appendChild(this._inputNode);
 
@@ -930,41 +1047,60 @@ class InputWithButton implements IDisposable {
 			this._buttonNode.className = 'rename-suggestions-button';
 			this._buttonNode.setAttribute('tabindex', '0');
 
-			this._buttonGenHoverText = nls.localize('generateRenameSuggestionsButton', "Generate new name suggestions");
-			this._buttonCancelHoverText = nls.localize('cancelRenameSuggestionsButton', "Cancel");
+			this._buttonGenHoverText = nls.localize(
+				'generateRenameSuggestionsButton',
+				'Generate new name suggestions'
+			);
+			this._buttonCancelHoverText = nls.localize('cancelRenameSuggestionsButton', 'Cancel');
 			this._buttonHoverContent = this._buttonGenHoverText;
-			this._disposables.add(getBaseLayerHoverDelegate().setupDelayedHover(this._buttonNode, () => ({
-				content: this._buttonHoverContent,
-				appearance: {
-					showPointer: true,
-					compact: true,
-				}
-			})));
+			this._disposables.add(
+				getBaseLayerHoverDelegate().setupDelayedHover(this._buttonNode, () => ({
+					content: this._buttonHoverContent,
+					appearance: {
+						showPointer: true,
+						compact: true,
+					},
+				}))
+			);
 
 			this._domNode.appendChild(this._buttonNode);
 
 			// notify if selection changes to cancel request to rename-suggestion providers
 
-			this._disposables.add(dom.addDisposableListener(this.input, dom.EventType.INPUT, () => this._onDidInputChange.fire()));
-			this._disposables.add(dom.addDisposableListener(this.input, dom.EventType.KEY_DOWN, (e) => {
-				const keyEvent = new StandardKeyboardEvent(e);
-				if (keyEvent.keyCode === KeyCode.LeftArrow || keyEvent.keyCode === KeyCode.RightArrow) {
-					this._onDidInputChange.fire();
-				}
-			}));
-			this._disposables.add(dom.addDisposableListener(this.input, dom.EventType.CLICK, () => this._onDidInputChange.fire()));
+			this._disposables.add(
+				dom.addDisposableListener(this.input, dom.EventType.INPUT, () =>
+					this._onDidInputChange.fire()
+				)
+			);
+			this._disposables.add(
+				dom.addDisposableListener(this.input, dom.EventType.KEY_DOWN, e => {
+					const keyEvent = new StandardKeyboardEvent(e);
+					if (keyEvent.keyCode === KeyCode.LeftArrow || keyEvent.keyCode === KeyCode.RightArrow) {
+						this._onDidInputChange.fire();
+					}
+				})
+			);
+			this._disposables.add(
+				dom.addDisposableListener(this.input, dom.EventType.CLICK, () =>
+					this._onDidInputChange.fire()
+				)
+			);
 
 			// focus "container" border instead of input box
 
-			this._disposables.add(dom.addDisposableListener(this.input, dom.EventType.FOCUS, () => {
-				this.domNode.style.outlineWidth = '1px';
-				this.domNode.style.outlineStyle = 'solid';
-				this.domNode.style.outlineOffset = '-1px';
-				this.domNode.style.outlineColor = 'var(--vscode-focusBorder)';
-			}));
-			this._disposables.add(dom.addDisposableListener(this.input, dom.EventType.BLUR, () => {
-				this.domNode.style.outline = 'none';
-			}));
+			this._disposables.add(
+				dom.addDisposableListener(this.input, dom.EventType.FOCUS, () => {
+					this.domNode.style.outlineWidth = '1px';
+					this.domNode.style.outlineStyle = 'solid';
+					this.domNode.style.outlineOffset = '-1px';
+					this.domNode.style.outlineColor = 'var(--vscode-focusBorder)';
+				})
+			);
+			this._disposables.add(
+				dom.addDisposableListener(this.input, dom.EventType.BLUR, () => {
+					this.domNode.style.outline = 'none';
+				})
+			);
 		}
 		return this._domNode;
 	}
@@ -1009,7 +1145,6 @@ class InputWithButton implements IDisposable {
 }
 
 class RenameCandidateView {
-
 	private static _PADDING: number = 2;
 
 	private readonly _domNode: HTMLElement;
@@ -1017,7 +1152,6 @@ class RenameCandidateView {
 	private readonly _label: HTMLElement;
 
 	constructor(parent: HTMLElement, fontInfo: FontInfo) {
-
 		this._domNode = document.createElement('div');
 		this._domNode.className = 'rename-box rename-candidate';
 		this._domNode.style.display = `flex`;
@@ -1059,10 +1193,9 @@ class RenameCandidateView {
 	}
 
 	public static getLayoutInfo({ lineHeight }: { lineHeight: number }): { totalHeight: number } {
-		const totalHeight = lineHeight + RenameCandidateView._PADDING * 2 /* top & bottom padding */;
+		const totalHeight = lineHeight + RenameCandidateView._PADDING * 2; /* top & bottom padding */
 		return { totalHeight };
 	}
 
-	public dispose() {
-	}
+	public dispose() {}
 }

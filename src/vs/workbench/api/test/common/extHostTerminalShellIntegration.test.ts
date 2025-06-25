@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type Terminal, type TerminalShellExecution, type TerminalShellExecutionCommandLine, type TerminalShellExecutionStartEvent } from 'vscode';
+import {
+	type Terminal,
+	type TerminalShellExecution,
+	type TerminalShellExecutionCommandLine,
+	type TerminalShellExecutionStartEvent,
+} from 'vscode';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { InternalTerminalShellIntegration } from '../../common/extHostTerminalShellIntegration.js';
 import { Emitter } from '../../../../base/common/event.js';
@@ -19,7 +24,9 @@ function cmdLine(value: string): TerminalShellExecutionCommandLine {
 		isTrusted: true,
 	});
 }
-function asCmdLine(value: string | TerminalShellExecutionCommandLine): TerminalShellExecutionCommandLine {
+function asCmdLine(
+	value: string | TerminalShellExecutionCommandLine
+): TerminalShellExecutionCommandLine {
 	if (typeof value === 'string') {
 		return cmdLine(value);
 	}
@@ -47,16 +54,23 @@ suite('InternalTerminalShellIntegration', () => {
 	let trackedEvents: ITrackedEvent[];
 	let readIteratorsFlushed: Promise<void>[];
 
-	async function startExecutionAwaitObject(commandLine: string | TerminalShellExecutionCommandLine, cwd?: URI): Promise<TerminalShellExecution> {
+	async function startExecutionAwaitObject(
+		commandLine: string | TerminalShellExecutionCommandLine,
+		cwd?: URI
+	): Promise<TerminalShellExecution> {
 		return await new Promise<TerminalShellExecution>(r => {
-			store.add(onDidStartTerminalShellExecution.event(e => {
-				r(e.execution);
-			}));
+			store.add(
+				onDidStartTerminalShellExecution.event(e => {
+					r(e.execution);
+				})
+			);
 			si.startShellExecution(asCmdLine(commandLine), cwd);
 		});
 	}
 
-	async function endExecutionAwaitObject(commandLine: string | TerminalShellExecutionCommandLine): Promise<TerminalShellExecution> {
+	async function endExecutionAwaitObject(
+		commandLine: string | TerminalShellExecutionCommandLine
+	): Promise<TerminalShellExecution> {
 		return await new Promise<TerminalShellExecution>(r => {
 			store.add(si.onDidRequestEndExecution(e => r(e.execution)));
 			si.endShellExecution(asCmdLine(commandLine), 0);
@@ -75,41 +89,55 @@ suite('InternalTerminalShellIntegration', () => {
 	}
 
 	function assertNonDataTrackedEvents(expected: ITrackedEvent[]) {
-		deepStrictEqual(trackedEvents.filter(e => e.type !== 'data'), expected);
+		deepStrictEqual(
+			trackedEvents.filter(e => e.type !== 'data'),
+			expected
+		);
 	}
 
 	function assertDataTrackedEvents(expected: ITrackedEvent[]) {
-		deepStrictEqual(trackedEvents.filter(e => e.type === 'data'), expected);
+		deepStrictEqual(
+			trackedEvents.filter(e => e.type === 'data'),
+			expected
+		);
 	}
 
 	setup(() => {
 		terminal = Symbol('testTerminal') as any;
 		onDidStartTerminalShellExecution = store.add(new Emitter());
-		si = store.add(new InternalTerminalShellIntegration(terminal, onDidStartTerminalShellExecution));
+		si = store.add(
+			new InternalTerminalShellIntegration(terminal, onDidStartTerminalShellExecution)
+		);
 
 		trackedEvents = [];
 		readIteratorsFlushed = [];
-		store.add(onDidStartTerminalShellExecution.event(async e => {
-			trackedEvents.push({
-				type: 'start',
-				commandLine: e.execution.commandLine.value,
-			});
-			const stream = e.execution.read();
-			const readIteratorsFlushedDeferred = new DeferredPromise<void>();
-			readIteratorsFlushed.push(readIteratorsFlushedDeferred.p);
-			for await (const data of stream) {
+		store.add(
+			onDidStartTerminalShellExecution.event(async e => {
 				trackedEvents.push({
-					type: 'data',
+					type: 'start',
 					commandLine: e.execution.commandLine.value,
-					data,
 				});
-			}
-			readIteratorsFlushedDeferred.complete();
-		}));
-		store.add(si.onDidRequestEndExecution(e => trackedEvents.push({
-			type: 'end',
-			commandLine: e.execution.commandLine.value,
-		})));
+				const stream = e.execution.read();
+				const readIteratorsFlushedDeferred = new DeferredPromise<void>();
+				readIteratorsFlushed.push(readIteratorsFlushedDeferred.p);
+				for await (const data of stream) {
+					trackedEvents.push({
+						type: 'data',
+						commandLine: e.execution.commandLine.value,
+						data,
+					});
+				}
+				readIteratorsFlushedDeferred.complete();
+			})
+		);
+		store.add(
+			si.onDidRequestEndExecution(e =>
+				trackedEvents.push({
+					type: 'end',
+					commandLine: e.execution.commandLine.value,
+				})
+			)
+		);
 	});
 
 	test('simple execution', async () => {
@@ -127,7 +155,11 @@ suite('InternalTerminalShellIntegration', () => {
 	test('different execution unexpectedly ended', async () => {
 		const execution1 = await startExecutionAwaitObject(testCommandLine);
 		const execution2 = await endExecutionAwaitObject(testCommandLine2);
-		strictEqual(execution1, execution2, 'when a different execution is ended, the one that started first should end');
+		strictEqual(
+			execution1,
+			execution2,
+			'when a different execution is ended, the one that started first should end'
+		);
 
 		assertTrackedEvents([
 			{ commandLine: testCommandLine, type: 'start' },
@@ -143,7 +175,11 @@ suite('InternalTerminalShellIntegration', () => {
 			store.add(si.onDidRequestEndExecution(e => r(e.execution)));
 			startExecutionAwaitObject(testCommandLine2);
 		});
-		strictEqual(execution1, endedExecution, 'when no end event is fired, the current execution should end');
+		strictEqual(
+			execution1,
+			endedExecution,
+			'when no end event is fired, the current execution should end'
+		);
 
 		// Clean up disposables
 		await endExecutionAwaitObject(testCommandLine2);
@@ -267,7 +303,8 @@ suite('InternalTerminalShellIntegration', () => {
 		});
 
 		test('4 multi-line commands with output', async () => {
-			const commandLine = 'echo "\nfoo"\ngit commit -m "hello\n\nworld"\ncat << EOT\nline1\nline2\nline3\nEOT\n{\necho "foo"\n}';
+			const commandLine =
+				'echo "\nfoo"\ngit commit -m "hello\n\nworld"\ncat << EOT\nline1\nline2\nline3\nEOT\n{\necho "foo"\n}';
 			const subCommandLine1 = 'echo "\nfoo"';
 			const subCommandLine2 = 'git commit -m "hello\n\nworld"';
 			const subCommandLine3 = 'cat << EOT\nline1\nline2\nline3\nEOT';
@@ -295,7 +332,11 @@ suite('InternalTerminalShellIntegration', () => {
 			assertTrackedEvents([
 				{ commandLine, type: 'start' },
 				{ commandLine, type: 'data', data: `${vsc('C')}foo` },
-				{ commandLine, type: 'data', data: `${vsc('C')} 2 files changed, 61 insertions(+), 2 deletions(-)` },
+				{
+					commandLine,
+					type: 'data',
+					data: `${vsc('C')} 2 files changed, 61 insertions(+), 2 deletions(-)`,
+				},
 				{ commandLine, type: 'data', data: `${vsc('C')}line1` },
 				{ commandLine, type: 'data', data: 'line2' },
 				{ commandLine, type: 'data', data: 'line3' },

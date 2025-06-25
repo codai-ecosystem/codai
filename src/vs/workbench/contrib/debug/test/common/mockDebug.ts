@@ -13,7 +13,38 @@ import { NullLogService } from '../../../../../platform/log/common/log.js';
 import { IStorageService } from '../../../../../platform/storage/common/storage.js';
 import { IWorkspaceFolder } from '../../../../../platform/workspace/common/workspace.js';
 import { AbstractDebugAdapter } from '../../common/abstractDebugAdapter.js';
-import { AdapterEndEvent, IAdapterManager, IBreakpoint, IBreakpointData, IBreakpointUpdateData, IConfig, IConfigurationManager, IDataBreakpoint, IDataBreakpointInfoResponse, IDebugLocationReferenced, IDebugModel, IDebugService, IDebugSession, IDebugSessionOptions, IDebugger, IExceptionBreakpoint, IExceptionInfo, IFunctionBreakpoint, IInstructionBreakpoint, ILaunch, IMemoryRegion, INewReplElementData, IRawModelUpdate, IRawStoppedDetails, IReplElement, IStackFrame, IThread, IViewModel, LoadedSourceEvent, State } from '../../common/debug.js';
+import {
+	AdapterEndEvent,
+	IAdapterManager,
+	IBreakpoint,
+	IBreakpointData,
+	IBreakpointUpdateData,
+	IConfig,
+	IConfigurationManager,
+	IDataBreakpoint,
+	IDataBreakpointInfoResponse,
+	IDebugLocationReferenced,
+	IDebugModel,
+	IDebugService,
+	IDebugSession,
+	IDebugSessionOptions,
+	IDebugger,
+	IExceptionBreakpoint,
+	IExceptionInfo,
+	IFunctionBreakpoint,
+	IInstructionBreakpoint,
+	ILaunch,
+	IMemoryRegion,
+	INewReplElementData,
+	IRawModelUpdate,
+	IRawStoppedDetails,
+	IReplElement,
+	IStackFrame,
+	IThread,
+	IViewModel,
+	LoadedSourceEvent,
+	State,
+} from '../../common/debug.js';
 import { DebugCompoundRoot } from '../../common/debugCompoundRoot.js';
 import { IInstructionBreakpointOptions } from '../../common/debugModel.js';
 import { Source } from '../../common/debugSource.js';
@@ -62,7 +93,11 @@ export class MockDebugService implements IDebugService {
 		throw new Error('not implemented');
 	}
 
-	sendBreakpoints(modelUri: uri, sourceModified?: boolean | undefined, session?: IDebugSession | undefined): Promise<any> {
+	sendBreakpoints(
+		modelUri: uri,
+		sourceModified?: boolean | undefined,
+		session?: IDebugSession | undefined
+	): Promise<any> {
 		throw new Error('not implemented');
 	}
 
@@ -70,7 +105,11 @@ export class MockDebugService implements IDebugService {
 		throw new Error('not implemented');
 	}
 
-	updateBreakpoints(uri: uri, data: Map<string, IBreakpointUpdateData>, sendOnResourceSaved: boolean): Promise<void> {
+	updateBreakpoints(
+		uri: uri,
+		data: Map<string, IBreakpointUpdateData>,
+		sendOnResourceSaved: boolean
+	): Promise<void> {
 		throw new Error('not implemented');
 	}
 
@@ -94,19 +133,28 @@ export class MockDebugService implements IDebugService {
 		throw new Error('Method not implemented.');
 	}
 
-	setExceptionBreakpointCondition(breakpoint: IExceptionBreakpoint, condition: string): Promise<void> {
+	setExceptionBreakpointCondition(
+		breakpoint: IExceptionBreakpoint,
+		condition: string
+	): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 
-	setExceptionBreakpointsForSession(session: IDebugSession, data: DebugProtocol.ExceptionBreakpointsFilter[]): void {
+	setExceptionBreakpointsForSession(
+		session: IDebugSession,
+		data: DebugProtocol.ExceptionBreakpointsFilter[]
+	): void {
 		throw new Error('Method not implemented.');
 	}
 
-	addFunctionBreakpoint(): void { }
+	addFunctionBreakpoint(): void {}
 
-	moveWatchExpression(id: string, position: number): void { }
+	moveWatchExpression(id: string, position: number): void {}
 
-	updateFunctionBreakpoint(id: string, update: { name?: string; hitCondition?: string; condition?: string }): Promise<void> {
+	updateFunctionBreakpoint(
+		id: string,
+		update: { name?: string; hitCondition?: string; condition?: string }
+	): Promise<void> {
 		throw new Error('not implemented');
 	}
 
@@ -118,7 +166,10 @@ export class MockDebugService implements IDebugService {
 		throw new Error('Method not implemented.');
 	}
 
-	updateDataBreakpoint(id: string, update: { hitCondition?: string; condition?: string }): Promise<void> {
+	updateDataBreakpoint(
+		id: string,
+		update: { hitCondition?: string; condition?: string }
+	): Promise<void> {
 		throw new Error('not implemented');
 	}
 
@@ -130,7 +181,7 @@ export class MockDebugService implements IDebugService {
 		throw new Error('not implemented');
 	}
 
-	removeReplExpressions(): void { }
+	removeReplExpressions(): void {}
 
 	addWatchExpression(name?: string): Promise<void> {
 		throw new Error('not implemented');
@@ -140,9 +191,13 @@ export class MockDebugService implements IDebugService {
 		throw new Error('not implemented');
 	}
 
-	removeWatchExpressions(id?: string): void { }
+	removeWatchExpressions(id?: string): void {}
 
-	startDebugging(launch: ILaunch, configOrName?: IConfig | string, options?: IDebugSessionOptions): Promise<boolean> {
+	startDebugging(
+		launch: ILaunch,
+		configOrName?: IConfig | string,
+		options?: IDebugSessionOptions
+	): Promise<boolean> {
 		return Promise.resolve(true);
 	}
 
@@ -162,7 +217,7 @@ export class MockDebugService implements IDebugService {
 		throw new Error('not implemented');
 	}
 
-	sourceIsNotAvailable(uri: uri): void { }
+	sourceIsNotAvailable(uri: uri): void {}
 
 	tryToAutoFocusStackFrame(thread: IThread): Promise<any> {
 		throw new Error('not implemented');
@@ -179,9 +234,7 @@ export class MockSession implements IDebugSession {
 	readonly suppressDebugView = false;
 	readonly autoExpandLazyVariables = false;
 
-	dispose(): void {
-
-	}
+	dispose(): void {}
 
 	getMemory(memoryReference: string): IMemoryRegion {
 		throw new Error('Method not implemented.');
@@ -191,17 +244,24 @@ export class MockSession implements IDebugSession {
 		throw new Error('Not implemented');
 	}
 
-	readMemory(memoryReference: string, offset: number, count: number): Promise<DebugProtocol.ReadMemoryResponse | undefined> {
+	readMemory(
+		memoryReference: string,
+		offset: number,
+		count: number
+	): Promise<DebugProtocol.ReadMemoryResponse | undefined> {
 		throw new Error('Method not implemented.');
 	}
 
-	writeMemory(memoryReference: string, offset: number, data: string, allowPartial?: boolean): Promise<DebugProtocol.WriteMemoryResponse | undefined> {
+	writeMemory(
+		memoryReference: string,
+		offset: number,
+		data: string,
+		allowPartial?: boolean
+	): Promise<DebugProtocol.WriteMemoryResponse | undefined> {
 		throw new Error('Method not implemented.');
 	}
 
-	cancelCorrelatedTestRun(): void {
-
-	}
+	cancelCorrelatedTestRun(): void {}
 
 	get compoundRoot(): DebugCompoundRoot | undefined {
 		return undefined;
@@ -231,11 +291,19 @@ export class MockSession implements IDebugSession {
 		throw new Error('Method not implemented.');
 	}
 
-	dataBytesBreakpointInfo(address: string, bytes: number): Promise<IDataBreakpointInfoResponse | undefined> {
+	dataBytesBreakpointInfo(
+		address: string,
+		bytes: number
+	): Promise<IDataBreakpointInfoResponse | undefined> {
 		throw new Error('Method not implemented.');
 	}
 
-	dataBreakpointInfo(name: string, variablesReference?: number | undefined): Promise<{ dataId: string | null; description: string; canPersist?: boolean | undefined } | undefined> {
+	dataBreakpointInfo(
+		name: string,
+		variablesReference?: number | undefined
+	): Promise<
+		{ dataId: string | null; description: string; canPersist?: boolean | undefined } | undefined
+	> {
 		throw new Error('Method not implemented.');
 	}
 
@@ -265,7 +333,7 @@ export class MockSession implements IDebugSession {
 		return true;
 	}
 
-	removeReplExpressions(): void { }
+	removeReplExpressions(): void {}
 	get onDidChangeReplElements(): Event<IReplElement | undefined> {
 		throw new Error('not implemented');
 	}
@@ -274,7 +342,7 @@ export class MockSession implements IDebugSession {
 		return Promise.resolve(undefined);
 	}
 
-	appendToRepl(data: INewReplElementData): void { }
+	appendToRepl(data: INewReplElementData): void {}
 
 	configuration: IConfig = { type: 'mock', name: 'mock', request: 'launch' };
 	unresolvedConfiguration: IConfig = { type: 'mock', name: 'mock', request: 'launch' };
@@ -342,7 +410,7 @@ export class MockSession implements IDebugSession {
 		throw new Error('not implemented');
 	}
 
-	setConfiguration(configuration: { resolved: IConfig; unresolved: IConfig }) { }
+	setConfiguration(configuration: { resolved: IConfig; unresolved: IConfig }) {}
 
 	getAllThreads(): IThread[] {
 		return [];
@@ -356,13 +424,18 @@ export class MockSession implements IDebugSession {
 		return Promise.resolve([]);
 	}
 
-	completions(frameId: number, threadId: number, text: string, position: Position): Promise<DebugProtocol.CompletionsResponse> {
+	completions(
+		frameId: number,
+		threadId: number,
+		text: string,
+		position: Position
+	): Promise<DebugProtocol.CompletionsResponse> {
 		throw new Error('not implemented');
 	}
 
-	clearThreads(removeThreads: boolean, reference?: number): void { }
+	clearThreads(removeThreads: boolean, reference?: number): void {}
 
-	rawUpdate(data: IRawModelUpdate): void { }
+	rawUpdate(data: IRawModelUpdate): void {}
 
 	initialize(dbgr: IDebugger): Promise<void> {
 		throw new Error('Method not implemented.');
@@ -391,7 +464,12 @@ export class MockSession implements IDebugSession {
 	customRequest(request: string, args: any): Promise<DebugProtocol.Response> {
 		throw new Error('Method not implemented.');
 	}
-	stackTrace(threadId: number, startFrame: number, levels: number, token: CancellationToken): Promise<DebugProtocol.StackTraceResponse> {
+	stackTrace(
+		threadId: number,
+		startFrame: number,
+		levels: number,
+		token: CancellationToken
+	): Promise<DebugProtocol.StackTraceResponse> {
 		throw new Error('Method not implemented.');
 	}
 	exceptionInfo(threadId: number): Promise<IExceptionInfo> {
@@ -400,10 +478,20 @@ export class MockSession implements IDebugSession {
 	scopes(frameId: number): Promise<DebugProtocol.ScopesResponse> {
 		throw new Error('Method not implemented.');
 	}
-	variables(variablesReference: number, threadId: number | undefined, filter: 'indexed' | 'named', start: number, count: number): Promise<DebugProtocol.VariablesResponse> {
+	variables(
+		variablesReference: number,
+		threadId: number | undefined,
+		filter: 'indexed' | 'named',
+		start: number,
+		count: number
+	): Promise<DebugProtocol.VariablesResponse> {
 		throw new Error('Method not implemented.');
 	}
-	evaluate(expression: string, frameId: number, context?: string): Promise<DebugProtocol.EvaluateResponse> {
+	evaluate(
+		expression: string,
+		frameId: number,
+		context?: string
+	): Promise<DebugProtocol.EvaluateResponse> {
 		throw new Error('Method not implemented.');
 	}
 	restartFrame(frameId: number, threadId: number): Promise<void> {
@@ -412,7 +500,11 @@ export class MockSession implements IDebugSession {
 	next(threadId: number, granularity?: DebugProtocol.SteppingGranularity): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
-	stepIn(threadId: number, targetId?: number, granularity?: DebugProtocol.SteppingGranularity): Promise<void> {
+	stepIn(
+		threadId: number,
+		targetId?: number,
+		granularity?: DebugProtocol.SteppingGranularity
+	): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 	stepOut(threadId: number, granularity?: DebugProtocol.SteppingGranularity): Promise<void> {
@@ -433,16 +525,29 @@ export class MockSession implements IDebugSession {
 	terminateThreads(threadIds: number[]): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
-	setVariable(variablesReference: number, name: string, value: string): Promise<DebugProtocol.SetVariableResponse> {
+	setVariable(
+		variablesReference: number,
+		name: string,
+		value: string
+	): Promise<DebugProtocol.SetVariableResponse> {
 		throw new Error('Method not implemented.');
 	}
-	setExpression(frameId: number, expression: string, value: string): Promise<DebugProtocol.SetExpressionResponse | undefined> {
+	setExpression(
+		frameId: number,
+		expression: string,
+		value: string
+	): Promise<DebugProtocol.SetExpressionResponse | undefined> {
 		throw new Error('Method not implemented.');
 	}
 	loadSource(resource: uri): Promise<DebugProtocol.SourceResponse> {
 		throw new Error('Method not implemented.');
 	}
-	disassemble(memoryReference: string, offset: number, instructionOffset: number, instructionCount: number): Promise<DebugProtocol.DisassembledInstruction[] | undefined> {
+	disassemble(
+		memoryReference: string,
+		offset: number,
+		instructionOffset: number,
+		instructionCount: number
+	): Promise<DebugProtocol.DisassembledInstruction[] | undefined> {
 		throw new Error('Method not implemented.');
 	}
 
@@ -453,7 +558,11 @@ export class MockSession implements IDebugSession {
 		throw new Error('Method not implemented.');
 	}
 
-	gotoTargets(source: DebugProtocol.Source, line: number, column?: number | undefined): Promise<DebugProtocol.GotoTargetsResponse> {
+	gotoTargets(
+		source: DebugProtocol.Source,
+		line: number,
+		column?: number | undefined
+	): Promise<DebugProtocol.GotoTargetsResponse> {
 		throw new Error('Method not implemented.');
 	}
 	goto(threadId: number, targetId: number): Promise<DebugProtocol.GotoResponse> {
@@ -465,7 +574,6 @@ export class MockSession implements IDebugSession {
 }
 
 export class MockRawSession {
-
 	capabilities: DebugProtocol.Capabilities = {};
 	disconnected = false;
 	sessionLengthInSeconds: number = 0;
@@ -485,17 +593,21 @@ export class MockRawSession {
 			success: true,
 			command: 'stackTrace',
 			body: {
-				stackFrames: [{
-					id: 1,
-					name: 'mock',
-					line: 5,
-					column: 6
-				}]
-			}
+				stackFrames: [
+					{
+						id: 1,
+						name: 'mock',
+						line: 5,
+						column: 6,
+					},
+				],
+			},
 		});
 	}
 
-	exceptionInfo(args: DebugProtocol.ExceptionInfoArguments): Promise<DebugProtocol.ExceptionInfoResponse> {
+	exceptionInfo(
+		args: DebugProtocol.ExceptionInfoArguments
+	): Promise<DebugProtocol.ExceptionInfoResponse> {
 		throw new Error('not implemented');
 	}
 
@@ -547,7 +659,9 @@ export class MockRawSession {
 		throw new Error('not implemented');
 	}
 
-	reverseContinue(args: DebugProtocol.ReverseContinueArguments): Promise<DebugProtocol.ReverseContinueResponse> {
+	reverseContinue(
+		args: DebugProtocol.ReverseContinueArguments
+	): Promise<DebugProtocol.ReverseContinueResponse> {
 		throw new Error('not implemented');
 	}
 
@@ -555,19 +669,27 @@ export class MockRawSession {
 		throw new Error('not implemented');
 	}
 
-	terminateThreads(args: DebugProtocol.TerminateThreadsArguments): Promise<DebugProtocol.TerminateThreadsResponse> {
+	terminateThreads(
+		args: DebugProtocol.TerminateThreadsArguments
+	): Promise<DebugProtocol.TerminateThreadsResponse> {
 		throw new Error('not implemented');
 	}
 
-	setVariable(args: DebugProtocol.SetVariableArguments): Promise<DebugProtocol.SetVariableResponse> {
+	setVariable(
+		args: DebugProtocol.SetVariableArguments
+	): Promise<DebugProtocol.SetVariableResponse> {
 		throw new Error('not implemented');
 	}
 
-	restartFrame(args: DebugProtocol.RestartFrameArguments): Promise<DebugProtocol.RestartFrameResponse> {
+	restartFrame(
+		args: DebugProtocol.RestartFrameArguments
+	): Promise<DebugProtocol.RestartFrameResponse> {
 		throw new Error('not implemented');
 	}
 
-	completions(args: DebugProtocol.CompletionsArguments): Promise<DebugProtocol.CompletionsResponse> {
+	completions(
+		args: DebugProtocol.CompletionsArguments
+	): Promise<DebugProtocol.CompletionsResponse> {
 		throw new Error('not implemented');
 	}
 
@@ -579,19 +701,27 @@ export class MockRawSession {
 		throw new Error('not implemented');
 	}
 
-	loadedSources(args: DebugProtocol.LoadedSourcesArguments): Promise<DebugProtocol.LoadedSourcesResponse> {
+	loadedSources(
+		args: DebugProtocol.LoadedSourcesArguments
+	): Promise<DebugProtocol.LoadedSourcesResponse> {
 		throw new Error('not implemented');
 	}
 
-	setBreakpoints(args: DebugProtocol.SetBreakpointsArguments): Promise<DebugProtocol.SetBreakpointsResponse> {
+	setBreakpoints(
+		args: DebugProtocol.SetBreakpointsArguments
+	): Promise<DebugProtocol.SetBreakpointsResponse> {
 		throw new Error('not implemented');
 	}
 
-	setFunctionBreakpoints(args: DebugProtocol.SetFunctionBreakpointsArguments): Promise<DebugProtocol.SetFunctionBreakpointsResponse> {
+	setFunctionBreakpoints(
+		args: DebugProtocol.SetFunctionBreakpointsArguments
+	): Promise<DebugProtocol.SetFunctionBreakpointsResponse> {
 		throw new Error('not implemented');
 	}
 
-	setExceptionBreakpoints(args: DebugProtocol.SetExceptionBreakpointsArguments): Promise<DebugProtocol.SetExceptionBreakpointsResponse> {
+	setExceptionBreakpoints(
+		args: DebugProtocol.SetExceptionBreakpointsArguments
+	): Promise<DebugProtocol.SetExceptionBreakpointsResponse> {
 		throw new Error('not implemented');
 	}
 
@@ -638,7 +768,7 @@ export class MockDebugAdapter extends AbstractDebugAdapter {
 			request_seq: request.seq,
 			command: request.command,
 			success: true,
-			body
+			body,
 		};
 		this.acceptMessage(response);
 	}
@@ -648,7 +778,7 @@ export class MockDebugAdapter extends AbstractDebugAdapter {
 			seq: ++this.seq,
 			type: 'event',
 			event,
-			body
+			body,
 		};
 		this.acceptMessage(response);
 	}
@@ -668,7 +798,7 @@ export class MockDebugAdapter extends AbstractDebugAdapter {
 			seq: ++this.seq,
 			type: 'request',
 			command,
-			arguments: args
+			arguments: args,
 		};
 		this.acceptMessage(response);
 	}
@@ -680,7 +810,7 @@ export class MockDebugAdapter extends AbstractDebugAdapter {
 
 		this.sendResponseBody(request, {
 			result: '=' + args.expression,
-			variablesReference: 0
+			variablesReference: 0,
 		});
 
 		if (args.expression.indexOf('after.') === 0) {
@@ -690,7 +820,6 @@ export class MockDebugAdapter extends AbstractDebugAdapter {
 }
 
 export class MockDebugStorage extends DebugStorage {
-
 	constructor(storageService: IStorageService) {
 		super(storageService, undefined as any, undefined as any, new NullLogService());
 	}

@@ -23,12 +23,19 @@ const MEMENTO_KEY = 'json-schema-cache';
 export class JSONSchemaCache {
 	private cacheInfo: CacheInfo;
 
-	constructor(private readonly schemaCacheLocation: string, private readonly globalState: Memento) {
+	constructor(
+		private readonly schemaCacheLocation: string,
+		private readonly globalState: Memento
+	) {
 		const infos = globalState.get<CacheInfo>(MEMENTO_KEY, {}) as CacheInfo;
 		const validated: CacheInfo = {};
 		for (const schemaUri in infos) {
 			const { etag, fileName, updateTime } = infos[schemaUri];
-			if (typeof etag === 'string' && typeof fileName === 'string' && typeof updateTime === 'number') {
+			if (
+				typeof etag === 'string' &&
+				typeof fileName === 'string' &&
+				typeof updateTime === 'number'
+			) {
 				validated[schemaUri] = { etag, fileName, updateTime };
 			}
 		}
@@ -60,15 +67,22 @@ export class JSONSchemaCache {
 		}
 	}
 
-	async getSchemaIfUpdatedSince(schemaUri: string, expirationDurationInHours: number): Promise<string | undefined> {
+	async getSchemaIfUpdatedSince(
+		schemaUri: string,
+		expirationDurationInHours: number
+	): Promise<string | undefined> {
 		const lastUpdatedInHours = this.getLastUpdatedInHours(schemaUri);
-		if (lastUpdatedInHours !== undefined && (lastUpdatedInHours < expirationDurationInHours)) {
+		if (lastUpdatedInHours !== undefined && lastUpdatedInHours < expirationDurationInHours) {
 			return this.loadSchemaFile(schemaUri, this.cacheInfo[schemaUri], false);
 		}
 		return undefined;
 	}
 
-	async getSchema(schemaUri: string, etag: string, etagValid: boolean): Promise<string | undefined> {
+	async getSchema(
+		schemaUri: string,
+		etag: string,
+		etagValid: boolean
+	): Promise<string | undefined> {
 		const cacheEntry = this.cacheInfo[schemaUri];
 		if (cacheEntry) {
 			if (cacheEntry.etag === etag) {
@@ -80,7 +94,11 @@ export class JSONSchemaCache {
 		return undefined;
 	}
 
-	private async loadSchemaFile(schemaUri: string, cacheEntry: CacheEntry, isUpdated: boolean): Promise<string | undefined> {
+	private async loadSchemaFile(
+		schemaUri: string,
+		cacheEntry: CacheEntry,
+		isUpdated: boolean
+	): Promise<string | undefined> {
 		const cacheLocation = path.join(this.schemaCacheLocation, cacheEntry.fileName);
 		try {
 			const content = (await fs.readFile(cacheLocation)).toString();
@@ -106,7 +124,6 @@ export class JSONSchemaCache {
 			// ignore
 		}
 	}
-
 
 	// for debugging
 	public getCacheInfo() {
@@ -135,7 +152,6 @@ export class JSONSchemaCache {
 		} catch (e) {
 			// ignore
 		} finally {
-
 			this.cacheInfo = {};
 			await this.updateMemento();
 		}

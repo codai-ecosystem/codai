@@ -9,7 +9,10 @@ import { Disposable } from '../../../../base/common/lifecycle.js';
 import Severity from '../../../../base/common/severity.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { TerminalSettingId } from '../../../../platform/terminal/common/terminal.js';
-import { listErrorForeground, listWarningForeground } from '../../../../platform/theme/common/colorRegistry.js';
+import {
+	listErrorForeground,
+	listWarningForeground,
+} from '../../../../platform/theme/common/colorRegistry.js';
 import { spinningLoading } from '../../../../platform/theme/common/iconRegistry.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { ITerminalStatus } from '../common/terminal.js';
@@ -25,7 +28,7 @@ export const enum TerminalStatus {
 	RelaunchNeeded = 'relaunch-needed',
 	EnvironmentVariableInfoChangesActive = 'env-var-info-changes-active',
 	ShellIntegrationInfo = 'shell-integration-info',
-	ShellIntegrationAttentionNeeded = 'shell-integration-attention-needed'
+	ShellIntegrationAttentionNeeded = 'shell-integration-attention-needed',
 }
 
 export interface ITerminalStatusList {
@@ -56,11 +59,19 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
 	private readonly _statusTimeouts: Map<string, number> = new Map();
 
 	private readonly _onDidAddStatus = this._register(new Emitter<ITerminalStatus>());
-	get onDidAddStatus(): Event<ITerminalStatus> { return this._onDidAddStatus.event; }
+	get onDidAddStatus(): Event<ITerminalStatus> {
+		return this._onDidAddStatus.event;
+	}
 	private readonly _onDidRemoveStatus = this._register(new Emitter<ITerminalStatus>());
-	get onDidRemoveStatus(): Event<ITerminalStatus> { return this._onDidRemoveStatus.event; }
-	private readonly _onDidChangePrimaryStatus = this._register(new Emitter<ITerminalStatus | undefined>());
-	get onDidChangePrimaryStatus(): Event<ITerminalStatus | undefined> { return this._onDidChangePrimaryStatus.event; }
+	get onDidRemoveStatus(): Event<ITerminalStatus> {
+		return this._onDidRemoveStatus.event;
+	}
+	private readonly _onDidChangePrimaryStatus = this._register(
+		new Emitter<ITerminalStatus | undefined>()
+	);
+	get onDidChangePrimaryStatus(): Event<ITerminalStatus | undefined> {
+		return this._onDidChangePrimaryStatus.event;
+	}
 
 	constructor(
 		@IConfigurationService private readonly _configurationService: IConfigurationService
@@ -80,7 +91,9 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
 		return result;
 	}
 
-	get statuses(): ITerminalStatus[] { return Array.from(this._statuses.values()); }
+	get statuses(): ITerminalStatus[] {
+		return Array.from(this._statuses.values());
+	}
 
 	add(status: ITerminalStatus, duration?: number) {
 		status = this._applyAnimationSetting(status);
@@ -133,7 +146,11 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
 	}
 
 	private _applyAnimationSetting(status: ITerminalStatus): ITerminalStatus {
-		if (!status.icon || ThemeIcon.getModifier(status.icon) !== 'spin' || this._configurationService.getValue(TerminalSettingId.TabsEnableAnimation)) {
+		if (
+			!status.icon ||
+			ThemeIcon.getModifier(status.icon) !== 'spin' ||
+			this._configurationService.getValue(TerminalSettingId.TabsEnableAnimation)
+		) {
 			return status;
 		}
 		let icon;
@@ -147,7 +164,7 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
 		// reload being needed
 		return {
 			...status,
-			icon
+			icon,
 		};
 	}
 }

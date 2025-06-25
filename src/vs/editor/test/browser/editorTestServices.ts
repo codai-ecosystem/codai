@@ -5,13 +5,19 @@
 
 import { Emitter, Event } from '../../../base/common/event.js';
 import { ICodeEditor } from '../../browser/editorBrowser.js';
-import { AbstractCodeEditorService, GlobalStyleSheet } from '../../browser/services/abstractCodeEditorService.js';
-import { CommandsRegistry, ICommandEvent, ICommandService } from '../../../platform/commands/common/commands.js';
+import {
+	AbstractCodeEditorService,
+	GlobalStyleSheet,
+} from '../../browser/services/abstractCodeEditorService.js';
+import {
+	CommandsRegistry,
+	ICommandEvent,
+	ICommandService,
+} from '../../../platform/commands/common/commands.js';
 import { IResourceEditorInput } from '../../../platform/editor/common/editor.js';
 import { IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
 
 export class TestCodeEditorService extends AbstractCodeEditorService {
-
 	public readonly globalStyleSheet = new TestGlobalStyleSheet();
 
 	protected override _createGlobalStyleSheet(): GlobalStyleSheet {
@@ -22,14 +28,17 @@ export class TestCodeEditorService extends AbstractCodeEditorService {
 		return null;
 	}
 	public lastInput?: IResourceEditorInput;
-	override openCodeEditor(input: IResourceEditorInput, source: ICodeEditor | null, sideBySide?: boolean): Promise<ICodeEditor | null> {
+	override openCodeEditor(
+		input: IResourceEditorInput,
+		source: ICodeEditor | null,
+		sideBySide?: boolean
+	): Promise<ICodeEditor | null> {
 		this.lastInput = input;
 		return Promise.resolve(null);
 	}
 }
 
 export class TestGlobalStyleSheet extends GlobalStyleSheet {
-
 	public rules: string[] = [];
 
 	constructor() {
@@ -77,7 +86,10 @@ export class TestCommandService implements ICommandService {
 
 		try {
 			this._onWillExecuteCommand.fire({ commandId: id, args });
-			const result = this._instantiationService.invokeFunction.apply(this._instantiationService, [command.handler, ...args]) as T;
+			const result = this._instantiationService.invokeFunction.apply(this._instantiationService, [
+				command.handler,
+				...args,
+			]) as T;
 			this._onDidExecuteCommand.fire({ commandId: id, args });
 			return Promise.resolve(result);
 		} catch (err) {

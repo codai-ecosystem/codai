@@ -14,15 +14,13 @@ function asRemoteSource(raw: any): RemoteSource {
 	const protocol = workspace.getConfiguration('github').get<'https' | 'ssh'>('gitProtocol');
 	return {
 		name: `$(github) ${raw.full_name}`,
-		description: `${raw.stargazers_count > 0 ? `$(star-full) ${raw.stargazers_count}` : ''
-			}`,
+		description: `${raw.stargazers_count > 0 ? `$(star-full) ${raw.stargazers_count}` : ''}`,
 		detail: raw.description || undefined,
-		url: protocol === 'https' ? raw.clone_url : raw.ssh_url
+		url: protocol === 'https' ? raw.clone_url : raw.ssh_url,
 	};
 }
 
 export class GithubRemoteSourceProvider implements RemoteSourceProvider {
-
 	readonly name = 'GitHub';
 	readonly icon = 'github';
 	readonly supportsQuery = true;
@@ -61,7 +59,11 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 		if (!query) {
 			const user = await octokit.users.getAuthenticated({});
 			const username = user.data.login;
-			const res = await octokit.repos.listForAuthenticatedUser({ username, sort: 'updated', per_page: 100 });
+			const res = await octokit.repos.listForAuthenticatedUser({
+				username,
+				sort: 'updated',
+				per_page: 100,
+			});
 			this.userReposCache = res.data.map(asRemoteSource);
 		}
 
@@ -111,7 +113,7 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 		const repo = await octokit.repos.get(repository);
 		const defaultBranch = repo.data.default_branch;
 
-		return branches.sort((a, b) => a === defaultBranch ? -1 : b === defaultBranch ? 1 : 0);
+		return branches.sort((a, b) => (a === defaultBranch ? -1 : b === defaultBranch ? 1 : 0));
 	}
 
 	async getRemoteSourceActions(url: string): Promise<RemoteSourceAction[]> {
@@ -120,20 +122,23 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 			return [];
 		}
 
-		return [{
-			label: l10n.t('Open on GitHub'),
-			icon: 'github',
-			run(branch: string) {
-				const link = getBranchLink(url, branch);
-				env.openExternal(Uri.parse(link));
-			}
-		}, {
-			label: l10n.t('Checkout on vscode.dev'),
-			icon: 'globe',
-			run(branch: string) {
-				const link = getBranchLink(url, branch, getVscodeDevHost());
-				env.openExternal(Uri.parse(link));
-			}
-		}];
+		return [
+			{
+				label: l10n.t('Open on GitHub'),
+				icon: 'github',
+				run(branch: string) {
+					const link = getBranchLink(url, branch);
+					env.openExternal(Uri.parse(link));
+				},
+			},
+			{
+				label: l10n.t('Checkout on vscode.dev'),
+				icon: 'globe',
+				run(branch: string) {
+					const link = getBranchLink(url, branch, getVscodeDevHost());
+					env.openExternal(Uri.parse(link));
+				},
+			},
+		];
 	}
 }

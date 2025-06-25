@@ -16,7 +16,6 @@ import { EditorOption, IRulerOption } from '../../../common/config/editorOptions
  * at a time.
  */
 export class Rulers extends ViewPart {
-
 	public domNode: FastDomNode<HTMLElement>;
 	private readonly _renderedRulers: FastDomNode<HTMLElement>[];
 	private _rulers: IRulerOption[];
@@ -31,7 +30,9 @@ export class Rulers extends ViewPart {
 		this._renderedRulers = [];
 		const options = this._context.configuration.options;
 		this._rulers = options.get(EditorOption.rulers);
-		this._typicalHalfwidthCharacterWidth = options.get(EditorOption.fontInfo).typicalHalfwidthCharacterWidth;
+		this._typicalHalfwidthCharacterWidth = options.get(
+			EditorOption.fontInfo
+		).typicalHalfwidthCharacterWidth;
 	}
 
 	public override dispose(): void {
@@ -43,7 +44,9 @@ export class Rulers extends ViewPart {
 	public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
 		const options = this._context.configuration.options;
 		this._rulers = options.get(EditorOption.rulers);
-		this._typicalHalfwidthCharacterWidth = options.get(EditorOption.fontInfo).typicalHalfwidthCharacterWidth;
+		this._typicalHalfwidthCharacterWidth = options.get(
+			EditorOption.fontInfo
+		).typicalHalfwidthCharacterWidth;
 		return true;
 	}
 	public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
@@ -89,7 +92,6 @@ export class Rulers extends ViewPart {
 	}
 
 	public render(ctx: RestrictedRenderingContext): void {
-
 		this._ensureRulersCount();
 
 		for (let i = 0, len = this._rulers.length; i < len; i++) {

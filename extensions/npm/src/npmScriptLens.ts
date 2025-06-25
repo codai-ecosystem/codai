@@ -13,11 +13,10 @@ import {
 	TextDocument,
 	Uri,
 	workspace,
-	l10n
+	l10n,
 } from 'vscode';
 import { readScripts } from './readScripts';
 import { getRunScriptCommand } from './tasks';
-
 
 const enum Constants {
 	ConfigKey = 'debug.javascript.codelens.npmScripts',
@@ -53,7 +52,7 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 					language: 'json',
 					pattern: '**/package.json',
 				},
-				this,
+				this
 			)
 		);
 	}
@@ -71,36 +70,34 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 			return [];
 		}
 
-		const title = '$(debug-start) ' + l10n.t("Debug");
+		const title = '$(debug-start) ' + l10n.t('Debug');
 		const cwd = path.dirname(document.uri.fsPath);
 		if (this.lensLocation === 'top') {
 			return [
-				new CodeLens(
-					tokens.location.range,
-					{
-						title,
-						command: 'extension.js-debug.npmScript',
-						arguments: [cwd],
-					},
-				),
+				new CodeLens(tokens.location.range, {
+					title,
+					command: 'extension.js-debug.npmScript',
+					arguments: [cwd],
+				}),
 			];
 		}
 
 		if (this.lensLocation === 'all') {
 			const folder = Uri.joinPath(document.uri, '..');
-			return Promise.all(tokens.scripts.map(
-				async ({ name, nameRange }) => {
+			return Promise.all(
+				tokens.scripts.map(async ({ name, nameRange }) => {
 					const runScriptCommand = await getRunScriptCommand(name, folder);
-					return new CodeLens(
-						nameRange,
-						{
-							title,
-							command: 'extension.js-debug.createDebuggerTerminal',
-							arguments: [runScriptCommand.join(' '), workspace.getWorkspaceFolder(document.uri), { cwd }],
-						},
-					);
-				},
-			));
+					return new CodeLens(nameRange, {
+						title,
+						command: 'extension.js-debug.createDebuggerTerminal',
+						arguments: [
+							runScriptCommand.join(' '),
+							workspace.getWorkspaceFolder(document.uri),
+							{ cwd },
+						],
+					});
+				})
+			);
 		}
 
 		return [];

@@ -12,7 +12,11 @@ import { renderLabelWithIcons } from '../../../../../base/browser/ui/iconLabel/i
 import { IDisposable } from '../../../../../base/common/lifecycle.js';
 import { ActionWidgetDropdownActionViewItem } from '../../../../../platform/actions/browser/actionWidgetDropdownActionViewItem.js';
 import { IActionWidgetService } from '../../../../../platform/actionWidget/browser/actionWidget.js';
-import { IActionWidgetDropdownAction, IActionWidgetDropdownActionProvider, IActionWidgetDropdownOptions } from '../../../../../platform/actionWidget/browser/actionWidgetDropdown.js';
+import {
+	IActionWidgetDropdownAction,
+	IActionWidgetDropdownActionProvider,
+	IActionWidgetDropdownOptions,
+} from '../../../../../platform/actionWidget/browser/actionWidgetDropdown.js';
 import { IMenuService, MenuId } from '../../../../../platform/actions/common/actions.js';
 import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
 import { getFlatActionBarActions } from '../../../../../platform/actions/browser/menuEntryActionViewItem.js';
@@ -27,7 +31,9 @@ export interface IModelPickerDelegate {
 	getModels(): ILanguageModelChatMetadataAndIdentifier[];
 }
 
-function modelDelegateToWidgetActionsProvider(delegate: IModelPickerDelegate): IActionWidgetDropdownActionProvider {
+function modelDelegateToWidgetActionsProvider(
+	delegate: IModelPickerDelegate
+): IActionWidgetDropdownActionProvider {
 	return {
 		getActions: () => {
 			return delegate.getModels().map(model => {
@@ -42,14 +48,19 @@ function modelDelegateToWidgetActionsProvider(delegate: IModelPickerDelegate): I
 					label: model.metadata.name,
 					run: () => {
 						delegate.setModel(model);
-					}
+					},
 				} satisfies IActionWidgetDropdownAction;
 			});
-		}
+		},
 	};
 }
 
-function getModelPickerActionBarActions(menuService: IMenuService, contextKeyService: IContextKeyService, commandService: ICommandService, chatEntitlementService: IChatEntitlementService): IAction[] {
+function getModelPickerActionBarActions(
+	menuService: IMenuService,
+	contextKeyService: IContextKeyService,
+	commandService: ICommandService,
+	chatEntitlementService: IChatEntitlementService
+): IAction[] {
 	const menuActions = menuService.createMenu(MenuId.ChatModelPicker, contextKeyService);
 	const menuContributions = getFlatActionBarActions(menuActions.getActions());
 	menuActions.dispose();
@@ -65,14 +76,14 @@ function getModelPickerActionBarActions(menuService: IMenuService, contextKeySer
 	if (chatEntitlementService.entitlement === ChatEntitlement.Free) {
 		additionalActions.push({
 			id: 'moreModels',
-			label: localize('chat.moreModels', "Add Premium Models"),
+			label: localize('chat.moreModels', 'Add Premium Models'),
 			enabled: true,
-			tooltip: localize('chat.moreModels.tooltip', "Add premium models"),
+			tooltip: localize('chat.moreModels.tooltip', 'Add premium models'),
 			class: undefined,
 			run: () => {
 				const commandId = 'workbench.action.chat.upgradePlan';
 				commandService.executeCommand(commandId);
-			}
+			},
 		});
 	}
 
@@ -92,34 +103,54 @@ export class ModelPickerActionItem extends ActionWidgetDropdownActionViewItem {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ICommandService commandService: ICommandService,
 		@IChatEntitlementService chatEntitlementService: IChatEntitlementService,
-		@IKeybindingService keybindingService: IKeybindingService,
+		@IKeybindingService keybindingService: IKeybindingService
 	) {
 		// Modify the original action with a different label and make it show the current model
 		const actionWithLabel: IAction = {
 			...action,
 			label: currentModel.metadata.name,
-			tooltip: localize('chat.modelPicker.label', "Pick Model"),
-			run: () => { }
+			tooltip: localize('chat.modelPicker.label', 'Pick Model'),
+			run: () => {},
 		};
 
-		const modelPickerActionWidgetOptions: Omit<IActionWidgetDropdownOptions, 'label' | 'labelRenderer'> = {
+		const modelPickerActionWidgetOptions: Omit<
+			IActionWidgetDropdownOptions,
+			'label' | 'labelRenderer'
+		> = {
 			actionProvider: modelDelegateToWidgetActionsProvider(delegate),
-			actionBarActions: getModelPickerActionBarActions(menuService, contextKeyService, commandService, chatEntitlementService)
+			actionBarActions: getModelPickerActionBarActions(
+				menuService,
+				contextKeyService,
+				commandService,
+				chatEntitlementService
+			),
 		};
 
-		super(actionWithLabel, modelPickerActionWidgetOptions, actionWidgetService, keybindingService, contextKeyService);
+		super(
+			actionWithLabel,
+			modelPickerActionWidgetOptions,
+			actionWidgetService,
+			keybindingService,
+			contextKeyService
+		);
 
 		// Listen for model changes from the delegate
-		this._register(delegate.onDidChangeModel(model => {
-			this.currentModel = model;
-			if (this.element) {
-				this.renderLabel(this.element);
-			}
-		}));
+		this._register(
+			delegate.onDidChangeModel(model => {
+				this.currentModel = model;
+				if (this.element) {
+					this.renderLabel(this.element);
+				}
+			})
+		);
 	}
 
 	protected override renderLabel(element: HTMLElement): IDisposable | null {
-		dom.reset(element, dom.$('span.chat-model-label', undefined, this.currentModel.metadata.name), ...renderLabelWithIcons(`$(chevron-down)`));
+		dom.reset(
+			element,
+			dom.$('span.chat-model-label', undefined, this.currentModel.metadata.name),
+			...renderLabelWithIcons(`$(chevron-down)`)
+		);
 		this.setAriaLabelAttributes(element);
 		return null;
 	}

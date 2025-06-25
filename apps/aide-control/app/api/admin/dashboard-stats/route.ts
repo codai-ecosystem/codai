@@ -17,15 +17,11 @@ async function handleGetDashboardStats(req: NextRequest, context: { uid: string 
 
 		return NextResponse.json({
 			stats,
-			recentActivity
+			recentActivity,
 		});
-
 	} catch (error) {
 		console.error('Dashboard stats error:', error);
-		return NextResponse.json(
-			{ error: 'Failed to fetch dashboard statistics' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to fetch dashboard statistics' }, { status: 500 });
 	}
 }
 
@@ -55,20 +51,18 @@ async function fetchDashboardStats(db: any) {
 			.where('status', '==', 'succeeded')
 			.get();
 
-		const monthlyRevenue = paymentsSnapshot.docs.reduce((total, doc) => {
-			const payment = doc.data();
-			return total + (payment.amount || 0);
-		}, 0) / 100; // Convert from cents to dollars
+		const monthlyRevenue =
+			paymentsSnapshot.docs.reduce((total, doc) => {
+				const payment = doc.data();
+				return total + (payment.amount || 0);
+			}, 0) / 100; // Convert from cents to dollars
 
 		// Get today's API calls
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 		const todayStart = today.toISOString();
 
-		const usageSnapshot = await db
-			.collectionGroup('usage')
-			.where('date', '>=', todayStart)
-			.get();
+		const usageSnapshot = await db.collectionGroup('usage').where('date', '>=', todayStart).get();
 
 		const apiCallsToday = usageSnapshot.docs.reduce((total, doc) => {
 			const usage = doc.data();
@@ -83,7 +77,7 @@ async function fetchDashboardStats(db: any) {
 			activeSubscriptions,
 			monthlyRevenue,
 			apiCallsToday,
-			systemStatus
+			systemStatus,
 		};
 	} catch (error) {
 		console.error('Error fetching dashboard stats:', error);
@@ -93,7 +87,7 @@ async function fetchDashboardStats(db: any) {
 			activeSubscriptions: 0,
 			monthlyRevenue: 0,
 			apiCallsToday: 0,
-			systemStatus: 'operational' as const
+			systemStatus: 'operational' as const,
 		};
 	}
 }
@@ -120,7 +114,7 @@ async function fetchRecentActivity(db: any) {
 				type: 'user_signup',
 				message: `New user registered: ${user.email || 'Unknown'}`,
 				timestamp: user.createdAt,
-				userId: doc.id
+				userId: doc.id,
 			});
 		});
 
@@ -140,7 +134,7 @@ async function fetchRecentActivity(db: any) {
 					type: 'subscription_created',
 					message: `New subscription activated for user ${doc.id}`,
 					timestamp: billing.createdAt,
-					userId: doc.id
+					userId: doc.id,
 				});
 			}
 		});
@@ -162,7 +156,7 @@ async function fetchRecentActivity(db: any) {
 				type: 'payment_succeeded',
 				message: `Payment of $${amount.toFixed(2)} processed successfully`,
 				timestamp: payment.createdAt,
-				userId: payment.userId
+				userId: payment.userId,
 			});
 		});
 
@@ -170,7 +164,6 @@ async function fetchRecentActivity(db: any) {
 		return activities
 			.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 			.slice(0, 10);
-
 	} catch (error) {
 		console.error('Error fetching recent activity:', error);
 		return [];

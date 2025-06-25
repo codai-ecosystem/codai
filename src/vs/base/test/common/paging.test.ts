@@ -15,23 +15,23 @@ function getPage(pageIndex: number, cancellationToken: CancellationToken): Promi
 		return Promise.reject(new CancellationError());
 	}
 
-	return Promise.resolve([0, 1, 2, 3, 4].map(i => i + (pageIndex * 5)));
+	return Promise.resolve([0, 1, 2, 3, 4].map(i => i + pageIndex * 5));
 }
 
 class TestPager implements IPager<number> {
-
 	readonly firstPage = [0, 1, 2, 3, 4];
 	readonly pageSize = 5;
 	readonly total = 100;
 	readonly getPage: (pageIndex: number, cancellationToken: CancellationToken) => Promise<number[]>;
 
-	constructor(getPageFn?: (pageIndex: number, cancellationToken: CancellationToken) => Promise<number[]>) {
+	constructor(
+		getPageFn?: (pageIndex: number, cancellationToken: CancellationToken) => Promise<number[]>
+	) {
 		this.getPage = getPageFn || getPage;
 	}
 }
 
 suite('PagedModel', () => {
-
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('isResolved', () => {
@@ -112,16 +112,18 @@ suite('PagedModel', () => {
 		try {
 			await model.resolve(5, CancellationToken.Cancelled);
 			return assert(false);
-		}
-		catch (err) {
+		} catch (err) {
 			return assert(isCancellationError(err));
 		}
 	});
 
 	test('cancellation works', function () {
-		const pager = new TestPager((_, token) => new Promise((_, e) => {
-			store.add(token.onCancellationRequested(() => e(new CancellationError())));
-		}));
+		const pager = new TestPager(
+			(_, token) =>
+				new Promise((_, e) => {
+					store.add(token.onCancellationRequested(() => e(new CancellationError())));
+				})
+		);
 
 		const model = new PagedModel(pager);
 		const tokenSource = store.add(new CancellationTokenSource());
@@ -143,10 +145,12 @@ suite('PagedModel', () => {
 			state = 'resolving';
 
 			return new Promise((_, e) => {
-				store.add(token.onCancellationRequested(() => {
-					state = 'idle';
-					e(new CancellationError());
-				}));
+				store.add(
+					token.onCancellationRequested(() => {
+						state = 'idle';
+						e(new CancellationError());
+					})
+				);
 			});
 		});
 
@@ -170,17 +174,21 @@ suite('PagedModel', () => {
 
 		assert.strictEqual(state, 'resolving');
 
-		store.add(disposableTimeout(() => {
-			assert.strictEqual(state, 'resolving');
-			tokenSource1.cancel();
-			assert.strictEqual(state, 'resolving');
-
-			store.add(disposableTimeout(() => {
+		store.add(
+			disposableTimeout(() => {
 				assert.strictEqual(state, 'resolving');
-				tokenSource2.cancel();
-				assert.strictEqual(state, 'idle');
-			}, 10));
-		}, 10));
+				tokenSource1.cancel();
+				assert.strictEqual(state, 'resolving');
+
+				store.add(
+					disposableTimeout(() => {
+						assert.strictEqual(state, 'resolving');
+						tokenSource2.cancel();
+						assert.strictEqual(state, 'idle');
+					}, 10)
+				);
+			}, 10)
+		);
 
 		return Promise.all([promise1, promise2]);
 	});

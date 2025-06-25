@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import { Writable } from 'stream';
 import assert from 'assert';
 import { StreamSplitter } from '../../node/nodeStreams.js';
@@ -12,7 +11,7 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../common/utils.js';
 suite('StreamSplitter', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('should split a stream on a single character splitter', (done) => {
+	test('should split a stream on a single character splitter', done => {
 		const chunks: string[] = [];
 		const splitter = new StreamSplitter('\n');
 		const writable = new Writable({
@@ -32,7 +31,7 @@ suite('StreamSplitter', () => {
 		});
 	});
 
-	test('should split a stream on a multi-character splitter', (done) => {
+	test('should split a stream on a multi-character splitter', done => {
 		const chunks: string[] = [];
 		const splitter = new StreamSplitter('---');
 		const writable = new Writable({

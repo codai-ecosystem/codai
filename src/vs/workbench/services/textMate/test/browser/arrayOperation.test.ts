@@ -6,7 +6,10 @@
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { MonotonousIndexTransformer } from '../../browser/indexTransformer.js';
-import { LengthEdit, LengthReplacement } from '../../../../../editor/common/core/edits/lengthEdit.js';
+import {
+	LengthEdit,
+	LengthReplacement,
+} from '../../../../../editor/common/core/edits/lengthEdit.js';
 
 suite('array operation', () => {
 	function seq(start: number, end: number) {
@@ -45,7 +48,7 @@ suite('array operation', () => {
 
 		const transformer = new MonotonousIndexTransformer(edit);
 		assert.deepStrictEqual(
-			seq(0, 15).map((x) => {
+			seq(0, 15).map(x => {
 				const t = transformer.transform(x);
 				let r = `arr[${x}]: ${arr[x]} -> `;
 				if (t !== undefined) {

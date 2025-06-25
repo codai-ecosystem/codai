@@ -8,7 +8,14 @@
 // import { anthropic } from '@ai-sdk/anthropic';
 // import { google } from '@ai-sdk/google';
 // import { generateText, streamText, LanguageModel } from 'ai';
-import { LLMModelConfig, LLMProvider, Message, LLMResponse, LLMRequestOptions, LLMService } from './types.js';
+import {
+	LLMModelConfig,
+	LLMProvider,
+	Message,
+	LLMResponse,
+	LLMRequestOptions,
+	LLMService,
+} from './types.js';
 
 /**
  * Modern AI SDK service for AIDE agent runtime - PLACEHOLDER IMPLEMENTATION
@@ -28,14 +35,18 @@ export class ModernAIService implements LLMService {
 	 * Generate a completion from the LLM - PLACEHOLDER
 	 */
 	async complete(options: LLMRequestOptions): Promise<LLMResponse> {
-		throw new Error('ModernAIService not yet implemented - install AI SDK dependencies first: @ai-sdk/openai, @ai-sdk/anthropic, @ai-sdk/google, ai');
+		throw new Error(
+			'ModernAIService not yet implemented - install AI SDK dependencies first: @ai-sdk/openai, @ai-sdk/anthropic, @ai-sdk/google, ai'
+		);
 	}
 
 	/**
 	 * Stream a completion from the LLM - PLACEHOLDER
 	 */
 	async *streamComplete(options: LLMRequestOptions): AsyncIterable<Partial<LLMResponse>> {
-		throw new Error('ModernAIService not yet implemented - install AI SDK dependencies first: @ai-sdk/openai, @ai-sdk/anthropic, @ai-sdk/google, ai');
+		throw new Error(
+			'ModernAIService not yet implemented - install AI SDK dependencies first: @ai-sdk/openai, @ai-sdk/anthropic, @ai-sdk/google, ai'
+		);
 	}
 
 	/**
@@ -96,5 +107,5 @@ export const modernAIConfigs: Record<LLMProvider, LLMModelConfig> = {
 	custom: {
 		provider: 'custom',
 		model: 'custom-model',
-	}
+	},
 };

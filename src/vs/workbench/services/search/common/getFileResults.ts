@@ -15,7 +15,6 @@ export const getFileResults = (
 		remainingResultQuota: number;
 	}
 ): ITextSearchResult[] => {
-
 	let text: string;
 	if (bytes[0] === 0xff && bytes[1] === 0xfe) {
 		text = new TextDecoder('utf-16le').decode(bytes);
@@ -44,7 +43,8 @@ export const getFileResults = (
 		const resultLines = new Set<number>();
 
 		const lineRanges: { start: number; end: number }[] = [];
-		const readLine = (lineNumber: number) => text.slice(lineRanges[lineNumber].start, lineRanges[lineNumber].end);
+		const readLine = (lineNumber: number) =>
+			text.slice(lineRanges[lineNumber].start, lineRanges[lineNumber].end);
 
 		let prevLineEnd = 0;
 		let lineEndingMatch: RegExpExecArray | null = null;
@@ -53,7 +53,9 @@ export const getFileResults = (
 			lineRanges.push({ start: prevLineEnd, end: lineEndingMatch.index });
 			prevLineEnd = lineEndingMatch.index + lineEndingMatch[0].length;
 		}
-		if (prevLineEnd < text.length) { lineRanges.push({ start: prevLineEnd, end: text.length }); }
+		if (prevLineEnd < text.length) {
+			lineRanges.push({ start: prevLineEnd, end: text.length });
+		}
 
 		let startLine = 0;
 		for (const { matchStartIndex, matchedText } of patternIndecies) {
@@ -65,12 +67,19 @@ export const getFileResults = (
 				startLine++;
 			}
 			let endLine = startLine;
-			while (Boolean(lineRanges[endLine + 1]) && matchStartIndex + matchedText.length > lineRanges[endLine].end) {
+			while (
+				Boolean(lineRanges[endLine + 1]) &&
+				matchStartIndex + matchedText.length > lineRanges[endLine].end
+			) {
 				endLine++;
 			}
 
 			if (options.surroundingContext) {
-				for (let contextLine = Math.max(0, startLine - options.surroundingContext); contextLine < startLine; contextLine++) {
+				for (
+					let contextLine = Math.max(0, startLine - options.surroundingContext);
+					contextLine < startLine;
+					contextLine++
+				) {
 					contextLinesNeeded.add(contextLine);
 				}
 			}
@@ -79,7 +88,10 @@ export const getFileResults = (
 			let offset = 0;
 			for (let matchLine = startLine; matchLine <= endLine; matchLine++) {
 				let previewLine = readLine(matchLine);
-				if (options.previewOptions?.charsPerLine && previewLine.length > options.previewOptions.charsPerLine) {
+				if (
+					options.previewOptions?.charsPerLine &&
+					previewLine.length > options.previewOptions.charsPerLine
+				) {
 					offset = Math.max(matchStartIndex - lineRanges[startLine].start - 20, 0);
 					previewLine = previewLine.substr(offset, options.previewOptions.charsPerLine);
 				}
@@ -97,28 +109,36 @@ export const getFileResults = (
 				0,
 				matchStartIndex - lineRanges[startLine].start - offset,
 				endLine - startLine,
-				matchStartIndex + matchedText.length - lineRanges[endLine].start - (endLine === startLine ? offset : 0)
+				matchStartIndex +
+					matchedText.length -
+					lineRanges[endLine].start -
+					(endLine === startLine ? offset : 0)
 			);
 
 			const match: ITextSearchMatch = {
-				rangeLocations: [{
-					source: fileRange,
-					preview: previewRange,
-				}],
-				previewText: previewText
+				rangeLocations: [
+					{
+						source: fileRange,
+						preview: previewRange,
+					},
+				],
+				previewText: previewText,
 			};
 
 			results.push(match);
 
 			if (options.surroundingContext) {
-				for (let contextLine = endLine + 1; contextLine <= Math.min(endLine + options.surroundingContext, lineRanges.length - 1); contextLine++) {
+				for (
+					let contextLine = endLine + 1;
+					contextLine <= Math.min(endLine + options.surroundingContext, lineRanges.length - 1);
+					contextLine++
+				) {
 					contextLinesNeeded.add(contextLine);
 				}
 			}
 		}
 		for (const contextLine of contextLinesNeeded) {
 			if (!resultLines.has(contextLine)) {
-
 				results.push({
 					text: readLine(contextLine),
 					lineNumber: contextLine + 1,

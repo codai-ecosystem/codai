@@ -8,25 +8,26 @@ import { IProductService } from '../../../../platform/product/common/productServ
 import { ExtensionRecommendationReason } from '../../../services/extensionRecommendations/common/extensionRecommendations.js';
 
 export class LanguageRecommendations extends ExtensionRecommendations {
-
 	private _recommendations: ExtensionRecommendation[] = [];
-	get recommendations(): ReadonlyArray<ExtensionRecommendation> { return this._recommendations; }
+	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
+		return this._recommendations;
+	}
 
-	constructor(
-		@IProductService private readonly productService: IProductService,
-	) {
+	constructor(@IProductService private readonly productService: IProductService) {
 		super();
 	}
 
 	protected async doActivate(): Promise<void> {
 		if (this.productService.languageExtensionTips) {
-			this._recommendations = this.productService.languageExtensionTips.map((extensionId): ExtensionRecommendation => ({
-				extension: extensionId.toLowerCase(),
-				reason: {
-					reasonId: ExtensionRecommendationReason.Application,
-					reasonText: ''
-				}
-			}));
+			this._recommendations = this.productService.languageExtensionTips.map(
+				(extensionId): ExtensionRecommendation => ({
+					extension: extensionId.toLowerCase(),
+					reason: {
+						reasonId: ExtensionRecommendationReason.Application,
+						reasonText: '',
+					},
+				})
+			);
 		}
 	}
 }

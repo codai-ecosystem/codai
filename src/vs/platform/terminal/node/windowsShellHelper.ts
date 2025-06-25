@@ -36,26 +36,30 @@ const SHELL_EXECUTABLES = [
 	'node.exe',
 ];
 
-const SHELL_EXECUTABLE_REGEXES = [
-	/^python(\d(\.\d{0,2})?)?\.exe$/,
-];
+const SHELL_EXECUTABLE_REGEXES = [/^python(\d(\.\d{0,2})?)?\.exe$/];
 
 let windowsProcessTree: typeof WindowsProcessTreeType;
 
 export class WindowsShellHelper extends Disposable implements IWindowsShellHelper {
 	private _currentRequest: Promise<string> | undefined;
 	private _shellType: TerminalShellType | undefined;
-	get shellType(): TerminalShellType | undefined { return this._shellType; }
+	get shellType(): TerminalShellType | undefined {
+		return this._shellType;
+	}
 	private _shellTitle: string = '';
-	get shellTitle(): string { return this._shellTitle; }
+	get shellTitle(): string {
+		return this._shellTitle;
+	}
 	private readonly _onShellNameChanged = new Emitter<string>();
-	get onShellNameChanged(): Event<string> { return this._onShellNameChanged.event; }
+	get onShellNameChanged(): Event<string> {
+		return this._onShellNameChanged.event;
+	}
 	private readonly _onShellTypeChanged = new Emitter<TerminalShellType | undefined>();
-	get onShellTypeChanged(): Event<TerminalShellType | undefined> { return this._onShellTypeChanged.event; }
+	get onShellTypeChanged(): Event<TerminalShellType | undefined> {
+		return this._onShellTypeChanged.event;
+	}
 
-	constructor(
-		private _rootProcessId: number
-	) {
+	constructor(private _rootProcessId: number) {
 		super();
 
 		if (!isWindows) {

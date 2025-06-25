@@ -8,13 +8,12 @@ import { IProductService } from '../../../../platform/product/common/productServ
 import { ExtensionRecommendationReason } from '../../../services/extensionRecommendations/common/extensionRecommendations.js';
 
 export class KeymapRecommendations extends ExtensionRecommendations {
-
 	private _recommendations: ExtensionRecommendation[] = [];
-	get recommendations(): ReadonlyArray<ExtensionRecommendation> { return this._recommendations; }
+	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
+		return this._recommendations;
+	}
 
-	constructor(
-		@IProductService private readonly productService: IProductService,
-	) {
+	constructor(@IProductService private readonly productService: IProductService) {
 		super();
 	}
 
@@ -24,11 +23,9 @@ export class KeymapRecommendations extends ExtensionRecommendations {
 				extension: extensionId.toLowerCase(),
 				reason: {
 					reasonId: ExtensionRecommendationReason.Application,
-					reasonText: ''
-				}
+					reasonText: '',
+				},
 			}));
 		}
 	}
-
 }
-

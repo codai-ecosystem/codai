@@ -14,15 +14,18 @@ import { countEOL } from '../../../common/core/misc/eolCounter.js';
 import { FoldingModel } from './foldingModel.js';
 
 export class HiddenRangeModel {
-
 	private readonly _foldingModel: FoldingModel;
 	private _hiddenRanges: IRange[];
 	private _foldingModelListener: IDisposable | null;
 	private readonly _updateEventEmitter = new Emitter<IRange[]>();
 	private _hasLineChanges: boolean = false;
 
-	public get onDidChange(): Event<IRange[]> { return this._updateEventEmitter.event; }
-	public get hiddenRanges() { return this._hiddenRanges; }
+	public get onDidChange(): Event<IRange[]> {
+		return this._updateEventEmitter.event;
+	}
+	public get hiddenRanges() {
+		return this._hiddenRanges;
+	}
 
 	public constructor(model: FoldingModel) {
 		this._foldingModel = model;
@@ -36,7 +39,10 @@ export class HiddenRangeModel {
 	public notifyChangeModelContent(e: IModelContentChangedEvent) {
 		if (this._hiddenRanges.length && !this._hasLineChanges) {
 			this._hasLineChanges = e.changes.some(change => {
-				return change.range.endLineNumber !== change.range.startLineNumber || countEOL(change.text)[0] !== 0;
+				return (
+					change.range.endLineNumber !== change.range.startLineNumber ||
+					countEOL(change.text)[0] !== 0
+				);
 			});
 		}
 	}
@@ -63,7 +69,12 @@ export class HiddenRangeModel {
 				continue;
 			}
 
-			if (!updateHiddenAreas && k < this._hiddenRanges.length && this._hiddenRanges[k].startLineNumber === startLineNumber && this._hiddenRanges[k].endLineNumber === endLineNumber) {
+			if (
+				!updateHiddenAreas &&
+				k < this._hiddenRanges.length &&
+				this._hiddenRanges[k].startLineNumber === startLineNumber &&
+				this._hiddenRanges[k].endLineNumber === endLineNumber
+			) {
 				// reuse the old ranges
 				newHiddenAreas.push(this._hiddenRanges[k]);
 				k++;
@@ -111,19 +122,24 @@ export class HiddenRangeModel {
 			let selection = selections[i];
 			const adjustedStartLine = adjustLine(selection.startLineNumber);
 			if (adjustedStartLine) {
-				selection = selection.setStartPosition(adjustedStartLine, editorModel.getLineMaxColumn(adjustedStartLine));
+				selection = selection.setStartPosition(
+					adjustedStartLine,
+					editorModel.getLineMaxColumn(adjustedStartLine)
+				);
 				hasChanges = true;
 			}
 			const adjustedEndLine = adjustLine(selection.endLineNumber);
 			if (adjustedEndLine) {
-				selection = selection.setEndPosition(adjustedEndLine, editorModel.getLineMaxColumn(adjustedEndLine));
+				selection = selection.setEndPosition(
+					adjustedEndLine,
+					editorModel.getLineMaxColumn(adjustedEndLine)
+				);
 				hasChanges = true;
 			}
 			selections[i] = selection;
 		}
 		return hasChanges;
 	}
-
 
 	public dispose() {
 		if (this.hiddenRanges.length > 0) {

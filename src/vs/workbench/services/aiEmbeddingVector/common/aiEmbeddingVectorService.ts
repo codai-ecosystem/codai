@@ -5,13 +5,23 @@
 
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { CancelablePromise, createCancelablePromise, raceCancellablePromises, timeout } from '../../../../base/common/async.js';
+import {
+	CancelablePromise,
+	createCancelablePromise,
+	raceCancellablePromises,
+	timeout,
+} from '../../../../base/common/async.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { StopWatch } from '../../../../base/common/stopwatch.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 
-export const IAiEmbeddingVectorService = createDecorator<IAiEmbeddingVectorService>('IAiEmbeddingVectorService');
+export const IAiEmbeddingVectorService = createDecorator<IAiEmbeddingVectorService>(
+	'IAiEmbeddingVectorService'
+);
 
 export interface IAiEmbeddingVectorService {
 	readonly _serviceBrand: undefined;
@@ -19,7 +29,10 @@ export interface IAiEmbeddingVectorService {
 	isEnabled(): boolean;
 	getEmbeddingVector(str: string, token: CancellationToken): Promise<number[]>;
 	getEmbeddingVector(strings: string[], token: CancellationToken): Promise<number[][]>;
-	registerAiEmbeddingVectorProvider(model: string, provider: IAiEmbeddingVectorProvider): IDisposable;
+	registerAiEmbeddingVectorProvider(
+		model: string,
+		provider: IAiEmbeddingVectorProvider
+	): IDisposable;
 }
 
 export interface IAiEmbeddingVectorProvider {
@@ -33,13 +46,16 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 
 	private readonly _providers: IAiEmbeddingVectorProvider[] = [];
 
-	constructor(@ILogService private readonly logService: ILogService) { }
+	constructor(@ILogService private readonly logService: ILogService) {}
 
 	isEnabled(): boolean {
 		return this._providers.length > 0;
 	}
 
-	registerAiEmbeddingVectorProvider(model: string, provider: IAiEmbeddingVectorProvider): IDisposable {
+	registerAiEmbeddingVectorProvider(
+		model: string,
+		provider: IAiEmbeddingVectorProvider
+	): IDisposable {
 		this._providers.push(provider);
 		return {
 			dispose: () => {
@@ -47,13 +63,16 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 				if (index >= 0) {
 					this._providers.splice(index, 1);
 				}
-			}
+			},
 		};
 	}
 
 	getEmbeddingVector(str: string, token: CancellationToken): Promise<number[]>;
 	getEmbeddingVector(strings: string[], token: CancellationToken): Promise<number[][]>;
-	async getEmbeddingVector(strings: string | string[], token: CancellationToken): Promise<number[] | number[][]> {
+	async getEmbeddingVector(
+		strings: string | string[],
+		token: CancellationToken
+	): Promise<number[] | number[][]> {
 		if (this._providers.length === 0) {
 			throw new Error('No embedding vector providers registered');
 		}
@@ -69,31 +88,35 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 		});
 
 		for (const provider of this._providers) {
-			cancellablePromises.push(createCancelablePromise(async t => {
-				try {
-					return await provider.provideAiEmbeddingVector(
-						Array.isArray(strings) ? strings : [strings],
-						t
-					);
-				} catch (e) {
-					// logged in extension host
-				}
-				// Wait for the timer to finish to allow for another provider to resolve.
-				// Alternatively, if something resolved, or we've timed out, this will throw
-				// as expected.
-				await timer;
-				throw new Error('Embedding vector provider timed out');
-			}));
+			cancellablePromises.push(
+				createCancelablePromise(async t => {
+					try {
+						return await provider.provideAiEmbeddingVector(
+							Array.isArray(strings) ? strings : [strings],
+							t
+						);
+					} catch (e) {
+						// logged in extension host
+					}
+					// Wait for the timer to finish to allow for another provider to resolve.
+					// Alternatively, if something resolved, or we've timed out, this will throw
+					// as expected.
+					await timer;
+					throw new Error('Embedding vector provider timed out');
+				})
+			);
 		}
 
-		cancellablePromises.push(createCancelablePromise(async (t) => {
-			const disposable = t.onCancellationRequested(() => {
-				timer.cancel();
-				disposable.dispose();
-			});
-			await timer;
-			throw new Error('Embedding vector provider timed out');
-		}));
+		cancellablePromises.push(
+			createCancelablePromise(async t => {
+				const disposable = t.onCancellationRequested(() => {
+					timer.cancel();
+					disposable.dispose();
+				});
+				await timer;
+				throw new Error('Embedding vector provider timed out');
+			})
+		);
 
 		try {
 			const result = await raceCancellablePromises(cancellablePromises);
@@ -106,7 +129,9 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 			return result;
 		} finally {
 			stopwatch.stop();
-			this.logService.trace(`[AiEmbeddingVectorService]: getEmbeddingVector took ${stopwatch.elapsed()}ms`);
+			this.logService.trace(
+				`[AiEmbeddingVectorService]: getEmbeddingVector took ${stopwatch.elapsed()}ms`
+			);
 		}
 	}
 }

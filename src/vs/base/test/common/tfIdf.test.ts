@@ -32,7 +32,7 @@ function permutate<T>(arr: T[]): T[][] {
 }
 
 function assertScoreOrdersEqual(actualScores: TfIdfScore[], expectedScoreKeys: string[]): void {
-	actualScores.sort((a, b) => (b.score - a.score) || a.key.localeCompare(b.key));
+	actualScores.sort((a, b) => b.score - a.score || a.key.localeCompare(b.key));
 	assert.strictEqual(actualScores.length, expectedScoreKeys.length);
 	for (let i = 0; i < expectedScoreKeys.length; i++) {
 		assert.strictEqual(actualScores[i].key, expectedScoreKeys[i]);
@@ -48,9 +48,7 @@ suite('TF-IDF Calculator', function () {
 	});
 
 	test('Should return no scores for term not in document', () => {
-		const tfidf = new TfIdfCalculator().updateDocuments([
-			makeDocument('A', 'cat dog fish'),
-		]);
+		const tfidf = new TfIdfCalculator().updateDocuments([makeDocument('A', 'cat dog fish')]);
 		const scores = tfidf.calculateScores('elepant', CancellationToken.None);
 		assertScoreOrdersEqual(scores, []);
 	});
@@ -95,7 +93,7 @@ suite('TF-IDF Calculator', function () {
 			makeDocument('/A', 'cat dog cat'),
 			makeDocument('/B', 'fish'),
 			makeDocument('/C', 'cat cat cat cat'),
-			makeDocument('/D', 'cat fish')
+			makeDocument('/D', 'cat fish'),
 		])) {
 			const tfidf = new TfIdfCalculator().updateDocuments(docs);
 			const scores = tfidf.calculateScores('cat the dog', CancellationToken.None);
@@ -106,7 +104,7 @@ suite('TF-IDF Calculator', function () {
 	test('Should weigh chunks with less common terms higher', () => {
 		for (const docs of permutate([
 			makeDocument('/A', ['cat dog cat', 'fish']),
-			makeDocument('/B', ['cat cat cat cat dog', 'dog'])
+			makeDocument('/B', ['cat cat cat cat dog', 'dog']),
 		])) {
 			const tfidf = new TfIdfCalculator().updateDocuments(docs);
 			const scores = tfidf.calculateScores('cat', CancellationToken.None);
@@ -115,7 +113,7 @@ suite('TF-IDF Calculator', function () {
 
 		for (const docs of permutate([
 			makeDocument('/A', ['cat dog cat', 'fish']),
-			makeDocument('/B', ['cat cat cat cat dog', 'dog'])
+			makeDocument('/B', ['cat cat cat cat dog', 'dog']),
 		])) {
 			const tfidf = new TfIdfCalculator().updateDocuments(docs);
 			const scores = tfidf.calculateScores('dog', CancellationToken.None);
@@ -124,7 +122,7 @@ suite('TF-IDF Calculator', function () {
 
 		for (const docs of permutate([
 			makeDocument('/A', ['cat dog cat', 'fish']),
-			makeDocument('/B', ['cat cat cat cat dog', 'dog'])
+			makeDocument('/B', ['cat cat cat cat dog', 'dog']),
 		])) {
 			const tfidf = new TfIdfCalculator().updateDocuments(docs);
 			const scores = tfidf.calculateScores('cat the dog', CancellationToken.None);
@@ -133,7 +131,7 @@ suite('TF-IDF Calculator', function () {
 
 		for (const docs of permutate([
 			makeDocument('/A', ['cat dog cat', 'fish']),
-			makeDocument('/B', ['cat cat cat cat dog', 'dog'])
+			makeDocument('/B', ['cat cat cat cat dog', 'dog']),
 		])) {
 			const tfidf = new TfIdfCalculator().updateDocuments(docs);
 			const scores = tfidf.calculateScores('lake fish', CancellationToken.None);

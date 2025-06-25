@@ -6,7 +6,6 @@
 // version: 9
 
 declare module 'vscode' {
-
 	/**
 	 * The location at which the chat is happening.
 	 */
@@ -137,7 +136,14 @@ declare module 'vscode' {
 		/**
 		 * @hidden
 		 */
-		private constructor(prompt: string, command: string | undefined, references: ChatPromptReference[], participant: string, toolReferences: ChatLanguageModelToolReference[], editedFileEvents: ChatRequestEditedFileEvent[] | undefined);
+		private constructor(
+			prompt: string,
+			command: string | undefined,
+			references: ChatPromptReference[],
+			participant: string,
+			toolReferences: ChatLanguageModelToolReference[],
+			editedFileEvents: ChatRequestEditedFileEvent[] | undefined
+		);
 	}
 
 	export interface ChatParticipant {
@@ -162,7 +168,11 @@ declare module 'vscode' {
 	}
 
 	export namespace chat {
-		export function createDynamicChatParticipant(id: string, dynamicProps: DynamicChatParticipantProps, handler: ChatExtendedRequestHandler): ChatParticipant;
+		export function createDynamicChatParticipant(
+			id: string,
+			dynamicProps: DynamicChatParticipantProps,
+			handler: ChatExtendedRequestHandler
+		): ChatParticipant;
 	}
 
 	/**
@@ -176,7 +186,9 @@ declare module 'vscode' {
 	}
 
 	export namespace lm {
-		export function registerIgnoredFileProvider(provider: LanguageModelIgnoredFileProvider): Disposable;
+		export function registerIgnoredFileProvider(
+			provider: LanguageModelIgnoredFileProvider
+		): Disposable;
 	}
 
 	export interface LanguageModelIgnoredFileProvider {
@@ -196,7 +208,10 @@ declare module 'vscode' {
 	}
 
 	export interface LanguageModelTool<T> {
-		prepareInvocation2?(options: LanguageModelToolInvocationPrepareOptions<T>, token: CancellationToken): ProviderResult<PreparedTerminalToolInvocation>;
+		prepareInvocation2?(
+			options: LanguageModelToolInvocationPrepareOptions<T>,
+			token: CancellationToken
+		): ProviderResult<PreparedTerminalToolInvocation>;
 	}
 
 	export class PreparedTerminalToolInvocation {
@@ -232,11 +247,18 @@ declare module 'vscode' {
 	}
 
 	export interface ChatParticipantDetectionProvider {
-		provideParticipantDetection(chatRequest: ChatRequest, context: ChatContext, options: { participants?: ChatParticipantMetadata[]; location: ChatLocation }, token: CancellationToken): ProviderResult<ChatParticipantDetectionResult>;
+		provideParticipantDetection(
+			chatRequest: ChatRequest,
+			context: ChatContext,
+			options: { participants?: ChatParticipantMetadata[]; location: ChatLocation },
+			token: CancellationToken
+		): ProviderResult<ChatParticipantDetectionResult>;
 	}
 
 	export namespace chat {
-		export function registerChatParticipantDetectionProvider(participantDetectionProvider: ChatParticipantDetectionProvider): Disposable;
+		export function registerChatParticipantDetectionProvider(
+			participantDetectionProvider: ChatParticipantDetectionProvider
+		): Disposable;
 
 		export const onDidDisposeChatSession: Event<string>;
 	}

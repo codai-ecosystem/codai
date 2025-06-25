@@ -18,30 +18,45 @@ export function formatError(message: string, err: any): string {
 	return message;
 }
 
-export function runSafeAsync<T>(runtime: RuntimeEnvironment, func: () => Thenable<T>, errorVal: T, errorMessage: string, token: CancellationToken): Thenable<T | ResponseError<any>> {
-	return new Promise<T | ResponseError<any>>((resolve) => {
+export function runSafeAsync<T>(
+	runtime: RuntimeEnvironment,
+	func: () => Thenable<T>,
+	errorVal: T,
+	errorMessage: string,
+	token: CancellationToken
+): Thenable<T | ResponseError<any>> {
+	return new Promise<T | ResponseError<any>>(resolve => {
 		runtime.timer.setImmediate(() => {
 			if (token.isCancellationRequested) {
 				resolve(cancelValue());
 				return;
 			}
-			return func().then(result => {
-				if (token.isCancellationRequested) {
-					resolve(cancelValue());
-					return;
-				} else {
-					resolve(result);
+			return func().then(
+				result => {
+					if (token.isCancellationRequested) {
+						resolve(cancelValue());
+						return;
+					} else {
+						resolve(result);
+					}
+				},
+				e => {
+					console.error(formatError(errorMessage, e));
+					resolve(errorVal);
 				}
-			}, e => {
-				console.error(formatError(errorMessage, e));
-				resolve(errorVal);
-			});
+			);
 		});
 	});
 }
 
-export function runSafe<T, E>(runtime: RuntimeEnvironment, func: () => T, errorVal: T, errorMessage: string, token: CancellationToken): Thenable<T | ResponseError<E>> {
-	return new Promise<T | ResponseError<E>>((resolve) => {
+export function runSafe<T, E>(
+	runtime: RuntimeEnvironment,
+	func: () => T,
+	errorVal: T,
+	errorMessage: string,
+	token: CancellationToken
+): Thenable<T | ResponseError<E>> {
+	return new Promise<T | ResponseError<E>>(resolve => {
 		runtime.timer.setImmediate(() => {
 			if (token.isCancellationRequested) {
 				resolve(cancelValue());
@@ -54,7 +69,6 @@ export function runSafe<T, E>(runtime: RuntimeEnvironment, func: () => T, errorV
 					} else {
 						resolve(result);
 					}
-
 				} catch (e) {
 					console.error(formatError(errorMessage, e));
 					resolve(errorVal);

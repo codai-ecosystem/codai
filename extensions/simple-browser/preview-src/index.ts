@@ -31,16 +31,14 @@ const openExternalButton = header.querySelector<HTMLButtonElement>('.open-extern
 
 window.addEventListener('message', e => {
 	switch (e.data.type) {
-		case 'focus':
-			{
-				iframe.focus();
-				break;
-			}
-		case 'didChangeFocusLockIndicatorEnabled':
-			{
-				toggleFocusLockIndicatorEnabled(e.data.enabled);
-				break;
-			}
+		case 'focus': {
+			iframe.focus();
+			break;
+		}
+		case 'didChangeFocusLockIndicatorEnabled': {
+			toggleFocusLockIndicatorEnabled(e.data.enabled);
+			break;
+		}
 	}
 });
 
@@ -70,7 +68,7 @@ onceDocumentLoaded(() => {
 	openExternalButton.addEventListener('click', () => {
 		vscode.postMessage({
 			type: 'openExternal',
-			url: input.value
+			url: input.value,
 		});
 	});
 
@@ -111,4 +109,3 @@ onceDocumentLoaded(() => {
 function toggleFocusLockIndicatorEnabled(enabled: boolean) {
 	document.body.classList.toggle('enable-focus-lock-indicator', enabled);
 }
-

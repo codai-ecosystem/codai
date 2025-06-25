@@ -10,7 +10,11 @@ import { IConfigurationService } from '../../../../../platform/configuration/com
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 import { CellKind, NotebookSetting } from '../../common/notebookCommon.js';
-import { createNotebookCellList, setupInstantiationService, withTestNotebook } from './testNotebookEditor.js';
+import {
+	createNotebookCellList,
+	setupInstantiationService,
+	withTestNotebook,
+} from './testNotebookEditor.js';
 
 suite('NotebookCellList', () => {
 	let testDisposables: DisposableStore;
@@ -37,7 +41,7 @@ suite('NotebookCellList', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
@@ -74,7 +78,8 @@ suite('NotebookCellList', () => {
 				// reveal cell 3, top 200, bottom 300, which is partially visible in the viewport
 				cellList.revealCells({ start: 3, end: 4 });
 				assert.deepStrictEqual(cellList.scrollTop, 90);
-			});
+			}
+		);
 	});
 
 	test('revealElementsInView: reveal partially visible cell', async function () {
@@ -84,7 +89,7 @@ suite('NotebookCellList', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
@@ -118,7 +123,8 @@ suite('NotebookCellList', () => {
 				// reveal cell 0, top 0, bottom 50
 				cellList.revealCells({ start: 0, end: 1 });
 				assert.deepStrictEqual(cellList.scrollTop, 0);
-			});
+			}
+		);
 	});
 
 	test('revealElementsInView: reveal cell out of viewport', async function () {
@@ -128,7 +134,7 @@ suite('NotebookCellList', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
@@ -155,7 +161,8 @@ suite('NotebookCellList', () => {
 				cellList.revealCells({ start: 4, end: 5 });
 				assert.deepStrictEqual(cellList.scrollTop, 140);
 				// assert.deepStrictEqual(cellList.getViewScrollBottom(), 330);
-			});
+			}
+		);
 	});
 
 	test('updateElementHeight', async function () {
@@ -165,7 +172,7 @@ suite('NotebookCellList', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
@@ -197,7 +204,8 @@ suite('NotebookCellList', () => {
 
 				cellList.updateElementHeight(0, 80);
 				assert.deepStrictEqual(cellList.scrollTop, 5);
-			});
+			}
+		);
 	});
 
 	test('updateElementHeight with anchor', async function () {
@@ -207,7 +215,7 @@ suite('NotebookCellList', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
@@ -256,8 +264,12 @@ suite('NotebookCellList', () => {
 				// focus won't be visible after cell 0 grow to 250, so let's try to keep the focused cell visible
 				cellList.updateElementHeight2(viewModel.cellAt(0)!, 250);
 				assert.deepStrictEqual(cellList.scrollTop, 250 + 100 - cellList.renderHeight);
-				assert.deepStrictEqual(cellList.getViewScrollBottom(), 250 + 100 - cellList.renderHeight + 210);
-			});
+				assert.deepStrictEqual(
+					cellList.getViewScrollBottom(),
+					250 + 100 - cellList.renderHeight + 210
+				);
+			}
+		);
 	});
 
 	test('updateElementHeight with no scrolling', async function () {
@@ -268,7 +280,7 @@ suite('NotebookCellList', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
@@ -307,7 +319,8 @@ suite('NotebookCellList', () => {
 
 				cellList.updateElementHeight2(viewModel.cellAt(0)!, 250);
 				assert.deepStrictEqual(cellList.scrollTop, 5);
-			});
+			}
+		);
 	});
 
 	test('updateElementHeight with no scroll setting and cell editor focused', async function () {
@@ -318,7 +331,7 @@ suite('NotebookCellList', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
@@ -353,7 +366,8 @@ suite('NotebookCellList', () => {
 
 				cellList.updateElementHeight2(viewModel.cellAt(0)!, 250);
 				assert.deepStrictEqual(cellList.scrollTop, 250 + 100 - cellList.renderHeight);
-			});
+			}
+		);
 	});
 
 	test('updateElementHeight with focused element out of viewport', async function () {
@@ -363,7 +377,7 @@ suite('NotebookCellList', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
@@ -389,7 +403,8 @@ suite('NotebookCellList', () => {
 				cellList.updateElementHeight2(viewModel.cellAt(1)!, 130);
 				// the focus cell is not in the viewport, the scrolltop should not change at all
 				assert.deepStrictEqual(cellList.scrollTop, 0);
-			});
+			}
+		);
 	});
 
 	test('updateElementHeight of cells out of viewport should not trigger scroll #121140', async function () {
@@ -399,7 +414,7 @@ suite('NotebookCellList', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
@@ -427,29 +442,25 @@ suite('NotebookCellList', () => {
 
 				cellList.updateElementHeight2(viewModel.cellAt(0)!, 30);
 				assert.deepStrictEqual(cellList.scrollTop, 60);
-			});
+			}
+		);
 	});
 
 	test('visibleRanges should be exclusive of end', async function () {
-		await withTestNotebook(
-			[
-			],
-			async (editor, viewModel, disposables) => {
-				const cellList = createNotebookCellList(instantiationService, disposables);
-				cellList.attachViewModel(viewModel);
+		await withTestNotebook([], async (editor, viewModel, disposables) => {
+			const cellList = createNotebookCellList(instantiationService, disposables);
+			cellList.attachViewModel(viewModel);
 
-				// render height 210, it can render 3 full cells and 1 partial cell
-				cellList.layout(100, 100);
+			// render height 210, it can render 3 full cells and 1 partial cell
+			cellList.layout(100, 100);
 
-				assert.deepStrictEqual(cellList.visibleRanges, []);
-			});
+			assert.deepStrictEqual(cellList.visibleRanges, []);
+		});
 	});
 
 	test('visibleRanges should be exclusive of end 2', async function () {
 		await withTestNotebook(
-			[
-				['# header a', 'markdown', CellKind.Markup, [], {}],
-			],
+			[['# header a', 'markdown', CellKind.Markup, [], {}]],
 			async (editor, viewModel, disposables) => {
 				viewModel.restoreEditorViewState({
 					editingCells: [false],
@@ -467,6 +478,7 @@ suite('NotebookCellList', () => {
 				cellList.layout(100, 100);
 
 				assert.deepStrictEqual(cellList.visibleRanges, [{ start: 0, end: 1 }]);
-			});
+			}
+		);
 	});
 });

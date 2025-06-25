@@ -17,8 +17,15 @@ import { IThemeService } from '../../../../../../platform/theme/common/themeServ
 import { TestThemeService } from '../../../../../../platform/theme/test/common/testThemeService.js';
 import { IViewDescriptorService } from '../../../../../common/views.js';
 import { IDetectedLinks, TerminalLinkManager } from '../../browser/terminalLinkManager.js';
-import { ITerminalCapabilityImplMap, ITerminalCapabilityStore, TerminalCapability } from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
-import { ITerminalConfiguration, ITerminalProcessManager } from '../../../../terminal/common/terminal.js';
+import {
+	ITerminalCapabilityImplMap,
+	ITerminalCapabilityStore,
+	TerminalCapability,
+} from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	ITerminalConfiguration,
+	ITerminalProcessManager,
+} from '../../../../terminal/common/terminal.js';
 import { TestViewDescriptorService } from '../../../../terminal/test/browser/xterm/xtermTerminal.test.js';
 import { TestStorageService } from '../../../../../test/common/workbenchTestServices.js';
 import type { ILink, Terminal } from '@xterm/xterm';
@@ -35,12 +42,15 @@ const defaultTerminalConfig: Partial<ITerminalConfiguration> = {
 	fastScrollSensitivity: 2,
 	mouseWheelScrollSensitivity: 1,
 	unicodeVersion: '11',
-	wordSeparators: ' ()[]{}\',"`─‘’“”'
+	wordSeparators: ' ()[]{}\',"`─‘’“”',
 };
 
 class TestLinkManager extends TerminalLinkManager {
 	private _links: IDetectedLinks | undefined;
-	protected override async _getLinksForType(y: number, type: 'word' | 'url' | 'localFile'): Promise<ILink[] | undefined> {
+	protected override async _getLinksForType(
+		y: number,
+		type: 'word' | 'url' | 'localFile'
+	): Promise<ILink[] | undefined> {
 		switch (type) {
 			case 'word':
 				return this._links?.wordLinks?.[y] ? [this._links?.wordLinks?.[y]] : undefined;
@@ -69,34 +79,49 @@ suite('TerminalLinkManager', () => {
 		configurationService = new TestConfigurationService({
 			editor: {
 				fastScrollSensitivity: 2,
-				mouseWheelScrollSensitivity: 1
+				mouseWheelScrollSensitivity: 1,
 			} as Partial<IEditorOptions>,
 			terminal: {
-				integrated: defaultTerminalConfig
-			}
+				integrated: defaultTerminalConfig,
+			},
 		});
 		themeService = new TestThemeService();
 		viewDescriptorService = new TestViewDescriptorService();
 
 		instantiationService = store.add(new TestInstantiationService());
-		instantiationService.stub(IContextMenuService, store.add(instantiationService.createInstance(ContextMenuService)));
+		instantiationService.stub(
+			IContextMenuService,
+			store.add(instantiationService.createInstance(ContextMenuService))
+		);
 		instantiationService.stub(IConfigurationService, configurationService);
 		instantiationService.stub(ILogService, new NullLogService());
 		instantiationService.stub(IStorageService, store.add(new TestStorageService()));
 		instantiationService.stub(IThemeService, themeService);
 		instantiationService.stub(IViewDescriptorService, viewDescriptorService);
 
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (
+			await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')
+		).Terminal;
 		xterm = store.add(new TerminalCtor({ allowProposedApi: true, cols: 80, rows: 30 }));
-		linkManager = store.add(instantiationService.createInstance(TestLinkManager, xterm, upcastPartial<ITerminalProcessManager>({
-			get initialCwd() {
-				return '';
-			}
-		}), {
-			get<T extends TerminalCapability>(capability: T): ITerminalCapabilityImplMap[T] | undefined {
-				return undefined;
-			}
-		} as Partial<ITerminalCapabilityStore> as any, instantiationService.createInstance(TerminalLinkResolver)));
+		linkManager = store.add(
+			instantiationService.createInstance(
+				TestLinkManager,
+				xterm,
+				upcastPartial<ITerminalProcessManager>({
+					get initialCwd() {
+						return '';
+					},
+				}),
+				{
+					get<T extends TerminalCapability>(
+						capability: T
+					): ITerminalCapabilityImplMap[T] | undefined {
+						return undefined;
+					},
+				} as Partial<ITerminalCapabilityStore> as any,
+				instantiationService.createInstance(TerminalLinkResolver)
+			)
+		);
 	});
 
 	suite('registerExternalLinkProvider', () => {
@@ -121,17 +146,19 @@ suite('TerminalLinkManager', () => {
 		test('should return word links in order', async () => {
 			const link1 = {
 				range: {
-					start: { x: 1, y: 1 }, end: { x: 14, y: 1 }
+					start: { x: 1, y: 1 },
+					end: { x: 14, y: 1 },
 				},
 				text: '1_我是学生.txt',
-				activate: () => Promise.resolve('')
+				activate: () => Promise.resolve(''),
 			};
 			const link2 = {
 				range: {
-					start: { x: 1, y: 1 }, end: { x: 14, y: 1 }
+					start: { x: 1, y: 1 },
+					end: { x: 14, y: 1 },
 				},
 				text: '2_我是学生.txt',
-				activate: () => Promise.resolve('')
+				activate: () => Promise.resolve(''),
 			};
 			linkManager.setLinks({ wordLinks: [link1, link2] });
 			const links = await linkManager.getLinks();
@@ -146,12 +173,12 @@ suite('TerminalLinkManager', () => {
 			const link1 = {
 				range: { start: { x: 5, y: 1 }, end: { x: 40, y: 1 } },
 				text: 'https://foo.bar/[this is foo site 1]',
-				activate: () => Promise.resolve('')
+				activate: () => Promise.resolve(''),
 			};
 			const link2 = {
 				range: { start: { x: 5, y: 2 }, end: { x: 40, y: 2 } },
 				text: 'https://foo.bar/[this is foo site 2]',
-				activate: () => Promise.resolve('')
+				activate: () => Promise.resolve(''),
 			};
 			linkManager.setLinks({ webLinks: [link1, link2] });
 			const links = await linkManager.getLinks();
@@ -166,12 +193,12 @@ suite('TerminalLinkManager', () => {
 			const link1 = {
 				range: { start: { x: 1, y: 1 }, end: { x: 32, y: 1 } },
 				text: 'file:///C:/users/test/file_1.txt',
-				activate: () => Promise.resolve('')
+				activate: () => Promise.resolve(''),
 			};
 			const link2 = {
 				range: { start: { x: 1, y: 2 }, end: { x: 32, y: 2 } },
 				text: 'file:///C:/users/test/file_2.txt',
-				activate: () => Promise.resolve('')
+				activate: () => Promise.resolve(''),
 			};
 			linkManager.setLinks({ fileLinks: [link1, link2] });
 			const links = await linkManager.getLinks();

@@ -6,7 +6,14 @@
 import { Emitter } from '../../../../base/common/event.js';
 import { TernarySearchTree } from '../../../../base/common/ternarySearchTree.js';
 import { URI } from '../../../../base/common/uri.js';
-import { getConfigurationValue, IConfigurationChangeEvent, IConfigurationOverrides, IConfigurationService, IConfigurationValue, isConfigurationOverrides } from '../../common/configuration.js';
+import {
+	getConfigurationValue,
+	IConfigurationChangeEvent,
+	IConfigurationOverrides,
+	IConfigurationService,
+	IConfigurationValue,
+	isConfigurationOverrides,
+} from '../../common/configuration.js';
 import { Extensions, IConfigurationRegistry } from '../../common/configurationRegistry.js';
 import { Registry } from '../../../registry/common/platform.js';
 
@@ -29,7 +36,11 @@ export class TestConfigurationService implements IConfigurationService {
 
 	public getValue(arg1?: any, arg2?: any): any {
 		let configuration;
-		const overrides = isConfigurationOverrides(arg1) ? arg1 : isConfigurationOverrides(arg2) ? arg2 : undefined;
+		const overrides = isConfigurationOverrides(arg1)
+			? arg1
+			: isConfigurationOverrides(arg2)
+				? arg2
+				: undefined;
 		if (overrides) {
 			if (overrides.resource) {
 				configuration = this.configurationByRoot.findSubstr(overrides.resource.fsPath);
@@ -70,16 +81,18 @@ export class TestConfigurationService implements IConfigurationService {
 			value,
 			defaultValue: undefined,
 			userValue: value,
-			overrideIdentifiers: this.overrideIdentifiers.get(key)
+			overrideIdentifiers: this.overrideIdentifiers.get(key),
 		};
 	}
 
 	public keys() {
 		return {
-			default: Object.keys(Registry.as<IConfigurationRegistry>(Extensions.Configuration).getConfigurationProperties()),
+			default: Object.keys(
+				Registry.as<IConfigurationRegistry>(Extensions.Configuration).getConfigurationProperties()
+			),
 			user: Object.keys(this.configuration),
 			workspace: [],
-			workspaceFolder: []
+			workspaceFolder: [],
 		};
 	}
 

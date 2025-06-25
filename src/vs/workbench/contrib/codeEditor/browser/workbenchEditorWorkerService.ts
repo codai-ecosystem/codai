@@ -18,9 +18,19 @@ export class WorkbenchEditorWorkerService extends EditorWorkerService {
 		@ITextResourceConfigurationService configurationService: ITextResourceConfigurationService,
 		@ILogService logService: ILogService,
 		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService
 	) {
-		const workerDescriptor = new WebWorkerDescriptor(FileAccess.asBrowserUri('vs/editor/common/services/editorWebWorkerMain.js'), 'TextEditorWorker');
-		super(workerDescriptor, modelService, configurationService, logService, languageConfigurationService, languageFeaturesService);
+		const workerDescriptor = new WebWorkerDescriptor(
+			FileAccess.asBrowserUri('vs/editor/common/services/editorWebWorkerMain.js'),
+			'TextEditorWorker'
+		);
+		super(
+			workerDescriptor,
+			modelService,
+			configurationService,
+			logService,
+			languageConfigurationService,
+			languageFeaturesService
+		);
 	}
 }

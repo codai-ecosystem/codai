@@ -27,9 +27,9 @@ const runtime: RuntimeEnvironment = {
 		setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable {
 			const handle = setTimeout(callback, ms, ...args);
 			return { dispose: () => clearTimeout(handle) };
-		}
+		},
 	},
-	file: getNodeFSRequestService()
+	file: getNodeFSRequestService(),
 };
 
 startServer(connection, runtime);

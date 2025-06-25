@@ -11,7 +11,10 @@ import { type TSimpleDecoderToken } from '../../simpleCodec/simpleDecoder.js';
 /**
  * Token represents a generic sequence of tokens in a Front Matter header.
  */
-export class FrontMatterSequence extends FrontMatterValueToken<FrontMatterSequence, readonly TSimpleDecoderToken[]> {
+export class FrontMatterSequence extends FrontMatterValueToken<
+	FrontMatterSequence,
+	readonly TSimpleDecoderToken[]
+> {
 	/**
 	 * @override Because this token represent a generic sequence of tokens,
 	 *           the type name is represented by the sequence of tokens itself
@@ -63,9 +66,7 @@ export class FrontMatterSequence extends FrontMatterValueToken<FrontMatterSequen
 		}
 
 		// update the current range to reflect the current trimmed value
-		this.withRange(
-			BaseToken.fullRange(this.childTokens),
-		);
+		this.withRange(BaseToken.fullRange(this.childTokens));
 
 		// trimmed tokens are collected starting from the end,
 		// moving to the start, hence reverse them before returning

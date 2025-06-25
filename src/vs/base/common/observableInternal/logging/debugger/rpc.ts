@@ -15,7 +15,9 @@ export interface IChannelHandler {
 	handleRequest(requestData: unknown): Promise<RpcRequestResult> | RpcRequestResult;
 }
 
-export type RpcRequestResult = { type: 'result'; value: unknown } | { type: 'error'; value: unknown };
+export type RpcRequestResult =
+	| { type: 'result'; value: unknown }
+	| { type: 'error'; value: unknown };
 
 export type API = {
 	host: Side;
@@ -27,7 +29,11 @@ export type Side = {
 	requests: Record<string, (...args: any[]) => Promise<unknown> | unknown>;
 };
 
-type MakeAsyncIfNot<TFn> = TFn extends (...args: infer TArgs) => infer TResult ? TResult extends Promise<unknown> ? TFn : (...args: TArgs) => Promise<TResult> : never;
+type MakeAsyncIfNot<TFn> = TFn extends (...args: infer TArgs) => infer TResult
+	? TResult extends Promise<unknown>
+		? TFn
+		: (...args: TArgs) => Promise<TResult>
+	: never;
 
 export type MakeSideAsync<T extends Side> = {
 	notifications: T['notifications'];
@@ -35,11 +41,17 @@ export type MakeSideAsync<T extends Side> = {
 };
 
 export class SimpleTypedRpcConnection<T extends Side> {
-	public static createHost<T extends API>(channelFactory: ChannelFactory, getHandler: () => T['host']): SimpleTypedRpcConnection<MakeSideAsync<T['client']>> {
+	public static createHost<T extends API>(
+		channelFactory: ChannelFactory,
+		getHandler: () => T['host']
+	): SimpleTypedRpcConnection<MakeSideAsync<T['client']>> {
 		return new SimpleTypedRpcConnection(channelFactory, getHandler);
 	}
 
-	public static createClient<T extends API>(channelFactory: ChannelFactory, getHandler: () => T['client']): SimpleTypedRpcConnection<MakeSideAsync<T['host']>> {
+	public static createClient<T extends API>(
+		channelFactory: ChannelFactory,
+		getHandler: () => T['client']
+	): SimpleTypedRpcConnection<MakeSideAsync<T['host']>> {
 		return new SimpleTypedRpcConnection(channelFactory, getHandler);
 	}
 
@@ -48,10 +60,10 @@ export class SimpleTypedRpcConnection<T extends Side> {
 
 	private constructor(
 		private readonly _channelFactory: ChannelFactory,
-		private readonly _getHandler: () => Side,
+		private readonly _getHandler: () => Side
 	) {
 		this._channel = this._channelFactory({
-			handleNotification: (notificationData) => {
+			handleNotification: notificationData => {
 				const m = notificationData as OutgoingMessage;
 				const fn = this._getHandler().notifications[m[0]];
 				if (!fn) {
@@ -59,7 +71,7 @@ export class SimpleTypedRpcConnection<T extends Side> {
 				}
 				fn(...m[1]);
 			},
-			handleRequest: (requestData) => {
+			handleRequest: requestData => {
 				const m = requestData as OutgoingMessage;
 				try {
 					const result = this._getHandler().requests[m[0]](...m[1]);
@@ -70,32 +82,35 @@ export class SimpleTypedRpcConnection<T extends Side> {
 			},
 		});
 
-		const requests = new Proxy({}, {
-			get: (target, key: string) => {
-				return async (...args: any[]) => {
-					const result = await this._channel.sendRequest([key, args] satisfies OutgoingMessage);
-					if (result.type === 'error') {
-						throw result.value;
-					} else {
-						return result.value;
-					}
-				};
+		const requests = new Proxy(
+			{},
+			{
+				get: (target, key: string) => {
+					return async (...args: any[]) => {
+						const result = await this._channel.sendRequest([key, args] satisfies OutgoingMessage);
+						if (result.type === 'error') {
+							throw result.value;
+						} else {
+							return result.value;
+						}
+					};
+				},
 			}
-		});
+		);
 
-		const notifications = new Proxy({}, {
-			get: (target, key: string) => {
-				return (...args: any[]) => {
-					this._channel.sendNotification([key, args] satisfies OutgoingMessage);
-				};
+		const notifications = new Proxy(
+			{},
+			{
+				get: (target, key: string) => {
+					return (...args: any[]) => {
+						this._channel.sendNotification([key, args] satisfies OutgoingMessage);
+					};
+				},
 			}
-		});
+		);
 
 		this.api = { notifications: notifications, requests: requests } as any;
 	}
 }
 
-type OutgoingMessage = [
-	method: string,
-	args: unknown[],
-];
+type OutgoingMessage = [method: string, args: unknown[]];

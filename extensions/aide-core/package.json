@@ -1,5 +1,6 @@
 {
-	"name": "aide-core",	"displayName": "codai.ro Core",
+	"name": "aide-core",
+	"displayName": "codai.ro Core",
 	"description": "AI-native development environment core functionality for codai.ro",
 	"version": "1.0.0",
 	"publisher": "codai",
@@ -236,7 +237,8 @@
 		"typescript": "^5.4.5",
 		"vitest": "^1.6.0"
 	},
-	"dependencies": {		"@dragoscatalin/memory-graph": "workspace:*",
+	"dependencies": {
+		"@dragoscatalin/memory-graph": "workspace:*",
 		"@dragoscatalin/agent-runtime": "workspace:*",
 		"@octokit/rest": "^20.0.0",
 		"@types/js-yaml": "^4.0.5",

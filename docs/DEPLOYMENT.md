@@ -7,12 +7,14 @@ For a complete multi-environment deployment (production, preview, development), 
 **Quick setup commands:**
 
 **Windows:**
+
 ```powershell
 .\scripts\setup-multi-env.ps1
 .\scripts\setup-github-secrets.ps1
 ```
 
 **Linux/macOS:**
+
 ```bash
 ./scripts/setup-multi-env.sh
 ./scripts/setup-github-secrets.sh
@@ -23,6 +25,7 @@ For a complete multi-environment deployment (production, preview, development), 
 ### Prerequisites
 
 1. **Vercel CLI**: Install if not already installed
+
    ```bash
    npm install -g vercel
    ```
@@ -33,11 +36,13 @@ For a complete multi-environment deployment (production, preview, development), 
 ### Deployment Steps
 
 #### 1. Login to Vercel
+
 ```bash
 vercel login
 ```
 
 #### 2. Link Project
+
 ```bash
 vercel link
 ```
@@ -64,6 +69,7 @@ vercel env add NEXT_PUBLIC_BASE_URL production
 ```
 
 #### 4. Deploy
+
 ```bash
 # From project root
 vercel --prod
@@ -72,6 +78,7 @@ vercel --prod
 ## 🔧 Environment Variables Required
 
 ### Stripe Configuration
+
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Your Stripe publishable key
 - `STRIPE_SECRET_KEY`: Your Stripe secret key
 - `NEXT_PUBLIC_STRIPE_PROFESSIONAL_PRICE_ID`: Professional plan monthly price ID
@@ -80,6 +87,7 @@ vercel --prod
 - `NEXT_PUBLIC_STRIPE_ENTERPRISE_YEARLY_PRICE_ID`: Enterprise plan yearly price ID
 
 ### URLs
+
 - `NEXT_PUBLIC_CONTROL_PANEL_URL`: URL of deployed aide-control app
 - `NEXT_PUBLIC_SITE_URL`: Your production site URL
 - `NEXT_PUBLIC_BASE_URL`: Base URL for metadata (same as site URL)
@@ -94,8 +102,10 @@ vercel --prod
 ## Stripe Price IDs
 
 You'll need to create products in Stripe and update the price IDs in:
+
 - `apps/aide-landing/components/sections/pricing-section.tsx`
 
 Current placeholder IDs need to be replaced with real ones:
+
 - Professional Plan: `price_professional_monthly`
 - Enterprise Plan: `price_enterprise_monthly`

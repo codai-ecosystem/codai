@@ -8,25 +8,51 @@ import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { themeColorFromId, ThemeIcon } from '../../../../base/common/themables.js';
-import { ICodeEditor, IViewZone, IViewZoneChangeAccessor } from '../../../../editor/browser/editorBrowser.js';
+import {
+	ICodeEditor,
+	IViewZone,
+	IViewZoneChangeAccessor,
+} from '../../../../editor/browser/editorBrowser.js';
 import { StableEditorScrollState } from '../../../../editor/browser/stableEditorScroll.js';
-import { LineSource, RenderOptions, renderLines } from '../../../../editor/browser/widget/diffEditor/components/diffEditorViewZones/renderLines.js';
+import {
+	LineSource,
+	RenderOptions,
+	renderLines,
+} from '../../../../editor/browser/widget/diffEditor/components/diffEditorViewZones/renderLines.js';
 import { ISingleEditOperation } from '../../../../editor/common/core/editOperation.js';
 import { LineRange } from '../../../../editor/common/core/ranges/lineRange.js';
 import { Position } from '../../../../editor/common/core/position.js';
 import { Range } from '../../../../editor/common/core/range.js';
 import { IEditorDecorationsCollection } from '../../../../editor/common/editorCommon.js';
-import { IModelDecorationsChangeAccessor, IModelDeltaDecoration, IValidEditOperation, MinimapPosition, OverviewRulerLane, TrackedRangeStickiness } from '../../../../editor/common/model.js';
+import {
+	IModelDecorationsChangeAccessor,
+	IModelDeltaDecoration,
+	IValidEditOperation,
+	MinimapPosition,
+	OverviewRulerLane,
+	TrackedRangeStickiness,
+} from '../../../../editor/common/model.js';
 import { ModelDecorationOptions } from '../../../../editor/common/model/textModel.js';
 import { IEditorWorkerService } from '../../../../editor/common/services/editorWorker.js';
 import { InlineDecoration, InlineDecorationType } from '../../../../editor/common/viewModel.js';
-import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { Progress } from '../../../../platform/progress/common/progress.js';
 import { SaveReason } from '../../../common/editor.js';
 import { countWords } from '../../chat/common/chatWordCounter.js';
 import { HunkInformation, Session, HunkState } from './inlineChatSession.js';
 import { InlineChatZoneWidget } from './inlineChatZoneWidget.js';
-import { ACTION_TOGGLE_DIFF, CTX_INLINE_CHAT_CHANGE_HAS_DIFF, CTX_INLINE_CHAT_CHANGE_SHOWS_DIFF, InlineChatConfigKeys, MENU_INLINE_CHAT_ZONE, minimapInlineChatDiffInserted, overviewRulerInlineChatDiffInserted } from '../common/inlineChat.js';
+import {
+	ACTION_TOGGLE_DIFF,
+	CTX_INLINE_CHAT_CHANGE_HAS_DIFF,
+	CTX_INLINE_CHAT_CHANGE_SHOWS_DIFF,
+	InlineChatConfigKeys,
+	MENU_INLINE_CHAT_ZONE,
+	minimapInlineChatDiffInserted,
+	overviewRulerInlineChatDiffInserted,
+} from '../common/inlineChat.js';
 import { assertType } from '../../../../base/common/types.js';
 import { performAsyncTextEdit, asProgressiveEdit } from './utils.js';
 import { IAccessibilityService } from '../../../../platform/accessibility/common/accessibility.js';
@@ -38,7 +64,10 @@ import { IInstantiationService } from '../../../../platform/instantiation/common
 import { DefaultChatTextEditor } from '../../chat/browser/codeBlockPart.js';
 import { isEqual } from '../../../../base/common/resources.js';
 import { Iterable } from '../../../../base/common/iterator.js';
-import { ConflictActionsFactory, IContentWidgetAction } from '../../mergeEditor/browser/view/conflictActions.js';
+import {
+	ConflictActionsFactory,
+	IContentWidgetAction,
+} from '../../mergeEditor/browser/view/conflictActions.js';
 import { observableValue } from '../../../../base/common/observable.js';
 import { IMenuService, MenuItemAction } from '../../../../platform/actions/common/actions.js';
 
@@ -52,11 +81,10 @@ export const enum HunkAction {
 	Discard,
 	MoveNext,
 	MovePrev,
-	ToggleDiff
+	ToggleDiff,
 }
 
 export class LiveStrategy {
-
 	private readonly _decoInsertedText = ModelDecorationOptions.register({
 		description: 'inline-modified-line',
 		className: 'inline-chat-inserted-range-linehighlight',
@@ -68,7 +96,7 @@ export class LiveStrategy {
 		minimap: {
 			position: MinimapPosition.Inline,
 			color: themeColorFromId(minimapInlineChatDiffInserted),
-		}
+		},
 	});
 
 	private readonly _decoInsertedTextRange = ModelDecorationOptions.register({
@@ -122,7 +150,6 @@ export class LiveStrategy {
 		this._zone.widget.updateStatus('');
 		this._progressiveEditingDecorations.clear();
 
-
 		for (const data of this._hunkData.values()) {
 			data.remove();
 		}
@@ -141,26 +168,38 @@ export class LiveStrategy {
 		return this._session.hunkData.discardAll();
 	}
 
-	async makeChanges(edits: ISingleEditOperation[], obs: IEditObserver, undoStopBefore: boolean): Promise<void> {
+	async makeChanges(
+		edits: ISingleEditOperation[],
+		obs: IEditObserver,
+		undoStopBefore: boolean
+	): Promise<void> {
 		return this._makeChanges(edits, obs, undefined, undefined, undoStopBefore);
 	}
 
-	async makeProgressiveChanges(edits: ISingleEditOperation[], obs: IEditObserver, opts: ProgressingEditsOptions, undoStopBefore: boolean): Promise<void> {
-
+	async makeProgressiveChanges(
+		edits: ISingleEditOperation[],
+		obs: IEditObserver,
+		opts: ProgressingEditsOptions,
+		undoStopBefore: boolean
+	): Promise<void> {
 		// add decorations once per line that got edited
 		const progress = new Progress<IValidEditOperation[]>(edits => {
-
 			const newLines = new Set<number>();
 			for (const edit of edits) {
 				LineRange.fromRange(edit.range).forEach(line => newLines.add(line));
 			}
-			const existingRanges = this._progressiveEditingDecorations.getRanges().map(LineRange.fromRange);
+			const existingRanges = this._progressiveEditingDecorations
+				.getRanges()
+				.map(LineRange.fromRange);
 			for (const existingRange of existingRanges) {
 				existingRange.forEach(line => newLines.delete(line));
 			}
 			const newDecorations: IModelDeltaDecoration[] = [];
 			for (const line of newLines) {
-				newDecorations.push({ range: new Range(line, 1, line, Number.MAX_VALUE), options: this._decoInsertedText });
+				newDecorations.push({
+					range: new Range(line, 1, line, Number.MAX_VALUE),
+					options: this._decoInsertedText,
+				});
 			}
 
 			this._progressiveEditingDecorations.append(newDecorations);
@@ -168,8 +207,13 @@ export class LiveStrategy {
 		return this._makeChanges(edits, obs, opts, progress, undoStopBefore);
 	}
 
-	private async _makeChanges(edits: ISingleEditOperation[], obs: IEditObserver, opts: ProgressingEditsOptions | undefined, progress: Progress<IValidEditOperation[]> | undefined, undoStopBefore: boolean): Promise<void> {
-
+	private async _makeChanges(
+		edits: ISingleEditOperation[],
+		obs: IEditObserver,
+		opts: ProgressingEditsOptions | undefined,
+		progress: Progress<IValidEditOperation[]> | undefined,
+		undoStopBefore: boolean
+	): Promise<void> {
 		// push undo stop before first edit
 		if (undoStopBefore) {
 			this._editor.pushUndoStop();
@@ -184,14 +228,18 @@ export class LiveStrategy {
 				const wordCount = countWords(edit.text ?? '');
 				const speed = wordCount / durationInSec;
 				// console.log({ durationInSec, wordCount, speed: wordCount / durationInSec });
-				const asyncEdit = asProgressiveEdit(new WindowIntervalTimer(this._zone.domNode), edit, speed, opts.token);
+				const asyncEdit = asProgressiveEdit(
+					new WindowIntervalTimer(this._zone.domNode),
+					edit,
+					speed,
+					opts.token
+				);
 				await performAsyncTextEdit(this._session.textModelN, asyncEdit, progress, obs);
 			}
-
 		} else {
 			// SYNC
 			obs.start();
-			this._session.textModelN.pushEditOperations(null, edits, (undoEdits) => {
+			this._session.textModelN.pushEditOperations(null, edits, undoEdits => {
 				progress?.report(undoEdits);
 				return null;
 			});
@@ -246,9 +294,10 @@ export class LiveStrategy {
 					// bogous hunk
 					continue;
 				}
-				const myDistance = zoneLine <= hunkRanges[0].startLineNumber
-					? hunkRanges[0].startLineNumber - zoneLine
-					: zoneLine - hunkRanges[0].endLineNumber;
+				const myDistance =
+					zoneLine <= hunkRanges[0].startLineNumber
+						? hunkRanges[0].startLineNumber - zoneLine
+						: zoneLine - hunkRanges[0].endLineNumber;
 
 				if (myDistance < distance) {
 					distance = myDistance;
@@ -259,26 +308,27 @@ export class LiveStrategy {
 
 		if (!result) {
 			// fallback: first hunk that is pending
-			result = Iterable.first(Iterable.filter(this._hunkData.values(), candidate => candidate.hunk.getState() === HunkState.Pending));
+			result = Iterable.first(
+				Iterable.filter(
+					this._hunkData.values(),
+					candidate => candidate.hunk.getState() === HunkState.Pending
+				)
+			);
 		}
 		return result;
 	}
 
 	async renderChanges() {
-
 		this._progressiveEditingDecorations.clear();
 
 		const renderHunks = () => {
-
 			let widgetData: HunkDisplayData | undefined;
 
 			changeDecorationsAndViewZones(this._editor, (decorationsAccessor, viewZoneAccessor) => {
-
 				const keysNow = new Set(this._hunkData.keys());
 				widgetData = undefined;
 
 				for (const hunkData of this._session.hunkData.getInfo()) {
-
 					keysNow.delete(hunkData);
 
 					const hunkRanges = hunkData.getRangesN();
@@ -287,9 +337,11 @@ export class LiveStrategy {
 						// first time -> create decoration
 						const decorationIds: string[] = [];
 						for (let i = 0; i < hunkRanges.length; i++) {
-							decorationIds.push(decorationsAccessor.addDecoration(hunkRanges[i], i === 0
-								? this._decoInsertedText
-								: this._decoInsertedTextRange)
+							decorationIds.push(
+								decorationsAccessor.addDecoration(
+									hunkRanges[i],
+									i === 0 ? this._decoInsertedText : this._decoInsertedTextRange
+								)
 							);
 						}
 
@@ -309,54 +361,70 @@ export class LiveStrategy {
 						const renderOptions = RenderOptions.fromEditor(this._editor);
 						const originalRange = hunkData.getRanges0()[0];
 						const source = new LineSource(
-							LineRange.fromRangeInclusive(originalRange).mapToLineArray(l => this._session.textModel0.tokenization.getLineTokens(l)),
+							LineRange.fromRangeInclusive(originalRange).mapToLineArray(l =>
+								this._session.textModel0.tokenization.getLineTokens(l)
+							),
 							[],
 							mightContainNonBasicASCII,
-							mightContainRTL,
+							mightContainRTL
 						);
 						const domNode = document.createElement('div');
 						domNode.className = 'inline-chat-original-zone2';
-						const result = renderLines(source, renderOptions, [new InlineDecoration(new Range(originalRange.startLineNumber, 1, originalRange.startLineNumber, 1), '', InlineDecorationType.Regular)], domNode);
+						const result = renderLines(
+							source,
+							renderOptions,
+							[
+								new InlineDecoration(
+									new Range(originalRange.startLineNumber, 1, originalRange.startLineNumber, 1),
+									'',
+									InlineDecorationType.Regular
+								),
+							],
+							domNode
+						);
 						const viewZoneData: IViewZone = {
 							afterLineNumber: -1,
 							heightInLines: result.heightInLines,
 							domNode,
-							ordinal: 50000 + 2 // more than https://github.com/microsoft/vscode/blob/bf52a5cfb2c75a7327c9adeaefbddc06d529dcad/src/vs/workbench/contrib/inlineChat/browser/inlineChatZoneWidget.ts#L42
+							ordinal: 50000 + 2, // more than https://github.com/microsoft/vscode/blob/bf52a5cfb2c75a7327c9adeaefbddc06d529dcad/src/vs/workbench/contrib/inlineChat/browser/inlineChatZoneWidget.ts#L42
 						};
 
 						const toggleDiff = () => {
 							const scrollState = StableEditorScrollState.capture(this._editor);
-							changeDecorationsAndViewZones(this._editor, (_decorationsAccessor, viewZoneAccessor) => {
-								assertType(data);
-								if (!data.diffViewZoneId) {
-									const [hunkRange] = hunkData.getRangesN();
-									viewZoneData.afterLineNumber = hunkRange.startLineNumber - 1;
-									data.diffViewZoneId = viewZoneAccessor.addZone(viewZoneData);
-								} else {
-									viewZoneAccessor.removeZone(data.diffViewZoneId!);
-									data.diffViewZoneId = undefined;
+							changeDecorationsAndViewZones(
+								this._editor,
+								(_decorationsAccessor, viewZoneAccessor) => {
+									assertType(data);
+									if (!data.diffViewZoneId) {
+										const [hunkRange] = hunkData.getRangesN();
+										viewZoneData.afterLineNumber = hunkRange.startLineNumber - 1;
+										data.diffViewZoneId = viewZoneAccessor.addZone(viewZoneData);
+									} else {
+										viewZoneAccessor.removeZone(data.diffViewZoneId!);
+										data.diffViewZoneId = undefined;
+									}
 								}
-							});
+							);
 							this._ctxCurrentChangeShowsDiff.set(typeof data?.diffViewZoneId === 'string');
 							scrollState.restore(this._editor);
 						};
-
 
 						let lensActions: DisposableStore | undefined;
 						const lensActionsViewZoneIds: string[] = [];
 
 						if (this._showOverlayToolbar && hunkData.getState() === HunkState.Pending) {
-
 							lensActions = new DisposableStore();
 
-							const menu = this._menuService.createMenu(MENU_INLINE_CHAT_ZONE, this._contextService);
+							const menu = this._menuService.createMenu(
+								MENU_INLINE_CHAT_ZONE,
+								this._contextService
+							);
 							const makeActions = () => {
 								const actions: IContentWidgetAction[] = [];
 								const tuples = menu.getActions({ arg: hunkData });
 								for (const [, group] of tuples) {
 									for (const item of group) {
 										if (item instanceof MenuItemAction) {
-
 											let text = item.label;
 
 											if (item.id === ACTION_TOGGLE_DIFF) {
@@ -380,28 +448,34 @@ export class LiveStrategy {
 							lensActions.add(menu.onDidChange(() => obs.set(makeActions(), undefined)));
 							lensActions.add(menu);
 
-							lensActions.add(this._lensActionsFactory.createWidget(viewZoneAccessor,
-								hunkRanges[0].startLineNumber - 1,
-								obs,
-								lensActionsViewZoneIds
-							));
+							lensActions.add(
+								this._lensActionsFactory.createWidget(
+									viewZoneAccessor,
+									hunkRanges[0].startLineNumber - 1,
+									obs,
+									lensActionsViewZoneIds
+								)
+							);
 						}
 
 						const remove = () => {
-							changeDecorationsAndViewZones(this._editor, (decorationsAccessor, viewZoneAccessor) => {
-								assertType(data);
-								for (const decorationId of data.decorationIds) {
-									decorationsAccessor.removeDecoration(decorationId);
-								}
-								if (data.diffViewZoneId) {
-									viewZoneAccessor.removeZone(data.diffViewZoneId!);
-								}
-								data.decorationIds = [];
-								data.diffViewZoneId = undefined;
+							changeDecorationsAndViewZones(
+								this._editor,
+								(decorationsAccessor, viewZoneAccessor) => {
+									assertType(data);
+									for (const decorationId of data.decorationIds) {
+										decorationsAccessor.removeDecoration(decorationId);
+									}
+									if (data.diffViewZoneId) {
+										viewZoneAccessor.removeZone(data.diffViewZoneId!);
+									}
+									data.decorationIds = [];
+									data.diffViewZoneId = undefined;
 
-								data.lensActionsViewZoneIds?.forEach(viewZoneAccessor.removeZone);
-								data.lensActionsViewZoneIds = undefined;
-							});
+									data.lensActionsViewZoneIds?.forEach(viewZoneAccessor.removeZone);
+									data.lensActionsViewZoneIds = undefined;
+								}
+							);
 
 							lensActions?.dispose();
 						};
@@ -417,10 +491,12 @@ export class LiveStrategy {
 							}
 						};
 
-						const zoneLineNumber = this._zone.position?.lineNumber ?? this._editor.getPosition()!.lineNumber;
-						const myDistance = zoneLineNumber <= hunkRanges[0].startLineNumber
-							? hunkRanges[0].startLineNumber - zoneLineNumber
-							: zoneLineNumber - hunkRanges[0].endLineNumber;
+						const zoneLineNumber =
+							this._zone.position?.lineNumber ?? this._editor.getPosition()!.lineNumber;
+						const myDistance =
+							zoneLineNumber <= hunkRanges[0].startLineNumber
+								? hunkRanges[0].startLineNumber - zoneLineNumber
+								: zoneLineNumber - hunkRanges[0].endLineNumber;
 
 						data = {
 							hunk: hunkData,
@@ -438,21 +514,24 @@ export class LiveStrategy {
 						};
 
 						this._hunkData.set(hunkData, data);
-
 					} else if (hunkData.getState() !== HunkState.Pending) {
 						data.remove();
-
 					} else {
 						// update distance and position based on modifiedRange-decoration
-						const zoneLineNumber = this._zone.position?.lineNumber ?? this._editor.getPosition()!.lineNumber;
+						const zoneLineNumber =
+							this._zone.position?.lineNumber ?? this._editor.getPosition()!.lineNumber;
 						const modifiedRangeNow = hunkRanges[0];
 						data.position = modifiedRangeNow.getStartPosition().delta(-1);
-						data.distance = zoneLineNumber <= modifiedRangeNow.startLineNumber
-							? modifiedRangeNow.startLineNumber - zoneLineNumber
-							: zoneLineNumber - modifiedRangeNow.endLineNumber;
+						data.distance =
+							zoneLineNumber <= modifiedRangeNow.startLineNumber
+								? modifiedRangeNow.startLineNumber - zoneLineNumber
+								: zoneLineNumber - modifiedRangeNow.endLineNumber;
 					}
 
-					if (hunkData.getState() === HunkState.Pending && (!widgetData || data.distance < widgetData.distance)) {
+					if (
+						hunkData.getState() === HunkState.Pending &&
+						(!widgetData || data.distance < widgetData.distance)
+					) {
 						widgetData = data;
 					}
 				}
@@ -469,13 +548,17 @@ export class LiveStrategy {
 			if (widgetData) {
 				this._zone.reveal(widgetData.position);
 
-				const mode = this._configService.getValue<'on' | 'off' | 'auto'>(InlineChatConfigKeys.AccessibleDiffView);
-				if (mode === 'on' || mode === 'auto' && this._accessibilityService.isScreenReaderOptimized()) {
+				const mode = this._configService.getValue<'on' | 'off' | 'auto'>(
+					InlineChatConfigKeys.AccessibleDiffView
+				);
+				if (
+					mode === 'on' ||
+					(mode === 'auto' && this._accessibilityService.isScreenReaderOptimized())
+				) {
 					this._zone.widget.showAccessibleHunk(this._session, widgetData.hunk);
 				}
 
 				this._ctxCurrentChangeHasDiff.set(Boolean(widgetData.toggleDiff));
-
 			} else if (this._hunkData.size > 0) {
 				// everything accepted or rejected
 				let oneAccepted = false;
@@ -504,14 +587,11 @@ export class LiveStrategy {
 	}
 
 	private async _doApplyChanges(ignoreLocal: boolean): Promise<void> {
-
 		const untitledModels: IUntitledTextEditorModel[] = [];
 
 		const editor = this._instaService.createInstance(DefaultChatTextEditor);
 
-
 		for (const request of this._session.chatModel.getRequests()) {
-
 			if (!request.response?.response) {
 				continue;
 			}
@@ -550,7 +630,6 @@ export interface ProgressingEditsOptions {
 }
 
 type HunkDisplayData = {
-
 	decorationIds: string[];
 
 	diffViewZoneId: string | undefined;
@@ -569,7 +648,13 @@ type HunkDisplayData = {
 	hunk: HunkInformation;
 };
 
-function changeDecorationsAndViewZones(editor: ICodeEditor, callback: (accessor: IModelDecorationsChangeAccessor, viewZoneAccessor: IViewZoneChangeAccessor) => void): void {
+function changeDecorationsAndViewZones(
+	editor: ICodeEditor,
+	callback: (
+		accessor: IModelDecorationsChangeAccessor,
+		viewZoneAccessor: IViewZoneChangeAccessor
+	) => void
+): void {
 	editor.changeDecorations(decorationsAccessor => {
 		editor.changeViewZones(viewZoneAccessor => {
 			callback(decorationsAccessor, viewZoneAccessor);

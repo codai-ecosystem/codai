@@ -62,23 +62,23 @@ export class ContextManager {
 		});
 
 		// Listen for active editor changes
-		vscode.window.onDidChangeActiveTextEditor((editor) => {
+		vscode.window.onDidChangeActiveTextEditor(editor => {
 			if (editor) {
 				this.updateActiveFile(editor.document.uri.fsPath);
 			}
 		});
 
 		// Listen for document changes
-		vscode.workspace.onDidChangeTextDocument((event) => {
+		vscode.workspace.onDidChangeTextDocument(event => {
 			this.updateFileContext(event.document.uri.fsPath);
 		});
 
 		// Listen for file operations
-		vscode.workspace.onDidCreateFiles((event) => {
+		vscode.workspace.onDidCreateFiles(event => {
 			event.files.forEach(file => this.addFileContext(file.fsPath));
 		});
 
-		vscode.workspace.onDidDeleteFiles((event) => {
+		vscode.workspace.onDidDeleteFiles(event => {
 			event.files.forEach(file => this.removeFileContext(file.fsPath));
 		});
 	}
@@ -93,7 +93,7 @@ export class ContextManager {
 			type: this.detectWorkspaceType(workspace.uri.fsPath),
 			technologies: this.detectTechnologies(workspace.uri.fsPath),
 			activeFiles: Array.from(this.activeFiles),
-			recentFiles: this.getRecentFiles()
+			recentFiles: this.getRecentFiles(),
 		};
 
 		// Update memory with workspace context
@@ -104,7 +104,7 @@ export class ContextManager {
 			metadata: this.workspaceContext,
 			connections: [],
 			timestamp: Date.now(),
-			weight: 1.0
+			weight: 1.0,
 		};
 
 		this.memoryService.addMemoryNode(memoryNode);
@@ -150,7 +150,7 @@ export class ContextManager {
 					isActive: this.activeFiles.has(filePath),
 					lastModified: Date.now(),
 					size: document.getText().length,
-					dependencies: this.extractDependencies(document.getText(), document.languageId)
+					dependencies: this.extractDependencies(document.getText(), document.languageId),
 				};
 
 				this.fileContexts.set(filePath, fileContext);
@@ -163,7 +163,7 @@ export class ContextManager {
 					metadata: fileContext,
 					connections: [],
 					timestamp: Date.now(),
-					weight: 0.5
+					weight: 0.5,
 				};
 
 				this.memoryService.addMemoryNode(memoryNode);
@@ -218,7 +218,7 @@ export class ContextManager {
 			activeFiles: this.getActiveFiles().map(path => this.getFileContext(path)),
 			recentFiles: this.getRecentFiles(),
 			technologies: this.workspaceContext?.technologies || [],
-			summary: this.generateContextSummary()
+			summary: this.generateContextSummary(),
 		};
 	}
 
@@ -244,7 +244,9 @@ export class ContextManager {
 			const path = require('path');
 
 			if (fs.existsSync(path.join(workspacePath, 'package.json'))) {
-				const packageJson = JSON.parse(fs.readFileSync(path.join(workspacePath, 'package.json'), 'utf8'));
+				const packageJson = JSON.parse(
+					fs.readFileSync(path.join(workspacePath, 'package.json'), 'utf8')
+				);
 
 				if (packageJson.dependencies?.next) return 'nextjs';
 				if (packageJson.dependencies?.react) return 'react';
@@ -255,8 +257,10 @@ export class ContextManager {
 				return 'nodejs';
 			}
 
-			if (fs.existsSync(path.join(workspacePath, 'requirements.txt')) ||
-				fs.existsSync(path.join(workspacePath, 'pyproject.toml'))) {
+			if (
+				fs.existsSync(path.join(workspacePath, 'requirements.txt')) ||
+				fs.existsSync(path.join(workspacePath, 'pyproject.toml'))
+			) {
 				return 'python';
 			}
 
@@ -286,7 +290,9 @@ export class ContextManager {
 
 			// Check package.json for JavaScript/Node.js projects
 			if (fs.existsSync(path.join(workspacePath, 'package.json'))) {
-				const packageJson = JSON.parse(fs.readFileSync(path.join(workspacePath, 'package.json'), 'utf8'));
+				const packageJson = JSON.parse(
+					fs.readFileSync(path.join(workspacePath, 'package.json'), 'utf8')
+				);
 				const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
 
 				Object.keys(deps).forEach(dep => {
@@ -306,15 +312,16 @@ export class ContextManager {
 				technologies.push('TypeScript');
 			}
 
-			if (fs.existsSync(path.join(workspacePath, '.eslintrc.js')) ||
-				fs.existsSync(path.join(workspacePath, '.eslintrc.json'))) {
+			if (
+				fs.existsSync(path.join(workspacePath, '.eslintrc.js')) ||
+				fs.existsSync(path.join(workspacePath, '.eslintrc.json'))
+			) {
 				technologies.push('ESLint');
 			}
 
 			if (fs.existsSync(path.join(workspacePath, 'tailwind.config.js'))) {
 				technologies.push('Tailwind CSS');
 			}
-
 		} catch (error) {
 			this.logger.error('Error detecting technologies:', error);
 		}
@@ -387,7 +394,7 @@ export class ContextManager {
 		let hash = 0;
 		for (let i = 0; i < filePath.length; i++) {
 			const char = filePath.charCodeAt(i);
-			hash = ((hash << 5) - hash) + char;
+			hash = (hash << 5) - hash + char;
 			hash = hash & hash; // Convert to 32bit integer
 		}
 		return Math.abs(hash).toString(36);
@@ -412,8 +419,7 @@ export class ContextManager {
 	 * Get context for specific file types
 	 */
 	getFilesByLanguage(language: string): FileContext[] {
-		return Array.from(this.fileContexts.values())
-			.filter(context => context.language === language);
+		return Array.from(this.fileContexts.values()).filter(context => context.language === language);
 	}
 
 	/**
@@ -424,7 +430,7 @@ export class ContextManager {
 			workspace: this.workspaceContext,
 			files: Object.fromEntries(this.fileContexts),
 			activeFiles: Array.from(this.activeFiles),
-			summary: this.generateContextSummary()
+			summary: this.generateContextSummary(),
 		};
 	}
 }

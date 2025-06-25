@@ -7,7 +7,14 @@ import { URI } from '../../../../../base/common/uri.js';
 import { MainThreadTestCollection } from '../../common/mainThreadTestCollection.js';
 import { ITestItem, TestsDiff } from '../../common/testTypes.js';
 import { TestId } from '../../common/testId.js';
-import { createTestItemChildren, ITestItemApi, ITestItemChildren, ITestItemLike, TestItemCollection, TestItemEventOp } from '../../common/testItemCollection.js';
+import {
+	createTestItemChildren,
+	ITestItemApi,
+	ITestItemChildren,
+	ITestItemLike,
+	TestItemCollection,
+	TestItemEventOp,
+} from '../../common/testItemCollection.js';
 
 export class TestTestItem implements ITestItemLike {
 	private readonly props: ITestItem;
@@ -18,7 +25,11 @@ export class TestTestItem implements ITestItemLike {
 	}
 
 	public set tags(value) {
-		this.api.listener?.({ op: TestItemEventOp.SetTags, new: value, old: this.props.tags.map(t => ({ id: t })) });
+		this.api.listener?.({
+			op: TestItemEventOp.SetTags,
+			new: value,
+			old: this.props.tags.map(t => ({ id: t })),
+		});
 		this.props.tags = value.map(tag => tag.id);
 	}
 
@@ -46,7 +57,7 @@ export class TestTestItem implements ITestItemLike {
 	constructor(
 		private readonly _extId: TestId,
 		label: string,
-		uri?: URI,
+		uri?: URI
 	) {
 		this.api = { controllerId: this._extId.controllerId };
 		this.children = createTestItemChildren(this.api, i => i.api, TestTestItem);
@@ -108,7 +119,9 @@ export class TestTestCollection extends TestItemCollection<TestTestItem> {
  * roots/stubs.
  */
 export const getInitializedMainTestCollection = async (singleUse = testStubs.nested()) => {
-	const c = new MainThreadTestCollection({ asCanonicalUri: u => u }, async (t, l) => singleUse.expand(t, l));
+	const c = new MainThreadTestCollection({ asCanonicalUri: u => u }, async (t, l) =>
+		singleUse.expand(t, l)
+	);
 	await singleUse.expand(singleUse.root.id, Infinity);
 	c.apply(singleUse.collectDiff());
 	singleUse.dispose();
@@ -146,8 +159,12 @@ export const testStubs = {
 				collection.root.children.add(a);
 				collection.root.children.add(b);
 			} else if (item.id === idPrefix + 'a') {
-				item.children.add(new TestTestItem(new TestId(['ctrlId', 'id-a', 'id-aa']), 'aa', URI.file('/')));
-				item.children.add(new TestTestItem(new TestId(['ctrlId', 'id-a', 'id-ab']), 'ab', URI.file('/')));
+				item.children.add(
+					new TestTestItem(new TestId(['ctrlId', 'id-a', 'id-aa']), 'aa', URI.file('/'))
+				);
+				item.children.add(
+					new TestTestItem(new TestId(['ctrlId', 'id-a', 'id-ab']), 'ab', URI.file('/'))
+				);
 			}
 		};
 

@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ExtHostSecretStateShape, MainContext, MainThreadSecretStateShape } from './extHost.protocol.js';
+import {
+	ExtHostSecretStateShape,
+	MainContext,
+	MainThreadSecretStateShape,
+} from './extHost.protocol.js';
 import { Emitter } from '../../../base/common/event.js';
 import { IExtHostRpcService } from './extHostRpcService.js';
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
@@ -34,5 +38,5 @@ export class ExtHostSecretState implements ExtHostSecretStateShape {
 	}
 }
 
-export interface IExtHostSecretState extends ExtHostSecretState { }
+export interface IExtHostSecretState extends ExtHostSecretState {}
 export const IExtHostSecretState = createDecorator<IExtHostSecretState>('IExtHostSecretState');

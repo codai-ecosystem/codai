@@ -38,7 +38,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		KeyY: ['y', 'Y', '', '', 0, 'VK_Y'],
 		KeyZ: ['z', 'Z', '', '', 0, 'VK_Z'],
 		Digit1: ['1', '!', '>', '', 0, 'VK_1'],
-		Digit2: ['2', '\'', '£', '', 0, 'VK_2'],
+		Digit2: ['2', "'", '£', '', 0, 'VK_2'],
 		Digit3: ['3', '^', '#', '', 0, 'VK_3'],
 		Digit4: ['4', '+', '$', '', 0, 'VK_4'],
 		Digit5: ['5', '%', '½', '', 0, 'VK_5'],
@@ -163,6 +163,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		BrowserForward: [],
 		BrowserStop: [],
 		BrowserRefresh: [],
-		BrowserFavorites: []
-	}
+		BrowserFavorites: [],
+	},
 });

@@ -14,40 +14,27 @@ import { randomBoolean } from '../../../../../base/test/common/testUtils.js';
  * @throws if {@link maxNumber} argument is less than `2`,
  *         is equal to `NaN` or is `infinite`.
  */
-export const randomRange = (
-	maxNumber: number = 1_000,
-): Range => {
-	assert(
-		maxNumber > 1,
-		`Max number must be greater than 1, got '${maxNumber}'.`,
-	);
+export const randomRange = (maxNumber: number = 1_000): Range => {
+	assert(maxNumber > 1, `Max number must be greater than 1, got '${maxNumber}'.`);
 
 	const startLineNumber = randomInt(maxNumber, 1);
-	const endLineNumber = (randomBoolean() === true)
-		? startLineNumber
-		: randomInt(2 * maxNumber, startLineNumber);
+	const endLineNumber =
+		randomBoolean() === true ? startLineNumber : randomInt(2 * maxNumber, startLineNumber);
 
 	const startColumnNumber = randomInt(maxNumber, 1);
-	const endColumnNumber = (randomBoolean() === true)
-		? startColumnNumber + 1
-		: randomInt(2 * maxNumber, startColumnNumber + 1);
+	const endColumnNumber =
+		randomBoolean() === true
+			? startColumnNumber + 1
+			: randomInt(2 * maxNumber, startColumnNumber + 1);
 
-	return new Range(
-		startLineNumber,
-		startColumnNumber,
-		endLineNumber,
-		endColumnNumber,
-	);
+	return new Range(startLineNumber, startColumnNumber, endLineNumber, endColumnNumber);
 };
 
 /**
  * Generates a random {@link Range} object that is different
  * from the provided one.
  */
-export const randomRangeNotEqualTo = (
-	differentFrom: Range,
-	maxTries: number = 10,
-): Range => {
+export const randomRangeNotEqualTo = (differentFrom: Range, maxTries: number = 10): Range => {
 	let retriesLeft = maxTries;
 
 	while (retriesLeft-- > 0) {
@@ -58,6 +45,6 @@ export const randomRangeNotEqualTo = (
 	}
 
 	throw new Error(
-		`Failed to generate a random range different from '${differentFrom}' in ${maxTries} tries.`,
+		`Failed to generate a random range different from '${differentFrom}' in ${maxTries} tries.`
 	);
 };

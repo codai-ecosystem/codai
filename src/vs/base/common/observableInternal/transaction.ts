@@ -41,7 +41,10 @@ export function globalTransaction(fn: (tx: ITransaction) => void) {
 }
 /** @deprecated */
 
-export async function asyncTransaction(fn: (tx: ITransaction) => Promise<void>, getDebugName?: () => string): Promise<void> {
+export async function asyncTransaction(
+	fn: (tx: ITransaction) => Promise<void>,
+	getDebugName?: () => string
+): Promise<void> {
 	const tx = new TransactionImpl(fn, getDebugName);
 	try {
 		await fn(tx);
@@ -53,16 +56,24 @@ export async function asyncTransaction(fn: (tx: ITransaction) => Promise<void>, 
  * Allows to chain transactions.
  */
 
-export function subtransaction(tx: ITransaction | undefined, fn: (tx: ITransaction) => void, getDebugName?: () => string): void {
+export function subtransaction(
+	tx: ITransaction | undefined,
+	fn: (tx: ITransaction) => void,
+	getDebugName?: () => string
+): void {
 	if (!tx) {
 		transaction(fn, getDebugName);
 	} else {
 		fn(tx);
 	}
-} export class TransactionImpl implements ITransaction {
+}
+export class TransactionImpl implements ITransaction {
 	private _updatingObservers: { observer: IObserver; observable: IObservable<any> }[] | null = [];
 
-	constructor(public readonly _fn: Function, private readonly _getDebugName?: () => string) {
+	constructor(
+		public readonly _fn: Function,
+		private readonly _getDebugName?: () => string
+	) {
 		getLogger()?.handleBeginTransaction(this);
 	}
 
@@ -110,4 +121,3 @@ export function subtransaction(tx: ITransaction | undefined, fn: (tx: ITransacti
 		return this._updatingObservers;
 	}
 }
-

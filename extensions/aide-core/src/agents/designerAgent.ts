@@ -35,7 +35,7 @@ export class DesignerAgent extends BaseAgent {
 		this.memoryGraph.addNode('screen', `Designed: ${message}`, {
 			agent: 'designer',
 			designType,
-			timestamp: new Date().toISOString()
+			timestamp: new Date().toISOString(),
 		});
 
 		return {
@@ -45,19 +45,20 @@ export class DesignerAgent extends BaseAgent {
 			metadata: {
 				designType,
 				actionsGenerated: actions.length,
-				contextItems: context.length
-			}
+				contextItems: context.length,
+			},
 		};
 	}
 
 	async getStatus(): Promise<Record<string, any>> {
-		const screens = this.memoryGraph.getNodesByType('screen')
+		const screens = this.memoryGraph
+			.getNodesByType('screen')
 			.filter(node => node.metadata.agent === 'designer');
 
 		return {
 			totalDesigns: screens.length,
 			recentDesigns: screens.slice(-5).map(s => s.content),
-			designTypes: this.getDesignTypeStats(screens)
+			designTypes: this.getDesignTypeStats(screens),
 		};
 	}
 
@@ -79,7 +80,12 @@ export class DesignerAgent extends BaseAgent {
 
 		return 'general';
 	}
-	private async designUI(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async designUI(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a UI/UX designer agent responsible for creating user interfaces. Your task is to:
 1. Analyze user requirements for UI design
 2. Create modern, accessible, and user-friendly designs
@@ -108,13 +114,13 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'src/styles/components.css',
-			content: this.generateUIStyles()
+			content: this.generateUIStyles(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: 'design/ui-spec.md',
-			content: this.generateUISpecification(message)
+			content: this.generateUISpecification(message),
 		});
 
 		return `🎨 **UI Design Complete**
@@ -141,7 +147,12 @@ ${aiResponse}
 - Conduct usability testing
 - Iterate based on feedback`;
 	}
-	private async designUX(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async designUX(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a UX designer agent responsible for user experience design. Your task is to:
 1. Analyze user needs and behaviors
 2. Create intuitive user flows and interactions
@@ -169,7 +180,7 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'design/user-flows.md',
-			content: this.generateUserFlows(message)
+			content: this.generateUserFlows(message),
 		});
 
 		return `🧭 **UX Design Complete**
@@ -197,7 +208,12 @@ ${aiResponse}
 - Consistent mental models
 - Accessibility first`;
 	}
-	private async designLayout(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async designLayout(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a layout designer agent responsible for creating responsive layouts. Your task is to:
 1. Design flexible, responsive layout systems
 2. Create proper grid systems and spacing
@@ -225,7 +241,7 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'src/styles/layout.css',
-			content: this.generateLayoutStyles()
+			content: this.generateLayoutStyles(),
 		});
 
 		return `📐 **Layout Design Complete**
@@ -252,7 +268,12 @@ ${aiResponse}
 - Responsive design patterns
 - Component composition support`;
 	}
-	private async designTheme(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async designTheme(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a visual design agent responsible for creating design systems and themes. Your task is to:
 1. Create cohesive visual identity and branding
 2. Design comprehensive design token systems
@@ -280,13 +301,13 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'src/styles/theme.css',
-			content: this.generateThemeStyles()
+			content: this.generateThemeStyles(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: 'design/design-tokens.json',
-			content: this.generateDesignTokens()
+			content: this.generateDesignTokens(),
 		});
 
 		return `🎭 **Theme Design Complete**
@@ -313,7 +334,12 @@ ${aiResponse}
 - Accessibility compliance
 - Cross-browser compatibility`;
 	}
-	private async generalDesign(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async generalDesign(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a general design agent responsible for providing comprehensive design guidance. Your task is to:
 1. Analyze design requirements and constraints
 2. Suggest appropriate design approaches and methodologies
@@ -542,46 +568,50 @@ ${aiResponse}
 	}
 
 	private generateDesignTokens(): string {
-		return JSON.stringify({
-			"colors": {
-				"primary": {
-					"50": "#eff6ff",
-					"100": "#dbeafe",
-					"500": "#3b82f6",
-					"600": "#2563eb",
-					"900": "#1e3a8a"
+		return JSON.stringify(
+			{
+				colors: {
+					primary: {
+						'50': '#eff6ff',
+						'100': '#dbeafe',
+						'500': '#3b82f6',
+						'600': '#2563eb',
+						'900': '#1e3a8a',
+					},
+					gray: {
+						'50': '#f9fafb',
+						'100': '#f3f4f6',
+						'500': '#6b7280',
+						'900': '#111827',
+					},
 				},
-				"gray": {
-					"50": "#f9fafb",
-					"100": "#f3f4f6",
-					"500": "#6b7280",
-					"900": "#111827"
-				}
-			},
-			"typography": {
-				"fontFamily": {
-					"sans": ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"]
+				typography: {
+					fontFamily: {
+						sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+					},
+					fontSize: {
+						xs: '0.75rem',
+						sm: '0.875rem',
+						base: '1rem',
+						lg: '1.125rem',
+						xl: '1.25rem',
+						'2xl': '1.5rem',
+						'3xl': '1.875rem',
+					},
 				},
-				"fontSize": {
-					"xs": "0.75rem",
-					"sm": "0.875rem",
-					"base": "1rem",
-					"lg": "1.125rem",
-					"xl": "1.25rem",
-					"2xl": "1.5rem",
-					"3xl": "1.875rem"
-				}
+				spacing: {
+					'1': '0.25rem',
+					'2': '0.5rem',
+					'3': '0.75rem',
+					'4': '1rem',
+					'6': '1.5rem',
+					'8': '2rem',
+					'12': '3rem',
+				},
 			},
-			"spacing": {
-				"1": "0.25rem",
-				"2": "0.5rem",
-				"3": "0.75rem",
-				"4": "1rem",
-				"6": "1.5rem",
-				"8": "2rem",
-				"12": "3rem"
-			}
-		}, null, 2);
+			null,
+			2
+		);
 	}
 
 	private generateUISpecification(message: string): string {

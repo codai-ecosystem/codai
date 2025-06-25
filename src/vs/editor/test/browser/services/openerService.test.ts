@@ -8,7 +8,10 @@ import { URI } from '../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { OpenerService } from '../../../browser/services/openerService.js';
 import { TestCodeEditorService } from '../editorTestServices.js';
-import { CommandsRegistry, ICommandService } from '../../../../platform/commands/common/commands.js';
+import {
+	CommandsRegistry,
+	ICommandService,
+} from '../../../../platform/commands/common/commands.js';
 import { NullCommandService } from '../../../../platform/commands/test/common/nullCommandService.js';
 import { ITextEditorOptions } from '../../../../platform/editor/common/editor.js';
 import { matchesScheme, matchesSomeScheme } from '../../../../base/common/network.js';
@@ -39,28 +42,61 @@ suite('OpenerService', function () {
 	test('delegate to editorService, scheme:///fff', async function () {
 		const openerService = new OpenerService(editorService, NullCommandService);
 		await openerService.open(URI.parse('another:///somepath'));
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection, undefined);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection,
+			undefined
+		);
 	});
 
 	test('delegate to editorService, scheme:///fff#L123', async function () {
 		const openerService = new OpenerService(editorService, NullCommandService);
 
 		await openerService.open(URI.parse('file:///somepath#L23'));
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber, 23);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn, 1);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.endLineNumber, undefined);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.endColumn, undefined);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber,
+			23
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn,
+			1
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.endLineNumber,
+			undefined
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.endColumn,
+			undefined
+		);
 		assert.strictEqual(editorService.lastInput!.resource.fragment, '');
 
 		await openerService.open(URI.parse('another:///somepath#L23'));
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber, 23);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn, 1);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber,
+			23
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn,
+			1
+		);
 
 		await openerService.open(URI.parse('another:///somepath#L23,45'));
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber, 23);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn, 45);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.endLineNumber, undefined);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.endColumn, undefined);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber,
+			23
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn,
+			45
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.endLineNumber,
+			undefined
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.endColumn,
+			undefined
+		);
 		assert.strictEqual(editorService.lastInput!.resource.fragment, '');
 	});
 
@@ -68,17 +104,41 @@ suite('OpenerService', function () {
 		const openerService = new OpenerService(editorService, NullCommandService);
 
 		await openerService.open(URI.parse('file:///somepath#23'));
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber, 23);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn, 1);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.endLineNumber, undefined);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.endColumn, undefined);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber,
+			23
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn,
+			1
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.endLineNumber,
+			undefined
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.endColumn,
+			undefined
+		);
 		assert.strictEqual(editorService.lastInput!.resource.fragment, '');
 
 		await openerService.open(URI.parse('file:///somepath#23,45'));
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber, 23);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn, 45);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.endLineNumber, undefined);
-		assert.strictEqual((editorService.lastInput!.options as ITextEditorOptions)!.selection!.endColumn, undefined);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startLineNumber,
+			23
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.startColumn,
+			45
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.endLineNumber,
+			undefined
+		);
+		assert.strictEqual(
+			(editorService.lastInput!.options as ITextEditorOptions)!.selection!.endColumn,
+			undefined
+		);
 		assert.strictEqual(editorService.lastInput!.resource.fragment, '');
 	});
 
@@ -86,21 +146,22 @@ suite('OpenerService', function () {
 		const openerService = new OpenerService(editorService, commandService);
 
 		const id = `aCommand${Math.random()}`;
-		store.add(CommandsRegistry.registerCommand(id, function () { }));
+		store.add(CommandsRegistry.registerCommand(id, function () {}));
 
 		assert.strictEqual(lastCommand, undefined);
 		await openerService.open(URI.parse('command:' + id));
 		assert.strictEqual(lastCommand, undefined);
 	});
 
-
 	test('delegate to commandsService, command:someid, 2', async function () {
 		const openerService = new OpenerService(editorService, commandService);
 
 		const id = `aCommand${Math.random()}`;
-		store.add(CommandsRegistry.registerCommand(id, function () { }));
+		store.add(CommandsRegistry.registerCommand(id, function () {}));
 
-		await openerService.open(URI.parse('command:' + id).with({ query: '\"123\"' }), { allowCommands: true });
+		await openerService.open(URI.parse('command:' + id).with({ query: '\"123\"' }), {
+			allowCommands: true,
+		});
 		assert.strictEqual(lastCommand!.id, id);
 		assert.strictEqual(lastCommand!.args.length, 1);
 		assert.strictEqual(lastCommand!.args[0], '123');
@@ -109,12 +170,17 @@ suite('OpenerService', function () {
 		assert.strictEqual(lastCommand!.id, id);
 		assert.strictEqual(lastCommand!.args.length, 0);
 
-		await openerService.open(URI.parse('command:' + id).with({ query: '123' }), { allowCommands: true });
+		await openerService.open(URI.parse('command:' + id).with({ query: '123' }), {
+			allowCommands: true,
+		});
 		assert.strictEqual(lastCommand!.id, id);
 		assert.strictEqual(lastCommand!.args.length, 1);
 		assert.strictEqual(lastCommand!.args[0], 123);
 
-		await openerService.open(URI.parse('command:' + id).with({ query: JSON.stringify([12, true]) }), { allowCommands: true });
+		await openerService.open(
+			URI.parse('command:' + id).with({ query: JSON.stringify([12, true]) }),
+			{ allowCommands: true }
+		);
 		assert.strictEqual(lastCommand!.id, id);
 		assert.strictEqual(lastCommand!.args.length, 2);
 		assert.strictEqual(lastCommand!.args[0], 12);
@@ -138,12 +204,14 @@ suite('OpenerService', function () {
 		store.add(openerService.registerValidator({ shouldOpen: () => Promise.resolve(true) }));
 
 		let openCount = 0;
-		store.add(openerService.registerOpener({
-			open: (resource: URI) => {
-				openCount++;
-				return Promise.resolve(true);
-			}
-		}));
+		store.add(
+			openerService.registerOpener({
+				open: (resource: URI) => {
+					openCount++;
+					return Promise.resolve(true);
+				},
+			})
+		);
 
 		await openerService.open(URI.parse('http://microsoft.com'));
 		assert.strictEqual(openCount, 1);
@@ -151,18 +219,22 @@ suite('OpenerService', function () {
 		assert.strictEqual(openCount, 2);
 	});
 
-	test('links aren\'t manipulated before being passed to validator: PR #118226', async function () {
+	test("links aren't manipulated before being passed to validator: PR #118226", async function () {
 		const openerService = new OpenerService(editorService, commandService);
 
-		store.add(openerService.registerValidator({
-			shouldOpen: (resource) => {
-				// We don't want it to convert strings into URIs
-				assert.strictEqual(resource instanceof URI, false);
-				return Promise.resolve(false);
-			}
-		}));
+		store.add(
+			openerService.registerValidator({
+				shouldOpen: resource => {
+					// We don't want it to convert strings into URIs
+					assert.strictEqual(resource instanceof URI, false);
+					return Promise.resolve(false);
+				},
+			})
+		);
 		await openerService.open('https://wwww.microsoft.com');
-		await openerService.open('https://www.microsoft.com??params=CountryCode%3DUSA%26Name%3Dvscode"');
+		await openerService.open(
+			'https://www.microsoft.com??params=CountryCode%3DUSA%26Name%3Dvscode"'
+		);
 	});
 
 	test('links validated by multiple validators', async function () {
@@ -173,7 +245,7 @@ suite('OpenerService', function () {
 			shouldOpen: () => {
 				v1++;
 				return Promise.resolve(true);
-			}
+			},
 		});
 
 		let v2 = 0;
@@ -181,7 +253,7 @@ suite('OpenerService', function () {
 			shouldOpen: () => {
 				v2++;
 				return Promise.resolve(true);
-			}
+			},
 		});
 
 		let openCount = 0;
@@ -189,7 +261,7 @@ suite('OpenerService', function () {
 			open: (resource: URI) => {
 				openCount++;
 				return Promise.resolve(true);
-			}
+			},
 		});
 
 		await openerService.open(URI.parse('http://microsoft.com'));
@@ -210,7 +282,7 @@ suite('OpenerService', function () {
 			shouldOpen: () => {
 				v1++;
 				return Promise.resolve(false);
-			}
+			},
 		});
 
 		let v2 = 0;
@@ -218,7 +290,7 @@ suite('OpenerService', function () {
 			shouldOpen: () => {
 				v2++;
 				return Promise.resolve(true);
-			}
+			},
 		});
 
 		let openCount = 0;
@@ -226,7 +298,7 @@ suite('OpenerService', function () {
 			open: (resource: URI) => {
 				openCount++;
 				return Promise.resolve(true);
-			}
+			},
 		});
 
 		await openerService.open(URI.parse('http://microsoft.com'));
@@ -271,8 +343,8 @@ suite('OpenerService', function () {
 
 		const disposable = openerService.registerExternalUriResolver({
 			async resolveExternalUri(uri) {
-				return { resolved: uri, dispose() { } };
-			}
+				return { resolved: uri, dispose() {} };
+			},
 		});
 
 		const result = await openerService.resolveExternalUri(URI.parse('file:///Users/user/folder'));
@@ -280,7 +352,7 @@ suite('OpenerService', function () {
 		disposable.dispose();
 	});
 
-	test('vscode.open command can\'t open HTTP URL with hash (#) in it [extension development] #140907', async function () {
+	test("vscode.open command can't open HTTP URL with hash (#) in it [extension development] #140907", async function () {
 		const openerService = new OpenerService(editorService, NullCommandService);
 
 		const actual: string[] = [];
@@ -289,10 +361,11 @@ suite('OpenerService', function () {
 			async openExternal(href) {
 				actual.push(href);
 				return true;
-			}
+			},
 		});
 
-		const href = 'https://gitlab.com/viktomas/test-project/merge_requests/new?merge_request%5Bsource_branch%5D=test-%23-hash';
+		const href =
+			'https://gitlab.com/viktomas/test-project/merge_requests/new?merge_request%5Bsource_branch%5D=test-%23-hash';
 		const uri = URI.parse(href);
 
 		assert.ok(await openerService.open(uri));
@@ -300,7 +373,7 @@ suite('OpenerService', function () {
 
 		assert.deepStrictEqual(actual, [
 			encodeURI(uri.toString(true)), // BAD, the encoded # (%23) is double encoded to %2523 (% is double encoded)
-			href // good
+			href, // good
 		]);
 	});
 });

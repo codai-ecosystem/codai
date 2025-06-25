@@ -9,7 +9,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { parseReplaceString, ReplacePattern, ReplacePiece } from '../../browser/replacePattern.js';
 
 suite('Replace Pattern test', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('parse replace string', () => {
@@ -52,7 +51,11 @@ suite('Replace Pattern test', () => {
 
 		testParse('hello$&', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(0)]);
 		testParse('hello$0', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(0)]);
-		testParse('hello$02', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(0), ReplacePiece.staticValue('2')]);
+		testParse('hello$02', [
+			ReplacePiece.staticValue('hello'),
+			ReplacePiece.matchIndex(0),
+			ReplacePiece.staticValue('2'),
+		]);
 		testParse('hello$1', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(1)]);
 		testParse('hello$2', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(2)]);
 		testParse('hello$9', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(9)]);
@@ -60,16 +63,36 @@ suite('Replace Pattern test', () => {
 
 		testParse('hello$12', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(12)]);
 		testParse('hello$99', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(99)]);
-		testParse('hello$99a', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(99), ReplacePiece.staticValue('a')]);
-		testParse('hello$1a', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(1), ReplacePiece.staticValue('a')]);
-		testParse('hello$100', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(10), ReplacePiece.staticValue('0')]);
-		testParse('hello$100a', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(10), ReplacePiece.staticValue('0a')]);
-		testParse('hello$10a0', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(10), ReplacePiece.staticValue('a0')]);
+		testParse('hello$99a', [
+			ReplacePiece.staticValue('hello'),
+			ReplacePiece.matchIndex(99),
+			ReplacePiece.staticValue('a'),
+		]);
+		testParse('hello$1a', [
+			ReplacePiece.staticValue('hello'),
+			ReplacePiece.matchIndex(1),
+			ReplacePiece.staticValue('a'),
+		]);
+		testParse('hello$100', [
+			ReplacePiece.staticValue('hello'),
+			ReplacePiece.matchIndex(10),
+			ReplacePiece.staticValue('0'),
+		]);
+		testParse('hello$100a', [
+			ReplacePiece.staticValue('hello'),
+			ReplacePiece.matchIndex(10),
+			ReplacePiece.staticValue('0a'),
+		]);
+		testParse('hello$10a0', [
+			ReplacePiece.staticValue('hello'),
+			ReplacePiece.matchIndex(10),
+			ReplacePiece.staticValue('a0'),
+		]);
 		testParse('hello$$', [ReplacePiece.staticValue('hello$')]);
 		testParse('hello$$0', [ReplacePiece.staticValue('hello$0')]);
 
 		testParse('hello$`', [ReplacePiece.staticValue('hello$`')]);
-		testParse('hello$\'', [ReplacePiece.staticValue('hello$\'')]);
+		testParse("hello$'", [ReplacePiece.staticValue("hello$'")]);
 	});
 
 	test('parse replace string with case modifiers', () => {
@@ -78,12 +101,21 @@ suite('Replace Pattern test', () => {
 			const expected = new ReplacePattern(expectedPieces);
 			assert.deepStrictEqual(actual, expected, 'Parsing ' + input);
 		};
-		function assertReplace(target: string, search: RegExp, replaceString: string, expected: string): void {
+		function assertReplace(
+			target: string,
+			search: RegExp,
+			replaceString: string,
+			expected: string
+		): void {
 			const replacePattern = parseReplaceString(replaceString);
 			const m = search.exec(target);
 			const actual = replacePattern.buildReplaceString(m);
 
-			assert.strictEqual(actual, expected, `${target}.replace(${search}, ${replaceString}) === ${expected}`);
+			assert.strictEqual(
+				actual,
+				expected,
+				`${target}.replace(${search}, ${replaceString}) === ${expected}`
+			);
 		}
 
 		// \U, \u => uppercase  \L, \l => lowercase  \E => cancel
@@ -100,12 +132,22 @@ suite('Replace Pattern test', () => {
 		testParse('hello\\l$1', [ReplacePiece.staticValue('hello'), ReplacePiece.caseOps(1, ['l'])]);
 		assertReplace('func PrivateFunc(', /func (\w+)\(/, 'func \\l$1(', 'func privateFunc(');
 
-		testParse('hello$1\\u\\u\\U$4goodbye', [ReplacePiece.staticValue('hello'), ReplacePiece.matchIndex(1), ReplacePiece.caseOps(4, ['u', 'u', 'U']), ReplacePiece.staticValue('goodbye')]);
+		testParse('hello$1\\u\\u\\U$4goodbye', [
+			ReplacePiece.staticValue('hello'),
+			ReplacePiece.matchIndex(1),
+			ReplacePiece.caseOps(4, ['u', 'u', 'U']),
+			ReplacePiece.staticValue('goodbye'),
+		]);
 		assertReplace('hellogooDbye', /hello(\w+)/, 'hello\\u\\u\\l\\l\\U$1', 'helloGOodBYE');
 	});
 
 	test('replace has JavaScript semantics', () => {
-		const testJSReplaceSemantics = (target: string, search: RegExp, replaceString: string, expected: string) => {
+		const testJSReplaceSemantics = (
+			target: string,
+			search: RegExp,
+			replaceString: string,
+			expected: string
+		) => {
 			const replacePattern = parseReplaceString(replaceString);
 			const m = search.exec(target);
 			const actual = replacePattern.buildReplaceString(m);
@@ -128,18 +170,32 @@ suite('Replace Pattern test', () => {
 		// capture groups have funny semantics in replace strings
 		// the replace string interprets $nn as a captured group only if it exists in the search regex
 		testJSReplaceSemantics('hi', /(hi)/, 'hello$10', 'hi'.replace(/(hi)/, 'hello$10'));
-		testJSReplaceSemantics('hi', /(hi)()()()()()()()()()/, 'hello$10', 'hi'.replace(/(hi)()()()()()()()()()/, 'hello$10'));
+		testJSReplaceSemantics(
+			'hi',
+			/(hi)()()()()()()()()()/,
+			'hello$10',
+			'hi'.replace(/(hi)()()()()()()()()()/, 'hello$10')
+		);
 		testJSReplaceSemantics('hi', /(hi)/, 'hello$100', 'hi'.replace(/(hi)/, 'hello$100'));
 		testJSReplaceSemantics('hi', /(hi)/, 'hello$20', 'hi'.replace(/(hi)/, 'hello$20'));
 	});
 
 	test('get replace string if given text is a complete match', () => {
-		function assertReplace(target: string, search: RegExp, replaceString: string, expected: string): void {
+		function assertReplace(
+			target: string,
+			search: RegExp,
+			replaceString: string,
+			expected: string
+		): void {
 			const replacePattern = parseReplaceString(replaceString);
 			const m = search.exec(target);
 			const actual = replacePattern.buildReplaceString(m);
 
-			assert.strictEqual(actual, expected, `${target}.replace(${search}, ${replaceString}) === ${expected}`);
+			assert.strictEqual(
+				actual,
+				expected,
+				`${target}.replace(${search}, ${replaceString}) === ${expected}`
+			);
 		}
 
 		assertReplace('bla', /bla/, 'hello', 'hello');
@@ -147,12 +203,42 @@ suite('Replace Pattern test', () => {
 		assertReplace('bla', /(bla)/, 'hello$0', 'hellobla');
 
 		const searchRegex = /let\s+(\w+)\s*=\s*require\s*\(\s*['"]([\w\.\-/]+)\s*['"]\s*\)\s*/;
-		assertReplace('let fs = require(\'fs\')', searchRegex, 'import * as $1 from \'$2\';', 'import * as fs from \'fs\';');
-		assertReplace('let something = require(\'fs\')', searchRegex, 'import * as $1 from \'$2\';', 'import * as something from \'fs\';');
-		assertReplace('let something = require(\'fs\')', searchRegex, 'import * as $1 from \'$1\';', 'import * as something from \'something\';');
-		assertReplace('let something = require(\'fs\')', searchRegex, 'import * as $2 from \'$1\';', 'import * as fs from \'something\';');
-		assertReplace('let something = require(\'fs\')', searchRegex, 'import * as $0 from \'$0\';', 'import * as let something = require(\'fs\') from \'let something = require(\'fs\')\';');
-		assertReplace('let fs = require(\'fs\')', searchRegex, 'import * as $1 from \'$2\';', 'import * as fs from \'fs\';');
+		assertReplace(
+			"let fs = require('fs')",
+			searchRegex,
+			"import * as $1 from '$2';",
+			"import * as fs from 'fs';"
+		);
+		assertReplace(
+			"let something = require('fs')",
+			searchRegex,
+			"import * as $1 from '$2';",
+			"import * as something from 'fs';"
+		);
+		assertReplace(
+			"let something = require('fs')",
+			searchRegex,
+			"import * as $1 from '$1';",
+			"import * as something from 'something';"
+		);
+		assertReplace(
+			"let something = require('fs')",
+			searchRegex,
+			"import * as $2 from '$1';",
+			"import * as fs from 'something';"
+		);
+		assertReplace(
+			"let something = require('fs')",
+			searchRegex,
+			"import * as $0 from '$0';",
+			"import * as let something = require('fs') from 'let something = require('fs')';"
+		);
+		assertReplace(
+			"let fs = require('fs')",
+			searchRegex,
+			"import * as $1 from '$2';",
+			"import * as fs from 'fs';"
+		);
 		assertReplace('for ()', /for(.*)/, 'cat$1', 'cat ()');
 
 		// issue #18111
@@ -160,12 +246,21 @@ suite('Replace Pattern test', () => {
 	});
 
 	test('get replace string if match is sub-string of the text', () => {
-		function assertReplace(target: string, search: RegExp, replaceString: string, expected: string): void {
+		function assertReplace(
+			target: string,
+			search: RegExp,
+			replaceString: string,
+			expected: string
+		): void {
 			const replacePattern = parseReplaceString(replaceString);
 			const m = search.exec(target);
 			const actual = replacePattern.buildReplaceString(m);
 
-			assert.strictEqual(actual, expected, `${target}.replace(${search}, ${replaceString}) === ${expected}`);
+			assert.strictEqual(
+				actual,
+				expected,
+				`${target}.replace(${search}, ${replaceString}) === ${expected}`
+			);
 		}
 		assertReplace('this is a bla text', /bla/, 'hello', 'hello');
 		assertReplace('this is a bla text', /this(?=.*bla)/, 'that', 'that');

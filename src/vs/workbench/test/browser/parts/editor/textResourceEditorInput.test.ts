@@ -15,7 +15,6 @@ import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('TextResourceEditorInput', () => {
-
 	const disposables = new DisposableStore();
 
 	let instantiationService: IInstantiationService;
@@ -32,14 +31,30 @@ suite('TextResourceEditorInput', () => {
 
 	test('basics', async () => {
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID), resource);
+		accessor.modelService.createModel(
+			'function test() {}',
+			accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID),
+			resource
+		);
 
-		const input = disposables.add(instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', undefined, undefined));
+		const input = disposables.add(
+			instantiationService.createInstance(
+				TextResourceEditorInput,
+				resource,
+				'The Name',
+				'The Description',
+				undefined,
+				undefined
+			)
+		);
 
 		const model = disposables.add(await input.resolve());
 
 		assert.ok(model);
-		assert.strictEqual(snapshotToString(((model as TextResourceEditorModel).createSnapshot()!)), 'function test() {}');
+		assert.strictEqual(
+			snapshotToString((model as TextResourceEditorModel).createSnapshot()!),
+			'function test() {}'
+		);
 	});
 
 	test('preferred language (via ctor)', async () => {
@@ -48,9 +63,22 @@ suite('TextResourceEditorInput', () => {
 		});
 
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID), resource);
+		accessor.modelService.createModel(
+			'function test() {}',
+			accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID),
+			resource
+		);
 
-		const input = disposables.add(instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', 'resource-input-test', undefined));
+		const input = disposables.add(
+			instantiationService.createInstance(
+				TextResourceEditorInput,
+				resource,
+				'The Name',
+				'The Description',
+				'resource-input-test',
+				undefined
+			)
+		);
 
 		const model = disposables.add(await input.resolve());
 		assert.ok(model);
@@ -70,9 +98,22 @@ suite('TextResourceEditorInput', () => {
 		});
 
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID), resource);
+		accessor.modelService.createModel(
+			'function test() {}',
+			accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID),
+			resource
+		);
 
-		const input = disposables.add(instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', undefined, undefined));
+		const input = disposables.add(
+			instantiationService.createInstance(
+				TextResourceEditorInput,
+				resource,
+				'The Name',
+				'The Description',
+				undefined,
+				undefined
+			)
+		);
 		input.setPreferredLanguageId('resource-input-test');
 
 		const model = disposables.add(await input.resolve());
@@ -83,9 +124,22 @@ suite('TextResourceEditorInput', () => {
 
 	test('preferred contents (via ctor)', async () => {
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID), resource);
+		accessor.modelService.createModel(
+			'function test() {}',
+			accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID),
+			resource
+		);
 
-		const input = disposables.add(instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', undefined, 'My Resource Input Contents'));
+		const input = disposables.add(
+			instantiationService.createInstance(
+				TextResourceEditorInput,
+				resource,
+				'The Name',
+				'The Description',
+				undefined,
+				'My Resource Input Contents'
+			)
+		);
 
 		const model = disposables.add(await input.resolve());
 		assert.ok(model);
@@ -100,9 +154,22 @@ suite('TextResourceEditorInput', () => {
 
 	test('preferred contents (via setPreferredContents)', async () => {
 		const resource = URI.from({ scheme: 'inmemory', authority: null!, path: 'thePath' });
-		accessor.modelService.createModel('function test() {}', accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID), resource);
+		accessor.modelService.createModel(
+			'function test() {}',
+			accessor.languageService.createById(PLAINTEXT_LANGUAGE_ID),
+			resource
+		);
 
-		const input = disposables.add(instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', undefined, undefined));
+		const input = disposables.add(
+			instantiationService.createInstance(
+				TextResourceEditorInput,
+				resource,
+				'The Name',
+				'The Description',
+				undefined,
+				undefined
+			)
+		);
 		input.setPreferredContents('My Resource Input Contents');
 
 		const model = disposables.add(await input.resolve());

@@ -105,17 +105,14 @@ After conducting a thorough audit of the AIDE codebase, I've identified several 
 ### Immediate (Critical)
 
 1. **Integrate CodeAgent into AgentManager**
-
    - Add import and instance creation
    - Add 'code' case to agent routing switch
    - Update determineRelevantAgents keywords
 
 2. **Fix GitHub Service Promise Chains**
-
    - Add .catch() handlers to prevent unhandled rejections
 
 3. **Implement Plugin Context Methods**
-
    - Add real state management for plugins
    - Implement secrets storage and retrieval
 
@@ -126,13 +123,11 @@ After conducting a thorough audit of the AIDE codebase, I've identified several 
 ### Medium Priority
 
 1. **Add Missing Error Handling**
-
    - Wrap all file operations in try-catch
    - Add timeout handling for network requests
    - Implement graceful degradation
 
 2. **Improve Type Safety**
-
    - Replace `any` types with specific interfaces
    - Add null checks for workspace operations
    - Strengthen return type definitions
@@ -144,7 +139,6 @@ After conducting a thorough audit of the AIDE codebase, I've identified several 
 ### Low Priority (Improvements)
 
 1. **Performance Optimizations**
-
    - Add caching for frequently accessed data
    - Implement async file operations everywhere
    - Add debouncing for UI interactions

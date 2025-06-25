@@ -23,7 +23,9 @@ try {
 let app;
 if (getApps().length === 0) {
 	// During build time or static generation, skip Firebase initialization to avoid credential issues
-	const isBuildTime = process.env.NODE_ENV === 'production' && (!process.env.FIREBASE_ADMIN_CREDENTIALS || process.env.FIREBASE_ADMIN_CREDENTIALS === '');
+	const isBuildTime =
+		process.env.NODE_ENV === 'production' &&
+		(!process.env.FIREBASE_ADMIN_CREDENTIALS || process.env.FIREBASE_ADMIN_CREDENTIALS === '');
 
 	if (isBuildTime) {
 		// This is likely a build-time execution, create a dummy app
@@ -387,7 +389,7 @@ export class FirestoreService {
 				.orderBy('order')
 				.get();
 
-			return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PlanDocument));
+			return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as PlanDocument);
 		} catch (error) {
 			console.error('Error getting active plans:', error);
 			throw error;
@@ -405,7 +407,7 @@ export class FirestoreService {
 				.limit(limit)
 				.get();
 
-			return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLogDocument));
+			return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as AuditLogDocument);
 		} catch (error) {
 			console.error('Error getting recent audit logs:', error);
 			throw error;

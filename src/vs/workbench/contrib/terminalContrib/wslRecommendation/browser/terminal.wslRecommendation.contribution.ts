@@ -9,13 +9,25 @@ import { isWindows } from '../../../../../base/common/platform.js';
 import { localize } from '../../../../../nls.js';
 import { IExtensionManagementService } from '../../../../../platform/extensionManagement/common/extensionManagement.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { INotificationService, NeverShowAgainScope, NotificationPriority, Severity } from '../../../../../platform/notification/common/notification.js';
+import {
+	INotificationService,
+	NeverShowAgainScope,
+	NotificationPriority,
+	Severity,
+} from '../../../../../platform/notification/common/notification.js';
 import { IProductService } from '../../../../../platform/product/common/productService.js';
-import { registerWorkbenchContribution2, WorkbenchPhase, type IWorkbenchContribution } from '../../../../common/contributions.js';
+import {
+	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
+} from '../../../../common/contributions.js';
 import { InstallRecommendedExtensionAction } from '../../../extensions/browser/extensionsActions.js';
 import { ITerminalService } from '../../../terminal/browser/terminal.js';
 
-export class TerminalWslRecommendationContribution extends Disposable implements IWorkbenchContribution {
+export class TerminalWslRecommendationContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
 	static ID = 'terminalWslRecommendation';
 
 	constructor(
@@ -23,7 +35,7 @@ export class TerminalWslRecommendationContribution extends Disposable implements
 		@IInstantiationService instantiationService: IInstantiationService,
 		@INotificationService notificationService: INotificationService,
 		@IProductService productService: IProductService,
-		@ITerminalService terminalService: ITerminalService,
+		@ITerminalService terminalService: ITerminalService
 	) {
 		super();
 
@@ -42,38 +54,54 @@ export class TerminalWslRecommendationContribution extends Disposable implements
 				return extensions.some(e => e.identifier.id === id);
 			}
 
-			if (!instance.shellLaunchConfig.executable || basename(instance.shellLaunchConfig.executable).toLowerCase() !== 'wsl.exe') {
+			if (
+				!instance.shellLaunchConfig.executable ||
+				basename(instance.shellLaunchConfig.executable).toLowerCase() !== 'wsl.exe'
+			) {
 				return;
 			}
 
 			listener?.dispose();
 			listener = undefined;
 
-			const extId = Object.keys(exeBasedExtensionTips.wsl.recommendations).find(extId => exeBasedExtensionTips.wsl.recommendations[extId].important);
-			if (!extId || await isExtensionInstalled(extId)) {
+			const extId = Object.keys(exeBasedExtensionTips.wsl.recommendations).find(
+				extId => exeBasedExtensionTips.wsl.recommendations[extId].important
+			);
+			if (!extId || (await isExtensionInstalled(extId))) {
 				return;
 			}
 
 			notificationService.prompt(
 				Severity.Info,
-				localize('useWslExtension.title', "The '{0}' extension is recommended for opening a terminal in WSL.", exeBasedExtensionTips.wsl.friendlyName),
+				localize(
+					'useWslExtension.title',
+					"The '{0}' extension is recommended for opening a terminal in WSL.",
+					exeBasedExtensionTips.wsl.friendlyName
+				),
 				[
 					{
 						label: localize('install', 'Install'),
 						run: () => {
 							instantiationService.createInstance(InstallRecommendedExtensionAction, extId).run();
-						}
-					}
+						},
+					},
 				],
 				{
 					sticky: true,
 					priority: NotificationPriority.OPTIONAL,
-					neverShowAgain: { id: 'terminalConfigHelper/launchRecommendationsIgnore', scope: NeverShowAgainScope.APPLICATION },
-					onCancel: () => { }
+					neverShowAgain: {
+						id: 'terminalConfigHelper/launchRecommendationsIgnore',
+						scope: NeverShowAgainScope.APPLICATION,
+					},
+					onCancel: () => {},
 				}
 			);
 		});
 	}
 }
 
-registerWorkbenchContribution2(TerminalWslRecommendationContribution.ID, TerminalWslRecommendationContribution, WorkbenchPhase.Eventually);
+registerWorkbenchContribution2(
+	TerminalWslRecommendationContribution.ID,
+	TerminalWslRecommendationContribution,
+	WorkbenchPhase.Eventually
+);

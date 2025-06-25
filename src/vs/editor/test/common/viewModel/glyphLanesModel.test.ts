@@ -5,7 +5,7 @@
 
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { GlyphMarginLanesModel, } from '../../../common/viewModel/glyphLanesModel.js';
+import { GlyphMarginLanesModel } from '../../../common/viewModel/glyphLanesModel.js';
 import { Range } from '../../../common/core/range.js';
 import { GlyphMarginLane } from '../../../common/model.js';
 
@@ -14,7 +14,8 @@ suite('GlyphLanesModel', () => {
 
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	const lineRange = (startLineNumber: number, endLineNumber: number) => new Range(startLineNumber, 1, endLineNumber, 1);
+	const lineRange = (startLineNumber: number, endLineNumber: number) =>
+		new Range(startLineNumber, 1, endLineNumber, 1);
 	const assertLines = (fromLine: number, n: number, expected: GlyphMarginLane[][]) => {
 		const result: GlyphMarginLane[][] = [];
 		for (let i = 0; i < n; i++) {
@@ -29,9 +30,7 @@ suite('GlyphLanesModel', () => {
 
 	test('handles empty', () => {
 		assert.equal(model.requiredLanes, 1);
-		assertLines(1, 1, [
-			[GlyphMarginLane.Center],
-		]);
+		assertLines(1, 1, [[GlyphMarginLane.Center]]);
 	});
 
 	test('works with a single line range', () => {

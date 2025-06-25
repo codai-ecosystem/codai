@@ -15,7 +15,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../common/utils.js';
 import { getRandomTestPath } from '../testUtils.js';
 
 suite('Zip', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('extract should handle directories', async () => {

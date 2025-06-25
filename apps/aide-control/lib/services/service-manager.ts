@@ -38,12 +38,12 @@ const initializeFirebaseAdmin = () => {
 
 				admin.initializeApp({
 					credential: admin.credential.cert(serviceAccount),
-					projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+					projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
 				});
 			} else {
 				// Fallback for development
 				admin.initializeApp({
-					projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+					projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
 				});
 			}
 		}
@@ -70,19 +70,21 @@ export class ServiceManager {
 			ServiceManager.instance = new ServiceManager();
 		}
 		return ServiceManager.instance;
-	}	/**
+	} /**
 	 * Get Firestore instance from Firebase Admin
 	 */
 	private getFirestore() {
 		if (!admin) {
 			// Try to initialize Firebase Admin first
 			if (!initializeFirebaseAdmin()) {
-				throw new Error('Firebase Admin SDK not available. Please install firebase-admin dependency.');
+				throw new Error(
+					'Firebase Admin SDK not available. Please install firebase-admin dependency.'
+				);
 			}
 		}
 
 		return admin!.firestore();
-	}/**
+	} /**
 	 * Initialize user services based on their configuration
 	 */
 	async initializeUserServices(userId: string): Promise<void> {
@@ -128,7 +130,10 @@ export class ServiceManager {
 			const service = createLLMService(config);
 			this.llmServices.set(serviceKey, service);
 		} catch (error) {
-			console.error(`Failed to initialize LLM service ${config.providerId} for user ${userId}:`, error);
+			console.error(
+				`Failed to initialize LLM service ${config.providerId} for user ${userId}:`,
+				error
+			);
 			throw error;
 		}
 	}
@@ -142,7 +147,10 @@ export class ServiceManager {
 			const service = createEmbeddingService(config);
 			this.embeddingServices.set(serviceKey, service);
 		} catch (error) {
-			console.error(`Failed to initialize embedding service ${config.providerId} for user ${userId}:`, error);
+			console.error(
+				`Failed to initialize embedding service ${config.providerId} for user ${userId}:`,
+				error
+			);
 			throw error;
 		}
 	}
@@ -155,7 +163,9 @@ export class ServiceManager {
 		const service = this.llmServices.get(serviceKey);
 
 		if (!service) {
-			throw new Error(`LLM service ${providerId} not found for user ${userId}. Please configure the service first.`);
+			throw new Error(
+				`LLM service ${providerId} not found for user ${userId}. Please configure the service first.`
+			);
 		}
 
 		return service;
@@ -169,14 +179,20 @@ export class ServiceManager {
 		const service = this.embeddingServices.get(serviceKey);
 
 		if (!service) {
-			throw new Error(`Embedding service ${providerId} not found for user ${userId}. Please configure the service first.`);
+			throw new Error(
+				`Embedding service ${providerId} not found for user ${userId}. Please configure the service first.`
+			);
 		}
 
 		return service;
-	}	/**
+	} /**
 	 * Add or update a service configuration for a user
 	 */
-	async updateServiceConfig(userId: string, serviceType: ServiceType, config: ServiceConfig): Promise<void> {
+	async updateServiceConfig(
+		userId: string,
+		serviceType: ServiceType,
+		config: ServiceConfig
+	): Promise<void> {
 		try {
 			const db = this.getFirestore();
 
@@ -196,7 +212,9 @@ export class ServiceManager {
 			}
 
 			// Find existing config for the same provider or add new one
-			const existingIndex = serviceConfigs[serviceType].findIndex((c: ServiceConfig) => c.providerId === config.providerId);
+			const existingIndex = serviceConfigs[serviceType].findIndex(
+				(c: ServiceConfig) => c.providerId === config.providerId
+			);
 
 			if (existingIndex >= 0) {
 				serviceConfigs[serviceType][existingIndex] = config;
@@ -207,7 +225,7 @@ export class ServiceManager {
 			// Update document
 			await userRef.update({
 				serviceConfigs,
-				updatedAt: new Date()
+				updatedAt: new Date(),
 			});
 
 			// Initialize the new service
@@ -222,10 +240,14 @@ export class ServiceManager {
 			console.error(`Failed to update service config for user ${userId}:`, error);
 			throw error;
 		}
-	}	/**
+	} /**
 	 * Remove a service configuration for a user
 	 */
-	async removeServiceConfig(userId: string, serviceType: ServiceType, providerId: string): Promise<void> {
+	async removeServiceConfig(
+		userId: string,
+		serviceType: ServiceType,
+		providerId: string
+	): Promise<void> {
 		try {
 			const db = this.getFirestore();
 
@@ -241,12 +263,14 @@ export class ServiceManager {
 			const serviceConfigs = userData?.serviceConfigs || {};
 
 			if (serviceConfigs[serviceType]) {
-				serviceConfigs[serviceType] = serviceConfigs[serviceType].filter((c: ServiceConfig) => c.providerId !== providerId);
+				serviceConfigs[serviceType] = serviceConfigs[serviceType].filter(
+					(c: ServiceConfig) => c.providerId !== providerId
+				);
 			}
 
 			await userRef.update({
 				serviceConfigs,
-				updatedAt: new Date()
+				updatedAt: new Date(),
 			});
 
 			// Remove from memory
@@ -273,17 +297,16 @@ export class ServiceManager {
 
 			const usageRecord: UsageRecord = {
 				...record,
-				userId
+				userId,
 			};
 
 			// Store in Firestore
-			await db.collection('usage').add(usageRecord);			// Update user's current usage count
+			await db.collection('usage').add(usageRecord); // Update user's current usage count
 			const userRef = db.collection('users').doc(userId);
 			await userRef.update({
 				usageCurrent: FieldValue ? FieldValue.increment(1) : 1,
-				updatedAt: new Date()
+				updatedAt: new Date(),
 			});
-
 		} catch (error) {
 			console.error(`Failed to record usage for user ${userId}:`, error);
 			throw error;
@@ -379,7 +402,7 @@ export class ServiceManager {
 	async healthCheck(): Promise<{ llm: number; embedding: number }> {
 		return {
 			llm: this.llmServices.size,
-			embedding: this.embeddingServices.size
+			embedding: this.embeddingServices.size,
 		};
 	}
 }

@@ -7,7 +7,7 @@ import Stripe from 'stripe';
 import { adminDb, COLLECTIONS } from '../../../../lib/firebase-admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-	apiVersion: '2024-04-10'
+	apiVersion: '2024-04-10',
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -23,10 +23,7 @@ export async function POST(request: NextRequest) {
 			event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
 		} catch (err) {
 			console.error('Webhook signature verification failed:', err);
-			return NextResponse.json(
-				{ error: 'Invalid signature' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
 		}
 
 		console.log('Received Stripe webhook event:', event.type);
@@ -61,10 +58,7 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({ received: true });
 	} catch (error) {
 		console.error('Webhook error:', error);
-		return NextResponse.json(
-			{ error: 'Webhook handler failed' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
 	}
 }
 
@@ -84,7 +78,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 			stripeSubscriptionId: subscription,
 			subscriptionStatus: 'active',
 			subscriptionStartDate: new Date(),
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		});
 
 		console.log(`Checkout completed for user ${userId}, subscription ${subscription}`);
@@ -98,7 +92,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 		const customerId = subscription.customer as string;
 
 		// Find user by Stripe customer ID
-		const userQuery = await adminDb.collection(COLLECTIONS.USERS)
+		const userQuery = await adminDb
+			.collection(COLLECTIONS.USERS)
 			.where('stripeCustomerId', '==', customerId)
 			.limit(1)
 			.get();
@@ -111,7 +106,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 		const userDoc = userQuery.docs[0];
 		const updateData: any = {
 			subscriptionStatus: subscription.status,
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		};
 
 		// Add plan information if available
@@ -137,7 +132,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 		const customerId = subscription.customer as string;
 
 		// Find user by Stripe customer ID
-		const userQuery = await adminDb.collection(COLLECTIONS.USERS)
+		const userQuery = await adminDb
+			.collection(COLLECTIONS.USERS)
 			.where('stripeCustomerId', '==', customerId)
 			.limit(1)
 			.get();
@@ -151,7 +147,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 		await userDoc.ref.update({
 			subscriptionStatus: 'cancelled',
 			subscriptionEndDate: new Date(),
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		});
 
 		console.log(`Subscription cancelled for customer ${customerId}`);
@@ -165,7 +161,8 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 		const customerId = invoice.customer as string;
 
 		// Find user by Stripe customer ID
-		const userQuery = await adminDb.collection(COLLECTIONS.USERS)
+		const userQuery = await adminDb
+			.collection(COLLECTIONS.USERS)
 			.where('stripeCustomerId', '==', customerId)
 			.limit(1)
 			.get();
@@ -184,13 +181,13 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 			amount: invoice.amount_paid,
 			currency: invoice.currency,
 			status: 'succeeded',
-			createdAt: new Date()
+			createdAt: new Date(),
 		});
 
 		// Update user's last payment date
 		await userDoc.ref.update({
 			lastPaymentDate: new Date(),
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		});
 
 		console.log(`Payment succeeded for customer ${customerId}, amount: ${invoice.amount_paid}`);
@@ -204,7 +201,8 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 		const customerId = invoice.customer as string;
 
 		// Find user by Stripe customer ID
-		const userQuery = await adminDb.collection(COLLECTIONS.USERS)
+		const userQuery = await adminDb
+			.collection(COLLECTIONS.USERS)
 			.where('stripeCustomerId', '==', customerId)
 			.limit(1)
 			.get();
@@ -223,13 +221,13 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 			amount: invoice.amount_due,
 			currency: invoice.currency,
 			status: 'failed',
-			createdAt: new Date()
+			createdAt: new Date(),
 		});
 
 		// Update subscription status if payment failed
 		await userDoc.ref.update({
 			subscriptionStatus: 'past_due',
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		});
 
 		console.log(`Payment failed for customer ${customerId}, amount: ${invoice.amount_due}`);

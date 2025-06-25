@@ -33,7 +33,8 @@ expect.extend({
 			};
 		} else {
 			return {
-				message: () => `expected ${received} to be valid test code with describe, test/it, and expect`,
+				message: () =>
+					`expected ${received} to be valid test code with describe, test/it, and expect`,
 				pass: false,
 			};
 		}

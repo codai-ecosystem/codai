@@ -24,7 +24,7 @@ const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(
 			sm: 'h-8 w-8',
 			md: 'h-10 w-10',
 			lg: 'h-12 w-12',
-			xl: 'h-16 w-16'
+			xl: 'h-16 w-16',
 		};
 
 		return (
@@ -40,31 +40,31 @@ const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(
 		);
 	}
 );
-Avatar.displayName = "Avatar";
+Avatar.displayName = 'Avatar';
 
 const AvatarImage = React.forwardRef<HTMLImageElement, AvatarImageProps>(
 	({ className, ...props }, ref) => (
 		<img
 			ref={ref}
-			className={clsx("aspect-square h-full w-full object-cover", className)}
+			className={clsx('aspect-square h-full w-full object-cover', className)}
 			{...props}
 		/>
 	)
 );
-AvatarImage.displayName = "AvatarImage";
+AvatarImage.displayName = 'AvatarImage';
 
 const AvatarFallback = React.forwardRef<HTMLSpanElement, AvatarFallbackProps>(
 	({ className, ...props }, ref) => (
 		<span
 			ref={ref}
 			className={clsx(
-				"flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground",
+				'flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground',
 				className
 			)}
 			{...props}
 		/>
 	)
 );
-AvatarFallback.displayName = "AvatarFallback";
+AvatarFallback.displayName = 'AvatarFallback';
 
 export { Avatar, AvatarImage, AvatarFallback };

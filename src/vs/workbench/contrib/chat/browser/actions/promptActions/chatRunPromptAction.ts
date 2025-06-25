@@ -28,7 +28,11 @@ import { ContextKeyExpr } from '../../../../../../platform/contextkey/common/con
 import { IRunPromptOptions, runPromptFile } from './dialogs/askToSelectPrompt/utils/runPrompt.js';
 import { ICodeEditorService } from '../../../../../../editor/browser/services/codeEditorService.js';
 import { KeybindingWeight } from '../../../../../../platform/keybinding/common/keybindingsRegistry.js';
-import { Action2, MenuId, registerAction2 } from '../../../../../../platform/actions/common/actions.js';
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from '../../../../../../platform/actions/common/actions.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
 import { PromptsType } from '../../../../../../platform/prompts/common/prompts.js';
 import { CancellationToken } from '../../../../../../base/common/cancellation.js';
@@ -39,7 +43,7 @@ import { CancellationToken } from '../../../../../../base/common/cancellation.js
 const EDITOR_ACTIONS_CONDITION = ContextKeyExpr.and(
 	ContextKeyExpr.and(PromptsConfig.enabledCtx, ChatContextKeys.enabled),
 	ResourceContextKey.HasResource,
-	ResourceContextKey.LangId.isEqualTo(PROMPT_LANGUAGE_ID),
+	ResourceContextKey.LangId.isEqualTo(PROMPT_LANGUAGE_ID)
 );
 
 /**
@@ -91,9 +95,7 @@ interface IRunPromptBaseActionConstructorOptions {
  * Base class of the `Run Prompt` action.
  */
 abstract class RunPromptBaseAction extends Action2 {
-	constructor(
-		options: IRunPromptBaseActionConstructorOptions,
-	) {
+	constructor(options: IRunPromptBaseActionConstructorOptions) {
 		super({
 			id: options.id,
 			title: options.title,
@@ -102,10 +104,7 @@ abstract class RunPromptBaseAction extends Action2 {
 			category: CHAT_CATEGORY,
 			icon: options.icon,
 			keybinding: {
-				when: ContextKeyExpr.and(
-					EditorContextKeys.editorTextFocus,
-					EDITOR_ACTIONS_CONDITION,
-				),
+				when: ContextKeyExpr.and(EditorContextKeys.editorTextFocus, EDITOR_ACTIONS_CONDITION),
 				weight: KeybindingWeight.WorkbenchContrib,
 				primary: options.keybinding,
 			},
@@ -127,25 +126,19 @@ abstract class RunPromptBaseAction extends Action2 {
 	public async execute(
 		resource: URI | undefined,
 		inNewChat: boolean,
-		accessor: ServicesAccessor,
+		accessor: ServicesAccessor
 	): Promise<IChatWidget> {
 		const viewsService = accessor.get(IViewsService);
 		const commandService = accessor.get(ICommandService);
 
 		resource ||= getActivePromptFileUri(accessor);
-		assertDefined(
-			resource,
-			'Cannot find URI resource for an active text editor.',
-		);
+		assertDefined(resource, 'Cannot find URI resource for an active text editor.');
 
-		const { widget } = await runPromptFile(
-			resource,
-			{
-				inNewChat,
-				commandService,
-				viewsService,
-			},
-		);
+		const { widget } = await runPromptFile(resource, {
+			inNewChat,
+			commandService,
+			viewsService,
+		});
 
 		return widget;
 	}
@@ -153,7 +146,7 @@ abstract class RunPromptBaseAction extends Action2 {
 
 const RUN_CURRENT_PROMPT_ACTION_TITLE = localize2(
 	'run-prompt.capitalized',
-	"Run Prompt in Current Chat"
+	'Run Prompt in Current Chat'
 );
 const RUN_CURRENT_PROMPT_ACTION_ICON = Codicon.playCircle;
 
@@ -172,13 +165,9 @@ class RunCurrentPromptAction extends RunPromptBaseAction {
 
 	public override async run(
 		accessor: ServicesAccessor,
-		resource: URI | undefined,
+		resource: URI | undefined
 	): Promise<IChatWidget> {
-		return await super.execute(
-			resource,
-			false,
-			accessor,
-		);
+		return await super.execute(resource, false, accessor);
 	}
 }
 
@@ -186,7 +175,7 @@ class RunSelectedPromptAction extends Action2 {
 	constructor() {
 		super({
 			id: RUN_SELECTED_PROMPT_ACTION_ID,
-			title: localize2('run-prompt.capitalized.ellipses', "Run Prompt..."),
+			title: localize2('run-prompt.capitalized.ellipses', 'Run Prompt...'),
 			icon: Codicon.bookmark,
 			f1: true,
 			precondition: ContextKeyExpr.and(PromptsConfig.enabledCtx, ChatContextKeys.enabled),
@@ -199,9 +188,7 @@ class RunSelectedPromptAction extends Action2 {
 		});
 	}
 
-	public override async run(
-		accessor: ServicesAccessor,
-	): Promise<void> {
+	public override async run(accessor: ServicesAccessor): Promise<void> {
 		const viewsService = accessor.get(IViewsService);
 		const promptsService = accessor.get(IPromptsService);
 		const commandService = accessor.get(ICommandService);
@@ -210,14 +197,21 @@ class RunSelectedPromptAction extends Action2 {
 		const pickers = instaService.createInstance(PromptFilePickers);
 
 		// find all prompt files in the user workspace
-		const promptFiles = await promptsService.listPromptFiles(PromptsType.prompt, CancellationToken.None);
+		const promptFiles = await promptsService.listPromptFiles(
+			PromptsType.prompt,
+			CancellationToken.None
+		);
 		const placeholder = localize(
 			'commands.prompt.select-dialog.placeholder',
 			'Select the prompt file to run (hold {0}-key to use in new chat)',
 			UILabelProvider.modifierLabels[OS].ctrlKey
 		);
 
-		const result = await pickers.selectPromptFile({ promptFiles, placeholder, type: PromptsType.prompt });
+		const result = await pickers.selectPromptFile({
+			promptFiles,
+			placeholder,
+			type: PromptsType.prompt,
+		});
 
 		if (result === undefined) {
 			return;
@@ -229,21 +223,15 @@ class RunSelectedPromptAction extends Action2 {
 			viewsService,
 			commandService,
 		};
-		const { widget } = await runPromptFile(
-			promptFile,
-			runPromptOptions,
-		);
+		const { widget } = await runPromptFile(promptFile, runPromptOptions);
 		widget.focusInput();
 	}
 }
 
-
 /**
  * Gets `URI` of a prompt file open in an active editor instance, if any.
  */
-export const getActivePromptFileUri = (
-	accessor: ServicesAccessor,
-): URI | undefined => {
+export const getActivePromptFileUri = (accessor: ServicesAccessor): URI | undefined => {
 	const codeEditorService = accessor.get(ICodeEditorService);
 	const model = codeEditorService.getActiveCodeEditor()?.getModel();
 	if (model?.getLanguageId() === PROMPT_LANGUAGE_ID) {
@@ -252,15 +240,15 @@ export const getActivePromptFileUri = (
 	return undefined;
 };
 
-
 /**
  * Action ID for the `Run Current Prompt In New Chat` action.
  */
-const RUN_CURRENT_PROMPT_IN_NEW_CHAT_ACTION_ID = 'workbench.action.chat.run-in-new-chat.prompt.current';
+const RUN_CURRENT_PROMPT_IN_NEW_CHAT_ACTION_ID =
+	'workbench.action.chat.run-in-new-chat.prompt.current';
 
 const RUN_IN_NEW_CHAT_ACTION_TITLE = localize2(
 	'run-prompt-in-new-chat.capitalized',
-	"Run Prompt In New Chat",
+	'Run Prompt In New Chat'
 );
 
 /**
@@ -286,15 +274,8 @@ class RunCurrentPromptInNewChatAction extends RunPromptBaseAction {
 		});
 	}
 
-	public override async run(
-		accessor: ServicesAccessor,
-		resource: URI,
-	): Promise<IChatWidget> {
-		return await super.execute(
-			resource,
-			true,
-			accessor,
-		);
+	public override async run(accessor: ServicesAccessor, resource: URI): Promise<IChatWidget> {
+		return await super.execute(resource, true, accessor);
 	}
 }
 

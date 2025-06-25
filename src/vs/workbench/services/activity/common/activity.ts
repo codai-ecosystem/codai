@@ -9,7 +9,12 @@ import { Event } from '../../../../base/common/event.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { activityErrorBadgeBackground, activityErrorBadgeForeground, activityWarningBadgeBackground, activityWarningBadgeForeground } from '../../../../platform/theme/common/colors/miscColors.js';
+import {
+	activityErrorBadgeBackground,
+	activityErrorBadgeForeground,
+	activityWarningBadgeBackground,
+	activityWarningBadgeForeground,
+} from '../../../../platform/theme/common/colors/miscColors.js';
 import { IColorTheme } from '../../../../platform/theme/common/themeService.js';
 import { ViewContainer } from '../../../common/views.js';
 
@@ -20,7 +25,6 @@ export interface IActivity {
 export const IActivityService = createDecorator<IActivityService>('activityService');
 
 export interface IActivityService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -71,12 +75,10 @@ export interface IBadgeStyles {
 }
 
 class BaseBadge implements IBadge {
-
 	constructor(
 		protected readonly descriptorFn: (arg: any) => string,
-		private readonly stylesFn: ((theme: IColorTheme) => IBadgeStyles | undefined) | undefined,
-	) {
-	}
+		private readonly stylesFn: ((theme: IColorTheme) => IBadgeStyles | undefined) | undefined
+	) {}
 
 	getDescription(): string {
 		return this.descriptorFn(null);
@@ -88,8 +90,10 @@ class BaseBadge implements IBadge {
 }
 
 export class NumberBadge extends BaseBadge {
-
-	constructor(readonly number: number, descriptorFn: (num: number) => string) {
+	constructor(
+		readonly number: number,
+		descriptorFn: (num: number) => string
+	) {
 		super(descriptorFn, undefined);
 
 		this.number = number;
@@ -104,7 +108,7 @@ export class IconBadge extends BaseBadge {
 	constructor(
 		readonly icon: ThemeIcon,
 		descriptorFn: () => string,
-		stylesFn?: (theme: IColorTheme) => IBadgeStyles | undefined,
+		stylesFn?: (theme: IColorTheme) => IBadgeStyles | undefined
 	) {
 		super(descriptorFn, stylesFn);
 	}

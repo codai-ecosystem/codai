@@ -10,7 +10,6 @@ import { ILanguagePacks, INLSConfiguration } from '../../nls.js';
 import { Promises } from './pfs.js';
 
 export interface IResolveNLSConfigurationContext {
-
 	/**
 	 * Location where `nls.messages.json` and `nls.keys.json` are stored.
 	 */
@@ -39,7 +38,13 @@ export interface IResolveNLSConfigurationContext {
 	readonly osLocale: string;
 }
 
-export async function resolveNLSConfiguration({ userLocale, osLocale, userDataPath, commit, nlsMetadataPath }: IResolveNLSConfigurationContext): Promise<INLSConfiguration> {
+export async function resolveNLSConfiguration({
+	userLocale,
+	osLocale,
+	userDataPath,
+	commit,
+	nlsMetadataPath,
+}: IResolveNLSConfigurationContext): Promise<INLSConfiguration> {
 	mark('code/willGenerateNls');
 
 	if (
@@ -83,7 +88,11 @@ export async function resolveNLSConfiguration({ userLocale, osLocale, userDataPa
 		const languagePackCorruptMarkerFile = join(globalLanguagePackCachePath, 'corrupted.info');
 
 		if (await Promises.exists(languagePackCorruptMarkerFile)) {
-			await promises.rm(globalLanguagePackCachePath, { recursive: true, force: true, maxRetries: 3 }); // delete corrupted cache folder
+			await promises.rm(globalLanguagePackCachePath, {
+				recursive: true,
+				force: true,
+				maxRetries: 3,
+			}); // delete corrupted cache folder
 		}
 
 		const result: INLSConfiguration = {
@@ -94,7 +103,7 @@ export async function resolveNLSConfiguration({ userLocale, osLocale, userDataPa
 			languagePack: {
 				translationsConfigFile,
 				messagesFile: languagePackMessagesFile,
-				corruptMarkerFile: languagePackCorruptMarkerFile
+				corruptMarkerFile: languagePackCorruptMarkerFile,
 			},
 
 			// NLS: below properties are a relic from old times only used by vscode-nls and deprecated
@@ -105,27 +114,30 @@ export async function resolveNLSConfiguration({ userLocale, osLocale, userDataPa
 			_translationsConfigFile: translationsConfigFile,
 			_cacheRoot: globalLanguagePackCachePath,
 			_resolvedLanguagePackCoreLocation: commitLanguagePackCachePath,
-			_corruptedFile: languagePackCorruptMarkerFile
+			_corruptedFile: languagePackCorruptMarkerFile,
 		};
 
 		if (await Promises.exists(commitLanguagePackCachePath)) {
-			touch(commitLanguagePackCachePath).catch(() => { }); // We don't wait for this. No big harm if we can't touch
+			touch(commitLanguagePackCachePath).catch(() => {}); // We don't wait for this. No big harm if we can't touch
 			mark('code/didGenerateNls');
 			return result;
 		}
 
-		const [
-			,
-			nlsDefaultKeys,
-			nlsDefaultMessages,
-			nlsPackdata
-		]:
-			[unknown, Array<[string, string[]]>, string[], { contents: Record<string, Record<string, string>> }]
+		const [, nlsDefaultKeys, nlsDefaultMessages, nlsPackdata]: [
+			unknown,
+			Array<[string, string[]]>,
+			string[],
+			{ contents: Record<string, Record<string, string>> },
+		] =
 			//               ^moduleId ^nlsKeys                               ^moduleId      ^nlsKey ^nlsValue
-			= await Promise.all([
+			await Promise.all([
 				promises.mkdir(commitLanguagePackCachePath, { recursive: true }),
-				promises.readFile(join(nlsMetadataPath, 'nls.keys.json'), 'utf-8').then(content => JSON.parse(content)),
-				promises.readFile(join(nlsMetadataPath, 'nls.messages.json'), 'utf-8').then(content => JSON.parse(content)),
+				promises
+					.readFile(join(nlsMetadataPath, 'nls.keys.json'), 'utf-8')
+					.then(content => JSON.parse(content)),
+				promises
+					.readFile(join(nlsMetadataPath, 'nls.messages.json'), 'utf-8')
+					.then(content => JSON.parse(content)),
 				promises.readFile(mainLanguagePackPath, 'utf-8').then(content => JSON.parse(content)),
 			]);
 
@@ -147,7 +159,11 @@ export async function resolveNLSConfiguration({ userLocale, osLocale, userDataPa
 
 		await Promise.all([
 			promises.writeFile(languagePackMessagesFile, JSON.stringify(nlsResult), 'utf-8'),
-			promises.writeFile(translationsConfigFile, JSON.stringify(languagePack.translations), 'utf-8')
+			promises.writeFile(
+				translationsConfigFile,
+				JSON.stringify(languagePack.translations),
+				'utf-8'
+			),
 		]);
 
 		mark('code/didGenerateNls');
@@ -168,7 +184,9 @@ export async function resolveNLSConfiguration({ userLocale, osLocale, userDataPa
  *
  * The file is updated whenever a new language pack is installed or removed.
  */
-async function getLanguagePackConfigurations(userDataPath: string): Promise<ILanguagePacks | undefined> {
+async function getLanguagePackConfigurations(
+	userDataPath: string
+): Promise<ILanguagePacks | undefined> {
 	const configFile = join(userDataPath, 'languagepacks.json');
 	try {
 		return JSON.parse(await promises.readFile(configFile, 'utf-8'));
@@ -177,7 +195,10 @@ async function getLanguagePackConfigurations(userDataPath: string): Promise<ILan
 	}
 }
 
-function resolveLanguagePackLanguage(languagePacks: ILanguagePacks, locale: string | undefined): string | undefined {
+function resolveLanguagePackLanguage(
+	languagePacks: ILanguagePacks,
+	locale: string | undefined
+): string | undefined {
 	try {
 		while (locale) {
 			if (languagePacks[locale]) {
@@ -198,7 +219,11 @@ function resolveLanguagePackLanguage(languagePacks: ILanguagePacks, locale: stri
 	return undefined;
 }
 
-function defaultNLSConfiguration(userLocale: string, osLocale: string, nlsMetadataPath: string): INLSConfiguration {
+function defaultNLSConfiguration(
+	userLocale: string,
+	osLocale: string,
+	nlsMetadataPath: string
+): INLSConfiguration {
 	mark('code/didGenerateNls');
 
 	return {
@@ -209,7 +234,7 @@ function defaultNLSConfiguration(userLocale: string, osLocale: string, nlsMetada
 
 		// NLS: below 2 are a relic from old times only used by vscode-nls and deprecated
 		locale: userLocale,
-		availableLanguages: {}
+		availableLanguages: {},
 	};
 }
 

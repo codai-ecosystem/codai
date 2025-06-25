@@ -10,7 +10,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { decodeUTF16LE, StringBuilder } from '../../../common/core/stringBuilder.js';
 
 suite('decodeUTF16LE', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('issue #118041: unicode character undo bug 1', () => {
@@ -36,11 +35,9 @@ suite('decodeUTF16LE', () => {
 		const actual = decodeUTF16LE(buff, 0, 3);
 		assert.deepStrictEqual(actual, 'a﻿b');
 	});
-
 });
 
 suite('StringBuilder', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('basic', () => {

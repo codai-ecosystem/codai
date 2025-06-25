@@ -14,21 +14,22 @@ import { EditorInput } from '../../../common/editor/editorInput.js';
 import { IPreferencesService } from './preferences.js';
 import { Settings2EditorModel } from './preferencesModels.js';
 
-const SettingsEditorIcon = registerIcon('settings-editor-label-icon', Codicon.settings, nls.localize('settingsEditorLabelIcon', 'Icon of the settings editor label.'));
+const SettingsEditorIcon = registerIcon(
+	'settings-editor-label-icon',
+	Codicon.settings,
+	nls.localize('settingsEditorLabelIcon', 'Icon of the settings editor label.')
+);
 
 export class SettingsEditor2Input extends EditorInput {
-
 	static readonly ID: string = 'workbench.input.settings2';
 	private readonly _settingsModel: Settings2EditorModel;
 
 	readonly resource: URI = URI.from({
 		scheme: Schemas.vscodeSettings,
-		path: `settingseditor`
+		path: `settingseditor`,
 	});
 
-	constructor(
-		@IPreferencesService _preferencesService: IPreferencesService,
-	) {
+	constructor(@IPreferencesService _preferencesService: IPreferencesService) {
 		super();
 
 		this._settingsModel = _preferencesService.createSettings2EditorModel();
@@ -43,7 +44,7 @@ export class SettingsEditor2Input extends EditorInput {
 	}
 
 	override getName(): string {
-		return nls.localize('settingsEditor2InputName', "Settings");
+		return nls.localize('settingsEditor2InputName', 'Settings');
 	}
 
 	override getIcon(): ThemeIcon {
@@ -61,15 +62,18 @@ export class SettingsEditor2Input extends EditorInput {
 	}
 }
 
-const PreferencesEditorIcon = registerIcon('preferences-editor-label-icon', Codicon.settings, nls.localize('preferencesEditorLabelIcon', 'Icon of the preferences editor label.'));
+const PreferencesEditorIcon = registerIcon(
+	'preferences-editor-label-icon',
+	Codicon.settings,
+	nls.localize('preferencesEditorLabelIcon', 'Icon of the preferences editor label.')
+);
 
 export class PreferencesEditorInput extends EditorInput {
-
 	static readonly ID: string = 'workbench.input.preferences';
 
 	readonly resource: URI = URI.from({
 		scheme: Schemas.vscodeSettings,
-		path: `preferenceseditor`
+		path: `preferenceseditor`,
 	});
 
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
@@ -81,7 +85,7 @@ export class PreferencesEditorInput extends EditorInput {
 	}
 
 	override getName(): string {
-		return nls.localize('preferencesEditorInputName', "Preferences");
+		return nls.localize('preferencesEditorInputName', 'Preferences');
 	}
 
 	override getIcon(): ThemeIcon {

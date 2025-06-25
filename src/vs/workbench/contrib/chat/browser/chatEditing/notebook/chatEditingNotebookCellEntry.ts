@@ -5,19 +5,40 @@
 
 import { RunOnceScheduler } from '../../../../../../base/common/async.js';
 import { DisposableStore, toDisposable } from '../../../../../../base/common/lifecycle.js';
-import { ITransaction, IObservable, observableValue, autorun, transaction } from '../../../../../../base/common/observable.js';
+import {
+	ITransaction,
+	IObservable,
+	observableValue,
+	autorun,
+	transaction,
+} from '../../../../../../base/common/observable.js';
 import { ObservableDisposable } from '../../../../../../base/common/observableDisposable.js';
 import { themeColorFromId } from '../../../../../../base/common/themables.js';
 import { URI } from '../../../../../../base/common/uri.js';
-import { EditOperation, ISingleEditOperation } from '../../../../../../editor/common/core/editOperation.js';
+import {
+	EditOperation,
+	ISingleEditOperation,
+} from '../../../../../../editor/common/core/editOperation.js';
 import { StringEdit } from '../../../../../../editor/common/core/edits/stringEdit.js';
 import { Range } from '../../../../../../editor/common/core/range.js';
-import { IDocumentDiff, nullDocumentDiff } from '../../../../../../editor/common/diff/documentDiffProvider.js';
+import {
+	IDocumentDiff,
+	nullDocumentDiff,
+} from '../../../../../../editor/common/diff/documentDiffProvider.js';
 import { DetailedLineRangeMapping } from '../../../../../../editor/common/diff/rangeMapping.js';
 import { TextEdit } from '../../../../../../editor/common/languages.js';
-import { IModelDeltaDecoration, ITextModel, MinimapPosition, OverviewRulerLane } from '../../../../../../editor/common/model.js';
+import {
+	IModelDeltaDecoration,
+	ITextModel,
+	MinimapPosition,
+	OverviewRulerLane,
+} from '../../../../../../editor/common/model.js';
 import { ModelDecorationOptions } from '../../../../../../editor/common/model/textModel.js';
-import { offsetEditFromContentChanges, offsetEditFromLineRangeMapping, offsetEditToEditOperations } from '../../../../../../editor/common/model/textModelStringEdit.js';
+import {
+	offsetEditFromContentChanges,
+	offsetEditFromLineRangeMapping,
+	offsetEditToEditOperations,
+} from '../../../../../../editor/common/model/textModelStringEdit.js';
 import { IEditorWorkerService } from '../../../../../../editor/common/services/editorWorker.js';
 import { IModelContentChangedEvent } from '../../../../../../editor/common/textModelEvents.js';
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
@@ -30,7 +51,6 @@ import { CellKind } from '../../../../notebook/common/notebookCommon.js';
 import { ModifiedFileEntryState } from '../../../common/chatEditingService.js';
 import { IChatResponseModel } from '../../../common/chatModel.js';
 import { pendingRewriteMinimap } from '../chatEditingModifiedFileEntry.js';
-
 
 /**
  * This is very closely similar to the ChatEditingModifiedDocumentEntry class.
@@ -45,7 +65,7 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 		marginClassName: 'chat-editing-last-edit',
 		overviewRuler: {
 			position: OverviewRulerLane.Full,
-			color: themeColorFromId(editorSelectionBackground)
+			color: themeColorFromId(editorSelectionBackground),
 		},
 	});
 
@@ -55,10 +75,9 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 		className: 'chat-editing-pending-edit',
 		minimap: {
 			position: MinimapPosition.Inline,
-			color: themeColorFromId(pendingRewriteMinimap)
-		}
+			color: themeColorFromId(pendingRewriteMinimap),
+		},
 	});
-
 
 	private _edit: StringEdit = StringEdit.empty;
 	private _isEditFromUs: boolean = false;
@@ -80,14 +99,24 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 	private readonly _maxModifiedLineNumber = observableValue<number>(this, 0);
 	readonly maxModifiedLineNumber = this._maxModifiedLineNumber;
 
-	private readonly _editDecorationClear = this._register(new RunOnceScheduler(() => { this._editDecorations = this.modifiedModel.deltaDecorations(this._editDecorations, []); }, 500));
+	private readonly _editDecorationClear = this._register(
+		new RunOnceScheduler(() => {
+			this._editDecorations = this.modifiedModel.deltaDecorations(this._editDecorations, []);
+		}, 500)
+	);
 	private _editDecorations: string[] = [];
 
 	private readonly _diffTrimWhitespace: IObservable<boolean>;
-	protected readonly _stateObs = observableValue<ModifiedFileEntryState>(this, ModifiedFileEntryState.Modified);
+	protected readonly _stateObs = observableValue<ModifiedFileEntryState>(
+		this,
+		ModifiedFileEntryState.Modified
+	);
 	readonly state: IObservable<ModifiedFileEntryState> = this._stateObs;
-	protected readonly _isCurrentlyBeingModifiedByObs = observableValue<IChatResponseModel | undefined>(this, undefined);
-	readonly isCurrentlyBeingModifiedBy: IObservable<IChatResponseModel | undefined> = this._isCurrentlyBeingModifiedByObs;
+	protected readonly _isCurrentlyBeingModifiedByObs = observableValue<
+		IChatResponseModel | undefined
+	>(this, undefined);
+	readonly isCurrentlyBeingModifiedBy: IObservable<IChatResponseModel | undefined> =
+		this._isCurrentlyBeingModifiedByObs;
 	private readonly initialContent: string;
 
 	constructor(
@@ -103,18 +132,28 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 		super();
 		this.initialContent = this.originalModel.getValue();
 		this._register(disposables);
-		this._register(this.modifiedModel.onDidChangeContent(e => {
-			this._mirrorEdits(e);
-		}));
-		this._register(toDisposable(() => {
-			this.clearCurrentEditLineDecoration();
-		}));
+		this._register(
+			this.modifiedModel.onDidChangeContent(e => {
+				this._mirrorEdits(e);
+			})
+		);
+		this._register(
+			toDisposable(() => {
+				this.clearCurrentEditLineDecoration();
+			})
+		);
 
-		this._diffTrimWhitespace = observableConfigValue('diffEditor.ignoreTrimWhitespace', true, configService);
-		this._register(autorun(r => {
-			this._diffTrimWhitespace.read(r);
-			this._updateDiffInfoSeq();
-		}));
+		this._diffTrimWhitespace = observableConfigValue(
+			'diffEditor.ignoreTrimWhitespace',
+			true,
+			configService
+		);
+		this._register(
+			autorun(r => {
+				this._diffTrimWhitespace.read(r);
+				this._updateDiffInfoSeq();
+			})
+		);
 	}
 
 	public clearCurrentEditLineDecoration() {
@@ -124,7 +163,6 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 		this._editDecorations = this.modifiedModel.deltaDecorations(this._editDecorations, []);
 	}
 
-
 	private _mirrorEdits(event: IModelContentChangedEvent) {
 		const edit = offsetEditFromContentChanges(event.changes);
 
@@ -132,9 +170,7 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 			const e_sum = this._edit;
 			const e_ai = edit;
 			this._edit = e_sum.compose(e_ai);
-
 		} else {
-
 			//           e_ai
 			//   d0 ---------------> s0
 			//   |                   |
@@ -176,12 +212,17 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 						break;
 					}
 			}
-
 		}
 	}
 
-	acceptAgentEdits(textEdits: TextEdit[], isLastEdits: boolean, responseModel: IChatResponseModel): void {
-		const notebookEditor = this.notebookEditorService.retrieveExistingWidgetFromURI(this.notebookUri)?.value;
+	acceptAgentEdits(
+		textEdits: TextEdit[],
+		isLastEdits: boolean,
+		responseModel: IChatResponseModel
+	): void {
+		const notebookEditor = this.notebookEditorService.retrieveExistingWidgetFromURI(
+			this.notebookUri
+		)?.value;
 		if (notebookEditor) {
 			const vm = notebookEditor.getCellByHandle(this.cell.handle);
 			vm?.updateEditState(CellEditState.Editing, 'chatEdit');
@@ -196,27 +237,28 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 			// decorate pending edit (region)
 			{
 				options: ChatEditingNotebookCellEntry._pendingEditDecorationOptions,
-				range: new Range(maxLineNumber + 1, 1, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)
-			}
+				range: new Range(maxLineNumber + 1, 1, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER),
+			},
 		];
 
 		if (maxLineNumber > 0) {
 			// decorate last edit
 			newDecorations.push({
 				options: ChatEditingNotebookCellEntry._lastEditDecorationOptions,
-				range: new Range(maxLineNumber, 1, maxLineNumber, Number.MAX_SAFE_INTEGER)
+				range: new Range(maxLineNumber, 1, maxLineNumber, Number.MAX_SAFE_INTEGER),
 			});
 		}
 
-		this._editDecorations = this.modifiedModel.deltaDecorations(this._editDecorations, newDecorations);
+		this._editDecorations = this.modifiedModel.deltaDecorations(
+			this._editDecorations,
+			newDecorations
+		);
 
-
-		transaction((tx) => {
+		transaction(tx => {
 			if (!isLastEdits) {
 				this._stateObs.set(ModifiedFileEntryState.Modified, tx);
 				this._isCurrentlyBeingModifiedByObs.set(responseModel, tx);
 				this._maxModifiedLineNumber.set(maxLineNumber, tx);
-
 			} else {
 				this._resetEditsState(tx);
 				this._updateDiffInfoSeq();
@@ -235,11 +277,15 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 			return;
 		}
 
-		const notebookEditor = this.notebookEditorService.retrieveExistingWidgetFromURI(this.notebookUri)?.value;
+		const notebookEditor = this.notebookEditorService.retrieveExistingWidgetFromURI(
+			this.notebookUri
+		)?.value;
 		if (notebookEditor) {
 			const vm = notebookEditor.getCellByHandle(this.cell.handle);
-			if (vm?.getEditState() === CellEditState.Editing &&
-				(vm.editStateSource === 'chatEdit' || vm.editStateSource === 'chatEditNavigation')) {
+			if (
+				vm?.getEditState() === CellEditState.Editing &&
+				(vm.editStateSource === 'chatEdit' || vm.editStateSource === 'chatEditNavigation')
+			) {
 				vm?.updateEditState(CellEditState.Preview, 'chatEdit');
 			}
 		}
@@ -257,7 +303,13 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 	private async _acceptHunk(change: DetailedLineRangeMapping): Promise<boolean> {
 		this._isEditFromUs = true;
 		try {
-			if (!this._diffInfo.get().changes.filter(c => c.modified.equals(change.modified) && c.original.equals(change.original)).length) {
+			if (
+				!this._diffInfo
+					.get()
+					.changes.filter(
+						c => c.modified.equals(change.modified) && c.original.equals(change.original)
+					).length
+			) {
 				// diffInfo should have model version ids and check them (instead of the caller doing that)
 				return false;
 			}
@@ -267,8 +319,7 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 				edits.push(EditOperation.replace(edit.originalRange, newText));
 			}
 			this.originalModel.pushEditOperations(null, edits, _ => null);
-		}
-		finally {
+		} finally {
 			this._isEditFromUs = false;
 		}
 		await this._updateDiffInfoSeq();
@@ -311,7 +362,7 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 		this._isEditFromUs = true;
 		try {
 			let result: ISingleEditOperation[] = [];
-			this.modifiedModel.pushEditOperations(null, edits, (undoEdits) => {
+			this.modifiedModel.pushEditOperations(null, edits, undoEdits => {
 				result = undoEdits;
 				return null;
 			});
@@ -332,7 +383,6 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 	}
 
 	private async _updateDiffInfo(): Promise<void> {
-
 		if (this.originalModel.isDisposed() || this.modifiedModel.isDisposed()) {
 			return;
 		}
@@ -354,10 +404,17 @@ export class ChatEditingNotebookCellEntry extends ObservableDisposable {
 		}
 
 		// only update the diff if the documents didn't change in the meantime
-		if (this.modifiedModel.getVersionId() === docVersionNow && this.originalModel.getVersionId() === snapshotVersionNow) {
+		if (
+			this.modifiedModel.getVersionId() === docVersionNow &&
+			this.originalModel.getVersionId() === snapshotVersionNow
+		) {
 			const diff2 = diff ?? nullDocumentDiff;
 			this._diffInfo.set(diff2, undefined);
-			this._edit = offsetEditFromLineRangeMapping(this.originalModel, this.modifiedModel, diff2.changes);
+			this._edit = offsetEditFromLineRangeMapping(
+				this.originalModel,
+				this.modifiedModel,
+				diff2.changes
+			);
 		}
 	}
 }

@@ -7,7 +7,12 @@ import { Emitter } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
 import { localize } from '../../../../../nls.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { ITerminalLinkDetector, ITerminalSimpleLink, TerminalBuiltinLinkType, TerminalLinkType } from './links.js';
+import {
+	ITerminalLinkDetector,
+	ITerminalSimpleLink,
+	TerminalBuiltinLinkType,
+	TerminalLinkType,
+} from './links.js';
 import { TerminalLink } from './terminalLink.js';
 import { XtermLinkMatcherHandler } from './terminalLinkManager.js';
 import type { IBufferLine, ILink, ILinkProvider, IViewportRange } from '@xterm/xterm';
@@ -37,7 +42,7 @@ export class TerminalLinkDetectorAdapter extends Disposable implements ILinkProv
 
 	constructor(
 		private readonly _detector: ITerminalLinkDetector,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 	}
@@ -69,9 +74,7 @@ export class TerminalLinkDetectorAdapter extends Disposable implements ILinkProv
 		let startLine = bufferLineNumber - 1;
 		let endLine = startLine;
 
-		const lines: IBufferLine[] = [
-			this._detector.xterm.buffer.active.getLine(startLine)!
-		];
+		const lines: IBufferLine[] = [this._detector.xterm.buffer.active.getLine(startLine)!];
 
 		// Cap the maximum context on either side of the line being provided, by taking the context
 		// around the line being provided for this ensures the line the pointer is on will have
@@ -79,33 +82,48 @@ export class TerminalLinkDetectorAdapter extends Disposable implements ILinkProv
 		const maxCharacterContext = Math.max(this._detector.maxLinkLength, this._detector.xterm.cols);
 		const maxLineContext = Math.ceil(maxCharacterContext / this._detector.xterm.cols);
 		const minStartLine = Math.max(startLine - maxLineContext, 0);
-		const maxEndLine = Math.min(endLine + maxLineContext, this._detector.xterm.buffer.active.length);
+		const maxEndLine = Math.min(
+			endLine + maxLineContext,
+			this._detector.xterm.buffer.active.length
+		);
 
-		while (startLine >= minStartLine && this._detector.xterm.buffer.active.getLine(startLine)?.isWrapped) {
+		while (
+			startLine >= minStartLine &&
+			this._detector.xterm.buffer.active.getLine(startLine)?.isWrapped
+		) {
 			lines.unshift(this._detector.xterm.buffer.active.getLine(startLine - 1)!);
 			startLine--;
 		}
 
-		while (endLine < maxEndLine && this._detector.xterm.buffer.active.getLine(endLine + 1)?.isWrapped) {
+		while (
+			endLine < maxEndLine &&
+			this._detector.xterm.buffer.active.getLine(endLine + 1)?.isWrapped
+		) {
 			lines.push(this._detector.xterm.buffer.active.getLine(endLine + 1)!);
 			endLine++;
 		}
 
 		const detectedLinks = await this._detector.detect(lines, startLine, endLine);
 		for (const link of detectedLinks) {
-			links.push(this._createTerminalLink(link, async (event) => this._onDidActivateLink.fire({ link, event })));
+			links.push(
+				this._createTerminalLink(link, async event => this._onDidActivateLink.fire({ link, event }))
+			);
 		}
 
 		return links;
 	}
 
-	private _createTerminalLink(l: ITerminalSimpleLink, activateCallback: XtermLinkMatcherHandler): TerminalLink {
+	private _createTerminalLink(
+		l: ITerminalSimpleLink,
+		activateCallback: XtermLinkMatcherHandler
+	): TerminalLink {
 		// Remove trailing colon if there is one so the link is more useful
 		if (!l.disableTrimColon && l.text.length > 0 && l.text.charAt(l.text.length - 1) === ':') {
 			l.text = l.text.slice(0, -1);
 			l.bufferRange.end.x--;
 		}
-		return this._instantiationService.createInstance(TerminalLink,
+		return this._instantiationService.createInstance(
+			TerminalLink,
 			this._detector.xterm,
 			l.bufferRange,
 			l.text,
@@ -114,12 +132,13 @@ export class TerminalLinkDetectorAdapter extends Disposable implements ILinkProv
 			l.actions,
 			this._detector.xterm.buffer.active.viewportY,
 			activateCallback,
-			(link, viewportRange, modifierDownCallback, modifierUpCallback) => this._onDidShowHover.fire({
-				link,
-				viewportRange,
-				modifierDownCallback,
-				modifierUpCallback
-			}),
+			(link, viewportRange, modifierDownCallback, modifierUpCallback) =>
+				this._onDidShowHover.fire({
+					link,
+					viewportRange,
+					modifierDownCallback,
+					modifierUpCallback,
+				}),
 			l.type !== TerminalBuiltinLinkType.Search, // Only search is low confidence
 			l.label || this._getLabel(l.type),
 			l.type
@@ -128,10 +147,14 @@ export class TerminalLinkDetectorAdapter extends Disposable implements ILinkProv
 
 	private _getLabel(type: TerminalLinkType): string {
 		switch (type) {
-			case TerminalBuiltinLinkType.Search: return localize('searchWorkspace', 'Search workspace');
-			case TerminalBuiltinLinkType.LocalFile: return localize('openFile', 'Open file in editor');
-			case TerminalBuiltinLinkType.LocalFolderInWorkspace: return localize('focusFolder', 'Focus folder in explorer');
-			case TerminalBuiltinLinkType.LocalFolderOutsideWorkspace: return localize('openFolder', 'Open folder in new window');
+			case TerminalBuiltinLinkType.Search:
+				return localize('searchWorkspace', 'Search workspace');
+			case TerminalBuiltinLinkType.LocalFile:
+				return localize('openFile', 'Open file in editor');
+			case TerminalBuiltinLinkType.LocalFolderInWorkspace:
+				return localize('focusFolder', 'Focus folder in explorer');
+			case TerminalBuiltinLinkType.LocalFolderOutsideWorkspace:
+				return localize('openFolder', 'Open folder in new window');
 			case TerminalBuiltinLinkType.Url:
 			default:
 				return localize('followLink', 'Follow link');

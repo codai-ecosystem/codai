@@ -13,7 +13,7 @@ const withDefaults = require('../shared.webpack.config');
 module.exports = withDefaults({
 	context: __dirname,
 	resolve: {
-		mainFields: ['module', 'main']
+		mainFields: ['module', 'main'],
 	},
 	entry: {
 		extension: './src/extension.ts',
@@ -25,7 +25,7 @@ module.exports = withDefaults({
 				{
 					from: './node_modules/vscode-markdown-languageserver/dist/node/workerMain.js',
 					to: 'serverWorkerMain.js',
-				}
+				},
 			],
 		}),
 	],

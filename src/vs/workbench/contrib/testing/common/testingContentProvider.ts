@@ -7,10 +7,16 @@ import { VSBuffer } from '../../../../base/common/buffer.js';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { removeAnsiEscapeCodes } from '../../../../base/common/strings.js';
 import { URI } from '../../../../base/common/uri.js';
-import { ILanguageSelection, ILanguageService } from '../../../../editor/common/languages/language.js';
+import {
+	ILanguageSelection,
+	ILanguageService,
+} from '../../../../editor/common/languages/language.js';
 import { ITextModel } from '../../../../editor/common/model.js';
 import { IModelService } from '../../../../editor/common/services/model.js';
-import { ITextModelContentProvider, ITextModelService } from '../../../../editor/common/services/resolverService.js';
+import {
+	ITextModelContentProvider,
+	ITextModelService,
+} from '../../../../editor/common/services/resolverService.js';
 import { localize } from '../../../../nls.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { ITestResultService } from './testResultService.js';
@@ -26,7 +32,7 @@ export class TestingContentProvider implements IWorkbenchContribution, ITextMode
 		@ITextModelService textModelResolverService: ITextModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IModelService private readonly modelService: IModelService,
-		@ITestResultService private readonly resultService: ITestResultService,
+		@ITestResultService private readonly resultService: ITestResultService
 	) {
 		textModelResolverService.registerTextModelContentProvider(TEST_DATA_SCHEME, this);
 	}
@@ -53,20 +59,30 @@ export class TestingContentProvider implements IWorkbenchContribution, ITextMode
 		if (parsed.type === TestUriType.TaskOutput) {
 			const task = result.tasks[parsed.taskIndex];
 			const model = this.modelService.createModel('', null, resource, false);
-			const append = (text: string) => model.applyEdits([{
-				range: { startColumn: 1, endColumn: 1, startLineNumber: Infinity, endLineNumber: Infinity },
-				text,
-			}]);
+			const append = (text: string) =>
+				model.applyEdits([
+					{
+						range: {
+							startColumn: 1,
+							endColumn: 1,
+							startLineNumber: Infinity,
+							endLineNumber: Infinity,
+						},
+						text,
+					},
+				]);
 
 			const init = VSBuffer.concat(task.output.buffers, task.output.length).toString();
 			append(removeAnsiEscapeCodes(init));
 
 			let hadContent = init.length > 0;
 			const dispose = new DisposableStore();
-			dispose.add(task.output.onDidWriteData(d => {
-				hadContent ||= d.byteLength > 0;
-				append(removeAnsiEscapeCodes(d.toString()));
-			}));
+			dispose.add(
+				task.output.onDidWriteData(d => {
+					hadContent ||= d.byteLength > 0;
+					append(removeAnsiEscapeCodes(d.toString()));
+				})
+			);
 			task.output.endPromise.then(() => {
 				if (dispose.isDisposed) {
 					return;
@@ -91,7 +107,9 @@ export class TestingContentProvider implements IWorkbenchContribution, ITextMode
 		switch (parsed.type) {
 			case TestUriType.ResultActualOutput: {
 				const message = test.tasks[parsed.taskIndex].messages[parsed.messageIndex];
-				if (message?.type === TestMessageType.Error) { text = message.actual; }
+				if (message?.type === TestMessageType.Error) {
+					text = message.actual;
+				}
 				break;
 			}
 			case TestUriType.TestOutput: {
@@ -99,14 +117,18 @@ export class TestingContentProvider implements IWorkbenchContribution, ITextMode
 				const output = result.tasks[parsed.taskIndex].output;
 				for (const message of test.tasks[parsed.taskIndex].messages) {
 					if (message.type === TestMessageType.Output) {
-						text += removeAnsiEscapeCodes(output.getRange(message.offset, message.length).toString());
+						text += removeAnsiEscapeCodes(
+							output.getRange(message.offset, message.length).toString()
+						);
 					}
 				}
 				break;
 			}
 			case TestUriType.ResultExpectedOutput: {
 				const message = test.tasks[parsed.taskIndex].messages[parsed.messageIndex];
-				if (message?.type === TestMessageType.Error) { text = message.expected; }
+				if (message?.type === TestMessageType.Error) {
+					text = message.expected;
+				}
 				break;
 			}
 			case TestUriType.ResultMessage: {
@@ -116,7 +138,10 @@ export class TestingContentProvider implements IWorkbenchContribution, ITextMode
 				}
 
 				if (message.type === TestMessageType.Output) {
-					const content = result.tasks[parsed.taskIndex].output.getRange(message.offset, message.length);
+					const content = result.tasks[parsed.taskIndex].output.getRange(
+						message.offset,
+						message.length
+					);
 					text = removeAnsiEscapeCodes(content.toString());
 				} else if (typeof message.message === 'string') {
 					text = removeAnsiEscapeCodes(message.message);

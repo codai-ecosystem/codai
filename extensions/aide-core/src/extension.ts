@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const apiKeys = {
 		openai: config.get<string>('openaiApiKey', ''),
 		anthropic: config.get<string>('anthropicApiKey', ''),
-		azure: config.get<string>('azureApiKey', '')
+		azure: config.get<string>('azureApiKey', ''),
 	};
 
 	// Initialize AI Service
@@ -57,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('aide.planFeature', async () => {
 			const feature = await vscode.window.showInputBox({
 				prompt: 'Describe the feature you want to plan',
-				placeHolder: 'e.g., Add user authentication system'
+				placeHolder: 'e.g., Add user authentication system',
 			});
 
 			if (feature) {
@@ -85,8 +85,9 @@ export function activate(context: vscode.ExtensionContext) {
 			const sessionId = await conversationManager.startSession('New Conversation');
 			const message = await vscode.window.showInputBox({
 				prompt: 'What would you like to do?',
-				placeHolder: 'e.g., Create a new React component, Fix a bug, Deploy to Azure...'
-			}); if (message) {
+				placeHolder: 'e.g., Create a new React component, Fix a bug, Deploy to Azure...',
+			});
+			if (message) {
 				const response = await conversationManager.processMessage(message);
 				vscode.window.showInformationMessage(response);
 			}
@@ -104,7 +105,7 @@ export function activate(context: vscode.ExtensionContext) {
 					label: session.title,
 					description: `Started: ${session.startTime.toLocaleString()}`,
 					detail: `${session.context.length} messages`,
-					session
+					session,
 				})),
 				{ placeHolder: 'Select a conversation session to view' }
 			);
@@ -113,7 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const history = selectedSession.session.context.join('\n\n');
 				const doc = await vscode.workspace.openTextDocument({
 					content: history,
-					language: 'markdown'
+					language: 'markdown',
 				});
 				await vscode.window.showTextDocument(doc);
 			}
@@ -121,34 +122,38 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Plugin management commands
 		vscode.commands.registerCommand('aide.createPlugin', async () => {
-			const pluginType = await vscode.window.showQuickPick([
-				{ label: 'Agent Plugin', value: 'agent' },
-				{ label: 'Command Plugin', value: 'command' },
-				{ label: 'View Plugin', value: 'view' },
-				{ label: 'Template Plugin', value: 'template' }
-			], {
-				placeHolder: 'Select the type of plugin to create'
-			}); if (pluginType) {
+			const pluginType = await vscode.window.showQuickPick(
+				[
+					{ label: 'Agent Plugin', value: 'agent' },
+					{ label: 'Command Plugin', value: 'command' },
+					{ label: 'View Plugin', value: 'view' },
+					{ label: 'Template Plugin', value: 'template' },
+				],
+				{
+					placeHolder: 'Select the type of plugin to create',
+				}
+			);
+			if (pluginType) {
 				const pluginName = await vscode.window.showInputBox({
 					prompt: 'Enter the plugin name',
-					placeHolder: 'My Awesome Plugin'
+					placeHolder: 'My Awesome Plugin',
 				});
 
 				if (pluginName) {
 					const pluginId = await vscode.window.showInputBox({
 						prompt: 'Enter the plugin ID (used for internal identification)',
 						placeHolder: 'my-awesome-plugin',
-						value: pluginName.toLowerCase().replace(/\s+/g, '-')
+						value: pluginName.toLowerCase().replace(/\s+/g, '-'),
 					});
 
 					const author = await vscode.window.showInputBox({
 						prompt: 'Enter the author name',
-						placeHolder: 'Your Name'
+						placeHolder: 'Your Name',
 					});
 
 					const description = await vscode.window.showInputBox({
 						prompt: 'Enter a description for the plugin',
-						placeHolder: 'A brief description of what this plugin does'
+						placeHolder: 'A brief description of what this plugin does',
 					});
 
 					if (pluginId && author && description) {
@@ -157,7 +162,8 @@ export function activate(context: vscode.ExtensionContext) {
 							if (workspaceFolder) {
 								const pluginPath = vscode.Uri.joinPath(
 									workspaceFolder.uri,
-									'.aide', 'plugins',
+									'.aide',
+									'plugins',
 									pluginId
 								).fsPath;
 
@@ -178,7 +184,9 @@ export function activate(context: vscode.ExtensionContext) {
 								// TODO: Reload plugins when PluginManager is available
 								// await pluginManager.discoverAndLoadPlugins();
 							} else {
-								vscode.window.showErrorMessage('No workspace folder found. Please open a workspace first.');
+								vscode.window.showErrorMessage(
+									'No workspace folder found. Please open a workspace first.'
+								);
 							}
 						} catch (error) {
 							vscode.window.showErrorMessage(`Failed to create plugin: ${error}`);
@@ -205,7 +213,6 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('aide.listPlugins', async () => {
 			// TODO: Implement plugin listing when PluginManager is available
 			// const loadedPlugins = pluginManager.getLoadedPlugins();			vscode.window.showInformationMessage('Plugin listing functionality not yet implemented');
-
 			// TODO: Complete plugin listing implementation when PluginManager is available
 			// if (loadedPlugins.length === 0) {
 			// 	vscode.window.showInformationMessage('No plugins are currently loaded');
@@ -230,11 +237,11 @@ export function activate(context: vscode.ExtensionContext) {
 				{ label: 'Web Application', value: 'webapp' },
 				{ label: 'API Server', value: 'api' },
 				{ label: 'Static Site', value: 'static' },
-				{ label: 'Full Stack', value: 'fullstack' }
+				{ label: 'Full Stack', value: 'fullstack' },
 			];
 
 			const projectType = await vscode.window.showQuickPick(projectTypes, {
-				placeHolder: 'What type of project are you deploying?'
+				placeHolder: 'What type of project are you deploying?',
 			});
 
 			if (projectType) {
@@ -248,7 +255,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const targets = deploymentService.getDeploymentTargets();
 			if (targets.length === 0) {
-				vscode.window.showErrorMessage('No deployment targets configured. Please setup deployment first.');
+				vscode.window.showErrorMessage(
+					'No deployment targets configured. Please setup deployment first.'
+				);
 				return;
 			}
 
@@ -256,37 +265,38 @@ export function activate(context: vscode.ExtensionContext) {
 				label: target.name,
 				description: target.type,
 				detail: `Status: ${target.status}`,
-				target
+				target,
 			}));
 
 			const selectedTarget = await vscode.window.showQuickPick(targetItems, {
-				placeHolder: 'Select deployment target for CI/CD setup'
+				placeHolder: 'Select deployment target for CI/CD setup',
 			});
 
 			if (selectedTarget) {
 				const ciOptions = [
 					{ label: 'GitHub Actions', value: 'github-actions' },
 					{ label: 'GitLab CI', value: 'gitlab-ci' },
-					{ label: 'Azure DevOps', value: 'azure-devops' }
+					{ label: 'Azure DevOps', value: 'azure-devops' },
 				];
 
 				const ciProvider = await vscode.window.showQuickPick(ciOptions, {
-					placeHolder: 'Select CI/CD provider'
+					placeHolder: 'Select CI/CD provider',
 				});
 
 				if (ciProvider) {
 					const dockerize = await vscode.window.showQuickPick(['Yes', 'No'], {
-						placeHolder: 'Create Dockerfile for containerized deployment?'
+						placeHolder: 'Create Dockerfile for containerized deployment?',
 					});
 
 					const autoTrigger = await vscode.window.showQuickPick(['Yes', 'No'], {
-						placeHolder: 'Automatically trigger deployment on push to main branch?'
-					}); await deploymentService.deployWithCI({
+						placeHolder: 'Automatically trigger deployment on push to main branch?',
+					});
+					await deploymentService.deployWithCI({
 						target: selectedTarget.target.name,
 						provider: ciProvider.value as any,
 						environment: 'production',
 						buildCommand: 'npm run build',
-						testCommand: 'npm test'
+						testCommand: 'npm test',
 					});
 				}
 			}
@@ -306,11 +316,11 @@ export function activate(context: vscode.ExtensionContext) {
 				label: `${deployment.target} - ${deployment.status}`,
 				description: deployment.id,
 				detail: `${deployment.startTime.toLocaleString()} ${deployment.endTime ? '→ ' + deployment.endTime.toLocaleString() : '(In Progress)'}`,
-				deployment
+				deployment,
 			}));
 
 			const selectedDeployment = await vscode.window.showQuickPick(historyItems, {
-				placeHolder: 'Select deployment to view details'
+				placeHolder: 'Select deployment to view details',
 			});
 
 			if (selectedDeployment) {
@@ -326,7 +336,7 @@ Version: ${selectedDeployment.deployment.version || 'N/A'}
 
 Logs:
 ${logs}`,
-					language: 'plaintext'
+					language: 'plaintext',
 				});
 				vscode.window.showTextDocument(document);
 			}
@@ -339,11 +349,11 @@ ${logs}`,
 			const actions = [
 				{ label: 'Add New Target', action: 'add' },
 				{ label: 'Remove Target', action: 'remove' },
-				{ label: 'View All Targets', action: 'view' }
+				{ label: 'View All Targets', action: 'view' },
 			];
 
 			const selectedAction = await vscode.window.showQuickPick(actions, {
-				placeHolder: 'What would you like to do with deployment targets?'
+				placeHolder: 'What would you like to do with deployment targets?',
 			});
 
 			if (selectedAction) {
@@ -363,16 +373,16 @@ ${logs}`,
 							label: target.name,
 							description: target.type,
 							detail: `Status: ${target.status}`,
-							target
+							target,
 						}));
 
 						const targetToRemove = await vscode.window.showQuickPick(targetItems, {
-							placeHolder: 'Select target to remove'
+							placeHolder: 'Select target to remove',
 						});
 
 						if (targetToRemove) {
 							const confirm = await vscode.window.showQuickPick(['Yes', 'No'], {
-								placeHolder: `Are you sure you want to remove "${targetToRemove.target.name}"?`
+								placeHolder: `Are you sure you want to remove "${targetToRemove.target.name}"?`,
 							});
 
 							if (confirm === 'Yes') {
@@ -391,11 +401,11 @@ ${logs}`,
 						const viewItems = allTargets.map(target => ({
 							label: target.name,
 							description: target.type,
-							detail: `Status: ${target.status} | Build: ${target.buildCommand || 'None'} | Output: ${target.outputDirectory || 'Default'}`
+							detail: `Status: ${target.status} | Build: ${target.buildCommand || 'None'} | Output: ${target.outputDirectory || 'Default'}`,
 						}));
 
 						await vscode.window.showQuickPick(viewItems, {
-							placeHolder: 'Deployment Targets Overview'
+							placeHolder: 'Deployment Targets Overview',
 						});
 						break;
 					}
@@ -408,7 +418,9 @@ ${logs}`,
 
 			const targets = deploymentService.getDeploymentTargets();
 			if (targets.length === 0) {
-				vscode.window.showErrorMessage('No deployment targets configured. Please setup deployment first.');
+				vscode.window.showErrorMessage(
+					'No deployment targets configured. Please setup deployment first.'
+				);
 				return;
 			}
 
@@ -416,11 +428,11 @@ ${logs}`,
 				label: target.name,
 				description: target.type,
 				detail: `Status: ${target.status}`,
-				target
+				target,
 			}));
 
 			const selectedTarget = await vscode.window.showQuickPick(targetItems, {
-				placeHolder: 'Select deployment target to setup monitoring'
+				placeHolder: 'Select deployment target to setup monitoring',
 			});
 
 			if (selectedTarget) {
@@ -436,7 +448,7 @@ ${logs}`,
 				vscode.ViewColumn.One,
 				{
 					enableScripts: true,
-					retainContextWhenHidden: true
+					retainContextWhenHidden: true,
 				}
 			);
 
@@ -452,17 +464,18 @@ ${logs}`,
 				}
 
 				// For demo purposes, we'll use a simple change detection
-				const changeType = await vscode.window.showQuickPick(
-					['patch', 'minor', 'major'],
-					{ placeHolder: 'Select change type for version bump' }
-				) as 'patch' | 'minor' | 'major';
+				const changeType = (await vscode.window.showQuickPick(['patch', 'minor', 'major'], {
+					placeHolder: 'Select change type for version bump',
+				})) as 'patch' | 'minor' | 'major';
 
 				if (!changeType) {
 					return;
 				}
 
 				const newVersion = await versionManager.generateNewVersion(changeType);
-				vscode.window.showInformationMessage(`Generated version bump: ${newVersion} (${changeType})`);
+				vscode.window.showInformationMessage(
+					`Generated version bump: ${newVersion} (${changeType})`
+				);
 
 				// Show changelog preview
 				const changelog = await versionManager.generateChangelog();
@@ -526,27 +539,32 @@ ${logs}`,
 			const providers = [
 				{ label: 'OpenAI', value: 'openai' },
 				{ label: 'Azure OpenAI', value: 'azure' },
-				{ label: 'Anthropic Claude', value: 'anthropic' }
+				{ label: 'Anthropic Claude', value: 'anthropic' },
 			];
 
 			const selectedProvider = await vscode.window.showQuickPick(providers, {
-				placeHolder: 'Select AI provider to configure'
+				placeHolder: 'Select AI provider to configure',
 			});
 
 			if (selectedProvider) {
 				const apiKey = await vscode.window.showInputBox({
 					prompt: `Enter API key for ${selectedProvider.label}`,
 					password: true,
-					placeHolder: 'Your API key'
-				}); if (apiKey) {
+					placeHolder: 'Your API key',
+				});
+				if (apiKey) {
 					try {
 						await aiService.setupApiKey(selectedProvider.value, apiKey);
 						const isConnected = await aiService.testConnection();
 
 						if (isConnected) {
-							vscode.window.showInformationMessage(`Successfully configured ${selectedProvider.label}!`);
+							vscode.window.showInformationMessage(
+								`Successfully configured ${selectedProvider.label}!`
+							);
 						} else {
-							vscode.window.showWarningMessage(`Configuration saved but connection test failed. Please verify your API key.`);
+							vscode.window.showWarningMessage(
+								`Configuration saved but connection test failed. Please verify your API key.`
+							);
 						}
 					} catch (error) {
 						vscode.window.showErrorMessage(`Failed to configure AI service: ${error}`);
@@ -561,7 +579,9 @@ ${logs}`,
 				if (isConnected) {
 					vscode.window.showInformationMessage('AI service connection successful!');
 				} else {
-					vscode.window.showWarningMessage('AI service connection failed. Please check your configuration.');
+					vscode.window.showWarningMessage(
+						'AI service connection failed. Please check your configuration.'
+					);
 				}
 			} catch (error) {
 				vscode.window.showErrorMessage(`Connection test failed: ${error}`);
@@ -572,13 +592,13 @@ ${logs}`,
 			const providers = [
 				{ label: 'OpenAI', value: 'openai' },
 				{ label: 'Azure OpenAI', value: 'azure' },
-				{ label: 'Anthropic Claude', value: 'anthropic' }
+				{ label: 'Anthropic Claude', value: 'anthropic' },
 			];
 
 			const availableProviders = providers.filter(p => p.value !== currentProvider);
 
 			const selectedProvider = await vscode.window.showQuickPick(availableProviders, {
-				placeHolder: `Current: ${providers.find(p => p.value === currentProvider)?.label || 'None'}. Select new provider:`
+				placeHolder: `Current: ${providers.find(p => p.value === currentProvider)?.label || 'None'}. Select new provider:`,
 			});
 
 			if (selectedProvider) {
@@ -589,7 +609,7 @@ ${logs}`,
 					vscode.window.showErrorMessage(`Failed to switch provider: ${error}`);
 				}
 			}
-		}),
+		})
 	);
 
 	// Set context for when AIDE is active
@@ -619,8 +639,12 @@ function generateVersionHistoryHTML(history: any[]): string {
 </head>
 <body>
 	<h1>AIDE Version History</h1>
-	${history.length === 0 ? '<p>No version history available.</p>' :
-			history.map(version => `
+	${
+		history.length === 0
+			? '<p>No version history available.</p>'
+			: history
+					.map(
+						version => `
 			<div class="version">
 				<div class="version-header">
 					Version ${version.current || 'Unknown'} (${version.changeType || 'patch'})
@@ -629,16 +653,22 @@ function generateVersionHistoryHTML(history: any[]): string {
 					</span>
 				</div>
 				<div class="changes">
-					${(version.changes || []).map((change: any) => `
+					${(version.changes || [])
+						.map(
+							(change: any) => `
 						<div class="change">
 							<span class="change-type">[${change.type || 'change'}]</span>
 							${change.description || 'No description'}
 						</div>
-					`).join('')}
+					`
+						)
+						.join('')}
 				</div>
 			</div>
-		`).join('')
-		}
+		`
+					)
+					.join('')
+	}
 </body>
 </html>`;
 }
@@ -671,12 +701,17 @@ function generateUpstreamUpdatesHTML(upstreamInfo: any): string {
 	</div>
 
 	<h2>Pending Updates</h2>
-	${(upstreamInfo.pendingUpdates || []).length === 0 ?
-			'<p>No pending updates.</p>' :
-			upstreamInfo.pendingUpdates.map((update: string) => `
+	${
+		(upstreamInfo.pendingUpdates || []).length === 0
+			? '<p>No pending updates.</p>'
+			: upstreamInfo.pendingUpdates
+					.map(
+						(update: string) => `
 			<div class="update">${update}</div>
-		`).join('')
-		}
+		`
+					)
+					.join('')
+	}
 </body>
 </html>`;
 }

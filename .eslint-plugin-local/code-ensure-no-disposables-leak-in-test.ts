@@ -6,12 +6,12 @@
 import * as eslint from 'eslint';
 import { Node } from 'estree';
 
-export = new class EnsureNoDisposablesAreLeakedInTestSuite implements eslint.Rule.RuleModule {
-
+export = new (class EnsureNoDisposablesAreLeakedInTestSuite implements eslint.Rule.RuleModule {
 	readonly meta: eslint.Rule.RuleMetaData = {
 		type: 'problem',
 		messages: {
-			ensure: 'Suites should include a call to `ensureNoDisposablesAreLeakedInTestSuite()` to ensure no disposables are leaked in tests.'
+			ensure:
+				'Suites should include a call to `ensureNoDisposablesAreLeakedInTestSuite()` to ensure no disposables are leaked in tests.',
 		},
 		fixable: 'code',
 		schema: false,
@@ -21,7 +21,7 @@ export = new class EnsureNoDisposablesAreLeakedInTestSuite implements eslint.Rul
 		const config = <{ exclude: string[] }>context.options[0];
 
 		const needle = context.getFilename().replace(/\\/g, '/');
-		if (config.exclude.some((e) => needle.endsWith(e))) {
+		if (config.exclude.some(e => needle.endsWith(e))) {
 			return {};
 		}
 
@@ -32,13 +32,16 @@ export = new class EnsureNoDisposablesAreLeakedInTestSuite implements eslint.Rul
 					context.report({
 						node,
 						messageId: 'ensure',
-						fix: (fixer) => {
-							const updatedSrc = src.replace(/(suite\(.*\n)/, '$1\n\tensureNoDisposablesAreLeakedInTestSuite();\n');
+						fix: fixer => {
+							const updatedSrc = src.replace(
+								/(suite\(.*\n)/,
+								'$1\n\tensureNoDisposablesAreLeakedInTestSuite();\n'
+							);
 							return fixer.replaceText(node, updatedSrc);
-						}
+						},
 					});
 				}
 			},
 		};
 	}
-};
+})();

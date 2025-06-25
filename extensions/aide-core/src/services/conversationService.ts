@@ -49,7 +49,7 @@ export class ConversationService {
 			projectContext,
 			isActive: false,
 			createdAt: Date.now(),
-			lastActivityAt: Date.now()
+			lastActivityAt: Date.now(),
 		};
 
 		this.sessions.set(session.id, session);
@@ -113,7 +113,7 @@ export class ConversationService {
 		const fullMessage: Message = {
 			...message,
 			id: this.generateMessageId(),
-			timestamp: Date.now()
+			timestamp: Date.now(),
 		};
 
 		session.messages.push(fullMessage);
@@ -168,9 +168,14 @@ export class ConversationService {
 	/**
 	 * Search messages across all sessions
 	 */
-	searchMessages(query: string, sessionId?: string): Array<{ session: ConversationSession; message: Message }> {
+	searchMessages(
+		query: string,
+		sessionId?: string
+	): Array<{ session: ConversationSession; message: Message }> {
 		const results: Array<{ session: ConversationSession; message: Message }> = [];
-		const sessions = sessionId ? [this.sessions.get(sessionId)].filter(Boolean) : Array.from(this.sessions.values());
+		const sessions = sessionId
+			? [this.sessions.get(sessionId)].filter(Boolean)
+			: Array.from(this.sessions.values());
 
 		for (const session of sessions) {
 			if (!session) continue;
@@ -202,7 +207,7 @@ export class ConversationService {
 				id: 'system_context',
 				role: 'system',
 				content: `You are AIDE, an AI-native development environment. Current workspace: ${workspace.name}. Help with coding, project planning, and development tasks.`,
-				timestamp: Date.now()
+				timestamp: Date.now(),
 			};
 			recentMessages.unshift(systemMessage);
 		}
@@ -223,7 +228,7 @@ export class ConversationService {
 			assistantMessages: session.messages.filter(m => m.role === 'assistant').length,
 			duration: session.lastActivityAt - session.createdAt,
 			avgMessageLength: 0,
-			lastActivity: session.lastActivityAt
+			lastActivity: session.lastActivityAt,
 		};
 
 		if (session.messages.length > 0) {
@@ -248,7 +253,7 @@ export class ConversationService {
 			projectContext: session.projectContext,
 			createdAt: session.createdAt,
 			lastActivityAt: session.lastActivityAt,
-			stats: this.getSessionStats(sessionId)
+			stats: this.getSessionStats(sessionId),
 		};
 	}
 
@@ -264,7 +269,7 @@ export class ConversationService {
 				projectContext: sessionData.projectContext,
 				isActive: false,
 				createdAt: sessionData.createdAt || Date.now(),
-				lastActivityAt: sessionData.lastActivityAt || Date.now()
+				lastActivityAt: sessionData.lastActivityAt || Date.now(),
 			};
 
 			this.sessions.set(session.id, session);
@@ -279,7 +284,9 @@ export class ConversationService {
 	/**
 	 * Get recent activity across all sessions
 	 */
-	getRecentActivity(limit: number = 5): Array<{ session: ConversationSession; lastMessage: Message }> {
+	getRecentActivity(
+		limit: number = 5
+	): Array<{ session: ConversationSession; lastMessage: Message }> {
 		const activities: Array<{ session: ConversationSession; lastMessage: Message }> = [];
 
 		for (const session of this.sessions.values()) {
@@ -306,10 +313,10 @@ export class ConversationService {
 				type: 'general',
 				technologies: [],
 				structure: {},
-				dependencies: []
+				dependencies: [],
 			},
 			activeFiles: [],
-			timestamp: session.lastActivityAt
+			timestamp: session.lastActivityAt,
 		};
 
 		this.memoryService.storeConversation(conversationContext);

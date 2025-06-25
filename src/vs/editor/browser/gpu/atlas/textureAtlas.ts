@@ -7,7 +7,12 @@ import { getActiveWindow } from '../../../../base/browser/dom.js';
 import { CharCode } from '../../../../base/common/charCode.js';
 import { BugIndicatingError } from '../../../../base/common/errors.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
-import { Disposable, dispose, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	dispose,
+	MutableDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { NKeyMap } from '../../../../base/common/map.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
@@ -24,7 +29,9 @@ export interface ITextureAtlasOptions {
 
 export class TextureAtlas extends Disposable {
 	private _colorMap?: string[];
-	private readonly _warmUpTask: MutableDisposable<ITaskQueue> = this._register(new MutableDisposable());
+	private readonly _warmUpTask: MutableDisposable<ITaskQueue> = this._register(
+		new MutableDisposable()
+	);
 	private readonly _warmedUpRasterizers = new Set<number>();
 	private readonly _allocatorType: AllocatorType;
 
@@ -40,7 +47,9 @@ export class TextureAtlas extends Disposable {
 	 * much less frequently so as to not drop frames.
 	 */
 	private readonly _pages: TextureAtlasPage[] = [];
-	get pages(): IReadableTextureAtlasPage[] { return this._pages; }
+	get pages(): IReadableTextureAtlasPage[] {
+		return this._pages;
+	}
 
 	readonly pageSize: number;
 
@@ -66,12 +75,14 @@ export class TextureAtlas extends Disposable {
 
 		this._allocatorType = options?.allocatorType ?? 'slab';
 
-		this._register(Event.runAndSubscribe(this._themeService.onDidColorThemeChange, () => {
-			if (this._colorMap) {
-				this.clear();
-			}
-			this._colorMap = this._themeService.getColorTheme().tokenColorMap;
-		}));
+		this._register(
+			Event.runAndSubscribe(this._themeService.onDidColorThemeChange, () => {
+				if (this._colorMap) {
+					this.clear();
+				}
+				this._colorMap = this._themeService.getColorTheme().tokenColorMap;
+			})
+		);
 
 		const dprFactor = Math.max(1, Math.floor(getActiveWindow().devicePixelRatio));
 
@@ -82,7 +93,12 @@ export class TextureAtlas extends Disposable {
 	}
 
 	private _initFirstPage() {
-		const firstPage = this._instantiationService.createInstance(TextureAtlasPage, 0, this.pageSize, this._allocatorType);
+		const firstPage = this._instantiationService.createInstance(
+			TextureAtlasPage,
+			0,
+			this.pageSize,
+			this._allocatorType
+		);
 		this._pages.push(firstPage);
 
 		// IMPORTANT: The first glyph on the first page must be an empty glyph such that zeroed out
@@ -110,10 +126,20 @@ export class TextureAtlas extends Disposable {
 		this._onDidDeleteGlyphs.fire();
 	}
 
-	getGlyph(rasterizer: IGlyphRasterizer, chars: string, tokenMetadata: number, decorationStyleSetId: number, x: number): Readonly<ITextureAtlasPageGlyph> {
+	getGlyph(
+		rasterizer: IGlyphRasterizer,
+		chars: string,
+		tokenMetadata: number,
+		decorationStyleSetId: number,
+		x: number
+	): Readonly<ITextureAtlasPageGlyph> {
 		// TODO: Encode font size and family into key
 		// Ignore metadata that doesn't affect the glyph
-		tokenMetadata &= ~(MetadataConsts.LANGUAGEID_MASK | MetadataConsts.TOKEN_TYPE_MASK | MetadataConsts.BALANCED_BRACKETS_MASK);
+		tokenMetadata &= ~(
+			MetadataConsts.LANGUAGEID_MASK |
+			MetadataConsts.TOKEN_TYPE_MASK |
+			MetadataConsts.BALANCED_BRACKETS_MASK
+		);
 
 		// Add x offset for sub-pixel rendering to the unused portion or tokenMetadata. This
 		// converts the decimal part of the x to a range from 0 to 9, where 0 = 0.0px x offset,
@@ -127,27 +153,71 @@ export class TextureAtlas extends Disposable {
 		}
 
 		// Try get the glyph, overflowing to a new page if necessary
-		return this._tryGetGlyph(this._glyphPageIndex.get(chars, tokenMetadata, decorationStyleSetId, rasterizer.cacheKey) ?? 0, rasterizer, chars, tokenMetadata, decorationStyleSetId);
-	}
-
-	private _tryGetGlyph(pageIndex: number, rasterizer: IGlyphRasterizer, chars: string, tokenMetadata: number, decorationStyleSetId: number): Readonly<ITextureAtlasPageGlyph> {
-		this._glyphPageIndex.set(pageIndex, chars, tokenMetadata, decorationStyleSetId, rasterizer.cacheKey);
-		return (
-			this._pages[pageIndex].getGlyph(rasterizer, chars, tokenMetadata, decorationStyleSetId)
-			?? (pageIndex + 1 < this._pages.length
-				? this._tryGetGlyph(pageIndex + 1, rasterizer, chars, tokenMetadata, decorationStyleSetId)
-				: undefined)
-			?? this._getGlyphFromNewPage(rasterizer, chars, tokenMetadata, decorationStyleSetId)
+		return this._tryGetGlyph(
+			this._glyphPageIndex.get(chars, tokenMetadata, decorationStyleSetId, rasterizer.cacheKey) ??
+				0,
+			rasterizer,
+			chars,
+			tokenMetadata,
+			decorationStyleSetId
 		);
 	}
 
-	private _getGlyphFromNewPage(rasterizer: IGlyphRasterizer, chars: string, tokenMetadata: number, decorationStyleSetId: number): Readonly<ITextureAtlasPageGlyph> {
+	private _tryGetGlyph(
+		pageIndex: number,
+		rasterizer: IGlyphRasterizer,
+		chars: string,
+		tokenMetadata: number,
+		decorationStyleSetId: number
+	): Readonly<ITextureAtlasPageGlyph> {
+		this._glyphPageIndex.set(
+			pageIndex,
+			chars,
+			tokenMetadata,
+			decorationStyleSetId,
+			rasterizer.cacheKey
+		);
+		return (
+			this._pages[pageIndex].getGlyph(rasterizer, chars, tokenMetadata, decorationStyleSetId) ??
+			(pageIndex + 1 < this._pages.length
+				? this._tryGetGlyph(pageIndex + 1, rasterizer, chars, tokenMetadata, decorationStyleSetId)
+				: undefined) ??
+			this._getGlyphFromNewPage(rasterizer, chars, tokenMetadata, decorationStyleSetId)
+		);
+	}
+
+	private _getGlyphFromNewPage(
+		rasterizer: IGlyphRasterizer,
+		chars: string,
+		tokenMetadata: number,
+		decorationStyleSetId: number
+	): Readonly<ITextureAtlasPageGlyph> {
 		if (this._pages.length >= TextureAtlas.maximumPageCount) {
-			throw new Error(`Attempt to create a texture atlas page past the limit ${TextureAtlas.maximumPageCount}`);
+			throw new Error(
+				`Attempt to create a texture atlas page past the limit ${TextureAtlas.maximumPageCount}`
+			);
 		}
-		this._pages.push(this._instantiationService.createInstance(TextureAtlasPage, this._pages.length, this.pageSize, this._allocatorType));
-		this._glyphPageIndex.set(this._pages.length - 1, chars, tokenMetadata, decorationStyleSetId, rasterizer.cacheKey);
-		return this._pages[this._pages.length - 1].getGlyph(rasterizer, chars, tokenMetadata, decorationStyleSetId)!;
+		this._pages.push(
+			this._instantiationService.createInstance(
+				TextureAtlasPage,
+				this._pages.length,
+				this.pageSize,
+				this._allocatorType
+			)
+		);
+		this._glyphPageIndex.set(
+			this._pages.length - 1,
+			chars,
+			tokenMetadata,
+			decorationStyleSetId,
+			rasterizer.cacheKey
+		);
+		return this._pages[this._pages.length - 1].getGlyph(
+			rasterizer,
+			chars,
+			tokenMetadata,
+			decorationStyleSetId
+		)!;
 	}
 
 	public getUsagePreview(): Promise<Blob[]> {
@@ -168,14 +238,20 @@ export class TextureAtlas extends Disposable {
 			throw new BugIndicatingError('Cannot warm atlas without color map');
 		}
 		this._warmUpTask.value?.clear();
-		const taskQueue = this._warmUpTask.value = new IdleTaskQueue();
+		const taskQueue = (this._warmUpTask.value = new IdleTaskQueue());
 		// Warm up using roughly the larger glyphs first to help optimize atlas allocation
 		// A-Z
 		for (let code = CharCode.A; code <= CharCode.Z; code++) {
 			for (const fgColor of colorMap.keys()) {
 				taskQueue.enqueue(() => {
 					for (let x = 0; x < 1; x += 0.1) {
-						this.getGlyph(rasterizer, String.fromCharCode(code), (fgColor << MetadataConsts.FOREGROUND_OFFSET) & MetadataConsts.FOREGROUND_MASK, 0, x);
+						this.getGlyph(
+							rasterizer,
+							String.fromCharCode(code),
+							(fgColor << MetadataConsts.FOREGROUND_OFFSET) & MetadataConsts.FOREGROUND_MASK,
+							0,
+							x
+						);
 					}
 				});
 			}
@@ -185,7 +261,13 @@ export class TextureAtlas extends Disposable {
 			for (const fgColor of colorMap.keys()) {
 				taskQueue.enqueue(() => {
 					for (let x = 0; x < 1; x += 0.1) {
-						this.getGlyph(rasterizer, String.fromCharCode(code), (fgColor << MetadataConsts.FOREGROUND_OFFSET) & MetadataConsts.FOREGROUND_MASK, 0, x);
+						this.getGlyph(
+							rasterizer,
+							String.fromCharCode(code),
+							(fgColor << MetadataConsts.FOREGROUND_OFFSET) & MetadataConsts.FOREGROUND_MASK,
+							0,
+							x
+						);
 					}
 				});
 			}
@@ -195,11 +277,16 @@ export class TextureAtlas extends Disposable {
 			for (const fgColor of colorMap.keys()) {
 				taskQueue.enqueue(() => {
 					for (let x = 0; x < 1; x += 0.1) {
-						this.getGlyph(rasterizer, String.fromCharCode(code), (fgColor << MetadataConsts.FOREGROUND_OFFSET) & MetadataConsts.FOREGROUND_MASK, 0, x);
+						this.getGlyph(
+							rasterizer,
+							String.fromCharCode(code),
+							(fgColor << MetadataConsts.FOREGROUND_OFFSET) & MetadataConsts.FOREGROUND_MASK,
+							0,
+							x
+						);
 					}
 				});
 			}
 		}
 	}
 }
-

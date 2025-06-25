@@ -17,14 +17,14 @@ export class MemoryGraphPanel {
 		this.memoryGraph.changes$.subscribe(change => {
 			this.postMessage({
 				type: 'graph_change',
-				data: change
+				data: change,
 			});
 		});
 
 		this.memoryGraph.graph$.subscribe(graph => {
 			this.postMessage({
 				type: 'graph_update',
-				data: graph
+				data: graph,
 			});
 		});
 	}
@@ -43,8 +43,8 @@ export class MemoryGraphPanel {
 				retainContextWhenHidden: true,
 				localResourceRoots: [
 					vscode.Uri.file(this.context.asAbsolutePath('dist')),
-					vscode.Uri.file(this.context.asAbsolutePath('assets'))
-				]
+					vscode.Uri.file(this.context.asAbsolutePath('assets')),
+				],
 			}
 		);
 
@@ -80,8 +80,8 @@ export class MemoryGraphPanel {
 				type: 'node_details',
 				data: {
 					node,
-					relationships: this.getNodeRelationships(nodeId)
-				}
+					relationships: this.getNodeRelationships(nodeId),
+				},
 			});
 		}
 	}
@@ -92,13 +92,13 @@ export class MemoryGraphPanel {
 			if (updatedNode) {
 				this.postMessage({
 					type: 'node_updated',
-					data: updatedNode
+					data: updatedNode,
 				});
 			}
 		} catch (error) {
 			this.postMessage({
 				type: 'error',
-				data: { message: `Error updating node: ${error}` }
+				data: { message: `Error updating node: ${error}` },
 			});
 		}
 	}
@@ -107,15 +107,18 @@ export class MemoryGraphPanel {
 		const graph = this.memoryGraph.currentGraph;
 		this.postMessage({
 			type: 'graph_update',
-			data: graph
+			data: graph,
 		});
 	}
 
-	private getNodeRelationships(nodeId: string): { incoming: Relationship[]; outgoing: Relationship[] } {
+	private getNodeRelationships(nodeId: string): {
+		incoming: Relationship[];
+		outgoing: Relationship[];
+	} {
 		const relationships = this.memoryGraph.relationships;
 		return {
 			incoming: relationships.filter(r => r.toNodeId === nodeId),
-			outgoing: relationships.filter(r => r.fromNodeId === nodeId)
+			outgoing: relationships.filter(r => r.fromNodeId === nodeId),
 		};
 	}
 
@@ -123,7 +126,8 @@ export class MemoryGraphPanel {
 		if (this.panel) {
 			this.panel.webview.postMessage(message);
 		}
-	} private getWebviewContent(): string {
+	}
+	private getWebviewContent(): string {
 		// Create a simple file path for scripts - compatibility fallback
 		const scriptPath = this.context.asAbsolutePath('dist/memory-graph.js');
 		const webviewScriptUri = vscode.Uri.file(scriptPath).toString();

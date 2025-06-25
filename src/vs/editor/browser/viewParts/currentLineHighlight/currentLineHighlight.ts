@@ -5,7 +5,10 @@
 
 import './currentLineHighlight.css';
 import { DynamicViewOverlay } from '../../view/dynamicViewOverlay.js';
-import { editorLineHighlight, editorLineHighlightBorder } from '../../../common/core/editorColorRegistry.js';
+import {
+	editorLineHighlight,
+	editorLineHighlightBorder,
+} from '../../../common/core/editorColorRegistry.js';
 import { RenderingContext } from '../../view/renderingContext.js';
 import { ViewContext } from '../../../common/viewModel/viewContext.js';
 import * as viewEvents from '../../../common/viewEvents.js';
@@ -39,7 +42,9 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 		this._renderLineHighlight = options.get(EditorOption.renderLineHighlight);
-		this._renderLineHighlightOnlyWhenFocus = options.get(EditorOption.renderLineHighlightOnlyWhenFocus);
+		this._renderLineHighlightOnlyWhenFocus = options.get(
+			EditorOption.renderLineHighlightOnlyWhenFocus
+		);
 		this._wordWrap = layoutInfo.isViewportWrapping;
 		this._contentLeft = layoutInfo.contentLeft;
 		this._contentWidth = layoutInfo.contentWidth;
@@ -88,7 +93,9 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 		this._renderLineHighlight = options.get(EditorOption.renderLineHighlight);
-		this._renderLineHighlightOnlyWhenFocus = options.get(EditorOption.renderLineHighlightOnlyWhenFocus);
+		this._renderLineHighlightOnlyWhenFocus = options.get(
+			EditorOption.renderLineHighlightOnlyWhenFocus
+		);
 		this._wordWrap = layoutInfo.isViewportWrapping;
 		this._contentLeft = layoutInfo.contentLeft;
 		this._contentWidth = layoutInfo.contentWidth;
@@ -133,7 +140,11 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 
 		// initialize renderData
 		const renderData: string[] = [];
-		for (let lineNumber = visibleStartLineNumber; lineNumber <= visibleEndLineNumber; lineNumber++) {
+		for (
+			let lineNumber = visibleStartLineNumber;
+			lineNumber <= visibleEndLineNumber;
+			lineNumber++
+		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
 			renderData[lineIndex] = '';
 		}
@@ -142,11 +153,19 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 			// do a first pass to render wrapped lines
 			const renderedLineWrapped = this._renderOne(ctx, false);
 			for (const cursorLineNumber of this._cursorLineNumbers) {
-
 				const coordinatesConverter = this._context.viewModel.coordinatesConverter;
-				const modelLineNumber = coordinatesConverter.convertViewPositionToModelPosition(new Position(cursorLineNumber, 1)).lineNumber;
-				const firstViewLineNumber = coordinatesConverter.convertModelPositionToViewPosition(new Position(modelLineNumber, 1)).lineNumber;
-				const lastViewLineNumber = coordinatesConverter.convertModelPositionToViewPosition(new Position(modelLineNumber, this._context.viewModel.model.getLineMaxColumn(modelLineNumber))).lineNumber;
+				const modelLineNumber = coordinatesConverter.convertViewPositionToModelPosition(
+					new Position(cursorLineNumber, 1)
+				).lineNumber;
+				const firstViewLineNumber = coordinatesConverter.convertModelPositionToViewPosition(
+					new Position(modelLineNumber, 1)
+				).lineNumber;
+				const lastViewLineNumber = coordinatesConverter.convertModelPositionToViewPosition(
+					new Position(
+						modelLineNumber,
+						this._context.viewModel.model.getLineMaxColumn(modelLineNumber)
+					)
+				).lineNumber;
 
 				const firstLine = Math.max(firstViewLineNumber, visibleStartLineNumber);
 				const lastLine = Math.min(lastViewLineNumber, visibleEndLineNumber);
@@ -183,16 +202,16 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 
 	protected _shouldRenderInMargin(): boolean {
 		return (
-			(this._renderLineHighlight === 'gutter' || this._renderLineHighlight === 'all')
-			&& (!this._renderLineHighlightOnlyWhenFocus || this._focused)
+			(this._renderLineHighlight === 'gutter' || this._renderLineHighlight === 'all') &&
+			(!this._renderLineHighlightOnlyWhenFocus || this._focused)
 		);
 	}
 
 	protected _shouldRenderInContent(): boolean {
 		return (
-			(this._renderLineHighlight === 'line' || this._renderLineHighlight === 'all')
-			&& this._selectionIsEmpty
-			&& (!this._renderLineHighlightOnlyWhenFocus || this._focused)
+			(this._renderLineHighlight === 'line' || this._renderLineHighlight === 'all') &&
+			this._selectionIsEmpty &&
+			(!this._renderLineHighlightOnlyWhenFocus || this._focused)
 		);
 	}
 
@@ -205,9 +224,11 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
  * Emphasizes the current line by drawing a border around it.
  */
 export class CurrentLineHighlightOverlay extends AbstractLineHighlightOverlay {
-
 	protected _renderOne(ctx: RenderingContext, exact: boolean): string {
-		const className = 'current-line' + (this._shouldRenderInMargin() ? ' current-line-both' : '') + (exact ? ' current-line-exact' : '');
+		const className =
+			'current-line' +
+			(this._shouldRenderInMargin() ? ' current-line-both' : '') +
+			(exact ? ' current-line-exact' : '');
 		return `<div class="${className}" style="width:${Math.max(ctx.scrollWidth, this._contentWidth)}px;"></div>`;
 	}
 	protected _shouldRenderThis(): boolean {
@@ -223,7 +244,11 @@ export class CurrentLineHighlightOverlay extends AbstractLineHighlightOverlay {
  */
 export class CurrentLineMarginHighlightOverlay extends AbstractLineHighlightOverlay {
 	protected _renderOne(ctx: RenderingContext, exact: boolean): string {
-		const className = 'current-line' + (this._shouldRenderInMargin() ? ' current-line-margin' : '') + (this._shouldRenderOther() ? ' current-line-margin-both' : '') + (this._shouldRenderInMargin() && exact ? ' current-line-exact-margin' : '');
+		const className =
+			'current-line' +
+			(this._shouldRenderInMargin() ? ' current-line-margin' : '') +
+			(this._shouldRenderOther() ? ' current-line-margin-both' : '') +
+			(this._shouldRenderInMargin() && exact ? ' current-line-exact-margin' : '');
 		return `<div class="${className}" style="width:${this._contentLeft}px"></div>`;
 	}
 	protected _shouldRenderThis(): boolean {
@@ -237,17 +262,29 @@ export class CurrentLineMarginHighlightOverlay extends AbstractLineHighlightOver
 registerThemingParticipant((theme, collector) => {
 	const lineHighlight = theme.getColor(editorLineHighlight);
 	if (lineHighlight) {
-		collector.addRule(`.monaco-editor .view-overlays .current-line { background-color: ${lineHighlight}; }`);
-		collector.addRule(`.monaco-editor .margin-view-overlays .current-line-margin { background-color: ${lineHighlight}; border: none; }`);
+		collector.addRule(
+			`.monaco-editor .view-overlays .current-line { background-color: ${lineHighlight}; }`
+		);
+		collector.addRule(
+			`.monaco-editor .margin-view-overlays .current-line-margin { background-color: ${lineHighlight}; border: none; }`
+		);
 	}
 	if (!lineHighlight || lineHighlight.isTransparent() || theme.defines(editorLineHighlightBorder)) {
 		const lineHighlightBorder = theme.getColor(editorLineHighlightBorder);
 		if (lineHighlightBorder) {
-			collector.addRule(`.monaco-editor .view-overlays .current-line-exact { border: 2px solid ${lineHighlightBorder}; }`);
-			collector.addRule(`.monaco-editor .margin-view-overlays .current-line-exact-margin { border: 2px solid ${lineHighlightBorder}; }`);
+			collector.addRule(
+				`.monaco-editor .view-overlays .current-line-exact { border: 2px solid ${lineHighlightBorder}; }`
+			);
+			collector.addRule(
+				`.monaco-editor .margin-view-overlays .current-line-exact-margin { border: 2px solid ${lineHighlightBorder}; }`
+			);
 			if (isHighContrast(theme.type)) {
-				collector.addRule(`.monaco-editor .view-overlays .current-line-exact { border-width: 1px; }`);
-				collector.addRule(`.monaco-editor .margin-view-overlays .current-line-exact-margin { border-width: 1px; }`);
+				collector.addRule(
+					`.monaco-editor .view-overlays .current-line-exact { border-width: 1px; }`
+				);
+				collector.addRule(
+					`.monaco-editor .margin-view-overlays .current-line-exact-margin { border-width: 1px; }`
+				);
 			}
 		}
 	}

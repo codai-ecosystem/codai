@@ -8,11 +8,10 @@ import { ITelemetryService } from '../../../../platform/telemetry/common/telemet
 import { Debugger } from './debugger.js';
 
 export class DebugTelemetry {
-
 	constructor(
 		private readonly model: IDebugModel,
-		@ITelemetryService private readonly telemetryService: ITelemetryService,
-	) { }
+		@ITelemetryService private readonly telemetryService: ITelemetryService
+	) {}
 
 	logDebugSessionStart(dbgr: Debugger, launchJsonExists: boolean) {
 		const extension = dbgr.getMainExtensionDescriptor();
@@ -35,12 +34,11 @@ export class DebugTelemetry {
 			watchExpressionsCount: this.model.getWatchExpressions().length,
 			extensionName: extension.identifier.value,
 			isBuiltin: extension.isBuiltin,
-			launchJsonExists
+			launchJsonExists,
 		});
 	}
 
 	logDebugSessionStop(session: IDebugSession, adapterExitEvent: AdapterEndEvent) {
-
 		const breakpoints = this.model.getBreakpoints();
 
 		/* __GDPR__
@@ -58,7 +56,7 @@ export class DebugTelemetry {
 			success: adapterExitEvent.emittedStopped || breakpoints.length === 0,
 			sessionLengthInSeconds: adapterExitEvent.sessionLengthInSeconds,
 			breakpointCount: breakpoints.length,
-			watchExpressionsCount: this.model.getWatchExpressions().length
+			watchExpressionsCount: this.model.getWatchExpressions().length,
 		});
 	}
 }

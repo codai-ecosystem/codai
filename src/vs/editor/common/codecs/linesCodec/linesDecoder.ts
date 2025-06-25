@@ -56,23 +56,16 @@ export class LinesDecoder extends BaseDecoder<TLineToken, VSBuffer> {
 	 * 					  which means that is the last call of this method.
 	 * @throws If internal logic implementation error is detected.
 	 */
-	private processData(
-		streamEnded: boolean,
-	): void {
+	private processData(streamEnded: boolean): void {
 		// iterate over each line of the data buffer, emitting each line
 		// as a `Line` token followed by a `NewLine` token, if applies
 		while (this.buffer.byteLength > 0) {
 			// get line number based on a previously emitted line, if any
-			const lineNumber = this.lastEmittedLine
-				? this.lastEmittedLine.range.startLineNumber + 1
-				: 1;
+			const lineNumber = this.lastEmittedLine ? this.lastEmittedLine.range.startLineNumber + 1 : 1;
 
 			// find the `\r`, `\n`, or `\r\n` tokens in the data
-			const endOfLineTokens = this.findEndOfLineTokens(
-				lineNumber,
-				streamEnded,
-			);
-			const firstToken: (NewLine | CarriageReturn | undefined) = endOfLineTokens[0];
+			const endOfLineTokens = this.findEndOfLineTokens(lineNumber, streamEnded);
+			const firstToken: NewLine | CarriageReturn | undefined = endOfLineTokens[0];
 
 			// if no end-of-the-line tokens found, stop the current processing
 			// attempt because we either (1) need more data to be received or
@@ -92,17 +85,14 @@ export class LinesDecoder extends BaseDecoder<TLineToken, VSBuffer> {
 			this.emitLine(lineNumber, this.buffer.slice(0, firstToken.range.startColumn - 1));
 
 			// must always hold true as the `emitLine` above sets this
-			assertDefined(
-				this.lastEmittedLine,
-				'No last emitted line found.',
-			);
+			assertDefined(this.lastEmittedLine, 'No last emitted line found.');
 
 			// Note! A standalone `\r` token case is not a well-defined case, and
 			// 		 was primarily used by old Mac OSx systems which treated it as
 			// 		 a line ending (same as `\n`). Hence for backward compatibility
 			// 		 with those systems, we treat it as a new line token as well.
 			// 		 We do that by replacing standalone `\r` token with `\n` one.
-			if ((endOfLineTokens.length === 1) && (firstToken instanceof CarriageReturn)) {
+			if (endOfLineTokens.length === 1 && firstToken instanceof CarriageReturn) {
 				endOfLineTokens.splice(0, 1, new NewLine(firstToken.range));
 			}
 
@@ -126,7 +116,7 @@ export class LinesDecoder extends BaseDecoder<TLineToken, VSBuffer> {
 		if (streamEnded) {
 			assert(
 				this.buffer.byteLength === 0,
-				'Expected the input data buffer to be empty when the stream ends.',
+				'Expected the input data buffer to be empty when the stream ends.'
 			);
 		}
 	}
@@ -141,7 +131,7 @@ export class LinesDecoder extends BaseDecoder<TLineToken, VSBuffer> {
 	 */
 	private findEndOfLineTokens(
 		lineNumber: number,
-		streamEnded: boolean,
+		streamEnded: boolean
 	): (CarriageReturn | NewLine)[] {
 		const result = [];
 
@@ -150,27 +140,31 @@ export class LinesDecoder extends BaseDecoder<TLineToken, VSBuffer> {
 		const newLineIndex = this.buffer.indexOf(NewLine.byte);
 
 		// if the `\r` comes before the `\n`(if `\n` present at all)
-		if (carriageReturnIndex >= 0 && ((carriageReturnIndex < newLineIndex) || (newLineIndex === -1))) {
+		if (carriageReturnIndex >= 0 && (carriageReturnIndex < newLineIndex || newLineIndex === -1)) {
 			// add the carriage return token first
 			result.push(
-				new CarriageReturn(new Range(
-					lineNumber,
-					(carriageReturnIndex + 1),
-					lineNumber,
-					(carriageReturnIndex + 1) + CarriageReturn.byte.byteLength,
-				)),
+				new CarriageReturn(
+					new Range(
+						lineNumber,
+						carriageReturnIndex + 1,
+						lineNumber,
+						carriageReturnIndex + 1 + CarriageReturn.byte.byteLength
+					)
+				)
 			);
 
 			// if the `\r\n` sequence
 			if (newLineIndex === carriageReturnIndex + 1) {
 				// add the newline token to the result
 				result.push(
-					new NewLine(new Range(
-						lineNumber,
-						(newLineIndex + 1),
-						lineNumber,
-						(newLineIndex + 1) + NewLine.byte.byteLength,
-					)),
+					new NewLine(
+						new Range(
+							lineNumber,
+							newLineIndex + 1,
+							lineNumber,
+							newLineIndex + 1 + NewLine.byte.byteLength
+						)
+					)
 				);
 			}
 
@@ -178,7 +172,7 @@ export class LinesDecoder extends BaseDecoder<TLineToken, VSBuffer> {
 			// the end-of-line tokens only, if the `\r` is followed by at least one more
 			// character (it could be a `\n` or any other character), or if the stream has
 			// ended (which means the `\r` is at the end of the line)
-			if ((this.buffer.byteLength > carriageReturnIndex + 1) || streamEnded) {
+			if (this.buffer.byteLength > carriageReturnIndex + 1 || streamEnded) {
 				return result;
 			}
 
@@ -189,12 +183,14 @@ export class LinesDecoder extends BaseDecoder<TLineToken, VSBuffer> {
 		// no `\r`, but there is `\n`
 		if (newLineIndex >= 0) {
 			result.push(
-				new NewLine(new Range(
-					lineNumber,
-					(newLineIndex + 1),
-					lineNumber,
-					(newLineIndex + 1) + NewLine.byte.byteLength,
-				)),
+				new NewLine(
+					new Range(
+						lineNumber,
+						newLineIndex + 1,
+						lineNumber,
+						newLineIndex + 1 + NewLine.byte.byteLength
+					)
+				)
 			);
 		}
 
@@ -207,9 +203,8 @@ export class LinesDecoder extends BaseDecoder<TLineToken, VSBuffer> {
 	 */
 	private emitLine(
 		lineNumber: number, // Note! 1-based indexing
-		lineBytes: VSBuffer,
+		lineBytes: VSBuffer
 	): void {
-
 		const line = new Line(lineNumber, lineBytes.toString());
 		this._onData.fire(line);
 

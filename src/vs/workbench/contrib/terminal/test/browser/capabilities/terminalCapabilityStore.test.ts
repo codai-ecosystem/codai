@@ -7,7 +7,10 @@ import { deepStrictEqual } from 'assert';
 import { DisposableStore } from '../../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { TerminalCapability } from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
-import { TerminalCapabilityStore, TerminalCapabilityStoreMultiplexer } from '../../../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
+import {
+	TerminalCapabilityStore,
+	TerminalCapabilityStoreMultiplexer,
+} from '../../../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
 
 suite('TerminalCapabilityStore', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
@@ -50,7 +53,10 @@ suite('TerminalCapabilityStore', () => {
 		capabilityStore.add(TerminalCapability.CwdDetection, {} as any);
 		deepStrictEqual(Array.from(capabilityStore.items), [TerminalCapability.CwdDetection]);
 		capabilityStore.add(TerminalCapability.NaiveCwdDetection, {} as any);
-		deepStrictEqual(Array.from(capabilityStore.items), [TerminalCapability.CwdDetection, TerminalCapability.NaiveCwdDetection]);
+		deepStrictEqual(Array.from(capabilityStore.items), [
+			TerminalCapability.CwdDetection,
+			TerminalCapability.NaiveCwdDetection,
+		]);
 		capabilityStore.remove(TerminalCapability.CwdDetection);
 		deepStrictEqual(Array.from(capabilityStore.items), [TerminalCapability.NaiveCwdDetection]);
 	});
@@ -107,7 +113,10 @@ suite('TerminalCapabilityStoreMultiplexer', () => {
 		store2.add(TerminalCapability.NaiveCwdDetection, {} as any);
 		multiplexer.add(store1);
 		multiplexer.add(store2);
-		assertEvents(addEvents, [TerminalCapability.CwdDetection, TerminalCapability.NaiveCwdDetection]);
+		assertEvents(addEvents, [
+			TerminalCapability.CwdDetection,
+			TerminalCapability.NaiveCwdDetection,
+		]);
 	});
 	test('items should return items from all stores', () => {
 		deepStrictEqual(Array.from(multiplexer.items).sort(), [].sort());
@@ -117,9 +126,19 @@ suite('TerminalCapabilityStoreMultiplexer', () => {
 		deepStrictEqual(Array.from(multiplexer.items).sort(), [TerminalCapability.CwdDetection].sort());
 		store1.add(TerminalCapability.CommandDetection, {} as any);
 		store2.add(TerminalCapability.NaiveCwdDetection, {} as any);
-		deepStrictEqual(Array.from(multiplexer.items).sort(), [TerminalCapability.CwdDetection, TerminalCapability.CommandDetection, TerminalCapability.NaiveCwdDetection].sort());
+		deepStrictEqual(
+			Array.from(multiplexer.items).sort(),
+			[
+				TerminalCapability.CwdDetection,
+				TerminalCapability.CommandDetection,
+				TerminalCapability.NaiveCwdDetection,
+			].sort()
+		);
 		store2.remove(TerminalCapability.NaiveCwdDetection);
-		deepStrictEqual(Array.from(multiplexer.items).sort(), [TerminalCapability.CwdDetection, TerminalCapability.CommandDetection].sort());
+		deepStrictEqual(
+			Array.from(multiplexer.items).sort(),
+			[TerminalCapability.CwdDetection, TerminalCapability.CommandDetection].sort()
+		);
 	});
 	test('has should return whether a capability is present', () => {
 		deepStrictEqual(multiplexer.has(TerminalCapability.CwdDetection), false);

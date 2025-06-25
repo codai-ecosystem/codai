@@ -8,12 +8,27 @@ import * as resources from '../../../../base/common/resources.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { ITaskService, IWorkspaceFolderTaskResult } from '../common/taskService.js';
-import { RunOnOptions, Task, TaskRunSource, TaskSource, TaskSourceKind, TASKS_CATEGORY, WorkspaceFileTaskSource, IWorkspaceTaskSource } from '../common/tasks.js';
-import { IQuickPickItem, IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
+import {
+	RunOnOptions,
+	Task,
+	TaskRunSource,
+	TaskSource,
+	TaskSourceKind,
+	TASKS_CATEGORY,
+	WorkspaceFileTaskSource,
+	IWorkspaceTaskSource,
+} from '../common/tasks.js';
+import {
+	IQuickPickItem,
+	IQuickInputService,
+} from '../../../../platform/quickinput/common/quickInput.js';
 import { Action2 } from '../../../../platform/actions/common/actions.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { IWorkspaceTrustManagementService } from '../../../../platform/workspace/common/workspaceTrust.js';
-import { ConfigurationTarget, IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+import {
+	ConfigurationTarget,
+	IConfigurationService,
+} from '../../../../platform/configuration/common/configuration.js';
 import { URI } from '../../../../base/common/uri.js';
 import { Event } from '../../../../base/common/event.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
@@ -25,15 +40,21 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
 	constructor(
 		@ITaskService private readonly _taskService: ITaskService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@ILogService private readonly _logService: ILogService) {
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@ILogService private readonly _logService: ILogService
+	) {
 		super();
 		if (this._taskService.isReconnected) {
 			this._tryRunTasks();
 		} else {
-			this._register(Event.once(this._taskService.onDidReconnectToTasks)(async () => await this._tryRunTasks()));
+			this._register(
+				Event.once(this._taskService.onDidReconnectToTasks)(async () => await this._tryRunTasks())
+			);
 		}
-		this._register(this._workspaceTrustManagementService.onDidChangeTrust(async () => await this._tryRunTasks()));
+		this._register(
+			this._workspaceTrustManagementService.onDidChangeTrust(async () => await this._tryRunTasks())
+		);
 	}
 
 	private async _tryRunTasks() {
@@ -60,24 +81,39 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
 		// to this point. Let's give it some extra time.
 		if (autoTasks.taskNames.length === 0) {
 			const updatedWithinTimeout = await Promise.race([
-				new Promise<boolean>((resolve) => {
-					Event.toPromise(Event.once(this._taskService.onDidChangeTaskConfig)).then(() => resolve(true));
+				new Promise<boolean>(resolve => {
+					Event.toPromise(Event.once(this._taskService.onDidChangeTaskConfig)).then(() =>
+						resolve(true)
+					);
 				}),
-				new Promise<boolean>((resolve) => {
-					const timer = setTimeout(() => { clearTimeout(timer); resolve(false); }, 10000);
-				})]);
+				new Promise<boolean>(resolve => {
+					const timer = setTimeout(() => {
+						clearTimeout(timer);
+						resolve(false);
+					}, 10000);
+				}),
+			]);
 
 			if (!updatedWithinTimeout) {
-				this._logService.trace(`RunAutomaticTasks: waited some extra time, but no update of tasks configuration`);
+				this._logService.trace(
+					`RunAutomaticTasks: waited some extra time, but no update of tasks configuration`
+				);
 				return;
 			}
 
 			workspaceTasks = await this._taskService.getWorkspaceTasks(TaskRunSource.FolderOpen);
 			autoTasks = this._findAutoTasks(this._taskService, workspaceTasks);
-			this._logService.trace(`RunAutomaticTasks: updated taskNames=${JSON.stringify(autoTasks.taskNames)}`);
+			this._logService.trace(
+				`RunAutomaticTasks: updated taskNames=${JSON.stringify(autoTasks.taskNames)}`
+			);
 		}
 
-		this._runWithPermission(this._taskService, this._configurationService, autoTasks.tasks, autoTasks.taskNames);
+		this._runWithPermission(
+			this._taskService,
+			this._configurationService,
+			autoTasks.tasks,
+			autoTasks.taskNames
+		);
 	}
 
 	private _runTasks(taskService: ITaskService, tasks: Array<Task | Promise<Task | undefined>>) {
@@ -98,7 +134,10 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
 		const taskKind = TaskSourceKind.toConfigurationTarget(source.kind);
 		switch (taskKind) {
 			case ConfigurationTarget.WORKSPACE_FOLDER: {
-				return resources.joinPath((<IWorkspaceTaskSource>source).config.workspaceFolder!.uri, (<IWorkspaceTaskSource>source).config.file);
+				return resources.joinPath(
+					(<IWorkspaceTaskSource>source).config.workspaceFolder!.uri,
+					(<IWorkspaceTaskSource>source).config.file
+				);
 			}
 			case ConfigurationTarget.WORKSPACE: {
 				return (<WorkspaceFileTaskSource>source).config.workspace?.configuration ?? undefined;
@@ -107,7 +146,14 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
 		return undefined;
 	}
 
-	private _findAutoTasks(taskService: ITaskService, workspaceTaskResult: Map<string, IWorkspaceFolderTaskResult>): { tasks: Array<Task | Promise<Task | undefined>>; taskNames: Array<string>; locations: Map<string, URI> } {
+	private _findAutoTasks(
+		taskService: ITaskService,
+		workspaceTaskResult: Map<string, IWorkspaceFolderTaskResult>
+	): {
+		tasks: Array<Task | Promise<Task | undefined>>;
+		taskNames: Array<string>;
+		locations: Map<string, URI>;
+	} {
 		const tasks = new Array<Task | Promise<Task | undefined>>();
 		const taskNames = new Array<string>();
 		const locations = new Map<string, URI>();
@@ -129,9 +175,13 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
 				if (resultElement.configurations) {
 					for (const configuredTask of Object.values(resultElement.configurations.byIdentifier)) {
 						if (configuredTask.runOptions.runOn === RunOnOptions.folderOpen) {
-							tasks.push(new Promise<Task | undefined>(resolve => {
-								taskService.getTask(resultElement.workspaceFolder, configuredTask._id, true).then(task => resolve(task));
-							}));
+							tasks.push(
+								new Promise<Task | undefined>(resolve => {
+									taskService
+										.getTask(resultElement.workspaceFolder, configuredTask._id, true)
+										.then(task => resolve(task));
+								})
+							);
 							if (configuredTask._label) {
 								taskNames.push(configuredTask._label);
 							} else {
@@ -149,7 +199,12 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
 		return { tasks, taskNames, locations };
 	}
 
-	private async _runWithPermission(taskService: ITaskService, configurationService: IConfigurationService, tasks: (Task | Promise<Task | undefined>)[], taskNames: string[]) {
+	private async _runWithPermission(
+		taskService: ITaskService,
+		configurationService: IConfigurationService,
+		tasks: (Task | Promise<Task | undefined>)[],
+		taskNames: string[]
+	) {
 		if (taskNames.length === 0) {
 			return;
 		}
@@ -161,27 +216,40 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
 }
 
 export class ManageAutomaticTaskRunning extends Action2 {
-
 	public static readonly ID = 'workbench.action.tasks.manageAutomaticRunning';
-	public static readonly LABEL = nls.localize('workbench.action.tasks.manageAutomaticRunning', "Manage Automatic Tasks");
+	public static readonly LABEL = nls.localize(
+		'workbench.action.tasks.manageAutomaticRunning',
+		'Manage Automatic Tasks'
+	);
 
 	constructor() {
 		super({
 			id: ManageAutomaticTaskRunning.ID,
 			title: ManageAutomaticTaskRunning.LABEL,
-			category: TASKS_CATEGORY
+			category: TASKS_CATEGORY,
 		});
 	}
 
 	public async run(accessor: ServicesAccessor): Promise<any> {
 		const quickInputService = accessor.get(IQuickInputService);
 		const configurationService = accessor.get(IConfigurationService);
-		const allowItem: IQuickPickItem = { label: nls.localize('workbench.action.tasks.allowAutomaticTasks', "Allow Automatic Tasks") };
-		const disallowItem: IQuickPickItem = { label: nls.localize('workbench.action.tasks.disallowAutomaticTasks', "Disallow Automatic Tasks") };
+		const allowItem: IQuickPickItem = {
+			label: nls.localize('workbench.action.tasks.allowAutomaticTasks', 'Allow Automatic Tasks'),
+		};
+		const disallowItem: IQuickPickItem = {
+			label: nls.localize(
+				'workbench.action.tasks.disallowAutomaticTasks',
+				'Disallow Automatic Tasks'
+			),
+		};
 		const value = await quickInputService.pick([allowItem, disallowItem], { canPickMany: false });
 		if (!value) {
 			return;
 		}
-		configurationService.updateValue(ALLOW_AUTOMATIC_TASKS, value === allowItem ? 'on' : 'off', ConfigurationTarget.USER);
+		configurationService.updateValue(
+			ALLOW_AUTOMATIC_TASKS,
+			value === allowItem ? 'on' : 'off',
+			ConfigurationTarget.USER
+		);
 	}
 }

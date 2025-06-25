@@ -9,7 +9,12 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { DefaultEndOfLine } from '../../../../common/model.js';
 import { createTextBufferFactory } from '../../../../common/model/textModel.js';
 
-function testTextBufferFactory(text: string, eol: string, mightContainNonBasicASCII: boolean, mightContainRTL: boolean): void {
+function testTextBufferFactory(
+	text: string,
+	eol: string,
+	mightContainNonBasicASCII: boolean,
+	mightContainRTL: boolean
+): void {
 	const { disposable, textBuffer } = createTextBufferFactory(text).create(DefaultEndOfLine.LF);
 
 	assert.strictEqual(textBuffer.mightContainNonBasicASCII(), mightContainNonBasicASCII);
@@ -19,7 +24,6 @@ function testTextBufferFactory(text: string, eol: string, mightContainNonBasicAS
 }
 
 suite('ModelBuilder', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('t1', () => {
@@ -35,19 +39,39 @@ suite('ModelBuilder', () => {
 	});
 
 	test('t4', () => {
-		testTextBufferFactory('Hello world\nHow are you?\nIs everything good today?\nDo you enjoy the weather?', '\n', false, false);
+		testTextBufferFactory(
+			'Hello world\nHow are you?\nIs everything good today?\nDo you enjoy the weather?',
+			'\n',
+			false,
+			false
+		);
 	});
 
 	test('carriage return detection (1 \\r\\n 2 \\n)', () => {
-		testTextBufferFactory('Hello world\r\nHow are you?\nIs everything good today?\nDo you enjoy the weather?', '\n', false, false);
+		testTextBufferFactory(
+			'Hello world\r\nHow are you?\nIs everything good today?\nDo you enjoy the weather?',
+			'\n',
+			false,
+			false
+		);
 	});
 
 	test('carriage return detection (2 \\r\\n 1 \\n)', () => {
-		testTextBufferFactory('Hello world\r\nHow are you?\r\nIs everything good today?\nDo you enjoy the weather?', '\r\n', false, false);
+		testTextBufferFactory(
+			'Hello world\r\nHow are you?\r\nIs everything good today?\nDo you enjoy the weather?',
+			'\r\n',
+			false,
+			false
+		);
 	});
 
 	test('carriage return detection (3 \\r\\n 0 \\n)', () => {
-		testTextBufferFactory('Hello world\r\nHow are you?\r\nIs everything good today?\r\nDo you enjoy the weather?', '\r\n', false, false);
+		testTextBufferFactory(
+			'Hello world\r\nHow are you?\r\nIs everything good today?\r\nDo you enjoy the weather?',
+			'\r\n',
+			false,
+			false
+		);
 	});
 
 	test('BOM handling', () => {

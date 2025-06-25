@@ -24,16 +24,14 @@ describe('TesterAgent', () => {
 			name: 'Test Tester Agent',
 			description: 'Agent for testing',
 			type: 'tester',
-			capabilities: [{
-				name: 'test_generation',
-				description: 'Generate tests',
-				inputs: [
-					{ name: 'code', type: 'string', required: true, description: 'Code to test' }
-				],
-				outputs: [
-					{ name: 'tests', type: 'array', description: 'Generated tests' }
-				]
-			}],
+			capabilities: [
+				{
+					name: 'test_generation',
+					description: 'Generate tests',
+					inputs: [{ name: 'code', type: 'string', required: true, description: 'Code to test' }],
+					outputs: [{ name: 'tests', type: 'array', description: 'Generated tests' }],
+				},
+			],
 			aiProvider: {
 				provider: 'openai',
 				model: 'gpt-4',
@@ -159,7 +157,7 @@ describe('TesterAgent', () => {
 				priority: 'medium',
 				inputs: {
 					code: 'function add(a, b) { return a + b; }',
-					testType: 'unit'
+					testType: 'unit',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -183,7 +181,7 @@ describe('TesterAgent', () => {
 				priority: 'medium',
 				inputs: {
 					code: 'const express = require("express"); const app = express();',
-					testType: 'integration'
+					testType: 'integration',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -207,13 +205,14 @@ describe('TesterAgent', () => {
 				priority: 'medium',
 				inputs: {
 					code: 'React component code',
-					testType: 'e2e'
+					testType: 'e2e',
 				},
 				createdAt: new Date(),
 				progress: 0,
 			};
 
-			const result = await testerAgent.executeTask(task); expect(result.success).toBe(true);
+			const result = await testerAgent.executeTask(task);
+			expect(result.success).toBe(true);
 			expect(result.outputs).toBeDefined();
 			expect(result.outputs?.testType).toBe('e2e');
 			expect(typeof result.outputs?.result).toBe('string');
@@ -229,7 +228,7 @@ describe('TesterAgent', () => {
 				priority: 'medium',
 				inputs: {
 					code: 'Database query code',
-					testType: 'performance'
+					testType: 'performance',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -238,7 +237,8 @@ describe('TesterAgent', () => {
 			const result = await testerAgent.executeTask(task);
 
 			expect(result.success).toBe(true);
-			expect(result.outputs).toBeDefined(); expect(result.outputs?.testType).toBe('performance');
+			expect(result.outputs).toBeDefined();
+			expect(result.outputs?.testType).toBe('performance');
 			expect(typeof result.outputs?.result).toBe('string');
 			expect(result.duration).toBeGreaterThanOrEqual(0);
 		});
@@ -252,13 +252,14 @@ describe('TesterAgent', () => {
 				priority: 'medium',
 				inputs: {
 					code: 'Authentication code',
-					testType: 'security'
+					testType: 'security',
 				},
 				createdAt: new Date(),
 				progress: 0,
 			};
 
-			const result = await testerAgent.executeTask(task); expect(result.success).toBe(true);
+			const result = await testerAgent.executeTask(task);
+			expect(result.success).toBe(true);
 			expect(result.outputs).toBeDefined();
 			expect(result.outputs?.testType).toBe('security');
 			expect(typeof result.outputs?.result).toBe('string');
@@ -273,7 +274,7 @@ describe('TesterAgent', () => {
 				status: 'pending',
 				priority: 'medium',
 				inputs: {
-					code: 'function utils() { return true; }'
+					code: 'function utils() { return true; }',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -287,7 +288,9 @@ describe('TesterAgent', () => {
 		});
 		it('should handle errors gracefully', async () => {
 			// Mock an error during test generation
-			vi.spyOn(testerAgent as any, 'generateUnitTests').mockRejectedValue(new Error('Test generation failed'));
+			vi.spyOn(testerAgent as any, 'generateUnitTests').mockRejectedValue(
+				new Error('Test generation failed')
+			);
 
 			const task: Task = {
 				id: 'test-error',
@@ -298,13 +301,14 @@ describe('TesterAgent', () => {
 				priority: 'medium',
 				inputs: {
 					code: 'invalid code',
-					testType: 'unit'
+					testType: 'unit',
 				},
 				createdAt: new Date(),
 				progress: 0,
 			};
 
-			const result = await testerAgent.executeTask(task); expect(result.success).toBe(false);
+			const result = await testerAgent.executeTask(task);
+			expect(result.success).toBe(false);
 			expect(result.error).toBe('Test generation failed');
 			expect(result.duration).toBeGreaterThanOrEqual(0);
 		});
@@ -323,9 +327,9 @@ describe('TesterAgent', () => {
 					code: 'function test() {}',
 					packageJson: {
 						devDependencies: {
-							jest: '^29.0.0'
-						}
-					}
+							jest: '^29.0.0',
+						},
+					},
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -347,9 +351,9 @@ describe('TesterAgent', () => {
 					code: 'function test() {}',
 					packageJson: {
 						devDependencies: {
-							mocha: '^10.0.0'
-						}
-					}
+							mocha: '^10.0.0',
+						},
+					},
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -371,9 +375,9 @@ describe('TesterAgent', () => {
 					code: 'function test() {}',
 					packageJson: {
 						devDependencies: {
-							vitest: '^0.34.0'
-						}
-					}
+							vitest: '^0.34.0',
+						},
+					},
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -395,9 +399,9 @@ describe('TesterAgent', () => {
 					code: 'function test() {}',
 					packageJson: {
 						devDependencies: {
-							'@playwright/test': '^1.40.0'
-						}
-					}
+							'@playwright/test': '^1.40.0',
+						},
+					},
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -416,7 +420,7 @@ describe('TesterAgent', () => {
 				status: 'pending',
 				priority: 'medium',
 				inputs: {
-					code: 'function test() {}'
+					code: 'function test() {}',
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -444,11 +448,11 @@ describe('TesterAgent', () => {
 			expect(functions).toHaveLength(2);
 			expect(functions[0]).toEqual({
 				name: 'add',
-				parameters: ['a', 'b']
+				parameters: ['a', 'b'],
 			});
 			expect(functions[1]).toEqual({
 				name: 'multiply',
-				parameters: ['x', 'y']
+				parameters: ['x', 'y'],
 			});
 		});
 
@@ -463,11 +467,11 @@ describe('TesterAgent', () => {
 			expect(functions).toHaveLength(2);
 			expect(functions[0]).toEqual({
 				name: 'subtract',
-				parameters: ['a', 'b']
+				parameters: ['a', 'b'],
 			});
 			expect(functions[1]).toEqual({
 				name: 'divide',
-				parameters: ['x', 'y']
+				parameters: ['x', 'y'],
 			});
 		});
 
@@ -485,11 +489,11 @@ describe('TesterAgent', () => {
 			expect(functions).toHaveLength(2);
 			expect(functions[0]).toEqual({
 				name: 'greet',
-				parameters: []
+				parameters: [],
 			});
 			expect(functions[1]).toEqual({
 				name: 'getMessage',
-				parameters: []
+				parameters: [],
 			});
 		});
 	});
@@ -509,7 +513,9 @@ describe('TesterAgent', () => {
 
 		it('should generate Vitest test header correctly', () => {
 			const header = (testerAgent as any).generateTestHeader('vitest');
-			expect(header).toContain("import { test, expect, describe, beforeEach, afterEach } from 'vitest'");
+			expect(header).toContain(
+				"import { test, expect, describe, beforeEach, afterEach } from 'vitest'"
+			);
 		});
 
 		it('should generate test setup correctly', () => {
@@ -523,7 +529,7 @@ describe('TesterAgent', () => {
 			const testCase = {
 				name: 'should test add function',
 				input: 'a, b',
-				expected: 'sum'
+				expected: 'sum',
 			};
 
 			const caseCode = (testerAgent as any).generateTestCase(testCase, 'jest');
@@ -536,7 +542,7 @@ describe('TesterAgent', () => {
 			const testCase = {
 				name: 'should test multiply function',
 				input: 'x, y',
-				expected: 'product'
+				expected: 'product',
 			};
 
 			const caseCode = (testerAgent as any).generateTestCase(testCase, 'mocha');
@@ -574,8 +580,8 @@ describe('TesterAgent', () => {
 					metadata: expect.objectContaining({
 						createdBy: mockConfig.id,
 						generatedCode: 'test code',
-						taskId: task.id
-					})
+						taskId: task.id,
+					}),
 				})
 			);
 		});

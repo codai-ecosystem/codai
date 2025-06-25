@@ -10,7 +10,7 @@ import { BaseEdit, BaseReplacement } from './edit.js';
 /**
  * Represents a set of replacements to a string.
  * All these replacements are applied at once.
-*/
+ */
 export class StringEdit extends BaseEdit<StringReplacement, StringEdit> {
 	public static readonly empty = new StringEdit([]);
 
@@ -76,10 +76,12 @@ export class StringEdit extends BaseEdit<StringReplacement, StringEdit> {
 		const edits: StringReplacement[] = [];
 		let offset = 0;
 		for (const e of this.replacements) {
-			edits.push(new StringReplacement(
-				OffsetRange.ofStartAndLength(e.replaceRange.start + offset, e.newText.length),
-				baseStr.substring(e.replaceRange.start, e.replaceRange.endExclusive),
-			));
+			edits.push(
+				new StringReplacement(
+					OffsetRange.ofStartAndLength(e.replaceRange.start + offset, e.newText.length),
+					baseStr.substring(e.replaceRange.start, e.replaceRange.endExclusive)
+				)
+			);
 			offset += e.newText.length - e.replaceRange.length;
 		}
 		return new StringEdit(edits);
@@ -110,10 +112,7 @@ export class StringEdit extends BaseEdit<StringReplacement, StringEdit> {
 				break;
 			} else if (!baseEdit) {
 				// no more edits from base
-				newEdits.push(new StringReplacement(
-					ourEdit.replaceRange.delta(offset),
-					ourEdit.newText,
-				));
+				newEdits.push(new StringReplacement(ourEdit.replaceRange.delta(offset), ourEdit.newText));
 				ourIdx++;
 			} else if (ourEdit.replaceRange.intersectsOrTouches(baseEdit.replaceRange)) {
 				ourIdx++; // Don't take our edit, as it is conflicting -> skip
@@ -122,10 +121,7 @@ export class StringEdit extends BaseEdit<StringReplacement, StringEdit> {
 				}
 			} else if (ourEdit.replaceRange.start < baseEdit.replaceRange.start) {
 				// Our edit starts first
-				newEdits.push(new StringReplacement(
-					ourEdit.replaceRange.delta(offset),
-					ourEdit.newText,
-				));
+				newEdits.push(new StringReplacement(ourEdit.replaceRange.delta(offset), ourEdit.newText));
 				ourIdx++;
 			} else {
 				baseIdx++;
@@ -162,12 +158,12 @@ export class StringEdit extends BaseEdit<StringReplacement, StringEdit> {
 
 /**
  * Warning: Be careful when changing this type, as it is used for serialization!
-*/
+ */
 export type ISerializedStringEdit = ISerializedStringReplacement[];
 
 /**
  * Warning: Be careful when changing this type, as it is used for serialization!
-*/
+ */
 export interface ISerializedStringReplacement {
 	txt: string;
 	pos: number;
@@ -189,7 +185,7 @@ export class StringReplacement extends BaseReplacement<StringReplacement> {
 
 	constructor(
 		range: OffsetRange,
-		public readonly newText: string,
+		public readonly newText: string
 	) {
 		super(range);
 	}
@@ -198,10 +194,15 @@ export class StringReplacement extends BaseReplacement<StringReplacement> {
 		return this.replaceRange.equals(other.replaceRange) && this.newText === other.newText;
 	}
 
-	getNewLength(): number { return this.newText.length; }
+	getNewLength(): number {
+		return this.newText.length;
+	}
 
 	tryJoinTouching(other: StringReplacement): StringReplacement | undefined {
-		return new StringReplacement(this.replaceRange.joinRightTouching(other.replaceRange), this.newText + other.newText);
+		return new StringReplacement(
+			this.replaceRange.joinRightTouching(other.replaceRange),
+			this.newText + other.newText
+		);
 	}
 
 	slice(range: OffsetRange, rangeInReplacement: OffsetRange): StringReplacement {
@@ -213,7 +214,11 @@ export class StringReplacement extends BaseReplacement<StringReplacement> {
 	}
 
 	replace(str: string): string {
-		return str.substring(0, this.replaceRange.start) + this.newText + str.substring(this.replaceRange.endExclusive);
+		return (
+			str.substring(0, this.replaceRange.start) +
+			this.newText +
+			str.substring(this.replaceRange.endExclusive)
+		);
 	}
 
 	/**
@@ -235,7 +240,7 @@ export class StringReplacement extends BaseReplacement<StringReplacement> {
 
 		const replaceRange = new OffsetRange(
 			this.replaceRange.start + prefixLen,
-			this.replaceRange.endExclusive - suffixLen,
+			this.replaceRange.endExclusive - suffixLen
 		);
 		const newText = this.newText.substring(prefixLen, this.newText.length - suffixLen);
 

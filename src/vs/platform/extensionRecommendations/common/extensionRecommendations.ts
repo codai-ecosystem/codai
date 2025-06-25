@@ -9,7 +9,7 @@ import { createDecorator } from '../../instantiation/common/instantiation.js';
 export const enum RecommendationSource {
 	FILE = 1,
 	WORKSPACE = 2,
-	EXE = 3
+	EXE = 3,
 }
 
 export interface IExtensionRecommendations {
@@ -21,9 +21,12 @@ export interface IExtensionRecommendations {
 
 export function RecommendationSourceToString(source: RecommendationSource) {
 	switch (source) {
-		case RecommendationSource.FILE: return 'file';
-		case RecommendationSource.WORKSPACE: return 'workspace';
-		case RecommendationSource.EXE: return 'exe';
+		case RecommendationSource.FILE:
+			return 'file';
+		case RecommendationSource.WORKSPACE:
+			return 'workspace';
+		case RecommendationSource.EXE:
+			return 'exe';
 	}
 }
 
@@ -35,7 +38,10 @@ export const enum RecommendationsNotificationResult {
 	Accepted = 'reacted',
 }
 
-export const IExtensionRecommendationNotificationService = createDecorator<IExtensionRecommendationNotificationService>('IExtensionRecommendationNotificationService');
+export const IExtensionRecommendationNotificationService =
+	createDecorator<IExtensionRecommendationNotificationService>(
+		'IExtensionRecommendationNotificationService'
+	);
 
 export interface IExtensionRecommendationNotificationService {
 	readonly _serviceBrand: undefined;
@@ -43,7 +49,8 @@ export interface IExtensionRecommendationNotificationService {
 	readonly ignoredRecommendations: string[];
 	hasToIgnoreRecommendationNotifications(): boolean;
 
-	promptImportantExtensionsInstallNotification(recommendations: IExtensionRecommendations): Promise<RecommendationsNotificationResult>;
+	promptImportantExtensionsInstallNotification(
+		recommendations: IExtensionRecommendations
+	): Promise<RecommendationsNotificationResult>;
 	promptWorkspaceRecommendations(recommendations: Array<string | URI>): Promise<void>;
 }
-

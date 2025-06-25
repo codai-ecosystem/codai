@@ -4,7 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IContextMenuProvider } from '../../contextmenu.js';
-import { $, addDisposableListener, append, EventHelper, EventType, isMouseEvent } from '../../dom.js';
+import {
+	$,
+	addDisposableListener,
+	append,
+	EventHelper,
+	EventType,
+	isMouseEvent,
+} from '../../dom.js';
 import { StandardKeyboardEvent } from '../../keyboardEvent.js';
 import { EventType as GestureEventType, Gesture } from '../../touch.js';
 import { AnchorAlignment } from '../contextview/contextview.js';
@@ -60,33 +67,37 @@ export class BaseDropdown extends ActionRunner {
 		}
 
 		for (const event of [EventType.MOUSE_DOWN, GestureEventType.Tap]) {
-			this._register(addDisposableListener(this._label, event, e => {
-				if (isMouseEvent(e) && (e.detail > 1 || e.button !== 0)) {
-					// prevent right click trigger to allow separate context menu (https://github.com/microsoft/vscode/issues/151064)
-					// prevent multiple clicks to open multiple context menus (https://github.com/microsoft/vscode/issues/41363)
-					return;
-				}
+			this._register(
+				addDisposableListener(this._label, event, e => {
+					if (isMouseEvent(e) && (e.detail > 1 || e.button !== 0)) {
+						// prevent right click trigger to allow separate context menu (https://github.com/microsoft/vscode/issues/151064)
+						// prevent multiple clicks to open multiple context menus (https://github.com/microsoft/vscode/issues/41363)
+						return;
+					}
 
-				if (this.visible) {
-					this.hide();
-				} else {
-					this.show();
-				}
-			}));
+					if (this.visible) {
+						this.hide();
+					} else {
+						this.show();
+					}
+				})
+			);
 		}
 
-		this._register(addDisposableListener(this._label, EventType.KEY_DOWN, e => {
-			const event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
-				EventHelper.stop(e, true); // https://github.com/microsoft/vscode/issues/57997
+		this._register(
+			addDisposableListener(this._label, EventType.KEY_DOWN, e => {
+				const event = new StandardKeyboardEvent(e);
+				if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
+					EventHelper.stop(e, true); // https://github.com/microsoft/vscode/issues/57997
 
-				if (this.visible) {
-					this.hide();
-				} else {
-					this.show();
+					if (this.visible) {
+						this.hide();
+					} else {
+						this.show();
+					}
 				}
-			}
-		}));
+			})
+		);
 
 		const cleanupFn = labelRenderer(this._label);
 		if (cleanupFn) {
@@ -107,7 +118,13 @@ export class BaseDropdown extends ActionRunner {
 	set tooltip(tooltip: string) {
 		if (this._label) {
 			if (!this.hover && tooltip !== '') {
-				this.hover = this._register(getBaseLayerHoverDelegate().setupManagedHover(getDefaultHoverDelegate('mouse'), this._label, tooltip));
+				this.hover = this._register(
+					getBaseLayerHoverDelegate().setupManagedHover(
+						getDefaultHoverDelegate('mouse'),
+						this._label,
+						tooltip
+					)
+				);
 			} else if (this.hover) {
 				this.hover.update(tooltip);
 			}
@@ -180,7 +197,10 @@ export class DropdownMenu extends BaseDropdown {
 	private _menuOptions: IMenuOptions | undefined;
 	private _actions: readonly IAction[] = [];
 
-	constructor(container: HTMLElement, private readonly _options: IDropdownMenuOptions) {
+	constructor(
+		container: HTMLElement,
+		private readonly _options: IDropdownMenuOptions
+	) {
 		super(container, _options);
 
 		this.actions = _options.actions || [];
@@ -214,15 +234,21 @@ export class DropdownMenu extends BaseDropdown {
 		this._options.contextMenuProvider.showContextMenu({
 			getAnchor: () => this.element,
 			getActions: () => this.actions,
-			getActionsContext: () => this.menuOptions ? this.menuOptions.context : null,
-			getActionViewItem: (action, options) => this.menuOptions && this.menuOptions.actionViewItemProvider ? this.menuOptions.actionViewItemProvider(action, options) : undefined,
-			getKeyBinding: action => this.menuOptions && this.menuOptions.getKeyBinding ? this.menuOptions.getKeyBinding(action) : undefined,
+			getActionsContext: () => (this.menuOptions ? this.menuOptions.context : null),
+			getActionViewItem: (action, options) =>
+				this.menuOptions && this.menuOptions.actionViewItemProvider
+					? this.menuOptions.actionViewItemProvider(action, options)
+					: undefined,
+			getKeyBinding: action =>
+				this.menuOptions && this.menuOptions.getKeyBinding
+					? this.menuOptions.getKeyBinding(action)
+					: undefined,
 			getMenuClassName: () => this._options.menuClassName || '',
 			onHide: () => this.onHide(),
 			actionRunner: this.menuOptions ? this.menuOptions.actionRunner : undefined,
 			anchorAlignment: this.menuOptions ? this.menuOptions.anchorAlignment : AnchorAlignment.LEFT,
 			domForShadowRoot: this._options.menuAsChild ? this.element : undefined,
-			skipTelemetry: this._options.skipTelemetry
+			skipTelemetry: this._options.skipTelemetry,
 		});
 	}
 

@@ -20,16 +20,14 @@ function assertToJSON(a: any, expected: any) {
 }
 
 suite('ExtHostTypes', function () {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('URI, toJSON', function () {
-
 		const uri = URI.parse('file:///path/test.file');
 		assert.deepStrictEqual(uri.toJSON(), {
 			$mid: MarshalledId.Uri,
 			scheme: 'file',
-			path: '/path/test.file'
+			path: '/path/test.file',
 		});
 
 		assert.ok(uri.fsPath);
@@ -48,12 +46,11 @@ suite('ExtHostTypes', function () {
 			path: '/path/test.file',
 			fsPath: '/path/test.file'.replace(/\//g, isWindows ? '\\' : '/'),
 			_sep: isWindows ? 1 : undefined,
-			external: 'file:///path/test.file'
+			external: 'file:///path/test.file',
 		});
 	});
 
 	test('Disposable', () => {
-
 		let count = 0;
 		const d = new types.Disposable(() => {
 			count += 1;
@@ -65,9 +62,12 @@ suite('ExtHostTypes', function () {
 		d.dispose();
 		assert.strictEqual(count, 1);
 
-		types.Disposable.from(undefined!, { dispose() { count += 1; } }).dispose();
+		types.Disposable.from(undefined!, {
+			dispose() {
+				count += 1;
+			},
+		}).dispose();
 		assert.strictEqual(count, 2);
-
 
 		assert.throws(() => {
 			new types.Disposable(() => {
@@ -76,7 +76,6 @@ suite('ExtHostTypes', function () {
 		});
 
 		new types.Disposable(undefined!).dispose();
-
 	});
 
 	test('Position', () => {
@@ -84,9 +83,9 @@ suite('ExtHostTypes', function () {
 		assert.throws(() => new types.Position(0, -1));
 
 		const pos = new types.Position(0, 0);
-		assert.throws(() => (pos as any).line = -1);
-		assert.throws(() => (pos as any).character = -1);
-		assert.throws(() => (pos as any).line = 12);
+		assert.throws(() => ((pos as any).line = -1));
+		assert.throws(() => ((pos as any).character = -1));
+		assert.throws(() => ((pos as any).line = 12));
 
 		const { line, character } = pos.toJSON();
 		assert.strictEqual(line, 0);
@@ -203,14 +202,20 @@ suite('ExtHostTypes', function () {
 		assert.throws(() => new types.Range(null!, new types.Position(0, 0)));
 
 		const range = new types.Range(1, 0, 0, 0);
-		assert.throws(() => { (range as any).start = null; });
-		assert.throws(() => { (range as any).start = new types.Position(0, 3); });
+		assert.throws(() => {
+			(range as any).start = null;
+		});
+		assert.throws(() => {
+			(range as any).start = new types.Position(0, 3);
+		});
 	});
 
 	test('Range, toJSON', function () {
-
 		const range = new types.Range(1, 2, 3, 4);
-		assertToJSON(range, [{ line: 1, character: 2 }, { line: 3, character: 4 }]);
+		assertToJSON(range, [
+			{ line: 1, character: 2 },
+			{ line: 3, character: 4 },
+		]);
 	});
 
 	test('Range, sorting', function () {
@@ -262,9 +267,9 @@ suite('ExtHostTypes', function () {
 		const endLike = { line: range.end.line, character: range.end.character };
 		const rangeLike = { start: startLike, end: endLike };
 
-		assert.ok(range.contains((<types.Position>startLike)));
-		assert.ok(range.contains((<types.Position>endLike)));
-		assert.ok(range.contains((<types.Range>rangeLike)));
+		assert.ok(range.contains(<types.Position>startLike));
+		assert.ok(range.contains(<types.Position>endLike));
+		assert.ok(range.contains(<types.Range>rangeLike));
 	});
 
 	test('Range, intersection', function () {
@@ -351,11 +356,16 @@ suite('ExtHostTypes', function () {
 	});
 
 	test('TextEdit', () => {
-
 		const range = new types.Range(1, 1, 2, 11);
 		let edit = new types.TextEdit(range, undefined!);
 		assert.strictEqual(edit.newText, '');
-		assertToJSON(edit, { range: [{ line: 1, character: 1 }, { line: 2, character: 11 }], newText: '' });
+		assertToJSON(edit, {
+			range: [
+				{ line: 1, character: 1 },
+				{ line: 2, character: 11 },
+			],
+			newText: '',
+		});
 
 		edit = new types.TextEdit(range, null);
 		assert.strictEqual(edit.newText, '');
@@ -365,7 +375,6 @@ suite('ExtHostTypes', function () {
 	});
 
 	test('WorkspaceEdit', () => {
-
 		const a = URI.file('a.ts');
 		const b = URI.file('b.ts');
 
@@ -375,15 +384,57 @@ suite('ExtHostTypes', function () {
 		edit.set(a, [types.TextEdit.insert(new types.Position(0, 0), 'fff')]);
 		assert.ok(edit.has(a));
 		assert.strictEqual(edit.size, 1);
-		assertToJSON(edit, [[a.toJSON(), [{ range: [{ line: 0, character: 0 }, { line: 0, character: 0 }], newText: 'fff' }]]]);
+		assertToJSON(edit, [
+			[
+				a.toJSON(),
+				[
+					{
+						range: [
+							{ line: 0, character: 0 },
+							{ line: 0, character: 0 },
+						],
+						newText: 'fff',
+					},
+				],
+			],
+		]);
 
 		edit.insert(b, new types.Position(1, 1), 'fff');
 		edit.delete(b, new types.Range(0, 0, 0, 0));
 		assert.ok(edit.has(b));
 		assert.strictEqual(edit.size, 2);
 		assertToJSON(edit, [
-			[a.toJSON(), [{ range: [{ line: 0, character: 0 }, { line: 0, character: 0 }], newText: 'fff' }]],
-			[b.toJSON(), [{ range: [{ line: 1, character: 1 }, { line: 1, character: 1 }], newText: 'fff' }, { range: [{ line: 0, character: 0 }, { line: 0, character: 0 }], newText: '' }]]
+			[
+				a.toJSON(),
+				[
+					{
+						range: [
+							{ line: 0, character: 0 },
+							{ line: 0, character: 0 },
+						],
+						newText: 'fff',
+					},
+				],
+			],
+			[
+				b.toJSON(),
+				[
+					{
+						range: [
+							{ line: 1, character: 1 },
+							{ line: 1, character: 1 },
+						],
+						newText: 'fff',
+					},
+					{
+						range: [
+							{ line: 0, character: 0 },
+							{ line: 0, character: 0 },
+						],
+						newText: '',
+					},
+				],
+			],
 		]);
 
 		edit.set(b, undefined!);
@@ -395,7 +446,6 @@ suite('ExtHostTypes', function () {
 	});
 
 	test('WorkspaceEdit - keep order of text and file changes', function () {
-
 		const edit = new types.WorkspaceEdit();
 		edit.replace(URI.parse('foo:a'), new types.Range(1, 1, 1, 1), 'foo');
 		edit.renameFile(URI.parse('foo:a'), URI.parse('foo:b'));
@@ -440,7 +490,10 @@ suite('ExtHostTypes', function () {
 		const uri = URI.parse('foo:bar');
 
 		edit.set(uri, [
-			[types.TextEdit.insert(new types.Position(0, 0), 'Hello'), { needsConfirmation: true, label: 'foo' }],
+			[
+				types.TextEdit.insert(new types.Position(0, 0), 'Hello'),
+				{ needsConfirmation: true, label: 'foo' },
+			],
 			[types.TextEdit.insert(new types.Position(0, 0), 'Hello'), undefined],
 		]);
 
@@ -457,51 +510,115 @@ suite('ExtHostTypes', function () {
 	});
 
 	test('toJSON & stringify', function () {
+		assertToJSON(new types.Selection(3, 4, 2, 1), {
+			start: { line: 2, character: 1 },
+			end: { line: 3, character: 4 },
+			anchor: { line: 3, character: 4 },
+			active: { line: 2, character: 1 },
+		});
 
-		assertToJSON(new types.Selection(3, 4, 2, 1), { start: { line: 2, character: 1 }, end: { line: 3, character: 4 }, anchor: { line: 3, character: 4 }, active: { line: 2, character: 1 } });
-
-		assertToJSON(new types.Location(URI.file('u.ts'), new types.Position(3, 4)), { uri: URI.parse('file:///u.ts').toJSON(), range: [{ line: 3, character: 4 }, { line: 3, character: 4 }] });
-		assertToJSON(new types.Location(URI.file('u.ts'), new types.Range(1, 2, 3, 4)), { uri: URI.parse('file:///u.ts').toJSON(), range: [{ line: 1, character: 2 }, { line: 3, character: 4 }] });
+		assertToJSON(new types.Location(URI.file('u.ts'), new types.Position(3, 4)), {
+			uri: URI.parse('file:///u.ts').toJSON(),
+			range: [
+				{ line: 3, character: 4 },
+				{ line: 3, character: 4 },
+			],
+		});
+		assertToJSON(new types.Location(URI.file('u.ts'), new types.Range(1, 2, 3, 4)), {
+			uri: URI.parse('file:///u.ts').toJSON(),
+			range: [
+				{ line: 1, character: 2 },
+				{ line: 3, character: 4 },
+			],
+		});
 
 		const diag = new types.Diagnostic(new types.Range(0, 1, 2, 3), 'hello');
-		assertToJSON(diag, { severity: 'Error', message: 'hello', range: [{ line: 0, character: 1 }, { line: 2, character: 3 }] });
+		assertToJSON(diag, {
+			severity: 'Error',
+			message: 'hello',
+			range: [
+				{ line: 0, character: 1 },
+				{ line: 2, character: 3 },
+			],
+		});
 		diag.source = 'me';
-		assertToJSON(diag, { severity: 'Error', message: 'hello', range: [{ line: 0, character: 1 }, { line: 2, character: 3 }], source: 'me' });
+		assertToJSON(diag, {
+			severity: 'Error',
+			message: 'hello',
+			range: [
+				{ line: 0, character: 1 },
+				{ line: 2, character: 3 },
+			],
+			source: 'me',
+		});
 
-		assertToJSON(new types.DocumentHighlight(new types.Range(2, 3, 4, 5)), { range: [{ line: 2, character: 3 }, { line: 4, character: 5 }], kind: 'Text' });
-		assertToJSON(new types.DocumentHighlight(new types.Range(2, 3, 4, 5), types.DocumentHighlightKind.Read), { range: [{ line: 2, character: 3 }, { line: 4, character: 5 }], kind: 'Read' });
-
-		assertToJSON(new types.SymbolInformation('test', types.SymbolKind.Boolean, new types.Range(0, 1, 2, 3)), {
-			name: 'test',
-			kind: 'Boolean',
-			location: {
-				range: [{ line: 0, character: 1 }, { line: 2, character: 3 }]
+		assertToJSON(new types.DocumentHighlight(new types.Range(2, 3, 4, 5)), {
+			range: [
+				{ line: 2, character: 3 },
+				{ line: 4, character: 5 },
+			],
+			kind: 'Text',
+		});
+		assertToJSON(
+			new types.DocumentHighlight(new types.Range(2, 3, 4, 5), types.DocumentHighlightKind.Read),
+			{
+				range: [
+					{ line: 2, character: 3 },
+					{ line: 4, character: 5 },
+				],
+				kind: 'Read',
 			}
-		});
+		);
 
-		assertToJSON(new types.CodeLens(new types.Range(7, 8, 9, 10)), { range: [{ line: 7, character: 8 }, { line: 9, character: 10 }] });
-		assertToJSON(new types.CodeLens(new types.Range(7, 8, 9, 10), { command: 'id', title: 'title' }), {
-			range: [{ line: 7, character: 8 }, { line: 9, character: 10 }],
-			command: { command: 'id', title: 'title' }
+		assertToJSON(
+			new types.SymbolInformation('test', types.SymbolKind.Boolean, new types.Range(0, 1, 2, 3)),
+			{
+				name: 'test',
+				kind: 'Boolean',
+				location: {
+					range: [
+						{ line: 0, character: 1 },
+						{ line: 2, character: 3 },
+					],
+				},
+			}
+		);
+
+		assertToJSON(new types.CodeLens(new types.Range(7, 8, 9, 10)), {
+			range: [
+				{ line: 7, character: 8 },
+				{ line: 9, character: 10 },
+			],
 		});
+		assertToJSON(
+			new types.CodeLens(new types.Range(7, 8, 9, 10), { command: 'id', title: 'title' }),
+			{
+				range: [
+					{ line: 7, character: 8 },
+					{ line: 9, character: 10 },
+				],
+				command: { command: 'id', title: 'title' },
+			}
+		);
 
 		assertToJSON(new types.CompletionItem('complete'), { label: 'complete' });
 
 		const item = new types.CompletionItem('complete');
 		item.kind = types.CompletionItemKind.Interface;
 		assertToJSON(item, { label: 'complete', kind: 'Interface' });
-
 	});
 
 	test('SymbolInformation, old ctor', function () {
-
-		const info = new types.SymbolInformation('foo', types.SymbolKind.Array, new types.Range(1, 1, 2, 3));
+		const info = new types.SymbolInformation(
+			'foo',
+			types.SymbolKind.Array,
+			new types.Range(1, 1, 2, 3)
+		);
 		assert.ok(info.location instanceof types.Location);
 		assert.strictEqual(info.location.uri, undefined);
 	});
 
 	test('SnippetString, builder-methods', function () {
-
 		let string: types.SnippetString;
 
 		string = new types.SnippetString();
@@ -535,7 +652,10 @@ suite('ExtHostTypes', function () {
 		assert.strictEqual(string.value, 'foo${1:far\\$boo}bar');
 
 		string = new types.SnippetString();
-		string.appendText('foo').appendPlaceholder(b => b.appendText('abc').appendPlaceholder('nested')).appendText('bar');
+		string
+			.appendText('foo')
+			.appendPlaceholder(b => b.appendText('abc').appendPlaceholder('nested'))
+			.appendText('bar');
 		assert.strictEqual(string.value, 'foo${1:abc${2:nested}}bar');
 
 		string = new types.SnippetString();
@@ -551,7 +671,7 @@ suite('ExtHostTypes', function () {
 		assert.strictEqual(string.value, '${BAR:${1:ops}}');
 
 		string = new types.SnippetString();
-		string.appendVariable('BAR', b => { });
+		string.appendVariable('BAR', b => {});
 		assert.strictEqual(string.value, '${BAR}');
 
 		string = new types.SnippetString();
@@ -575,38 +695,42 @@ suite('ExtHostTypes', function () {
 		assert.strictEqual(string.value, 'foo${1|far,$boo|}bar');
 
 		string = new types.SnippetString();
-		string.appendText('foo').appendPlaceholder('farboo').appendChoice(['far', 'boo']).appendText('bar');
+		string
+			.appendText('foo')
+			.appendPlaceholder('farboo')
+			.appendChoice(['far', 'boo'])
+			.appendText('bar');
 		assert.strictEqual(string.value, 'foo${1:farboo}${2|far,boo|}bar');
 	});
 
 	test('Snippet choices are incorrectly escaped/applied #180132', function () {
 		{
 			const s = new types.SnippetString();
-			s.appendChoice(["aaa$aaa"]);
-			s.appendText("bbb$bbb");
+			s.appendChoice(['aaa$aaa']);
+			s.appendText('bbb$bbb');
 			assert.strictEqual(s.value, '${1|aaa$aaa|}bbb\\$bbb');
 		}
 		{
 			const s = new types.SnippetString();
-			s.appendChoice(["aaa,aaa"]);
-			s.appendText("bbb$bbb");
+			s.appendChoice(['aaa,aaa']);
+			s.appendText('bbb$bbb');
 			assert.strictEqual(s.value, '${1|aaa\\,aaa|}bbb\\$bbb');
 		}
 		{
 			const s = new types.SnippetString();
-			s.appendChoice(["aaa|aaa"]);
-			s.appendText("bbb$bbb");
+			s.appendChoice(['aaa|aaa']);
+			s.appendText('bbb$bbb');
 			assert.strictEqual(s.value, '${1|aaa\\|aaa|}bbb\\$bbb');
 		}
 		{
 			const s = new types.SnippetString();
-			s.appendChoice(["aaa\\aaa"]);
-			s.appendText("bbb$bbb");
+			s.appendChoice(['aaa\\aaa']);
+			s.appendText('bbb$bbb');
 			assert.strictEqual(s.value, '${1|aaa\\\\aaa|}bbb\\$bbb');
 		}
 	});
 
-	test('instanceof doesn\'t work for FileSystemError #49386', function () {
+	test("instanceof doesn't work for FileSystemError #49386", function () {
 		const error = types.FileSystemError.Unavailable('foo');
 		assert.ok(error instanceof Error);
 		assert.ok(error instanceof types.FileSystemError);
@@ -622,22 +746,52 @@ suite('ExtHostTypes', function () {
 
 	test('CodeActionKind contains', () => {
 		assert.ok(types.CodeActionKind.RefactorExtract.contains(types.CodeActionKind.RefactorExtract));
-		assert.ok(types.CodeActionKind.RefactorExtract.contains(types.CodeActionKind.RefactorExtract.append('other')));
+		assert.ok(
+			types.CodeActionKind.RefactorExtract.contains(
+				types.CodeActionKind.RefactorExtract.append('other')
+			)
+		);
 
 		assert.ok(!types.CodeActionKind.RefactorExtract.contains(types.CodeActionKind.Refactor));
-		assert.ok(!types.CodeActionKind.RefactorExtract.contains(types.CodeActionKind.Refactor.append('other')));
-		assert.ok(!types.CodeActionKind.RefactorExtract.contains(types.CodeActionKind.Empty.append('other').append('refactor')));
-		assert.ok(!types.CodeActionKind.RefactorExtract.contains(types.CodeActionKind.Empty.append('refactory')));
+		assert.ok(
+			!types.CodeActionKind.RefactorExtract.contains(types.CodeActionKind.Refactor.append('other'))
+		);
+		assert.ok(
+			!types.CodeActionKind.RefactorExtract.contains(
+				types.CodeActionKind.Empty.append('other').append('refactor')
+			)
+		);
+		assert.ok(
+			!types.CodeActionKind.RefactorExtract.contains(types.CodeActionKind.Empty.append('refactory'))
+		);
 	});
 
 	test('CodeActionKind intersects', () => {
-		assert.ok(types.CodeActionKind.RefactorExtract.intersects(types.CodeActionKind.RefactorExtract));
+		assert.ok(
+			types.CodeActionKind.RefactorExtract.intersects(types.CodeActionKind.RefactorExtract)
+		);
 		assert.ok(types.CodeActionKind.RefactorExtract.intersects(types.CodeActionKind.Refactor));
-		assert.ok(types.CodeActionKind.RefactorExtract.intersects(types.CodeActionKind.RefactorExtract.append('other')));
+		assert.ok(
+			types.CodeActionKind.RefactorExtract.intersects(
+				types.CodeActionKind.RefactorExtract.append('other')
+			)
+		);
 
-		assert.ok(!types.CodeActionKind.RefactorExtract.intersects(types.CodeActionKind.Refactor.append('other')));
-		assert.ok(!types.CodeActionKind.RefactorExtract.intersects(types.CodeActionKind.Empty.append('other').append('refactor')));
-		assert.ok(!types.CodeActionKind.RefactorExtract.intersects(types.CodeActionKind.Empty.append('refactory')));
+		assert.ok(
+			!types.CodeActionKind.RefactorExtract.intersects(
+				types.CodeActionKind.Refactor.append('other')
+			)
+		);
+		assert.ok(
+			!types.CodeActionKind.RefactorExtract.intersects(
+				types.CodeActionKind.Empty.append('other').append('refactor')
+			)
+		);
+		assert.ok(
+			!types.CodeActionKind.RefactorExtract.intersects(
+				types.CodeActionKind.Empty.append('refactory')
+			)
+		);
 	});
 
 	function toArr(uint32Arr: Uint32Array): number[] {
@@ -653,11 +807,10 @@ suite('ExtHostTypes', function () {
 		builder.push(1, 0, 5, 1, 1);
 		builder.push(1, 10, 4, 2, 2);
 		builder.push(2, 2, 3, 2, 2);
-		assert.deepStrictEqual(toArr(builder.build().data), [
-			1, 0, 5, 1, 1,
-			0, 10, 4, 2, 2,
-			1, 2, 3, 2, 2
-		]);
+		assert.deepStrictEqual(
+			toArr(builder.build().data),
+			[1, 0, 5, 1, 1, 0, 10, 4, 2, 2, 1, 2, 3, 2, 2]
+		);
 	});
 
 	test('SemanticTokensBuilder no modifier', () => {
@@ -665,11 +818,10 @@ suite('ExtHostTypes', function () {
 		builder.push(1, 0, 5, 1);
 		builder.push(1, 10, 4, 2);
 		builder.push(2, 2, 3, 2);
-		assert.deepStrictEqual(toArr(builder.build().data), [
-			1, 0, 5, 1, 0,
-			0, 10, 4, 2, 0,
-			1, 2, 3, 2, 0
-		]);
+		assert.deepStrictEqual(
+			toArr(builder.build().data),
+			[1, 0, 5, 1, 0, 0, 10, 4, 2, 0, 1, 2, 3, 2, 0]
+		);
 	});
 
 	test('SemanticTokensBuilder out of order 1', () => {
@@ -678,22 +830,17 @@ suite('ExtHostTypes', function () {
 		builder.push(2, 10, 1, 2, 2);
 		builder.push(2, 15, 2, 3, 3);
 		builder.push(1, 0, 4, 4, 4);
-		assert.deepStrictEqual(toArr(builder.build().data), [
-			1, 0, 4, 4, 4,
-			1, 0, 5, 1, 1,
-			0, 10, 1, 2, 2,
-			0, 5, 2, 3, 3
-		]);
+		assert.deepStrictEqual(
+			toArr(builder.build().data),
+			[1, 0, 4, 4, 4, 1, 0, 5, 1, 1, 0, 10, 1, 2, 2, 0, 5, 2, 3, 3]
+		);
 	});
 
 	test('SemanticTokensBuilder out of order 2', () => {
 		const builder = new types.SemanticTokensBuilder();
 		builder.push(2, 10, 5, 1, 1);
 		builder.push(2, 2, 4, 2, 2);
-		assert.deepStrictEqual(toArr(builder.build().data), [
-			2, 2, 4, 2, 2,
-			0, 8, 5, 1, 1
-		]);
+		assert.deepStrictEqual(toArr(builder.build().data), [2, 2, 4, 2, 2, 0, 8, 5, 1, 1]);
 	});
 
 	test('SemanticTokensBuilder with legend', () => {
@@ -706,9 +853,21 @@ suite('ExtHostTypes', function () {
 		builder.push(new types.Range(2, 0, 2, 4), 'cType', ['mod0', 'mod5']);
 		builder.push(new types.Range(3, 0, 3, 3), 'dType', ['mod2', 'mod4']);
 		assert.deepStrictEqual(toArr(builder.build().data), [
-			1, 0, 5, 1, 0,
-			1, 0, 4, 2, 1 | (1 << 5),
-			1, 0, 3, 3, (1 << 2) | (1 << 4)
+			1,
+			0,
+			5,
+			1,
+			0,
+			1,
+			0,
+			4,
+			2,
+			1 | (1 << 5),
+			1,
+			0,
+			3,
+			3,
+			(1 << 2) | (1 << 4),
 		]);
 	});
 
@@ -718,7 +877,6 @@ suite('ExtHostTypes', function () {
 	});
 
 	test('NotebookCellOutputItem - factories', function () {
-
 		assert.throws(() => {
 			// invalid mime type
 			new types.NotebookCellOutputItem(new Uint8Array(), 'invalid');
@@ -747,7 +905,10 @@ suite('ExtHostTypes', function () {
 
 		item = types.NotebookCellOutputItem.json([true, 1, 'ddd']);
 		assert.strictEqual(item.mime, 'text/x-json');
-		assert.deepStrictEqual(item.data, new TextEncoder().encode(JSON.stringify([true, 1, 'ddd'], undefined, '\t')));
+		assert.deepStrictEqual(
+			item.data,
+			new TextEncoder().encode(JSON.stringify([true, 1, 'ddd'], undefined, '\t'))
+		);
 
 		// --- text
 
@@ -761,7 +922,6 @@ suite('ExtHostTypes', function () {
 	});
 
 	test('FileDecoration#validate', function () {
-
 		assert.ok(types.FileDecoration.validate({ badge: 'u' }));
 		assert.ok(types.FileDecoration.validate({ badge: 'ü' }));
 		assert.ok(types.FileDecoration.validate({ badge: '1' }));

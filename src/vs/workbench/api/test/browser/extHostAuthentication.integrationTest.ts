@@ -10,7 +10,11 @@ import { TestDialogService } from '../../../../platform/dialogs/test/common/test
 import { TestInstantiationService } from '../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { TestNotificationService } from '../../../../platform/notification/test/common/testNotificationService.js';
-import { IQuickInputHideEvent, IQuickInputService, IQuickPickDidAcceptEvent } from '../../../../platform/quickinput/common/quickInput.js';
+import {
+	IQuickInputHideEvent,
+	IQuickInputService,
+	IQuickPickDidAcceptEvent,
+} from '../../../../platform/quickinput/common/quickInput.js';
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { NullTelemetryService } from '../../../../platform/telemetry/common/telemetryUtils.js';
@@ -19,17 +23,40 @@ import { ExtHostContext, MainContext } from '../../common/extHost.protocol.js';
 import { ExtHostAuthentication } from '../../common/extHostAuthentication.js';
 import { IActivityService } from '../../../services/activity/common/activity.js';
 import { AuthenticationService } from '../../../services/authentication/browser/authenticationService.js';
-import { IAuthenticationExtensionsService, IAuthenticationService } from '../../../services/authentication/common/authentication.js';
-import { IExtensionService, nullExtensionDescription as extensionDescription } from '../../../services/extensions/common/extensions.js';
+import {
+	IAuthenticationExtensionsService,
+	IAuthenticationService,
+} from '../../../services/authentication/common/authentication.js';
+import {
+	IExtensionService,
+	nullExtensionDescription as extensionDescription,
+} from '../../../services/extensions/common/extensions.js';
 import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
 import { TestRPCProtocol } from '../common/testRPCProtocol.js';
-import { TestEnvironmentService, TestHostService, TestQuickInputService, TestRemoteAgentService } from '../../../test/browser/workbenchTestServices.js';
-import { TestActivityService, TestExtensionService, TestLoggerService, TestProductService, TestStorageService } from '../../../test/common/workbenchTestServices.js';
+import {
+	TestEnvironmentService,
+	TestHostService,
+	TestQuickInputService,
+	TestRemoteAgentService,
+} from '../../../test/browser/workbenchTestServices.js';
+import {
+	TestActivityService,
+	TestExtensionService,
+	TestLoggerService,
+	TestProductService,
+	TestStorageService,
+} from '../../../test/common/workbenchTestServices.js';
 import type { AuthenticationProvider, AuthenticationSession } from 'vscode';
 import { IBrowserWorkbenchEnvironmentService } from '../../../services/environment/browser/environmentService.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
-import { AuthenticationAccessService, IAuthenticationAccessService } from '../../../services/authentication/browser/authenticationAccessService.js';
-import { AuthenticationUsageService, IAuthenticationUsageService } from '../../../services/authentication/browser/authenticationUsageService.js';
+import {
+	AuthenticationAccessService,
+	IAuthenticationAccessService,
+} from '../../../services/authentication/browser/authenticationAccessService.js';
+import {
+	AuthenticationUsageService,
+	IAuthenticationUsageService,
+} from '../../../services/authentication/browser/authenticationUsageService.js';
 import { AuthenticationExtensionsService } from '../../../services/authentication/browser/authenticationExtensionsService.js';
 import { ILogService, NullLogService } from '../../../../platform/log/common/log.js';
 import { IExtHostInitDataService } from '../../common/extHostInitDataService.js';
@@ -37,7 +64,10 @@ import { ExtHostWindow } from '../../common/extHostWindow.js';
 import { MainThreadWindow } from '../../browser/mainThreadWindow.js';
 import { IHostService } from '../../../services/host/browser/host.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
-import { IUserActivityService, UserActivityService } from '../../../services/userActivity/common/userActivityService.js';
+import {
+	IUserActivityService,
+	UserActivityService,
+} from '../../../services/userActivity/common/userActivityService.js';
 import { ExtHostUrls } from '../../common/extHostUrls.js';
 import { ISecretStorageService } from '../../../../platform/secrets/common/secrets.js';
 import { TestSecretStorageService } from '../../../../platform/secrets/test/common/testSecretStorageService.js';
@@ -54,15 +84,11 @@ class AuthQuickPick {
 	onDidAccept(listener: (e: IQuickPickDidAcceptEvent) => any) {
 		this.listener = listener;
 	}
-	onDidHide(listener: (e: IQuickInputHideEvent) => any) {
-
-	}
-	dispose() {
-
-	}
+	onDidHide(listener: (e: IQuickInputHideEvent) => any) {}
+	dispose() {}
 	show() {
 		this.listener!({
-			inBackground: false
+			inBackground: false,
 		});
 	}
 }
@@ -75,8 +101,10 @@ class AuthTestQuickInputService extends TestQuickInputService {
 class TestAuthProvider implements AuthenticationProvider {
 	private id = 1;
 	private sessions = new Map<string, AuthenticationSession>();
-	onDidChangeSessions = () => { return { dispose() { } }; };
-	constructor(private readonly authProviderName: string) { }
+	onDidChangeSessions = () => {
+		return { dispose() {} };
+	};
+	constructor(private readonly authProviderName: string) {}
 	async getSessions(scopes?: readonly string[]): Promise<AuthenticationSession[]> {
 		if (!scopes) {
 			return [...this.sessions.values()];
@@ -106,7 +134,6 @@ class TestAuthProvider implements AuthenticationProvider {
 	async removeSession(sessionId: string): Promise<void> {
 		this.sessions.delete(sessionId);
 	}
-
 }
 
 suite('ExtHostAuthentication', () => {
@@ -121,7 +148,10 @@ suite('ExtHostAuthentication', () => {
 		instantiationService.stub(IDialogService, new TestDialogService({ confirmed: true }));
 		instantiationService.stub(IStorageService, new TestStorageService());
 		instantiationService.stub(ISecretStorageService, new TestSecretStorageService());
-		instantiationService.stub(IDynamicAuthenticationProviderStorageService, instantiationService.createInstance(DynamicAuthenticationProviderStorageService));
+		instantiationService.stub(
+			IDynamicAuthenticationProviderStorageService,
+			instantiationService.createInstance(DynamicAuthenticationProviderStorageService)
+		);
 		instantiationService.stub(IQuickInputService, new AuthTestQuickInputService());
 		instantiationService.stub(IExtensionService, new TestExtensionService());
 
@@ -135,43 +165,70 @@ suite('ExtHostAuthentication', () => {
 		instantiationService.stub(ITelemetryService, NullTelemetryService);
 		instantiationService.stub(IBrowserWorkbenchEnvironmentService, TestEnvironmentService);
 		instantiationService.stub(IProductService, TestProductService);
-		instantiationService.stub(IAuthenticationAccessService, instantiationService.createInstance(AuthenticationAccessService));
-		instantiationService.stub(IAuthenticationService, instantiationService.createInstance(AuthenticationService));
-		instantiationService.stub(IAuthenticationUsageService, instantiationService.createInstance(AuthenticationUsageService));
+		instantiationService.stub(
+			IAuthenticationAccessService,
+			instantiationService.createInstance(AuthenticationAccessService)
+		);
+		instantiationService.stub(
+			IAuthenticationService,
+			instantiationService.createInstance(AuthenticationService)
+		);
+		instantiationService.stub(
+			IAuthenticationUsageService,
+			instantiationService.createInstance(AuthenticationUsageService)
+		);
 		const rpcProtocol = new TestRPCProtocol();
 
-		instantiationService.stub(IAuthenticationExtensionsService, instantiationService.createInstance(AuthenticationExtensionsService));
-		rpcProtocol.set(MainContext.MainThreadAuthentication, instantiationService.createInstance(MainThreadAuthentication, rpcProtocol));
-		rpcProtocol.set(MainContext.MainThreadWindow, instantiationService.createInstance(MainThreadWindow, rpcProtocol));
+		instantiationService.stub(
+			IAuthenticationExtensionsService,
+			instantiationService.createInstance(AuthenticationExtensionsService)
+		);
+		rpcProtocol.set(
+			MainContext.MainThreadAuthentication,
+			instantiationService.createInstance(MainThreadAuthentication, rpcProtocol)
+		);
+		rpcProtocol.set(
+			MainContext.MainThreadWindow,
+			instantiationService.createInstance(MainThreadWindow, rpcProtocol)
+		);
 		const initData: IExtHostInitDataService = {
 			environment: {
 				appUriScheme: 'test',
-				appName: 'Test'
-			}
+				appName: 'Test',
+			},
 		} as any;
 		extHostAuthentication = new ExtHostAuthentication(
 			rpcProtocol,
 			{
 				environment: {
 					appUriScheme: 'test',
-					appName: 'Test'
-				}
+					appName: 'Test',
+				},
 			} as any,
 			new ExtHostWindow(initData, rpcProtocol),
 			new ExtHostUrls(rpcProtocol),
-			new TestLoggerService(),
+			new TestLoggerService()
 		);
 		rpcProtocol.set(ExtHostContext.ExtHostAuthentication, extHostAuthentication);
 	});
 
 	setup(async () => {
 		disposables = new DisposableStore();
-		disposables.add(extHostAuthentication.registerAuthenticationProvider('test', 'test provider', new TestAuthProvider('test')));
-		disposables.add(extHostAuthentication.registerAuthenticationProvider(
-			'test-multiple',
-			'test multiple provider',
-			new TestAuthProvider('test-multiple'),
-			{ supportsMultipleAccounts: true }));
+		disposables.add(
+			extHostAuthentication.registerAuthenticationProvider(
+				'test',
+				'test provider',
+				new TestAuthProvider('test')
+			)
+		);
+		disposables.add(
+			extHostAuthentication.registerAuthenticationProvider(
+				'test-multiple',
+				'test multiple provider',
+				new TestAuthProvider('test-multiple'),
+				{ supportsMultipleAccounts: true }
+			)
+		);
 	});
 
 	suiteTeardown(() => {
@@ -184,13 +241,9 @@ suite('ExtHostAuthentication', () => {
 
 	test('createIfNone - true', async () => {
 		const scopes = ['foo'];
-		const session = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				createIfNone: true
-			});
+		const session = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			createIfNone: true,
+		});
 		assert.strictEqual(session?.id, '1');
 		assert.strictEqual(session?.scopes[0], 'foo');
 	});
@@ -201,17 +254,14 @@ suite('ExtHostAuthentication', () => {
 			extensionDescription,
 			'test',
 			scopes,
-			{});
+			{}
+		);
 		assert.strictEqual(nosession, undefined);
 
 		// Now create the session
-		const session = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				createIfNone: true
-			});
+		const session = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			createIfNone: true,
+		});
 
 		assert.strictEqual(session?.id, '1');
 		assert.strictEqual(session?.scopes[0], 'foo');
@@ -220,7 +270,8 @@ suite('ExtHostAuthentication', () => {
 			extensionDescription,
 			'test',
 			scopes,
-			{});
+			{}
+		);
 
 		assert.strictEqual(session2?.id, session.id);
 		assert.strictEqual(session2?.scopes[0], session.scopes[0]);
@@ -230,34 +281,22 @@ suite('ExtHostAuthentication', () => {
 	// should behave the same as createIfNone: false
 	test('silent - true', async () => {
 		const scopes = ['foo'];
-		const nosession = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				silent: true
-			});
+		const nosession = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			silent: true,
+		});
 		assert.strictEqual(nosession, undefined);
 
 		// Now create the session
-		const session = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				createIfNone: true
-			});
+		const session = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			createIfNone: true,
+		});
 
 		assert.strictEqual(session?.id, '1');
 		assert.strictEqual(session?.scopes[0], 'foo');
 
-		const session2 = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				silent: true
-			});
+		const session2 = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			silent: true,
+		});
 
 		assert.strictEqual(session.id, session2?.id);
 		assert.strictEqual(session.scopes[0], session2?.scopes[0]);
@@ -265,22 +304,14 @@ suite('ExtHostAuthentication', () => {
 
 	test('forceNewSession - true - existing session', async () => {
 		const scopes = ['foo'];
-		const session1 = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				createIfNone: true
-			});
+		const session1 = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			createIfNone: true,
+		});
 
 		// Now create the session
-		const session2 = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				forceNewSession: true
-			});
+		const session2 = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			forceNewSession: true,
+		});
 
 		assert.strictEqual(session2?.id, '2');
 		assert.strictEqual(session2?.scopes[0], 'foo');
@@ -290,35 +321,23 @@ suite('ExtHostAuthentication', () => {
 	// Should behave like createIfNone: true
 	test('forceNewSession - true - no existing session', async () => {
 		const scopes = ['foo'];
-		const session = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				forceNewSession: true
-			});
+		const session = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			forceNewSession: true,
+		});
 		assert.strictEqual(session?.id, '1');
 		assert.strictEqual(session?.scopes[0], 'foo');
 	});
 
 	test('forceNewSession - detail', async () => {
 		const scopes = ['foo'];
-		const session1 = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				createIfNone: true
-			});
+		const session1 = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			createIfNone: true,
+		});
 
 		// Now create the session
-		const session2 = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			scopes,
-			{
-				forceNewSession: { detail: 'bar' }
-			});
+		const session2 = await extHostAuthentication.getSession(extensionDescription, 'test', scopes, {
+			forceNewSession: { detail: 'bar' },
+		});
 
 		assert.strictEqual(session2?.id, '2');
 		assert.strictEqual(session2?.scopes[0], 'foo');
@@ -335,8 +354,9 @@ suite('ExtHostAuthentication', () => {
 			'test-multiple',
 			scopes,
 			{
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
 
 		assert.strictEqual(session?.id, '1');
 		assert.strictEqual(session?.scopes[0], scopes[0]);
@@ -347,8 +367,9 @@ suite('ExtHostAuthentication', () => {
 			'test-multiple',
 			scopes2,
 			{
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
 		assert.strictEqual(session2?.id, '2');
 		assert.strictEqual(session2?.scopes[0], scopes2[0]);
 
@@ -358,8 +379,9 @@ suite('ExtHostAuthentication', () => {
 			['return multiple'],
 			{
 				clearSessionPreference: true,
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
 
 		// clearing session preference causes us to get the first session
 		// because it would normally show a quick pick for the user to choose
@@ -376,8 +398,9 @@ suite('ExtHostAuthentication', () => {
 			'test-multiple',
 			scopes,
 			{
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
 
 		assert.strictEqual(session?.id, '1');
 		assert.strictEqual(session?.scopes[0], scopes[0]);
@@ -388,8 +411,9 @@ suite('ExtHostAuthentication', () => {
 			'test-multiple',
 			scopes2,
 			{
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
 		assert.strictEqual(session2?.id, '2');
 		assert.strictEqual(session2?.scopes[0], scopes2[0]);
 
@@ -397,7 +421,8 @@ suite('ExtHostAuthentication', () => {
 			extensionDescription,
 			'test-multiple',
 			scopes,
-			{});
+			{}
+		);
 		assert.strictEqual(shouldBeSession1?.id, session.id);
 		assert.strictEqual(shouldBeSession1?.scopes[0], session.scopes[0]);
 		assert.strictEqual(shouldBeSession1?.accessToken, session.accessToken);
@@ -406,7 +431,8 @@ suite('ExtHostAuthentication', () => {
 			extensionDescription,
 			'test-multiple',
 			scopes2,
-			{});
+			{}
+		);
 		assert.strictEqual(shouldBeSession2?.id, session2.id);
 		assert.strictEqual(shouldBeSession2?.scopes[0], session2.scopes[0]);
 		assert.strictEqual(shouldBeSession2?.accessToken, session2.accessToken);
@@ -418,14 +444,10 @@ suite('ExtHostAuthentication', () => {
 
 	test('createIfNone and forceNewSession', async () => {
 		try {
-			await extHostAuthentication.getSession(
-				extensionDescription,
-				'test',
-				['foo'],
-				{
-					createIfNone: true,
-					forceNewSession: true
-				});
+			await extHostAuthentication.getSession(extensionDescription, 'test', ['foo'], {
+				createIfNone: true,
+				forceNewSession: true,
+			});
 			assert.fail('should have thrown an Error.');
 		} catch (e) {
 			assert.ok(e);
@@ -434,14 +456,10 @@ suite('ExtHostAuthentication', () => {
 
 	test('forceNewSession and silent', async () => {
 		try {
-			await extHostAuthentication.getSession(
-				extensionDescription,
-				'test',
-				['foo'],
-				{
-					forceNewSession: true,
-					silent: true
-				});
+			await extHostAuthentication.getSession(extensionDescription, 'test', ['foo'], {
+				forceNewSession: true,
+				silent: true,
+			});
 			assert.fail('should have thrown an Error.');
 		} catch (e) {
 			assert.ok(e);
@@ -450,14 +468,10 @@ suite('ExtHostAuthentication', () => {
 
 	test('createIfNone and silent', async () => {
 		try {
-			await extHostAuthentication.getSession(
-				extensionDescription,
-				'test',
-				['foo'],
-				{
-					createIfNone: true,
-					silent: true
-				});
+			await extHostAuthentication.getSession(extensionDescription, 'test', ['foo'], {
+				createIfNone: true,
+				silent: true,
+			});
 			assert.fail('should have thrown an Error.');
 		} catch (e) {
 			assert.ok(e);
@@ -470,15 +484,17 @@ suite('ExtHostAuthentication', () => {
 			'test-multiple',
 			['foo'],
 			{
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
 		session = await extHostAuthentication.getSession(
 			extensionDescription,
 			'test-multiple',
 			['bar'],
 			{
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
 		assert.strictEqual(session?.id, '2');
 		assert.strictEqual(session?.scopes[0], 'bar');
 
@@ -487,8 +503,9 @@ suite('ExtHostAuthentication', () => {
 			'test-multiple',
 			['foo'],
 			{
-				createIfNone: false
-			});
+				createIfNone: false,
+			}
+		);
 		assert.strictEqual(session?.id, '1');
 		assert.strictEqual(session?.scopes[0], 'foo');
 	});
@@ -499,15 +516,12 @@ suite('ExtHostAuthentication', () => {
 			'test-multiple',
 			['foo'],
 			{
-				createIfNone: true
-			});
-		session = await extHostAuthentication.getSession(
-			extensionDescription,
-			'test',
-			['foo'],
-			{
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
+		session = await extHostAuthentication.getSession(extensionDescription, 'test', ['foo'], {
+			createIfNone: true,
+		});
 		assert.strictEqual(session?.id, '1');
 		assert.strictEqual(session?.scopes[0], 'foo');
 		assert.strictEqual(session?.account.label, 'test');
@@ -517,8 +531,9 @@ suite('ExtHostAuthentication', () => {
 			'test-multiple',
 			['foo'],
 			{
-				createIfNone: false
-			});
+				createIfNone: false,
+			}
+		);
 		assert.strictEqual(session2?.id, '1');
 		assert.strictEqual(session2?.scopes[0], 'foo');
 		assert.strictEqual(session2?.account.label, 'test-multiple');
@@ -530,15 +545,17 @@ suite('ExtHostAuthentication', () => {
 			'test',
 			['foo'],
 			{
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
 		const session2P: Promise<AuthenticationSession | undefined> = extHostAuthentication.getSession(
 			extensionDescription,
 			'test-multiple',
 			['foo'],
 			{
-				createIfNone: true
-			});
+				createIfNone: true,
+			}
+		);
 		const session = await sessionP;
 		assert.strictEqual(session?.id, '1');
 		assert.strictEqual(session?.scopes[0], 'foo');
@@ -549,7 +566,6 @@ suite('ExtHostAuthentication', () => {
 		assert.strictEqual(session2?.scopes[0], 'foo');
 		assert.strictEqual(session2?.account.label, 'test-multiple');
 	});
-
 
 	//#endregion
 });

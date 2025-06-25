@@ -18,17 +18,25 @@ suite('ListView', function () {
 		element.style.width = '200px';
 
 		const delegate: IListVirtualDelegate<number> = {
-			getHeight() { return 20; },
-			getTemplateId() { return 'template'; }
+			getHeight() {
+				return 20;
+			},
+			getTemplateId() {
+				return 'template';
+			},
 		};
 
 		let templatesCount = 0;
 
 		const renderer: IListRenderer<number, void> = {
 			templateId: 'template',
-			renderTemplate() { templatesCount++; },
-			renderElement() { },
-			disposeTemplate() { templatesCount--; }
+			renderTemplate() {
+				templatesCount++;
+			},
+			renderElement() {},
+			disposeTemplate() {
+				templatesCount--;
+			},
 		};
 
 		const listView = new ListView<number>(element, delegate, [renderer]);

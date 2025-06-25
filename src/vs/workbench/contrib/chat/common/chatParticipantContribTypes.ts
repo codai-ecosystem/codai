@@ -12,7 +12,12 @@ export interface IRawChatCommandContribution {
 	isSticky?: boolean;
 	when?: string;
 	defaultImplicitVariables?: string[];
-	disambiguation?: { category: string; categoryName?: string /** Deprecated */; description: string; examples: string[] }[];
+	disambiguation?: {
+		category: string;
+		categoryName?: string /** Deprecated */;
+		description: string;
+		examples: string[];
+	}[];
 }
 
 export interface IRawChatParticipantContribution {
@@ -30,7 +35,12 @@ export interface IRawChatParticipantContribution {
 	 * Valid for default participants in 'panel' location
 	 */
 	modes?: ChatMode[];
-	disambiguation?: { category: string; categoryName?: string /** Deprecated */; description: string; examples: string[] }[];
+	disambiguation?: {
+		category: string;
+		categoryName?: string /** Deprecated */;
+		description: string;
+		examples: string[];
+	}[];
 }
 
 /**

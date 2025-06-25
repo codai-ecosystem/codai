@@ -12,8 +12,16 @@ import { FontMeasurements } from '../../browser/config/fontMeasurements.js';
 import { ICodeEditor } from '../../browser/editorBrowser.js';
 import { EditorCommand, ServicesAccessor } from '../../browser/editorExtensions.js';
 import { ICodeEditorService } from '../../browser/services/codeEditorService.js';
-import { IInternalWebWorkerOptions, MonacoWebWorker, createWebWorker as actualCreateWebWorker } from './standaloneWebWorker.js';
-import { ApplyUpdateResult, ConfigurationChangedEvent, EditorOptions } from '../../common/config/editorOptions.js';
+import {
+	IInternalWebWorkerOptions,
+	MonacoWebWorker,
+	createWebWorker as actualCreateWebWorker,
+} from './standaloneWebWorker.js';
+import {
+	ApplyUpdateResult,
+	ConfigurationChangedEvent,
+	EditorOptions,
+} from '../../common/config/editorOptions.js';
 import { EditorZoom } from '../../common/config/editorZoom.js';
 import { BareFontInfo, FontInfo } from '../../common/config/fontInfo.js';
 import { IPosition } from '../../common/core/position.js';
@@ -27,8 +35,21 @@ import { FindMatch, ITextModel, TextModelResolvedOptions } from '../../common/mo
 import { IModelService } from '../../common/services/model.js';
 import * as standaloneEnums from '../../common/standalone/standaloneEnums.js';
 import { Colorizer, IColorizerElementOptions, IColorizerOptions } from './colorizer.js';
-import { IActionDescriptor, IStandaloneCodeEditor, IStandaloneDiffEditor, IStandaloneDiffEditorConstructionOptions, IStandaloneEditorConstructionOptions, StandaloneDiffEditor2, StandaloneEditor, createTextModel } from './standaloneCodeEditor.js';
-import { IEditorOverrideServices, StandaloneKeybindingService, StandaloneServices } from './standaloneServices.js';
+import {
+	IActionDescriptor,
+	IStandaloneCodeEditor,
+	IStandaloneDiffEditor,
+	IStandaloneDiffEditorConstructionOptions,
+	IStandaloneEditorConstructionOptions,
+	StandaloneDiffEditor2,
+	StandaloneEditor,
+	createTextModel,
+} from './standaloneCodeEditor.js';
+import {
+	IEditorOverrideServices,
+	StandaloneKeybindingService,
+	StandaloneServices,
+} from './standaloneServices.js';
 import { StandaloneThemeService } from './standaloneThemeService.js';
 import { IStandaloneThemeData, IStandaloneThemeService } from '../common/standaloneTheme.js';
 import { IMenuItem, MenuId, MenuRegistry } from '../../../platform/actions/common/actions.js';
@@ -45,7 +66,11 @@ import { MultiDiffEditorWidget } from '../../browser/widget/multiDiffEditor/mult
  * `domElement` should be empty (not contain other dom nodes).
  * The editor will read the size of `domElement`.
  */
-export function create(domElement: HTMLElement, options?: IStandaloneEditorConstructionOptions, override?: IEditorOverrideServices): IStandaloneCodeEditor {
+export function create(
+	domElement: HTMLElement,
+	options?: IStandaloneEditorConstructionOptions,
+	override?: IEditorOverrideServices
+): IStandaloneCodeEditor {
 	const instantiationService = StandaloneServices.initialize(override || {});
 	return instantiationService.createInstance(StandaloneEditor, domElement, options);
 }
@@ -57,7 +82,7 @@ export function create(domElement: HTMLElement, options?: IStandaloneEditorConst
  */
 export function onDidCreateEditor(listener: (codeEditor: ICodeEditor) => void): IDisposable {
 	const codeEditorService = StandaloneServices.get(ICodeEditorService);
-	return codeEditorService.onCodeEditorAdd((editor) => {
+	return codeEditorService.onCodeEditorAdd(editor => {
 		listener(<ICodeEditor>editor);
 	});
 }
@@ -68,7 +93,7 @@ export function onDidCreateEditor(listener: (codeEditor: ICodeEditor) => void): 
  */
 export function onDidCreateDiffEditor(listener: (diffEditor: IDiffEditor) => void): IDisposable {
 	const codeEditorService = StandaloneServices.get(ICodeEditorService);
-	return codeEditorService.onDiffEditorAdd((editor) => {
+	return codeEditorService.onDiffEditorAdd(editor => {
 		listener(<IDiffEditor>editor);
 	});
 }
@@ -94,12 +119,19 @@ export function getDiffEditors(): readonly IDiffEditor[] {
  * `domElement` should be empty (not contain other dom nodes).
  * The editor will read the size of `domElement`.
  */
-export function createDiffEditor(domElement: HTMLElement, options?: IStandaloneDiffEditorConstructionOptions, override?: IEditorOverrideServices): IStandaloneDiffEditor {
+export function createDiffEditor(
+	domElement: HTMLElement,
+	options?: IStandaloneDiffEditorConstructionOptions,
+	override?: IEditorOverrideServices
+): IStandaloneDiffEditor {
 	const instantiationService = StandaloneServices.initialize(override || {});
 	return instantiationService.createInstance(StandaloneDiffEditor2, domElement, options);
 }
 
-export function createMultiFileDiffEditor(domElement: HTMLElement, override?: IEditorOverrideServices) {
+export function createMultiFileDiffEditor(
+	domElement: HTMLElement,
+	override?: IEditorOverrideServices
+) {
 	const instantiationService = StandaloneServices.initialize(override || {});
 	return new MultiDiffEditorWidget(domElement, {}, instantiationService);
 }
@@ -122,7 +154,7 @@ export interface ICommandDescriptor {
  * Add a command.
  */
 export function addCommand(descriptor: ICommandDescriptor): IDisposable {
-	if ((typeof descriptor.id !== 'string') || (typeof descriptor.run !== 'function')) {
+	if (typeof descriptor.id !== 'string' || typeof descriptor.run !== 'function') {
 		throw new Error('Invalid command descriptor, `id` and `run` are required properties!');
 	}
 	return CommandsRegistry.registerCommand(descriptor.id, descriptor.run);
@@ -132,13 +164,19 @@ export function addCommand(descriptor: ICommandDescriptor): IDisposable {
  * Add an action to all editors.
  */
 export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
-	if ((typeof descriptor.id !== 'string') || (typeof descriptor.label !== 'string') || (typeof descriptor.run !== 'function')) {
+	if (
+		typeof descriptor.id !== 'string' ||
+		typeof descriptor.label !== 'string' ||
+		typeof descriptor.run !== 'function'
+	) {
 		throw new Error('Invalid action descriptor, `id`, `label` and `run` are required properties!');
 	}
 
 	const precondition = ContextKeyExpr.deserialize(descriptor.precondition);
 	const run = (accessor: ServicesAccessor, ...args: any[]): void | Promise<void> => {
-		return EditorCommand.runEditorCommand(accessor, args, precondition, (accessor, editor, args) => Promise.resolve(descriptor.run(editor, ...args)));
+		return EditorCommand.runEditorCommand(accessor, args, precondition, (accessor, editor, args) =>
+			Promise.resolve(descriptor.run(editor, ...args))
+		);
 	};
 
 	const toDispose = new DisposableStore();
@@ -151,11 +189,11 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
 		const menuItem: IMenuItem = {
 			command: {
 				id: descriptor.id,
-				title: descriptor.label
+				title: descriptor.label,
 			},
 			when: precondition,
 			group: descriptor.contextMenuGroupId,
-			order: descriptor.contextMenuOrder || 0
+			order: descriptor.contextMenuOrder || 0,
 		};
 		toDispose.add(MenuRegistry.appendMenuItem(MenuId.EditorContext, menuItem));
 	}
@@ -164,16 +202,25 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
 	if (Array.isArray(descriptor.keybindings)) {
 		const keybindingService = StandaloneServices.get(IKeybindingService);
 		if (!(keybindingService instanceof StandaloneKeybindingService)) {
-			console.warn('Cannot add keybinding because the editor is configured with an unrecognized KeybindingService');
+			console.warn(
+				'Cannot add keybinding because the editor is configured with an unrecognized KeybindingService'
+			);
 		} else {
-			const keybindingsWhen = ContextKeyExpr.and(precondition, ContextKeyExpr.deserialize(descriptor.keybindingContext));
-			toDispose.add(keybindingService.addDynamicKeybindings(descriptor.keybindings.map((keybinding) => {
-				return {
-					keybinding,
-					command: descriptor.id,
-					when: keybindingsWhen
-				};
-			})));
+			const keybindingsWhen = ContextKeyExpr.and(
+				precondition,
+				ContextKeyExpr.deserialize(descriptor.keybindingContext)
+			);
+			toDispose.add(
+				keybindingService.addDynamicKeybindings(
+					descriptor.keybindings.map(keybinding => {
+						return {
+							keybinding,
+							command: descriptor.id,
+							when: keybindingsWhen,
+						};
+					})
+				)
+			);
 		}
 	}
 
@@ -203,18 +250,22 @@ export function addKeybindingRule(rule: IKeybindingRule): IDisposable {
 export function addKeybindingRules(rules: IKeybindingRule[]): IDisposable {
 	const keybindingService = StandaloneServices.get(IKeybindingService);
 	if (!(keybindingService instanceof StandaloneKeybindingService)) {
-		console.warn('Cannot add keybinding because the editor is configured with an unrecognized KeybindingService');
+		console.warn(
+			'Cannot add keybinding because the editor is configured with an unrecognized KeybindingService'
+		);
 		return Disposable.None;
 	}
 
-	return keybindingService.addDynamicKeybindings(rules.map((rule) => {
-		return {
-			keybinding: rule.keybinding,
-			command: rule.command,
-			commandArgs: rule.commandArgs,
-			when: ContextKeyExpr.deserialize(rule.when),
-		};
-	}));
+	return keybindingService.addDynamicKeybindings(
+		rules.map(rule => {
+			return {
+				keybinding: rule.keybinding,
+				command: rule.command,
+				commandArgs: rule.commandArgs,
+				when: ContextKeyExpr.deserialize(rule.when),
+			};
+		})
+	);
 }
 
 /**
@@ -238,7 +289,10 @@ export function createModel(value: string, language?: string, uri?: URI): ITextM
  */
 export function setModelLanguage(model: ITextModel, mimeTypeOrLanguageId: string): void {
 	const languageService = StandaloneServices.get(ILanguageService);
-	const languageId = languageService.getLanguageIdByMimeType(mimeTypeOrLanguageId) || mimeTypeOrLanguageId || PLAINTEXT_LANGUAGE_ID;
+	const languageId =
+		languageService.getLanguageIdByMimeType(mimeTypeOrLanguageId) ||
+		mimeTypeOrLanguageId ||
+		PLAINTEXT_LANGUAGE_ID;
 	model.setLanguage(languageService.createById(languageId));
 }
 
@@ -265,7 +319,11 @@ export function removeAllMarkers(owner: string) {
  *
  * @returns list of markers
  */
-export function getModelMarkers(filter: { owner?: string; resource?: URI; take?: number }): IMarker[] {
+export function getModelMarkers(filter: {
+	owner?: string;
+	resource?: URI;
+	take?: number;
+}): IMarker[] {
 	const markerService = StandaloneServices.get(IMarkerService);
 	return markerService.read(filter);
 }
@@ -317,12 +375,14 @@ export function onWillDisposeModel(listener: (model: ITextModel) => void): IDisp
  * Emitted when a different language is set to a model.
  * @event
  */
-export function onDidChangeModelLanguage(listener: (e: { readonly model: ITextModel; readonly oldLanguage: string }) => void): IDisposable {
+export function onDidChangeModelLanguage(
+	listener: (e: { readonly model: ITextModel; readonly oldLanguage: string }) => void
+): IDisposable {
 	const modelService = StandaloneServices.get(IModelService);
-	return modelService.onModelLanguageChanged((e) => {
+	return modelService.onModelLanguageChanged(e => {
 		listener({
 			model: e.model,
-			oldLanguage: e.oldLanguageId
+			oldLanguage: e.oldLanguageId,
 		});
 	});
 }
@@ -331,14 +391,19 @@ export function onDidChangeModelLanguage(listener: (e: { readonly model: ITextMo
  * Create a new web worker that has model syncing capabilities built in.
  * Specify an AMD module to load that will `create` an object that will be proxied.
  */
-export function createWebWorker<T extends object>(opts: IInternalWebWorkerOptions): MonacoWebWorker<T> {
+export function createWebWorker<T extends object>(
+	opts: IInternalWebWorkerOptions
+): MonacoWebWorker<T> {
 	return actualCreateWebWorker<T>(StandaloneServices.get(IModelService), opts);
 }
 
 /**
  * Colorize the contents of `domNode` using attribute `data-lang`.
  */
-export function colorizeElement(domNode: HTMLElement, options: IColorizerElementOptions): Promise<void> {
+export function colorizeElement(
+	domNode: HTMLElement,
+	options: IColorizerElementOptions
+): Promise<void> {
 	const languageService = StandaloneServices.get(ILanguageService);
 	const themeService = <StandaloneThemeService>StandaloneServices.get(IStandaloneThemeService);
 	return Colorizer.colorizeElement(themeService, languageService, domNode, options).then(() => {
@@ -349,7 +414,11 @@ export function colorizeElement(domNode: HTMLElement, options: IColorizerElement
 /**
  * Colorize `text` using language `languageId`.
  */
-export function colorize(text: string, languageId: string, options: IColorizerOptions): Promise<string> {
+export function colorize(
+	text: string,
+	languageId: string,
+	options: IColorizerOptions
+): Promise<string> {
 	const languageService = StandaloneServices.get(ILanguageService);
 	const themeService = <StandaloneThemeService>StandaloneServices.get(IStandaloneThemeService);
 	themeService.registerEditorContainer(mainWindow.document.body);
@@ -359,7 +428,11 @@ export function colorize(text: string, languageId: string, options: IColorizerOp
 /**
  * Colorize a line in a model.
  */
-export function colorizeModelLine(model: ITextModel, lineNumber: number, tabSize: number = 4): string {
+export function colorizeModelLine(
+	model: ITextModel,
+	lineNumber: number,
+	tabSize: number = 4
+): string {
 	const themeService = <StandaloneThemeService>StandaloneServices.get(IStandaloneThemeService);
 	themeService.registerEditorContainer(mainWindow.document.body);
 	return Colorizer.colorizeModelLine(model, lineNumber, tabSize);
@@ -368,14 +441,17 @@ export function colorizeModelLine(model: ITextModel, lineNumber: number, tabSize
 /**
  * @internal
  */
-function getSafeTokenizationSupport(language: string): Omit<languages.ITokenizationSupport, 'tokenizeEncoded'> {
+function getSafeTokenizationSupport(
+	language: string
+): Omit<languages.ITokenizationSupport, 'tokenizeEncoded'> {
 	const tokenizationSupport = languages.TokenizationRegistry.get(language);
 	if (tokenizationSupport) {
 		return tokenizationSupport;
 	}
 	return {
 		getInitialState: () => NullState,
-		tokenize: (line: string, hasEOL: boolean, state: languages.IState) => nullTokenize(language, state)
+		tokenize: (line: string, hasEOL: boolean, state: languages.IState) =>
+			nullTokenize(language, state),
 	};
 }
 
@@ -426,7 +502,10 @@ export function remeasureFonts(): void {
 /**
  * Register a command.
  */
-export function registerCommand(id: string, handler: (accessor: any, ...args: any[]) => void): IDisposable {
+export function registerCommand(
+	id: string,
+	handler: (accessor: any, ...args: any[]) => void
+): IDisposable {
 	return CommandsRegistry.registerCommand({ id, handler });
 }
 
@@ -448,7 +527,7 @@ export function registerLinkOpener(opener: ILinkOpener): IDisposable {
 				resource = URI.parse(resource);
 			}
 			return opener.open(resource);
-		}
+		},
 	});
 }
 
@@ -464,7 +543,11 @@ export interface ICodeEditorOpener {
 	 * @param resource The URI of the resource that should be opened.
 	 * @param selectionOrPosition An optional position or selection inside the model corresponding to `resource` that can be used to set the cursor.
 	 */
-	openCodeEditor(source: ICodeEditor, resource: URI, selectionOrPosition?: IRange | IPosition): boolean | Promise<boolean>;
+	openCodeEditor(
+		source: ICodeEditor,
+		resource: URI,
+		selectionOrPosition?: IRange | IPosition
+	): boolean | Promise<boolean>;
 }
 
 /**
@@ -477,22 +560,31 @@ export interface ICodeEditorOpener {
  */
 export function registerEditorOpener(opener: ICodeEditorOpener): IDisposable {
 	const codeEditorService = StandaloneServices.get(ICodeEditorService);
-	return codeEditorService.registerCodeEditorOpenHandler(async (input: ITextResourceEditorInput, source: ICodeEditor | null, sideBySide?: boolean) => {
-		if (!source) {
-			return null;
+	return codeEditorService.registerCodeEditorOpenHandler(
+		async (input: ITextResourceEditorInput, source: ICodeEditor | null, sideBySide?: boolean) => {
+			if (!source) {
+				return null;
+			}
+			const selection = input.options?.selection;
+			let selectionOrPosition: IRange | IPosition | undefined;
+			if (
+				selection &&
+				typeof selection.endLineNumber === 'number' &&
+				typeof selection.endColumn === 'number'
+			) {
+				selectionOrPosition = <IRange>selection;
+			} else if (selection) {
+				selectionOrPosition = {
+					lineNumber: selection.startLineNumber,
+					column: selection.startColumn,
+				};
+			}
+			if (await opener.openCodeEditor(source, input.resource, selectionOrPosition)) {
+				return source; // return source editor to indicate that this handler has successfully handled the opening
+			}
+			return null; // fallback to other registered handlers
 		}
-		const selection = input.options?.selection;
-		let selectionOrPosition: IRange | IPosition | undefined;
-		if (selection && typeof selection.endLineNumber === 'number' && typeof selection.endColumn === 'number') {
-			selectionOrPosition = <IRange>selection;
-		} else if (selection) {
-			selectionOrPosition = { lineNumber: selection.startLineNumber, column: selection.startColumn };
-		}
-		if (await opener.openCodeEditor(source, input.resource, selectionOrPosition)) {
-			return source; // return source editor to indicate that this handler has successfully handled the opening
-		}
-		return null; // fallback to other registered handlers
-	});
+	);
 }
 
 /**
@@ -524,7 +616,6 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 		onDidCreateModel: <any>onDidCreateModel,
 		onWillDisposeModel: <any>onWillDisposeModel,
 		onDidChangeModelLanguage: <any>onDidChangeModelLanguage,
-
 
 		createWebWorker: <any>createWebWorker,
 		colorizeElement: <any>colorizeElement,
@@ -579,7 +670,6 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 
 		// vars
 		EditorType: EditorType,
-		EditorOptions: <any>EditorOptions
-
+		EditorOptions: <any>EditorOptions,
 	};
 }

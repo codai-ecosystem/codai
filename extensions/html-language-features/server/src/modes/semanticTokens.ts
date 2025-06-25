@@ -16,9 +16,7 @@ export interface SemanticTokenProvider {
 	getSemanticTokens(document: TextDocument, ranges?: Range[]): Promise<number[]>;
 }
 
-
 export function newSemanticTokenProvider(languageModes: LanguageModes): SemanticTokenProvider {
-
 	// combined legend across modes
 	const legend: { types: string[]; modifiers: string[] } = { types: [], modifiers: [] };
 	const legendMappings: { [modeId: string]: LegendMapping } = {};
@@ -26,7 +24,10 @@ export function newSemanticTokenProvider(languageModes: LanguageModes): Semantic
 	for (const mode of languageModes.getAllModes()) {
 		if (mode.getSemanticTokenLegend && mode.getSemanticTokens) {
 			const modeLegend = mode.getSemanticTokenLegend();
-			legendMappings[mode.getId()] = { types: createMapping(modeLegend.types, legend.types), modifiers: createMapping(modeLegend.modifiers, legend.modifiers) };
+			legendMappings[mode.getId()] = {
+				types: createMapping(modeLegend.types, legend.types),
+				modifiers: createMapping(modeLegend.modifiers, legend.modifiers),
+			};
 		}
 	}
 
@@ -46,7 +47,7 @@ export function newSemanticTokenProvider(languageModes: LanguageModes): Semantic
 				}
 			}
 			return encodeTokens(allTokens, ranges, document);
-		}
+		},
 	};
 }
 
@@ -61,7 +62,7 @@ function createMapping(origLegend: string[], newLegend: string[]): number[] | un
 			newLegend.push(entry);
 		}
 		mapping.push(newIndex);
-		needsMapping = needsMapping || (newIndex !== origIndex);
+		needsMapping = needsMapping || newIndex !== origIndex;
 	}
 	return needsMapping ? mapping : undefined;
 }
@@ -74,7 +75,10 @@ function applyTypesMapping(tokens: SemanticTokenData[], typesMapping: number[] |
 	}
 }
 
-function applyModifiersMapping(tokens: SemanticTokenData[], modifiersMapping: number[] | undefined): void {
+function applyModifiersMapping(
+	tokens: SemanticTokenData[],
+	modifiersMapping: number[] | undefined
+): void {
 	if (modifiersMapping) {
 		for (const token of tokens) {
 			let modifierSet = token.modifierSet;
@@ -94,11 +98,18 @@ function applyModifiersMapping(tokens: SemanticTokenData[], modifiersMapping: nu
 	}
 }
 
-function encodeTokens(tokens: SemanticTokenData[], ranges: Range[] | undefined, document: TextDocument): number[] {
-
-	const resultTokens = tokens.sort((d1, d2) => d1.start.line - d2.start.line || d1.start.character - d2.start.character);
+function encodeTokens(
+	tokens: SemanticTokenData[],
+	ranges: Range[] | undefined,
+	document: TextDocument
+): number[] {
+	const resultTokens = tokens.sort(
+		(d1, d2) => d1.start.line - d2.start.line || d1.start.character - d2.start.character
+	);
 	if (ranges) {
-		ranges = ranges.sort((d1, d2) => d1.start.line - d2.start.line || d1.start.character - d2.start.character);
+		ranges = ranges.sort(
+			(d1, d2) => d1.start.line - d2.start.line || d1.start.character - d2.start.character
+		);
 	} else {
 		ranges = [Range.create(Position.create(0, 0), Position.create(document.lineCount, 0))];
 	}
@@ -117,7 +128,11 @@ function encodeTokens(tokens: SemanticTokenData[], ranges: Range[] | undefined, 
 		while (currRange && beforeOrSame(currRange.end, start)) {
 			currRange = ranges[rangeIndex++];
 		}
-		if (currRange && beforeOrSame(currRange.start, start) && beforeOrSame({ line: start.line, character: start.character + curr.length }, currRange.end)) {
+		if (
+			currRange &&
+			beforeOrSame(currRange.start, start) &&
+			beforeOrSame({ line: start.line, character: start.character + curr.length }, currRange.end)
+		) {
 			// token inside a range
 
 			if (prefLine !== start.line) {

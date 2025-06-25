@@ -7,26 +7,41 @@ import { assert } from '../../../../../../../base/common/assert.js';
 import { PromptTemplateVariable } from '../tokens/promptTemplateVariable.js';
 import { BaseToken } from '../../../../../../../editor/common/codecs/baseToken.js';
 import { TSimpleDecoderToken } from '../../../../../../../editor/common/codecs/simpleCodec/simpleDecoder.js';
-import { DollarSign, LeftCurlyBrace, RightCurlyBrace } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/index.js';
-import { assertNotConsumed, ParserBase, TAcceptTokenResult } from '../../../../../../../editor/common/codecs/simpleCodec/parserBase.js';
+import {
+	DollarSign,
+	LeftCurlyBrace,
+	RightCurlyBrace,
+} from '../../../../../../../editor/common/codecs/simpleCodec/tokens/index.js';
+import {
+	assertNotConsumed,
+	ParserBase,
+	TAcceptTokenResult,
+} from '../../../../../../../editor/common/codecs/simpleCodec/parserBase.js';
 
 /**
  * Parsers of the `${variable}` token sequence in a prompt text.
  */
-export type TPromptTemplateVariableParser = PartialPromptTemplateVariableStart | PartialPromptTemplateVariable;
+export type TPromptTemplateVariableParser =
+	| PartialPromptTemplateVariableStart
+	| PartialPromptTemplateVariable;
 
 /**
  * Parser that handles start sequence of a `${variable}` token sequence in
  * a prompt text. Transitions to {@link PartialPromptTemplateVariable} parser
  * as soon as the `${` character sequence is found.
  */
-export class PartialPromptTemplateVariableStart extends ParserBase<DollarSign | LeftCurlyBrace, PartialPromptTemplateVariableStart | PartialPromptTemplateVariable> {
+export class PartialPromptTemplateVariableStart extends ParserBase<
+	DollarSign | LeftCurlyBrace,
+	PartialPromptTemplateVariableStart | PartialPromptTemplateVariable
+> {
 	constructor(token: DollarSign) {
 		super([token]);
 	}
 
 	@assertNotConsumed
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialPromptTemplateVariableStart | PartialPromptTemplateVariable> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<PartialPromptTemplateVariableStart | PartialPromptTemplateVariable> {
 		if (token instanceof LeftCurlyBrace) {
 			this.currentTokens.push(token);
 
@@ -48,13 +63,18 @@ export class PartialPromptTemplateVariableStart extends ParserBase<DollarSign | 
 /**
  * Parser that handles a partial `${variable}` token sequence in a prompt text.
  */
-export class PartialPromptTemplateVariable extends ParserBase<TSimpleDecoderToken, PartialPromptTemplateVariable | PromptTemplateVariable> {
+export class PartialPromptTemplateVariable extends ParserBase<
+	TSimpleDecoderToken,
+	PartialPromptTemplateVariable | PromptTemplateVariable
+> {
 	constructor(tokens: (DollarSign | LeftCurlyBrace)[]) {
 		super(tokens);
 	}
 
 	@assertNotConsumed
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialPromptTemplateVariable | PromptTemplateVariable> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<PartialPromptTemplateVariable | PromptTemplateVariable> {
 		// template variables are terminated by the `}` character
 		if (token instanceof RightCurlyBrace) {
 			this.currentTokens.push(token);
@@ -94,9 +114,9 @@ export class PartialPromptTemplateVariable extends ParserBase<TSimpleDecoderToke
 		// collect all tokens besides the first two (`${`) and a possible `}` at the end
 		for (let i = 2; i < this.currentTokens.length; i++) {
 			const token = this.currentTokens[i];
-			const isLastToken = (i === this.currentTokens.length - 1);
+			const isLastToken = i === this.currentTokens.length - 1;
 
-			if ((token instanceof RightCurlyBrace) && (isLastToken === true)) {
+			if (token instanceof RightCurlyBrace && isLastToken === true) {
 				break;
 			}
 
@@ -121,28 +141,16 @@ export class PartialPromptTemplateVariable extends ParserBase<TSimpleDecoderToke
 		// to have at least 3 tokens in the list for a valid one
 		assert(
 			this.currentTokens.length >= 3,
-			'Prompt template variable should have at least 3 tokens.',
+			'Prompt template variable should have at least 3 tokens.'
 		);
 
 		// a complete template variable must end with a `}`
-		assert(
-			lastToken instanceof RightCurlyBrace,
-			'Last token is not a "}".',
-		);
+		assert(lastToken instanceof RightCurlyBrace, 'Last token is not a "}".');
 
 		// sanity checks of the first and second tokens
-		assert(
-			firstToken instanceof DollarSign,
-			'First token must be a "$".',
-		);
-		assert(
-			secondToken instanceof LeftCurlyBrace,
-			'Second token must be a "{".',
-		);
+		assert(firstToken instanceof DollarSign, 'First token must be a "$".');
+		assert(secondToken instanceof LeftCurlyBrace, 'Second token must be a "{".');
 
-		return new PromptTemplateVariable(
-			BaseToken.fullRange(this.currentTokens),
-			this.contents,
-		);
+		return new PromptTemplateVariable(BaseToken.fullRange(this.currentTokens), this.contents);
 	}
 }

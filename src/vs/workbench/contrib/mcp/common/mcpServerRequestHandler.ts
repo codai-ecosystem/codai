@@ -63,16 +63,22 @@ export class McpServerRequestHandler extends Disposable {
 	}
 
 	// Event emitters for server notifications
-	private readonly _onDidReceiveCancelledNotification = this._register(new Emitter<MCP.CancelledNotification>());
+	private readonly _onDidReceiveCancelledNotification = this._register(
+		new Emitter<MCP.CancelledNotification>()
+	);
 	readonly onDidReceiveCancelledNotification = this._onDidReceiveCancelledNotification.event;
 
-	private readonly _onDidReceiveProgressNotification = this._register(new Emitter<MCP.ProgressNotification>());
+	private readonly _onDidReceiveProgressNotification = this._register(
+		new Emitter<MCP.ProgressNotification>()
+	);
 	readonly onDidReceiveProgressNotification = this._onDidReceiveProgressNotification.event;
 
 	private readonly _onDidChangeResourceList = this._register(new Emitter<void>());
 	readonly onDidChangeResourceList = this._onDidChangeResourceList.event;
 
-	private readonly _onDidUpdateResource = this._register(new Emitter<MCP.ResourceUpdatedNotification>());
+	private readonly _onDidUpdateResource = this._register(
+		new Emitter<MCP.ResourceUpdatedNotification>()
+	);
 	readonly onDidUpdateResource = this._onDidUpdateResource.event;
 
 	private readonly _onDidChangeToolList = this._register(new Emitter<void>());
@@ -85,7 +91,13 @@ export class McpServerRequestHandler extends Disposable {
 	 * Connects to the MCP server and does the initialization handshake.
 	 * @throws MpcResponseError if the server fails to initialize.
 	 */
-	public static async create(instaService: IInstantiationService, launch: IMcpMessageTransport, logger: ILogger, requestLogLevel = LogLevel.Debug, token?: CancellationToken) {
+	public static async create(
+		instaService: IInstantiationService,
+		launch: IMcpMessageTransport,
+		logger: ILogger,
+		requestLogLevel = LogLevel.Debug,
+		token?: CancellationToken
+	) {
 		const mcp = new McpServerRequestHandler(launch, logger, requestLogLevel);
 		const store = new DisposableStore();
 		try {
@@ -96,24 +108,27 @@ export class McpServerRequestHandler extends Disposable {
 
 			await instaService.invokeFunction(async accessor => {
 				const productService = accessor.get(IProductService);
-				const initialized = await mcp.sendRequest<MCP.InitializeRequest, MCP.InitializeResult>({
-					method: 'initialize',
-					params: {
-						protocolVersion: MCP.LATEST_PROTOCOL_VERSION,
-						capabilities: {
-							roots: { listChanged: true },
+				const initialized = await mcp.sendRequest<MCP.InitializeRequest, MCP.InitializeResult>(
+					{
+						method: 'initialize',
+						params: {
+							protocolVersion: MCP.LATEST_PROTOCOL_VERSION,
+							capabilities: {
+								roots: { listChanged: true },
+							},
+							clientInfo: {
+								name: productService.nameLong,
+								version: productService.version,
+							},
 						},
-						clientInfo: {
-							name: productService.nameLong,
-							version: productService.version,
-						}
-					}
-				}, token);
+					},
+					token
+				);
 
 				mcp._serverInit = initialized;
 
 				mcp.sendNotification<MCP.InitializedNotification>({
-					method: 'notifications/initialized'
+					method: 'notifications/initialized',
 				});
 			});
 
@@ -129,18 +144,20 @@ export class McpServerRequestHandler extends Disposable {
 	protected constructor(
 		private readonly launch: IMcpMessageTransport,
 		public readonly logger: ILogger,
-		private readonly requestLogLevel: LogLevel,
+		private readonly requestLogLevel: LogLevel
 	) {
 		super();
 		this._register(launch.onDidReceiveMessage(message => this.handleMessage(message)));
-		this._register(autorun(reader => {
-			const state = launch.state.read(reader).state;
-			// the handler will get disposed when the launch stops, but if we're still
-			// create()'ing we need to make sure to cancel the initialize request.
-			if (state === McpConnectionState.Kind.Error || state === McpConnectionState.Kind.Stopped) {
-				this.cancelAllRequests();
-			}
-		}));
+		this._register(
+			autorun(reader => {
+				const state = launch.state.read(reader).state;
+				// the handler will get disposed when the launch stops, but if we're still
+				// create()'ing we need to make sure to cancel the initialize request.
+				if (state === McpConnectionState.Kind.Error || state === McpConnectionState.Kind.Stopped) {
+					this.cancelAllRequests();
+				}
+			})
+		);
 	}
 
 	/**
@@ -165,7 +182,7 @@ export class McpServerRequestHandler extends Disposable {
 		const jsonRpcRequest: MCP.JSONRPCRequest = {
 			jsonrpc: MCP.JSONRPC_VERSION,
 			id,
-			...request
+			...request,
 		};
 
 		const promise = new DeferredPromise<MCP.ServerResult>();
@@ -192,7 +209,8 @@ export class McpServerRequestHandler extends Disposable {
 	}
 
 	private send(mcp: MCP.JSONRPCMessage) {
-		if (canLog(this.logger.getLevel(), this.requestLogLevel)) { // avoid building the string if we don't need to
+		if (canLog(this.logger.getLevel(), this.requestLogLevel)) {
+			// avoid building the string if we don't need to
 			log(this.logger, this.requestLogLevel, `[editor -> server] ${JSON.stringify(mcp)}`);
 		}
 
@@ -208,13 +226,22 @@ export class McpServerRequestHandler extends Disposable {
 	 * @param token Cancellation token
 	 * @returns Promise with all items combined
 	 */
-	private async *sendRequestPaginated<T extends MCP.PaginatedRequest & MCP.ClientRequest, R extends MCP.PaginatedResult, I>(method: T['method'], getItems: (result: R) => I[], initialParams?: Omit<T['params'], 'jsonrpc' | 'id'>, token: CancellationToken = CancellationToken.None): AsyncIterable<I[]> {
+	private async *sendRequestPaginated<
+		T extends MCP.PaginatedRequest & MCP.ClientRequest,
+		R extends MCP.PaginatedResult,
+		I,
+	>(
+		method: T['method'],
+		getItems: (result: R) => I[],
+		initialParams?: Omit<T['params'], 'jsonrpc' | 'id'>,
+		token: CancellationToken = CancellationToken.None
+	): AsyncIterable<I[]> {
 		let nextCursor: MCP.Cursor | undefined = undefined;
 
 		do {
 			const params: T['params'] = {
 				...initialParams,
-				cursor: nextCursor
+				cursor: nextCursor,
 			};
 
 			const result: R = await this.sendRequest<T, R>({ method, params }, token);
@@ -231,7 +258,8 @@ export class McpServerRequestHandler extends Disposable {
 	 * Handle incoming messages from the server
 	 */
 	private handleMessage(message: MCP.JSONRPCMessage): void {
-		if (canLog(this.logger.getLevel(), this.requestLogLevel)) { // avoid building the string if we don't need to
+		if (canLog(this.logger.getLevel(), this.requestLogLevel)) {
+			// avoid building the string if we don't need to
 			log(this.logger, this.requestLogLevel, `[server -> editor] ${JSON.stringify(message)}`);
 		}
 
@@ -272,7 +300,9 @@ export class McpServerRequestHandler extends Disposable {
 		const request = this._pendingRequests.get(response.id);
 		if (request) {
 			this._pendingRequests.delete(response.id);
-			request.promise.error(new MpcResponseError(response.error.message, response.error.code, response.error.data));
+			request.promise.error(
+				new MpcResponseError(response.error.message, response.error.code, response.error.data)
+			);
 		}
 	}
 
@@ -292,8 +322,8 @@ export class McpServerRequestHandler extends Disposable {
 					id: request.id,
 					error: {
 						code: MCP.METHOD_NOT_FOUND,
-						message: `Method not found: ${request.method}`
-					}
+						message: `Method not found: ${request.method}`,
+					},
 				};
 				this.send(errorResponse);
 				break;
@@ -303,7 +333,9 @@ export class McpServerRequestHandler extends Disposable {
 	/**
 	 * Handle incoming server notifications
 	 */
-	private handleServerNotification(request: MCP.JSONRPCNotification & MCP.ServerNotification): void {
+	private handleServerNotification(
+		request: MCP.JSONRPCNotification & MCP.ServerNotification
+	): void {
 		switch (request.method) {
 			case 'notifications/message':
 				return this.handleLoggingNotification(request);
@@ -337,7 +369,10 @@ export class McpServerRequestHandler extends Disposable {
 	}
 
 	private handleLoggingNotification(request: MCP.LoggingMessageNotification): void {
-		let contents = typeof request.params.data === 'string' ? request.params.data : JSON.stringify(request.params.data);
+		let contents =
+			typeof request.params.data === 'string'
+				? request.params.data
+				: JSON.stringify(request.params.data);
 		if (request.params.logger) {
 			contents = `${request.params.logger}: ${contents}`;
 		}
@@ -372,7 +407,7 @@ export class McpServerRequestHandler extends Disposable {
 		const response: MCP.JSONRPCResponse = {
 			jsonrpc: MCP.JSONRPC_VERSION,
 			id: request.id,
-			result
+			result,
 		};
 		this.send(response);
 	}
@@ -405,91 +440,178 @@ export class McpServerRequestHandler extends Disposable {
 	/**
 	 * Send an initialize request
 	 */
-	initialize(params: MCP.InitializeRequest['params'], token?: CancellationToken): Promise<MCP.InitializeResult> {
-		return this.sendRequest<MCP.InitializeRequest, MCP.InitializeResult>({ method: 'initialize', params }, token);
+	initialize(
+		params: MCP.InitializeRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.InitializeResult> {
+		return this.sendRequest<MCP.InitializeRequest, MCP.InitializeResult>(
+			{ method: 'initialize', params },
+			token
+		);
 	}
 
 	/**
 	 * List available resources
 	 */
-	listResources(params?: MCP.ListResourcesRequest['params'], token?: CancellationToken): Promise<MCP.Resource[]> {
+	listResources(
+		params?: MCP.ListResourcesRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.Resource[]> {
 		return Iterable.asyncToArrayFlat(this.listResourcesIterable(params, token));
 	}
 
 	/**
 	 * List available resources (iterable)
 	 */
-	listResourcesIterable(params?: MCP.ListResourcesRequest['params'], token?: CancellationToken): AsyncIterable<MCP.Resource[]> {
-		return this.sendRequestPaginated<MCP.ListResourcesRequest, MCP.ListResourcesResult, MCP.Resource>('resources/list', result => result.resources, params, token);
+	listResourcesIterable(
+		params?: MCP.ListResourcesRequest['params'],
+		token?: CancellationToken
+	): AsyncIterable<MCP.Resource[]> {
+		return this.sendRequestPaginated<
+			MCP.ListResourcesRequest,
+			MCP.ListResourcesResult,
+			MCP.Resource
+		>('resources/list', result => result.resources, params, token);
 	}
 
 	/**
 	 * Read a specific resource
 	 */
-	readResource(params: MCP.ReadResourceRequest['params'], token?: CancellationToken): Promise<MCP.ReadResourceResult> {
-		return this.sendRequest<MCP.ReadResourceRequest, MCP.ReadResourceResult>({ method: 'resources/read', params }, token);
+	readResource(
+		params: MCP.ReadResourceRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.ReadResourceResult> {
+		return this.sendRequest<MCP.ReadResourceRequest, MCP.ReadResourceResult>(
+			{ method: 'resources/read', params },
+			token
+		);
 	}
 
 	/**
 	 * List available resource templates
 	 */
-	listResourceTemplates(params?: MCP.ListResourceTemplatesRequest['params'], token?: CancellationToken): Promise<MCP.ResourceTemplate[]> {
-		return Iterable.asyncToArrayFlat(this.sendRequestPaginated<MCP.ListResourceTemplatesRequest, MCP.ListResourceTemplatesResult, MCP.ResourceTemplate>('resources/templates/list', result => result.resourceTemplates, params, token));
+	listResourceTemplates(
+		params?: MCP.ListResourceTemplatesRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.ResourceTemplate[]> {
+		return Iterable.asyncToArrayFlat(
+			this.sendRequestPaginated<
+				MCP.ListResourceTemplatesRequest,
+				MCP.ListResourceTemplatesResult,
+				MCP.ResourceTemplate
+			>('resources/templates/list', result => result.resourceTemplates, params, token)
+		);
 	}
 
 	/**
 	 * Subscribe to resource updates
 	 */
-	subscribe(params: MCP.SubscribeRequest['params'], token?: CancellationToken): Promise<MCP.EmptyResult> {
-		return this.sendRequest<MCP.SubscribeRequest, MCP.EmptyResult>({ method: 'resources/subscribe', params }, token);
+	subscribe(
+		params: MCP.SubscribeRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.EmptyResult> {
+		return this.sendRequest<MCP.SubscribeRequest, MCP.EmptyResult>(
+			{ method: 'resources/subscribe', params },
+			token
+		);
 	}
 
 	/**
 	 * Unsubscribe from resource updates
 	 */
-	unsubscribe(params: MCP.UnsubscribeRequest['params'], token?: CancellationToken): Promise<MCP.EmptyResult> {
-		return this.sendRequest<MCP.UnsubscribeRequest, MCP.EmptyResult>({ method: 'resources/unsubscribe', params }, token);
+	unsubscribe(
+		params: MCP.UnsubscribeRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.EmptyResult> {
+		return this.sendRequest<MCP.UnsubscribeRequest, MCP.EmptyResult>(
+			{ method: 'resources/unsubscribe', params },
+			token
+		);
 	}
 
 	/**
 	 * List available prompts
 	 */
-	listPrompts(params?: MCP.ListPromptsRequest['params'], token?: CancellationToken): Promise<MCP.Prompt[]> {
-		return Iterable.asyncToArrayFlat(this.sendRequestPaginated<MCP.ListPromptsRequest, MCP.ListPromptsResult, MCP.Prompt>('prompts/list', result => result.prompts, params, token));
+	listPrompts(
+		params?: MCP.ListPromptsRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.Prompt[]> {
+		return Iterable.asyncToArrayFlat(
+			this.sendRequestPaginated<MCP.ListPromptsRequest, MCP.ListPromptsResult, MCP.Prompt>(
+				'prompts/list',
+				result => result.prompts,
+				params,
+				token
+			)
+		);
 	}
 
 	/**
 	 * Get a specific prompt
 	 */
-	getPrompt(params: MCP.GetPromptRequest['params'], token?: CancellationToken): Promise<MCP.GetPromptResult> {
-		return this.sendRequest<MCP.GetPromptRequest, MCP.GetPromptResult>({ method: 'prompts/get', params }, token);
+	getPrompt(
+		params: MCP.GetPromptRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.GetPromptResult> {
+		return this.sendRequest<MCP.GetPromptRequest, MCP.GetPromptResult>(
+			{ method: 'prompts/get', params },
+			token
+		);
 	}
 
 	/**
 	 * List available tools
 	 */
-	listTools(params?: MCP.ListToolsRequest['params'], token?: CancellationToken): Promise<MCP.Tool[]> {
-		return Iterable.asyncToArrayFlat(this.sendRequestPaginated<MCP.ListToolsRequest, MCP.ListToolsResult, MCP.Tool>('tools/list', result => result.tools, params, token));
+	listTools(
+		params?: MCP.ListToolsRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.Tool[]> {
+		return Iterable.asyncToArrayFlat(
+			this.sendRequestPaginated<MCP.ListToolsRequest, MCP.ListToolsResult, MCP.Tool>(
+				'tools/list',
+				result => result.tools,
+				params,
+				token
+			)
+		);
 	}
 
 	/**
 	 * Call a specific tool
 	 */
-	callTool(params: MCP.CallToolRequest['params'] & MCP.Request['params'], token?: CancellationToken): Promise<MCP.CallToolResult> {
-		return this.sendRequest<MCP.CallToolRequest, MCP.CallToolResult>({ method: 'tools/call', params }, token);
+	callTool(
+		params: MCP.CallToolRequest['params'] & MCP.Request['params'],
+		token?: CancellationToken
+	): Promise<MCP.CallToolResult> {
+		return this.sendRequest<MCP.CallToolRequest, MCP.CallToolResult>(
+			{ method: 'tools/call', params },
+			token
+		);
 	}
 
 	/**
 	 * Set the logging level
 	 */
-	setLevel(params: MCP.SetLevelRequest['params'], token?: CancellationToken): Promise<MCP.EmptyResult> {
-		return this.sendRequest<MCP.SetLevelRequest, MCP.EmptyResult>({ method: 'logging/setLevel', params }, token);
+	setLevel(
+		params: MCP.SetLevelRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.EmptyResult> {
+		return this.sendRequest<MCP.SetLevelRequest, MCP.EmptyResult>(
+			{ method: 'logging/setLevel', params },
+			token
+		);
 	}
 
 	/**
 	 * Find completions for an argument
 	 */
-	complete(params: MCP.CompleteRequest['params'], token?: CancellationToken): Promise<MCP.CompleteResult> {
-		return this.sendRequest<MCP.CompleteRequest, MCP.CompleteResult>({ method: 'completion/complete', params }, token);
+	complete(
+		params: MCP.CompleteRequest['params'],
+		token?: CancellationToken
+	): Promise<MCP.CompleteResult> {
+		return this.sendRequest<MCP.CompleteRequest, MCP.CompleteResult>(
+			{ method: 'completion/complete', params },
+			token
+		);
 	}
 }

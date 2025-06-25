@@ -50,7 +50,7 @@ export interface IRelatedInformation {
 
 export const enum MarkerTag {
 	Unnecessary = 1,
-	Deprecated = 2
+	Deprecated = 2,
 }
 
 export enum MarkerSeverity {
@@ -61,24 +61,23 @@ export enum MarkerSeverity {
 }
 
 export namespace MarkerSeverity {
-
 	export function compare(a: MarkerSeverity, b: MarkerSeverity): number {
 		return b - a;
 	}
 
 	const _displayStrings: { [value: number]: string } = Object.create(null);
-	_displayStrings[MarkerSeverity.Error] = localize('sev.error', "Error");
-	_displayStrings[MarkerSeverity.Warning] = localize('sev.warning', "Warning");
-	_displayStrings[MarkerSeverity.Info] = localize('sev.info', "Info");
+	_displayStrings[MarkerSeverity.Error] = localize('sev.error', 'Error');
+	_displayStrings[MarkerSeverity.Warning] = localize('sev.warning', 'Warning');
+	_displayStrings[MarkerSeverity.Info] = localize('sev.info', 'Info');
 
 	export function toString(a: MarkerSeverity): string {
 		return _displayStrings[a] || '';
 	}
 
 	const _displayStringsPlural: { [value: number]: string } = Object.create(null);
-	_displayStringsPlural[MarkerSeverity.Error] = localize('sev.errors', "Errors");
-	_displayStringsPlural[MarkerSeverity.Warning] = localize('sev.warnings', "Warnings");
-	_displayStringsPlural[MarkerSeverity.Info] = localize('sev.infos', "Infos");
+	_displayStringsPlural[MarkerSeverity.Error] = localize('sev.errors', 'Errors');
+	_displayStringsPlural[MarkerSeverity.Warning] = localize('sev.warnings', 'Warnings');
+	_displayStringsPlural[MarkerSeverity.Info] = localize('sev.infos', 'Infos');
 
 	export function toStringPlural(a: MarkerSeverity): string {
 		return _displayStringsPlural[a] || '';
@@ -86,19 +85,27 @@ export namespace MarkerSeverity {
 
 	export function fromSeverity(severity: Severity): MarkerSeverity {
 		switch (severity) {
-			case Severity.Error: return MarkerSeverity.Error;
-			case Severity.Warning: return MarkerSeverity.Warning;
-			case Severity.Info: return MarkerSeverity.Info;
-			case Severity.Ignore: return MarkerSeverity.Hint;
+			case Severity.Error:
+				return MarkerSeverity.Error;
+			case Severity.Warning:
+				return MarkerSeverity.Warning;
+			case Severity.Info:
+				return MarkerSeverity.Info;
+			case Severity.Ignore:
+				return MarkerSeverity.Hint;
 		}
 	}
 
 	export function toSeverity(severity: MarkerSeverity): Severity {
 		switch (severity) {
-			case MarkerSeverity.Error: return Severity.Error;
-			case MarkerSeverity.Warning: return Severity.Warning;
-			case MarkerSeverity.Info: return Severity.Info;
-			case MarkerSeverity.Hint: return Severity.Ignore;
+			case MarkerSeverity.Error:
+				return Severity.Error;
+			case MarkerSeverity.Warning:
+				return Severity.Warning;
+			case MarkerSeverity.Info:
+				return Severity.Info;
+			case MarkerSeverity.Hint:
+				return Severity.Ignore;
 		}
 	}
 }

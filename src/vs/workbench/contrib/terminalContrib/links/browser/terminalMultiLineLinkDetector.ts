@@ -6,11 +6,19 @@
 import { URI } from '../../../../../base/common/uri.js';
 import { IUriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentity.js';
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
-import { ITerminalLinkDetector, ITerminalLinkResolver, ITerminalSimpleLink, TerminalBuiltinLinkType } from './links.js';
+import {
+	ITerminalLinkDetector,
+	ITerminalLinkResolver,
+	ITerminalSimpleLink,
+	TerminalBuiltinLinkType,
+} from './links.js';
 import { convertLinkRangeToBuffer, getXtermLineContent } from './terminalLinkHelpers.js';
 import type { IBufferLine, Terminal } from '@xterm/xterm';
 import { ITerminalProcessManager } from '../../../terminal/common/terminal.js';
-import { ITerminalBackend, ITerminalLogService } from '../../../../../platform/terminal/common/terminal.js';
+import {
+	ITerminalBackend,
+	ITerminalLogService,
+} from '../../../../../platform/terminal/common/terminal.js';
 
 const enum Constants {
 	/**
@@ -33,14 +41,14 @@ const lineNumberPrefixMatchers = [
 	// Eslint:
 	//   /some/file
 	//     16:5  error ...
-	/^ *(?<link>(?<line>\d+):(?<col>\d+)?)/
+	/^ *(?<link>(?<line>\d+):(?<col>\d+)?)/,
 ];
 
 const gitDiffMatchers = [
 	// --- a/some/file
 	// +++ b/some/file
 	// @@ -8,11 +8,11 @@ file content...
-	/^(?<link>@@ .+ \+(?<toFileLine>\d+),(?<toFileCount>\d+) @@)/
+	/^(?<link>@@ .+ \+(?<toFileLine>\d+),(?<toFileCount>\d+) @@)/,
 ];
 
 export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
@@ -54,15 +62,21 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 
 	constructor(
 		readonly xterm: Terminal,
-		private readonly _processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & { backend?: Pick<ITerminalBackend, 'getWslPath'> },
+		private readonly _processManager: Pick<
+			ITerminalProcessManager,
+			'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'
+		> & { backend?: Pick<ITerminalBackend, 'getWslPath'> },
 		private readonly _linkResolver: ITerminalLinkResolver,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
 		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService,
 		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService
-	) {
-	}
+	) {}
 
-	async detect(lines: IBufferLine[], startLine: number, endLine: number): Promise<ITerminalSimpleLink[]> {
+	async detect(
+		lines: IBufferLine[],
+		startLine: number,
+		endLine: number
+	): Promise<ITerminalSimpleLink[]> {
 		const links: ITerminalSimpleLink[] = [];
 
 		// Get the text representation of the wrapped line
@@ -127,23 +141,28 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 				}
 
 				// Convert the entire line's text string index into a wrapped buffer range
-				const bufferRange = convertLinkRangeToBuffer(lines, this.xterm.cols, {
-					startColumn: 1,
-					startLineNumber: 1,
-					endColumn: 1 + text.length,
-					endLineNumber: 1
-				}, startLine);
+				const bufferRange = convertLinkRangeToBuffer(
+					lines,
+					this.xterm.cols,
+					{
+						startColumn: 1,
+						startLineNumber: 1,
+						endColumn: 1 + text.length,
+						endLineNumber: 1,
+					},
+					startLine
+				);
 
 				const simpleLink: ITerminalSimpleLink = {
 					text: link,
 					uri: linkStat.uri,
 					selection: {
 						startLineNumber: parseInt(line),
-						startColumn: col ? parseInt(col) : 1
+						startColumn: col ? parseInt(col) : 1,
 					},
 					disableTrimColon: true,
 					bufferRange: bufferRange,
-					type
+					type,
 				};
 				this._logService.trace('terminalMultiLineLinkDetector#detect verified link', simpleLink);
 				links.push(simpleLink);
@@ -173,7 +192,6 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 				}
 
 				this._logService.trace('terminalMultiLineLinkDetector#detect candidate', link);
-
 
 				// Scan up looking for the first line that could be a path
 				let possiblePath: string | undefined;
@@ -208,12 +226,17 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 					}
 
 					// Convert the link to the buffer range
-					const bufferRange = convertLinkRangeToBuffer(lines, this.xterm.cols, {
-						startColumn: 1,
-						startLineNumber: 1,
-						endColumn: 1 + link.length,
-						endLineNumber: 1
-					}, startLine);
+					const bufferRange = convertLinkRangeToBuffer(
+						lines,
+						this.xterm.cols,
+						{
+							startColumn: 1,
+							startLineNumber: 1,
+							endColumn: 1 + link.length,
+							endLineNumber: 1,
+						},
+						startLine
+					);
 
 					const simpleLink: ITerminalSimpleLink = {
 						text: link,
@@ -221,10 +244,10 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 						selection: {
 							startLineNumber: parseInt(toFileLine),
 							startColumn: 1,
-							endLineNumber: parseInt(toFileLine) + parseInt(toFileCount)
+							endLineNumber: parseInt(toFileLine) + parseInt(toFileCount),
 						},
 						bufferRange: bufferRange,
-						type
+						type,
 					};
 					this._logService.trace('terminalMultiLineLinkDetector#detect verified link', simpleLink);
 					links.push(simpleLink);

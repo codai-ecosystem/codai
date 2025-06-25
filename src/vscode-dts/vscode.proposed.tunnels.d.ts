@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// tunnels @alexr00
 
 	export interface TunnelOptions {

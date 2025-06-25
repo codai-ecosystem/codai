@@ -16,8 +16,9 @@ const root = join(__dirname, '..', '..', '..');
 
 let port = 9000;
 
-export async function launch(options: LaunchOptions): Promise<{ serverProcess: ChildProcess; driver: PlaywrightDriver }> {
-
+export async function launch(
+	options: LaunchOptions
+): Promise<{ serverProcess: ChildProcess; driver: PlaywrightDriver }> {
 	// Launch server
 	const { serverProcess, endpoint } = await launchServer(options);
 
@@ -26,7 +27,7 @@ export async function launch(options: LaunchOptions): Promise<{ serverProcess: C
 
 	return {
 		serverProcess,
-		driver: new PlaywrightDriver(browser, context, page, serverProcess, pageLoadedPromise, options)
+		driver: new PlaywrightDriver(browser, context, page, serverProcess, pageLoadedPromise, options),
 	};
 }
 
@@ -35,11 +36,15 @@ async function launchServer(options: LaunchOptions) {
 	const serverLogsPath = join(logsPath, 'server');
 	const codeServerPath = codePath ?? process.env.VSCODE_REMOTE_SERVER_PATH;
 	const agentFolder = userDataDir;
-	await measureAndLog(() => fs.promises.mkdir(agentFolder, { recursive: true }), `mkdirp(${agentFolder})`, logger);
+	await measureAndLog(
+		() => fs.promises.mkdir(agentFolder, { recursive: true }),
+		`mkdirp(${agentFolder})`,
+		logger
+	);
 
 	const env = {
 		VSCODE_REMOTE_SERVER_PATH: codeServerPath,
-		...process.env
+		...process.env,
 	};
 
 	const args = [
@@ -50,7 +55,7 @@ async function launchServer(options: LaunchOptions) {
 		`--extensions-dir=${extensionsPath}`,
 		`--server-data-dir=${agentFolder}`,
 		'--accept-server-license-terms',
-		`--logsPath=${serverLogsPath}`
+		`--logsPath=${serverLogsPath}`,
 	];
 
 	if (options.verbose) {
@@ -60,11 +65,18 @@ async function launchServer(options: LaunchOptions) {
 	let serverLocation: string | undefined;
 	if (codeServerPath) {
 		const { serverApplicationName } = require(join(codeServerPath, 'product.json'));
-		serverLocation = join(codeServerPath, 'bin', `${serverApplicationName}${process.platform === 'win32' ? '.cmd' : ''}`);
+		serverLocation = join(
+			codeServerPath,
+			'bin',
+			`${serverApplicationName}${process.platform === 'win32' ? '.cmd' : ''}`
+		);
 
 		logger.log(`Starting built server from '${serverLocation}'`);
 	} else {
-		serverLocation = join(root, `scripts/code-server.${process.platform === 'win32' ? 'bat' : 'sh'}`);
+		serverLocation = join(
+			root,
+			`scripts/code-server.${process.platform === 'win32' ? 'bat' : 'sh'}`
+		);
 
 		logger.log(`Starting server out of sources from '${serverLocation}'`);
 	}
@@ -72,18 +84,18 @@ async function launchServer(options: LaunchOptions) {
 	logger.log(`Storing log files into '${serverLogsPath}'`);
 
 	logger.log(`Command line: '${serverLocation}' ${args.join(' ')}`);
-	const shell: boolean = (process.platform === 'win32');
-	const serverProcess = spawn(
-		serverLocation,
-		args,
-		{ env, shell }
-	);
+	const shell: boolean = process.platform === 'win32';
+	const serverProcess = spawn(serverLocation, args, { env, shell });
 
 	logger.log(`Started server for browser smoke tests (pid: ${serverProcess.pid})`);
 
 	return {
 		serverProcess,
-		endpoint: await measureAndLog(() => waitForEndpoint(serverProcess, logger), 'waitForEndpoint(serverProcess)', logger)
+		endpoint: await measureAndLog(
+			() => waitForEndpoint(serverProcess, logger),
+			'waitForEndpoint(serverProcess)',
+			logger
+		),
 	};
 }
 
@@ -91,11 +103,16 @@ async function launchBrowser(options: LaunchOptions, endpoint: string) {
 	const { logger, workspacePath, tracing, snapshots, headless } = options;
 
 	const [browserType, browserChannel] = (options.browser ?? 'chromium').split('-');
-	const browser = await measureAndLog(() => playwright[browserType as unknown as 'chromium' | 'webkit' | 'firefox'].launch({
-		headless: headless ?? false,
-		timeout: 0,
-		channel: browserChannel,
-	}), 'playwright#launch', logger);
+	const browser = await measureAndLog(
+		() =>
+			playwright[browserType as unknown as 'chromium' | 'webkit' | 'firefox'].launch({
+				headless: headless ?? false,
+				timeout: 0,
+				channel: browserChannel,
+			}),
+		'playwright#launch',
+		logger
+	);
 
 	browser.on('disconnected', () => logger.log(`Playwright: browser disconnected`));
 
@@ -103,34 +120,56 @@ async function launchBrowser(options: LaunchOptions, endpoint: string) {
 
 	if (tracing) {
 		try {
-			await measureAndLog(() => context.tracing.start({ screenshots: true, snapshots }), 'context.tracing.start()', logger);
+			await measureAndLog(
+				() => context.tracing.start({ screenshots: true, snapshots }),
+				'context.tracing.start()',
+				logger
+			);
 		} catch (error) {
 			logger.log(`Playwright (Browser): Failed to start playwright tracing (${error})`); // do not fail the build when this fails
 		}
 	}
 
 	const page = await measureAndLog(() => context.newPage(), 'context.newPage()', logger);
-	await measureAndLog(() => page.setViewportSize({ width: 1200, height: 800 }), 'page.setViewportSize', logger);
+	await measureAndLog(
+		() => page.setViewportSize({ width: 1200, height: 800 }),
+		'page.setViewportSize',
+		logger
+	);
 
 	if (options.verbose) {
 		context.on('page', () => logger.log(`Playwright (Browser): context.on('page')`));
-		context.on('requestfailed', e => logger.log(`Playwright (Browser): context.on('requestfailed') [${e.failure()?.errorText} for ${e.url()}]`));
+		context.on('requestfailed', e =>
+			logger.log(
+				`Playwright (Browser): context.on('requestfailed') [${e.failure()?.errorText} for ${e.url()}]`
+			)
+		);
 
 		page.on('console', e => logger.log(`Playwright (Browser): window.on('console') [${e.text()}]`));
 		page.on('dialog', () => logger.log(`Playwright (Browser): page.on('dialog')`));
-		page.on('domcontentloaded', () => logger.log(`Playwright (Browser): page.on('domcontentloaded')`));
+		page.on('domcontentloaded', () =>
+			logger.log(`Playwright (Browser): page.on('domcontentloaded')`)
+		);
 		page.on('load', () => logger.log(`Playwright (Browser): page.on('load')`));
 		page.on('popup', () => logger.log(`Playwright (Browser): page.on('popup')`));
 		page.on('framenavigated', () => logger.log(`Playwright (Browser): page.on('framenavigated')`));
-		page.on('requestfailed', e => logger.log(`Playwright (Browser): page.on('requestfailed') [${e.failure()?.errorText} for ${e.url()}]`));
+		page.on('requestfailed', e =>
+			logger.log(
+				`Playwright (Browser): page.on('requestfailed') [${e.failure()?.errorText} for ${e.url()}]`
+			)
+		);
 	}
 
-	page.on('pageerror', async (error) => logger.log(`Playwright (Browser) ERROR: page error: ${error}`));
+	page.on('pageerror', async error =>
+		logger.log(`Playwright (Browser) ERROR: page error: ${error}`)
+	);
 	page.on('crash', () => logger.log('Playwright (Browser) ERROR: page crash'));
 	page.on('close', () => logger.log('Playwright (Browser): page close'));
-	page.on('response', async (response) => {
+	page.on('response', async response => {
 		if (response.status() >= 400) {
-			logger.log(`Playwright (Browser) ERROR: HTTP status ${response.status()} for ${response.url()}`);
+			logger.log(
+				`Playwright (Browser) ERROR: HTTP status ${response.status()} for ${response.url()}`
+			);
 		}
 	});
 
@@ -138,10 +177,17 @@ async function launchBrowser(options: LaunchOptions, endpoint: string) {
 		'["enableProposedApi",""]',
 		'["skipWelcome", "true"]',
 		'["skipReleaseNotes", "true"]',
-		`["logLevel","${options.verbose ? 'trace' : 'info'}"]`
+		`["logLevel","${options.verbose ? 'trace' : 'info'}"]`,
 	].join(',')}]`;
 
-	const gotoPromise = measureAndLog(() => page.goto(`${endpoint}&${workspacePath.endsWith('.code-workspace') ? 'workspace' : 'folder'}=${URI.file(workspacePath!).path}&payload=${payloadParam}`), 'page.goto()', logger);
+	const gotoPromise = measureAndLog(
+		() =>
+			page.goto(
+				`${endpoint}&${workspacePath.endsWith('.code-workspace') ? 'workspace' : 'folder'}=${URI.file(workspacePath!).path}&payload=${payloadParam}`
+			),
+		'page.goto()',
+		logger
+	);
 	const pageLoadedPromise = page.waitForLoadState('load');
 
 	await gotoPromise;

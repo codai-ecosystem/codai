@@ -9,7 +9,11 @@ import { Mutable } from '../../../../../base/common/types.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { INativeMcpDiscoveryData } from '../../../../../platform/mcp/common/nativeMcpDiscoveryHelper.js';
 import { DiscoverySource } from '../mcpConfiguration.js';
-import { McpCollectionSortOrder, McpServerDefinition, McpServerTransportType } from '../mcpTypes.js';
+import {
+	McpCollectionSortOrder,
+	McpServerDefinition,
+	McpServerTransportType,
+} from '../mcpTypes.js';
 
 export interface NativeMpcDiscoveryAdapter {
 	readonly remoteAuthority: string | null;
@@ -18,17 +22,23 @@ export interface NativeMpcDiscoveryAdapter {
 	readonly discoverySource: DiscoverySource;
 
 	getFilePath(details: INativeMcpDiscoveryData): URI | undefined;
-	adaptFile(contents: VSBuffer, details: INativeMcpDiscoveryData): McpServerDefinition[] | undefined;
+	adaptFile(
+		contents: VSBuffer,
+		details: INativeMcpDiscoveryData
+	): McpServerDefinition[] | undefined;
 }
 
 export function claudeConfigToServerDefinition(idPrefix: string, contents: VSBuffer, cwd?: URI) {
 	let parsed: {
-		mcpServers: Record<string, {
-			command: string;
-			args?: string[];
-			env?: Record<string, string>;
-			url?: string;
-		}>;
+		mcpServers: Record<
+			string,
+			{
+				command: string;
+				args?: string[];
+				env?: Record<string, string>;
+				url?: string;
+			}
+		>;
 	};
 
 	try {
@@ -41,18 +51,20 @@ export function claudeConfigToServerDefinition(idPrefix: string, contents: VSBuf
 		return {
 			id: `${idPrefix}.${name}`,
 			label: name,
-			launch: server.url ? {
-				type: McpServerTransportType.HTTP,
-				uri: URI.parse(server.url),
-				headers: [],
-			} : {
-				type: McpServerTransportType.Stdio,
-				args: server.args || [],
-				command: server.command,
-				env: server.env || {},
-				envFile: undefined,
-				cwd,
-			}
+			launch: server.url
+				? {
+						type: McpServerTransportType.HTTP,
+						uri: URI.parse(server.url),
+						headers: [],
+					}
+				: {
+						type: McpServerTransportType.Stdio,
+						args: server.args || [],
+						command: server.command,
+						env: server.env || {},
+						envFile: undefined,
+						cwd,
+					},
 		};
 	});
 }
@@ -66,19 +78,33 @@ export class ClaudeDesktopMpcDiscoveryAdapter implements NativeMpcDiscoveryAdapt
 		this.id = `claude-desktop.${this.remoteAuthority}`;
 	}
 
-	getFilePath({ platform, winAppData, xdgHome, homedir }: INativeMcpDiscoveryData): URI | undefined {
+	getFilePath({
+		platform,
+		winAppData,
+		xdgHome,
+		homedir,
+	}: INativeMcpDiscoveryData): URI | undefined {
 		if (platform === Platform.Windows) {
 			const appData = winAppData || URI.joinPath(homedir, 'AppData', 'Roaming');
 			return URI.joinPath(appData, 'Claude', 'claude_desktop_config.json');
 		} else if (platform === Platform.Mac) {
-			return URI.joinPath(homedir, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
+			return URI.joinPath(
+				homedir,
+				'Library',
+				'Application Support',
+				'Claude',
+				'claude_desktop_config.json'
+			);
 		} else {
 			const configDir = xdgHome || URI.joinPath(homedir, '.config');
 			return URI.joinPath(configDir, 'Claude', 'claude_desktop_config.json');
 		}
 	}
 
-	adaptFile(contents: VSBuffer, { homedir }: INativeMcpDiscoveryData): McpServerDefinition[] | undefined {
+	adaptFile(
+		contents: VSBuffer,
+		{ homedir }: INativeMcpDiscoveryData
+	): McpServerDefinition[] | undefined {
 		return claudeConfigToServerDefinition(this.id, contents, homedir);
 	}
 }

@@ -14,8 +14,11 @@ interface IMessageChannelResult {
 	source: unknown;
 }
 
-export async function acquirePort(requestChannel: string | undefined, responseChannel: string, nonce = generateUuid()): Promise<MessagePort> {
-
+export async function acquirePort(
+	requestChannel: string | undefined,
+	responseChannel: string,
+	nonce = generateUuid()
+): Promise<MessagePort> {
 	// Get ready to acquire the message port from the
 	// provided `responseChannel` via preload helper.
 	ipcMessagePort.acquire(responseChannel, nonce);
@@ -29,8 +32,16 @@ export async function acquirePort(requestChannel: string | undefined, responseCh
 	// Wait until the main side has returned the `MessagePort`
 	// We need to filter by the `nonce` to ensure we listen
 	// to the right response.
-	const onMessageChannelResult = Event.fromDOMEventEmitter<IMessageChannelResult>(mainWindow, 'message', (e: MessageEvent) => ({ nonce: e.data, port: e.ports[0], source: e.source }));
-	const { port } = await Event.toPromise(Event.once(Event.filter(onMessageChannelResult, e => e.nonce === nonce && e.source === mainWindow)));
+	const onMessageChannelResult = Event.fromDOMEventEmitter<IMessageChannelResult>(
+		mainWindow,
+		'message',
+		(e: MessageEvent) => ({ nonce: e.data, port: e.ports[0], source: e.source })
+	);
+	const { port } = await Event.toPromise(
+		Event.once(
+			Event.filter(onMessageChannelResult, e => e.nonce === nonce && e.source === mainWindow)
+		)
+	);
 
 	return port;
 }

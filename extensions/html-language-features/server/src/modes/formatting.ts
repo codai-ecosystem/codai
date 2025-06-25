@@ -3,11 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LanguageModes, Settings, LanguageModeRange, TextDocument, Range, TextEdit, FormattingOptions, Position } from './languageModes';
+import {
+	LanguageModes,
+	Settings,
+	LanguageModeRange,
+	TextDocument,
+	Range,
+	TextEdit,
+	FormattingOptions,
+	Position,
+} from './languageModes';
 import { pushAll } from '../utils/arrays';
 import { isEOL } from '../utils/strings';
 
-export async function format(languageModes: LanguageModes, document: TextDocument, formatRange: Range, formattingOptions: FormattingOptions, settings: Settings | undefined, enabledModes: { [mode: string]: boolean }) {
+export async function format(
+	languageModes: LanguageModes,
+	document: TextDocument,
+	formatRange: Range,
+	formattingOptions: FormattingOptions,
+	settings: Settings | undefined,
+	enabledModes: { [mode: string]: boolean }
+) {
 	const result: TextEdit[] = [];
 
 	const endPos = formatRange.end;
@@ -21,7 +37,6 @@ export async function format(languageModes: LanguageModes, document: TextDocumen
 		}
 		formatRange = Range.create(formatRange.start, document.positionAt(endOffset));
 	}
-
 
 	// run the html formatter on the full range and pass the result content to the embedded formatters.
 	// from the final content create a single edit
@@ -39,7 +54,12 @@ export async function format(languageModes: LanguageModes, document: TextDocumen
 	while (i < allRanges.length && !isHTML(allRanges[i])) {
 		const range = allRanges[i];
 		if (!range.attributeValue && range.mode && range.mode.format) {
-			const edits = await range.mode.format(document, Range.create(startPos, range.end), formattingOptions, settings);
+			const edits = await range.mode.format(
+				document,
+				Range.create(startPos, range.end),
+				formattingOptions,
+				settings
+			);
 			pushAll(result, edits);
 		}
 		startPos = range.end;
@@ -55,15 +75,27 @@ export async function format(languageModes: LanguageModes, document: TextDocumen
 	const htmlMode = languageModes.getMode('html')!;
 	const htmlEdits = await htmlMode.format!(document, formatRange, formattingOptions, settings);
 	let htmlFormattedContent = TextDocument.applyEdits(document, htmlEdits);
-	if (formattingOptions.insertFinalNewline && endOffset === content.length && !htmlFormattedContent.endsWith('\n')) {
+	if (
+		formattingOptions.insertFinalNewline &&
+		endOffset === content.length &&
+		!htmlFormattedContent.endsWith('\n')
+	) {
 		htmlFormattedContent = htmlFormattedContent + '\n';
 		htmlEdits.push(TextEdit.insert(endPos, '\n'));
 	}
-	const newDocument = TextDocument.create(document.uri + '.tmp', document.languageId, document.version, htmlFormattedContent);
+	const newDocument = TextDocument.create(
+		document.uri + '.tmp',
+		document.languageId,
+		document.version,
+		htmlFormattedContent
+	);
 	try {
 		// run embedded formatters on html formatted content: - formatters see correct initial indent
 		const afterFormatRangeLength = document.getText().length - document.offsetAt(formatRange.end); // length of unchanged content after replace range
-		const newFormatRange = Range.create(formatRange.start, newDocument.positionAt(htmlFormattedContent.length - afterFormatRangeLength));
+		const newFormatRange = Range.create(
+			formatRange.start,
+			newDocument.positionAt(htmlFormattedContent.length - afterFormatRangeLength)
+		);
 		const embeddedRanges = languageModes.getModesInRange(newDocument, newFormatRange);
 
 		const embeddedEdits: TextEdit[] = [];
@@ -85,12 +117,14 @@ export async function format(languageModes: LanguageModes, document: TextDocumen
 
 		// apply all embedded format edits and create a single edit for all changes
 		const resultContent = TextDocument.applyEdits(newDocument, embeddedEdits);
-		const resultReplaceText = resultContent.substring(document.offsetAt(formatRange.start), resultContent.length - afterFormatRangeLength);
+		const resultReplaceText = resultContent.substring(
+			document.offsetAt(formatRange.start),
+			resultContent.length - afterFormatRangeLength
+		);
 
 		result.push(TextEdit.replace(formatRange, resultReplaceText));
 		return result;
 	} finally {
 		languageModes.onDocumentRemoved(newDocument);
 	}
-
 }

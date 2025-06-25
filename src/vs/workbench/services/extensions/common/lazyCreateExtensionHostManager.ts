@@ -7,7 +7,10 @@ import { Barrier } from '../../../../base/common/async.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
-import { ExtensionIdentifier, IExtensionDescription } from '../../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionIdentifier,
+	IExtensionDescription,
+} from '../../../../platform/extensions/common/extensions.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { RemoteAuthorityResolverErrorCode } from '../../../../platform/remote/common/remoteAuthorityResolver.js';
@@ -17,17 +20,26 @@ import { IExtensionHostManager } from './extensionHostManagers.js';
 import { IExtensionDescriptionDelta } from './extensionHostProtocol.js';
 import { IResolveAuthorityResult } from './extensionHostProxy.js';
 import { ExtensionRunningLocation } from './extensionRunningLocation.js';
-import { ActivationKind, ExtensionActivationReason, ExtensionHostExtensions, ExtensionHostStartup, IExtensionHost, IInternalExtensionService } from './extensions.js';
+import {
+	ActivationKind,
+	ExtensionActivationReason,
+	ExtensionHostExtensions,
+	ExtensionHostStartup,
+	IExtensionHost,
+	IInternalExtensionService,
+} from './extensions.js';
 import { ResponsiveState } from './rpcProtocol.js';
 
 /**
  * Waits until `start()` and only if it has extensions proceeds to really start.
  */
 export class LazyCreateExtensionHostManager extends Disposable implements IExtensionHostManager {
-
 	public readonly onDidExit: Event<[number, string | null]>;
-	private readonly _onDidChangeResponsiveState: Emitter<ResponsiveState> = this._register(new Emitter<ResponsiveState>());
-	public readonly onDidChangeResponsiveState: Event<ResponsiveState> = this._onDidChangeResponsiveState.event;
+	private readonly _onDidChangeResponsiveState: Emitter<ResponsiveState> = this._register(
+		new Emitter<ResponsiveState>()
+	);
+	public readonly onDidChangeResponsiveState: Event<ResponsiveState> =
+		this._onDidChangeResponsiveState.event;
 
 	private readonly _extensionHost: IExtensionHost;
 	private _startCalled: Barrier;
@@ -69,8 +81,17 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
 
 	private _createActual(reason: string): ExtensionHostManager {
 		this._logService.info(`Creating lazy extension host (${this.friendyName}). Reason: ${reason}`);
-		this._actual = this._register(this._instantiationService.createInstance(ExtensionHostManager, this._extensionHost, [], this._internalExtensionService));
-		this._register(this._actual.onDidChangeResponsiveState((e) => this._onDidChangeResponsiveState.fire(e)));
+		this._actual = this._register(
+			this._instantiationService.createInstance(
+				ExtensionHostManager,
+				this._extensionHost,
+				[],
+				this._internalExtensionService
+			)
+		);
+		this._register(
+			this._actual.onDidChangeResponsiveState(e => this._onDidChangeResponsiveState.fire(e))
+		);
 		return this._actual;
 	}
 
@@ -80,7 +101,11 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
 			return this._actual;
 		}
 		const actual = this._createActual(reason);
-		await actual.start(this._lazyStartExtensions!.versionId, this._lazyStartExtensions!.allExtensions, this._lazyStartExtensions!.myExtensions);
+		await actual.start(
+			this._lazyStartExtensions!.versionId,
+			this._lazyStartExtensions!.allExtensions,
+			this._lazyStartExtensions!.myExtensions
+		);
 		return actual;
 	}
 
@@ -103,22 +128,34 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
 		}
 		this._lazyStartExtensions!.delta(extensionsDelta);
 		if (extensionsDelta.myToAdd.length > 0) {
-			const actual = this._createActual(`contains ${extensionsDelta.myToAdd.length} new extension(s) (installed or enabled): ${extensionsDelta.myToAdd.map(extId => extId.value)}`);
-			await actual.start(this._lazyStartExtensions!.versionId, this._lazyStartExtensions!.allExtensions, this._lazyStartExtensions!.myExtensions);
+			const actual = this._createActual(
+				`contains ${extensionsDelta.myToAdd.length} new extension(s) (installed or enabled): ${extensionsDelta.myToAdd.map(extId => extId.value)}`
+			);
+			await actual.start(
+				this._lazyStartExtensions!.versionId,
+				this._lazyStartExtensions!.allExtensions,
+				this._lazyStartExtensions!.myExtensions
+			);
 			return;
 		}
 	}
 	public containsExtension(extensionId: ExtensionIdentifier): boolean {
 		return this._extensionHost.extensions?.containsExtension(extensionId) ?? false;
 	}
-	public async activate(extension: ExtensionIdentifier, reason: ExtensionActivationReason): Promise<boolean> {
+	public async activate(
+		extension: ExtensionIdentifier,
+		reason: ExtensionActivationReason
+	): Promise<boolean> {
 		await this._startCalled.wait();
 		if (this._actual) {
 			return this._actual.activate(extension, reason);
 		}
 		return false;
 	}
-	public async activateByEvent(activationEvent: string, activationKind: ActivationKind): Promise<void> {
+	public async activateByEvent(
+		activationEvent: string,
+		activationKind: ActivationKind
+	): Promise<void> {
 		if (activationKind === ActivationKind.Immediate) {
 			// this is an immediate request, so we cannot wait for start to be called
 			if (this._actual) {
@@ -140,11 +177,16 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
 		}
 		return true;
 	}
-	public async getInspectPort(tryEnableInspector: boolean): Promise<{ port: number; host: string } | undefined> {
+	public async getInspectPort(
+		tryEnableInspector: boolean
+	): Promise<{ port: number; host: string } | undefined> {
 		await this._startCalled.wait();
 		return this._actual?.getInspectPort(tryEnableInspector);
 	}
-	public async resolveAuthority(remoteAuthority: string, resolveAttempt: number): Promise<IResolveAuthorityResult> {
+	public async resolveAuthority(
+		remoteAuthority: string,
+		resolveAttempt: number
+	): Promise<IResolveAuthorityResult> {
 		await this._startCalled.wait();
 		if (this._actual) {
 			return this._actual.resolveAuthority(remoteAuthority, resolveAttempt);
@@ -154,8 +196,8 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
 			error: {
 				message: `Cannot resolve authority`,
 				code: RemoteAuthorityResolverErrorCode.Unknown,
-				detail: undefined
-			}
+				detail: undefined,
+			},
 		};
 	}
 	public async getCanonicalURI(remoteAuthority: string, uri: URI): Promise<URI | null> {
@@ -165,16 +207,26 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
 		}
 		throw new Error(`Cannot resolve canonical URI`);
 	}
-	public async start(extensionRegistryVersionId: number, allExtensions: IExtensionDescription[], myExtensions: ExtensionIdentifier[]): Promise<void> {
+	public async start(
+		extensionRegistryVersionId: number,
+		allExtensions: IExtensionDescription[],
+		myExtensions: ExtensionIdentifier[]
+	): Promise<void> {
 		if (myExtensions.length > 0) {
 			// there are actual extensions, so let's launch the extension host
-			const actual = this._createActual(`contains ${myExtensions.length} extension(s): ${myExtensions.map(extId => extId.value)}.`);
+			const actual = this._createActual(
+				`contains ${myExtensions.length} extension(s): ${myExtensions.map(extId => extId.value)}.`
+			);
 			const result = actual.start(extensionRegistryVersionId, allExtensions, myExtensions);
 			this._startCalled.open();
 			return result;
 		}
 		// there are no actual extensions running, store extensions in `this._lazyStartExtensions`
-		this._lazyStartExtensions = new ExtensionHostExtensions(extensionRegistryVersionId, allExtensions, myExtensions);
+		this._lazyStartExtensions = new ExtensionHostExtensions(
+			extensionRegistryVersionId,
+			allExtensions,
+			myExtensions
+		);
 		this._startCalled.open();
 	}
 	public async extensionTestsExecute(): Promise<number> {

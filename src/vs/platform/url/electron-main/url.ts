@@ -7,7 +7,6 @@ import { URI } from '../../../base/common/uri.js';
 import { IWindowOpenable } from '../../window/common/window.js';
 
 export interface IProtocolUrl {
-
 	/**
 	 * The parsed URI from the raw URL.
 	 */
@@ -55,7 +54,6 @@ export interface IProtocolUrl {
  * - a URL with any other authority will be added to the `urls` array
  */
 export interface IInitialProtocolUrls {
-
 	/**
 	 * Initial protocol URLs to handle that are not
 	 * already converted to `IWindowOpenable` window

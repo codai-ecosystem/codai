@@ -1,23 +1,23 @@
 {
-  "id": "fb1e72c7-1918-4638-b2ba-ec520fa26021",
-  "name": "New AIDE Project",
-  "version": "0.2.0",
-  "createdAt": "2025-06-05T06:08:03.780Z",
-  "updatedAt": "2025-06-05T06:33:03.839Z",
-  "nodes": [],
-  "relationships": [],
-  "metadata": {
-    "aiProvider": "openai",
-    "lastInteractionAt": "2025-06-05T06:08:03.780Z",
-    "tags": [],
-    "stats": {
-      "nodeCount": 0,
-      "edgeCount": 0,
-      "complexity": 0
-    }
-  },
-  "settings": {
-    "autoSave": true,
-    "persistLocation": "local"
-  }
+	"id": "fb1e72c7-1918-4638-b2ba-ec520fa26021",
+	"name": "New AIDE Project",
+	"version": "0.2.0",
+	"createdAt": "2025-06-05T06:08:03.780Z",
+	"updatedAt": "2025-06-05T06:33:03.839Z",
+	"nodes": [],
+	"relationships": [],
+	"metadata": {
+		"aiProvider": "openai",
+		"lastInteractionAt": "2025-06-05T06:08:03.780Z",
+		"tags": [],
+		"stats": {
+			"nodeCount": 0,
+			"edgeCount": 0,
+			"complexity": 0
+		}
+	},
+	"settings": {
+		"autoSave": true,
+		"persistLocation": "local"
+	}
 }

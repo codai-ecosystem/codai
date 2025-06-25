@@ -15,5 +15,5 @@ export const NullHoverService: IHoverService = {
 	setupDelayedHoverAtMouse: () => Disposable.None,
 	setupManagedHover: () => Disposable.None as any,
 	showAndFocusLastHover: () => undefined,
-	showManagedHover: () => undefined
+	showManagedHover: () => undefined,
 };

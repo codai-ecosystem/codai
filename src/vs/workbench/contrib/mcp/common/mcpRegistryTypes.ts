@@ -12,7 +12,16 @@ import { ILogger, LogLevel } from '../../../../platform/log/common/log.js';
 import { StorageScope } from '../../../../platform/storage/common/storage.js';
 import { IWorkspaceFolderData } from '../../../../platform/workspace/common/workspace.js';
 import { IResolvedValue } from '../../../services/configurationResolver/common/configurationResolverExpression.js';
-import { IMcpServerConnection, LazyCollectionState, McpCollectionDefinition, McpCollectionReference, McpConnectionState, McpDefinitionReference, McpServerDefinition, McpServerLaunch } from './mcpTypes.js';
+import {
+	IMcpServerConnection,
+	LazyCollectionState,
+	McpCollectionDefinition,
+	McpCollectionReference,
+	McpConnectionState,
+	McpDefinitionReference,
+	McpServerDefinition,
+	McpServerLaunch,
+} from './mcpTypes.js';
 import { MCP } from './modelContextProtocol.js';
 
 export const IMcpRegistry = createDecorator<IMcpRegistry>('mcpRegistry');
@@ -30,8 +39,15 @@ export interface IMcpHostDelegate {
 	/** Priority for this delegate, delegates are tested in descending priority order */
 	readonly priority: number;
 	waitForInitialProviderPromises(): Promise<void>;
-	canStart(collectionDefinition: McpCollectionDefinition, serverDefinition: McpServerDefinition): boolean;
-	start(collectionDefinition: McpCollectionDefinition, serverDefinition: McpServerDefinition, resolvedLaunch: McpServerLaunch): IMcpMessageTransport;
+	canStart(
+		collectionDefinition: McpCollectionDefinition,
+		serverDefinition: McpServerDefinition
+	): boolean;
+	start(
+		collectionDefinition: McpCollectionDefinition,
+		serverDefinition: McpServerDefinition,
+		resolvedLaunch: McpServerLaunch
+	): IMcpMessageTransport;
 }
 
 export interface IMcpResolveConnectionOptions {
@@ -56,7 +72,13 @@ export interface IMcpRegistry {
 	readonly lazyCollectionState: IObservable<LazyCollectionState>;
 
 	/** Helper function to observe a definition by its reference. */
-	getServerDefinition(collectionRef: McpDefinitionReference, definitionRef: McpDefinitionReference): IObservable<{ server: McpServerDefinition | undefined; collection: McpCollectionDefinition | undefined }>;
+	getServerDefinition(
+		collectionRef: McpDefinitionReference,
+		definitionRef: McpDefinitionReference
+	): IObservable<{
+		server: McpServerDefinition | undefined;
+		collection: McpCollectionDefinition | undefined;
+	}>;
 
 	/** Discover new collections, returning newly-discovered ones. */
 	discoverCollections(): Promise<McpCollectionDefinition[]>;
@@ -73,11 +95,18 @@ export interface IMcpRegistry {
 	/** Resets any saved inputs for the input, or globally. */
 	clearSavedInputs(scope: StorageScope, inputId?: string): Promise<void>;
 	/** Edits a previously-saved input. */
-	editSavedInput(inputId: string, folderData: IWorkspaceFolderData | undefined, configSection: string, target: ConfigurationTarget): Promise<void>;
+	editSavedInput(
+		inputId: string,
+		folderData: IWorkspaceFolderData | undefined,
+		configSection: string,
+		target: ConfigurationTarget
+	): Promise<void>;
 	/** Updates a saved input. */
 	setSavedInput(inputId: string, target: ConfigurationTarget, value: string): Promise<void>;
 	/** Gets saved inputs from storage. */
 	getSavedInputs(scope: StorageScope): Promise<{ [id: string]: IResolvedValue }>;
 	/** Creates a connection for the collection and definition. */
-	resolveConnection(options: IMcpResolveConnectionOptions): Promise<IMcpServerConnection | undefined>;
+	resolveConnection(
+		options: IMcpResolveConnectionOptions
+	): Promise<IMcpServerConnection | undefined>;
 }

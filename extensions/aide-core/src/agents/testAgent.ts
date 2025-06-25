@@ -38,8 +38,8 @@ export class TestAgent extends BaseAgent {
 			metadata: {
 				testType,
 				actionsGenerated: actions.length,
-				contextItems: context.length
-			}
+				contextItems: context.length,
+			},
 		};
 	}
 
@@ -55,8 +55,8 @@ export class TestAgent extends BaseAgent {
 				unit: 0,
 				integration: 0,
 				e2e: 0,
-				performance: 0
-			}
+				performance: 0,
+			},
 		};
 	}
 
@@ -78,7 +78,12 @@ export class TestAgent extends BaseAgent {
 
 		return 'general';
 	}
-	private async createUnitTests(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async createUnitTests(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a testing agent responsible for creating comprehensive unit tests. Your task is to:
 1. Analyze code requirements and create thorough test cases
 2. Generate unit tests with excellent coverage (aim for 90%+)
@@ -107,13 +112,13 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'src/__tests__/unit/example.test.ts',
-			content: this.generateUnitTestCode()
+			content: this.generateUnitTestCode(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: 'jest.config.js',
-			content: this.generateJestConfig()
+			content: this.generateJestConfig(),
 		});
 
 		return `🧪 **Unit Tests Created**
@@ -146,7 +151,12 @@ ${aiResponse}
 - Watch mode: \`npm run test:watch\`
 - Coverage: \`npm run test:coverage\``;
 	}
-	private async createIntegrationTests(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async createIntegrationTests(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a testing agent responsible for creating integration tests. Your task is to:
 1. Test component interactions and system integration
 2. Validate API endpoints and data flow
@@ -174,7 +184,7 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'src/__tests__/integration/api.test.ts',
-			content: this.generateIntegrationTestCode()
+			content: this.generateIntegrationTestCode(),
 		});
 
 		return `🔗 **Integration Tests Created**
@@ -208,7 +218,12 @@ ${aiResponse}
 - Environment variables
 - Test data fixtures`;
 	}
-	private async createE2ETests(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async createE2ETests(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a testing agent responsible for creating end-to-end tests. Your task is to:
 1. Design complete user journey tests from start to finish
 2. Test real user interactions and workflows
@@ -236,13 +251,13 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'e2e/user-journey.spec.ts',
-			content: this.generateE2ETestCode()
+			content: this.generateE2ETestCode(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: 'playwright.config.ts',
-			content: this.generatePlaywrightConfig()
+			content: this.generatePlaywrightConfig(),
 		});
 
 		return `🎭 **End-to-End Tests Created**
@@ -281,7 +296,12 @@ ${aiResponse}
 - Debug mode: \`npx playwright test --debug\`
 - Report: \`npx playwright show-report\``;
 	}
-	private async createPerformanceTests(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async createPerformanceTests(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a testing agent responsible for creating performance tests. Your task is to:
 1. Design load testing and stress testing scenarios
 2. Create performance benchmarks and thresholds
@@ -309,7 +329,7 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'performance/load-test.js',
-			content: this.generatePerformanceTestCode()
+			content: this.generatePerformanceTestCode(),
 		});
 
 		return `⚡ **Performance Tests Created**
@@ -348,7 +368,12 @@ ${aiResponse}
 - Lighthouse for web vitals
 - Bundle analyzer for optimization`;
 	}
-	private async analyzeTestRequirements(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async analyzeTestRequirements(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a test analysis agent responsible for analyzing testing requirements. Your task is to:
 1. Analyze project requirements and identify testing needs
 2. Suggest comprehensive testing strategies

@@ -5,9 +5,24 @@
 
 import { localize } from '../../../../nls.js';
 import { deepClone } from '../../../../base/common/objects.js';
-import { badgeBackground, buttonForeground, chartsBlue, chartsPurple, foreground } from '../../../../platform/theme/common/colorRegistry.js';
-import { asCssVariable, ColorIdentifier, registerColor } from '../../../../platform/theme/common/colorUtils.js';
-import { ISCMHistoryItem, ISCMHistoryItemGraphNode, ISCMHistoryItemRef, ISCMHistoryItemViewModel } from '../common/history.js';
+import {
+	badgeBackground,
+	buttonForeground,
+	chartsBlue,
+	chartsPurple,
+	foreground,
+} from '../../../../platform/theme/common/colorRegistry.js';
+import {
+	asCssVariable,
+	ColorIdentifier,
+	registerColor,
+} from '../../../../platform/theme/common/colorUtils.js';
+import {
+	ISCMHistoryItem,
+	ISCMHistoryItemGraphNode,
+	ISCMHistoryItemRef,
+	ISCMHistoryItemViewModel,
+} from '../common/history.js';
 import { rot } from '../../../../base/common/numbers.js';
 import { svgElem } from '../../../../base/browser/dom.js';
 import { compareHistoryItemRefs } from './util.js';
@@ -21,31 +36,98 @@ const CIRCLE_STROKE_WIDTH = 2;
 /**
  * History item reference colors (local, remote, base)
  */
-export const historyItemRefColor = registerColor('scmGraph.historyItemRefColor', chartsBlue, localize('scmGraphHistoryItemRefColor', "History item reference color."));
-export const historyItemRemoteRefColor = registerColor('scmGraph.historyItemRemoteRefColor', chartsPurple, localize('scmGraphHistoryItemRemoteRefColor', "History item remote reference color."));
-export const historyItemBaseRefColor = registerColor('scmGraph.historyItemBaseRefColor', '#EA5C00', localize('scmGraphHistoryItemBaseRefColor', "History item base reference color."));
+export const historyItemRefColor = registerColor(
+	'scmGraph.historyItemRefColor',
+	chartsBlue,
+	localize('scmGraphHistoryItemRefColor', 'History item reference color.')
+);
+export const historyItemRemoteRefColor = registerColor(
+	'scmGraph.historyItemRemoteRefColor',
+	chartsPurple,
+	localize('scmGraphHistoryItemRemoteRefColor', 'History item remote reference color.')
+);
+export const historyItemBaseRefColor = registerColor(
+	'scmGraph.historyItemBaseRefColor',
+	'#EA5C00',
+	localize('scmGraphHistoryItemBaseRefColor', 'History item base reference color.')
+);
 
 /**
  * History item hover color
  */
-export const historyItemHoverDefaultLabelForeground = registerColor('scmGraph.historyItemHoverDefaultLabelForeground', foreground, localize('scmGraphHistoryItemHoverDefaultLabelForeground', "History item hover default label foreground color."));
-export const historyItemHoverDefaultLabelBackground = registerColor('scmGraph.historyItemHoverDefaultLabelBackground', badgeBackground, localize('scmGraphHistoryItemHoverDefaultLabelBackground', "History item hover default label background color."));
-export const historyItemHoverLabelForeground = registerColor('scmGraph.historyItemHoverLabelForeground', buttonForeground, localize('scmGraphHistoryItemHoverLabelForeground', "History item hover label foreground color."));
-export const historyItemHoverAdditionsForeground = registerColor('scmGraph.historyItemHoverAdditionsForeground', { light: '#587C0C', dark: '#81B88B', hcDark: '#A1E3AD', hcLight: '#374E06' }, localize('scmGraph.HistoryItemHoverAdditionsForeground', "History item hover additions foreground color."));
-export const historyItemHoverDeletionsForeground = registerColor('scmGraph.historyItemHoverDeletionsForeground', { light: '#AD0707', dark: '#C74E39', hcDark: '#C74E39', hcLight: '#AD0707' }, localize('scmGraph.HistoryItemHoverDeletionsForeground', "History item hover deletions foreground color."));
+export const historyItemHoverDefaultLabelForeground = registerColor(
+	'scmGraph.historyItemHoverDefaultLabelForeground',
+	foreground,
+	localize(
+		'scmGraphHistoryItemHoverDefaultLabelForeground',
+		'History item hover default label foreground color.'
+	)
+);
+export const historyItemHoverDefaultLabelBackground = registerColor(
+	'scmGraph.historyItemHoverDefaultLabelBackground',
+	badgeBackground,
+	localize(
+		'scmGraphHistoryItemHoverDefaultLabelBackground',
+		'History item hover default label background color.'
+	)
+);
+export const historyItemHoverLabelForeground = registerColor(
+	'scmGraph.historyItemHoverLabelForeground',
+	buttonForeground,
+	localize('scmGraphHistoryItemHoverLabelForeground', 'History item hover label foreground color.')
+);
+export const historyItemHoverAdditionsForeground = registerColor(
+	'scmGraph.historyItemHoverAdditionsForeground',
+	{ light: '#587C0C', dark: '#81B88B', hcDark: '#A1E3AD', hcLight: '#374E06' },
+	localize(
+		'scmGraph.HistoryItemHoverAdditionsForeground',
+		'History item hover additions foreground color.'
+	)
+);
+export const historyItemHoverDeletionsForeground = registerColor(
+	'scmGraph.historyItemHoverDeletionsForeground',
+	{ light: '#AD0707', dark: '#C74E39', hcDark: '#C74E39', hcLight: '#AD0707' },
+	localize(
+		'scmGraph.HistoryItemHoverDeletionsForeground',
+		'History item hover deletions foreground color.'
+	)
+);
 
 /**
  * History graph color registry
  */
 export const colorRegistry: ColorIdentifier[] = [
-	registerColor('scmGraph.foreground1', '#FFB000', localize('scmGraphForeground1', "Source control graph foreground color (1).")),
-	registerColor('scmGraph.foreground2', '#DC267F', localize('scmGraphForeground2', "Source control graph foreground color (2).")),
-	registerColor('scmGraph.foreground3', '#994F00', localize('scmGraphForeground3', "Source control graph foreground color (3).")),
-	registerColor('scmGraph.foreground4', '#40B0A6', localize('scmGraphForeground4', "Source control graph foreground color (4).")),
-	registerColor('scmGraph.foreground5', '#B66DFF', localize('scmGraphForeground5', "Source control graph foreground color (5).")),
+	registerColor(
+		'scmGraph.foreground1',
+		'#FFB000',
+		localize('scmGraphForeground1', 'Source control graph foreground color (1).')
+	),
+	registerColor(
+		'scmGraph.foreground2',
+		'#DC267F',
+		localize('scmGraphForeground2', 'Source control graph foreground color (2).')
+	),
+	registerColor(
+		'scmGraph.foreground3',
+		'#994F00',
+		localize('scmGraphForeground3', 'Source control graph foreground color (3).')
+	),
+	registerColor(
+		'scmGraph.foreground4',
+		'#40B0A6',
+		localize('scmGraphForeground4', 'Source control graph foreground color (4).')
+	),
+	registerColor(
+		'scmGraph.foreground5',
+		'#B66DFF',
+		localize('scmGraphForeground5', 'Source control graph foreground color (5).')
+	),
 ];
 
-function getLabelColorIdentifier(historyItem: ISCMHistoryItem, colorMap: Map<string, ColorIdentifier | undefined>): ColorIdentifier | undefined {
+function getLabelColorIdentifier(
+	historyItem: ISCMHistoryItem,
+	colorMap: Map<string, ColorIdentifier | undefined>
+): ColorIdentifier | undefined {
 	for (const ref of historyItem.references ?? []) {
 		const colorIdentifier = colorMap.get(ref.id);
 		if (colorIdentifier !== undefined) {
@@ -66,7 +148,12 @@ function createPath(colorIdentifier: string, strokeWidth = 1): SVGPathElement {
 	return path;
 }
 
-function drawCircle(index: number, radius: number, strokeWidth: number, colorIdentifier?: string): SVGCircleElement {
+function drawCircle(
+	index: number,
+	radius: number,
+	strokeWidth: number,
+	colorIdentifier?: string
+): SVGCircleElement {
 	const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
 	circle.setAttribute('cx', `${SWIMLANE_WIDTH * (index + 1)}`);
 	circle.setAttribute('cy', `${SWIMLANE_WIDTH}`);
@@ -80,7 +167,13 @@ function drawCircle(index: number, radius: number, strokeWidth: number, colorIde
 	return circle;
 }
 
-function drawVerticalLine(x1: number, y1: number, y2: number, color: string, strokeWidth = 1): SVGPathElement {
+function drawVerticalLine(
+	x1: number,
+	y1: number,
+	y2: number,
+	color: string,
+	strokeWidth = 1
+): SVGPathElement {
 	const path = createPath(color, strokeWidth);
 	path.setAttribute('d', `M ${x1} ${y1} V ${y2}`);
 
@@ -97,7 +190,9 @@ function findLastIndex(nodes: ISCMHistoryItemGraphNode[], id: string): number {
 	return -1;
 }
 
-export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemViewModel): SVGElement {
+export function renderSCMHistoryItemGraph(
+	historyItemViewModel: ISCMHistoryItemViewModel
+): SVGElement {
 	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 	svg.classList.add('graph');
 
@@ -112,8 +207,12 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 	const circleIndex = inputIndex !== -1 ? inputIndex : inputSwimlanes.length;
 
 	// Circle color - use the output swimlane color if present, otherwise the input swimlane color
-	const circleColor = circleIndex < outputSwimlanes.length ? outputSwimlanes[circleIndex].color :
-		circleIndex < inputSwimlanes.length ? inputSwimlanes[circleIndex].color : historyItemRefColor;
+	const circleColor =
+		circleIndex < outputSwimlanes.length
+			? outputSwimlanes[circleIndex].color
+			: circleIndex < inputSwimlanes.length
+				? inputSwimlanes[circleIndex].color
+				: historyItemRefColor;
 
 	let outputSwimlaneIndex = 0;
 	for (let index = 0; index < inputSwimlanes.length; index++) {
@@ -128,7 +227,9 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 
 				// Draw /
 				d.push(`M ${SWIMLANE_WIDTH * (index + 1)} 0`);
-				d.push(`A ${SWIMLANE_WIDTH} ${SWIMLANE_WIDTH} 0 0 1 ${SWIMLANE_WIDTH * (index)} ${SWIMLANE_WIDTH}`);
+				d.push(
+					`A ${SWIMLANE_WIDTH} ${SWIMLANE_WIDTH} 0 0 1 ${SWIMLANE_WIDTH * index} ${SWIMLANE_WIDTH}`
+				);
 
 				// Draw -
 				d.push(`H ${SWIMLANE_WIDTH * (circleIndex + 1)}`);
@@ -140,8 +241,10 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 			}
 		} else {
 			// Not the current commit
-			if (outputSwimlaneIndex < outputSwimlanes.length &&
-				inputSwimlanes[index].id === outputSwimlanes[outputSwimlaneIndex].id) {
+			if (
+				outputSwimlaneIndex < outputSwimlanes.length &&
+				inputSwimlanes[index].id === outputSwimlanes[outputSwimlaneIndex].id
+			) {
 				if (index === outputSwimlaneIndex) {
 					// Draw |
 					const path = drawVerticalLine(SWIMLANE_WIDTH * (index + 1), 0, SWIMLANE_HEIGHT, color);
@@ -155,13 +258,17 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 					d.push(`V 6`);
 
 					// Draw /
-					d.push(`A ${SWIMLANE_CURVE_RADIUS} ${SWIMLANE_CURVE_RADIUS} 0 0 1 ${(SWIMLANE_WIDTH * (index + 1)) - SWIMLANE_CURVE_RADIUS} ${SWIMLANE_HEIGHT / 2}`);
+					d.push(
+						`A ${SWIMLANE_CURVE_RADIUS} ${SWIMLANE_CURVE_RADIUS} 0 0 1 ${SWIMLANE_WIDTH * (index + 1) - SWIMLANE_CURVE_RADIUS} ${SWIMLANE_HEIGHT / 2}`
+					);
 
 					// Draw -
-					d.push(`H ${(SWIMLANE_WIDTH * (outputSwimlaneIndex + 1)) + SWIMLANE_CURVE_RADIUS}`);
+					d.push(`H ${SWIMLANE_WIDTH * (outputSwimlaneIndex + 1) + SWIMLANE_CURVE_RADIUS}`);
 
 					// Draw /
-					d.push(`A ${SWIMLANE_CURVE_RADIUS} ${SWIMLANE_CURVE_RADIUS} 0 0 0 ${SWIMLANE_WIDTH * (outputSwimlaneIndex + 1)} ${(SWIMLANE_HEIGHT / 2) + SWIMLANE_CURVE_RADIUS}`);
+					d.push(
+						`A ${SWIMLANE_CURVE_RADIUS} ${SWIMLANE_CURVE_RADIUS} 0 0 0 ${SWIMLANE_WIDTH * (outputSwimlaneIndex + 1)} ${SWIMLANE_HEIGHT / 2 + SWIMLANE_CURVE_RADIUS}`
+					);
 
 					// Draw |
 					d.push(`V ${SWIMLANE_HEIGHT}`);
@@ -188,7 +295,9 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 
 		// Draw \
 		d.push(`M ${SWIMLANE_WIDTH * parentOutputIndex} ${SWIMLANE_HEIGHT / 2}`);
-		d.push(`A ${SWIMLANE_WIDTH} ${SWIMLANE_WIDTH} 0 0 1 ${SWIMLANE_WIDTH * (parentOutputIndex + 1)} ${SWIMLANE_HEIGHT}`);
+		d.push(
+			`A ${SWIMLANE_WIDTH} ${SWIMLANE_WIDTH} 0 0 1 ${SWIMLANE_WIDTH * (parentOutputIndex + 1)} ${SWIMLANE_HEIGHT}`
+		);
 
 		// Draw -
 		d.push(`M ${SWIMLANE_WIDTH * parentOutputIndex} ${SWIMLANE_HEIGHT / 2}`);
@@ -200,20 +309,35 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 
 	// Draw | to *
 	if (inputIndex !== -1) {
-		const path = drawVerticalLine(SWIMLANE_WIDTH * (circleIndex + 1), 0, SWIMLANE_HEIGHT / 2, inputSwimlanes[inputIndex].color);
+		const path = drawVerticalLine(
+			SWIMLANE_WIDTH * (circleIndex + 1),
+			0,
+			SWIMLANE_HEIGHT / 2,
+			inputSwimlanes[inputIndex].color
+		);
 		svg.append(path);
 	}
 
 	// Draw | from *
 	if (historyItem.parentIds.length > 0) {
-		const path = drawVerticalLine(SWIMLANE_WIDTH * (circleIndex + 1), SWIMLANE_HEIGHT / 2, SWIMLANE_HEIGHT, circleColor);
+		const path = drawVerticalLine(
+			SWIMLANE_WIDTH * (circleIndex + 1),
+			SWIMLANE_HEIGHT / 2,
+			SWIMLANE_HEIGHT,
+			circleColor
+		);
 		svg.append(path);
 	}
 
 	// Draw *
 	if (historyItemViewModel.isCurrent) {
 		// HEAD
-		const outerCircle = drawCircle(circleIndex, CIRCLE_RADIUS + 3, CIRCLE_STROKE_WIDTH, circleColor);
+		const outerCircle = drawCircle(
+			circleIndex,
+			CIRCLE_RADIUS + 3,
+			CIRCLE_STROKE_WIDTH,
+			circleColor
+		);
 		svg.append(outerCircle);
 
 		const innerCircle = drawCircle(circleIndex, CIRCLE_STROKE_WIDTH, CIRCLE_RADIUS);
@@ -221,10 +345,20 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 	} else {
 		if (historyItem.parentIds.length > 1) {
 			// Multi-parent node
-			const circleOuter = drawCircle(circleIndex, CIRCLE_RADIUS + 2, CIRCLE_STROKE_WIDTH, circleColor);
+			const circleOuter = drawCircle(
+				circleIndex,
+				CIRCLE_RADIUS + 2,
+				CIRCLE_STROKE_WIDTH,
+				circleColor
+			);
 			svg.append(circleOuter);
 
-			const circleInner = drawCircle(circleIndex, CIRCLE_RADIUS - 1, CIRCLE_STROKE_WIDTH, circleColor);
+			const circleInner = drawCircle(
+				circleIndex,
+				CIRCLE_RADIUS - 1,
+				CIRCLE_STROKE_WIDTH,
+				circleColor
+			);
 			svg.append(circleInner);
 		} else {
 			// Node
@@ -240,15 +374,24 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 	return svg;
 }
 
-export function renderSCMHistoryGraphPlaceholder(columns: ISCMHistoryItemGraphNode[], highlightIndex?: number): HTMLElement {
+export function renderSCMHistoryGraphPlaceholder(
+	columns: ISCMHistoryItemGraphNode[],
+	highlightIndex?: number
+): HTMLElement {
 	const elements = svgElem('svg', {
-		style: { height: `${SWIMLANE_HEIGHT}px`, width: `${SWIMLANE_WIDTH * (columns.length + 1)}px`, }
+		style: { height: `${SWIMLANE_HEIGHT}px`, width: `${SWIMLANE_WIDTH * (columns.length + 1)}px` },
 	});
 
 	// Draw |
 	for (let index = 0; index < columns.length; index++) {
 		const strokeWidth = index === highlightIndex ? 3 : 1;
-		const path = drawVerticalLine(SWIMLANE_WIDTH * (index + 1), 0, SWIMLANE_HEIGHT, columns[index].color, strokeWidth);
+		const path = drawVerticalLine(
+			SWIMLANE_WIDTH * (index + 1),
+			0,
+			SWIMLANE_HEIGHT,
+			columns[index].color,
+			strokeWidth
+		);
 		elements.root.append(path);
 	}
 
@@ -282,7 +425,7 @@ export function toISCMHistoryItemViewModelArray(
 					if (!firstParentAdded) {
 						outputSwimlanes.push({
 							id: historyItem.parentIds[0],
-							color: getLabelColorIdentifier(historyItem, colorMap) ?? node.color
+							color: getLabelColorIdentifier(historyItem, colorMap) ?? node.color,
 						});
 						firstParentAdded = true;
 					}
@@ -302,9 +445,10 @@ export function toISCMHistoryItemViewModelArray(
 			if (i === 0) {
 				colorIdentifier = getLabelColorIdentifier(historyItem, colorMap);
 			} else {
-				const historyItemParent = historyItems
-					.find(h => h.id === historyItem.parentIds[i]);
-				colorIdentifier = historyItemParent ? getLabelColorIdentifier(historyItemParent, colorMap) : undefined;
+				const historyItemParent = historyItems.find(h => h.id === historyItem.parentIds[i]);
+				colorIdentifier = historyItemParent
+					? getLabelColorIdentifier(historyItemParent, colorMap)
+					: undefined;
 			}
 
 			if (!colorIdentifier) {
@@ -314,37 +458,47 @@ export function toISCMHistoryItemViewModelArray(
 
 			outputSwimlanes.push({
 				id: historyItem.parentIds[i],
-				color: colorIdentifier
+				color: colorIdentifier,
 			});
 		}
 
 		// Add colors to references
-		const references = (historyItem.references ?? [])
-			.map(ref => {
-				let color = colorMap.get(ref.id);
-				if (colorMap.has(ref.id) && color === undefined) {
-					// Find the history item in the input swimlanes
-					const inputIndex = inputSwimlanes.findIndex(node => node.id === historyItem.id);
+		const references = (historyItem.references ?? []).map(ref => {
+			let color = colorMap.get(ref.id);
+			if (colorMap.has(ref.id) && color === undefined) {
+				// Find the history item in the input swimlanes
+				const inputIndex = inputSwimlanes.findIndex(node => node.id === historyItem.id);
 
-					// Circle index - use the input swimlane index if present, otherwise add it to the end
-					const circleIndex = inputIndex !== -1 ? inputIndex : inputSwimlanes.length;
+				// Circle index - use the input swimlane index if present, otherwise add it to the end
+				const circleIndex = inputIndex !== -1 ? inputIndex : inputSwimlanes.length;
 
-					// Circle color - use the output swimlane color if present, otherwise the input swimlane color
-					color = circleIndex < outputSwimlanes.length ? outputSwimlanes[circleIndex].color :
-						circleIndex < inputSwimlanes.length ? inputSwimlanes[circleIndex].color : historyItemRefColor;
-				}
+				// Circle color - use the output swimlane color if present, otherwise the input swimlane color
+				color =
+					circleIndex < outputSwimlanes.length
+						? outputSwimlanes[circleIndex].color
+						: circleIndex < inputSwimlanes.length
+							? inputSwimlanes[circleIndex].color
+							: historyItemRefColor;
+			}
 
-				return { ...ref, color };
-			});
+			return { ...ref, color };
+		});
 
 		// Sort references
 		references.sort((ref1, ref2) =>
-			compareHistoryItemRefs(ref1, ref2, currentHistoryItemRef, currentHistoryItemRemoteRef, currentHistoryItemBaseRef));
+			compareHistoryItemRefs(
+				ref1,
+				ref2,
+				currentHistoryItemRef,
+				currentHistoryItemRemoteRef,
+				currentHistoryItemBaseRef
+			)
+		);
 
 		viewModels.push({
 			historyItem: {
 				...historyItem,
-				references
+				references,
 			},
 			isCurrent,
 			inputSwimlanes,

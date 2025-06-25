@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, DisposableStore, toDisposable } from '../../../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	toDisposable,
+} from '../../../../../../base/common/lifecycle.js';
 import { CellDiffInfo } from '../notebookDiffViewModel.js';
 import { INotebookEditor, NotebookOverviewRulerLane } from '../../notebookBrowser.js';
 import { NotebookCellTextModel } from '../../../common/model/notebookCellTextModel.js';
@@ -11,9 +15,7 @@ import { overviewRulerModifiedForeground } from '../../../../scm/common/quickDif
 
 export class NotebookModifiedCellDecorator extends Disposable {
 	private readonly decorators = this._register(new DisposableStore());
-	constructor(
-		private readonly notebookEditor: INotebookEditor,
-	) {
+	constructor(private readonly notebookEditor: INotebookEditor) {
 		super();
 	}
 
@@ -31,24 +33,29 @@ export class NotebookModifiedCellDecorator extends Disposable {
 			}
 		}
 
-		const ids = this.notebookEditor.deltaCellDecorations([], modifiedCells.map(cell => ({
-			handle: cell.handle,
-			options: {
-				overviewRuler: {
-					color: overviewRulerModifiedForeground,
-					modelRanges: [],
-					includeOutput: true,
-					position: NotebookOverviewRulerLane.Full
-				}
-			}
-		})));
+		const ids = this.notebookEditor.deltaCellDecorations(
+			[],
+			modifiedCells.map(cell => ({
+				handle: cell.handle,
+				options: {
+					overviewRuler: {
+						color: overviewRulerModifiedForeground,
+						modelRanges: [],
+						includeOutput: true,
+						position: NotebookOverviewRulerLane.Full,
+					},
+				},
+			}))
+		);
 
 		this.clear();
-		this.decorators.add(toDisposable(() => {
-			if (!this.notebookEditor.isDisposed) {
-				this.notebookEditor.deltaCellDecorations(ids, []);
-			}
-		}));
+		this.decorators.add(
+			toDisposable(() => {
+				if (!this.notebookEditor.isDisposed) {
+					this.notebookEditor.deltaCellDecorations(ids, []);
+				}
+			})
+		);
 	}
 	public clear() {
 		this.decorators.clear();

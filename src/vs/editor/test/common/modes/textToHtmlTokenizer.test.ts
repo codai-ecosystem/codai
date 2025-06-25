@@ -7,16 +7,22 @@ import assert from 'assert';
 import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { ColorId, FontStyle, MetadataConsts } from '../../../common/encodedTokenAttributes.js';
-import { EncodedTokenizationResult, IState, TokenizationRegistry } from '../../../common/languages.js';
+import {
+	EncodedTokenizationResult,
+	IState,
+	TokenizationRegistry,
+} from '../../../common/languages.js';
 import { ILanguageService } from '../../../common/languages/language.js';
-import { _tokenizeToString, tokenizeLineToHTML } from '../../../common/languages/textToHtmlTokenizer.js';
+import {
+	_tokenizeToString,
+	tokenizeLineToHTML,
+} from '../../../common/languages/textToHtmlTokenizer.js';
 import { LanguageIdCodec } from '../../../common/services/languagesRegistry.js';
 import { TestLineToken, TestLineTokens } from '../core/testLineToken.js';
 import { createModelServices } from '../testTextModel.js';
 import { TestInstantiationService } from '../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 
 suite('Editor Modes - textToHtmlTokenizer', () => {
-
 	let disposables: DisposableStore;
 	let instantiationService: TestInstantiationService;
 
@@ -32,7 +38,7 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function toStr(pieces: { className: string; text: string }[]): string {
-		const resultArr = pieces.map((t) => `<span class="${t.className}">${t.text}</span>`);
+		const resultArr = pieces.map(t => `<span class="${t.className}">${t.text}</span>`);
 		return resultArr.join('');
 	}
 
@@ -58,7 +64,11 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 		const mode = disposables.add(instantiationService.createInstance(Mode));
 		const support = TokenizationRegistry.get(mode.languageId)!;
 
-		const actual = _tokenizeToString('.abc..def...gh\n.abc..def...gh', new LanguageIdCodec(), support);
+		const actual = _tokenizeToString(
+			'.abc..def...gh\n.abc..def...gh',
+			new LanguageIdCodec(),
+			support
+		);
 		const expected1 = [
 			{ className: 'mtk7', text: '.' },
 			{ className: 'mtk9', text: 'abc' },
@@ -87,36 +97,19 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 		const lineTokens = new TestLineTokens([
 			new TestLineToken(
 				4,
-				(
-					(3 << MetadataConsts.FOREGROUND_OFFSET)
-					| ((FontStyle.Bold | FontStyle.Italic) << MetadataConsts.FONT_STYLE_OFFSET)
-				) >>> 0
+				((3 << MetadataConsts.FOREGROUND_OFFSET) |
+					((FontStyle.Bold | FontStyle.Italic) << MetadataConsts.FONT_STYLE_OFFSET)) >>>
+					0
 			),
-			new TestLineToken(
-				5,
-				(
-					(1 << MetadataConsts.FOREGROUND_OFFSET)
-				) >>> 0
-			),
-			new TestLineToken(
-				10,
-				(
-					(4 << MetadataConsts.FOREGROUND_OFFSET)
-				) >>> 0
-			),
-			new TestLineToken(
-				11,
-				(
-					(1 << MetadataConsts.FOREGROUND_OFFSET)
-				) >>> 0
-			),
+			new TestLineToken(5, (1 << MetadataConsts.FOREGROUND_OFFSET) >>> 0),
+			new TestLineToken(10, (4 << MetadataConsts.FOREGROUND_OFFSET) >>> 0),
+			new TestLineToken(11, (1 << MetadataConsts.FOREGROUND_OFFSET) >>> 0),
 			new TestLineToken(
 				17,
-				(
-					(5 << MetadataConsts.FOREGROUND_OFFSET)
-					| ((FontStyle.Underline) << MetadataConsts.FONT_STYLE_OFFSET)
-				) >>> 0
-			)
+				((5 << MetadataConsts.FOREGROUND_OFFSET) |
+					(FontStyle.Underline << MetadataConsts.FONT_STYLE_OFFSET)) >>>
+					0
+			),
 		]);
 		const colorMap = [null!, '#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff'];
 
@@ -129,7 +122,7 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 				'<span style="color: #00ff00;">hello</span>',
 				'<span style="color: #000000;"> </span>',
 				'<span style="color: #0000ff;text-decoration: underline;">world!</span>',
-				'</div>'
+				'</div>',
 			].join('')
 		);
 
@@ -142,7 +135,7 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 				'<span style="color: #00ff00;">hello</span>',
 				'<span style="color: #000000;"> </span>',
 				'<span style="color: #0000ff;text-decoration: underline;">w</span>',
-				'</div>'
+				'</div>',
 			].join('')
 		);
 
@@ -154,7 +147,7 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 				'<span style="color: #000000;"> </span>',
 				'<span style="color: #00ff00;">hello</span>',
 				'<span style="color: #000000;"> </span>',
-				'</div>'
+				'</div>',
 			].join('')
 		);
 
@@ -166,7 +159,7 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 				'<span style="color: #000000;"> </span>',
 				'<span style="color: #00ff00;">hello</span>',
 				'<span style="color: #000000;"> </span>',
-				'</div>'
+				'</div>',
 			].join('')
 		);
 
@@ -177,7 +170,7 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 				'<span style="color: #000000;">&#160;</span>',
 				'<span style="color: #00ff00;">hello</span>',
 				'<span style="color: #000000;"> </span>',
-				'</div>'
+				'</div>',
 			].join('')
 		);
 
@@ -187,69 +180,39 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 				'<div>',
 				'<span style="color: #00ff00;">hello</span>',
 				'<span style="color: #000000;"> </span>',
-				'</div>'
+				'</div>',
 			].join('')
 		);
 
 		assert.strictEqual(
 			tokenizeLineToHTML(text, lineTokens, colorMap, 5, 10, 4, true),
-			[
-				'<div>',
-				'<span style="color: #00ff00;">hello</span>',
-				'</div>'
-			].join('')
+			['<div>', '<span style="color: #00ff00;">hello</span>', '</div>'].join('')
 		);
 
 		assert.strictEqual(
 			tokenizeLineToHTML(text, lineTokens, colorMap, 6, 9, 4, true),
-			[
-				'<div>',
-				'<span style="color: #00ff00;">ell</span>',
-				'</div>'
-			].join('')
+			['<div>', '<span style="color: #00ff00;">ell</span>', '</div>'].join('')
 		);
 	});
 	test('tokenizeLineToHTML handle spaces #35954', () => {
 		const text = '  Ciao   hello world!';
 		const lineTokens = new TestLineTokens([
-			new TestLineToken(
-				2,
-				(
-					(1 << MetadataConsts.FOREGROUND_OFFSET)
-				) >>> 0
-			),
+			new TestLineToken(2, (1 << MetadataConsts.FOREGROUND_OFFSET) >>> 0),
 			new TestLineToken(
 				6,
-				(
-					(3 << MetadataConsts.FOREGROUND_OFFSET)
-					| ((FontStyle.Bold | FontStyle.Italic) << MetadataConsts.FONT_STYLE_OFFSET)
-				) >>> 0
+				((3 << MetadataConsts.FOREGROUND_OFFSET) |
+					((FontStyle.Bold | FontStyle.Italic) << MetadataConsts.FONT_STYLE_OFFSET)) >>>
+					0
 			),
-			new TestLineToken(
-				9,
-				(
-					(1 << MetadataConsts.FOREGROUND_OFFSET)
-				) >>> 0
-			),
-			new TestLineToken(
-				14,
-				(
-					(4 << MetadataConsts.FOREGROUND_OFFSET)
-				) >>> 0
-			),
-			new TestLineToken(
-				15,
-				(
-					(1 << MetadataConsts.FOREGROUND_OFFSET)
-				) >>> 0
-			),
+			new TestLineToken(9, (1 << MetadataConsts.FOREGROUND_OFFSET) >>> 0),
+			new TestLineToken(14, (4 << MetadataConsts.FOREGROUND_OFFSET) >>> 0),
+			new TestLineToken(15, (1 << MetadataConsts.FOREGROUND_OFFSET) >>> 0),
 			new TestLineToken(
 				21,
-				(
-					(5 << MetadataConsts.FOREGROUND_OFFSET)
-					| ((FontStyle.Underline) << MetadataConsts.FONT_STYLE_OFFSET)
-				) >>> 0
-			)
+				((5 << MetadataConsts.FOREGROUND_OFFSET) |
+					(FontStyle.Underline << MetadataConsts.FONT_STYLE_OFFSET)) >>>
+					0
+			),
 		]);
 		const colorMap = [null!, '#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff'];
 
@@ -263,7 +226,7 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 				'<span style="color: #00ff00;">hello</span>',
 				'<span style="color: #000000;"> </span>',
 				'<span style="color: #0000ff;text-decoration: underline;">world!</span>',
-				'</div>'
+				'</div>',
 			].join('')
 		);
 
@@ -277,7 +240,7 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 				'<span style="color: #00ff00;">hello</span>',
 				'<span style="color: #000000;"> </span>',
 				'<span style="color: #0000ff;text-decoration: underline;">wo</span>',
-				'</div>'
+				'</div>',
 			].join('')
 		);
 
@@ -287,45 +250,45 @@ suite('Editor Modes - textToHtmlTokenizer', () => {
 				'<div>',
 				'<span style="color: #000000;">&#160; </span>',
 				'<span style="color: #ff0000;font-style: italic;font-weight: bold;">C</span>',
-				'</div>'
+				'</div>',
 			].join('')
 		);
 	});
-
 });
 
 class Mode extends Disposable {
-
 	public readonly languageId = 'textToHtmlTokenizerMode';
 
-	constructor(
-		@ILanguageService languageService: ILanguageService
-	) {
+	constructor(@ILanguageService languageService: ILanguageService) {
 		super();
 		this._register(languageService.registerLanguage({ id: this.languageId }));
-		this._register(TokenizationRegistry.register(this.languageId, {
-			getInitialState: (): IState => null!,
-			tokenize: undefined!,
-			tokenizeEncoded: (line: string, hasEOL: boolean, state: IState): EncodedTokenizationResult => {
-				const tokensArr: number[] = [];
-				let prevColor = -1 as ColorId;
-				for (let i = 0; i < line.length; i++) {
-					const colorId = (line.charAt(i) === '.' ? 7 : 9) as ColorId;
-					if (prevColor !== colorId) {
-						tokensArr.push(i);
-						tokensArr.push((
-							colorId << MetadataConsts.FOREGROUND_OFFSET
-						) >>> 0);
+		this._register(
+			TokenizationRegistry.register(this.languageId, {
+				getInitialState: (): IState => null!,
+				tokenize: undefined!,
+				tokenizeEncoded: (
+					line: string,
+					hasEOL: boolean,
+					state: IState
+				): EncodedTokenizationResult => {
+					const tokensArr: number[] = [];
+					let prevColor = -1 as ColorId;
+					for (let i = 0; i < line.length; i++) {
+						const colorId = (line.charAt(i) === '.' ? 7 : 9) as ColorId;
+						if (prevColor !== colorId) {
+							tokensArr.push(i);
+							tokensArr.push((colorId << MetadataConsts.FOREGROUND_OFFSET) >>> 0);
+						}
+						prevColor = colorId;
 					}
-					prevColor = colorId;
-				}
 
-				const tokens = new Uint32Array(tokensArr.length);
-				for (let i = 0; i < tokens.length; i++) {
-					tokens[i] = tokensArr[i];
-				}
-				return new EncodedTokenizationResult(tokens, null!);
-			}
-		}));
+					const tokens = new Uint32Array(tokensArr.length);
+					for (let i = 0; i < tokens.length; i++) {
+						tokens[i] = tokensArr[i];
+					}
+					return new EncodedTokenizationResult(tokens, null!);
+				},
+			})
+		);
 	}
 }

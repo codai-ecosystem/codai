@@ -7,7 +7,13 @@ import * as assert from 'assert';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { FileChangeType, FileSystemProviderErrorCode, FileType, IFileChange, IFileService } from '../../../../../platform/files/common/files.js';
+import {
+	FileChangeType,
+	FileSystemProviderErrorCode,
+	FileType,
+	IFileChange,
+	IFileService,
+} from '../../../../../platform/files/common/files.js';
 import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 import { ILoggerService, NullLogService } from '../../../../../platform/log/common/log.js';
@@ -15,7 +21,12 @@ import { IStorageService } from '../../../../../platform/storage/common/storage.
 import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
 import { NullTelemetryService } from '../../../../../platform/telemetry/common/telemetryUtils.js';
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
-import { TestContextService, TestLoggerService, TestProductService, TestStorageService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	TestContextService,
+	TestLoggerService,
+	TestProductService,
+	TestStorageService,
+} from '../../../../test/common/workbenchTestServices.js';
 import { IMcpRegistry } from '../../common/mcpRegistryTypes.js';
 import { McpResourceFilesystem } from '../../common/mcpResourceFilesystem.js';
 import { McpService } from '../../common/mcpService.js';
@@ -25,9 +36,7 @@ import { TestMcpMessageTransport, TestMcpRegistry } from './mcpRegistryTypes.js'
 import { IProductService } from '../../../../../platform/product/common/productService.js';
 import { Barrier, timeout } from '../../../../../base/common/async.js';
 
-
 suite('Workbench - MCP - ResourceFilesystem', () => {
-
 	const ds = ensureNoDisposablesAreLeakedInTestSuite();
 
 	let transport: TestMcpMessageTransport;
@@ -35,25 +44,39 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 
 	setup(() => {
 		const services = new ServiceCollection(
-			[IFileService, { registerProvider: () => { } }],
+			[IFileService, { registerProvider: () => {} }],
 			[IStorageService, ds.add(new TestStorageService())],
 			[ILoggerService, ds.add(new TestLoggerService())],
 			[IWorkspaceContextService, new TestContextService()],
 			[ITelemetryService, NullTelemetryService],
-			[IProductService, TestProductService],
+			[IProductService, TestProductService]
 		);
 
 		const parentInsta1 = ds.add(new TestInstantiationService(services));
 		const registry = new TestMcpRegistry(parentInsta1);
 
-		const parentInsta2 = ds.add(parentInsta1.createChild(new ServiceCollection([IMcpRegistry, registry])));
-		const mcpService = ds.add(new McpService(parentInsta2, registry, { registerToolData: () => Disposable.None, registerToolImplementation: () => Disposable.None, createToolSet: () => Disposable.None } as any, new NullLogService()));
+		const parentInsta2 = ds.add(
+			parentInsta1.createChild(new ServiceCollection([IMcpRegistry, registry]))
+		);
+		const mcpService = ds.add(
+			new McpService(
+				parentInsta2,
+				registry,
+				{
+					registerToolData: () => Disposable.None,
+					registerToolImplementation: () => Disposable.None,
+					createToolSet: () => Disposable.None,
+				} as any,
+				new NullLogService()
+			)
+		);
 		mcpService.updateCollectedServers();
 
-		const instaService = ds.add(parentInsta2.createChild(new ServiceCollection(
-			[IMcpRegistry, registry],
-			[IMcpService, mcpService],
-		)));
+		const instaService = ds.add(
+			parentInsta2.createChild(
+				new ServiceCollection([IMcpRegistry, registry], [IMcpService, mcpService])
+			)
+		);
 
 		fs = ds.add(instaService.createInstance(McpResourceFilesystem));
 
@@ -69,11 +92,13 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 				jsonrpc: '2.0',
 				result: {
 					contents: [{ uri: msg.params.uri, text: 'Hello World' }],
-				} satisfies MCP.ReadResourceResult
+				} satisfies MCP.ReadResourceResult,
 			};
 		});
 
-		const response = await fs.readFile(URI.parse('mcp-resource://746573742D736572766572/custom/hello/world.txt'));
+		const response = await fs.readFile(
+			URI.parse('mcp-resource://746573742D736572766572/custom/hello/world.txt')
+		);
 		assert.strictEqual(new TextDecoder().decode(response), 'Hello World');
 	});
 
@@ -85,11 +110,13 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 				jsonrpc: '2.0',
 				result: {
 					contents: [{ uri: msg.params.uri, text: 'Hello World' }],
-				} satisfies MCP.ReadResourceResult
+				} satisfies MCP.ReadResourceResult,
 			};
 		});
 
-		const fileStats = await fs.stat(URI.parse('mcp-resource://746573742D736572766572/custom/hello/world.txt'));
+		const fileStats = await fs.stat(
+			URI.parse('mcp-resource://746573742D736572766572/custom/hello/world.txt')
+		);
 		assert.strictEqual(fileStats.type, FileType.File);
 		assert.strictEqual(fileStats.size, 'Hello World'.length);
 	});
@@ -105,11 +132,13 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 						{ uri: 'custom://hello/file1.txt', text: 'File 1' },
 						{ uri: 'custom://hello/file2.txt', text: 'File 2' },
 					],
-				} satisfies MCP.ReadResourceResult
+				} satisfies MCP.ReadResourceResult,
 			};
 		});
 
-		const dirStats = await fs.stat(URI.parse('mcp-resource://746573742D736572766572/custom/hello/'));
+		const dirStats = await fs.stat(
+			URI.parse('mcp-resource://746573742D736572766572/custom/hello/')
+		);
 		assert.strictEqual(dirStats.type, FileType.Directory);
 		// Size should be sum of all file contents in the directory
 		assert.strictEqual(dirStats.size, 'File 1'.length + 'File 2'.length);
@@ -122,7 +151,7 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 				jsonrpc: '2.0',
 				result: {
 					contents: [],
-				} satisfies MCP.ReadResourceResult
+				} satisfies MCP.ReadResourceResult,
 			};
 		});
 
@@ -144,11 +173,13 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 						{ uri: 'custom://hello/dir/file2.txt', text: 'File 2' },
 						{ uri: 'custom://hello/dir/subdir/file3.txt', text: 'File 3' },
 					],
-				} satisfies MCP.ReadResourceResult
+				} satisfies MCP.ReadResourceResult,
 			};
 		});
 
-		const dirEntries = await fs.readdir(URI.parse('mcp-resource://746573742D736572766572/custom/hello/dir/'));
+		const dirEntries = await fs.readdir(
+			URI.parse('mcp-resource://746573742D736572766572/custom/hello/dir/')
+		);
 		assert.deepStrictEqual(dirEntries, [
 			['file1.txt', FileType.File],
 			['file2.txt', FileType.File],
@@ -163,7 +194,7 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 				jsonrpc: '2.0',
 				result: {
 					contents: [{ uri: msg.params.uri, text: 'This is a file' }],
-				} satisfies MCP.ReadResourceResult
+				} satisfies MCP.ReadResourceResult,
 			};
 		});
 
@@ -181,7 +212,7 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 				jsonrpc: '2.0',
 				result: {
 					contents: [{ uri: msg.params.uri, text: 'File content' }],
-				} satisfies MCP.ReadResourceResult
+				} satisfies MCP.ReadResourceResult,
 			};
 		});
 
@@ -247,11 +278,13 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 				jsonrpc: '2.0',
 				result: {
 					contents: [{ uri: msg.params.uri, blob: blobBase64 }],
-				} satisfies MCP.ReadResourceResult
+				} satisfies MCP.ReadResourceResult,
 			};
 		});
 
-		const response = await fs.readFile(URI.parse('mcp-resource://746573742D736572766572/custom/hello/blob.bin'));
+		const response = await fs.readFile(
+			URI.parse('mcp-resource://746573742D736572766572/custom/hello/blob.bin')
+		);
 		assert.strictEqual(new TextDecoder().decode(response), 'Hello World as Blob');
 	});
 
@@ -259,7 +292,13 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 		const uri = URI.parse('mcp-resource://746573742D736572766572/custom/hello/file.txt');
 
 		await assert.rejects(
-			async () => fs.writeFile(uri, new Uint8Array(), { create: true, overwrite: true, atomic: false, unlock: false }),
+			async () =>
+				fs.writeFile(uri, new Uint8Array(), {
+					create: true,
+					overwrite: true,
+					atomic: false,
+					unlock: false,
+				}),
 			(err: any) => err.code === FileSystemProviderErrorCode.NoPermissions
 		);
 
@@ -274,7 +313,12 @@ suite('Workbench - MCP - ResourceFilesystem', () => {
 		);
 
 		await assert.rejects(
-			async () => fs.rename(uri, URI.parse('mcp-resource://746573742D736572766572/custom/hello/newfile.txt'), { overwrite: false }),
+			async () =>
+				fs.rename(
+					uri,
+					URI.parse('mcp-resource://746573742D736572766572/custom/hello/newfile.txt'),
+					{ overwrite: false }
+				),
 			(err: any) => err.code === FileSystemProviderErrorCode.NoPermissions
 		);
 	});

@@ -27,7 +27,11 @@ interface IObservableMementoOpts<T> {
  * with storage service events, and must be tracked appropriately.
  */
 export function observableMemento<T>(opts: IObservableMementoOpts<T>) {
-	return (scope: StorageScope, target: StorageTarget, storageService: IStorageService): ObservableMemento<T> => {
+	return (
+		scope: StorageScope,
+		target: StorageTarget,
+		storageService: IStorageService
+	): ObservableMemento<T> => {
 		return new ObservableMemento<T>(opts, scope, target, storageService);
 	};
 }
@@ -43,7 +47,7 @@ export class ObservableMemento<T> extends ObservableValue<T> implements IDisposa
 		opts: IObservableMementoOpts<T>,
 		storageScope: StorageScope,
 		storageTarget: StorageTarget,
-		@IStorageService storageService: IStorageService,
+		@IStorageService storageService: IStorageService
 	) {
 		if (opts.defaultValue && typeof opts.defaultValue === 'object') {
 			opts.toStorage ??= (value: T) => JSON.stringify(value);
@@ -63,27 +67,35 @@ export class ObservableMemento<T> extends ObservableValue<T> implements IDisposa
 			}
 		}
 
-		super(new DebugNameData(undefined, `storage/${opts.key}`, undefined), initialValue, strictEquals);
+		super(
+			new DebugNameData(undefined, `storage/${opts.key}`, undefined),
+			initialValue,
+			strictEquals
+		);
 
 		const didChange = storageService.onDidChangeValue(storageScope, opts.key, this._store);
 		// only take external changes if there aren't local changes we've made
-		this._store.add(didChange((e) => {
-			if (e.external && e.key === opts.key && !this._didChange) {
-				this.set(opts.defaultValue, undefined);
-			}
-		}));
-
-		this._store.add(storageService.onWillSaveState(() => {
-			if (this._didChange) {
-				this._didChange = false;
-				const value = this.get();
-				if (opts.toStorage) {
-					storageService.store(opts.key, opts.toStorage(value), storageScope, storageTarget);
-				} else {
-					storageService.store(opts.key, String(value), storageScope, storageTarget);
+		this._store.add(
+			didChange(e => {
+				if (e.external && e.key === opts.key && !this._didChange) {
+					this.set(opts.defaultValue, undefined);
 				}
-			}
-		}));
+			})
+		);
+
+		this._store.add(
+			storageService.onWillSaveState(() => {
+				if (this._didChange) {
+					this._didChange = false;
+					const value = this.get();
+					if (opts.toStorage) {
+						storageService.store(opts.key, opts.toStorage(value), storageScope, storageTarget);
+					} else {
+						storageService.store(opts.key, String(value), storageScope, storageTarget);
+					}
+				}
+			})
+		);
 	}
 
 	protected override _setValue(newValue: T): void {

@@ -26,14 +26,16 @@ function getUTF16BE_TextDecoder(): TextDecoder {
 let _platformTextDecoder: TextDecoder | null;
 export function getPlatformTextDecoder(): TextDecoder {
 	if (!_platformTextDecoder) {
-		_platformTextDecoder = platform.isLittleEndian() ? getUTF16LE_TextDecoder() : getUTF16BE_TextDecoder();
+		_platformTextDecoder = platform.isLittleEndian()
+			? getUTF16LE_TextDecoder()
+			: getUTF16BE_TextDecoder();
 	}
 	return _platformTextDecoder;
 }
 
 export function decodeUTF16LE(source: Uint8Array, offset: number, len: number): string {
 	const view = new Uint16Array(source.buffer, offset, len);
-	if (len > 0 && (view[0] === 0xFEFF || view[0] === 0xFFFE)) {
+	if (len > 0 && (view[0] === 0xfeff || view[0] === 0xfffe)) {
 		// UTF16 sometimes starts with a BOM https://de.wikipedia.org/wiki/Byte_Order_Mark
 		// It looks like TextDecoder.decode will eat up a leading BOM (0xFEFF or 0xFFFE)
 		// We don't want that behavior because we know the string is UTF16LE and the BOM should be maintained
@@ -47,14 +49,14 @@ function compatDecodeUTF16LE(source: Uint8Array, offset: number, len: number): s
 	const result: string[] = [];
 	let resultLen = 0;
 	for (let i = 0; i < len; i++) {
-		const charCode = buffer.readUInt16LE(source, offset); offset += 2;
+		const charCode = buffer.readUInt16LE(source, offset);
+		offset += 2;
 		result[resultLen++] = String.fromCharCode(charCode);
 	}
 	return result.join('');
 }
 
 export class StringBuilder {
-
 	private readonly _capacity: number;
 	private readonly _buffer: Uint16Array;
 

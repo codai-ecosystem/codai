@@ -24,7 +24,7 @@ export class DeployerAgent extends BaseAgentImpl {
 			'pipeline',
 			'release',
 			'deploy',
-			'development'
+			'development',
 		];
 
 		// Check if task has a type property and it matches our capabilities
@@ -35,9 +35,10 @@ export class DeployerAgent extends BaseAgentImpl {
 			}
 		}
 
-		return deploymentTasks.some(taskType =>
-			task.title.toLowerCase().includes(taskType) ||
-			task.description.toLowerCase().includes(taskType)
+		return deploymentTasks.some(
+			taskType =>
+				task.title.toLowerCase().includes(taskType) ||
+				task.description.toLowerCase().includes(taskType)
 		);
 	}
 
@@ -58,15 +59,16 @@ export class DeployerAgent extends BaseAgentImpl {
 			await this.sendMessage({
 				type: 'notification',
 				content: `Starting deployment task: ${task.title}`,
-				metadata: { taskId: task.id }
+				metadata: { taskId: task.id },
 			});
 
 			const projectPath = task.inputs.projectPath as string;
-			const deploymentType = task.inputs.deploymentType as string || 'production';
-			const platform = task.inputs.platform as string || 'docker';
+			const deploymentType = (task.inputs.deploymentType as string) || 'production';
+			const platform = (task.inputs.platform as string) || 'docker';
 
 			// Generate deployment configuration based on type
-			let result; if (deploymentType.includes('docker')) {
+			let result;
+			if (deploymentType.includes('docker')) {
 				result = await this.generateDockerConfiguration(projectPath, task);
 			} else if (deploymentType.includes('kubernetes')) {
 				result = await this.generateKubernetesConfiguration(projectPath, task);
@@ -84,7 +86,7 @@ export class DeployerAgent extends BaseAgentImpl {
 				success: true,
 				outputs: { result, deploymentType, platform },
 				duration,
-				memoryChanges: []
+				memoryChanges: [],
 			};
 		} catch (error) {
 			// Ensure minimum execution time even in error case
@@ -94,10 +96,10 @@ export class DeployerAgent extends BaseAgentImpl {
 			return {
 				success: false,
 				outputs: {
-					error: error instanceof Error ? error.message : 'Unknown deployment error'
+					error: error instanceof Error ? error.message : 'Unknown deployment error',
 				},
 				duration,
-				memoryChanges: []
+				memoryChanges: [],
 			};
 		}
 	}
@@ -128,15 +130,19 @@ export class DeployerAgent extends BaseAgentImpl {
 		// Generate .dockerignore
 		const dockerIgnore = this.generateDockerIgnore();
 
-		return JSON.stringify({
-			type: 'docker_configuration',
-			files: {
-				'Dockerfile': dockerfile,
-				'docker-compose.yml': dockerCompose,
-				'.dockerignore': dockerIgnore
+		return JSON.stringify(
+			{
+				type: 'docker_configuration',
+				files: {
+					Dockerfile: dockerfile,
+					'docker-compose.yml': dockerCompose,
+					'.dockerignore': dockerIgnore,
+				},
+				instructions: 'Docker configuration files generated. Review and customize as needed.',
 			},
-			instructions: 'Docker configuration files generated. Review and customize as needed.'
-		}, null, 2);
+			null,
+			2
+		);
 	}
 
 	/**
@@ -154,15 +160,19 @@ export class DeployerAgent extends BaseAgentImpl {
 		// Generate ingress.yaml
 		const ingress = this.generateKubernetesIngress(projectType);
 
-		return JSON.stringify({
-			type: 'kubernetes_configuration',
-			files: {
-				'k8s/deployment.yaml': deployment,
-				'k8s/service.yaml': service,
-				'k8s/ingress.yaml': ingress
+		return JSON.stringify(
+			{
+				type: 'kubernetes_configuration',
+				files: {
+					'k8s/deployment.yaml': deployment,
+					'k8s/service.yaml': service,
+					'k8s/ingress.yaml': ingress,
+				},
+				instructions: 'Kubernetes configuration files generated. Apply with kubectl.',
 			},
-			instructions: 'Kubernetes configuration files generated. Apply with kubectl.'
-		}, null, 2);
+			null,
+			2
+		);
 	}
 
 	/**
@@ -170,7 +180,7 @@ export class DeployerAgent extends BaseAgentImpl {
 	 */
 	private async generateCICDPipeline(projectPath: string, task: Task): Promise<string> {
 		const projectType = await this.detectProjectType(projectPath);
-		const ciProvider = task.inputs.ciProvider as string || 'github';
+		const ciProvider = (task.inputs.ciProvider as string) || 'github';
 
 		let pipelineConfig;
 		if (ciProvider === 'github') {
@@ -183,19 +193,23 @@ export class DeployerAgent extends BaseAgentImpl {
 			pipelineConfig = this.generateGitHubActions(projectType); // Default
 		}
 
-		return JSON.stringify({
-			type: 'cicd_pipeline',
-			provider: ciProvider,
-			configuration: pipelineConfig,
-			instructions: `CI/CD pipeline for ${ciProvider} generated. Review and commit to repository.`
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'cicd_pipeline',
+				provider: ciProvider,
+				configuration: pipelineConfig,
+				instructions: `CI/CD pipeline for ${ciProvider} generated. Review and commit to repository.`,
+			},
+			null,
+			2
+		);
 	}
 
 	/**
 	 * Generate infrastructure as code
 	 */
 	private async generateInfrastructureCode(projectPath: string, task: Task): Promise<string> {
-		const provider = task.inputs.infraProvider as string || 'terraform';
+		const provider = (task.inputs.infraProvider as string) || 'terraform';
 
 		let infraConfig;
 		if (provider === 'terraform') {
@@ -208,12 +222,16 @@ export class DeployerAgent extends BaseAgentImpl {
 			infraConfig = this.generateTerraformConfig(); // Default
 		}
 
-		return JSON.stringify({
-			type: 'infrastructure_code',
-			provider,
-			configuration: infraConfig,
-			instructions: `Infrastructure code for ${provider} generated. Review and apply.`
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'infrastructure_code',
+				provider,
+				configuration: infraConfig,
+				instructions: `Infrastructure code for ${provider} generated. Review and apply.`,
+			},
+			null,
+			2
+		);
 	}
 
 	/**
@@ -226,14 +244,18 @@ export class DeployerAgent extends BaseAgentImpl {
 			dockerfile: this.generateDockerfile(projectType),
 			deploymentScript: this.generateDeploymentScript(projectType),
 			environmentConfig: this.generateEnvironmentConfig(),
-			healthCheck: this.generateHealthCheckConfig(projectType)
+			healthCheck: this.generateHealthCheckConfig(projectType),
 		};
 
-		return JSON.stringify({
-			type: 'general_deployment',
-			configuration: config,
-			instructions: 'General deployment configuration generated. Customize for your environment.'
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'general_deployment',
+				configuration: config,
+				instructions: 'General deployment configuration generated. Customize for your environment.',
+			},
+			null,
+			2
+		);
 	}
 
 	/**
@@ -268,7 +290,7 @@ CMD ["python", "app.py"]`,
 WORKDIR /app
 COPY target/*.jar app.jar
 EXPOSE 8080
-CMD ["java", "-jar", "app.jar"]`
+CMD ["java", "-jar", "app.jar"]`,
 		};
 
 		return dockerfiles[projectType as keyof typeof dockerfiles] || dockerfiles.node;

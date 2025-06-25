@@ -11,11 +11,9 @@ import { URI } from '../../common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('network', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	(isWeb ? test.skip : test)('FileAccess: URI (native)', () => {
-
 		// asCodeUri() & asFileUri(): simple, without authority
 		let originalFileUri = URI.file('network.test.ts');
 		let browserUri = FileAccess.uriToBrowserUri(originalFileUri);
@@ -41,22 +39,33 @@ suite('network', () => {
 	});
 
 	(isWeb ? test.skip : test)('FileAccess: query and fragment is dropped (native)', () => {
-		const originalFileUri = URI.file('network.test.ts').with({ query: 'foo=bar', fragment: 'something' });
+		const originalFileUri = URI.file('network.test.ts').with({
+			query: 'foo=bar',
+			fragment: 'something',
+		});
 		const browserUri = FileAccess.uriToBrowserUri(originalFileUri);
 		assert.strictEqual(browserUri.query, '');
 		assert.strictEqual(browserUri.fragment, '');
 	});
 
-	(isWeb ? test.skip : test)('FileAccess: query and fragment is kept if URI is already of same scheme (native)', () => {
-		const originalFileUri = URI.file('network.test.ts').with({ query: 'foo=bar', fragment: 'something' });
-		const browserUri = FileAccess.uriToBrowserUri(originalFileUri.with({ scheme: Schemas.vscodeFileResource }));
-		assert.strictEqual(browserUri.query, 'foo=bar');
-		assert.strictEqual(browserUri.fragment, 'something');
+	(isWeb ? test.skip : test)(
+		'FileAccess: query and fragment is kept if URI is already of same scheme (native)',
+		() => {
+			const originalFileUri = URI.file('network.test.ts').with({
+				query: 'foo=bar',
+				fragment: 'something',
+			});
+			const browserUri = FileAccess.uriToBrowserUri(
+				originalFileUri.with({ scheme: Schemas.vscodeFileResource })
+			);
+			assert.strictEqual(browserUri.query, 'foo=bar');
+			assert.strictEqual(browserUri.fragment, 'something');
 
-		const fileUri = FileAccess.uriToFileUri(originalFileUri);
-		assert.strictEqual(fileUri.query, 'foo=bar');
-		assert.strictEqual(fileUri.fragment, 'something');
-	});
+			const fileUri = FileAccess.uriToFileUri(originalFileUri);
+			assert.strictEqual(fileUri.query, 'foo=bar');
+			assert.strictEqual(fileUri.fragment, 'something');
+		}
+	);
 
 	(isWeb ? test.skip : test)('FileAccess: web', () => {
 		const originalHttpsUri = URI.file('network.test.ts').with({ scheme: 'https' });

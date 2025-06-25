@@ -24,7 +24,6 @@ export function setup(options?: { skipSuite: boolean }) {
 		});
 
 		describe('Auto replies', function () {
-
 			// HACK: Retry this suite only on Windows because conpty can rarely lead to unexpected behavior which would
 			// cause flakiness. If this does happen, the feature is expected to fail.
 			if (process.platform === 'win32') {

@@ -19,7 +19,12 @@ import { IEditorOptions } from '../../../../editor/common/config/editorOptions.j
 import { IPosition } from '../../../../editor/common/core/position.js';
 import { IRange, Range } from '../../../../editor/common/core/range.js';
 import { ScrollType } from '../../../../editor/common/editorCommon.js';
-import { IModelDecorationOptions, TrackedRangeStickiness, IModelDeltaDecoration, OverviewRulerLane } from '../../../../editor/common/model.js';
+import {
+	IModelDecorationOptions,
+	TrackedRangeStickiness,
+	IModelDeltaDecoration,
+	OverviewRulerLane,
+} from '../../../../editor/common/model.js';
 import { ITextModelService } from '../../../../editor/common/services/resolverService.js';
 import * as peekView from '../../../../editor/contrib/peekView/browser/peekView.js';
 import { localize } from '../../../../nls.js';
@@ -27,9 +32,20 @@ import { getFlatActionBarActions } from '../../../../platform/actions/browser/me
 import { IMenuService, MenuId } from '../../../../platform/actions/common/actions.js';
 import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { IWorkbenchAsyncDataTreeOptions, WorkbenchAsyncDataTree } from '../../../../platform/list/browser/listService.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
-import { IColorTheme, IThemeService, themeColorFromId } from '../../../../platform/theme/common/themeService.js';
+import {
+	IWorkbenchAsyncDataTreeOptions,
+	WorkbenchAsyncDataTree,
+} from '../../../../platform/list/browser/listService.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
+import {
+	IColorTheme,
+	IThemeService,
+	themeColorFromId,
+} from '../../../../platform/theme/common/themeService.js';
 import * as typeHTree from './typeHierarchyTree.js';
 import { TypeHierarchyDirection, TypeHierarchyModel } from '../common/typeHierarchy.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
@@ -38,13 +54,17 @@ import { IEditorService } from '../../../services/editor/common/editorService.js
 const enum State {
 	Loading = 'loading',
 	Message = 'message',
-	Data = 'data'
+	Data = 'data',
 }
 
 class LayoutInfo {
-
 	static store(info: LayoutInfo, storageService: IStorageService): void {
-		storageService.store('typeHierarchyPeekLayout', JSON.stringify(info), StorageScope.PROFILE, StorageTarget.MACHINE);
+		storageService.store(
+			'typeHierarchyPeekLayout',
+			JSON.stringify(info),
+			StorageScope.PROFILE,
+			StorageTarget.MACHINE
+		);
 	}
 
 	static retrieve(storageService: IStorageService): LayoutInfo {
@@ -60,13 +80,16 @@ class LayoutInfo {
 	constructor(
 		public ratio: number,
 		public height: number
-	) { }
+	) {}
 }
 
-class TypeHierarchyTree extends WorkbenchAsyncDataTree<TypeHierarchyModel, typeHTree.Type, FuzzyScore> { }
+class TypeHierarchyTree extends WorkbenchAsyncDataTree<
+	TypeHierarchyModel,
+	typeHTree.Type,
+	FuzzyScore
+> {}
 
 export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
-
 	static readonly TitleMenu = new MenuId('typehierarchy/title');
 
 	private _parent!: HTMLElement;
@@ -91,9 +114,13 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		@IStorageService private readonly _storageService: IStorageService,
 		@IMenuService private readonly _menuService: IMenuService,
 		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
-		super(editor, { showFrame: true, showArrow: true, isResizeable: true, isAccessible: true }, _instantiationService);
+		super(
+			editor,
+			{ showFrame: true, showArrow: true, isResizeable: true, isAccessible: true },
+			_instantiationService
+		);
 		this.create();
 		this._peekViewService.addExclusiveWidget(editor, this);
 		this._applyTheme(themeService.getColorTheme());
@@ -120,14 +147,17 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			frameColor: borderColor,
 			headerBackgroundColor: theme.getColor(peekView.peekViewTitleBackground) || Color.transparent,
 			primaryHeadingColor: theme.getColor(peekView.peekViewTitleForeground),
-			secondaryHeadingColor: theme.getColor(peekView.peekViewTitleInfoForeground)
+			secondaryHeadingColor: theme.getColor(peekView.peekViewTitleInfoForeground),
 		});
 	}
 
 	protected override _fillHead(container: HTMLElement): void {
 		super._fillHead(container, true);
 
-		const menu = this._menuService.createMenu(TypeHierarchyTreePeekWidget.TitleMenu, this._contextKeyService);
+		const menu = this._menuService.createMenu(
+			TypeHierarchyTreePeekWidget.TitleMenu,
+			this._contextKeyService
+		);
 		const updateToolbar = () => {
 			const actions = getFlatActionBarActions(menu.getActions());
 			this._actionbarWidget!.clear();
@@ -139,7 +169,6 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 	}
 
 	protected _fillBody(parent: HTMLElement): void {
-
 		this._layoutInfo = LayoutInfo.retrieve(this._storageService);
 		this._dim = new Dimension(0, 0);
 
@@ -170,13 +199,13 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				useShadows: true,
 				verticalHasArrows: false,
 				horizontalHasArrows: false,
-				alwaysConsumeMouseWheel: false
+				alwaysConsumeMouseWheel: false,
 			},
 			overviewRulerLanes: 2,
 			fixedOverflowWidgets: true,
 			minimap: {
-				enabled: false
-			}
+				enabled: false,
+			},
 		};
 		this._editor = this._instantiationService.createInstance(
 			EmbeddedCodeEditorWidget,
@@ -196,8 +225,8 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			identityProvider: new typeHTree.IdentityProvider(() => this._direction),
 			expandOnlyOnTwistieClick: true,
 			overrideStyles: {
-				listBackground: peekView.peekViewResultsBackground
-			}
+				listBackground: peekView.peekViewResultsBackground,
+			},
 		};
 		this._tree = this._instantiationService.createInstance(
 			TypeHierarchyTree,
@@ -210,81 +239,94 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		);
 
 		// split stuff
-		this._splitView.addView({
-			onDidChange: Event.None,
-			element: editorContainer,
-			minimumSize: 200,
-			maximumSize: Number.MAX_VALUE,
-			layout: (width) => {
-				if (this._dim.height) {
-					this._editor.layout({ height: this._dim.height, width });
-				}
-			}
-		}, Sizing.Distribute);
+		this._splitView.addView(
+			{
+				onDidChange: Event.None,
+				element: editorContainer,
+				minimumSize: 200,
+				maximumSize: Number.MAX_VALUE,
+				layout: width => {
+					if (this._dim.height) {
+						this._editor.layout({ height: this._dim.height, width });
+					}
+				},
+			},
+			Sizing.Distribute
+		);
 
-		this._splitView.addView({
-			onDidChange: Event.None,
-			element: treeContainer,
-			minimumSize: 100,
-			maximumSize: Number.MAX_VALUE,
-			layout: (width) => {
-				if (this._dim.height) {
-					this._tree.layout(this._dim.height, width);
-				}
-			}
-		}, Sizing.Distribute);
+		this._splitView.addView(
+			{
+				onDidChange: Event.None,
+				element: treeContainer,
+				minimumSize: 100,
+				maximumSize: Number.MAX_VALUE,
+				layout: width => {
+					if (this._dim.height) {
+						this._tree.layout(this._dim.height, width);
+					}
+				},
+			},
+			Sizing.Distribute
+		);
 
-		this._disposables.add(this._splitView.onDidSashChange(() => {
-			if (this._dim.width) {
-				this._layoutInfo.ratio = this._splitView.getViewSize(0) / this._dim.width;
-			}
-		}));
+		this._disposables.add(
+			this._splitView.onDidSashChange(() => {
+				if (this._dim.width) {
+					this._layoutInfo.ratio = this._splitView.getViewSize(0) / this._dim.width;
+				}
+			})
+		);
 
 		// update editor
 		this._disposables.add(this._tree.onDidChangeFocus(this._updatePreview, this));
 
-		this._disposables.add(this._editor.onMouseDown(e => {
-			const { event, target } = e;
-			if (event.detail !== 2) {
-				return;
-			}
-			const [focus] = this._tree.getFocus();
-			if (!focus) {
-				return;
-			}
-			this.dispose();
-			this._editorService.openEditor({
-				resource: focus.item.uri,
-				options: { selection: target.range! }
-			});
-
-		}));
-
-		this._disposables.add(this._tree.onMouseDblClick(e => {
-			if (e.target === TreeMouseEventTarget.Twistie) {
-				return;
-			}
-
-			if (e.element) {
+		this._disposables.add(
+			this._editor.onMouseDown(e => {
+				const { event, target } = e;
+				if (event.detail !== 2) {
+					return;
+				}
+				const [focus] = this._tree.getFocus();
+				if (!focus) {
+					return;
+				}
 				this.dispose();
 				this._editorService.openEditor({
-					resource: e.element.item.uri,
-					options: { selection: e.element.item.selectionRange, pinned: true }
+					resource: focus.item.uri,
+					options: { selection: target.range! },
 				});
-			}
-		}));
+			})
+		);
 
-		this._disposables.add(this._tree.onDidChangeSelection(e => {
-			const [element] = e.elements;
-			// don't close on click
-			if (element && isKeyboardEvent(e.browserEvent)) {
-				this.dispose();
-				this._editorService.openEditor({
-					resource: element.item.uri,
-					options: { selection: element.item.selectionRange, pinned: true }
-				});
-			}
-		}));
+		this._disposables.add(
+			this._tree.onMouseDblClick(e => {
+				if (e.target === TreeMouseEventTarget.Twistie) {
+					return;
+				}
+
+				if (e.element) {
+					this.dispose();
+					this._editorService.openEditor({
+						resource: e.element.item.uri,
+						options: { selection: e.element.item.selectionRange, pinned: true },
+					});
+				}
+			})
+		);
+
+		this._disposables.add(
+			this._tree.onDidChangeSelection(e => {
+				const [element] = e.elements;
+				// don't close on click
+				if (element && isKeyboardEvent(e.browserEvent)) {
+					this.dispose();
+					this._editorService.openEditor({
+						resource: element.item.uri,
+						options: { selection: element.item.selectionRange, pinned: true },
+					});
+				}
+			})
+		);
 	}
 
 	private async _updatePreview() {
@@ -302,7 +344,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			className: 'type-decoration',
 			overviewRuler: {
 				color: themeColorFromId(peekView.peekViewEditorMatchHighlight),
-				position: OverviewRulerLane.Center
+				position: OverviewRulerLane.Center,
 			},
 		};
 
@@ -334,15 +376,16 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		this._previewDisposable.add(value);
 
 		// update: title
-		const title = this._direction === TypeHierarchyDirection.Supertypes
-			? localize('supertypes', "Supertypes of '{0}'", element.model.root.name)
-			: localize('subtypes', "Subtypes of '{0}'", element.model.root.name);
+		const title =
+			this._direction === TypeHierarchyDirection.Supertypes
+				? localize('supertypes', "Supertypes of '{0}'", element.model.root.name)
+				: localize('subtypes', "Subtypes of '{0}'", element.model.root.name);
 		this.setTitle(title);
 	}
 
 	showLoading(): void {
 		this._parent.dataset['state'] = State.Loading;
-		this.setTitle(localize('title.loading', "Loading..."));
+		this.setTitle(localize('title.loading', 'Loading...'));
 		this._show();
 	}
 
@@ -356,7 +399,6 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 	}
 
 	async showModel(model: TypeHierarchyModel): Promise<void> {
-
 		this._show();
 		const viewState = this._treeViewStates.get(this._direction);
 
@@ -366,10 +408,11 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		await this._tree.expand(root.element);
 
 		if (root.children.length === 0) {
-			this.showMessage(this._direction === TypeHierarchyDirection.Supertypes
-				? localize('empt.supertypes', "No supertypes of '{0}'", model.root.name)
-				: localize('empt.subtypes', "No subtypes of '{0}'", model.root.name));
-
+			this.showMessage(
+				this._direction === TypeHierarchyDirection.Supertypes
+					? localize('empt.supertypes', "No supertypes of '{0}'", model.root.name)
+					: localize('empt.subtypes', "No subtypes of '{0}'", model.root.name)
+			);
 		} else {
 			this._parent.dataset['state'] = State.Data;
 			if (!viewState || this._tree.getFocus().length === 0) {
@@ -414,7 +457,9 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		if (this._dim.height !== height || this._dim.width !== width) {
 			super._doLayoutBody(height, width);
 			this._dim = new Dimension(width, height);
-			this._layoutInfo.height = this._viewZone ? this._viewZone.heightInLines : this._layoutInfo.height;
+			this._layoutInfo.height = this._viewZone
+				? this._viewZone.heightInLines
+				: this._layoutInfo.height;
 			this._splitView.layout(width);
 			this._splitView.resizeView(0, width * this._layoutInfo.ratio);
 		}

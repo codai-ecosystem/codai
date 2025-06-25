@@ -6,21 +6,17 @@
 import * as vscode from 'vscode';
 import { Disposable } from './dispose';
 
-
 export interface ShowOptions {
 	readonly preserveFocus?: boolean;
 	readonly viewColumn?: vscode.ViewColumn;
 }
 
 export class SimpleBrowserView extends Disposable {
-
 	public static readonly viewType = 'simpleBrowser.view';
-	private static readonly title = vscode.l10n.t("Simple Browser");
+	private static readonly title = vscode.l10n.t('Simple Browser');
 
 	private static getWebviewLocalResourceRoots(extensionUri: vscode.Uri): readonly vscode.Uri[] {
-		return [
-			vscode.Uri.joinPath(extensionUri, 'media')
-		];
+		return [vscode.Uri.joinPath(extensionUri, 'media')];
 	}
 
 	private static getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
@@ -41,20 +37,25 @@ export class SimpleBrowserView extends Disposable {
 		url: string,
 		showOptions?: ShowOptions
 	): SimpleBrowserView {
-		const webview = vscode.window.createWebviewPanel(SimpleBrowserView.viewType, SimpleBrowserView.title, {
-			viewColumn: showOptions?.viewColumn ?? vscode.ViewColumn.Active,
-			preserveFocus: showOptions?.preserveFocus
-		}, {
-			retainContextWhenHidden: true,
-			...SimpleBrowserView.getWebviewOptions(extensionUri)
-		});
+		const webview = vscode.window.createWebviewPanel(
+			SimpleBrowserView.viewType,
+			SimpleBrowserView.title,
+			{
+				viewColumn: showOptions?.viewColumn ?? vscode.ViewColumn.Active,
+				preserveFocus: showOptions?.preserveFocus,
+			},
+			{
+				retainContextWhenHidden: true,
+				...SimpleBrowserView.getWebviewOptions(extensionUri),
+			}
+		);
 		return new SimpleBrowserView(extensionUri, url, webview);
 	}
 
 	public static restore(
 		extensionUri: vscode.Uri,
 		url: string,
-		webviewPanel: vscode.WebviewPanel,
+		webviewPanel: vscode.WebviewPanel
 	): SimpleBrowserView {
 		return new SimpleBrowserView(extensionUri, url, webviewPanel);
 	}
@@ -62,39 +63,45 @@ export class SimpleBrowserView extends Disposable {
 	private constructor(
 		private readonly extensionUri: vscode.Uri,
 		url: string,
-		webviewPanel: vscode.WebviewPanel,
+		webviewPanel: vscode.WebviewPanel
 	) {
 		super();
 
 		this._webviewPanel = this._register(webviewPanel);
 		this._webviewPanel.webview.options = SimpleBrowserView.getWebviewOptions(extensionUri);
 
-		this._register(this._webviewPanel.webview.onDidReceiveMessage(e => {
-			switch (e.type) {
-				case 'openExternal':
-					try {
-						const url = vscode.Uri.parse(e.url);
-						vscode.env.openExternal(url);
-					} catch {
-						// Noop
-					}
-					break;
-			}
-		}));
+		this._register(
+			this._webviewPanel.webview.onDidReceiveMessage(e => {
+				switch (e.type) {
+					case 'openExternal':
+						try {
+							const url = vscode.Uri.parse(e.url);
+							vscode.env.openExternal(url);
+						} catch {
+							// Noop
+						}
+						break;
+				}
+			})
+		);
 
-		this._register(this._webviewPanel.onDidDispose(() => {
-			this.dispose();
-		}));
+		this._register(
+			this._webviewPanel.onDidDispose(() => {
+				this.dispose();
+			})
+		);
 
-		this._register(vscode.workspace.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('simpleBrowser.focusLockIndicator.enabled')) {
-				const configuration = vscode.workspace.getConfiguration('simpleBrowser');
-				this._webviewPanel.webview.postMessage({
-					type: 'didChangeFocusLockIndicatorEnabled',
-					focusLockEnabled: configuration.get<boolean>('focusLockIndicator.enabled', true)
-				});
-			}
-		}));
+		this._register(
+			vscode.workspace.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('simpleBrowser.focusLockIndicator.enabled')) {
+					const configuration = vscode.workspace.getConfiguration('simpleBrowser');
+					this._webviewPanel.webview.postMessage({
+						type: 'didChangeFocusLockIndicatorEnabled',
+						focusLockEnabled: configuration.get<boolean>('focusLockIndicator.enabled', true),
+					});
+				}
+			})
+		);
 
 		this.show(url);
 	}
@@ -131,10 +138,12 @@ export class SimpleBrowserView extends Disposable {
 					frame-src *;
 					">
 
-				<meta id="simple-browser-settings" data-settings="${escapeAttribute(JSON.stringify({
-			url: url,
-			focusLockEnabled: configuration.get<boolean>('focusLockIndicator.enabled', true)
-		}))}">
+				<meta id="simple-browser-settings" data-settings="${escapeAttribute(
+					JSON.stringify({
+						url: url,
+						focusLockEnabled: configuration.get<boolean>('focusLockIndicator.enabled', true),
+					})
+				)}">
 
 				<link rel="stylesheet" type="text/css" href="${mainCss}">
 				<link rel="stylesheet" type="text/css" href="${codiconsUri}">
@@ -143,15 +152,15 @@ export class SimpleBrowserView extends Disposable {
 				<header class="header">
 					<nav class="controls">
 						<button
-							title="${vscode.l10n.t("Back")}"
+							title="${vscode.l10n.t('Back')}"
 							class="back-button icon"><i class="codicon codicon-arrow-left"></i></button>
 
 						<button
-							title="${vscode.l10n.t("Forward")}"
+							title="${vscode.l10n.t('Forward')}"
 							class="forward-button icon"><i class="codicon codicon-arrow-right"></i></button>
 
 						<button
-							title="${vscode.l10n.t("Reload")}"
+							title="${vscode.l10n.t('Reload')}"
 							class="reload-button icon"><i class="codicon codicon-refresh"></i></button>
 					</nav>
 
@@ -159,12 +168,12 @@ export class SimpleBrowserView extends Disposable {
 
 					<nav class="controls">
 						<button
-							title="${vscode.l10n.t("Open in browser")}"
+							title="${vscode.l10n.t('Open in browser')}"
 							class="open-external-button icon"><i class="codicon codicon-link-external"></i></button>
 					</nav>
 				</header>
 				<div class="content">
-					<div class="iframe-focused-alert">${vscode.l10n.t("Focus Lock")}</div>
+					<div class="iframe-focused-alert">${vscode.l10n.t('Focus Lock')}</div>
 					<iframe sandbox="allow-scripts allow-forms allow-same-origin allow-downloads"></iframe>
 				</div>
 
@@ -174,7 +183,9 @@ export class SimpleBrowserView extends Disposable {
 	}
 
 	private extensionResourceUrl(...parts: string[]): vscode.Uri {
-		return this._webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, ...parts));
+		return this._webviewPanel.webview.asWebviewUri(
+			vscode.Uri.joinPath(this.extensionUri, ...parts)
+		);
 	}
 }
 

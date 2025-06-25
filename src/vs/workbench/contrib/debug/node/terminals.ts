@@ -27,7 +27,6 @@ function spawnAsPromised(command: string, args: string[]): Promise<string> {
 
 export async function hasChildProcesses(processId: number | undefined): Promise<boolean> {
 	if (processId) {
-
 		// if shell has at least one child process, assume that shell is busy
 		if (platform.isWindows) {
 			const windowsProcessTree = await import('@vscode/windows-process-tree');
@@ -37,27 +36,39 @@ export async function hasChildProcesses(processId: number | undefined): Promise<
 				});
 			});
 		} else {
-			return spawnAsPromised('/usr/bin/pgrep', ['-lP', String(processId)]).then(stdout => {
-				const r = stdout.trim();
-				if (r.length === 0 || r.indexOf(' tmux') >= 0) { // ignore 'tmux'; see #43683
-					return false;
-				} else {
+			return spawnAsPromised('/usr/bin/pgrep', ['-lP', String(processId)]).then(
+				stdout => {
+					const r = stdout.trim();
+					if (r.length === 0 || r.indexOf(' tmux') >= 0) {
+						// ignore 'tmux'; see #43683
+						return false;
+					} else {
+						return true;
+					}
+				},
+				error => {
 					return true;
 				}
-			}, error => {
-				return true;
-			});
+			);
 		}
 	}
 	// fall back to safe side
 	return Promise.resolve(true);
 }
 
-const enum ShellType { cmd, powershell, bash }
+const enum ShellType {
+	cmd,
+	powershell,
+	bash,
+}
 
-
-export function prepareCommand(shell: string, args: string[], argsCanBeInterpretedByShell: boolean, cwd?: string, env?: { [key: string]: string | null }): string {
-
+export function prepareCommand(
+	shell: string,
+	args: string[],
+	argsCanBeInterpretedByShell: boolean,
+	cwd?: string,
+	env?: { [key: string]: string | null }
+): string {
 	shell = shell.trim().toLowerCase();
 
 	// try to determine the shell type
@@ -71,7 +82,7 @@ export function prepareCommand(shell: string, args: string[], argsCanBeInterpret
 	} else if (platform.isWindows) {
 		shellType = ShellType.cmd; // pick a good default for Windows
 	} else {
-		shellType = ShellType.bash;	// pick a good default for anything else
+		shellType = ShellType.bash; // pick a good default for anything else
 	}
 
 	let quote: (s: string) => string;
@@ -79,11 +90,9 @@ export function prepareCommand(shell: string, args: string[], argsCanBeInterpret
 	let command = ' ';
 
 	switch (shellType) {
-
 		case ShellType.powershell:
-
 			quote = (s: string) => {
-				s = s.replace(/\'/g, '\'\'');
+				s = s.replace(/\'/g, "''");
 				if (s.length > 0 && s.charAt(s.length - 1) === '\\') {
 					return `'${s}\\'`;
 				}
@@ -110,16 +119,15 @@ export function prepareCommand(shell: string, args: string[], argsCanBeInterpret
 			if (args.length > 0) {
 				const arg = args.shift()!;
 				const cmd = argsCanBeInterpretedByShell ? arg : quote(arg);
-				command += (cmd[0] === '\'') ? `& ${cmd} ` : `${cmd} `;
+				command += cmd[0] === "'" ? `& ${cmd} ` : `${cmd} `;
 				for (const a of args) {
-					command += (a === '<' || a === '>' || argsCanBeInterpretedByShell) ? a : quote(a);
+					command += a === '<' || a === '>' || argsCanBeInterpretedByShell ? a : quote(a);
 					command += ' ';
 				}
 			}
 			break;
 
 		case ShellType.cmd:
-
 			quote = (s: string) => {
 				// Note: Wrapping in cmd /C "..." complicates the escaping.
 				// cmd /C "node -e "console.log(process.argv)" """A^>0"""" # prints "A>0"
@@ -127,7 +135,7 @@ export function prepareCommand(shell: string, args: string[], argsCanBeInterpret
 				// Outside of the cmd /C, it could be a simple quoting, but here, the ^ is needed too
 				s = s.replace(/\"/g, '""');
 				s = s.replace(/([><!^&|])/g, '^$1');
-				return (' "'.split('').some(char => s.includes(char)) || s.length === 0) ? `"${s}"` : s;
+				return ' "'.split('').some(char => s.includes(char)) || s.length === 0 ? `"${s}"` : s;
 			};
 
 			if (cwd) {
@@ -150,7 +158,7 @@ export function prepareCommand(shell: string, args: string[], argsCanBeInterpret
 				}
 			}
 			for (const a of args) {
-				command += (a === '<' || a === '>' || argsCanBeInterpretedByShell) ? a : quote(a);
+				command += a === '<' || a === '>' || argsCanBeInterpretedByShell ? a : quote(a);
 				command += ' ';
 			}
 			if (env) {
@@ -159,14 +167,13 @@ export function prepareCommand(shell: string, args: string[], argsCanBeInterpret
 			break;
 
 		case ShellType.bash: {
-
 			quote = (s: string) => {
 				s = s.replace(/(["'\\\$!><#()\[\]*&^| ;{}?`])/g, '\\$1');
 				return s.length === 0 ? `""` : s;
 			};
 
 			const hardQuote = (s: string) => {
-				return /[^\w@%\/+=,.:^-]/.test(s) ? `'${s.replace(/'/g, '\'\\\'\'')}'` : s;
+				return /[^\w@%\/+=,.:^-]/.test(s) ? `'${s.replace(/'/g, "'\\''")}'` : s;
 			};
 
 			if (cwd) {
@@ -185,7 +192,7 @@ export function prepareCommand(shell: string, args: string[], argsCanBeInterpret
 				command += ' ';
 			}
 			for (const a of args) {
-				command += (a === '<' || a === '>' || argsCanBeInterpretedByShell) ? a : quote(a);
+				command += a === '<' || a === '>' || argsCanBeInterpretedByShell ? a : quote(a);
 				command += ' ';
 			}
 			break;

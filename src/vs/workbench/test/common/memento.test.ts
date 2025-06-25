@@ -6,7 +6,11 @@
 import assert from 'assert';
 import { DisposableStore } from '../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/common/utils.js';
-import { StorageScope, IStorageService, StorageTarget } from '../../../platform/storage/common/storage.js';
+import {
+	StorageScope,
+	IStorageService,
+	StorageTarget,
+} from '../../../platform/storage/common/storage.js';
 import { Memento } from '../../common/memento.js';
 import { TestStorageService } from './workbenchTestServices.js';
 
@@ -64,9 +68,17 @@ suite('Memento', () => {
 		assert.deepStrictEqual(memento, { foo: 'Hello World' });
 
 		// Assert the Mementos are stored properly in storage
-		assert.deepStrictEqual(JSON.parse(storage.get('memento/memento.test', StorageScope.APPLICATION)!), { foo: [1, 2, 3] });
-		assert.deepStrictEqual(JSON.parse(storage.get('memento/memento.test', StorageScope.PROFILE)!), { foo: [4, 5, 6] });
-		assert.deepStrictEqual(JSON.parse(storage.get('memento/memento.test', StorageScope.WORKSPACE)!), { foo: 'Hello World' });
+		assert.deepStrictEqual(
+			JSON.parse(storage.get('memento/memento.test', StorageScope.APPLICATION)!),
+			{ foo: [1, 2, 3] }
+		);
+		assert.deepStrictEqual(JSON.parse(storage.get('memento/memento.test', StorageScope.PROFILE)!), {
+			foo: [4, 5, 6],
+		});
+		assert.deepStrictEqual(
+			JSON.parse(storage.get('memento/memento.test', StorageScope.WORKSPACE)!),
+			{ foo: 'Hello World' }
+		);
 
 		// Delete Application
 		memento = myMemento.getMemento(StorageScope.APPLICATION, StorageTarget.MACHINE);

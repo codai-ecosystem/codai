@@ -16,17 +16,15 @@ interface IGeneratedEdit {
 }
 
 suite('TextChangeCompressor', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function getResultingContent(initialContent: string, edits: IGeneratedEdit[]): string {
 		let content = initialContent;
 		for (let i = edits.length - 1; i >= 0; i--) {
-			content = (
+			content =
 				content.substring(0, edits[i].offset) +
 				edits[i].text +
-				content.substring(edits[i].offset + edits[i].length)
-			);
+				content.substring(edits[i].offset + edits[i].length);
 		}
 		return content;
 	}
@@ -45,11 +43,7 @@ suite('TextChangeCompressor', () => {
 
 			const oldText = content.substr(position, length);
 
-			content = (
-				content.substr(0, position) +
-				text +
-				content.substr(position + length)
-			);
+			content = content.substr(0, position) + text + content.substr(position + length);
 
 			changes[i] = new TextChange(edit.offset, oldText, position, text);
 
@@ -59,8 +53,11 @@ suite('TextChangeCompressor', () => {
 		return changes;
 	}
 
-	function assertCompression(initialText: string, edit1: IGeneratedEdit[], edit2: IGeneratedEdit[]): void {
-
+	function assertCompression(
+		initialText: string,
+		edit1: IGeneratedEdit[],
+		edit2: IGeneratedEdit[]
+	): void {
 		const tmpText = getResultingContent(initialText, edit1);
 		const chg1 = getTextChanges(initialText, edit1);
 
@@ -70,21 +67,21 @@ suite('TextChangeCompressor', () => {
 		const compressedTextChanges = compressConsecutiveTextChanges(chg1, chg2);
 
 		// Check that the compression was correct
-		const compressedDoTextEdits: IGeneratedEdit[] = compressedTextChanges.map((change) => {
+		const compressedDoTextEdits: IGeneratedEdit[] = compressedTextChanges.map(change => {
 			return {
 				offset: change.oldPosition,
 				length: change.oldLength,
-				text: change.newText
+				text: change.newText,
 			};
 		});
 		const actualDoResult = getResultingContent(initialText, compressedDoTextEdits);
 		assert.strictEqual(actualDoResult, finalText);
 
-		const compressedUndoTextEdits: IGeneratedEdit[] = compressedTextChanges.map((change) => {
+		const compressedUndoTextEdits: IGeneratedEdit[] = compressedTextChanges.map(change => {
 			return {
 				offset: change.newPosition,
 				length: change.newLength,
-				text: change.oldText
+				text: change.oldText,
 			};
 		});
 		const actualUndoResult = getResultingContent(finalText, compressedUndoTextEdits);
@@ -113,7 +110,7 @@ suite('TextChangeCompressor', () => {
 			[
 				{ offset: 0, length: 3, text: 'qh' },
 				{ offset: 5, length: 0, text: '1' },
-				{ offset: 8, length: 2, text: 'X' }
+				{ offset: 8, length: 2, text: 'X' },
 			],
 			[
 				{ offset: 1, length: 0, text: 'Z' },
@@ -201,9 +198,12 @@ suite('TextChangeCompressor', () => {
 
 	function getRandomEOL(): string {
 		switch (getRandomInt(1, 3)) {
-			case 1: return '\r';
-			case 2: return '\n';
-			case 3: return '\r\n';
+			case 1:
+				return '\r';
+			case 2:
+				return '\n';
+			case 3:
+				return '\r\n';
 		}
 		throw new Error(`not possible`);
 	}
@@ -218,14 +218,12 @@ suite('TextChangeCompressor', () => {
 	}
 
 	function getRandomEdits(content: string, min: number = 1, max: number = 5): IGeneratedEdit[] {
-
 		const result: IGeneratedEdit[] = [];
 		let cnt = getRandomInt(min, max);
 
 		let maxOffset = content.length;
 
 		while (cnt > 0 && maxOffset > 0) {
-
 			const offset = getRandomInt(0, maxOffset);
 			const length = getRandomInt(0, maxOffset - offset);
 			const text = getRandomBuffer(true);
@@ -233,7 +231,7 @@ suite('TextChangeCompressor', () => {
 			result.push({
 				offset: offset,
 				length: length,
-				text: text
+				text: text,
 			});
 
 			maxOffset = offset;
@@ -246,20 +244,25 @@ suite('TextChangeCompressor', () => {
 	}
 
 	class GeneratedTest {
-
 		private readonly _content: string;
 		private readonly _edits1: IGeneratedEdit[];
 		private readonly _edits2: IGeneratedEdit[];
 
 		constructor() {
 			this._content = getRandomBuffer(false).replace(/\n/g, '_');
-			this._edits1 = getRandomEdits(this._content, 1, 5).map((e) => { return { offset: e.offset, length: e.length, text: e.text.replace(/\n/g, '_') }; });
+			this._edits1 = getRandomEdits(this._content, 1, 5).map(e => {
+				return { offset: e.offset, length: e.length, text: e.text.replace(/\n/g, '_') };
+			});
 			const tmp = getResultingContent(this._content, this._edits1);
-			this._edits2 = getRandomEdits(tmp, 1, 5).map((e) => { return { offset: e.offset, length: e.length, text: e.text.replace(/\n/g, '_') }; });
+			this._edits2 = getRandomEdits(tmp, 1, 5).map(e => {
+				return { offset: e.offset, length: e.length, text: e.text.replace(/\n/g, '_') };
+			});
 		}
 
 		public print(): void {
-			console.log(`assertCompression(${JSON.stringify(this._content)}, ${JSON.stringify(this._edits1)}, ${JSON.stringify(this._edits2)});`);
+			console.log(
+				`assertCompression(${JSON.stringify(this._content)}, ${JSON.stringify(this._edits1)}, ${JSON.stringify(this._edits2)});`
+			);
 		}
 
 		public assert(): void {
@@ -285,7 +288,6 @@ suite('TextChangeCompressor', () => {
 });
 
 suite('TextChange', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('issue #118041: unicode character undo bug', () => {
@@ -296,5 +298,4 @@ suite('TextChange', () => {
 		TextChange.read(buff, 0, actual);
 		assert.deepStrictEqual(actual[0], textChange);
 	});
-
 });

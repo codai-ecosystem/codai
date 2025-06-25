@@ -9,7 +9,6 @@ import { Emitter, Event } from '../../../base/common/event.js';
 import { getWindow, scheduleAtNextAnimationFrame } from '../../../base/browser/dom.js';
 
 export class ElementSizeObserver extends Disposable {
-
 	private _onDidChange = this._register(new Emitter<void>());
 	public readonly onDidChange: Event<void> = this._onDidChange.event;
 
@@ -74,9 +73,12 @@ export class ElementSizeObserver extends Disposable {
 				}
 			};
 
-			this._resizeObserver = new ResizeObserver((entries) => {
+			this._resizeObserver = new ResizeObserver(entries => {
 				if (entries && entries[0] && entries[0].contentRect) {
-					observedDimenstion = { width: entries[0].contentRect.width, height: entries[0].contentRect.height };
+					observedDimenstion = {
+						width: entries[0].contentRect.width,
+						height: entries[0].contentRect.height,
+					};
 				} else {
 					observedDimenstion = null;
 				}

@@ -8,7 +8,6 @@ import { ScrollbarState } from '../../../../browser/ui/scrollbar/scrollbarState.
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../common/utils.js';
 
 suite('ScrollbarState', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('inflates slider size', () => {

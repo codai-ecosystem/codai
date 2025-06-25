@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from '../../../../../../../../nls.js';
-import { getPromptFileExtension, PromptsType } from '../../../../../../../../platform/prompts/common/prompts.js';
+import {
+	getPromptFileExtension,
+	PromptsType,
+} from '../../../../../../../../platform/prompts/common/prompts.js';
 import { IQuickInputService } from '../../../../../../../../platform/quickinput/common/quickInput.js';
 import { URI } from '../../../../../../../../base/common/uri.js';
 import { IFileService } from '../../../../../../../../platform/files/common/files.js';
@@ -30,39 +33,46 @@ export async function askForPromptFileName(
 		}
 
 		const fileExtension = getPromptFileExtension(type);
-		return (trimmedName.endsWith(fileExtension))
-			? trimmedName
-			: `${trimmedName}${fileExtension}`;
+		return trimmedName.endsWith(fileExtension) ? trimmedName : `${trimmedName}${fileExtension}`;
 	};
 
 	const validateInput = async (value: string) => {
 		const fileName = sanitizeInput(value);
 		if (!fileName) {
 			return {
-				content: localize('askForPromptFileName.error.empty', "Please enter a name."),
-				severity: Severity.Warning
+				content: localize('askForPromptFileName.error.empty', 'Please enter a name.'),
+				severity: Severity.Warning,
 			};
 		}
 
 		if (!isValidBasename(fileName)) {
 			return {
-				content: localize('askForPromptFileName.error.invalid', "The name contains invalid characters."),
-				severity: Severity.Error
+				content: localize(
+					'askForPromptFileName.error.invalid',
+					'The name contains invalid characters.'
+				),
+				severity: Severity.Error,
 			};
 		}
 
 		const fileUri = URI.joinPath(selectedFolder, fileName);
 		if (await fileService.exists(fileUri)) {
 			return {
-				content: localize('askForPromptFileName.error.exists', "A file for the given name already exists."),
-				severity: Severity.Error
+				content: localize(
+					'askForPromptFileName.error.exists',
+					'A file for the given name already exists.'
+				),
+				severity: Severity.Error,
 			};
 		}
 
 		return undefined;
 	};
 
-	const result = await quickInputService.input({ placeHolder: getPlaceholderString(type), validateInput });
+	const result = await quickInputService.input({
+		placeHolder: getPlaceholderString(type),
+		validateInput,
+	});
 	if (!result) {
 		return undefined;
 	}
@@ -73,13 +83,18 @@ export async function askForPromptFileName(
 function getPlaceholderString(type: PromptsType): string {
 	switch (type) {
 		case PromptsType.instructions:
-			return localize('askForInstructionsFileName.placeholder', "Enter the name of the instructions file");
+			return localize(
+				'askForInstructionsFileName.placeholder',
+				'Enter the name of the instructions file'
+			);
 		case PromptsType.prompt:
-			return localize('askForPromptFileName.placeholder', "Enter the name of the prompt file");
+			return localize('askForPromptFileName.placeholder', 'Enter the name of the prompt file');
 		case PromptsType.mode:
-			return localize('askForModeFileName.placeholder', "Enter the name of the custom chat mode file");
+			return localize(
+				'askForModeFileName.placeholder',
+				'Enter the name of the custom chat mode file'
+			);
 		default:
 			throw new Error('Unknown prompt type');
 	}
 }
-

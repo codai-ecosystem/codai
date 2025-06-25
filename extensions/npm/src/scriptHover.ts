@@ -5,17 +5,22 @@
 
 import { dirname } from 'path';
 import {
-	CancellationToken, commands, ExtensionContext,
-	Hover, HoverProvider, MarkdownString, l10n, Position, ProviderResult,
-	tasks, TextDocument,
-	Uri, workspace
+	CancellationToken,
+	commands,
+	ExtensionContext,
+	Hover,
+	HoverProvider,
+	MarkdownString,
+	l10n,
+	Position,
+	ProviderResult,
+	tasks,
+	TextDocument,
+	Uri,
+	workspace,
 } from 'vscode';
 import { INpmScriptInfo, readScripts } from './readScripts';
-import {
-	createScriptRunnerTask,
-	startDebugging
-} from './tasks';
-
+import { createScriptRunnerTask, startDebugging } from './tasks';
 
 let cachedDocument: Uri | undefined = undefined;
 let cachedScripts: INpmScriptInfo | undefined = undefined;
@@ -34,22 +39,34 @@ export class NpmScriptHoverProvider implements HoverProvider {
 	private enabled: boolean;
 
 	constructor(private context: ExtensionContext) {
-		context.subscriptions.push(commands.registerCommand('npm.runScriptFromHover', this.runScriptFromHover, this));
-		context.subscriptions.push(commands.registerCommand('npm.debugScriptFromHover', this.debugScriptFromHover, this));
-		context.subscriptions.push(workspace.onDidChangeTextDocument((e) => {
-			invalidateHoverScriptsCache(e.document);
-		}));
+		context.subscriptions.push(
+			commands.registerCommand('npm.runScriptFromHover', this.runScriptFromHover, this)
+		);
+		context.subscriptions.push(
+			commands.registerCommand('npm.debugScriptFromHover', this.debugScriptFromHover, this)
+		);
+		context.subscriptions.push(
+			workspace.onDidChangeTextDocument(e => {
+				invalidateHoverScriptsCache(e.document);
+			})
+		);
 
 		const isEnabled = () => workspace.getConfiguration('npm').get<boolean>('scriptHover', true);
 		this.enabled = isEnabled();
-		context.subscriptions.push(workspace.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration('npm.scriptHover')) {
-				this.enabled = isEnabled();
-			}
-		}));
+		context.subscriptions.push(
+			workspace.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('npm.scriptHover')) {
+					this.enabled = isEnabled();
+				}
+			})
+		);
 	}
 
-	public provideHover(document: TextDocument, position: Position, _token: CancellationToken): ProviderResult<Hover> {
+	public provideHover(
+		document: TextDocument,
+		position: Position,
+		_token: CancellationToken
+	): ProviderResult<Hover> {
 		if (!this.enabled) {
 			return;
 		}
@@ -79,10 +96,10 @@ export class NpmScriptHoverProvider implements HoverProvider {
 			script: script,
 		};
 		return this.createMarkdownLink(
-			l10n.t("Run Script"),
+			l10n.t('Run Script'),
 			'npm.runScriptFromHover',
 			args,
-			l10n.t("Run the script as a task")
+			l10n.t('Run the script as a task')
 		);
 	}
 
@@ -92,15 +109,21 @@ export class NpmScriptHoverProvider implements HoverProvider {
 			script: script,
 		};
 		return this.createMarkdownLink(
-			l10n.t("Debug Script"),
+			l10n.t('Debug Script'),
 			'npm.debugScriptFromHover',
 			args,
-			l10n.t("Runs the script under the debugger"),
+			l10n.t('Runs the script under the debugger'),
 			'|'
 		);
 	}
 
-	private createMarkdownLink(label: string, cmd: string, args: any, tooltip: string, separator?: string): string {
+	private createMarkdownLink(
+		label: string,
+		cmd: string,
+		args: any,
+		tooltip: string,
+		separator?: string
+	): string {
 		const encodedArgs = encodeURIComponent(JSON.stringify(args));
 		let prefix = '';
 		if (separator) {

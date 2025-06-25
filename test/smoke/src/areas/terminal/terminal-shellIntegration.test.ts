@@ -3,7 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Application, Terminal, SettingsEditor, TerminalCommandIdWithValue, TerminalCommandId } from '../../../../automation';
+import {
+	Application,
+	Terminal,
+	SettingsEditor,
+	TerminalCommandIdWithValue,
+	TerminalCommandId,
+} from '../../../../automation';
 import { setTerminalTestSettings } from './terminal-helpers';
 
 export function setup(options?: { skipSuite: boolean }) {
@@ -23,13 +29,18 @@ export function setup(options?: { skipSuite: boolean }) {
 		});
 
 		async function createShellIntegrationProfile() {
-			await terminal.runCommandWithValue(TerminalCommandIdWithValue.NewWithProfile, process.platform === 'win32' ? 'PowerShell' : 'bash');
+			await terminal.runCommandWithValue(
+				TerminalCommandIdWithValue.NewWithProfile,
+				process.platform === 'win32' ? 'PowerShell' : 'bash'
+			);
 		}
 
 		// TODO: Some agents may not have pwsh installed?
 		(process.platform === 'win32' ? describe.skip : describe)(`Process-based tests`, function () {
 			before(async function () {
-				await setTerminalTestSettings(app, [['terminal.integrated.shellIntegration.enabled', 'true']]);
+				await setTerminalTestSettings(app, [
+					['terminal.integrated.shellIntegration.enabled', 'true'],
+				]);
 			});
 			after(async function () {
 				await settingsEditor.clearUserSettings();
@@ -54,7 +65,9 @@ export function setup(options?: { skipSuite: boolean }) {
 				describe('terminal.integrated.shellIntegration.decorationsEnabled should determine gutter and overview ruler decoration visibility', function () {
 					beforeEach(async () => {
 						await settingsEditor.clearUserSettings();
-						await setTerminalTestSettings(app, [['terminal.integrated.shellIntegration.enabled', 'true']]);
+						await setTerminalTestSettings(app, [
+							['terminal.integrated.shellIntegration.enabled', 'true'],
+						]);
 						await createShellIntegrationProfile();
 						await terminal.assertCommandDecorations({ placeholder: 1, success: 0, error: 0 });
 						await terminal.runCommandInTerminal(`echo "foo"`);
@@ -65,20 +78,48 @@ export function setup(options?: { skipSuite: boolean }) {
 						await app.workbench.terminal.runCommand(TerminalCommandId.KillAll);
 					});
 					it('never', async () => {
-						await settingsEditor.addUserSetting('terminal.integrated.shellIntegration.decorationsEnabled', '"never"');
-						await terminal.assertCommandDecorations({ placeholder: 0, success: 0, error: 0 }, undefined, 'never');
+						await settingsEditor.addUserSetting(
+							'terminal.integrated.shellIntegration.decorationsEnabled',
+							'"never"'
+						);
+						await terminal.assertCommandDecorations(
+							{ placeholder: 0, success: 0, error: 0 },
+							undefined,
+							'never'
+						);
 					});
 					it('both', async () => {
-						await settingsEditor.addUserSetting('terminal.integrated.shellIntegration.decorationsEnabled', '"both"');
-						await terminal.assertCommandDecorations({ placeholder: 1, success: 1, error: 1 }, undefined, 'both');
+						await settingsEditor.addUserSetting(
+							'terminal.integrated.shellIntegration.decorationsEnabled',
+							'"both"'
+						);
+						await terminal.assertCommandDecorations(
+							{ placeholder: 1, success: 1, error: 1 },
+							undefined,
+							'both'
+						);
 					});
 					it('gutter', async () => {
-						await settingsEditor.addUserSetting('terminal.integrated.shellIntegration.decorationsEnabled', '"gutter"');
-						await terminal.assertCommandDecorations({ placeholder: 1, success: 1, error: 1 }, undefined, 'gutter');
+						await settingsEditor.addUserSetting(
+							'terminal.integrated.shellIntegration.decorationsEnabled',
+							'"gutter"'
+						);
+						await terminal.assertCommandDecorations(
+							{ placeholder: 1, success: 1, error: 1 },
+							undefined,
+							'gutter'
+						);
 					});
 					it('overviewRuler', async () => {
-						await settingsEditor.addUserSetting('terminal.integrated.shellIntegration.decorationsEnabled', '"overviewRuler"');
-						await terminal.assertCommandDecorations({ placeholder: 1, success: 1, error: 1 }, undefined, 'overviewRuler');
+						await settingsEditor.addUserSetting(
+							'terminal.integrated.shellIntegration.decorationsEnabled',
+							'"overviewRuler"'
+						);
+						await terminal.assertCommandDecorations(
+							{ placeholder: 1, success: 1, error: 1 },
+							undefined,
+							'overviewRuler'
+						);
 					});
 				});
 			});
@@ -98,33 +139,66 @@ export function setup(options?: { skipSuite: boolean }) {
 				// Use the simplest profile to get as little process interaction as possible
 				await terminal.createEmptyTerminal();
 				// Erase all content and reset cursor to top
-				await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `${csi('2J')}${csi('H')}`);
+				await terminal.runCommandWithValue(
+					TerminalCommandIdWithValue.WriteDataToTerminal,
+					`${csi('2J')}${csi('H')}`
+				);
 			});
 			describe('VS Code sequences', () => {
 				it('should handle the simple case', async () => {
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `${vsc('A')}Prompt> ${vsc('B')}exitcode 0`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`${vsc('A')}Prompt> ${vsc('B')}exitcode 0`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 1, success: 0, error: 0 });
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `\\r\\n${vsc('C')}Success\\r\\n${vsc('D;0')}`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`\\r\\n${vsc('C')}Success\\r\\n${vsc('D;0')}`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 0, success: 1, error: 0 });
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `${vsc('A')}Prompt> ${vsc('B')}exitcode 1`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`${vsc('A')}Prompt> ${vsc('B')}exitcode 1`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 1, success: 1, error: 0 });
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `\\r\\n${vsc('C')}Failure\\r\\n${vsc('D;1')}`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`\\r\\n${vsc('C')}Failure\\r\\n${vsc('D;1')}`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 0, success: 1, error: 1 });
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `${vsc('A')}Prompt> ${vsc('B')}`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`${vsc('A')}Prompt> ${vsc('B')}`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 1, success: 1, error: 1 });
 				});
 			});
 			describe('Final Term sequences', () => {
 				it('should handle the simple case', async () => {
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `${ft('A')}Prompt> ${ft('B')}exitcode 0`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`${ft('A')}Prompt> ${ft('B')}exitcode 0`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 1, success: 0, error: 0 });
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `\\r\\n${ft('C')}Success\\r\\n${ft('D;0')}`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`\\r\\n${ft('C')}Success\\r\\n${ft('D;0')}`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 0, success: 1, error: 0 });
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `${ft('A')}Prompt> ${ft('B')}exitcode 1`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`${ft('A')}Prompt> ${ft('B')}exitcode 1`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 1, success: 1, error: 0 });
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `\\r\\n${ft('C')}Failure\\r\\n${ft('D;1')}`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`\\r\\n${ft('C')}Failure\\r\\n${ft('D;1')}`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 0, success: 1, error: 1 });
-					await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, `${ft('A')}Prompt> ${ft('B')}exitcode 1`);
+					await terminal.runCommandWithValue(
+						TerminalCommandIdWithValue.WriteDataToTerminal,
+						`${ft('A')}Prompt> ${ft('B')}exitcode 1`
+					);
 					await terminal.assertCommandDecorations({ placeholder: 1, success: 1, error: 1 });
 				});
 			});

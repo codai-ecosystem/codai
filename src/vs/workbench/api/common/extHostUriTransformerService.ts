@@ -11,7 +11,8 @@ export interface IURITransformerService extends IURITransformer {
 	readonly _serviceBrand: undefined;
 }
 
-export const IURITransformerService = createDecorator<IURITransformerService>('IURITransformerService');
+export const IURITransformerService =
+	createDecorator<IURITransformerService>('IURITransformerService');
 
 export class URITransformerService implements IURITransformerService {
 	declare readonly _serviceBrand: undefined;

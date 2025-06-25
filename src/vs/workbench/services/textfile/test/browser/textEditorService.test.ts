@@ -5,13 +5,28 @@
 
 import assert from 'assert';
 import { URI } from '../../../../../base/common/uri.js';
-import { IResourceDiffEditorInput, IResourceSideBySideEditorInput, isResourceDiffEditorInput, isResourceSideBySideEditorInput, isUntitledResourceEditorInput } from '../../../../common/editor.js';
-import { workbenchInstantiationService, registerTestEditor, TestFileEditorInput, registerTestResourceEditor, registerTestSideBySideEditor } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	IResourceDiffEditorInput,
+	IResourceSideBySideEditorInput,
+	isResourceDiffEditorInput,
+	isResourceSideBySideEditorInput,
+	isUntitledResourceEditorInput,
+} from '../../../../common/editor.js';
+import {
+	workbenchInstantiationService,
+	registerTestEditor,
+	TestFileEditorInput,
+	registerTestResourceEditor,
+	registerTestSideBySideEditor,
+} from '../../../../test/browser/workbenchTestServices.js';
 import { TextResourceEditorInput } from '../../../../common/editor/textResourceEditorInput.js';
 import { SyncDescriptor } from '../../../../../platform/instantiation/common/descriptors.js';
 import { FileEditorInput } from '../../../../contrib/files/browser/editors/fileEditorInput.js';
 import { UntitledTextEditorInput } from '../../../untitled/common/untitledTextEditorInput.js';
-import { ensureNoDisposablesAreLeakedInTestSuite, toResource } from '../../../../../base/test/common/utils.js';
+import {
+	ensureNoDisposablesAreLeakedInTestSuite,
+	toResource,
+} from '../../../../../base/test/common/utils.js';
 import { IFileService } from '../../../../../platform/files/common/files.js';
 import { Disposable, DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { UntitledTextEditorModel } from '../../../untitled/common/untitledTextEditorModel.js';
@@ -25,7 +40,6 @@ import { ILanguageService } from '../../../../../editor/common/languages/languag
 import { EditorInput } from '../../../../common/editor/editorInput.js';
 
 suite('TextEditorService', () => {
-
 	const TEST_EDITOR_ID = 'MyTestEditorForEditorService';
 	const TEST_EDITOR_INPUT_ID = 'testEditorInputForEditorService';
 
@@ -40,7 +54,13 @@ suite('TextEditorService', () => {
 	const disposables = new DisposableStore();
 
 	setup(() => {
-		disposables.add(registerTestEditor(TEST_EDITOR_ID, [new SyncDescriptor(TestFileEditorInput)], TEST_EDITOR_INPUT_ID));
+		disposables.add(
+			registerTestEditor(
+				TEST_EDITOR_ID,
+				[new SyncDescriptor(TestFileEditorInput)],
+				TEST_EDITOR_INPUT_ID
+			)
+		);
 		disposables.add(registerTestResourceEditor());
 		disposables.add(registerTestSideBySideEditor());
 	});
@@ -55,19 +75,30 @@ suite('TextEditorService', () => {
 		const service = disposables.add(instantiationService.createInstance(TextEditorService));
 
 		const languageId = 'create-input-test';
-		disposables.add(languageService.registerLanguage({
-			id: languageId,
-		}));
+		disposables.add(
+			languageService.registerLanguage({
+				id: languageId,
+			})
+		);
 
 		// Untyped Input (file)
-		let input: EditorInput = disposables.add(service.createTextEditor({ resource: toResource.call(this, '/index.html'), options: { selection: { startLineNumber: 1, startColumn: 1 } } }));
+		let input: EditorInput = disposables.add(
+			service.createTextEditor({
+				resource: toResource.call(this, '/index.html'),
+				options: { selection: { startLineNumber: 1, startColumn: 1 } },
+			})
+		);
 		assert(input instanceof FileEditorInput);
 		let contentInput = <FileEditorInput>input;
 		assert.strictEqual(contentInput.resource.fsPath, toResource.call(this, '/index.html').fsPath);
 
 		// Untyped Input (file casing)
-		input = disposables.add(service.createTextEditor({ resource: toResource.call(this, '/index.html') }));
-		const inputDifferentCase = disposables.add(service.createTextEditor({ resource: toResource.call(this, '/INDEX.html') }));
+		input = disposables.add(
+			service.createTextEditor({ resource: toResource.call(this, '/index.html') })
+		);
+		const inputDifferentCase = disposables.add(
+			service.createTextEditor({ resource: toResource.call(this, '/INDEX.html') })
+		);
 
 		if (!isLinux) {
 			assert.strictEqual(input, inputDifferentCase);
@@ -81,58 +112,103 @@ suite('TextEditorService', () => {
 		assert.strictEqual(disposables.add(service.createTextEditor(input)), input);
 
 		// Untyped Input (file, encoding)
-		input = disposables.add(service.createTextEditor({ resource: toResource.call(this, '/index.html'), encoding: 'utf16le', options: { selection: { startLineNumber: 1, startColumn: 1 } } }));
+		input = disposables.add(
+			service.createTextEditor({
+				resource: toResource.call(this, '/index.html'),
+				encoding: 'utf16le',
+				options: { selection: { startLineNumber: 1, startColumn: 1 } },
+			})
+		);
 		assert(input instanceof FileEditorInput);
 		contentInput = <FileEditorInput>input;
 		assert.strictEqual(contentInput.getPreferredEncoding(), 'utf16le');
 
 		// Untyped Input (file, language)
-		input = disposables.add(service.createTextEditor({ resource: toResource.call(this, '/index.html'), languageId: languageId }));
+		input = disposables.add(
+			service.createTextEditor({
+				resource: toResource.call(this, '/index.html'),
+				languageId: languageId,
+			})
+		);
 		assert(input instanceof FileEditorInput);
 		contentInput = <FileEditorInput>input;
 		assert.strictEqual(contentInput.getPreferredLanguageId(), languageId);
-		let fileModel = disposables.add((await contentInput.resolve() as ITextFileEditorModel));
+		let fileModel = disposables.add((await contentInput.resolve()) as ITextFileEditorModel);
 		assert.strictEqual(fileModel.textEditorModel?.getLanguageId(), languageId);
 
 		// Untyped Input (file, contents)
-		input = disposables.add(service.createTextEditor({ resource: toResource.call(this, '/index.html'), contents: 'My contents' }));
+		input = disposables.add(
+			service.createTextEditor({
+				resource: toResource.call(this, '/index.html'),
+				contents: 'My contents',
+			})
+		);
 		assert(input instanceof FileEditorInput);
 		contentInput = <FileEditorInput>input;
-		fileModel = disposables.add((await contentInput.resolve() as ITextFileEditorModel));
+		fileModel = disposables.add((await contentInput.resolve()) as ITextFileEditorModel);
 		assert.strictEqual(fileModel.textEditorModel?.getValue(), 'My contents');
 		assert.strictEqual(fileModel.isDirty(), true);
 
 		// Untyped Input (file, different language)
-		input = disposables.add(service.createTextEditor({ resource: toResource.call(this, '/index.html'), languageId: 'text' }));
+		input = disposables.add(
+			service.createTextEditor({
+				resource: toResource.call(this, '/index.html'),
+				languageId: 'text',
+			})
+		);
 		assert(input instanceof FileEditorInput);
 		contentInput = <FileEditorInput>input;
 		assert.strictEqual(contentInput.getPreferredLanguageId(), 'text');
 
 		// Untyped Input (untitled)
-		input = disposables.add(service.createTextEditor({ resource: undefined, options: { selection: { startLineNumber: 1, startColumn: 1 } } }));
+		input = disposables.add(
+			service.createTextEditor({
+				resource: undefined,
+				options: { selection: { startLineNumber: 1, startColumn: 1 } },
+			})
+		);
 		assert(input instanceof UntitledTextEditorInput);
 
 		// Untyped Input (untitled with contents)
-		let untypedInput: any = { contents: 'Hello Untitled', options: { selection: { startLineNumber: 1, startColumn: 1 } } };
+		let untypedInput: any = {
+			contents: 'Hello Untitled',
+			options: { selection: { startLineNumber: 1, startColumn: 1 } },
+		};
 		input = disposables.add(service.createTextEditor(untypedInput));
 		assert.ok(isUntitledResourceEditorInput(untypedInput));
 		assert(input instanceof UntitledTextEditorInput);
-		let model = disposables.add(await input.resolve() as UntitledTextEditorModel);
+		let model = disposables.add((await input.resolve()) as UntitledTextEditorModel);
 		assert.strictEqual(model.textEditorModel?.getValue(), 'Hello Untitled');
 
 		// Untyped Input (untitled with language id)
-		input = disposables.add(service.createTextEditor({ resource: undefined, languageId: languageId, options: { selection: { startLineNumber: 1, startColumn: 1 } } }));
+		input = disposables.add(
+			service.createTextEditor({
+				resource: undefined,
+				languageId: languageId,
+				options: { selection: { startLineNumber: 1, startColumn: 1 } },
+			})
+		);
 		assert(input instanceof UntitledTextEditorInput);
-		model = disposables.add(await input.resolve() as UntitledTextEditorModel);
+		model = disposables.add((await input.resolve()) as UntitledTextEditorModel);
 		assert.strictEqual(model.getLanguageId(), languageId);
 
 		// Untyped Input (untitled with file path)
-		input = disposables.add(service.createTextEditor({ resource: URI.file('/some/path.txt'), forceUntitled: true, options: { selection: { startLineNumber: 1, startColumn: 1 } } }));
+		input = disposables.add(
+			service.createTextEditor({
+				resource: URI.file('/some/path.txt'),
+				forceUntitled: true,
+				options: { selection: { startLineNumber: 1, startColumn: 1 } },
+			})
+		);
 		assert(input instanceof UntitledTextEditorInput);
 		assert.ok((input as UntitledTextEditorInput).hasAssociatedFilePath);
 
 		// Untyped Input (untitled with untitled resource)
-		untypedInput = { resource: URI.parse('untitled://Untitled-1'), forceUntitled: true, options: { selection: { startLineNumber: 1, startColumn: 1 } } };
+		untypedInput = {
+			resource: URI.parse('untitled://Untitled-1'),
+			forceUntitled: true,
+			options: { selection: { startLineNumber: 1, startColumn: 1 } },
+		};
 		assert.ok(isUntitledResourceEditorInput(untypedInput));
 		input = disposables.add(service.createTextEditor(untypedInput));
 		assert(input instanceof UntitledTextEditorInput);
@@ -145,9 +221,17 @@ suite('TextEditorService', () => {
 		assert(input instanceof UntitledTextEditorInput);
 
 		// Untyped Input (untitled with custom resource)
-		const provider = disposables.add(instantiationService.createInstance(FileServiceProvider, 'untitled-custom'));
+		const provider = disposables.add(
+			instantiationService.createInstance(FileServiceProvider, 'untitled-custom')
+		);
 
-		input = disposables.add(service.createTextEditor({ resource: URI.parse('untitled-custom://some/path'), forceUntitled: true, options: { selection: { startLineNumber: 1, startColumn: 1 } } }));
+		input = disposables.add(
+			service.createTextEditor({
+				resource: URI.parse('untitled-custom://some/path'),
+				forceUntitled: true,
+				options: { selection: { startLineNumber: 1, startColumn: 1 } },
+			})
+		);
 		assert(input instanceof UntitledTextEditorInput);
 		assert.ok((input as UntitledTextEditorInput).hasAssociatedFilePath);
 
@@ -160,34 +244,58 @@ suite('TextEditorService', () => {
 		// Untyped Input (diff)
 		const resourceDiffInput = {
 			modified: { resource: toResource.call(this, '/modified.html') },
-			original: { resource: toResource.call(this, '/original.html') }
+			original: { resource: toResource.call(this, '/original.html') },
 		};
 		assert.strictEqual(isResourceDiffEditorInput(resourceDiffInput), true);
 		input = disposables.add(service.createTextEditor(resourceDiffInput));
 		assert(input instanceof DiffEditorInput);
 		disposables.add(input.modified);
 		disposables.add(input.original);
-		assert.strictEqual(input.original.resource?.toString(), resourceDiffInput.original.resource.toString());
-		assert.strictEqual(input.modified.resource?.toString(), resourceDiffInput.modified.resource.toString());
+		assert.strictEqual(
+			input.original.resource?.toString(),
+			resourceDiffInput.original.resource.toString()
+		);
+		assert.strictEqual(
+			input.modified.resource?.toString(),
+			resourceDiffInput.modified.resource.toString()
+		);
 		const untypedDiffInput = input.toUntyped() as IResourceDiffEditorInput;
-		assert.strictEqual(untypedDiffInput.original.resource?.toString(), resourceDiffInput.original.resource.toString());
-		assert.strictEqual(untypedDiffInput.modified.resource?.toString(), resourceDiffInput.modified.resource.toString());
+		assert.strictEqual(
+			untypedDiffInput.original.resource?.toString(),
+			resourceDiffInput.original.resource.toString()
+		);
+		assert.strictEqual(
+			untypedDiffInput.modified.resource?.toString(),
+			resourceDiffInput.modified.resource.toString()
+		);
 
 		// Untyped Input (side by side)
 		const sideBySideResourceInput = {
 			primary: { resource: toResource.call(this, '/primary.html') },
-			secondary: { resource: toResource.call(this, '/secondary.html') }
+			secondary: { resource: toResource.call(this, '/secondary.html') },
 		};
 		assert.strictEqual(isResourceSideBySideEditorInput(sideBySideResourceInput), true);
 		input = disposables.add(service.createTextEditor(sideBySideResourceInput));
 		assert(input instanceof SideBySideEditorInput);
 		disposables.add(input.primary);
 		disposables.add(input.secondary);
-		assert.strictEqual(input.primary.resource?.toString(), sideBySideResourceInput.primary.resource.toString());
-		assert.strictEqual(input.secondary.resource?.toString(), sideBySideResourceInput.secondary.resource.toString());
+		assert.strictEqual(
+			input.primary.resource?.toString(),
+			sideBySideResourceInput.primary.resource.toString()
+		);
+		assert.strictEqual(
+			input.secondary.resource?.toString(),
+			sideBySideResourceInput.secondary.resource.toString()
+		);
 		const untypedSideBySideInput = input.toUntyped() as IResourceSideBySideEditorInput;
-		assert.strictEqual(untypedSideBySideInput.primary.resource?.toString(), sideBySideResourceInput.primary.resource.toString());
-		assert.strictEqual(untypedSideBySideInput.secondary.resource?.toString(), sideBySideResourceInput.secondary.resource.toString());
+		assert.strictEqual(
+			untypedSideBySideInput.primary.resource?.toString(),
+			sideBySideResourceInput.primary.resource.toString()
+		);
+		assert.strictEqual(
+			untypedSideBySideInput.secondary.resource?.toString(),
+			sideBySideResourceInput.secondary.resource.toString()
+		);
 	});
 
 	test('createTextEditor- caching', function () {
@@ -205,14 +313,18 @@ suite('TextEditorService', () => {
 
 		assert.notStrictEqual(fileEditorInput1, fileEditorInput2);
 
-		const fileEditorInput1Again = disposables.add(service.createTextEditor({ resource: fileResource1 }));
+		const fileEditorInput1Again = disposables.add(
+			service.createTextEditor({ resource: fileResource1 })
+		);
 		assert.strictEqual(fileEditorInput1Again, fileEditorInput1);
 
 		fileEditorInput1Again.dispose();
 
 		assert.ok(fileEditorInput1.isDisposed());
 
-		const fileEditorInput1AgainAndAgain = disposables.add(service.createTextEditor({ resource: fileResource1 }));
+		const fileEditorInput1AgainAndAgain = disposables.add(
+			service.createTextEditor({ resource: fileResource1 })
+		);
 		assert.notStrictEqual(fileEditorInput1AgainAndAgain, fileEditorInput1);
 		assert.ok(!fileEditorInput1AgainAndAgain.isDisposed());
 

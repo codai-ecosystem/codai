@@ -3,7 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import assert from 'assert';
-import { createScanner, Node, parse, ParseError, ParseErrorCode, ParseOptions, parseTree, ScanError, SyntaxKind } from '../../common/json.js';
+import {
+	createScanner,
+	Node,
+	parse,
+	ParseError,
+	ParseErrorCode,
+	ParseOptions,
+	parseTree,
+	ScanError,
+	SyntaxKind,
+} from '../../common/json.js';
 import { getParseErrorMessage } from '../../common/jsonErrorMessages.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
@@ -40,11 +50,19 @@ function assertInvalidParse(input: string, expected: any, options?: ParseOptions
 	assert.deepStrictEqual(actual, expected);
 }
 
-function assertTree(input: string, expected: any, expectedErrors: number[] = [], options?: ParseOptions): void {
+function assertTree(
+	input: string,
+	expected: any,
+	expectedErrors: number[] = [],
+	options?: ParseOptions
+): void {
 	const errors: ParseError[] = [];
 	const actual = parseTree(input, errors, options);
 
-	assert.deepStrictEqual(errors.map(e => e.error, expected), expectedErrors);
+	assert.deepStrictEqual(
+		errors.map(e => e.error, expected),
+		expectedErrors
+	);
 	const checkParent = (node: Node) => {
 		if (node.children) {
 			for (const child of node.children) {
@@ -60,7 +78,6 @@ function assertTree(input: string, expected: any, expectedErrors: number[] = [],
 }
 
 suite('JSON', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('tokens', () => {
@@ -102,7 +119,12 @@ suite('JSON', () => {
 
 		// unexpected end
 		assertKinds('"test', SyntaxKind.StringLiteral);
-		assertKinds('"test\n"', SyntaxKind.StringLiteral, SyntaxKind.LineBreakTrivia, SyntaxKind.StringLiteral);
+		assertKinds(
+			'"test\n"',
+			SyntaxKind.StringLiteral,
+			SyntaxKind.LineBreakTrivia,
+			SyntaxKind.StringLiteral
+		);
 
 		// invalid characters
 		assertScanError('"\t"', SyntaxKind.StringLiteral, ScanError.InvalidCharacter);
@@ -139,13 +161,14 @@ suite('JSON', () => {
 		assertKinds('false', SyntaxKind.FalseKeyword);
 		assertKinds('null', SyntaxKind.NullKeyword);
 
-
-		assertKinds('true false null',
+		assertKinds(
+			'true false null',
 			SyntaxKind.TrueKeyword,
 			SyntaxKind.Trivia,
 			SyntaxKind.FalseKeyword,
 			SyntaxKind.Trivia,
-			SyntaxKind.NullKeyword);
+			SyntaxKind.NullKeyword
+		);
 
 		// invalid words
 		assertKinds('nulllll', SyntaxKind.Unknown);
@@ -162,11 +185,15 @@ suite('JSON', () => {
 		assertKinds('\r', SyntaxKind.LineBreakTrivia);
 		assertKinds('\n', SyntaxKind.LineBreakTrivia);
 		assertKinds('\n\r', SyntaxKind.LineBreakTrivia, SyntaxKind.LineBreakTrivia);
-		assertKinds('\n   \n', SyntaxKind.LineBreakTrivia, SyntaxKind.Trivia, SyntaxKind.LineBreakTrivia);
+		assertKinds(
+			'\n   \n',
+			SyntaxKind.LineBreakTrivia,
+			SyntaxKind.Trivia,
+			SyntaxKind.LineBreakTrivia
+		);
 	});
 
 	test('parse: literals', () => {
-
 		assertValidParse('true', true);
 		assertValidParse('false', false);
 		assertValidParse('null', null);
@@ -177,9 +204,9 @@ suite('JSON', () => {
 		assertValidParse('-9', -9);
 		assertValidParse('0.129', 0.129);
 		assertValidParse('23e3', 23e3);
-		assertValidParse('1.2E+3', 1.2E+3);
-		assertValidParse('1.2E-3', 1.2E-3);
-		assertValidParse('1.2E-3 // comment', 1.2E-3);
+		assertValidParse('1.2E+3', 1.2e3);
+		assertValidParse('1.2E-3', 1.2e-3);
+		assertValidParse('1.2E-3 // comment', 1.2e-3);
 	});
 
 	test('parse: objects', () => {
@@ -188,9 +215,22 @@ suite('JSON', () => {
 		assertValidParse('{ "bar": 8, "xoo": "foo" }', { bar: 8, xoo: 'foo' });
 		assertValidParse('{ "hello": [], "world": {} }', { hello: [], world: {} });
 		assertValidParse('{ "a": false, "b": true, "c": [ 7.4 ] }', { a: false, b: true, c: [7.4] });
-		assertValidParse('{ "lineComment": "//", "blockComment": ["/*", "*/"], "brackets": [ ["{", "}"], ["[", "]"], ["(", ")"] ] }', { lineComment: '//', blockComment: ['/*', '*/'], brackets: [['{', '}'], ['[', ']'], ['(', ')']] });
+		assertValidParse(
+			'{ "lineComment": "//", "blockComment": ["/*", "*/"], "brackets": [ ["{", "}"], ["[", "]"], ["(", ")"] ] }',
+			{
+				lineComment: '//',
+				blockComment: ['/*', '*/'],
+				brackets: [
+					['{', '}'],
+					['[', ']'],
+					['(', ')'],
+				],
+			}
+		);
 		assertValidParse('{ "hello": [], "world": {} }', { hello: [], world: {} });
-		assertValidParse('{ "hello": { "again": { "inside": 5 }, "world": 1 }}', { hello: { again: { inside: 5 }, world: 1 } });
+		assertValidParse('{ "hello": { "again": { "inside": 5 }, "world": 1 }}', {
+			hello: { again: { inside: 5 }, world: 1 },
+		});
 		assertValidParse('{ "foo": /*hello*/true }', { foo: true });
 	});
 
@@ -255,75 +295,120 @@ suite('JSON', () => {
 
 	test('tree: arrays', () => {
 		assertTree('[]', { type: 'array', offset: 0, length: 2, children: [] });
-		assertTree('[ 1 ]', { type: 'array', offset: 0, length: 5, children: [{ type: 'number', offset: 2, length: 1, value: 1 }] });
+		assertTree('[ 1 ]', {
+			type: 'array',
+			offset: 0,
+			length: 5,
+			children: [{ type: 'number', offset: 2, length: 1, value: 1 }],
+		});
 		assertTree('[ 1,"x"]', {
-			type: 'array', offset: 0, length: 8, children: [
+			type: 'array',
+			offset: 0,
+			length: 8,
+			children: [
 				{ type: 'number', offset: 2, length: 1, value: 1 },
-				{ type: 'string', offset: 4, length: 3, value: 'x' }
-			]
+				{ type: 'string', offset: 4, length: 3, value: 'x' },
+			],
 		});
 		assertTree('[[]]', {
-			type: 'array', offset: 0, length: 4, children: [
-				{ type: 'array', offset: 1, length: 2, children: [] }
-			]
+			type: 'array',
+			offset: 0,
+			length: 4,
+			children: [{ type: 'array', offset: 1, length: 2, children: [] }],
 		});
 	});
 
 	test('tree: objects', () => {
 		assertTree('{ }', { type: 'object', offset: 0, length: 3, children: [] });
 		assertTree('{ "val": 1 }', {
-			type: 'object', offset: 0, length: 12, children: [
+			type: 'object',
+			offset: 0,
+			length: 12,
+			children: [
 				{
-					type: 'property', offset: 2, length: 8, colonOffset: 7, children: [
+					type: 'property',
+					offset: 2,
+					length: 8,
+					colonOffset: 7,
+					children: [
 						{ type: 'string', offset: 2, length: 5, value: 'val' },
-						{ type: 'number', offset: 9, length: 1, value: 1 }
-					]
-				}
-			]
+						{ type: 'number', offset: 9, length: 1, value: 1 },
+					],
+				},
+			],
 		});
-		assertTree('{"id": "$", "v": [ null, null] }',
+		assertTree('{"id": "$", "v": [ null, null] }', {
+			type: 'object',
+			offset: 0,
+			length: 32,
+			children: [
+				{
+					type: 'property',
+					offset: 1,
+					length: 9,
+					colonOffset: 5,
+					children: [
+						{ type: 'string', offset: 1, length: 4, value: 'id' },
+						{ type: 'string', offset: 7, length: 3, value: '$' },
+					],
+				},
+				{
+					type: 'property',
+					offset: 12,
+					length: 18,
+					colonOffset: 15,
+					children: [
+						{ type: 'string', offset: 12, length: 3, value: 'v' },
+						{
+							type: 'array',
+							offset: 17,
+							length: 13,
+							children: [
+								{ type: 'null', offset: 19, length: 4, value: null },
+								{ type: 'null', offset: 25, length: 4, value: null },
+							],
+						},
+					],
+				},
+			],
+		});
+		assertTree(
+			'{  "id": { "foo": { } } , }',
 			{
-				type: 'object', offset: 0, length: 32, children: [
+				type: 'object',
+				offset: 0,
+				length: 27,
+				children: [
 					{
-						type: 'property', offset: 1, length: 9, colonOffset: 5, children: [
-							{ type: 'string', offset: 1, length: 4, value: 'id' },
-							{ type: 'string', offset: 7, length: 3, value: '$' }
-						]
-					},
-					{
-						type: 'property', offset: 12, length: 18, colonOffset: 15, children: [
-							{ type: 'string', offset: 12, length: 3, value: 'v' },
-							{
-								type: 'array', offset: 17, length: 13, children: [
-									{ type: 'null', offset: 19, length: 4, value: null },
-									{ type: 'null', offset: 25, length: 4, value: null }
-								]
-							}
-						]
-					}
-				]
-			}
-		);
-		assertTree('{  "id": { "foo": { } } , }',
-			{
-				type: 'object', offset: 0, length: 27, children: [
-					{
-						type: 'property', offset: 3, length: 20, colonOffset: 7, children: [
+						type: 'property',
+						offset: 3,
+						length: 20,
+						colonOffset: 7,
+						children: [
 							{ type: 'string', offset: 3, length: 4, value: 'id' },
 							{
-								type: 'object', offset: 9, length: 14, children: [
+								type: 'object',
+								offset: 9,
+								length: 14,
+								children: [
 									{
-										type: 'property', offset: 11, length: 10, colonOffset: 16, children: [
+										type: 'property',
+										offset: 11,
+										length: 10,
+										colonOffset: 16,
+										children: [
 											{ type: 'string', offset: 11, length: 5, value: 'foo' },
-											{ type: 'object', offset: 18, length: 3, children: [] }
-										]
-									}
-								]
-							}
-						]
-					}
-				]
-			}
-			, [ParseErrorCode.PropertyNameExpected, ParseErrorCode.ValueExpected], { allowTrailingComma: false });
+											{ type: 'object', offset: 18, length: 3, children: [] },
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			[ParseErrorCode.PropertyNameExpected, ParseErrorCode.ValueExpected],
+			{ allowTrailingComma: false }
+		);
 	});
 });

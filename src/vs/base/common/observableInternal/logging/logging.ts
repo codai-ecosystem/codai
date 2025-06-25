@@ -51,11 +51,19 @@ export interface IObservableLogger {
 
 	handleAutorunCreated(autorun: AutorunObserver): void;
 	handleAutorunDisposed(autorun: AutorunObserver): void;
-	handleAutorunDependencyChanged(autorun: AutorunObserver, observable: IObservable<any>, change: unknown): void;
+	handleAutorunDependencyChanged(
+		autorun: AutorunObserver,
+		observable: IObservable<any>,
+		change: unknown
+	): void;
 	handleAutorunStarted(autorun: AutorunObserver): void;
 	handleAutorunFinished(autorun: AutorunObserver): void;
 
-	handleDerivedDependencyChanged(derived: Derived<any, any, any>, observable: IObservable<any>, change: unknown): void;
+	handleDerivedDependencyChanged(
+		derived: Derived<any, any, any>,
+		observable: IObservable<any>,
+		change: unknown
+	): void;
 	handleDerivedCleared(observable: Derived<any, any, any>): void;
 
 	handleBeginTransaction(transaction: TransactionImpl): void;
@@ -63,9 +71,7 @@ export interface IObservableLogger {
 }
 
 class ComposedLogger implements IObservableLogger {
-	constructor(
-		public readonly loggers: IObservableLogger[],
-	) { }
+	constructor(public readonly loggers: IObservableLogger[]) {}
 
 	handleObservableCreated(observable: IObservable<any>): void {
 		for (const logger of this.loggers) {
@@ -92,7 +98,11 @@ class ComposedLogger implements IObservableLogger {
 			logger.handleAutorunDisposed(autorun);
 		}
 	}
-	handleAutorunDependencyChanged(autorun: AutorunObserver, observable: IObservable<any>, change: unknown): void {
+	handleAutorunDependencyChanged(
+		autorun: AutorunObserver,
+		observable: IObservable<any>,
+		change: unknown
+	): void {
 		for (const logger of this.loggers) {
 			logger.handleAutorunDependencyChanged(autorun, observable, change);
 		}
@@ -107,7 +117,11 @@ class ComposedLogger implements IObservableLogger {
 			logger.handleAutorunFinished(autorun);
 		}
 	}
-	handleDerivedDependencyChanged(derived: Derived<any>, observable: IObservable<any>, change: unknown): void {
+	handleDerivedDependencyChanged(
+		derived: Derived<any>,
+		observable: IObservable<any>,
+		change: unknown
+	): void {
 		for (const logger of this.loggers) {
 			logger.handleDerivedDependencyChanged(derived, observable, change);
 		}

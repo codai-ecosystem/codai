@@ -8,15 +8,22 @@ import { Event } from '../../../../../base/common/event.js';
 import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
 import { constObservable, IObservable } from '../../../../../base/common/observable.js';
 import { IProgressStep } from '../../../../../platform/progress/common/progress.js';
-import { CountTokensCallback, ILanguageModelToolsService, IToolData, IToolImpl, IToolInvocation, IToolResult, ToolSet } from '../../common/languageModelToolsService.js';
+import {
+	CountTokensCallback,
+	ILanguageModelToolsService,
+	IToolData,
+	IToolImpl,
+	IToolInvocation,
+	IToolResult,
+	ToolSet,
+} from '../../common/languageModelToolsService.js';
 
 export class MockLanguageModelToolsService implements ILanguageModelToolsService {
 	_serviceBrand: undefined;
 
-	constructor() { }
+	constructor() {}
 
-	cancelToolCallsForRequest(requestId: string): void {
-	}
+	cancelToolCallsForRequest(requestId: string): void {}
 
 	onDidChangeTools: Event<void> = Event.None;
 
@@ -24,13 +31,13 @@ export class MockLanguageModelToolsService implements ILanguageModelToolsService
 		return Disposable.None;
 	}
 
-	resetToolAutoConfirmation(): void {
+	resetToolAutoConfirmation(): void {}
 
-	}
-
-	setToolAutoConfirmation(toolId: string, scope: 'workspace' | 'profile', autoConfirm?: boolean): void {
-
-	}
+	setToolAutoConfirmation(
+		toolId: string,
+		scope: 'workspace' | 'profile',
+		autoConfirm?: boolean
+	): void {}
 
 	registerToolImplementation(name: string, tool: IToolImpl): IDisposable {
 		return Disposable.None;
@@ -48,13 +55,15 @@ export class MockLanguageModelToolsService implements ILanguageModelToolsService
 		return undefined;
 	}
 
-	acceptProgress(sessionId: string | undefined, callId: string, progress: IProgressStep): void {
+	acceptProgress(sessionId: string | undefined, callId: string, progress: IProgressStep): void {}
 
-	}
-
-	async invokeTool(dto: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult> {
+	async invokeTool(
+		dto: IToolInvocation,
+		countTokens: CountTokensCallback,
+		token: CancellationToken
+	): Promise<IToolResult> {
 		return {
-			content: [{ kind: 'text', value: 'result' }]
+			content: [{ kind: 'text', value: 'result' }],
 		};
 	}
 

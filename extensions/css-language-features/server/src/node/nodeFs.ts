@@ -25,7 +25,6 @@ export function getNodeFSRequestService(): RequestService {
 						return e(err);
 					}
 					c(buf.toString());
-
 				});
 			});
 		},
@@ -55,7 +54,7 @@ export function getNodeFSRequestService(): RequestService {
 						type,
 						ctime: stats.ctime.getTime(),
 						mtime: stats.mtime.getTime(),
-						size: stats.size
+						size: stats.size,
 					});
 				});
 			});
@@ -69,19 +68,21 @@ export function getNodeFSRequestService(): RequestService {
 					if (err) {
 						return e(err);
 					}
-					c(children.map(stat => {
-						if (stat.isSymbolicLink()) {
-							return [stat.name, FileType.SymbolicLink];
-						} else if (stat.isDirectory()) {
-							return [stat.name, FileType.Directory];
-						} else if (stat.isFile()) {
-							return [stat.name, FileType.File];
-						} else {
-							return [stat.name, FileType.Unknown];
-						}
-					}));
+					c(
+						children.map(stat => {
+							if (stat.isSymbolicLink()) {
+								return [stat.name, FileType.SymbolicLink];
+							} else if (stat.isDirectory()) {
+								return [stat.name, FileType.Directory];
+							} else if (stat.isFile()) {
+								return [stat.name, FileType.File];
+							} else {
+								return [stat.name, FileType.Unknown];
+							}
+						})
+					);
 				});
 			});
-		}
+		},
 	};
 }

@@ -32,5 +32,4 @@ export interface IExtensionHostStarter {
 	start(id: string, opts: IExtensionHostProcessOptions): Promise<{ pid: number | undefined }>;
 	enableInspectPort(id: string): Promise<boolean>;
 	kill(id: string): Promise<void>;
-
 }

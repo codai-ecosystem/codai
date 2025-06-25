@@ -14,17 +14,19 @@ import { ScrollType } from '../../common/editorCommon.js';
 import { ITextModel } from '../../common/model.js';
 import { IContextKey, IContextKeyService } from '../../../platform/contextkey/common/contextkey.js';
 import { ITextResourceEditorInput } from '../../../platform/editor/common/editor.js';
-import { InstantiationType, registerSingleton } from '../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../platform/instantiation/common/extensions.js';
 import { IThemeService } from '../../../platform/theme/common/themeService.js';
 
 export class StandaloneCodeEditorService extends AbstractCodeEditorService {
-
 	private readonly _editorIsOpen: IContextKey<boolean>;
 	private _activeCodeEditor: ICodeEditor | null;
 
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IThemeService themeService: IThemeService,
+		@IThemeService themeService: IThemeService
 	) {
 		super(themeService);
 		this._register(this.onCodeEditorAdd(() => this._checkContextKey()));
@@ -32,12 +34,14 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
 		this._editorIsOpen = contextKeyService.createKey('editorIsOpen', false);
 		this._activeCodeEditor = null;
 
-		this._register(this.registerCodeEditorOpenHandler(async (input, source, sideBySide) => {
-			if (!source) {
-				return null;
-			}
-			return this.doOpenEditor(source, input);
-		}));
+		this._register(
+			this.registerCodeEditorOpenHandler(async (input, source, sideBySide) => {
+				if (!source) {
+					return null;
+				}
+				return this.doOpenEditor(source, input);
+			})
+		);
 	}
 
 	private _checkContextKey(): void {
@@ -59,12 +63,10 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
 		return this._activeCodeEditor;
 	}
 
-
 	private doOpenEditor(editor: ICodeEditor, input: ITextResourceEditorInput): ICodeEditor | null {
 		const model = this.findModel(editor, input.resource);
 		if (!model) {
 			if (input.resource) {
-
 				const schema = input.resource.scheme;
 				if (schema === Schemas.http || schema === Schemas.https) {
 					// This is a fully qualified http or https URL
@@ -83,7 +85,7 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
 			} else {
 				const pos = {
 					lineNumber: selection.startLineNumber,
-					column: selection.startColumn
+					column: selection.startColumn,
 				};
 				editor.setPosition(pos);
 				editor.revealPositionInCenter(pos, ScrollType.Immediate);

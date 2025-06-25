@@ -32,12 +32,13 @@ interface NodePosition {
 }
 
 export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> = ({
-	graph, className,
+	graph,
+	className,
 	onNodeSelect,
 	onNodeUpdate,
 	onRelationshipDelete,
 	isEditable = false,
-	layout = 'force'
+	layout = 'force',
 }) => {
 	const [selectedNode, setSelectedNode] = useState<AnyNode | null>(null);
 	const [nodePositions, setNodePositions] = useState<Map<string, NodePosition>>(new Map());
@@ -89,7 +90,7 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 			positions.set(node.id, {
 				id: node.id,
 				x: centerX + Math.cos(angle) * radius,
-				y: centerY + Math.sin(angle) * radius
+				y: centerY + Math.sin(angle) * radius,
 			});
 		});
 
@@ -97,7 +98,8 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 		for (let iteration = 0; iteration < 50; iteration++) {
 			nodes.forEach(node => {
 				const pos = positions.get(node.id)!;
-				let fx = 0, fy = 0;
+				let fx = 0,
+					fy = 0;
 
 				// Repulsion between nodes
 				nodes.forEach(otherNode => {
@@ -112,7 +114,7 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 							fy += (dy / distance) * force;
 						}
 					}
-				});				// Attraction from relationships
+				}); // Attraction from relationships
 				graph.relationships.forEach(edge => {
 					if (edge.fromNodeId === node.id || edge.toNodeId === node.id) {
 						const otherNodeId = edge.fromNodeId === node.id ? edge.toNodeId : edge.fromNodeId;
@@ -163,7 +165,8 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 
 		// Find root nodes (nodes with no incoming edges)
 		const incomingCount = new Map<string, number>();
-		graph.nodes.forEach(node => incomingCount.set(node.id, 0)); graph.relationships.forEach(edge => {
+		graph.nodes.forEach(node => incomingCount.set(node.id, 0));
+		graph.relationships.forEach(edge => {
 			incomingCount.set(edge.toNodeId, (incomingCount.get(edge.toNodeId) || 0) + 1);
 		});
 
@@ -208,140 +211,160 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 			positions.set(node.id, {
 				id: node.id,
 				x: centerX + Math.cos(angle) * radius,
-				y: centerY + Math.sin(angle) * radius
+				y: centerY + Math.sin(angle) * radius,
 			});
 		});
 	};
-	const handleNodeClick = useCallback((node: AnyNode) => {
-		setSelectedNode(node);
-		onNodeSelect?.(node);
-	}, [onNodeSelect]);
+	const handleNodeClick = useCallback(
+		(node: AnyNode) => {
+			setSelectedNode(node);
+			onNodeSelect?.(node);
+		},
+		[onNodeSelect]
+	);
 
-	const handleNodeUpdate = useCallback((nodeId: string, updates: Partial<AnyNode>) => {
-		onNodeUpdate?.(nodeId, updates);
-		if (selectedNode?.id === nodeId) {
-			setSelectedNode({ ...selectedNode, ...updates } as AnyNode);
-		}
-	}, [onNodeUpdate, selectedNode]);
+	const handleNodeUpdate = useCallback(
+		(nodeId: string, updates: Partial<AnyNode>) => {
+			onNodeUpdate?.(nodeId, updates);
+			if (selectedNode?.id === nodeId) {
+				setSelectedNode({ ...selectedNode, ...updates } as AnyNode);
+			}
+		},
+		[onNodeUpdate, selectedNode]
+	);
 
 	const handleZoom = useCallback((delta: number) => {
 		setZoomLevel(prev => Math.max(0.1, Math.min(3, prev + delta)));
 	}, []);
-	return (<div className={clsx('memory-graph-visualization relative overflow-hidden bg-gray-50', className)}>
-		<GraphControls
-			onFilterChange={(type) => {
-				setNodeFilter(type);
-			}}
-			currentFilter={nodeFilter}
-			nodeTypes={Array.from(new Set(graph.nodes.map(node => node.type)))}
-			className="absolute top-4 left-4 z-10"
-		/><div
-			ref={containerRef}
-			className="graph-container"
-			onMouseDown={(e) => {
-				const startX = e.clientX;
-				const startY = e.clientY;
-				const startPanX = panOffset.x;
-				const startPanY = panOffset.y;
+	return (
+		<div
+			className={clsx('memory-graph-visualization relative overflow-hidden bg-gray-50', className)}
+		>
+			<GraphControls
+				onFilterChange={type => {
+					setNodeFilter(type);
+				}}
+				currentFilter={nodeFilter}
+				nodeTypes={Array.from(new Set(graph.nodes.map(node => node.type)))}
+				className="absolute top-4 left-4 z-10"
+			/>
+			<div
+				ref={containerRef}
+				className="graph-container"
+				onMouseDown={e => {
+					const startX = e.clientX;
+					const startY = e.clientY;
+					const startPanX = panOffset.x;
+					const startPanY = panOffset.y;
 
-				const handleMouseMove = (e: MouseEvent) => {
-					const deltaX = e.clientX - startX;
-					const deltaY = e.clientY - startY;
-					setPanOffset({
-						x: startPanX + deltaX,
-						y: startPanY + deltaY
-					});
-				};
+					const handleMouseMove = (e: MouseEvent) => {
+						const deltaX = e.clientX - startX;
+						const deltaY = e.clientY - startY;
+						setPanOffset({
+							x: startPanX + deltaX,
+							y: startPanY + deltaY,
+						});
+					};
 
-				const handleMouseUp = () => {
-					document.removeEventListener('mousemove', handleMouseMove);
-					document.removeEventListener('mouseup', handleMouseUp);
-				};
+					const handleMouseUp = () => {
+						document.removeEventListener('mousemove', handleMouseMove);
+						document.removeEventListener('mouseup', handleMouseUp);
+					};
 
-				document.addEventListener('mousemove', handleMouseMove);
-				document.addEventListener('mouseup', handleMouseUp);
-			}} onWheel={(e) => {
-				e.preventDefault();
-				handleZoom(e.deltaY > 0 ? -0.1 : 0.1);
-			}}
-		>				{/* Render relationships first (behind nodes) */}				<svg
-			className="graph-svg"			>
-				{graph.relationships
-					.filter(edge => {
-						if (!nodeFilter) return true;
-						const fromNode = graph.nodes.find(n => n.id === edge.fromNodeId);
-						const toNode = graph.nodes.find(n => n.id === edge.toNodeId);
-						return fromNode?.type === nodeFilter && toNode?.type === nodeFilter;
-					})
-					.map((edge) => {
-						const fromPos = nodePositions.get(edge.fromNodeId);
-						const toPos = nodePositions.get(edge.toNodeId);
-						if (!fromPos || !toPos) return null; const deleteHandler = isEditable && onRelationshipDelete ? () => onRelationshipDelete(edge.id) : undefined;
+					document.addEventListener('mousemove', handleMouseMove);
+					document.addEventListener('mouseup', handleMouseUp);
+				}}
+				onWheel={e => {
+					e.preventDefault();
+					handleZoom(e.deltaY > 0 ? -0.1 : 0.1);
+				}}
+			>
+				{' '}
+				{/* Render relationships first (behind nodes) */}{' '}
+				<svg className="graph-svg">
+					{graph.relationships
+						.filter(edge => {
+							if (!nodeFilter) return true;
+							const fromNode = graph.nodes.find(n => n.id === edge.fromNodeId);
+							const toNode = graph.nodes.find(n => n.id === edge.toNodeId);
+							return fromNode?.type === nodeFilter && toNode?.type === nodeFilter;
+						})
+						.map(edge => {
+							const fromPos = nodePositions.get(edge.fromNodeId);
+							const toPos = nodePositions.get(edge.toNodeId);
+							if (!fromPos || !toPos) return null;
+							const deleteHandler =
+								isEditable && onRelationshipDelete
+									? () => onRelationshipDelete(edge.id)
+									: undefined;
+							return (
+								<RelationshipEdge
+									key={edge.id}
+									edge={edge}
+									fromPosition={fromPos}
+									toPosition={toPos}
+									isSelected={false}
+									{...(deleteHandler && { onDelete: deleteHandler })}
+								/>
+							);
+						})}
+				</svg>{' '}
+				{/* Render nodes */}
+				{graph.nodes
+					.filter(node => !nodeFilter || node.type === nodeFilter)
+					.map(node => {
+						const position = nodePositions.get(node.id);
+						if (!position) return null;
 						return (
-							<RelationshipEdge
-								key={edge.id}
-								edge={edge}
-								fromPosition={fromPos}
-								toPosition={toPos}
-								isSelected={false}
-								{...(deleteHandler && { onDelete: deleteHandler })}
+							<NodeCard
+								key={node.id}
+								node={node}
+								position={position}
+								isSelected={selectedNode?.id === node.id}
+								isEditable={isEditable}
+								onClick={() => handleNodeClick(node)}
+								onUpdate={(updates: Partial<AnyNode>) => handleNodeUpdate(node.id, updates)}
 							/>
 						);
 					})}
-			</svg>				{/* Render nodes */}
-			{graph.nodes
-				.filter(node => !nodeFilter || node.type === nodeFilter)
-				.map((node) => {
-					const position = nodePositions.get(node.id);
-					if (!position) return null; return (
-						<NodeCard
-							key={node.id}
-							node={node}
-							position={position}
-							isSelected={selectedNode?.id === node.id}
-							isEditable={isEditable}
-							onClick={() => handleNodeClick(node)}
-							onUpdate={(updates: Partial<AnyNode>) => handleNodeUpdate(node.id, updates)}
-						/>
-					);
-				})}
-		</div>
-
-		{/* Node details panel */}
-		{selectedNode && (
-			<div className="absolute top-4 right-4 w-80 bg-white rounded-lg shadow-lg p-4 z-20">
-				<h3 className="text-lg font-semibold mb-2">Node Details</h3>
-				<div className="space-y-2">
-					<div>
-						<label className="text-sm font-medium text-gray-600">Type:</label>
-						<p className="text-sm">{selectedNode.type}</p>
-					</div>						<div>
-						<label className="text-sm font-medium text-gray-600">Name:</label>
-						<p className="text-sm">{selectedNode.name}</p>
-					</div>
-					{selectedNode.description && (
-						<div>
-							<label className="text-sm font-medium text-gray-600">Description:</label>
-							<p className="text-sm">{selectedNode.description}</p>
-						</div>
-					)}
-					<div>
-						<label className="text-sm font-medium text-gray-600">Created:</label>
-						<p className="text-sm">{new Date(selectedNode.createdAt).toLocaleString()}</p>
-					</div>
-					<div>
-						<label className="text-sm font-medium text-gray-600">Updated:</label>
-						<p className="text-sm">{new Date(selectedNode.updatedAt).toLocaleString()}</p>
-					</div>
-				</div>
-				<button
-					className="mt-4 text-sm text-blue-600 hover:text-blue-800"
-					onClick={() => setSelectedNode(null)}
-				>
-					Close
-				</button>
 			</div>
-		)}
-	</div>
+
+			{/* Node details panel */}
+			{selectedNode && (
+				<div className="absolute top-4 right-4 w-80 bg-white rounded-lg shadow-lg p-4 z-20">
+					<h3 className="text-lg font-semibold mb-2">Node Details</h3>
+					<div className="space-y-2">
+						<div>
+							<label className="text-sm font-medium text-gray-600">Type:</label>
+							<p className="text-sm">{selectedNode.type}</p>
+						</div>{' '}
+						<div>
+							<label className="text-sm font-medium text-gray-600">Name:</label>
+							<p className="text-sm">{selectedNode.name}</p>
+						</div>
+						{selectedNode.description && (
+							<div>
+								<label className="text-sm font-medium text-gray-600">Description:</label>
+								<p className="text-sm">{selectedNode.description}</p>
+							</div>
+						)}
+						<div>
+							<label className="text-sm font-medium text-gray-600">Created:</label>
+							<p className="text-sm">{new Date(selectedNode.createdAt).toLocaleString()}</p>
+						</div>
+						<div>
+							<label className="text-sm font-medium text-gray-600">Updated:</label>
+							<p className="text-sm">{new Date(selectedNode.updatedAt).toLocaleString()}</p>
+						</div>
+					</div>
+					<button
+						className="mt-4 text-sm text-blue-600 hover:text-blue-800"
+						onClick={() => setSelectedNode(null)}
+					>
+						Close
+					</button>
+				</div>
+			)}
+		</div>
 	);
 };

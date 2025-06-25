@@ -7,12 +7,17 @@ import { Event } from '../../../../base/common/event.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { IEnvironmentService } from '../../../environment/common/environment.js';
 import { TestInstantiationService } from '../../../instantiation/test/common/instantiationServiceMock.js';
-import { AbstractLogger, DEFAULT_LOG_LEVEL, ILogger, ILoggerService, LogLevel } from '../../../log/common/log.js';
+import {
+	AbstractLogger,
+	DEFAULT_LOG_LEVEL,
+	ILogger,
+	ILoggerService,
+	LogLevel,
+} from '../../../log/common/log.js';
 import { IProductService } from '../../../product/common/productService.js';
 import { TelemetryLogAppender } from '../../common/telemetryLogAppender.js';
 
 class TestTelemetryLogger extends AbstractLogger implements ILogger {
-
 	public logs: string[] = [];
 
 	constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
@@ -49,7 +54,7 @@ class TestTelemetryLogger extends AbstractLogger implements ILogger {
 			this.logs.push(message);
 		}
 	}
-	flush(): void { }
+	flush(): void {}
 }
 
 export class TestTelemetryLoggerService implements ILoggerService {
@@ -57,7 +62,7 @@ export class TestTelemetryLoggerService implements ILoggerService {
 
 	logger?: TestTelemetryLogger;
 
-	constructor(private readonly logLevel: LogLevel) { }
+	constructor(private readonly logLevel: LogLevel) {}
 
 	getLogger() {
 		return this.logger;
@@ -74,24 +79,37 @@ export class TestTelemetryLoggerService implements ILoggerService {
 	onDidChangeVisibility = Event.None;
 	onDidChangeLogLevel = Event.None;
 	onDidChangeLoggers = Event.None;
-	setLogLevel(): void { }
-	getLogLevel() { return LogLevel.Info; }
-	setVisibility(): void { }
-	getDefaultLogLevel() { return this.logLevel; }
-	registerLogger() { }
-	deregisterLogger(): void { }
-	getRegisteredLoggers() { return []; }
-	getRegisteredLogger() { return undefined; }
+	setLogLevel(): void {}
+	getLogLevel() {
+		return LogLevel.Info;
+	}
+	setVisibility(): void {}
+	getDefaultLogLevel() {
+		return this.logLevel;
+	}
+	registerLogger() {}
+	deregisterLogger(): void {}
+	getRegisteredLoggers() {
+		return [];
+	}
+	getRegisteredLogger() {
+		return undefined;
+	}
 }
 
 suite('TelemetryLogAdapter', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('Do not Log Telemetry if log level is not trace', async () => {
 		const testLoggerService = new TestTelemetryLoggerService(DEFAULT_LOG_LEVEL);
 		const testInstantiationService = new TestInstantiationService();
-		const testObject = new TelemetryLogAppender('', false, testLoggerService, testInstantiationService.stub(IEnvironmentService, {}), testInstantiationService.stub(IProductService, {}));
+		const testObject = new TelemetryLogAppender(
+			'',
+			false,
+			testLoggerService,
+			testInstantiationService.stub(IEnvironmentService, {}),
+			testInstantiationService.stub(IProductService, {})
+		);
 		testObject.log('testEvent', { hello: 'world', isTrue: true, numberBetween1And3: 2 });
 		assert.strictEqual(testLoggerService.createLogger().logs.length, 0);
 		testObject.dispose();
@@ -101,16 +119,29 @@ suite('TelemetryLogAdapter', () => {
 	test('Log Telemetry if log level is trace', async () => {
 		const testLoggerService = new TestTelemetryLoggerService(LogLevel.Trace);
 		const testInstantiationService = new TestInstantiationService();
-		const testObject = new TelemetryLogAppender('', false, testLoggerService, testInstantiationService.stub(IEnvironmentService, {}), testInstantiationService.stub(IProductService, {}));
+		const testObject = new TelemetryLogAppender(
+			'',
+			false,
+			testLoggerService,
+			testInstantiationService.stub(IEnvironmentService, {}),
+			testInstantiationService.stub(IProductService, {})
+		);
 		testObject.log('testEvent', { hello: 'world', isTrue: true, numberBetween1And3: 2 });
-		assert.strictEqual(testLoggerService.createLogger().logs[0], 'telemetry/testEvent' + JSON.stringify([{
-			properties: {
-				hello: 'world',
-			},
-			measurements: {
-				isTrue: 1, numberBetween1And3: 2
-			}
-		}]));
+		assert.strictEqual(
+			testLoggerService.createLogger().logs[0],
+			'telemetry/testEvent' +
+				JSON.stringify([
+					{
+						properties: {
+							hello: 'world',
+						},
+						measurements: {
+							isTrue: 1,
+							numberBetween1And3: 2,
+						},
+					},
+				])
+		);
 		testObject.dispose();
 		testInstantiationService.dispose();
 	});

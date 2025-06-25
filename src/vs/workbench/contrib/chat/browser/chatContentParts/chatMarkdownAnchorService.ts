@@ -4,15 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { addDisposableListener, isActiveElement } from '../../../../../base/browser/dom.js';
-import { Disposable, IDisposable, combinedDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	IDisposable,
+	combinedDisposable,
+	toDisposable,
+} from '../../../../../base/common/lifecycle.js';
 import { createDecorator } from '../../../../../platform/instantiation/common/instantiation.js';
 import { InlineAnchorWidget } from '../chatInlineAnchorWidget.js';
 
-
-export const IChatMarkdownAnchorService = createDecorator<IChatMarkdownAnchorService>('chatMarkdownAnchorService');
+export const IChatMarkdownAnchorService = createDecorator<IChatMarkdownAnchorService>(
+	'chatMarkdownAnchorService'
+);
 
 export interface IChatMarkdownAnchorService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -24,7 +29,6 @@ export interface IChatMarkdownAnchorService {
 }
 
 export class ChatMarkdownAnchorService extends Disposable implements IChatMarkdownAnchorService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private _widgets: InlineAnchorWidget[] = [];
@@ -60,7 +64,7 @@ export class ChatMarkdownAnchorService extends Disposable implements IChatMarkdo
 				if (this._lastFocusedWidget === widget) {
 					this.setLastFocusedList(undefined);
 				}
-			}),
+			})
 		);
 	}
 }

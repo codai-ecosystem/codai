@@ -9,21 +9,27 @@ import { ScrollableElementResolvedOptions } from './scrollableElementOptions.js'
 import { ARROW_IMG_SIZE } from './scrollbarArrow.js';
 import { ScrollbarState } from './scrollbarState.js';
 import { Codicon } from '../../../common/codicons.js';
-import { INewScrollPosition, Scrollable, ScrollbarVisibility, ScrollEvent } from '../../../common/scrollable.js';
-
-
+import {
+	INewScrollPosition,
+	Scrollable,
+	ScrollbarVisibility,
+	ScrollEvent,
+} from '../../../common/scrollable.js';
 
 export class VerticalScrollbar extends AbstractScrollbar {
-
-	constructor(scrollable: Scrollable, options: ScrollableElementResolvedOptions, host: ScrollbarHost) {
+	constructor(
+		scrollable: Scrollable,
+		options: ScrollableElementResolvedOptions,
+		host: ScrollbarHost
+	) {
 		const scrollDimensions = scrollable.getScrollDimensions();
 		const scrollPosition = scrollable.getCurrentScrollPosition();
 		super({
 			lazyRender: options.lazyRender,
 			host: host,
 			scrollbarState: new ScrollbarState(
-				(options.verticalHasArrows ? options.arrowSize : 0),
-				(options.vertical === ScrollbarVisibility.Hidden ? 0 : options.verticalScrollbarSize),
+				options.verticalHasArrows ? options.arrowSize : 0,
+				options.vertical === ScrollbarVisibility.Hidden ? 0 : options.verticalScrollbarSize,
 				// give priority to vertical scroll bar over horizontal and let it scroll all the way to the bottom
 				0,
 				scrollDimensions.height,
@@ -33,7 +39,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 			visibility: options.vertical,
 			extraScrollbarClassName: 'vertical',
 			scrollable: scrollable,
-			scrollByPage: options.scrollByPage
+			scrollByPage: options.scrollByPage,
 		});
 
 		if (options.verticalHasArrows) {
@@ -65,7 +71,12 @@ export class VerticalScrollbar extends AbstractScrollbar {
 			});
 		}
 
-		this._createSlider(0, Math.floor((options.verticalScrollbarSize - options.verticalSliderSize) / 2), options.verticalSliderSize, undefined);
+		this._createSlider(
+			0,
+			Math.floor((options.verticalScrollbarSize - options.verticalSliderSize) / 2),
+			options.verticalSliderSize,
+			undefined
+		);
 	}
 
 	protected _updateSlider(sliderSize: number, sliderPosition: number): void {
@@ -108,11 +119,12 @@ export class VerticalScrollbar extends AbstractScrollbar {
 	}
 
 	public updateOptions(options: ScrollableElementResolvedOptions): void {
-		this.updateScrollbarSize(options.vertical === ScrollbarVisibility.Hidden ? 0 : options.verticalScrollbarSize);
+		this.updateScrollbarSize(
+			options.vertical === ScrollbarVisibility.Hidden ? 0 : options.verticalScrollbarSize
+		);
 		// give priority to vertical scroll bar over horizontal and let it scroll all the way to the bottom
 		this._scrollbarState.setOppositeScrollbarSize(0);
 		this._visibilityController.setVisibility(options.vertical);
 		this._scrollByPage = options.scrollByPage;
 	}
-
 }

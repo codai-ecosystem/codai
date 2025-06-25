@@ -4,14 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 import { AsyncIterableObject } from '../../../../../base/common/async.js';
 import { VSBuffer } from '../../../../../base/common/buffer.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../../base/common/cancellation.js';
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from '../../../../../base/common/cancellation.js';
 import { CharCode } from '../../../../../base/common/charCode.js';
 import { isCancellationError } from '../../../../../base/common/errors.js';
 import { isEqual } from '../../../../../base/common/resources.js';
 import * as strings from '../../../../../base/common/strings.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { getCodeEditor, IActiveCodeEditor } from '../../../../../editor/browser/editorBrowser.js';
-import { IBulkEditService, ResourceTextEdit } from '../../../../../editor/browser/services/bulkEditService.js';
+import {
+	IBulkEditService,
+	ResourceTextEdit,
+} from '../../../../../editor/browser/services/bulkEditService.js';
 import { ICodeEditorService } from '../../../../../editor/browser/services/codeEditorService.js';
 import { Range } from '../../../../../editor/common/core/range.js';
 import { TextEdit } from '../../../../../editor/common/languages.js';
@@ -21,14 +27,32 @@ import { localize } from '../../../../../nls.js';
 import { IDialogService } from '../../../../../platform/dialogs/common/dialogs.js';
 import { IFileService } from '../../../../../platform/files/common/files.js';
 import { ILogService } from '../../../../../platform/log/common/log.js';
-import { IProgressService, ProgressLocation } from '../../../../../platform/progress/common/progress.js';
+import {
+	IProgressService,
+	ProgressLocation,
+} from '../../../../../platform/progress/common/progress.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 import { ITextFileService } from '../../../../services/textfile/common/textfiles.js';
-import { reviewEdits, reviewNotebookEdits } from '../../../inlineChat/browser/inlineChatController.js';
+import {
+	reviewEdits,
+	reviewNotebookEdits,
+} from '../../../inlineChat/browser/inlineChatController.js';
 import { insertCell } from '../../../notebook/browser/controller/cellOperations.js';
-import { IActiveNotebookEditor, INotebookEditor } from '../../../notebook/browser/notebookBrowser.js';
-import { CellKind, ICellEditOperation, NOTEBOOK_EDITOR_ID } from '../../../notebook/common/notebookCommon.js';
-import { ICodeMapperCodeBlock, ICodeMapperRequest, ICodeMapperResponse, ICodeMapperService } from '../../common/chatCodeMapperService.js';
+import {
+	IActiveNotebookEditor,
+	INotebookEditor,
+} from '../../../notebook/browser/notebookBrowser.js';
+import {
+	CellKind,
+	ICellEditOperation,
+	NOTEBOOK_EDITOR_ID,
+} from '../../../notebook/common/notebookCommon.js';
+import {
+	ICodeMapperCodeBlock,
+	ICodeMapperRequest,
+	ICodeMapperResponse,
+	ICodeMapperService,
+} from '../../common/chatCodeMapperService.js';
 import { ChatUserAction, IChatService } from '../../common/chatService.js';
 import { isResponseVM } from '../../common/chatViewModel.js';
 import { ICodeBlockActionContext } from '../codeBlockPart.js';
@@ -45,9 +69,8 @@ export class InsertCodeBlockOperation {
 		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
 		@IChatService private readonly chatService: IChatService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IDialogService private readonly dialogService: IDialogService,
-	) {
-	}
+		@IDialogService private readonly dialogService: IDialogService
+	) {}
 
 	public async run(context: ICodeBlockActionContext) {
 		const activeEditorControl = getEditableActiveCodeEditor(this.editorService);
@@ -58,40 +81,74 @@ export class InsertCodeBlockOperation {
 			if (activeNotebookEditor) {
 				await this.handleNotebookEditor(activeNotebookEditor, context);
 			} else {
-				this.notify(localize('insertCodeBlock.noActiveEditor', "To insert the code block, open a code editor or notebook editor and set the cursor at the location where to insert the code block."));
+				this.notify(
+					localize(
+						'insertCodeBlock.noActiveEditor',
+						'To insert the code block, open a code editor or notebook editor and set the cursor at the location where to insert the code block.'
+					)
+				);
 			}
 		}
 		notifyUserAction(this.chatService, context, {
 			kind: 'insert',
 			codeBlockIndex: context.codeBlockIndex,
-			totalCharacters: context.code.length
+			totalCharacters: context.code.length,
 		});
 	}
 
-	private async handleNotebookEditor(notebookEditor: IActiveNotebookEditor, codeBlockContext: ICodeBlockActionContext): Promise<boolean> {
+	private async handleNotebookEditor(
+		notebookEditor: IActiveNotebookEditor,
+		codeBlockContext: ICodeBlockActionContext
+	): Promise<boolean> {
 		if (notebookEditor.isReadOnly) {
-			this.notify(localize('insertCodeBlock.readonlyNotebook', "Cannot insert the code block to read-only notebook editor."));
+			this.notify(
+				localize(
+					'insertCodeBlock.readonlyNotebook',
+					'Cannot insert the code block to read-only notebook editor.'
+				)
+			);
 			return false;
 		}
 		const focusRange = notebookEditor.getFocus();
 		const next = Math.max(focusRange.end - 1, 0);
-		insertCell(this.languageService, notebookEditor, next, CellKind.Code, 'below', codeBlockContext.code, true);
+		insertCell(
+			this.languageService,
+			notebookEditor,
+			next,
+			CellKind.Code,
+			'below',
+			codeBlockContext.code,
+			true
+		);
 		return true;
 	}
 
-	private async handleTextEditor(codeEditor: IActiveCodeEditor, codeBlockContext: ICodeBlockActionContext): Promise<boolean> {
+	private async handleTextEditor(
+		codeEditor: IActiveCodeEditor,
+		codeBlockContext: ICodeBlockActionContext
+	): Promise<boolean> {
 		const activeModel = codeEditor.getModel();
 		if (isReadOnly(activeModel, this.textFileService)) {
-			this.notify(localize('insertCodeBlock.readonly', "Cannot insert the code block to read-only code editor."));
+			this.notify(
+				localize(
+					'insertCodeBlock.readonly',
+					'Cannot insert the code block to read-only code editor.'
+				)
+			);
 			return false;
 		}
 
-		const range = codeEditor.getSelection() ?? new Range(activeModel.getLineCount(), 1, activeModel.getLineCount(), 1);
+		const range =
+			codeEditor.getSelection() ??
+			new Range(activeModel.getLineCount(), 1, activeModel.getLineCount(), 1);
 		const text = reindent(codeBlockContext.code, activeModel, range.startLineNumber);
 
 		const edits = [new ResourceTextEdit(activeModel.uri, { range, text })];
 		await this.bulkEditService.apply(edits);
-		this.codeEditorService.listCodeEditors().find(editor => editor.getModel()?.uri.toString() === activeModel.uri.toString())?.focus();
+		this.codeEditorService
+			.listCodeEditors()
+			.find(editor => editor.getModel()?.uri.toString() === activeModel.uri.toString())
+			?.focus();
 		return true;
 	}
 
@@ -104,7 +161,6 @@ export class InsertCodeBlockOperation {
 type IComputeEditsResult = { readonly editsProposed: boolean; readonly codeMapper?: string };
 
 export class ApplyCodeBlockOperation {
-
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
 		@ITextFileService private readonly textFileService: ITextFileService,
@@ -117,9 +173,8 @@ export class ApplyCodeBlockOperation {
 		@IQuickInputService private readonly quickInputService: IQuickInputService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@INotebookService private readonly notebookService: INotebookService,
-	) {
-	}
+		@INotebookService private readonly notebookService: INotebookService
+	) {}
 
 	public async run(context: ICodeBlockActionContext): Promise<void> {
 		let activeEditorControl = getEditableActiveCodeEditor(this.editorService);
@@ -129,7 +184,11 @@ export class ApplyCodeBlockOperation {
 			return;
 		}
 
-		if (codemapperUri && !isEqual(activeEditorControl?.getModel().uri, codemapperUri) && !this.notebookService.hasSupportedNotebooks(codemapperUri)) {
+		if (
+			codemapperUri &&
+			!isEqual(activeEditorControl?.getModel().uri, codemapperUri) &&
+			!this.notebookService.hasSupportedNotebooks(codemapperUri)
+		) {
 			// reveal the target file
 			try {
 				const editorPane = await this.editorService.openEditor({ resource: codemapperUri });
@@ -138,11 +197,21 @@ export class ApplyCodeBlockOperation {
 					this.tryToRevealCodeBlock(codeEditor, context.code);
 					activeEditorControl = codeEditor;
 				} else {
-					this.notify(localize('applyCodeBlock.errorOpeningFile', "Failed to open {0} in a code editor.", codemapperUri.toString()));
+					this.notify(
+						localize(
+							'applyCodeBlock.errorOpeningFile',
+							'Failed to open {0} in a code editor.',
+							codemapperUri.toString()
+						)
+					);
 					return;
 				}
 			} catch (e) {
-				this.logService.info('[ApplyCodeBlockOperation] error opening code mapper file', codemapperUri, e);
+				this.logService.info(
+					'[ApplyCodeBlockOperation] error opening code mapper file',
+					codemapperUri,
+					e
+				);
 				return;
 			}
 		}
@@ -150,13 +219,26 @@ export class ApplyCodeBlockOperation {
 		let result: IComputeEditsResult | undefined = undefined;
 
 		if (activeEditorControl && !this.notebookService.hasSupportedNotebooks(codemapperUri)) {
-			result = await this.handleTextEditor(activeEditorControl, context.chatSessionId, context.code);
+			result = await this.handleTextEditor(
+				activeEditorControl,
+				context.chatSessionId,
+				context.code
+			);
 		} else {
 			const activeNotebookEditor = getActiveNotebookEditor(this.editorService);
 			if (activeNotebookEditor) {
-				result = await this.handleNotebookEditor(activeNotebookEditor, context.chatSessionId, context.code);
+				result = await this.handleNotebookEditor(
+					activeNotebookEditor,
+					context.chatSessionId,
+					context.code
+				);
 			} else {
-				this.notify(localize('applyCodeBlock.noActiveEditor', "To apply this code block, open a code or notebook editor."));
+				this.notify(
+					localize(
+						'applyCodeBlock.noActiveEditor',
+						'To apply this code block, open a code or notebook editor.'
+					)
+				);
 			}
 		}
 		notifyUserAction(this.chatService, context, {
@@ -164,22 +246,44 @@ export class ApplyCodeBlockOperation {
 			codeBlockIndex: context.codeBlockIndex,
 			totalCharacters: context.code.length,
 			codeMapper: result?.codeMapper,
-			editsProposed: !!result?.editsProposed
+			editsProposed: !!result?.editsProposed,
 		});
 	}
 
-	private async evaluateURIToUse(resource: URI | undefined, activeEditorControl: IActiveCodeEditor | undefined): Promise<URI | undefined> {
-		if (resource && await this.fileService.exists(resource)) {
+	private async evaluateURIToUse(
+		resource: URI | undefined,
+		activeEditorControl: IActiveCodeEditor | undefined
+	): Promise<URI | undefined> {
+		if (resource && (await this.fileService.exists(resource))) {
 			return resource;
 		}
 
-		const activeEditorOption = activeEditorControl?.getModel().uri ? { label: localize('activeEditor', "Active editor '{0}'", this.labelService.getUriLabel(activeEditorControl.getModel().uri, { relative: true })), id: 'activeEditor' } : undefined;
-		const untitledEditorOption = { label: localize('newUntitledFile', "New untitled editor"), id: 'newUntitledFile' };
+		const activeEditorOption = activeEditorControl?.getModel().uri
+			? {
+					label: localize(
+						'activeEditor',
+						"Active editor '{0}'",
+						this.labelService.getUriLabel(activeEditorControl.getModel().uri, { relative: true })
+					),
+					id: 'activeEditor',
+				}
+			: undefined;
+		const untitledEditorOption = {
+			label: localize('newUntitledFile', 'New untitled editor'),
+			id: 'newUntitledFile',
+		};
 
 		const options = [];
 		if (resource) {
 			// code block had an URI, but it doesn't exist
-			options.push({ label: localize('createFile', "New file '{0}'", this.labelService.getUriLabel(resource, { relative: true })), id: 'createFile' });
+			options.push({
+				label: localize(
+					'createFile',
+					"New file '{0}'",
+					this.labelService.getUriLabel(resource, { relative: true })
+				),
+				id: 'createFile',
+			});
 			options.push(untitledEditorOption);
 			if (activeEditorOption) {
 				options.push(activeEditorOption);
@@ -192,7 +296,12 @@ export class ApplyCodeBlockOperation {
 			options.push(untitledEditorOption);
 		}
 
-		const selected = options.length > 1 ? await this.quickInputService.pick(options, { placeHolder: localize('selectOption', "Select where to apply the code block") }) : options[0];
+		const selected =
+			options.length > 1
+				? await this.quickInputService.pick(options, {
+						placeHolder: localize('selectOption', 'Select where to apply the code block'),
+					})
+				: options[0];
 		if (selected) {
 			switch (selected.id) {
 				case 'createFile':
@@ -200,7 +309,13 @@ export class ApplyCodeBlockOperation {
 						try {
 							await this.fileService.writeFile(resource, VSBuffer.fromString(''));
 						} catch (error) {
-							this.notify(localize('applyCodeBlock.fileWriteError', "Failed to create file: {0}", error.message));
+							this.notify(
+								localize(
+									'applyCodeBlock.fileWriteError',
+									'Failed to create file: {0}',
+									error.message
+								)
+							);
 							return URI.from({ scheme: 'untitled', path: resource.path });
 						}
 					}
@@ -214,34 +329,59 @@ export class ApplyCodeBlockOperation {
 		return undefined;
 	}
 
-	private async handleNotebookEditor(notebookEditor: IActiveNotebookEditor, chatSessionId: string | undefined, code: string): Promise<IComputeEditsResult | undefined> {
+	private async handleNotebookEditor(
+		notebookEditor: IActiveNotebookEditor,
+		chatSessionId: string | undefined,
+		code: string
+	): Promise<IComputeEditsResult | undefined> {
 		if (notebookEditor.isReadOnly) {
-			this.notify(localize('applyCodeBlock.readonlyNotebook', "Cannot apply code block to read-only notebook editor."));
+			this.notify(
+				localize(
+					'applyCodeBlock.readonlyNotebook',
+					'Cannot apply code block to read-only notebook editor.'
+				)
+			);
 			return undefined;
 		}
 		const uri = notebookEditor.textModel.uri;
 		const codeBlock = { code, resource: uri, markdownBeforeBlock: undefined };
 		const codeMapper = this.codeMapperService.providers[0]?.displayName;
 		if (!codeMapper) {
-			this.notify(localize('applyCodeBlock.noCodeMapper', "No code mapper available."));
+			this.notify(localize('applyCodeBlock.noCodeMapper', 'No code mapper available.'));
 			return undefined;
 		}
 		let editsProposed = false;
 		const cancellationTokenSource = new CancellationTokenSource();
 		try {
-			const iterable = await this.progressService.withProgress<AsyncIterable<[URI, TextEdit[]] | ICellEditOperation[]>>(
+			const iterable = await this.progressService.withProgress<
+				AsyncIterable<[URI, TextEdit[]] | ICellEditOperation[]>
+			>(
 				{ location: ProgressLocation.Notification, delay: 500, sticky: true, cancellable: true },
 				async progress => {
-					progress.report({ message: localize('applyCodeBlock.progress', "Applying code block using {0}...", codeMapper) });
-					const editsIterable = this.getNotebookEdits(codeBlock, chatSessionId, cancellationTokenSource.token);
+					progress.report({
+						message: localize(
+							'applyCodeBlock.progress',
+							'Applying code block using {0}...',
+							codeMapper
+						),
+					});
+					const editsIterable = this.getNotebookEdits(
+						codeBlock,
+						chatSessionId,
+						cancellationTokenSource.token
+					);
 					return await this.waitForFirstElement(editsIterable);
 				},
 				() => cancellationTokenSource.cancel()
 			);
-			editsProposed = await this.applyNotebookEditsWithInlinePreview(iterable, uri, cancellationTokenSource);
+			editsProposed = await this.applyNotebookEditsWithInlinePreview(
+				iterable,
+				uri,
+				cancellationTokenSource
+			);
 		} catch (e) {
 			if (!isCancellationError(e)) {
-				this.notify(localize('applyCodeBlock.error', "Failed to apply code block: {0}", e.message));
+				this.notify(localize('applyCodeBlock.error', 'Failed to apply code block: {0}', e.message));
 			}
 		} finally {
 			cancellationTokenSource.dispose();
@@ -249,22 +389,33 @@ export class ApplyCodeBlockOperation {
 
 		return {
 			editsProposed,
-			codeMapper
+			codeMapper,
 		};
 	}
 
-	private async handleTextEditor(codeEditor: IActiveCodeEditor, chatSessionId: string | undefined, code: string): Promise<IComputeEditsResult | undefined> {
+	private async handleTextEditor(
+		codeEditor: IActiveCodeEditor,
+		chatSessionId: string | undefined,
+		code: string
+	): Promise<IComputeEditsResult | undefined> {
 		const activeModel = codeEditor.getModel();
 		if (isReadOnly(activeModel, this.textFileService)) {
-			this.notify(localize('applyCodeBlock.readonly', "Cannot apply code block to read-only file."));
+			this.notify(
+				localize('applyCodeBlock.readonly', 'Cannot apply code block to read-only file.')
+			);
 			return undefined;
 		}
 
-		const codeBlock = { code, resource: activeModel.uri, chatSessionId, markdownBeforeBlock: undefined };
+		const codeBlock = {
+			code,
+			resource: activeModel.uri,
+			chatSessionId,
+			markdownBeforeBlock: undefined,
+		};
 
 		const codeMapper = this.codeMapperService.providers[0]?.displayName;
 		if (!codeMapper) {
-			this.notify(localize('applyCodeBlock.noCodeMapper', "No code mapper available."));
+			this.notify(localize('applyCodeBlock.noCodeMapper', 'No code mapper available.'));
 			return undefined;
 		}
 		let editsProposed = false;
@@ -273,16 +424,30 @@ export class ApplyCodeBlockOperation {
 			const iterable = await this.progressService.withProgress<AsyncIterable<TextEdit[]>>(
 				{ location: ProgressLocation.Notification, delay: 500, sticky: true, cancellable: true },
 				async progress => {
-					progress.report({ message: localize('applyCodeBlock.progress', "Applying code block using {0}...", codeMapper) });
-					const editsIterable = this.getTextEdits(codeBlock, chatSessionId, cancellationTokenSource.token);
+					progress.report({
+						message: localize(
+							'applyCodeBlock.progress',
+							'Applying code block using {0}...',
+							codeMapper
+						),
+					});
+					const editsIterable = this.getTextEdits(
+						codeBlock,
+						chatSessionId,
+						cancellationTokenSource.token
+					);
 					return await this.waitForFirstElement(editsIterable);
 				},
 				() => cancellationTokenSource.cancel()
 			);
-			editsProposed = await this.applyWithInlinePreview(iterable, codeEditor, cancellationTokenSource);
+			editsProposed = await this.applyWithInlinePreview(
+				iterable,
+				codeEditor,
+				cancellationTokenSource
+			);
 		} catch (e) {
 			if (!isCancellationError(e)) {
-				this.notify(localize('applyCodeBlock.error', "Failed to apply code block: {0}", e.message));
+				this.notify(localize('applyCodeBlock.error', 'Failed to apply code block: {0}', e.message));
 			}
 		} finally {
 			cancellationTokenSource.dispose();
@@ -290,15 +455,19 @@ export class ApplyCodeBlockOperation {
 
 		return {
 			editsProposed,
-			codeMapper
+			codeMapper,
 		};
 	}
 
-	private getTextEdits(codeBlock: ICodeMapperCodeBlock, chatSessionId: string | undefined, token: CancellationToken): AsyncIterable<TextEdit[]> {
+	private getTextEdits(
+		codeBlock: ICodeMapperCodeBlock,
+		chatSessionId: string | undefined,
+		token: CancellationToken
+	): AsyncIterable<TextEdit[]> {
 		return new AsyncIterableObject<TextEdit[]>(async executor => {
 			const request: ICodeMapperRequest = {
 				codeBlocks: [codeBlock],
-				chatSessionId
+				chatSessionId,
 			};
 			const response: ICodeMapperResponse = {
 				textEdit: (target: URI, edit: TextEdit[]) => {
@@ -315,12 +484,16 @@ export class ApplyCodeBlockOperation {
 		});
 	}
 
-	private getNotebookEdits(codeBlock: ICodeMapperCodeBlock, chatSessionId: string | undefined, token: CancellationToken): AsyncIterable<[URI, TextEdit[]] | ICellEditOperation[]> {
+	private getNotebookEdits(
+		codeBlock: ICodeMapperCodeBlock,
+		chatSessionId: string | undefined,
+		token: CancellationToken
+	): AsyncIterable<[URI, TextEdit[]] | ICellEditOperation[]> {
 		return new AsyncIterableObject<[URI, TextEdit[]] | ICellEditOperation[]>(async executor => {
 			const request: ICodeMapperRequest = {
 				codeBlocks: [codeBlock],
 				chatSessionId,
-				location: 'panel'
+				location: 'panel',
 			};
 			const response: ICodeMapperResponse = {
 				textEdit: (target: URI, edits: TextEdit[]) => {
@@ -345,7 +518,7 @@ export class ApplyCodeBlockOperation {
 			return {
 				async *[Symbol.asyncIterator]() {
 					return;
-				}
+				},
 			};
 		}
 
@@ -355,22 +528,42 @@ export class ApplyCodeBlockOperation {
 					yield result.value;
 					result = await iterator.next();
 				}
-			}
+			},
 		};
 	}
 
-	private async applyWithInlinePreview(edits: AsyncIterable<TextEdit[]>, codeEditor: IActiveCodeEditor, tokenSource: CancellationTokenSource): Promise<boolean> {
-		return this.instantiationService.invokeFunction(reviewEdits, codeEditor, edits, tokenSource.token);
+	private async applyWithInlinePreview(
+		edits: AsyncIterable<TextEdit[]>,
+		codeEditor: IActiveCodeEditor,
+		tokenSource: CancellationTokenSource
+	): Promise<boolean> {
+		return this.instantiationService.invokeFunction(
+			reviewEdits,
+			codeEditor,
+			edits,
+			tokenSource.token
+		);
 	}
 
-	private async applyNotebookEditsWithInlinePreview(edits: AsyncIterable<[URI, TextEdit[]] | ICellEditOperation[]>, uri: URI, tokenSource: CancellationTokenSource): Promise<boolean> {
-		return this.instantiationService.invokeFunction(reviewNotebookEdits, uri, edits, tokenSource.token);
+	private async applyNotebookEditsWithInlinePreview(
+		edits: AsyncIterable<[URI, TextEdit[]] | ICellEditOperation[]>,
+		uri: URI,
+		tokenSource: CancellationTokenSource
+	): Promise<boolean> {
+		return this.instantiationService.invokeFunction(
+			reviewNotebookEdits,
+			uri,
+			edits,
+			tokenSource.token
+		);
 	}
 
 	private tryToRevealCodeBlock(codeEditor: IActiveCodeEditor, codeBlock: string): void {
 		const match = codeBlock.match(/(\S[^\n]*)\n/); // substring that starts with a non-whitespace character and ends with a newline
 		if (match && match[1].length > 10) {
-			const findMatch = codeEditor.getModel().findNextMatch(match[1], { lineNumber: 1, column: 1 }, false, false, null, false);
+			const findMatch = codeEditor
+				.getModel()
+				.findNextMatch(match[1], { lineNumber: 1, column: 1 }, false, false, null, false);
 			if (findMatch) {
 				codeEditor.revealRangeInCenter(findMatch.range);
 			}
@@ -381,10 +574,13 @@ export class ApplyCodeBlockOperation {
 		//this.notificationService.notify({ severity: Severity.Info, message });
 		this.dialogService.info(message);
 	}
-
 }
 
-function notifyUserAction(chatService: IChatService, context: ICodeBlockActionContext, action: ChatUserAction) {
+function notifyUserAction(
+	chatService: IChatService,
+	context: ICodeBlockActionContext,
+	action: ChatUserAction
+) {
 	if (isResponseVM(context.element)) {
 		chatService.notifyUserAction({
 			agentId: context.element.agent?.id,
@@ -392,7 +588,7 @@ function notifyUserAction(chatService: IChatService, context: ICodeBlockActionCo
 			sessionId: context.element.sessionId,
 			requestId: context.element.requestId,
 			result: context.element.result,
-			action
+			action,
 		});
 	}
 }
@@ -410,7 +606,11 @@ function getActiveNotebookEditor(editorService: IEditorService): IActiveNotebook
 
 function getEditableActiveCodeEditor(editorService: IEditorService): IActiveCodeEditor | undefined {
 	const activeCodeEditorInNotebook = getActiveNotebookEditor(editorService)?.activeCodeEditor;
-	if (activeCodeEditorInNotebook && activeCodeEditorInNotebook.hasTextFocus() && activeCodeEditorInNotebook.hasModel()) {
+	if (
+		activeCodeEditorInNotebook &&
+		activeCodeEditorInNotebook.hasTextFocus() &&
+		activeCodeEditorInNotebook.hasModel()
+	) {
 		return activeCodeEditorInNotebook;
 	}
 
@@ -432,7 +632,8 @@ function getEditableActiveCodeEditor(editorService: IEditorService): IActiveCode
 
 function isReadOnly(model: ITextModel, textFileService: ITextFileService): boolean {
 	// Check if model is editable, currently only support untitled and text file
-	const activeTextModel = textFileService.files.get(model.uri) ?? textFileService.untitled.get(model.uri);
+	const activeTextModel =
+		textFileService.files.get(model.uri) ?? textFileService.untitled.get(model.uri);
 	return !!activeTextModel?.isReadonly();
 }
 
@@ -443,13 +644,17 @@ function reindent(codeBlockContent: string, model: ITextModel, seletionStartLine
 	}
 
 	const formattingOptions = model.getFormattingOptions();
-	const codeIndentLevel = computeIndentation(model.getLineContent(seletionStartLine), formattingOptions.tabSize).level;
+	const codeIndentLevel = computeIndentation(
+		model.getLineContent(seletionStartLine),
+		formattingOptions.tabSize
+	).level;
 
 	const indents = newContent.map(line => computeIndentation(line, formattingOptions.tabSize));
 
 	// find the smallest indent level in the code block
 	const newContentIndentLevel = indents.reduce<number>((min, indent, index) => {
-		if (indent.length !== newContent[index].length) { // ignore empty lines
+		if (indent.length !== newContent[index].length) {
+			// ignore empty lines
 			return Math.min(indent.level, min);
 		}
 		return min;
@@ -463,7 +668,9 @@ function reindent(codeBlockContent: string, model: ITextModel, seletionStartLine
 	for (let i = 0; i < newContent.length; i++) {
 		const { level, length } = indents[i];
 		const newLevel = Math.max(0, codeIndentLevel + level - newContentIndentLevel);
-		const newIndentation = formattingOptions.insertSpaces ? ' '.repeat(formattingOptions.tabSize * newLevel) : '\t'.repeat(newLevel);
+		const newIndentation = formattingOptions.insertSpaces
+			? ' '.repeat(formattingOptions.tabSize * newLevel)
+			: '\t'.repeat(newLevel);
 		newLines.push(newIndentation + newContent[i].substring(length));
 	}
 	return newLines.join('\n');
@@ -474,7 +681,10 @@ function reindent(codeBlockContent: string, model: ITextModel, seletionStartLine
  *  - level: the line's the ident level in tabs
  *  - length: the number of characters of the leading whitespace
  */
-export function computeIndentation(line: string, tabSize: number): { level: number; length: number } {
+export function computeIndentation(
+	line: string,
+	tabSize: number
+): { level: number; length: number } {
 	let nSpaces = 0;
 	let level = 0;
 	let i = 0;

@@ -6,15 +6,15 @@
 // Mock VS Code context for testing
 const mockContext = {
 	secrets: {
-		get: async (key) => {
+		get: async key => {
 			console.log(`Getting secret for key: ${key}`);
 			return null; // Will fall back to config
 		},
 		store: async (key, value) => {
 			console.log(`Storing secret for key: ${key}`);
 			return Promise.resolve();
-		}
-	}
+		},
+	},
 };
 
 // Mock workspace configuration
@@ -28,10 +28,10 @@ const mockConfig = {
 			'aide.azureOpenaiEndpoint': process.env.AZURE_OPENAI_ENDPOINT || '',
 			'aide.azureOpenaiModel': 'gpt-4',
 			'aide.anthropicApiKey': process.env.ANTHROPIC_API_KEY || '',
-			'aide.anthropicModel': 'claude-3-5-sonnet-20241022'
+			'aide.anthropicModel': 'claude-3-5-sonnet-20241022',
 		};
 		return configs[key] || defaultValue;
-	}
+	},
 };
 
 async function testAIIntegration() {
@@ -58,7 +58,6 @@ async function testAIIntegration() {
 
 		console.log('\n🎉 AI Integration structure is valid!');
 		console.log('🚀 Extension ready for testing in VS Code');
-
 	} catch (error) {
 		console.error('❌ Error testing AI integration:', error);
 	}

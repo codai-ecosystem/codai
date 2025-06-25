@@ -13,7 +13,6 @@ import { StandardTokenType } from '../encodedTokenAttributes.js';
 import { ITextModel } from '../model.js';
 
 export class TrimTrailingWhitespaceCommand implements ICommand {
-
 	private readonly _selection: Selection;
 	private _selectionId: string | null;
 	private readonly _cursors: Position[];
@@ -45,7 +44,11 @@ export class TrimTrailingWhitespaceCommand implements ICommand {
 /**
  * Generate commands for trimming trailing whitespace on a model and ignore lines on which cursors are sitting.
  */
-export function trimTrailingWhitespace(model: ITextModel, cursors: Position[], trimInRegexesAndStrings: boolean): ISingleEditOperation[] {
+export function trimTrailingWhitespace(
+	model: ITextModel,
+	cursors: Position[],
+	trimInRegexesAndStrings: boolean
+): ISingleEditOperation[] {
 	// Sort cursors ascending
 	cursors.sort((a, b) => {
 		if (a.lineNumber === b.lineNumber) {
@@ -67,7 +70,11 @@ export function trimTrailingWhitespace(model: ITextModel, cursors: Position[], t
 	let cursorIndex = 0;
 	const cursorLen = cursors.length;
 
-	for (let lineNumber = 1, lineCount = model.getLineCount(); lineNumber <= lineCount; lineNumber++) {
+	for (
+		let lineNumber = 1, lineCount = model.getLineCount();
+		lineNumber <= lineCount;
+		lineNumber++
+	) {
 		const lineContent = model.getLineContent(lineNumber);
 		const maxLineColumn = lineContent.length + 1;
 		let minEditColumn = 0;
@@ -108,18 +115,20 @@ export function trimTrailingWhitespace(model: ITextModel, cursors: Position[], t
 			}
 
 			const lineTokens = model.tokenization.getLineTokens(lineNumber);
-			const fromColumnType = lineTokens.getStandardTokenType(lineTokens.findTokenIndexAtOffset(fromColumn));
+			const fromColumnType = lineTokens.getStandardTokenType(
+				lineTokens.findTokenIndexAtOffset(fromColumn)
+			);
 
-			if (fromColumnType === StandardTokenType.String || fromColumnType === StandardTokenType.RegEx) {
+			if (
+				fromColumnType === StandardTokenType.String ||
+				fromColumnType === StandardTokenType.RegEx
+			) {
 				continue;
 			}
 		}
 
 		fromColumn = Math.max(minEditColumn, fromColumn);
-		r[rLen++] = EditOperation.delete(new Range(
-			lineNumber, fromColumn,
-			lineNumber, maxLineColumn
-		));
+		r[rLen++] = EditOperation.delete(new Range(lineNumber, fromColumn, lineNumber, maxLineColumn));
 	}
 
 	return r;

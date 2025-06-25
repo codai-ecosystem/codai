@@ -15,7 +15,11 @@ import { TestConfigurationService } from '../../../../../platform/configuration/
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 import { NullLogService } from '../../../../../platform/log/common/log.js';
 import { createDecorationsForStackFrame } from '../../browser/callStackEditorContribution.js';
-import { getContext, getContextForContributedActions, getSpecificSourceName } from '../../browser/callStackView.js';
+import {
+	getContext,
+	getContextForContributedActions,
+	getSpecificSourceName,
+} from '../../browser/callStackView.js';
 import { debugStackframe, debugStackframeFocused } from '../../browser/debugIcons.js';
 import { getStackFrameThreadAndSessionToFocus } from '../../browser/debugService.js';
 import { DebugSession } from '../../browser/debugSession.js';
@@ -28,43 +32,101 @@ import { MockRawSession } from '../common/mockDebug.js';
 const mockWorkspaceContextService = {
 	getWorkspace: () => {
 		return {
-			folders: []
+			folders: [],
 		};
-	}
+	},
 } as any;
 
-export function createTestSession(model: DebugModel, name = 'mockSession', options?: IDebugSessionOptions): DebugSession {
-	return new DebugSession(generateUuid(), { resolved: { name, type: 'node', request: 'launch' }, unresolved: undefined }, undefined, model, options, {
-		getViewModel(): any {
-			return {
-				updateViews(): void {
-					// noop
-				}
-			};
-		}
-	} as IDebugService, undefined!, undefined!, new TestConfigurationService({ debug: { console: { collapseIdenticalLines: true } } }), undefined!, mockWorkspaceContextService, undefined!, undefined!, undefined!, mockUriIdentityService, new TestInstantiationService(), undefined!, undefined!, new NullLogService(), undefined!, undefined!, new TestAccessibilityService());
+export function createTestSession(
+	model: DebugModel,
+	name = 'mockSession',
+	options?: IDebugSessionOptions
+): DebugSession {
+	return new DebugSession(
+		generateUuid(),
+		{ resolved: { name, type: 'node', request: 'launch' }, unresolved: undefined },
+		undefined,
+		model,
+		options,
+		{
+			getViewModel(): any {
+				return {
+					updateViews(): void {
+						// noop
+					},
+				};
+			},
+		} as IDebugService,
+		undefined!,
+		undefined!,
+		new TestConfigurationService({ debug: { console: { collapseIdenticalLines: true } } }),
+		undefined!,
+		mockWorkspaceContextService,
+		undefined!,
+		undefined!,
+		undefined!,
+		mockUriIdentityService,
+		new TestInstantiationService(),
+		undefined!,
+		undefined!,
+		new NullLogService(),
+		undefined!,
+		undefined!,
+		new TestAccessibilityService()
+	);
 }
 
-function createTwoStackFrames(session: DebugSession): { firstStackFrame: StackFrame; secondStackFrame: StackFrame } {
-	const thread = new class extends Thread {
+function createTwoStackFrames(session: DebugSession): {
+	firstStackFrame: StackFrame;
+	secondStackFrame: StackFrame;
+} {
+	const thread = new (class extends Thread {
 		public override getCallStack(): StackFrame[] {
 			return [firstStackFrame, secondStackFrame];
 		}
-	}(session, 'mockthread', 1);
+	})(session, 'mockthread', 1);
 
-	const firstSource = new Source({
-		name: 'internalModule.js',
-		path: 'a/b/c/d/internalModule.js',
-		sourceReference: 10,
-	}, 'aDebugSessionId', mockUriIdentityService, new NullLogService());
-	const secondSource = new Source({
-		name: 'internalModule.js',
-		path: 'z/x/c/d/internalModule.js',
-		sourceReference: 11,
-	}, 'aDebugSessionId', mockUriIdentityService, new NullLogService());
+	const firstSource = new Source(
+		{
+			name: 'internalModule.js',
+			path: 'a/b/c/d/internalModule.js',
+			sourceReference: 10,
+		},
+		'aDebugSessionId',
+		mockUriIdentityService,
+		new NullLogService()
+	);
+	const secondSource = new Source(
+		{
+			name: 'internalModule.js',
+			path: 'z/x/c/d/internalModule.js',
+			sourceReference: 11,
+		},
+		'aDebugSessionId',
+		mockUriIdentityService,
+		new NullLogService()
+	);
 
-	const firstStackFrame = new StackFrame(thread, 0, firstSource, 'app.js', 'normal', { startLineNumber: 1, startColumn: 2, endLineNumber: 1, endColumn: 10 }, 0, true);
-	const secondStackFrame = new StackFrame(thread, 1, secondSource, 'app2.js', 'normal', { startLineNumber: 1, startColumn: 2, endLineNumber: 1, endColumn: 10 }, 1, true);
+	const firstStackFrame = new StackFrame(
+		thread,
+		0,
+		firstSource,
+		'app.js',
+		'normal',
+		{ startLineNumber: 1, startColumn: 2, endLineNumber: 1, endColumn: 10 },
+		0,
+		true
+	);
+	const secondStackFrame = new StackFrame(
+		thread,
+		1,
+		secondSource,
+		'app2.js',
+		'normal',
+		{ startLineNumber: 1, startColumn: 2, endLineNumber: 1, endColumn: 10 },
+		1,
+		true
+	);
 
 	return { firstStackFrame, secondStackFrame };
 }
@@ -95,10 +157,12 @@ suite('Debug - CallStack', () => {
 		assert.strictEqual(model.getSessions(true).length, 1);
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId,
-				name: threadName
-			}]
+			threads: [
+				{
+					id: threadId,
+					name: threadName,
+				},
+			],
 		});
 
 		assert.strictEqual(session.getThread(threadId)!.name, threadName);
@@ -124,26 +188,31 @@ suite('Debug - CallStack', () => {
 
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}]
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1,
+				},
+			],
 		});
 
 		// Stopped event with all threads stopped
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}, {
-				id: threadId2,
-				name: threadName2
-			}],
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1,
+				},
+				{
+					id: threadId2,
+					name: threadName2,
+				},
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: 1,
-				allThreadsStopped: true
+				allThreadsStopped: true,
 			},
 		});
 
@@ -206,33 +275,39 @@ suite('Debug - CallStack', () => {
 		// Stopped event with all threads stopped
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}, {
-				id: threadId2,
-				name: threadName2
-			}],
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1,
+				},
+				{
+					id: threadId2,
+					name: threadName2,
+				},
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: threadId1,
-				allThreadsStopped: true
+				allThreadsStopped: true,
 			},
 		});
 
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}, {
-				id: threadId2,
-				name: threadName2
-			}],
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1,
+				},
+				{
+					id: threadId2,
+					name: threadName2,
+				},
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: threadId2,
-				allThreadsStopped: true
+				allThreadsStopped: true,
 			},
 		});
 
@@ -260,27 +335,32 @@ suite('Debug - CallStack', () => {
 		// Add the threads
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: stoppedThreadId,
-				name: stoppedThreadName
-			}]
+			threads: [
+				{
+					id: stoppedThreadId,
+					name: stoppedThreadName,
+				},
+			],
 		});
 
 		// Stopped event with only one thread stopped
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: 1,
-				name: stoppedThreadName
-			}, {
-				id: runningThreadId,
-				name: runningThreadName
-			}],
+			threads: [
+				{
+					id: 1,
+					name: stoppedThreadName,
+				},
+				{
+					id: runningThreadId,
+					name: runningThreadName,
+				},
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: 1,
-				allThreadsStopped: false
-			}
+				allThreadsStopped: false,
+			},
 		});
 
 		const stoppedThread = session.getThread(stoppedThreadId)!;
@@ -337,16 +417,49 @@ suite('Debug - CallStack', () => {
 		const session = createTestSession(model);
 		disposables.add(session);
 		const thread = new Thread(session, 'mockthread', 1);
-		const firstSource = new Source({
-			name: 'internalModule.js',
-			path: 'a/b/c/d/internalModule.js',
-			sourceReference: 10,
-		}, 'aDebugSessionId', mockUriIdentityService, new NullLogService());
-		const stackFrame = new StackFrame(thread, 1, firstSource, 'app', 'normal', { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 10 }, 1, true);
+		const firstSource = new Source(
+			{
+				name: 'internalModule.js',
+				path: 'a/b/c/d/internalModule.js',
+				sourceReference: 10,
+			},
+			'aDebugSessionId',
+			mockUriIdentityService,
+			new NullLogService()
+		);
+		const stackFrame = new StackFrame(
+			thread,
+			1,
+			firstSource,
+			'app',
+			'normal',
+			{ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 10 },
+			1,
+			true
+		);
 		assert.strictEqual(stackFrame.toString(), 'app (internalModule.js:1)');
 
-		const secondSource = new Source(undefined, 'aDebugSessionId', mockUriIdentityService, new NullLogService());
-		const stackFrame2 = new StackFrame(thread, 2, secondSource, 'module', 'normal', { startLineNumber: undefined!, startColumn: undefined!, endLineNumber: undefined!, endColumn: undefined! }, 2, true);
+		const secondSource = new Source(
+			undefined,
+			'aDebugSessionId',
+			mockUriIdentityService,
+			new NullLogService()
+		);
+		const stackFrame2 = new StackFrame(
+			thread,
+			2,
+			secondSource,
+			'module',
+			'normal',
+			{
+				startLineNumber: undefined!,
+				startColumn: undefined!,
+				endLineNumber: undefined!,
+				endColumn: undefined!,
+			},
+			2,
+			true
+		);
 		assert.strictEqual(stackFrame2.toString(), 'module');
 	});
 
@@ -355,13 +468,19 @@ suite('Debug - CallStack', () => {
 		model.addSession(session);
 		const secondSession = disposables.add(createTestSession(model, 'mockSession2'));
 		model.addSession(secondSession);
-		const firstChild = disposables.add(createTestSession(model, 'firstChild', { parentSession: session }));
+		const firstChild = disposables.add(
+			createTestSession(model, 'firstChild', { parentSession: session })
+		);
 		model.addSession(firstChild);
-		const secondChild = disposables.add(createTestSession(model, 'secondChild', { parentSession: session }));
+		const secondChild = disposables.add(
+			createTestSession(model, 'secondChild', { parentSession: session })
+		);
 		model.addSession(secondChild);
 		const thirdSession = disposables.add(createTestSession(model, 'mockSession3'));
 		model.addSession(thirdSession);
-		const anotherChild = disposables.add(createTestSession(model, 'secondChild', { parentSession: secondSession }));
+		const anotherChild = disposables.add(
+			createTestSession(model, 'secondChild', { parentSession: secondSession })
+		);
 		model.addSession(anotherChild);
 
 		const sessions = model.getSessions();
@@ -381,29 +500,53 @@ suite('Debug - CallStack', () => {
 		let decorations = createDecorationsForStackFrame(firstStackFrame, true, false);
 		assert.strictEqual(decorations.length, 3);
 		assert.deepStrictEqual(decorations[0].range, new Range(1, 2, 1, 3));
-		assert.strictEqual(decorations[0].options.glyphMarginClassName, ThemeIcon.asClassName(debugStackframe));
-		assert.deepStrictEqual(decorations[1].range, new Range(1, 2, 1, Constants.MAX_SAFE_SMALL_INTEGER));
+		assert.strictEqual(
+			decorations[0].options.glyphMarginClassName,
+			ThemeIcon.asClassName(debugStackframe)
+		);
+		assert.deepStrictEqual(
+			decorations[1].range,
+			new Range(1, 2, 1, Constants.MAX_SAFE_SMALL_INTEGER)
+		);
 		assert.strictEqual(decorations[1].options.className, 'debug-top-stack-frame-line');
 		assert.strictEqual(decorations[1].options.isWholeLine, true);
 
 		decorations = createDecorationsForStackFrame(secondStackFrame, true, false);
 		assert.strictEqual(decorations.length, 2);
 		assert.deepStrictEqual(decorations[0].range, new Range(1, 2, 1, 3));
-		assert.strictEqual(decorations[0].options.glyphMarginClassName, ThemeIcon.asClassName(debugStackframeFocused));
-		assert.deepStrictEqual(decorations[1].range, new Range(1, 2, 1, Constants.MAX_SAFE_SMALL_INTEGER));
+		assert.strictEqual(
+			decorations[0].options.glyphMarginClassName,
+			ThemeIcon.asClassName(debugStackframeFocused)
+		);
+		assert.deepStrictEqual(
+			decorations[1].range,
+			new Range(1, 2, 1, Constants.MAX_SAFE_SMALL_INTEGER)
+		);
 		assert.strictEqual(decorations[1].options.className, 'debug-focused-stack-frame-line');
 		assert.strictEqual(decorations[1].options.isWholeLine, true);
 
 		decorations = createDecorationsForStackFrame(firstStackFrame, true, false);
 		assert.strictEqual(decorations.length, 3);
 		assert.deepStrictEqual(decorations[0].range, new Range(1, 2, 1, 3));
-		assert.strictEqual(decorations[0].options.glyphMarginClassName, ThemeIcon.asClassName(debugStackframe));
-		assert.deepStrictEqual(decorations[1].range, new Range(1, 2, 1, Constants.MAX_SAFE_SMALL_INTEGER));
+		assert.strictEqual(
+			decorations[0].options.glyphMarginClassName,
+			ThemeIcon.asClassName(debugStackframe)
+		);
+		assert.deepStrictEqual(
+			decorations[1].range,
+			new Range(1, 2, 1, Constants.MAX_SAFE_SMALL_INTEGER)
+		);
 		assert.strictEqual(decorations[1].options.className, 'debug-top-stack-frame-line');
 		assert.strictEqual(decorations[1].options.isWholeLine, true);
 		// Inline decoration gets rendered in this case
-		assert.strictEqual(decorations[2].options.before?.inlineClassName, 'debug-top-stack-frame-column');
-		assert.deepStrictEqual(decorations[2].range, new Range(1, 2, 1, Constants.MAX_SAFE_SMALL_INTEGER));
+		assert.strictEqual(
+			decorations[2].options.before?.inlineClassName,
+			'debug-top-stack-frame-column'
+		);
+		assert.deepStrictEqual(
+			decorations[2].range,
+			new Range(1, 2, 1, Constants.MAX_SAFE_SMALL_INTEGER)
+		);
 	});
 
 	test('contexts', () => {
@@ -442,11 +585,37 @@ suite('Debug - CallStack', () => {
 		const stoppedReason = 'breakpoint';
 
 		// Add the threads
-		const session = new class extends DebugSession {
+		const session = new (class extends DebugSession {
 			override get state(): State {
 				return State.Stopped;
 			}
-		}(generateUuid(), { resolved: { name: 'stoppedSession', type: 'node', request: 'launch' }, unresolved: undefined }, undefined, model, undefined, undefined!, undefined!, undefined!, undefined!, undefined!, mockWorkspaceContextService, undefined!, undefined!, undefined!, mockUriIdentityService, new TestInstantiationService(), undefined!, undefined!, new NullLogService(), undefined!, undefined!, new TestAccessibilityService());
+		})(
+			generateUuid(),
+			{
+				resolved: { name: 'stoppedSession', type: 'node', request: 'launch' },
+				unresolved: undefined,
+			},
+			undefined,
+			model,
+			undefined,
+			undefined!,
+			undefined!,
+			undefined!,
+			undefined!,
+			undefined!,
+			mockWorkspaceContextService,
+			undefined!,
+			undefined!,
+			undefined!,
+			mockUriIdentityService,
+			new TestInstantiationService(),
+			undefined!,
+			undefined!,
+			new NullLogService(),
+			undefined!,
+			undefined!,
+			new TestAccessibilityService()
+		);
 		disposables.add(session);
 
 		const runningSession = createTestSession(model);
@@ -458,26 +627,31 @@ suite('Debug - CallStack', () => {
 
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}]
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1,
+				},
+			],
 		});
 
 		// Stopped event with all threads stopped
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}, {
-				id: threadId2,
-				name: threadName2
-			}],
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1,
+				},
+				{
+					id: threadId2,
+					name: threadName2,
+				},
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: 1,
-				allThreadsStopped: true
+				allThreadsStopped: true,
 			},
 		});
 
@@ -489,15 +663,32 @@ suite('Debug - CallStack', () => {
 		assert.deepStrictEqual(toFocus, { stackFrame: undefined, thread: thread, session: session });
 
 		toFocus = getStackFrameThreadAndSessionToFocus(model, undefined, undefined, runningSession);
-		assert.deepStrictEqual(toFocus, { stackFrame: undefined, thread: undefined, session: runningSession });
+		assert.deepStrictEqual(toFocus, {
+			stackFrame: undefined,
+			thread: undefined,
+			session: runningSession,
+		});
 
 		toFocus = getStackFrameThreadAndSessionToFocus(model, undefined, thread);
 		assert.deepStrictEqual(toFocus, { stackFrame: undefined, thread: thread, session: session });
 
 		toFocus = getStackFrameThreadAndSessionToFocus(model, undefined, runningThread);
-		assert.deepStrictEqual(toFocus, { stackFrame: undefined, thread: runningThread, session: session });
+		assert.deepStrictEqual(toFocus, {
+			stackFrame: undefined,
+			thread: runningThread,
+			session: session,
+		});
 
-		const stackFrame = new StackFrame(thread, 5, undefined!, 'stackframename2', undefined, undefined!, 1, true);
+		const stackFrame = new StackFrame(
+			thread,
+			5,
+			undefined!,
+			'stackframename2',
+			undefined,
+			undefined!,
+			1,
+			true
+		);
 		toFocus = getStackFrameThreadAndSessionToFocus(model, stackFrame);
 		assert.deepStrictEqual(toFocus, { stackFrame: stackFrame, thread: thread, session: session });
 	});

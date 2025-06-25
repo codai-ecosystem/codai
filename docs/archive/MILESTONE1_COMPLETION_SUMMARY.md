@@ -43,4 +43,4 @@ With the successful completion of Milestone 1, we have established a solid found
 
 ---
 
-*Summary created: June 5, 2025*
+_Summary created: June 5, 2025_

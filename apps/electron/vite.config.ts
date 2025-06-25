@@ -14,19 +14,21 @@ export default defineConfig({
 		outDir: resolve(__dirname, 'dist/renderer'),
 		emptyOutDir: true,
 		rollupOptions: {
-			external: ['electron']
-		}
-	}, resolve: {
+			external: ['electron'],
+		},
+	},
+	resolve: {
 		alias: {
-			'@': resolve(__dirname, 'src/renderer'),			'@dragoscatalin/memory-graph': resolve(__dirname, '../../packages/memory-graph/dist'),
+			'@': resolve(__dirname, 'src/renderer'),
+			'@dragoscatalin/memory-graph': resolve(__dirname, '../../packages/memory-graph/dist'),
 			'@dragoscatalin/agent-runtime': resolve(__dirname, '../../packages/agent-runtime/dist'),
-			'@dragoscatalin/ui-components': resolve(__dirname, '../../packages/ui-components/dist')
-		}
+			'@dragoscatalin/ui-components': resolve(__dirname, '../../packages/ui-components/dist'),
+		},
 	},
 	define: {
-		'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+		'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
 	},
 	server: {
-		port: 5173
-	}
+		port: 5173,
+	},
 });

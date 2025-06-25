@@ -19,26 +19,30 @@ import { ParameterHintsModel } from '../../browser/parameterHintsModel.js';
 import { createTestCodeEditor } from '../../../../test/browser/testCodeEditor.js';
 import { createTextModel } from '../../../../test/common/testTextModel.js';
 import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
-import { InMemoryStorageService, IStorageService } from '../../../../../platform/storage/common/storage.js';
+import {
+	InMemoryStorageService,
+	IStorageService,
+} from '../../../../../platform/storage/common/storage.js';
 import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
 import { NullTelemetryService } from '../../../../../platform/telemetry/common/telemetryUtils.js';
 
 const mockFile = URI.parse('test:somefile.ttt');
 const mockFileSelector = { scheme: 'test' };
 
-
 const emptySigHelp: languages.SignatureHelp = {
-	signatures: [{
-		label: 'none',
-		parameters: []
-	}],
+	signatures: [
+		{
+			label: 'none',
+			parameters: [],
+		},
+	],
 	activeParameter: 0,
-	activeSignature: 0
+	activeSignature: 0,
 };
 
 const emptySigHelpResult: languages.SignatureHelpResult = {
 	value: emptySigHelp,
-	dispose: () => { }
+	dispose: () => {},
 };
 
 suite('ParameterHintsModel', () => {
@@ -57,22 +61,28 @@ suite('ParameterHintsModel', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function createMockEditor(fileContents: string) {
-		const textModel = disposables.add(createTextModel(fileContents, undefined, undefined, mockFile));
-		const editor = disposables.add(createTestCodeEditor(textModel, {
-			serviceCollection: new ServiceCollection(
-				[ITelemetryService, NullTelemetryService],
-				[IStorageService, disposables.add(new InMemoryStorageService())]
-			)
-		}));
+		const textModel = disposables.add(
+			createTextModel(fileContents, undefined, undefined, mockFile)
+		);
+		const editor = disposables.add(
+			createTestCodeEditor(textModel, {
+				serviceCollection: new ServiceCollection(
+					[ITelemetryService, NullTelemetryService],
+					[IStorageService, disposables.add(new InMemoryStorageService())]
+				),
+			})
+		);
 		return editor;
 	}
 
 	function getNextHint(model: ParameterHintsModel) {
 		return new Promise<languages.SignatureHelpResult | undefined>(resolve => {
-			const sub = disposables.add(model.onChangedHints(e => {
-				sub.dispose();
-				return resolve(e ? { value: e, dispose: () => { } } : undefined);
-			}));
+			const sub = disposables.add(
+				model.onChangedHints(e => {
+					sub.dispose();
+					return resolve(e ? { value: e, dispose: () => {} } : undefined);
+				})
+			);
 		});
 	}
 
@@ -84,17 +94,30 @@ suite('ParameterHintsModel', () => {
 		const editor = createMockEditor('');
 		disposables.add(new ParameterHintsModel(editor, registry));
 
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = [triggerChar];
-			signatureHelpRetriggerCharacters = [];
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = [triggerChar];
+					signatureHelpRetriggerCharacters = [];
 
-			provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext) {
-				assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-				assert.strictEqual(context.triggerCharacter, triggerChar);
-				done();
-				return undefined;
-			}
-		}));
+					provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					) {
+						assert.strictEqual(
+							context.triggerKind,
+							languages.SignatureHelpTriggerKind.TriggerCharacter
+						);
+						assert.strictEqual(context.triggerCharacter, triggerChar);
+						done();
+						return undefined;
+					}
+				})()
+			)
+		);
 
 		await runWithFakedTimers({ useFakeTimers: true }, async () => {
 			editor.trigger('keyboard', Handler.Type, { text: triggerChar });
@@ -111,37 +134,56 @@ suite('ParameterHintsModel', () => {
 		disposables.add(new ParameterHintsModel(editor, registry));
 
 		let invokeCount = 0;
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = [triggerChar];
-			signatureHelpRetriggerCharacters = [];
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = [triggerChar];
+					signatureHelpRetriggerCharacters = [];
 
-			provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
-				++invokeCount;
-				try {
-					if (invokeCount === 1) {
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.strictEqual(context.triggerCharacter, triggerChar);
-						assert.strictEqual(context.isRetrigger, false);
-						assert.strictEqual(context.activeSignatureHelp, undefined);
+					provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
+						++invokeCount;
+						try {
+							if (invokeCount === 1) {
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.strictEqual(context.triggerCharacter, triggerChar);
+								assert.strictEqual(context.isRetrigger, false);
+								assert.strictEqual(context.activeSignatureHelp, undefined);
 
-						// Retrigger
-						setTimeout(() => editor.trigger('keyboard', Handler.Type, { text: triggerChar }), 0);
-					} else {
-						assert.strictEqual(invokeCount, 2);
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.strictEqual(context.isRetrigger, true);
-						assert.strictEqual(context.triggerCharacter, triggerChar);
-						assert.strictEqual(context.activeSignatureHelp, emptySigHelp);
+								// Retrigger
+								setTimeout(
+									() => editor.trigger('keyboard', Handler.Type, { text: triggerChar }),
+									0
+								);
+							} else {
+								assert.strictEqual(invokeCount, 2);
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.strictEqual(context.isRetrigger, true);
+								assert.strictEqual(context.triggerCharacter, triggerChar);
+								assert.strictEqual(context.activeSignatureHelp, emptySigHelp);
 
-						done();
+								done();
+							}
+							return emptySigHelpResult;
+						} catch (err) {
+							console.error(err);
+							throw err;
+						}
 					}
-					return emptySigHelpResult;
-				} catch (err) {
-					console.error(err);
-					throw err;
-				}
-			}
-		}));
+				})()
+			)
+		);
 
 		await runWithFakedTimers({ useFakeTimers: true }, async () => {
 			editor.trigger('keyboard', Handler.Type, { text: triggerChar });
@@ -158,37 +200,53 @@ suite('ParameterHintsModel', () => {
 		const hintModel = disposables.add(new ParameterHintsModel(editor, registry));
 
 		let invokeCount = 0;
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = [triggerChar];
-			signatureHelpRetriggerCharacters = [];
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = [triggerChar];
+					signatureHelpRetriggerCharacters = [];
 
-			provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
-				try {
-					++invokeCount;
-					if (invokeCount === 1) {
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.strictEqual(context.triggerCharacter, triggerChar);
-						assert.strictEqual(context.isRetrigger, false);
-						assert.strictEqual(context.activeSignatureHelp, undefined);
+					provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
+						try {
+							++invokeCount;
+							if (invokeCount === 1) {
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.strictEqual(context.triggerCharacter, triggerChar);
+								assert.strictEqual(context.isRetrigger, false);
+								assert.strictEqual(context.activeSignatureHelp, undefined);
 
-						// Cancel and retrigger
-						hintModel.cancel();
-						editor.trigger('keyboard', Handler.Type, { text: triggerChar });
-					} else {
-						assert.strictEqual(invokeCount, 2);
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.strictEqual(context.triggerCharacter, triggerChar);
-						assert.strictEqual(context.isRetrigger, true);
-						assert.strictEqual(context.activeSignatureHelp, undefined);
-						done();
+								// Cancel and retrigger
+								hintModel.cancel();
+								editor.trigger('keyboard', Handler.Type, { text: triggerChar });
+							} else {
+								assert.strictEqual(invokeCount, 2);
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.strictEqual(context.triggerCharacter, triggerChar);
+								assert.strictEqual(context.isRetrigger, true);
+								assert.strictEqual(context.activeSignatureHelp, undefined);
+								done();
+							}
+							return emptySigHelpResult;
+						} catch (err) {
+							console.error(err);
+							throw err;
+						}
 					}
-					return emptySigHelpResult;
-				} catch (err) {
-					console.error(err);
-					throw err;
-				}
-			}
-		}));
+				})()
+			)
+		);
 
 		await runWithFakedTimers({ useFakeTimers: true }, () => {
 			editor.trigger('keyboard', Handler.Type, { text: triggerChar });
@@ -203,31 +261,44 @@ suite('ParameterHintsModel', () => {
 		disposables.add(new ParameterHintsModel(editor, registry, 5));
 
 		let invokeCount = 0;
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = ['a', 'b', 'c'];
-			signatureHelpRetriggerCharacters = [];
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = ['a', 'b', 'c'];
+					signatureHelpRetriggerCharacters = [];
 
-			provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext) {
-				try {
-					++invokeCount;
+					provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					) {
+						try {
+							++invokeCount;
 
-					assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-					assert.strictEqual(context.isRetrigger, false);
-					assert.strictEqual(context.triggerCharacter, 'c');
+							assert.strictEqual(
+								context.triggerKind,
+								languages.SignatureHelpTriggerKind.TriggerCharacter
+							);
+							assert.strictEqual(context.isRetrigger, false);
+							assert.strictEqual(context.triggerCharacter, 'c');
 
-					// Give some time to allow for later triggers
-					setTimeout(() => {
-						assert.strictEqual(invokeCount, 1);
+							// Give some time to allow for later triggers
+							setTimeout(() => {
+								assert.strictEqual(invokeCount, 1);
 
-						done();
-					}, 50);
-					return undefined;
-				} catch (err) {
-					console.error(err);
-					throw err;
-				}
-			}
-		}));
+								done();
+							}, 50);
+							return undefined;
+						} catch (err) {
+							console.error(err);
+							throw err;
+						}
+					}
+				})()
+			)
+		);
 
 		await runWithFakedTimers({ useFakeTimers: true }, async () => {
 			editor.trigger('keyboard', Handler.Type, { text: 'a' });
@@ -246,35 +317,51 @@ suite('ParameterHintsModel', () => {
 
 		let invokeCount = 0;
 
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = ['a', 'b'];
-			signatureHelpRetriggerCharacters = [];
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = ['a', 'b'];
+					signatureHelpRetriggerCharacters = [];
 
-			provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
-				try {
-					++invokeCount;
-					if (invokeCount === 1) {
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.strictEqual(context.triggerCharacter, 'a');
+					provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
+						try {
+							++invokeCount;
+							if (invokeCount === 1) {
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.strictEqual(context.triggerCharacter, 'a');
 
-						// retrigger after delay for widget to show up
-						setTimeout(() => editor.trigger('keyboard', Handler.Type, { text: 'b' }), 50);
-					} else if (invokeCount === 2) {
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.ok(context.isRetrigger);
-						assert.strictEqual(context.triggerCharacter, 'b');
-						done();
-					} else {
-						assert.fail('Unexpected invoke');
+								// retrigger after delay for widget to show up
+								setTimeout(() => editor.trigger('keyboard', Handler.Type, { text: 'b' }), 50);
+							} else if (invokeCount === 2) {
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.ok(context.isRetrigger);
+								assert.strictEqual(context.triggerCharacter, 'b');
+								done();
+							} else {
+								assert.fail('Unexpected invoke');
+							}
+
+							return emptySigHelpResult;
+						} catch (err) {
+							console.error(err);
+							throw err;
+						}
 					}
-
-					return emptySigHelpResult;
-				} catch (err) {
-					console.error(err);
-					throw err;
-				}
-			}
-		}));
+				})()
+			)
+		);
 
 		await runWithFakedTimers({ useFakeTimers: true }, () => {
 			editor.trigger('keyboard', Handler.Type, { text: 'a' });
@@ -283,21 +370,27 @@ suite('ParameterHintsModel', () => {
 	});
 
 	test('Should cancel existing request when new request comes in', async () => {
-
 		const editor = createMockEditor('abc def');
 		const hintsModel = disposables.add(new ParameterHintsModel(editor, registry));
 
 		let didRequestCancellationOf = -1;
 		let invokeCount = 0;
-		const longRunningProvider = new class implements languages.SignatureHelpProvider {
+		const longRunningProvider = new (class implements languages.SignatureHelpProvider {
 			signatureHelpTriggerCharacters = [];
 			signatureHelpRetriggerCharacters = [];
 
-
-			provideSignatureHelp(_model: ITextModel, _position: Position, token: CancellationToken): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
+			provideSignatureHelp(
+				_model: ITextModel,
+				_position: Position,
+				token: CancellationToken
+			): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
 				try {
 					const count = invokeCount++;
-					disposables.add(token.onCancellationRequested(() => { didRequestCancellationOf = count; }));
+					disposables.add(
+						token.onCancellationRequested(() => {
+							didRequestCancellationOf = count;
+						})
+					);
 
 					// retrigger on first request
 					if (count === 0) {
@@ -308,14 +401,16 @@ suite('ParameterHintsModel', () => {
 						setTimeout(() => {
 							resolve({
 								value: {
-									signatures: [{
-										label: '' + count,
-										parameters: []
-									}],
+									signatures: [
+										{
+											label: '' + count,
+											parameters: [],
+										},
+									],
 									activeParameter: 0,
-									activeSignature: 0
+									activeSignature: 0,
 								},
-								dispose: () => { }
+								dispose: () => {},
 							});
 						}, 100);
 					});
@@ -324,25 +419,27 @@ suite('ParameterHintsModel', () => {
 					throw err;
 				}
 			}
-		};
+		})();
 
 		disposables.add(registry.register(mockFileSelector, longRunningProvider));
 
 		await runWithFakedTimers({ useFakeTimers: true }, async () => {
-
 			hintsModel.trigger({ triggerKind: languages.SignatureHelpTriggerKind.Invoke }, 0);
 			assert.strictEqual(-1, didRequestCancellationOf);
 
 			return new Promise<void>((resolve, reject) =>
-				disposables.add(hintsModel.onChangedHints(newParamterHints => {
-					try {
-						assert.strictEqual(0, didRequestCancellationOf);
-						assert.strictEqual('1', newParamterHints!.signatures[0].label);
-						resolve();
-					} catch (e) {
-						reject(e);
-					}
-				})));
+				disposables.add(
+					hintsModel.onChangedHints(newParamterHints => {
+						try {
+							assert.strictEqual(0, didRequestCancellationOf);
+							assert.strictEqual('1', newParamterHints!.signatures[0].label);
+							resolve();
+						} catch (e) {
+							reject(e);
+						}
+					})
+				)
+			);
 		});
 	});
 
@@ -356,35 +453,54 @@ suite('ParameterHintsModel', () => {
 		disposables.add(new ParameterHintsModel(editor, registry, 5));
 
 		let invokeCount = 0;
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = [triggerChar];
-			signatureHelpRetriggerCharacters = [retriggerChar];
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = [triggerChar];
+					signatureHelpRetriggerCharacters = [retriggerChar];
 
-			provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
-				try {
-					++invokeCount;
-					if (invokeCount === 1) {
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.strictEqual(context.triggerCharacter, triggerChar);
+					provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
+						try {
+							++invokeCount;
+							if (invokeCount === 1) {
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.strictEqual(context.triggerCharacter, triggerChar);
 
-						// retrigger after delay for widget to show up
-						setTimeout(() => editor.trigger('keyboard', Handler.Type, { text: retriggerChar }), 50);
-					} else if (invokeCount === 2) {
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.ok(context.isRetrigger);
-						assert.strictEqual(context.triggerCharacter, retriggerChar);
-						done();
-					} else {
-						assert.fail('Unexpected invoke');
+								// retrigger after delay for widget to show up
+								setTimeout(
+									() => editor.trigger('keyboard', Handler.Type, { text: retriggerChar }),
+									50
+								);
+							} else if (invokeCount === 2) {
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.ok(context.isRetrigger);
+								assert.strictEqual(context.triggerCharacter, retriggerChar);
+								done();
+							} else {
+								assert.fail('Unexpected invoke');
+							}
+
+							return emptySigHelpResult;
+						} catch (err) {
+							console.error(err);
+							throw err;
+						}
 					}
-
-					return emptySigHelpResult;
-				} catch (err) {
-					console.error(err);
-					throw err;
-				}
-			}
-		}));
+				})()
+			)
+		);
 
 		await runWithFakedTimers({ useFakeTimers: true }, async () => {
 			// This should not trigger anything
@@ -406,61 +522,90 @@ suite('ParameterHintsModel', () => {
 		const editor = createMockEditor('');
 		const model = disposables.add(new ParameterHintsModel(editor, registry, 5));
 
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = [triggerChar];
-			signatureHelpRetriggerCharacters = [];
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = [triggerChar];
+					signatureHelpRetriggerCharacters = [];
 
-			async provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext): Promise<languages.SignatureHelpResult | undefined> {
-				try {
-					if (!context.isRetrigger) {
-						// retrigger after delay for widget to show up
-						setTimeout(() => editor.trigger('keyboard', Handler.Type, { text: triggerChar }), 50);
+					async provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					): Promise<languages.SignatureHelpResult | undefined> {
+						try {
+							if (!context.isRetrigger) {
+								// retrigger after delay for widget to show up
+								setTimeout(
+									() => editor.trigger('keyboard', Handler.Type, { text: triggerChar }),
+									50
+								);
 
-						return {
-							value: {
-								activeParameter: 0,
-								activeSignature: 0,
-								signatures: [{
-									label: firstProviderId,
-									parameters: [
-										{ label: paramterLabel }
-									]
-								}]
-							},
-							dispose: () => { }
-						};
+								return {
+									value: {
+										activeParameter: 0,
+										activeSignature: 0,
+										signatures: [
+											{
+												label: firstProviderId,
+												parameters: [{ label: paramterLabel }],
+											},
+										],
+									},
+									dispose: () => {},
+								};
+							}
+
+							return undefined;
+						} catch (err) {
+							console.error(err);
+							throw err;
+						}
 					}
+				})()
+			)
+		);
 
-					return undefined;
-				} catch (err) {
-					console.error(err);
-					throw err;
-				}
-			}
-		}));
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = [triggerChar];
+					signatureHelpRetriggerCharacters = [];
 
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = [triggerChar];
-			signatureHelpRetriggerCharacters = [];
+					async provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					): Promise<languages.SignatureHelpResult | undefined> {
+						if (context.isRetrigger) {
+							return {
+								value: {
+									activeParameter: 0,
+									activeSignature: context.activeSignatureHelp
+										? context.activeSignatureHelp.activeSignature + 1
+										: 0,
+									signatures: [
+										{
+											label: secondProviderId,
+											parameters: context.activeSignatureHelp
+												? context.activeSignatureHelp.signatures[0].parameters
+												: [],
+										},
+									],
+								},
+								dispose: () => {},
+							};
+						}
 
-			async provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext): Promise<languages.SignatureHelpResult | undefined> {
-				if (context.isRetrigger) {
-					return {
-						value: {
-							activeParameter: 0,
-							activeSignature: context.activeSignatureHelp ? context.activeSignatureHelp.activeSignature + 1 : 0,
-							signatures: [{
-								label: secondProviderId,
-								parameters: context.activeSignatureHelp ? context.activeSignatureHelp.signatures[0].parameters : []
-							}]
-						},
-						dispose: () => { }
-					};
-				}
-
-				return undefined;
-			}
-		}));
+						return undefined;
+					}
+				})()
+			)
+		);
 
 		await runWithFakedTimers({ useFakeTimers: true }, async () => {
 			editor.trigger('keyboard', Handler.Type, { text: triggerChar });
@@ -484,28 +629,41 @@ suite('ParameterHintsModel', () => {
 		const triggerCharacter = 'a';
 
 		let invokeCount = 0;
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = [triggerCharacter];
-			signatureHelpRetriggerCharacters = [];
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = [triggerCharacter];
+					signatureHelpRetriggerCharacters = [];
 
-			provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
-				try {
-					++invokeCount;
+					provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					): languages.SignatureHelpResult | Promise<languages.SignatureHelpResult> {
+						try {
+							++invokeCount;
 
-					if (invokeCount === 1) {
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.strictEqual(context.triggerCharacter, triggerCharacter);
-					} else {
-						assert.fail('Unexpected invoke');
+							if (invokeCount === 1) {
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.strictEqual(context.triggerCharacter, triggerCharacter);
+							} else {
+								assert.fail('Unexpected invoke');
+							}
+
+							return emptySigHelpResult;
+						} catch (err) {
+							console.error(err);
+							throw err;
+						}
 					}
-
-					return emptySigHelpResult;
-				} catch (err) {
-					console.error(err);
-					throw err;
-				}
-			}
-		}));
+				})()
+			)
+		);
 
 		await runWithFakedTimers({ useFakeTimers: true }, async () => {
 			editor.trigger('keyboard', Handler.Type, { text: triggerCharacter });
@@ -525,41 +683,59 @@ suite('ParameterHintsModel', () => {
 		const retriggerCharacter = 'b';
 
 		let invokeCount = 0;
-		disposables.add(registry.register(mockFileSelector, new class implements languages.SignatureHelpProvider {
-			signatureHelpTriggerCharacters = [triggerCharacter];
-			signatureHelpRetriggerCharacters = [retriggerCharacter];
+		disposables.add(
+			registry.register(
+				mockFileSelector,
+				new (class implements languages.SignatureHelpProvider {
+					signatureHelpTriggerCharacters = [triggerCharacter];
+					signatureHelpRetriggerCharacters = [retriggerCharacter];
 
-			async provideSignatureHelp(_model: ITextModel, _position: Position, _token: CancellationToken, context: languages.SignatureHelpContext): Promise<languages.SignatureHelpResult> {
-				try {
-					++invokeCount;
+					async provideSignatureHelp(
+						_model: ITextModel,
+						_position: Position,
+						_token: CancellationToken,
+						context: languages.SignatureHelpContext
+					): Promise<languages.SignatureHelpResult> {
+						try {
+							++invokeCount;
 
-					if (invokeCount === 1) {
-						assert.strictEqual(context.triggerKind, languages.SignatureHelpTriggerKind.TriggerCharacter);
-						assert.strictEqual(context.triggerCharacter, triggerCharacter);
-						setTimeout(() => editor.trigger('keyboard', Handler.Type, { text: retriggerCharacter }), 50);
-					} else if (invokeCount === 2) {
-						// Trigger again while we wait for resolve to take place
-						setTimeout(() => editor.trigger('keyboard', Handler.Type, { text: retriggerCharacter }), 50);
-						await new Promise(resolve => setTimeout(resolve, 1000));
-					} else if (invokeCount === 3) {
-						// Make sure that in a retrigger during a pending resolve, we still have the old active signature.
-						assert.strictEqual(context.activeSignatureHelp, emptySigHelp);
-						done();
-					} else {
-						assert.fail('Unexpected invoke');
+							if (invokeCount === 1) {
+								assert.strictEqual(
+									context.triggerKind,
+									languages.SignatureHelpTriggerKind.TriggerCharacter
+								);
+								assert.strictEqual(context.triggerCharacter, triggerCharacter);
+								setTimeout(
+									() => editor.trigger('keyboard', Handler.Type, { text: retriggerCharacter }),
+									50
+								);
+							} else if (invokeCount === 2) {
+								// Trigger again while we wait for resolve to take place
+								setTimeout(
+									() => editor.trigger('keyboard', Handler.Type, { text: retriggerCharacter }),
+									50
+								);
+								await new Promise(resolve => setTimeout(resolve, 1000));
+							} else if (invokeCount === 3) {
+								// Make sure that in a retrigger during a pending resolve, we still have the old active signature.
+								assert.strictEqual(context.activeSignatureHelp, emptySigHelp);
+								done();
+							} else {
+								assert.fail('Unexpected invoke');
+							}
+
+							return emptySigHelpResult;
+						} catch (err) {
+							console.error(err);
+							done(err);
+							throw err;
+						}
 					}
-
-					return emptySigHelpResult;
-				} catch (err) {
-					console.error(err);
-					done(err);
-					throw err;
-				}
-			}
-		}));
+				})()
+			)
+		);
 
 		await runWithFakedTimers({ useFakeTimers: true }, async () => {
-
 			editor.trigger('keyboard', Handler.Type, { text: triggerCharacter });
 
 			await getNextHint(model);

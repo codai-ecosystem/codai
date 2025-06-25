@@ -3,11 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ChannelFactory, IChannelHandler, API, SimpleTypedRpcConnection, MakeSideAsync } from './rpc.js';
+import {
+	ChannelFactory,
+	IChannelHandler,
+	API,
+	SimpleTypedRpcConnection,
+	MakeSideAsync,
+} from './rpc.js';
 
 export function registerDebugChannel<T extends { channelId: string } & API>(
 	channelId: T['channelId'],
-	createClient: () => T['client'],
+	createClient: () => T['client']
 ): SimpleTypedRpcConnection<MakeSideAsync<T['host']>> {
 	const g = globalThis as any as GlobalObj;
 
@@ -15,7 +21,7 @@ export function registerDebugChannel<T extends { channelId: string } & API>(
 	let curHost: IHost | undefined = undefined;
 
 	const { channel, handler } = createChannelFactoryFromDebugChannel({
-		sendNotification: (data) => {
+		sendNotification: data => {
 			if (curHost) {
 				curHost.sendNotification(data);
 			} else {
@@ -26,33 +32,42 @@ export function registerDebugChannel<T extends { channelId: string } & API>(
 
 	let curClient: T['client'] | undefined = undefined;
 
-	(g.$$debugValueEditor_debugChannels ?? (g.$$debugValueEditor_debugChannels = {}))[channelId] = (host) => {
-		curClient = createClient();
-		curHost = host;
-		for (const n of queuedNotifications) {
-			host.sendNotification(n);
-		}
-		queuedNotifications = [];
-		return handler;
-	};
+	(g.$$debugValueEditor_debugChannels ?? (g.$$debugValueEditor_debugChannels = {}))[channelId] =
+		host => {
+			curClient = createClient();
+			curHost = host;
+			for (const n of queuedNotifications) {
+				host.sendNotification(n);
+			}
+			queuedNotifications = [];
+			return handler;
+		};
 
 	return SimpleTypedRpcConnection.createClient<T>(channel, () => {
-		if (!curClient) { throw new Error('Not supported'); }
+		if (!curClient) {
+			throw new Error('Not supported');
+		}
 		return curClient;
 	});
 }
 
 interface GlobalObj {
-	$$debugValueEditor_debugChannels: Record<string, (host: IHost) => { handleRequest: (data: unknown) => unknown }>;
+	$$debugValueEditor_debugChannels: Record<
+		string,
+		(host: IHost) => { handleRequest: (data: unknown) => unknown }
+	>;
 }
 
 interface IHost {
 	sendNotification: (data: unknown) => void;
 }
 
-function createChannelFactoryFromDebugChannel(host: IHost): { channel: ChannelFactory; handler: { handleRequest: (data: unknown) => unknown } } {
+function createChannelFactoryFromDebugChannel(host: IHost): {
+	channel: ChannelFactory;
+	handler: { handleRequest: (data: unknown) => unknown };
+} {
 	let h: IChannelHandler | undefined;
-	const channel: ChannelFactory = (handler) => {
+	const channel: ChannelFactory = handler => {
 		h = handler;
 		return {
 			sendNotification: data => {

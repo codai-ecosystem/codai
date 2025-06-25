@@ -7,11 +7,14 @@ import * as picomatch from 'picomatch';
 import * as vscode from 'vscode';
 import { Utils } from 'vscode-uri';
 import { getParentDocumentUri } from '../../util/document';
-import { CopyFileConfiguration, getCopyFileConfiguration, parseGlob, resolveCopyDestination } from './copyFiles';
-
+import {
+	CopyFileConfiguration,
+	getCopyFileConfiguration,
+	parseGlob,
+	resolveCopyDestination,
+} from './copyFiles';
 
 export class NewFilePathGenerator {
-
 	private readonly _usedPaths = new Set<string>();
 
 	async getNewFilePath(
@@ -61,12 +64,21 @@ export class NewFilePathGenerator {
 	}
 }
 
-export function getDesiredNewFilePath(config: CopyFileConfiguration, document: vscode.TextDocument, file: vscode.DataTransferFile): vscode.Uri {
+export function getDesiredNewFilePath(
+	config: CopyFileConfiguration,
+	document: vscode.TextDocument,
+	file: vscode.DataTransferFile
+): vscode.Uri {
 	const docUri = getParentDocumentUri(document.uri);
 	for (const [rawGlob, rawDest] of Object.entries(config.destination)) {
 		for (const glob of parseGlob(rawGlob)) {
 			if (picomatch.isMatch(docUri.path, glob, { dot: true })) {
-				return resolveCopyDestination(docUri, file.name, rawDest, uri => vscode.workspace.getWorkspaceFolder(uri)?.uri);
+				return resolveCopyDestination(
+					docUri,
+					file.name,
+					rawDest,
+					uri => vscode.workspace.getWorkspaceFolder(uri)?.uri
+				);
 			}
 		}
 	}
@@ -74,4 +86,3 @@ export function getDesiredNewFilePath(config: CopyFileConfiguration, document: v
 	// Default to next to current file
 	return vscode.Uri.joinPath(Utils.dirname(docUri), file.name);
 }
-

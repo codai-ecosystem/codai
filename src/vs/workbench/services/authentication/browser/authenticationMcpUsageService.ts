@@ -5,11 +5,18 @@
 
 import { Queue } from '../../../../base/common/async.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { IAuthenticationService } from '../common/authentication.js';
 
 export interface IAuthenticationMcpUsage {
@@ -19,7 +26,9 @@ export interface IAuthenticationMcpUsage {
 	scopes?: string[];
 }
 
-export const IAuthenticationMcpUsageService = createDecorator<IAuthenticationMcpUsageService>('IAuthenticationMcpUsageService');
+export const IAuthenticationMcpUsageService = createDecorator<IAuthenticationMcpUsageService>(
+	'IAuthenticationMcpUsageService'
+);
 export interface IAuthenticationMcpUsageService {
 	readonly _serviceBrand: undefined;
 	/**
@@ -36,7 +45,7 @@ export interface IAuthenticationMcpUsageService {
 	 * @param providerId The id of the authentication provider to get usages for
 	 * @param accountName The name of the account to get usages for
 	 */
-	readAccountUsages(providerId: string, accountName: string,): IAuthenticationMcpUsage[];
+	readAccountUsages(providerId: string, accountName: string): IAuthenticationMcpUsage[];
 	/**
 	 *
 	 * @param providerId The id of the authentication provider to get usages for
@@ -50,10 +59,19 @@ export interface IAuthenticationMcpUsageService {
 	 * @param mcpServerId The id of the MCP server to add a usage for
 	 * @param mcpServerName The name of the MCP server to add a usage for
 	 */
-	addAccountUsage(providerId: string, accountName: string, scopes: ReadonlyArray<string>, mcpServerId: string, mcpServerName: string): void;
+	addAccountUsage(
+		providerId: string,
+		accountName: string,
+		scopes: ReadonlyArray<string>,
+		mcpServerId: string,
+		mcpServerName: string
+	): void;
 }
 
-export class AuthenticationMcpUsageService extends Disposable implements IAuthenticationMcpUsageService {
+export class AuthenticationMcpUsageService
+	extends Disposable
+	implements IAuthenticationMcpUsageService
+{
 	_serviceBrand: undefined;
 
 	private _queue = new Queue();
@@ -63,7 +81,7 @@ export class AuthenticationMcpUsageService extends Disposable implements IAuthen
 		@IStorageService private readonly _storageService: IStorageService,
 		@IAuthenticationService private readonly _authenticationService: IAuthenticationService,
 		@ILogService private readonly _logService: ILogService,
-		@IProductService productService: IProductService,
+		@IProductService productService: IProductService
 	) {
 		super();
 
@@ -81,15 +99,19 @@ export class AuthenticationMcpUsageService extends Disposable implements IAuthen
 			}
 		}
 
-		this._register(this._authenticationService.onDidRegisterAuthenticationProvider(
-			provider => this._queue.queue(
-				() => this._addToCache(provider.id)
+		this._register(
+			this._authenticationService.onDidRegisterAuthenticationProvider(provider =>
+				this._queue.queue(() => this._addToCache(provider.id))
 			)
-		));
+		);
 	}
 
 	async initializeUsageCache(): Promise<void> {
-		await this._queue.queue(() => Promise.all(this._authenticationService.getProviderIds().map(providerId => this._addToCache(providerId))));
+		await this._queue.queue(() =>
+			Promise.all(
+				this._authenticationService.getProviderIds().map(providerId => this._addToCache(providerId))
+			)
+		);
 	}
 
 	async hasUsedAuth(mcpServerId: string): Promise<boolean> {
@@ -117,7 +139,13 @@ export class AuthenticationMcpUsageService extends Disposable implements IAuthen
 		this._storageService.remove(accountKey, StorageScope.APPLICATION);
 	}
 
-	addAccountUsage(providerId: string, accountName: string, scopes: string[], mcpServerId: string, mcpServerName: string): void {
+	addAccountUsage(
+		providerId: string,
+		accountName: string,
+		scopes: string[],
+		mcpServerId: string,
+		mcpServerName: string
+	): void {
 		const accountKey = `${providerId}-${accountName}-mcpserver-usages`;
 		const usages = this.readAccountUsages(providerId, accountName);
 
@@ -127,18 +155,23 @@ export class AuthenticationMcpUsageService extends Disposable implements IAuthen
 				mcpServerId,
 				mcpServerName,
 				scopes,
-				lastUsed: Date.now()
+				lastUsed: Date.now(),
 			});
 		} else {
 			usages.push({
 				mcpServerId,
 				mcpServerName,
 				scopes,
-				lastUsed: Date.now()
+				lastUsed: Date.now(),
 			});
 		}
 
-		this._storageService.store(accountKey, JSON.stringify(usages), StorageScope.APPLICATION, StorageTarget.MACHINE);
+		this._storageService.store(
+			accountKey,
+			JSON.stringify(usages),
+			StorageScope.APPLICATION,
+			StorageTarget.MACHINE
+		);
 		this._mcpServersUsingAuth.add(mcpServerId);
 	}
 
@@ -157,4 +190,8 @@ export class AuthenticationMcpUsageService extends Disposable implements IAuthen
 	}
 }
 
-registerSingleton(IAuthenticationMcpUsageService, AuthenticationMcpUsageService, InstantiationType.Delayed);
+registerSingleton(
+	IAuthenticationMcpUsageService,
+	AuthenticationMcpUsageService,
+	InstantiationType.Delayed
+);

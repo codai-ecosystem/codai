@@ -17,11 +17,14 @@ export class NotebookLoggingService extends Disposable implements INotebookLoggi
 	static ID: string = 'notebook';
 	private readonly _logger: ILogger;
 
-	constructor(
-		@ILoggerService loggerService: ILoggerService,
-	) {
+	constructor(@ILoggerService loggerService: ILoggerService) {
 		super();
-		this._logger = this._register(loggerService.createLogger(logChannelId, { name: nls.localize('renderChannelName', "Notebook"), group: windowLogGroup }));
+		this._logger = this._register(
+			loggerService.createLogger(logChannelId, {
+				name: nls.localize('renderChannelName', 'Notebook'),
+				group: windowLogGroup,
+			})
+		);
 	}
 
 	debug(category: string, output: string): void {
@@ -40,4 +43,3 @@ export class NotebookLoggingService extends Disposable implements INotebookLoggi
 		this._logger.error(`[${category}] ${output}`);
 	}
 }
-

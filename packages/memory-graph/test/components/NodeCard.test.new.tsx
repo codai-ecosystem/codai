@@ -11,7 +11,7 @@ import {
 	createLogicNode,
 	createDataModelNode,
 	createApiNode,
-	createTestNode
+	createTestNode,
 } from '../utils/testHelpers';
 
 describe('NodeCard Component', () => {
@@ -156,11 +156,7 @@ describe('NodeCard Component', () => {
 
 		it('applies selected styling when isSelected is true', () => {
 			const { container } = render(
-				<NodeCard
-					node={testNode}
-					{...defaultProps}
-					isSelected={true}
-				/>
+				<NodeCard node={testNode} {...defaultProps} isSelected={true} />
 			);
 			const nodeElement = container.querySelector('.memory-graph-node');
 
@@ -169,11 +165,7 @@ describe('NodeCard Component', () => {
 
 		it('does not apply selected styling when isSelected is false', () => {
 			const { container } = render(
-				<NodeCard
-					node={testNode}
-					{...defaultProps}
-					isSelected={false}
-				/>
+				<NodeCard node={testNode} {...defaultProps} isSelected={false} />
 			);
 			const nodeElement = container.querySelector('.memory-graph-node');
 
@@ -187,11 +179,7 @@ describe('NodeCard Component', () => {
 		it('applies correct position transform', () => {
 			const position = { x: 150, y: 250 };
 			const { container } = render(
-				<NodeCard
-					node={testNode}
-					{...defaultProps}
-					position={position}
-				/>
+				<NodeCard node={testNode} {...defaultProps} position={position} />
 			);
 			const nodeElement = container.querySelector('.memory-graph-node') as HTMLElement;
 
@@ -204,25 +192,13 @@ describe('NodeCard Component', () => {
 
 		it('uses data prop when provided', () => {
 			const nodeData = { ...testNode, name: 'Data Prop Node' };
-			render(
-				<NodeCard
-					node={testNode}
-					data={nodeData}
-					{...defaultProps}
-				/>
-			);
+			render(<NodeCard node={testNode} data={nodeData} {...defaultProps} />);
 
 			expect(screen.getByText('Data Prop Node')).toBeDefined();
 		});
 
 		it('uses selected prop for ReactFlow compatibility', () => {
-			const { container } = render(
-				<NodeCard
-					node={testNode}
-					{...defaultProps}
-					selected={true}
-				/>
-			);
+			const { container } = render(<NodeCard node={testNode} {...defaultProps} selected={true} />);
 			const nodeElement = container.querySelector('.memory-graph-node');
 
 			expect(nodeElement?.classList.contains('selected')).toBe(true);
@@ -234,11 +210,7 @@ describe('NodeCard Component', () => {
 
 		it('applies custom className', () => {
 			const { container } = render(
-				<NodeCard
-					node={testNode}
-					{...defaultProps}
-					className="custom-node"
-				/>
+				<NodeCard node={testNode} {...defaultProps} className="custom-node" />
 			);
 			const nodeElement = container.querySelector('.memory-graph-node');
 
@@ -271,19 +243,14 @@ describe('NodeCard Component', () => {
 			const { description, ...nodeData } = nodeWithoutDescription;
 
 			expect(() => {
-				render(
-					<NodeCard
-						node={nodeData as any}
-						{...defaultProps}
-					/>
-				);
+				render(<NodeCard node={nodeData as any} {...defaultProps} />);
 			}).not.toThrow();
 		});
 
 		it('handles unknown node types gracefully', () => {
 			const unknownNode = {
 				...createFeatureNode(),
-				type: 'unknown' as any
+				type: 'unknown' as any,
 			};
 
 			const { container } = render(<NodeCard node={unknownNode} {...defaultProps} />);

@@ -13,7 +13,10 @@ console.log('✅ Testing Memory Graph Engine...');
 try {
 	const engine = new MemoryGraphEngine();
 	console.log('  ✓ MemoryGraphEngine created successfully');
-	console.log('  ✓ Engine methods available:', Object.getOwnPropertyNames(Object.getPrototypeOf(engine)));
+	console.log(
+		'  ✓ Engine methods available:',
+		Object.getOwnPropertyNames(Object.getPrototypeOf(engine))
+	);
 } catch (error) {
 	console.error('  ❌ MemoryGraphEngine test failed:', error.message);
 	process.exit(1);
@@ -33,7 +36,7 @@ try {
 		requirements: ['User can test the feature'],
 		createdAt: new Date(),
 		updatedAt: new Date(),
-		version: '1.0.0'
+		version: '1.0.0',
 	});
 
 	console.log('  ✓ FeatureNode created successfully');
@@ -60,7 +63,7 @@ try {
 		category: 'test',
 		priority: 'medium',
 		status: 'active',
-		context: 'Integration test'
+		context: 'Integration test',
 	};
 
 	memoryEngine.addNode(intentNode);
@@ -72,7 +75,6 @@ try {
 	} else {
 		console.log('❌ Node retrieval failed');
 	}
-
 } catch (error) {
 	console.log('❌ MemoryGraphEngine test failed:', error.message);
 }
@@ -81,10 +83,9 @@ try {
 try {
 	const memoryEngine = new MemoryGraphEngine();
 	const agentRuntime = new AgentRuntime(memoryEngine, {
-		openai: 'test-key'
+		openai: 'test-key',
 	});
 	console.log('✅ AgentRuntime instantiated successfully');
-
 } catch (error) {
 	console.log('❌ AgentRuntime test failed:', error.message);
 }

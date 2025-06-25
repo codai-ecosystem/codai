@@ -6,11 +6,22 @@
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { ParsedPattern, parse as parseGlob } from '../../../../base/common/glob.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { isAbsolute, parse as parsePath, ParsedPath, dirname } from '../../../../base/common/path.js';
-import { dirname as resourceDirname, relativePath as getRelativePath } from '../../../../base/common/resources.js';
+import {
+	isAbsolute,
+	parse as parsePath,
+	ParsedPath,
+	dirname,
+} from '../../../../base/common/path.js';
+import {
+	dirname as resourceDirname,
+	relativePath as getRelativePath,
+} from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { MRUCache } from '../../../../base/common/map.js';
@@ -28,7 +39,6 @@ interface ICustomEditorLabelPattern {
 }
 
 export class CustomEditorLabelService extends Disposable implements ICustomEditorLabelService {
-
 	readonly _serviceBrand: undefined;
 
 	static readonly SETTING_ID_PATTERNS = 'workbench.editor.customLabels.patterns';
@@ -44,7 +54,7 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
 
 	constructor(
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService
 	) {
 		super();
 
@@ -55,33 +65,39 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
 	}
 
 	private registerListeners(): void {
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			// Cache the enabled state
-			if (e.affectsConfiguration(CustomEditorLabelService.SETTING_ID_ENABLED)) {
-				const oldEnablement = this.enabled;
-				this.storeEnablementState();
-				if (oldEnablement !== this.enabled && this.patterns.length > 0) {
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				// Cache the enabled state
+				if (e.affectsConfiguration(CustomEditorLabelService.SETTING_ID_ENABLED)) {
+					const oldEnablement = this.enabled;
+					this.storeEnablementState();
+					if (oldEnablement !== this.enabled && this.patterns.length > 0) {
+						this._onDidChange.fire();
+					}
+				}
+
+				// Cache the patterns
+				else if (e.affectsConfiguration(CustomEditorLabelService.SETTING_ID_PATTERNS)) {
+					this.cache.clear();
+					this.storeCustomPatterns();
 					this._onDidChange.fire();
 				}
-			}
-
-			// Cache the patterns
-			else if (e.affectsConfiguration(CustomEditorLabelService.SETTING_ID_PATTERNS)) {
-				this.cache.clear();
-				this.storeCustomPatterns();
-				this._onDidChange.fire();
-			}
-		}));
+			})
+		);
 	}
 
 	private storeEnablementState(): void {
-		this.enabled = this.configurationService.getValue<boolean>(CustomEditorLabelService.SETTING_ID_ENABLED);
+		this.enabled = this.configurationService.getValue<boolean>(
+			CustomEditorLabelService.SETTING_ID_ENABLED
+		);
 	}
 
 	private _templateRegexValidation: RegExp = /[a-zA-Z0-9]/;
 	private storeCustomPatterns(): void {
 		this.patterns = [];
-		const customLabelPatterns = this.configurationService.getValue<ICustomEditorLabelObject>(CustomEditorLabelService.SETTING_ID_PATTERNS);
+		const customLabelPatterns = this.configurationService.getValue<ICustomEditorLabelObject>(
+			CustomEditorLabelService.SETTING_ID_PATTERNS
+		);
 		for (const pattern in customLabelPatterns) {
 			const template = customLabelPatterns[pattern];
 
@@ -155,41 +171,46 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
 		return undefined;
 	}
 
-	private readonly _parsedTemplateExpression = /\$\{(dirname|filename|extname|extname\((?<extnameN>[-+]?\d+)\)|dirname\((?<dirnameN>[-+]?\d+)\))\}/g;
+	private readonly _parsedTemplateExpression =
+		/\$\{(dirname|filename|extname|extname\((?<extnameN>[-+]?\d+)\)|dirname\((?<dirnameN>[-+]?\d+)\))\}/g;
 	private readonly _filenameCaptureExpression = /(?<filename>^\.*[^.]*)/;
 	private applyTemplate(template: string, resource: URI, relevantPath: string): string {
 		let parsedPath: undefined | ParsedPath;
-		return template.replace(this._parsedTemplateExpression, (match: string, variable: string, ...args: any[]) => {
-			parsedPath = parsedPath ?? parsePath(resource.path);
-			// named group matches
-			const { dirnameN = '0', extnameN = '0' }: { dirnameN?: string; extnameN?: string } = args.pop();
+		return template.replace(
+			this._parsedTemplateExpression,
+			(match: string, variable: string, ...args: any[]) => {
+				parsedPath = parsedPath ?? parsePath(resource.path);
+				// named group matches
+				const { dirnameN = '0', extnameN = '0' }: { dirnameN?: string; extnameN?: string } =
+					args.pop();
 
-			if (variable === 'filename') {
-				const { filename } = this._filenameCaptureExpression.exec(parsedPath.base)?.groups ?? {};
-				if (filename) {
-					return filename;
+				if (variable === 'filename') {
+					const { filename } = this._filenameCaptureExpression.exec(parsedPath.base)?.groups ?? {};
+					if (filename) {
+						return filename;
+					}
+				} else if (variable === 'extname') {
+					const extension = this.getExtnames(parsedPath.base);
+					if (extension) {
+						return extension;
+					}
+				} else if (variable.startsWith('extname')) {
+					const n = parseInt(extnameN);
+					const nthExtname = this.getNthExtname(parsedPath.base, n);
+					if (nthExtname) {
+						return nthExtname;
+					}
+				} else if (variable.startsWith('dirname')) {
+					const n = parseInt(dirnameN);
+					const nthDir = this.getNthDirname(dirname(relevantPath), n);
+					if (nthDir) {
+						return nthDir;
+					}
 				}
-			} else if (variable === 'extname') {
-				const extension = this.getExtnames(parsedPath.base);
-				if (extension) {
-					return extension;
-				}
-			} else if (variable.startsWith('extname')) {
-				const n = parseInt(extnameN);
-				const nthExtname = this.getNthExtname(parsedPath.base, n);
-				if (nthExtname) {
-					return nthExtname;
-				}
-			} else if (variable.startsWith('dirname')) {
-				const n = parseInt(dirnameN);
-				const nthDir = this.getNthDirname(dirname(relevantPath), n);
-				if (nthDir) {
-					return nthDir;
-				}
+
+				return match;
 			}
-
-			return match;
-		});
+		);
 	}
 
 	private removeLeadingDot(path: string): string {
@@ -238,7 +259,9 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
 	}
 }
 
-export const ICustomEditorLabelService = createDecorator<ICustomEditorLabelService>('ICustomEditorLabelService');
+export const ICustomEditorLabelService = createDecorator<ICustomEditorLabelService>(
+	'ICustomEditorLabelService'
+);
 
 export interface ICustomEditorLabelService {
 	readonly _serviceBrand: undefined;

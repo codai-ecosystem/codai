@@ -10,12 +10,11 @@ import { ILanguageModelToolsService } from '../../common/languageModelToolsServi
 import { EditTool, EditToolData } from './editFileTool.js';
 
 export class BuiltinToolsContribution extends Disposable implements IWorkbenchContribution {
-
 	static readonly ID = 'chat.builtinTools';
 
 	constructor(
 		@ILanguageModelToolsService toolsService: ILanguageModelToolsService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 

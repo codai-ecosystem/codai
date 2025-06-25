@@ -13,16 +13,17 @@ import { BaseWindow } from '../../browser/window.js';
 import { TestEnvironmentService, TestHostService } from './workbenchTestServices.js';
 
 suite('Window', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	class TestWindow extends BaseWindow {
-
-		constructor(window: CodeWindow, dom: { getWindowsCount: () => number; getWindows: () => Iterable<IRegisteredCodeWindow> }) {
+		constructor(
+			window: CodeWindow,
+			dom: { getWindowsCount: () => number; getWindows: () => Iterable<IRegisteredCodeWindow> }
+		) {
 			super(window, dom, new TestHostService(), TestEnvironmentService);
 		}
 
-		protected override enableWindowFocusOnElementFocus(): void { }
+		protected override enableWindowFocusOnElementFocus(): void {}
 	}
 
 	test('multi window aware setTimeout()', async function () {
@@ -32,7 +33,7 @@ suite('Window', () => {
 			let windows: IRegisteredCodeWindow[] = [];
 			const dom = {
 				getWindowsCount: () => windows.length,
-				getWindows: () => windows
+				getWindows: () => windows,
 			};
 
 			const setTimeoutCalls: number[] = [];
@@ -49,7 +50,7 @@ suite('Window', () => {
 						clearTimeoutCalls.push(id);
 
 						return mainWindow.clearTimeout(timeoutId);
-					}
+					},
 				} as any;
 
 				disposables.add(new TestWindow(res, dom));
@@ -106,7 +107,7 @@ suite('Window', () => {
 			windows = [
 				{ window: window2, disposables },
 				{ window: window1, disposables },
-				{ window: window3, disposables }
+				{ window: window3, disposables },
 			];
 
 			await new Promise<void>((resolve, reject) => {

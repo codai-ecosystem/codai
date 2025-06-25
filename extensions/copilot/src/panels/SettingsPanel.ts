@@ -32,7 +32,7 @@ class SimpleSettingsManager {
 		return config.get('settings', {
 			aiProviders: {},
 			userPreferences: {},
-			deploymentConfigs: []
+			deploymentConfigs: [],
 		});
 	}
 
@@ -62,15 +62,13 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 	public resolveWebviewView(
 		webviewView: vscode.WebviewView,
 		context: vscode.WebviewViewResolveContext,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	) {
 		this.view = webviewView;
 
 		webviewView.webview.options = {
 			enableScripts: true,
-			localResourceRoots: [
-				this.context.extensionUri
-			]
+			localResourceRoots: [this.context.extensionUri],
 		};
 
 		webviewView.webview.html = this.getHtml(webviewView.webview);
@@ -119,40 +117,42 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 			this.sendMessage({
 				type: 'settingsSaved',
 				success: true,
-				message: 'Settings saved successfully'
+				message: 'Settings saved successfully',
 			});
 
 			// Show success message
 			vscode.window.showInformationMessage('AIDE settings saved successfully');
-
 		} catch (error) {
 			console.error('Failed to save settings:', error);
 			this.sendMessage({
 				type: 'settingsSaved',
 				success: false,
-				message: `Failed to save settings: ${error instanceof Error ? error.message : 'Unknown error'}`
+				message: `Failed to save settings: ${error instanceof Error ? error.message : 'Unknown error'}`,
 			});
 
-			vscode.window.showErrorMessage(`Failed to save settings: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			vscode.window.showErrorMessage(
+				`Failed to save settings: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 
 	private async loadSettings() {
 		try {
-			const settings = await this.settingsManager.load(); this.sendMessage({
+			const settings = await this.settingsManager.load();
+			this.sendMessage({
 				type: 'settingsLoaded',
 				settings: {
 					...settings,
 					// Just use the settings as-is for now
 					// Will add masking when proper types are available
-					aiProviders: settings.aiProviders
-				}
+					aiProviders: settings.aiProviders,
+				},
 			});
 		} catch (error) {
 			console.error('Failed to load settings:', error);
 			this.sendMessage({
 				type: 'settingsError',
-				message: `Failed to load settings: ${error instanceof Error ? error.message : 'Unknown error'}`
+				message: `Failed to load settings: ${error instanceof Error ? error.message : 'Unknown error'}`,
 			});
 		}
 	}
@@ -160,7 +160,7 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 		try {
 			this.sendMessage({
 				type: 'connectionTesting',
-				provider
+				provider,
 			});
 
 			// For now, just simulate a connection test
@@ -173,16 +173,15 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 				type: 'connectionTested',
 				provider,
 				success: true,
-				message: 'Connection successful'
+				message: 'Connection successful',
 			});
-
 		} catch (error) {
 			console.error(`Failed to test ${provider} connection:`, error);
 			this.sendMessage({
 				type: 'connectionTested',
 				provider,
 				success: false,
-				message: `Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+				message: `Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
 			});
 		}
 	}
@@ -194,13 +193,15 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 
 			this.sendMessage({
 				type: 'settingsReset',
-				success: true
+				success: true,
 			});
 
 			vscode.window.showInformationMessage('Settings reset to defaults');
 		} catch (error) {
 			console.error('Failed to reset settings:', error);
-			vscode.window.showErrorMessage(`Failed to reset settings: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			vscode.window.showErrorMessage(
+				`Failed to reset settings: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 
@@ -212,8 +213,8 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 			const uri = await vscode.window.showSaveDialog({
 				defaultUri: vscode.Uri.file('aide-settings.json'),
 				filters: {
-					'JSON': ['json']
-				}
+					JSON: ['json'],
+				},
 			});
 
 			if (uri) {
@@ -222,7 +223,9 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 			}
 		} catch (error) {
 			console.error('Failed to export settings:', error);
-			vscode.window.showErrorMessage(`Failed to export settings: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			vscode.window.showErrorMessage(
+				`Failed to export settings: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 
@@ -233,8 +236,8 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 				canSelectFolders: false,
 				canSelectMany: false,
 				filters: {
-					'JSON': ['json']
-				}
+					JSON: ['json'],
+				},
 			});
 
 			if (uri && uri[0]) {
@@ -248,7 +251,9 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 			}
 		} catch (error) {
 			console.error('Failed to import settings:', error);
-			vscode.window.showErrorMessage(`Failed to import settings: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			vscode.window.showErrorMessage(
+				`Failed to import settings: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 
@@ -260,9 +265,15 @@ export class SettingsPanel implements vscode.WebviewViewProvider {
 	private getHtml(webview: vscode.Webview): string {
 		// Use path.join for constructing file paths correctly
 		// VS Code handles the conversion to URIs
-		const stylesResetUri = webview.asWebviewUri(vscode.Uri.file(this.context.extensionUri.fsPath + '/media/reset.css'));
-		const stylesMainUri = webview.asWebviewUri(vscode.Uri.file(this.context.extensionUri.fsPath + '/media/vscode.css'));
-		const scriptUri = webview.asWebviewUri(vscode.Uri.file(this.context.extensionUri.fsPath + '/media/settings.js'));
+		const stylesResetUri = webview.asWebviewUri(
+			vscode.Uri.file(this.context.extensionUri.fsPath + '/media/reset.css')
+		);
+		const stylesMainUri = webview.asWebviewUri(
+			vscode.Uri.file(this.context.extensionUri.fsPath + '/media/vscode.css')
+		);
+		const scriptUri = webview.asWebviewUri(
+			vscode.Uri.file(this.context.extensionUri.fsPath + '/media/settings.js')
+		);
 
 		return `<!DOCTYPE html>
 			<html lang="en">

@@ -8,7 +8,6 @@ import { parentOriginHash } from '../../../base/browser/iframe.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/common/utils.js';
 
 suite('parentOriginHash', () => {
-
 	test('localhost 1', async () => {
 		const hash = await parentOriginHash('http://localhost:9888', '123456');
 		assert.strictEqual(hash, '0fnsiac2jaup1t266qekgr7iuj4pnm31gf8r0h1o6k2lvvmfh6hk');

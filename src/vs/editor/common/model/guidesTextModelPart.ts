@@ -11,8 +11,18 @@ import { Range } from '../core/range.js';
 import type { TextModel } from './textModel.js';
 import { TextModelPart } from './textModelPart.js';
 import { computeIndentLevel } from './utils.js';
-import { ILanguageConfigurationService, ResolvedLanguageConfiguration } from '../languages/languageConfigurationRegistry.js';
-import { BracketGuideOptions, HorizontalGuidesState, IActiveIndentGuideInfo, IGuidesTextModelPart, IndentGuide, IndentGuideHorizontalLine } from '../textModelGuides.js';
+import {
+	ILanguageConfigurationService,
+	ResolvedLanguageConfiguration,
+} from '../languages/languageConfigurationRegistry.js';
+import {
+	BracketGuideOptions,
+	HorizontalGuidesState,
+	IActiveIndentGuideInfo,
+	IGuidesTextModelPart,
+	IndentGuide,
+	IndentGuideHorizontalLine,
+} from '../textModelGuides.js';
 import { BugIndicatingError } from '../../../base/common/errors.js';
 
 export class GuidesTextModelPart extends TextModelPart implements IGuidesTextModelPart {
@@ -23,12 +33,8 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 		super();
 	}
 
-	private getLanguageConfiguration(
-		languageId: string
-	): ResolvedLanguageConfiguration {
-		return this.languageConfigurationService.getLanguageConfiguration(
-			languageId
-		);
+	private getLanguageConfiguration(languageId: string): ResolvedLanguageConfiguration {
+		return this.languageConfigurationService.getLanguageConfiguration(languageId);
 	}
 
 	private _computeIndentLevel(lineIndex: number): number {
@@ -50,22 +56,17 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 			throw new BugIndicatingError('Illegal value for lineNumber');
 		}
 
-		const foldingRules = this.getLanguageConfiguration(
-			this.textModel.getLanguageId()
-		).foldingRules;
+		const foldingRules = this.getLanguageConfiguration(this.textModel.getLanguageId()).foldingRules;
 		const offSide = Boolean(foldingRules && foldingRules.offSide);
 
-		let up_aboveContentLineIndex =
-			-2; /* -2 is a marker for not having computed it */
+		let up_aboveContentLineIndex = -2; /* -2 is a marker for not having computed it */
 		let up_aboveContentLineIndent = -1;
-		let up_belowContentLineIndex =
-			-2; /* -2 is a marker for not having computed it */
+		let up_belowContentLineIndex = -2; /* -2 is a marker for not having computed it */
 		let up_belowContentLineIndent = -1;
 		const up_resolveIndents = (lineNumber: number) => {
 			if (
 				up_aboveContentLineIndex !== -1 &&
-				(up_aboveContentLineIndex === -2 ||
-					up_aboveContentLineIndex > lineNumber - 1)
+				(up_aboveContentLineIndex === -2 || up_aboveContentLineIndex > lineNumber - 1)
 			) {
 				up_aboveContentLineIndex = -1;
 				up_aboveContentLineIndent = -1;
@@ -97,11 +98,9 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 			}
 		};
 
-		let down_aboveContentLineIndex =
-			-2; /* -2 is a marker for not having computed it */
+		let down_aboveContentLineIndex = -2; /* -2 is a marker for not having computed it */
 		let down_aboveContentLineIndent = -1;
-		let down_belowContentLineIndex =
-			-2; /* -2 is a marker for not having computed it */
+		let down_belowContentLineIndex = -2; /* -2 is a marker for not having computed it */
 		let down_belowContentLineIndent = -1;
 		const down_resolveIndents = (lineNumber: number) => {
 			if (down_aboveContentLineIndex === -2) {
@@ -121,8 +120,7 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 
 			if (
 				down_belowContentLineIndex !== -1 &&
-				(down_belowContentLineIndex === -2 ||
-					down_belowContentLineIndex < lineNumber - 1)
+				(down_belowContentLineIndex === -2 || down_belowContentLineIndex < lineNumber - 1)
 			) {
 				down_belowContentLineIndex = -1;
 				down_belowContentLineIndent = -1;
@@ -154,10 +152,7 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 			if (distance > 1 && (upLineNumber < 1 || upLineNumber < minLineNumber)) {
 				goUp = false;
 			}
-			if (
-				distance > 1 &&
-				(downLineNumber > lineCount || downLineNumber > maxLineNumber)
-			) {
+			if (distance > 1 && (downLineNumber > lineCount || downLineNumber > maxLineNumber)) {
 				goDown = false;
 			}
 			if (distance > 50000) {
@@ -175,9 +170,7 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 					// Use the line's indent
 					up_belowContentLineIndex = upLineNumber - 1;
 					up_belowContentLineIndent = currentIndent;
-					upLineIndentLevel = Math.ceil(
-						currentIndent / this.textModel.getOptions().indentSize
-					);
+					upLineIndentLevel = Math.ceil(currentIndent / this.textModel.getOptions().indentSize);
 				} else {
 					up_resolveIndents(upLineNumber);
 					upLineIndentLevel = this._getIndentLevelForWhitespaceLine(
@@ -197,9 +190,7 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 					// Use the line's indent
 					down_aboveContentLineIndex = downLineNumber - 1;
 					down_aboveContentLineIndent = currentIndent;
-					downLineIndentLevel = Math.ceil(
-						currentIndent / this.textModel.getOptions().indentSize
-					);
+					downLineIndentLevel = Math.ceil(currentIndent / this.textModel.getOptions().indentSize);
 				} else {
 					down_resolveIndents(downLineNumber);
 					downLineIndentLevel = this._getIndentLevelForWhitespaceLine(
@@ -285,35 +276,31 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 		// If requested, this could be made configurable.
 		const includeSingleLinePairs = true;
 
-		const bracketPairs =
-			this.textModel.bracketPairs.getBracketPairsInRangeWithMinIndentation(
-				new Range(
-					startLineNumber,
-					1,
-					endLineNumber,
-					this.textModel.getLineMaxColumn(endLineNumber)
-				)
-			).toArray();
+		const bracketPairs = this.textModel.bracketPairs
+			.getBracketPairsInRangeWithMinIndentation(
+				new Range(startLineNumber, 1, endLineNumber, this.textModel.getLineMaxColumn(endLineNumber))
+			)
+			.toArray();
 
 		let activeBracketPairRange: Range | undefined = undefined;
 		if (activePosition && bracketPairs.length > 0) {
 			const bracketsContainingActivePosition = (
-				startLineNumber <= activePosition.lineNumber &&
-					activePosition.lineNumber <= endLineNumber
-					// We don't need to query the brackets again if the cursor is in the viewport
-					? bracketPairs
-					: this.textModel.bracketPairs.getBracketPairsInRange(
-						Range.fromPositions(activePosition)
-					).toArray()
-			).filter((bp) => Range.strictContainsPosition(bp.range, activePosition));
+				startLineNumber <= activePosition.lineNumber && activePosition.lineNumber <= endLineNumber
+					? // We don't need to query the brackets again if the cursor is in the viewport
+						bracketPairs
+					: this.textModel.bracketPairs
+							.getBracketPairsInRange(Range.fromPositions(activePosition))
+							.toArray()
+			).filter(bp => Range.strictContainsPosition(bp.range, activePosition));
 
 			activeBracketPairRange = findLast(
 				bracketsContainingActivePosition,
-				(i) => includeSingleLinePairs || i.range.startLineNumber !== i.range.endLineNumber
+				i => includeSingleLinePairs || i.range.startLineNumber !== i.range.endLineNumber
 			)?.range;
 		}
 
-		const independentColorPoolPerBracketType = this.textModel.getOptions().bracketPairColorizationOptions.independentColorPoolPerBracketType;
+		const independentColorPoolPerBracketType =
+			this.textModel.getOptions().bracketPairColorizationOptions.independentColorPoolPerBracketType;
 		const colorProvider = new BracketPairGuidesClassNames();
 
 		for (const pair of bracketPairs) {
@@ -355,20 +342,21 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 			}
 
 			const className =
-				colorProvider.getInlineClassName(pair.nestingLevel, pair.nestingLevelOfEqualBracketType, independentColorPoolPerBracketType) +
-				(options.highlightActive && isActive
-					? ' ' + colorProvider.activeClassName
-					: '');
-
+				colorProvider.getInlineClassName(
+					pair.nestingLevel,
+					pair.nestingLevelOfEqualBracketType,
+					independentColorPoolPerBracketType
+				) + (options.highlightActive && isActive ? ' ' + colorProvider.activeClassName : '');
 
 			const start = pair.openingBracketRange.getStartPosition();
 			const end = pair.closingBracketRange.getStartPosition();
 
-			const horizontalGuides = options.horizontalGuides === HorizontalGuidesState.Enabled || (options.horizontalGuides === HorizontalGuidesState.EnabledForActive && isActive);
+			const horizontalGuides =
+				options.horizontalGuides === HorizontalGuidesState.Enabled ||
+				(options.horizontalGuides === HorizontalGuidesState.EnabledForActive && isActive);
 
 			if (pair.range.startLineNumber === pair.range.endLineNumber) {
 				if (includeSingleLinePairs && horizontalGuides) {
-
 					result[pair.range.startLineNumber - startLineNumber].push(
 						new IndentGuide(
 							-1,
@@ -376,10 +364,9 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 							className,
 							new IndentGuideHorizontalLine(false, end.column),
 							-1,
-							-1,
+							-1
 						)
 					);
-
 				}
 				continue;
 			}
@@ -388,21 +375,22 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 			const startVisibleColumn = this.getVisibleColumnFromPosition(
 				pair.openingBracketRange.getStartPosition()
 			);
-			const guideVisibleColumn = Math.min(startVisibleColumn, endVisibleColumn, pair.minVisibleColumnIndentation + 1);
+			const guideVisibleColumn = Math.min(
+				startVisibleColumn,
+				endVisibleColumn,
+				pair.minVisibleColumnIndentation + 1
+			);
 
 			let renderHorizontalEndLineAtTheBottom = false;
 
-
 			const firstNonWsIndex = strings.firstNonWhitespaceIndex(
-				this.textModel.getLineContent(
-					pair.closingBracketRange.startLineNumber
-				)
+				this.textModel.getLineContent(pair.closingBracketRange.startLineNumber)
 			);
-			const hasTextBeforeClosingBracket = firstNonWsIndex < pair.closingBracketRange.startColumn - 1;
+			const hasTextBeforeClosingBracket =
+				firstNonWsIndex < pair.closingBracketRange.startColumn - 1;
 			if (hasTextBeforeClosingBracket) {
 				renderHorizontalEndLineAtTheBottom = true;
 			}
-
 
 			const visibleGuideStartLineNumber = Math.max(start.lineNumber, startLineNumber);
 			const visibleGuideEndLineNumber = Math.min(end.lineNumber, endLineNumber);
@@ -431,7 +419,7 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 							className,
 							new IndentGuideHorizontalLine(false, start.column),
 							-1,
-							-1,
+							-1
 						)
 					);
 				}
@@ -444,7 +432,7 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 							className,
 							new IndentGuideHorizontalLine(!renderHorizontalEndLineAtTheBottom, end.column),
 							-1,
-							-1,
+							-1
 						)
 					);
 				}
@@ -468,10 +456,7 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 		);
 	}
 
-	public getLinesIndentGuides(
-		startLineNumber: number,
-		endLineNumber: number
-	): number[] {
+	public getLinesIndentGuides(startLineNumber: number, endLineNumber: number): number[] {
 		this.assertNotDisposed();
 		const lineCount = this.textModel.getLineCount();
 
@@ -483,28 +468,18 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 		}
 
 		const options = this.textModel.getOptions();
-		const foldingRules = this.getLanguageConfiguration(
-			this.textModel.getLanguageId()
-		).foldingRules;
+		const foldingRules = this.getLanguageConfiguration(this.textModel.getLanguageId()).foldingRules;
 		const offSide = Boolean(foldingRules && foldingRules.offSide);
 
-		const result: number[] = new Array<number>(
-			endLineNumber - startLineNumber + 1
-		);
+		const result: number[] = new Array<number>(endLineNumber - startLineNumber + 1);
 
-		let aboveContentLineIndex =
-			-2; /* -2 is a marker for not having computed it */
+		let aboveContentLineIndex = -2; /* -2 is a marker for not having computed it */
 		let aboveContentLineIndent = -1;
 
-		let belowContentLineIndex =
-			-2; /* -2 is a marker for not having computed it */
+		let belowContentLineIndex = -2; /* -2 is a marker for not having computed it */
 		let belowContentLineIndent = -1;
 
-		for (
-			let lineNumber = startLineNumber;
-			lineNumber <= endLineNumber;
-			lineNumber++
-		) {
+		for (let lineNumber = startLineNumber; lineNumber <= endLineNumber; lineNumber++) {
 			const resultIndex = lineNumber - startLineNumber;
 
 			const currentIndent = this._computeIndentLevel(lineNumber - 1);
@@ -590,8 +565,14 @@ export class GuidesTextModelPart extends TextModelPart implements IGuidesTextMod
 export class BracketPairGuidesClassNames {
 	public readonly activeClassName = 'indent-active';
 
-	getInlineClassName(nestingLevel: number, nestingLevelOfEqualBracketType: number, independentColorPoolPerBracketType: boolean): string {
-		return this.getInlineClassNameOfLevel(independentColorPoolPerBracketType ? nestingLevelOfEqualBracketType : nestingLevel);
+	getInlineClassName(
+		nestingLevel: number,
+		nestingLevelOfEqualBracketType: number,
+		independentColorPoolPerBracketType: boolean
+	): string {
+		return this.getInlineClassNameOfLevel(
+			independentColorPoolPerBracketType ? nestingLevelOfEqualBracketType : nestingLevel
+		);
 	}
 
 	getInlineClassNameOfLevel(level: number): string {

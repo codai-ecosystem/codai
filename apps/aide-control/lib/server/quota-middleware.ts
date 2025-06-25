@@ -45,7 +45,7 @@ export async function checkQuota(
 		if (!userDoc.exists) {
 			return {
 				allowed: false,
-				message: 'User not found'
+				message: 'User not found',
 			};
 		}
 
@@ -62,7 +62,7 @@ export async function checkQuota(
 				computeMinutes: 60,
 				storageMB: 100,
 				deployments: 3,
-				concurrentSessions: 1
+				concurrentSessions: 1,
 			};
 
 			return await checkUsageAgainstLimits(db, check, defaultLimits);
@@ -74,16 +74,15 @@ export async function checkQuota(
 			computeMinutes: planData.limits?.computeMinutes || 60,
 			storageMB: planData.limits?.storageMB || 100,
 			deployments: planData.limits?.deployments || 3,
-			concurrentSessions: planData.limits?.concurrentSessions || 1
+			concurrentSessions: planData.limits?.concurrentSessions || 1,
 		};
 
 		return await checkUsageAgainstLimits(db, check, limits);
-
 	} catch (error) {
 		console.error('Error checking quota:', error);
 		return {
 			allowed: false,
-			message: 'Error checking quota'
+			message: 'Error checking quota',
 		};
 	}
 }
@@ -104,14 +103,16 @@ async function checkUsageAgainstLimits(
 		.doc('current')
 		.get();
 
-	const currentUsage: UsageStats = usageDoc.exists ? usageDoc.data() as UsageStats : {
-		apiCalls: 0,
-		computeMinutes: 0,
-		storageMB: 0,
-		deployments: 0,
-		lastReset: new Date().toISOString(),
-		updatedAt: new Date().toISOString()
-	};
+	const currentUsage: UsageStats = usageDoc.exists
+		? (usageDoc.data() as UsageStats)
+		: {
+				apiCalls: 0,
+				computeMinutes: 0,
+				storageMB: 0,
+				deployments: 0,
+				lastReset: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			};
 
 	// Check against limits based on service type
 	let currentValue = 0;
@@ -136,15 +137,15 @@ async function checkUsageAgainstLimits(
 			break;
 	}
 
-	const wouldExceed = (currentValue + check.amount) > limitValue;
+	const wouldExceed = currentValue + check.amount > limitValue;
 
 	return {
 		allowed: !wouldExceed,
 		usage: currentUsage,
 		limits,
-		message: wouldExceed ?
-			`Quota exceeded. Current: ${currentValue}, Requested: ${check.amount}, Limit: ${limitValue}` :
-			undefined
+		message: wouldExceed
+			? `Quota exceeded. Current: ${currentValue}, Requested: ${check.amount}, Limit: ${limitValue}`
+			: undefined,
 	};
 }
 
@@ -160,24 +161,22 @@ export async function updateUsage(
 		const admin = getAdminApp();
 		const db = (admin as any).firestore();
 
-		const usageRef = db
-			.collection('users')
-			.doc(userId)
-			.collection('usage')
-			.doc('current');
+		const usageRef = db.collection('users').doc(userId).collection('usage').doc('current');
 
 		const usageDoc = await usageRef.get();
-		const currentUsage = usageDoc.exists ? usageDoc.data() : {
-			apiCalls: 0,
-			computeMinutes: 0,
-			storageMB: 0,
-			deployments: 0,
-			lastReset: new Date().toISOString()
-		};
+		const currentUsage = usageDoc.exists
+			? usageDoc.data()
+			: {
+					apiCalls: 0,
+					computeMinutes: 0,
+					storageMB: 0,
+					deployments: 0,
+					lastReset: new Date().toISOString(),
+				};
 
 		// Update the appropriate field
 		const updateData: any = {
-			updatedAt: new Date().toISOString()
+			updatedAt: new Date().toISOString(),
 		};
 
 		switch (serviceType) {
@@ -198,17 +197,12 @@ export async function updateUsage(
 		await usageRef.set(updateData, { merge: true });
 
 		// Also log to usage history
-		await db
-			.collection('users')
-			.doc(userId)
-			.collection('usage_history')
-			.add({
-				serviceType,
-				amount,
-				timestamp: new Date().toISOString(),
-				operation: 'increment'
-			});
-
+		await db.collection('users').doc(userId).collection('usage_history').add({
+			serviceType,
+			amount,
+			timestamp: new Date().toISOString(),
+			operation: 'increment',
+		});
 	} catch (error) {
 		console.error('Error updating usage:', error);
 		throw error;
@@ -218,29 +212,21 @@ export async function updateUsage(
 /**
  * Middleware function to wrap API routes with quota checking
  */
-export function withQuotaCheck(
-	serviceType: QuotaCheck['serviceType'],
-	amount: number = 1
-) {
-	return function (
-		handler: (req: NextRequest, context: any) => Promise<NextResponse>
-	) {
+export function withQuotaCheck(serviceType: QuotaCheck['serviceType'], amount: number = 1) {
+	return function (handler: (req: NextRequest, context: any) => Promise<NextResponse>) {
 		return async (req: NextRequest, context: any) => {
 			// Extract user ID from context (should be set by auth middleware)
 			const userId = context?.uid;
 
 			if (!userId) {
-				return NextResponse.json(
-					{ error: 'Authentication required' },
-					{ status: 401 }
-				);
+				return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 			}
 
 			// Check quota
 			const quotaCheck = await checkQuota({
 				userId,
 				serviceType,
-				amount
+				amount,
 			});
 
 			if (!quotaCheck.allowed) {
@@ -249,7 +235,7 @@ export function withQuotaCheck(
 						error: 'Quota exceeded',
 						message: quotaCheck.message,
 						usage: quotaCheck.usage,
-						limits: quotaCheck.limits
+						limits: quotaCheck.limits,
 					},
 					{ status: 429 }
 				);
@@ -298,7 +284,7 @@ export async function getUserQuotaStatus(userId: string): Promise<{
 		computeMinutes: planData.limits?.computeMinutes || 60,
 		storageMB: planData.limits?.storageMB || 100,
 		deployments: planData.limits?.deployments || 3,
-		concurrentSessions: planData.limits?.concurrentSessions || 1
+		concurrentSessions: planData.limits?.concurrentSessions || 1,
 	};
 
 	// Get current usage
@@ -309,18 +295,20 @@ export async function getUserQuotaStatus(userId: string): Promise<{
 		.doc('current')
 		.get();
 
-	const usage: UsageStats = usageDoc.exists ? usageDoc.data() as UsageStats : {
-		apiCalls: 0,
-		computeMinutes: 0,
-		storageMB: 0,
-		deployments: 0,
-		lastReset: new Date().toISOString(),
-		updatedAt: new Date().toISOString()
-	};
+	const usage: UsageStats = usageDoc.exists
+		? (usageDoc.data() as UsageStats)
+		: {
+				apiCalls: 0,
+				computeMinutes: 0,
+				storageMB: 0,
+				deployments: 0,
+				lastReset: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			};
 
 	return {
 		usage,
 		limits,
-		planId
+		planId,
 	};
 }

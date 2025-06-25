@@ -8,13 +8,13 @@ module.exports = {
 	output: {
 		path: path.resolve(__dirname, 'dist'),
 		filename: 'extension.js',
-		libraryTarget: 'commonjs2'
+		libraryTarget: 'commonjs2',
 	},
 	externals: {
-		vscode: 'commonjs vscode' // The vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed
+		vscode: 'commonjs vscode', // The vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed
 	},
 	resolve: {
-		extensions: ['.ts', '.js']
+		extensions: ['.ts', '.js'],
 	},
 	module: {
 		rules: [
@@ -23,14 +23,14 @@ module.exports = {
 				exclude: /node_modules/,
 				use: [
 					{
-						loader: 'ts-loader'
-					}
-				]
-			}
-		]
+						loader: 'ts-loader',
+					},
+				],
+			},
+		],
 	},
 	devtool: 'nosources-source-map',
 	infrastructureLogging: {
-		level: "log", // Enables logging required for problem matchers
+		level: 'log', // Enables logging required for problem matchers
 	},
 };

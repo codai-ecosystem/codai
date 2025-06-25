@@ -11,11 +11,16 @@ import { IFileService } from '../../../files/common/files.js';
 import { ILogService } from '../../../log/common/log.js';
 import { IUserDataProfilesService } from '../../../userDataProfile/common/userDataProfile.js';
 import { getTasksContentFromSyncContent, TasksSynchroniser } from '../../common/tasksSync.js';
-import { Change, IUserDataSyncStoreService, MergeState, SyncResource, SyncStatus } from '../../common/userDataSync.js';
+import {
+	Change,
+	IUserDataSyncStoreService,
+	MergeState,
+	SyncResource,
+	SyncStatus,
+} from '../../common/userDataSync.js';
 import { UserDataSyncClient, UserDataSyncTestServer } from './userDataSyncClient.js';
 
 suite('TasksSync', () => {
-
 	const server = new UserDataSyncTestServer();
 	let client: UserDataSyncClient;
 
@@ -36,7 +41,8 @@ suite('TasksSync', () => {
 	test('when tasks file does not exist', async () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 
 			assert.deepStrictEqual(await testObject.getLastSyncUserData(), null);
 			let manifest = await client.getResourceManifest();
@@ -44,9 +50,13 @@ suite('TasksSync', () => {
 			await testObject.sync(manifest);
 
 			assert.deepStrictEqual(server.requests, [
-				{ type: 'GET', url: `${server.url}/v1/resource/${testObject.resource}/latest`, headers: {} },
+				{
+					type: 'GET',
+					url: `${server.url}/v1/resource/${testObject.resource}/latest`,
+					headers: {},
+				},
 			]);
-			assert.ok(!await fileService.exists(tasksResource));
+			assert.ok(!(await fileService.exists(tasksResource)));
 
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
@@ -71,27 +81,45 @@ suite('TasksSync', () => {
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
-			const tasksResource2 = client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
-			await client2.instantiationService.get(IFileService).writeFile(tasksResource2, VSBuffer.fromString(content));
+			const tasksResource2 =
+				client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			await client2.instantiationService
+				.get(IFileService)
+				.writeFile(tasksResource2, VSBuffer.fromString(content));
 			await client2.sync();
 
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 
 			await testObject.sync(await client.getResourceManifest());
 
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 			assert.strictEqual((await fileService.readFile(tasksResource)).value.toString(), content);
 		});
 	});
@@ -99,14 +127,17 @@ suite('TasksSync', () => {
 	test('when tasks file exists locally and remote has no tasks', async () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
 			fileService.writeFile(tasksResource, VSBuffer.fromString(content));
 
@@ -115,8 +146,20 @@ suite('TasksSync', () => {
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 		});
 	});
 
@@ -125,19 +168,25 @@ suite('TasksSync', () => {
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
-			const tasksResource2 = client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
-			await client2.instantiationService.get(IFileService).writeFile(tasksResource2, VSBuffer.fromString(content));
+			const tasksResource2 =
+				client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			await client2.instantiationService
+				.get(IFileService)
+				.writeFile(tasksResource2, VSBuffer.fromString(content));
 			await client2.sync();
 
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			await fileService.writeFile(tasksResource, VSBuffer.fromString(content));
 
 			await testObject.sync(await client.getResourceManifest());
@@ -145,8 +194,20 @@ suite('TasksSync', () => {
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 			assert.strictEqual((await fileService.readFile(tasksResource)).value.toString(), content);
 		});
 	});
@@ -154,21 +215,29 @@ suite('TasksSync', () => {
 	test('when tasks file locally has moved forward', async () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
-			fileService.writeFile(tasksResource, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': []
-			})));
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			fileService.writeFile(
+				tasksResource,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [],
+					})
+				)
+			);
 
 			await testObject.sync(await client.getResourceManifest());
 
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
 			fileService.writeFile(tasksResource, VSBuffer.fromString(content));
 
@@ -177,8 +246,20 @@ suite('TasksSync', () => {
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 		});
 	});
 
@@ -186,26 +267,35 @@ suite('TasksSync', () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
-			const tasksResource2 = client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource2 =
+				client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			const fileService2 = client2.instantiationService.get(IFileService);
-			await fileService2.writeFile(tasksResource2, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': []
-			})));
+			await fileService2.writeFile(
+				tasksResource2,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [],
+					})
+				)
+			);
 
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 
 			await client2.sync();
 			await testObject.sync(await client.getResourceManifest());
 
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
 			fileService2.writeFile(tasksResource2, VSBuffer.fromString(content));
 
@@ -215,8 +305,20 @@ suite('TasksSync', () => {
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 			assert.strictEqual((await fileService.readFile(tasksResource)).value.toString(), content);
 		});
 	});
@@ -225,26 +327,35 @@ suite('TasksSync', () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
-			const tasksResource2 = client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource2 =
+				client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			const fileService2 = client2.instantiationService.get(IFileService);
-			await fileService2.writeFile(tasksResource2, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': []
-			})));
+			await fileService2.writeFile(
+				tasksResource2,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [],
+					})
+				)
+			);
 
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 
 			await client2.sync();
 			await testObject.sync(await client.getResourceManifest());
 
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
 			fileService2.writeFile(tasksResource2, VSBuffer.fromString(content));
 			await client2.sync();
@@ -255,8 +366,20 @@ suite('TasksSync', () => {
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 			assert.strictEqual((await fileService.readFile(tasksResource)).value.toString(), content);
 		});
 	});
@@ -265,40 +388,58 @@ suite('TasksSync', () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
-			const tasksResource2 = client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource2 =
+				client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			const fileService2 = client2.instantiationService.get(IFileService);
-			await fileService2.writeFile(tasksResource2, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': []
-			})));
+			await fileService2.writeFile(
+				tasksResource2,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [],
+					})
+				)
+			);
 
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 
 			await client2.sync();
 			await testObject.sync(await client.getResourceManifest());
 
-			fileService2.writeFile(tasksResource2, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-				}]
-			})));
+			fileService2.writeFile(
+				tasksResource2,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [
+							{
+								type: 'npm',
+								script: 'watch',
+							},
+						],
+					})
+				)
+			);
 			await client2.sync();
 
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
 			fileService.writeFile(tasksResource, VSBuffer.fromString(content));
 			await testObject.sync(await client.getResourceManifest());
 
-			const previewContent = (await fileService.readFile(testObject.conflicts.conflicts[0].previewResource)).value.toString();
+			const previewContent = (
+				await fileService.readFile(testObject.conflicts.conflicts[0].previewResource)
+			).value.toString();
 			assert.deepStrictEqual(testObject.status, SyncStatus.HasConflicts);
 			assert.deepStrictEqual(testObject.conflicts.conflicts.length, 1);
 			assert.deepStrictEqual(testObject.conflicts.conflicts[0].mergeState, MergeState.Conflict);
@@ -310,9 +451,24 @@ suite('TasksSync', () => {
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), previewContent);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), previewContent);
-			assert.strictEqual((await fileService.readFile(tasksResource)).value.toString(), previewContent);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				previewContent
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				previewContent
+			);
+			assert.strictEqual(
+				(await fileService.readFile(tasksResource)).value.toString(),
+				previewContent
+			);
 		});
 	});
 
@@ -320,53 +476,88 @@ suite('TasksSync', () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
-			const tasksResource2 = client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource2 =
+				client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			const fileService2 = client2.instantiationService.get(IFileService);
-			await fileService2.writeFile(tasksResource2, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': []
-			})));
+			await fileService2.writeFile(
+				tasksResource2,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [],
+					})
+				)
+			);
 
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 
 			await client2.sync();
 			await testObject.sync(await client.getResourceManifest());
 
-			fileService2.writeFile(tasksResource2, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-				}]
-			})));
+			fileService2.writeFile(
+				tasksResource2,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [
+							{
+								type: 'npm',
+								script: 'watch',
+							},
+						],
+					})
+				)
+			);
 			await client2.sync();
 
-			fileService.writeFile(tasksResource, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
-			})));
+			fileService.writeFile(
+				tasksResource,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [
+							{
+								type: 'npm',
+								script: 'watch',
+								label: 'Watch',
+							},
+						],
+					})
+				)
+			);
 			await testObject.sync(await client.getResourceManifest());
 
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch 2'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch 2',
+					},
+				],
 			});
 			await testObject.accept(testObject.conflicts.conflicts[0].previewResource, content);
 			await testObject.apply(false);
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 			assert.strictEqual((await fileService.readFile(tasksResource)).value.toString(), content);
 		});
 	});
@@ -375,37 +566,53 @@ suite('TasksSync', () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
-			const tasksResource2 = client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource2 =
+				client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			const fileService2 = client2.instantiationService.get(IFileService);
-			await fileService2.writeFile(tasksResource2, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': []
-			})));
+			await fileService2.writeFile(
+				tasksResource2,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [],
+					})
+				)
+			);
 
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 
 			await client2.sync();
 			await testObject.sync(await client.getResourceManifest());
 
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+					},
+				],
 			});
 			fileService2.writeFile(tasksResource2, VSBuffer.fromString(content));
 			await client2.sync();
 
-			fileService.writeFile(tasksResource, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
-			})));
+			fileService.writeFile(
+				tasksResource,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [
+							{
+								type: 'npm',
+								script: 'watch',
+								label: 'Watch',
+							},
+						],
+					})
+				)
+			);
 			await testObject.sync(await client.getResourceManifest());
 			assert.deepStrictEqual(testObject.status, SyncStatus.HasConflicts);
 
@@ -414,8 +621,20 @@ suite('TasksSync', () => {
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 			assert.strictEqual((await fileService.readFile(tasksResource)).value.toString(), content);
 		});
 	});
@@ -424,35 +643,51 @@ suite('TasksSync', () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
-			const tasksResource2 = client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource2 =
+				client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			const fileService2 = client2.instantiationService.get(IFileService);
-			await fileService2.writeFile(tasksResource2, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': []
-			})));
+			await fileService2.writeFile(
+				tasksResource2,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [],
+					})
+				)
+			);
 
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 
 			await client2.sync();
 			await testObject.sync(await client.getResourceManifest());
 
-			fileService2.writeFile(tasksResource2, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-				}]
-			})));
+			fileService2.writeFile(
+				tasksResource2,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [
+							{
+								type: 'npm',
+								script: 'watch',
+							},
+						],
+					})
+				)
+			);
 			await client2.sync();
 
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
 			fileService.writeFile(tasksResource, VSBuffer.fromString(content));
 			await testObject.sync(await client.getResourceManifest());
@@ -463,8 +698,20 @@ suite('TasksSync', () => {
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 			assert.strictEqual((await fileService.readFile(tasksResource)).value.toString(), content);
 		});
 	});
@@ -472,18 +719,25 @@ suite('TasksSync', () => {
 	test('when tasks file was removed in one client', async () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
-			await fileService.writeFile(tasksResource, VSBuffer.fromString(JSON.stringify({
-				'version': '2.0.0',
-				'tasks': []
-			})));
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			await fileService.writeFile(
+				tasksResource,
+				VSBuffer.fromString(
+					JSON.stringify({
+						version: '2.0.0',
+						tasks: [],
+					})
+				)
+			);
 			await testObject.sync(await client.getResourceManifest());
 
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
 			await client2.sync();
 
-			const tasksResource2 = client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource2 =
+				client2.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			const fileService2 = client2.instantiationService.get(IFileService);
 			fileService2.del(tasksResource2);
 			await client2.sync();
@@ -493,8 +747,20 @@ suite('TasksSync', () => {
 			assert.deepStrictEqual(testObject.status, SyncStatus.Idle);
 			const lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), null);
-			assert.strictEqual(getTasksContentFromSyncContent(remoteUserData.syncData!.content, client.instantiationService.get(ILogService)), null);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				null
+			);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					remoteUserData.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				null
+			);
 			assert.strictEqual(await fileService.exists(tasksResource), false);
 		});
 	});
@@ -502,16 +768,19 @@ suite('TasksSync', () => {
 	test('when tasks file is created after first sync', async () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			await testObject.sync(await client.getResourceManifest());
 
 			const content = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
 			await fileService.createFile(tasksResource, VSBuffer.fromString(content));
 
@@ -521,21 +790,32 @@ suite('TasksSync', () => {
 			await testObject.sync(manifest);
 
 			assert.deepStrictEqual(server.requests, [
-				{ type: 'POST', url: `${server.url}/v1/resource/${testObject.resource}`, headers: { 'If-Match': lastSyncUserData?.ref } },
+				{
+					type: 'POST',
+					url: `${server.url}/v1/resource/${testObject.resource}`,
+					headers: { 'If-Match': lastSyncUserData?.ref },
+				},
 			]);
 
 			lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
 			assert.deepStrictEqual(lastSyncUserData!.ref, remoteUserData.ref);
 			assert.deepStrictEqual(lastSyncUserData!.syncData, remoteUserData.syncData);
-			assert.strictEqual(getTasksContentFromSyncContent(lastSyncUserData!.syncData!.content, client.instantiationService.get(ILogService)), content);
+			assert.strictEqual(
+				getTasksContentFromSyncContent(
+					lastSyncUserData!.syncData!.content,
+					client.instantiationService.get(ILogService)
+				),
+				content
+			);
 		});
 	});
 
 	test('apply remote when tasks file does not exist', async () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const fileService = client.instantiationService.get(IFileService);
-			const tasksResource = client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
+			const tasksResource =
+				client.instantiationService.get(IUserDataProfilesService).defaultProfile.tasksResource;
 			if (await fileService.exists(tasksResource)) {
 				await fileService.del(tasksResource);
 			}
@@ -554,24 +834,33 @@ suite('TasksSync', () => {
 		await runWithFakedTimers<void>({}, async () => {
 			const client2 = disposableStore.add(new UserDataSyncClient(server));
 			await client2.setUp(true);
-			const profile = await client2.instantiationService.get(IUserDataProfilesService).createNamedProfile('profile1');
+			const profile = await client2.instantiationService
+				.get(IUserDataProfilesService)
+				.createNamedProfile('profile1');
 			const expected = JSON.stringify({
-				'version': '2.0.0',
-				'tasks': [{
-					'type': 'npm',
-					'script': 'watch',
-					'label': 'Watch'
-				}]
+				version: '2.0.0',
+				tasks: [
+					{
+						type: 'npm',
+						script: 'watch',
+						label: 'Watch',
+					},
+				],
 			});
-			await client2.instantiationService.get(IFileService).createFile(profile.tasksResource, VSBuffer.fromString(expected));
+			await client2.instantiationService
+				.get(IFileService)
+				.createFile(profile.tasksResource, VSBuffer.fromString(expected));
 			await client2.sync();
 
 			await client.sync();
 
-			const syncedProfile = client.instantiationService.get(IUserDataProfilesService).profiles.find(p => p.id === profile.id)!;
-			const actual = (await client.instantiationService.get(IFileService).readFile(syncedProfile.tasksResource)).value.toString();
+			const syncedProfile = client.instantiationService
+				.get(IUserDataProfilesService)
+				.profiles.find(p => p.id === profile.id)!;
+			const actual = (
+				await client.instantiationService.get(IFileService).readFile(syncedProfile.tasksResource)
+			).value.toString();
 			assert.strictEqual(actual, expected);
 		});
 	});
-
 });

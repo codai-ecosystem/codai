@@ -20,25 +20,19 @@ suite('TerminalRecorder', () => {
 
 	test('should record dimensions', async () => {
 		const recorder = new TerminalRecorder(1, 2);
-		await eventsEqual(recorder, [
-			{ cols: 1, rows: 2, data: '' }
-		]);
+		await eventsEqual(recorder, [{ cols: 1, rows: 2, data: '' }]);
 		recorder.handleData('a');
 		recorder.handleResize(3, 4);
 		await eventsEqual(recorder, [
 			{ cols: 1, rows: 2, data: 'a' },
-			{ cols: 3, rows: 4, data: '' }
+			{ cols: 3, rows: 4, data: '' },
 		]);
 	});
 	test('should ignore resize events without data', async () => {
 		const recorder = new TerminalRecorder(1, 2);
-		await eventsEqual(recorder, [
-			{ cols: 1, rows: 2, data: '' }
-		]);
+		await eventsEqual(recorder, [{ cols: 1, rows: 2, data: '' }]);
 		recorder.handleResize(3, 4);
-		await eventsEqual(recorder, [
-			{ cols: 3, rows: 4, data: '' }
-		]);
+		await eventsEqual(recorder, [{ cols: 3, rows: 4, data: '' }]);
 	});
 	test('should record data and combine it into the previous resize event', async () => {
 		const recorder = new TerminalRecorder(1, 2);
@@ -49,7 +43,7 @@ suite('TerminalRecorder', () => {
 		recorder.handleData('d');
 		await eventsEqual(recorder, [
 			{ cols: 1, rows: 2, data: 'ab' },
-			{ cols: 3, rows: 4, data: 'cd' }
+			{ cols: 3, rows: 4, data: 'cd' },
 		]);
 	});
 });

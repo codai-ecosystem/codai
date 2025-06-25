@@ -25,8 +25,11 @@ export const NOTEBOOK_CELL_OUTPUT_MIME_TYPE_LIST_FOR_CHAT_CONST = [
 	'image/svg',
 ];
 
-export function createNotebookOutputVariableEntry(outputViewModel: ICellOutputViewModel, mimeType: string, notebookEditor: INotebookEditor): INotebookOutputVariableEntry | undefined {
-
+export function createNotebookOutputVariableEntry(
+	outputViewModel: ICellOutputViewModel,
+	mimeType: string,
+	notebookEditor: INotebookEditor
+): INotebookOutputVariableEntry | undefined {
 	// get the cell index
 	const cellFromViewModelHandle = outputViewModel.cellViewModel.handle;
 	const notebookModel = notebookEditor.textModel;
@@ -56,11 +59,18 @@ export function createNotebookOutputVariableEntry(outputViewModel: ICellOutputVi
 	const l: INotebookOutputVariableEntry = {
 		value: outputCellUri,
 		id: outputCellUri.toString(),
-		name: localize('notebookOutputCellLabel', "{0} • Cell {1} • Output {2}", fileName, `${cellIndex + 1}`, `${outputIndex + 1}`),
-		icon: mimeType === 'application/vnd.code.notebook.error' ? ThemeIcon.fromId('error') : undefined,
+		name: localize(
+			'notebookOutputCellLabel',
+			'{0} • Cell {1} • Output {2}',
+			fileName,
+			`${cellIndex + 1}`,
+			`${outputIndex + 1}`
+		),
+		icon:
+			mimeType === 'application/vnd.code.notebook.error' ? ThemeIcon.fromId('error') : undefined,
 		kind: 'notebookOutput',
 		outputIndex,
-		mimeType
+		mimeType,
 	};
 
 	return l;

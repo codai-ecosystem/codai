@@ -8,8 +8,7 @@ import { Code } from './code';
 import { PlaywrightDriver } from './playwrightDriver';
 
 export class Profiler {
-	constructor(private readonly code: Code) {
-	}
+	constructor(private readonly code: Code) {}
 
 	async checkObjectLeaks(classNames: string | string[], fn: () => Promise<void>): Promise<void> {
 		await this.code.driver.startCDP();
@@ -109,8 +108,6 @@ export function generateUuid(): string {
 	return result;
 }
 
-
-
 /*---------------------------------------------------------------------------------------------
  *  The MIT License (MIT)
  *  Copyright (c) 2023-present, Simon Siefke
@@ -118,7 +115,10 @@ export function generateUuid(): string {
  *  This code is derived from https://github.com/SimonSiefke/vscode-memory-leak-finder
  *--------------------------------------------------------------------------------------------*/
 
-const getInstances = async (driver: PlaywrightDriver, classNames: string[]): Promise<{ [key: string]: number }> => {
+const getInstances = async (
+	driver: PlaywrightDriver,
+	classNames: string[]
+): Promise<{ [key: string]: number }> => {
 	await driver.collectGarbage();
 	const objectGroup = `og:${generateUuid()}`;
 	const prototypeDescriptor = await driver.evaluate({

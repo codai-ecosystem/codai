@@ -40,10 +40,10 @@ exports.initialize = function (loaderConfig) {
 exports.createReport = function (isSingle, coveragePath, formats) {
 	const mapStore = iLibSourceMaps.createSourceMapStore();
 	const coverageMap = iLibCoverage.createCoverageMap(global.__coverage__);
-	return mapStore.transformCoverage(coverageMap).then((transformed) => {
+	return mapStore.transformCoverage(coverageMap).then(transformed => {
 		// Paths come out all broken
 		const newData = Object.create(null);
-		Object.keys(transformed.data).forEach((file) => {
+		Object.keys(transformed.data).forEach(file => {
 			const entry = transformed.data[file];
 			const fixedPath = fixPath(entry.path);
 			entry.data.path = fixedPath;
@@ -53,7 +53,7 @@ exports.createReport = function (isSingle, coveragePath, formats) {
 
 		const context = iLibReport.createContext({
 			dir: coveragePath || path.join(REPO_PATH, `.build/coverage${isSingle ? '-single' : ''}`),
-			coverageMap: transformed
+			coverageMap: transformed,
 		});
 		const tree = context.getTree('flat');
 

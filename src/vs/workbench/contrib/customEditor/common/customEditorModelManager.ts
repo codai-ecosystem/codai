@@ -12,17 +12,18 @@ import { ICustomEditorModel, ICustomEditorModelManager } from './customEditor.js
 export class CustomEditorModelManager implements ICustomEditorModelManager {
 	private readonly _uriIdentityService: IUriIdentityService;
 
-	constructor(
-		uriIdentityService: IUriIdentityService,
-	) {
+	constructor(uriIdentityService: IUriIdentityService) {
 		this._uriIdentityService = uriIdentityService;
 	}
 
-	private readonly _references = new Map<string, {
-		readonly viewType: string;
-		readonly model: Promise<ICustomEditorModel>;
-		counter: number;
-	}>();
+	private readonly _references = new Map<
+		string,
+		{
+			readonly viewType: string;
+			readonly model: Promise<ICustomEditorModel>;
+			counter: number;
+		}
+	>();
 
 	public async getAllModels(resource: URI): Promise<ICustomEditorModel[]> {
 		const keyStart = `${resource.toString()}@@@`;
@@ -40,7 +41,10 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 		return entry?.model;
 	}
 
-	public tryRetain(resource: URI, viewType: string): Promise<IReference<ICustomEditorModel>> | undefined {
+	public tryRetain(
+		resource: URI,
+		viewType: string
+	): Promise<IReference<ICustomEditorModel>> | undefined {
 		const key = this.key(resource, viewType);
 
 		const entry = this._references.get(key);
@@ -63,7 +67,11 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 		});
 	}
 
-	public add(resource: URI, viewType: string, model: Promise<ICustomEditorModel>): Promise<IReference<ICustomEditorModel>> {
+	public add(
+		resource: URI,
+		viewType: string,
+		model: Promise<ICustomEditorModel>
+	): Promise<IReference<ICustomEditorModel>> {
 		const key = this.key(resource, viewType);
 		const existing = this._references.get(key);
 		if (existing) {

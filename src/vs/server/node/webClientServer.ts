@@ -14,7 +14,13 @@ import { isLinux } from '../../base/common/platform.js';
 import { ILogService, LogLevel } from '../../platform/log/common/log.js';
 import { IServerEnvironmentService } from './serverEnvironmentService.js';
 import { extname, dirname, join, normalize, posix, resolve } from '../../base/common/path.js';
-import { FileAccess, connectionTokenCookieName, connectionTokenQueryName, Schemas, builtinExtensionsPath } from '../../base/common/network.js';
+import {
+	FileAccess,
+	connectionTokenCookieName,
+	connectionTokenQueryName,
+	Schemas,
+	builtinExtensionsPath,
+} from '../../base/common/network.js';
 import { generateUuid } from '../../base/common/uuid.js';
 import { IProductService } from '../../platform/product/common/productService.js';
 import { ServerConnectionToken, ServerConnectionTokenType } from './serverConnectionToken.js';
@@ -40,23 +46,36 @@ const textMimeType: { [ext: string]: string | undefined } = {
 /**
  * Return an error to the client.
  */
-export async function serveError(req: http.IncomingMessage, res: http.ServerResponse, errorCode: number, errorMessage: string): Promise<void> {
+export async function serveError(
+	req: http.IncomingMessage,
+	res: http.ServerResponse,
+	errorCode: number,
+	errorMessage: string
+): Promise<void> {
 	res.writeHead(errorCode, { 'Content-Type': 'text/plain' });
 	res.end(errorMessage);
 }
 
 export const enum CacheControl {
-	NO_CACHING, ETAG, NO_EXPIRY
+	NO_CACHING,
+	ETAG,
+	NO_EXPIRY,
 }
 
 /**
  * Serve a file at a given path or 404 if the file is missing.
  */
-export async function serveFile(filePath: string, cacheControl: CacheControl, logService: ILogService, req: http.IncomingMessage, res: http.ServerResponse, responseHeaders: Record<string, string>): Promise<void> {
+export async function serveFile(
+	filePath: string,
+	cacheControl: CacheControl,
+	logService: ILogService,
+	req: http.IncomingMessage,
+	res: http.ServerResponse,
+	responseHeaders: Record<string, string>
+): Promise<void> {
 	try {
 		const stat = await promises.stat(filePath); // throws an error if file doesn't exist
 		if (cacheControl === CacheControl.ETAG) {
-
 			// Check if file modified since
 			const etag = `W/"${[stat.ino, stat.size, stat.mtime.getTime()].join('-')}"`; // weak validator (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag)
 			if (req.headers['if-none-match'] === etag) {
@@ -71,7 +90,8 @@ export async function serveFile(filePath: string, cacheControl: CacheControl, lo
 			responseHeaders['Cache-Control'] = 'no-store';
 		}
 
-		responseHeaders['Content-Type'] = textMimeType[extname(filePath)] || getMediaMime(filePath) || 'text/plain';
+		responseHeaders['Content-Type'] =
+			textMimeType[extname(filePath)] || getMediaMime(filePath) || 'text/plain';
 
 		res.writeHead(200, responseHeaders);
 
@@ -97,7 +117,6 @@ const CALLBACK_PATH = `/callback`;
 const WEB_EXTENSION_PATH = `/web-extension-resource`;
 
 export class WebClientServer {
-
 	private readonly _webExtensionResourceUrlTemplate: URI | undefined;
 
 	constructor(
@@ -110,7 +129,10 @@ export class WebClientServer {
 		@IProductService private readonly _productService: IProductService,
 		@ICSSDevelopmentService private readonly _cssDevService: ICSSDevelopmentService
 	) {
-		this._webExtensionResourceUrlTemplate = this._productService.extensionsGallery?.resourceUrlTemplate ? URI.parse(this._productService.extensionsGallery.resourceUrlTemplate) : undefined;
+		this._webExtensionResourceUrlTemplate = this._productService.extensionsGallery
+			?.resourceUrlTemplate
+			? URI.parse(this._productService.extensionsGallery.resourceUrlTemplate)
+			: undefined;
 	}
 
 	/**
@@ -120,9 +142,17 @@ export class WebClientServer {
 	 * @param parsedUrl The URL to handle, including base and product path
 	 * @param pathname The pathname of the URL, without base and product path
 	 */
-	async handle(req: http.IncomingMessage, res: http.ServerResponse, parsedUrl: url.UrlWithParsedQuery, pathname: string): Promise<void> {
+	async handle(
+		req: http.IncomingMessage,
+		res: http.ServerResponse,
+		parsedUrl: url.UrlWithParsedQuery,
+		pathname: string
+	): Promise<void> {
 		try {
-			if (pathname.startsWith(STATIC_PATH) && pathname.charCodeAt(STATIC_PATH.length) === CharCode.Slash) {
+			if (
+				pathname.startsWith(STATIC_PATH) &&
+				pathname.charCodeAt(STATIC_PATH.length) === CharCode.Slash
+			) {
 				return this._handleStatic(req, res, pathname.substring(STATIC_PATH.length));
 			}
 			if (pathname === '/') {
@@ -132,9 +162,16 @@ export class WebClientServer {
 				// callback support
 				return this._handleCallback(res);
 			}
-			if (pathname.startsWith(WEB_EXTENSION_PATH) && pathname.charCodeAt(WEB_EXTENSION_PATH.length) === CharCode.Slash) {
+			if (
+				pathname.startsWith(WEB_EXTENSION_PATH) &&
+				pathname.charCodeAt(WEB_EXTENSION_PATH.length) === CharCode.Slash
+			) {
 				// extension resource support
-				return this._handleWebExtensionResource(req, res, pathname.substring(WEB_EXTENSION_PATH.length));
+				return this._handleWebExtensionResource(
+					req,
+					res,
+					pathname.substring(WEB_EXTENSION_PATH.length)
+				);
 			}
 
 			return serveError(req, res, 404, 'Not found.');
@@ -149,7 +186,11 @@ export class WebClientServer {
 	 * Handle HTTP requests for /static/*
 	 * @param resourcePath The path after /static/
 	 */
-	private async _handleStatic(req: http.IncomingMessage, res: http.ServerResponse, resourcePath: string): Promise<void> {
+	private async _handleStatic(
+		req: http.IncomingMessage,
+		res: http.ServerResponse,
+		resourcePath: string
+	): Promise<void> {
 		const headers: Record<string, string> = Object.create(null);
 
 		// Strip the this._staticRoute from the path
@@ -160,7 +201,14 @@ export class WebClientServer {
 			return serveError(req, res, 400, `Bad request.`);
 		}
 
-		return serveFile(filePath, this._environmentService.isBuilt ? CacheControl.NO_EXPIRY : CacheControl.ETAG, this._logService, req, res, headers);
+		return serveFile(
+			filePath,
+			this._environmentService.isBuilt ? CacheControl.NO_EXPIRY : CacheControl.ETAG,
+			this._logService,
+			req,
+			res,
+			headers
+		);
 	}
 
 	private _getResourceURLTemplateAuthority(uri: URI): string | undefined {
@@ -172,7 +220,11 @@ export class WebClientServer {
 	 * Handle extension resources
 	 * @param resourcePath The path after /web-extension-resource/
 	 */
-	private async _handleWebExtensionResource(req: http.IncomingMessage, res: http.ServerResponse, resourcePath: string): Promise<void> {
+	private async _handleWebExtensionResource(
+		req: http.IncomingMessage,
+		res: http.ServerResponse,
+		resourcePath: string
+	): Promise<void> {
 		if (!this._webExtensionResourceUrlTemplate) {
 			return serveError(req, res, 500, 'No extension gallery service configured.');
 		}
@@ -182,10 +234,13 @@ export class WebClientServer {
 		const uri = URI.parse(path).with({
 			scheme: this._webExtensionResourceUrlTemplate.scheme,
 			authority: path.substring(0, path.indexOf('/')),
-			path: path.substring(path.indexOf('/') + 1)
+			path: path.substring(path.indexOf('/') + 1),
 		});
 
-		if (this._getResourceURLTemplateAuthority(this._webExtensionResourceUrlTemplate) !== this._getResourceURLTemplateAuthority(uri)) {
+		if (
+			this._getResourceURLTemplateAuthority(this._webExtensionResourceUrlTemplate) !==
+			this._getResourceURLTemplateAuthority(uri)
+		) {
 			return serveError(req, res, 403, 'Request Forbidden');
 		}
 
@@ -203,18 +258,23 @@ export class WebClientServer {
 		setRequestHeader('X-Machine-Id');
 		setRequestHeader('X-Client-Commit');
 
-		const context = await this._requestService.request({
-			type: 'GET',
-			url: uri.toString(true),
-			headers
-		}, CancellationToken.None);
+		const context = await this._requestService.request(
+			{
+				type: 'GET',
+				url: uri.toString(true),
+				headers,
+			},
+			CancellationToken.None
+		);
 
 		const status = context.res.statusCode || 500;
 		if (status !== 200) {
 			let text: string | null = null;
 			try {
 				text = await asTextOrError(context);
-			} catch (error) {/* Ignore */ }
+			} catch (error) {
+				/* Ignore */
+			}
 			return serveError(req, res, status, text || `Request failed with status ${status}`);
 		}
 
@@ -237,8 +297,11 @@ export class WebClientServer {
 	/**
 	 * Handle HTTP requests for /
 	 */
-	private async _handleRoot(req: http.IncomingMessage, res: http.ServerResponse, parsedUrl: url.UrlWithParsedQuery): Promise<void> {
-
+	private async _handleRoot(
+		req: http.IncomingMessage,
+		res: http.ServerResponse,
+		parsedUrl: url.UrlWithParsedQuery
+	): Promise<void> {
 		const getFirstHeader = (headerName: string) => {
 			const val = req.headers[headerName];
 			return Array.isArray(val) ? val[0] : val;
@@ -257,7 +320,7 @@ export class WebClientServer {
 				queryConnectionToken,
 				{
 					sameSite: 'lax',
-					maxAge: 60 * 60 * 24 * 7 /* 1 week */
+					maxAge: 60 * 60 * 24 * 7 /* 1 week */,
 				}
 			);
 
@@ -283,12 +346,11 @@ export class WebClientServer {
 			return host;
 		};
 
-		const useTestResolver = (!this._environmentService.isBuilt && this._environmentService.args['use-test-resolver']);
-		let remoteAuthority = (
-			useTestResolver
-				? 'test+test'
-				: (getFirstHeader('x-original-host') || getFirstHeader('x-forwarded-host') || req.headers.host)
-		);
+		const useTestResolver =
+			!this._environmentService.isBuilt && this._environmentService.args['use-test-resolver'];
+		let remoteAuthority = useTestResolver
+			? 'test+test'
+			: getFirstHeader('x-original-host') || getFirstHeader('x-forwarded-host') || req.headers.host;
 		if (!remoteAuthority) {
 			return serveError(req, res, 400, `Bad request.`);
 		}
@@ -315,33 +377,50 @@ export class WebClientServer {
 					this._logService.trace(`[WebClientServer] ${header}: ${value}`);
 				}
 			});
-			this._logService.trace(`[WebClientServer] Request URL: ${req.url}, basePath: ${basePath}, remoteAuthority: ${remoteAuthority}`);
+			this._logService.trace(
+				`[WebClientServer] Request URL: ${req.url}, basePath: ${basePath}, remoteAuthority: ${remoteAuthority}`
+			);
 		}
 
 		const staticRoute = posix.join(basePath, this._productPath, STATIC_PATH);
 		const callbackRoute = posix.join(basePath, this._productPath, CALLBACK_PATH);
 		const webExtensionRoute = posix.join(basePath, this._productPath, WEB_EXTENSION_PATH);
 
-		const resolveWorkspaceURI = (defaultLocation?: string) => defaultLocation && URI.file(resolve(defaultLocation)).with({ scheme: Schemas.vscodeRemote, authority: remoteAuthority });
+		const resolveWorkspaceURI = (defaultLocation?: string) =>
+			defaultLocation &&
+			URI.file(resolve(defaultLocation)).with({
+				scheme: Schemas.vscodeRemote,
+				authority: remoteAuthority,
+			});
 
-		const filePath = FileAccess.asFileUri(`vs/code/browser/workbench/workbench${this._environmentService.isBuilt ? '' : '-dev'}.html`).fsPath;
-		const authSessionInfo = !this._environmentService.isBuilt && this._environmentService.args['github-auth'] ? {
-			id: generateUuid(),
-			providerId: 'github',
-			accessToken: this._environmentService.args['github-auth'],
-			scopes: [['user:email'], ['repo']]
-		} : undefined;
+		const filePath = FileAccess.asFileUri(
+			`vs/code/browser/workbench/workbench${this._environmentService.isBuilt ? '' : '-dev'}.html`
+		).fsPath;
+		const authSessionInfo =
+			!this._environmentService.isBuilt && this._environmentService.args['github-auth']
+				? {
+						id: generateUuid(),
+						providerId: 'github',
+						accessToken: this._environmentService.args['github-auth'],
+						scopes: [['user:email'], ['repo']],
+					}
+				: undefined;
 
 		const productConfiguration: Partial<Mutable<IProductConfiguration>> = {
 			embedderIdentifier: 'server-distro',
-			extensionsGallery: this._webExtensionResourceUrlTemplate && this._productService.extensionsGallery ? {
-				...this._productService.extensionsGallery,
-				resourceUrlTemplate: this._webExtensionResourceUrlTemplate.with({
-					scheme: 'http',
-					authority: remoteAuthority,
-					path: `${webExtensionRoute}/${this._webExtensionResourceUrlTemplate.authority}${this._webExtensionResourceUrlTemplate.path}`
-				}).toString(true)
-			} : undefined
+			extensionsGallery:
+				this._webExtensionResourceUrlTemplate && this._productService.extensionsGallery
+					? {
+							...this._productService.extensionsGallery,
+							resourceUrlTemplate: this._webExtensionResourceUrlTemplate
+								.with({
+									scheme: 'http',
+									authority: remoteAuthority,
+									path: `${webExtensionRoute}/${this._webExtensionResourceUrlTemplate.authority}${this._webExtensionResourceUrlTemplate.path}`,
+								})
+								.toString(true),
+						}
+					: undefined,
 		};
 
 		const proposedApi = this._environmentService.args['enable-proposed-api'];
@@ -352,26 +431,41 @@ export class WebClientServer {
 
 		if (!this._environmentService.isBuilt) {
 			try {
-				const productOverrides = JSON.parse((await promises.readFile(join(APP_ROOT, 'product.overrides.json'))).toString());
+				const productOverrides = JSON.parse(
+					(await promises.readFile(join(APP_ROOT, 'product.overrides.json'))).toString()
+				);
 				Object.assign(productConfiguration, productOverrides);
-			} catch (err) {/* Ignore Error */ }
+			} catch (err) {
+				/* Ignore Error */
+			}
 		}
 
 		const workbenchWebConfiguration = {
 			remoteAuthority,
 			serverBasePath: basePath,
 			_wrapWebWorkerExtHostInIframe,
-			developmentOptions: { enableSmokeTestDriver: this._environmentService.args['enable-smoke-test-driver'] ? true : undefined, logLevel: this._logService.getLevel() },
-			settingsSyncOptions: !this._environmentService.isBuilt && this._environmentService.args['enable-sync'] ? { enabled: true } : undefined,
+			developmentOptions: {
+				enableSmokeTestDriver: this._environmentService.args['enable-smoke-test-driver']
+					? true
+					: undefined,
+				logLevel: this._logService.getLevel(),
+			},
+			settingsSyncOptions:
+				!this._environmentService.isBuilt && this._environmentService.args['enable-sync']
+					? { enabled: true }
+					: undefined,
 			enableWorkspaceTrust: !this._environmentService.args['disable-workspace-trust'],
 			folderUri: resolveWorkspaceURI(this._environmentService.args['default-folder']),
 			workspaceUri: resolveWorkspaceURI(this._environmentService.args['default-workspace']),
 			productConfiguration,
-			callbackRoute: callbackRoute
+			callbackRoute: callbackRoute,
 		};
 
 		const cookies = cookie.parse(req.headers.cookie || '');
-		const locale = cookies['vscode.nls.locale'] || req.headers['accept-language']?.split(',')[0]?.toLowerCase() || 'en';
+		const locale =
+			cookies['vscode.nls.locale'] ||
+			req.headers['accept-language']?.split(',')[0]?.toLowerCase() ||
+			'en';
 		let WORKBENCH_NLS_BASE_URL: string | undefined;
 		let WORKBENCH_NLS_URL: string;
 		if (!locale.startsWith('en') && this._productService.nlsCoreBaseUrl) {
@@ -386,7 +480,7 @@ export class WebClientServer {
 			WORKBENCH_AUTH_SESSION: authSessionInfo ? asJSON(authSessionInfo) : '',
 			WORKBENCH_WEB_BASE_URL: staticRoute,
 			WORKBENCH_NLS_URL,
-			WORKBENCH_NLS_FALLBACK_URL: `${staticRoute}/out/nls.messages.js`
+			WORKBENCH_NLS_FALLBACK_URL: `${staticRoute}/out/nls.messages.js`,
 		};
 
 		// DEV ---------------------------------------------------------------------------------------
@@ -402,7 +496,13 @@ export class WebClientServer {
 		if (useTestResolver) {
 			const bundledExtensions: { extensionPath: string; packageJSON: IExtensionManifest }[] = [];
 			for (const extensionPath of ['vscode-test-resolver', 'github-authentication']) {
-				const packageJSON = JSON.parse((await promises.readFile(FileAccess.asFileUri(`${builtinExtensionsPath}/${extensionPath}/package.json`).fsPath)).toString());
+				const packageJSON = JSON.parse(
+					(
+						await promises.readFile(
+							FileAccess.asFileUri(`${builtinExtensionsPath}/${extensionPath}/package.json`).fsPath
+						)
+					).toString()
+				);
 				bundledExtensions.push({ extensionPath, packageJSON });
 			}
 			values['WORKBENCH_BUILTIN_EXTENSIONS'] = asJSON(bundledExtensions);
@@ -417,25 +517,26 @@ export class WebClientServer {
 			return void res.end('Not found');
 		}
 
-		const webWorkerExtensionHostIframeScriptSHA = 'sha256-2Q+j4hfT09+1+imS46J2YlkCtHWQt0/BE79PXjJ0ZJ8=';
+		const webWorkerExtensionHostIframeScriptSHA =
+			'sha256-2Q+j4hfT09+1+imS46J2YlkCtHWQt0/BE79PXjJ0ZJ8=';
 
 		const cspDirectives = [
-			'default-src \'self\';',
-			'img-src \'self\' https: data: blob:;',
-			'media-src \'self\';',
-			`script-src 'self' 'unsafe-eval' ${WORKBENCH_NLS_BASE_URL ?? ''} blob: 'nonce-1nline-m4p' ${this._getScriptCspHashes(data).join(' ')} '${webWorkerExtensionHostIframeScriptSHA}' 'sha256-/r7rqQ+yrxt57sxLuQ6AMYcy/lUpvAIzHjIJt/OeLWU=' ${useTestResolver ? '' : `http://${remoteAuthority}`};`,  // the sha is the same as in src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
-			'child-src \'self\';',
+			"default-src 'self';",
+			"img-src 'self' https: data: blob:;",
+			"media-src 'self';",
+			`script-src 'self' 'unsafe-eval' ${WORKBENCH_NLS_BASE_URL ?? ''} blob: 'nonce-1nline-m4p' ${this._getScriptCspHashes(data).join(' ')} '${webWorkerExtensionHostIframeScriptSHA}' 'sha256-/r7rqQ+yrxt57sxLuQ6AMYcy/lUpvAIzHjIJt/OeLWU=' ${useTestResolver ? '' : `http://${remoteAuthority}`};`, // the sha is the same as in src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+			"child-src 'self';",
 			`frame-src 'self' https://*.vscode-cdn.net data:;`,
-			'worker-src \'self\' data: blob:;',
-			'style-src \'self\' \'unsafe-inline\';',
-			'connect-src \'self\' ws: wss: https:;',
-			'font-src \'self\' blob:;',
-			'manifest-src \'self\';'
+			"worker-src 'self' data: blob:;",
+			"style-src 'self' 'unsafe-inline';",
+			"connect-src 'self' ws: wss: https:;",
+			"font-src 'self' blob:;",
+			"manifest-src 'self';",
 		].join(' ');
 
 		const headers: http.OutgoingHttpHeaders = {
 			'Content-Type': 'text/html',
-			'Content-Security-Policy': cspDirectives
+			'Content-Security-Policy': cspDirectives,
 		};
 		if (this._connectionToken.type !== ServerConnectionTokenType.None) {
 			// At this point we know the client has a valid cookie
@@ -446,7 +547,7 @@ export class WebClientServer {
 				this._connectionToken.value,
 				{
 					sameSite: 'lax',
-					maxAge: 60 * 60 * 24 * 7 /* 1 week */
+					maxAge: 60 * 60 * 24 * 7 /* 1 week */,
 				}
 			);
 		}
@@ -458,16 +559,14 @@ export class WebClientServer {
 	private _getScriptCspHashes(content: string): string[] {
 		// Compute the CSP hashes for line scripts. Uses regex
 		// which means it isn't 100% good.
-		const regex = /<script>([\s\S]+?)<\/script>/img;
+		const regex = /<script>([\s\S]+?)<\/script>/gim;
 		const result: string[] = [];
 		let match: RegExpExecArray | null;
-		while (match = regex.exec(content)) {
+		while ((match = regex.exec(content))) {
 			const hasher = crypto.createHash('sha256');
 			// This only works on Windows if we strip `\r` from `\r\n`.
 			const script = match[1].replace(/\r\n/g, '\n');
-			const hash = hasher
-				.update(Buffer.from(script))
-				.digest().toString('base64');
+			const hash = hasher.update(Buffer.from(script)).digest().toString('base64');
 
 			result.push(`'sha256-${hash}'`);
 		}
@@ -481,17 +580,17 @@ export class WebClientServer {
 		const filePath = FileAccess.asFileUri('vs/code/browser/workbench/callback.html').fsPath;
 		const data = (await promises.readFile(filePath)).toString();
 		const cspDirectives = [
-			'default-src \'self\';',
-			'img-src \'self\' https: data: blob:;',
-			'media-src \'none\';',
+			"default-src 'self';",
+			"img-src 'self' https: data: blob:;",
+			"media-src 'none';",
 			`script-src 'self' ${this._getScriptCspHashes(data).join(' ')};`,
-			'style-src \'self\' \'unsafe-inline\';',
-			'font-src \'self\' blob:;'
+			"style-src 'self' 'unsafe-inline';",
+			"font-src 'self' blob:;",
 		].join(' ');
 
 		res.writeHead(200, {
 			'Content-Type': 'text/html',
-			'Content-Security-Policy': cspDirectives
+			'Content-Security-Policy': cspDirectives,
 		});
 		return void res.end(data);
 	}

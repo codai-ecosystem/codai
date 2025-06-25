@@ -37,7 +37,6 @@ suite('WellDefinedPrefixTree', () => {
 		assert.strictEqual(tree.hasKeyOrParent(['baz']), false);
 	});
 
-
 	test('hasKeyOrChildren', () => {
 		const key = ['foo', 'bar'];
 		tree.insert(key, 42);
@@ -75,7 +74,7 @@ suite('WellDefinedPrefixTree', () => {
 		const key2 = ['foo', 'baz'];
 		tree.insert(key1, 42);
 		tree.insert(key2, 43);
-		tree.mutate(key1, (value) => {
+		tree.mutate(key1, value => {
 			assert.strictEqual(value, 42);
 			return 44;
 		});
@@ -137,7 +136,6 @@ suite('WellDefinedPrefixTree', () => {
 
 		assert.deepStrictEqual([...tree.values()], [43, 42]);
 	});
-
 
 	test('delete recursive', () => {
 		const key1 = ['foo', 'bar'];

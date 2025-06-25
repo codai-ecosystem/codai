@@ -30,7 +30,11 @@ class TunnelMock implements Partial<ITunnelService> {
 		return Promise.resolve(undefined);
 	}
 
-	openTunnel(_addressProvider: IAddressProvider | undefined, _host: string | undefined, port: number): Promise<RemoteTunnel | string | undefined> | undefined {
+	openTunnel(
+		_addressProvider: IAddressProvider | undefined,
+		_host: string | undefined,
+		port: number
+	): Promise<RemoteTunnel | string | undefined> | undefined {
 		if (!this.assignedPorts[port]) {
 			return Promise.reject(new Error('Unexpected tunnel request'));
 		}
@@ -43,7 +47,7 @@ class TunnelMock implements Partial<ITunnelService> {
 				assert(this.expectedDispose, 'Unexpected dispose');
 				this.expectedDispose = false;
 				return Promise.resolve();
-			}
+			},
 		};
 		delete this.assignedPorts[port];
 		return Promise.resolve(res);
@@ -60,9 +64,9 @@ class TunnelMock implements Partial<ITunnelService> {
 }
 
 class TestNativeWindow extends NativeWindow {
-	protected override create(): void { }
-	protected override registerListeners(): void { }
-	protected override enableMultiWindowAwareTimeout(): void { }
+	protected override create(): void {}
+	protected override registerListeners(): void {}
+	protected override enableMultiWindowAwareTimeout(): void {}
 }
 
 suite.skip('NativeWindow:resolveExternal', () => {
@@ -71,7 +75,9 @@ suite.skip('NativeWindow:resolveExternal', () => {
 	let window: TestNativeWindow;
 
 	setup(() => {
-		const instantiationService: TestInstantiationService = <TestInstantiationService>workbenchInstantiationService(undefined, disposables);
+		const instantiationService: TestInstantiationService = <TestInstantiationService>(
+			workbenchInstantiationService(undefined, disposables)
+		);
 		instantiationService.stub(ITunnelService, tunnelMock);
 		window = disposables.add(instantiationService.createInstance(TestNativeWindow));
 	});
@@ -84,7 +90,7 @@ suite.skip('NativeWindow:resolveExternal', () => {
 		tunnelMock.reset(ports);
 		const res = await window.resolveExternalUri(URI.parse(uri), {
 			allowTunneling: true,
-			openExternal: true
+			openExternal: true,
 		});
 		assert.strictEqual(!expectedUri, !res, `Expected URI ${expectedUri} but got ${res}`);
 		if (expectedUri && res) {
@@ -107,22 +113,30 @@ suite.skip('NativeWindow:resolveExternal', () => {
 		await doTest('http://localhost:1234/path', { 1234: 1235 }, 'http://localhost:1235/path');
 	});
 	test('query', async () => {
-		await doTest('http://foo.bar/path?a=b&c=http%3a%2f%2flocalhost%3a4455', { 4455: 4455 }, 'http://foo.bar/path?a=b&c=http%3a%2f%2flocalhost%3a4455');
+		await doTest(
+			'http://foo.bar/path?a=b&c=http%3a%2f%2flocalhost%3a4455',
+			{ 4455: 4455 },
+			'http://foo.bar/path?a=b&c=http%3a%2f%2flocalhost%3a4455'
+		);
 	});
 	test('query with different port', async () => {
 		tunnelMock.expectDispose();
 		await doTest('http://foo.bar/path?a=b&c=http%3a%2f%2flocalhost%3a4455', { 4455: 4567 });
 	});
 	test('both url and query', async () => {
-		await doTest('http://localhost:1234/path?a=b&c=http%3a%2f%2flocalhost%3a4455',
+		await doTest(
+			'http://localhost:1234/path?a=b&c=http%3a%2f%2flocalhost%3a4455',
 			{ 1234: 4321, 4455: 4455 },
-			'http://localhost:4321/path?a=b&c=http%3a%2f%2flocalhost%3a4455');
+			'http://localhost:4321/path?a=b&c=http%3a%2f%2flocalhost%3a4455'
+		);
 	});
 	test('both url and query, query rejected', async () => {
 		tunnelMock.expectDispose();
-		await doTest('http://localhost:1234/path?a=b&c=http%3a%2f%2flocalhost%3a4455',
+		await doTest(
+			'http://localhost:1234/path?a=b&c=http%3a%2f%2flocalhost%3a4455',
 			{ 1234: 4321, 4455: 5544 },
-			'http://localhost:4321/path?a=b&c=http%3a%2f%2flocalhost%3a4455');
+			'http://localhost:4321/path?a=b&c=http%3a%2f%2flocalhost%3a4455'
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();

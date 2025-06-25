@@ -5,10 +5,18 @@
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { IExtensionManifest } from '../../common/extensions.js';
-import { areApiProposalsCompatible, INormalizedVersion, IParsedVersion, isValidExtensionVersion, isValidVersion, isValidVersionStr, normalizeVersion, parseVersion } from '../../common/extensionValidator.js';
+import {
+	areApiProposalsCompatible,
+	INormalizedVersion,
+	IParsedVersion,
+	isValidExtensionVersion,
+	isValidVersion,
+	isValidVersionStr,
+	normalizeVersion,
+	parseVersion,
+} from '../../common/extensionValidator.js';
 
 suite('Extension Version Validator', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	const productVersion = '2021-05-11T21:54:30.577Z';
@@ -33,9 +41,30 @@ suite('Extension Version Validator', () => {
 	});
 
 	test('parseVersion', () => {
-		function assertParseVersion(version: string, hasCaret: boolean, hasGreaterEquals: boolean, majorBase: number, majorMustEqual: boolean, minorBase: number, minorMustEqual: boolean, patchBase: number, patchMustEqual: boolean, preRelease: string | null): void {
+		function assertParseVersion(
+			version: string,
+			hasCaret: boolean,
+			hasGreaterEquals: boolean,
+			majorBase: number,
+			majorMustEqual: boolean,
+			minorBase: number,
+			minorMustEqual: boolean,
+			patchBase: number,
+			patchMustEqual: boolean,
+			preRelease: string | null
+		): void {
 			const actual = parseVersion(version);
-			const expected: IParsedVersion = { hasCaret, hasGreaterEquals, majorBase, majorMustEqual, minorBase, minorMustEqual, patchBase, patchMustEqual, preRelease };
+			const expected: IParsedVersion = {
+				hasCaret,
+				hasGreaterEquals,
+				majorBase,
+				majorMustEqual,
+				minorBase,
+				minorMustEqual,
+				patchBase,
+				patchMustEqual,
+				preRelease,
+			};
 
 			assert.deepStrictEqual(actual, expected, 'parseVersion for ' + version);
 		}
@@ -59,15 +88,44 @@ suite('Extension Version Validator', () => {
 	});
 
 	test('normalizeVersion', () => {
-		function assertNormalizeVersion(version: string, majorBase: number, majorMustEqual: boolean, minorBase: number, minorMustEqual: boolean, patchBase: number, patchMustEqual: boolean, isMinimum: boolean, notBefore = 0): void {
+		function assertNormalizeVersion(
+			version: string,
+			majorBase: number,
+			majorMustEqual: boolean,
+			minorBase: number,
+			minorMustEqual: boolean,
+			patchBase: number,
+			patchMustEqual: boolean,
+			isMinimum: boolean,
+			notBefore = 0
+		): void {
 			const actual = normalizeVersion(parseVersion(version));
-			const expected: INormalizedVersion = { majorBase, majorMustEqual, minorBase, minorMustEqual, patchBase, patchMustEqual, isMinimum, notBefore };
+			const expected: INormalizedVersion = {
+				majorBase,
+				majorMustEqual,
+				minorBase,
+				minorMustEqual,
+				patchBase,
+				patchMustEqual,
+				isMinimum,
+				notBefore,
+			};
 			assert.deepStrictEqual(actual, expected, 'parseVersion for ' + version);
 		}
 
 		assertNormalizeVersion('0.10.0-dev', 0, true, 10, true, 0, true, false, 0);
 		assertNormalizeVersion('0.10.0-222222222', 0, true, 10, true, 0, true, false, 0);
-		assertNormalizeVersion('0.10.0-20210511', 0, true, 10, true, 0, true, false, new Date('2021-05-11T00:00:00Z').getTime());
+		assertNormalizeVersion(
+			'0.10.0-20210511',
+			0,
+			true,
+			10,
+			true,
+			0,
+			true,
+			false,
+			new Date('2021-05-11T00:00:00Z').getTime()
+		);
 
 		assertNormalizeVersion('0.10.0', 0, true, 10, true, 0, true, false);
 		assertNormalizeVersion('0.10.1', 0, true, 10, true, 1, true, false);
@@ -88,9 +146,22 @@ suite('Extension Version Validator', () => {
 	});
 
 	test('isValidVersion', () => {
-		function testIsValidVersion(version: string, desiredVersion: string, expectedResult: boolean): void {
+		function testIsValidVersion(
+			version: string,
+			desiredVersion: string,
+			expectedResult: boolean
+		): void {
 			const actual = isValidVersion(version, productVersion, desiredVersion);
-			assert.strictEqual(actual, expectedResult, 'extension - vscode: ' + version + ', desiredVersion: ' + desiredVersion + ' should be ' + expectedResult);
+			assert.strictEqual(
+				actual,
+				expectedResult,
+				'extension - vscode: ' +
+					version +
+					', desiredVersion: ' +
+					desiredVersion +
+					' should be ' +
+					expectedResult
+			);
 		}
 
 		testIsValidVersion('0.10.0-dev', 'x.x.x', true);
@@ -211,32 +282,62 @@ suite('Extension Version Validator', () => {
 	});
 
 	test('isValidExtensionVersion', () => {
-
-		function testExtensionVersion(version: string, desiredVersion: string, isBuiltin: boolean, hasMain: boolean, expectedResult: boolean): void {
+		function testExtensionVersion(
+			version: string,
+			desiredVersion: string,
+			isBuiltin: boolean,
+			hasMain: boolean,
+			expectedResult: boolean
+		): void {
 			const manifest: IExtensionManifest = {
 				name: 'test',
 				publisher: 'test',
 				version: '0.0.0',
 				engines: {
-					vscode: desiredVersion
+					vscode: desiredVersion,
 				},
-				main: hasMain ? 'something' : undefined
+				main: hasMain ? 'something' : undefined,
 			};
 			const reasons: string[] = [];
 			const actual = isValidExtensionVersion(version, productVersion, manifest, isBuiltin, reasons);
 
-			assert.strictEqual(actual, expectedResult, 'version: ' + version + ', desiredVersion: ' + desiredVersion + ', desc: ' + JSON.stringify(manifest) + ', reasons: ' + JSON.stringify(reasons));
+			assert.strictEqual(
+				actual,
+				expectedResult,
+				'version: ' +
+					version +
+					', desiredVersion: ' +
+					desiredVersion +
+					', desc: ' +
+					JSON.stringify(manifest) +
+					', reasons: ' +
+					JSON.stringify(reasons)
+			);
 		}
 
-		function testIsInvalidExtensionVersion(version: string, desiredVersion: string, isBuiltin: boolean, hasMain: boolean): void {
+		function testIsInvalidExtensionVersion(
+			version: string,
+			desiredVersion: string,
+			isBuiltin: boolean,
+			hasMain: boolean
+		): void {
 			testExtensionVersion(version, desiredVersion, isBuiltin, hasMain, false);
 		}
 
-		function testIsValidExtensionVersion(version: string, desiredVersion: string, isBuiltin: boolean, hasMain: boolean): void {
+		function testIsValidExtensionVersion(
+			version: string,
+			desiredVersion: string,
+			isBuiltin: boolean,
+			hasMain: boolean
+		): void {
 			testExtensionVersion(version, desiredVersion, isBuiltin, hasMain, true);
 		}
 
-		function testIsValidVersion(version: string, desiredVersion: string, expectedResult: boolean): void {
+		function testIsValidVersion(
+			version: string,
+			desiredVersion: string,
+			expectedResult: boolean
+		): void {
 			testExtensionVersion(version, desiredVersion, false, true, expectedResult);
 		}
 
@@ -347,7 +448,6 @@ suite('Extension Version Validator', () => {
 		testIsValidVersion('1.10.0', '^1.10.0', true);
 		testIsValidVersion('1.10.0', '*', false); // fails due to lack of specificity
 
-
 		// Anything < 1.0.0 is compatible
 
 		testIsValidVersion('1.0.0', 'x.x.x', false); // fails due to lack of specificity
@@ -417,9 +517,9 @@ suite('Extension Version Validator', () => {
 			publisher: 'test',
 			version: '0.0.0',
 			engines: {
-				vscode: '^1.45.0'
+				vscode: '^1.45.0',
 			},
-			browser: 'something'
+			browser: 'something',
 		};
 		assert.strictEqual(isValidExtensionVersion('1.44.0', undefined, manifest, false, []), false);
 	});
@@ -429,16 +529,39 @@ suite('Extension Version Validator', () => {
 		assert.strictEqual(areApiProposalsCompatible([], ['hello']), true);
 		assert.strictEqual(areApiProposalsCompatible([], {}), true);
 		assert.strictEqual(areApiProposalsCompatible(['proposal1'], {}), true);
-		assert.strictEqual(areApiProposalsCompatible(['proposal1'], { 'proposal1': { proposal: '' } }), true);
-		assert.strictEqual(areApiProposalsCompatible(['proposal1'], { 'proposal1': { proposal: '', version: 1 } }), true);
-		assert.strictEqual(areApiProposalsCompatible(['proposal1@1'], { 'proposal1': { proposal: '', version: 1 } }), true);
-		assert.strictEqual(areApiProposalsCompatible(['proposal1'], { 'proposal2': { proposal: '' } }), true);
+		assert.strictEqual(
+			areApiProposalsCompatible(['proposal1'], { proposal1: { proposal: '' } }),
+			true
+		);
+		assert.strictEqual(
+			areApiProposalsCompatible(['proposal1'], { proposal1: { proposal: '', version: 1 } }),
+			true
+		);
+		assert.strictEqual(
+			areApiProposalsCompatible(['proposal1@1'], { proposal1: { proposal: '', version: 1 } }),
+			true
+		);
+		assert.strictEqual(
+			areApiProposalsCompatible(['proposal1'], { proposal2: { proposal: '' } }),
+			true
+		);
 		assert.strictEqual(areApiProposalsCompatible(['proposal1', 'proposal2'], {}), true);
-		assert.strictEqual(areApiProposalsCompatible(['proposal1', 'proposal2'], { 'proposal1': { proposal: '' } }), true);
+		assert.strictEqual(
+			areApiProposalsCompatible(['proposal1', 'proposal2'], { proposal1: { proposal: '' } }),
+			true
+		);
 
-		assert.strictEqual(areApiProposalsCompatible(['proposal2@1'], { 'proposal1': { proposal: '' } }), false);
-		assert.strictEqual(areApiProposalsCompatible(['proposal1@1'], { 'proposal1': { proposal: '', version: 2 } }), false);
-		assert.strictEqual(areApiProposalsCompatible(['proposal1@1'], { 'proposal1': { proposal: '' } }), false);
+		assert.strictEqual(
+			areApiProposalsCompatible(['proposal2@1'], { proposal1: { proposal: '' } }),
+			false
+		);
+		assert.strictEqual(
+			areApiProposalsCompatible(['proposal1@1'], { proposal1: { proposal: '', version: 2 } }),
+			false
+		);
+		assert.strictEqual(
+			areApiProposalsCompatible(['proposal1@1'], { proposal1: { proposal: '' } }),
+			false
+		);
 	});
-
 });

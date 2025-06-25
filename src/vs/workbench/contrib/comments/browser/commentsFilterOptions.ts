@@ -7,7 +7,6 @@ import { IFilter, matchesFuzzy, matchesFuzzy2 } from '../../../../base/common/fi
 import * as strings from '../../../../base/common/strings.js';
 
 export class FilterOptions {
-
 	static readonly _filter: IFilter = matchesFuzzy2;
 	static readonly _messageFilter: IFilter = matchesFuzzy;
 
@@ -18,7 +17,7 @@ export class FilterOptions {
 	constructor(
 		readonly filter: string,
 		showResolved: boolean,
-		showUnresolved: boolean,
+		showUnresolved: boolean
 	) {
 		filter = filter.trim();
 		this.showResolved = showResolved;

@@ -5,11 +5,18 @@
 
 import { join } from 'path';
 import { Application, ApplicationOptions, Logger, Quality } from '../../../../automation';
-import { createApp, timeout, installDiagnosticsHandler, installAppAfterHandler, getRandomUserDataDir, suiteLogsPath, suiteCrashPath } from '../../utils';
+import {
+	createApp,
+	timeout,
+	installDiagnosticsHandler,
+	installAppAfterHandler,
+	getRandomUserDataDir,
+	suiteLogsPath,
+	suiteCrashPath,
+} from '../../utils';
 
 export function setup(ensureStableCode: () => string | undefined, logger: Logger) {
 	describe('Data Loss (insiders -> insiders)', function () {
-
 		// Double the timeout since these tests involve 2 startups
 		this.timeout(4 * 60 * 1000);
 
@@ -23,7 +30,10 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 			app = createApp({
 				...this.defaultOptions,
 				logsPath: suiteLogsPath(this.defaultOptions, 'test_verifies_opened_editors_are_restored'),
-				crashesPath: suiteCrashPath(this.defaultOptions, 'test_verifies_opened_editors_are_restored')
+				crashesPath: suiteCrashPath(
+					this.defaultOptions,
+					'test_verifies_opened_editors_are_restored'
+				),
 			});
 			await app.start();
 
@@ -49,7 +59,10 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 			app = createApp({
 				...this.defaultOptions,
 				logsPath: suiteLogsPath(this.defaultOptions, 'test_verifies_editors_can_save_and_restore'),
-				crashesPath: suiteCrashPath(this.defaultOptions, 'test_verifies_editors_can_save_and_restore')
+				crashesPath: suiteCrashPath(
+					this.defaultOptions,
+					'test_verifies_editors_can_save_and_restore'
+				),
 			});
 			await app.start();
 
@@ -68,29 +81,52 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 			await app.restart();
 
 			// verify contents
-			await app.workbench.editor.waitForEditorContents('app.js', contents => contents.indexOf(textToType) > -1);
+			await app.workbench.editor.waitForEditorContents(
+				'app.js',
+				contents => contents.indexOf(textToType) > -1
+			);
 
 			await app.stop();
 			app = undefined;
 		});
 
 		it('verifies that "hot exit" works for dirty files (without delay)', function () {
-			return testHotExit.call(this, 'test_verifies_that_hot_exit_works_for_dirty_files_without_delay', undefined, undefined);
+			return testHotExit.call(
+				this,
+				'test_verifies_that_hot_exit_works_for_dirty_files_without_delay',
+				undefined,
+				undefined
+			);
 		});
 
 		it('verifies that "hot exit" works for dirty files (with delay)', function () {
-			return testHotExit.call(this, 'test_verifies_that_hot_exit_works_for_dirty_files_with_delay', 2000, undefined);
+			return testHotExit.call(
+				this,
+				'test_verifies_that_hot_exit_works_for_dirty_files_with_delay',
+				2000,
+				undefined
+			);
 		});
 
 		it('verifies that auto save triggers on shutdown', function () {
-			return testHotExit.call(this, 'test_verifies_that_auto_save_triggers_on_shutdown', undefined, true);
+			return testHotExit.call(
+				this,
+				'test_verifies_that_auto_save_triggers_on_shutdown',
+				undefined,
+				true
+			);
 		});
 
-		async function testHotExit(this: import('mocha').Context, title: string, restartDelay: number | undefined, autoSave: boolean | undefined) {
+		async function testHotExit(
+			this: import('mocha').Context,
+			title: string,
+			restartDelay: number | undefined,
+			autoSave: boolean | undefined
+		) {
 			app = createApp({
 				...this.defaultOptions,
 				logsPath: suiteLogsPath(this.defaultOptions, title),
-				crashesPath: suiteCrashPath(this.defaultOptions, title)
+				crashesPath: suiteCrashPath(this.defaultOptions, title),
 			});
 			await app.start();
 
@@ -123,10 +159,16 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 			await app.workbench.editors.waitForTab('Untitled-1', true);
 
 			await app.workbench.editors.selectTab('readme.md');
-			await app.workbench.editor.waitForEditorContents('readme.md', contents => contents.indexOf(textToType) > -1);
+			await app.workbench.editor.waitForEditorContents(
+				'readme.md',
+				contents => contents.indexOf(textToType) > -1
+			);
 
 			await app.workbench.editors.selectTab('Untitled-1');
-			await app.workbench.editor.waitForEditorContents('Untitled-1', contents => contents.indexOf(textToTypeInUntitled) > -1);
+			await app.workbench.editor.waitForEditorContents(
+				'Untitled-1',
+				contents => contents.indexOf(textToTypeInUntitled) > -1
+			);
 
 			await app.stop();
 			app = undefined;
@@ -134,7 +176,6 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 	});
 
 	describe('Data Loss (stable -> insiders)', function () {
-
 		// Double the timeout since these tests involve 2 startups
 		this.timeout(4 * 60 * 1000);
 
@@ -143,7 +184,10 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 
 		// Shared before/after handling
 		installDiagnosticsHandler(logger, () => insidersApp ?? stableApp);
-		installAppAfterHandler(() => insidersApp ?? stableApp, async () => stableApp?.stop());
+		installAppAfterHandler(
+			() => insidersApp ?? stableApp,
+			async () => stableApp?.stop()
+		);
 
 		it('verifies opened editors are restored', async function () {
 			const stableCodePath = ensureStableCode();
@@ -161,8 +205,14 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 			}
 
 			const userDataDir = getRandomUserDataDir(this.defaultOptions);
-			const logsPath = suiteLogsPath(this.defaultOptions, 'test_verifies_opened_editors_are_restored_from_stable');
-			const crashesPath = suiteCrashPath(this.defaultOptions, 'test_verifies_opened_editors_are_restored_from_stable');
+			const logsPath = suiteLogsPath(
+				this.defaultOptions,
+				'test_verifies_opened_editors_are_restored_from_stable'
+			);
+			const crashesPath = suiteCrashPath(
+				this.defaultOptions,
+				'test_verifies_opened_editors_are_restored_from_stable'
+			);
 
 			const stableOptions: ApplicationOptions = Object.assign({}, this.defaultOptions);
 			stableOptions.codePath = stableCodePath;
@@ -175,9 +225,13 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 			await stableApp.start();
 
 			// Open 3 editors
-			await stableApp.workbench.quickaccess.openFile(join(stableApp.workspacePathOrFolder, 'bin', 'www'));
+			await stableApp.workbench.quickaccess.openFile(
+				join(stableApp.workspacePathOrFolder, 'bin', 'www')
+			);
 			await stableApp.workbench.quickaccess.runCommand('View: Keep Editor');
-			await stableApp.workbench.quickaccess.openFile(join(stableApp.workspacePathOrFolder, 'app.js'));
+			await stableApp.workbench.quickaccess.openFile(
+				join(stableApp.workspacePathOrFolder, 'app.js')
+			);
 			await stableApp.workbench.quickaccess.runCommand('View: Keep Editor');
 			await stableApp.workbench.editors.newUntitledFile();
 
@@ -202,14 +256,26 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 		});
 
 		it('verifies that "hot exit" works for dirty files (without delay)', async function () {
-			return testHotExit.call(this, `test_verifies_that_hot_exit_works_for_dirty_files_without_delay_from_stable`, undefined);
+			return testHotExit.call(
+				this,
+				`test_verifies_that_hot_exit_works_for_dirty_files_without_delay_from_stable`,
+				undefined
+			);
 		});
 
 		it('verifies that "hot exit" works for dirty files (with delay)', async function () {
-			return testHotExit.call(this, `test_verifies_that_hot_exit_works_for_dirty_files_with_delay_from_stable`, 2000);
+			return testHotExit.call(
+				this,
+				`test_verifies_that_hot_exit_works_for_dirty_files_with_delay_from_stable`,
+				2000
+			);
 		});
 
-		async function testHotExit(this: import('mocha').Context, title: string, restartDelay: number | undefined) {
+		async function testHotExit(
+			this: import('mocha').Context,
+			title: string,
+			restartDelay: number | undefined
+		) {
 			const stableCodePath = ensureStableCode();
 			if (!stableCodePath) {
 				this.skip();
@@ -236,7 +302,9 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 			await stableApp.workbench.editors.waitForTab('Untitled-1', true);
 
 			const textToType = 'Hello, Code';
-			await stableApp.workbench.quickaccess.openFile(join(stableApp.workspacePathOrFolder, 'readme.md'));
+			await stableApp.workbench.quickaccess.openFile(
+				join(stableApp.workspacePathOrFolder, 'readme.md')
+			);
 			await stableApp.workbench.editor.waitForTypeInEditor('readme.md', textToType);
 			await stableApp.workbench.editors.waitForTab('readme.md', true);
 
@@ -263,10 +331,16 @@ export function setup(ensureStableCode: () => string | undefined, logger: Logger
 			await insidersApp.workbench.editors.waitForTab('Untitled-1', true);
 
 			await insidersApp.workbench.editors.selectTab('readme.md');
-			await insidersApp.workbench.editor.waitForEditorContents('readme.md', contents => contents.indexOf(textToType) > -1);
+			await insidersApp.workbench.editor.waitForEditorContents(
+				'readme.md',
+				contents => contents.indexOf(textToType) > -1
+			);
 
 			await insidersApp.workbench.editors.selectTab('Untitled-1');
-			await insidersApp.workbench.editor.waitForEditorContents('Untitled-1', contents => contents.indexOf(textToTypeInUntitled) > -1);
+			await insidersApp.workbench.editor.waitForEditorContents(
+				'Untitled-1',
+				contents => contents.indexOf(textToTypeInUntitled) > -1
+			);
 
 			await insidersApp.stop();
 			insidersApp = undefined;

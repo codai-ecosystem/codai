@@ -488,7 +488,9 @@ export interface IAuthorizationJWTClaims {
 
 //#region is functions
 
-export function isAuthorizationProtectedResourceMetadata(obj: unknown): obj is IAuthorizationProtectedResourceMetadata {
+export function isAuthorizationProtectedResourceMetadata(
+	obj: unknown
+): obj is IAuthorizationProtectedResourceMetadata {
 	if (typeof obj !== 'object' || obj === null) {
 		return false;
 	}
@@ -505,7 +507,9 @@ export function isAuthorizationServerMetadata(obj: unknown): obj is IAuthorizati
 	return metadata.issuer !== undefined;
 }
 
-export function isAuthorizationDynamicClientRegistrationResponse(obj: unknown): obj is IAuthorizationDynamicClientRegistrationResponse {
+export function isAuthorizationDynamicClientRegistrationResponse(
+	obj: unknown
+): obj is IAuthorizationDynamicClientRegistrationResponse {
 	if (typeof obj !== 'object' || obj === null) {
 		return false;
 	}
@@ -513,7 +517,9 @@ export function isAuthorizationDynamicClientRegistrationResponse(obj: unknown): 
 	return response.client_id !== undefined && response.client_name !== undefined;
 }
 
-export function isAuthorizationAuthorizeResponse(obj: unknown): obj is IAuthorizationAuthorizeResponse {
+export function isAuthorizationAuthorizeResponse(
+	obj: unknown
+): obj is IAuthorizationAuthorizeResponse {
 	if (typeof obj !== 'object' || obj === null) {
 		return false;
 	}
@@ -529,7 +535,9 @@ export function isAuthorizationTokenResponse(obj: unknown): obj is IAuthorizatio
 	return response.access_token !== undefined && response.token_type !== undefined;
 }
 
-export function isDynamicClientRegistrationResponse(obj: unknown): obj is IAuthorizationDynamicClientRegistrationResponse {
+export function isDynamicClientRegistrationResponse(
+	obj: unknown
+): obj is IAuthorizationDynamicClientRegistrationResponse {
 	if (typeof obj !== 'object' || obj === null) {
 		return false;
 	}
@@ -539,7 +547,9 @@ export function isDynamicClientRegistrationResponse(obj: unknown): obj is IAutho
 
 //#endregion
 
-export function getDefaultMetadataForUrl(issuer: URL): IRequiredAuthorizationServerMetadata & IRequiredAuthorizationServerMetadata {
+export function getDefaultMetadataForUrl(
+	issuer: URL
+): IRequiredAuthorizationServerMetadata & IRequiredAuthorizationServerMetadata {
 	return {
 		issuer: issuer.toString(),
 		authorization_endpoint: new URL('/authorize', issuer).toString(),
@@ -551,21 +561,29 @@ export function getDefaultMetadataForUrl(issuer: URL): IRequiredAuthorizationSer
 	};
 }
 
-export function getMetadataWithDefaultValues(metadata: IAuthorizationServerMetadata): IAuthorizationServerMetadata & IRequiredAuthorizationServerMetadata {
+export function getMetadataWithDefaultValues(
+	metadata: IAuthorizationServerMetadata
+): IAuthorizationServerMetadata & IRequiredAuthorizationServerMetadata {
 	const issuer = new URL(metadata.issuer);
 	return {
 		...metadata,
-		authorization_endpoint: metadata.authorization_endpoint ?? new URL('/authorize', issuer).toString(),
+		authorization_endpoint:
+			metadata.authorization_endpoint ?? new URL('/authorize', issuer).toString(),
 		token_endpoint: metadata.token_endpoint ?? new URL('/token', issuer).toString(),
-		registration_endpoint: metadata.registration_endpoint ?? new URL('/register', issuer).toString(),
+		registration_endpoint:
+			metadata.registration_endpoint ?? new URL('/register', issuer).toString(),
 	};
 }
 
-export async function fetchDynamicRegistration(registrationEndpoint: string, clientName: string, additionalRedirectUris: string[] = []): Promise<IAuthorizationDynamicClientRegistrationResponse> {
+export async function fetchDynamicRegistration(
+	registrationEndpoint: string,
+	clientName: string,
+	additionalRedirectUris: string[] = []
+): Promise<IAuthorizationDynamicClientRegistrationResponse> {
 	const response = await fetch(registrationEndpoint, {
 		method: 'POST',
 		headers: {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify({
 			client_name: clientName,
@@ -575,10 +593,10 @@ export async function fetchDynamicRegistration(registrationEndpoint: string, cli
 			redirect_uris: [
 				'https://insiders.vscode.dev/redirect',
 				'https://vscode.dev/redirect',
-				...additionalRedirectUris
+				...additionalRedirectUris,
 			],
-			token_endpoint_auth_method: 'none'
-		})
+			token_endpoint_auth_method: 'none',
+		}),
 	});
 
 	if (!response.ok) {
@@ -589,9 +607,10 @@ export async function fetchDynamicRegistration(registrationEndpoint: string, cli
 	if (isAuthorizationDynamicClientRegistrationResponse(registration)) {
 		return registration;
 	}
-	throw new Error(`Invalid authorization dynamic client registration response: ${JSON.stringify(registration)}`);
+	throw new Error(
+		`Invalid authorization dynamic client registration response: ${JSON.stringify(registration)}`
+	);
 }
-
 
 export function parseWWWAuthenticateHeader(wwwAuthenticateHeaderValue: string) {
 	const parts = wwwAuthenticateHeaderValue.split(' ');

@@ -23,15 +23,14 @@ import { IFileService } from '../../../../platform/files/common/files.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 
 class StartDebugTextMate extends Action2 {
-
 	private static resource = URI.parse(`inmemory:///tm-log.txt`);
 
 	constructor() {
 		super({
 			id: 'editor.action.startDebugTextMate',
-			title: nls.localize2('startDebugTextMate', "Start TextMate Syntax Grammar Logging"),
+			title: nls.localize2('startDebugTextMate', 'Start TextMate Syntax Grammar Logging'),
 			category: Categories.Developer,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -45,10 +44,17 @@ class StartDebugTextMate extends Action2 {
 
 	private _append(model: ITextModel, str: string) {
 		const lineCount = model.getLineCount();
-		model.applyEdits([{
-			range: new Range(lineCount, Constants.MAX_SAFE_SMALL_INTEGER, lineCount, Constants.MAX_SAFE_SMALL_INTEGER),
-			text: str
-		}]);
+		model.applyEdits([
+			{
+				range: new Range(
+					lineCount,
+					Constants.MAX_SAFE_SMALL_INTEGER,
+					lineCount,
+					Constants.MAX_SAFE_SMALL_INTEGER
+				),
+				text: str,
+			},
+		]);
 	}
 
 	async run(accessor: ServicesAccessor) {
@@ -74,7 +80,7 @@ class StartDebugTextMate extends Action2 {
 		await hostService.openWindow([{ fileUri: pathInTemp }], { forceNewWindow: true });
 		const textEditorPane = await editorService.openEditor({
 			resource: model.uri,
-			options: { pinned: true }
+			options: { pinned: true },
 		});
 		if (!textEditorPane) {
 			return;
@@ -94,15 +100,13 @@ class StartDebugTextMate extends Action2 {
 		append(`// Output mirrored at ${pathInTemp}`);
 
 		textMateService.startDebugMode(
-			(str) => {
+			str => {
 				this._append(model, str + '\n');
 				scrollEditor();
 				logger.info(str);
 				logger.flush();
 			},
-			() => {
-
-			}
+			() => {}
 		);
 	}
 }

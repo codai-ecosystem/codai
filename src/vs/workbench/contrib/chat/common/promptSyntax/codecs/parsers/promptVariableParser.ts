@@ -18,21 +18,50 @@ import { VerticalTab } from '../../../../../../../editor/common/codecs/simpleCod
 import { TSimpleDecoderToken } from '../../../../../../../editor/common/codecs/simpleCodec/simpleDecoder.js';
 import { CarriageReturn } from '../../../../../../../editor/common/codecs/linesCodec/tokens/carriageReturn.js';
 import { ExclamationMark } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/exclamationMark.js';
-import { LeftBracket, RightBracket } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/brackets.js';
-import { LeftAngleBracket, RightAngleBracket } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/angleBrackets.js';
-import { assertNotConsumed, ParserBase, TAcceptTokenResult } from '../../../../../../../editor/common/codecs/simpleCodec/parserBase.js';
+import {
+	LeftBracket,
+	RightBracket,
+} from '../../../../../../../editor/common/codecs/simpleCodec/tokens/brackets.js';
+import {
+	LeftAngleBracket,
+	RightAngleBracket,
+} from '../../../../../../../editor/common/codecs/simpleCodec/tokens/angleBrackets.js';
+import {
+	assertNotConsumed,
+	ParserBase,
+	TAcceptTokenResult,
+} from '../../../../../../../editor/common/codecs/simpleCodec/parserBase.js';
 
 /**
  * List of characters that terminate the prompt variable sequence.
  */
-export const STOP_CHARACTERS: readonly string[] = [Space, Tab, NewLine, CarriageReturn, VerticalTab, FormFeed, Hash, At]
-	.map((token) => { return token.symbol; });
+export const STOP_CHARACTERS: readonly string[] = [
+	Space,
+	Tab,
+	NewLine,
+	CarriageReturn,
+	VerticalTab,
+	FormFeed,
+	Hash,
+	At,
+].map(token => {
+	return token.symbol;
+});
 
 /**
  * List of characters that cannot be in a variable name (excluding the {@link STOP_CHARACTERS}).
  */
-export const INVALID_NAME_CHARACTERS: readonly string[] = [Hash, Colon, ExclamationMark, LeftAngleBracket, RightAngleBracket, LeftBracket, RightBracket]
-	.map((token) => { return token.symbol; });
+export const INVALID_NAME_CHARACTERS: readonly string[] = [
+	Hash,
+	Colon,
+	ExclamationMark,
+	LeftAngleBracket,
+	RightAngleBracket,
+	LeftBracket,
+	RightBracket,
+].map(token => {
+	return token.symbol;
+});
 
 /**
  * The parser responsible for parsing a `prompt variable name`.
@@ -41,13 +70,20 @@ export const INVALID_NAME_CHARACTERS: readonly string[] = [Hash, Colon, Exclamat
  * that is also able to parse the `data` part of the variable. E.g., the `#file` part
  * of the `#file:/path/to/something.md` sequence.
  */
-export class PartialPromptVariableName extends ParserBase<TSimpleDecoderToken, PartialPromptVariableName | PartialPromptVariableWithData | PromptVariable> {
+export class PartialPromptVariableName extends ParserBase<
+	TSimpleDecoderToken,
+	PartialPromptVariableName | PartialPromptVariableWithData | PromptVariable
+> {
 	constructor(token: Hash) {
 		super([token]);
 	}
 
 	@assertNotConsumed
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialPromptVariableName | PartialPromptVariableWithData | PromptVariable> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<
+		PartialPromptVariableName | PartialPromptVariableWithData | PromptVariable
+	> {
 		// if a `stop` character is encountered, finish the parsing process
 		if (STOP_CHARACTERS.includes(token.text)) {
 			try {
@@ -123,7 +159,7 @@ export class PartialPromptVariableName extends ParserBase<TSimpleDecoderToken, P
 		// must be the starting `#` one), then fail
 		assert(
 			this.currentTokens.length > 1,
-			'Cannot create a prompt variable out of incomplete token sequence.',
+			'Cannot create a prompt variable out of incomplete token sequence.'
 		);
 
 		const firstToken = this.currentTokens[0];
@@ -138,9 +174,9 @@ export class PartialPromptVariableName extends ParserBase<TSimpleDecoderToken, P
 				firstToken.range.startLineNumber,
 				firstToken.range.startColumn,
 				lastToken.range.endLineNumber,
-				lastToken.range.endColumn,
+				lastToken.range.endColumn
 			),
-			variableName,
+			variableName
 		);
 	}
 }
@@ -149,31 +185,26 @@ export class PartialPromptVariableName extends ParserBase<TSimpleDecoderToken, P
  * The parser responsible for parsing a `prompt variable name` with `data`.
  * E.g., the `/path/to/something.md` part of the `#file:/path/to/something.md` sequence.
  */
-export class PartialPromptVariableWithData extends ParserBase<TSimpleDecoderToken, PartialPromptVariableWithData | PromptVariableWithData> {
-
+export class PartialPromptVariableWithData extends ParserBase<
+	TSimpleDecoderToken,
+	PartialPromptVariableWithData | PromptVariableWithData
+> {
 	constructor(tokens: readonly TSimpleDecoderToken[]) {
 		const firstToken = tokens[0];
 		const lastToken = tokens[tokens.length - 1];
 
 		// sanity checks of our expectations about the tokens list
-		assert(
-			tokens.length > 2,
-			`Tokens list must contain at least 3 items, got '${tokens.length}'.`,
-		);
-		assert(
-			firstToken instanceof Hash,
-			`The first token must be a '#', got '${firstToken} '.`,
-		);
-		assert(
-			lastToken instanceof Colon,
-			`The last token must be a ':', got '${lastToken} '.`,
-		);
+		assert(tokens.length > 2, `Tokens list must contain at least 3 items, got '${tokens.length}'.`);
+		assert(firstToken instanceof Hash, `The first token must be a '#', got '${firstToken} '.`);
+		assert(lastToken instanceof Colon, `The last token must be a ':', got '${lastToken} '.`);
 
 		super([...tokens]);
 	}
 
 	@assertNotConsumed
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialPromptVariableWithData | PromptVariableWithData> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<PartialPromptVariableWithData | PromptVariableWithData> {
 		// if a `stop` character is encountered, finish the parsing process
 		if (STOP_CHARACTERS.includes(token.text)) {
 			// in any case, success of failure below, this is an end of the parsing process
@@ -192,7 +223,7 @@ export class PartialPromptVariableWithData extends ParserBase<TSimpleDecoderToke
 				firstToken.range.startLineNumber,
 				firstToken.range.startColumn,
 				lastToken.range.endLineNumber,
-				lastToken.range.endColumn,
+				lastToken.range.endColumn
 			);
 
 			// render the characters above into strings
@@ -201,11 +232,7 @@ export class PartialPromptVariableWithData extends ParserBase<TSimpleDecoderToke
 
 			return {
 				result: 'success',
-				nextParser: new PromptVariableWithData(
-					fullRange,
-					variableName,
-					variableData,
-				),
+				nextParser: new PromptVariableWithData(fullRange, variableName, variableData),
 				wasTokenConsumed: false,
 			};
 		}
@@ -243,10 +270,10 @@ export class PartialPromptVariableWithData extends ParserBase<TSimpleDecoderToke
 				firstToken.range.startLineNumber,
 				firstToken.range.startColumn,
 				lastToken.range.endLineNumber,
-				lastToken.range.endColumn,
+				lastToken.range.endColumn
 			),
 			variableName,
-			variableData,
+			variableData
 		);
 	}
 }

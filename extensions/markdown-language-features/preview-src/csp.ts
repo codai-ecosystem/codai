@@ -16,14 +16,12 @@ export class CspAlerter {
 
 	private _messaging?: MessagePoster;
 
-	constructor(
-		private readonly _settingsManager: SettingsManager,
-	) {
+	constructor(private readonly _settingsManager: SettingsManager) {
 		document.addEventListener('securitypolicyviolation', () => {
 			this._onCspWarning();
 		});
 
-		window.addEventListener('message', (event) => {
+		window.addEventListener('message', event => {
 			if (event && event.data && event.data.name === 'vscode-did-block-svg') {
 				this._onCspWarning();
 			}

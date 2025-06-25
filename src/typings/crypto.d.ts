@@ -8,7 +8,6 @@
 // in nodejs. Therefore it's OK to spell out its typings here
 
 declare global {
-
 	/**
 	 * This Web Crypto API interface provides a number of low-level cryptographic functions. It is accessed via the Crypto.subtle properties available in a window context (via Window.crypto).
 	 * Available only in secure contexts.
@@ -23,7 +22,10 @@ declare global {
 		// /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/SubtleCrypto/deriveKey) */
 		// deriveKey(algorithm: AlgorithmIdentifier | EcdhKeyDeriveParams | HkdfParams | Pbkdf2Params, baseKey: CryptoKey, derivedKeyType: AlgorithmIdentifier | AesDerivedKeyParams | HmacImportParams | HkdfParams | Pbkdf2Params, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey>;
 		/** [MDN Reference](https://developer.mozilla.org/docs/Web/API/SubtleCrypto/digest) */
-		digest(algorithm: { name: string } | string, data: ArrayBufferView | ArrayBuffer): Promise<ArrayBuffer>;
+		digest(
+			algorithm: { name: string } | string,
+			data: ArrayBufferView | ArrayBuffer
+		): Promise<ArrayBuffer>;
 		// /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/SubtleCrypto/encrypt) */
 		// encrypt(algorithm: AlgorithmIdentifier | RsaOaepParams | AesCtrParams | AesCbcParams | AesGcmParams, key: CryptoKey, data: BufferSource): Promise<ArrayBuffer>;
 		// /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/SubtleCrypto/exportKey) */
@@ -74,10 +76,9 @@ declare global {
 
 	var Crypto: {
 		prototype: Crypto;
-		new(): Crypto;
+		new (): Crypto;
 	};
 
 	var crypto: Crypto;
-
 }
-export { }
+export {};

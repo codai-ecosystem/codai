@@ -11,12 +11,22 @@ import { IDimension } from '../../../../base/browser/dom.js';
 import { Direction, IViewSize } from '../../../../base/browser/ui/grid/grid.js';
 import { isMacintosh, isNative, isWeb } from '../../../../base/common/platform.js';
 import { isAuxiliaryWindow } from '../../../../base/browser/window.js';
-import { CustomTitleBarVisibility, TitleBarSetting, getMenuBarVisibility, hasCustomTitlebar, hasNativeMenu, hasNativeTitlebar } from '../../../../platform/window/common/window.js';
+import {
+	CustomTitleBarVisibility,
+	TitleBarSetting,
+	getMenuBarVisibility,
+	hasCustomTitlebar,
+	hasNativeMenu,
+	hasNativeTitlebar,
+} from '../../../../platform/window/common/window.js';
 import { isFullscreen, isWCOEnabled } from '../../../../base/browser/browser.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
 
-export const IWorkbenchLayoutService = refineServiceDecorator<ILayoutService, IWorkbenchLayoutService>(ILayoutService);
+export const IWorkbenchLayoutService = refineServiceDecorator<
+	ILayoutService,
+	IWorkbenchLayoutService
+>(ILayoutService);
 
 export const enum Parts {
 	TITLEBAR_PART = 'workbench.parts.titlebar',
@@ -26,7 +36,7 @@ export const enum Parts {
 	PANEL_PART = 'workbench.parts.panel',
 	AUXILIARYBAR_PART = 'workbench.parts.auxiliarybar',
 	EDITOR_PART = 'workbench.parts.editor',
-	STATUSBAR_PART = 'workbench.parts.statusbar'
+	STATUSBAR_PART = 'workbench.parts.statusbar',
 }
 
 export const enum ZenModeSettings {
@@ -45,33 +55,33 @@ export const enum LayoutSettings {
 	EDITOR_TABS_MODE = 'workbench.editor.showTabs',
 	EDITOR_ACTIONS_LOCATION = 'workbench.editor.editorActionsLocation',
 	COMMAND_CENTER = 'window.commandCenter',
-	LAYOUT_ACTIONS = 'workbench.layoutControl.enabled'
+	LAYOUT_ACTIONS = 'workbench.layoutControl.enabled',
 }
 
 export const enum ActivityBarPosition {
 	DEFAULT = 'default',
 	TOP = 'top',
 	BOTTOM = 'bottom',
-	HIDDEN = 'hidden'
+	HIDDEN = 'hidden',
 }
 
 export const enum EditorTabsMode {
 	MULTIPLE = 'multiple',
 	SINGLE = 'single',
-	NONE = 'none'
+	NONE = 'none',
 }
 
 export const enum EditorActionsLocation {
 	DEFAULT = 'default',
 	TITLEBAR = 'titleBar',
-	HIDDEN = 'hidden'
+	HIDDEN = 'hidden',
 }
 
 export const enum Position {
 	LEFT,
 	RIGHT,
 	BOTTOM,
-	TOP
+	TOP,
 }
 
 export function isHorizontal(position: Position): boolean {
@@ -81,18 +91,23 @@ export function isHorizontal(position: Position): boolean {
 export const enum PanelOpensMaximizedOptions {
 	ALWAYS,
 	NEVER,
-	REMEMBER_LAST
+	REMEMBER_LAST,
 }
 
 export type PanelAlignment = 'left' | 'center' | 'right' | 'justify';
 
 export function positionToString(position: Position): string {
 	switch (position) {
-		case Position.LEFT: return 'left';
-		case Position.RIGHT: return 'right';
-		case Position.BOTTOM: return 'bottom';
-		case Position.TOP: return 'top';
-		default: return 'bottom';
+		case Position.LEFT:
+			return 'left';
+		case Position.RIGHT:
+			return 'right';
+		case Position.BOTTOM:
+			return 'bottom';
+		case Position.TOP:
+			return 'top';
+		default:
+			return 'bottom';
 	}
 }
 
@@ -100,7 +115,7 @@ const positionsByString: { [key: string]: Position } = {
 	[positionToString(Position.LEFT)]: Position.LEFT,
 	[positionToString(Position.RIGHT)]: Position.RIGHT,
 	[positionToString(Position.BOTTOM)]: Position.BOTTOM,
-	[positionToString(Position.TOP)]: Position.TOP
+	[positionToString(Position.TOP)]: Position.TOP,
 };
 
 export function positionFromString(str: string): Position {
@@ -109,17 +124,24 @@ export function positionFromString(str: string): Position {
 
 function panelOpensMaximizedSettingToString(setting: PanelOpensMaximizedOptions): string {
 	switch (setting) {
-		case PanelOpensMaximizedOptions.ALWAYS: return 'always';
-		case PanelOpensMaximizedOptions.NEVER: return 'never';
-		case PanelOpensMaximizedOptions.REMEMBER_LAST: return 'preserve';
-		default: return 'preserve';
+		case PanelOpensMaximizedOptions.ALWAYS:
+			return 'always';
+		case PanelOpensMaximizedOptions.NEVER:
+			return 'never';
+		case PanelOpensMaximizedOptions.REMEMBER_LAST:
+			return 'preserve';
+		default:
+			return 'preserve';
 	}
 }
 
 const panelOpensMaximizedByString: { [key: string]: PanelOpensMaximizedOptions } = {
-	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.ALWAYS)]: PanelOpensMaximizedOptions.ALWAYS,
-	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.NEVER)]: PanelOpensMaximizedOptions.NEVER,
-	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.REMEMBER_LAST)]: PanelOpensMaximizedOptions.REMEMBER_LAST
+	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.ALWAYS)]:
+		PanelOpensMaximizedOptions.ALWAYS,
+	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.NEVER)]:
+		PanelOpensMaximizedOptions.NEVER,
+	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.REMEMBER_LAST)]:
+		PanelOpensMaximizedOptions.REMEMBER_LAST,
 };
 
 export function panelOpensMaximizedFromString(str: string): PanelOpensMaximizedOptions {
@@ -130,13 +152,12 @@ export type MULTI_WINDOW_PARTS = Parts.EDITOR_PART | Parts.STATUSBAR_PART | Part
 export type SINGLE_WINDOW_PARTS = Exclude<Parts, MULTI_WINDOW_PARTS>;
 
 export function isMultiWindowPart(part: Parts): part is MULTI_WINDOW_PARTS {
-	return part === Parts.EDITOR_PART ||
-		part === Parts.STATUSBAR_PART ||
-		part === Parts.TITLEBAR_PART;
+	return (
+		part === Parts.EDITOR_PART || part === Parts.STATUSBAR_PART || part === Parts.TITLEBAR_PART
+	);
 }
 
 export interface IWorkbenchLayoutService extends ILayoutService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -147,7 +168,10 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	/**
 	 * Emits when the target window is maximized or unmaximized.
 	 */
-	readonly onDidChangeWindowMaximized: Event<{ readonly windowId: number; readonly maximized: boolean }>;
+	readonly onDidChangeWindowMaximized: Event<{
+		readonly windowId: number;
+		readonly maximized: boolean;
+	}>;
 
 	/**
 	 * Emits when main editor centered layout is enabled or disabled.
@@ -332,7 +356,11 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	getVisibleNeighborPart(part: Parts, direction: Direction): Parts | undefined;
 }
 
-export function shouldShowCustomTitleBar(configurationService: IConfigurationService, window: Window, menuBarToggled?: boolean): boolean {
+export function shouldShowCustomTitleBar(
+	configurationService: IConfigurationService,
+	window: Window,
+	menuBarToggled?: boolean
+): boolean {
 	if (!hasCustomTitlebar(configurationService)) {
 		return false;
 	}
@@ -341,8 +369,13 @@ export function shouldShowCustomTitleBar(configurationService: IConfigurationSer
 	const nativeTitleBarEnabled = hasNativeTitlebar(configurationService);
 
 	if (!isWeb) {
-		const showCustomTitleBar = configurationService.getValue<CustomTitleBarVisibility>(TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY);
-		if (showCustomTitleBar === CustomTitleBarVisibility.NEVER && nativeTitleBarEnabled || showCustomTitleBar === CustomTitleBarVisibility.WINDOWED && inFullscreen) {
+		const showCustomTitleBar = configurationService.getValue<CustomTitleBarVisibility>(
+			TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY
+		);
+		if (
+			(showCustomTitleBar === CustomTitleBarVisibility.NEVER && nativeTitleBarEnabled) ||
+			(showCustomTitleBar === CustomTitleBarVisibility.WINDOWED && inFullscreen)
+		) {
 			return false;
 		}
 	}
@@ -372,7 +405,9 @@ export function shouldShowCustomTitleBar(configurationService: IConfigurationSer
 	}
 
 	// remaining behavior is based on menubar visibility
-	const menuBarVisibility = !isAuxiliaryWindow(window) ? getMenuBarVisibility(configurationService) : 'hidden';
+	const menuBarVisibility = !isAuxiliaryWindow(window)
+		? getMenuBarVisibility(configurationService)
+		: 'hidden';
 	switch (menuBarVisibility) {
 		case 'classic':
 			return !inFullscreen || !!menuBarToggled;
@@ -389,22 +424,34 @@ export function shouldShowCustomTitleBar(configurationService: IConfigurationSer
 }
 
 function isTitleBarEmpty(configurationService: IConfigurationService): boolean {
-
 	// with the command center enabled, we should always show
 	if (configurationService.getValue<boolean>(LayoutSettings.COMMAND_CENTER)) {
 		return false;
 	}
 
 	// with the activity bar on top, we should always show
-	const activityBarPosition = configurationService.getValue<ActivityBarPosition>(LayoutSettings.ACTIVITY_BAR_LOCATION);
-	if (activityBarPosition === ActivityBarPosition.TOP || activityBarPosition === ActivityBarPosition.BOTTOM) {
+	const activityBarPosition = configurationService.getValue<ActivityBarPosition>(
+		LayoutSettings.ACTIVITY_BAR_LOCATION
+	);
+	if (
+		activityBarPosition === ActivityBarPosition.TOP ||
+		activityBarPosition === ActivityBarPosition.BOTTOM
+	) {
 		return false;
 	}
 
 	// with the editor actions on top, we should always show
-	const editorActionsLocation = configurationService.getValue<EditorActionsLocation>(LayoutSettings.EDITOR_ACTIONS_LOCATION);
-	const editorTabsMode = configurationService.getValue<EditorTabsMode>(LayoutSettings.EDITOR_TABS_MODE);
-	if (editorActionsLocation === EditorActionsLocation.TITLEBAR || editorActionsLocation === EditorActionsLocation.DEFAULT && editorTabsMode === EditorTabsMode.NONE) {
+	const editorActionsLocation = configurationService.getValue<EditorActionsLocation>(
+		LayoutSettings.EDITOR_ACTIONS_LOCATION
+	);
+	const editorTabsMode = configurationService.getValue<EditorTabsMode>(
+		LayoutSettings.EDITOR_TABS_MODE
+	);
+	if (
+		editorActionsLocation === EditorActionsLocation.TITLEBAR ||
+		(editorActionsLocation === EditorActionsLocation.DEFAULT &&
+			editorTabsMode === EditorTabsMode.NONE)
+	) {
 		return false;
 	}
 

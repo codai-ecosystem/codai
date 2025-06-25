@@ -20,7 +20,6 @@ const providerScheme = 'mcp-install';
 export class McpUrlHandler extends Disposable implements IWorkbenchContribution, IURLHandler {
 	public static readonly scheme = providerScheme;
 
-
 	private readonly _fileSystemProvider = new Lazy(() => {
 		return this._instaService.invokeFunction(accessor => {
 			const fileService = accessor.get(IFileService);
@@ -33,7 +32,7 @@ export class McpUrlHandler extends Disposable implements IWorkbenchContribution,
 	constructor(
 		@IURLService urlService: IURLService,
 		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@IFileService private readonly _fileService: IFileService,
+		@IFileService private readonly _fileService: IFileService
 	) {
 		super();
 		this._register(urlService.registerHandler(this));
@@ -58,10 +57,13 @@ export class McpUrlHandler extends Disposable implements IWorkbenchContribution,
 
 		await this._fileService.writeFile(
 			fileUri,
-			VSBuffer.fromString(JSON.stringify(rest, null, '\t')),
+			VSBuffer.fromString(JSON.stringify(rest, null, '\t'))
 		);
 
-		const addConfigHelper = this._instaService.createInstance(McpAddConfigurationCommand, undefined);
+		const addConfigHelper = this._instaService.createInstance(
+			McpAddConfigurationCommand,
+			undefined
+		);
 		addConfigHelper.pickForUrlHandler(fileUri, true);
 
 		return Promise.resolve(true);

@@ -19,7 +19,10 @@ import { IModelService } from '../../../../common/services/model.js';
 import { ITextResourceConfigurationService } from '../../../../common/services/textResourceConfiguration.js';
 import { CompletionItem } from '../../browser/suggest.js';
 import { WordDistance } from '../../browser/wordDistance.js';
-import { createCodeEditorServices, instantiateTestCodeEditor } from '../../../../test/browser/testCodeEditor.js';
+import {
+	createCodeEditorServices,
+	instantiateTestCodeEditor,
+} from '../../../../test/browser/testCodeEditor.js';
 import { instantiateTextModel } from '../../../../test/common/testTextModel.js';
 import { TestLanguageConfigurationService } from '../../../../test/common/modes/testLanguageConfigurationService.js';
 import { NullLogService } from '../../../../../platform/log/common/log.js';
@@ -28,7 +31,6 @@ import { ILanguageService } from '../../../../common/languages/language.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('suggest, word distance', function () {
-
 	let distance: WordDistance;
 	const disposables = new DisposableStore();
 
@@ -40,44 +42,68 @@ suite('suggest, word distance', function () {
 		const languageConfigurationService = instantiationService.get(ILanguageConfigurationService);
 		const languageService = instantiationService.get(ILanguageService);
 		disposables.add(languageService.registerLanguage({ id: languageId }));
-		disposables.add(languageConfigurationService.register(languageId, {
-			brackets: [
-				['{', '}'],
-				['[', ']'],
-				['(', ')'],
-			]
-		}));
+		disposables.add(
+			languageConfigurationService.register(languageId, {
+				brackets: [
+					['{', '}'],
+					['[', ']'],
+					['(', ')'],
+				],
+			})
+		);
 
-		const model = disposables.add(instantiateTextModel(instantiationService, 'function abc(aa, ab){\na\n}', languageId, undefined, URI.parse('test:///some.path')));
+		const model = disposables.add(
+			instantiateTextModel(
+				instantiationService,
+				'function abc(aa, ab){\na\n}',
+				languageId,
+				undefined,
+				URI.parse('test:///some.path')
+			)
+		);
 		const editor = disposables.add(instantiateTestCodeEditor(instantiationService, model));
 		editor.updateOptions({ suggest: { localityBonus: true } });
 		editor.setPosition({ lineNumber: 2, column: 2 });
 
-		const modelService = new class extends mock<IModelService>() {
+		const modelService = new (class extends mock<IModelService>() {
 			override onModelRemoved = Event.None;
 			override getModel(uri: URI) {
 				return uri.toString() === model.uri.toString() ? model : null;
 			}
-		};
+		})();
 
-		const service = new class extends EditorWorkerService {
-
+		const service = new (class extends EditorWorkerService {
 			private _worker = new EditorWorker();
 
 			constructor() {
-				super(null!, modelService, new class extends mock<ITextResourceConfigurationService>() { }, new NullLogService(), new TestLanguageConfigurationService(), new LanguageFeaturesService());
+				super(
+					null!,
+					modelService,
+					new (class extends mock<ITextResourceConfigurationService>() {})(),
+					new NullLogService(),
+					new TestLanguageConfigurationService(),
+					new LanguageFeaturesService()
+				);
 				this._worker.$acceptNewModel({
 					url: model.uri.toString(),
 					lines: model.getLinesContent(),
 					EOL: model.getEOL(),
-					versionId: model.getVersionId()
+					versionId: model.getVersionId(),
 				});
 				model.onDidChangeContent(e => this._worker.$acceptModelChanged(model.uri.toString(), e));
 			}
-			override computeWordRanges(resource: URI, range: IRange): Promise<{ [word: string]: IRange[] } | null> {
-				return this._worker.$computeWordRanges(resource.toString(), range, DEFAULT_WORD_REGEXP.source, DEFAULT_WORD_REGEXP.flags);
+			override computeWordRanges(
+				resource: URI,
+				range: IRange
+			): Promise<{ [word: string]: IRange[] } | null> {
+				return this._worker.$computeWordRanges(
+					resource.toString(),
+					range,
+					DEFAULT_WORD_REGEXP.source,
+					DEFAULT_WORD_REGEXP.flags
+				);
 			}
-		};
+		})();
 
 		distance = await WordDistance.create(service, editor);
 
@@ -90,21 +116,30 @@ suite('suggest, word distance', function () {
 
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function createSuggestItem(label: string, overwriteBefore: number, position: IPosition): CompletionItem {
+	function createSuggestItem(
+		label: string,
+		overwriteBefore: number,
+		position: IPosition
+	): CompletionItem {
 		const suggestion: languages.CompletionItem = {
 			label,
-			range: { startLineNumber: position.lineNumber, startColumn: position.column - overwriteBefore, endLineNumber: position.lineNumber, endColumn: position.column },
+			range: {
+				startLineNumber: position.lineNumber,
+				startColumn: position.column - overwriteBefore,
+				endLineNumber: position.lineNumber,
+				endColumn: position.column,
+			},
 			insertText: label,
-			kind: 0
+			kind: 0,
 		};
 		const container: languages.CompletionList = {
-			suggestions: [suggestion]
+			suggestions: [suggestion],
 		};
 		const provider: languages.CompletionItemProvider = {
 			_debugDisplayName: 'test',
 			provideCompletionItems(): any {
 				return;
-			}
+			},
 		};
 		return new CompletionItem(position, suggestion, container, provider);
 	}

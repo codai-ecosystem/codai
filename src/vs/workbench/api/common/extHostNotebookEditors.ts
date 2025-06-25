@@ -5,24 +5,29 @@
 
 import { Emitter } from '../../../base/common/event.js';
 import { ILogService } from '../../../platform/log/common/log.js';
-import { ExtHostNotebookEditorsShape, INotebookEditorPropertiesChangeData, INotebookEditorViewColumnInfo } from './extHost.protocol.js';
+import {
+	ExtHostNotebookEditorsShape,
+	INotebookEditorPropertiesChangeData,
+	INotebookEditorViewColumnInfo,
+} from './extHost.protocol.js';
 import { ExtHostNotebookController } from './extHostNotebook.js';
 import * as typeConverters from './extHostTypeConverters.js';
 import type * as vscode from 'vscode';
 
-
 export class ExtHostNotebookEditors implements ExtHostNotebookEditorsShape {
-
-	private readonly _onDidChangeNotebookEditorSelection = new Emitter<vscode.NotebookEditorSelectionChangeEvent>();
-	private readonly _onDidChangeNotebookEditorVisibleRanges = new Emitter<vscode.NotebookEditorVisibleRangesChangeEvent>();
+	private readonly _onDidChangeNotebookEditorSelection =
+		new Emitter<vscode.NotebookEditorSelectionChangeEvent>();
+	private readonly _onDidChangeNotebookEditorVisibleRanges =
+		new Emitter<vscode.NotebookEditorVisibleRangesChangeEvent>();
 
 	readonly onDidChangeNotebookEditorSelection = this._onDidChangeNotebookEditorSelection.event;
-	readonly onDidChangeNotebookEditorVisibleRanges = this._onDidChangeNotebookEditorVisibleRanges.event;
+	readonly onDidChangeNotebookEditorVisibleRanges =
+		this._onDidChangeNotebookEditorVisibleRanges.event;
 
 	constructor(
 		@ILogService private readonly _logService: ILogService,
-		private readonly _notebooksAndEditors: ExtHostNotebookController,
-	) { }
+		private readonly _notebooksAndEditors: ExtHostNotebookController
+	) {}
 
 	$acceptEditorPropertiesChanged(id: string, data: INotebookEditorPropertiesChangeData): void {
 		this._logService.debug('ExtHostNotebook#$acceptEditorPropertiesChanged', id, data);
@@ -39,14 +44,16 @@ export class ExtHostNotebookEditors implements ExtHostNotebookEditorsShape {
 		if (data.visibleRanges) {
 			this._onDidChangeNotebookEditorVisibleRanges.fire({
 				notebookEditor: editor.apiEditor,
-				visibleRanges: editor.apiEditor.visibleRanges
+				visibleRanges: editor.apiEditor.visibleRanges,
 			});
 		}
 		if (data.selections) {
-			this._onDidChangeNotebookEditorSelection.fire(Object.freeze({
-				notebookEditor: editor.apiEditor,
-				selections: editor.apiEditor.selections
-			}));
+			this._onDidChangeNotebookEditorSelection.fire(
+				Object.freeze({
+					notebookEditor: editor.apiEditor,
+					selections: editor.apiEditor.selections,
+				})
+			);
 		}
 	}
 

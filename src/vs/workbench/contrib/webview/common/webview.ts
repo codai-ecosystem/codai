@@ -42,7 +42,12 @@ export function asWebviewUri(resource: URI, remoteInfo?: WebviewRemoteInfo): URI
 		return resource;
 	}
 
-	if (remoteInfo && remoteInfo.authority && remoteInfo.isRemote && resource.scheme === Schemas.file) {
+	if (
+		remoteInfo &&
+		remoteInfo.authority &&
+		remoteInfo.isRemote &&
+		resource.scheme === Schemas.file
+	) {
 		resource = URI.from({
 			scheme: Schemas.vscodeRemote,
 			authority: remoteInfo.authority,
@@ -63,9 +68,9 @@ function encodeAuthority(authority: string): string {
 	return authority.replace(/./g, char => {
 		const code = char.charCodeAt(0);
 		if (
-			(code >= CharCode.a && code <= CharCode.z)
-			|| (code >= CharCode.A && code <= CharCode.Z)
-			|| (code >= CharCode.Digit0 && code <= CharCode.Digit9)
+			(code >= CharCode.a && code <= CharCode.z) ||
+			(code >= CharCode.A && code <= CharCode.Z) ||
+			(code >= CharCode.Digit0 && code <= CharCode.Digit9)
 		) {
 			return char;
 		}

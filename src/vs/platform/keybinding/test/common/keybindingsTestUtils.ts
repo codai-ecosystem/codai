@@ -7,7 +7,10 @@ import { decodeKeybinding, ResolvedKeybinding } from '../../../../base/common/ke
 import { OperatingSystem } from '../../../../base/common/platform.js';
 import { USLayoutResolvedKeybinding } from '../../common/usLayoutResolvedKeybinding.js';
 
-export function createUSLayoutResolvedKeybinding(encodedKeybinding: number | number[], OS: OperatingSystem): ResolvedKeybinding | undefined {
+export function createUSLayoutResolvedKeybinding(
+	encodedKeybinding: number | number[],
+	OS: OperatingSystem
+): ResolvedKeybinding | undefined {
 	if (encodedKeybinding === 0) {
 		return undefined;
 	}

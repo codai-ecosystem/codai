@@ -7,7 +7,10 @@ import { Range } from '../core/range.js';
 import { ITextModel } from '../model.js';
 import { IndentAction, CompleteEnterAction } from './languageConfiguration.js';
 import { EditorAutoIndentStrategy } from '../config/editorOptions.js';
-import { getIndentationAtPosition, ILanguageConfigurationService } from './languageConfigurationRegistry.js';
+import {
+	getIndentationAtPosition,
+	ILanguageConfigurationService,
+} from './languageConfigurationRegistry.js';
 import { IndentationContextProcessor } from './supports/indentationLineProcessor.js';
 
 export function getEnterAction(
@@ -22,13 +25,22 @@ export function getEnterAction(
 	if (!richEditSupport) {
 		return null;
 	}
-	const indentationContextProcessor = new IndentationContextProcessor(model, languageConfigurationService);
-	const processedContextTokens = indentationContextProcessor.getProcessedTokenContextAroundRange(range);
+	const indentationContextProcessor = new IndentationContextProcessor(
+		model,
+		languageConfigurationService
+	);
+	const processedContextTokens =
+		indentationContextProcessor.getProcessedTokenContextAroundRange(range);
 	const previousLineText = processedContextTokens.previousLineProcessedTokens.getLineContent();
 	const beforeEnterText = processedContextTokens.beforeRangeProcessedTokens.getLineContent();
 	const afterEnterText = processedContextTokens.afterRangeProcessedTokens.getLineContent();
 
-	const enterResult = richEditSupport.onEnter(autoIndent, previousLineText, beforeEnterText, afterEnterText);
+	const enterResult = richEditSupport.onEnter(
+		autoIndent,
+		previousLineText,
+		beforeEnterText,
+		afterEnterText
+	);
 	if (!enterResult) {
 		return null;
 	}
@@ -39,10 +51,7 @@ export function getEnterAction(
 
 	// Here we add `\t` to appendText first because enterAction is leveraging appendText and removeText to change indentation.
 	if (!appendText) {
-		if (
-			(indentAction === IndentAction.Indent) ||
-			(indentAction === IndentAction.IndentOutdent)
-		) {
+		if (indentAction === IndentAction.Indent || indentAction === IndentAction.IndentOutdent) {
 			appendText = '\t';
 		} else {
 			appendText = '';
@@ -60,6 +69,6 @@ export function getEnterAction(
 		indentAction: indentAction,
 		appendText: appendText,
 		removeText: removeText,
-		indentation: indentation
+		indentation: indentation,
 	};
 }

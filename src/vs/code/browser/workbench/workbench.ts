@@ -17,7 +17,11 @@ import { URI, UriComponents } from '../../../base/common/uri.js';
 import product from '../../../platform/product/common/product.js';
 import { ISecretStorageProvider } from '../../../platform/secrets/common/secrets.js';
 import { isFolderToOpen, isWorkspaceToOpen } from '../../../platform/window/common/window.js';
-import type { IWorkbenchConstructionOptions, IWorkspace, IWorkspaceProvider } from '../../../workbench/browser/web.api.js';
+import type {
+	IWorkbenchConstructionOptions,
+	IWorkspace,
+	IWorkspaceProvider,
+} from '../../../workbench/browser/web.api.js';
 import { AuthenticationSessionInfo } from '../../../workbench/services/authentication/browser/authenticationService.js';
 import type { IURLCallbackProvider } from '../../../workbench/services/url/browser/urlService.js';
 import { create } from '../../../workbench/workbench.web.main.internal.js';
@@ -28,7 +32,6 @@ interface ISecretStorageCrypto {
 }
 
 class TransparentCrypto implements ISecretStorageCrypto {
-
 	async seal(data: string): Promise<string> {
 		return data;
 	}
@@ -45,7 +48,6 @@ const enum AESConstants {
 }
 
 class NetworkError extends Error {
-
 	constructor(inner: Error) {
 		super(inner.message);
 		this.name = inner.name;
@@ -54,7 +56,6 @@ class NetworkError extends Error {
 }
 
 class ServerKeyedAESCrypto implements ISecretStorageCrypto {
-
 	private serverKey: Uint8Array | undefined;
 
 	/**
@@ -64,7 +65,7 @@ class ServerKeyedAESCrypto implements ISecretStorageCrypto {
 		return !!crypto.subtle;
 	}
 
-	constructor(private readonly authEndpoint: string) { }
+	constructor(private readonly authEndpoint: string) {}
 
 	async seal(data: string): Promise<string> {
 		// Get a new key and IV on every change, to avoid the risk of reusing the same key and IV pair with AES-GCM
@@ -162,7 +163,9 @@ class ServerKeyedAESCrypto implements ISecretStorageCrypto {
 
 				const serverKey = new Uint8Array(await res.arrayBuffer());
 				if (serverKey.byteLength !== AESConstants.KEY_LENGTH / 8) {
-					throw Error(`The key retrieved by the server is not ${AESConstants.KEY_LENGTH} bit long.`);
+					throw Error(
+						`The key retrieved by the server is not ${AESConstants.KEY_LENGTH} bit long.`
+					);
 				}
 
 				this.serverKey = serverKey;
@@ -186,16 +189,13 @@ class ServerKeyedAESCrypto implements ISecretStorageCrypto {
 }
 
 export class LocalStorageSecretStorageProvider implements ISecretStorageProvider {
-
 	private readonly storageKey = 'secrets.provider';
 
 	private secretsPromise: Promise<Record<string, string>>;
 
 	type: 'in-memory' | 'persisted' | 'unknown' = 'persisted';
 
-	constructor(
-		private readonly crypto: ISecretStorageCrypto,
-	) {
+	constructor(private readonly crypto: ISecretStorageCrypto) {
 		this.secretsPromise = this.load();
 	}
 
@@ -223,11 +223,15 @@ export class LocalStorageSecretStorageProvider implements ISecretStorageProvider
 	private loadAuthSessionFromElement(): Record<string, string> {
 		let authSessionInfo: (AuthenticationSessionInfo & { scopes: string[][] }) | undefined;
 		const authSessionElement = mainWindow.document.getElementById('vscode-workbench-auth-session');
-		const authSessionElementAttribute = authSessionElement ? authSessionElement.getAttribute('data-settings') : undefined;
+		const authSessionElementAttribute = authSessionElement
+			? authSessionElement.getAttribute('data-settings')
+			: undefined;
 		if (authSessionElementAttribute) {
 			try {
 				authSessionInfo = JSON.parse(authSessionElementAttribute);
-			} catch (error) { /* Invalid session is passed. Ignore. */ }
+			} catch (error) {
+				/* Invalid session is passed. Ignore. */
+			}
 		}
 
 		if (!authSessionInfo) {
@@ -245,12 +249,17 @@ export class LocalStorageSecretStorageProvider implements ISecretStorageProvider
 			return record;
 		}
 
-		const authAccount = JSON.stringify({ extensionId: 'vscode.github-authentication', key: 'github.auth' });
-		record[authAccount] = JSON.stringify(authSessionInfo.scopes.map(scopes => ({
-			id: authSessionInfo.id,
-			scopes,
-			accessToken: authSessionInfo.accessToken
-		})));
+		const authAccount = JSON.stringify({
+			extensionId: 'vscode.github-authentication',
+			key: 'github.auth',
+		});
+		record[authAccount] = JSON.stringify(
+			authSessionInfo.scopes.map(scopes => ({
+				id: authSessionInfo.id,
+				scopes,
+				accessToken: authSessionInfo.accessToken,
+			}))
+		);
 
 		return record;
 	}
@@ -286,7 +295,6 @@ export class LocalStorageSecretStorageProvider implements ISecretStorageProvider
 }
 
 class LocalStorageURLCallbackProvider extends Disposable implements IURLCallbackProvider {
-
 	private static REQUEST_ID = 0;
 
 	private static QUERY_KEYS: ('scheme' | 'authority' | 'path' | 'query' | 'fragment')[] = [
@@ -294,7 +302,7 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
 		'authority',
 		'path',
 		'query',
-		'fragment'
+		'fragment',
 	];
 
 	private readonly _onCallback = this._register(new Emitter<URI>());
@@ -332,7 +340,10 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
 			this.startListening();
 		}
 
-		return URI.parse(mainWindow.location.href).with({ path: this._callbackRoute, query: queryParams.join('&') });
+		return URI.parse(mainWindow.location.href).with({
+			path: this._callbackRoute,
+			query: queryParams.join('&'),
+		});
 	}
 
 	private startListening(): void {
@@ -342,7 +353,9 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
 
 		const fn = () => this.onDidChangeLocalStorage();
 		mainWindow.addEventListener('storage', fn);
-		this.onDidChangeLocalStorageDisposable = { dispose: () => mainWindow.removeEventListener('storage', fn) };
+		this.onDidChangeLocalStorageDisposable = {
+			dispose: () => mainWindow.removeEventListener('storage', fn),
+		};
 	}
 
 	private stopListening(): void {
@@ -398,14 +411,18 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
 }
 
 class WorkspaceProvider implements IWorkspaceProvider {
-
 	private static QUERY_PARAM_EMPTY_WINDOW = 'ew';
 	private static QUERY_PARAM_FOLDER = 'folder';
 	private static QUERY_PARAM_WORKSPACE = 'workspace';
 
 	private static QUERY_PARAM_PAYLOAD = 'payload';
 
-	static create(config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents }) {
+	static create(
+		config: IWorkbenchConstructionOptions & {
+			folderUri?: UriComponents;
+			workspaceUri?: UriComponents;
+		}
+	) {
 		let foundWorkspace = false;
 		let workspace: IWorkspace;
 		let payload = Object.create(null);
@@ -413,14 +430,19 @@ class WorkspaceProvider implements IWorkspaceProvider {
 		const query = new URL(document.location.href).searchParams;
 		query.forEach((value, key) => {
 			switch (key) {
-
 				// Folder
 				case WorkspaceProvider.QUERY_PARAM_FOLDER:
 					if (config.remoteAuthority && value.startsWith(posix.sep)) {
 						// when connected to a remote and having a value
 						// that is a path (begins with a `/`), assume this
 						// is a vscode-remote resource as simplified URL.
-						workspace = { folderUri: URI.from({ scheme: Schemas.vscodeRemote, path: value, authority: config.remoteAuthority }) };
+						workspace = {
+							folderUri: URI.from({
+								scheme: Schemas.vscodeRemote,
+								path: value,
+								authority: config.remoteAuthority,
+							}),
+						};
 					} else {
 						workspace = { folderUri: URI.parse(value) };
 					}
@@ -433,7 +455,13 @@ class WorkspaceProvider implements IWorkspaceProvider {
 						// when connected to a remote and having a value
 						// that is a path (begins with a `/`), assume this
 						// is a vscode-remote resource as simplified URL.
-						workspace = { workspaceUri: URI.from({ scheme: Schemas.vscodeRemote, path: value, authority: config.remoteAuthority }) };
+						workspace = {
+							workspaceUri: URI.from({
+								scheme: Schemas.vscodeRemote,
+								path: value,
+								authority: config.remoteAuthority,
+							}),
+						};
 					} else {
 						workspace = { workspaceUri: URI.parse(value) };
 					}
@@ -476,10 +504,12 @@ class WorkspaceProvider implements IWorkspaceProvider {
 		readonly workspace: IWorkspace,
 		readonly payload: object,
 		private readonly config: IWorkbenchConstructionOptions
-	) {
-	}
+	) {}
 
-	async open(workspace: IWorkspace, options?: { reuse?: boolean; payload?: object }): Promise<boolean> {
+	async open(
+		workspace: IWorkspace,
+		options?: { reuse?: boolean; payload?: object }
+	): Promise<boolean> {
 		if (options?.reuse && !options.payload && this.isSame(this.workspace, workspace)) {
 			return true; // return early if workspace and environment is not changing and we are reusing window
 		}
@@ -504,8 +534,10 @@ class WorkspaceProvider implements IWorkspaceProvider {
 		return false;
 	}
 
-	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean; payload?: object }): string | undefined {
-
+	private createTargetUrl(
+		workspace: IWorkspace,
+		options?: { reuse?: boolean; payload?: object }
+	): string | undefined {
 		// Empty
 		let targetHref: string | undefined = undefined;
 		if (!workspace) {
@@ -534,7 +566,6 @@ class WorkspaceProvider implements IWorkspaceProvider {
 
 	private encodeWorkspacePath(uri: URI): string {
 		if (this.config.remoteAuthority && uri.scheme === Schemas.vscodeRemote) {
-
 			// when connected to a remote and having a folder
 			// or workspace for that remote, only use the path
 			// as query value to form shorter, nicer URLs.
@@ -591,27 +622,40 @@ function readCookie(name: string): string | undefined {
 }
 
 (function () {
-
 	// Find config by checking for DOM
 	const configElement = mainWindow.document.getElementById('vscode-workbench-web-configuration');
-	const configElementAttribute = configElement ? configElement.getAttribute('data-settings') : undefined;
+	const configElementAttribute = configElement
+		? configElement.getAttribute('data-settings')
+		: undefined;
 	if (!configElement || !configElementAttribute) {
 		throw new Error('Missing web configuration element');
 	}
-	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = JSON.parse(configElementAttribute);
+	const config: IWorkbenchConstructionOptions & {
+		folderUri?: UriComponents;
+		workspaceUri?: UriComponents;
+		callbackRoute: string;
+	} = JSON.parse(configElementAttribute);
 	const secretStorageKeyPath = readCookie('vscode-secret-key-path');
-	const secretStorageCrypto = secretStorageKeyPath && ServerKeyedAESCrypto.supported()
-		? new ServerKeyedAESCrypto(secretStorageKeyPath) : new TransparentCrypto();
+	const secretStorageCrypto =
+		secretStorageKeyPath && ServerKeyedAESCrypto.supported()
+			? new ServerKeyedAESCrypto(secretStorageKeyPath)
+			: new TransparentCrypto();
 
 	// Create workbench
 	create(mainWindow.document.body, {
 		...config,
-		windowIndicator: config.windowIndicator ?? { label: '$(remote)', tooltip: `${product.nameShort} Web` },
-		settingsSyncOptions: config.settingsSyncOptions ? { enabled: config.settingsSyncOptions.enabled, } : undefined,
+		windowIndicator: config.windowIndicator ?? {
+			label: '$(remote)',
+			tooltip: `${product.nameShort} Web`,
+		},
+		settingsSyncOptions: config.settingsSyncOptions
+			? { enabled: config.settingsSyncOptions.enabled }
+			: undefined,
 		workspaceProvider: WorkspaceProvider.create(config),
 		urlCallbackProvider: new LocalStorageURLCallbackProvider(config.callbackRoute),
-		secretStorageProvider: config.remoteAuthority && !secretStorageKeyPath
-			? undefined /* with a remote without embedder-preferred storage, store on the remote */
-			: new LocalStorageSecretStorageProvider(secretStorageCrypto),
+		secretStorageProvider:
+			config.remoteAuthority && !secretStorageKeyPath
+				? undefined /* with a remote without embedder-preferred storage, store on the remote */
+				: new LocalStorageSecretStorageProvider(secretStorageCrypto),
 	});
 })();

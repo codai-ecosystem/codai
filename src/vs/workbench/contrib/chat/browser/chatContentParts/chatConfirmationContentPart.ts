@@ -8,7 +8,11 @@ import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js
 import { localize } from '../../../../../nls.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { IChatProgressRenderableResponseContent } from '../../common/chatModel.js';
-import { IChatConfirmation, IChatSendRequestOptions, IChatService } from '../../common/chatService.js';
+import {
+	IChatConfirmation,
+	IChatSendRequestOptions,
+	IChatService,
+} from '../../common/chatService.js';
 import { isResponseVM } from '../../common/chatViewModel.js';
 import { IChatWidgetService } from '../chat.js';
 import { ChatConfirmationWidget } from './chatConfirmationWidget.js';
@@ -25,44 +29,55 @@ export class ChatConfirmationContentPart extends Disposable implements IChatCont
 		context: IChatContentPartRenderContext,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IChatService private readonly chatService: IChatService,
-		@IChatWidgetService chatWidgetService: IChatWidgetService,
+		@IChatWidgetService chatWidgetService: IChatWidgetService
 	) {
 		super();
 
 		const element = context.element;
 		const buttons = confirmation.buttons
 			? confirmation.buttons.map(button => ({
-				label: button,
-				data: confirmation.data
-			}))
+					label: button,
+					data: confirmation.data,
+				}))
 			: [
-				{ label: localize('accept', "Accept"), data: confirmation.data },
-				{ label: localize('dismiss', "Dismiss"), data: confirmation.data, isSecondary: true },
-			];
-		const confirmationWidget = this._register(this.instantiationService.createInstance(ChatConfirmationWidget, confirmation.title, undefined, confirmation.message, buttons, context.container));
+					{ label: localize('accept', 'Accept'), data: confirmation.data },
+					{ label: localize('dismiss', 'Dismiss'), data: confirmation.data, isSecondary: true },
+				];
+		const confirmationWidget = this._register(
+			this.instantiationService.createInstance(
+				ChatConfirmationWidget,
+				confirmation.title,
+				undefined,
+				confirmation.message,
+				buttons,
+				context.container
+			)
+		);
 		confirmationWidget.setShowButtons(!confirmation.isUsed);
 
 		this._register(confirmationWidget.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
 
-		this._register(confirmationWidget.onDidClick(async e => {
-			if (isResponseVM(element)) {
-				const prompt = `${e.label}: "${confirmation.title}"`;
-				const options: IChatSendRequestOptions = e.isSecondary ?
-					{ rejectedConfirmationData: [e.data] } :
-					{ acceptedConfirmationData: [e.data] };
-				options.agentId = element.agent?.id;
-				options.slashCommand = element.slashCommand?.name;
-				options.confirmation = e.label;
-				const widget = chatWidgetService.getWidgetBySessionId(element.sessionId);
-				options.userSelectedModelId = widget?.input.currentLanguageModel;
-				options.mode = widget?.input.currentMode;
-				if (await this.chatService.sendRequest(element.sessionId, prompt, options)) {
-					confirmation.isUsed = true;
-					confirmationWidget.setShowButtons(false);
-					this._onDidChangeHeight.fire();
+		this._register(
+			confirmationWidget.onDidClick(async e => {
+				if (isResponseVM(element)) {
+					const prompt = `${e.label}: "${confirmation.title}"`;
+					const options: IChatSendRequestOptions = e.isSecondary
+						? { rejectedConfirmationData: [e.data] }
+						: { acceptedConfirmationData: [e.data] };
+					options.agentId = element.agent?.id;
+					options.slashCommand = element.slashCommand?.name;
+					options.confirmation = e.label;
+					const widget = chatWidgetService.getWidgetBySessionId(element.sessionId);
+					options.userSelectedModelId = widget?.input.currentLanguageModel;
+					options.mode = widget?.input.currentMode;
+					if (await this.chatService.sendRequest(element.sessionId, prompt, options)) {
+						confirmation.isUsed = true;
+						confirmationWidget.setShowButtons(false);
+						this._onDidChangeHeight.fire();
+					}
 				}
-			}
-		}));
+			})
+		);
 
 		this.domNode = confirmationWidget.domNode;
 	}

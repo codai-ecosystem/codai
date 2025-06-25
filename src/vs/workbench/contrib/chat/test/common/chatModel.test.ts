@@ -18,9 +18,19 @@ import { MockContextKeyService } from '../../../../../platform/keybinding/test/c
 import { ILogService, NullLogService } from '../../../../../platform/log/common/log.js';
 import { IStorageService } from '../../../../../platform/storage/common/storage.js';
 import { IExtensionService } from '../../../../services/extensions/common/extensions.js';
-import { TestExtensionService, TestStorageService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	TestExtensionService,
+	TestStorageService,
+} from '../../../../test/common/workbenchTestServices.js';
 import { ChatAgentService, IChatAgentService } from '../../common/chatAgents.js';
-import { ChatModel, ISerializableChatData1, ISerializableChatData2, ISerializableChatData3, normalizeSerializableChatData, Response } from '../../common/chatModel.js';
+import {
+	ChatModel,
+	ISerializableChatData1,
+	ISerializableChatData2,
+	ISerializableChatData3,
+	normalizeSerializableChatData,
+	Response,
+} from '../../common/chatModel.js';
 import { ChatRequestTextPart } from '../../common/chatParserTypes.js';
 import { ChatAgentLocation } from '../../common/constants.js';
 
@@ -35,15 +45,33 @@ suite('ChatModel', () => {
 		instantiationService.stub(ILogService, new NullLogService());
 		instantiationService.stub(IExtensionService, new TestExtensionService());
 		instantiationService.stub(IContextKeyService, new MockContextKeyService());
-		instantiationService.stub(IChatAgentService, testDisposables.add(instantiationService.createInstance(ChatAgentService)));
+		instantiationService.stub(
+			IChatAgentService,
+			testDisposables.add(instantiationService.createInstance(ChatAgentService))
+		);
 		instantiationService.stub(IConfigurationService, new TestConfigurationService());
 	});
 
 	test('removeRequest', async () => {
-		const model = testDisposables.add(instantiationService.createInstance(ChatModel, undefined, ChatAgentLocation.Panel));
+		const model = testDisposables.add(
+			instantiationService.createInstance(ChatModel, undefined, ChatAgentLocation.Panel)
+		);
 
 		const text = 'hello';
-		model.addRequest({ text, parts: [new ChatRequestTextPart(new OffsetRange(0, text.length), new Range(1, text.length, 1, text.length), text)] }, { variables: [] }, 0);
+		model.addRequest(
+			{
+				text,
+				parts: [
+					new ChatRequestTextPart(
+						new OffsetRange(0, text.length),
+						new Range(1, text.length, 1, text.length),
+						text
+					),
+				],
+			},
+			{ variables: [] },
+			0
+		);
 		const requests = model.getRequests();
 		assert.strictEqual(requests.length, 1);
 
@@ -52,11 +80,28 @@ suite('ChatModel', () => {
 	});
 
 	test('adoptRequest', async function () {
-		const model1 = testDisposables.add(instantiationService.createInstance(ChatModel, undefined, ChatAgentLocation.Editor));
-		const model2 = testDisposables.add(instantiationService.createInstance(ChatModel, undefined, ChatAgentLocation.Panel));
+		const model1 = testDisposables.add(
+			instantiationService.createInstance(ChatModel, undefined, ChatAgentLocation.Editor)
+		);
+		const model2 = testDisposables.add(
+			instantiationService.createInstance(ChatModel, undefined, ChatAgentLocation.Panel)
+		);
 
 		const text = 'hello';
-		const request1 = model1.addRequest({ text, parts: [new ChatRequestTextPart(new OffsetRange(0, text.length), new Range(1, text.length, 1, text.length), text)] }, { variables: [] }, 0);
+		const request1 = model1.addRequest(
+			{
+				text,
+				parts: [
+					new ChatRequestTextPart(
+						new OffsetRange(0, text.length),
+						new Range(1, text.length, 1, text.length),
+						text
+					),
+				],
+			},
+			{ variables: [] },
+			0
+		);
 
 		assert.strictEqual(model1.getRequests().length, 1);
 		assert.strictEqual(model2.getRequests().length, 0);
@@ -70,16 +115,40 @@ suite('ChatModel', () => {
 		assert.ok(request1.session === model2);
 		assert.ok(request1.response?.session === model2);
 
-		model2.acceptResponseProgress(request1, { content: new MarkdownString('Hello'), kind: 'markdownContent' });
+		model2.acceptResponseProgress(request1, {
+			content: new MarkdownString('Hello'),
+			kind: 'markdownContent',
+		});
 
 		assert.strictEqual(request1.response.response.toString(), 'Hello');
 	});
 
 	test('addCompleteRequest', async function () {
-		const model1 = testDisposables.add(instantiationService.createInstance(ChatModel, undefined, ChatAgentLocation.Panel));
+		const model1 = testDisposables.add(
+			instantiationService.createInstance(ChatModel, undefined, ChatAgentLocation.Panel)
+		);
 
 		const text = 'hello';
-		const request1 = model1.addRequest({ text, parts: [new ChatRequestTextPart(new OffsetRange(0, text.length), new Range(1, text.length, 1, text.length), text)] }, { variables: [] }, 0, undefined, undefined, undefined, undefined, undefined, true);
+		const request1 = model1.addRequest(
+			{
+				text,
+				parts: [
+					new ChatRequestTextPart(
+						new OffsetRange(0, text.length),
+						new Range(1, text.length, 1, text.length),
+						text
+					),
+				],
+			},
+			{ variables: [] },
+			0,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			true
+		);
 
 		assert.strictEqual(request1.isCompleteAddedRequest, true);
 		assert.strictEqual(request1.response!.isCompleteAddedRequest, true);
@@ -111,13 +180,18 @@ suite('Response', () => {
 
 	test('inline reference', async () => {
 		const response = store.add(new Response([]));
-		response.updateContent({ content: new MarkdownString('text before '), kind: 'markdownContent' });
-		response.updateContent({ inlineReference: URI.parse('https://microsoft.com/'), kind: 'inlineReference' });
+		response.updateContent({
+			content: new MarkdownString('text before '),
+			kind: 'markdownContent',
+		});
+		response.updateContent({
+			inlineReference: URI.parse('https://microsoft.com/'),
+			kind: 'inlineReference',
+		});
 		response.updateContent({ content: new MarkdownString(' text after'), kind: 'markdownContent' });
 		await assertSnapshot(response.value);
 
 		assert.strictEqual(response.toString(), 'text before https://microsoft.com/ text after');
-
 	});
 });
 
@@ -157,7 +231,7 @@ suite('normalizeSerializableChatData', () => {
 			responderAvatarIconUri: undefined,
 			responderUsername: 'bot',
 			sessionId: 'session1',
-			computedTitle: 'computed title'
+			computedTitle: 'computed title',
 		};
 
 		const newData = normalizeSerializableChatData(v2Data);
@@ -204,7 +278,7 @@ suite('normalizeSerializableChatData', () => {
 			responderAvatarIconUri: undefined,
 			responderUsername: 'bot',
 			sessionId: 'session1',
-			customTitle: 'computed title'
+			customTitle: 'computed title',
 		};
 
 		const newData = normalizeSerializableChatData(v3Data);

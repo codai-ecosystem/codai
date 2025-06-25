@@ -9,7 +9,7 @@ require('ts-node').register({ experimentalResolver: true, transpileOnly: true })
 
 // Re-export all .ts files as rules
 const rules = {};
-glob.sync(`${__dirname}/*.ts`).forEach((file) => {
+glob.sync(`${__dirname}/*.ts`).forEach(file => {
 	rules[path.basename(file, '.ts')] = require(file);
 });
 

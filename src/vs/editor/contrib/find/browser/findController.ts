@@ -8,27 +8,63 @@ import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
 import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
 import * as strings from '../../../../base/common/strings.js';
 import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { EditorAction, EditorCommand, EditorContributionInstantiation, MultiEditorAction, registerEditorAction, registerEditorCommand, registerEditorContribution, registerMultiEditorAction, ServicesAccessor } from '../../../browser/editorExtensions.js';
+import {
+	EditorAction,
+	EditorCommand,
+	EditorContributionInstantiation,
+	MultiEditorAction,
+	registerEditorAction,
+	registerEditorCommand,
+	registerEditorContribution,
+	registerMultiEditorAction,
+	ServicesAccessor,
+} from '../../../browser/editorExtensions.js';
 import { EditorOption } from '../../../common/config/editorOptions.js';
 import { overviewRulerRangeHighlight } from '../../../common/core/editorColorRegistry.js';
 import { IRange } from '../../../common/core/range.js';
 import { IEditorContribution } from '../../../common/editorCommon.js';
 import { EditorContextKeys } from '../../../common/editorContextKeys.js';
 import { OverviewRulerLane } from '../../../common/model.js';
-import { CONTEXT_FIND_INPUT_FOCUSED, CONTEXT_FIND_WIDGET_VISIBLE, CONTEXT_REPLACE_INPUT_FOCUSED, FindModelBoundToEditorModel, FIND_IDS, ToggleCaseSensitiveKeybinding, TogglePreserveCaseKeybinding, ToggleRegexKeybinding, ToggleSearchScopeKeybinding, ToggleWholeWordKeybinding } from './findModel.js';
+import {
+	CONTEXT_FIND_INPUT_FOCUSED,
+	CONTEXT_FIND_WIDGET_VISIBLE,
+	CONTEXT_REPLACE_INPUT_FOCUSED,
+	FindModelBoundToEditorModel,
+	FIND_IDS,
+	ToggleCaseSensitiveKeybinding,
+	TogglePreserveCaseKeybinding,
+	ToggleRegexKeybinding,
+	ToggleSearchScopeKeybinding,
+	ToggleWholeWordKeybinding,
+} from './findModel.js';
 import { FindOptionsWidget } from './findOptionsWidget.js';
-import { FindReplaceState, FindReplaceStateChangedEvent, INewFindReplaceState } from './findState.js';
+import {
+	FindReplaceState,
+	FindReplaceStateChangedEvent,
+	INewFindReplaceState,
+} from './findState.js';
 import { FindWidget, IFindController } from './findWidget.js';
 import * as nls from '../../../../nls.js';
 import { MenuId } from '../../../../platform/actions/common/actions.js';
 import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
-import { ContextKeyExpr, IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	ContextKeyExpr,
+	IContextKey,
+	IContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { IContextViewService } from '../../../../platform/contextview/browser/contextView.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
-import { INotificationService, Severity } from '../../../../platform/notification/common/notification.js';
+import {
+	INotificationService,
+	Severity,
+} from '../../../../platform/notification/common/notification.js';
 import { IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { themeColorFromId } from '../../../../platform/theme/common/themeService.js';
 import { Selection } from '../../../common/core/selection.js';
 import { IHoverService } from '../../../../platform/hover/browser/hover.js';
@@ -37,7 +73,11 @@ import { ReplaceWidgetHistory } from './replaceWidgetHistory.js';
 
 const SEARCH_STRING_MAX_LENGTH = 524288;
 
-export function getSelectionSearchString(editor: ICodeEditor, seedSearchStringFromSelection: 'single' | 'multiple' = 'single', seedSearchStringFromNonEmptySelection: boolean = false): string | null {
+export function getSelectionSearchString(
+	editor: ICodeEditor,
+	seedSearchStringFromSelection: 'single' | 'multiple' = 'single',
+	seedSearchStringFromNonEmptySelection: boolean = false
+): string | null {
 	if (!editor.hasModel()) {
 		return null;
 	}
@@ -45,11 +85,14 @@ export function getSelectionSearchString(editor: ICodeEditor, seedSearchStringFr
 	const selection = editor.getSelection();
 	// if selection spans multiple lines, default search string to empty
 
-	if ((seedSearchStringFromSelection === 'single' && selection.startLineNumber === selection.endLineNumber)
-		|| seedSearchStringFromSelection === 'multiple') {
+	if (
+		(seedSearchStringFromSelection === 'single' &&
+			selection.startLineNumber === selection.endLineNumber) ||
+		seedSearchStringFromSelection === 'multiple'
+	) {
 		if (selection.isEmpty()) {
 			const wordAtPosition = editor.getConfiguredWordAtPosition(selection.getStartPosition());
-			if (wordAtPosition && (false === seedSearchStringFromNonEmptySelection)) {
+			if (wordAtPosition && false === seedSearchStringFromNonEmptySelection) {
 				return wordAtPosition.word;
 			}
 		} else {
@@ -65,7 +108,7 @@ export function getSelectionSearchString(editor: ICodeEditor, seedSearchStringFr
 export const enum FindStartFocusAction {
 	NoFocusChange,
 	FocusFindInput,
-	FocusReplaceInput
+	FocusReplaceInput,
 }
 
 export interface IFindStartOptions {
@@ -90,7 +133,6 @@ export interface IFindStartArguments {
 }
 
 export class CommonFindController extends Disposable implements IEditorContribution {
-
 	public static readonly ID = 'editor.contrib.findController';
 
 	protected _editor: ICodeEditor;
@@ -132,36 +174,57 @@ export class CommonFindController extends Disposable implements IEditorContribut
 		this._updateHistoryDelayer = new Delayer<void>(500);
 		this._state = this._register(new FindReplaceState());
 		this.loadQueryState();
-		this._register(this._state.onFindReplaceStateChange((e) => this._onStateChanged(e)));
+		this._register(this._state.onFindReplaceStateChange(e => this._onStateChanged(e)));
 
 		this._model = null;
 
-		this._register(this._editor.onDidChangeModel(() => {
-			const shouldRestartFind = (this._editor.getModel() && this._state.isRevealed);
+		this._register(
+			this._editor.onDidChangeModel(() => {
+				const shouldRestartFind = this._editor.getModel() && this._state.isRevealed;
 
-			this.disposeModel();
+				this.disposeModel();
 
-			this._state.change({
-				searchScope: null,
-				matchCase: this._storageService.getBoolean('editor.matchCase', StorageScope.WORKSPACE, false),
-				wholeWord: this._storageService.getBoolean('editor.wholeWord', StorageScope.WORKSPACE, false),
-				isRegex: this._storageService.getBoolean('editor.isRegex', StorageScope.WORKSPACE, false),
-				preserveCase: this._storageService.getBoolean('editor.preserveCase', StorageScope.WORKSPACE, false)
-			}, false);
+				this._state.change(
+					{
+						searchScope: null,
+						matchCase: this._storageService.getBoolean(
+							'editor.matchCase',
+							StorageScope.WORKSPACE,
+							false
+						),
+						wholeWord: this._storageService.getBoolean(
+							'editor.wholeWord',
+							StorageScope.WORKSPACE,
+							false
+						),
+						isRegex: this._storageService.getBoolean(
+							'editor.isRegex',
+							StorageScope.WORKSPACE,
+							false
+						),
+						preserveCase: this._storageService.getBoolean(
+							'editor.preserveCase',
+							StorageScope.WORKSPACE,
+							false
+						),
+					},
+					false
+				);
 
-			if (shouldRestartFind) {
-				this._start({
-					forceRevealReplace: false,
-					seedSearchStringFromSelection: 'none',
-					seedSearchStringFromNonEmptySelection: false,
-					seedSearchStringFromGlobalClipboard: false,
-					shouldFocus: FindStartFocusAction.NoFocusChange,
-					shouldAnimate: false,
-					updateSearchScope: false,
-					loop: this._editor.getOption(EditorOption.find).loop
-				});
-			}
-		}));
+				if (shouldRestartFind) {
+					this._start({
+						forceRevealReplace: false,
+						seedSearchStringFromSelection: 'none',
+						seedSearchStringFromNonEmptySelection: false,
+						seedSearchStringFromGlobalClipboard: false,
+						shouldFocus: FindStartFocusAction.NoFocusChange,
+						shouldAnimate: false,
+						updateSearchScope: false,
+						loop: this._editor.getOption(EditorOption.find).loop,
+					});
+				}
+			})
+		);
 	}
 
 	public override dispose(): void {
@@ -194,26 +257,65 @@ export class CommonFindController extends Disposable implements IEditorContribut
 
 	private saveQueryState(e: FindReplaceStateChangedEvent) {
 		if (e.isRegex) {
-			this._storageService.store('editor.isRegex', this._state.actualIsRegex, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+			this._storageService.store(
+				'editor.isRegex',
+				this._state.actualIsRegex,
+				StorageScope.WORKSPACE,
+				StorageTarget.MACHINE
+			);
 		}
 		if (e.wholeWord) {
-			this._storageService.store('editor.wholeWord', this._state.actualWholeWord, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+			this._storageService.store(
+				'editor.wholeWord',
+				this._state.actualWholeWord,
+				StorageScope.WORKSPACE,
+				StorageTarget.MACHINE
+			);
 		}
 		if (e.matchCase) {
-			this._storageService.store('editor.matchCase', this._state.actualMatchCase, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+			this._storageService.store(
+				'editor.matchCase',
+				this._state.actualMatchCase,
+				StorageScope.WORKSPACE,
+				StorageTarget.MACHINE
+			);
 		}
 		if (e.preserveCase) {
-			this._storageService.store('editor.preserveCase', this._state.actualPreserveCase, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+			this._storageService.store(
+				'editor.preserveCase',
+				this._state.actualPreserveCase,
+				StorageScope.WORKSPACE,
+				StorageTarget.MACHINE
+			);
 		}
 	}
 
 	private loadQueryState() {
-		this._state.change({
-			matchCase: this._storageService.getBoolean('editor.matchCase', StorageScope.WORKSPACE, this._state.matchCase),
-			wholeWord: this._storageService.getBoolean('editor.wholeWord', StorageScope.WORKSPACE, this._state.wholeWord),
-			isRegex: this._storageService.getBoolean('editor.isRegex', StorageScope.WORKSPACE, this._state.isRegex),
-			preserveCase: this._storageService.getBoolean('editor.preserveCase', StorageScope.WORKSPACE, this._state.preserveCase)
-		}, false);
+		this._state.change(
+			{
+				matchCase: this._storageService.getBoolean(
+					'editor.matchCase',
+					StorageScope.WORKSPACE,
+					this._state.matchCase
+				),
+				wholeWord: this._storageService.getBoolean(
+					'editor.wholeWord',
+					StorageScope.WORKSPACE,
+					this._state.wholeWord
+				),
+				isRegex: this._storageService.getBoolean(
+					'editor.isRegex',
+					StorageScope.WORKSPACE,
+					this._state.isRegex
+				),
+				preserveCase: this._storageService.getBoolean(
+					'editor.preserveCase',
+					StorageScope.WORKSPACE,
+					this._state.preserveCase
+				),
+			},
+			false
+		);
 	}
 
 	public isFindInputFocused(): boolean {
@@ -225,10 +327,13 @@ export class CommonFindController extends Disposable implements IEditorContribut
 	}
 
 	public closeFindWidget(): void {
-		this._state.change({
-			isRevealed: false,
-			searchScope: null
-		}, false);
+		this._state.change(
+			{
+				isRevealed: false,
+				searchScope: null,
+			},
+			false
+		);
 		this._editor.focus();
 	}
 
@@ -266,18 +371,20 @@ export class CommonFindController extends Disposable implements IEditorContribut
 		} else {
 			if (this._editor.hasModel()) {
 				let selections = this._editor.getSelections();
-				selections = selections.map(selection => {
-					if (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber) {
-						selection = selection.setEndPosition(
-							selection.endLineNumber - 1,
-							this._editor.getModel()!.getLineMaxColumn(selection.endLineNumber - 1)
-						);
-					}
-					if (!selection.isEmpty()) {
-						return selection;
-					}
-					return null;
-				}).filter((element): element is Selection => !!element);
+				selections = selections
+					.map(selection => {
+						if (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber) {
+							selection = selection.setEndPosition(
+								selection.endLineNumber - 1,
+								this._editor.getModel()!.getLineMaxColumn(selection.endLineNumber - 1)
+							);
+						}
+						if (!selection.isEmpty()) {
+							return selection;
+						}
+						return null;
+					})
+					.filter((element): element is Selection => !!element);
 
 				if (selections.length) {
 					this._state.change({ searchScope: selections }, true);
@@ -307,11 +414,15 @@ export class CommonFindController extends Disposable implements IEditorContribut
 
 		const stateChanges: INewFindReplaceState = {
 			...newState,
-			isRevealed: true
+			isRevealed: true,
 		};
 
 		if (opts.seedSearchStringFromSelection === 'single') {
-			const selectionSearchString = getSelectionSearchString(this._editor, opts.seedSearchStringFromSelection, opts.seedSearchStringFromNonEmptySelection);
+			const selectionSearchString = getSelectionSearchString(
+				this._editor,
+				opts.seedSearchStringFromSelection,
+				opts.seedSearchStringFromNonEmptySelection
+			);
 			if (selectionSearchString) {
 				if (this._state.isRegex) {
 					stateChanges.searchString = strings.escapeRegExpCharacters(selectionSearchString);
@@ -320,7 +431,10 @@ export class CommonFindController extends Disposable implements IEditorContribut
 				}
 			}
 		} else if (opts.seedSearchStringFromSelection === 'multiple' && !opts.updateSearchScope) {
-			const selectionSearchString = getSelectionSearchString(this._editor, opts.seedSearchStringFromSelection);
+			const selectionSearchString = getSelectionSearchString(
+				this._editor,
+				opts.seedSearchStringFromSelection
+			);
 			if (selectionSearchString) {
 				stateChanges.searchString = selectionSearchString;
 			}
@@ -401,7 +515,12 @@ export class CommonFindController extends Disposable implements IEditorContribut
 	public replaceAll(): boolean {
 		if (this._model) {
 			if (this._editor.getModel()?.isTooLargeForHeapOperation()) {
-				this._notificationService.warn(nls.localize('too.large.for.replaceall', "The file is too large to perform a replace all operation."));
+				this._notificationService.warn(
+					nls.localize(
+						'too.large.for.replaceall',
+						'The file is too large to perform a replace all operation.'
+					)
+				);
 				return false;
 			}
 			this._model.replaceAll();
@@ -420,9 +539,10 @@ export class CommonFindController extends Disposable implements IEditorContribut
 	}
 
 	public async getGlobalBufferTerm(): Promise<string> {
-		if (this._editor.getOption(EditorOption.find).globalFindClipboard
-			&& this._editor.hasModel()
-			&& !this._editor.getModel().isTooLargeForSyncing()
+		if (
+			this._editor.getOption(EditorOption.find).globalFindClipboard &&
+			this._editor.hasModel() &&
+			!this._editor.getModel().isTooLargeForSyncing()
 		) {
 			return this._clipboardService.readFindText();
 		}
@@ -430,9 +550,10 @@ export class CommonFindController extends Disposable implements IEditorContribut
 	}
 
 	public setGlobalBufferTerm(text: string): void {
-		if (this._editor.getOption(EditorOption.find).globalFindClipboard
-			&& this._editor.hasModel()
-			&& !this._editor.getModel().isTooLargeForSyncing()
+		if (
+			this._editor.getOption(EditorOption.find).globalFindClipboard &&
+			this._editor.hasModel() &&
+			!this._editor.getModel().isTooLargeForSyncing()
 		) {
 			// intentionally not awaited
 			this._clipboardService.writeFindText(text);
@@ -441,7 +562,6 @@ export class CommonFindController extends Disposable implements IEditorContribut
 }
 
 export class FindController extends CommonFindController implements IFindController {
-
 	private _widget: FindWidget | null;
 	private _findOptionsWidget: FindOptionsWidget | null;
 	private _findWidgetSearchHistory: FindWidgetSearchHistory;
@@ -455,16 +575,26 @@ export class FindController extends CommonFindController implements IFindControl
 		@INotificationService notificationService: INotificationService,
 		@IStorageService _storageService: IStorageService,
 		@IClipboardService clipboardService: IClipboardService,
-		@IHoverService hoverService: IHoverService,
+		@IHoverService hoverService: IHoverService
 	) {
-		super(editor, _contextKeyService, _storageService, clipboardService, notificationService, hoverService);
+		super(
+			editor,
+			_contextKeyService,
+			_storageService,
+			clipboardService,
+			notificationService,
+			hoverService
+		);
 		this._widget = null;
 		this._findOptionsWidget = null;
 		this._findWidgetSearchHistory = FindWidgetSearchHistory.getOrCreate(_storageService);
 		this._replaceWidgetHistory = ReplaceWidgetHistory.getOrCreate(_storageService);
 	}
 
-	protected override async _start(opts: IFindStartOptions, newState?: INewFindReplaceState): Promise<void> {
+	protected override async _start(
+		opts: IFindStartOptions,
+		newState?: INewFindReplaceState
+	): Promise<void> {
 		if (!this._widget) {
 			this._createFindWidget();
 		}
@@ -480,7 +610,8 @@ export class FindController extends CommonFindController implements IFindControl
 				updateSearchScope = false;
 				break;
 			case 'multiline': {
-				const isSelectionMultipleLine = !!selection && selection.startLineNumber !== selection.endLineNumber;
+				const isSelectionMultipleLine =
+					!!selection && selection.startLineNumber !== selection.endLineNumber;
 				updateSearchScope = isSelectionMultipleLine;
 				break;
 			}
@@ -513,8 +644,22 @@ export class FindController extends CommonFindController implements IFindControl
 	}
 
 	private _createFindWidget() {
-		this._widget = this._register(new FindWidget(this._editor, this, this._state, this._contextViewService, this._keybindingService, this._contextKeyService, this._hoverService, this._findWidgetSearchHistory, this._replaceWidgetHistory));
-		this._findOptionsWidget = this._register(new FindOptionsWidget(this._editor, this._state, this._keybindingService));
+		this._widget = this._register(
+			new FindWidget(
+				this._editor,
+				this,
+				this._state,
+				this._contextViewService,
+				this._keybindingService,
+				this._contextKeyService,
+				this._hoverService,
+				this._findWidgetSearchHistory,
+				this._replaceWidgetHistory
+			)
+		);
+		this._findOptionsWidget = this._register(
+			new FindOptionsWidget(this._editor, this._state, this._keybindingService)
+		);
 	}
 
 	saveViewState(): any {
@@ -526,101 +671,125 @@ export class FindController extends CommonFindController implements IFindControl
 	}
 }
 
-export const StartFindAction = registerMultiEditorAction(new MultiEditorAction({
-	id: FIND_IDS.StartFindAction,
-	label: nls.localize2('startFindAction', "Find"),
-	precondition: ContextKeyExpr.or(EditorContextKeys.focus, ContextKeyExpr.has('editorIsOpen')),
-	kbOpts: {
-		kbExpr: null,
-		primary: KeyMod.CtrlCmd | KeyCode.KeyF,
-		weight: KeybindingWeight.EditorContrib
-	},
-	menuOpts: {
-		menuId: MenuId.MenubarEditMenu,
-		group: '3_find',
-		title: nls.localize({ key: 'miFind', comment: ['&& denotes a mnemonic'] }, "&&Find"),
-		order: 1
-	}
-}));
+export const StartFindAction = registerMultiEditorAction(
+	new MultiEditorAction({
+		id: FIND_IDS.StartFindAction,
+		label: nls.localize2('startFindAction', 'Find'),
+		precondition: ContextKeyExpr.or(EditorContextKeys.focus, ContextKeyExpr.has('editorIsOpen')),
+		kbOpts: {
+			kbExpr: null,
+			primary: KeyMod.CtrlCmd | KeyCode.KeyF,
+			weight: KeybindingWeight.EditorContrib,
+		},
+		menuOpts: {
+			menuId: MenuId.MenubarEditMenu,
+			group: '3_find',
+			title: nls.localize({ key: 'miFind', comment: ['&& denotes a mnemonic'] }, '&&Find'),
+			order: 1,
+		},
+	})
+);
 
-StartFindAction.addImplementation(0, (accessor: ServicesAccessor, editor: ICodeEditor, args: any): boolean | Promise<void> => {
-	const controller = CommonFindController.get(editor);
-	if (!controller) {
-		return false;
+StartFindAction.addImplementation(
+	0,
+	(accessor: ServicesAccessor, editor: ICodeEditor, args: any): boolean | Promise<void> => {
+		const controller = CommonFindController.get(editor);
+		if (!controller) {
+			return false;
+		}
+		return controller.start({
+			forceRevealReplace: false,
+			seedSearchStringFromSelection:
+				editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never'
+					? 'single'
+					: 'none',
+			seedSearchStringFromNonEmptySelection:
+				editor.getOption(EditorOption.find).seedSearchStringFromSelection === 'selection',
+			seedSearchStringFromGlobalClipboard: editor.getOption(EditorOption.find).globalFindClipboard,
+			shouldFocus: FindStartFocusAction.FocusFindInput,
+			shouldAnimate: true,
+			updateSearchScope: false,
+			loop: editor.getOption(EditorOption.find).loop,
+		});
 	}
-	return controller.start({
-		forceRevealReplace: false,
-		seedSearchStringFromSelection: editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never' ? 'single' : 'none',
-		seedSearchStringFromNonEmptySelection: editor.getOption(EditorOption.find).seedSearchStringFromSelection === 'selection',
-		seedSearchStringFromGlobalClipboard: editor.getOption(EditorOption.find).globalFindClipboard,
-		shouldFocus: FindStartFocusAction.FocusFindInput,
-		shouldAnimate: true,
-		updateSearchScope: false,
-		loop: editor.getOption(EditorOption.find).loop
-	});
-});
+);
 
 const findArgDescription = {
 	description: 'Open a new In-Editor Find Widget.',
-	args: [{
-		name: 'Open a new In-Editor Find Widget args',
-		schema: {
-			properties: {
-				searchString: { type: 'string' },
-				replaceString: { type: 'string' },
-				isRegex: { type: 'boolean' },
-				matchWholeWord: { type: 'boolean' },
-				isCaseSensitive: { type: 'boolean' },
-				preserveCase: { type: 'boolean' },
-				findInSelection: { type: 'boolean' },
-			}
-		}
-	}]
+	args: [
+		{
+			name: 'Open a new In-Editor Find Widget args',
+			schema: {
+				properties: {
+					searchString: { type: 'string' },
+					replaceString: { type: 'string' },
+					isRegex: { type: 'boolean' },
+					matchWholeWord: { type: 'boolean' },
+					isCaseSensitive: { type: 'boolean' },
+					preserveCase: { type: 'boolean' },
+					findInSelection: { type: 'boolean' },
+				},
+			},
+		},
+	],
 } as const;
 
 export class StartFindWithArgsAction extends EditorAction {
-
 	constructor() {
 		super({
 			id: FIND_IDS.StartFindWithArgs,
-			label: nls.localize2('startFindWithArgsAction', "Find with Arguments"),
+			label: nls.localize2('startFindWithArgsAction', 'Find with Arguments'),
 			precondition: undefined,
 			kbOpts: {
 				kbExpr: null,
 				primary: 0,
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
-			metadata: findArgDescription
+			metadata: findArgDescription,
 		});
 	}
 
-	public async run(accessor: ServicesAccessor | null, editor: ICodeEditor, args?: IFindStartArguments): Promise<void> {
+	public async run(
+		accessor: ServicesAccessor | null,
+		editor: ICodeEditor,
+		args?: IFindStartArguments
+	): Promise<void> {
 		const controller = CommonFindController.get(editor);
 		if (controller) {
-			const newState: INewFindReplaceState = args ? {
-				searchString: args.searchString,
-				replaceString: args.replaceString,
-				isReplaceRevealed: args.replaceString !== undefined,
-				isRegex: args.isRegex,
-				// isRegexOverride: args.regexOverride,
-				wholeWord: args.matchWholeWord,
-				// wholeWordOverride: args.wholeWordOverride,
-				matchCase: args.isCaseSensitive,
-				// matchCaseOverride: args.matchCaseOverride,
-				preserveCase: args.preserveCase,
-				// preserveCaseOverride: args.preserveCaseOverride,
-			} : {};
+			const newState: INewFindReplaceState = args
+				? {
+						searchString: args.searchString,
+						replaceString: args.replaceString,
+						isReplaceRevealed: args.replaceString !== undefined,
+						isRegex: args.isRegex,
+						// isRegexOverride: args.regexOverride,
+						wholeWord: args.matchWholeWord,
+						// wholeWordOverride: args.wholeWordOverride,
+						matchCase: args.isCaseSensitive,
+						// matchCaseOverride: args.matchCaseOverride,
+						preserveCase: args.preserveCase,
+						// preserveCaseOverride: args.preserveCaseOverride,
+					}
+				: {};
 
-			await controller.start({
-				forceRevealReplace: false,
-				seedSearchStringFromSelection: (controller.getState().searchString.length === 0) && editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never' ? 'single' : 'none',
-				seedSearchStringFromNonEmptySelection: editor.getOption(EditorOption.find).seedSearchStringFromSelection === 'selection',
-				seedSearchStringFromGlobalClipboard: true,
-				shouldFocus: FindStartFocusAction.FocusFindInput,
-				shouldAnimate: true,
-				updateSearchScope: args?.findInSelection || false,
-				loop: editor.getOption(EditorOption.find).loop
-			}, newState);
+			await controller.start(
+				{
+					forceRevealReplace: false,
+					seedSearchStringFromSelection:
+						controller.getState().searchString.length === 0 &&
+						editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never'
+							? 'single'
+							: 'none',
+					seedSearchStringFromNonEmptySelection:
+						editor.getOption(EditorOption.find).seedSearchStringFromSelection === 'selection',
+					seedSearchStringFromGlobalClipboard: true,
+					shouldFocus: FindStartFocusAction.FocusFindInput,
+					shouldAnimate: true,
+					updateSearchScope: args?.findInSelection || false,
+					loop: editor.getOption(EditorOption.find).loop,
+				},
+				newState
+			);
 
 			controller.setGlobalBufferTerm(controller.getState().searchString);
 		}
@@ -628,11 +797,10 @@ export class StartFindWithArgsAction extends EditorAction {
 }
 
 export class StartFindWithSelectionAction extends EditorAction {
-
 	constructor() {
 		super({
 			id: FIND_IDS.StartFindWithSelection,
-			label: nls.localize2('startFindWithSelectionAction', "Find with Selection"),
+			label: nls.localize2('startFindWithSelectionAction', 'Find with Selection'),
 			precondition: undefined,
 			kbOpts: {
 				kbExpr: null,
@@ -640,8 +808,8 @@ export class StartFindWithSelectionAction extends EditorAction {
 				mac: {
 					primary: KeyMod.CtrlCmd | KeyCode.KeyE,
 				},
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -656,7 +824,7 @@ export class StartFindWithSelectionAction extends EditorAction {
 				shouldFocus: FindStartFocusAction.NoFocusChange,
 				shouldAnimate: true,
 				updateSearchScope: false,
-				loop: editor.getOption(EditorOption.find).loop
+				loop: editor.getOption(EditorOption.find).loop,
 			});
 
 			controller.setGlobalBufferTerm(controller.getState().searchString);
@@ -669,13 +837,18 @@ export abstract class MatchFindAction extends EditorAction {
 		if (controller && !this._run(controller)) {
 			await controller.start({
 				forceRevealReplace: false,
-				seedSearchStringFromSelection: (controller.getState().searchString.length === 0) && editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never' ? 'single' : 'none',
-				seedSearchStringFromNonEmptySelection: editor.getOption(EditorOption.find).seedSearchStringFromSelection === 'selection',
+				seedSearchStringFromSelection:
+					controller.getState().searchString.length === 0 &&
+					editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never'
+						? 'single'
+						: 'none',
+				seedSearchStringFromNonEmptySelection:
+					editor.getOption(EditorOption.find).seedSearchStringFromSelection === 'selection',
 				seedSearchStringFromGlobalClipboard: true,
 				shouldFocus: FindStartFocusAction.NoFocusChange,
 				shouldAnimate: true,
 				updateSearchScope: false,
-				loop: editor.getOption(EditorOption.find).loop
+				loop: editor.getOption(EditorOption.find).loop,
 			});
 			this._run(controller);
 		}
@@ -685,22 +858,24 @@ export abstract class MatchFindAction extends EditorAction {
 }
 
 export class NextMatchFindAction extends MatchFindAction {
-
 	constructor() {
 		super({
 			id: FIND_IDS.NextMatchFindAction,
-			label: nls.localize2('findNextMatchAction', "Find Next"),
+			label: nls.localize2('findNextMatchAction', 'Find Next'),
 			precondition: undefined,
-			kbOpts: [{
-				kbExpr: EditorContextKeys.focus,
-				primary: KeyCode.F3,
-				mac: { primary: KeyMod.CtrlCmd | KeyCode.KeyG, secondary: [KeyCode.F3] },
-				weight: KeybindingWeight.EditorContrib
-			}, {
-				kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, CONTEXT_FIND_INPUT_FOCUSED),
-				primary: KeyCode.Enter,
-				weight: KeybindingWeight.EditorContrib
-			}]
+			kbOpts: [
+				{
+					kbExpr: EditorContextKeys.focus,
+					primary: KeyCode.F3,
+					mac: { primary: KeyMod.CtrlCmd | KeyCode.KeyG, secondary: [KeyCode.F3] },
+					weight: KeybindingWeight.EditorContrib,
+				},
+				{
+					kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, CONTEXT_FIND_INPUT_FOCUSED),
+					primary: KeyCode.Enter,
+					weight: KeybindingWeight.EditorContrib,
+				},
+			],
 		});
 	}
 
@@ -715,25 +890,28 @@ export class NextMatchFindAction extends MatchFindAction {
 	}
 }
 
-
 export class PreviousMatchFindAction extends MatchFindAction {
-
 	constructor() {
 		super({
 			id: FIND_IDS.PreviousMatchFindAction,
-			label: nls.localize2('findPreviousMatchAction', "Find Previous"),
+			label: nls.localize2('findPreviousMatchAction', 'Find Previous'),
 			precondition: undefined,
-			kbOpts: [{
-				kbExpr: EditorContextKeys.focus,
-				primary: KeyMod.Shift | KeyCode.F3,
-				mac: { primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyG, secondary: [KeyMod.Shift | KeyCode.F3] },
-				weight: KeybindingWeight.EditorContrib
-			}, {
-				kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, CONTEXT_FIND_INPUT_FOCUSED),
-				primary: KeyMod.Shift | KeyCode.Enter,
-				weight: KeybindingWeight.EditorContrib
-			}
-			]
+			kbOpts: [
+				{
+					kbExpr: EditorContextKeys.focus,
+					primary: KeyMod.Shift | KeyCode.F3,
+					mac: {
+						primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyG,
+						secondary: [KeyMod.Shift | KeyCode.F3],
+					},
+					weight: KeybindingWeight.EditorContrib,
+				},
+				{
+					kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, CONTEXT_FIND_INPUT_FOCUSED),
+					primary: KeyMod.Shift | KeyCode.Enter,
+					weight: KeybindingWeight.EditorContrib,
+				},
+			],
 		});
 	}
 
@@ -743,13 +921,12 @@ export class PreviousMatchFindAction extends MatchFindAction {
 }
 
 export class MoveToMatchFindAction extends EditorAction {
-
 	private _highlightDecorations: string[] = [];
 	constructor() {
 		super({
 			id: FIND_IDS.GoToMatchFindAction,
-			label: nls.localize2('findMatchAction.goToMatch', "Go to Match..."),
-			precondition: CONTEXT_FIND_WIDGET_VISIBLE
+			label: nls.localize2('findMatchAction.goToMatch', 'Go to Match...'),
+			precondition: CONTEXT_FIND_WIDGET_VISIBLE,
 		});
 	}
 
@@ -764,7 +941,10 @@ export class MoveToMatchFindAction extends EditorAction {
 			const notificationService = accessor.get(INotificationService);
 			notificationService.notify({
 				severity: Severity.Warning,
-				message: nls.localize('findMatchAction.noResults', "No matches. Try searching for something else.")
+				message: nls.localize(
+					'findMatchAction.noResults',
+					'No matches. Try searching for something else.'
+				),
 			});
 			return;
 		}
@@ -772,7 +952,11 @@ export class MoveToMatchFindAction extends EditorAction {
 		const quickInputService = accessor.get(IQuickInputService);
 		const disposables = new DisposableStore();
 		const inputBox = disposables.add(quickInputService.createInputBox());
-		inputBox.placeholder = nls.localize('findMatchAction.inputPlaceHolder', "Type a number to go to a specific match (between 1 and {0})", matchesCount);
+		inputBox.placeholder = nls.localize(
+			'findMatchAction.inputPlaceHolder',
+			'Type a number to go to a specific match (between 1 and {0})',
+			matchesCount
+		);
 
 		const toFindMatchIndex = (value: string): number | undefined => {
 			const index = parseInt(value);
@@ -801,28 +985,42 @@ export class MoveToMatchFindAction extends EditorAction {
 					this.addDecorations(editor, currentMatch);
 				}
 			} else {
-				inputBox.validationMessage = nls.localize('findMatchAction.inputValidationMessage', "Please type a number between 1 and {0}", controller.getState().matchesCount);
+				inputBox.validationMessage = nls.localize(
+					'findMatchAction.inputValidationMessage',
+					'Please type a number between 1 and {0}',
+					controller.getState().matchesCount
+				);
 				this.clearDecorations(editor);
 			}
 		};
-		disposables.add(inputBox.onDidChangeValue(value => {
-			updatePickerAndEditor(value);
-		}));
+		disposables.add(
+			inputBox.onDidChangeValue(value => {
+				updatePickerAndEditor(value);
+			})
+		);
 
-		disposables.add(inputBox.onDidAccept(() => {
-			const index = toFindMatchIndex(inputBox.value);
-			if (typeof index === 'number') {
-				controller.goToMatch(index);
-				inputBox.hide();
-			} else {
-				inputBox.validationMessage = nls.localize('findMatchAction.inputValidationMessage', "Please type a number between 1 and {0}", controller.getState().matchesCount);
-			}
-		}));
+		disposables.add(
+			inputBox.onDidAccept(() => {
+				const index = toFindMatchIndex(inputBox.value);
+				if (typeof index === 'number') {
+					controller.goToMatch(index);
+					inputBox.hide();
+				} else {
+					inputBox.validationMessage = nls.localize(
+						'findMatchAction.inputValidationMessage',
+						'Please type a number between 1 and {0}',
+						controller.getState().matchesCount
+					);
+				}
+			})
+		);
 
-		disposables.add(inputBox.onDidHide(() => {
-			this.clearDecorations(editor);
-			disposables.dispose();
-		}));
+		disposables.add(
+			inputBox.onDidHide(() => {
+				this.clearDecorations(editor);
+				disposables.dispose();
+			})
+		);
 
 		inputBox.show();
 	}
@@ -841,8 +1039,8 @@ export class MoveToMatchFindAction extends EditorAction {
 					options: {
 						description: 'find-match-quick-access-range-highlight',
 						className: 'rangeHighlight',
-						isWholeLine: true
-					}
+						isWholeLine: true,
+					},
 				},
 				{
 					range,
@@ -850,10 +1048,10 @@ export class MoveToMatchFindAction extends EditorAction {
 						description: 'find-match-quick-access-range-highlight-overview',
 						overviewRuler: {
 							color: themeColorFromId(overviewRulerRangeHighlight),
-							position: OverviewRulerLane.Full
-						}
-					}
-				}
+							position: OverviewRulerLane.Full,
+						},
+					},
+				},
 			]);
 		});
 	}
@@ -879,7 +1077,7 @@ export abstract class SelectionMatchFindAction extends EditorAction {
 				shouldFocus: FindStartFocusAction.NoFocusChange,
 				shouldAnimate: true,
 				updateSearchScope: false,
-				loop: editor.getOption(EditorOption.find).loop
+				loop: editor.getOption(EditorOption.find).loop,
 			});
 			this._run(controller);
 		}
@@ -889,17 +1087,16 @@ export abstract class SelectionMatchFindAction extends EditorAction {
 }
 
 export class NextSelectionMatchFindAction extends SelectionMatchFindAction {
-
 	constructor() {
 		super({
 			id: FIND_IDS.NextSelectionMatchFindAction,
-			label: nls.localize2('nextSelectionMatchFindAction', "Find Next Selection"),
+			label: nls.localize2('nextSelectionMatchFindAction', 'Find Next Selection'),
 			precondition: undefined,
 			kbOpts: {
 				kbExpr: EditorContextKeys.focus,
 				primary: KeyMod.CtrlCmd | KeyCode.F3,
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -909,17 +1106,16 @@ export class NextSelectionMatchFindAction extends SelectionMatchFindAction {
 }
 
 export class PreviousSelectionMatchFindAction extends SelectionMatchFindAction {
-
 	constructor() {
 		super({
 			id: FIND_IDS.PreviousSelectionMatchFindAction,
-			label: nls.localize2('previousSelectionMatchFindAction', "Find Previous Selection"),
+			label: nls.localize2('previousSelectionMatchFindAction', 'Find Previous Selection'),
 			precondition: undefined,
 			kbOpts: {
 				kbExpr: EditorContextKeys.focus,
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.F3,
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -928,64 +1124,78 @@ export class PreviousSelectionMatchFindAction extends SelectionMatchFindAction {
 	}
 }
 
-export const StartFindReplaceAction = registerMultiEditorAction(new MultiEditorAction({
-	id: FIND_IDS.StartFindReplaceAction,
-	label: nls.localize2('startReplace', "Replace"),
-	precondition: ContextKeyExpr.or(EditorContextKeys.focus, ContextKeyExpr.has('editorIsOpen')),
-	kbOpts: {
-		kbExpr: null,
-		primary: KeyMod.CtrlCmd | KeyCode.KeyH,
-		mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyF },
-		weight: KeybindingWeight.EditorContrib
-	},
-	menuOpts: {
-		menuId: MenuId.MenubarEditMenu,
-		group: '3_find',
-		title: nls.localize({ key: 'miReplace', comment: ['&& denotes a mnemonic'] }, "&&Replace"),
-		order: 2
-	}
-}));
+export const StartFindReplaceAction = registerMultiEditorAction(
+	new MultiEditorAction({
+		id: FIND_IDS.StartFindReplaceAction,
+		label: nls.localize2('startReplace', 'Replace'),
+		precondition: ContextKeyExpr.or(EditorContextKeys.focus, ContextKeyExpr.has('editorIsOpen')),
+		kbOpts: {
+			kbExpr: null,
+			primary: KeyMod.CtrlCmd | KeyCode.KeyH,
+			mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyF },
+			weight: KeybindingWeight.EditorContrib,
+		},
+		menuOpts: {
+			menuId: MenuId.MenubarEditMenu,
+			group: '3_find',
+			title: nls.localize({ key: 'miReplace', comment: ['&& denotes a mnemonic'] }, '&&Replace'),
+			order: 2,
+		},
+	})
+);
 
-StartFindReplaceAction.addImplementation(0, (accessor: ServicesAccessor, editor: ICodeEditor, args: any): boolean | Promise<void> => {
-	if (!editor.hasModel() || editor.getOption(EditorOption.readOnly)) {
-		return false;
-	}
-	const controller = CommonFindController.get(editor);
-	if (!controller) {
-		return false;
-	}
+StartFindReplaceAction.addImplementation(
+	0,
+	(accessor: ServicesAccessor, editor: ICodeEditor, args: any): boolean | Promise<void> => {
+		if (!editor.hasModel() || editor.getOption(EditorOption.readOnly)) {
+			return false;
+		}
+		const controller = CommonFindController.get(editor);
+		if (!controller) {
+			return false;
+		}
 
-	const currentSelection = editor.getSelection();
-	const findInputFocused = controller.isFindInputFocused();
-	// we only seed search string from selection when the current selection is single line and not empty,
-	// + the find input is not focused
-	const seedSearchStringFromSelection = !currentSelection.isEmpty()
-		&& currentSelection.startLineNumber === currentSelection.endLineNumber
-		&& (editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never')
-		&& !findInputFocused;
-	/*
+		const currentSelection = editor.getSelection();
+		const findInputFocused = controller.isFindInputFocused();
+		// we only seed search string from selection when the current selection is single line and not empty,
+		// + the find input is not focused
+		const seedSearchStringFromSelection =
+			!currentSelection.isEmpty() &&
+			currentSelection.startLineNumber === currentSelection.endLineNumber &&
+			editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never' &&
+			!findInputFocused;
+		/*
 	* if the existing search string in find widget is empty and we don't seed search string from selection, it means the Find Input is still empty, so we should focus the Find Input instead of Replace Input.
 
 	* findInputFocused true -> seedSearchStringFromSelection false, FocusReplaceInput
 	* findInputFocused false, seedSearchStringFromSelection true FocusReplaceInput
 	* findInputFocused false seedSearchStringFromSelection false FocusFindInput
 	*/
-	const shouldFocus = (findInputFocused || seedSearchStringFromSelection) ?
-		FindStartFocusAction.FocusReplaceInput : FindStartFocusAction.FocusFindInput;
+		const shouldFocus =
+			findInputFocused || seedSearchStringFromSelection
+				? FindStartFocusAction.FocusReplaceInput
+				: FindStartFocusAction.FocusFindInput;
 
-	return controller.start({
-		forceRevealReplace: true,
-		seedSearchStringFromSelection: seedSearchStringFromSelection ? 'single' : 'none',
-		seedSearchStringFromNonEmptySelection: editor.getOption(EditorOption.find).seedSearchStringFromSelection === 'selection',
-		seedSearchStringFromGlobalClipboard: editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never',
-		shouldFocus: shouldFocus,
-		shouldAnimate: true,
-		updateSearchScope: false,
-		loop: editor.getOption(EditorOption.find).loop
-	});
-});
+		return controller.start({
+			forceRevealReplace: true,
+			seedSearchStringFromSelection: seedSearchStringFromSelection ? 'single' : 'none',
+			seedSearchStringFromNonEmptySelection:
+				editor.getOption(EditorOption.find).seedSearchStringFromSelection === 'selection',
+			seedSearchStringFromGlobalClipboard:
+				editor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never',
+			shouldFocus: shouldFocus,
+			shouldAnimate: true,
+			updateSearchScope: false,
+			loop: editor.getOption(EditorOption.find).loop,
+		});
+	}
+);
 
-registerEditorContribution(CommonFindController.ID, FindController, EditorContributionInstantiation.Eager); // eager because it uses `saveViewState`/`restoreViewState`
+registerEditorContribution(
+	CommonFindController.ID,
+	FindController,
+	EditorContributionInstantiation.Eager
+); // eager because it uses `saveViewState`/`restoreViewState`
 
 registerEditorAction(StartFindWithArgsAction);
 registerEditorAction(StartFindWithSelectionAction);
@@ -995,144 +1205,168 @@ registerEditorAction(MoveToMatchFindAction);
 registerEditorAction(NextSelectionMatchFindAction);
 registerEditorAction(PreviousSelectionMatchFindAction);
 
-const FindCommand = EditorCommand.bindToContribution<CommonFindController>(CommonFindController.get);
+const FindCommand = EditorCommand.bindToContribution<CommonFindController>(
+	CommonFindController.get
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.CloseFindWidgetCommand,
-	precondition: CONTEXT_FIND_WIDGET_VISIBLE,
-	handler: x => x.closeFindWidget(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, ContextKeyExpr.not('isComposing')),
-		primary: KeyCode.Escape,
-		secondary: [KeyMod.Shift | KeyCode.Escape]
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.CloseFindWidgetCommand,
+		precondition: CONTEXT_FIND_WIDGET_VISIBLE,
+		handler: x => x.closeFindWidget(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, ContextKeyExpr.not('isComposing')),
+			primary: KeyCode.Escape,
+			secondary: [KeyMod.Shift | KeyCode.Escape],
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.ToggleCaseSensitiveCommand,
-	precondition: undefined,
-	handler: x => x.toggleCaseSensitive(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: EditorContextKeys.focus,
-		primary: ToggleCaseSensitiveKeybinding.primary,
-		mac: ToggleCaseSensitiveKeybinding.mac,
-		win: ToggleCaseSensitiveKeybinding.win,
-		linux: ToggleCaseSensitiveKeybinding.linux
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.ToggleCaseSensitiveCommand,
+		precondition: undefined,
+		handler: x => x.toggleCaseSensitive(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: EditorContextKeys.focus,
+			primary: ToggleCaseSensitiveKeybinding.primary,
+			mac: ToggleCaseSensitiveKeybinding.mac,
+			win: ToggleCaseSensitiveKeybinding.win,
+			linux: ToggleCaseSensitiveKeybinding.linux,
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.ToggleWholeWordCommand,
-	precondition: undefined,
-	handler: x => x.toggleWholeWords(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: EditorContextKeys.focus,
-		primary: ToggleWholeWordKeybinding.primary,
-		mac: ToggleWholeWordKeybinding.mac,
-		win: ToggleWholeWordKeybinding.win,
-		linux: ToggleWholeWordKeybinding.linux
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.ToggleWholeWordCommand,
+		precondition: undefined,
+		handler: x => x.toggleWholeWords(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: EditorContextKeys.focus,
+			primary: ToggleWholeWordKeybinding.primary,
+			mac: ToggleWholeWordKeybinding.mac,
+			win: ToggleWholeWordKeybinding.win,
+			linux: ToggleWholeWordKeybinding.linux,
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.ToggleRegexCommand,
-	precondition: undefined,
-	handler: x => x.toggleRegex(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: EditorContextKeys.focus,
-		primary: ToggleRegexKeybinding.primary,
-		mac: ToggleRegexKeybinding.mac,
-		win: ToggleRegexKeybinding.win,
-		linux: ToggleRegexKeybinding.linux
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.ToggleRegexCommand,
+		precondition: undefined,
+		handler: x => x.toggleRegex(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: EditorContextKeys.focus,
+			primary: ToggleRegexKeybinding.primary,
+			mac: ToggleRegexKeybinding.mac,
+			win: ToggleRegexKeybinding.win,
+			linux: ToggleRegexKeybinding.linux,
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.ToggleSearchScopeCommand,
-	precondition: undefined,
-	handler: x => x.toggleSearchScope(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: EditorContextKeys.focus,
-		primary: ToggleSearchScopeKeybinding.primary,
-		mac: ToggleSearchScopeKeybinding.mac,
-		win: ToggleSearchScopeKeybinding.win,
-		linux: ToggleSearchScopeKeybinding.linux
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.ToggleSearchScopeCommand,
+		precondition: undefined,
+		handler: x => x.toggleSearchScope(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: EditorContextKeys.focus,
+			primary: ToggleSearchScopeKeybinding.primary,
+			mac: ToggleSearchScopeKeybinding.mac,
+			win: ToggleSearchScopeKeybinding.win,
+			linux: ToggleSearchScopeKeybinding.linux,
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.TogglePreserveCaseCommand,
-	precondition: undefined,
-	handler: x => x.togglePreserveCase(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: EditorContextKeys.focus,
-		primary: TogglePreserveCaseKeybinding.primary,
-		mac: TogglePreserveCaseKeybinding.mac,
-		win: TogglePreserveCaseKeybinding.win,
-		linux: TogglePreserveCaseKeybinding.linux
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.TogglePreserveCaseCommand,
+		precondition: undefined,
+		handler: x => x.togglePreserveCase(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: EditorContextKeys.focus,
+			primary: TogglePreserveCaseKeybinding.primary,
+			mac: TogglePreserveCaseKeybinding.mac,
+			win: TogglePreserveCaseKeybinding.win,
+			linux: TogglePreserveCaseKeybinding.linux,
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.ReplaceOneAction,
-	precondition: CONTEXT_FIND_WIDGET_VISIBLE,
-	handler: x => x.replace(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: EditorContextKeys.focus,
-		primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Digit1
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.ReplaceOneAction,
+		precondition: CONTEXT_FIND_WIDGET_VISIBLE,
+		handler: x => x.replace(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: EditorContextKeys.focus,
+			primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Digit1,
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.ReplaceOneAction,
-	precondition: CONTEXT_FIND_WIDGET_VISIBLE,
-	handler: x => x.replace(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, CONTEXT_REPLACE_INPUT_FOCUSED),
-		primary: KeyCode.Enter
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.ReplaceOneAction,
+		precondition: CONTEXT_FIND_WIDGET_VISIBLE,
+		handler: x => x.replace(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, CONTEXT_REPLACE_INPUT_FOCUSED),
+			primary: KeyCode.Enter,
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.ReplaceAllAction,
-	precondition: CONTEXT_FIND_WIDGET_VISIBLE,
-	handler: x => x.replaceAll(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: EditorContextKeys.focus,
-		primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.Enter
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.ReplaceAllAction,
+		precondition: CONTEXT_FIND_WIDGET_VISIBLE,
+		handler: x => x.replaceAll(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: EditorContextKeys.focus,
+			primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.Enter,
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.ReplaceAllAction,
-	precondition: CONTEXT_FIND_WIDGET_VISIBLE,
-	handler: x => x.replaceAll(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, CONTEXT_REPLACE_INPUT_FOCUSED),
-		primary: undefined,
-		mac: {
-			primary: KeyMod.CtrlCmd | KeyCode.Enter,
-		}
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.ReplaceAllAction,
+		precondition: CONTEXT_FIND_WIDGET_VISIBLE,
+		handler: x => x.replaceAll(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: ContextKeyExpr.and(EditorContextKeys.focus, CONTEXT_REPLACE_INPUT_FOCUSED),
+			primary: undefined,
+			mac: {
+				primary: KeyMod.CtrlCmd | KeyCode.Enter,
+			},
+		},
+	})
+);
 
-registerEditorCommand(new FindCommand({
-	id: FIND_IDS.SelectAllMatchesAction,
-	precondition: CONTEXT_FIND_WIDGET_VISIBLE,
-	handler: x => x.selectAllMatches(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 5,
-		kbExpr: EditorContextKeys.focus,
-		primary: KeyMod.Alt | KeyCode.Enter
-	}
-}));
+registerEditorCommand(
+	new FindCommand({
+		id: FIND_IDS.SelectAllMatchesAction,
+		precondition: CONTEXT_FIND_WIDGET_VISIBLE,
+		handler: x => x.selectAllMatches(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 5,
+			kbExpr: EditorContextKeys.focus,
+			primary: KeyMod.Alt | KeyCode.Enter,
+		},
+	})
+);

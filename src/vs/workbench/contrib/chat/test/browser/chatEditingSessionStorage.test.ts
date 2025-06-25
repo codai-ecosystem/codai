@@ -16,7 +16,11 @@ import { InMemoryFileSystemProvider } from '../../../../../platform/files/common
 import { NullLogService } from '../../../../../platform/log/common/log.js';
 import { TestEnvironmentService } from '../../../../test/browser/workbenchTestServices.js';
 import { ISnapshotEntry } from '../../browser/chatEditing/chatEditingModifiedFileEntry.js';
-import { ChatEditingSessionStorage, IChatEditingSessionStop, StoredSessionState } from '../../browser/chatEditing/chatEditingSessionStorage.js';
+import {
+	ChatEditingSessionStorage,
+	IChatEditingSessionStop,
+	StoredSessionState,
+} from '../../browser/chatEditing/chatEditingSessionStorage.js';
 import { ChatEditingSnapshotTextModelContentProvider } from '../../browser/chatEditing/chatEditingTextModelContentProviders.js';
 import { ModifiedFileEntryState } from '../../common/chatEditingService.js';
 
@@ -34,31 +38,65 @@ suite('ChatEditingSessionStorage', () => {
 
 	setup(() => {
 		fs = ds.add(new FileService(new NullLogService()));
-		ds.add(fs.registerProvider(TestEnvironmentService.workspaceStorageHome.scheme, ds.add(new InMemoryFileSystemProvider())));
+		ds.add(
+			fs.registerProvider(
+				TestEnvironmentService.workspaceStorageHome.scheme,
+				ds.add(new InMemoryFileSystemProvider())
+			)
+		);
 
 		storage = new TestChatEditingSessionStorage(
 			sessionId,
 			fs,
 			TestEnvironmentService,
 			new NullLogService(),
-			{ getWorkspace: () => ({ id: 'workspaceId' }) } as any,
+			{ getWorkspace: () => ({ id: 'workspaceId' }) } as any
 		);
 	});
 
-	function makeStop(requestId: string | undefined, before: string, after: string): IChatEditingSessionStop {
+	function makeStop(
+		requestId: string | undefined,
+		before: string,
+		after: string
+	): IChatEditingSessionStop {
 		const stopId = generateUuid();
 		const resource = URI.file('/foo.js');
 		return {
 			stopId,
 			entries: new ResourceMap([
-				[resource, { resource, languageId: 'javascript', snapshotUri: ChatEditingSnapshotTextModelContentProvider.getSnapshotFileURI(sessionId, requestId, stopId, resource.path), original: `contents${before}}`, current: `contents${after}`, originalToCurrentEdit: StringEdit.replace(OffsetRange.ofLength(42), 'newtext'), state: ModifiedFileEntryState.Modified, telemetryInfo: { agentId: 'agentId', command: 'cmd', requestId: generateUuid(), result: undefined, sessionId } } satisfies ISnapshotEntry],
+				[
+					resource,
+					{
+						resource,
+						languageId: 'javascript',
+						snapshotUri: ChatEditingSnapshotTextModelContentProvider.getSnapshotFileURI(
+							sessionId,
+							requestId,
+							stopId,
+							resource.path
+						),
+						original: `contents${before}}`,
+						current: `contents${after}`,
+						originalToCurrentEdit: StringEdit.replace(OffsetRange.ofLength(42), 'newtext'),
+						state: ModifiedFileEntryState.Modified,
+						telemetryInfo: {
+							agentId: 'agentId',
+							command: 'cmd',
+							requestId: generateUuid(),
+							result: undefined,
+							sessionId,
+						},
+					} satisfies ISnapshotEntry,
+				],
 			]),
 		};
 	}
 
 	function generateState(): StoredSessionState {
 		const initialFileContents = new ResourceMap<string>();
-		for (let i = 0; i < 10; i++) { initialFileContents.set(URI.file(`/foo${i}.js`), `fileContents${Math.floor(i / 2)}`); }
+		for (let i = 0; i < 10; i++) {
+			initialFileContents.set(URI.file(`/foo${i}.js`), `fileContents${Math.floor(i / 2)}`);
+		}
 
 		const r1 = generateUuid();
 		const r2 = generateUuid();
@@ -68,9 +106,19 @@ suite('ChatEditingSessionStorage', () => {
 			recentSnapshot: makeStop(undefined, 'd', 'e'),
 			linearHistoryIndex: 3,
 			linearHistory: [
-				{ startIndex: 0, requestId: r1, stops: [makeStop(r1, 'a', 'b')], postEdit: makeStop(r1, 'b', 'c').entries },
-				{ startIndex: 1, requestId: r2, stops: [makeStop(r2, 'c', 'd'), makeStop(r2, 'd', 'd')], postEdit: makeStop(r2, 'd', 'd').entries },
-			]
+				{
+					startIndex: 0,
+					requestId: r1,
+					stops: [makeStop(r1, 'a', 'b')],
+					postEdit: makeStop(r1, 'b', 'c').entries,
+				},
+				{
+					startIndex: 1,
+					requestId: r2,
+					stops: [makeStop(r2, 'c', 'd'), makeStop(r2, 'd', 'd')],
+					postEdit: makeStop(r2, 'd', 'd').entries,
+				},
+			],
 		};
 	}
 
@@ -84,7 +132,11 @@ suite('ChatEditingSessionStorage', () => {
 		await storage.storeState(original);
 
 		const changer = (x: any) => {
-			return URI.isUri(x) ? x.toString() : x instanceof Map ? cloneAndChange([...x.values()], changer) : undefined;
+			return URI.isUri(x)
+				? x.toString()
+				: x instanceof Map
+					? cloneAndChange([...x.values()], changer)
+					: undefined;
 		};
 
 		const restored = await storage.restoreState();

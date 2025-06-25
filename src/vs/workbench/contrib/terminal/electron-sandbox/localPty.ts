@@ -3,7 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IProcessPropertyMap, IPtyService, ITerminalChildProcess, ITerminalLaunchError, ProcessPropertyType } from '../../../../platform/terminal/common/terminal.js';
+import {
+	IProcessPropertyMap,
+	IPtyService,
+	ITerminalChildProcess,
+	ITerminalLaunchError,
+	ProcessPropertyType,
+} from '../../../../platform/terminal/common/terminal.js';
 import { BasePty } from '../common/basePty.js';
 
 /**
@@ -46,7 +52,10 @@ export class LocalPty extends BasePty implements ITerminalChildProcess {
 	}
 
 	resize(cols: number, rows: number): void {
-		if (this._inReplay || this._lastDimensions.cols === cols && this._lastDimensions.rows === rows) {
+		if (
+			this._inReplay ||
+			(this._lastDimensions.cols === cols && this._lastDimensions.rows === rows)
+		) {
 			return;
 		}
 		this._lastDimensions.cols = cols;
@@ -69,7 +78,10 @@ export class LocalPty extends BasePty implements ITerminalChildProcess {
 		return this._proxy.refreshProperty(this.id, type);
 	}
 
-	async updateProperty<T extends ProcessPropertyType>(type: T, value: IProcessPropertyMap[T]): Promise<void> {
+	async updateProperty<T extends ProcessPropertyType>(
+		type: T,
+		value: IProcessPropertyMap[T]
+	): Promise<void> {
 		return this._proxy.updateProperty(this.id, type, value);
 	}
 

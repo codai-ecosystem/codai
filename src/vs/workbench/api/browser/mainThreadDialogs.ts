@@ -4,16 +4,27 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { URI } from '../../../base/common/uri.js';
-import { MainThreadDiaglogsShape, MainContext, MainThreadDialogOpenOptions, MainThreadDialogSaveOptions } from '../common/extHost.protocol.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
-import { IFileDialogService, IOpenDialogOptions, ISaveDialogOptions } from '../../../platform/dialogs/common/dialogs.js';
+import {
+	MainThreadDiaglogsShape,
+	MainContext,
+	MainThreadDialogOpenOptions,
+	MainThreadDialogSaveOptions,
+} from '../common/extHost.protocol.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
+import {
+	IFileDialogService,
+	IOpenDialogOptions,
+	ISaveDialogOptions,
+} from '../../../platform/dialogs/common/dialogs.js';
 
 @extHostNamedCustomer(MainContext.MainThreadDialogs)
 export class MainThreadDialogs implements MainThreadDiaglogsShape {
-
 	constructor(
 		context: IExtHostContext,
-		@IFileDialogService private readonly _fileDialogService: IFileDialogService,
+		@IFileDialogService private readonly _fileDialogService: IFileDialogService
 	) {
 		//
 	}
@@ -41,12 +52,13 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 	private static _convertOpenOptions(options?: MainThreadDialogOpenOptions): IOpenDialogOptions {
 		const result: IOpenDialogOptions = {
 			openLabel: options?.openLabel || undefined,
-			canSelectFiles: options?.canSelectFiles || (!options?.canSelectFiles && !options?.canSelectFolders),
+			canSelectFiles:
+				options?.canSelectFiles || (!options?.canSelectFiles && !options?.canSelectFolders),
 			canSelectFolders: options?.canSelectFolders,
 			canSelectMany: options?.canSelectMany,
 			defaultUri: options?.defaultUri ? URI.revive(options.defaultUri) : undefined,
 			title: options?.title || undefined,
-			availableFileSystems: []
+			availableFileSystems: [],
 		};
 		if (options?.filters) {
 			result.filters = [];
@@ -61,7 +73,7 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 		const result: ISaveDialogOptions = {
 			defaultUri: options?.defaultUri ? URI.revive(options.defaultUri) : undefined,
 			saveLabel: options?.saveLabel || undefined,
-			title: options?.title || undefined
+			title: options?.title || undefined,
 		};
 		if (options?.filters) {
 			result.filters = [];

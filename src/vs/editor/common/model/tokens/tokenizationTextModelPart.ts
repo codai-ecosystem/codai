@@ -12,13 +12,22 @@ import { Range } from '../../core/range.js';
 import { IWordAtPosition, getWordAtText } from '../../core/wordHelper.js';
 import { StandardTokenType } from '../../encodedTokenAttributes.js';
 import { ILanguageService } from '../../languages/language.js';
-import { ILanguageConfigurationService, LanguageConfigurationServiceChangeEvent, ResolvedLanguageConfiguration } from '../../languages/languageConfigurationRegistry.js';
+import {
+	ILanguageConfigurationService,
+	LanguageConfigurationServiceChangeEvent,
+	ResolvedLanguageConfiguration,
+} from '../../languages/languageConfigurationRegistry.js';
 import { BracketPairsTextModelPart } from '../bracketPairsTextModelPart/bracketPairsImpl.js';
 import { TextModel } from '../textModel.js';
 import { TextModelPart } from '../textModelPart.js';
 import { AbstractSyntaxTokenBackend, AttachedViews } from './abstractSyntaxTokenBackend.js';
 import { TreeSitterSyntaxTokenBackend } from './treeSitter/treeSitterSyntaxTokenBackend.js';
-import { IModelContentChangedEvent, IModelLanguageChangedEvent, IModelLanguageConfigurationChangedEvent, IModelTokensChangedEvent } from '../../textModelEvents.js';
+import {
+	IModelContentChangedEvent,
+	IModelLanguageChangedEvent,
+	IModelLanguageConfigurationChangedEvent,
+	IModelTokensChangedEvent,
+} from '../../textModelEvents.js';
 import { ITokenizationTextModelPart } from '../../tokenizationTextModelPart.js';
 import { LineTokens } from '../../tokens/lineTokens.js';
 import { SparseMultilineTokens } from '../../tokens/sparseMultilineTokens.js';
@@ -26,7 +35,12 @@ import { SparseTokensStore } from '../../tokens/sparseTokensStore.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { TokenizerSyntaxTokenBackend } from './tokenizerSyntaxTokenBackend.js';
 import { ITreeSitterLibraryService } from '../../services/treeSitter/treeSitterLibraryService.js';
-import { derived, IObservable, ISettableObservable, observableValue } from '../../../../base/common/observable.js';
+import {
+	derived,
+	IObservable,
+	ISettableObservable,
+	observableValue,
+} from '../../../../base/common/observable.js';
 
 export class TokenizationTextModelPart extends TextModelPart implements ITokenizationTextModelPart {
 	private readonly _semanticTokens: SparseTokensStore;
@@ -50,9 +64,10 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		private _languageId: string,
 		private readonly _attachedViews: AttachedViews,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITreeSitterLibraryService private readonly _treeSitterLibraryService: ITreeSitterLibraryService,
+		@ITreeSitterLibraryService private readonly _treeSitterLibraryService: ITreeSitterLibraryService
 	) {
 		super();
 
@@ -66,24 +81,37 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		this.tokens = derived(this, reader => {
 			let tokens: AbstractSyntaxTokenBackend;
 			if (this._useTreeSitter.read(reader)) {
-				tokens = reader.store.add(this._instantiationService.createInstance(
-					TreeSitterSyntaxTokenBackend,
-					this._languageIdObs,
-					this._languageService.languageIdCodec,
-					this._textModel,
-					this._attachedViews.visibleLineRanges
-				));
+				tokens = reader.store.add(
+					this._instantiationService.createInstance(
+						TreeSitterSyntaxTokenBackend,
+						this._languageIdObs,
+						this._languageService.languageIdCodec,
+						this._textModel,
+						this._attachedViews.visibleLineRanges
+					)
+				);
 			} else {
-				tokens = reader.store.add(new TokenizerSyntaxTokenBackend(this._languageService.languageIdCodec, this._textModel, () => this._languageId, this._attachedViews));
+				tokens = reader.store.add(
+					new TokenizerSyntaxTokenBackend(
+						this._languageService.languageIdCodec,
+						this._textModel,
+						() => this._languageId,
+						this._attachedViews
+					)
+				);
 			}
 
-			reader.store.add(tokens.onDidChangeTokens(e => {
-				this._emitModelTokensChangedEvent(e);
-			}));
+			reader.store.add(
+				tokens.onDidChangeTokens(e => {
+					this._emitModelTokensChangedEvent(e);
+				})
+			);
 
-			reader.store.add(tokens.onDidChangeBackgroundTokenizationState(e => {
-				this._bracketPairsTextModelPart.handleDidChangeBackgroundTokenizationState();
-			}));
+			reader.store.add(
+				tokens.onDidChangeBackgroundTokenizationState(e => {
+					this._bracketPairsTextModelPart.handleDidChangeBackgroundTokenizationState();
+				})
+			);
 			return tokens;
 		});
 
@@ -100,19 +128,25 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		this._semanticTokens = new SparseTokensStore(this._languageService.languageIdCodec);
 		this._onDidChangeLanguage = this._register(new Emitter<IModelLanguageChangedEvent>());
 		this.onDidChangeLanguage = this._onDidChangeLanguage.event;
-		this._onDidChangeLanguageConfiguration = this._register(new Emitter<IModelLanguageConfigurationChangedEvent>());
+		this._onDidChangeLanguageConfiguration = this._register(
+			new Emitter<IModelLanguageConfigurationChangedEvent>()
+		);
 		this.onDidChangeLanguageConfiguration = this._onDidChangeLanguageConfiguration.event;
 		this._onDidChangeTokens = this._register(new Emitter<IModelTokensChangedEvent>());
 		this.onDidChangeTokens = this._onDidChangeTokens.event;
 	}
 
 	_hasListeners(): boolean {
-		return (this._onDidChangeLanguage.hasListeners()
-			|| this._onDidChangeLanguageConfiguration.hasListeners()
-			|| this._onDidChangeTokens.hasListeners());
+		return (
+			this._onDidChangeLanguage.hasListeners() ||
+			this._onDidChangeLanguageConfiguration.hasListeners() ||
+			this._onDidChangeTokens.hasListeners()
+		);
 	}
 
-	public handleLanguageConfigurationServiceChange(e: LanguageConfigurationServiceChangeEvent): void {
+	public handleLanguageConfigurationServiceChange(
+		e: LanguageConfigurationServiceChangeEvent
+	): void {
 		if (e.affects(this._languageId)) {
 			this._onDidChangeLanguageConfiguration.fire({});
 		}
@@ -121,7 +155,8 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 	public handleDidChangeContent(e: IModelContentChangedEvent): void {
 		if (e.isFlush) {
 			this._semanticTokens.flush();
-		} else if (!e.isEolChange) { // We don't have to do anything on an EOL change
+		} else if (!e.isEolChange) {
+			// We don't have to do anything on an EOL change
 			for (const c of e.changes) {
 				const [eolCount, firstLineLength, lastLineLength] = countEOL(c.text);
 
@@ -198,7 +233,11 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		this.tokens.get().tokenizeIfCheap(lineNumber);
 	}
 
-	public getTokenTypeIfInsertingCharacter(lineNumber: number, column: number, character: string): StandardTokenType {
+	public getTokenTypeIfInsertingCharacter(
+		lineNumber: number,
+		column: number,
+		character: string
+	): StandardTokenType {
 		return this.tokens.get().getTokenTypeIfInsertingCharacter(lineNumber, column, character);
 	}
 
@@ -259,7 +298,10 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		const tokenIndex = lineTokens.findTokenIndexAtOffset(position.column - 1);
 
 		// (1). First try checking right biased word
-		const [rbStartOffset, rbEndOffset] = TokenizationTextModelPart._findLanguageBoundaries(lineTokens, tokenIndex);
+		const [rbStartOffset, rbEndOffset] = TokenizationTextModelPart._findLanguageBoundaries(
+			lineTokens,
+			tokenIndex
+		);
 		const rightBiasedWord = getWordAtText(
 			position.column,
 			this.getLanguageConfiguration(lineTokens.getLanguageId(tokenIndex)).getWordDefinition(),
@@ -305,7 +347,10 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		return this._languageConfigurationService.getLanguageConfiguration(languageId);
 	}
 
-	private static _findLanguageBoundaries(lineTokens: LineTokens, tokenIndex: number): [number, number] {
+	private static _findLanguageBoundaries(
+		lineTokens: LineTokens,
+		tokenIndex: number
+	): [number, number] {
 		const languageId = lineTokens.getLanguageId(tokenIndex);
 
 		// go left until a different language is hit
@@ -330,7 +375,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 	public getWordUntilPosition(position: IPosition): IWordAtPosition {
 		const wordAtPosition = this.getWordAtPosition(position);
 		if (!wordAtPosition) {
-			return { word: '', startColumn: position.column, endColumn: position.column, };
+			return { word: '', startColumn: position.column, endColumn: position.column };
 		}
 		return {
 			word: wordAtPosition.word.substr(0, position.column - wordAtPosition.startColumn),
@@ -362,7 +407,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		const e: IModelLanguageChangedEvent = {
 			oldLanguage: this._languageId,
 			newLanguage: languageId,
-			source
+			source,
 		};
 
 		this._languageId = languageId;

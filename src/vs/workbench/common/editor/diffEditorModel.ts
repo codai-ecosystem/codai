@@ -11,14 +11,20 @@ import { IResolvableEditorModel } from '../../../platform/editor/common/editor.j
  * and the modified version.
  */
 export class DiffEditorModel extends EditorModel {
-
 	protected readonly _originalModel: IResolvableEditorModel | undefined;
-	get originalModel(): IResolvableEditorModel | undefined { return this._originalModel; }
+	get originalModel(): IResolvableEditorModel | undefined {
+		return this._originalModel;
+	}
 
 	protected readonly _modifiedModel: IResolvableEditorModel | undefined;
-	get modifiedModel(): IResolvableEditorModel | undefined { return this._modifiedModel; }
+	get modifiedModel(): IResolvableEditorModel | undefined {
+		return this._modifiedModel;
+	}
 
-	constructor(originalModel: IResolvableEditorModel | undefined, modifiedModel: IResolvableEditorModel | undefined) {
+	constructor(
+		originalModel: IResolvableEditorModel | undefined,
+		modifiedModel: IResolvableEditorModel | undefined
+	) {
 		super();
 
 		this._originalModel = originalModel;
@@ -26,10 +32,7 @@ export class DiffEditorModel extends EditorModel {
 	}
 
 	override async resolve(): Promise<void> {
-		await Promise.all([
-			this._originalModel?.resolve(),
-			this._modifiedModel?.resolve()
-		]);
+		await Promise.all([this._originalModel?.resolve(), this._modifiedModel?.resolve()]);
 	}
 
 	override isResolved(): boolean {
@@ -37,7 +40,6 @@ export class DiffEditorModel extends EditorModel {
 	}
 
 	override dispose(): void {
-
 		// Do not propagate the dispose() call to the two models inside. We never created the two models
 		// (original and modified) so we can not dispose them without sideeffects. Rather rely on the
 		// models getting disposed when their related inputs get disposed from the diffEditorInput.

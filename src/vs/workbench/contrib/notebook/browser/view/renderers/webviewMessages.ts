@@ -178,12 +178,12 @@ export interface OutputItemEntry {
 export type ICreationContent =
 	| { readonly type: RenderOutputType.Html; readonly htmlContent: string }
 	| {
-		readonly type: RenderOutputType.Extension;
-		readonly outputId: string;
-		readonly metadata: unknown;
-		readonly output: OutputItemEntry;
-		readonly allOutputs: ReadonlyArray<{ readonly mime: string }>;
-	};
+			readonly type: RenderOutputType.Extension;
+			readonly outputId: string;
+			readonly metadata: unknown;
+			readonly output: OutputItemEntry;
+			readonly allOutputs: ReadonlyArray<{ readonly mime: string }>;
+	  };
 
 export interface ICreationRequestMessage {
 	readonly type: 'html';
@@ -399,9 +399,16 @@ export interface ITokenizedStylesChangedMessage {
 export interface IFindMessage {
 	readonly type: 'find';
 	readonly query: string;
-	readonly options: { wholeWord?: boolean; caseSensitive?: boolean; includeMarkup: boolean; includeOutput: boolean; shouldGetSearchPreviewInfo: boolean; ownerID: string; findIds: string[] };
+	readonly options: {
+		wholeWord?: boolean;
+		caseSensitive?: boolean;
+		includeMarkup: boolean;
+		includeOutput: boolean;
+		shouldGetSearchPreviewInfo: boolean;
+		ownerID: string;
+		findIds: string[];
+	};
 }
-
 
 export interface IFindHighlightCurrentMessage {
 	readonly type: 'findHighlightCurrent';
@@ -488,75 +495,75 @@ export interface IPerformanceMessage extends BaseToWebviewMessage {
 	readonly outputSize?: number;
 }
 
+export type FromWebviewMessage =
+	| WebviewInitialized
+	| IDimensionMessage
+	| IMouseEnterMessage
+	| IMouseLeaveMessage
+	| IOutputFocusMessage
+	| IOutputBlurMessage
+	| IOutputInputFocusMessage
+	| IScrollToRevealMessage
+	| IWheelMessage
+	| IScrollAckMessage
+	| IFocusEditorMessage
+	| ICustomKernelMessage
+	| ICustomRendererMessage
+	| IClickedDataUrlMessage
+	| IClickMarkupCellMessage
+	| IClickedLinkMessage
+	| IContextMenuMarkupCellMessage
+	| IMouseEnterMarkupCellMessage
+	| IMouseLeaveMarkupCellMessage
+	| IToggleMarkupPreviewMessage
+	| ICellDragStartMessage
+	| ICellDragMessage
+	| ICellDropMessage
+	| ICellDragEndMessage
+	| IInitializedMarkupMessage
+	| IRenderedMarkupMessage
+	| IRenderedCellOutputMessage
+	| IDidFindMessage
+	| IDidFindHighlightCurrentMessage
+	| IOutputResizedMessage
+	| IGetOutputItemMessage
+	| ILogRendererDebugMessage
+	| IPerformanceMessage;
 
-export type FromWebviewMessage = WebviewInitialized |
-	IDimensionMessage |
-	IMouseEnterMessage |
-	IMouseLeaveMessage |
-	IOutputFocusMessage |
-	IOutputBlurMessage |
-	IOutputInputFocusMessage |
-	IScrollToRevealMessage |
-	IWheelMessage |
-	IScrollAckMessage |
-	IFocusEditorMessage |
-	ICustomKernelMessage |
-	ICustomRendererMessage |
-	IClickedDataUrlMessage |
-	IClickMarkupCellMessage |
-	IClickedLinkMessage |
-	IContextMenuMarkupCellMessage |
-	IMouseEnterMarkupCellMessage |
-	IMouseLeaveMarkupCellMessage |
-	IToggleMarkupPreviewMessage |
-	ICellDragStartMessage |
-	ICellDragMessage |
-	ICellDropMessage |
-	ICellDragEndMessage |
-	IInitializedMarkupMessage |
-	IRenderedMarkupMessage |
-	IRenderedCellOutputMessage |
-	IDidFindMessage |
-	IDidFindHighlightCurrentMessage |
-	IOutputResizedMessage |
-	IGetOutputItemMessage |
-	ILogRendererDebugMessage |
-	IPerformanceMessage;
-
-export type ToWebviewMessage = IClearMessage |
-	IFocusOutputMessage |
-	IBlurOutputMessage |
-	IAckOutputHeightMessage |
-	ICreationRequestMessage |
-	IViewScrollTopRequestMessage |
-	IScrollRequestMessage |
-	IClearOutputRequestMessage |
-	IHideOutputMessage |
-	IShowOutputMessage |
-	ICopyImageMessage |
-	IUpdateControllerPreloadsMessage |
-	IUpdateRenderersMessage |
-	IUpdateDecorationsMessage |
-	ICustomKernelMessage |
-	ICustomRendererMessage |
-	ICreateMarkupCellMessage |
-	IDeleteMarkupCellMessage |
-	IShowMarkupCellMessage |
-	IHideMarkupCellMessage |
-	IUnhideMarkupCellMessage |
-	IUpdateSelectedMarkupCellsMessage |
-	IInitializeMarkupCells |
-	INotebookStylesMessage |
-	INotebookOptionsMessage |
-	ITokenizedCodeBlockMessage |
-	ITokenizedStylesChangedMessage |
-	IFindMessage |
-	IFindHighlightCurrentMessage |
-	IFindUnHighlightCurrentMessage |
-	IFindStopMessage |
-	IReturnOutputItemMessage |
-	ISelectOutputItemMessage |
-	ISelectInputOutputItemMessage;
-
+export type ToWebviewMessage =
+	| IClearMessage
+	| IFocusOutputMessage
+	| IBlurOutputMessage
+	| IAckOutputHeightMessage
+	| ICreationRequestMessage
+	| IViewScrollTopRequestMessage
+	| IScrollRequestMessage
+	| IClearOutputRequestMessage
+	| IHideOutputMessage
+	| IShowOutputMessage
+	| ICopyImageMessage
+	| IUpdateControllerPreloadsMessage
+	| IUpdateRenderersMessage
+	| IUpdateDecorationsMessage
+	| ICustomKernelMessage
+	| ICustomRendererMessage
+	| ICreateMarkupCellMessage
+	| IDeleteMarkupCellMessage
+	| IShowMarkupCellMessage
+	| IHideMarkupCellMessage
+	| IUnhideMarkupCellMessage
+	| IUpdateSelectedMarkupCellsMessage
+	| IInitializeMarkupCells
+	| INotebookStylesMessage
+	| INotebookOptionsMessage
+	| ITokenizedCodeBlockMessage
+	| ITokenizedStylesChangedMessage
+	| IFindMessage
+	| IFindHighlightCurrentMessage
+	| IFindUnHighlightCurrentMessage
+	| IFindStopMessage
+	| IReturnOutputItemMessage
+	| ISelectOutputItemMessage
+	| ISelectInputOutputItemMessage;
 
 export type AnyMessage = FromWebviewMessage | ToWebviewMessage;

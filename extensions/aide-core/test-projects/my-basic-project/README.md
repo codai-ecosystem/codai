@@ -12,6 +12,7 @@ npm run dev
 ## Project Structure
 
 This is a basic project with the following structure:
+
 - `src/` - Source code
 - `package.json` - Project configuration
 - `README.md` - This file

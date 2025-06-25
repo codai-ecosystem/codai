@@ -8,13 +8,21 @@ import { Disposable, DisposableStore } from '../../../../../../base/common/lifec
 import { ICodeEditor } from '../../../../../../editor/browser/editorBrowser.js';
 import { Selection, SelectionDirection } from '../../../../../../editor/common/core/selection.js';
 import { CursorChangeReason } from '../../../../../../editor/common/cursorEvents.js';
-import { FindMatch, IModelDeltaDecoration, ITextModel } from '../../../../../../editor/common/model.js';
+import {
+	FindMatch,
+	IModelDeltaDecoration,
+	ITextModel,
+} from '../../../../../../editor/common/model.js';
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
-import { IActiveNotebookEditor, ICellViewModel, INotebookEditor, INotebookEditorContribution } from '../../notebookBrowser.js';
+import {
+	IActiveNotebookEditor,
+	ICellViewModel,
+	INotebookEditor,
+	INotebookEditorContribution,
+} from '../../notebookBrowser.js';
 import { registerNotebookContribution } from '../../notebookEditorExtensions.js';
 
 class NotebookSelectionHighlighter extends Disposable implements INotebookEditorContribution {
-
 	static readonly id: string = 'notebook.selectionHighlighter';
 	private isEnabled: boolean = false;
 
@@ -28,59 +36,68 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService private readonly configurationService: IConfigurationService
 	) {
 		super();
 
 		this.isEnabled = this.configurationService.getValue<boolean>('editor.selectionHighlight');
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('editor.selectionHighlight')) {
-				this.isEnabled = this.configurationService.getValue<boolean>('editor.selectionHighlight');
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('editor.selectionHighlight')) {
+					this.isEnabled = this.configurationService.getValue<boolean>('editor.selectionHighlight');
+				}
+			})
+		);
 
-		this._register(this.notebookEditor.onDidChangeActiveCell(async () => {
-			if (!this.isEnabled) {
-				return;
-			}
-
-			this.anchorCell = this.notebookEditor.activeCellAndCodeEditor;
-			if (!this.anchorCell) {
-				return;
-			}
-
-			const activeCell = this.notebookEditor.getActiveCell();
-			if (!activeCell) {
-				return;
-			}
-
-			if (!activeCell.editorAttached) {
-				await Event.toPromise(activeCell.onDidChangeEditorAttachState);
-			}
-
-			this.clearNotebookSelectionDecorations();
-
-			this.anchorDisposables.clear();
-			this.anchorDisposables.add(this.anchorCell[1].onDidChangeCursorPosition((e) => {
-				if (e.reason !== CursorChangeReason.Explicit) {
-					this.clearNotebookSelectionDecorations();
+		this._register(
+			this.notebookEditor.onDidChangeActiveCell(async () => {
+				if (!this.isEnabled) {
 					return;
 				}
 
+				this.anchorCell = this.notebookEditor.activeCellAndCodeEditor;
 				if (!this.anchorCell) {
 					return;
 				}
 
-				if (this.notebookEditor.hasModel()) {
-					this.clearNotebookSelectionDecorations();
+				const activeCell = this.notebookEditor.getActiveCell();
+				if (!activeCell) {
+					return;
+				}
+
+				if (!activeCell.editorAttached) {
+					await Event.toPromise(activeCell.onDidChangeEditorAttachState);
+				}
+
+				this.clearNotebookSelectionDecorations();
+
+				this.anchorDisposables.clear();
+				this.anchorDisposables.add(
+					this.anchorCell[1].onDidChangeCursorPosition(e => {
+						if (e.reason !== CursorChangeReason.Explicit) {
+							this.clearNotebookSelectionDecorations();
+							return;
+						}
+
+						if (!this.anchorCell) {
+							return;
+						}
+
+						if (this.notebookEditor.hasModel()) {
+							this.clearNotebookSelectionDecorations();
+							this._update(this.notebookEditor);
+						}
+					})
+				);
+
+				if (
+					this.notebookEditor.getEditorViewState().editorFocused &&
+					this.notebookEditor.hasModel()
+				) {
 					this._update(this.notebookEditor);
 				}
-			}));
-
-			if (this.notebookEditor.getEditorViewState().editorFocused && this.notebookEditor.hasModel()) {
-				this._update(this.notebookEditor);
-			}
-		}));
+			})
+		);
 	}
 
 	private _update(editor: IActiveNotebookEditor) {
@@ -107,12 +124,7 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 			return;
 		}
 
-		const results = editor.textModel.findMatches(
-			searchText,
-			false,
-			true,
-			null,
-		);
+		const results = editor.textModel.findMatches(searchText, false, true, null);
 
 		for (const res of results) {
 			const cell = editor.getCellByHandle(res.cell.handle);
@@ -139,16 +151,13 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 					options: {
 						description: '',
 						className: '.nb-selection-highlight',
-					}
+					},
 				});
 			}
 		});
 
 		const oldDecorations = this.cellDecorationIds.get(cell) ?? [];
-		this.cellDecorationIds.set(cell, cell.deltaModelDecorations(
-			oldDecorations,
-			newDecorations
-		));
+		this.cellDecorationIds.set(cell, cell.deltaModelDecorations(oldDecorations, newDecorations));
 	}
 
 	private clearNotebookSelectionDecorations() {

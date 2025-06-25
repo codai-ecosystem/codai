@@ -5,7 +5,11 @@
 
 import { Registry } from '../../platform/registry/common/platform.js';
 import { Composite, CompositeDescriptor, CompositeRegistry } from './composite.js';
-import { IConstructorSignature, BrandedService, IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
+import {
+	IConstructorSignature,
+	BrandedService,
+	IInstantiationService,
+} from '../../platform/instantiation/common/instantiation.js';
 import { URI } from '../../base/common/uri.js';
 import { Dimension } from '../../base/browser/dom.js';
 import { IActionViewItem } from '../../base/browser/ui/actionbar/actionbar.js';
@@ -25,7 +29,6 @@ import { IBoundarySashes } from '../../base/browser/ui/sash/sash.js';
 import { IBaseActionViewItemOptions } from '../../base/browser/ui/actionbar/actionViewItems.js';
 
 export abstract class PaneComposite extends Composite implements IPaneComposite {
-
 	private viewPaneContainer?: ViewPaneContainer;
 
 	constructor(
@@ -112,17 +115,25 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 			return [];
 		}
 
-		const viewPaneActions = this.viewPaneContainer.isViewMergedWithContainer() ? this.viewPaneContainer.panes[0].menuActions.getSecondaryActions() : [];
+		const viewPaneActions = this.viewPaneContainer.isViewMergedWithContainer()
+			? this.viewPaneContainer.panes[0].menuActions.getSecondaryActions()
+			: [];
 		let menuActions = this.viewPaneContainer.menuActions.getSecondaryActions();
 
-		const viewsSubmenuActionIndex = menuActions.findIndex(action => action instanceof SubmenuItemAction && action.item.submenu === ViewsSubMenu);
+		const viewsSubmenuActionIndex = menuActions.findIndex(
+			action => action instanceof SubmenuItemAction && action.item.submenu === ViewsSubMenu
+		);
 		if (viewsSubmenuActionIndex !== -1) {
 			const viewsSubmenuAction = <SubmenuItemAction>menuActions[viewsSubmenuActionIndex];
 			if (viewsSubmenuAction.actions.some(({ enabled }) => enabled)) {
 				if (menuActions.length === 1 && viewPaneActions.length === 0) {
 					menuActions = viewsSubmenuAction.actions.slice();
 				} else if (viewsSubmenuActionIndex !== 0) {
-					menuActions = [viewsSubmenuAction, ...menuActions.slice(0, viewsSubmenuActionIndex), ...menuActions.slice(viewsSubmenuActionIndex + 1)];
+					menuActions = [
+						viewsSubmenuAction,
+						...menuActions.slice(0, viewsSubmenuActionIndex),
+						...menuActions.slice(viewsSubmenuActionIndex + 1),
+					];
 				}
 			} else {
 				// Remove views submenu if none of the actions are enabled
@@ -131,17 +142,16 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 		}
 
 		if (menuActions.length && viewPaneActions.length) {
-			return [
-				...menuActions,
-				new Separator(),
-				...viewPaneActions
-			];
+			return [...menuActions, new Separator(), ...viewPaneActions];
 		}
 
 		return menuActions.length ? menuActions : viewPaneActions;
 	}
 
-	override getActionViewItem(action: IAction, options: IBaseActionViewItemOptions): IActionViewItem | undefined {
+	override getActionViewItem(
+		action: IAction,
+		options: IBaseActionViewItemOptions
+	): IActionViewItem | undefined {
 		return this.viewPaneContainer?.getActionViewItem(action, options);
 	}
 
@@ -157,14 +167,12 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 	protected abstract createViewPaneContainer(parent: HTMLElement): ViewPaneContainer;
 }
 
-
 /**
  * A Pane Composite descriptor is a lightweight descriptor of a Pane Composite in the workbench.
  */
 export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> {
-
 	static create<Services extends BrandedService[]>(
-		ctor: { new(...services: Services): PaneComposite },
+		ctor: { new (...services: Services): PaneComposite },
 		id: string,
 		name: string,
 		cssClass?: string,
@@ -172,8 +180,15 @@ export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> 
 		requestedIndex?: number,
 		iconUrl?: URI
 	): PaneCompositeDescriptor {
-
-		return new PaneCompositeDescriptor(ctor as IConstructorSignature<PaneComposite>, id, name, cssClass, order, requestedIndex, iconUrl);
+		return new PaneCompositeDescriptor(
+			ctor as IConstructorSignature<PaneComposite>,
+			id,
+			name,
+			cssClass,
+			order,
+			requestedIndex,
+			iconUrl
+		);
 	}
 
 	private constructor(
@@ -196,7 +211,6 @@ export const Extensions = {
 };
 
 export class PaneCompositeRegistry extends CompositeRegistry<PaneComposite> {
-
 	/**
 	 * Registers a viewlet to the platform.
 	 */

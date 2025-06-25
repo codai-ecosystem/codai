@@ -14,11 +14,22 @@ import { StopWatch } from '../../../base/common/stopwatch.js';
 import { URI } from '../../../base/common/uri.js';
 import { ILogService } from '../../log/common/log.js';
 import { IProductService } from '../../product/common/productService.js';
-import { IRemoteAuthorityResolverService, IRemoteConnectionData, RemoteConnectionType, ResolvedAuthority, ResolvedOptions, ResolverResult, WebSocketRemoteConnection, getRemoteAuthorityPrefix } from '../common/remoteAuthorityResolver.js';
+import {
+	IRemoteAuthorityResolverService,
+	IRemoteConnectionData,
+	RemoteConnectionType,
+	ResolvedAuthority,
+	ResolvedOptions,
+	ResolverResult,
+	WebSocketRemoteConnection,
+	getRemoteAuthorityPrefix,
+} from '../common/remoteAuthorityResolver.js';
 import { parseAuthorityWithOptionalPort } from '../common/remoteHosts.js';
 
-export class RemoteAuthorityResolverService extends Disposable implements IRemoteAuthorityResolverService {
-
+export class RemoteAuthorityResolverService
+	extends Disposable
+	implements IRemoteAuthorityResolverService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeConnectionData = this._register(new Emitter<void>());
@@ -36,7 +47,7 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
 		resourceUriProvider: ((uri: URI) => URI) | undefined,
 		serverBasePath: string | undefined,
 		@IProductService productService: IProductService,
-		@ILogService private readonly _logService: ILogService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		super();
 		this._connectionToken = connectionToken;
@@ -54,7 +65,10 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
 			result = new DeferredPromise<ResolverResult>();
 			this._resolveAuthorityRequests.set(authority, result);
 			if (this._isWorkbenchOptionsBasedResolution) {
-				this._doResolveAuthority(authority).then(v => result!.complete(v), (err) => result!.error(err));
+				this._doResolveAuthority(authority).then(
+					v => result!.complete(v),
+					err => result!.error(err)
+				);
 			}
 		}
 
@@ -71,10 +85,11 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
 			return null;
 		}
 		const resolverResult = this._cache.get(authority)!;
-		const connectionToken = this._connectionTokens.get(authority) || resolverResult.authority.connectionToken;
+		const connectionToken =
+			this._connectionTokens.get(authority) || resolverResult.authority.connectionToken;
 		return {
 			connectTo: resolverResult.authority.connectTo,
-			connectionToken: connectionToken
+			connectionToken: connectionToken,
 		};
 	}
 
@@ -83,18 +98,27 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
 		const sw = StopWatch.create(false);
 		this._logService.info(`Resolving connection token (${authorityPrefix})...`);
 		performance.mark(`code/willResolveConnectionToken/${authorityPrefix}`);
-		const connectionToken = await Promise.resolve(this._connectionTokens.get(authority) || this._connectionToken);
+		const connectionToken = await Promise.resolve(
+			this._connectionTokens.get(authority) || this._connectionToken
+		);
 		performance.mark(`code/didResolveConnectionToken/${authorityPrefix}`);
-		this._logService.info(`Resolved connection token (${authorityPrefix}) after ${sw.elapsed()} ms`);
-		const defaultPort = (/^https:/.test(mainWindow.location.href) ? 443 : 80);
+		this._logService.info(
+			`Resolved connection token (${authorityPrefix}) after ${sw.elapsed()} ms`
+		);
+		const defaultPort = /^https:/.test(mainWindow.location.href) ? 443 : 80;
 		const { host, port } = parseAuthorityWithOptionalPort(authority, defaultPort);
-		const result: ResolverResult = { authority: { authority, connectTo: new WebSocketRemoteConnection(host, port), connectionToken } };
+		const result: ResolverResult = {
+			authority: {
+				authority,
+				connectTo: new WebSocketRemoteConnection(host, port),
+				connectionToken,
+			},
+		};
 		RemoteAuthorities.set(authority, host, port);
 		this._cache.set(authority, result);
 		this._onDidChangeConnectionData.fire();
 		return result;
 	}
-
 
 	_clearResolvedAuthority(authority: string): void {
 		if (this._resolveAuthorityRequests.has(authority)) {
@@ -109,10 +133,17 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
 			// For non-websocket types, it's expected the embedder passes a `remoteResourceProvider`
 			// which is wrapped to a `IResourceUriProvider` and is not handled here.
 			if (resolvedAuthority.connectTo.type === RemoteConnectionType.WebSocket) {
-				RemoteAuthorities.set(resolvedAuthority.authority, resolvedAuthority.connectTo.host, resolvedAuthority.connectTo.port);
+				RemoteAuthorities.set(
+					resolvedAuthority.authority,
+					resolvedAuthority.connectTo.host,
+					resolvedAuthority.connectTo.port
+				);
 			}
 			if (resolvedAuthority.connectionToken) {
-				RemoteAuthorities.setConnectionToken(resolvedAuthority.authority, resolvedAuthority.connectionToken);
+				RemoteAuthorities.setConnectionToken(
+					resolvedAuthority.authority,
+					resolvedAuthority.connectionToken
+				);
 			}
 			request.complete({ authority: resolvedAuthority, options });
 			this._onDidChangeConnectionData.fire();
@@ -133,6 +164,5 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
 		this._onDidChangeConnectionData.fire();
 	}
 
-	_setCanonicalURIProvider(provider: (uri: URI) => Promise<URI>): void {
-	}
+	_setCanonicalURIProvider(provider: (uri: URI) => Promise<URI>): void {}
 }

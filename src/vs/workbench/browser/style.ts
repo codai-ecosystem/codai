@@ -13,7 +13,6 @@ import { selectionBackground } from '../../platform/theme/common/colorRegistry.j
 import { mainWindow } from '../../base/browser/window.js';
 
 registerThemingParticipant((theme, collector) => {
-
 	// Background (helps for subpixel-antialiasing on Windows)
 	const workbenchBackground = WORKBENCH_BACKGROUND(theme);
 	collector.addRule(`.monaco-workbench { background-color: ${workbenchBackground}; }`);
@@ -21,7 +20,9 @@ registerThemingParticipant((theme, collector) => {
 	// Selection (do NOT remove - https://github.com/microsoft/vscode/issues/169662)
 	const windowSelectionBackground = theme.getColor(selectionBackground);
 	if (windowSelectionBackground) {
-		collector.addRule(`.monaco-workbench ::selection { background-color: ${windowSelectionBackground}; }`);
+		collector.addRule(
+			`.monaco-workbench ::selection { background-color: ${windowSelectionBackground}; }`
+		);
 	}
 
 	// Update <meta name="theme-color" content=""> based on selected theme

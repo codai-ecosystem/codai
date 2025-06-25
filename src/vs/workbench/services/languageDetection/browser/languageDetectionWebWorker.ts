@@ -6,11 +6,23 @@
 import type { ModelOperations, ModelResult } from '@vscode/vscode-languagedetection';
 import { importAMDNodeModule } from '../../../../amdX.js';
 import { StopWatch } from '../../../../base/common/stopwatch.js';
-import { IWebWorkerServerRequestHandler, IWebWorkerServer } from '../../../../base/common/worker/webWorker.js';
-import { LanguageDetectionWorkerHost, ILanguageDetectionWorker } from './languageDetectionWorker.protocol.js';
+import {
+	IWebWorkerServerRequestHandler,
+	IWebWorkerServer,
+} from '../../../../base/common/worker/webWorker.js';
+import {
+	LanguageDetectionWorkerHost,
+	ILanguageDetectionWorker,
+} from './languageDetectionWorker.protocol.js';
 import { WorkerTextModelSyncServer } from '../../../../editor/common/services/textModelSync/textModelSync.impl.js';
 
-type RegexpModel = { detect: (inp: string, langBiases: Record<string, number>, supportedLangs?: string[]) => string | undefined };
+type RegexpModel = {
+	detect: (
+		inp: string,
+		langBiases: Record<string, number>,
+		supportedLangs?: string[]
+	) => string | undefined;
+};
 
 export function create(workerServer: IWebWorkerServer): IWebWorkerServerRequestHandler {
 	return new LanguageDetectionWorker(workerServer);
@@ -43,17 +55,27 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 		this._workerTextModelSyncServer.bindToServer(workerServer);
 	}
 
-	public async $detectLanguage(uri: string, langBiases: Record<string, number> | undefined, preferHistory: boolean, supportedLangs?: string[]): Promise<string | undefined> {
+	public async $detectLanguage(
+		uri: string,
+		langBiases: Record<string, number> | undefined,
+		preferHistory: boolean,
+		supportedLangs?: string[]
+	): Promise<string | undefined> {
 		const languages: string[] = [];
 		const confidences: number[] = [];
 		const stopWatch = new StopWatch();
 		const documentTextSample = this.getTextForDetection(uri);
-		if (!documentTextSample) { return; }
+		if (!documentTextSample) {
+			return;
+		}
 
 		const neuralResolver = async () => {
 			for await (const language of this.detectLanguagesImpl(documentTextSample)) {
 				if (!this.modelIdToCoreId.has(language.languageId)) {
-					this.modelIdToCoreId.set(language.languageId, await this._host.$getLanguageId(language.languageId));
+					this.modelIdToCoreId.set(
+						language.languageId,
+						await this._host.$getLanguageId(language.languageId)
+					);
 				}
 				const coreId = this.modelIdToCoreId.get(language.languageId);
 				if (coreId && (!supportedLangs?.length || supportedLangs.includes(coreId))) {
@@ -70,18 +92,27 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 			return undefined;
 		};
 
-		const historicalResolver = async () => this.runRegexpModel(documentTextSample, langBiases ?? {}, supportedLangs);
+		const historicalResolver = async () =>
+			this.runRegexpModel(documentTextSample, langBiases ?? {}, supportedLangs);
 
 		if (preferHistory) {
 			const history = await historicalResolver();
-			if (history) { return history; }
+			if (history) {
+				return history;
+			}
 			const neural = await neuralResolver();
-			if (neural) { return neural; }
+			if (neural) {
+				return neural;
+			}
 		} else {
 			const neural = await neuralResolver();
-			if (neural) { return neural; }
+			if (neural) {
+				return neural;
+			}
 			const history = await historicalResolver();
-			if (history) { return history; }
+			if (history) {
+				return history;
+			}
 		}
 
 		return undefined;
@@ -89,14 +120,16 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 
 	private getTextForDetection(uri: string): string | undefined {
 		const editorModel = this._workerTextModelSyncServer.getModel(uri);
-		if (!editorModel) { return; }
+		if (!editorModel) {
+			return;
+		}
 
 		const end = editorModel.positionAt(10000);
 		const content = editorModel.getValueInRange({
 			startColumn: 1,
 			startLineNumber: 1,
 			endColumn: end.column,
-			endLineNumber: end.lineNumber
+			endLineNumber: end.lineNumber,
 		});
 		return content;
 	}
@@ -110,7 +143,7 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 		}
 		const uri: string = await this._host.$getRegexpModelUri();
 		try {
-			this._regexpModel = await importAMDNodeModule(uri, '') as RegexpModel;
+			this._regexpModel = (await importAMDNodeModule(uri, '')) as RegexpModel;
 			return this._regexpModel;
 		} catch (e) {
 			this._regexpLoadFailed = true;
@@ -119,9 +152,15 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 		}
 	}
 
-	private async runRegexpModel(content: string, langBiases: Record<string, number>, supportedLangs?: string[]): Promise<string | undefined> {
+	private async runRegexpModel(
+		content: string,
+		langBiases: Record<string, number>,
+		supportedLangs?: string[]
+	): Promise<string | undefined> {
 		const regexpModel = await this.getRegexpModel();
-		if (!regexpModel) { return; }
+		if (!regexpModel) {
+			return;
+		}
 
 		if (supportedLangs?.length) {
 			// When using supportedLangs, normally computed biases are too extreme. Just use a "bitmask" of sorts.
@@ -144,7 +183,10 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 		}
 
 		const uri: string = await this._host.$getIndexJsUri();
-		const { ModelOperations } = await importAMDNodeModule(uri, '') as typeof import('@vscode/vscode-languagedetection');
+		const { ModelOperations } = (await importAMDNodeModule(
+			uri,
+			''
+		)) as typeof import('@vscode/vscode-languagedetection');
 		this._modelOperations = new ModelOperations({
 			modelJsonLoaderFunc: async () => {
 				const response = await fetch(await this._host.$getModelJsonUri());
@@ -160,7 +202,7 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 				const response = await fetch(await this._host.$getWeightsUri());
 				const buffer = await response.arrayBuffer();
 				return buffer;
-			}
+			},
 		});
 
 		return this._modelOperations;
@@ -214,12 +256,11 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 
 			default:
 				break;
-
 		}
 		return modelResult;
 	}
 
-	private async * detectLanguagesImpl(content: string): AsyncGenerator<ModelResult, void, unknown> {
+	private async *detectLanguagesImpl(content: string): AsyncGenerator<ModelResult, void, unknown> {
 		if (this._loadFailed) {
 			return;
 		}
@@ -241,9 +282,11 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 			console.warn(e);
 		}
 
-		if (!modelResults
-			|| modelResults.length === 0
-			|| modelResults[0].confidence < LanguageDetectionWorker.expectedRelativeConfidence) {
+		if (
+			!modelResults ||
+			modelResults.length === 0 ||
+			modelResults[0].confidence < LanguageDetectionWorker.expectedRelativeConfidence
+		) {
 			return;
 		}
 
@@ -262,7 +305,10 @@ export class LanguageDetectionWorker implements ILanguageDetectionWorker {
 			current = this.adjustLanguageConfidence(current);
 			const currentHighest = possibleLanguages[possibleLanguages.length - 1];
 
-			if (currentHighest.confidence - current.confidence >= LanguageDetectionWorker.expectedRelativeConfidence) {
+			if (
+				currentHighest.confidence - current.confidence >=
+				LanguageDetectionWorker.expectedRelativeConfidence
+			) {
 				while (possibleLanguages.length) {
 					yield possibleLanguages.shift()!;
 				}

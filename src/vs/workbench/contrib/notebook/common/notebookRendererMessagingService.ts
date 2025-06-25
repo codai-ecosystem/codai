@@ -7,7 +7,9 @@ import { Event } from '../../../../base/common/event.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 
-export const INotebookRendererMessagingService = createDecorator<INotebookRendererMessagingService>('INotebookRendererMessagingService');
+export const INotebookRendererMessagingService = createDecorator<INotebookRendererMessagingService>(
+	'INotebookRendererMessagingService'
+);
 
 export interface INotebookRendererMessagingService {
 	readonly _serviceBrand: undefined;
@@ -29,7 +31,11 @@ export interface INotebookRendererMessagingService {
 	/**
 	 * Called when the main thread gets a message for a renderer.
 	 */
-	receiveMessage(editorId: string | undefined, rendererId: string, message: unknown): Promise<boolean>;
+	receiveMessage(
+		editorId: string | undefined,
+		rendererId: string,
+		message: unknown
+	): Promise<boolean>;
 }
 
 export interface IScopedRendererMessaging extends IDisposable {

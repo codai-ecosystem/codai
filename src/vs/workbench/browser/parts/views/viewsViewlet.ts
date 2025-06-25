@@ -5,7 +5,12 @@
 
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
-import { IViewDescriptor, IViewDescriptorService, IAddedViewDescriptorRef, IView } from '../../../common/views.js';
+import {
+	IViewDescriptor,
+	IViewDescriptorService,
+	IAddedViewDescriptorRef,
+	IView,
+} from '../../../common/views.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
@@ -41,18 +46,35 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 		@IExtensionService extensionService: IExtensionService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
+		super(
+			viewletId,
+			{ mergeViewWithContainerWhenSingleView: false },
+			instantiationService,
+			configurationService,
+			layoutService,
+			contextMenuService,
+			telemetryService,
+			extensionService,
+			themeService,
+			storageService,
+			contextService,
+			viewDescriptorService,
+			logService
+		);
+		this._register(
+			onDidChangeFilterValue(newFilterValue => {
+				this.filterValue = newFilterValue;
+				this.onFilterChanged(newFilterValue);
+			})
+		);
 
-		super(viewletId, { mergeViewWithContainerWhenSingleView: false }, instantiationService, configurationService, layoutService, contextMenuService, telemetryService, extensionService, themeService, storageService, contextService, viewDescriptorService, logService);
-		this._register(onDidChangeFilterValue(newFilterValue => {
-			this.filterValue = newFilterValue;
-			this.onFilterChanged(newFilterValue);
-		}));
-
-		this._register(this.viewContainerModel.onDidChangeActiveViewDescriptors(() => {
-			this.updateAllViews(this.viewContainerModel.activeViewDescriptors);
-		}));
+		this._register(
+			this.viewContainerModel.onDidChangeActiveViewDescriptors(() => {
+				this.updateAllViews(this.viewContainerModel.activeViewDescriptors);
+			})
+		);
 	}
 
 	private updateAllViews(viewDescriptors: ReadonlyArray<IViewDescriptor>) {
@@ -65,14 +87,20 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 				this.allViews.set(filterOnValue, new Map());
 			}
 			this.allViews.get(filterOnValue)!.set(descriptor.id, descriptor);
-			if (this.filterValue && !this.filterValue.includes(filterOnValue) && this.panes.find(pane => pane.id === descriptor.id)) {
+			if (
+				this.filterValue &&
+				!this.filterValue.includes(filterOnValue) &&
+				this.panes.find(pane => pane.id === descriptor.id)
+			) {
 				this.viewContainerModel.setVisible(descriptor.id, false);
 			}
 		});
 	}
 
 	protected addConstantViewDescriptors(constantViewDescriptors: IViewDescriptor[]) {
-		constantViewDescriptors.forEach(viewDescriptor => this.constantViewDescriptors.set(viewDescriptor.id, viewDescriptor));
+		constantViewDescriptors.forEach(viewDescriptor =>
+			this.constantViewDescriptors.set(viewDescriptor.id, viewDescriptor)
+		);
 	}
 
 	protected abstract getFilterOn(viewDescriptor: IViewDescriptor): string | undefined;
@@ -83,8 +111,12 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 		if (this.allViews.size === 0) {
 			this.updateAllViews(this.viewContainerModel.activeViewDescriptors);
 		}
-		this.getViewsNotForTarget(newFilterValue).forEach(item => this.viewContainerModel.setVisible(item.id, false));
-		this.getViewsForTarget(newFilterValue).forEach(item => this.viewContainerModel.setVisible(item.id, true));
+		this.getViewsNotForTarget(newFilterValue).forEach(item =>
+			this.viewContainerModel.setVisible(item.id, false)
+		);
+		this.getViewsForTarget(newFilterValue).forEach(item =>
+			this.viewContainerModel.setVisible(item.id, true)
+		);
 	}
 
 	private getViewsForTarget(target: string[]): IViewDescriptor[] {
@@ -144,5 +176,4 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 	}
 
 	abstract override getTitle(): string;
-
 }

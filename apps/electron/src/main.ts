@@ -86,7 +86,7 @@ class AideApplication {
 			},
 			titleBarStyle: 'hiddenInset',
 			show: false,
-		});		// Load the React app
+		}); // Load the React app
 		if (process.env.NODE_ENV === 'development') {
 			this.mainWindow.loadURL('http://localhost:3000');
 			this.mainWindow.webContents.openDevTools();
@@ -206,10 +206,7 @@ class AideApplication {
 			},
 			{
 				label: 'Window',
-				submenu: [
-					{ role: 'minimize' },
-					{ role: 'close' },
-				],
+				submenu: [{ role: 'minimize' }, { role: 'close' }],
 			},
 		];
 

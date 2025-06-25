@@ -6,21 +6,34 @@
 import { createTrustedTypesPolicy } from '../../../../../../base/browser/trustedTypes.js';
 import { applyFontInfo } from '../../../../config/domFontInfo.js';
 import { ICodeEditor } from '../../../../editorBrowser.js';
-import { EditorFontLigatures, EditorOption, FindComputedEditorOptionValueById } from '../../../../../common/config/editorOptions.js';
+import {
+	EditorFontLigatures,
+	EditorOption,
+	FindComputedEditorOptionValueById,
+} from '../../../../../common/config/editorOptions.js';
 import { FontInfo } from '../../../../../common/config/fontInfo.js';
 import { StringBuilder } from '../../../../../common/core/stringBuilder.js';
 import { ModelLineProjectionData } from '../../../../../common/modelLineProjectionData.js';
 import { IViewLineTokens, LineTokens } from '../../../../../common/tokens/lineTokens.js';
 import { LineDecoration } from '../../../../../common/viewLayout/lineDecorations.js';
-import { RenderLineInput, renderViewLine } from '../../../../../common/viewLayout/viewLineRenderer.js';
+import {
+	RenderLineInput,
+	renderViewLine,
+} from '../../../../../common/viewLayout/viewLineRenderer.js';
 import { InlineDecoration, ViewLineRenderingData } from '../../../../../common/viewModel.js';
 
 const ttPolicy = createTrustedTypesPolicy('diffEditorWidget', { createHTML: value => value });
 
-export function renderLines(source: LineSource, options: RenderOptions, decorations: InlineDecoration[], domNode: HTMLElement, noExtra = false): RenderLinesResult {
+export function renderLines(
+	source: LineSource,
+	options: RenderOptions,
+	decorations: InlineDecoration[],
+	domNode: HTMLElement,
+	noExtra = false
+): RenderLinesResult {
 	applyFontInfo(domNode, options.fontInfo);
 
-	const hasCharChanges = (decorations.length > 0);
+	const hasCharChanges = decorations.length > 0;
 
 	const sb = new StringBuilder(10000);
 	let maxCharsPerLine = 0;
@@ -30,40 +43,51 @@ export function renderLines(source: LineSource, options: RenderOptions, decorati
 		const lineNumber = lineIndex + 1;
 		const lineTokens = source.lineTokens[lineIndex];
 		const lineBreakData = source.lineBreakData[lineIndex];
-		const actualDecorations = LineDecoration.filter(decorations, lineNumber, 1, Number.MAX_SAFE_INTEGER);
+		const actualDecorations = LineDecoration.filter(
+			decorations,
+			lineNumber,
+			1,
+			Number.MAX_SAFE_INTEGER
+		);
 
 		if (lineBreakData) {
 			let lastBreakOffset = 0;
 			for (const breakOffset of lineBreakData.breakOffsets) {
 				const viewLineTokens = lineTokens.sliceAndInflate(lastBreakOffset, breakOffset, 0);
-				maxCharsPerLine = Math.max(maxCharsPerLine, renderOriginalLine(
-					renderedLineCount,
-					viewLineTokens,
-					LineDecoration.extractWrapped(actualDecorations, lastBreakOffset, breakOffset),
-					hasCharChanges,
-					source.mightContainNonBasicASCII,
-					source.mightContainRTL,
-					options,
-					sb,
-					noExtra,
-				));
+				maxCharsPerLine = Math.max(
+					maxCharsPerLine,
+					renderOriginalLine(
+						renderedLineCount,
+						viewLineTokens,
+						LineDecoration.extractWrapped(actualDecorations, lastBreakOffset, breakOffset),
+						hasCharChanges,
+						source.mightContainNonBasicASCII,
+						source.mightContainRTL,
+						options,
+						sb,
+						noExtra
+					)
+				);
 				renderedLineCount++;
 				lastBreakOffset = breakOffset;
 			}
 			viewLineCounts.push(lineBreakData.breakOffsets.length);
 		} else {
 			viewLineCounts.push(1);
-			maxCharsPerLine = Math.max(maxCharsPerLine, renderOriginalLine(
-				renderedLineCount,
-				lineTokens,
-				actualDecorations,
-				hasCharChanges,
-				source.mightContainNonBasicASCII,
-				source.mightContainRTL,
-				options,
-				sb,
-				noExtra,
-			));
+			maxCharsPerLine = Math.max(
+				maxCharsPerLine,
+				renderOriginalLine(
+					renderedLineCount,
+					lineTokens,
+					actualDecorations,
+					hasCharChanges,
+					source.mightContainNonBasicASCII,
+					source.mightContainRTL,
+					options,
+					sb,
+					noExtra
+				)
+			);
 			renderedLineCount++;
 		}
 	}
@@ -72,7 +96,7 @@ export function renderLines(source: LineSource, options: RenderOptions, decorati
 	const html = sb.build();
 	const trustedhtml = ttPolicy ? ttPolicy.createHTML(html) : html;
 	domNode.innerHTML = trustedhtml as string;
-	const minWidthInPx = (maxCharsPerLine * options.typicalHalfwidthCharacterWidth);
+	const minWidthInPx = maxCharsPerLine * options.typicalHalfwidthCharacterWidth;
 
 	return {
 		heightInLines: renderedLineCount,
@@ -81,19 +105,17 @@ export function renderLines(source: LineSource, options: RenderOptions, decorati
 	};
 }
 
-
 export class LineSource {
 	constructor(
 		public readonly lineTokens: LineTokens[],
 		public readonly lineBreakData: (ModelLineProjectionData | null)[] = lineTokens.map(t => null),
 		public readonly mightContainNonBasicASCII: boolean = true,
-		public readonly mightContainRTL: boolean = true,
-	) { }
+		public readonly mightContainRTL: boolean = true
+	) {}
 }
 
 export class RenderOptions {
 	public static fromEditor(editor: ICodeEditor): RenderOptions {
-
 		const modifiedEditorOptions = editor.getOptions();
 		const fontInfo = modifiedEditorOptions.get(EditorOption.fontInfo);
 		const layoutInfo = modifiedEditorOptions.get(EditorOption.layoutInfo);
@@ -111,7 +133,7 @@ export class RenderOptions {
 			modifiedEditorOptions.get(EditorOption.stopRenderingLineAfter),
 			modifiedEditorOptions.get(EditorOption.renderWhitespace),
 			modifiedEditorOptions.get(EditorOption.renderControlCharacters),
-			modifiedEditorOptions.get(EditorOption.fontLigatures),
+			modifiedEditorOptions.get(EditorOption.fontLigatures)
 		);
 	}
 
@@ -127,8 +149,8 @@ export class RenderOptions {
 		public readonly renderWhitespace: FindComputedEditorOptionValueById<EditorOption.renderWhitespace>,
 		public readonly renderControlCharacters: boolean,
 		public readonly fontLigatures: FindComputedEditorOptionValueById<EditorOption.fontLigatures>,
-		public readonly setWidth = true,
-	) { }
+		public readonly setWidth = true
+	) {}
 
 	public withSetWidth(setWidth: boolean): RenderOptions {
 		return new RenderOptions(
@@ -143,7 +165,7 @@ export class RenderOptions {
 			this.renderWhitespace,
 			this.renderControlCharacters,
 			this.fontLigatures,
-			setWidth,
+			setWidth
 		);
 	}
 
@@ -160,7 +182,7 @@ export class RenderOptions {
 			this.renderWhitespace,
 			this.renderControlCharacters,
 			this.fontLigatures,
-			this.setWidth,
+			this.setWidth
 		);
 	}
 }
@@ -180,9 +202,8 @@ function renderOriginalLine(
 	mightContainRTL: boolean,
 	options: RenderOptions,
 	sb: StringBuilder,
-	noExtra: boolean,
+	noExtra: boolean
 ): number {
-
 	sb.appendString('<div class="view-line');
 	if (!noExtra && !hasCharChanges) {
 		// No char changes
@@ -199,27 +220,30 @@ function renderOriginalLine(
 	const lineContent = lineTokens.getLineContent();
 	const isBasicASCII = ViewLineRenderingData.isBasicASCII(lineContent, mightContainNonBasicASCII);
 	const containsRTL = ViewLineRenderingData.containsRTL(lineContent, isBasicASCII, mightContainRTL);
-	const output = renderViewLine(new RenderLineInput(
-		(options.fontInfo.isMonospace && !options.disableMonospaceOptimizations),
-		options.fontInfo.canUseHalfwidthRightwardsArrow,
-		lineContent,
-		false,
-		isBasicASCII,
-		containsRTL,
-		0,
-		lineTokens,
-		decorations,
-		options.tabSize,
-		0,
-		options.fontInfo.spaceWidth,
-		options.fontInfo.middotWidth,
-		options.fontInfo.wsmiddotWidth,
-		options.stopRenderingLineAfter,
-		options.renderWhitespace,
-		options.renderControlCharacters,
-		options.fontLigatures !== EditorFontLigatures.OFF,
-		null // Send no selections, original line cannot be selected
-	), sb);
+	const output = renderViewLine(
+		new RenderLineInput(
+			options.fontInfo.isMonospace && !options.disableMonospaceOptimizations,
+			options.fontInfo.canUseHalfwidthRightwardsArrow,
+			lineContent,
+			false,
+			isBasicASCII,
+			containsRTL,
+			0,
+			lineTokens,
+			decorations,
+			options.tabSize,
+			0,
+			options.fontInfo.spaceWidth,
+			options.fontInfo.middotWidth,
+			options.fontInfo.wsmiddotWidth,
+			options.stopRenderingLineAfter,
+			options.renderWhitespace,
+			options.renderControlCharacters,
+			options.fontLigatures !== EditorFontLigatures.OFF,
+			null // Send no selections, original line cannot be selected
+		),
+		sb
+	);
 
 	sb.appendString('</div>');
 

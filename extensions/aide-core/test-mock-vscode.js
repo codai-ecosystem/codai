@@ -8,37 +8,38 @@ const workspace = {
 		{
 			uri: { fsPath: 'e:\\GitHub\\AIDE\\test-workspace' },
 			name: 'test-workspace',
-			index: 0
-		}
+			index: 0,
+		},
 	],
-	getConfiguration: (section) => ({
+	getConfiguration: section => ({
 		get: (key, defaultValue) => defaultValue,
-		has: (key) => false,
-		inspect: (key) => undefined,
-		update: (key, value, target) => Promise.resolve()
+		has: key => false,
+		inspect: key => undefined,
+		update: (key, value, target) => Promise.resolve(),
 	}),
-	createFileSystemWatcher: (pattern) => ({
-		onDidCreate: () => ({ dispose: () => { } }),
-		onDidChange: () => ({ dispose: () => { } }),
-		onDidDelete: () => ({ dispose: () => { } }),
-		dispose: () => { }
+	createFileSystemWatcher: pattern => ({
+		onDidCreate: () => ({ dispose: () => {} }),
+		onDidChange: () => ({ dispose: () => {} }),
+		onDidDelete: () => ({ dispose: () => {} }),
+		dispose: () => {},
 	}),
-	onDidChangeWorkspaceFolders: () => ({ dispose: () => { } }),
-	onDidChangeConfiguration: () => ({ dispose: () => { } }),
-	asRelativePath: (path) => path,
+	onDidChangeWorkspaceFolders: () => ({ dispose: () => {} }),
+	onDidChangeConfiguration: () => ({ dispose: () => {} }),
+	asRelativePath: path => path,
 	findFiles: () => Promise.resolve([]),
 	fs: {
 		readFile: () => Promise.resolve(Buffer.from('')),
 		writeFile: () => Promise.resolve(),
 		createDirectory: () => Promise.resolve(),
 		delete: () => Promise.resolve(),
-		stat: () => Promise.resolve({
-			type: 1, // File
-			ctime: Date.now(),
-			mtime: Date.now(),
-			size: 0
-		})
-	}
+		stat: () =>
+			Promise.resolve({
+				type: 1, // File
+				ctime: Date.now(),
+				mtime: Date.now(),
+				size: 0,
+			}),
+	},
 };
 
 // Mock window
@@ -55,69 +56,69 @@ const window = {
 		console.log('ERROR:', message);
 		return Promise.resolve(items[0]);
 	},
-	showQuickPick: (items) => Promise.resolve(items[0]),
-	showInputBox: (options) => Promise.resolve('test-input'),
-	showOpenDialog: (options) => Promise.resolve([{ fsPath: 'test-file.txt' }]),
-	showSaveDialog: (options) => Promise.resolve({ fsPath: 'test-save.txt' }),
-	createOutputChannel: (name) => ({
-		appendLine: (line) => console.log(`[${name}]`, line),
-		append: (text) => console.log(`[${name}]`, text),
-		show: () => { },
-		hide: () => { },
-		dispose: () => { },
-		clear: () => { }
+	showQuickPick: items => Promise.resolve(items[0]),
+	showInputBox: options => Promise.resolve('test-input'),
+	showOpenDialog: options => Promise.resolve([{ fsPath: 'test-file.txt' }]),
+	showSaveDialog: options => Promise.resolve({ fsPath: 'test-save.txt' }),
+	createOutputChannel: name => ({
+		appendLine: line => console.log(`[${name}]`, line),
+		append: text => console.log(`[${name}]`, text),
+		show: () => {},
+		hide: () => {},
+		dispose: () => {},
+		clear: () => {},
 	}),
-	createTerminal: (options) => ({
+	createTerminal: options => ({
 		name: options?.name || 'terminal',
-		sendText: (text) => console.log('TERMINAL:', text),
-		show: () => { },
-		hide: () => { },
-		dispose: () => { }
+		sendText: text => console.log('TERMINAL:', text),
+		show: () => {},
+		hide: () => {},
+		dispose: () => {},
 	}),
 	withProgress: (options, task) => {
 		console.log('PROGRESS:', options.title);
 		return task({
-			report: (progress) => console.log('PROGRESS UPDATE:', progress.message)
+			report: progress => console.log('PROGRESS UPDATE:', progress.message),
 		});
-	}
+	},
 };
 
 // Mock commands
 const commands = {
 	registerCommand: (command, callback) => {
 		console.log('REGISTERED COMMAND:', command);
-		return { dispose: () => { } };
+		return { dispose: () => {} };
 	},
 	executeCommand: (command, ...args) => {
 		console.log('EXECUTE COMMAND:', command, args);
 		return Promise.resolve();
 	},
-	getCommands: () => Promise.resolve([])
+	getCommands: () => Promise.resolve([]),
 };
 
 // Mock extensions
 const extensions = {
-	getExtension: (id) => undefined,
+	getExtension: id => undefined,
 	all: [],
-	onDidChange: () => ({ dispose: () => { } })
+	onDidChange: () => ({ dispose: () => {} }),
 };
 
 // Mock languages
 const languages = {
-	createDiagnosticCollection: (name) => ({
-		set: (uri, diagnostics) => { },
-		delete: (uri) => { },
-		clear: () => { },
-		dispose: () => { }
+	createDiagnosticCollection: name => ({
+		set: (uri, diagnostics) => {},
+		delete: uri => {},
+		clear: () => {},
+		dispose: () => {},
 	}),
 	getDiagnostics: () => [],
-	onDidChangeDiagnostics: () => ({ dispose: () => { } })
+	onDidChangeDiagnostics: () => ({ dispose: () => {} }),
 };
 
 // Mock Uri
 const Uri = {
-	file: (path) => ({ fsPath: path, scheme: 'file', toString: () => `file://${path}` }),
-	parse: (uri) => ({ fsPath: uri.replace('file://', ''), scheme: 'file' })
+	file: path => ({ fsPath: path, scheme: 'file', toString: () => `file://${path}` }),
+	parse: uri => ({ fsPath: uri.replace('file://', ''), scheme: 'file' }),
 };
 
 // Mock Range and Position
@@ -138,7 +139,7 @@ const Range = class {
 // Mock StatusBarAlignment
 const StatusBarAlignment = {
 	Left: 1,
-	Right: 2
+	Right: 2,
 };
 
 // Mock ExtensionContext
@@ -147,13 +148,13 @@ const createMockContext = () => ({
 	workspaceState: {
 		get: (key, defaultValue) => defaultValue,
 		update: (key, value) => Promise.resolve(),
-		keys: () => []
+		keys: () => [],
 	},
 	globalState: {
 		get: (key, defaultValue) => defaultValue,
 		update: (key, value) => Promise.resolve(),
 		keys: () => [],
-		setKeysForSync: (keys) => { }
+		setKeysForSync: keys => {},
 	},
 	extensionPath: 'e:\\GitHub\\AIDE\\extensions\\aide-core',
 	extensionUri: Uri.file('e:\\GitHub\\AIDE\\extensions\\aide-core'),
@@ -162,10 +163,10 @@ const createMockContext = () => ({
 	logPath: 'e:\\GitHub\\AIDE\\extensions\\aide-core\\logs',
 	extensionMode: 1, // Development
 	secrets: {
-		get: (key) => Promise.resolve(undefined),
+		get: key => Promise.resolve(undefined),
 		store: (key, value) => Promise.resolve(),
-		delete: (key) => Promise.resolve()
-	}
+		delete: key => Promise.resolve(),
+	},
 });
 
 // Export the mock VS Code API
@@ -186,7 +187,7 @@ module.exports = {
 		Error: 0,
 		Warning: 1,
 		Information: 2,
-		Hint: 3
+		Hint: 3,
 	},
 
 	CompletionItemKind: {
@@ -207,7 +208,7 @@ module.exports = {
 		Snippet: 14,
 		Color: 15,
 		File: 16,
-		Reference: 17
+		Reference: 17,
 	},
 
 	SymbolKind: {
@@ -228,6 +229,6 @@ module.exports = {
 		String: 14,
 		Number: 15,
 		Boolean: 16,
-		Array: 17
-	}
+		Array: 17,
+	},
 };

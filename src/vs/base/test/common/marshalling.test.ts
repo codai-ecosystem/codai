@@ -8,11 +8,10 @@ import { URI } from '../../common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('Marshalling', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('RegExp', () => {
-		const value = /foo/img;
+		const value = /foo/gim;
 		const raw = stringify(value);
 		const clone = <RegExp>parse(raw);
 
@@ -23,7 +22,13 @@ suite('Marshalling', () => {
 	});
 
 	test('URI', () => {
-		const value = URI.from({ scheme: 'file', authority: 'server', path: '/shares/c#files', query: 'q', fragment: 'f' });
+		const value = URI.from({
+			scheme: 'file',
+			authority: 'server',
+			path: '/shares/c#files',
+			query: 'q',
+			fragment: 'f',
+		});
 		const raw = stringify(value);
 		const clone = <URI>parse(raw);
 

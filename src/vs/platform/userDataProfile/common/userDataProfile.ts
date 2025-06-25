@@ -10,10 +10,18 @@ import { basename, joinPath } from '../../../base/common/resources.js';
 import { URI, UriDto } from '../../../base/common/uri.js';
 import { localize } from '../../../nls.js';
 import { IEnvironmentService } from '../../environment/common/environment.js';
-import { FileOperationResult, IFileService, toFileOperationResult } from '../../files/common/files.js';
+import {
+	FileOperationResult,
+	IFileService,
+	toFileOperationResult,
+} from '../../files/common/files.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 import { ILogService } from '../../log/common/log.js';
-import { IAnyWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier, isWorkspaceIdentifier } from '../../workspace/common/workspace.js';
+import {
+	IAnyWorkspaceIdentifier,
+	isSingleFolderWorkspaceIdentifier,
+	isWorkspaceIdentifier,
+} from '../../workspace/common/workspace.js';
 import { IStringDictionary } from '../../../base/common/collections.js';
 import { IUriIdentityService } from '../../uriIdentity/common/uriIdentity.js';
 import { Promises } from '../../../base/common/async.js';
@@ -59,22 +67,29 @@ export interface IUserDataProfile {
 export function isUserDataProfile(thing: unknown): thing is IUserDataProfile {
 	const candidate = thing as IUserDataProfile | undefined;
 
-	return !!(candidate && typeof candidate === 'object'
-		&& typeof candidate.id === 'string'
-		&& typeof candidate.isDefault === 'boolean'
-		&& typeof candidate.name === 'string'
-		&& URI.isUri(candidate.location)
-		&& URI.isUri(candidate.globalStorageHome)
-		&& URI.isUri(candidate.settingsResource)
-		&& URI.isUri(candidate.keybindingsResource)
-		&& URI.isUri(candidate.tasksResource)
-		&& URI.isUri(candidate.snippetsHome)
-		&& URI.isUri(candidate.promptsHome)
-		&& URI.isUri(candidate.extensionsResource)
+	return !!(
+		candidate &&
+		typeof candidate === 'object' &&
+		typeof candidate.id === 'string' &&
+		typeof candidate.isDefault === 'boolean' &&
+		typeof candidate.name === 'string' &&
+		URI.isUri(candidate.location) &&
+		URI.isUri(candidate.globalStorageHome) &&
+		URI.isUri(candidate.settingsResource) &&
+		URI.isUri(candidate.keybindingsResource) &&
+		URI.isUri(candidate.tasksResource) &&
+		URI.isUri(candidate.snippetsHome) &&
+		URI.isUri(candidate.promptsHome) &&
+		URI.isUri(candidate.extensionsResource)
 	);
 }
 
-export type DidChangeProfilesEvent = { readonly added: readonly IUserDataProfile[]; readonly removed: readonly IUserDataProfile[]; readonly updated: readonly IUserDataProfile[]; readonly all: readonly IUserDataProfile[] };
+export type DidChangeProfilesEvent = {
+	readonly added: readonly IUserDataProfile[];
+	readonly removed: readonly IUserDataProfile[];
+	readonly updated: readonly IUserDataProfile[];
+	readonly all: readonly IUserDataProfile[];
+};
 
 export type WillCreateProfileEvent = {
 	profile: IUserDataProfile;
@@ -98,7 +113,9 @@ export interface IUserDataProfileUpdateOptions extends Omit<IUserDataProfileOpti
 	readonly icon?: string | null;
 }
 
-export const IUserDataProfilesService = createDecorator<IUserDataProfilesService>('IUserDataProfilesService');
+export const IUserDataProfilesService = createDecorator<IUserDataProfilesService>(
+	'IUserDataProfilesService'
+);
 export interface IUserDataProfilesService {
 	readonly _serviceBrand: undefined;
 
@@ -110,13 +127,28 @@ export interface IUserDataProfilesService {
 
 	readonly onDidResetWorkspaces: Event<void>;
 
-	createNamedProfile(name: string, options?: IUserDataProfileOptions, workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile>;
+	createNamedProfile(
+		name: string,
+		options?: IUserDataProfileOptions,
+		workspaceIdentifier?: IAnyWorkspaceIdentifier
+	): Promise<IUserDataProfile>;
 	createTransientProfile(workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile>;
-	createProfile(id: string, name: string, options?: IUserDataProfileOptions, workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile>;
-	updateProfile(profile: IUserDataProfile, options?: IUserDataProfileUpdateOptions,): Promise<IUserDataProfile>;
+	createProfile(
+		id: string,
+		name: string,
+		options?: IUserDataProfileOptions,
+		workspaceIdentifier?: IAnyWorkspaceIdentifier
+	): Promise<IUserDataProfile>;
+	updateProfile(
+		profile: IUserDataProfile,
+		options?: IUserDataProfileUpdateOptions
+	): Promise<IUserDataProfile>;
 	removeProfile(profile: IUserDataProfile): Promise<void>;
 
-	setProfileForWorkspace(workspaceIdentifier: IAnyWorkspaceIdentifier, profile: IUserDataProfile): Promise<void>;
+	setProfileForWorkspace(
+		workspaceIdentifier: IAnyWorkspaceIdentifier,
+		profile: IUserDataProfile
+	): Promise<void>;
 	resetWorkspaces(): Promise<void>;
 
 	cleanUp(): Promise<void>;
@@ -144,20 +176,48 @@ export function reviveProfile(profile: UriDto<IUserDataProfile>, scheme: string)
 	};
 }
 
-export function toUserDataProfile(id: string, name: string, location: URI, profilesCacheHome: URI, options?: IUserDataProfileOptions, defaultProfile?: IUserDataProfile): IUserDataProfile {
+export function toUserDataProfile(
+	id: string,
+	name: string,
+	location: URI,
+	profilesCacheHome: URI,
+	options?: IUserDataProfileOptions,
+	defaultProfile?: IUserDataProfile
+): IUserDataProfile {
 	return {
 		id,
 		name,
 		location,
 		isDefault: false,
 		icon: options?.icon,
-		globalStorageHome: defaultProfile && options?.useDefaultFlags?.globalState ? defaultProfile.globalStorageHome : joinPath(location, 'globalStorage'),
-		settingsResource: defaultProfile && options?.useDefaultFlags?.settings ? defaultProfile.settingsResource : joinPath(location, 'settings.json'),
-		keybindingsResource: defaultProfile && options?.useDefaultFlags?.keybindings ? defaultProfile.keybindingsResource : joinPath(location, 'keybindings.json'),
-		tasksResource: defaultProfile && options?.useDefaultFlags?.tasks ? defaultProfile.tasksResource : joinPath(location, 'tasks.json'),
-		snippetsHome: defaultProfile && options?.useDefaultFlags?.snippets ? defaultProfile.snippetsHome : joinPath(location, 'snippets'),
-		promptsHome: defaultProfile && options?.useDefaultFlags?.prompts ? defaultProfile.promptsHome : joinPath(location, 'prompts'),
-		extensionsResource: defaultProfile && options?.useDefaultFlags?.extensions ? defaultProfile.extensionsResource : joinPath(location, 'extensions.json'),
+		globalStorageHome:
+			defaultProfile && options?.useDefaultFlags?.globalState
+				? defaultProfile.globalStorageHome
+				: joinPath(location, 'globalStorage'),
+		settingsResource:
+			defaultProfile && options?.useDefaultFlags?.settings
+				? defaultProfile.settingsResource
+				: joinPath(location, 'settings.json'),
+		keybindingsResource:
+			defaultProfile && options?.useDefaultFlags?.keybindings
+				? defaultProfile.keybindingsResource
+				: joinPath(location, 'keybindings.json'),
+		tasksResource:
+			defaultProfile && options?.useDefaultFlags?.tasks
+				? defaultProfile.tasksResource
+				: joinPath(location, 'tasks.json'),
+		snippetsHome:
+			defaultProfile && options?.useDefaultFlags?.snippets
+				? defaultProfile.snippetsHome
+				: joinPath(location, 'snippets'),
+		promptsHome:
+			defaultProfile && options?.useDefaultFlags?.prompts
+				? defaultProfile.promptsHome
+				: joinPath(location, 'prompts'),
+		extensionsResource:
+			defaultProfile && options?.useDefaultFlags?.extensions
+				? defaultProfile.extensionsResource
+				: joinPath(location, 'extensions.json'),
 		cacheHome: joinPath(profilesCacheHome, id),
 		useDefaultFlags: options?.useDefaultFlags,
 		isTransient: options?.transient,
@@ -183,7 +243,6 @@ export type StoredProfileAssociations = {
 };
 
 export class UserDataProfilesService extends Disposable implements IUserDataProfilesService {
-
 	protected static readonly PROFILES_KEY = 'userDataProfiles';
 	protected static readonly PROFILE_ASSOCIATIONS_KEY = 'profileAssociations';
 
@@ -192,8 +251,12 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 	readonly profilesHome: URI;
 	private readonly profilesCacheHome: URI;
 
-	get defaultProfile(): IUserDataProfile { return this.profiles[0]; }
-	get profiles(): IUserDataProfile[] { return [...this.profilesObject.profiles, ...this.transientProfilesObject.profiles]; }
+	get defaultProfile(): IUserDataProfile {
+		return this.profiles[0];
+	}
+	get profiles(): IUserDataProfile[] {
+		return [...this.profilesObject.profiles, ...this.transientProfilesObject.profiles];
+	}
 
 	protected readonly _onDidChangeProfiles = this._register(new Emitter<DidChangeProfilesEvent>());
 	readonly onDidChangeProfiles = this._onDidChangeProfiles.event;
@@ -211,7 +274,7 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 
 	protected readonly transientProfilesObject: UserDataProfilesObject = {
 		profiles: [],
-		emptyWindows: new Map()
+		emptyWindows: new Map(),
 	};
 
 	constructor(
@@ -237,10 +300,22 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 			try {
 				for (const storedProfile of this.getStoredProfiles()) {
 					if (!storedProfile.name || !isString(storedProfile.name) || !storedProfile.location) {
-						this.logService.warn('Skipping the invalid stored profile', storedProfile.location || storedProfile.name);
+						this.logService.warn(
+							'Skipping the invalid stored profile',
+							storedProfile.location || storedProfile.name
+						);
 						continue;
 					}
-					profiles.push(toUserDataProfile(basename(storedProfile.location), storedProfile.name, storedProfile.location, this.profilesCacheHome, { icon: storedProfile.icon, useDefaultFlags: storedProfile.useDefaultFlags }, defaultProfile));
+					profiles.push(
+						toUserDataProfile(
+							basename(storedProfile.location),
+							storedProfile.name,
+							storedProfile.location,
+							this.profilesCacheHome,
+							{ icon: storedProfile.icon, useDefaultFlags: storedProfile.useDefaultFlags },
+							defaultProfile
+						)
+					);
 				}
 			} catch (error) {
 				this.logService.error(error);
@@ -250,7 +325,9 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 				try {
 					const profileAssociaitions = this.getStoredProfileAssociations();
 					if (profileAssociaitions.workspaces) {
-						for (const [workspacePath, profileId] of Object.entries(profileAssociaitions.workspaces)) {
+						for (const [workspacePath, profileId] of Object.entries(
+							profileAssociaitions.workspaces
+						)) {
 							const workspace = URI.parse(workspacePath);
 							const profile = profiles.find(p => p.id === profileId);
 							if (profile) {
@@ -278,11 +355,23 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 	}
 
 	private createDefaultProfile() {
-		const defaultProfile = toUserDataProfile('__default__profile__', localize('defaultProfile', "Default"), this.environmentService.userRoamingDataHome, this.profilesCacheHome);
-		return { ...defaultProfile, extensionsResource: this.getDefaultProfileExtensionsLocation() ?? defaultProfile.extensionsResource, isDefault: true };
+		const defaultProfile = toUserDataProfile(
+			'__default__profile__',
+			localize('defaultProfile', 'Default'),
+			this.environmentService.userRoamingDataHome,
+			this.profilesCacheHome
+		);
+		return {
+			...defaultProfile,
+			extensionsResource:
+				this.getDefaultProfileExtensionsLocation() ?? defaultProfile.extensionsResource,
+			isDefault: true,
+		};
 	}
 
-	async createTransientProfile(workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile> {
+	async createTransientProfile(
+		workspaceIdentifier?: IAnyWorkspaceIdentifier
+	): Promise<IUserDataProfile> {
 		const namePrefix = `Temp`;
 		const nameRegEx = new RegExp(`${escapeRegExpCharacters(namePrefix)}\\s(\\d+)`);
 		let nameIndex = 0;
@@ -292,20 +381,44 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 			nameIndex = index > nameIndex ? index : nameIndex;
 		}
 		const name = `${namePrefix} ${nameIndex + 1}`;
-		return this.createProfile(hash(generateUuid()).toString(16), name, { transient: true }, workspaceIdentifier);
+		return this.createProfile(
+			hash(generateUuid()).toString(16),
+			name,
+			{ transient: true },
+			workspaceIdentifier
+		);
 	}
 
-	async createNamedProfile(name: string, options?: IUserDataProfileOptions, workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile> {
-		return this.createProfile(hash(generateUuid()).toString(16), name, options, workspaceIdentifier);
+	async createNamedProfile(
+		name: string,
+		options?: IUserDataProfileOptions,
+		workspaceIdentifier?: IAnyWorkspaceIdentifier
+	): Promise<IUserDataProfile> {
+		return this.createProfile(
+			hash(generateUuid()).toString(16),
+			name,
+			options,
+			workspaceIdentifier
+		);
 	}
 
-	async createProfile(id: string, name: string, options?: IUserDataProfileOptions, workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile> {
+	async createProfile(
+		id: string,
+		name: string,
+		options?: IUserDataProfileOptions,
+		workspaceIdentifier?: IAnyWorkspaceIdentifier
+	): Promise<IUserDataProfile> {
 		const profile = await this.doCreateProfile(id, name, options, workspaceIdentifier);
 
 		return profile;
 	}
 
-	private async doCreateProfile(id: string, name: string, options?: IUserDataProfileOptions, workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile> {
+	private async doCreateProfile(
+		id: string,
+		name: string,
+		options?: IUserDataProfileOptions,
+		workspaceIdentifier?: IAnyWorkspaceIdentifier
+	): Promise<IUserDataProfile> {
 		if (!isString(name) || !name) {
 			throw new Error('Name of the profile is mandatory and must be of type `string`');
 		}
@@ -314,16 +427,27 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 		if (!profileCreationPromise) {
 			profileCreationPromise = (async () => {
 				try {
-					const existing = this.profiles.find(p => p.id === id || (!p.isTransient && !options?.transient && p.name === name));
+					const existing = this.profiles.find(
+						p => p.id === id || (!p.isTransient && !options?.transient && p.name === name)
+					);
 					if (existing) {
 						throw new Error(`Profile with ${name} name already exists`);
 					}
 
-					const workspace = workspaceIdentifier ? this.getWorkspace(workspaceIdentifier) : undefined;
+					const workspace = workspaceIdentifier
+						? this.getWorkspace(workspaceIdentifier)
+						: undefined;
 					if (URI.isUri(workspace)) {
 						options = { ...options, workspaces: [workspace] };
 					}
-					const profile = toUserDataProfile(id, name, joinPath(this.profilesHome, id), this.profilesCacheHome, options, this.defaultProfile);
+					const profile = toUserDataProfile(
+						id,
+						name,
+						joinPath(this.profilesHome, id),
+						this.profilesCacheHome,
+						options,
+						this.defaultProfile
+					);
 					await this.fileService.createFolder(profile.location);
 
 					const joiners: Promise<void>[] = [];
@@ -331,7 +455,7 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 						profile,
 						join(promise) {
 							joiners.push(promise);
-						}
+						},
 					});
 					await Promises.settled(joiners);
 
@@ -349,27 +473,37 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 		return profileCreationPromise;
 	}
 
-	async updateProfile(profile: IUserDataProfile, options: IUserDataProfileUpdateOptions): Promise<IUserDataProfile> {
+	async updateProfile(
+		profile: IUserDataProfile,
+		options: IUserDataProfileUpdateOptions
+	): Promise<IUserDataProfile> {
 		const profilesToUpdate: IUserDataProfile[] = [];
 		for (const existing of this.profiles) {
 			let profileToUpdate: Mutable<IUserDataProfile> | undefined;
 
 			if (profile.id === existing.id) {
 				if (!existing.isDefault) {
-					profileToUpdate = toUserDataProfile(existing.id, options.name ?? existing.name, existing.location, this.profilesCacheHome, {
-						icon: options.icon === null ? undefined : options.icon ?? existing.icon,
-						transient: options.transient ?? existing.isTransient,
-						useDefaultFlags: options.useDefaultFlags ?? existing.useDefaultFlags,
-						workspaces: options.workspaces ?? existing.workspaces,
-					}, this.defaultProfile);
+					profileToUpdate = toUserDataProfile(
+						existing.id,
+						options.name ?? existing.name,
+						existing.location,
+						this.profilesCacheHome,
+						{
+							icon: options.icon === null ? undefined : (options.icon ?? existing.icon),
+							transient: options.transient ?? existing.isTransient,
+							useDefaultFlags: options.useDefaultFlags ?? existing.useDefaultFlags,
+							workspaces: options.workspaces ?? existing.workspaces,
+						},
+						this.defaultProfile
+					);
 				} else if (options.workspaces) {
 					profileToUpdate = existing;
 					profileToUpdate.workspaces = options.workspaces;
 				}
-			}
-
-			else if (options.workspaces) {
-				const workspaces = existing.workspaces?.filter(w1 => !options.workspaces?.some(w2 => this.uriIdentityService.extUri.isEqual(w1, w2)));
+			} else if (options.workspaces) {
+				const workspaces = existing.workspaces?.filter(
+					w1 => !options.workspaces?.some(w2 => this.uriIdentityService.extUri.isEqual(w1, w2))
+				);
 				if (existing.workspaces?.length !== workspaces?.length) {
 					profileToUpdate = existing;
 					profileToUpdate.workspaces = workspaces;
@@ -412,7 +546,7 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 			profile,
 			join(promise) {
 				joiners.push(promise);
-			}
+			},
 		});
 
 		try {
@@ -432,7 +566,10 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 		}
 	}
 
-	async setProfileForWorkspace(workspaceIdentifier: IAnyWorkspaceIdentifier, profileToSet: IUserDataProfile): Promise<void> {
+	async setProfileForWorkspace(
+		workspaceIdentifier: IAnyWorkspaceIdentifier,
+		profileToSet: IUserDataProfile
+	): Promise<void> {
 		const profile = this.profiles.find(p => p.id === profileToSet.id);
 		if (!profile) {
 			throw new Error(`Profile '${profileToSet.name}' does not exist`);
@@ -456,7 +593,11 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 		if (URI.isUri(workspace)) {
 			const currentlyAssociatedProfile = this.getProfileForWorkspace(workspaceIdentifier);
 			if (currentlyAssociatedProfile) {
-				this.updateProfile(currentlyAssociatedProfile, { workspaces: currentlyAssociatedProfile.workspaces?.filter(w => !this.uriIdentityService.extUri.isEqual(w, workspace)) });
+				this.updateProfile(currentlyAssociatedProfile, {
+					workspaces: currentlyAssociatedProfile.workspaces?.filter(
+						w => !this.uriIdentityService.extUri.isEqual(w, workspace)
+					),
+				});
 			}
 		} else {
 			this.updateEmptyWindowAssociation(workspace, undefined, transient);
@@ -477,22 +618,37 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 	async cleanUp(): Promise<void> {
 		if (await this.fileService.exists(this.profilesHome)) {
 			const stat = await this.fileService.resolve(this.profilesHome);
-			await Promise.all((stat.children || [])
-				.filter(child => child.isDirectory && this.profiles.every(p => !this.uriIdentityService.extUri.isEqual(p.location, child.resource)))
-				.map(child => this.fileService.del(child.resource, { recursive: true })));
+			await Promise.all(
+				(stat.children || [])
+					.filter(
+						child =>
+							child.isDirectory &&
+							this.profiles.every(
+								p => !this.uriIdentityService.extUri.isEqual(p.location, child.resource)
+							)
+					)
+					.map(child => this.fileService.del(child.resource, { recursive: true }))
+			);
 		}
 	}
 
 	async cleanUpTransientProfiles(): Promise<void> {
-		const unAssociatedTransientProfiles = this.transientProfilesObject.profiles.filter(p => !this.isProfileAssociatedToWorkspace(p));
+		const unAssociatedTransientProfiles = this.transientProfilesObject.profiles.filter(
+			p => !this.isProfileAssociatedToWorkspace(p)
+		);
 		await Promise.allSettled(unAssociatedTransientProfiles.map(p => this.removeProfile(p)));
 	}
 
-	getProfileForWorkspace(workspaceIdentifier: IAnyWorkspaceIdentifier): IUserDataProfile | undefined {
+	getProfileForWorkspace(
+		workspaceIdentifier: IAnyWorkspaceIdentifier
+	): IUserDataProfile | undefined {
 		const workspace = this.getWorkspace(workspaceIdentifier);
 		return URI.isUri(workspace)
-			? this.profiles.find(p => p.workspaces?.some(w => this.uriIdentityService.extUri.isEqual(w, workspace)))
-			: (this.profilesObject.emptyWindows.get(workspace) ?? this.transientProfilesObject.emptyWindows.get(workspace));
+			? this.profiles.find(p =>
+					p.workspaces?.some(w => this.uriIdentityService.extUri.isEqual(w, workspace))
+				)
+			: (this.profilesObject.emptyWindows.get(workspace) ??
+					this.transientProfilesObject.emptyWindows.get(workspace));
 	}
 
 	protected getWorkspace(workspaceIdentifier: IAnyWorkspaceIdentifier): URI | string {
@@ -509,16 +665,28 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 		if (profile.workspaces?.length) {
 			return true;
 		}
-		if ([...this.profilesObject.emptyWindows.values()].some(windowProfile => this.uriIdentityService.extUri.isEqual(windowProfile.location, profile.location))) {
+		if (
+			[...this.profilesObject.emptyWindows.values()].some(windowProfile =>
+				this.uriIdentityService.extUri.isEqual(windowProfile.location, profile.location)
+			)
+		) {
 			return true;
 		}
-		if ([...this.transientProfilesObject.emptyWindows.values()].some(windowProfile => this.uriIdentityService.extUri.isEqual(windowProfile.location, profile.location))) {
+		if (
+			[...this.transientProfilesObject.emptyWindows.values()].some(windowProfile =>
+				this.uriIdentityService.extUri.isEqual(windowProfile.location, profile.location)
+			)
+		) {
 			return true;
 		}
 		return false;
 	}
 
-	private updateProfiles(added: IUserDataProfile[], removed: IUserDataProfile[], updated: IUserDataProfile[]): void {
+	private updateProfiles(
+		added: IUserDataProfile[],
+		removed: IUserDataProfile[],
+		updated: IUserDataProfile[]
+	): void {
 		const allProfiles: Mutable<IUserDataProfile>[] = [...this.profiles, ...added];
 
 		const transientProfiles = this.transientProfilesObject.profiles;
@@ -567,11 +735,19 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 		this.triggerProfilesChanges(added, removed, updated);
 	}
 
-	protected triggerProfilesChanges(added: IUserDataProfile[], removed: IUserDataProfile[], updated: IUserDataProfile[]) {
+	protected triggerProfilesChanges(
+		added: IUserDataProfile[],
+		removed: IUserDataProfile[],
+		updated: IUserDataProfile[]
+	) {
 		this._onDidChangeProfiles.fire({ added, removed, updated, all: this.profiles });
 	}
 
-	private updateEmptyWindowAssociation(windowId: string, newProfile: IUserDataProfile | undefined, transient: boolean): void {
+	private updateEmptyWindowAssociation(
+		windowId: string,
+		newProfile: IUserDataProfile | undefined,
+		transient: boolean
+	): void {
 		// Force transient if the new profile to associate is transient
 		transient = newProfile?.isTransient ? true : transient;
 
@@ -581,9 +757,7 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 			} else {
 				this.transientProfilesObject.emptyWindows.delete(windowId);
 			}
-		}
-
-		else {
+		} else {
 			// Unset the transiet association if any
 			this.transientProfilesObject.emptyWindows.delete(windowId);
 			if (newProfile) {
@@ -604,7 +778,12 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 				continue;
 			}
 			if (!profile.isDefault) {
-				storedProfiles.push({ location: profile.location, name: profile.name, icon: profile.icon, useDefaultFlags: profile.useDefaultFlags });
+				storedProfiles.push({
+					location: profile.location,
+					name: profile.name,
+					icon: profile.icon,
+					useDefaultFlags: profile.useDefaultFlags,
+				});
 			}
 			if (profile.workspaces) {
 				for (const workspace of profile.workspaces) {
@@ -622,20 +801,42 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
 		this._profilesObject = undefined;
 	}
 
-	protected getStoredProfiles(): StoredUserDataProfile[] { return []; }
-	protected saveStoredProfiles(storedProfiles: StoredUserDataProfile[]): void { throw new Error('not implemented'); }
+	protected getStoredProfiles(): StoredUserDataProfile[] {
+		return [];
+	}
+	protected saveStoredProfiles(storedProfiles: StoredUserDataProfile[]): void {
+		throw new Error('not implemented');
+	}
 
-	protected getStoredProfileAssociations(): StoredProfileAssociations { return {}; }
-	protected saveStoredProfileAssociations(storedProfileAssociations: StoredProfileAssociations): void { throw new Error('not implemented'); }
-	protected getDefaultProfileExtensionsLocation(): URI | undefined { return undefined; }
+	protected getStoredProfileAssociations(): StoredProfileAssociations {
+		return {};
+	}
+	protected saveStoredProfileAssociations(
+		storedProfileAssociations: StoredProfileAssociations
+	): void {
+		throw new Error('not implemented');
+	}
+	protected getDefaultProfileExtensionsLocation(): URI | undefined {
+		return undefined;
+	}
 }
 
 export class InMemoryUserDataProfilesService extends UserDataProfilesService {
 	private storedProfiles: StoredUserDataProfile[] = [];
-	protected override getStoredProfiles(): StoredUserDataProfile[] { return this.storedProfiles; }
-	protected override saveStoredProfiles(storedProfiles: StoredUserDataProfile[]): void { this.storedProfiles = storedProfiles; }
+	protected override getStoredProfiles(): StoredUserDataProfile[] {
+		return this.storedProfiles;
+	}
+	protected override saveStoredProfiles(storedProfiles: StoredUserDataProfile[]): void {
+		this.storedProfiles = storedProfiles;
+	}
 
 	private storedProfileAssociations: StoredProfileAssociations = {};
-	protected override getStoredProfileAssociations(): StoredProfileAssociations { return this.storedProfileAssociations; }
-	protected override saveStoredProfileAssociations(storedProfileAssociations: StoredProfileAssociations): void { this.storedProfileAssociations = storedProfileAssociations; }
+	protected override getStoredProfileAssociations(): StoredProfileAssociations {
+		return this.storedProfileAssociations;
+	}
+	protected override saveStoredProfileAssociations(
+		storedProfileAssociations: StoredProfileAssociations
+	): void {
+		this.storedProfileAssociations = storedProfileAssociations;
+	}
 }

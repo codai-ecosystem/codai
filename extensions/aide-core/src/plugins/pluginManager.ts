@@ -112,7 +112,7 @@ export class PluginManager {
 				manifest,
 				instance: pluginModule,
 				context: pluginContext,
-				activated: false
+				activated: false,
 			};
 
 			// Register plugin
@@ -209,7 +209,9 @@ export class PluginManager {
 			}
 
 			// Check global plugins directory
-			const globalPluginsPath = vscode.Uri.file(`${process.env.HOME || process.env.USERPROFILE}/.aide/plugins`);
+			const globalPluginsPath = vscode.Uri.file(
+				`${process.env.HOME || process.env.USERPROFILE}/.aide/plugins`
+			);
 			try {
 				const globalPluginDirs = await vscode.workspace.fs.readDirectory(globalPluginsPath);
 
@@ -313,12 +315,18 @@ export class PluginManager {
 		);
 	}
 
-	private createPluginContext(manifest: PluginManifest, pluginPath: string): vscode.ExtensionContext {
+	private createPluginContext(
+		manifest: PluginManifest,
+		pluginPath: string
+	): vscode.ExtensionContext {
 		// Create a simplified extension context for plugins
 		const storageUri = vscode.Uri.file(`${pluginPath}/.storage`);
-		const globalStorageUri = vscode.Uri.file(`${process.env.HOME || process.env.USERPROFILE}/.aide/storage/${manifest.id}`);
+		const globalStorageUri = vscode.Uri.file(
+			`${process.env.HOME || process.env.USERPROFILE}/.aide/storage/${manifest.id}`
+		);
 		return {
-			subscriptions: [], workspaceState: {
+			subscriptions: [],
+			workspaceState: {
 				get: async (key: string, defaultValue?: any) => {
 					const value = await this.readPluginStorage(manifest.id, key, false);
 					return value !== undefined ? value : defaultValue;
@@ -326,8 +334,9 @@ export class PluginManager {
 				update: async (key: string, value: any) => {
 					await this.writePluginStorage(manifest.id, key, value, false);
 				},
-				keys: () => this.getStorageKeys(manifest.id, false)
-			}, globalState: {
+				keys: () => this.getStorageKeys(manifest.id, false),
+			},
+			globalState: {
 				get: async (key: string, defaultValue?: any) => {
 					const value = await this.readPluginStorage(manifest.id, key, true);
 					return value !== undefined ? value : defaultValue;
@@ -336,7 +345,7 @@ export class PluginManager {
 					await this.writePluginStorage(manifest.id, key, value, true);
 				},
 				keys: () => this.getStorageKeys(manifest.id, true),
-				setKeysForSync: (keys: string[]) => this.setStorageKeysForSync(manifest.id, keys)
+				setKeysForSync: (keys: string[]) => this.setStorageKeysForSync(manifest.id, keys),
 			},
 			extensionUri: vscode.Uri.file(pluginPath),
 			extensionPath: pluginPath,
@@ -346,21 +355,23 @@ export class PluginManager {
 			storageUri,
 			globalStorageUri,
 			logUri: vscode.Uri.file(`${pluginPath}/.logs`),
-			asAbsolutePath: (relativePath: string) => `${pluginPath}/${relativePath}`, secrets: {
+			asAbsolutePath: (relativePath: string) => `${pluginPath}/${relativePath}`,
+			secrets: {
 				get: async (key: string) => await this.readPluginSecret(manifest.id, key),
-				store: async (key: string, value: string) => await this.writePluginSecret(manifest.id, key, value),
-				delete: async (key: string) => await this.writePluginSecret(manifest.id, key, '')
+				store: async (key: string, value: string) =>
+					await this.writePluginSecret(manifest.id, key, value),
+				delete: async (key: string) => await this.writePluginSecret(manifest.id, key, ''),
 			},
 			environmentVariableCollection: {
 				persistent: false,
-				replace: (variable: string, value: string) => { },
-				append: (variable: string, value: string) => { },
-				prepend: (variable: string, value: string) => { },
+				replace: (variable: string, value: string) => {},
+				append: (variable: string, value: string) => {},
+				prepend: (variable: string, value: string) => {},
 				get: (variable: string) => undefined,
-				forEach: (callback: (variable: string, mutator: any, collection: any) => any) => { },
-				delete: (variable: string) => { },
-				clear: () => { },
-				[Symbol.iterator]: function* () { }
+				forEach: (callback: (variable: string, mutator: any, collection: any) => any) => {},
+				delete: (variable: string) => {},
+				clear: () => {},
+				[Symbol.iterator]: function* () {},
 			},
 			extension: {
 				id: manifest.id,
@@ -369,13 +380,13 @@ export class PluginManager {
 				isActive: true,
 				packageJSON: manifest,
 				exports: undefined,
-				activate: async () => { }
+				activate: async () => {},
 			},
 			extensionMode: vscode.ExtensionMode.Development,
 			languageModelAccessInformation: {
 				onDidChange: new vscode.EventEmitter<void>().event,
-				canSendRequest: () => false
-			}
+				canSendRequest: () => false,
+			},
 		} as any;
 	}
 
@@ -441,7 +452,12 @@ export class PluginManager {
 		try {
 			const storageDir = isGlobal
 				? path.join(process.env.HOME || process.env.USERPROFILE || '', '.aide', 'storage', pluginId)
-				: path.join(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', '.aide', 'storage', pluginId);
+				: path.join(
+						vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '',
+						'.aide',
+						'storage',
+						pluginId
+					);
 
 			const storageFile = path.join(storageDir, 'storage.json');
 
@@ -460,11 +476,21 @@ export class PluginManager {
 	/**
 	 * Write storage file for plugin
 	 */
-	private async writePluginStorage(pluginId: string, key: string, value: any, isGlobal = false): Promise<void> {
+	private async writePluginStorage(
+		pluginId: string,
+		key: string,
+		value: any,
+		isGlobal = false
+	): Promise<void> {
 		try {
 			const storageDir = isGlobal
 				? path.join(process.env.HOME || process.env.USERPROFILE || '', '.aide', 'storage', pluginId)
-				: path.join(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', '.aide', 'storage', pluginId);
+				: path.join(
+						vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '',
+						'.aide',
+						'storage',
+						pluginId
+					);
 
 			await fs.mkdir(storageDir, { recursive: true });
 			const storageFile = path.join(storageDir, 'storage.json');
@@ -486,7 +512,12 @@ export class PluginManager {
 	 */
 	private async readPluginSecret(pluginId: string, key: string): Promise<string | undefined> {
 		try {
-			const secretsDir = path.join(process.env.HOME || process.env.USERPROFILE || '', '.aide', 'secrets', pluginId);
+			const secretsDir = path.join(
+				process.env.HOME || process.env.USERPROFILE || '',
+				'.aide',
+				'secrets',
+				pluginId
+			);
 			const secretsFile = path.join(secretsDir, 'secrets.json');
 
 			if (await this.fileExists(secretsFile)) {
@@ -506,7 +537,12 @@ export class PluginManager {
 	 */
 	private async writePluginSecret(pluginId: string, key: string, value: string): Promise<void> {
 		try {
-			const secretsDir = path.join(process.env.HOME || process.env.USERPROFILE || '', '.aide', 'secrets', pluginId);
+			const secretsDir = path.join(
+				process.env.HOME || process.env.USERPROFILE || '',
+				'.aide',
+				'secrets',
+				pluginId
+			);
 			await fs.mkdir(secretsDir, { recursive: true });
 			const secretsFile = path.join(secretsDir, 'secrets.json');
 			let data: Record<string, any> = {};
@@ -587,14 +623,20 @@ export class PluginAPI {
 		this.memoryGraph = memoryGraph;
 	}
 	// Provide safe access to AIDE functionality for plugins
-	addMemoryNode(type: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision', content: string, metadata?: any): void {
+	addMemoryNode(
+		type: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision',
+		content: string,
+		metadata?: any
+	): void {
 		this.memoryGraph.addNode(type, content, {
 			...metadata,
-			source: 'plugin'
+			source: 'plugin',
 		});
 	}
 
-	getMemoryNodes(type?: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision'): any[] {
+	getMemoryNodes(
+		type?: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision'
+	): any[] {
 		// Since getNodes doesn't exist, we'll use getNode and filter
 		const allNodes = this.memoryGraph.getNode('');
 		if (!type) {

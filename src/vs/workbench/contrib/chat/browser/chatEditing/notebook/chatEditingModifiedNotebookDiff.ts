@@ -16,15 +16,14 @@ export class ChatEditingModifiedNotebookDiff {
 	constructor(
 		private readonly original: ISnapshotEntry,
 		private readonly modified: ISnapshotEntry,
-		@INotebookEditorWorkerService private readonly notebookEditorWorkerService: INotebookEditorWorkerService,
+		@INotebookEditorWorkerService
+		private readonly notebookEditorWorkerService: INotebookEditorWorkerService,
 		@INotebookLoggingService private readonly notebookLoggingService: INotebookLoggingService,
-		@INotebookEditorModelResolverService private readonly notebookEditorModelService: INotebookEditorModelResolverService,
-	) {
-
-	}
+		@INotebookEditorModelResolverService
+		private readonly notebookEditorModelService: INotebookEditorModelResolverService
+	) {}
 
 	async computeDiff(): Promise<IEditSessionEntryDiff> {
-
 		let added = 0;
 		let removed = 0;
 
@@ -32,12 +31,19 @@ export class ChatEditingModifiedNotebookDiff {
 		try {
 			const [modifiedRef, originalRef] = await Promise.all([
 				this.notebookEditorModelService.resolve(this.modified.snapshotUri),
-				this.notebookEditorModelService.resolve(this.original.snapshotUri)
+				this.notebookEditorModelService.resolve(this.original.snapshotUri),
 			]);
 			disposables.add(modifiedRef);
 			disposables.add(originalRef);
-			const notebookDiff = await this.notebookEditorWorkerService.computeDiff(this.original.snapshotUri, this.modified.snapshotUri);
-			const result = computeDiff(originalRef.object.notebook, modifiedRef.object.notebook, notebookDiff);
+			const notebookDiff = await this.notebookEditorWorkerService.computeDiff(
+				this.original.snapshotUri,
+				this.modified.snapshotUri
+			);
+			const result = computeDiff(
+				originalRef.object.notebook,
+				modifiedRef.object.notebook,
+				notebookDiff
+			);
 			result.cellDiffInfo.forEach(diff => {
 				switch (diff.type) {
 					case 'modified':

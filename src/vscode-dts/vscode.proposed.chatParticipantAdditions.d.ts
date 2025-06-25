@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	export interface ChatParticipant {
 		onDidPerformAction: Event<ChatUserActionEvent>;
 	}
@@ -84,7 +83,16 @@ declare module 'vscode' {
 		constructor(toolName: string);
 	}
 
-	export type ExtendedChatResponsePart = ChatResponsePart | ChatResponseTextEditPart | ChatResponseNotebookEditPart | ChatResponseConfirmationPart | ChatResponseCodeCitationPart | ChatResponseReferencePart2 | ChatResponseMovePart | ChatResponseExtensionsPart | ChatPrepareToolInvocationPart;
+	export type ExtendedChatResponsePart =
+		| ChatResponsePart
+		| ChatResponseTextEditPart
+		| ChatResponseNotebookEditPart
+		| ChatResponseConfirmationPart
+		| ChatResponseCodeCitationPart
+		| ChatResponseReferencePart2
+		| ChatResponseMovePart
+		| ChatResponseExtensionsPart
+		| ChatPrepareToolInvocationPart;
 
 	export class ChatResponseWarningPart {
 		value: MarkdownString;
@@ -93,8 +101,15 @@ declare module 'vscode' {
 
 	export class ChatResponseProgressPart2 extends ChatResponseProgressPart {
 		value: string;
-		task?: (progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>) => Thenable<string | void>;
-		constructor(value: string, task?: (progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>) => Thenable<string | void>);
+		task?: (
+			progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>
+		) => Thenable<string | void>;
+		constructor(
+			value: string,
+			task?: (
+				progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>
+			) => Thenable<string | void>
+		);
 	}
 
 	export class ChatResponseReferencePart2 {
@@ -106,16 +121,19 @@ declare module 'vscode' {
 		/**
 		 * The icon for the reference.
 		 */
-		iconPath?: Uri | ThemeIcon | {
-			/**
-			 * The icon path for the light theme.
-			 */
-			light: Uri;
-			/**
-			 * The icon path for the dark theme.
-			 */
-			dark: Uri;
-		};
+		iconPath?:
+			| Uri
+			| ThemeIcon
+			| {
+					/**
+					 * The icon path for the light theme.
+					 */
+					light: Uri;
+					/**
+					 * The icon path for the dark theme.
+					 */
+					dark: Uri;
+			  };
 		options?: { status?: { description: string; kind: ChatResponseReferencePartStatusKind } };
 
 		/**
@@ -123,20 +141,26 @@ declare module 'vscode' {
 		 * @param value A uri or location
 		 * @param iconPath Icon for the reference shown in UI
 		 */
-		constructor(value: Uri | Location | { variableName: string; value?: Uri | Location } | string, iconPath?: Uri | ThemeIcon | {
-			/**
-			 * The icon path for the light theme.
-			 */
-			light: Uri;
-			/**
-			 * The icon path for the dark theme.
-			 */
-			dark: Uri;
-		}, options?: { status?: { description: string; kind: ChatResponseReferencePartStatusKind } });
+		constructor(
+			value: Uri | Location | { variableName: string; value?: Uri | Location } | string,
+			iconPath?:
+				| Uri
+				| ThemeIcon
+				| {
+						/**
+						 * The icon path for the light theme.
+						 */
+						light: Uri;
+						/**
+						 * The icon path for the dark theme.
+						 */
+						dark: Uri;
+				  },
+			options?: { status?: { description: string; kind: ChatResponseReferencePartStatusKind } }
+		);
 	}
 
 	export class ChatResponseMovePart {
-
 		readonly uri: Uri;
 		readonly range: Range;
 
@@ -165,23 +189,26 @@ declare module 'vscode' {
 	}
 
 	export class ChatResponseExtensionsPart {
-
 		readonly extensions: string[];
 
 		constructor(extensions: string[]);
 	}
 
 	export interface ChatResponseStream {
-
 		/**
 		 * Push a progress part to this stream. Short-hand for
 		 * `push(new ChatResponseProgressPart(value))`.
-		*
-		* @param value A progress message
-		* @param task If provided, a task to run while the progress is displayed. When the Thenable resolves, the progress will be marked complete in the UI, and the progress message will be updated to the resolved string if one is specified.
-		* @returns This stream.
-		*/
-		progress(value: string, task?: (progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>) => Thenable<string | void>): void;
+		 *
+		 * @param value A progress message
+		 * @param task If provided, a task to run while the progress is displayed. When the Thenable resolves, the progress will be marked complete in the UI, and the progress message will be updated to the resolved string if one is specified.
+		 * @returns This stream.
+		 */
+		progress(
+			value: string,
+			task?: (
+				progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>
+			) => Thenable<string | void>
+		): void;
 
 		textEdit(target: Uri, edits: TextEdit | TextEdit[]): void;
 
@@ -191,9 +218,18 @@ declare module 'vscode' {
 
 		notebookEdit(target: Uri, isDone: true): void;
 
-		markdownWithVulnerabilities(value: string | MarkdownString, vulnerabilities: ChatVulnerability[]): void;
+		markdownWithVulnerabilities(
+			value: string | MarkdownString,
+			vulnerabilities: ChatVulnerability[]
+		): void;
 		codeblockUri(uri: Uri, isEdit?: boolean): void;
-		push(part: ChatResponsePart | ChatResponseTextEditPart | ChatResponseWarningPart | ChatResponseProgressPart2): void;
+		push(
+			part:
+				| ChatResponsePart
+				| ChatResponseTextEditPart
+				| ChatResponseWarningPart
+				| ChatResponseProgressPart2
+		): void;
 
 		/**
 		 * Show an inline message in the chat view asking the user to confirm an action.
@@ -216,9 +252,16 @@ declare module 'vscode' {
 		 */
 		warning(message: string | MarkdownString): void;
 
-		reference(value: Uri | Location | { variableName: string; value?: Uri | Location }, iconPath?: Uri | ThemeIcon | { light: Uri; dark: Uri }): void;
+		reference(
+			value: Uri | Location | { variableName: string; value?: Uri | Location },
+			iconPath?: Uri | ThemeIcon | { light: Uri; dark: Uri }
+		): void;
 
-		reference2(value: Uri | Location | string | { variableName: string; value?: Uri | Location }, iconPath?: Uri | ThemeIcon | { light: Uri; dark: Uri }, options?: { status?: { description: string; kind: ChatResponseReferencePartStatusKind } }): void;
+		reference2(
+			value: Uri | Location | string | { variableName: string; value?: Uri | Location },
+			iconPath?: Uri | ThemeIcon | { light: Uri; dark: Uri },
+			options?: { status?: { description: string; kind: ChatResponseReferencePartStatusKind } }
+		): void;
 
 		codeCitation(value: Uri, license: string, snippet: string): void;
 
@@ -230,9 +273,8 @@ declare module 'vscode' {
 	export enum ChatResponseReferencePartStatusKind {
 		Complete = 1,
 		Partial = 2,
-		Omitted = 3
+		Omitted = 3,
 	}
-
 
 	/**
 	 * Does this piggy-back on the existing ChatRequest, or is it a different type of request entirely?
@@ -251,7 +293,6 @@ declare module 'vscode' {
 	}
 
 	export interface ChatRequest {
-
 		/**
 		 * A map of all tools that should (`true`) and should not (`false`) be used in this request.
 		 */
@@ -267,7 +308,10 @@ declare module 'vscode' {
 		/**
 		 * Provide a set of variables that can only be used with this participant.
 		 */
-		participantVariableProvider?: { provider: ChatParticipantCompletionItemProvider; triggerCharacters: string[] };
+		participantVariableProvider?: {
+			provider: ChatParticipantCompletionItemProvider;
+			triggerCharacters: string[];
+		};
 
 		/**
 		 * Event that fires when a request is paused or unpaused.
@@ -282,7 +326,10 @@ declare module 'vscode' {
 	}
 
 	export interface ChatParticipantCompletionItemProvider {
-		provideCompletionItems(query: string, token: CancellationToken): ProviderResult<ChatCompletionItem[]>;
+		provideCompletionItems(
+			query: string,
+			token: CancellationToken
+		): ProviderResult<ChatCompletionItem[]>;
 	}
 
 	export class ChatCompletionItem {
@@ -299,7 +346,12 @@ declare module 'vscode' {
 		constructor(id: string, label: string | CompletionItemLabel, values: ChatVariableValue[]);
 	}
 
-	export type ChatExtendedRequestHandler = (request: ChatRequest, context: ChatContext, response: ChatResponseStream, token: CancellationToken) => ProviderResult<ChatResult | void>;
+	export type ChatExtendedRequestHandler = (
+		request: ChatRequest,
+		context: ChatContext,
+		response: ChatResponseStream,
+		token: CancellationToken
+	) => ProviderResult<ChatResult | void>;
 
 	export interface ChatResult {
 		nextQuestion?: {
@@ -313,7 +365,10 @@ declare module 'vscode' {
 		/**
 		 * Create a chat participant with the extended progress type
 		 */
-		export function createChatParticipant(id: string, handler: ChatExtendedRequestHandler): ChatParticipant;
+		export function createChatParticipant(
+			id: string,
+			handler: ChatExtendedRequestHandler
+		): ChatParticipant;
 	}
 
 	/*
@@ -323,7 +378,7 @@ declare module 'vscode' {
 	export enum ChatCopyKind {
 		// Keyboard shortcut or context menu
 		Action = 1,
-		Toolbar = 2
+		Toolbar = 2,
 	}
 
 	export interface ChatCopyAction {
@@ -394,12 +449,21 @@ declare module 'vscode' {
 	export enum ChatEditingSessionActionOutcome {
 		Accepted = 1,
 		Rejected = 2,
-		Saved = 3
+		Saved = 3,
 	}
 
 	export interface ChatUserActionEvent {
 		readonly result: ChatResult;
-		readonly action: ChatCopyAction | ChatInsertAction | ChatApplyAction | ChatTerminalAction | ChatCommandAction | ChatFollowupAction | ChatBugReportAction | ChatEditorAction | ChatEditingSessionAction;
+		readonly action:
+			| ChatCopyAction
+			| ChatInsertAction
+			| ChatApplyAction
+			| ChatTerminalAction
+			| ChatCommandAction
+			| ChatFollowupAction
+			| ChatBugReportAction
+			| ChatEditorAction
+			| ChatEditingSessionAction;
 	}
 
 	export interface ChatPromptReference {
@@ -440,7 +504,7 @@ declare module 'vscode' {
 	export enum ChatVariableLevel {
 		Short = 1,
 		Medium = 2,
-		Full = 3
+		Full = 3,
 	}
 
 	export interface LanguageModelToolInvocationOptions<T> {

@@ -8,18 +8,16 @@ import { localize2 } from '../../../../../nls.js';
 import { Action2, IAction2Options } from '../../../../../platform/actions/common/actions.js';
 
 const defaultOptions = {
-	category: localize2('snippets', "Snippets"),
+	category: localize2('snippets', 'Snippets'),
 } as const;
 
 export abstract class SnippetsAction extends Action2 {
-
 	constructor(desc: Readonly<IAction2Options>) {
 		super({ ...defaultOptions, ...desc });
 	}
 }
 
 export abstract class SnippetEditorAction extends EditorAction2 {
-
 	constructor(desc: Readonly<IAction2Options>) {
 		super({ ...defaultOptions, ...desc });
 	}

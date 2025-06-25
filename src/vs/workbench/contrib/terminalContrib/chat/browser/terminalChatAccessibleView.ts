@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccessibleViewProviderId, AccessibleViewType, AccessibleContentProvider } from '../../../../../platform/accessibility/browser/accessibleView.js';
+import {
+	AccessibleViewProviderId,
+	AccessibleViewType,
+	AccessibleContentProvider,
+} from '../../../../../platform/accessibility/browser/accessibleView.js';
 import { AccessibilityVerbositySettingId } from '../../../accessibility/browser/accessibilityConfiguration.js';
 import { ITerminalService } from '../../../terminal/browser/terminal.js';
 import { TerminalChatController } from './terminalChatController.js';
@@ -25,7 +29,10 @@ export class TerminalInlineChatAccessibleView implements IAccessibleViewImplemen
 		const actions: IAction[] = [];
 		const contextKeyService = TerminalChatController.activeChatController?.scopedContextKeyService;
 		if (contextKeyService) {
-			const menuActions = menuService.getMenuActions(MENU_TERMINAL_CHAT_WIDGET_STATUS, contextKeyService);
+			const menuActions = menuService.getMenuActions(
+				MENU_TERMINAL_CHAT_WIDGET_STATUS,
+				contextKeyService
+			);
 			for (const action of menuActions) {
 				for (const a of action[1]) {
 					if (a instanceof MenuItemAction) {
@@ -35,7 +42,8 @@ export class TerminalInlineChatAccessibleView implements IAccessibleViewImplemen
 			}
 		}
 
-		const controller: TerminalChatController | undefined = terminalService.activeInstance?.getContribution(TerminalChatController.ID) ?? undefined;
+		const controller: TerminalChatController | undefined =
+			terminalService.activeInstance?.getContribution(TerminalChatController.ID) ?? undefined;
 		if (!controller?.lastResponseContent) {
 			return;
 		}
@@ -43,7 +51,9 @@ export class TerminalInlineChatAccessibleView implements IAccessibleViewImplemen
 		return new AccessibleContentProvider(
 			AccessibleViewProviderId.TerminalChat,
 			{ type: AccessibleViewType.View },
-			() => { return responseContent; },
+			() => {
+				return responseContent;
+			},
 			() => {
 				controller.focus();
 			},

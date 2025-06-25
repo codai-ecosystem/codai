@@ -8,16 +8,24 @@ import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { Event, Emitter } from '../../../../base/common/event.js';
 import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
-import { FileChangesEvent, FileChangeType, IFileService } from '../../../../platform/files/common/files.js';
+import {
+	FileChangesEvent,
+	FileChangeType,
+	IFileService,
+} from '../../../../platform/files/common/files.js';
 import { ISaveOptions, IRevertOptions } from '../../../common/editor.js';
-import { IWorkingCopy, IWorkingCopyBackup, IWorkingCopySaveEvent, WorkingCopyCapabilities } from './workingCopy.js';
+import {
+	IWorkingCopy,
+	IWorkingCopyBackup,
+	IWorkingCopySaveEvent,
+	WorkingCopyCapabilities,
+} from './workingCopy.js';
 
 /**
  * A resource based `IWorkingCopy` is backed by a `URI` from a
  * known file system provider.
  */
 export interface IResourceWorkingCopy extends IWorkingCopy, IDisposable {
-
 	/**
 	 * An event for when the orphaned state of the resource working copy changes.
 	 */
@@ -40,7 +48,6 @@ export interface IResourceWorkingCopy extends IWorkingCopy, IDisposable {
 }
 
 export abstract class ResourceWorkingCopy extends Disposable implements IResourceWorkingCopy {
-
 	constructor(
 		readonly resource: URI,
 		@IFileService protected readonly fileService: IFileService
@@ -86,7 +93,6 @@ export abstract class ResourceWorkingCopy extends Disposable implements IResourc
 		if (fileEventImpactsUs && this.orphaned !== newInOrphanModeGuess) {
 			let newInOrphanModeValidated: boolean = false;
 			if (newInOrphanModeGuess) {
-
 				// We have received reports of users seeing delete events even though the file still
 				// exists (network shares issue: https://github.com/microsoft/vscode/issues/13665).
 				// Since we do not want to mark the working copy as orphaned, we have to check if the
@@ -117,7 +123,6 @@ export abstract class ResourceWorkingCopy extends Disposable implements IResourc
 
 	//#endregion
 
-
 	//#region Dispose
 
 	private readonly _onWillDispose = this._register(new Emitter<void>());
@@ -128,7 +133,6 @@ export abstract class ResourceWorkingCopy extends Disposable implements IResourc
 	}
 
 	override dispose(): void {
-
 		// State
 		this.orphaned = false;
 

@@ -39,24 +39,26 @@ suite('ContextKeyService', () => {
 			complete = _complete;
 			reject = _reject;
 		});
-		testDisposables.add(child.onDidChangeContext(e => {
-			try {
-				assert.ok(e.affectsSome(new Set(['testA'])), 'testA changed');
-				assert.ok(e.affectsSome(new Set(['testB'])), 'testB changed');
-				assert.ok(e.affectsSome(new Set(['testC'])), 'testC changed');
-				assert.ok(!e.affectsSome(new Set(['testD'])), 'testD did not change');
+		testDisposables.add(
+			child.onDidChangeContext(e => {
+				try {
+					assert.ok(e.affectsSome(new Set(['testA'])), 'testA changed');
+					assert.ok(e.affectsSome(new Set(['testB'])), 'testB changed');
+					assert.ok(e.affectsSome(new Set(['testC'])), 'testC changed');
+					assert.ok(!e.affectsSome(new Set(['testD'])), 'testD did not change');
 
-				assert.strictEqual(child.getContextKeyValue('testA'), 3);
-				assert.strictEqual(child.getContextKeyValue('testB'), undefined);
-				assert.strictEqual(child.getContextKeyValue('testC'), 4);
-				assert.strictEqual(child.getContextKeyValue('testD'), 0);
-			} catch (err) {
-				reject(err);
-				return;
-			}
+					assert.strictEqual(child.getContextKeyValue('testA'), 3);
+					assert.strictEqual(child.getContextKeyValue('testB'), undefined);
+					assert.strictEqual(child.getContextKeyValue('testC'), 4);
+					assert.strictEqual(child.getContextKeyValue('testD'), 0);
+				} catch (err) {
+					reject(err);
+					return;
+				}
 
-			complete();
-		}));
+				complete();
+			})
+		);
 
 		child.updateParent(parent2);
 
@@ -73,9 +75,11 @@ suite('ContextKeyService', () => {
 		parent1.createKey('testD', 0);
 
 		let eventFired = false;
-		testDisposables.add(child.onDidChangeContext(e => {
-			eventFired = true;
-		}));
+		testDisposables.add(
+			child.onDidChangeContext(e => {
+				eventFired = true;
+			})
+		);
 
 		child.updateParent(parent1);
 
@@ -84,20 +88,33 @@ suite('ContextKeyService', () => {
 
 	test('issue #147732: URIs as context values', () => {
 		const configurationService: IConfigurationService = new TestConfigurationService();
-		const contextKeyService: IContextKeyService = testDisposables.add(new ContextKeyService(configurationService));
-		const instantiationService = testDisposables.add(new TestInstantiationService(new ServiceCollection(
-			[IConfigurationService, configurationService],
-			[IContextKeyService, contextKeyService],
-			[ITelemetryService, new class extends mock<ITelemetryService>() {
-				override async publicLog2() {
-					//
-				}
-			}]
-		)));
+		const contextKeyService: IContextKeyService = testDisposables.add(
+			new ContextKeyService(configurationService)
+		);
+		const instantiationService = testDisposables.add(
+			new TestInstantiationService(
+				new ServiceCollection(
+					[IConfigurationService, configurationService],
+					[IContextKeyService, contextKeyService],
+					[
+						ITelemetryService,
+						new (class extends mock<ITelemetryService>() {
+							override async publicLog2() {
+								//
+							}
+						})(),
+					]
+				)
+			)
+		);
 
 		const uri = URI.parse('test://abc');
 		contextKeyService.createKey<string>('notebookCellResource', undefined).set(uri.toString());
-		instantiationService.invokeFunction(setContext, 'jupyter.runByLineCells', JSON.parse(JSON.stringify([uri])));
+		instantiationService.invokeFunction(
+			setContext,
+			'jupyter.runByLineCells',
+			JSON.parse(JSON.stringify([uri]))
+		);
 
 		const expr = ContextKeyExpr.in('notebookCellResource', 'jupyter.runByLineCells');
 		assert.deepStrictEqual(contextKeyService.contextMatchesRules(expr), true);
@@ -111,9 +128,13 @@ suite('ContextKeyService', () => {
 		child.createKey('testA', 4);
 
 		let fired = false;
-		const event = testDisposables.add(child.onDidChangeContext(e => fired = true));
+		const event = testDisposables.add(child.onDidChangeContext(e => (fired = true)));
 		root.setContext('testA', 10);
-		assert.strictEqual(fired, false, 'Should not fire event when overridden key is updated in parent');
+		assert.strictEqual(
+			fired,
+			false,
+			'Should not fire event when overridden key is updated in parent'
+		);
 		event.dispose();
 	});
 
@@ -130,14 +151,18 @@ suite('ContextKeyService', () => {
 		child.createKey('testD', 6);
 
 		let fired = false;
-		const event = testDisposables.add(child.onDidChangeContext(e => fired = true));
+		const event = testDisposables.add(child.onDidChangeContext(e => (fired = true)));
 		root.bufferChangeEvents(() => {
 			root.setContext('testA', 10);
 			root.setContext('testB', 20);
 			root.setContext('testD', 30);
 		});
 
-		assert.strictEqual(fired, false, 'Should not fire event when overridden key is updated in parent');
+		assert.strictEqual(
+			fired,
+			false,
+			'Should not fire event when overridden key is updated in parent'
+		);
 		event.dispose();
 	});
 
@@ -154,18 +179,20 @@ suite('ContextKeyService', () => {
 		child.createKey('testD', 6);
 
 		const def = new DeferredPromise();
-		testDisposables.add(child.onDidChangeContext(e => {
-			try {
-				assert.ok(e.affectsSome(new Set(['testA'])), 'testA changed');
-				assert.ok(e.affectsSome(new Set(['testB'])), 'testB changed');
-				assert.ok(e.affectsSome(new Set(['testC'])), 'testC changed');
-			} catch (err) {
-				def.error(err);
-				return;
-			}
+		testDisposables.add(
+			child.onDidChangeContext(e => {
+				try {
+					assert.ok(e.affectsSome(new Set(['testA'])), 'testA changed');
+					assert.ok(e.affectsSome(new Set(['testB'])), 'testB changed');
+					assert.ok(e.affectsSome(new Set(['testC'])), 'testC changed');
+				} catch (err) {
+					def.error(err);
+					return;
+				}
 
-			def.complete(undefined);
-		}));
+				def.complete(undefined);
+			})
+		);
 
 		root.bufferChangeEvents(() => {
 			root.setContext('testA', 10);

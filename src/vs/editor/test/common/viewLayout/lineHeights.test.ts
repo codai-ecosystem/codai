@@ -8,7 +8,6 @@ import { LineHeightsManager } from '../../../common/viewLayout/lineHeights.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('Editor ViewLayout - LineHeightsManager', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('default line height is used when no custom heights exist', () => {

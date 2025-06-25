@@ -6,7 +6,11 @@
 import { DetailedLineRangeMapping, LineRangeMapping } from './rangeMapping.js';
 
 export interface ILinesDiffComputer {
-	computeDiff(originalLines: string[], modifiedLines: string[], options: ILinesDiffComputerOptions): LinesDiff;
+	computeDiff(
+		originalLines: string[],
+		modifiedLines: string[],
+		options: ILinesDiffComputerOptions
+	): LinesDiff;
 }
 
 export interface ILinesDiffComputerOptions {
@@ -30,9 +34,8 @@ export class LinesDiff {
 		 * Indicates if the time out was reached.
 		 * In that case, the diffs might be an approximation and the user should be asked to rerun the diff with more time.
 		 */
-		readonly hitTimeout: boolean,
-	) {
-	}
+		readonly hitTimeout: boolean
+	) {}
 }
 
 export class MovedText {
@@ -45,15 +48,15 @@ export class MovedText {
 	 */
 	public readonly changes: readonly DetailedLineRangeMapping[];
 
-	constructor(
-		lineRangeMapping: LineRangeMapping,
-		changes: readonly DetailedLineRangeMapping[],
-	) {
+	constructor(lineRangeMapping: LineRangeMapping, changes: readonly DetailedLineRangeMapping[]) {
 		this.lineRangeMapping = lineRangeMapping;
 		this.changes = changes;
 	}
 
 	public flip(): MovedText {
-		return new MovedText(this.lineRangeMapping.flip(), this.changes.map(c => c.flip()));
+		return new MovedText(
+			this.lineRangeMapping.flip(),
+			this.changes.map(c => c.flip())
+		);
 	}
 }

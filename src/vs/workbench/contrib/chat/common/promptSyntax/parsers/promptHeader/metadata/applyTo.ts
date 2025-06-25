@@ -7,8 +7,15 @@ import { PromptStringMetadata } from './base/string.js';
 import { localize } from '../../../../../../../../nls.js';
 import { INSTRUCTIONS_LANGUAGE_ID } from '../../../constants.js';
 import { isEmptyPattern, parse } from '../../../../../../../../base/common/glob.js';
-import { PromptMetadataDiagnostic, PromptMetadataError, PromptMetadataWarning } from '../diagnostics.js';
-import { FrontMatterRecord, FrontMatterToken } from '../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
+import {
+	PromptMetadataDiagnostic,
+	PromptMetadataError,
+	PromptMetadataWarning,
+} from '../diagnostics.js';
+import {
+	FrontMatterRecord,
+	FrontMatterToken,
+} from '../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
 
 /**
  * Name of the metadata record in the prompt header.
@@ -19,10 +26,7 @@ const RECORD_NAME = 'applyTo';
  * Prompt `applyTo` metadata record inside the prompt header.
  */
 export class PromptApplyToMetadata extends PromptStringMetadata {
-	constructor(
-		recordToken: FrontMatterRecord,
-		languageId: string,
-	) {
+	constructor(recordToken: FrontMatterRecord, languageId: string) {
 		super(RECORD_NAME, recordToken, languageId);
 	}
 
@@ -47,9 +51,9 @@ export class PromptApplyToMetadata extends PromptStringMetadata {
 					localize(
 						'prompt.header.metadata.string.diagnostics.invalid-language',
 						"The '{0}' metadata record is only valid in instruction files.",
-						this.recordName,
-					),
-				),
+						this.recordName
+					)
+				)
 			);
 
 			delete this.valueToken;
@@ -66,9 +70,9 @@ export class PromptApplyToMetadata extends PromptStringMetadata {
 					localize(
 						'prompt.header.metadata.applyTo.diagnostics.non-valid-glob',
 						"Invalid glob pattern '{0}'.",
-						cleanText,
-					),
-				),
+						cleanText
+					)
+				)
 			);
 
 			delete this.valueToken;
@@ -81,9 +85,7 @@ export class PromptApplyToMetadata extends PromptStringMetadata {
 	/**
 	 * Check if a provided string contains a valid glob pattern.
 	 */
-	private isValidGlob(
-		pattern: string,
-	): boolean {
+	private isValidGlob(pattern: string): boolean {
 		try {
 			const globPattern = parse(pattern);
 			if (isEmptyPattern(globPattern)) {
@@ -100,10 +102,8 @@ export class PromptApplyToMetadata extends PromptStringMetadata {
 	 * Check if a provided front matter token is a metadata record
 	 * with name equal to `applyTo`.
 	 */
-	public static isApplyToRecord(
-		token: FrontMatterToken,
-	): boolean {
-		if ((token instanceof FrontMatterRecord) === false) {
+	public static isApplyToRecord(token: FrontMatterToken): boolean {
+		if (token instanceof FrontMatterRecord === false) {
 			return false;
 		}
 

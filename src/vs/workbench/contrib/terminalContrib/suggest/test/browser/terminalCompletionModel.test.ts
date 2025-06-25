@@ -6,7 +6,11 @@ import assert, { notStrictEqual, strictEqual } from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { TerminalCompletionModel } from '../../browser/terminalCompletionModel.js';
 import { LineContext } from '../../../../../services/suggest/browser/simpleCompletionModel.js';
-import { TerminalCompletionItem, TerminalCompletionItemKind, type ITerminalCompletion } from '../../browser/terminalCompletionItem.js';
+import {
+	TerminalCompletionItem,
+	TerminalCompletionItemKind,
+	type ITerminalCompletion,
+} from '../../browser/terminalCompletionItem.js';
 
 function createItem(options: Partial<ITerminalCompletion>): TerminalCompletionItem {
 	return new TerminalCompletionItem({
@@ -24,10 +28,7 @@ function createFileItems(...labels: string[]): TerminalCompletionItem[] {
 }
 
 function createFileItemsModel(...labels: string[]): TerminalCompletionModel {
-	return new TerminalCompletionModel(
-		createFileItems(...labels),
-		new LineContext('', 0)
-	);
+	return new TerminalCompletionModel(createFileItems(...labels), new LineContext('', 0));
 }
 
 function createFolderItems(...labels: string[]): TerminalCompletionItem[] {
@@ -35,14 +36,14 @@ function createFolderItems(...labels: string[]): TerminalCompletionItem[] {
 }
 
 function createFolderItemsModel(...labels: string[]): TerminalCompletionModel {
-	return new TerminalCompletionModel(
-		createFolderItems(...labels),
-		new LineContext('', 0)
-	);
+	return new TerminalCompletionModel(createFolderItems(...labels), new LineContext('', 0));
 }
 
 function assertItems(model: TerminalCompletionModel, labels: string[]): void {
-	assert.deepStrictEqual(model.items.map(i => i.completion.label), labels);
+	assert.deepStrictEqual(
+		model.items.map(i => i.completion.label),
+		labels
+	);
 	assert.strictEqual(model.items.length, labels.length); // sanity check
 }
 
@@ -58,20 +59,17 @@ suite('TerminalCompletionModel', function () {
 	});
 
 	test('should handle a list with one item', function () {
-		model = new TerminalCompletionModel([
-			createItem({ label: 'a' }),
-		], new LineContext('', 0));
+		model = new TerminalCompletionModel([createItem({ label: 'a' })], new LineContext('', 0));
 
 		assert.strictEqual(model.items.length, 1);
 		assert.strictEqual(model.items[0].completion.label, 'a');
 	});
 
 	test('should sort alphabetically', function () {
-		model = new TerminalCompletionModel([
-			createItem({ label: 'b' }),
-			createItem({ label: 'z' }),
-			createItem({ label: 'a' }),
-		], new LineContext('', 0));
+		model = new TerminalCompletionModel(
+			[createItem({ label: 'b' }), createItem({ label: 'z' }), createItem({ label: 'a' })],
+			new LineContext('', 0)
+		);
 
 		assert.strictEqual(model.items.length, 3);
 		assert.strictEqual(model.items[0].completion.label, 'a');
@@ -80,19 +78,12 @@ suite('TerminalCompletionModel', function () {
 	});
 
 	test('fuzzy matching', () => {
-		const initial = [
-			'.\\.eslintrc',
-			'.\\resources\\',
-			'.\\scripts\\',
-			'.\\src\\',
-		];
-		const expected = [
-			'.\\scripts\\',
-			'.\\src\\',
-			'.\\.eslintrc',
-			'.\\resources\\',
-		];
-		model = new TerminalCompletionModel(initial.map(e => (createItem({ label: e }))), new LineContext('s', 0));
+		const initial = ['.\\.eslintrc', '.\\resources\\', '.\\scripts\\', '.\\src\\'];
+		const expected = ['.\\scripts\\', '.\\src\\', '.\\.eslintrc', '.\\resources\\'];
+		model = new TerminalCompletionModel(
+			initial.map(e => createItem({ label: e })),
+			new LineContext('s', 0)
+		);
 
 		assertItems(model, expected);
 	});
@@ -135,7 +126,7 @@ suite('TerminalCompletionModel', function () {
 					'resources',
 					'scripts',
 					'src',
-					'test',
+					'test'
 				),
 				...createFileItems(
 					'__init__.py',
@@ -163,8 +154,8 @@ suite('TerminalCompletionModel', function () {
 					'README.md',
 					'SECURITY.md',
 					'ThirdPartyNotices.txt',
-					'tsfmt.json',
-				)
+					'tsfmt.json'
+				),
 			];
 			const model = new TerminalCompletionModel(items, new LineContext('', 0));
 			assertItems(model, [
@@ -218,7 +209,11 @@ suite('TerminalCompletionModel', function () {
 	});
 
 	suite('inline completions', () => {
-		function createItems(kind: TerminalCompletionItemKind.InlineSuggestion | TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop) {
+		function createItems(
+			kind:
+				| TerminalCompletionItemKind.InlineSuggestion
+				| TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop
+		) {
 			return [
 				...createFolderItems('a', 'c'),
 				...createFileItems('b', 'd'),
@@ -227,40 +222,51 @@ suite('TerminalCompletionModel', function () {
 					provider: 'core',
 					replacementIndex: 0,
 					replacementLength: 0,
-					kind
-				})
+					kind,
+				}),
 			];
 		}
 		suite('InlineSuggestion', () => {
 			test('should put on top generally', function () {
-				const model = new TerminalCompletionModel(createItems(TerminalCompletionItemKind.InlineSuggestion), new LineContext('', 0));
+				const model = new TerminalCompletionModel(
+					createItems(TerminalCompletionItemKind.InlineSuggestion),
+					new LineContext('', 0)
+				);
 				strictEqual(model.items[0].completion.label, 'ab');
 			});
-			test('should NOT put on top when there\'s an exact match of another item', function () {
-				const model = new TerminalCompletionModel(createItems(TerminalCompletionItemKind.InlineSuggestion), new LineContext('a', 0));
+			test("should NOT put on top when there's an exact match of another item", function () {
+				const model = new TerminalCompletionModel(
+					createItems(TerminalCompletionItemKind.InlineSuggestion),
+					new LineContext('a', 0)
+				);
 				notStrictEqual(model.items[0].completion.label, 'ab');
 				strictEqual(model.items[1].completion.label, 'ab');
 			});
 		});
 		suite('InlineSuggestionAlwaysOnTop', () => {
 			test('should put on top generally', function () {
-				const model = new TerminalCompletionModel(createItems(TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop), new LineContext('', 0));
+				const model = new TerminalCompletionModel(
+					createItems(TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop),
+					new LineContext('', 0)
+				);
 				strictEqual(model.items[0].completion.label, 'ab');
 			});
-			test('should put on top even if there\'s an exact match of another item', function () {
-				const model = new TerminalCompletionModel(createItems(TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop), new LineContext('a', 0));
+			test("should put on top even if there's an exact match of another item", function () {
+				const model = new TerminalCompletionModel(
+					createItems(TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop),
+					new LineContext('a', 0)
+				);
 				strictEqual(model.items[0].completion.label, 'ab');
 			});
 		});
 	});
 
 	suite('lsp priority sorting', () => {
-
 		suite('Sort Python provider items', () => {
 			test('Prioritize items with "python" in provider name when inside REPL', () => {
 				const items = [
 					createItem({ label: 'b_default_provider', provider: 'defaultProvider' }),
-					createItem({ label: 'a_python_provider', provider: 'ms-python.python' })
+					createItem({ label: 'a_python_provider', provider: 'ms-python.python' }),
 				];
 				const model = new TerminalCompletionModel(items, new LineContext('', 0));
 				assertItems(model, ['a_python_provider', 'b_default_provider']);
@@ -271,7 +277,7 @@ suite('TerminalCompletionModel', function () {
 					createItem({ label: 'z_default', provider: 'default' }),
 					createItem({ label: 'c_python', provider: 'ms-python.pylance' }),
 					createItem({ label: 'a_default', provider: 'default' }),
-					createItem({ label: 'b_python', provider: 'ms-python.python' })
+					createItem({ label: 'b_python', provider: 'ms-python.python' }),
 				];
 				const model = new TerminalCompletionModel(items, new LineContext('', 0));
 				assertItems(model, ['b_python', 'c_python', 'a_default', 'z_default']);
@@ -285,15 +291,13 @@ suite('TerminalCompletionModel', function () {
 						provider: 'core',
 						replacementIndex: 0,
 						replacementLength: 0,
-						kind: TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop
+						kind: TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop,
 					}),
-					createItem({ label: 'c_default', provider: 'default_provider' })
+					createItem({ label: 'c_default', provider: 'default_provider' }),
 				];
 				const model = new TerminalCompletionModel(items, new LineContext('', 0));
 				assertItems(model, ['a_always_on_top', 'b_python', 'c_default']);
 			});
 		});
-
-
 	});
 });

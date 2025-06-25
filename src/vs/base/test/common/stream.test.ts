@@ -8,10 +8,26 @@ import { timeout } from '../../common/async.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 import { bufferToReadable, VSBuffer } from '../../common/buffer.js';
 import { CancellationTokenSource } from '../../common/cancellation.js';
-import { consumeReadable, consumeStream, isReadable, isReadableBufferedStream, isReadableStream, listenStream, newWriteableStream, peekReadable, peekStream, prefixedReadable, prefixedStream, Readable, ReadableStream, toReadable, toStream, transform } from '../../common/stream.js';
+import {
+	consumeReadable,
+	consumeStream,
+	isReadable,
+	isReadableBufferedStream,
+	isReadableStream,
+	listenStream,
+	newWriteableStream,
+	peekReadable,
+	peekStream,
+	prefixedReadable,
+	prefixedStream,
+	Readable,
+	ReadableStream,
+	toReadable,
+	toStream,
+	transform,
+} from '../../common/stream.js';
 
 suite('Stream', () => {
-
 	test('isReadable', () => {
 		assert.ok(!isReadable(undefined));
 		assert.ok(!isReadable(Object.create(null)));
@@ -96,7 +112,7 @@ suite('Stream', () => {
 		 * A complex object that cannot be reduced to a single object.
 		 */
 		class TestMessage {
-			constructor(public value: string) { }
+			constructor(public value: string) {}
 		}
 
 		const stream = newWriteableStream<TestMessage>(null);
@@ -118,18 +134,12 @@ suite('Stream', () => {
 			chunks.push(data);
 		});
 
-		assert(
-			chunks[0] instanceof TestMessage,
-			'Message `0` must be an instance of `TestMessage`.',
-		);
+		assert(chunks[0] instanceof TestMessage, 'Message `0` must be an instance of `TestMessage`.');
 		assert.strictEqual(chunks[0].value, 'Hello');
 
 		stream.write(new TestMessage('World'));
 
-		assert(
-			chunks[1] instanceof TestMessage,
-			'Message `1` must be an instance of `TestMessage`.',
-		);
+		assert(chunks[1] instanceof TestMessage, 'Message `1` must be an instance of `TestMessage`.');
 		assert.strictEqual(chunks[1].value, 'World');
 
 		assert.strictEqual(error, false);
@@ -146,22 +156,13 @@ suite('Stream', () => {
 
 		assert.strictEqual(chunks.length, 5);
 
-		assert(
-			chunks[2] instanceof TestMessage,
-			'Message `2` must be an instance of `TestMessage`.',
-		);
+		assert(chunks[2] instanceof TestMessage, 'Message `2` must be an instance of `TestMessage`.');
 		assert.strictEqual(chunks[2].value, '1');
 
-		assert(
-			chunks[3] instanceof TestMessage,
-			'Message `3` must be an instance of `TestMessage`.',
-		);
+		assert(chunks[3] instanceof TestMessage, 'Message `3` must be an instance of `TestMessage`.');
 		assert.strictEqual(chunks[3].value, '2');
 
-		assert(
-			chunks[4] instanceof TestMessage,
-			'Message `4` must be an instance of `TestMessage`.',
-		);
+		assert(chunks[4] instanceof TestMessage, 'Message `4` must be an instance of `TestMessage`.');
 		assert.strictEqual(chunks[4].value, '3');
 
 		stream.error(new Error());
@@ -174,12 +175,8 @@ suite('Stream', () => {
 		stream.end(new TestMessage('Final Bit'));
 		assert.strictEqual(chunks.length, 6);
 
-		assert(
-			chunks[5] instanceof TestMessage,
-			'Message `5` must be an instance of `TestMessage`.',
-		);
+		assert(chunks[5] instanceof TestMessage, 'Message `5` must be an instance of `TestMessage`.');
 		assert.strictEqual(chunks[5].value, 'Final Bit');
-
 
 		assert.strictEqual(end, true);
 
@@ -190,7 +187,7 @@ suite('Stream', () => {
 	});
 
 	test('WriteableStream - end with empty string works', async () => {
-		const reducer = (strings: string[]) => strings.length > 0 ? strings.join() : 'error';
+		const reducer = (strings: string[]) => (strings.length > 0 ? strings.join() : 'error');
 		const stream = newWriteableStream<string>(reducer);
 		stream.end('');
 
@@ -238,7 +235,7 @@ suite('Stream', () => {
 		stream.removeListener('error', errorListener);
 
 		// always leave at least one error listener to streams to avoid unexpected errors during test running
-		stream.on('error', () => { });
+		stream.on('error', () => {});
 		stream.error(new Error());
 		assert.strictEqual(error, false);
 	});
@@ -313,7 +310,6 @@ suite('Stream', () => {
 	});
 
 	test('peekReadable - error handling', async () => {
-
 		// 0 Chunks
 		let stream = newWriteableStream(data => data);
 
@@ -368,14 +364,14 @@ suite('Stream', () => {
 
 		assert.ok(!error);
 
-		stream.on('error', err => error = err);
-		stream.on('data', chunk => { });
+		stream.on('error', err => (error = err));
+		stream.on('data', chunk => {});
 		assert.ok(error);
 	});
 
 	function arrayToReadable<T>(array: T[]): Readable<T> {
 		return {
-			read: () => array.shift() || null
+			read: () => array.shift() || null,
 		};
 	}
 
@@ -431,7 +427,7 @@ suite('Stream', () => {
 			},
 			onEnd: () => {
 				end = true;
-			}
+			},
 		});
 
 		stream.write('Hello');
@@ -460,17 +456,21 @@ suite('Stream', () => {
 
 		const cts = new CancellationTokenSource();
 
-		listenStream(stream, {
-			onData: d => {
-				data = d;
+		listenStream(
+			stream,
+			{
+				onData: d => {
+					data = d;
+				},
+				onError: e => {
+					error = true;
+				},
+				onEnd: () => {
+					end = true;
+				},
 			},
-			onError: e => {
-				error = true;
-			},
-			onEnd: () => {
-				end = true;
-			}
-		}, cts.token);
+			cts.token
+		);
 
 		cts.cancel();
 
@@ -537,7 +537,9 @@ suite('Stream', () => {
 	test('transform', async () => {
 		const source = newWriteableStream<string>(strings => strings.join());
 
-		const result = transform(source, { data: string => string + string }, strings => strings.join());
+		const result = transform(source, { data: string => string + string }, strings =>
+			strings.join()
+		);
 
 		// Simulate async behavior
 		setTimeout(() => {
@@ -558,11 +560,16 @@ suite('Stream', () => {
 		let listener1Called = false;
 		let listener2Called = false;
 
-		const listener1 = () => { stream.removeListener('end', listener1); listener1Called = true; };
-		const listener2 = () => { listener2Called = true; };
+		const listener1 = () => {
+			stream.removeListener('end', listener1);
+			listener1Called = true;
+		};
+		const listener2 = () => {
+			listener2Called = true;
+		};
 		stream.on('end', listener1);
 		stream.on('end', listener2);
-		stream.on('data', () => { });
+		stream.on('data', () => {});
 		stream.end('');
 
 		assert.strictEqual(listener1Called, true);
@@ -570,18 +577,22 @@ suite('Stream', () => {
 	});
 
 	test('prefixedReadable', () => {
-
 		// Basic
 		let readable = prefixedReadable('1,2', arrayToReadable(['3', '4', '5']), val => val.join(','));
-		assert.strictEqual(consumeReadable(readable, val => val.join(',')), '1,2,3,4,5');
+		assert.strictEqual(
+			consumeReadable(readable, val => val.join(',')),
+			'1,2,3,4,5'
+		);
 
 		// Empty
 		readable = prefixedReadable('empty', arrayToReadable<string>([]), val => val.join(','));
-		assert.strictEqual(consumeReadable(readable, val => val.join(',')), 'empty');
+		assert.strictEqual(
+			consumeReadable(readable, val => val.join(',')),
+			'empty'
+		);
 	});
 
 	test('prefixedStream', async () => {
-
 		// Basic
 		let stream = newWriteableStream<string>(strings => strings.join());
 		stream.write('3');

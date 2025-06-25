@@ -16,12 +16,15 @@ export class SignOutOfAccountAction extends Action2 {
 	constructor() {
 		super({
 			id: '_signOutOfAccount',
-			title: localize('signOutOfAccount', "Sign out of account"),
-			f1: false
+			title: localize('signOutOfAccount', 'Sign out of account'),
+			f1: false,
 		});
 	}
 
-	override async run(accessor: ServicesAccessor, { providerId, accountLabel }: { providerId: string; accountLabel: string }): Promise<void> {
+	override async run(
+		accessor: ServicesAccessor,
+		{ providerId, accountLabel }: { providerId: string; accountLabel: string }
+	): Promise<void> {
 		const authenticationService = accessor.get(IAuthenticationService);
 		const authenticationUsageService = accessor.get(IAuthenticationUsageService);
 		const authenticationAccessService = accessor.get(IAuthenticationAccessService);
@@ -39,13 +42,20 @@ export class SignOutOfAccountAction extends Action2 {
 		const { confirmed } = await dialogService.confirm({
 			type: Severity.Info,
 			message: accountUsages.length
-				? localize('signOutMessage', "The account '{0}' has been used by: \n\n{1}\n\n Sign out from these extensions?", accountLabel, accountUsages.map(usage => usage.extensionName).join('\n'))
+				? localize(
+						'signOutMessage',
+						"The account '{0}' has been used by: \n\n{1}\n\n Sign out from these extensions?",
+						accountLabel,
+						accountUsages.map(usage => usage.extensionName).join('\n')
+					)
 				: localize('signOutMessageSimple', "Sign out of '{0}'?", accountLabel),
-			primaryButton: localize({ key: 'signOut', comment: ['&& denotes a mnemonic'] }, "&&Sign Out")
+			primaryButton: localize({ key: 'signOut', comment: ['&& denotes a mnemonic'] }, '&&Sign Out'),
 		});
 
 		if (confirmed) {
-			const removeSessionPromises = sessions.map(session => authenticationService.removeSession(providerId, session.id));
+			const removeSessionPromises = sessions.map(session =>
+				authenticationService.removeSession(providerId, session.id)
+			);
 			await Promise.all(removeSessionPromises);
 			authenticationUsageService.removeAccountUsage(providerId, accountLabel);
 			authenticationAccessService.removeAllowedExtensions(providerId, accountLabel);

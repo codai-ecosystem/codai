@@ -28,7 +28,6 @@ suite('DomActivityTracker', () => {
 		clock.restore();
 	});
 
-
 	test('marks inactive on no input', () => {
 		assert.equal(uas.isActive, true);
 		clock.tick(maxTimeToBecomeIdle);

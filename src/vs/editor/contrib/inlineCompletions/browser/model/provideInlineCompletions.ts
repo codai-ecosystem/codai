@@ -5,7 +5,10 @@
 
 import { assertNever } from '../../../../../base/common/assert.js';
 import { AsyncIterableObject, DeferredPromise } from '../../../../../base/common/async.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../../base/common/cancellation.js';
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from '../../../../../base/common/cancellation.js';
 import { onUnexpectedExternalError } from '../../../../../base/common/errors.js';
 import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
 import { SetMap } from '../../../../../base/common/map.js';
@@ -17,7 +20,17 @@ import { OffsetRange } from '../../../../common/core/ranges/offsetRange.js';
 import { Position } from '../../../../common/core/position.js';
 import { Range } from '../../../../common/core/range.js';
 import { TextReplacement } from '../../../../common/core/edits/textEdit.js';
-import { InlineCompletionEndOfLifeReason, InlineCompletionEndOfLifeReasonKind, InlineCompletion, InlineCompletionContext, InlineCompletionProviderGroupId, InlineCompletions, InlineCompletionsProvider, InlineCompletionTriggerKind, PartialAcceptInfo } from '../../../../common/languages.js';
+import {
+	InlineCompletionEndOfLifeReason,
+	InlineCompletionEndOfLifeReasonKind,
+	InlineCompletion,
+	InlineCompletionContext,
+	InlineCompletionProviderGroupId,
+	InlineCompletions,
+	InlineCompletionsProvider,
+	InlineCompletionTriggerKind,
+	PartialAcceptInfo,
+} from '../../../../common/languages.js';
 import { ILanguageConfigurationService } from '../../../../common/languages/languageConfigurationRegistry.js';
 import { ITextModel } from '../../../../common/model.js';
 import { fixBracketsInLine } from '../../../../common/model/bracketPairsTextModelPart/fixBrackets.js';
@@ -33,14 +46,15 @@ export async function provideInlineCompletions(
 	model: ITextModel,
 	context: InlineCompletionContextWithoutUuid,
 	baseToken: CancellationToken = CancellationToken.None,
-	languageConfigurationService?: ILanguageConfigurationService,
+	languageConfigurationService?: ILanguageConfigurationService
 ): Promise<InlineCompletionProviderResult> {
 	const requestUuid = generateUuid();
 	const tokenSource = new CancellationTokenSource(baseToken);
 	const token = tokenSource.token;
 	const contextWithUuid: InlineCompletionContext = { ...context, requestUuid: requestUuid };
 
-	const defaultReplaceRange = positionOrRange instanceof Position ? getDefaultRange(positionOrRange, model) : positionOrRange;
+	const defaultReplaceRange =
+		positionOrRange instanceof Position ? getDefaultRange(positionOrRange, model) : positionOrRange;
 
 	const multiMap = new SetMap<InlineCompletionProviderGroupId, InlineCompletionsProvider<any>>();
 	for (const provider of providers) {
@@ -49,8 +63,12 @@ export async function provideInlineCompletions(
 		}
 	}
 
-	function getPreferredProviders(provider: InlineCompletionsProvider<any>): InlineCompletionsProvider<any>[] {
-		if (!provider.yieldsToGroupIds) { return []; }
+	function getPreferredProviders(
+		provider: InlineCompletionsProvider<any>
+	): InlineCompletionsProvider<any>[] {
+		if (!provider.yieldsToGroupIds) {
+			return [];
+		}
 		const result: InlineCompletionsProvider<any>[] = [];
 		for (const groupId of provider.yieldsToGroupIds || []) {
 			const providers = multiMap.get(groupId);
@@ -66,17 +84,21 @@ export async function provideInlineCompletions(
 	function findPreferredProviderCircle(
 		provider: InlineCompletionsProvider<any>,
 		stack: InlineCompletionsProvider[],
-		seen: Set<InlineCompletionsProvider>,
+		seen: Set<InlineCompletionsProvider>
 	): InlineCompletionsProvider[] | undefined {
 		stack = [...stack, provider];
-		if (seen.has(provider)) { return stack; }
+		if (seen.has(provider)) {
+			return stack;
+		}
 
 		seen.add(provider);
 		try {
 			const preferred = getPreferredProviders(provider);
 			for (const p of preferred) {
 				const c = findPreferredProviderCircle(p, stack, seen);
-				if (c) { return c; }
+				if (c) {
+					return c;
+				}
 			}
 		} finally {
 			seen.delete(provider);
@@ -84,14 +106,23 @@ export async function provideInlineCompletions(
 		return undefined;
 	}
 
-	function queryProviderOrPreferredProvider(provider: InlineCompletionsProvider<InlineCompletions>, states: Map<InlineCompletionsProvider, Result>): Result {
+	function queryProviderOrPreferredProvider(
+		provider: InlineCompletionsProvider<InlineCompletions>,
+		states: Map<InlineCompletionsProvider, Result>
+	): Result {
 		const state = states.get(provider);
-		if (state) { return state; }
+		if (state) {
+			return state;
+		}
 
 		const circle = findPreferredProviderCircle(provider, [], new Set());
 		if (circle) {
-			onUnexpectedExternalError(new Error(`Inline completions: cyclic yield-to dependency detected.`
-				+ ` Path: ${circle.map(s => s.toString ? s.toString() : ('' + s)).join(' -> ')}`));
+			onUnexpectedExternalError(
+				new Error(
+					`Inline completions: cyclic yield-to dependency detected.` +
+						` Path: ${circle.map(s => (s.toString ? s.toString() : '' + s)).join(' -> ')}`
+				)
+			);
 		}
 
 		const deferredPromise = new DeferredPromise<InlineSuggestionList | undefined>();
@@ -110,29 +141,55 @@ export async function provideInlineCompletions(
 			}
 
 			return query(provider);
-		})().then(c => deferredPromise.complete(c), e => deferredPromise.error(e));
+		})().then(
+			c => deferredPromise.complete(c),
+			e => deferredPromise.error(e)
+		);
 
 		return deferredPromise.p;
 	}
 
-	async function query(provider: InlineCompletionsProvider): Promise<InlineSuggestionList | undefined> {
+	async function query(
+		provider: InlineCompletionsProvider
+	): Promise<InlineSuggestionList | undefined> {
 		let result: InlineCompletions | null | undefined;
 		try {
 			if (positionOrRange instanceof Position) {
-				result = await provider.provideInlineCompletions(model, positionOrRange, contextWithUuid, token);
+				result = await provider.provideInlineCompletions(
+					model,
+					positionOrRange,
+					contextWithUuid,
+					token
+				);
 			} else {
-				result = await provider.provideInlineEditsForRange?.(model, positionOrRange, contextWithUuid, token);
+				result = await provider.provideInlineEditsForRange?.(
+					model,
+					positionOrRange,
+					contextWithUuid,
+					token
+				);
 			}
 		} catch (e) {
 			onUnexpectedExternalError(e);
 			return undefined;
 		}
 
-		if (!result) { return undefined; }
+		if (!result) {
+			return undefined;
+		}
 		const data: InlineSuggestData[] = [];
 		const list = new InlineSuggestionList(result, data, provider);
 		for (const item of result.items) {
-			data.push(createInlineCompletionItem(item, list, defaultReplaceRange, model, languageConfigurationService, contextWithUuid));
+			data.push(
+				createInlineCompletionItem(
+					item,
+					list,
+					defaultReplaceRange,
+					model,
+					languageConfigurationService,
+					contextWithUuid
+				)
+			);
 		}
 
 		runWhenCancelled(token, () => list.removeRef());
@@ -140,7 +197,9 @@ export async function provideInlineCompletions(
 	}
 
 	const states = new Map<InlineCompletionsProvider, Result>();
-	const inlineCompletionLists = AsyncIterableObject.fromPromisesResolveOrder(providers.map(p => queryProviderOrPreferredProvider(p, states)));
+	const inlineCompletionLists = AsyncIterableObject.fromPromisesResolveOrder(
+		providers.map(p => queryProviderOrPreferredProvider(p, states))
+	);
 
 	if (token.isCancellationRequested) {
 		tokenSource.dispose(true);
@@ -169,8 +228,8 @@ function runWhenCancelled(token: CancellationToken, callback: () => void): IDisp
 
 async function addRefAndCreateResult(
 	context: InlineCompletionContext,
-	inlineCompletionLists: AsyncIterable<(InlineSuggestionList | undefined)>,
-	model: ITextModel,
+	inlineCompletionLists: AsyncIterable<InlineSuggestionList | undefined>,
+	model: ITextModel
 ): Promise<InlineCompletionProviderResult> {
 	// for deduplication
 	const itemsByHash = new Map<string, InlineSuggestData>();
@@ -178,7 +237,9 @@ async function addRefAndCreateResult(
 	let shouldStop = false;
 	const lists: InlineSuggestionList[] = [];
 	for await (const completions of inlineCompletionLists) {
-		if (!completions) { continue; }
+		if (!completions) {
+			continue;
+		}
 		completions.addRef();
 		lists.push(completions);
 		for (const item of completions.inlineSuggestionsData) {
@@ -192,7 +253,10 @@ async function addRefAndCreateResult(
 			itemsByHash.set(createHashFromSingleTextEdit(item.getSingleTextEdit()), item);
 
 			// Stop after first visible inline completion
-			if (!(item.isInlineEdit || item.showInlineEditMenu) && context.triggerKind === InlineCompletionTriggerKind.Automatic) {
+			if (
+				!(item.isInlineEdit || item.showInlineEditMenu) &&
+				context.triggerKind === InlineCompletionTriggerKind.Automatic
+			) {
 				const minifiedEdit = item.getSingleTextEdit().removeCommonPrefix(new TextModelText(model));
 				if (!minifiedEdit.isEmpty) {
 					shouldStop = true;
@@ -205,19 +269,22 @@ async function addRefAndCreateResult(
 		}
 	}
 
-	return new InlineCompletionProviderResult(Array.from(itemsByHash.values()), new Set(itemsByHash.keys()), lists);
+	return new InlineCompletionProviderResult(
+		Array.from(itemsByHash.values()),
+		new Set(itemsByHash.keys()),
+		lists
+	);
 }
 
 export class InlineCompletionProviderResult implements IDisposable {
-
 	constructor(
 		/**
 		 * Free of duplicates.
 		 */
 		public readonly completions: readonly InlineSuggestData[],
 		private readonly hashs: Set<string>,
-		private readonly providerResults: readonly InlineSuggestionList[],
-	) { }
+		private readonly providerResults: readonly InlineSuggestionList[]
+	) {}
 
 	public has(edit: TextReplacement): boolean {
 		return this.hashs.has(createHashFromSingleTextEdit(edit));
@@ -225,8 +292,10 @@ export class InlineCompletionProviderResult implements IDisposable {
 
 	// TODO: This is not complete as it does not take the textmodel into account
 	isEmpty(): boolean {
-		return this.completions.length === 0
-			|| this.completions.every(c => c.range.isEmpty() && c.insertText.length === 0);
+		return (
+			this.completions.length === 0 ||
+			this.completions.every(c => c.range.isEmpty() && c.insertText.length === 0)
+		);
 	}
 
 	dispose(): void {
@@ -246,7 +315,7 @@ function createInlineCompletionItem(
 	defaultReplaceRange: Range,
 	textModel: ITextModel,
 	languageConfigurationService: ILanguageConfigurationService | undefined,
-	context: InlineCompletionContext,
+	context: InlineCompletionContext
 ): InlineSuggestData {
 	let insertText: string;
 	let snippetInfo: SnippetInfo | undefined;
@@ -266,7 +335,12 @@ function createInlineCompletionItem(
 			// Modify range depending on if brackets are added or removed
 			const diff = insertText.length - inlineCompletion.insertText.length;
 			if (diff !== 0) {
-				range = new Range(range.startLineNumber, range.startColumn, range.endLineNumber, range.endColumn + diff);
+				range = new Range(
+					range.startLineNumber,
+					range.startColumn,
+					range.endLineNumber,
+					range.endColumn + diff
+				);
 			}
 		}
 
@@ -285,7 +359,12 @@ function createInlineCompletionItem(
 			// Modify range depending on if brackets are added or removed
 			const diff = inlineCompletion.insertText.snippet.length - preBracketCompletionLength;
 			if (diff !== 0) {
-				range = new Range(range.startLineNumber, range.startColumn, range.endLineNumber, range.endColumn + diff);
+				range = new Range(
+					range.startLineNumber,
+					range.startColumn,
+					range.endLineNumber,
+					range.endColumn + diff
+				);
 			}
 		}
 
@@ -298,17 +377,19 @@ function createInlineCompletionItem(
 			insertText = snippet.toString();
 			snippetInfo = {
 				snippet: inlineCompletion.insertText.snippet,
-				range: range
+				range: range,
 			};
 		}
 	} else {
 		assertNever(inlineCompletion.insertText);
 	}
 
-	const displayLocation = inlineCompletion.displayLocation ? {
-		range: Range.lift(inlineCompletion.displayLocation.range),
-		label: inlineCompletion.displayLocation.label
-	} : undefined;
+	const displayLocation = inlineCompletion.displayLocation
+		? {
+				range: Range.lift(inlineCompletion.displayLocation.range),
+				label: inlineCompletion.displayLocation.label,
+			}
+		: undefined;
 
 	return new InlineSuggestData(
 		range,
@@ -319,7 +400,7 @@ function createInlineCompletionItem(
 		inlineCompletion,
 		source,
 		context,
-		inlineCompletion.isInlineEdit ?? false,
+		inlineCompletion.isInlineEdit ?? false
 	);
 }
 
@@ -338,25 +419,37 @@ export class InlineSuggestData {
 		public readonly sourceInlineCompletion: InlineCompletion,
 		public readonly source: InlineSuggestionList,
 		public readonly context: InlineCompletionContext,
-		public readonly isInlineEdit: boolean,
-	) { }
+		public readonly isInlineEdit: boolean
+	) {}
 
-	public get showInlineEditMenu() { return this.sourceInlineCompletion.showInlineEditMenu ?? false; }
+	public get showInlineEditMenu() {
+		return this.sourceInlineCompletion.showInlineEditMenu ?? false;
+	}
 
 	public getSingleTextEdit() {
 		return new TextReplacement(this.range, this.insertText);
 	}
 
-	public async reportInlineEditShown(commandService: ICommandService, updatedInsertText: string): Promise<void> {
+	public async reportInlineEditShown(
+		commandService: ICommandService,
+		updatedInsertText: string
+	): Promise<void> {
 		if (this._didShow) {
 			return;
 		}
 		this._didShow = true;
 
-		this.source.provider.handleItemDidShow?.(this.source.inlineSuggestions, this.sourceInlineCompletion, updatedInsertText);
+		this.source.provider.handleItemDidShow?.(
+			this.source.inlineSuggestions,
+			this.sourceInlineCompletion,
+			updatedInsertText
+		);
 
 		if (this.sourceInlineCompletion.shownCommand) {
-			await commandService.executeCommand(this.sourceInlineCompletion.shownCommand.id, ...(this.sourceInlineCompletion.shownCommand.arguments || []));
+			await commandService.executeCommand(
+				this.sourceInlineCompletion.shownCommand.id,
+				...(this.sourceInlineCompletion.shownCommand.arguments || [])
+			);
 		}
 	}
 
@@ -373,7 +466,7 @@ export class InlineSuggestData {
 	 * Sends the end of life event to the provider.
 	 * If no reason is provided, the last set reason is used.
 	 * If no reason was set, the default reason is used.
-	*/
+	 */
 	public reportEndOfLife(reason?: InlineCompletionEndOfLifeReason): void {
 		if (this._didReportEndOfLife) {
 			return;
@@ -381,21 +474,35 @@ export class InlineSuggestData {
 		this._didReportEndOfLife = true;
 
 		if (!reason) {
-			reason = this._lastSetEndOfLifeReason ?? { kind: InlineCompletionEndOfLifeReasonKind.Ignored, userTypingDisagreed: false, supersededBy: undefined };
+			reason = this._lastSetEndOfLifeReason ?? {
+				kind: InlineCompletionEndOfLifeReasonKind.Ignored,
+				userTypingDisagreed: false,
+				supersededBy: undefined,
+			};
 		}
 
-		if (reason.kind === InlineCompletionEndOfLifeReasonKind.Rejected && this.source.provider.handleRejection) {
-			this.source.provider.handleRejection(this.source.inlineSuggestions, this.sourceInlineCompletion);
+		if (
+			reason.kind === InlineCompletionEndOfLifeReasonKind.Rejected &&
+			this.source.provider.handleRejection
+		) {
+			this.source.provider.handleRejection(
+				this.source.inlineSuggestions,
+				this.sourceInlineCompletion
+			);
 		}
 
 		if (this.source.provider.handleEndOfLifetime) {
-			this.source.provider.handleEndOfLifetime(this.source.inlineSuggestions, this.sourceInlineCompletion, reason);
+			this.source.provider.handleEndOfLifetime(
+				this.source.inlineSuggestions,
+				this.sourceInlineCompletion,
+				reason
+			);
 		}
 	}
 
 	/**
 	 * Sets the end of life reason, but does not send the event to the provider yet.
-	*/
+	 */
 	public setEndOfLifeReason(reason: InlineCompletionEndOfLifeReason): void {
 		this._lastSetEndOfLifeReason = reason;
 	}
@@ -421,8 +528,8 @@ export class InlineSuggestionList {
 	constructor(
 		public readonly inlineSuggestions: InlineCompletions,
 		public readonly inlineSuggestionsData: readonly InlineSuggestData[],
-		public readonly provider: InlineCompletionsProvider,
-	) { }
+		public readonly provider: InlineCompletionsProvider
+	) {}
 
 	addRef(): void {
 		this.refCount++;
@@ -450,11 +557,21 @@ function getDefaultRange(position: Position, model: ITextModel): Range {
 		: Range.fromPositions(position, position.with(undefined, maxColumn));
 }
 
-function closeBrackets(text: string, position: Position, model: ITextModel, languageConfigurationService: ILanguageConfigurationService): string {
+function closeBrackets(
+	text: string,
+	position: Position,
+	model: ITextModel,
+	languageConfigurationService: ILanguageConfigurationService
+): string {
 	const currentLine = model.getLineContent(position.lineNumber);
-	const edit = StringReplacement.replace(new OffsetRange(position.column - 1, currentLine.length), text);
+	const edit = StringReplacement.replace(
+		new OffsetRange(position.column - 1, currentLine.length),
+		text
+	);
 
-	const proposedLineTokens = model.tokenization.tokenizeLinesAt(position.lineNumber, [edit.replace(currentLine)]);
+	const proposedLineTokens = model.tokenization.tokenizeLinesAt(position.lineNumber, [
+		edit.replace(currentLine),
+	]);
 	const textTokens = proposedLineTokens?.[0].sliceZeroCopy(edit.getRangeAfterReplace());
 	if (!textTokens) {
 		return text;

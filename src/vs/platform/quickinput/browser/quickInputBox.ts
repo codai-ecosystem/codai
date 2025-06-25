@@ -5,7 +5,11 @@
 
 import * as dom from '../../../base/browser/dom.js';
 import { FindInput } from '../../../base/browser/ui/findinput/findInput.js';
-import { IInputBoxStyles, IRange, MessageType } from '../../../base/browser/ui/inputbox/inputBox.js';
+import {
+	IInputBoxStyles,
+	IRange,
+	MessageType,
+} from '../../../base/browser/ui/inputbox/inputBox.js';
 import { IToggleStyles, Toggle } from '../../../base/browser/ui/toggle/toggle.js';
 import { Disposable, IDisposable } from '../../../base/common/lifecycle.js';
 import Severity from '../../../base/common/severity.js';
@@ -14,7 +18,6 @@ import './media/quickInput.css';
 const $ = dom.$;
 
 export class QuickInputBox extends Disposable {
-
 	private container: HTMLElement;
 	private findInput: FindInput;
 
@@ -25,7 +28,9 @@ export class QuickInputBox extends Disposable {
 	) {
 		super();
 		this.container = dom.append(this.parent, $('.quick-input-box'));
-		this.findInput = this._register(new FindInput(this.container, undefined, { label: '', inputBoxStyles, toggleStyles }));
+		this.findInput = this._register(
+			new FindInput(this.container, undefined, { label: '', inputBoxStyles, toggleStyles })
+		);
 		const input = this.findInput.inputBox.inputElement;
 		input.role = 'textbox';
 		input.ariaHasPopup = 'menu';
@@ -124,12 +129,26 @@ export class QuickInputBox extends Disposable {
 		if (decoration === Severity.Ignore) {
 			this.findInput.clearMessage();
 		} else {
-			this.findInput.showMessage({ type: decoration === Severity.Info ? MessageType.INFO : decoration === Severity.Warning ? MessageType.WARNING : MessageType.ERROR, content: '' });
+			this.findInput.showMessage({
+				type:
+					decoration === Severity.Info
+						? MessageType.INFO
+						: decoration === Severity.Warning
+							? MessageType.WARNING
+							: MessageType.ERROR,
+				content: '',
+			});
 		}
 	}
 
 	stylesForType(decoration: Severity) {
-		return this.findInput.inputBox.stylesForType(decoration === Severity.Info ? MessageType.INFO : decoration === Severity.Warning ? MessageType.WARNING : MessageType.ERROR);
+		return this.findInput.inputBox.stylesForType(
+			decoration === Severity.Info
+				? MessageType.INFO
+				: decoration === Severity.Warning
+					? MessageType.WARNING
+					: MessageType.ERROR
+		);
 	}
 
 	setFocus(): void {

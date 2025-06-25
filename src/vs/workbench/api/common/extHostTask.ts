@@ -32,7 +32,6 @@ import { asArray } from '../../../base/common/arrays.js';
 import { ITaskProblemMatcherStartedDto, ITaskProblemMatcherEndedDto } from './shared/tasks.js';
 
 export interface IExtHostTask extends ExtHostTaskShape {
-
 	readonly _serviceBrand: undefined;
 
 	taskExecutions: vscode.TaskExecution[];
@@ -43,7 +42,11 @@ export interface IExtHostTask extends ExtHostTaskShape {
 	onDidStartTaskProblemMatchers: Event<vscode.TaskProblemMatcherStartedEvent>;
 	onDidEndTaskProblemMatchers: Event<vscode.TaskProblemMatcherEndedEvent>;
 
-	registerTaskProvider(extension: IExtensionDescription, type: string, provider: vscode.TaskProvider): vscode.Disposable;
+	registerTaskProvider(
+		extension: IExtensionDescription,
+		type: string,
+		provider: vscode.TaskProvider
+	): vscode.Disposable;
 	registerTaskSystem(scheme: string, info: tasks.ITaskSystemInfoDTO): void;
 	fetchTasks(filter?: vscode.TaskFilter): Promise<vscode.Task[]>;
 	executeTask(extension: IExtensionDescription, task: vscode.Task): Promise<vscode.TaskExecution>;
@@ -66,13 +69,17 @@ namespace TaskDefinitionDTO {
 }
 
 namespace TaskPresentationOptionsDTO {
-	export function from(value: vscode.TaskPresentationOptions): tasks.ITaskPresentationOptionsDTO | undefined {
+	export function from(
+		value: vscode.TaskPresentationOptions
+	): tasks.ITaskPresentationOptionsDTO | undefined {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
 		return value;
 	}
-	export function to(value: tasks.ITaskPresentationOptionsDTO): vscode.TaskPresentationOptions | undefined {
+	export function to(
+		value: tasks.ITaskPresentationOptionsDTO
+	): vscode.TaskPresentationOptions | undefined {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
@@ -81,13 +88,17 @@ namespace TaskPresentationOptionsDTO {
 }
 
 namespace ProcessExecutionOptionsDTO {
-	export function from(value: vscode.ProcessExecutionOptions): tasks.IProcessExecutionOptionsDTO | undefined {
+	export function from(
+		value: vscode.ProcessExecutionOptions
+	): tasks.IProcessExecutionOptionsDTO | undefined {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
 		return value;
 	}
-	export function to(value: tasks.IProcessExecutionOptionsDTO): vscode.ProcessExecutionOptions | undefined {
+	export function to(
+		value: tasks.IProcessExecutionOptionsDTO
+	): vscode.ProcessExecutionOptions | undefined {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
@@ -96,7 +107,13 @@ namespace ProcessExecutionOptionsDTO {
 }
 
 namespace ProcessExecutionDTO {
-	export function is(value: tasks.IShellExecutionDTO | tasks.IProcessExecutionDTO | tasks.ICustomExecutionDTO | undefined): value is tasks.IProcessExecutionDTO {
+	export function is(
+		value:
+			| tasks.IShellExecutionDTO
+			| tasks.IProcessExecutionDTO
+			| tasks.ICustomExecutionDTO
+			| undefined
+	): value is tasks.IProcessExecutionDTO {
 		if (value) {
 			const candidate = value as tasks.IProcessExecutionDTO;
 			return candidate && !!candidate.process;
@@ -110,7 +127,7 @@ namespace ProcessExecutionDTO {
 		}
 		const result: tasks.IProcessExecutionDTO = {
 			process: value.process,
-			args: value.args
+			args: value.args,
 		};
 		if (value.options) {
 			result.options = ProcessExecutionOptionsDTO.from(value.options);
@@ -126,13 +143,17 @@ namespace ProcessExecutionDTO {
 }
 
 namespace ShellExecutionOptionsDTO {
-	export function from(value: vscode.ShellExecutionOptions): tasks.IShellExecutionOptionsDTO | undefined {
+	export function from(
+		value: vscode.ShellExecutionOptions
+	): tasks.IShellExecutionOptionsDTO | undefined {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
 		return value;
 	}
-	export function to(value: tasks.IShellExecutionOptionsDTO): vscode.ShellExecutionOptions | undefined {
+	export function to(
+		value: tasks.IShellExecutionOptionsDTO
+	): vscode.ShellExecutionOptions | undefined {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
@@ -141,7 +162,13 @@ namespace ShellExecutionOptionsDTO {
 }
 
 namespace ShellExecutionDTO {
-	export function is(value: tasks.IShellExecutionDTO | tasks.IProcessExecutionDTO | tasks.ICustomExecutionDTO | undefined): value is tasks.IShellExecutionDTO {
+	export function is(
+		value:
+			| tasks.IShellExecutionDTO
+			| tasks.IProcessExecutionDTO
+			| tasks.ICustomExecutionDTO
+			| undefined
+	): value is tasks.IShellExecutionDTO {
 		if (value) {
 			const candidate = value as tasks.IShellExecutionDTO;
 			return candidate && (!!candidate.commandLine || !!candidate.command);
@@ -153,8 +180,7 @@ namespace ShellExecutionDTO {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
-		const result: tasks.IShellExecutionDTO = {
-		};
+		const result: tasks.IShellExecutionDTO = {};
 		if (value.commandLine !== undefined) {
 			result.commandLine = value.commandLine;
 		} else {
@@ -167,7 +193,11 @@ namespace ShellExecutionDTO {
 		return result;
 	}
 	export function to(value: tasks.IShellExecutionDTO): types.ShellExecution | undefined {
-		if (value === undefined || value === null || (value.command === undefined && value.commandLine === undefined)) {
+		if (
+			value === undefined ||
+			value === null ||
+			(value.command === undefined && value.commandLine === undefined)
+		) {
 			return undefined;
 		}
 		if (value.commandLine) {
@@ -179,7 +209,13 @@ namespace ShellExecutionDTO {
 }
 
 export namespace CustomExecutionDTO {
-	export function is(value: tasks.IShellExecutionDTO | tasks.IProcessExecutionDTO | tasks.ICustomExecutionDTO | undefined): value is tasks.ICustomExecutionDTO {
+	export function is(
+		value:
+			| tasks.IShellExecutionDTO
+			| tasks.IProcessExecutionDTO
+			| tasks.ICustomExecutionDTO
+			| undefined
+	): value is tasks.ICustomExecutionDTO {
 		if (value) {
 			const candidate = value as tasks.ICustomExecutionDTO;
 			return candidate && candidate.customExecution === 'customExecution';
@@ -190,23 +226,32 @@ export namespace CustomExecutionDTO {
 
 	export function from(value: vscode.CustomExecution): tasks.ICustomExecutionDTO {
 		return {
-			customExecution: 'customExecution'
+			customExecution: 'customExecution',
 		};
 	}
 
-	export function to(taskId: string, providedCustomExeutions: Map<string, types.CustomExecution>): types.CustomExecution | undefined {
+	export function to(
+		taskId: string,
+		providedCustomExeutions: Map<string, types.CustomExecution>
+	): types.CustomExecution | undefined {
 		return providedCustomExeutions.get(taskId);
 	}
 }
 
-
 export namespace TaskHandleDTO {
-	export function from(value: types.Task, workspaceService?: IExtHostWorkspace): tasks.ITaskHandleDTO {
+	export function from(
+		value: types.Task,
+		workspaceService?: IExtHostWorkspace
+	): tasks.ITaskHandleDTO {
 		let folder: UriComponents | string;
 		if (value.scope !== undefined && typeof value.scope !== 'number') {
 			folder = value.scope.uri;
 		} else if (value.scope !== undefined && typeof value.scope === 'number') {
-			if ((value.scope === types.TaskScope.Workspace) && workspaceService && workspaceService.workspaceFile) {
+			if (
+				value.scope === types.TaskScope.Workspace &&
+				workspaceService &&
+				workspaceService.workspaceFile
+			) {
 				folder = workspaceService.workspaceFile;
 			} else {
 				folder = USER_TASKS_GROUP_KEY;
@@ -214,7 +259,7 @@ export namespace TaskHandleDTO {
 		}
 		return {
 			id: value._id!,
-			workspaceFolder: folder!
+			workspaceFolder: folder!,
 		};
 	}
 }
@@ -228,7 +273,10 @@ namespace TaskGroupDTO {
 }
 
 export namespace TaskDTO {
-	export function fromMany(tasks: vscode.Task[], extension: IExtensionDescription): tasks.ITaskDTO[] {
+	export function fromMany(
+		tasks: vscode.Task[],
+		extension: IExtensionDescription
+	): tasks.ITaskDTO[] {
 		if (tasks === undefined || tasks === null) {
 			return [];
 		}
@@ -242,11 +290,18 @@ export namespace TaskDTO {
 		return result;
 	}
 
-	export function from(value: vscode.Task, extension: IExtensionDescription): tasks.ITaskDTO | undefined {
+	export function from(
+		value: vscode.Task,
+		extension: IExtensionDescription
+	): tasks.ITaskDTO | undefined {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
-		let execution: tasks.IShellExecutionDTO | tasks.IProcessExecutionDTO | tasks.ICustomExecutionDTO | undefined;
+		let execution:
+			| tasks.IShellExecutionDTO
+			| tasks.IProcessExecutionDTO
+			| tasks.ICustomExecutionDTO
+			| undefined;
 		if (value.execution instanceof types.ProcessExecution) {
 			execution = ProcessExecutionDTO.from(value.execution);
 		} else if (value.execution instanceof types.ShellExecution) {
@@ -255,7 +310,9 @@ export namespace TaskDTO {
 			execution = CustomExecutionDTO.from(<types.CustomExecution>value.execution);
 		}
 
-		const definition: tasks.ITaskDefinitionDTO | undefined = TaskDefinitionDTO.from(value.definition);
+		const definition: tasks.ITaskDefinitionDTO | undefined = TaskDefinitionDTO.from(
+			value.definition
+		);
 		let scope: number | UriComponents;
 		if (value.scope) {
 			if (typeof value.scope === 'number') {
@@ -277,7 +334,7 @@ export namespace TaskDTO {
 			source: {
 				extensionId: extension.identifier.value,
 				label: value.source,
-				scope: scope
+				scope: scope,
 			},
 			execution: execution!,
 			isBackground: value.isBackground,
@@ -286,15 +343,23 @@ export namespace TaskDTO {
 			problemMatchers: asArray(value.problemMatchers),
 			hasDefinedMatchers: (value as types.Task).hasDefinedMatchers,
 			runOptions: value.runOptions ? value.runOptions : { reevaluateOnRerun: true },
-			detail: value.detail
+			detail: value.detail,
 		};
 		return result;
 	}
-	export async function to(value: tasks.ITaskDTO | undefined, workspace: IExtHostWorkspaceProvider, providedCustomExeutions: Map<string, types.CustomExecution>): Promise<types.Task | undefined> {
+	export async function to(
+		value: tasks.ITaskDTO | undefined,
+		workspace: IExtHostWorkspaceProvider,
+		providedCustomExeutions: Map<string, types.CustomExecution>
+	): Promise<types.Task | undefined> {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
-		let execution: types.ShellExecution | types.ProcessExecution | types.CustomExecution | undefined;
+		let execution:
+			| types.ShellExecution
+			| types.ProcessExecution
+			| types.CustomExecution
+			| undefined;
 		if (ProcessExecutionDTO.is(value.execution)) {
 			execution = ProcessExecutionDTO.to(value.execution);
 		} else if (ShellExecutionDTO.is(value.execution)) {
@@ -303,7 +368,11 @@ export namespace TaskDTO {
 			execution = CustomExecutionDTO.to(value._id, providedCustomExeutions);
 		}
 		const definition: vscode.TaskDefinition | undefined = TaskDefinitionDTO.to(value.definition);
-		let scope: vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder | undefined;
+		let scope:
+			| vscode.TaskScope.Global
+			| vscode.TaskScope.Workspace
+			| vscode.WorkspaceFolder
+			| undefined;
 		if (value.source) {
 			if (value.source.scope !== undefined) {
 				if (typeof value.source.scope === 'number') {
@@ -318,7 +387,14 @@ export namespace TaskDTO {
 		if (!definition || !scope) {
 			return undefined;
 		}
-		const result = new types.Task(definition, scope, value.name!, value.source.label, execution, value.problemMatchers);
+		const result = new types.Task(
+			definition,
+			scope,
+			value.name!,
+			value.source.label,
+			execution,
+			value.problemMatchers
+		);
 		if (value.isBackground !== undefined) {
 			result.isBackground = value.isBackground;
 		}
@@ -358,10 +434,13 @@ namespace TaskFilterDTO {
 }
 
 class TaskExecutionImpl implements vscode.TaskExecution {
-
 	readonly #tasks: ExtHostTaskBase;
 
-	constructor(tasks: ExtHostTaskBase, readonly _id: string, private readonly _task: vscode.Task) {
+	constructor(
+		tasks: ExtHostTaskBase,
+		readonly _id: string,
+		private readonly _task: vscode.Task
+	) {
 		this.#tasks = tasks;
 	}
 
@@ -373,11 +452,9 @@ class TaskExecutionImpl implements vscode.TaskExecution {
 		this.#tasks.terminateTask(this);
 	}
 
-	public fireDidStartProcess(value: tasks.ITaskProcessStartedDTO): void {
-	}
+	public fireDidStartProcess(value: tasks.ITaskProcessStartedDTO): void {}
 
-	public fireDidEndProcess(value: tasks.ITaskProcessEndedDTO): void {
-	}
+	public fireDidEndProcess(value: tasks.ITaskProcessEndedDTO): void {}
 }
 
 export interface HandlerData {
@@ -404,13 +481,19 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 	private _notProvidedCustomExecutions: Set<string>; // Used for custom executions tasks that are created and run through executeTask.
 	protected _activeCustomExecutions2: Map<string, types.CustomExecution>;
 	private _lastStartedTask: string | undefined;
-	protected readonly _onDidExecuteTask: Emitter<vscode.TaskStartEvent> = new Emitter<vscode.TaskStartEvent>();
-	protected readonly _onDidTerminateTask: Emitter<vscode.TaskEndEvent> = new Emitter<vscode.TaskEndEvent>();
+	protected readonly _onDidExecuteTask: Emitter<vscode.TaskStartEvent> =
+		new Emitter<vscode.TaskStartEvent>();
+	protected readonly _onDidTerminateTask: Emitter<vscode.TaskEndEvent> =
+		new Emitter<vscode.TaskEndEvent>();
 
-	protected readonly _onDidTaskProcessStarted: Emitter<vscode.TaskProcessStartEvent> = new Emitter<vscode.TaskProcessStartEvent>();
-	protected readonly _onDidTaskProcessEnded: Emitter<vscode.TaskProcessEndEvent> = new Emitter<vscode.TaskProcessEndEvent>();
-	protected readonly _onDidStartTaskProblemMatchers: Emitter<vscode.TaskProblemMatcherStartedEvent> = new Emitter<vscode.TaskProblemMatcherStartedEvent>();
-	protected readonly _onDidEndTaskProblemMatchers: Emitter<vscode.TaskProblemMatcherEndedEvent> = new Emitter<vscode.TaskProblemMatcherEndedEvent>();
+	protected readonly _onDidTaskProcessStarted: Emitter<vscode.TaskProcessStartEvent> =
+		new Emitter<vscode.TaskProcessStartEvent>();
+	protected readonly _onDidTaskProcessEnded: Emitter<vscode.TaskProcessEndEvent> =
+		new Emitter<vscode.TaskProcessEndEvent>();
+	protected readonly _onDidStartTaskProblemMatchers: Emitter<vscode.TaskProblemMatcherStartedEvent> =
+		new Emitter<vscode.TaskProblemMatcherStartedEvent>();
+	protected readonly _onDidEndTaskProblemMatchers: Emitter<vscode.TaskProblemMatcherEndedEvent> =
+		new Emitter<vscode.TaskProblemMatcherEndedEvent>();
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
@@ -439,9 +522,13 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		this._proxy.$registerSupportedExecutions(true);
 	}
 
-	public registerTaskProvider(extension: IExtensionDescription, type: string, provider: vscode.TaskProvider): vscode.Disposable {
+	public registerTaskProvider(
+		extension: IExtensionDescription,
+		type: string,
+		provider: vscode.TaskProvider
+	): vscode.Disposable {
 		if (!provider) {
-			return new types.Disposable(() => { });
+			return new types.Disposable(() => {});
 		}
 		const handle = this.nextHandle();
 		this._handlers.set(handle, { type, provider, extension });
@@ -457,10 +544,14 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 	}
 
 	public fetchTasks(filter?: vscode.TaskFilter): Promise<vscode.Task[]> {
-		return this._proxy.$fetchTasks(TaskFilterDTO.from(filter)).then(async (values) => {
+		return this._proxy.$fetchTasks(TaskFilterDTO.from(filter)).then(async values => {
 			const result: vscode.Task[] = [];
 			for (const value of values) {
-				const task = await TaskDTO.to(value, this._workspaceProvider, this._providedCustomExecutions2);
+				const task = await TaskDTO.to(
+					value,
+					this._workspaceProvider,
+					this._providedCustomExecutions2
+				);
 				if (task) {
 					result.push(task);
 				}
@@ -469,7 +560,10 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		});
 	}
 
-	public abstract executeTask(extension: IExtensionDescription, task: vscode.Task): Promise<vscode.TaskExecution>;
+	public abstract executeTask(
+		extension: IExtensionDescription,
+		task: vscode.Task
+	): Promise<vscode.TaskExecution>;
 
 	public get taskExecutions(): vscode.TaskExecution[] {
 		const result: vscode.TaskExecution[] = [];
@@ -488,17 +582,26 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		return this._onDidExecuteTask.event;
 	}
 
-	public async $onDidStartTask(execution: tasks.ITaskExecutionDTO, terminalId: number, resolvedDefinition: tasks.ITaskDefinitionDTO): Promise<void> {
-		const customExecution: types.CustomExecution | undefined = this._providedCustomExecutions2.get(execution.id);
+	public async $onDidStartTask(
+		execution: tasks.ITaskExecutionDTO,
+		terminalId: number,
+		resolvedDefinition: tasks.ITaskDefinitionDTO
+	): Promise<void> {
+		const customExecution: types.CustomExecution | undefined = this._providedCustomExecutions2.get(
+			execution.id
+		);
 		if (customExecution) {
 			// Clone the custom execution to keep the original untouched. This is important for multiple runs of the same task.
 			this._activeCustomExecutions2.set(execution.id, customExecution);
-			this._terminalService.attachPtyToTerminal(terminalId, await customExecution.callback(resolvedDefinition));
+			this._terminalService.attachPtyToTerminal(
+				terminalId,
+				await customExecution.callback(resolvedDefinition)
+			);
 		}
 		this._lastStartedTask = execution.id;
 
 		this._onDidExecuteTask.fire({
-			execution: await this.getTaskExecution(execution)
+			execution: await this.getTaskExecution(execution),
 		});
 	}
 
@@ -517,7 +620,7 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		this._taskExecutions.delete(execution.id);
 		this.customExecutionComplete(execution);
 		this._onDidTerminateTask.fire({
-			execution: _execution
+			execution: _execution,
 		});
 	}
 
@@ -529,7 +632,7 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		const execution = await this.getTaskExecution(value.id);
 		this._onDidTaskProcessStarted.fire({
 			execution: execution,
-			processId: value.processId
+			processId: value.processId,
 		});
 	}
 
@@ -541,7 +644,7 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		const execution = await this.getTaskExecution(value.id);
 		this._onDidTaskProcessEnded.fire({
 			execution: execution,
-			exitCode: value.exitCode
+			exitCode: value.exitCode,
 		});
 	}
 
@@ -577,9 +680,17 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		this._onDidEndTaskProblemMatchers.fire({ execution, hasErrors: value.hasErrors });
 	}
 
-	protected abstract provideTasksInternal(validTypes: { [key: string]: boolean }, taskIdPromises: Promise<void>[], handler: HandlerData, value: vscode.Task[] | null | undefined): { tasks: tasks.ITaskDTO[]; extension: IExtensionDescription };
+	protected abstract provideTasksInternal(
+		validTypes: { [key: string]: boolean },
+		taskIdPromises: Promise<void>[],
+		handler: HandlerData,
+		value: vscode.Task[] | null | undefined
+	): { tasks: tasks.ITaskDTO[]; extension: IExtensionDescription };
 
-	public $provideTasks(handle: number, validTypes: { [key: string]: boolean }): Promise<tasks.ITaskSetDTO> {
+	public $provideTasks(
+		handle: number,
+		validTypes: { [key: string]: boolean }
+	): Promise<tasks.ITaskSetDTO> {
 		const handler = this._handlers.get(handle);
 		if (!handler) {
 			return Promise.reject(new Error('no handler found'));
@@ -594,12 +705,14 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		// thread, which is too late for us because we need to save an map
 		// from an ID to the custom execution function. (Kind of a cart before the horse problem).
 		const taskIdPromises: Promise<void>[] = [];
-		const fetchPromise = asPromise(() => handler.provider.provideTasks(CancellationToken.None)).then(value => {
+		const fetchPromise = asPromise(() =>
+			handler.provider.provideTasks(CancellationToken.None)
+		).then(value => {
 			return this.provideTasksInternal(validTypes, taskIdPromises, handler, value);
 		});
 
-		return new Promise((resolve) => {
-			fetchPromise.then((result) => {
+		return new Promise(resolve => {
+			fetchPromise.then(result => {
 				Promise.all(taskIdPromises).then(() => {
 					resolve(result);
 				});
@@ -607,19 +720,30 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		});
 	}
 
-	protected abstract resolveTaskInternal(resolvedTaskDTO: tasks.ITaskDTO): Promise<tasks.ITaskDTO | undefined>;
+	protected abstract resolveTaskInternal(
+		resolvedTaskDTO: tasks.ITaskDTO
+	): Promise<tasks.ITaskDTO | undefined>;
 
-	public async $resolveTask(handle: number, taskDTO: tasks.ITaskDTO): Promise<tasks.ITaskDTO | undefined> {
+	public async $resolveTask(
+		handle: number,
+		taskDTO: tasks.ITaskDTO
+	): Promise<tasks.ITaskDTO | undefined> {
 		const handler = this._handlers.get(handle);
 		if (!handler) {
 			return Promise.reject(new Error('no handler found'));
 		}
 
 		if (taskDTO.definition.type !== handler.type) {
-			throw new Error(`Unexpected: Task of type [${taskDTO.definition.type}] cannot be resolved by provider of type [${handler.type}].`);
+			throw new Error(
+				`Unexpected: Task of type [${taskDTO.definition.type}] cannot be resolved by provider of type [${handler.type}].`
+			);
 		}
 
-		const task = await TaskDTO.to(taskDTO, this._workspaceProvider, this._providedCustomExecutions2);
+		const task = await TaskDTO.to(
+			taskDTO,
+			this._workspaceProvider,
+			this._providedCustomExecutions2
+		);
 		if (!task) {
 			throw new Error('Unexpected: Task cannot be resolved.');
 		}
@@ -631,13 +755,18 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 
 		this.checkDeprecation(resolvedTask, handler);
 
-		const resolvedTaskDTO: tasks.ITaskDTO | undefined = TaskDTO.from(resolvedTask, handler.extension);
+		const resolvedTaskDTO: tasks.ITaskDTO | undefined = TaskDTO.from(
+			resolvedTask,
+			handler.extension
+		);
 		if (!resolvedTaskDTO) {
 			throw new Error('Unexpected: Task cannot be resolved.');
 		}
 
 		if (resolvedTask.definition !== task.definition) {
-			throw new Error('Unexpected: The resolved task definition must be the same object as the original task definition. The task definition cannot be changed.');
+			throw new Error(
+				'Unexpected: The resolved task definition must be the same object as the original task definition. The task definition cannot be changed.'
+			);
 		}
 
 		if (CustomExecutionDTO.is(resolvedTaskDTO.execution)) {
@@ -647,13 +776,20 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		return await this.resolveTaskInternal(resolvedTaskDTO);
 	}
 
-	public abstract $resolveVariables(uriComponents: UriComponents, toResolve: { process?: { name: string; cwd?: string; path?: string }; variables: string[] }): Promise<{ process?: string; variables: { [key: string]: string } }>;
+	public abstract $resolveVariables(
+		uriComponents: UriComponents,
+		toResolve: { process?: { name: string; cwd?: string; path?: string }; variables: string[] }
+	): Promise<{ process?: string; variables: { [key: string]: string } }>;
 
 	private nextHandle(): number {
 		return this._handleCounter++;
 	}
 
-	protected async addCustomExecution(taskDTO: tasks.ITaskDTO, task: vscode.Task, isProvided: boolean): Promise<void> {
+	protected async addCustomExecution(
+		taskDTO: tasks.ITaskDTO,
+		task: vscode.Task,
+		isProvided: boolean
+	): Promise<void> {
 		const taskId = await this._proxy.$createTaskId(taskDTO);
 		if (!isProvided && !this._providedCustomExecutions2.has(taskId)) {
 			this._notProvidedCustomExecutions.add(taskId);
@@ -663,7 +799,10 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		this._providedCustomExecutions2.set(taskId, <types.CustomExecution>task.execution);
 	}
 
-	protected async getTaskExecution(execution: tasks.ITaskExecutionDTO | string, task?: vscode.Task): Promise<TaskExecutionImpl> {
+	protected async getTaskExecution(
+		execution: tasks.ITaskExecutionDTO | string,
+		task?: vscode.Task
+	): Promise<TaskExecutionImpl> {
 		if (typeof execution === 'string') {
 			const taskExecution = this._taskExecutionPromises.get(execution);
 			if (!taskExecution) {
@@ -672,14 +811,20 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 			return taskExecution;
 		}
 
-		const result: Promise<TaskExecutionImpl> | undefined = this._taskExecutionPromises.get(execution.id);
+		const result: Promise<TaskExecutionImpl> | undefined = this._taskExecutionPromises.get(
+			execution.id
+		);
 		if (result) {
 			return result;
 		}
 
 		let executionPromise: Promise<TaskExecutionImpl>;
 		if (!task) {
-			executionPromise = TaskDTO.to(execution.task, this._workspaceProvider, this._providedCustomExecutions2).then(t => {
+			executionPromise = TaskDTO.to(
+				execution.task,
+				this._workspaceProvider,
+				this._providedCustomExecutions2
+			).then(t => {
 				if (!t) {
 					throw new ErrorNoTelemetry('Unexpected: Task does not exist.');
 				}
@@ -696,14 +841,19 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 	}
 
 	protected checkDeprecation(task: vscode.Task, handler: HandlerData) {
-		const tTask = (task as types.Task);
+		const tTask = task as types.Task;
 		if (tTask._deprecated) {
-			this._deprecationService.report('Task.constructor', handler.extension, 'Use the Task constructor that takes a `scope` instead.');
+			this._deprecationService.report(
+				'Task.constructor',
+				handler.extension,
+				'Use the Task constructor that takes a `scope` instead.'
+			);
 		}
 	}
 
 	private customExecutionComplete(execution: tasks.ITaskExecutionDTO): void {
-		const extensionCallback2: vscode.CustomExecution | undefined = this._activeCustomExecutions2.get(execution.id);
+		const extensionCallback2: vscode.CustomExecution | undefined =
+			this._activeCustomExecutions2.get(execution.id);
 		if (extensionCallback2) {
 			this._activeCustomExecutions2.delete(execution.id);
 		}
@@ -712,14 +862,20 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 		// is executing a task through "executeTask" over and over again
 		// with different properties in the task definition, then the map of executions
 		// could grow indefinitely, something we don't want.
-		if (this._notProvidedCustomExecutions.has(execution.id) && (this._lastStartedTask !== execution.id)) {
+		if (
+			this._notProvidedCustomExecutions.has(execution.id) &&
+			this._lastStartedTask !== execution.id
+		) {
 			this._providedCustomExecutions2.delete(execution.id);
 			this._notProvidedCustomExecutions.delete(execution.id);
 		}
 		const iterator = this._notProvidedCustomExecutions.values();
 		let iteratorResult = iterator.next();
 		while (!iteratorResult.done) {
-			if (!this._activeCustomExecutions2.has(iteratorResult.value) && (this._lastStartedTask !== iteratorResult.value)) {
+			if (
+				!this._activeCustomExecutions2.has(iteratorResult.value) &&
+				this._lastStartedTask !== iteratorResult.value
+			) {
 				this._providedCustomExecutions2.delete(iteratorResult.value);
 				this._notProvidedCustomExecutions.delete(iteratorResult.value);
 			}
@@ -729,7 +885,11 @@ export abstract class ExtHostTaskBase implements ExtHostTaskShape, IExtHostTask 
 
 	public abstract $jsonTasksSupported(): Promise<boolean>;
 
-	public abstract $findExecutable(command: string, cwd?: string | undefined, paths?: string[] | undefined): Promise<string | undefined>;
+	public abstract $findExecutable(
+		command: string,
+		cwd?: string | undefined,
+		paths?: string[] | undefined
+	): Promise<string | undefined>;
 }
 
 export class WorkerExtHostTask extends ExtHostTaskBase {
@@ -743,15 +903,27 @@ export class WorkerExtHostTask extends ExtHostTaskBase {
 		@ILogService logService: ILogService,
 		@IExtHostApiDeprecationService deprecationService: IExtHostApiDeprecationService
 	) {
-		super(extHostRpc, initData, workspaceService, editorService, configurationService, extHostTerminalService, logService, deprecationService);
+		super(
+			extHostRpc,
+			initData,
+			workspaceService,
+			editorService,
+			configurationService,
+			extHostTerminalService,
+			logService,
+			deprecationService
+		);
 		this.registerTaskSystem(Schemas.vscodeRemote, {
 			scheme: Schemas.vscodeRemote,
 			authority: '',
-			platform: Platform.PlatformToString(Platform.Platform.Web)
+			platform: Platform.PlatformToString(Platform.Platform.Web),
 		});
 	}
 
-	public async executeTask(extension: IExtensionDescription, task: vscode.Task): Promise<vscode.TaskExecution> {
+	public async executeTask(
+		extension: IExtensionDescription,
+		task: vscode.Task
+	): Promise<vscode.TaskExecution> {
 		if (!task.execution) {
 			throw new Error('Tasks to execute must include an execution');
 		}
@@ -772,18 +944,27 @@ export class WorkerExtHostTask extends ExtHostTaskBase {
 
 		// Always get the task execution first to prevent timing issues when retrieving it later
 		const execution = await this.getTaskExecution(await this._proxy.$getTaskExecution(dto), task);
-		this._proxy.$executeTask(dto).catch(error => { throw new Error(error); });
+		this._proxy.$executeTask(dto).catch(error => {
+			throw new Error(error);
+		});
 		return execution;
 	}
 
-	protected provideTasksInternal(validTypes: { [key: string]: boolean }, taskIdPromises: Promise<void>[], handler: HandlerData, value: vscode.Task[] | null | undefined): { tasks: tasks.ITaskDTO[]; extension: IExtensionDescription } {
+	protected provideTasksInternal(
+		validTypes: { [key: string]: boolean },
+		taskIdPromises: Promise<void>[],
+		handler: HandlerData,
+		value: vscode.Task[] | null | undefined
+	): { tasks: tasks.ITaskDTO[]; extension: IExtensionDescription } {
 		const taskDTOs: tasks.ITaskDTO[] = [];
 		if (value) {
 			for (const task of value) {
 				this.checkDeprecation(task, handler);
 				if (!task.definition || !validTypes[task.definition.type]) {
 					const source = task.source ? task.source : 'No task source';
-					this._logService.warn(`The task [${source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`);
+					this._logService.warn(
+						`The task [${source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`
+					);
 				}
 
 				const taskDTO: tasks.ITaskDTO | undefined = TaskDTO.from(task, handler.extension);
@@ -800,11 +981,13 @@ export class WorkerExtHostTask extends ExtHostTaskBase {
 		}
 		return {
 			tasks: taskDTOs,
-			extension: handler.extension
+			extension: handler.extension,
 		};
 	}
 
-	protected async resolveTaskInternal(resolvedTaskDTO: tasks.ITaskDTO): Promise<tasks.ITaskDTO | undefined> {
+	protected async resolveTaskInternal(
+		resolvedTaskDTO: tasks.ITaskDTO
+	): Promise<tasks.ITaskDTO | undefined> {
 		if (CustomExecutionDTO.is(resolvedTaskDTO.execution)) {
 			return resolvedTaskDTO;
 		} else {
@@ -813,10 +996,13 @@ export class WorkerExtHostTask extends ExtHostTaskBase {
 		return undefined;
 	}
 
-	public async $resolveVariables(uriComponents: UriComponents, toResolve: { process?: { name: string; cwd?: string; path?: string }; variables: string[] }): Promise<{ process?: string; variables: { [key: string]: string } }> {
+	public async $resolveVariables(
+		uriComponents: UriComponents,
+		toResolve: { process?: { name: string; cwd?: string; path?: string }; variables: string[] }
+	): Promise<{ process?: string; variables: { [key: string]: string } }> {
 		const result = {
-			process: <unknown>undefined as string,
-			variables: Object.create(null)
+			process: (<unknown>undefined) as string,
+			variables: Object.create(null),
 		};
 		return result;
 	}
@@ -825,7 +1011,11 @@ export class WorkerExtHostTask extends ExtHostTaskBase {
 		return false;
 	}
 
-	public async $findExecutable(command: string, cwd?: string | undefined, paths?: string[] | undefined): Promise<string | undefined> {
+	public async $findExecutable(
+		command: string,
+		cwd?: string | undefined,
+		paths?: string[] | undefined
+	): Promise<string | undefined> {
 		return undefined;
 	}
 }

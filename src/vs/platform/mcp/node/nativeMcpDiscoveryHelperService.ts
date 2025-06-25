@@ -6,12 +6,15 @@
 import { homedir } from 'os';
 import { platform } from '../../../base/common/platform.js';
 import { URI } from '../../../base/common/uri.js';
-import { INativeMcpDiscoveryData, INativeMcpDiscoveryHelperService } from '../common/nativeMcpDiscoveryHelper.js';
+import {
+	INativeMcpDiscoveryData,
+	INativeMcpDiscoveryHelperService,
+} from '../common/nativeMcpDiscoveryHelper.js';
 
 export class NativeMcpDiscoveryHelperService implements INativeMcpDiscoveryHelperService {
 	declare readonly _serviceBrand: undefined;
 
-	constructor() { }
+	constructor() {}
 
 	load(): Promise<INativeMcpDiscoveryData> {
 		return Promise.resolve({
@@ -30,4 +33,3 @@ export class NativeMcpDiscoveryHelperService implements INativeMcpDiscoveryHelpe
 		return URI.file(envVar);
 	}
 }
-

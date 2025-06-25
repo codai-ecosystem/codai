@@ -58,7 +58,7 @@ async function isYarnPreferred(pkgPath: string): Promise<PreferredProperties> {
 		if (typeof findWorkspaceRoot(pkgPath) === 'string') {
 			return { isPreferred: true, hasLockfile: false };
 		}
-	} catch (err) { }
+	} catch (err) {}
 
 	return { isPreferred: false, hasLockfile: false };
 }
@@ -68,7 +68,9 @@ async function isNPMPreferred(pkgPath: string): Promise<PreferredProperties> {
 	return { isPreferred: lockfileExists, hasLockfile: lockfileExists };
 }
 
-export async function findPreferredPM(pkgPath: string): Promise<{ name: string; multipleLockFilesDetected: boolean }> {
+export async function findPreferredPM(
+	pkgPath: string
+): Promise<{ name: string; multipleLockFilesDetected: boolean }> {
 	const detectedPackageManagerNames: string[] = [];
 	const detectedPackageManagerProperties: PreferredProperties[] = [];
 
@@ -104,10 +106,12 @@ export async function findPreferredPM(pkgPath: string): Promise<{ name: string; 
 	}
 
 	let lockfilesCount = 0;
-	detectedPackageManagerProperties.forEach(detected => lockfilesCount += detected.hasLockfile ? 1 : 0);
+	detectedPackageManagerProperties.forEach(
+		detected => (lockfilesCount += detected.hasLockfile ? 1 : 0)
+	);
 
 	return {
 		name: detectedPackageManagerNames[0] || 'npm',
-		multipleLockFilesDetected: lockfilesCount > 1
+		multipleLockFilesDetected: lockfilesCount > 1,
 	};
 }

@@ -10,10 +10,9 @@ import { IChecksumService } from '../common/checksumService.js';
 import { IFileService } from '../../files/common/files.js';
 
 export class ChecksumService implements IChecksumService {
-
 	declare readonly _serviceBrand: undefined;
 
-	constructor(@IFileService private readonly fileService: IFileService) { }
+	constructor(@IFileService private readonly fileService: IFileService) {}
 
 	async checksum(resource: URI): Promise<string> {
 		const stream = (await this.fileService.readFileStream(resource)).value;
@@ -23,7 +22,7 @@ export class ChecksumService implements IChecksumService {
 			listenStream(stream, {
 				onData: data => hash.update(data.buffer),
 				onError: error => reject(error),
-				onEnd: () => resolve(hash.digest('base64').replace(/=+$/, ''))
+				onEnd: () => resolve(hash.digest('base64').replace(/=+$/, '')),
 			});
 		});
 	}

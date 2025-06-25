@@ -16,17 +16,30 @@ import { ScrollbarVisibility } from '../../../../base/common/scrollable.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 import { Dimension, size, clearNode, $, EventHelper } from '../../../../base/browser/dom.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { DisposableStore, IDisposable, MutableDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	DisposableStore,
+	IDisposable,
+	MutableDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 import { assertAllDefined } from '../../../../base/common/types.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
-import { IWorkspaceContextService, isSingleFolderWorkspaceIdentifier, toWorkspaceIdentifier } from '../../../../platform/workspace/common/workspace.js';
+import {
+	IWorkspaceContextService,
+	isSingleFolderWorkspaceIdentifier,
+	toWorkspaceIdentifier,
+} from '../../../../platform/workspace/common/workspace.js';
 import { EditorOpenSource, IEditorOptions } from '../../../../platform/editor/common/editor.js';
 import { computeEditorAriaLabel, EditorPaneDescriptor } from '../../editor.js';
 import { ButtonBar } from '../../../../base/browser/ui/button/button.js';
 import { defaultButtonStyles } from '../../../../platform/theme/browser/defaultStyles.js';
 import { SimpleIconLabel } from '../../../../base/browser/ui/iconLabel/simpleIconLabel.js';
-import { FileChangeType, FileOperationError, FileOperationResult, IFileService } from '../../../../platform/files/common/files.js';
+import {
+	FileChangeType,
+	FileOperationError,
+	FileOperationResult,
+	IFileService,
+} from '../../../../platform/files/common/files.js';
 import { toErrorMessage } from '../../../../base/common/errorMessage.js';
 import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
 import { IEditorGroup } from '../../../services/editor/common/editorGroupsService.js';
@@ -47,7 +60,6 @@ export interface IErrorEditorPlaceholderOptions extends IEditorOptions {
 }
 
 export abstract class EditorPlaceholder extends EditorPane {
-
 	private static readonly PLACEHOLDER_LABEL_MAX_LENGTH = 1024;
 
 	private container: HTMLElement | undefined;
@@ -65,19 +77,28 @@ export abstract class EditorPlaceholder extends EditorPane {
 	}
 
 	protected createEditor(parent: HTMLElement): void {
-
 		// Container
 		this.container = $('.monaco-editor-pane-placeholder', {
-			tabIndex: 0 // enable focus support from the editor part (do not remove)
+			tabIndex: 0, // enable focus support from the editor part (do not remove)
 		});
 		this.container.style.outline = 'none';
 
 		// Custom Scrollbars
-		this.scrollbar = this._register(new DomScrollableElement(this.container, { horizontal: ScrollbarVisibility.Auto, vertical: ScrollbarVisibility.Auto }));
+		this.scrollbar = this._register(
+			new DomScrollableElement(this.container, {
+				horizontal: ScrollbarVisibility.Auto,
+				vertical: ScrollbarVisibility.Auto,
+			})
+		);
 		parent.appendChild(this.scrollbar.getDomNode());
 	}
 
-	override async setInput(input: EditorInput, options: IEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
+	override async setInput(
+		input: EditorInput,
+		options: IEditorOptions | undefined,
+		context: IEditorOpenContext,
+		token: CancellationToken
+	): Promise<void> {
 		await super.setInput(input, options, context, token);
 
 		// Check for cancellation
@@ -89,7 +110,10 @@ export abstract class EditorPlaceholder extends EditorPane {
 		this.inputDisposable.value = await this.renderInput(input, options);
 	}
 
-	private async renderInput(input: EditorInput, options: IEditorOptions | undefined): Promise<IDisposable> {
+	private async renderInput(
+		input: EditorInput,
+		options: IEditorOptions | undefined
+	): Promise<IDisposable> {
 		const [container, scrollbar] = assertAllDefined(this.container, this.scrollbar);
 
 		// Reset any previous contents
@@ -112,7 +136,10 @@ export abstract class EditorPlaceholder extends EditorPane {
 		labelContainer.appendChild(labelWidget);
 
 		// ARIA label
-		container.setAttribute('aria-label', `${computeEditorAriaLabel(input, undefined, this.group, undefined)}, ${truncatedLabel}`);
+		container.setAttribute(
+			'aria-label',
+			`${computeEditorAriaLabel(input, undefined, this.group, undefined)}, ${truncatedLabel}`
+		);
 
 		// Buttons
 		if (actions.length) {
@@ -120,19 +147,23 @@ export abstract class EditorPlaceholder extends EditorPane {
 			const buttons = disposables.add(new ButtonBar(actionsContainer));
 
 			for (let i = 0; i < actions.length; i++) {
-				const button = disposables.add(buttons.addButton({
-					...defaultButtonStyles,
-					secondary: i !== 0
-				}));
+				const button = disposables.add(
+					buttons.addButton({
+						...defaultButtonStyles,
+						secondary: i !== 0,
+					})
+				);
 
 				button.label = actions[i].label;
-				disposables.add(button.onDidClick(e => {
-					if (e) {
-						EventHelper.stop(e, true);
-					}
+				disposables.add(
+					button.onDidClick(e => {
+						if (e) {
+							EventHelper.stop(e, true);
+						}
 
-					actions[i].run();
-				}));
+						actions[i].run();
+					})
+				);
 			}
 		}
 
@@ -142,7 +173,11 @@ export abstract class EditorPlaceholder extends EditorPane {
 		return disposables;
 	}
 
-	protected abstract getContents(input: EditorInput, options: IEditorOptions | undefined, disposables: DisposableStore): Promise<IEditorPlaceholderContents>;
+	protected abstract getContents(
+		input: EditorInput,
+		options: IEditorOptions | undefined,
+		disposables: DisposableStore
+	): Promise<IEditorPlaceholderContents>;
 
 	override clearInput(): void {
 		if (this.container) {
@@ -181,11 +216,14 @@ export abstract class EditorPlaceholder extends EditorPane {
 }
 
 export class WorkspaceTrustRequiredPlaceholderEditor extends EditorPlaceholder {
-
 	static readonly ID = 'workbench.editors.workspaceTrustRequiredEditor';
-	private static readonly LABEL = localize('trustRequiredEditor', "Workspace Trust Required");
+	private static readonly LABEL = localize('trustRequiredEditor', 'Workspace Trust Required');
 
-	static readonly DESCRIPTOR = EditorPaneDescriptor.create(WorkspaceTrustRequiredPlaceholderEditor, this.ID, this.LABEL);
+	static readonly DESCRIPTOR = EditorPaneDescriptor.create(
+		WorkspaceTrustRequiredPlaceholderEditor,
+		this.ID,
+		this.LABEL
+	);
 
 	constructor(
 		group: IEditorGroup,
@@ -195,7 +233,13 @@ export class WorkspaceTrustRequiredPlaceholderEditor extends EditorPlaceholder {
 		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
 		@IStorageService storageService: IStorageService
 	) {
-		super(WorkspaceTrustRequiredPlaceholderEditor.ID, group, telemetryService, themeService, storageService);
+		super(
+			WorkspaceTrustRequiredPlaceholderEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService
+		);
 	}
 
 	override getTitle(): string {
@@ -205,25 +249,36 @@ export class WorkspaceTrustRequiredPlaceholderEditor extends EditorPlaceholder {
 	protected async getContents(): Promise<IEditorPlaceholderContents> {
 		return {
 			icon: '$(workspace-untrusted)',
-			label: isSingleFolderWorkspaceIdentifier(toWorkspaceIdentifier(this.workspaceService.getWorkspace())) ?
-				localize('requiresFolderTrustText', "The file is not displayed in the editor because trust has not been granted to the folder.") :
-				localize('requiresWorkspaceTrustText', "The file is not displayed in the editor because trust has not been granted to the workspace."),
+			label: isSingleFolderWorkspaceIdentifier(
+				toWorkspaceIdentifier(this.workspaceService.getWorkspace())
+			)
+				? localize(
+						'requiresFolderTrustText',
+						'The file is not displayed in the editor because trust has not been granted to the folder.'
+					)
+				: localize(
+						'requiresWorkspaceTrustText',
+						'The file is not displayed in the editor because trust has not been granted to the workspace.'
+					),
 			actions: [
 				{
-					label: localize('manageTrust', "Manage Workspace Trust"),
-					run: () => this.commandService.executeCommand('workbench.trust.manage')
-				}
-			]
+					label: localize('manageTrust', 'Manage Workspace Trust'),
+					run: () => this.commandService.executeCommand('workbench.trust.manage'),
+				},
+			],
 		};
 	}
 }
 
 export class ErrorPlaceholderEditor extends EditorPlaceholder {
-
 	private static readonly ID = 'workbench.editors.errorEditor';
-	private static readonly LABEL = localize('errorEditor', "Error Editor");
+	private static readonly LABEL = localize('errorEditor', 'Error Editor');
 
-	static readonly DESCRIPTOR = EditorPaneDescriptor.create(ErrorPlaceholderEditor, this.ID, this.LABEL);
+	static readonly DESCRIPTOR = EditorPaneDescriptor.create(
+		ErrorPlaceholderEditor,
+		this.ID,
+		this.LABEL
+	);
 
 	constructor(
 		group: IEditorGroup,
@@ -236,21 +291,36 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 		super(ErrorPlaceholderEditor.ID, group, telemetryService, themeService, storageService);
 	}
 
-	protected async getContents(input: EditorInput, options: IErrorEditorPlaceholderOptions, disposables: DisposableStore): Promise<IEditorPlaceholderContents> {
+	protected async getContents(
+		input: EditorInput,
+		options: IErrorEditorPlaceholderOptions,
+		disposables: DisposableStore
+	): Promise<IEditorPlaceholderContents> {
 		const resource = input.resource;
 		const error = options.error;
-		const isFileNotFound = (<FileOperationError | undefined>error)?.fileOperationResult === FileOperationResult.FILE_NOT_FOUND;
+		const isFileNotFound =
+			(<FileOperationError | undefined>error)?.fileOperationResult ===
+			FileOperationResult.FILE_NOT_FOUND;
 
 		// Error Label
 		let label: string;
 		if (isFileNotFound) {
-			label = localize('unavailableResourceErrorEditorText', "The editor could not be opened because the file was not found.");
+			label = localize(
+				'unavailableResourceErrorEditorText',
+				'The editor could not be opened because the file was not found.'
+			);
 		} else if (isEditorOpenError(error) && error.forceMessage) {
 			label = error.message;
 		} else if (error) {
-			label = localize('unknownErrorEditorTextWithError', "The editor could not be opened due to an unexpected error. Please consult the log for more details.");
+			label = localize(
+				'unknownErrorEditorTextWithError',
+				'The editor could not be opened due to an unexpected error. Please consult the log for more details.'
+			);
 		} else {
-			label = localize('unknownErrorEditorTextWithoutError', "The editor could not be opened due to an unexpected error.");
+			label = localize(
+				'unknownErrorEditorTextWithoutError',
+				'The editor could not be opened due to an unexpected error.'
+			);
 		}
 
 		// Error Icon
@@ -274,25 +344,31 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 						if (result instanceof Promise) {
 							result.catch(error => this.dialogService.error(toErrorMessage(error)));
 						}
-					}
+					},
 				};
 			});
 		} else {
 			actions = [
 				{
-					label: localize('retry', "Try Again"),
-					run: () => this.group.openEditor(input, { ...options, source: EditorOpenSource.USER /* explicit user gesture */ })
-				}
+					label: localize('retry', 'Try Again'),
+					run: () =>
+						this.group.openEditor(input, {
+							...options,
+							source: EditorOpenSource.USER /* explicit user gesture */,
+						}),
+				},
 			];
 		}
 
 		// Auto-reload when file is added
 		if (isFileNotFound && resource && this.fileService.hasProvider(resource)) {
-			disposables.add(this.fileService.onDidFilesChange(e => {
-				if (e.contains(resource, FileChangeType.ADDED, FileChangeType.UPDATED)) {
-					this.group.openEditor(input, options);
-				}
-			}));
+			disposables.add(
+				this.fileService.onDidFilesChange(e => {
+					if (e.contains(resource, FileChangeType.ADDED, FileChangeType.UPDATED)) {
+						this.group.openEditor(input, options);
+					}
+				})
+			);
 		}
 
 		return { icon, label, actions: actions ?? [] };

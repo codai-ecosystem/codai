@@ -56,7 +56,9 @@ export interface ITextureAtlasAllocator {
 	 * Allocates a rasterized glyph to the canvas, drawing it and returning information on its
 	 * position in the canvas. This will return undefined if the glyph does not fit on the canvas.
 	 */
-	allocate(rasterizedGlyph: Readonly<IRasterizedGlyph>): Readonly<ITextureAtlasPageGlyph> | undefined;
+	allocate(
+		rasterizedGlyph: Readonly<IRasterizedGlyph>
+	): Readonly<ITextureAtlasPageGlyph> | undefined;
 	/**
 	 * Gets a usage preview of the atlas for debugging purposes.
 	 */
@@ -106,9 +108,7 @@ export const enum UsagePreviewColors {
 	Restricted = '#FF000088',
 }
 
-export type GlyphMap<T> = NKeyMap<T, [
-	chars: string,
-	tokenMetadata: number,
-	decorationStyleSetId: number,
-	rasterizerCacheKey: string,
-]>;
+export type GlyphMap<T> = NKeyMap<
+	T,
+	[chars: string, tokenMetadata: number, decorationStyleSetId: number, rasterizerCacheKey: string]
+>;

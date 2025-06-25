@@ -12,11 +12,10 @@ import { CharacterClassifier } from './characterClassifier.js';
 export const enum WordCharacterClass {
 	Regular = 0,
 	Whitespace = 1,
-	WordSeparator = 2
+	WordSeparator = 2,
 }
 
 export class WordCharacterClassifier extends CharacterClassifier<WordCharacterClass> {
-
 	public readonly intlSegmenterLocales: Intl.UnicodeBCP47LocaleIdentifier[];
 	private readonly _segmenter: Lazy<Intl.Segmenter> | null = null;
 	private _cachedLine: string | null = null;
@@ -39,7 +38,10 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 		this.set(CharCode.Tab, WordCharacterClass.Whitespace);
 	}
 
-	public findPrevIntlWordBeforeOrAtOffset(line: string, offset: number): IntlWordSegmentData | null {
+	public findPrevIntlWordBeforeOrAtOffset(
+		line: string,
+		offset: number
+	): IntlWordSegmentData | null {
 		let candidate: IntlWordSegmentData | null = null;
 		for (const segment of this._getIntlSegmenterWordsOnLine(line)) {
 			if (segment.index > offset) {
@@ -50,7 +52,10 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 		return candidate;
 	}
 
-	public findNextIntlWordAtOrAfterOffset(lineContent: string, offset: number): IntlWordSegmentData | null {
+	public findNextIntlWordAtOrAfterOffset(
+		lineContent: string,
+		offset: number
+	): IntlWordSegmentData | null {
 		for (const segment of this._getIntlSegmenterWordsOnLine(lineContent)) {
 			if (segment.index < offset) {
 				continue;
@@ -101,7 +106,10 @@ export interface IntlWordSegmentData extends Intl.SegmentData {
 
 const wordClassifierCache = new LRUCache<string, WordCharacterClassifier>(10);
 
-export function getMapForWordSeparators(wordSeparators: string, intlSegmenterLocales: Intl.UnicodeBCP47LocaleIdentifier[]): WordCharacterClassifier {
+export function getMapForWordSeparators(
+	wordSeparators: string,
+	intlSegmenterLocales: Intl.UnicodeBCP47LocaleIdentifier[]
+): WordCharacterClassifier {
 	const key = `${wordSeparators}/${intlSegmenterLocales.join(',')}`;
 	let result = wordClassifierCache.get(key)!;
 	if (!result) {

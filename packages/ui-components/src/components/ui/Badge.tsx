@@ -11,7 +11,8 @@ const Badge = forwardRef<HTMLDivElement, BadgeProps>(
 			default: 'bg-codai-primary hover:bg-codai-primary/80 text-codai-primary-foreground',
 			secondary: 'bg-codai-secondary hover:bg-codai-secondary/80 text-codai-secondary-foreground',
 			destructive: 'bg-red-500 hover:bg-red-600 text-white',
-			outline: 'text-codai-foreground border border-codai-border hover:bg-codai-accent/10 hover:text-codai-accent',
+			outline:
+				'text-codai-foreground border border-codai-border hover:bg-codai-accent/10 hover:text-codai-accent',
 		};
 
 		return (

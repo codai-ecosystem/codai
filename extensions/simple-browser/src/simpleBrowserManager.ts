@@ -7,12 +7,9 @@ import * as vscode from 'vscode';
 import { ShowOptions, SimpleBrowserView } from './simpleBrowserView';
 
 export class SimpleBrowserManager {
-
 	private _activeView?: SimpleBrowserView;
 
-	constructor(
-		private readonly extensionUri: vscode.Uri,
-	) { }
+	constructor(private readonly extensionUri: vscode.Uri) {}
 
 	dispose() {
 		this._activeView?.dispose();
@@ -45,5 +42,4 @@ export class SimpleBrowserManager {
 			}
 		});
 	}
-
 }

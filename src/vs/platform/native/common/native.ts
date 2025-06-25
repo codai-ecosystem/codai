@@ -6,14 +6,31 @@
 import { VSBuffer } from '../../../base/common/buffer.js';
 import { Event } from '../../../base/common/event.js';
 import { URI } from '../../../base/common/uri.js';
-import { MessageBoxOptions, MessageBoxReturnValue, OpenDevToolsOptions, OpenDialogOptions, OpenDialogReturnValue, SaveDialogOptions, SaveDialogReturnValue } from '../../../base/parts/sandbox/common/electronTypes.js';
+import {
+	MessageBoxOptions,
+	MessageBoxReturnValue,
+	OpenDevToolsOptions,
+	OpenDialogOptions,
+	OpenDialogReturnValue,
+	SaveDialogOptions,
+	SaveDialogReturnValue,
+} from '../../../base/parts/sandbox/common/electronTypes.js';
 import { ISerializableCommandAction } from '../../action/common/action.js';
 import { INativeOpenDialogOptions } from '../../dialogs/common/dialogs.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 import { IV8Profile } from '../../profiling/common/profiling.js';
 import { AuthInfo, Credentials } from '../../request/common/request.js';
 import { IPartsSplash } from '../../theme/common/themeService.js';
-import { IColorScheme, IOpenedAuxiliaryWindow, IOpenedMainWindow, IOpenEmptyWindowOptions, IOpenWindowOptions, IPoint, IRectangle, IWindowOpenable } from '../../window/common/window.js';
+import {
+	IColorScheme,
+	IOpenedAuxiliaryWindow,
+	IOpenedMainWindow,
+	IOpenEmptyWindowOptions,
+	IOpenWindowOptions,
+	IPoint,
+	IRectangle,
+	IWindowOpenable,
+} from '../../window/common/window.js';
 
 export interface ICPUProperties {
 	model: string;
@@ -39,7 +56,6 @@ export interface INativeHostOptions {
 }
 
 export const enum FocusMode {
-
 	/**
 	 * (Default) Transfer focus to the target window
 	 * when the editor is focused.
@@ -61,7 +77,6 @@ export const enum FocusMode {
 }
 
 export interface ICommonNativeHostService {
-
 	readonly _serviceBrand: undefined;
 
 	// Properties
@@ -90,10 +105,16 @@ export interface ICommonNativeHostService {
 
 	readonly onDidChangePassword: Event<{ readonly service: string; readonly account: string }>;
 
-	readonly onDidTriggerWindowSystemContextMenu: Event<{ readonly windowId: number; readonly x: number; readonly y: number }>;
+	readonly onDidTriggerWindowSystemContextMenu: Event<{
+		readonly windowId: number;
+		readonly x: number;
+		readonly y: number;
+	}>;
 
 	// Window
-	getWindows(options: { includeAuxiliaryWindows: true }): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
+	getWindows(options: {
+		includeAuxiliaryWindows: true;
+	}): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
 	getWindows(options: { includeAuxiliaryWindows: false }): Promise<Array<IOpenedMainWindow>>;
 	getWindowCount(): Promise<number>;
 	getActiveWindowId(): Promise<number | undefined>;
@@ -124,7 +145,13 @@ export interface ICommonNativeHostService {
 	 *
 	 * @param options `backgroundColor` and `foregroundColor` are only supported on Windows
 	 */
-	updateWindowControls(options: INativeHostOptions & { height?: number; backgroundColor?: string; foregroundColor?: string }): Promise<void>;
+	updateWindowControls(
+		options: INativeHostOptions & {
+			height?: number;
+			backgroundColor?: string;
+			foregroundColor?: string;
+		}
+	): Promise<void>;
 
 	setMinimumSize(width: number | undefined, height: number | undefined): Promise<void>;
 
@@ -179,7 +206,11 @@ export interface ICommonNativeHostService {
 	writeClipboardText(text: string, type?: 'selection' | 'clipboard'): Promise<void>;
 	readClipboardFindText(): Promise<string>;
 	writeClipboardFindText(text: string): Promise<void>;
-	writeClipboardBuffer(format: string, buffer: VSBuffer, type?: 'selection' | 'clipboard'): Promise<void>;
+	writeClipboardBuffer(
+		format: string,
+		buffer: VSBuffer,
+		type?: 'selection' | 'clipboard'
+	): Promise<void>;
 	readClipboardBuffer(format: string): Promise<VSBuffer>;
 	hasClipboard(format: string, type?: 'selection' | 'clipboard'): Promise<boolean>;
 	readImage(): Promise<Uint8Array>;
@@ -220,10 +251,24 @@ export interface ICommonNativeHostService {
 	lookupKerberosAuthorization(url: string): Promise<string | undefined>;
 	loadCertificates(): Promise<string[]>;
 	isPortFree(port: number): Promise<boolean>;
-	findFreePort(startPort: number, giveUpAfter: number, timeout: number, stride?: number): Promise<number>;
+	findFreePort(
+		startPort: number,
+		giveUpAfter: number,
+		timeout: number,
+		stride?: number
+	): Promise<number>;
 
 	// Registry (Windows only)
-	windowsGetStringRegKey(hive: 'HKEY_CURRENT_USER' | 'HKEY_LOCAL_MACHINE' | 'HKEY_CLASSES_ROOT' | 'HKEY_USERS' | 'HKEY_CURRENT_CONFIG', path: string, name: string): Promise<string | undefined>;
+	windowsGetStringRegKey(
+		hive:
+			| 'HKEY_CURRENT_USER'
+			| 'HKEY_LOCAL_MACHINE'
+			| 'HKEY_CLASSES_ROOT'
+			| 'HKEY_USERS'
+			| 'HKEY_CURRENT_CONFIG',
+		path: string,
+		name: string
+	): Promise<string | undefined>;
 }
 
 export const INativeHostService = createDecorator<INativeHostService>('nativeHostService');
@@ -235,4 +280,4 @@ export const INativeHostService = createDecorator<INativeHostService>('nativeHos
  * @see {@link IHostService} for methods that can be used in native and web
  * hosts.
  */
-export interface INativeHostService extends ICommonNativeHostService { }
+export interface INativeHostService extends ICommonNativeHostService {}

@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { UriParts, IRawURITransformer, URITransformer, IURITransformer } from '../../../base/common/uriIpc.js';
+import {
+	UriParts,
+	IRawURITransformer,
+	URITransformer,
+	IURITransformer,
+} from '../../../base/common/uriIpc.js';
 
 /**
  * ```
@@ -28,7 +33,13 @@ function createRawURITransformer(remoteAuthority: string): IRawURITransformer {
 		},
 		transformOutgoing: (uri: UriParts): UriParts => {
 			if (uri.scheme === 'file') {
-				return { scheme: 'vscode-remote', authority: remoteAuthority, path: uri.path, query: uri.query, fragment: uri.fragment };
+				return {
+					scheme: 'vscode-remote',
+					authority: remoteAuthority,
+					path: uri.path,
+					query: uri.query,
+					fragment: uri.fragment,
+				};
 			}
 			if (uri.scheme === 'vscode-local') {
 				return { scheme: 'file', path: uri.path, query: uri.query, fragment: uri.fragment };
@@ -42,7 +53,7 @@ function createRawURITransformer(remoteAuthority: string): IRawURITransformer {
 				return 'file';
 			}
 			return scheme;
-		}
+		},
 	};
 }
 

@@ -15,25 +15,29 @@ import { IConfigurationService } from '../../../../platform/configuration/common
 import { getSelectionTextFromEditor } from './searchView.js';
 import { RenderableMatch } from './searchTreeModel/searchTreeCommon.js';
 
-registerAction2(class TextSearchQuickAccessAction extends Action2 {
+registerAction2(
+	class TextSearchQuickAccessAction extends Action2 {
+		constructor() {
+			super({
+				id: Constants.SearchCommandIds.QuickTextSearchActionId,
+				title: nls.localize2('quickTextSearch', 'Quick Search'),
+				category,
+				f1: true,
+			});
+		}
 
-	constructor(
-	) {
-		super({
-			id: Constants.SearchCommandIds.QuickTextSearchActionId,
-			title: nls.localize2('quickTextSearch', "Quick Search"),
-			category,
-			f1: true
-		});
-
+		override async run(
+			accessor: ServicesAccessor,
+			match: RenderableMatch | undefined
+		): Promise<any> {
+			const quickInputService = accessor.get(IQuickInputService);
+			const searchText = getSearchText(accessor) ?? '';
+			quickInputService.quickAccess.show(TEXT_SEARCH_QUICK_ACCESS_PREFIX + searchText, {
+				preserveValue: !!searchText,
+			});
+		}
 	}
-
-	override async run(accessor: ServicesAccessor, match: RenderableMatch | undefined): Promise<any> {
-		const quickInputService = accessor.get(IQuickInputService);
-		const searchText = getSearchText(accessor) ?? '';
-		quickInputService.quickAccess.show(TEXT_SEARCH_QUICK_ACCESS_PREFIX + searchText, { preserveValue: !!searchText });
-	}
-});
+);
 
 function getSearchText(accessor: ServicesAccessor): string | null {
 	const editorService = accessor.get(IEditorService);
@@ -48,7 +52,9 @@ function getSearchText(accessor: ServicesAccessor): string | null {
 	}
 
 	// only happen if it would also happen for the search view
-	const seedSearchStringFromSelection = configurationService.getValue<boolean>('editor.find.seedSearchStringFromSelection');
+	const seedSearchStringFromSelection = configurationService.getValue<boolean>(
+		'editor.find.seedSearchStringFromSelection'
+	);
 	if (!seedSearchStringFromSelection) {
 		return null;
 	}

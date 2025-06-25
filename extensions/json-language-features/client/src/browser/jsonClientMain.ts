@@ -5,7 +5,13 @@
 
 import { Disposable, ExtensionContext, Uri, l10n, window } from 'vscode';
 import { LanguageClientOptions } from 'vscode-languageclient';
-import { startClient, LanguageClientConstructor, SchemaRequestService, AsyncDisposable, languageServerDescription } from '../jsonClient';
+import {
+	startClient,
+	LanguageClientConstructor,
+	SchemaRequestService,
+	AsyncDisposable,
+	languageServerDescription,
+} from '../jsonClient';
 import { LanguageClient } from 'vscode-languageclient/browser';
 
 let client: AsyncDisposable | undefined;
@@ -17,31 +23,37 @@ export async function activate(context: ExtensionContext) {
 		const worker = new Worker(serverMain.toString());
 		worker.postMessage({ i10lLocation: l10n.uri?.toString(false) ?? '' });
 
-		const newLanguageClient: LanguageClientConstructor = (id: string, name: string, clientOptions: LanguageClientOptions) => {
+		const newLanguageClient: LanguageClientConstructor = (
+			id: string,
+			name: string,
+			clientOptions: LanguageClientOptions
+		) => {
 			return new LanguageClient(id, name, worker, clientOptions);
 		};
 
 		const schemaRequests: SchemaRequestService = {
 			getContent(uri: string) {
-				return fetch(uri, { mode: 'cors' })
-					.then(function (response: any) {
-						return response.text();
-					});
-			}
+				return fetch(uri, { mode: 'cors' }).then(function (response: any) {
+					return response.text();
+				});
+			},
 		};
 
 		const timer = {
 			setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable {
 				const handle = setTimeout(callback, ms, ...args);
 				return { dispose: () => clearTimeout(handle) };
-			}
+			},
 		};
 
 		const logOutputChannel = window.createOutputChannel(languageServerDescription, { log: true });
 		context.subscriptions.push(logOutputChannel);
 
-		client = await startClient(context, newLanguageClient, { schemaRequests, timer, logOutputChannel });
-
+		client = await startClient(context, newLanguageClient, {
+			schemaRequests,
+			timer,
+			logOutputChannel,
+		});
 	} catch (e) {
 		console.log(e);
 	}

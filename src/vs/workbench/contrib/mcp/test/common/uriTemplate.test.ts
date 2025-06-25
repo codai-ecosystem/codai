@@ -15,7 +15,10 @@ suite('UriTemplate', () => {
 	 */
 	function testParsing(template: string, expectedComponents: any[]) {
 		const templ = UriTemplate.parse(template);
-		assert.deepStrictEqual(templ.components.filter(c => typeof c === 'object'), expectedComponents);
+		assert.deepStrictEqual(
+			templ.components.filter(c => typeof c === 'object'),
+			expectedComponents
+		);
 		return templ;
 	}
 
@@ -30,65 +33,141 @@ suite('UriTemplate', () => {
 
 	test('simple replacement', () => {
 		const templ = UriTemplate.parse('http://example.com/{var}');
-		assert.deepStrictEqual(templ.components, ['http://example.com/', {
-			expression: "{var}",
-			operator: '',
-			variables: [{ explodable: false, name: "var", optional: false, prefixLength: undefined, repeatable: false }]
-		}, '']);
+		assert.deepStrictEqual(templ.components, [
+			'http://example.com/',
+			{
+				expression: '{var}',
+				operator: '',
+				variables: [
+					{
+						explodable: false,
+						name: 'var',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: false,
+					},
+				],
+			},
+			'',
+		]);
 		const result = templ.resolve({ var: 'value' });
 		assert.strictEqual(result, 'http://example.com/value');
 	});
 
 	test('parsing components correctly', () => {
 		// Simple component
-		testParsing('http://example.com/{var}', [{
-			expression: "{var}",
-			operator: '',
-			variables: [{ explodable: false, name: "var", optional: false, prefixLength: undefined, repeatable: false }]
-		}]);
+		testParsing('http://example.com/{var}', [
+			{
+				expression: '{var}',
+				operator: '',
+				variables: [
+					{
+						explodable: false,
+						name: 'var',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: false,
+					},
+				],
+			},
+		]);
 
 		// Component with operator
-		testParsing('http://example.com/{+path}', [{
-			expression: "{+path}",
-			operator: '+',
-			variables: [{ explodable: false, name: "path", optional: false, prefixLength: undefined, repeatable: false }]
-		}]);
+		testParsing('http://example.com/{+path}', [
+			{
+				expression: '{+path}',
+				operator: '+',
+				variables: [
+					{
+						explodable: false,
+						name: 'path',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: false,
+					},
+				],
+			},
+		]);
 
 		// Component with multiple variables
-		testParsing('http://example.com/{x,y}', [{
-			expression: "{x,y}",
-			operator: '',
-			variables: [
-				{ explodable: false, name: "x", optional: false, prefixLength: undefined, repeatable: false },
-				{ explodable: false, name: "y", optional: false, prefixLength: undefined, repeatable: false }
-			]
-		}]);
+		testParsing('http://example.com/{x,y}', [
+			{
+				expression: '{x,y}',
+				operator: '',
+				variables: [
+					{
+						explodable: false,
+						name: 'x',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: false,
+					},
+					{
+						explodable: false,
+						name: 'y',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: false,
+					},
+				],
+			},
+		]);
 
 		// Component with value modifiers
-		testParsing('http://example.com/{var:3}', [{
-			expression: "{var:3}",
-			operator: '',
-			variables: [{ explodable: false, name: "var", optional: false, prefixLength: 3, repeatable: false }]
-		}]);
+		testParsing('http://example.com/{var:3}', [
+			{
+				expression: '{var:3}',
+				operator: '',
+				variables: [
+					{ explodable: false, name: 'var', optional: false, prefixLength: 3, repeatable: false },
+				],
+			},
+		]);
 
-		testParsing('http://example.com/{list*}', [{
-			expression: "{list*}",
-			operator: '',
-			variables: [{ explodable: true, name: "list", optional: false, prefixLength: undefined, repeatable: true }]
-		}]);
+		testParsing('http://example.com/{list*}', [
+			{
+				expression: '{list*}',
+				operator: '',
+				variables: [
+					{
+						explodable: true,
+						name: 'list',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: true,
+					},
+				],
+			},
+		]);
 
 		// Multiple components
 		testParsing('http://example.com/{x}/path/{y}', [
 			{
-				expression: "{x}",
+				expression: '{x}',
 				operator: '',
-				variables: [{ explodable: false, name: "x", optional: false, prefixLength: undefined, repeatable: false }]
+				variables: [
+					{
+						explodable: false,
+						name: 'x',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: false,
+					},
+				],
 			},
 			{
-				expression: "{y}",
+				expression: '{y}',
 				operator: '',
-				variables: [{ explodable: false, name: "y", optional: false, prefixLength: undefined, repeatable: false }]
-			}
+				variables: [
+					{
+						explodable: false,
+						name: 'y',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: false,
+					},
+				],
+			},
 		]);
 	});
 
@@ -96,7 +175,7 @@ suite('UriTemplate', () => {
 		// Test cases from RFC 6570 Section 1.2
 		const variables = {
 			var: 'value',
-			hello: 'Hello World!'
+			hello: 'Hello World!',
 		};
 
 		testResolution('{var}', variables, 'value');
@@ -108,7 +187,7 @@ suite('UriTemplate', () => {
 		const variables = {
 			var: 'value',
 			hello: 'Hello World!',
-			path: '/foo/bar'
+			path: '/foo/bar',
 		};
 
 		testResolution('{+var}', variables, 'value');
@@ -121,7 +200,7 @@ suite('UriTemplate', () => {
 		// Test cases from RFC 6570 Section 1.2
 		const variables = {
 			var: 'value',
-			hello: 'Hello World!'
+			hello: 'Hello World!',
 		};
 
 		testResolution('X{#var}', variables, 'X#value');
@@ -136,7 +215,7 @@ suite('UriTemplate', () => {
 			empty: '',
 			path: '/foo/bar',
 			x: '1024',
-			y: '768'
+			y: '768',
 		};
 
 		testResolution('map?{x,y}', variables, 'map?1024,768');
@@ -150,7 +229,7 @@ suite('UriTemplate', () => {
 			hello: 'Hello World!',
 			path: '/foo/bar',
 			x: '1024',
-			y: '768'
+			y: '768',
 		};
 
 		testResolution('{+x,hello,y}', variables, '1024,Hello%20World!,768');
@@ -164,7 +243,7 @@ suite('UriTemplate', () => {
 			hello: 'Hello World!',
 			path: '/foo/bar',
 			x: '1024',
-			y: '768'
+			y: '768',
 		};
 
 		testResolution('{#x,hello,y}', variables, '#1024,Hello%20World!,768');
@@ -176,7 +255,7 @@ suite('UriTemplate', () => {
 		const variables = {
 			var: 'value',
 			x: '1024',
-			y: '768'
+			y: '768',
 		};
 
 		testResolution('X{.var}', variables, 'X.value');
@@ -187,7 +266,7 @@ suite('UriTemplate', () => {
 		// Test cases from RFC 6570 Section 1.2
 		const variables = {
 			var: 'value',
-			x: '1024'
+			x: '1024',
 		};
 
 		testResolution('{/var}', variables, '/value');
@@ -199,7 +278,7 @@ suite('UriTemplate', () => {
 		const variables = {
 			x: '1024',
 			y: '768',
-			empty: ''
+			empty: '',
 		};
 
 		testResolution('{;x,y}', variables, ';x=1024;y=768');
@@ -211,7 +290,7 @@ suite('UriTemplate', () => {
 		const variables = {
 			x: '1024',
 			y: '768',
-			empty: ''
+			empty: '',
 		};
 
 		testResolution('{?x,y}', variables, '?x=1024&y=768');
@@ -223,7 +302,7 @@ suite('UriTemplate', () => {
 		const variables = {
 			x: '1024',
 			y: '768',
-			empty: ''
+			empty: '',
 		};
 
 		testResolution('?fixed=yes{&x}', variables, '?fixed=yes&x=1024');
@@ -240,8 +319,8 @@ suite('UriTemplate', () => {
 			keys: {
 				semi: ';',
 				dot: '.',
-				comma: ','
-			}
+				comma: ',',
+			},
 		};
 
 		testResolution('{var:3}', variables, 'val');
@@ -260,8 +339,8 @@ suite('UriTemplate', () => {
 			keys: {
 				semi: ';',
 				dot: '.',
-				comma: ','
-			}
+				comma: ',',
+			},
 		};
 
 		testResolution('{+path:6}/here', variables, '/foo/b/here');
@@ -281,8 +360,8 @@ suite('UriTemplate', () => {
 			keys: {
 				semi: ';',
 				dot: '.',
-				comma: ','
-			}
+				comma: ',',
+			},
 		};
 
 		testResolution('{#path:6}/here', variables, '#/foo/b/here');
@@ -300,8 +379,8 @@ suite('UriTemplate', () => {
 			keys: {
 				semi: ';',
 				dot: '.',
-				comma: ','
-			}
+				comma: ',',
+			},
 		};
 
 		testResolution('X{.var:3}', variables, 'X.val');
@@ -320,8 +399,8 @@ suite('UriTemplate', () => {
 			keys: {
 				semi: ';',
 				dot: '.',
-				comma: ','
-			}
+				comma: ',',
+			},
 		};
 
 		testResolution('{/var:1,var}', variables, '/v/value');
@@ -340,8 +419,8 @@ suite('UriTemplate', () => {
 			keys: {
 				semi: ';',
 				dot: '.',
-				comma: ','
-			}
+				comma: ',',
+			},
 		};
 
 		testResolution('{;hello:5}', { hello: 'Hello World!' }, ';hello=Hello');
@@ -359,8 +438,8 @@ suite('UriTemplate', () => {
 			keys: {
 				semi: ';',
 				dot: '.',
-				comma: ','
-			}
+				comma: ',',
+			},
 		};
 
 		testResolution('{?var:3}', variables, '?var=val');
@@ -378,8 +457,8 @@ suite('UriTemplate', () => {
 			keys: {
 				semi: ';',
 				dot: '.',
-				comma: ','
-			}
+				comma: ',',
+			},
 		};
 
 		testResolution('?fixed=yes{&var:3}', variables, '?fixed=yes&var=val');
@@ -395,7 +474,7 @@ suite('UriTemplate', () => {
 			defined: 'value',
 			undef: undefined,
 			null: null,
-			empty: ''
+			empty: '',
 		};
 
 		// Simple string expansion
@@ -434,23 +513,29 @@ suite('UriTemplate', () => {
 			lang: 'en',
 			sessionId: '123abc',
 			filters: ['color:blue', 'shape:square'],
-			coordinates: { lat: '37.7', lon: '-122.4' }
+			coordinates: { lat: '37.7', lon: '-122.4' },
 		};
 
 		// RESTful URL pattern
-		testResolution('https://{domain}/api/v1/users/{user}{/path*}{?query,page,lang}',
+		testResolution(
+			'https://{domain}/api/v1/users/{user}{/path*}{?query,page,lang}',
 			variables,
-			'https://example.com/api/v1/users/fred/path/to/resource?query=search&page=5&lang=en');
+			'https://example.com/api/v1/users/fred/path/to/resource?query=search&page=5&lang=en'
+		);
 
 		// Complex query parameters
-		testResolution('https://{domain}/search{?query,filters,coordinates*}',
+		testResolution(
+			'https://{domain}/search{?query,filters,coordinates*}',
 			variables,
-			'https://example.com/search?query=search&filters=color:blue,shape:square&lat=37.7&lon=-122.4');
+			'https://example.com/search?query=search&filters=color:blue,shape:square&lat=37.7&lon=-122.4'
+		);
 
 		// Multiple expression types
-		testResolution('https://{domain}/users/{user}/profile{.lang}{?sessionId}{#path}',
+		testResolution(
+			'https://{domain}/users/{user}/profile{.lang}{?sessionId}{#path}',
 			variables,
-			'https://example.com/users/fred/profile.en?sessionId=123abc#path,to,resource');
+			'https://example.com/users/fred/profile.en?sessionId=123abc#path,to,resource'
+		);
 	});
 
 	test('literals and escaping', () => {
@@ -460,13 +545,29 @@ suite('UriTemplate', () => {
 			{
 				expression: '{var}',
 				operator: '',
-				variables: [{ explodable: false, name: 'var', optional: false, prefixLength: undefined, repeatable: false }]
+				variables: [
+					{
+						explodable: false,
+						name: 'var',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: false,
+					},
+				],
 			},
 			{
 				expression: '{var2}',
 				operator: '',
-				variables: [{ explodable: false, name: 'var2', optional: false, prefixLength: undefined, repeatable: false }]
-			}
+				variables: [
+					{
+						explodable: false,
+						name: 'var2',
+						optional: false,
+						prefixLength: undefined,
+						repeatable: false,
+					},
+				],
+			},
 		]);
 
 		// Test that escaped braces are treated as literals

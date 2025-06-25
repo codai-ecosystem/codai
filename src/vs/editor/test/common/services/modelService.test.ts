@@ -11,7 +11,12 @@ import { EditOperation } from '../../../common/core/editOperation.js';
 import { Range } from '../../../common/core/range.js';
 import { Selection } from '../../../common/core/selection.js';
 import { StringBuilder } from '../../../common/core/stringBuilder.js';
-import { DefaultEndOfLine, ITextBuffer, ITextBufferFactory, ITextSnapshot } from '../../../common/model.js';
+import {
+	DefaultEndOfLine,
+	ITextBuffer,
+	ITextBufferFactory,
+	ITextSnapshot,
+} from '../../../common/model.js';
 import { createTextBuffer } from '../../../common/model/textModel.js';
 import { ModelService } from '../../../common/services/modelService.js';
 import { TestConfigurationService } from '../../../../platform/configuration/test/common/testConfigurationService.js';
@@ -33,11 +38,15 @@ suite('ModelService', () => {
 		disposables = new DisposableStore();
 
 		const configService = new TestConfigurationService();
-		configService.setUserConfiguration('files', { 'eol': '\n' });
-		configService.setUserConfiguration('files', { 'eol': '\r\n' }, URI.file(platform.isWindows ? 'c:\\myroot' : '/myroot'));
+		configService.setUserConfiguration('files', { eol: '\n' });
+		configService.setUserConfiguration(
+			'files',
+			{ eol: '\r\n' },
+			URI.file(platform.isWindows ? 'c:\\myroot' : '/myroot')
+		);
 
 		instantiationService = createModelServices(disposables, [
-			[IConfigurationService, configService]
+			[IConfigurationService, configService],
 		]);
 		modelService = instantiationService.get(IModelService);
 	});
@@ -50,8 +59,16 @@ suite('ModelService', () => {
 
 	test('EOL setting respected depending on root', () => {
 		const model1 = modelService.createModel('farboo', null);
-		const model2 = modelService.createModel('farboo', null, URI.file(platform.isWindows ? 'c:\\myroot\\myfile.txt' : '/myroot/myfile.txt'));
-		const model3 = modelService.createModel('farboo', null, URI.file(platform.isWindows ? 'c:\\other\\myfile.txt' : '/other/myfile.txt'));
+		const model2 = modelService.createModel(
+			'farboo',
+			null,
+			URI.file(platform.isWindows ? 'c:\\myroot\\myfile.txt' : '/myroot/myfile.txt')
+		);
+		const model3 = modelService.createModel(
+			'farboo',
+			null,
+			URI.file(platform.isWindows ? 'c:\\other\\myfile.txt' : '/other/myfile.txt')
+		);
 
 		assert.strictEqual(model1.getOptions().defaultEOL, DefaultEndOfLine.LF);
 		assert.strictEqual(model2.getOptions().defaultEOL, DefaultEndOfLine.CRLF);
@@ -63,15 +80,16 @@ suite('ModelService', () => {
 	});
 
 	test('_computeEdits no change', function () {
-
-		const model = disposables.add(createTextModel(
-			[
-				'This is line one', //16
-				'and this is line number two', //27
-				'it is followed by #3', //20
-				'and finished with the fourth.', //29
-			].join('\n')
-		));
+		const model = disposables.add(
+			createTextModel(
+				[
+					'This is line one', //16
+					'and this is line number two', //27
+					'it is followed by #3', //20
+					'and finished with the fourth.', //29
+				].join('\n')
+			)
+		);
 
 		const textBuffer = createAndRegisterTextBuffer(
 			disposables,
@@ -90,15 +108,16 @@ suite('ModelService', () => {
 	});
 
 	test('_computeEdits first line changed', function () {
-
-		const model = disposables.add(createTextModel(
-			[
-				'This is line one', //16
-				'and this is line number two', //27
-				'it is followed by #3', //20
-				'and finished with the fourth.', //29
-			].join('\n')
-		));
+		const model = disposables.add(
+			createTextModel(
+				[
+					'This is line one', //16
+					'and this is line number two', //27
+					'it is followed by #3', //20
+					'and finished with the fourth.', //29
+				].join('\n')
+			)
+		);
 
 		const textBuffer = createAndRegisterTextBuffer(
 			disposables,
@@ -114,20 +133,21 @@ suite('ModelService', () => {
 		const actual = ModelService._computeEdits(model, textBuffer);
 
 		assert.deepStrictEqual(actual, [
-			EditOperation.replaceMove(new Range(1, 1, 2, 1), 'This is line One\n')
+			EditOperation.replaceMove(new Range(1, 1, 2, 1), 'This is line One\n'),
 		]);
 	});
 
 	test('_computeEdits EOL changed', function () {
-
-		const model = disposables.add(createTextModel(
-			[
-				'This is line one', //16
-				'and this is line number two', //27
-				'it is followed by #3', //20
-				'and finished with the fourth.', //29
-			].join('\n')
-		));
+		const model = disposables.add(
+			createTextModel(
+				[
+					'This is line one', //16
+					'and this is line number two', //27
+					'it is followed by #3', //20
+					'and finished with the fourth.', //29
+				].join('\n')
+			)
+		);
 
 		const textBuffer = createAndRegisterTextBuffer(
 			disposables,
@@ -146,15 +166,16 @@ suite('ModelService', () => {
 	});
 
 	test('_computeEdits EOL and other change 1', function () {
-
-		const model = disposables.add(createTextModel(
-			[
-				'This is line one', //16
-				'and this is line number two', //27
-				'it is followed by #3', //20
-				'and finished with the fourth.', //29
-			].join('\n')
-		));
+		const model = disposables.add(
+			createTextModel(
+				[
+					'This is line one', //16
+					'and this is line number two', //27
+					'it is followed by #3', //20
+					'and finished with the fourth.', //29
+				].join('\n')
+			)
+		);
 
 		const textBuffer = createAndRegisterTextBuffer(
 			disposables,
@@ -172,47 +193,52 @@ suite('ModelService', () => {
 		assert.deepStrictEqual(actual, [
 			EditOperation.replaceMove(
 				new Range(1, 1, 4, 1),
-				[
-					'This is line One',
-					'and this is line number two',
-					'It is followed by #3',
-					''
-				].join('\r\n')
-			)
+				['This is line One', 'and this is line number two', 'It is followed by #3', ''].join('\r\n')
+			),
 		]);
 	});
 
 	test('_computeEdits EOL and other change 2', function () {
-
-		const model = disposables.add(createTextModel(
-			[
-				'package main',	// 1
-				'func foo() {',	// 2
-				'}'				// 3
-			].join('\n')
-		));
+		const model = disposables.add(
+			createTextModel(
+				[
+					'package main', // 1
+					'func foo() {', // 2
+					'}', // 3
+				].join('\n')
+			)
+		);
 
 		const textBuffer = createAndRegisterTextBuffer(
 			disposables,
 			[
-				'package main',	// 1
-				'func foo() {',	// 2
-				'}',			// 3
-				''
+				'package main', // 1
+				'func foo() {', // 2
+				'}', // 3
+				'',
 			].join('\r\n'),
 			DefaultEndOfLine.LF
 		);
 
 		const actual = ModelService._computeEdits(model, textBuffer);
 
-		assert.deepStrictEqual(actual, [
-			EditOperation.replaceMove(new Range(3, 2, 3, 2), '\r\n')
-		]);
+		assert.deepStrictEqual(actual, [EditOperation.replaceMove(new Range(3, 2, 3, 2), '\r\n')]);
 	});
 
 	test('generated1', () => {
 		const file1 = ['pram', 'okctibad', 'pjuwtemued', 'knnnm', 'u', ''];
-		const file2 = ['tcnr', 'rxwlicro', 'vnzy', '', '', 'pjzcogzur', 'ptmxyp', 'dfyshia', 'pee', 'ygg'];
+		const file2 = [
+			'tcnr',
+			'rxwlicro',
+			'vnzy',
+			'',
+			'',
+			'pjzcogzur',
+			'ptmxyp',
+			'dfyshia',
+			'pee',
+			'ygg',
+		];
 		assertComputeEdits(file1, file2);
 	});
 
@@ -223,7 +249,18 @@ suite('ModelService', () => {
 	});
 
 	test('generated3', () => {
-		const file1 = ['ubrbrcv', 'wv', 'xodspybszt', 's', 'wednjxm', 'fklajt', 'fyfc', 'lvejgge', 'rtpjlodmmk', 'arivtgmjdm'];
+		const file1 = [
+			'ubrbrcv',
+			'wv',
+			'xodspybszt',
+			's',
+			'wednjxm',
+			'fklajt',
+			'fyfc',
+			'lvejgge',
+			'rtpjlodmmk',
+			'arivtgmjdm',
+		];
 		const file2 = ['s', 'qj', 'tu', 'ur', 'qerhjjhyvx', 't'];
 		assertComputeEdits(file1, file2);
 	});
@@ -235,85 +272,37 @@ suite('ModelService', () => {
 	});
 
 	test('does insertions in the middle of the document', () => {
-		const file1 = [
-			'line 1',
-			'line 2',
-			'line 3'
-		];
-		const file2 = [
-			'line 1',
-			'line 2',
-			'line 5',
-			'line 3'
-		];
+		const file1 = ['line 1', 'line 2', 'line 3'];
+		const file2 = ['line 1', 'line 2', 'line 5', 'line 3'];
 		assertComputeEdits(file1, file2);
 	});
 
 	test('does insertions at the end of the document', () => {
-		const file1 = [
-			'line 1',
-			'line 2',
-			'line 3'
-		];
-		const file2 = [
-			'line 1',
-			'line 2',
-			'line 3',
-			'line 4'
-		];
+		const file1 = ['line 1', 'line 2', 'line 3'];
+		const file2 = ['line 1', 'line 2', 'line 3', 'line 4'];
 		assertComputeEdits(file1, file2);
 	});
 
 	test('does insertions at the beginning of the document', () => {
-		const file1 = [
-			'line 1',
-			'line 2',
-			'line 3'
-		];
-		const file2 = [
-			'line 0',
-			'line 1',
-			'line 2',
-			'line 3'
-		];
+		const file1 = ['line 1', 'line 2', 'line 3'];
+		const file2 = ['line 0', 'line 1', 'line 2', 'line 3'];
 		assertComputeEdits(file1, file2);
 	});
 
 	test('does replacements', () => {
-		const file1 = [
-			'line 1',
-			'line 2',
-			'line 3'
-		];
-		const file2 = [
-			'line 1',
-			'line 7',
-			'line 3'
-		];
+		const file1 = ['line 1', 'line 2', 'line 3'];
+		const file2 = ['line 1', 'line 7', 'line 3'];
 		assertComputeEdits(file1, file2);
 	});
 
 	test('does deletions', () => {
-		const file1 = [
-			'line 1',
-			'line 2',
-			'line 3'
-		];
-		const file2 = [
-			'line 1',
-			'line 3'
-		];
+		const file1 = ['line 1', 'line 2', 'line 3'];
+		const file2 = ['line 1', 'line 3'];
 		assertComputeEdits(file1, file2);
 	});
 
 	test('does insert, replace, and delete', () => {
-		const file1 = [
-			'line 1',
-			'line 2',
-			'line 3',
-			'line 4',
-			'line 5',
-		];
+		const file1 = ['line 1', 'line 2', 'line 3', 'line 4', 'line 5'];
 		const file2 = [
 			'line 0', // insert line 0
 			'line 1',
@@ -331,7 +320,9 @@ suite('ModelService', () => {
 		// create a model
 		const model1 = modelService.createModel('text', null, resource);
 		// make an edit
-		model1.pushEditOperations(null, [{ range: new Range(1, 5, 1, 5), text: '1' }], () => [new Selection(1, 5, 1, 5)]);
+		model1.pushEditOperations(null, [{ range: new Range(1, 5, 1, 5), text: '1' }], () => [
+			new Selection(1, 5, 1, 5),
+		]);
 		assert.strictEqual(model1.getValue(), 'text1');
 		// dispose it
 		modelService.destroyModel(resource);
@@ -351,7 +342,9 @@ suite('ModelService', () => {
 		// create a model
 		const model1 = modelService.createModel('text', null, resource);
 		// make an edit
-		model1.pushEditOperations(null, [{ range: new Range(1, 5, 1, 5), text: '1' }], () => [new Selection(1, 5, 1, 5)]);
+		model1.pushEditOperations(null, [{ range: new Range(1, 5, 1, 5), text: '1' }], () => [
+			new Selection(1, 5, 1, 5),
+		]);
 		assert.strictEqual(model1.getValue(), 'text1');
 		const versionId = model1.getVersionId();
 		const alternativeVersionId = model1.getAlternativeVersionId();
@@ -372,7 +365,9 @@ suite('ModelService', () => {
 		// create a model
 		const model1 = modelService.createModel('text', null, resource);
 		// make an edit
-		model1.pushEditOperations(null, [{ range: new Range(1, 5, 1, 5), text: '1' }], () => [new Selection(1, 5, 1, 5)]);
+		model1.pushEditOperations(null, [{ range: new Range(1, 5, 1, 5), text: '1' }], () => [
+			new Selection(1, 5, 1, 5),
+		]);
 		assert.strictEqual(model1.getValue(), 'text1');
 		// dispose it
 		modelService.destroyModel(resource);
@@ -390,7 +385,9 @@ suite('ModelService', () => {
 		const resource = URI.parse('file://test.txt');
 
 		const model = modelService.createModel('text', null, resource);
-		model.pushEditOperations(null, [{ range: new Range(1, 5, 1, 5), text: '1' }], () => [new Selection(1, 5, 1, 5)]);
+		model.pushEditOperations(null, [{ range: new Range(1, 5, 1, 5), text: '1' }], () => [
+			new Selection(1, 5, 1, 5),
+		]);
 		assert.strictEqual(model.getValue(), 'text1');
 
 		model.setValue('text2');
@@ -443,7 +440,6 @@ function generateFile(small: boolean): string[] {
 if (GENERATE_TESTS) {
 	let number = 1;
 	while (true) {
-
 		console.log('------TEST: ' + number++);
 
 		const file1 = generateFile(true);
@@ -456,8 +452,8 @@ if (GENERATE_TESTS) {
 		} catch (err) {
 			console.log(err);
 			console.log(`
-const file1 = ${JSON.stringify(file1).replace(/"/g, '\'')};
-const file2 = ${JSON.stringify(file2).replace(/"/g, '\'')};
+const file1 = ${JSON.stringify(file1).replace(/"/g, "'")};
+const file2 = ${JSON.stringify(file2).replace(/"/g, "'")};
 assertComputeEdits(file1, file2);
 `);
 			break;
@@ -465,7 +461,11 @@ assertComputeEdits(file1, file2);
 	}
 }
 
-function createAndRegisterTextBuffer(store: DisposableStore, value: string | ITextBufferFactory | ITextSnapshot, defaultEOL: DefaultEndOfLine): ITextBuffer {
+function createAndRegisterTextBuffer(
+	store: DisposableStore,
+	value: string | ITextBufferFactory | ITextSnapshot,
+	defaultEOL: DefaultEndOfLine
+): ITextBuffer {
 	const { disposable, textBuffer } = createTextBuffer(value, defaultEOL);
 	store.add(disposable);
 	return textBuffer;

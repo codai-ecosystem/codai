@@ -30,10 +30,14 @@ class RemainingIssuesTestSuite {
 			const packageJsonPath = path.join(process.cwd(), '../../package.json');
 			const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
-			const hasStylePlugin = packageJson.devDependencies && packageJson.devDependencies['@stylistic/eslint-plugin-ts'];
+			const hasStylePlugin =
+				packageJson.devDependencies && packageJson.devDependencies['@stylistic/eslint-plugin-ts'];
 
-			this.addResult('ESLint Stylistic Plugin Dependency', !!hasStylePlugin,
-				hasStylePlugin ? `Installed version: ${hasStylePlugin}` : 'Dependency missing');
+			this.addResult(
+				'ESLint Stylistic Plugin Dependency',
+				!!hasStylePlugin,
+				hasStylePlugin ? `Installed version: ${hasStylePlugin}` : 'Dependency missing'
+			);
 		} catch (error) {
 			this.addResult('ESLint Stylistic Plugin Dependency', false, undefined, error.message);
 		}
@@ -50,10 +54,14 @@ class RemainingIssuesTestSuite {
 			const hasSetStorageKeysForSync = content.includes('setStorageKeysForSync');
 			const hasGetPluginDataDir = content.includes('getPluginDataDir');
 
-			const allImplemented = todoCount === 0 && hasGetStorageKeys && hasSetStorageKeysForSync && hasGetPluginDataDir;
+			const allImplemented =
+				todoCount === 0 && hasGetStorageKeys && hasSetStorageKeysForSync && hasGetPluginDataDir;
 
-			this.addResult('Plugin Storage TODO Implementation', allImplemented,
-				`TODO count: ${todoCount}, Methods implemented: getStorageKeys=${hasGetStorageKeys}, setStorageKeysForSync=${hasSetStorageKeysForSync}, getPluginDataDir=${hasGetPluginDataDir}`);
+			this.addResult(
+				'Plugin Storage TODO Implementation',
+				allImplemented,
+				`TODO count: ${todoCount}, Methods implemented: getStorageKeys=${hasGetStorageKeys}, setStorageKeysForSync=${hasSetStorageKeysForSync}, getPluginDataDir=${hasGetPluginDataDir}`
+			);
 		} catch (error) {
 			this.addResult('Plugin Storage TODO Implementation', false, undefined, error.message);
 		}
@@ -74,8 +82,11 @@ class RemainingIssuesTestSuite {
 
 				const complete = hasLogLevels && hasLoggerService && hasCreateLogger && hasOutputChannel;
 
-				this.addResult('Logging Service Implementation', complete,
-					`LogLevels=${hasLogLevels}, LoggerService=${hasLoggerService}, createLogger=${hasCreateLogger}, OutputChannel=${hasOutputChannel}`);
+				this.addResult(
+					'Logging Service Implementation',
+					complete,
+					`LogLevels=${hasLogLevels}, LoggerService=${hasLoggerService}, createLogger=${hasCreateLogger}, OutputChannel=${hasOutputChannel}`
+				);
 			} else {
 				this.addResult('Logging Service Implementation', false, 'Logger service file not found');
 			}
@@ -99,8 +110,11 @@ class RemainingIssuesTestSuite {
 
 				const complete = hasWithTimeout && hasWithRetry && hasTimeoutError && hasDebounce;
 
-				this.addResult('Async Utilities Implementation', complete,
-					`withTimeout=${hasWithTimeout}, withRetry=${hasWithRetry}, TimeoutError=${hasTimeoutError}, debounce=${hasDebounce}`);
+				this.addResult(
+					'Async Utilities Implementation',
+					complete,
+					`withTimeout=${hasWithTimeout}, withRetry=${hasWithRetry}, TimeoutError=${hasTimeoutError}, debounce=${hasDebounce}`
+				);
 			} else {
 				this.addResult('Async Utilities Implementation', false, 'Async utils file not found');
 			}
@@ -123,10 +137,14 @@ class RemainingIssuesTestSuite {
 				const hasDeploymentError = content.includes('class DeploymentError');
 				const hasErrorFactory = content.includes('class ErrorFactory');
 
-				const complete = hasAIDeError && hasPluginError && hasBuildError && hasDeploymentError && hasErrorFactory;
+				const complete =
+					hasAIDeError && hasPluginError && hasBuildError && hasDeploymentError && hasErrorFactory;
 
-				this.addResult('Custom Error Types Implementation', complete,
-					`AIDeError=${hasAIDeError}, PluginError=${hasPluginError}, BuildError=${hasBuildError}, DeploymentError=${hasDeploymentError}, ErrorFactory=${hasErrorFactory}`);
+				this.addResult(
+					'Custom Error Types Implementation',
+					complete,
+					`AIDeError=${hasAIDeError}, PluginError=${hasPluginError}, BuildError=${hasBuildError}, DeploymentError=${hasDeploymentError}, ErrorFactory=${hasErrorFactory}`
+				);
 			} else {
 				this.addResult('Custom Error Types Implementation', false, 'Error types file not found');
 			}
@@ -141,23 +159,34 @@ class RemainingIssuesTestSuite {
 			const packageJsonPath = path.join(process.cwd(), 'package.json');
 			const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
-			const hasLoggingConfig = packageJson.contributes && packageJson.contributes.configuration &&
-				packageJson.contributes.configuration.properties && packageJson.contributes.configuration.properties['aide.logging.level'];
-			const hasFileLoggingConfig = packageJson.contributes && packageJson.contributes.configuration &&
-				packageJson.contributes.configuration.properties && packageJson.contributes.configuration.properties['aide.logging.enableFileOutput'];
+			const hasLoggingConfig =
+				packageJson.contributes &&
+				packageJson.contributes.configuration &&
+				packageJson.contributes.configuration.properties &&
+				packageJson.contributes.configuration.properties['aide.logging.level'];
+			const hasFileLoggingConfig =
+				packageJson.contributes &&
+				packageJson.contributes.configuration &&
+				packageJson.contributes.configuration.properties &&
+				packageJson.contributes.configuration.properties['aide.logging.enableFileOutput'];
 
 			// Check extension.ts for logger usage
 			const extensionPath = path.join(process.cwd(), 'src/extension.ts');
 			const extensionContent = fs.readFileSync(extensionPath, 'utf8');
-			const usesLogger = extensionContent.includes('createLogger') && extensionContent.includes('logger.info');
+			const usesLogger =
+				extensionContent.includes('createLogger') && extensionContent.includes('logger.info');
 
 			// Count console.log statements (should be reduced)
 			const consoleLogCount = (extensionContent.match(/console\.log/g) || []).length;
 
-			const qualityImproved = hasLoggingConfig && hasFileLoggingConfig && usesLogger && consoleLogCount === 0;
+			const qualityImproved =
+				hasLoggingConfig && hasFileLoggingConfig && usesLogger && consoleLogCount === 0;
 
-			this.addResult('Code Quality Improvements', qualityImproved,
-				`LoggingConfig=${hasLoggingConfig}, FileLoggingConfig=${hasFileLoggingConfig}, UsesLogger=${usesLogger}, ConsoleLogCount=${consoleLogCount}`);
+			this.addResult(
+				'Code Quality Improvements',
+				qualityImproved,
+				`LoggingConfig=${hasLoggingConfig}, FileLoggingConfig=${hasFileLoggingConfig}, UsesLogger=${usesLogger}, ConsoleLogCount=${consoleLogCount}`
+			);
 		} catch (error) {
 			this.addResult('Code Quality Improvements', false, undefined, error.message);
 		}
@@ -189,7 +218,9 @@ class RemainingIssuesTestSuite {
 		}
 
 		console.log('='.repeat(80));
-		console.log(`Results: ${passedCount}/${this.results.length} tests passed (${Math.round(passedCount / this.results.length * 100)}% success rate)`);
+		console.log(
+			`Results: ${passedCount}/${this.results.length} tests passed (${Math.round((passedCount / this.results.length) * 100)}% success rate)`
+		);
 
 		if (passedCount === this.results.length) {
 			console.log('🎉 All remaining issues have been successfully fixed!');
@@ -211,8 +242,11 @@ class RemainingIssuesTestSuite {
 
 // Run the test suite
 const testSuite = new RemainingIssuesTestSuite();
-testSuite.runAllTests().then(() => {
-	console.log('\n✨ AIDE Core remaining issues test suite completed!');
-}).catch(error => {
-	console.error('❌ Test suite failed:', error);
-});
+testSuite
+	.runAllTests()
+	.then(() => {
+		console.log('\n✨ AIDE Core remaining issues test suite completed!');
+	})
+	.catch(error => {
+		console.error('❌ Test suite failed:', error);
+	});

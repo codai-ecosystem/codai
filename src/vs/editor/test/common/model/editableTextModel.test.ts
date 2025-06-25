@@ -11,14 +11,21 @@ import { Range } from '../../../common/core/range.js';
 import { EndOfLinePreference, EndOfLineSequence } from '../../../common/model.js';
 import { MirrorTextModel } from '../../../common/model/mirrorTextModel.js';
 import { IModelContentChangedEvent } from '../../../common/textModelEvents.js';
-import { assertSyncedModels, testApplyEditsWithSyncedModels } from './editableTextModelTestUtils.js';
+import {
+	assertSyncedModels,
+	testApplyEditsWithSyncedModels,
+} from './editableTextModelTestUtils.js';
 import { createTextModel } from '../testTextModel.js';
 
 suite('EditorModel - EditableTextModel.applyEdits updates mightContainRTL', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function testApplyEdits(original: string[], edits: ISingleEditOperation[], before: boolean, after: boolean): void {
+	function testApplyEdits(
+		original: string[],
+		edits: ISingleEditOperation[],
+		before: boolean,
+		after: boolean
+	): void {
 		const model = createTextModel(original.join('\n'));
 		model.setEOL(EndOfLineSequence.LF);
 
@@ -29,15 +36,26 @@ suite('EditorModel - EditableTextModel.applyEdits updates mightContainRTL', () =
 		model.dispose();
 	}
 
-	function editOp(startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number, text: string[]): ISingleEditOperation {
+	function editOp(
+		startLineNumber: number,
+		startColumn: number,
+		endLineNumber: number,
+		endColumn: number,
+		text: string[]
+	): ISingleEditOperation {
 		return {
 			range: new Range(startLineNumber, startColumn, endLineNumber, endColumn),
-			text: text.join('\n')
+			text: text.join('\n'),
 		};
 	}
 
 	test('start with RTL, insert LTR', () => {
-		testApplyEdits(['Hello,\nזוהי עובדה מבוססת שדעתו'], [editOp(1, 1, 1, 1, ['hello'])], true, true);
+		testApplyEdits(
+			['Hello,\nזוהי עובדה מבוססת שדעתו'],
+			[editOp(1, 1, 1, 1, ['hello'])],
+			true,
+			true
+		);
 	});
 
 	test('start with RTL, delete RTL', () => {
@@ -45,7 +63,12 @@ suite('EditorModel - EditableTextModel.applyEdits updates mightContainRTL', () =
 	});
 
 	test('start with RTL, insert RTL', () => {
-		testApplyEdits(['Hello,\nזוהי עובדה מבוססת שדעתו'], [editOp(1, 1, 1, 1, ['هناك حقيقة مثبتة منذ زمن طويل'])], true, true);
+		testApplyEdits(
+			['Hello,\nזוהי עובדה מבוססת שדעתו'],
+			[editOp(1, 1, 1, 1, ['هناك حقيقة مثبتة منذ زمن طويل'])],
+			true,
+			true
+		);
 	});
 
 	test('start with LTR, insert LTR', () => {
@@ -53,20 +76,33 @@ suite('EditorModel - EditableTextModel.applyEdits updates mightContainRTL', () =
 	});
 
 	test('start with LTR, insert RTL 1', () => {
-		testApplyEdits(['Hello,\nworld!'], [editOp(1, 1, 1, 1, ['هناك حقيقة مثبتة منذ زمن طويل'])], false, true);
+		testApplyEdits(
+			['Hello,\nworld!'],
+			[editOp(1, 1, 1, 1, ['هناك حقيقة مثبتة منذ زمن طويل'])],
+			false,
+			true
+		);
 	});
 
 	test('start with LTR, insert RTL 2', () => {
-		testApplyEdits(['Hello,\nworld!'], [editOp(1, 1, 1, 1, ['זוהי עובדה מבוססת שדעתו'])], false, true);
+		testApplyEdits(
+			['Hello,\nworld!'],
+			[editOp(1, 1, 1, 1, ['זוהי עובדה מבוססת שדעתו'])],
+			false,
+			true
+		);
 	});
 });
 
-
 suite('EditorModel - EditableTextModel.applyEdits updates mightContainNonBasicASCII', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function testApplyEdits(original: string[], edits: ISingleEditOperation[], before: boolean, after: boolean): void {
+	function testApplyEdits(
+		original: string[],
+		edits: ISingleEditOperation[],
+		before: boolean,
+		after: boolean
+	): void {
 		const model = createTextModel(original.join('\n'));
 		model.setEOL(EndOfLineSequence.LF);
 
@@ -77,10 +113,16 @@ suite('EditorModel - EditableTextModel.applyEdits updates mightContainNonBasicAS
 		model.dispose();
 	}
 
-	function editOp(startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number, text: string[]): ISingleEditOperation {
+	function editOp(
+		startLineNumber: number,
+		startColumn: number,
+		endLineNumber: number,
+		endColumn: number,
+		text: string[]
+	): ISingleEditOperation {
 		return {
 			range: new Range(startLineNumber, startColumn, endLineNumber, endColumn),
-			text: text.join('\n')
+			text: text.join('\n'),
 		};
 	}
 
@@ -97,291 +139,137 @@ suite('EditorModel - EditableTextModel.applyEdits updates mightContainNonBasicAS
 	});
 
 	test('start with ASCII, insert ASCII', () => {
-		testApplyEdits(['Hello,\nworld!'], [editOp(1, 1, 1, 1, ['hello', 'second line'])], false, false);
+		testApplyEdits(
+			['Hello,\nworld!'],
+			[editOp(1, 1, 1, 1, ['hello', 'second line'])],
+			false,
+			false
+		);
 	});
 
 	test('start with ASCII, insert NON-ASCII', () => {
 		testApplyEdits(['Hello,\nworld!'], [editOp(1, 1, 1, 1, ['Zürich', 'Zürich'])], false, true);
 	});
-
 });
 
 suite('EditorModel - EditableTextModel.applyEdits', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function editOp(startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number, text: string[]): ISingleEditOperation {
+	function editOp(
+		startLineNumber: number,
+		startColumn: number,
+		endLineNumber: number,
+		endColumn: number,
+		text: string[]
+	): ISingleEditOperation {
 		return {
 			range: new Range(startLineNumber, startColumn, endLineNumber, endColumn),
 			text: text.join('\n'),
-			forceMoveMarkers: false
+			forceMoveMarkers: false,
 		};
 	}
 
 	test('high-low surrogates 1', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'📚some',
-				'very nice',
-				'text'
-			],
-			[
-				editOp(1, 2, 1, 2, ['a'])
-			],
-			[
-				'a📚some',
-				'very nice',
-				'text'
-			],
-/*inputEditsAreInvalid*/true
+			['📚some', 'very nice', 'text'],
+			[editOp(1, 2, 1, 2, ['a'])],
+			['a📚some', 'very nice', 'text'],
+			/*inputEditsAreInvalid*/ true
 		);
 	});
 	test('high-low surrogates 2', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'📚some',
-				'very nice',
-				'text'
-			],
-			[
-				editOp(1, 2, 1, 3, ['a'])
-			],
-			[
-				'asome',
-				'very nice',
-				'text'
-			],
-/*inputEditsAreInvalid*/true
+			['📚some', 'very nice', 'text'],
+			[editOp(1, 2, 1, 3, ['a'])],
+			['asome', 'very nice', 'text'],
+			/*inputEditsAreInvalid*/ true
 		);
 	});
 	test('high-low surrogates 3', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'📚some',
-				'very nice',
-				'text'
-			],
-			[
-				editOp(1, 1, 1, 2, ['a'])
-			],
-			[
-				'asome',
-				'very nice',
-				'text'
-			],
-/*inputEditsAreInvalid*/true
+			['📚some', 'very nice', 'text'],
+			[editOp(1, 1, 1, 2, ['a'])],
+			['asome', 'very nice', 'text'],
+			/*inputEditsAreInvalid*/ true
 		);
 	});
 	test('high-low surrogates 4', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'📚some',
-				'very nice',
-				'text'
-			],
-			[
-				editOp(1, 1, 1, 3, ['a'])
-			],
-			[
-				'asome',
-				'very nice',
-				'text'
-			],
-/*inputEditsAreInvalid*/true
+			['📚some', 'very nice', 'text'],
+			[editOp(1, 1, 1, 3, ['a'])],
+			['asome', 'very nice', 'text'],
+			/*inputEditsAreInvalid*/ true
 		);
 	});
 
 	test('Bug 19872: Undo is funky', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'something',
-				' A',
-				'',
-				' B',
-				'something else'
-			],
-			[
-				editOp(2, 1, 2, 2, ['']),
-				editOp(3, 1, 4, 2, [''])
-			],
-			[
-				'something',
-				'A',
-				'B',
-				'something else'
-			]
+			['something', ' A', '', ' B', 'something else'],
+			[editOp(2, 1, 2, 2, ['']), editOp(3, 1, 4, 2, [''])],
+			['something', 'A', 'B', 'something else']
 		);
 	});
 
 	test('Bug 19872: Undo is funky (2)', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'something',
-				'A',
-				'B',
-				'something else'
-			],
-			[
-				editOp(2, 1, 2, 1, [' ']),
-				editOp(3, 1, 3, 1, ['', ' '])
-			],
-			[
-				'something',
-				' A',
-				'',
-				' B',
-				'something else'
-			]
+			['something', 'A', 'B', 'something else'],
+			[editOp(2, 1, 2, 1, [' ']), editOp(3, 1, 3, 1, ['', ' '])],
+			['something', ' A', '', ' B', 'something else']
 		);
 	});
 
 	test('insert empty text', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 1, 1, 1, [''])
-			],
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 1, 1, 1, [''])],
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('last op is no-op', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 1, 1, 2, ['']),
-				editOp(4, 1, 4, 1, [''])
-			],
-			[
-				'y First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 1, 1, 2, ['']), editOp(4, 1, 4, 1, [''])],
+			['y First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('insert text without newline 1', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 1, 1, 1, ['foo '])
-			],
-			[
-				'foo My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 1, 1, 1, ['foo '])],
+			['foo My First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('insert text without newline 2', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 3, 1, 3, [' foo'])
-			],
-			[
-				'My foo First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 3, 1, 3, [' foo'])],
+			['My foo First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('insert one newline', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 4, 1, 4, ['', ''])
-			],
-			[
-				'My ',
-				'First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 4, 1, 4, ['', ''])],
+			['My ', 'First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('insert text with one newline', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 3, 1, 3, [' new line', 'No longer'])
-			],
-			[
-				'My new line',
-				'No longer First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 3, 1, 3, [' new line', 'No longer'])],
+			['My new line', 'No longer First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('insert text with two newlines', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 3, 1, 3, [' new line', 'One more line in the middle', 'No longer'])
-			],
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 3, 1, 3, [' new line', 'One more line in the middle', 'No longer'])],
 			[
 				'My new line',
 				'One more line in the middle',
@@ -389,232 +277,88 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 				'\t\tMy Second Line',
 				'    Third Line',
 				'',
-				'1'
+				'1',
 			]
 		);
 	});
 
 	test('insert text with many newlines', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 3, 1, 3, ['', '', '', '', ''])
-			],
-			[
-				'My',
-				'',
-				'',
-				'',
-				' First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 3, 1, 3, ['', '', '', '', ''])],
+			['My', '', '', '', ' First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('insert multiple newlines', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 3, 1, 3, ['', '', '', '', '']),
-				editOp(3, 15, 3, 15, ['a', 'b'])
-			],
-			[
-				'My',
-				'',
-				'',
-				'',
-				' First Line',
-				'\t\tMy Second Line',
-				'    Third Linea',
-				'b',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 3, 1, 3, ['', '', '', '', '']), editOp(3, 15, 3, 15, ['a', 'b'])],
+			['My', '', '', '', ' First Line', '\t\tMy Second Line', '    Third Linea', 'b', '', '1']
 		);
 	});
 
 	test('delete empty text', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 1, 1, 1, [''])
-			],
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 1, 1, 1, [''])],
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('delete text from one line', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 1, 1, 2, [''])
-			],
-			[
-				'y First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 1, 1, 2, [''])],
+			['y First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('delete text from one line 2', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 1, 1, 3, ['a'])
-			],
-			[
-				'a First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 1, 1, 3, ['a'])],
+			['a First Line', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('delete all text from a line', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 1, 1, 14, [''])
-			],
-			[
-				'',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 1, 1, 14, [''])],
+			['', '\t\tMy Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('delete text from two lines', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 4, 2, 6, [''])
-			],
-			[
-				'My Second Line',
-				'    Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 4, 2, 6, [''])],
+			['My Second Line', '    Third Line', '', '1']
 		);
 	});
 
 	test('delete text from many lines', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 4, 3, 5, [''])
-			],
-			[
-				'My Third Line',
-				'',
-				'1'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 4, 3, 5, [''])],
+			['My Third Line', '', '1']
 		);
 	});
 
 	test('delete everything', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'1'
-			],
-			[
-				editOp(1, 1, 5, 2, [''])
-			],
-			[
-				''
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '1'],
+			[editOp(1, 1, 5, 2, [''])],
+			['']
 		);
 	});
 
 	test('two unrelated edits', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'My First Line',
-				'\t\tMy Second Line',
-				'    Third Line',
-				'',
-				'123'
-			],
-			[
-				editOp(2, 1, 2, 3, ['\t']),
-				editOp(3, 1, 3, 5, [''])
-			],
-			[
-				'My First Line',
-				'\tMy Second Line',
-				'Third Line',
-				'',
-				'123'
-			]
+			['My First Line', '\t\tMy Second Line', '    Third Line', '', '123'],
+			[editOp(2, 1, 2, 3, ['\t']), editOp(3, 1, 3, 5, [''])],
+			['My First Line', '\tMy Second Line', 'Third Line', '', '123']
 		);
 	});
 
@@ -625,77 +369,34 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 				'\t\tsecond line',
 				'\tthird line',
 				'fourth line',
-				'\t\t<!@#fifth#@!>\t\t'
+				'\t\t<!@#fifth#@!>\t\t',
 			],
-			[
-				editOp(5, 3, 5, 7, ['']),
-				editOp(5, 12, 5, 16, [''])
-			],
-			[
-				'\t\tfirst\t    ',
-				'\t\tsecond line',
-				'\tthird line',
-				'fourth line',
-				'\t\tfifth\t\t'
-			]
+			[editOp(5, 3, 5, 7, ['']), editOp(5, 12, 5, 16, [''])],
+			['\t\tfirst\t    ', '\t\tsecond line', '\tthird line', 'fourth line', '\t\tfifth\t\t']
 		);
 	});
 
 	test('many edits', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'{"x" : 1}'
-			],
-			[
-				editOp(1, 2, 1, 2, ['\n  ']),
-				editOp(1, 5, 1, 6, ['']),
-				editOp(1, 9, 1, 9, ['\n'])
-			],
-			[
-				'{',
-				'  "x": 1',
-				'}'
-			]
+			['{"x" : 1}'],
+			[editOp(1, 2, 1, 2, ['\n  ']), editOp(1, 5, 1, 6, ['']), editOp(1, 9, 1, 9, ['\n'])],
+			['{', '  "x": 1', '}']
 		);
 	});
 
 	test('many edits reversed', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'{',
-				'  "x": 1',
-				'}'
-			],
-			[
-				editOp(1, 2, 2, 3, ['']),
-				editOp(2, 6, 2, 6, [' ']),
-				editOp(2, 9, 3, 1, [''])
-			],
-			[
-				'{"x" : 1}'
-			]
+			['{', '  "x": 1', '}'],
+			[editOp(1, 2, 2, 3, ['']), editOp(2, 6, 2, 6, [' ']), editOp(2, 9, 3, 1, [''])],
+			['{"x" : 1}']
 		);
 	});
 
 	test('replacing newlines 1', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'{',
-				'"a": true,',
-				'',
-				'"b": true',
-				'}'
-			],
-			[
-				editOp(1, 2, 2, 1, ['', '\t']),
-				editOp(2, 11, 4, 1, ['', '\t'])
-			],
-			[
-				'{',
-				'\t"a": true,',
-				'\t"b": true',
-				'}'
-			]
+			['{', '"a": true,', '', '"b": true', '}'],
+			[editOp(1, 2, 2, 1, ['', '\t']), editOp(2, 11, 4, 1, ['', '\t'])],
+			['{', '\t"a": true,', '\t"b": true', '}']
 		);
 	});
 
@@ -707,13 +408,13 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 				'now comes an empty line',
 				'',
 				'after empty line',
-				'and the last line'
+				'and the last line',
 			],
 			[
 				editOp(1, 5, 3, 1, [' text', 'some more text', 'some more text']),
 				editOp(3, 2, 4, 1, ['o more lines', 'asd', 'asd', 'asd']),
 				editOp(5, 1, 5, 6, ['zzzzzzzz']),
-				editOp(5, 11, 6, 16, ['1', '2', '3', '4'])
+				editOp(5, 11, 6, 16, ['1', '2', '3', '4']),
 			],
 			[
 				'some text',
@@ -725,7 +426,7 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 				'zzzzzzzz empt1',
 				'2',
 				'3',
-				'4ne'
+				'4ne',
 			]
 		);
 	});
@@ -747,7 +448,7 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 				editOp(4, 10, 4, 10, ['', '  ']),
 				editOp(4, 28, 4, 28, ['', '    ']),
 				editOp(4, 32, 4, 32, ['', '  ']),
-				editOp(4, 33, 4, 34, ['', ''])
+				editOp(4, 33, 4, 34, ['', '']),
 			],
 			[
 				'{',
@@ -764,32 +465,15 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 
 	test('advanced simplified', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'   abc',
-				' ,def'
-			],
-			[
-				editOp(1, 1, 1, 4, ['']),
-				editOp(1, 7, 2, 2, ['']),
-				editOp(2, 3, 2, 3, ['', ''])
-			],
-			[
-				'abc,',
-				'def'
-			]
+			['   abc', ' ,def'],
+			[editOp(1, 1, 1, 4, ['']), editOp(1, 7, 2, 2, ['']), editOp(2, 3, 2, 3, ['', ''])],
+			['abc,', 'def']
 		);
 	});
 
 	test('issue #144', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'package caddy',
-				'',
-				'func main() {',
-				'\tfmt.Println("Hello World! :)")',
-				'}',
-				''
-			],
+			['package caddy', '', 'func main() {', '\tfmt.Println("Hello World! :)")', '}', ''],
 			[
 				editOp(1, 1, 6, 1, [
 					'package caddy',
@@ -799,8 +483,8 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 					'func main() {',
 					'\tfmt.Println("Hello World! :)")',
 					'}',
-					''
-				])
+					'',
+				]),
 			],
 			[
 				'package caddy',
@@ -810,24 +494,16 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 				'func main() {',
 				'\tfmt.Println("Hello World! :)")',
 				'}',
-				''
+				'',
 			]
 		);
 	});
 
 	test('issue #2586 Replacing selected end-of-line with newline locks up the document', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'something',
-				'interesting'
-			],
-			[
-				editOp(1, 10, 2, 1, ['', ''])
-			],
-			[
-				'something',
-				'interesting'
-			]
+			['something', 'interesting'],
+			[editOp(1, 10, 2, 1, ['', ''])],
+			['something', 'interesting']
 		);
 	});
 
@@ -876,173 +552,129 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 
 	test('touching edits: two inserts at the same position', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'hello world'
-			],
-			[
-				editOp(1, 1, 1, 1, ['a']),
-				editOp(1, 1, 1, 1, ['b']),
-			],
-			[
-				'abhello world'
-			]
+			['hello world'],
+			[editOp(1, 1, 1, 1, ['a']), editOp(1, 1, 1, 1, ['b'])],
+			['abhello world']
 		);
 	});
 
 	test('touching edits: insert and replace touching', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'hello world'
-			],
-			[
-				editOp(1, 1, 1, 1, ['b']),
-				editOp(1, 1, 1, 3, ['ab']),
-			],
-			[
-				'babllo world'
-			]
+			['hello world'],
+			[editOp(1, 1, 1, 1, ['b']), editOp(1, 1, 1, 3, ['ab'])],
+			['babllo world']
 		);
 	});
 
 	test('overlapping edits: two overlapping replaces', () => {
-		testApplyEditsFails(
-			[
-				'hello world'
-			],
-			[
-				editOp(1, 1, 1, 2, ['b']),
-				editOp(1, 1, 1, 3, ['ab']),
-			]
-		);
+		testApplyEditsFails(['hello world'], [editOp(1, 1, 1, 2, ['b']), editOp(1, 1, 1, 3, ['ab'])]);
 	});
 
 	test('overlapping edits: two overlapping deletes', () => {
-		testApplyEditsFails(
-			[
-				'hello world'
-			],
-			[
-				editOp(1, 1, 1, 2, ['']),
-				editOp(1, 1, 1, 3, ['']),
-			]
-		);
+		testApplyEditsFails(['hello world'], [editOp(1, 1, 1, 2, ['']), editOp(1, 1, 1, 3, [''])]);
 	});
 
 	test('touching edits: two touching replaces', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'hello world'
-			],
-			[
-				editOp(1, 1, 1, 2, ['H']),
-				editOp(1, 2, 1, 3, ['E']),
-			],
-			[
-				'HEllo world'
-			]
+			['hello world'],
+			[editOp(1, 1, 1, 2, ['H']), editOp(1, 2, 1, 3, ['E'])],
+			['HEllo world']
 		);
 	});
 
 	test('touching edits: two touching deletes', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'hello world'
-			],
-			[
-				editOp(1, 1, 1, 2, ['']),
-				editOp(1, 2, 1, 3, ['']),
-			],
-			[
-				'llo world'
-			]
+			['hello world'],
+			[editOp(1, 1, 1, 2, ['']), editOp(1, 2, 1, 3, [''])],
+			['llo world']
 		);
 	});
 
 	test('touching edits: insert and replace', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'hello world'
-			],
-			[
-				editOp(1, 1, 1, 1, ['H']),
-				editOp(1, 1, 1, 3, ['e']),
-			],
-			[
-				'Hello world'
-			]
+			['hello world'],
+			[editOp(1, 1, 1, 1, ['H']), editOp(1, 1, 1, 3, ['e'])],
+			['Hello world']
 		);
 	});
 
 	test('touching edits: replace and insert', () => {
 		testApplyEditsWithSyncedModels(
-			[
-				'hello world'
-			],
-			[
-				editOp(1, 1, 1, 3, ['H']),
-				editOp(1, 3, 1, 3, ['e']),
-			],
-			[
-				'Hello world'
-			]
+			['hello world'],
+			[editOp(1, 1, 1, 3, ['H']), editOp(1, 3, 1, 3, ['e'])],
+			['Hello world']
 		);
 	});
 
 	test('change while emitting events 1', () => {
 		let disposable!: IDisposable;
-		assertSyncedModels('Hello', (model, assertMirrorModels) => {
-			model.applyEdits([{
-				range: new Range(1, 6, 1, 6),
-				text: ' world!',
-				// forceMoveMarkers: false
-			}]);
+		assertSyncedModels(
+			'Hello',
+			(model, assertMirrorModels) => {
+				model.applyEdits([
+					{
+						range: new Range(1, 6, 1, 6),
+						text: ' world!',
+						// forceMoveMarkers: false
+					},
+				]);
 
-			assertMirrorModels();
+				assertMirrorModels();
+			},
+			model => {
+				let isFirstTime = true;
+				disposable = model.onDidChangeContent(() => {
+					if (!isFirstTime) {
+						return;
+					}
+					isFirstTime = false;
 
-		}, (model) => {
-			let isFirstTime = true;
-			disposable = model.onDidChangeContent(() => {
-				if (!isFirstTime) {
-					return;
-				}
-				isFirstTime = false;
-
-				model.applyEdits([{
-					range: new Range(1, 13, 1, 13),
-					text: ' How are you?',
-					// forceMoveMarkers: false
-				}]);
-			});
-		});
+					model.applyEdits([
+						{
+							range: new Range(1, 13, 1, 13),
+							text: ' How are you?',
+							// forceMoveMarkers: false
+						},
+					]);
+				});
+			}
+		);
 		disposable.dispose();
 	});
 
 	test('change while emitting events 2', () => {
 		let disposable!: IDisposable;
-		assertSyncedModels('Hello', (model, assertMirrorModels) => {
-			model.applyEdits([{
-				range: new Range(1, 6, 1, 6),
-				text: ' world!',
-				// forceMoveMarkers: false
-			}]);
+		assertSyncedModels(
+			'Hello',
+			(model, assertMirrorModels) => {
+				model.applyEdits([
+					{
+						range: new Range(1, 6, 1, 6),
+						text: ' world!',
+						// forceMoveMarkers: false
+					},
+				]);
 
-			assertMirrorModels();
+				assertMirrorModels();
+			},
+			model => {
+				let isFirstTime = true;
+				disposable = model.onDidChangeContent((e: IModelContentChangedEvent) => {
+					if (!isFirstTime) {
+						return;
+					}
+					isFirstTime = false;
 
-		}, (model) => {
-			let isFirstTime = true;
-			disposable = model.onDidChangeContent((e: IModelContentChangedEvent) => {
-				if (!isFirstTime) {
-					return;
-				}
-				isFirstTime = false;
-
-				model.applyEdits([{
-					range: new Range(1, 13, 1, 13),
-					text: ' How are you?',
-					// forceMoveMarkers: false
-				}]);
-			});
-		});
+					model.applyEdits([
+						{
+							range: new Range(1, 13, 1, 13),
+							text: ' How are you?',
+							// forceMoveMarkers: false
+						},
+					]);
+				});
+			}
+		);
 		disposable.dispose();
 	});
 
@@ -1050,7 +682,12 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 		const model = createTextModel('Hello\nWorld!');
 		assert.strictEqual(model.getEOL(), '\n');
 
-		const mirrorModel2 = new MirrorTextModel(null!, model.getLinesContent(), model.getEOL(), model.getVersionId());
+		const mirrorModel2 = new MirrorTextModel(
+			null!,
+			model.getLinesContent(),
+			model.getEOL(),
+			model.getVersionId()
+		);
 		let mirrorModel2PrevVersionId = model.getVersionId();
 
 		const disposable = model.onDidChangeContent((e: IModelContentChangedEvent) => {
@@ -1076,7 +713,7 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 	});
 
 	test('issue #47733: Undo mangles unicode characters', () => {
-		const model = createTextModel('\'👁\'');
+		const model = createTextModel("'👁'");
 
 		model.applyEdits([
 			{ range: new Range(1, 1, 1, 1), text: '"' },
@@ -1092,25 +729,23 @@ suite('EditorModel - EditableTextModel.applyEdits', () => {
 			{ range: new Range(1, 3, 1, 4), text: null },
 		]);
 
-		assert.strictEqual(model.getValue(EndOfLinePreference.LF), '\'👁\'');
+		assert.strictEqual(model.getValue(EndOfLinePreference.LF), "'👁'");
 
 		model.dispose();
 	});
 
 	test('issue #48741: Broken undo stack with move lines up with multiple cursors', () => {
-		const model = createTextModel([
-			'line1',
-			'line2',
-			'line3',
-			'',
-		].join('\n'));
+		const model = createTextModel(['line1', 'line2', 'line3', ''].join('\n'));
 
-		const undoEdits = model.applyEdits([
-			{ range: new Range(4, 1, 4, 1), text: 'line3', },
-			{ range: new Range(3, 1, 3, 6), text: null, },
-			{ range: new Range(2, 1, 3, 1), text: null, },
-			{ range: new Range(3, 6, 3, 6), text: '\nline2' }
-		], true);
+		const undoEdits = model.applyEdits(
+			[
+				{ range: new Range(4, 1, 4, 1), text: 'line3' },
+				{ range: new Range(3, 1, 3, 6), text: null },
+				{ range: new Range(2, 1, 3, 1), text: null },
+				{ range: new Range(3, 6, 3, 6), text: '\nline2' },
+			],
+			true
+		);
 
 		model.applyEdits(undoEdits);
 

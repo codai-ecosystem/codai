@@ -5,8 +5,14 @@
 
 import { TableColumnResizeQuickPick } from './tableColumnResizeQuickPick.js';
 import { Table } from '../../../../base/browser/ui/table/tableWidget.js';
-import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
-import { IListService, WorkbenchListFocusContextKey } from '../../../../platform/list/browser/listService.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../../../platform/instantiation/common/instantiation.js';
+import {
+	IListService,
+	WorkbenchListFocusContextKey,
+} from '../../../../platform/list/browser/listService.js';
 import { Action2 } from '../../../../platform/actions/common/actions.js';
 import { localize } from '../../../../nls.js';
 
@@ -14,10 +20,10 @@ export class ListResizeColumnAction extends Action2 {
 	constructor() {
 		super({
 			id: 'list.resizeColumn',
-			title: { value: localize('list.resizeColumn', "Resize Column"), original: 'Resize Column' },
-			category: { value: localize('list', "List"), original: 'List' },
+			title: { value: localize('list.resizeColumn', 'Resize Column'), original: 'Resize Column' },
+			category: { value: localize('list', 'List'), original: 'List' },
 			precondition: WorkbenchListFocusContextKey,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -31,4 +37,3 @@ export class ListResizeColumnAction extends Action2 {
 		}
 	}
 }
-

@@ -15,7 +15,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
 import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
 
 export class ElectronTerminalProfileResolverService extends BaseTerminalProfileResolverService {
-
 	constructor(
 		@IConfigurationResolverService configurationResolverService: IConfigurationResolverService,
 		@IConfigurationService configurationService: IConfigurationService,
@@ -31,17 +30,21 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
 				getDefaultSystemShell: async (remoteAuthority, platform) => {
 					const backend = await terminalInstanceService.getBackend(remoteAuthority);
 					if (!backend) {
-						throw new ErrorNoTelemetry(`Cannot get default system shell when there is no backend for remote authority '${remoteAuthority}'`);
+						throw new ErrorNoTelemetry(
+							`Cannot get default system shell when there is no backend for remote authority '${remoteAuthority}'`
+						);
 					}
 					return backend.getDefaultSystemShell(platform);
 				},
-				getEnvironment: async (remoteAuthority) => {
+				getEnvironment: async remoteAuthority => {
 					const backend = await terminalInstanceService.getBackend(remoteAuthority);
 					if (!backend) {
-						throw new ErrorNoTelemetry(`Cannot get environment when there is no backend for remote authority '${remoteAuthority}'`);
+						throw new ErrorNoTelemetry(
+							`Cannot get environment when there is no backend for remote authority '${remoteAuthority}'`
+						);
 					}
 					return backend.getEnvironment();
-				}
+				},
 			},
 			configurationService,
 			configurationResolverService,

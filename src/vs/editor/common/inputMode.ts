@@ -6,10 +6,10 @@
 import { Emitter, Event } from '../../base/common/event.js';
 
 class InputModeImpl {
-
 	private _inputMode: 'overtype' | 'insert' = 'insert';
 	private readonly _onDidChangeInputMode = new Emitter<'overtype' | 'insert'>();
-	public readonly onDidChangeInputMode: Event<'overtype' | 'insert'> = this._onDidChangeInputMode.event;
+	public readonly onDidChangeInputMode: Event<'overtype' | 'insert'> =
+		this._onDidChangeInputMode.event;
 
 	public getInputMode(): 'overtype' | 'insert' {
 		return this._inputMode;

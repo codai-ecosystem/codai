@@ -8,7 +8,19 @@ import { IDisposable } from '../../../../../base/common/lifecycle.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { IWebWorkerServerRequestHandler } from '../../../../../base/common/worker/webWorker.js';
 import { PieceTreeTextBufferBuilder } from '../../../../../editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder.js';
-import { CellKind, IMainCellDto, INotebookDiffResult, IOutputDto, NotebookCellInternalMetadata, NotebookCellMetadata, NotebookCellsChangedEventDto, NotebookCellsChangeType, NotebookCellTextModelSplice, NotebookDocumentMetadata, TransientDocumentMetadata } from '../notebookCommon.js';
+import {
+	CellKind,
+	IMainCellDto,
+	INotebookDiffResult,
+	IOutputDto,
+	NotebookCellInternalMetadata,
+	NotebookCellMetadata,
+	NotebookCellsChangedEventDto,
+	NotebookCellsChangeType,
+	NotebookCellTextModelSplice,
+	NotebookDocumentMetadata,
+	TransientDocumentMetadata,
+} from '../notebookCommon.js';
 import { Range } from '../../../../../editor/common/core/range.js';
 import { SearchParams } from '../../../../../editor/common/model/textModelSearch.js';
 import { MirrorModel } from '../../../../../editor/common/services/textModelSync/textModelSync.impl.js';
@@ -38,8 +50,7 @@ class MirrorCell {
 		public cellKind: CellKind,
 		public outputs: IOutputDto[],
 		public metadata?: NotebookCellMetadata,
-		public internalMetadata?: NotebookCellInternalMetadata,
-
+		public internalMetadata?: NotebookCellInternalMetadata
 	) {
 		this.textModel = new MirrorModel(uri, source, _eol, versionId);
 	}
@@ -56,7 +67,7 @@ class MirrorCell {
 		return this.textModel.getLinesContent();
 	}
 	getComparisonValue(): number {
-		return this._hash ??= this._getHash();
+		return (this._hash ??= this._getHash());
 	}
 
 	private _getHash() {
@@ -90,9 +101,8 @@ class MirrorNotebookDocument {
 		readonly uri: URI,
 		public cells: MirrorCell[],
 		public metadata: NotebookDocumentMetadata,
-		public transientDocumentMetadata: TransientDocumentMetadata,
-	) {
-	}
+		public transientDocumentMetadata: TransientDocumentMetadata
+	) {}
 
 	acceptModelChanged(event: NotebookCellsChangedEventDto) {
 		// note that the cell content change is not applied to the MirrorCell
@@ -144,7 +154,7 @@ class MirrorNotebookDocument {
 					cell.language,
 					cell.cellKind,
 					cell.outputs,
-					cell.metadata,
+					cell.metadata
 				);
 			});
 
@@ -154,13 +164,12 @@ class MirrorNotebookDocument {
 }
 
 class CellSequence implements ISequence {
-
 	static create(textModel: MirrorNotebookDocument) {
 		const hashValue = textModel.cells.map(c => c.getComparisonValue());
 		return new CellSequence(hashValue);
 	}
 	static createWithCellId(cells: MirrorCell[], includeCellContents?: boolean) {
-		const hashValue = cells.map((c) => {
+		const hashValue = cells.map(c => {
 			if (includeCellContents) {
 				return `${doHash(c.internalMetadata?.internalId, numberHash(104579, 0))}#${c.getComparisonValue()}`;
 			} else {
@@ -170,7 +179,7 @@ class CellSequence implements ISequence {
 		return new CellSequence(hashValue);
 	}
 
-	constructor(readonly hashValue: number[] | string[]) { }
+	constructor(readonly hashValue: number[] | string[]) {}
 
 	getElements(): string[] | number[] | Int32Array {
 		return this.hashValue;
@@ -185,22 +194,34 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 	constructor() {
 		this._models = Object.create(null);
 	}
-	dispose(): void {
-	}
+	dispose(): void {}
 
-	public $acceptNewModel(uri: string, metadata: NotebookDocumentMetadata, transientDocumentMetadata: TransientDocumentMetadata, cells: IMainCellDto[]): void {
-		this._models[uri] = new MirrorNotebookDocument(URI.parse(uri), cells.map(dto => new MirrorCell(
-			dto.handle,
-			URI.parse(dto.url),
-			dto.source,
-			dto.eol,
-			dto.versionId,
-			dto.language,
-			dto.cellKind,
-			dto.outputs,
-			dto.metadata,
-			dto.internalMetadata
-		)), metadata, transientDocumentMetadata);
+	public $acceptNewModel(
+		uri: string,
+		metadata: NotebookDocumentMetadata,
+		transientDocumentMetadata: TransientDocumentMetadata,
+		cells: IMainCellDto[]
+	): void {
+		this._models[uri] = new MirrorNotebookDocument(
+			URI.parse(uri),
+			cells.map(
+				dto =>
+					new MirrorCell(
+						dto.handle,
+						URI.parse(dto.url),
+						dto.source,
+						dto.eol,
+						dto.versionId,
+						dto.language,
+						dto.cellKind,
+						dto.outputs,
+						dto.metadata,
+						dto.internalMetadata
+					)
+			),
+			metadata,
+			transientDocumentMetadata
+		);
 	}
 
 	public $acceptModelChanged(strURL: string, event: NotebookCellsChangedEventDto) {
@@ -227,17 +248,26 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 		const originalModel = new NotebookTextModelFacade(original);
 		const modifiedModel = new NotebookTextModelFacade(modified);
 
-		const originalMetadata = filter(original.metadata, key => !original.transientDocumentMetadata[key]);
-		const modifiedMetadata = filter(modified.metadata, key => !modified.transientDocumentMetadata[key]);
+		const originalMetadata = filter(
+			original.metadata,
+			key => !original.transientDocumentMetadata[key]
+		);
+		const modifiedMetadata = filter(
+			modified.metadata,
+			key => !modified.transientDocumentMetadata[key]
+		);
 		const metadataChanged = JSON.stringify(originalMetadata) !== JSON.stringify(modifiedMetadata);
 		// TODO@DonJayamanne
 		// In the future we might want to avoid computing LCS of outputs
 		// That will make this faster.
-		const originalDiff = new LcsDiff(CellSequence.create(original), CellSequence.create(modified)).ComputeDiff(false);
+		const originalDiff = new LcsDiff(
+			CellSequence.create(original),
+			CellSequence.create(modified)
+		).ComputeDiff(false);
 		if (originalDiff.changes.length === 0) {
 			return {
 				metadataChanged,
-				cellsDiff: originalDiff
+				cellsDiff: originalDiff,
 			};
 		}
 
@@ -246,13 +276,16 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 		// That can be used as anchor points to find the cells that have changed.
 		// And on cells that have changed, we can use similarity algorithms to find the mapping.
 		// Eg as mentioned earlier, its possible after similarity algorithms we find that cells weren't inserted/deleted but were just modified.
-		const cellMapping = computeDiff(originalModel, modifiedModel, { cellsDiff: { changes: originalDiff.changes, quitEarly: false }, metadataChanged: false, }).cellDiffInfo;
+		const cellMapping = computeDiff(originalModel, modifiedModel, {
+			cellsDiff: { changes: originalDiff.changes, quitEarly: false },
+			metadataChanged: false,
+		}).cellDiffInfo;
 
 		// If we have no insertions/deletions, then this is a good diffing.
 		if (cellMapping.every(c => c.type === 'modified')) {
 			return {
 				metadataChanged,
-				cellsDiff: originalDiff
+				cellsDiff: originalDiff,
 			};
 		}
 
@@ -294,8 +327,6 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 			 * F => F
 			 */
 
-
-
 			// Note, if cells are swapped, then this compilicates things
 			// Trying to solve diff manually is not easy.
 			// Lets instead use LCS find the cells that haven't changed,
@@ -310,8 +341,6 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 			// Code Cell = print("Foo BarZ")
 			// LCS will tell us that everything changed.
 			// But using similarity algorithms we can tell that the first cell is new and last 2 changed.
-
-
 
 			// Lets try the similarity algorithms on all cells.
 			// We might fare better.
@@ -328,7 +357,7 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 		if (!diffUsingCellIds) {
 			return {
 				metadataChanged,
-				cellsDiff: originalDiff
+				cellsDiff: originalDiff,
 			};
 		}
 
@@ -336,8 +365,14 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 		// I.e. we compute LCS diff and the hashes of some cells from original will be equal to that in modified as we're using cellId.
 		// Thus we can find what cells are new/deleted.
 		// After that we can find whether the contents of the cells changed.
-		const cellsInsertedOrDeletedDiff = new LcsDiff(CellSequence.createWithCellId(original.cells), CellSequence.createWithCellId(modified.cells)).ComputeDiff(false);
-		const cellDiffInfo = computeDiff(originalModel, modifiedModel, { cellsDiff: { changes: cellsInsertedOrDeletedDiff.changes, quitEarly: false }, metadataChanged: false, }).cellDiffInfo;
+		const cellsInsertedOrDeletedDiff = new LcsDiff(
+			CellSequence.createWithCellId(original.cells),
+			CellSequence.createWithCellId(modified.cells)
+		).ComputeDiff(false);
+		const cellDiffInfo = computeDiff(originalModel, modifiedModel, {
+			cellsDiff: { changes: cellsInsertedOrDeletedDiff.changes, quitEarly: false },
+			metadataChanged: false,
+		}).cellDiffInfo;
 
 		let processedIndex = 0;
 		const changes: IDiffChange[] = [];
@@ -345,12 +380,16 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 			if (!change.originalLength && change.modifiedLength) {
 				// Inserted.
 				// Find all modified cells before this.
-				const changeIndex = cellDiffInfo.findIndex(c => c.type === 'insert' && c.modifiedCellIndex === change.modifiedStart);
+				const changeIndex = cellDiffInfo.findIndex(
+					c => c.type === 'insert' && c.modifiedCellIndex === change.modifiedStart
+				);
 				cellDiffInfo.slice(processedIndex, changeIndex).forEach(c => {
 					if (c.type === 'unchanged' || c.type === 'modified') {
 						const originalCell = original.cells[c.originalCellIndex];
 						const modifiedCell = modified.cells[c.modifiedCellIndex];
-						const changed = c.type === 'modified' || originalCell.getComparisonValue() !== modifiedCell.getComparisonValue();
+						const changed =
+							c.type === 'modified' ||
+							originalCell.getComparisonValue() !== modifiedCell.getComparisonValue();
 						if (changed) {
 							changes.push(new DiffChange(c.originalCellIndex, 1, c.modifiedCellIndex, 1));
 						}
@@ -361,12 +400,16 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 			} else if (change.originalLength && !change.modifiedLength) {
 				// Deleted.
 				// Find all modified cells before this.
-				const changeIndex = cellDiffInfo.findIndex(c => c.type === 'delete' && c.originalCellIndex === change.originalStart);
+				const changeIndex = cellDiffInfo.findIndex(
+					c => c.type === 'delete' && c.originalCellIndex === change.originalStart
+				);
 				cellDiffInfo.slice(processedIndex, changeIndex).forEach(c => {
 					if (c.type === 'unchanged' || c.type === 'modified') {
 						const originalCell = original.cells[c.originalCellIndex];
 						const modifiedCell = modified.cells[c.modifiedCellIndex];
-						const changed = c.type === 'modified' || originalCell.getComparisonValue() !== modifiedCell.getComparisonValue();
+						const changed =
+							c.type === 'modified' ||
+							originalCell.getComparisonValue() !== modifiedCell.getComparisonValue();
 						if (changed) {
 							changes.push(new DiffChange(c.originalCellIndex, 1, c.modifiedCellIndex, 1));
 						}
@@ -378,12 +421,18 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 				// This could be a situation where a cell has been deleted on left and inserted on the right.
 				// E.g. markdown cell deleted and code cell inserted.
 				// But LCS shows them as a modification.
-				const changeIndex = cellDiffInfo.findIndex(c => (c.type === 'delete' && c.originalCellIndex === change.originalStart) || (c.type === 'insert' && c.modifiedCellIndex === change.modifiedStart));
+				const changeIndex = cellDiffInfo.findIndex(
+					c =>
+						(c.type === 'delete' && c.originalCellIndex === change.originalStart) ||
+						(c.type === 'insert' && c.modifiedCellIndex === change.modifiedStart)
+				);
 				cellDiffInfo.slice(processedIndex, changeIndex).forEach(c => {
 					if (c.type === 'unchanged' || c.type === 'modified') {
 						const originalCell = original.cells[c.originalCellIndex];
 						const modifiedCell = modified.cells[c.modifiedCellIndex];
-						const changed = c.type === 'modified' || originalCell.getComparisonValue() !== modifiedCell.getComparisonValue();
+						const changed =
+							c.type === 'modified' ||
+							originalCell.getComparisonValue() !== modifiedCell.getComparisonValue();
 						if (changed) {
 							changes.push(new DiffChange(c.originalCellIndex, 1, c.modifiedCellIndex, 1));
 						}
@@ -397,7 +446,9 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 			if (c.type === 'unchanged' || c.type === 'modified') {
 				const originalCell = original.cells[c.originalCellIndex];
 				const modifiedCell = modified.cells[c.modifiedCellIndex];
-				const changed = c.type === 'modified' || originalCell.getComparisonValue() !== modifiedCell.getComparisonValue();
+				const changed =
+					c.type === 'modified' ||
+					originalCell.getComparisonValue() !== modifiedCell.getComparisonValue();
 				if (changed) {
 					changes.push(new DiffChange(c.originalCellIndex, 1, c.modifiedCellIndex, 1));
 				}
@@ -408,18 +459,33 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 			metadataChanged,
 			cellsDiff: {
 				changes,
-				quitEarly: false
-			}
+				quitEarly: false,
+			},
 		};
 	}
 
-	canComputeDiffWithCellIds(original: MirrorNotebookDocument, modified: MirrorNotebookDocument): boolean {
-		return this.canComputeDiffWithCellInternalIds(original, modified) || this.canComputeDiffWithCellMetadataIds(original, modified);
+	canComputeDiffWithCellIds(
+		original: MirrorNotebookDocument,
+		modified: MirrorNotebookDocument
+	): boolean {
+		return (
+			this.canComputeDiffWithCellInternalIds(original, modified) ||
+			this.canComputeDiffWithCellMetadataIds(original, modified)
+		);
 	}
 
-	canComputeDiffWithCellInternalIds(original: MirrorNotebookDocument, modified: MirrorNotebookDocument): boolean {
-		const originalCellIndexIds = original.cells.map((cell, index) => ({ index, id: (cell.internalMetadata?.internalId || '') as string }));
-		const modifiedCellIndexIds = modified.cells.map((cell, index) => ({ index, id: (cell.internalMetadata?.internalId || '') as string }));
+	canComputeDiffWithCellInternalIds(
+		original: MirrorNotebookDocument,
+		modified: MirrorNotebookDocument
+	): boolean {
+		const originalCellIndexIds = original.cells.map((cell, index) => ({
+			index,
+			id: (cell.internalMetadata?.internalId || '') as string,
+		}));
+		const modifiedCellIndexIds = modified.cells.map((cell, index) => ({
+			index,
+			id: (cell.internalMetadata?.internalId || '') as string,
+		}));
 		// If we have a cell without an id, do not use metadata.id for diffing.
 		if (originalCellIndexIds.some(c => !c.id) || modifiedCellIndexIds.some(c => !c.id)) {
 			return false;
@@ -429,9 +495,18 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 		return originalCellIndexIds.some(c => modifiedCellIndexIds.find(m => m.id === c.id));
 	}
 
-	canComputeDiffWithCellMetadataIds(original: MirrorNotebookDocument, modified: MirrorNotebookDocument): boolean {
-		const originalCellIndexIds = original.cells.map((cell, index) => ({ index, id: (cell.metadata?.id || '') as string }));
-		const modifiedCellIndexIds = modified.cells.map((cell, index) => ({ index, id: (cell.metadata?.id || '') as string }));
+	canComputeDiffWithCellMetadataIds(
+		original: MirrorNotebookDocument,
+		modified: MirrorNotebookDocument
+	): boolean {
+		const originalCellIndexIds = original.cells.map((cell, index) => ({
+			index,
+			id: (cell.metadata?.id || '') as string,
+		}));
+		const modifiedCellIndexIds = modified.cells.map((cell, index) => ({
+			index,
+			id: (cell.metadata?.id || '') as string,
+		}));
 		// If we have a cell without an id, do not use metadata.id for diffing.
 		if (originalCellIndexIds.some(c => !c.id) || modifiedCellIndexIds.some(c => !c.id)) {
 			return false;
@@ -445,20 +520,25 @@ export class NotebookWorker implements IWebWorkerServerRequestHandler, IDisposab
 		// Internally we use internalMetadata.cellId for diffing, hence update the internalMetadata.cellId
 		original.cells.map((cell, index) => {
 			cell.internalMetadata = cell.internalMetadata || {};
-			cell.internalMetadata.internalId = cell.metadata?.id as string || '';
+			cell.internalMetadata.internalId = (cell.metadata?.id as string) || '';
 		});
 		modified.cells.map((cell, index) => {
 			cell.internalMetadata = cell.internalMetadata || {};
-			cell.internalMetadata.internalId = cell.metadata?.id as string || '';
+			cell.internalMetadata.internalId = (cell.metadata?.id as string) || '';
 		});
 		return true;
 	}
 
-
 	isOriginalCellMatchedWithModifiedCell(originalCell: MirrorCell) {
-		return (originalCell.internalMetadata?.internalId as string || '').startsWith(PREFIX_FOR_UNMATCHED_ORIGINAL_CELLS);
+		return ((originalCell.internalMetadata?.internalId as string) || '').startsWith(
+			PREFIX_FOR_UNMATCHED_ORIGINAL_CELLS
+		);
 	}
-	updateCellIdsBasedOnMappings(mappings: { modified: number; original: number }[], originalCells: MirrorCell[], modifiedCells: MirrorCell[]): boolean {
+	updateCellIdsBasedOnMappings(
+		mappings: { modified: number; original: number }[],
+		originalCells: MirrorCell[],
+		modifiedCells: MirrorCell[]
+	): boolean {
 		const uuids = new Map<number, string>();
 		originalCells.map((cell, index) => {
 			cell.internalMetadata = cell.internalMetadata || { internalId: '' };
@@ -525,19 +605,20 @@ export function create(): IWebWorkerServerRequestHandler {
 	return new NotebookWorker();
 }
 
-export type CellDiffInfo = {
-	originalCellIndex: number;
-	modifiedCellIndex: number;
-	type: 'unchanged' | 'modified';
-} |
-{
-	originalCellIndex: number;
-	type: 'delete';
-} |
-{
-	modifiedCellIndex: number;
-	type: 'insert';
-};
+export type CellDiffInfo =
+	| {
+			originalCellIndex: number;
+			modifiedCellIndex: number;
+			type: 'unchanged' | 'modified';
+	  }
+	| {
+			originalCellIndex: number;
+			type: 'delete';
+	  }
+	| {
+			modifiedCellIndex: number;
+			type: 'insert';
+	  };
 
 interface ICell {
 	cellKind: CellKind;
@@ -547,22 +628,15 @@ interface ICell {
 
 class NotebookTextModelFacade {
 	public readonly cells: readonly ICell[];
-	constructor(
-		readonly notebook: MirrorNotebookDocument
-	) {
-
+	constructor(readonly notebook: MirrorNotebookDocument) {
 		this.cells = notebook.cells.map(cell => new NotebookCellTextModelFacade(cell));
 	}
-
 }
 class NotebookCellTextModelFacade implements ICell {
 	get cellKind(): CellKind {
 		return this.cell.cellKind;
 	}
-	constructor(
-		private readonly cell: MirrorCell
-	) {
-	}
+	constructor(private readonly cell: MirrorCell) {}
 	getHashValue(): number {
 		return this.cell.getComparisonValue();
 	}
@@ -572,5 +646,4 @@ class NotebookCellTextModelFacade implements ICell {
 		}
 		return this.getHashValue() === cell.getHashValue();
 	}
-
 }

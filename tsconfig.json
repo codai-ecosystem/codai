@@ -9,12 +9,14 @@
 		"incremental": true,
 		"tsBuildInfoFile": ".tsbuildinfo",
 		"baseUrl": ".",
-		"paths": {			"@dragoscatalin/*": ["packages/*/src"],
+		"paths": {
+			"@dragoscatalin/*": ["packages/*/src"],
 			"@dragoscatalin/memory-graph": ["packages/memory-graph/src"],
 			"@dragoscatalin/agent-runtime": ["packages/agent-runtime/src"],
 			"@dragoscatalin/ui-components": ["packages/ui-components/src"]
 		}
-	},	"include": ["packages/*/src/**/*", "apps/*/src/**/*"],
+	},
+	"include": ["packages/*/src/**/*", "apps/*/src/**/*"],
 	"exclude": [
 		"node_modules",
 		"packages/*/dist/**",

@@ -16,7 +16,10 @@ export interface MessagePoster {
 	): void;
 }
 
-export const createPosterForVsCode = (vscode: any, settingsManager: SettingsManager): MessagePoster => {
+export const createPosterForVsCode = (
+	vscode: any,
+	settingsManager: SettingsManager
+): MessagePoster => {
 	return {
 		postMessage<T extends FromWebviewMessage.Type>(
 			type: T['type'],
@@ -25,9 +28,8 @@ export const createPosterForVsCode = (vscode: any, settingsManager: SettingsMana
 			vscode.postMessage({
 				type,
 				source: settingsManager.settings!.source,
-				...body
+				...body,
 			});
-		}
+		},
 	};
 };
-

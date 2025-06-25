@@ -25,14 +25,11 @@ export class ChatFileReference extends FilePromptParser implements IDynamicVaria
 		public readonly reference: IDynamicVariable,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IWorkspaceContextService workspaceService: IWorkspaceContextService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		const { data } = reference;
 
-		assert(
-			data instanceof URI,
-			`Variable data must be an URI, got '${data}'.`,
-		);
+		assert(data instanceof URI, `Variable data must be an URI, got '${data}'.`);
 
 		super(data, {}, instantiationService, workspaceService, logService);
 	}

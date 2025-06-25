@@ -17,7 +17,7 @@ export function Header({
 	subtitle,
 	actions,
 	children,
-	className = ''
+	className = '',
 }: HeaderProps) {
 	return (
 		<header
@@ -34,22 +34,12 @@ export function Header({
 							<h1 className="text-xl font-bold bg-gradient-to-r from-codai-primary to-codai-accent bg-clip-text text-transparent">
 								{title}
 							</h1>
-							{subtitle && (
-								<span className="text-sm text-codai-muted-foreground">{subtitle}</span>
-							)}
+							{subtitle && <span className="text-sm text-codai-muted-foreground">{subtitle}</span>}
 						</div>
 					</div>
-					{children && (
-						<div className="ml-8">
-							{children}
-						</div>
-					)}
+					{children && <div className="ml-8">{children}</div>}
 				</div>
-				{actions && (
-					<div className="flex items-center space-x-3">
-						{actions}
-					</div>
-				)}
+				{actions && <div className="flex items-center space-x-3">{actions}</div>}
 			</div>
 		</header>
 	);

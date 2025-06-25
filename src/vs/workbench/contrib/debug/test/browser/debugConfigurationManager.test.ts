@@ -18,10 +18,21 @@ import { TestInstantiationService } from '../../../../../platform/instantiation/
 import { NullLogService } from '../../../../../platform/log/common/log.js';
 import { UriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentityService.js';
 import { ConfigurationManager } from '../../browser/debugConfigurationManager.js';
-import { DebugConfigurationProviderTriggerKind, IAdapterManager, IConfig, IDebugAdapterExecutable, IDebugSession } from '../../common/debug.js';
+import {
+	DebugConfigurationProviderTriggerKind,
+	IAdapterManager,
+	IConfig,
+	IDebugAdapterExecutable,
+	IDebugSession,
+} from '../../common/debug.js';
 import { IPreferencesService } from '../../../../services/preferences/common/preferences.js';
 import { TestQuickInputService } from '../../../../test/browser/workbenchTestServices.js';
-import { TestHistoryService, TestContextService, TestExtensionService, TestStorageService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	TestHistoryService,
+	TestContextService,
+	TestExtensionService,
+	TestStorageService,
+} from '../../../../test/common/workbenchTestServices.js';
 
 suite('debugConfigurationManager', () => {
 	const configurationProviderType = 'custom-type';
@@ -29,7 +40,10 @@ suite('debugConfigurationManager', () => {
 	let disposables: DisposableStore;
 
 	const adapterManager = <IAdapterManager>{
-		getDebugAdapterDescriptor(session: IDebugSession, config: IConfig): Promise<IDebugAdapterExecutable | undefined> {
+		getDebugAdapterDescriptor(
+			session: IDebugSession,
+			config: IConfig
+		): Promise<IDebugAdapterExecutable | undefined> {
 			return Promise.resolve(undefined);
 		},
 
@@ -39,18 +53,25 @@ suite('debugConfigurationManager', () => {
 
 		get onDidDebuggersExtPointRead(): Event<void> {
 			return Event.None;
-		}
+		},
 	};
 
 	const preferencesService = <IPreferencesService>{
-		userSettingsResource: URI.file('/tmp/settings.json')
+		userSettingsResource: URI.file('/tmp/settings.json'),
 	};
 
 	const configurationService = new TestConfigurationService();
 	setup(() => {
 		disposables = new DisposableStore();
 		const fileService = disposables.add(new FileService(new NullLogService()));
-		const instantiationService = disposables.add(new TestInstantiationService(new ServiceCollection([IPreferencesService, preferencesService], [IConfigurationService, configurationService])));
+		const instantiationService = disposables.add(
+			new TestInstantiationService(
+				new ServiceCollection(
+					[IPreferencesService, preferencesService],
+					[IConfigurationService, configurationService]
+				)
+			)
+		);
 		_debugConfigurationManager = new ConfigurationManager(
 			adapterManager,
 			new TestContextService(),
@@ -62,7 +83,8 @@ suite('debugConfigurationManager', () => {
 			new TestHistoryService(),
 			new UriIdentityService(fileService),
 			new ContextKeyService(configurationService),
-			new NullLogService());
+			new NullLogService()
+		);
 	});
 
 	teardown(() => disposables.dispose());
@@ -70,17 +92,19 @@ suite('debugConfigurationManager', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('resolves configuration based on type', async () => {
-		disposables.add(_debugConfigurationManager.registerDebugConfigurationProvider({
-			type: configurationProviderType,
-			resolveDebugConfiguration: (folderUri, config, token) => {
-				assert.strictEqual(config.type, configurationProviderType);
-				return Promise.resolve({
-					...config,
-					configurationResolved: true
-				});
-			},
-			triggerKind: DebugConfigurationProviderTriggerKind.Initial
-		}));
+		disposables.add(
+			_debugConfigurationManager.registerDebugConfigurationProvider({
+				type: configurationProviderType,
+				resolveDebugConfiguration: (folderUri, config, token) => {
+					assert.strictEqual(config.type, configurationProviderType);
+					return Promise.resolve({
+						...config,
+						configurationResolved: true,
+					});
+				},
+				triggerKind: DebugConfigurationProviderTriggerKind.Initial,
+			})
+		);
 
 		const initialConfig: IConfig = {
 			type: configurationProviderType,
@@ -88,34 +112,47 @@ suite('debugConfigurationManager', () => {
 			name: 'configName',
 		};
 
-		const resultConfig = await _debugConfigurationManager.resolveConfigurationByProviders(undefined, configurationProviderType, initialConfig, CancellationToken.None);
-		assert.strictEqual((resultConfig as any).configurationResolved, true, 'Configuration should be updated by test provider');
+		const resultConfig = await _debugConfigurationManager.resolveConfigurationByProviders(
+			undefined,
+			configurationProviderType,
+			initialConfig,
+			CancellationToken.None
+		);
+		assert.strictEqual(
+			(resultConfig as any).configurationResolved,
+			true,
+			'Configuration should be updated by test provider'
+		);
 	});
 
 	test('resolves configuration from second provider if type changes', async () => {
 		const secondProviderType = 'second-provider';
-		disposables.add(_debugConfigurationManager.registerDebugConfigurationProvider({
-			type: configurationProviderType,
-			resolveDebugConfiguration: (folderUri, config, token) => {
-				assert.strictEqual(config.type, configurationProviderType);
-				return Promise.resolve({
-					...config,
-					type: secondProviderType
-				});
-			},
-			triggerKind: DebugConfigurationProviderTriggerKind.Initial
-		}));
-		disposables.add(_debugConfigurationManager.registerDebugConfigurationProvider({
-			type: secondProviderType,
-			resolveDebugConfiguration: (folderUri, config, token) => {
-				assert.strictEqual(config.type, secondProviderType);
-				return Promise.resolve({
-					...config,
-					configurationResolved: true
-				});
-			},
-			triggerKind: DebugConfigurationProviderTriggerKind.Initial
-		}));
+		disposables.add(
+			_debugConfigurationManager.registerDebugConfigurationProvider({
+				type: configurationProviderType,
+				resolveDebugConfiguration: (folderUri, config, token) => {
+					assert.strictEqual(config.type, configurationProviderType);
+					return Promise.resolve({
+						...config,
+						type: secondProviderType,
+					});
+				},
+				triggerKind: DebugConfigurationProviderTriggerKind.Initial,
+			})
+		);
+		disposables.add(
+			_debugConfigurationManager.registerDebugConfigurationProvider({
+				type: secondProviderType,
+				resolveDebugConfiguration: (folderUri, config, token) => {
+					assert.strictEqual(config.type, secondProviderType);
+					return Promise.resolve({
+						...config,
+						configurationResolved: true,
+					});
+				},
+				triggerKind: DebugConfigurationProviderTriggerKind.Initial,
+			})
+		);
 
 		const initialConfig: IConfig = {
 			type: configurationProviderType,
@@ -123,9 +160,18 @@ suite('debugConfigurationManager', () => {
 			name: 'configName',
 		};
 
-		const resultConfig = await _debugConfigurationManager.resolveConfigurationByProviders(undefined, configurationProviderType, initialConfig, CancellationToken.None);
+		const resultConfig = await _debugConfigurationManager.resolveConfigurationByProviders(
+			undefined,
+			configurationProviderType,
+			initialConfig,
+			CancellationToken.None
+		);
 		assert.strictEqual(resultConfig!.type, secondProviderType);
-		assert.strictEqual((resultConfig as any).configurationResolved, true, 'Configuration should be updated by test provider');
+		assert.strictEqual(
+			(resultConfig as any).configurationResolved,
+			true,
+			'Configuration should be updated by test provider'
+		);
 	});
 
 	teardown(() => disposables.clear());

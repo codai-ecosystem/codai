@@ -17,7 +17,6 @@ import { EditorOption } from '../../../common/config/editorOptions.js';
  * decorations that provide additional information about the lines of code.
  */
 export class Margin extends ViewPart {
-
 	public static readonly CLASS_NAME = 'glyph-margin';
 	public static readonly OUTER_CLASS_NAME = 'margin';
 

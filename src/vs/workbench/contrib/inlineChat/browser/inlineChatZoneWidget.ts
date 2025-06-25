@@ -16,17 +16,27 @@ import { Range } from '../../../../editor/common/core/range.js';
 import { ScrollType } from '../../../../editor/common/editorCommon.js';
 import { IOptions, ZoneWidget } from '../../../../editor/contrib/zoneWidget/browser/zoneWidget.js';
 import { localize } from '../../../../nls.js';
-import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { IChatWidgetViewOptions } from '../../chat/browser/chat.js';
 import { IChatWidgetLocationOptions } from '../../chat/browser/chatWidget.js';
 import { isResponseVM } from '../../chat/common/chatViewModel.js';
-import { ACTION_REGENERATE_RESPONSE, ACTION_REPORT_ISSUE, ACTION_TOGGLE_DIFF, CTX_INLINE_CHAT_OUTER_CURSOR_POSITION, MENU_INLINE_CHAT_SIDE, MENU_INLINE_CHAT_WIDGET_SECONDARY, MENU_INLINE_CHAT_WIDGET_STATUS } from '../common/inlineChat.js';
+import {
+	ACTION_REGENERATE_RESPONSE,
+	ACTION_REPORT_ISSUE,
+	ACTION_TOGGLE_DIFF,
+	CTX_INLINE_CHAT_OUTER_CURSOR_POSITION,
+	MENU_INLINE_CHAT_SIDE,
+	MENU_INLINE_CHAT_WIDGET_SECONDARY,
+	MENU_INLINE_CHAT_WIDGET_STATUS,
+} from '../common/inlineChat.js';
 import { EditorBasedInlineChatWidget } from './inlineChatWidget.js';
 
 export class InlineChatZoneWidget extends ZoneWidget {
-
 	private static readonly _options: IOptions = {
 		showFrame: true,
 		frameWidth: 1,
@@ -52,80 +62,103 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		editor: ICodeEditor,
 		@IInstantiationService private readonly _instaService: IInstantiationService,
 		@ILogService private _logService: ILogService,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		super(editor, InlineChatZoneWidget._options);
 
 		this._ctxCursorPosition = CTX_INLINE_CHAT_OUTER_CURSOR_POSITION.bindTo(contextKeyService);
 
-		this._disposables.add(toDisposable(() => {
-			this._ctxCursorPosition.reset();
-		}));
+		this._disposables.add(
+			toDisposable(() => {
+				this._ctxCursorPosition.reset();
+			})
+		);
 
-		this.widget = this._instaService.createInstance(EditorBasedInlineChatWidget, location, this.editor, {
-			statusMenuId: {
-				menu: MENU_INLINE_CHAT_WIDGET_STATUS,
-				options: {
-					buttonConfigProvider: (action, index) => {
-						const isSecondary = index > 0;
-						if (new Set([ACTION_REGENERATE_RESPONSE, ACTION_TOGGLE_DIFF, ACTION_REPORT_ISSUE]).has(action.id)) {
-							return { isSecondary, showIcon: true, showLabel: false };
-						} else {
-							return { isSecondary };
-						}
-					}
-				}
-			},
-			secondaryMenuId: MENU_INLINE_CHAT_WIDGET_SECONDARY,
-			inZoneWidget: true,
-			chatWidgetViewOptions: {
-				menus: {
-					telemetrySource: 'interactiveEditorWidget-toolbar',
-					inputSideToolbar: MENU_INLINE_CHAT_SIDE
-				},
-				...options,
-				rendererOptions: {
-					renderTextEditsAsSummary: (uri) => {
-						// render when dealing with the current file in the editor
-						return isEqual(uri, editor.getModel()?.uri);
+		this.widget = this._instaService.createInstance(
+			EditorBasedInlineChatWidget,
+			location,
+			this.editor,
+			{
+				statusMenuId: {
+					menu: MENU_INLINE_CHAT_WIDGET_STATUS,
+					options: {
+						buttonConfigProvider: (action, index) => {
+							const isSecondary = index > 0;
+							if (
+								new Set([ACTION_REGENERATE_RESPONSE, ACTION_TOGGLE_DIFF, ACTION_REPORT_ISSUE]).has(
+									action.id
+								)
+							) {
+								return { isSecondary, showIcon: true, showLabel: false };
+							} else {
+								return { isSecondary };
+							}
+						},
 					},
-					renderDetectedCommandsWithRequest: true,
-					...options?.rendererOptions
+				},
+				secondaryMenuId: MENU_INLINE_CHAT_WIDGET_SECONDARY,
+				inZoneWidget: true,
+				chatWidgetViewOptions: {
+					menus: {
+						telemetrySource: 'interactiveEditorWidget-toolbar',
+						inputSideToolbar: MENU_INLINE_CHAT_SIDE,
+					},
+					...options,
+					rendererOptions: {
+						renderTextEditsAsSummary: uri => {
+							// render when dealing with the current file in the editor
+							return isEqual(uri, editor.getModel()?.uri);
+						},
+						renderDetectedCommandsWithRequest: true,
+						...options?.rendererOptions,
+					},
 				},
 			}
-		});
+		);
 		this._disposables.add(this.widget);
 
 		let revealFn: (() => void) | undefined;
-		this._disposables.add(this.widget.chatWidget.onWillMaybeChangeHeight(() => {
-			if (this.position) {
-				revealFn = this._createZoneAndScrollRestoreFn(this.position);
-			}
-		}));
-		this._disposables.add(this.widget.onDidChangeHeight(() => {
-			if (this.position && !this._usesResizeHeight) {
-				// only relayout when visible
-				revealFn ??= this._createZoneAndScrollRestoreFn(this.position);
-				const height = this._computeHeight();
-				this._relayout(height.linesValue);
-				revealFn?.();
-				revealFn = undefined;
-			}
-		}));
+		this._disposables.add(
+			this.widget.chatWidget.onWillMaybeChangeHeight(() => {
+				if (this.position) {
+					revealFn = this._createZoneAndScrollRestoreFn(this.position);
+				}
+			})
+		);
+		this._disposables.add(
+			this.widget.onDidChangeHeight(() => {
+				if (this.position && !this._usesResizeHeight) {
+					// only relayout when visible
+					revealFn ??= this._createZoneAndScrollRestoreFn(this.position);
+					const height = this._computeHeight();
+					this._relayout(height.linesValue);
+					revealFn?.();
+					revealFn = undefined;
+				}
+			})
+		);
 
 		this.create();
 
-		this._disposables.add(autorun(r => {
-			const isBusy = this.widget.requestInProgress.read(r);
-			this.domNode.firstElementChild?.classList.toggle('busy', isBusy);
-		}));
+		this._disposables.add(
+			autorun(r => {
+				const isBusy = this.widget.requestInProgress.read(r);
+				this.domNode.firstElementChild?.classList.toggle('busy', isBusy);
+			})
+		);
 
-		this._disposables.add(addDisposableListener(this.domNode, 'click', e => {
-			if (!this.editor.hasWidgetFocus() && !this.widget.hasFocus()) {
-				this.editor.focus();
-			}
-		}, true));
-
+		this._disposables.add(
+			addDisposableListener(
+				this.domNode,
+				'click',
+				e => {
+					if (!this.editor.hasWidgetFocus() && !this.widget.hasFocus()) {
+						this.editor.focus();
+					}
+				},
+				true
+			)
+		);
 
 		// todo@jrieken listen ONLY when showing
 		const updateCursorIsAboveContextKey = () => {
@@ -139,20 +172,23 @@ export class InlineChatZoneWidget extends ZoneWidget {
 				this._ctxCursorPosition.reset();
 			}
 		};
-		this._disposables.add(this.editor.onDidChangeCursorPosition(e => updateCursorIsAboveContextKey()));
+		this._disposables.add(
+			this.editor.onDidChangeCursorPosition(e => updateCursorIsAboveContextKey())
+		);
 		this._disposables.add(this.editor.onDidFocusEditorText(e => updateCursorIsAboveContextKey()));
 		updateCursorIsAboveContextKey();
 	}
 
 	protected override _fillContainer(container: HTMLElement): void {
-
-		container.style.setProperty('--vscode-inlineChat-background', 'var(--vscode-editor-background)');
+		container.style.setProperty(
+			'--vscode-inlineChat-background',
+			'var(--vscode-editor-background)'
+		);
 
 		container.appendChild(this.widget.domNode);
 	}
 
 	protected override _doLayout(heightInPixel: number): void {
-
 		this._updatePadding();
 
 		const info = this.editor.getLayoutInfo();
@@ -167,7 +203,9 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		const chatContentHeight = this.widget.contentHeight;
 		const editorHeight = this.editor.getLayoutInfo().height;
 
-		const contentHeight = this._decoratingElementsHeight() + Math.min(chatContentHeight, Math.max(this.widget.minHeight, editorHeight * 0.42));
+		const contentHeight =
+			this._decoratingElementsHeight() +
+			Math.min(chatContentHeight, Math.max(this.widget.minHeight, editorHeight * 0.42));
 		const heightInLines = contentHeight / this.editor.getOption(EditorOption.lineHeight);
 		return { linesValue: heightInLines, pixelsValue: contentHeight };
 	}
@@ -181,7 +219,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 
 		return {
 			minLines: minHeightPx / lineHeight,
-			maxLines: maxHeightPx / lineHeight
+			maxLines: maxHeightPx / lineHeight,
 		};
 	}
 
@@ -209,26 +247,33 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		assertType(this.container);
 
 		const info = this.editor.getLayoutInfo();
-		const marginWithoutIndentation = info.glyphMarginWidth + info.lineNumbersWidth + info.decorationsWidth;
+		const marginWithoutIndentation =
+			info.glyphMarginWidth + info.lineNumbersWidth + info.decorationsWidth;
 		this.container.style.paddingLeft = `${marginWithoutIndentation}px`;
 	}
 
 	reveal(position: Position) {
 		const stickyScroll = this.editor.getOption(EditorOption.stickyScroll);
 		const magicValue = stickyScroll.enabled ? stickyScroll.maxLineCount : 0;
-		this.editor.revealLines(position.lineNumber + magicValue, position.lineNumber + magicValue, ScrollType.Immediate);
+		this.editor.revealLines(
+			position.lineNumber + magicValue,
+			position.lineNumber + magicValue,
+			ScrollType.Immediate
+		);
 		this._scrollUp.reset();
 		this.updatePositionAndHeight(position);
 	}
 
 	override updatePositionAndHeight(position: Position): void {
 		const revealZone = this._createZoneAndScrollRestoreFn(position);
-		super.updatePositionAndHeight(position, !this._usesResizeHeight ? this._computeHeight().linesValue : undefined);
+		super.updatePositionAndHeight(
+			position,
+			!this._usesResizeHeight ? this._computeHeight().linesValue : undefined
+		);
 		revealZone();
 	}
 
 	private _createZoneAndScrollRestoreFn(position: Position): () => void {
-
 		const scrollState = StableEditorBottomScrollState.capture(this.editor);
 
 		const lineNumber = position.lineNumber <= 1 ? 1 : 1 + position.lineNumber;
@@ -240,7 +285,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			return isResponseVM(candidate) && candidate.response.value.length > 0;
 		});
 
-		if (hasResponse && zoneTop < scrollTop || this._scrollUp.didScrollUpOrDown) {
+		if ((hasResponse && zoneTop < scrollTop) || this._scrollUp.didScrollUpOrDown) {
 			// don't reveal the zone if it is already out of view (unless we are still getting ready)
 			// or if an outside scroll-up happened (e.g the user scrolled up/down to see the new content)
 			return this._scrollUp.runIgnored(() => {
@@ -260,7 +305,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			let newScrollTop = zoneTop;
 			let forceScrollTop = false;
 
-			if (lineBottom >= (scrollTop + editorHeight)) {
+			if (lineBottom >= scrollTop + editorHeight) {
 				// revealing the top of the zone would push out the line we are interested in and
 				// therefore we keep the line in the viewport
 				newScrollTop = lineBottom - editorHeight;
@@ -268,7 +313,14 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			}
 
 			if (newScrollTop < scrollTop || forceScrollTop) {
-				this._logService.trace('[IE] REVEAL zone', { zoneTop, lineTop, lineBottom, scrollTop, newScrollTop, forceScrollTop });
+				this._logService.trace('[IE] REVEAL zone', {
+					zoneTop,
+					lineTop,
+					lineBottom,
+					scrollTop,
+					newScrollTop,
+					forceScrollTop,
+				});
 				this.editor.setScrollTop(newScrollTop, ScrollType.Immediate);
 			}
 		});
@@ -291,13 +343,12 @@ export class InlineChatZoneWidget extends ZoneWidget {
 }
 
 class ScrollUpState {
-
 	private _didScrollUpOrDown?: boolean;
 	private _ignoreEvents = false;
 
 	private readonly _listener = new MutableDisposable();
 
-	constructor(private readonly _editor: ICodeEditor) { }
+	constructor(private readonly _editor: ICodeEditor) {}
 
 	dispose(): void {
 		this._listener.dispose();
@@ -337,5 +388,4 @@ class ScrollUpState {
 	get didScrollUpOrDown(): boolean | undefined {
 		return this._didScrollUpOrDown;
 	}
-
 }

@@ -101,5 +101,6 @@ export class TestDecorations<T extends { id: string; line: number } = ITestDecor
 	}
 }
 
-export const ITestingDecorationsService = createDecorator<ITestingDecorationsService>('testingDecorationService');
-
+export const ITestingDecorationsService = createDecorator<ITestingDecorationsService>(
+	'testingDecorationService'
+);

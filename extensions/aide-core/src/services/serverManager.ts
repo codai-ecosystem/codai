@@ -24,62 +24,70 @@ export class ServerManager {
 	 * @param description Server project description
 	 */
 	public generatePackageJson(name: string, description: string): string {
-		return JSON.stringify({
-			"name": this.kebabCase(name),
-			"version": "1.0.0",
-			"description": description || `${name} API server`,
-			"main": "dist/index.js",
-			"scripts": {
-				"start": "node dist/index.js",
-				"dev": "nodemon --exec ts-node src/index.ts",
-				"build": "tsc",
-				"test": "jest",
-				"lint": "eslint src/**/*.ts"
+		return JSON.stringify(
+			{
+				name: this.kebabCase(name),
+				version: '1.0.0',
+				description: description || `${name} API server`,
+				main: 'dist/index.js',
+				scripts: {
+					start: 'node dist/index.js',
+					dev: 'nodemon --exec ts-node src/index.ts',
+					build: 'tsc',
+					test: 'jest',
+					lint: 'eslint src/**/*.ts',
+				},
+				dependencies: {
+					express: '^4.18.2',
+					cors: '^2.8.5',
+					helmet: '^7.0.0',
+					morgan: '^1.10.0',
+					dotenv: '^16.0.3',
+				},
+				devDependencies: {
+					'@types/express': '^4.17.17',
+					'@types/cors': '^2.8.13',
+					'@types/morgan': '^1.9.4',
+					'@types/node': '^20.2.5',
+					'@types/jest': '^29.5.2',
+					typescript: '^5.0.4',
+					'ts-node': '^10.9.1',
+					nodemon: '^2.0.22',
+					jest: '^29.5.0',
+					'ts-jest': '^29.1.0',
+					eslint: '^8.41.0',
+					'@typescript-eslint/eslint-plugin': '^5.59.9',
+					'@typescript-eslint/parser': '^5.59.9',
+				},
 			},
-			"dependencies": {
-				"express": "^4.18.2",
-				"cors": "^2.8.5",
-				"helmet": "^7.0.0",
-				"morgan": "^1.10.0",
-				"dotenv": "^16.0.3"
-			},
-			"devDependencies": {
-				"@types/express": "^4.17.17",
-				"@types/cors": "^2.8.13",
-				"@types/morgan": "^1.9.4",
-				"@types/node": "^20.2.5",
-				"@types/jest": "^29.5.2",
-				"typescript": "^5.0.4",
-				"ts-node": "^10.9.1",
-				"nodemon": "^2.0.22",
-				"jest": "^29.5.0",
-				"ts-jest": "^29.1.0",
-				"eslint": "^8.41.0",
-				"@typescript-eslint/eslint-plugin": "^5.59.9",
-				"@typescript-eslint/parser": "^5.59.9"
-			}
-		}, null, 2);
+			null,
+			2
+		);
 	}
 
 	/**
 	 * Generate tsconfig.json for a server project
 	 */
 	public generateTsConfig(): string {
-		return JSON.stringify({
-			"compilerOptions": {
-				"target": "ES2022",
-				"module": "CommonJS",
-				"outDir": "./dist",
-				"rootDir": "./src",
-				"strict": true,
-				"esModuleInterop": true,
-				"skipLibCheck": true,
-				"forceConsistentCasingInFileNames": true,
-				"resolveJsonModule": true
+		return JSON.stringify(
+			{
+				compilerOptions: {
+					target: 'ES2022',
+					module: 'CommonJS',
+					outDir: './dist',
+					rootDir: './src',
+					strict: true,
+					esModuleInterop: true,
+					skipLibCheck: true,
+					forceConsistentCasingInFileNames: true,
+					resolveJsonModule: true,
+				},
+				include: ['src/**/*'],
+				exclude: ['node_modules', '**/*.test.ts'],
 			},
-			"include": ["src/**/*"],
-			"exclude": ["node_modules", "**/*.test.ts"]
-		}, null, 2);
+			null,
+			2
+		);
 	}
 
 	/**
@@ -124,7 +132,7 @@ LOG_LEVEL=debug
 			url: 'http://localhost:3000',
 			status: 'running',
 			startTime: new Date(),
-			pid: 12345 // Mock PID
+			pid: 12345, // Mock PID
 		};
 
 		this.activeServers.set(serverInfo.id, serverInfo);

@@ -1,11 +1,13 @@
 # CODAI.RO Transition Plan
 
 ## Overview
+
 This document outlines the transition from AIDE (development name) to **codai.ro** - a minimal, user-friendly AI-native development environment focused on simplicity and broad accessibility.
 
 ## Brand Transition
 
 ### New Branding
+
 - **Production Name**: codai.ro
 - **Tagline**: "AI-Native Development Made Simple"
 - **Owner**: Dragos Catalin / factoria.ro
@@ -13,6 +15,7 @@ This document outlines the transition from AIDE (development name) to **codai.ro
 - **Platform Support**: Both web and native applications
 
 ### Key Principles
+
 1. **Simplicity First**: Remove complexity, focus on core AI-driven development
 2. **Minimal Extensions**: Only essential tools (GitHub Copilot + Copilot Chat)
 3. **Universal Access**: Web-first design with native fallback
@@ -21,7 +24,9 @@ This document outlines the transition from AIDE (development name) to **codai.ro
 ## Extension Strategy Overhaul
 
 ### Current State Analysis
+
 The project currently includes 50+ VS Code extensions covering every language and tool imaginable. This creates:
+
 - Bloated bundle sizes
 - Complex dependency management
 - Overwhelming user experience
@@ -30,12 +35,14 @@ The project currently includes 50+ VS Code extensions covering every language an
 ### New Minimal Extension Strategy
 
 #### Core Extensions (Keep)
+
 1. **GitHub Copilot** - AI code completion
 2. **GitHub Copilot Chat** - AI conversation interface
 3. **TypeScript/JavaScript** - Already in VS Code core
 4. **Git** - Already in VS Code core
 
 #### Extensions to Remove (90% reduction)
+
 - Language-specific extensions (Python, Java, C++, etc.) - Users can install as needed
 - Theme extensions - Provide 2-3 clean themes maximum
 - Specialized tools (Docker, etc.) - Optional user installation
@@ -43,6 +50,7 @@ The project currently includes 50+ VS Code extensions covering every language an
 - Most formatting/linting tools - Keep only essential ones
 
 #### Optional Extensions (User Choice)
+
 - Markdown support (for documentation)
 - JSON/YAML (for configuration)
 - Simple file icons
@@ -50,6 +58,7 @@ The project currently includes 50+ VS Code extensions covering every language an
 ## UI/UX Simplification
 
 ### Current Complexity Issues
+
 - Multiple control panels
 - Complex agent orchestration UI
 - Technical terminology
@@ -58,6 +67,7 @@ The project currently includes 50+ VS Code extensions covering every language an
 ### New Simple UI Structure
 
 #### Main Interface
+
 ```
 codai.ro Interface
 ├── Welcome Screen
@@ -76,6 +86,7 @@ codai.ro Interface
 ```
 
 #### Key UI Principles
+
 1. **One-Click Actions**: New project, deploy, share
 2. **Conversational Interface**: Chat-first development
 3. **Context Awareness**: AI understands project automatically
@@ -84,12 +95,14 @@ codai.ro Interface
 ## Architecture Simplification
 
 ### Current Architecture (Complex)
+
 - Multiple agent types
 - Complex memory graph
 - Distributed control systems
 - Multiple deployment targets
 
 ### New Streamlined Architecture
+
 ```
 codai.ro Core
 ├── VS Code Base (web/native)
@@ -100,6 +113,7 @@ codai.ro Core
 ```
 
 ### Components to Simplify/Remove
+
 1. **Agent Runtime**: Simplify to basic task coordination
 2. **Memory Graph**: Reduce to project context only
 3. **Control Panel**: Merge into main interface
@@ -108,30 +122,35 @@ codai.ro Core
 ## Implementation Phases
 
 ### Phase 1: Documentation & Branding Update
+
 - [ ] Update README.md with codai.ro branding
 - [ ] Create new brand guidelines
 - [ ] Simplify project description
 - [ ] Update package.json metadata
 
 ### Phase 2: Extension Cleanup
+
 - [ ] Identify essential extensions (Copilot + Chat)
 - [ ] Remove 90% of current extensions
 - [ ] Update extension manifests
 - [ ] Test minimal extension set
 
 ### Phase 3: UI/UX Redesign
+
 - [ ] Design simple welcome screen
 - [ ] Integrate Copilot Chat as primary interface
 - [ ] Remove complex control panels
 - [ ] Implement one-click project creation
 
 ### Phase 4: Architecture Streamlining
+
 - [ ] Simplify agent runtime
 - [ ] Reduce memory graph complexity
 - [ ] Consolidate applications
 - [ ] Optimize for web deployment
 
 ### Phase 5: Testing & Deployment
+
 - [ ] Test web version
 - [ ] Test native version
 - [ ] Performance optimization
@@ -140,6 +159,7 @@ codai.ro Core
 ## File Cleanup Strategy
 
 ### Files to Archive/Remove
+
 1. **Milestone Documentation**: Move to `docs/archive/`
 2. **Complex Planning Docs**: Archive or consolidate
 3. **Temporary Files**: Delete package-temp.json, etc.
@@ -147,6 +167,7 @@ codai.ro Core
 5. **Complex Configurations**: Simplify build and deployment configs
 
 ### Files to Update
+
 1. **README.md**: Complete rewrite for codai.ro
 2. **package.json**: Update metadata and dependencies
 3. **Documentation**: Simplify and focus on user experience
@@ -155,12 +176,14 @@ codai.ro Core
 ## Success Metrics
 
 ### User Experience
+
 - Time to first project: < 30 seconds
 - Learning curve: Minimal (chat-driven)
 - Bundle size: < 50MB (vs current 200MB+)
 - Startup time: < 5 seconds
 
 ### Technical
+
 - Extension count: 2-5 (vs current 50+)
 - Dependencies: Minimal set
 - Build time: < 2 minutes

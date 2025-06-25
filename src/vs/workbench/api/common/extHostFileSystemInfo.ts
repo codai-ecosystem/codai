@@ -11,7 +11,6 @@ import { createDecorator } from '../../../platform/instantiation/common/instanti
 import { ExtHostFileSystemInfoShape } from './extHost.protocol.js';
 
 export class ExtHostFileSystemInfo implements ExtHostFileSystemInfoShape {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _systemSchemes = new Set(Object.keys(Schemas));
@@ -54,4 +53,5 @@ export class ExtHostFileSystemInfo implements ExtHostFileSystemInfoShape {
 export interface IExtHostFileSystemInfo extends ExtHostFileSystemInfo {
 	readonly extUri: IExtUri;
 }
-export const IExtHostFileSystemInfo = createDecorator<IExtHostFileSystemInfo>('IExtHostFileSystemInfo');
+export const IExtHostFileSystemInfo =
+	createDecorator<IExtHostFileSystemInfo>('IExtHostFileSystemInfo');

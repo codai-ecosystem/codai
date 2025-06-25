@@ -19,12 +19,16 @@ export class SharedWebContentExtractorService implements ISharedWebContentExtrac
 		try {
 			const response = await fetch(uri.toString(true), {
 				headers: {
-					'Accept': 'image/*',
-					'User-Agent': 'Mozilla/5.0'
-				}
+					Accept: 'image/*',
+					'User-Agent': 'Mozilla/5.0',
+				},
 			});
 			const contentType = response.headers.get('content-type');
-			if (!response.ok || !contentType?.startsWith('image/') || !/(webp|jpg|jpeg|gif|png|bmp)$/i.test(contentType)) {
+			if (
+				!response.ok ||
+				!contentType?.startsWith('image/') ||
+				!/(webp|jpg|jpeg|gif|png|bmp)$/i.test(contentType)
+			) {
 				return undefined;
 			}
 

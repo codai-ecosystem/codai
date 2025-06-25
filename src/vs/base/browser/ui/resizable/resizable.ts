@@ -8,7 +8,6 @@ import { Orientation, OrthogonalEdge, Sash, SashState } from '../sash/sash.js';
 import { Emitter, Event } from '../../../common/event.js';
 import { DisposableStore } from '../../../common/lifecycle.js';
 
-
 export interface IResizeEvent {
 	dimension: Dimension;
 	done: boolean;
@@ -19,7 +18,6 @@ export interface IResizeEvent {
 }
 
 export class ResizableHTMLElement {
-
 	readonly domNode: HTMLElement;
 
 	private readonly _onDidWillResize = new Emitter<void>();
@@ -41,10 +39,26 @@ export class ResizableHTMLElement {
 
 	constructor() {
 		this.domNode = document.createElement('div');
-		this._eastSash = new Sash(this.domNode, { getVerticalSashLeft: () => this._size.width }, { orientation: Orientation.VERTICAL });
-		this._westSash = new Sash(this.domNode, { getVerticalSashLeft: () => 0 }, { orientation: Orientation.VERTICAL });
-		this._northSash = new Sash(this.domNode, { getHorizontalSashTop: () => 0 }, { orientation: Orientation.HORIZONTAL, orthogonalEdge: OrthogonalEdge.North });
-		this._southSash = new Sash(this.domNode, { getHorizontalSashTop: () => this._size.height }, { orientation: Orientation.HORIZONTAL, orthogonalEdge: OrthogonalEdge.South });
+		this._eastSash = new Sash(
+			this.domNode,
+			{ getVerticalSashLeft: () => this._size.width },
+			{ orientation: Orientation.VERTICAL }
+		);
+		this._westSash = new Sash(
+			this.domNode,
+			{ getVerticalSashLeft: () => 0 },
+			{ orientation: Orientation.VERTICAL }
+		);
+		this._northSash = new Sash(
+			this.domNode,
+			{ getHorizontalSashTop: () => 0 },
+			{ orientation: Orientation.HORIZONTAL, orthogonalEdge: OrthogonalEdge.North }
+		);
+		this._southSash = new Sash(
+			this.domNode,
+			{ getHorizontalSashTop: () => this._size.height },
+			{ orientation: Orientation.HORIZONTAL, orthogonalEdge: OrthogonalEdge.South }
+		);
 
 		this._northSash.orthogonalStartSash = this._westSash;
 		this._northSash.orthogonalEndSash = this._eastSash;
@@ -55,64 +69,96 @@ export class ResizableHTMLElement {
 		let deltaY = 0;
 		let deltaX = 0;
 
-		this._sashListener.add(Event.any(this._northSash.onDidStart, this._eastSash.onDidStart, this._southSash.onDidStart, this._westSash.onDidStart)(() => {
-			if (currentSize === undefined) {
-				this._onDidWillResize.fire();
-				currentSize = this._size;
-				deltaY = 0;
-				deltaX = 0;
-			}
-		}));
-		this._sashListener.add(Event.any(this._northSash.onDidEnd, this._eastSash.onDidEnd, this._southSash.onDidEnd, this._westSash.onDidEnd)(() => {
-			if (currentSize !== undefined) {
-				currentSize = undefined;
-				deltaY = 0;
-				deltaX = 0;
-				this._onDidResize.fire({ dimension: this._size, done: true });
-			}
-		}));
+		this._sashListener.add(
+			Event.any(
+				this._northSash.onDidStart,
+				this._eastSash.onDidStart,
+				this._southSash.onDidStart,
+				this._westSash.onDidStart
+			)(() => {
+				if (currentSize === undefined) {
+					this._onDidWillResize.fire();
+					currentSize = this._size;
+					deltaY = 0;
+					deltaX = 0;
+				}
+			})
+		);
+		this._sashListener.add(
+			Event.any(
+				this._northSash.onDidEnd,
+				this._eastSash.onDidEnd,
+				this._southSash.onDidEnd,
+				this._westSash.onDidEnd
+			)(() => {
+				if (currentSize !== undefined) {
+					currentSize = undefined;
+					deltaY = 0;
+					deltaX = 0;
+					this._onDidResize.fire({ dimension: this._size, done: true });
+				}
+			})
+		);
 
-		this._sashListener.add(this._eastSash.onDidChange(e => {
-			if (currentSize) {
-				deltaX = e.currentX - e.startX;
-				this.layout(currentSize.height + deltaY, currentSize.width + deltaX);
-				this._onDidResize.fire({ dimension: this._size, done: false, east: true });
-			}
-		}));
-		this._sashListener.add(this._westSash.onDidChange(e => {
-			if (currentSize) {
-				deltaX = -(e.currentX - e.startX);
-				this.layout(currentSize.height + deltaY, currentSize.width + deltaX);
-				this._onDidResize.fire({ dimension: this._size, done: false, west: true });
-			}
-		}));
-		this._sashListener.add(this._northSash.onDidChange(e => {
-			if (currentSize) {
-				deltaY = -(e.currentY - e.startY);
-				this.layout(currentSize.height + deltaY, currentSize.width + deltaX);
-				this._onDidResize.fire({ dimension: this._size, done: false, north: true });
-			}
-		}));
-		this._sashListener.add(this._southSash.onDidChange(e => {
-			if (currentSize) {
-				deltaY = e.currentY - e.startY;
-				this.layout(currentSize.height + deltaY, currentSize.width + deltaX);
-				this._onDidResize.fire({ dimension: this._size, done: false, south: true });
-			}
-		}));
+		this._sashListener.add(
+			this._eastSash.onDidChange(e => {
+				if (currentSize) {
+					deltaX = e.currentX - e.startX;
+					this.layout(currentSize.height + deltaY, currentSize.width + deltaX);
+					this._onDidResize.fire({ dimension: this._size, done: false, east: true });
+				}
+			})
+		);
+		this._sashListener.add(
+			this._westSash.onDidChange(e => {
+				if (currentSize) {
+					deltaX = -(e.currentX - e.startX);
+					this.layout(currentSize.height + deltaY, currentSize.width + deltaX);
+					this._onDidResize.fire({ dimension: this._size, done: false, west: true });
+				}
+			})
+		);
+		this._sashListener.add(
+			this._northSash.onDidChange(e => {
+				if (currentSize) {
+					deltaY = -(e.currentY - e.startY);
+					this.layout(currentSize.height + deltaY, currentSize.width + deltaX);
+					this._onDidResize.fire({ dimension: this._size, done: false, north: true });
+				}
+			})
+		);
+		this._sashListener.add(
+			this._southSash.onDidChange(e => {
+				if (currentSize) {
+					deltaY = e.currentY - e.startY;
+					this.layout(currentSize.height + deltaY, currentSize.width + deltaX);
+					this._onDidResize.fire({ dimension: this._size, done: false, south: true });
+				}
+			})
+		);
 
-		this._sashListener.add(Event.any(this._eastSash.onDidReset, this._westSash.onDidReset)(e => {
-			if (this._preferredSize) {
-				this.layout(this._size.height, this._preferredSize.width);
-				this._onDidResize.fire({ dimension: this._size, done: true });
-			}
-		}));
-		this._sashListener.add(Event.any(this._northSash.onDidReset, this._southSash.onDidReset)(e => {
-			if (this._preferredSize) {
-				this.layout(this._preferredSize.height, this._size.width);
-				this._onDidResize.fire({ dimension: this._size, done: true });
-			}
-		}));
+		this._sashListener.add(
+			Event.any(
+				this._eastSash.onDidReset,
+				this._westSash.onDidReset
+			)(e => {
+				if (this._preferredSize) {
+					this.layout(this._size.height, this._preferredSize.width);
+					this._onDidResize.fire({ dimension: this._size, done: true });
+				}
+			})
+		);
+		this._sashListener.add(
+			Event.any(
+				this._northSash.onDidReset,
+				this._southSash.onDidReset
+			)(e => {
+				if (this._preferredSize) {
+					this.layout(this._preferredSize.height, this._size.width);
+					this._onDidResize.fire({ dimension: this._size, done: true });
+				}
+			})
+		);
 	}
 
 	dispose(): void {
@@ -134,7 +180,6 @@ export class ResizableHTMLElement {
 	}
 
 	layout(height: number = this.size.height, width: number = this.size.width): void {
-
 		const { height: minHeight, width: minWidth } = this._minSize;
 		const { height: maxHeight, width: maxWidth } = this._maxSize;
 

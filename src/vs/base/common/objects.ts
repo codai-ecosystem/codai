@@ -41,7 +41,6 @@ export function deepFreeze<T>(obj: T): T {
 
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 
-
 export function cloneAndChange(obj: any, changer: (orig: any) => any): any {
 	return _cloneAndChange(obj, changer, new Set());
 }
@@ -122,7 +121,7 @@ export function equals(one: any, other: any): boolean {
 	if (typeof one !== 'object') {
 		return false;
 	}
-	if ((Array.isArray(one)) !== (Array.isArray(other))) {
+	if (Array.isArray(one) !== Array.isArray(other)) {
 		return false;
 	}
 
@@ -231,7 +230,10 @@ export function filter(obj: obj, predicate: (key: string, value: any) => boolean
 	return result;
 }
 
-export function mapValues<T extends {}, R>(obj: T, fn: (value: T[keyof T], key: string) => R): { [K in keyof T]: R } {
+export function mapValues<T extends {}, R>(
+	obj: T,
+	fn: (value: T[keyof T], key: string) => R
+): { [K in keyof T]: R } {
 	const result: { [key: string]: R } = {};
 	for (const [key, value] of Object.entries(obj)) {
 		result[key] = fn(<T[keyof T]>value, key);

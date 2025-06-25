@@ -91,6 +91,7 @@ aide/
 The memory graph is the core data structure used by AIDE to store and organize project information. It's a persistent graph-based data model that represents code, requirements, and relationships.
 
 Key components:
+
 - **GraphNode**: Base entity in the memory graph
 - **GraphEdge**: Relationships between nodes
 - **Persistence Layer**: Adapters for different storage backends
@@ -111,6 +112,7 @@ Communication between agents happens through a message bus with a standardized p
 ### UI Components
 
 Shared React components used across different parts of the application. Built with:
+
 - TypeScript for type safety
 - Tailwind CSS for styling
 - Radix UI for accessible primitives
@@ -170,6 +172,7 @@ Follow the Conventional Commits style:
 ```
 
 Where `type` is one of:
+
 - feat: New feature
 - fix: Bug fix
 - docs: Documentation

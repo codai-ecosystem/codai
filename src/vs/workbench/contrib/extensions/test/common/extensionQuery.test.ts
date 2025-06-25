@@ -147,6 +147,8 @@ suite('Extension query', () => {
 		Query.suggestions('@sort:installs', null).every(x => x !== '@sort:rating ');
 
 		Query.suggestions('@category:blah', null).some(x => x === '@category:"extension packs" ');
-		Query.suggestions('@category:"extension packs"', null).every(x => x !== '@category:formatters ');
+		Query.suggestions('@category:"extension packs"', null).every(
+			x => x !== '@category:formatters '
+		);
 	});
 });

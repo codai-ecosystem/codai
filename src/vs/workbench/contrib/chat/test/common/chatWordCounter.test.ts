@@ -22,7 +22,7 @@ suite('ChatWordCounter', () => {
 				['hello world', 1, 'hello'],
 				['hello', 1, 'hello'],
 				['hello world', 0, ''],
-				['here\'s, some.   punctuation?', 3, 'here\'s, some.   punctuation?'],
+				["here's, some.   punctuation?", 3, "here's, some.   punctuation?"],
 				['| markdown | _table_ | header |', 3, '| markdown | _table_ | header |'],
 				['| --- | --- | --- |', 1, '| ---'],
 				['| --- | --- | --- |', 3, '| --- | --- | --- |'],
@@ -33,30 +33,24 @@ suite('ChatWordCounter', () => {
 		});
 
 		test('whitespace', () => {
-			assert.deepStrictEqual(
-				getNWords('hello ', 1),
-				{
-					value: 'hello ',
-					returnedWordCount: 1,
-					isFullString: true,
-					totalWordCount: 1,
-				} satisfies IWordCountResult);
-			assert.deepStrictEqual(
-				getNWords('hello\n\n', 1),
-				{
-					value: 'hello\n\n',
-					returnedWordCount: 1,
-					isFullString: true,
-					totalWordCount: 1,
-				} satisfies IWordCountResult);
-			assert.deepStrictEqual(
-				getNWords('\nhello', 1),
-				{
-					value: '\nhello',
-					returnedWordCount: 1,
-					isFullString: true,
-					totalWordCount: 1,
-				} satisfies IWordCountResult);
+			assert.deepStrictEqual(getNWords('hello ', 1), {
+				value: 'hello ',
+				returnedWordCount: 1,
+				isFullString: true,
+				totalWordCount: 1,
+			} satisfies IWordCountResult);
+			assert.deepStrictEqual(getNWords('hello\n\n', 1), {
+				value: 'hello\n\n',
+				returnedWordCount: 1,
+				isFullString: true,
+				totalWordCount: 1,
+			} satisfies IWordCountResult);
+			assert.deepStrictEqual(getNWords('\nhello', 1), {
+				value: '\nhello',
+				returnedWordCount: 1,
+				isFullString: true,
+				totalWordCount: 1,
+			} satisfies IWordCountResult);
 		});
 
 		test('matching links', () => {
@@ -64,11 +58,19 @@ suite('ChatWordCounter', () => {
 				['[hello](https://example.com) world', 1, '[hello](https://example.com)'],
 				['[hello](https://example.com) world', 2, '[hello](https://example.com) world'],
 				['oh [hello](https://example.com "title") world', 1, 'oh'],
-				['oh [hello](https://example.com "title") world', 2, 'oh [hello](https://example.com "title")'],
+				[
+					'oh [hello](https://example.com "title") world',
+					2,
+					'oh [hello](https://example.com "title")',
+				],
 				// Parens in link destination
 				['[hello](https://example.com?()) world', 1, '[hello](https://example.com?())'],
 				// Escaped brackets in link text
-				['[he \\[l\\] \\]lo](https://example.com?()) world', 1, '[he \\[l\\] \\]lo](https://example.com?())'],
+				[
+					'[he \\[l\\] \\]lo](https://example.com?()) world',
+					1,
+					'[he \\[l\\] \\]lo](https://example.com?())',
+				],
 			];
 
 			cases.forEach(([str, nWords, result]) => doTest(str, nWords, result));
@@ -88,12 +90,9 @@ suite('ChatWordCounter', () => {
 		});
 
 		test('chinese characters', () => {
-			const cases: [string, number, string][] = [
-				['我喜欢中国菜', 3, '我喜欢'],
-			];
+			const cases: [string, number, string][] = [['我喜欢中国菜', 3, '我喜欢']];
 
 			cases.forEach(([str, nWords, result]) => doTest(str, nWords, result));
 		});
 	});
-
 });

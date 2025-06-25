@@ -6,13 +6,23 @@
 import { refineServiceDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { Event } from '../../../../base/common/event.js';
 import { Color } from '../../../../base/common/color.js';
-import { IColorTheme, IThemeService, IFileIconTheme, IProductIconTheme } from '../../../../platform/theme/common/themeService.js';
+import {
+	IColorTheme,
+	IThemeService,
+	IFileIconTheme,
+	IProductIconTheme,
+} from '../../../../platform/theme/common/themeService.js';
 import { ConfigurationTarget } from '../../../../platform/configuration/common/configuration.js';
 import { isBoolean, isString } from '../../../../base/common/types.js';
-import { IconContribution, IconDefinition } from '../../../../platform/theme/common/iconRegistry.js';
+import {
+	IconContribution,
+	IconDefinition,
+} from '../../../../platform/theme/common/iconRegistry.js';
 import { ColorScheme, ThemeTypeSelector } from '../../../../platform/theme/common/theme.js';
 
-export const IWorkbenchThemeService = refineServiceDecorator<IThemeService, IWorkbenchThemeService>(IThemeService);
+export const IWorkbenchThemeService = refineServiceDecorator<IThemeService, IWorkbenchThemeService>(
+	IThemeService
+);
 
 export const THEME_SCOPE_OPEN_PAREN = '[';
 export const THEME_SCOPE_CLOSE_PAREN = ']';
@@ -30,12 +40,12 @@ export enum ThemeSettings {
 
 	PREFERRED_DARK_THEME = 'workbench.preferredDarkColorTheme',
 	PREFERRED_LIGHT_THEME = 'workbench.preferredLightColorTheme',
-	PREFERRED_HC_DARK_THEME = 'workbench.preferredHighContrastColorTheme', /* id kept for compatibility reasons */
+	PREFERRED_HC_DARK_THEME = 'workbench.preferredHighContrastColorTheme' /* id kept for compatibility reasons */,
 	PREFERRED_HC_LIGHT_THEME = 'workbench.preferredHighContrastLightColorTheme',
 	DETECT_COLOR_SCHEME = 'window.autoDetectColorScheme',
 	DETECT_HC = 'window.autoDetectHighContrast',
 
-	SYSTEM_COLOR_THEME = 'window.systemColorTheme'
+	SYSTEM_COLOR_THEME = 'window.systemColorTheme',
 }
 
 export enum ThemeSettingDefaults {
@@ -75,7 +85,7 @@ export const COLOR_THEME_DARK_INITIAL_COLORS = {
 	'titleBar.border': '#2b2b2b',
 	'titleBar.inactiveBackground': '#1f1f1f',
 	'titleBar.inactiveForeground': '#9d9d9d',
-	'welcomePage.tileBackground': '#2b2b2b'
+	'welcomePage.tileBackground': '#2b2b2b',
 };
 
 export const COLOR_THEME_LIGHT_INITIAL_COLORS = {
@@ -102,7 +112,7 @@ export const COLOR_THEME_LIGHT_INITIAL_COLORS = {
 	'titleBar.border': '#E5E5E5',
 	'titleBar.inactiveBackground': '#f8f8f8',
 	'titleBar.inactiveForeground': '#8b949e',
-	'welcomePage.tileBackground': '#f3f3f3'
+	'welcomePage.tileBackground': '#f3f3f3',
 };
 
 export interface IWorkbenchTheme {
@@ -122,8 +132,7 @@ export interface IColorMap {
 	[id: string]: Color;
 }
 
-export interface IWorkbenchFileIconTheme extends IWorkbenchTheme, IFileIconTheme {
-}
+export interface IWorkbenchFileIconTheme extends IWorkbenchTheme, IFileIconTheme {}
 
 export interface IWorkbenchProductIconTheme extends IWorkbenchTheme, IProductIconTheme {
 	readonly settingsId: string;
@@ -133,27 +142,47 @@ export interface IWorkbenchProductIconTheme extends IWorkbenchTheme, IProductIco
 
 export type ThemeSettingTarget = ConfigurationTarget | undefined | 'auto' | 'preview';
 
-
 export interface IWorkbenchThemeService extends IThemeService {
 	readonly _serviceBrand: undefined;
-	setColorTheme(themeId: string | undefined | IWorkbenchColorTheme, settingsTarget: ThemeSettingTarget): Promise<IWorkbenchColorTheme | null>;
+	setColorTheme(
+		themeId: string | undefined | IWorkbenchColorTheme,
+		settingsTarget: ThemeSettingTarget
+	): Promise<IWorkbenchColorTheme | null>;
 	getColorTheme(): IWorkbenchColorTheme;
 	getColorThemes(): Promise<IWorkbenchColorTheme[]>;
-	getMarketplaceColorThemes(publisher: string, name: string, version: string): Promise<IWorkbenchColorTheme[]>;
+	getMarketplaceColorThemes(
+		publisher: string,
+		name: string,
+		version: string
+	): Promise<IWorkbenchColorTheme[]>;
 	onDidColorThemeChange: Event<IWorkbenchColorTheme>;
 
 	getPreferredColorScheme(): ColorScheme | undefined;
 
-	setFileIconTheme(iconThemeId: string | undefined | IWorkbenchFileIconTheme, settingsTarget: ThemeSettingTarget): Promise<IWorkbenchFileIconTheme>;
+	setFileIconTheme(
+		iconThemeId: string | undefined | IWorkbenchFileIconTheme,
+		settingsTarget: ThemeSettingTarget
+	): Promise<IWorkbenchFileIconTheme>;
 	getFileIconTheme(): IWorkbenchFileIconTheme;
 	getFileIconThemes(): Promise<IWorkbenchFileIconTheme[]>;
-	getMarketplaceFileIconThemes(publisher: string, name: string, version: string): Promise<IWorkbenchFileIconTheme[]>;
+	getMarketplaceFileIconThemes(
+		publisher: string,
+		name: string,
+		version: string
+	): Promise<IWorkbenchFileIconTheme[]>;
 	onDidFileIconThemeChange: Event<IWorkbenchFileIconTheme>;
 
-	setProductIconTheme(iconThemeId: string | undefined | IWorkbenchProductIconTheme, settingsTarget: ThemeSettingTarget): Promise<IWorkbenchProductIconTheme>;
+	setProductIconTheme(
+		iconThemeId: string | undefined | IWorkbenchProductIconTheme,
+		settingsTarget: ThemeSettingTarget
+	): Promise<IWorkbenchProductIconTheme>;
 	getProductIconTheme(): IWorkbenchProductIconTheme;
 	getProductIconThemes(): Promise<IWorkbenchProductIconTheme[]>;
-	getMarketplaceProductIconThemes(publisher: string, name: string, version: string): Promise<IWorkbenchProductIconTheme[]>;
+	getMarketplaceProductIconThemes(
+		publisher: string,
+		name: string,
+		version: string
+	): Promise<IWorkbenchProductIconTheme[]>;
 	onDidProductIconThemeChange: Event<IWorkbenchProductIconTheme>;
 }
 
@@ -166,7 +195,12 @@ export interface IColorCustomizations {
 }
 
 export interface IThemeScopedTokenColorCustomizations {
-	[groupId: string]: ITextMateThemingRule[] | ITokenColorizationSetting | boolean | string | undefined;
+	[groupId: string]:
+		| ITextMateThemingRule[]
+		| ITokenColorizationSetting
+		| boolean
+		| string
+		| undefined;
 	comments?: string | ITokenColorizationSetting;
 	strings?: string | ITokenColorizationSetting;
 	numbers?: string | ITokenColorizationSetting;
@@ -179,7 +213,13 @@ export interface IThemeScopedTokenColorCustomizations {
 }
 
 export interface ITokenColorCustomizations {
-	[groupIdOrThemeScope: string]: IThemeScopedTokenColorCustomizations | ITextMateThemingRule[] | ITokenColorizationSetting | boolean | string | undefined;
+	[groupIdOrThemeScope: string]:
+		| IThemeScopedTokenColorCustomizations
+		| ITextMateThemingRule[]
+		| ITokenColorizationSetting
+		| boolean
+		| string
+		| undefined;
 	comments?: string | ITokenColorizationSetting;
 	strings?: string | ITokenColorizationSetting;
 	numbers?: string | ITokenColorizationSetting;
@@ -198,7 +238,11 @@ export interface IThemeScopedSemanticTokenColorCustomizations {
 }
 
 export interface ISemanticTokenColorCustomizations {
-	[styleRuleOrThemeScope: string]: IThemeScopedSemanticTokenColorCustomizations | ISemanticTokenRules | boolean | undefined;
+	[styleRuleOrThemeScope: string]:
+		| IThemeScopedSemanticTokenColorCustomizations
+		| ISemanticTokenRules
+		| boolean
+		| undefined;
 	enabled?: boolean;
 	rules?: ISemanticTokenRules;
 }
@@ -208,17 +252,20 @@ export interface IThemeScopedExperimentalSemanticTokenColorCustomizations {
 }
 
 export interface IExperimentalSemanticTokenColorCustomizations {
-	[styleRuleOrThemeScope: string]: IThemeScopedExperimentalSemanticTokenColorCustomizations | ISemanticTokenRules | undefined;
+	[styleRuleOrThemeScope: string]:
+		| IThemeScopedExperimentalSemanticTokenColorCustomizations
+		| ISemanticTokenRules
+		| undefined;
 }
 
 export type IThemeScopedCustomizations =
-	IThemeScopedColorCustomizations
+	| IThemeScopedColorCustomizations
 	| IThemeScopedTokenColorCustomizations
 	| IThemeScopedExperimentalSemanticTokenColorCustomizations
 	| IThemeScopedSemanticTokenColorCustomizations;
 
 export type IThemeScopableCustomizations =
-	IColorCustomizations
+	| IColorCustomizations
 	| ITokenColorCustomizations
 	| IExperimentalSemanticTokenColorCustomizations
 	| ISemanticTokenColorCustomizations;
@@ -236,12 +283,12 @@ export interface ITextMateThemingRule {
 export interface ITokenColorizationSetting {
 	foreground?: string;
 	background?: string;
-	fontStyle?: string; /* [italic|bold|underline|strikethrough] */
+	fontStyle?: string /* [italic|bold|underline|strikethrough] */;
 }
 
 export interface ISemanticTokenColorizationSetting {
 	foreground?: string;
-	fontStyle?: string; /* [italic|bold|underline|strikethrough] */
+	fontStyle?: string /* [italic|bold|underline|strikethrough] */;
 	bold?: boolean;
 	underline?: boolean;
 	strikethrough?: boolean;
@@ -257,16 +304,39 @@ export interface ExtensionData {
 
 export namespace ExtensionData {
 	export function toJSONObject(d: ExtensionData | undefined): any {
-		return d && { _extensionId: d.extensionId, _extensionIsBuiltin: d.extensionIsBuiltin, _extensionName: d.extensionName, _extensionPublisher: d.extensionPublisher };
+		return (
+			d && {
+				_extensionId: d.extensionId,
+				_extensionIsBuiltin: d.extensionIsBuiltin,
+				_extensionName: d.extensionName,
+				_extensionPublisher: d.extensionPublisher,
+			}
+		);
 	}
 	export function fromJSONObject(o: any): ExtensionData | undefined {
-		if (o && isString(o._extensionId) && isBoolean(o._extensionIsBuiltin) && isString(o._extensionName) && isString(o._extensionPublisher)) {
-			return { extensionId: o._extensionId, extensionIsBuiltin: o._extensionIsBuiltin, extensionName: o._extensionName, extensionPublisher: o._extensionPublisher };
+		if (
+			o &&
+			isString(o._extensionId) &&
+			isBoolean(o._extensionIsBuiltin) &&
+			isString(o._extensionName) &&
+			isString(o._extensionPublisher)
+		) {
+			return {
+				extensionId: o._extensionId,
+				extensionIsBuiltin: o._extensionIsBuiltin,
+				extensionName: o._extensionName,
+				extensionPublisher: o._extensionPublisher,
+			};
 		}
 		return undefined;
 	}
 	export function fromName(publisher: string, name: string, isBuiltin = false): ExtensionData {
-		return { extensionPublisher: publisher, extensionId: `${publisher}.${name}`, extensionName: name, extensionIsBuiltin: isBuiltin };
+		return {
+			extensionPublisher: publisher,
+			extensionId: `${publisher}.${name}`,
+			extensionName: name,
+			extensionIsBuiltin: isBuiltin,
+		};
 	}
 }
 

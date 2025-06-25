@@ -9,7 +9,7 @@ declare module 'vscode' {
 	export enum TextEditorChangeKind {
 		Addition = 1,
 		Deletion = 2,
-		Modification = 3
+		Modification = 3,
 	}
 
 	export interface TextEditorLineRange {
@@ -43,5 +43,4 @@ declare module 'vscode' {
 	export namespace window {
 		export const onDidChangeTextEditorDiffInformation: Event<TextEditorDiffInformationChangeEvent>;
 	}
-
 }

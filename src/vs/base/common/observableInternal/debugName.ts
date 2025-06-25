@@ -27,8 +27,8 @@ export class DebugNameData {
 	constructor(
 		public readonly owner: DebugOwner | undefined,
 		public readonly debugNameSource: DebugNameSource | undefined,
-		public readonly referenceFn: Function | undefined,
-	) { }
+		public readonly referenceFn: Function | undefined
+	) {}
 
 	public getDebugName(target: object): string | undefined {
 		return getDebugName(target, this);

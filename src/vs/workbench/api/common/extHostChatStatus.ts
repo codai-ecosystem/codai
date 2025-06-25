@@ -5,17 +5,17 @@
 
 import type * as vscode from 'vscode';
 import * as extHostProtocol from './extHost.protocol.js';
-import { ExtensionIdentifier, IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionIdentifier,
+	IExtensionDescription,
+} from '../../../platform/extensions/common/extensions.js';
 
 export class ExtHostChatStatus {
-
 	private readonly _proxy: extHostProtocol.MainThreadChatStatusShape;
 
 	private readonly _items = new Map<string, vscode.ChatStatusItem>();
 
-	constructor(
-		mainContext: extHostProtocol.IMainContext
-	) {
+	constructor(mainContext: extHostProtocol.IMainContext) {
 		this._proxy = mainContext.getProxy(extHostProtocol.MainContext.MainThreadChatStatus);
 	}
 
@@ -96,4 +96,3 @@ export class ExtHostChatStatus {
 function asChatItemIdentifier(extension: ExtensionIdentifier, id: string): string {
 	return `${ExtensionIdentifier.toKey(extension)}.${id}`;
 }
-

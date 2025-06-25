@@ -14,13 +14,12 @@ export interface ISettingsWriter {
 }
 
 export class EditorSettingMigration {
-
 	public static items: EditorSettingMigration[] = [];
 
 	constructor(
 		public readonly key: string,
 		public readonly migrate: (value: any, read: ISettingsReader, write: ISettingsWriter) => void
-	) { }
+	) {}
 
 	apply(options: any): void {
 		const value = EditorSettingMigration._read(options, this.key);
@@ -54,7 +53,10 @@ export class EditorSettingMigration {
 	}
 }
 
-function registerEditorSettingMigration(key: string, migrate: (value: any, read: ISettingsReader, write: ISettingsWriter) => void): void {
+function registerEditorSettingMigration(
+	key: string,
+	migrate: (value: any, read: ISettingsReader, write: ISettingsWriter) => void
+): void {
 	EditorSettingMigration.items.push(new EditorSettingMigration(key, migrate));
 }
 
@@ -78,22 +80,67 @@ export function migrateOptions(options: IEditorOptions): void {
 	EditorSettingMigration.items.forEach(migration => migration.apply(options));
 }
 
-registerSimpleEditorSettingMigration('wordWrap', [[true, 'on'], [false, 'off']]);
-registerSimpleEditorSettingMigration('lineNumbers', [[true, 'on'], [false, 'off']]);
+registerSimpleEditorSettingMigration('wordWrap', [
+	[true, 'on'],
+	[false, 'off'],
+]);
+registerSimpleEditorSettingMigration('lineNumbers', [
+	[true, 'on'],
+	[false, 'off'],
+]);
 registerSimpleEditorSettingMigration('cursorBlinking', [['visible', 'solid']]);
-registerSimpleEditorSettingMigration('renderWhitespace', [[true, 'boundary'], [false, 'none']]);
-registerSimpleEditorSettingMigration('renderLineHighlight', [[true, 'line'], [false, 'none']]);
-registerSimpleEditorSettingMigration('acceptSuggestionOnEnter', [[true, 'on'], [false, 'off']]);
-registerSimpleEditorSettingMigration('tabCompletion', [[false, 'off'], [true, 'onlySnippets']]);
-registerSimpleEditorSettingMigration('hover', [[true, { enabled: true }], [false, { enabled: false }]]);
-registerSimpleEditorSettingMigration('parameterHints', [[true, { enabled: true }], [false, { enabled: false }]]);
-registerSimpleEditorSettingMigration('autoIndent', [[false, 'advanced'], [true, 'full']]);
-registerSimpleEditorSettingMigration('matchBrackets', [[true, 'always'], [false, 'never']]);
-registerSimpleEditorSettingMigration('renderFinalNewline', [[true, 'on'], [false, 'off']]);
-registerSimpleEditorSettingMigration('cursorSmoothCaretAnimation', [[true, 'on'], [false, 'off']]);
-registerSimpleEditorSettingMigration('occurrencesHighlight', [[true, 'singleFile'], [false, 'off']]);
-registerSimpleEditorSettingMigration('wordBasedSuggestions', [[true, 'matchingDocuments'], [false, 'off']]);
-registerSimpleEditorSettingMigration('defaultColorDecorators', [[true, 'auto'], [false, 'never']]);
+registerSimpleEditorSettingMigration('renderWhitespace', [
+	[true, 'boundary'],
+	[false, 'none'],
+]);
+registerSimpleEditorSettingMigration('renderLineHighlight', [
+	[true, 'line'],
+	[false, 'none'],
+]);
+registerSimpleEditorSettingMigration('acceptSuggestionOnEnter', [
+	[true, 'on'],
+	[false, 'off'],
+]);
+registerSimpleEditorSettingMigration('tabCompletion', [
+	[false, 'off'],
+	[true, 'onlySnippets'],
+]);
+registerSimpleEditorSettingMigration('hover', [
+	[true, { enabled: true }],
+	[false, { enabled: false }],
+]);
+registerSimpleEditorSettingMigration('parameterHints', [
+	[true, { enabled: true }],
+	[false, { enabled: false }],
+]);
+registerSimpleEditorSettingMigration('autoIndent', [
+	[false, 'advanced'],
+	[true, 'full'],
+]);
+registerSimpleEditorSettingMigration('matchBrackets', [
+	[true, 'always'],
+	[false, 'never'],
+]);
+registerSimpleEditorSettingMigration('renderFinalNewline', [
+	[true, 'on'],
+	[false, 'off'],
+]);
+registerSimpleEditorSettingMigration('cursorSmoothCaretAnimation', [
+	[true, 'on'],
+	[false, 'off'],
+]);
+registerSimpleEditorSettingMigration('occurrencesHighlight', [
+	[true, 'singleFile'],
+	[false, 'off'],
+]);
+registerSimpleEditorSettingMigration('wordBasedSuggestions', [
+	[true, 'matchingDocuments'],
+	[false, 'off'],
+]);
+registerSimpleEditorSettingMigration('defaultColorDecorators', [
+	[true, 'auto'],
+	[false, 'never'],
+]);
 
 registerEditorSettingMigration('autoClosingBrackets', (value, read, write) => {
 	if (value === false) {

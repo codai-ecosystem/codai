@@ -3,9 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { editorActiveIndentGuide1, editorIndentGuide1 } from '../../common/core/editorColorRegistry.js';
+import {
+	editorActiveIndentGuide1,
+	editorIndentGuide1,
+} from '../../common/core/editorColorRegistry.js';
 import { IStandaloneThemeData } from './standaloneTheme.js';
-import { editorBackground, editorForeground, editorInactiveSelection, editorSelectionHighlight } from '../../../platform/theme/common/colorRegistry.js';
+import {
+	editorBackground,
+	editorForeground,
+	editorInactiveSelection,
+	editorSelectionHighlight,
+} from '../../../platform/theme/common/colorRegistry.js';
 
 /* -------------------------------- Begin vs theme -------------------------------- */
 export const vs: IStandaloneThemeData = {
@@ -73,11 +81,10 @@ export const vs: IStandaloneThemeData = {
 		[editorInactiveSelection]: '#E5EBF1',
 		[editorIndentGuide1]: '#D3D3D3',
 		[editorActiveIndentGuide1]: '#939393',
-		[editorSelectionHighlight]: '#ADD6FF4D'
-	}
+		[editorSelectionHighlight]: '#ADD6FF4D',
+	},
 };
 /* -------------------------------- End vs theme -------------------------------- */
-
 
 /* -------------------------------- Begin vs-dark theme -------------------------------- */
 export const vs_dark: IStandaloneThemeData = {
@@ -144,12 +151,10 @@ export const vs_dark: IStandaloneThemeData = {
 		[editorInactiveSelection]: '#3A3D41',
 		[editorIndentGuide1]: '#404040',
 		[editorActiveIndentGuide1]: '#707070',
-		[editorSelectionHighlight]: '#ADD6FF26'
-	}
+		[editorSelectionHighlight]: '#ADD6FF26',
+	},
 };
 /* -------------------------------- End vs-dark theme -------------------------------- */
-
-
 
 /* -------------------------------- Begin hc-black theme -------------------------------- */
 export const hc_black: IStandaloneThemeData = {
@@ -206,7 +211,7 @@ export const hc_black: IStandaloneThemeData = {
 		[editorForeground]: '#FFFFFF',
 		[editorIndentGuide1]: '#FFFFFF',
 		[editorActiveIndentGuide1]: '#FFFFFF',
-	}
+	},
 };
 /* -------------------------------- End hc-black theme -------------------------------- */
 
@@ -265,7 +270,6 @@ export const hc_light: IStandaloneThemeData = {
 		[editorForeground]: '#292929',
 		[editorIndentGuide1]: '#292929',
 		[editorActiveIndentGuide1]: '#292929',
-	}
+	},
 };
 /* -------------------------------- End hc-light theme -------------------------------- */
-

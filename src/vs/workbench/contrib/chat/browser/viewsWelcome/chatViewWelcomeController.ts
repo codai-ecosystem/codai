@@ -10,7 +10,10 @@ import { Event } from '../../../../../base/common/event.js';
 import { IMarkdownString } from '../../../../../base/common/htmlContent.js';
 import { Disposable, DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ThemeIcon } from '../../../../../base/common/themables.js';
-import { IMarkdownRenderResult, MarkdownRenderer } from '../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
+import {
+	IMarkdownRenderResult,
+	MarkdownRenderer,
+} from '../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
 import { localize } from '../../../../../nls.js';
 import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
@@ -40,14 +43,14 @@ export class ChatViewWelcomeController extends Disposable {
 		private readonly delegate: IViewWelcomeDelegate,
 		private readonly location: ChatAgentLocation,
 		@IContextKeyService private contextKeyService: IContextKeyService,
-		@IInstantiationService private instantiationService: IInstantiationService,
+		@IInstantiationService private instantiationService: IInstantiationService
 	) {
 		super();
 
 		this.element = dom.append(this.container, dom.$('.chat-view-welcome'));
-		this._register(Event.runAndSubscribe(
-			delegate.onDidChangeViewWelcomeState,
-			() => this.update()));
+		this._register(
+			Event.runAndSubscribe(delegate.onDidChangeViewWelcomeState, () => this.update())
+		);
 		this._register(chatViewsWelcomeRegistry.onDidChange(() => this.update(true)));
 	}
 
@@ -71,11 +74,13 @@ export class ChatViewWelcomeController extends Disposable {
 			this.render(descriptors);
 
 			const descriptorKeys: Set<string> = new Set(descriptors.flatMap(d => d.when.keys()));
-			this.enabledDisposables.add(this.contextKeyService.onDidChangeContext(e => {
-				if (e.affectsSome(descriptorKeys)) {
-					this.render(descriptors);
-				}
-			}));
+			this.enabledDisposables.add(
+				this.contextKeyService.onDidChangeContext(e => {
+					if (e.affectsSome(descriptorKeys)) {
+						this.render(descriptors);
+					}
+				})
+			);
 		}
 	}
 
@@ -83,7 +88,9 @@ export class ChatViewWelcomeController extends Disposable {
 		this.renderDisposables.clear();
 		dom.clearNode(this.element!);
 
-		const matchingDescriptors = descriptors.filter(descriptor => this.contextKeyService.contextMatchesRules(descriptor.when));
+		const matchingDescriptors = descriptors.filter(descriptor =>
+			this.contextKeyService.contextMatchesRules(descriptor.when)
+		);
 		let enabledDescriptor: IChatViewsWelcomeDescriptor | undefined;
 		for (const descriptor of matchingDescriptors) {
 			if (typeof descriptor.content === 'function') {
@@ -96,9 +103,14 @@ export class ChatViewWelcomeController extends Disposable {
 			const content: IChatViewWelcomeContent = {
 				icon: enabledDescriptor.icon,
 				title: enabledDescriptor.title,
-				message: enabledDescriptor.content
+				message: enabledDescriptor.content,
 			};
-			const welcomeView = this.renderDisposables.add(this.instantiationService.createInstance(ChatViewWelcomePart, content, { firstLinkToButton: true, location: this.location }));
+			const welcomeView = this.renderDisposables.add(
+				this.instantiationService.createInstance(ChatViewWelcomePart, content, {
+					firstLinkToButton: true,
+					location: this.location,
+				})
+			);
 			this.element!.appendChild(welcomeView.element);
 			this.container.classList.toggle('chat-view-welcome-visible', true);
 		} else {
@@ -130,7 +142,7 @@ export class ChatViewWelcomePart extends Disposable {
 		@IOpenerService private openerService: IOpenerService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@ILogService private logService: ILogService,
-		@IChatAgentService chatAgentService: IChatAgentService,
+		@IChatAgentService chatAgentService: IChatAgentService
 	) {
 		super();
 		this.element = dom.$('.chat-welcome-view');
@@ -151,7 +163,10 @@ export class ChatViewWelcomePart extends Disposable {
 			// Preview indicator
 			if (typeof content.message !== 'function' && options?.isWidgetAgentWelcomeViewContent) {
 				const container = dom.append(this.element, $('.chat-welcome-view-indicator-container'));
-				dom.append(container, $('.chat-welcome-view-subtitle', undefined, localize('agentModeSubtitle', "Agent Mode")));
+				dom.append(
+					container,
+					$('.chat-welcome-view-subtitle', undefined, localize('agentModeSubtitle', 'Agent Mode'))
+				);
 			}
 
 			// Message
@@ -161,7 +176,6 @@ export class ChatViewWelcomePart extends Disposable {
 			} else {
 				const messageResult = this.renderMarkdownMessageContent(renderer, content.message, options);
 				dom.append(message, messageResult.element);
-
 			}
 
 			// Additional message
@@ -170,7 +184,11 @@ export class ChatViewWelcomePart extends Disposable {
 				element.textContent = content.additionalMessage;
 				dom.append(message, element);
 			} else if (content.additionalMessage) {
-				const additionalMessageResult = this.renderMarkdownMessageContent(renderer, content.additionalMessage, options);
+				const additionalMessageResult = this.renderMarkdownMessageContent(
+					renderer,
+					content.additionalMessage,
+					options
+				);
 				dom.append(message, additionalMessageResult.element);
 			}
 
@@ -185,17 +203,25 @@ export class ChatViewWelcomePart extends Disposable {
 		}
 	}
 
-	private renderMarkdownMessageContent(renderer: MarkdownRenderer, content: IMarkdownString, options: IChatViewWelcomeRenderOptions | undefined): IMarkdownRenderResult {
+	private renderMarkdownMessageContent(
+		renderer: MarkdownRenderer,
+		content: IMarkdownString,
+		options: IChatViewWelcomeRenderOptions | undefined
+	): IMarkdownRenderResult {
 		const messageResult = this._register(renderer.render(content));
-		const firstLink = options?.firstLinkToButton ? messageResult.element.querySelector('a') : undefined;
+		const firstLink = options?.firstLinkToButton
+			? messageResult.element.querySelector('a')
+			: undefined;
 		if (firstLink) {
 			const target = firstLink.getAttribute('data-href');
 			const button = this._register(new Button(firstLink.parentElement!, defaultButtonStyles));
 			button.label = firstLink.textContent ?? '';
 			if (target) {
-				this._register(button.onDidClick(() => {
-					this.openerService.open(target, { allowCommands: true });
-				}));
+				this._register(
+					button.onDidClick(() => {
+						this.openerService.open(target, { allowCommands: true });
+					})
+				);
 			}
 			firstLink.replaceWith(button.element);
 		}

@@ -20,7 +20,7 @@ export class CodeCompletionPlugin {
 				{ scheme: 'file', language: 'javascript' },
 				{ scheme: 'file', language: 'python' },
 				{ scheme: 'file', language: 'java' },
-				{ scheme: 'file', language: 'csharp' }
+				{ scheme: 'file', language: 'csharp' },
 			],
 			new AICompletionProvider(),
 			'.', // Trigger on dot
@@ -44,7 +44,6 @@ class AICompletionProvider implements vscode.CompletionItemProvider {
 		token: vscode.CancellationToken,
 		context: vscode.CompletionContext
 	): Promise<vscode.CompletionItem[]> {
-
 		const line = document.lineAt(position.line);
 		const linePrefix = line.text.substr(0, position.character);
 
@@ -75,7 +74,11 @@ class AICompletionProvider implements vscode.CompletionItemProvider {
 		const completions: vscode.CompletionItem[] = [];
 
 		// Function completion
-		if (linePrefix.includes('function ') || linePrefix.includes('const ') || linePrefix.includes('let ')) {
+		if (
+			linePrefix.includes('function ') ||
+			linePrefix.includes('const ') ||
+			linePrefix.includes('let ')
+		) {
 			const functionCompletion = new vscode.CompletionItem(
 				'function template',
 				vscode.CompletionItemKind.Function
@@ -83,7 +86,9 @@ class AICompletionProvider implements vscode.CompletionItemProvider {
 			functionCompletion.insertText = new vscode.SnippetString(
 				'function ${1:functionName}(${2:params}) {\n\t${3:// implementation}\n\treturn ${4:result};\n}'
 			);
-			functionCompletion.documentation = new vscode.MarkdownString('AI-generated function template');
+			functionCompletion.documentation = new vscode.MarkdownString(
+				'AI-generated function template'
+			);
 			completions.push(functionCompletion);
 		}
 
@@ -106,7 +111,9 @@ class AICompletionProvider implements vscode.CompletionItemProvider {
 				'import statement',
 				vscode.CompletionItemKind.Module
 			);
-			importCompletion.insertText = new vscode.SnippetString('import { ${1:items} } from \'${2:module}\';');
+			importCompletion.insertText = new vscode.SnippetString(
+				"import { ${1:items} } from '${2:module}';"
+			);
 			importCompletion.documentation = new vscode.MarkdownString('AI-suggested import');
 			completions.push(importCompletion);
 		}
@@ -118,9 +125,11 @@ class AICompletionProvider implements vscode.CompletionItemProvider {
 				vscode.CompletionItemKind.Snippet
 			);
 			errorHandlingCompletion.insertText = new vscode.SnippetString(
-				'try {\n\t${1:// code that may throw}\n} catch (${2:error}) {\n\t${3:// error handling}\n\tconsole.error(\'${4:Error message}:\', ${2:error});\n}'
+				"try {\n\t${1:// code that may throw}\n} catch (${2:error}) {\n\t${3:// error handling}\n\tconsole.error('${4:Error message}:', ${2:error});\n}"
 			);
-			errorHandlingCompletion.documentation = new vscode.MarkdownString('AI-generated error handling');
+			errorHandlingCompletion.documentation = new vscode.MarkdownString(
+				'AI-generated error handling'
+			);
 			completions.push(errorHandlingCompletion);
 		}
 
@@ -151,7 +160,7 @@ class AICompletionProvider implements vscode.CompletionItemProvider {
 				vscode.CompletionItemKind.Function
 			);
 			asyncCompletion.insertText = new vscode.SnippetString(
-				'async function ${1:functionName}(${2:params}) {\n\ttry {\n\t\tconst ${3:result} = await ${4:asyncOperation};\n\t\treturn ${3:result};\n\t} catch (error) {\n\t\tconsole.error(\'Error in ${1:functionName}:\', error);\n\t\tthrow error;\n\t}\n}'
+				"async function ${1:functionName}(${2:params}) {\n\ttry {\n\t\tconst ${3:result} = await ${4:asyncOperation};\n\t\treturn ${3:result};\n\t} catch (error) {\n\t\tconsole.error('Error in ${1:functionName}:', error);\n\t\tthrow error;\n\t}\n}"
 			);
 			completions.push(asyncCompletion);
 		}

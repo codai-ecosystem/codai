@@ -8,7 +8,9 @@ import { RequestType, BaseLanguageClient } from 'vscode-languageclient';
 import { Runtime } from './cssClient';
 
 export namespace FsContentRequest {
-	export const type: RequestType<{ uri: string; encoding?: string }, string, any> = new RequestType('fs/content');
+	export const type: RequestType<{ uri: string; encoding?: string }, string, any> = new RequestType(
+		'fs/content'
+	);
 }
 export namespace FsStatRequest {
 	export const type: RequestType<string, FileStat, any> = new RequestType('fs/stat');
@@ -60,7 +62,7 @@ export enum FileType {
 	/**
 	 * A symbolic link to a file.
 	 */
-	SymbolicLink = 64
+	SymbolicLink = 64,
 }
 export interface FileStat {
 	/**

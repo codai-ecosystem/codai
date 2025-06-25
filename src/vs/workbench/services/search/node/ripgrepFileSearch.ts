@@ -17,7 +17,13 @@ import { rgPath } from '@vscode/ripgrep';
 // If @vscode/ripgrep is in an .asar file, then the binary is unpacked.
 const rgDiskPath = rgPath.replace(/\bnode_modules\.asar\b/, 'node_modules.asar.unpacked');
 
-export function spawnRipgrepCmd(config: IFileQuery, folderQuery: IFolderQuery, includePattern?: glob.IExpression, excludePattern?: glob.IExpression, numThreads?: number) {
+export function spawnRipgrepCmd(
+	config: IFileQuery,
+	folderQuery: IFolderQuery,
+	includePattern?: glob.IExpression,
+	excludePattern?: glob.IExpression,
+	numThreads?: number
+) {
 	const rgArgs = getRgArgs(config, folderQuery, includePattern, excludePattern, numThreads);
 	const cwd = folderQuery.folder.fsPath;
 	return {
@@ -25,11 +31,17 @@ export function spawnRipgrepCmd(config: IFileQuery, folderQuery: IFolderQuery, i
 		rgDiskPath,
 		siblingClauses: rgArgs.siblingClauses,
 		rgArgs,
-		cwd
+		cwd,
 	};
 }
 
-function getRgArgs(config: IFileQuery, folderQuery: IFolderQuery, includePattern?: glob.IExpression, excludePattern?: glob.IExpression, numThreads?: number) {
+function getRgArgs(
+	config: IFileQuery,
+	folderQuery: IFolderQuery,
+	includePattern?: glob.IExpression,
+	excludePattern?: glob.IExpression,
+	numThreads?: number
+) {
 	const args = ['--files', '--hidden', '--case-sensitive', '--no-require-git'];
 
 	// includePattern can't have siblingClauses
@@ -82,7 +94,7 @@ function getRgArgs(config: IFileQuery, folderQuery: IFolderQuery, includePattern
 
 	return {
 		args,
-		siblingClauses: rgGlobs.siblingClauses
+		siblingClauses: rgGlobs.siblingClauses,
 	};
 }
 
@@ -91,12 +103,25 @@ interface IRgGlobResult {
 	siblingClauses: glob.IExpression;
 }
 
-function foldersToRgExcludeGlobs(folderQueries: IFolderQuery[], globalExclude?: glob.IExpression, excludesToSkip?: Set<string>, absoluteGlobs = true): IRgGlobResult {
+function foldersToRgExcludeGlobs(
+	folderQueries: IFolderQuery[],
+	globalExclude?: glob.IExpression,
+	excludesToSkip?: Set<string>,
+	absoluteGlobs = true
+): IRgGlobResult {
 	const globArgs: string[] = [];
 	let siblingClauses: glob.IExpression = {};
 	folderQueries.forEach(folderQuery => {
-		const totalExcludePattern = Object.assign({}, folderQuery.excludePattern || {}, globalExclude || {});
-		const result = globExprsToRgGlobs(totalExcludePattern, absoluteGlobs ? folderQuery.folder.fsPath : undefined, excludesToSkip);
+		const totalExcludePattern = Object.assign(
+			{},
+			folderQuery.excludePattern || {},
+			globalExclude || {}
+		);
+		const result = globExprsToRgGlobs(
+			totalExcludePattern,
+			absoluteGlobs ? folderQuery.folder.fsPath : undefined,
+			excludesToSkip
+		);
 		globArgs.push(...result.globArgs);
 		if (result.siblingClauses) {
 			siblingClauses = Object.assign(siblingClauses, result.siblingClauses);
@@ -106,52 +131,66 @@ function foldersToRgExcludeGlobs(folderQueries: IFolderQuery[], globalExclude?: 
 	return { globArgs, siblingClauses };
 }
 
-function foldersToIncludeGlobs(folderQueries: IFolderQuery[], globalInclude?: glob.IExpression, absoluteGlobs = true): string[] {
+function foldersToIncludeGlobs(
+	folderQueries: IFolderQuery[],
+	globalInclude?: glob.IExpression,
+	absoluteGlobs = true
+): string[] {
 	const globArgs: string[] = [];
 	folderQueries.forEach(folderQuery => {
-		const totalIncludePattern = Object.assign({}, globalInclude || {}, folderQuery.includePattern || {});
-		const result = globExprsToRgGlobs(totalIncludePattern, absoluteGlobs ? folderQuery.folder.fsPath : undefined);
+		const totalIncludePattern = Object.assign(
+			{},
+			globalInclude || {},
+			folderQuery.includePattern || {}
+		);
+		const result = globExprsToRgGlobs(
+			totalIncludePattern,
+			absoluteGlobs ? folderQuery.folder.fsPath : undefined
+		);
 		globArgs.push(...result.globArgs);
 	});
 
 	return globArgs;
 }
 
-function globExprsToRgGlobs(patterns: glob.IExpression, folder?: string, excludesToSkip?: Set<string>): IRgGlobResult {
+function globExprsToRgGlobs(
+	patterns: glob.IExpression,
+	folder?: string,
+	excludesToSkip?: Set<string>
+): IRgGlobResult {
 	const globArgs: string[] = [];
 	const siblingClauses: glob.IExpression = {};
-	Object.keys(patterns)
-		.forEach(key => {
-			if (excludesToSkip && excludesToSkip.has(key)) {
-				return;
-			}
+	Object.keys(patterns).forEach(key => {
+		if (excludesToSkip && excludesToSkip.has(key)) {
+			return;
+		}
 
-			if (!key) {
-				return;
-			}
+		if (!key) {
+			return;
+		}
 
-			const value = patterns[key];
-			key = trimTrailingSlash(folder ? getAbsoluteGlob(folder, key) : key);
+		const value = patterns[key];
+		key = trimTrailingSlash(folder ? getAbsoluteGlob(folder, key) : key);
 
-			// glob.ts requires forward slashes, but a UNC path still must start with \\
-			// #38165 and #38151
+		// glob.ts requires forward slashes, but a UNC path still must start with \\
+		// #38165 and #38151
+		if (key.startsWith('\\\\')) {
+			key = '\\\\' + key.substr(2).replace(/\\/g, '/');
+		} else {
+			key = key.replace(/\\/g, '/');
+		}
+
+		if (typeof value === 'boolean' && value) {
 			if (key.startsWith('\\\\')) {
-				key = '\\\\' + key.substr(2).replace(/\\/g, '/');
-			} else {
-				key = key.replace(/\\/g, '/');
+				// Absolute globs UNC paths don't work properly, see #58758
+				key += '**';
 			}
 
-			if (typeof value === 'boolean' && value) {
-				if (key.startsWith('\\\\')) {
-					// Absolute globs UNC paths don't work properly, see #58758
-					key += '**';
-				}
-
-				globArgs.push(fixDriveC(key));
-			} else if (value && value.when) {
-				siblingClauses[key] = value;
-			}
-		});
+			globArgs.push(fixDriveC(key));
+		} else if (value && value.when) {
+			siblingClauses[key] = value;
+		}
+	});
 
 	return { globArgs, siblingClauses };
 }
@@ -163,9 +202,7 @@ function globExprsToRgGlobs(patterns: glob.IExpression, folder?: string, exclude
  * Exported for testing
  */
 export function getAbsoluteGlob(folder: string, key: string): string {
-	return path.isAbsolute(key) ?
-		key :
-		path.join(folder, key);
+	return path.isAbsolute(key) ? key : path.join(folder, key);
 }
 
 function trimTrailingSlash(str: string): string {
@@ -175,7 +212,5 @@ function trimTrailingSlash(str: string): string {
 
 export function fixDriveC(path: string): string {
 	const root = extpath.getRoot(path);
-	return root.toLowerCase() === 'c:/' ?
-		path.replace(/^c:[/\\]/i, '/') :
-		path;
+	return root.toLowerCase() === 'c:/' ? path.replace(/^c:[/\\]/i, '/') : path;
 }

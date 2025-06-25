@@ -10,7 +10,7 @@ import { Octokit } from '@octokit/rest';
 import { httpsOverHttp } from 'tunnel';
 import { URL } from 'url';
 
-export class AuthenticationError extends Error { }
+export class AuthenticationError extends Error {}
 
 function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
 	if (!url) {
@@ -37,21 +37,23 @@ let _octokit: Promise<Octokit> | undefined;
 
 export function getOctokit(): Promise<Octokit> {
 	if (!_octokit) {
-		_octokit = getSession().then(async session => {
-			const token = session.accessToken;
-			const agent = getAgent();
+		_octokit = getSession()
+			.then(async session => {
+				const token = session.accessToken;
+				const agent = getAgent();
 
-			const { Octokit } = await import('@octokit/rest');
+				const { Octokit } = await import('@octokit/rest');
 
-			return new Octokit({
-				request: { agent },
-				userAgent: 'GitHub VSCode',
-				auth: `token ${token}`
+				return new Octokit({
+					request: { agent },
+					userAgent: 'GitHub VSCode',
+					auth: `token ${token}`,
+				});
+			})
+			.then(null, async err => {
+				_octokit = undefined;
+				throw err;
 			});
-		}).then(null, async err => {
-			_octokit = undefined;
-			throw err;
-		});
 	}
 
 	return _octokit;
@@ -70,9 +72,9 @@ export async function getOctokitGraphql(): Promise<graphql> {
 				return graphql.defaults({
 					headers: {
 						authorization: `token ${token}`,
-						'user-agent': 'GitHub VSCode'
+						'user-agent': 'GitHub VSCode',
 					},
-					request: { agent }
+					request: { agent },
 				});
 			})
 			.then(null, async err => {

@@ -11,9 +11,23 @@ import { IContextKeyService } from '../../../../platform/contextkey/common/conte
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ILabelService } from '../../../../platform/label/common/label.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
-import { getExcludes, IFileQuery, ISearchComplete, ISearchConfiguration, ISearchService, QueryType, VIEW_ID } from '../../../services/search/common/search.js';
+import {
+	getExcludes,
+	IFileQuery,
+	ISearchComplete,
+	ISearchConfiguration,
+	ISearchService,
+	QueryType,
+	VIEW_ID,
+} from '../../../services/search/common/search.js';
 import { IViewsService } from '../../../services/views/common/viewsService.js';
-import { IChatContextPickerItem, IChatContextPickerPickItem, IChatContextPickService, IChatContextValueItem, picksWithPromiseFn } from '../../chat/browser/chatContextPickService.js';
+import {
+	IChatContextPickerItem,
+	IChatContextPickerPickItem,
+	IChatContextPickService,
+	IChatContextValueItem,
+	picksWithPromiseFn,
+} from '../../chat/browser/chatContextPickService.js';
 import { IChatRequestVariableEntry, ISymbolVariableEntry } from '../../chat/common/chatModel.js';
 import { SearchContext } from '../common/constants.js';
 import { SearchView } from './searchView.js';
@@ -35,7 +49,6 @@ import { SymbolsQuickAccessProvider } from './symbolsQuickAccess.js';
 import { SymbolKinds } from '../../../../editor/common/languages.js';
 
 export class SearchChatContextContribution extends Disposable implements IWorkbenchContribution {
-
 	static readonly ID = 'workbench.contributions.searchChatContextContribution';
 
 	constructor(
@@ -43,14 +56,25 @@ export class SearchChatContextContribution extends Disposable implements IWorkbe
 		@IChatContextPickService chatContextPickService: IChatContextPickService
 	) {
 		super();
-		this._store.add(chatContextPickService.registerChatContextItem(instantiationService.createInstance(SearchViewResultChatContextPick)));
-		this._store.add(chatContextPickService.registerChatContextItem(instantiationService.createInstance(FilesAndFoldersPickerPick)));
-		this._store.add(chatContextPickService.registerChatContextItem(this._store.add(instantiationService.createInstance(SymbolsContextPickerPick))));
+		this._store.add(
+			chatContextPickService.registerChatContextItem(
+				instantiationService.createInstance(SearchViewResultChatContextPick)
+			)
+		);
+		this._store.add(
+			chatContextPickService.registerChatContextItem(
+				instantiationService.createInstance(FilesAndFoldersPickerPick)
+			)
+		);
+		this._store.add(
+			chatContextPickService.registerChatContextItem(
+				this._store.add(instantiationService.createInstance(SymbolsContextPickerPick))
+			)
+		);
 	}
 }
 
 class SearchViewResultChatContextPick implements IChatContextValueItem {
-
 	readonly type = 'valuePick';
 	readonly label: string = localize('chatContext.searchResults', 'Search Results');
 	readonly icon: ThemeIcon = Codicon.search;
@@ -59,8 +83,8 @@ class SearchViewResultChatContextPick implements IChatContextValueItem {
 	constructor(
 		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
 		@IViewsService private readonly _viewsService: IViewsService,
-		@ILabelService private readonly _labelService: ILabelService,
-	) { }
+		@ILabelService private readonly _labelService: ILabelService
+	) {}
 
 	isEnabled(): Promise<boolean> | boolean {
 		return !!SearchContext.HasSearchResults.getValue(this._contextKeyService);
@@ -82,7 +106,6 @@ class SearchViewResultChatContextPick implements IChatContextValueItem {
 }
 
 class SymbolsContextPickerPick implements IChatContextPickerItem {
-
 	readonly type = 'pickerPick';
 
 	readonly label: string = localize('symbols', 'Symbols...');
@@ -92,19 +115,17 @@ class SymbolsContextPickerPick implements IChatContextPickerItem {
 	private _provider: SymbolsQuickAccessProvider | undefined;
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService private readonly _instantiationService: IInstantiationService
+	) {}
 
 	dispose(): void {
 		this._provider?.dispose();
 	}
 
 	asPicker() {
-
 		return {
-			placeholder: localize('select.symb', "Select a symbol"),
+			placeholder: localize('select.symb', 'Select a symbol'),
 			picks: picksWithPromiseFn((query: string, token: CancellationToken) => {
-
 				this._provider ??= this._instantiationService.createInstance(SymbolsQuickAccessProvider);
 
 				return this._provider.getSymbolPicks(query, undefined, token).then(symbolItems => {
@@ -129,7 +150,7 @@ class SymbolsContextPickerPick implements IChatContextPickerItem {
 							iconClass: ThemeIcon.asClassName(SymbolKinds.toIcon(item.symbol.kind)),
 							asAttachment() {
 								return attachment;
-							}
+							},
 						});
 					}
 					return result;
@@ -140,7 +161,6 @@ class SymbolsContextPickerPick implements IChatContextPickerItem {
 }
 
 class FilesAndFoldersPickerPick implements IChatContextPickerItem {
-
 	readonly type = 'pickerPick';
 	readonly label = localize('chatContext.folder', 'Files & Folders...');
 	readonly icon = Codicon.folder;
@@ -154,20 +174,27 @@ class FilesAndFoldersPickerPick implements IChatContextPickerItem {
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
 		@IWorkspaceContextService private readonly _workspaceService: IWorkspaceContextService,
 		@IFileService private readonly _fileService: IFileService,
-		@IHistoryService private readonly _historyService: IHistoryService,
-	) { }
+		@IHistoryService private readonly _historyService: IHistoryService
+	) {}
 
 	asPicker() {
-
 		return {
-			placeholder: localize('chatContext.attach.files.placeholder', "Search file or folder by name"),
+			placeholder: localize(
+				'chatContext.attach.files.placeholder',
+				'Search file or folder by name'
+			),
 			picks: picksWithPromiseFn(async (value, token) => {
-
 				const workspaces = this._workspaceService.getWorkspace().folders.map(folder => folder.uri);
 
 				const defaultItems: IChatContextPickerPickItem[] = [];
-				(await getTopLevelFolders(workspaces, this._fileService)).forEach(uri => defaultItems.push(this._createPickItem(uri, FileKind.FOLDER)));
-				this._historyService.getHistory().filter(a => a.resource).slice(0, 30).forEach(uri => defaultItems.push(this._createPickItem(uri.resource!, FileKind.FILE)));
+				(await getTopLevelFolders(workspaces, this._fileService)).forEach(uri =>
+					defaultItems.push(this._createPickItem(uri, FileKind.FOLDER))
+				);
+				this._historyService
+					.getHistory()
+					.filter(a => a.resource)
+					.slice(0, 30)
+					.forEach(uri => defaultItems.push(this._createPickItem(uri.resource!, FileKind.FILE)));
 
 				if (value === '') {
 					return defaultItems;
@@ -175,24 +202,26 @@ class FilesAndFoldersPickerPick implements IChatContextPickerItem {
 
 				const result: IChatContextPickerPickItem[] = [];
 
-				await Promise.all(workspaces.map(async workspace => {
-					const { folders, files } = await searchFilesAndFolders(
-						workspace,
-						value,
-						true,
-						token,
-						undefined,
-						this._configurationService,
-						this._searchService
-					);
+				await Promise.all(
+					workspaces.map(async workspace => {
+						const { folders, files } = await searchFilesAndFolders(
+							workspace,
+							value,
+							true,
+							token,
+							undefined,
+							this._configurationService,
+							this._searchService
+						);
 
-					for (const folder of folders) {
-						result.push(this._createPickItem(folder, FileKind.FOLDER));
-					}
-					for (const file of files) {
-						result.push(this._createPickItem(file, FileKind.FILE));
-					}
-				}));
+						for (const folder of folders) {
+							result.push(this._createPickItem(folder, FileKind.FOLDER));
+						}
+						for (const file of files) {
+							result.push(this._createPickItem(file, FileKind.FILE));
+						}
+					})
+				);
 
 				result.sort((a, b) => compare(a.label, b.label));
 
@@ -205,9 +234,12 @@ class FilesAndFoldersPickerPick implements IChatContextPickerItem {
 		return {
 			label: basename(resource),
 			description: this._labelService.getUriLabel(dirname(resource), { relative: true }),
-			iconClass: kind === FileKind.FILE
-				? getIconClasses(this._modelService, this._languageService, resource, FileKind.FILE).join(' ')
-				: ThemeIcon.asClassName(Codicon.folder),
+			iconClass:
+				kind === FileKind.FILE
+					? getIconClasses(this._modelService, this._languageService, resource, FileKind.FILE).join(
+							' '
+						)
+					: ThemeIcon.asClassName(Codicon.folder),
 			asAttachment: () => {
 				return {
 					kind: kind === FileKind.FILE ? 'file' : 'directory',
@@ -215,10 +247,9 @@ class FilesAndFoldersPickerPick implements IChatContextPickerItem {
 					value: resource,
 					name: basename(resource),
 				};
-			}
+			},
 		};
 	}
-
 }
 export async function searchFilesAndFolders(
 	workspace: URI,
@@ -229,14 +260,19 @@ export async function searchFilesAndFolders(
 	configurationService: IConfigurationService,
 	searchService: ISearchService
 ): Promise<{ folders: URI[]; files: URI[] }> {
-	const segmentMatchPattern = caseInsensitiveGlobPattern(fuzzyMatch ? fuzzyMatchingGlobPattern(pattern) : continousMatchingGlobPattern(pattern));
+	const segmentMatchPattern = caseInsensitiveGlobPattern(
+		fuzzyMatch ? fuzzyMatchingGlobPattern(pattern) : continousMatchingGlobPattern(pattern)
+	);
 
-	const searchExcludePattern = getExcludes(configurationService.getValue<ISearchConfiguration>({ resource: workspace })) || {};
+	const searchExcludePattern =
+		getExcludes(configurationService.getValue<ISearchConfiguration>({ resource: workspace })) || {};
 	const searchOptions: IFileQuery = {
-		folderQueries: [{
-			folder: workspace,
-			disregardIgnoreFiles: configurationService.getValue<boolean>('explorer.excludeGitIgnore'),
-		}],
+		folderQueries: [
+			{
+				folder: workspace,
+				disregardIgnoreFiles: configurationService.getValue<boolean>('explorer.excludeGitIgnore'),
+			},
+		],
 		type: QueryType.File,
 		shouldGlobMatchFilePattern: true,
 		cacheKey,
@@ -246,7 +282,10 @@ export async function searchFilesAndFolders(
 
 	let searchResult: ISearchComplete | undefined;
 	try {
-		searchResult = await searchService.fileSearch({ ...searchOptions, filePattern: `{**/${segmentMatchPattern}/**,${pattern}}` }, token);
+		searchResult = await searchService.fileSearch(
+			{ ...searchOptions, filePattern: `{**/${segmentMatchPattern}/**,${pattern}}` },
+			token
+		);
 	} catch (e) {
 		if (!isCancellationError(e)) {
 			throw e;
@@ -258,7 +297,11 @@ export async function searchFilesAndFolders(
 	}
 
 	const fileResources = searchResult.results.map(result => result.resource);
-	const folderResources = getMatchingFoldersFromFiles(fileResources, workspace, segmentMatchPattern);
+	const folderResources = getMatchingFoldersFromFiles(
+		fileResources,
+		workspace,
+		segmentMatchPattern
+	);
 
 	return { folders: folderResources, files: fileResources };
 }
@@ -291,7 +334,11 @@ function caseInsensitiveGlobPattern(pattern: string): string {
 }
 
 // TODO: remove this and have support from the search service
-function getMatchingFoldersFromFiles(resources: URI[], workspace: URI, segmentMatchPattern: string): URI[] {
+function getMatchingFoldersFromFiles(
+	resources: URI[],
+	workspace: URI,
+	segmentMatchPattern: string
+): URI[] {
 	const uniqueFolders = new ResourceSet();
 	for (const resource of resources) {
 		const relativePathToRoot = relativePath(workspace, resource);
@@ -321,7 +368,10 @@ function getMatchingFoldersFromFiles(resources: URI[], workspace: URI, segmentMa
 	return matchingFolders;
 }
 
-export async function getTopLevelFolders(workspaces: URI[], fileService: IFileService): Promise<URI[]> {
+export async function getTopLevelFolders(
+	workspaces: URI[],
+	fileService: IFileService
+): Promise<URI[]> {
 	const folders: URI[] = [];
 	for (const workspace of workspaces) {
 		const fileSystemProvider = fileService.getProvider(workspace.scheme);

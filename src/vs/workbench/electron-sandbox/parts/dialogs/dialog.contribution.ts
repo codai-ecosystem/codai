@@ -5,13 +5,21 @@
 
 import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IDialogHandler, IDialogResult, IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
+import {
+	IDialogHandler,
+	IDialogResult,
+	IDialogService,
+} from '../../../../platform/dialogs/common/dialogs.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { ILayoutService } from '../../../../platform/layout/browser/layoutService.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { INativeHostService } from '../../../../platform/native/common/native.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
-import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
+import {
+	IWorkbenchContribution,
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from '../../../common/contributions.js';
 import { IDialogsModel, IDialogViewItem } from '../../../common/dialogs.js';
 import { BrowserDialogHandler } from '../../../browser/parts/dialogs/dialogHandler.js';
 import { NativeDialogHandler } from './dialogHandler.js';
@@ -22,7 +30,6 @@ import { Lazy } from '../../../../base/common/lazy.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 
 export class DialogHandlerContribution extends Disposable implements IWorkbenchContribution {
-
 	static readonly ID = 'workbench.contrib.dialogHandler';
 
 	private nativeImpl: Lazy<IDialogHandler>;
@@ -45,16 +52,31 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
 	) {
 		super();
 
-		this.browserImpl = new Lazy(() => new BrowserDialogHandler(logService, layoutService, keybindingService, instantiationService, productService, clipboardService, openerService));
-		this.nativeImpl = new Lazy(() => new NativeDialogHandler(logService, nativeHostService, productService, clipboardService));
+		this.browserImpl = new Lazy(
+			() =>
+				new BrowserDialogHandler(
+					logService,
+					layoutService,
+					keybindingService,
+					instantiationService,
+					productService,
+					clipboardService,
+					openerService
+				)
+		);
+		this.nativeImpl = new Lazy(
+			() => new NativeDialogHandler(logService, nativeHostService, productService, clipboardService)
+		);
 
 		this.model = (this.dialogService as DialogService).model;
 
-		this._register(this.model.onWillShowDialog(() => {
-			if (!this.currentDialog) {
-				this.processDialogs();
-			}
-		}));
+		this._register(
+			this.model.onWillShowDialog(() => {
+				if (!this.currentDialog) {
+					this.processDialogs();
+				}
+			})
+		);
 
 		this.processDialogs();
 	}
@@ -65,13 +87,13 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
 
 			let result: IDialogResult | Error | undefined = undefined;
 			try {
-
 				// Confirm
 				if (this.currentDialog.args.confirmArgs) {
 					const args = this.currentDialog.args.confirmArgs;
-					result = (this.useCustomDialog || args?.confirmation.custom) ?
-						await this.browserImpl.value.confirm(args.confirmation) :
-						await this.nativeImpl.value.confirm(args.confirmation);
+					result =
+						this.useCustomDialog || args?.confirmation.custom
+							? await this.browserImpl.value.confirm(args.confirmation)
+							: await this.nativeImpl.value.confirm(args.confirmation);
 				}
 
 				// Input (custom only)
@@ -83,9 +105,10 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
 				// Prompt
 				else if (this.currentDialog.args.promptArgs) {
 					const args = this.currentDialog.args.promptArgs;
-					result = (this.useCustomDialog || args?.prompt.custom) ?
-						await this.browserImpl.value.prompt(args.prompt) :
-						await this.nativeImpl.value.prompt(args.prompt);
+					result =
+						this.useCustomDialog || args?.prompt.custom
+							? await this.browserImpl.value.prompt(args.prompt)
+							: await this.nativeImpl.value.prompt(args.prompt);
 				}
 
 				// About

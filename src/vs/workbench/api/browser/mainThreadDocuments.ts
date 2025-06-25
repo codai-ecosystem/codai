@@ -11,8 +11,17 @@ import { ITextModel, shouldSynchronizeModel } from '../../../editor/common/model
 import { IModelService } from '../../../editor/common/services/model.js';
 import { ITextModelService } from '../../../editor/common/services/resolverService.js';
 import { IFileService, FileOperation } from '../../../platform/files/common/files.js';
-import { ExtHostContext, ExtHostDocumentsShape, MainThreadDocumentsShape } from '../common/extHost.protocol.js';
-import { EncodingMode, ITextFileEditorModel, ITextFileService, TextFileResolveReason } from '../../services/textfile/common/textfiles.js';
+import {
+	ExtHostContext,
+	ExtHostDocumentsShape,
+	MainThreadDocumentsShape,
+} from '../common/extHost.protocol.js';
+import {
+	EncodingMode,
+	ITextFileEditorModel,
+	ITextFileService,
+	TextFileResolveReason,
+} from '../../services/textfile/common/textfiles.js';
 import { IUntitledTextEditorModel } from '../../services/untitled/common/untitledTextEditorModel.js';
 import { IWorkbenchEnvironmentService } from '../../services/environment/common/environmentService.js';
 import { toLocalResource, extUri, IExtUri } from '../../../base/common/resources.js';
@@ -25,7 +34,6 @@ import { IExtHostContext } from '../../services/extensions/common/extHostCustome
 import { ErrorNoTelemetry } from '../../../base/common/errors.js';
 
 export class BoundModelReferenceCollection {
-
 	private _data = new Array<{ uri: URI; length: number; dispose(): void }>();
 	private _length = 0;
 
@@ -83,33 +91,37 @@ export class BoundModelReferenceCollection {
 }
 
 class ModelTracker extends Disposable {
-
 	private _knownVersionId: number;
 
 	constructor(
 		private readonly _model: ITextModel,
 		private readonly _onIsCaughtUpWithContentChanges: Emitter<URI>,
 		private readonly _proxy: ExtHostDocumentsShape,
-		private readonly _textFileService: ITextFileService,
+		private readonly _textFileService: ITextFileService
 	) {
 		super();
 		this._knownVersionId = this._model.getVersionId();
-		this._store.add(this._model.onDidChangeContent((e) => {
-			this._knownVersionId = e.versionId;
-			this._proxy.$acceptModelChanged(this._model.uri, e, this._textFileService.isDirty(this._model.uri));
-			if (this.isCaughtUpWithContentChanges()) {
-				this._onIsCaughtUpWithContentChanges.fire(this._model.uri);
-			}
-		}));
+		this._store.add(
+			this._model.onDidChangeContent(e => {
+				this._knownVersionId = e.versionId;
+				this._proxy.$acceptModelChanged(
+					this._model.uri,
+					e,
+					this._textFileService.isDirty(this._model.uri)
+				);
+				if (this.isCaughtUpWithContentChanges()) {
+					this._onIsCaughtUpWithContentChanges.fire(this._model.uri);
+				}
+			})
+		);
 	}
 
 	isCaughtUpWithContentChanges(): boolean {
-		return (this._model.getVersionId() === this._knownVersionId);
+		return this._model.getVersionId() === this._knownVersionId;
 	}
 }
 
 export class MainThreadDocuments extends Disposable implements MainThreadDocumentsShape {
-
 	private _onIsCaughtUpWithContentChanges = this._store.add(new Emitter<URI>());
 	readonly onIsCaughtUpWithContentChanges = this._onIsCaughtUpWithContentChanges.event;
 
@@ -123,49 +135,63 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
 		@ITextFileService private readonly _textFileService: ITextFileService,
 		@IFileService private readonly _fileService: IFileService,
 		@ITextModelService private readonly _textModelResolverService: ITextModelService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
 		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService,
 		@IWorkingCopyFileService workingCopyFileService: IWorkingCopyFileService,
 		@IPathService private readonly _pathService: IPathService
 	) {
 		super();
 
-		this._modelReferenceCollection = this._store.add(new BoundModelReferenceCollection(_uriIdentityService.extUri));
+		this._modelReferenceCollection = this._store.add(
+			new BoundModelReferenceCollection(_uriIdentityService.extUri)
+		);
 
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDocuments);
 
 		this._store.add(_modelService.onModelLanguageChanged(this._onModelModeChanged, this));
 
-		this._store.add(_textFileService.files.onDidSave(e => {
-			if (this._shouldHandleFileEvent(e.model.resource)) {
-				this._proxy.$acceptModelSaved(e.model.resource);
-			}
-		}));
-		this._store.add(_textFileService.files.onDidChangeDirty(m => {
-			if (this._shouldHandleFileEvent(m.resource)) {
-				this._proxy.$acceptDirtyStateChanged(m.resource, m.isDirty());
-			}
-		}));
-		this._store.add(Event.any<ITextFileEditorModel | IUntitledTextEditorModel>(_textFileService.files.onDidChangeEncoding, _textFileService.untitled.onDidChangeEncoding)(m => {
-			if (this._shouldHandleFileEvent(m.resource)) {
-				const encoding = m.getEncoding();
-				if (encoding) {
-					this._proxy.$acceptEncodingChanged(m.resource, encoding);
+		this._store.add(
+			_textFileService.files.onDidSave(e => {
+				if (this._shouldHandleFileEvent(e.model.resource)) {
+					this._proxy.$acceptModelSaved(e.model.resource);
 				}
-			}
-		}));
-
-		this._store.add(workingCopyFileService.onDidRunWorkingCopyFileOperation(e => {
-			const isMove = e.operation === FileOperation.MOVE;
-			if (isMove || e.operation === FileOperation.DELETE) {
-				for (const pair of e.files) {
-					const removed = isMove ? pair.source : pair.target;
-					if (removed) {
-						this._modelReferenceCollection.remove(removed);
+			})
+		);
+		this._store.add(
+			_textFileService.files.onDidChangeDirty(m => {
+				if (this._shouldHandleFileEvent(m.resource)) {
+					this._proxy.$acceptDirtyStateChanged(m.resource, m.isDirty());
+				}
+			})
+		);
+		this._store.add(
+			Event.any<ITextFileEditorModel | IUntitledTextEditorModel>(
+				_textFileService.files.onDidChangeEncoding,
+				_textFileService.untitled.onDidChangeEncoding
+			)(m => {
+				if (this._shouldHandleFileEvent(m.resource)) {
+					const encoding = m.getEncoding();
+					if (encoding) {
+						this._proxy.$acceptEncodingChanged(m.resource, encoding);
 					}
 				}
-			}
-		}));
+			})
+		);
+
+		this._store.add(
+			workingCopyFileService.onDidRunWorkingCopyFileOperation(e => {
+				const isMove = e.operation === FileOperation.MOVE;
+				if (isMove || e.operation === FileOperation.DELETE) {
+					for (const pair of e.files) {
+						const removed = isMove ? pair.source : pair.target;
+						if (removed) {
+							this._modelReferenceCollection.remove(removed);
+						}
+					}
+				}
+			})
+		);
 	}
 
 	override dispose(): void {
@@ -193,7 +219,15 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
 			// don't synchronize too large models
 			return;
 		}
-		this._modelTrackers.set(model.uri, new ModelTracker(model, this._onIsCaughtUpWithContentChanges, this._proxy, this._textFileService));
+		this._modelTrackers.set(
+			model.uri,
+			new ModelTracker(
+				model,
+				this._onIsCaughtUpWithContentChanges,
+				this._proxy,
+				this._textFileService
+			)
+		);
 	}
 
 	private _onModelModeChanged(event: { model: ITextModel; oldLanguageId: string }): void {
@@ -242,28 +276,43 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
 		try {
 			documentUri = await promise;
 		} catch (err) {
-			throw new ErrorNoTelemetry(`cannot open ${canonicalUri.toString()}. Detail: ${toErrorMessage(err)}`);
+			throw new ErrorNoTelemetry(
+				`cannot open ${canonicalUri.toString()}. Detail: ${toErrorMessage(err)}`
+			);
 		}
 		if (!documentUri) {
 			throw new ErrorNoTelemetry(`cannot open ${canonicalUri.toString()}`);
 		} else if (!extUri.isEqual(documentUri, canonicalUri)) {
-			throw new ErrorNoTelemetry(`cannot open ${canonicalUri.toString()}. Detail: Actual document opened as ${documentUri.toString()}`);
+			throw new ErrorNoTelemetry(
+				`cannot open ${canonicalUri.toString()}. Detail: Actual document opened as ${documentUri.toString()}`
+			);
 		} else if (!this._modelTrackers.has(canonicalUri)) {
-			throw new ErrorNoTelemetry(`cannot open ${canonicalUri.toString()}. Detail: Files above 50MB cannot be synchronized with extensions.`);
+			throw new ErrorNoTelemetry(
+				`cannot open ${canonicalUri.toString()}. Detail: Files above 50MB cannot be synchronized with extensions.`
+			);
 		} else {
 			return canonicalUri;
 		}
 	}
 
-	$tryCreateDocument(options?: { language?: string; content?: string; encoding?: string }): Promise<URI> {
+	$tryCreateDocument(options?: {
+		language?: string;
+		content?: string;
+		encoding?: string;
+	}): Promise<URI> {
 		return this._doCreateUntitled(undefined, options);
 	}
 
 	private async _handleAsResourceInput(uri: URI, options?: { encoding?: string }): Promise<URI> {
 		if (options?.encoding) {
-			const model = await this._textFileService.files.resolve(uri, { encoding: options.encoding, reason: TextFileResolveReason.REFERENCE });
+			const model = await this._textFileService.files.resolve(uri, {
+				encoding: options.encoding,
+				reason: TextFileResolveReason.REFERENCE,
+			});
 			if (model.isDirty()) {
-				throw new ErrorNoTelemetry(`Cannot re-open a dirty text document with different encoding. Save it first.`);
+				throw new ErrorNoTelemetry(
+					`Cannot re-open a dirty text document with different encoding. Save it first.`
+				);
 			}
 			await model.setEncoding(options.encoding, EncodingMode.Decode);
 		}
@@ -274,7 +323,11 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
 	}
 
 	private async _handleUntitledScheme(uri: URI, options?: { encoding?: string }): Promise<URI> {
-		const asLocalUri = toLocalResource(uri, this._environmentService.remoteAuthority, this._pathService.defaultUriScheme);
+		const asLocalUri = toLocalResource(
+			uri,
+			this._environmentService.remoteAuthority,
+			this._pathService.defaultUriScheme
+		);
 		const exists = await this._fileService.exists(asLocalUri);
 		if (exists) {
 			// don't create a new file ontop of an existing file
@@ -283,12 +336,15 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
 		return await this._doCreateUntitled(Boolean(uri.path) ? uri : undefined, options);
 	}
 
-	private async _doCreateUntitled(associatedResource?: URI, options?: { language?: string; content?: string; encoding?: string }): Promise<URI> {
+	private async _doCreateUntitled(
+		associatedResource?: URI,
+		options?: { language?: string; content?: string; encoding?: string }
+	): Promise<URI> {
 		const model = this._textFileService.untitled.create({
 			associatedResource,
 			languageId: options?.language,
 			initialValue: options?.content,
-			encoding: options?.encoding
+			encoding: options?.encoding,
 		});
 		const resource = model.resource;
 		const ref = await this._textModelResolverService.createModelReference(resource);

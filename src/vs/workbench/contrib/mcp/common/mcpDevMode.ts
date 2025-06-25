@@ -17,7 +17,12 @@ import { createDecorator } from '../../../../platform/instantiation/common/insta
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { IConfig, IDebugService, IDebugSessionOptions } from '../../debug/common/debug.js';
 import { IMcpRegistry } from './mcpRegistryTypes.js';
-import { IMcpServer, McpServerDefinition, McpServerLaunch, McpServerTransportType } from './mcpTypes.js';
+import {
+	IMcpServer,
+	McpServerDefinition,
+	McpServerLaunch,
+	McpServerTransportType,
+} from './mcpTypes.js';
 
 export class McpDevModeServerAttache extends Disposable {
 	public active: boolean = false;
@@ -27,12 +32,17 @@ export class McpDevModeServerAttache extends Disposable {
 		fwdRef: { lastModeDebugged: boolean },
 		@IMcpRegistry registry: IMcpRegistry,
 		@IFileService fileService: IFileService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService
 	) {
 		super();
 
-		const workspaceFolder = server.readDefinitions().map(({ collection }) => collection?.presentation?.origin &&
-			workspaceContextService.getWorkspaceFolder(collection.presentation?.origin)?.uri);
+		const workspaceFolder = server
+			.readDefinitions()
+			.map(
+				({ collection }) =>
+					collection?.presentation?.origin &&
+					workspaceContextService.getWorkspaceFolder(collection.presentation?.origin)?.uri
+			);
 
 		const restart = async () => {
 			const lastDebugged = fwdRef.lastModeDebugged;
@@ -42,33 +52,37 @@ export class McpDevModeServerAttache extends Disposable {
 
 		// 1. Auto-start the server, restart if entering debug mode
 		let didAutoStart = false;
-		this._register(autorun(reader => {
-			const defs = server.readDefinitions().read(reader);
-			if (!defs.collection || !defs.server || !defs.server.devMode) {
-				didAutoStart = false;
-				return;
-			}
+		this._register(
+			autorun(reader => {
+				const defs = server.readDefinitions().read(reader);
+				if (!defs.collection || !defs.server || !defs.server.devMode) {
+					didAutoStart = false;
+					return;
+				}
 
-			// don't keep trying to start the server unless it's a new server or devmode is newly turned on
-			if (didAutoStart) {
-				return;
-			}
+				// don't keep trying to start the server unless it's a new server or devmode is newly turned on
+				if (didAutoStart) {
+					return;
+				}
 
-			const delegates = registry.delegates.read(reader);
-			if (!delegates.some(d => d.canStart(defs.collection!, defs.server!))) {
-				return;
-			}
+				const delegates = registry.delegates.read(reader);
+				if (!delegates.some(d => d.canStart(defs.collection!, defs.server!))) {
+					return;
+				}
 
-			server.start();
-			didAutoStart = true;
-		}));
+				server.start();
+				didAutoStart = true;
+			})
+		);
 
 		const debugMode = server.readDefinitions().map(d => !!d.server?.devMode?.debug);
-		this._register(autorunDelta(debugMode, ({ lastValue, newValue }) => {
-			if (!!newValue && !objectsEqual(lastValue, newValue)) {
-				restart();
-			}
-		}));
+		this._register(
+			autorunDelta(debugMode, ({ lastValue, newValue }) => {
+				if (!!newValue && !objectsEqual(lastValue, newValue)) {
+					restart();
+				}
+			})
+		);
 
 		// 2. Watch for file changes
 		const watchObs = derivedOpts<string[] | undefined>({ equalsFn: arraysEqual }, reader => {
@@ -79,30 +93,37 @@ export class McpDevModeServerAttache extends Disposable {
 
 		const restartScheduler = this._register(new Throttler());
 
-		this._register(autorun(reader => {
-			const pattern = watchObs.read(reader);
-			const wf = workspaceFolder.read(reader);
-			if (!pattern || !wf) {
-				return;
-			}
-
-			const includes = pattern.filter(p => !p.startsWith('!'));
-			const excludes = pattern.filter(p => p.startsWith('!')).map(p => p.slice(1));
-			reader.store.add(fileService.watch(wf, { includes, excludes, recursive: true }));
-
-			const includeParse = includes.map(p => glob.parse({ base: wf.fsPath, pattern: p }));
-			const excludeParse = excludes.map(p => glob.parse({ base: wf.fsPath, pattern: p }));
-			reader.store.add(fileService.onDidFilesChange(e => {
-				for (const change of [e.rawAdded, e.rawDeleted, e.rawUpdated]) {
-					for (const uri of change) {
-						if (includeParse.some(i => i(uri.fsPath)) && !excludeParse.some(e => e(uri.fsPath))) {
-							restartScheduler.queue(restart);
-							break;
-						}
-					}
+		this._register(
+			autorun(reader => {
+				const pattern = watchObs.read(reader);
+				const wf = workspaceFolder.read(reader);
+				if (!pattern || !wf) {
+					return;
 				}
-			}));
-		}));
+
+				const includes = pattern.filter(p => !p.startsWith('!'));
+				const excludes = pattern.filter(p => p.startsWith('!')).map(p => p.slice(1));
+				reader.store.add(fileService.watch(wf, { includes, excludes, recursive: true }));
+
+				const includeParse = includes.map(p => glob.parse({ base: wf.fsPath, pattern: p }));
+				const excludeParse = excludes.map(p => glob.parse({ base: wf.fsPath, pattern: p }));
+				reader.store.add(
+					fileService.onDidFilesChange(e => {
+						for (const change of [e.rawAdded, e.rawDeleted, e.rawUpdated]) {
+							for (const uri of change) {
+								if (
+									includeParse.some(i => i(uri.fsPath)) &&
+									!excludeParse.some(e => e(uri.fsPath))
+								) {
+									restartScheduler.queue(restart);
+									break;
+								}
+							}
+						}
+					})
+				);
+			})
+		);
 	}
 }
 
@@ -121,10 +142,13 @@ export class McpDevModeDebugging implements IMcpDevModeDebugging {
 
 	constructor(
 		@IDebugService private readonly _debugService: IDebugService,
-		@ICommandService private readonly _commandService: ICommandService,
-	) { }
+		@ICommandService private readonly _commandService: ICommandService
+	) {}
 
-	public async transform(definition: McpServerDefinition, launch: McpServerLaunch): Promise<McpServerLaunch> {
+	public async transform(
+		definition: McpServerDefinition,
+		launch: McpServerLaunch
+	): Promise<McpServerLaunch> {
 		if (!definition.devMode?.debug || launch.type !== McpServerTransportType.Stdio) {
 			return launch;
 		}
@@ -140,26 +164,42 @@ export class McpDevModeDebugging implements IMcpDevModeDebugging {
 		switch (definition.devMode.debug.type) {
 			case 'node': {
 				if (!/node[0-9]*$/.test(launch.command)) {
-					throw new Error(localize('mcp.debug.nodeBinReq', 'MCP server must be launched with the "node" executable to enable debugging, but was launched with "{0}"', launch.command));
+					throw new Error(
+						localize(
+							'mcp.debug.nodeBinReq',
+							'MCP server must be launched with the "node" executable to enable debugging, but was launched with "{0}"',
+							launch.command
+						)
+					);
 				}
 
 				// We intentionally assert types as the DA has additional properties beyong IConfig
 				// eslint-disable-next-line local/code-no-dangerous-type-assertions
-				this._debugService.startDebugging(undefined, {
-					type: 'pwa-node',
-					request: 'attach',
-					name,
-					port,
-					host: DEBUG_HOST,
-					timeout: 30_000,
-					continueOnAttach: true,
-					...commonConfig,
-				} as IConfig, options);
+				this._debugService.startDebugging(
+					undefined,
+					{
+						type: 'pwa-node',
+						request: 'attach',
+						name,
+						port,
+						host: DEBUG_HOST,
+						timeout: 30_000,
+						continueOnAttach: true,
+						...commonConfig,
+					} as IConfig,
+					options
+				);
 				return { ...launch, args: [`--inspect-brk=${DEBUG_HOST}:${port}`, ...launch.args] };
 			}
 			case 'debugpy': {
 				if (!/python[0-9.]*$/.test(launch.command)) {
-					throw new Error(localize('mcp.debug.pythonBinReq', 'MCP server must be launched with the "python" executable to enable debugging, but was launched with "{0}"', launch.command));
+					throw new Error(
+						localize(
+							'mcp.debug.pythonBinReq',
+							'MCP server must be launched with the "python" executable to enable debugging, but was launched with "{0}"',
+							launch.command
+						)
+					);
 				}
 
 				let command: string | undefined;
@@ -169,7 +209,9 @@ export class McpDevModeDebugging implements IMcpDevModeDebugging {
 				} else {
 					try {
 						// The Python debugger exposes a command to get its bundle debugpy module path.  Use that if it's available.
-						const debugPyPath = await this._commandService.executeCommand('python.getDebugpyPackagePath');
+						const debugPyPath = await this._commandService.executeCommand(
+							'python.getDebugpyPackagePath'
+						);
 						if (debugPyPath) {
 							command = launch.command;
 							args = [debugPyPath, ...args];
@@ -184,23 +226,30 @@ export class McpDevModeDebugging implements IMcpDevModeDebugging {
 
 				await Promise.race([
 					// eslint-disable-next-line local/code-no-dangerous-type-assertions
-					this._debugService.startDebugging(undefined, {
-						type: 'debugpy',
-						name,
-						request: 'attach',
-						listen: {
-							host: DEBUG_HOST,
-							port
-						},
-						...commonConfig,
-					} as IConfig, options),
-					this.ensureListeningOnPort(port)
+					this._debugService.startDebugging(
+						undefined,
+						{
+							type: 'debugpy',
+							name,
+							request: 'attach',
+							listen: {
+								host: DEBUG_HOST,
+								port,
+							},
+							...commonConfig,
+						} as IConfig,
+						options
+					),
+					this.ensureListeningOnPort(port),
 				]);
 
 				return { ...launch, command, args };
 			}
 			default:
-				assertNever(definition.devMode.debug, `Unknown debug type ${JSON.stringify(definition.devMode.debug)}`);
+				assertNever(
+					definition.devMode.debug,
+					`Unknown debug type ${JSON.stringify(definition.devMode.debug)}`
+				);
 		}
 	}
 

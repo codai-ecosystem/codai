@@ -42,13 +42,10 @@ suite('randomInt', () => {
 					while (iterations-- > 0) {
 						const int = randomInt(max, min);
 
-						assert(
-							int <= max,
-							`Expected ${int} to be less than or equal to ${max}.`
-						);
+						assert(int <= max, `Expected ${int} to be less than or equal to ${max}.`);
 						assert(
 							int >= (min ?? 0),
-							`Expected ${int} to be greater than or equal to ${min ?? 0}.`,
+							`Expected ${int} to be greater than or equal to ${min ?? 0}.`
 						);
 					}
 				});
@@ -61,14 +58,8 @@ suite('randomInt', () => {
 					results.push(randomInt(max, min));
 				}
 
-				assert(
-					results.includes(max),
-					`Expected ${results} to include ${max}.`,
-				);
-				assert(
-					results.includes(min ?? 0),
-					`Expected ${results} to include ${min ?? 0}.`,
-				);
+				assert(results.includes(max), `Expected ${results} to include ${max}.`);
+				assert(results.includes(min ?? 0), `Expected ${results} to include ${min ?? 0}.`);
 			});
 		});
 	};

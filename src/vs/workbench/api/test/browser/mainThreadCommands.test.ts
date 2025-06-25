@@ -5,19 +5,24 @@
 
 import assert from 'assert';
 import { MainThreadCommands } from '../../browser/mainThreadCommands.js';
-import { CommandsRegistry, ICommandService } from '../../../../platform/commands/common/commands.js';
+import {
+	CommandsRegistry,
+	ICommandService,
+} from '../../../../platform/commands/common/commands.js';
 import { SingleProxyRPCProtocol } from '../common/testRPCProtocol.js';
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 import { mock } from '../../../../base/test/common/mock.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('MainThreadCommands', function () {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('dispose on unregister', function () {
-
-		const commands = new MainThreadCommands(SingleProxyRPCProtocol(null), undefined!, new class extends mock<IExtensionService>() { });
+		const commands = new MainThreadCommands(
+			SingleProxyRPCProtocol(null),
+			undefined!,
+			new (class extends mock<IExtensionService>() {})()
+		);
 		assert.strictEqual(CommandsRegistry.getCommand('foo'), undefined);
 
 		// register
@@ -29,12 +34,14 @@ suite('MainThreadCommands', function () {
 		assert.strictEqual(CommandsRegistry.getCommand('foo'), undefined);
 
 		commands.dispose();
-
 	});
 
 	test('unregister all on dispose', function () {
-
-		const commands = new MainThreadCommands(SingleProxyRPCProtocol(null), undefined!, new class extends mock<IExtensionService>() { });
+		const commands = new MainThreadCommands(
+			SingleProxyRPCProtocol(null),
+			undefined!,
+			new (class extends mock<IExtensionService>() {})()
+		);
 		assert.strictEqual(CommandsRegistry.getCommand('foo'), undefined);
 
 		commands.$registerCommand('foo');
@@ -50,24 +57,23 @@ suite('MainThreadCommands', function () {
 	});
 
 	test('activate and throw when needed', async function () {
-
 		const activations: string[] = [];
 		const runs: string[] = [];
 
 		const commands = new MainThreadCommands(
 			SingleProxyRPCProtocol(null),
-			new class extends mock<ICommandService>() {
+			new (class extends mock<ICommandService>() {
 				override executeCommand<T>(id: string): Promise<T | undefined> {
 					runs.push(id);
 					return Promise.resolve(undefined);
 				}
-			},
-			new class extends mock<IExtensionService>() {
+			})(),
+			new (class extends mock<IExtensionService>() {
 				override activateByEvent(id: string) {
 					activations.push(id);
 					return Promise.resolve();
 				}
-			}
+			})()
 		);
 
 		// case 1: arguments and retry

@@ -15,7 +15,7 @@ suite('Decorators', () => {
 		class Foo {
 			count = 0;
 
-			constructor(private _answer: number | null | undefined) { }
+			constructor(private _answer: number | null | undefined) {}
 
 			@memoize
 			answer() {
@@ -60,7 +60,7 @@ suite('Decorators', () => {
 		class Foo {
 			count = 0;
 
-			constructor(private _answer: number | null | undefined) { }
+			constructor(private _answer: number | null | undefined) {}
 
 			@memoize
 			get answer() {
@@ -145,11 +145,7 @@ suite('Decorators', () => {
 					this._handle = fn;
 				}
 
-				@throttle(
-					100,
-					(a: number, b: number) => a + b,
-					() => 0
-				)
+				@throttle(100, (a: number, b: number) => a + b, () => 0)
 				report(p: number): void {
 					this._handle(p);
 				}

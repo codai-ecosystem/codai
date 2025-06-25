@@ -12,7 +12,11 @@ import { ReadableStream } from '../../../../base/common/stream.js';
 import { FrontMatterToken, FrontMatterRecord } from './tokens/index.js';
 import { BaseDecoder } from '../../../../base/common/codecs/baseDecoder.js';
 import { SimpleDecoder, type TSimpleDecoderToken } from '../simpleCodec/simpleDecoder.js';
-import { PartialFrontMatterRecord, PartialFrontMatterRecordName, PartialFrontMatterRecordNameWithDelimiter } from './parsers/frontMatterRecord/index.js';
+import {
+	PartialFrontMatterRecord,
+	PartialFrontMatterRecordName,
+	PartialFrontMatterRecordNameWithDelimiter,
+} from './parsers/frontMatterRecord/index.js';
 
 /**
  * Tokens produced by this decoder.
@@ -27,11 +31,12 @@ export class FrontMatterDecoder extends BaseDecoder<TFrontMatterToken, TSimpleDe
 	 * Current parser reference responsible for parsing a specific sequence
 	 * of tokens into a standalone token.
 	 */
-	private current?: PartialFrontMatterRecordName | PartialFrontMatterRecordNameWithDelimiter | PartialFrontMatterRecord;
+	private current?:
+		| PartialFrontMatterRecordName
+		| PartialFrontMatterRecordNameWithDelimiter
+		| PartialFrontMatterRecord;
 
-	constructor(
-		stream: ReadableStream<VSBuffer> | ObjectStream<TSimpleDecoderToken>,
-	) {
+	constructor(stream: ReadableStream<VSBuffer> | ObjectStream<TSimpleDecoderToken>) {
 		if (stream instanceof ObjectStream) {
 			super(stream);
 
@@ -63,9 +68,8 @@ export class FrontMatterDecoder extends BaseDecoder<TFrontMatterToken, TSimpleDe
 				// front matter record token is the spacial case - because it can
 				// contain trailing space tokens, we want to emit "trimmed" record
 				// token and the trailing spaces tokens separately
-				const trimmedTokens = (nextParser instanceof FrontMatterRecord)
-					? nextParser.trimValueEnd()
-					: [];
+				const trimmedTokens =
+					nextParser instanceof FrontMatterRecord ? nextParser.trimValueEnd() : [];
 
 				this._onData.fire(nextParser);
 
@@ -117,7 +121,7 @@ export class FrontMatterDecoder extends BaseDecoder<TFrontMatterToken, TSimpleDe
 
 			assert(
 				this.current instanceof PartialFrontMatterRecord,
-				'Only partial front matter records can be processed on stream end.',
+				'Only partial front matter records can be processed on stream end.'
 			);
 
 			const record = this.current.asRecordToken();

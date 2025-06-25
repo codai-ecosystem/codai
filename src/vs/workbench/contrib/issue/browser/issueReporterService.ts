@@ -29,7 +29,18 @@ export class IssueWebReporter extends BaseIssueReporterService {
 		@IFileService fileService: IFileService,
 		@IFileDialogService fileDialogService: IFileDialogService
 	) {
-		super(disableExtensions, data, os, product, window, true, issueFormService, themeService, fileService, fileDialogService);
+		super(
+			disableExtensions,
+			data,
+			os,
+			product,
+			window,
+			true,
+			issueFormService,
+			themeService,
+			fileService,
+			fileDialogService
+		);
 
 		const target = this.window.document.querySelector<HTMLElement>('.block-system .block-info');
 
@@ -53,7 +64,7 @@ export class IssueWebReporter extends BaseIssueReporterService {
 			// Resets placeholder
 			const descriptionTextArea = <HTMLInputElement>this.getElementById('issue-title');
 			if (descriptionTextArea) {
-				descriptionTextArea.placeholder = localize('undefinedPlaceholder', "Please enter a title");
+				descriptionTextArea.placeholder = localize('undefinedPlaceholder', 'Please enter a title');
 			}
 
 			this.updatePreviewButtonState();

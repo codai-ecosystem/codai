@@ -13,11 +13,18 @@ import { InlineSuggestionItem } from '../../model/inlineSuggestionItem.js';
 
 export class InlineEditWithChanges {
 	public get lineEdit() {
-		return SingleLineEdit.fromSingleTextEdit(this.edit.toReplacement(this.originalText), this.originalText);
+		return SingleLineEdit.fromSingleTextEdit(
+			this.edit.toReplacement(this.originalText),
+			this.originalText
+		);
 	}
 
-	public get originalLineRange() { return this.lineEdit.lineRange; }
-	public get modifiedLineRange() { return this.lineEdit.toLineEdit().getNewLineRanges()[0]; }
+	public get originalLineRange() {
+		return this.lineEdit.lineRange;
+	}
+	public get modifiedLineRange() {
+		return this.lineEdit.toLineEdit().getNewLineRanges()[0];
+	}
 
 	public get displayRange() {
 		return this.originalText.lineRange.intersect(
@@ -33,14 +40,15 @@ export class InlineEditWithChanges {
 		public readonly cursorPosition: Position,
 		public readonly commands: readonly Command[],
 		public readonly inlineCompletion: InlineSuggestionItem
-	) {
-	}
+	) {}
 
 	equals(other: InlineEditWithChanges) {
-		return this.originalText.getValue() === other.originalText.getValue() &&
+		return (
+			this.originalText.getValue() === other.originalText.getValue() &&
 			this.edit.equals(other.edit) &&
 			this.cursorPosition.equals(other.cursorPosition) &&
 			this.commands === other.commands &&
-			this.inlineCompletion === other.inlineCompletion;
+			this.inlineCompletion === other.inlineCompletion
+		);
 	}
 }

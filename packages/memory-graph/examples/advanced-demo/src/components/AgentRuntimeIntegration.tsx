@@ -17,7 +17,7 @@ export const AgentRuntimeIntegration = ({
 	memoryGraphEngine,
 	onTaskStarted,
 	onTaskCompleted,
-	onGraphUpdated
+	onGraphUpdated,
 }: AgentRuntimeIntegrationProps) => {
 	const [agentRuntime, setAgentRuntime] = useState<AgentRuntimeDemo | null>(null);
 	const [activeAgents, setActiveAgents] = useState<string[]>([]);
@@ -48,9 +48,7 @@ export const AgentRuntimeIntegration = ({
 		// Track active agents
 		const statusSubscription = runtime.status$.subscribe(status => {
 			if (status.agentId) {
-				setActiveAgents(prev =>
-					prev.includes(status.agentId) ? prev : [...prev, status.agentId]
-				);
+				setActiveAgents(prev => (prev.includes(status.agentId) ? prev : [...prev, status.agentId]));
 			}
 		});
 

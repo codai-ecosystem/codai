@@ -6,7 +6,11 @@
 import { FastDomNode, createFastDomNode } from '../../../../base/browser/fastDomNode.js';
 import { IOverviewRuler } from '../../editorBrowser.js';
 import { OverviewRulerPosition, EditorOption } from '../../../common/config/editorOptions.js';
-import { ColorZone, OverviewRulerZone, OverviewZoneManager } from '../../../common/viewModel/overviewZoneManager.js';
+import {
+	ColorZone,
+	OverviewRulerZone,
+	OverviewZoneManager,
+} from '../../../common/viewModel/overviewZoneManager.js';
 import { ViewContext } from '../../../common/viewModel/viewContext.js';
 import * as viewEvents from '../../../common/viewEvents.js';
 import { ViewEventHandler } from '../../../common/viewEventHandler.js';
@@ -16,7 +20,6 @@ import { ViewEventHandler } from '../../../common/viewEventHandler.js';
  * like the cursor, various decorations, etc.
  */
 export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
-
 	private readonly _context: ViewContext;
 	private readonly _domNode: FastDomNode<HTMLCanvasElement>;
 	private readonly _zoneManager: OverviewZoneManager;
@@ -32,7 +35,9 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
 		this._domNode.setLayerHinting(true);
 		this._domNode.setContain('strict');
 
-		this._zoneManager = new OverviewZoneManager((lineNumber: number) => this._context.viewLayout.getVerticalOffsetForLineNumber(lineNumber));
+		this._zoneManager = new OverviewZoneManager((lineNumber: number) =>
+			this._context.viewLayout.getVerticalOffsetForLineNumber(lineNumber)
+		);
 		this._zoneManager.setDOMWidth(0);
 		this._zoneManager.setDOMHeight(0);
 		this._zoneManager.setOuterHeight(this._context.viewLayout.getScrollHeight());
@@ -134,14 +139,17 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
 		return true;
 	}
 
-	private _renderOneLane(ctx: CanvasRenderingContext2D, colorZones: ColorZone[], id2Color: string[], width: number): void {
-
+	private _renderOneLane(
+		ctx: CanvasRenderingContext2D,
+		colorZones: ColorZone[],
+		id2Color: string[],
+		width: number
+	): void {
 		let currentColorId = 0;
 		let currentFrom = 0;
 		let currentTo = 0;
 
 		for (const zone of colorZones) {
-
 			const zoneColorId = zone.colorId;
 			const zoneFrom = zone.from;
 			const zoneTo = zone.to;
@@ -165,6 +173,5 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
 		}
 
 		ctx.fillRect(0, currentFrom, width, currentTo - currentFrom);
-
 	}
 }

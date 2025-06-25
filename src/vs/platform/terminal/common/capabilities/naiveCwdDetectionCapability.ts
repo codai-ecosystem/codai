@@ -8,7 +8,7 @@ import { ITerminalChildProcess } from '../terminal.js';
 import { TerminalCapability, INaiveCwdDetectionCapability } from './capabilities.js';
 
 export class NaiveCwdDetectionCapability implements INaiveCwdDetectionCapability {
-	constructor(private readonly _process: ITerminalChildProcess) { }
+	constructor(private readonly _process: ITerminalChildProcess) {}
 	readonly type = TerminalCapability.NaiveCwdDetection;
 	private _cwd = '';
 

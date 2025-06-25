@@ -6,14 +6,7 @@
 import { BugIndicatingError } from '../../../base/common/errors.js';
 import { toDisposable, type IDisposable } from '../../../base/common/lifecycle.js';
 
-export const quadVertices = new Float32Array([
-	1, 0,
-	1, 1,
-	0, 1,
-	0, 0,
-	0, 1,
-	1, 0,
-]);
+export const quadVertices = new Float32Array([1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0]);
 
 export function ensureNonNullable<T>(value: T | null): T {
 	if (!value) {
@@ -23,13 +16,17 @@ export function ensureNonNullable<T>(value: T | null): T {
 }
 
 // TODO: Move capabilities into ElementSizeObserver?
-export function observeDevicePixelDimensions(element: HTMLElement, parentWindow: Window & typeof globalThis, callback: (deviceWidth: number, deviceHeight: number) => void): IDisposable {
+export function observeDevicePixelDimensions(
+	element: HTMLElement,
+	parentWindow: Window & typeof globalThis,
+	callback: (deviceWidth: number, deviceHeight: number) => void
+): IDisposable {
 	// Observe any resizes to the element and extract the actual pixel size of the element if the
 	// devicePixelContentBoxSize API is supported. This allows correcting rounding errors when
 	// converting between CSS pixels and device pixels which causes blurry rendering when device
 	// pixel ratio is not a round number.
-	let observer: ResizeObserver | undefined = new parentWindow.ResizeObserver((entries) => {
-		const entry = entries.find((entry) => entry.target === element);
+	let observer: ResizeObserver | undefined = new parentWindow.ResizeObserver(entries => {
+		const entry = entries.find(entry => entry.target === element);
 		if (!entry) {
 			return;
 		}

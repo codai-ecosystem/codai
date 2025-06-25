@@ -11,7 +11,6 @@ import { EndOfLineSequence } from '../../../common/model.js';
 import { SingleModelEditStackData } from '../../../common/model/editStack.js';
 
 suite('EditStack', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('issue #118041: unicode character undo bug', () => {
@@ -30,5 +29,4 @@ suite('EditStack', () => {
 
 		assert.deepStrictEqual(actual, stackData);
 	});
-
 });

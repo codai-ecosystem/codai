@@ -45,7 +45,7 @@ suite('NotebookRendererMessaging', () => {
 
 		const expected = [
 			{ editorId: 'some-editor', rendererId: 'foo', message: 1 },
-			{ editorId: 'some-editor', rendererId: 'foo', message: 2 }
+			{ editorId: 'some-editor', rendererId: 'foo', message: 2 },
 		];
 
 		assert.deepStrictEqual(sent, expected);
@@ -54,7 +54,7 @@ suite('NotebookRendererMessaging', () => {
 
 		assert.deepStrictEqual(sent, [
 			...expected,
-			{ editorId: 'some-editor', rendererId: 'foo', message: 3 }
+			{ editorId: 'some-editor', rendererId: 'foo', message: 3 },
 		]);
 	});
 });

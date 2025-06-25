@@ -10,10 +10,16 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { isURLDomainTrusted } from '../../common/trustedDomains.js';
 
 function linkAllowedByRules(link: string, rules: string[]) {
-	assert.ok(isURLDomainTrusted(URI.parse(link), rules), `Link\n${link}\n should be allowed by rules\n${JSON.stringify(rules)}`);
+	assert.ok(
+		isURLDomainTrusted(URI.parse(link), rules),
+		`Link\n${link}\n should be allowed by rules\n${JSON.stringify(rules)}`
+	);
 }
 function linkNotAllowedByRules(link: string, rules: string[]) {
-	assert.ok(!isURLDomainTrusted(URI.parse(link), rules), `Link\n${link}\n should NOT be allowed by rules\n${JSON.stringify(rules)}`);
+	assert.ok(
+		!isURLDomainTrusted(URI.parse(link), rules),
+		`Link\n${link}\n should NOT be allowed by rules\n${JSON.stringify(rules)}`
+	);
 }
 
 suite('Link protection domain matching', () => {
@@ -107,13 +113,21 @@ suite('Link protection domain matching', () => {
 
 	test('case normalization', () => {
 		// https://github.com/microsoft/vscode/issues/99294
-		linkAllowedByRules('https://github.com/microsoft/vscode/issues/new', ['https://github.com/microsoft']);
-		linkAllowedByRules('https://github.com/microsoft/vscode/issues/new', ['https://github.com/microsoft']);
+		linkAllowedByRules('https://github.com/microsoft/vscode/issues/new', [
+			'https://github.com/microsoft',
+		]);
+		linkAllowedByRules('https://github.com/microsoft/vscode/issues/new', [
+			'https://github.com/microsoft',
+		]);
 	});
 
 	test('ignore query & fragment - https://github.com/microsoft/vscode/issues/156839', () => {
-		linkAllowedByRules('https://github.com/login/oauth/authorize?foo=4', ['https://github.com/login/oauth/authorize']);
-		linkAllowedByRules('https://github.com/login/oauth/authorize#foo', ['https://github.com/login/oauth/authorize']);
+		linkAllowedByRules('https://github.com/login/oauth/authorize?foo=4', [
+			'https://github.com/login/oauth/authorize',
+		]);
+		linkAllowedByRules('https://github.com/login/oauth/authorize#foo', [
+			'https://github.com/login/oauth/authorize',
+		]);
 	});
 
 	test('ensure individual parts of url are compared and wildcard does not leak out', () => {

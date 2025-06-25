@@ -7,7 +7,19 @@ import { NotSupportedError } from '../../../../base/common/errors.js';
 import { IDisposable, Disposable } from '../../../../base/common/lifecycle.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { URI } from '../../../../base/common/uri.js';
-import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileSystemProviderErrorCode, FileType, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileSystemProviderWithFileReadWriteCapability, IStat, IWatchOptions } from '../../../../platform/files/common/files.js';
+import {
+	FileChangeType,
+	FilePermission,
+	FileSystemProviderCapabilities,
+	FileSystemProviderErrorCode,
+	FileType,
+	IFileChange,
+	IFileDeleteOptions,
+	IFileOverwriteOptions,
+	IFileSystemProviderWithFileReadWriteCapability,
+	IStat,
+	IWatchOptions,
+} from '../../../../platform/files/common/files.js';
 import { IPreferencesService } from '../../../services/preferences/common/preferences.js';
 import { Event, Emitter } from '../../../../base/common/event.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
@@ -16,35 +28,54 @@ import { VSBuffer } from '../../../../base/common/buffer.js';
 import { ILogService, LogLevel } from '../../../../platform/log/common/log.js';
 import { isEqual } from '../../../../base/common/resources.js';
 
-const schemaRegistry = Registry.as<JSONContributionRegistry.IJSONContributionRegistry>(JSONContributionRegistry.Extensions.JSONContribution);
+const schemaRegistry = Registry.as<JSONContributionRegistry.IJSONContributionRegistry>(
+	JSONContributionRegistry.Extensions.JSONContribution
+);
 
-
-export class SettingsFileSystemProvider extends Disposable implements IFileSystemProviderWithFileReadWriteCapability {
-
+export class SettingsFileSystemProvider
+	extends Disposable
+	implements IFileSystemProviderWithFileReadWriteCapability
+{
 	static readonly SCHEMA = Schemas.vscode;
 
 	protected readonly _onDidChangeFile = this._register(new Emitter<readonly IFileChange[]>());
 	readonly onDidChangeFile = this._onDidChangeFile.event;
 
-	private static SCHEMA_ASSOCIATIONS = URI.parse(`${Schemas.vscode}://schemas-associations/schemas-associations.json`);
+	private static SCHEMA_ASSOCIATIONS = URI.parse(
+		`${Schemas.vscode}://schemas-associations/schemas-associations.json`
+	);
 
 	constructor(
 		@IPreferencesService private readonly preferencesService: IPreferencesService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super();
-		this._register(schemaRegistry.onDidChangeSchema(schemaUri => {
-			this._onDidChangeFile.fire([{ resource: URI.parse(schemaUri), type: FileChangeType.UPDATED }]);
-		}));
-		this._register(schemaRegistry.onDidChangeSchemaAssociations(() => {
-			this._onDidChangeFile.fire([{ resource: SettingsFileSystemProvider.SCHEMA_ASSOCIATIONS, type: FileChangeType.UPDATED }]);
-		}));
-		this._register(preferencesService.onDidDefaultSettingsContentChanged(uri => {
-			this._onDidChangeFile.fire([{ resource: uri, type: FileChangeType.UPDATED }]);
-		}));
+		this._register(
+			schemaRegistry.onDidChangeSchema(schemaUri => {
+				this._onDidChangeFile.fire([
+					{ resource: URI.parse(schemaUri), type: FileChangeType.UPDATED },
+				]);
+			})
+		);
+		this._register(
+			schemaRegistry.onDidChangeSchemaAssociations(() => {
+				this._onDidChangeFile.fire([
+					{
+						resource: SettingsFileSystemProvider.SCHEMA_ASSOCIATIONS,
+						type: FileChangeType.UPDATED,
+					},
+				]);
+			})
+		);
+		this._register(
+			preferencesService.onDidDefaultSettingsContentChanged(uri => {
+				this._onDidChangeFile.fire([{ resource: uri, type: FileChangeType.UPDATED }]);
+			})
+		);
 	}
 
-	readonly capabilities: FileSystemProviderCapabilities = FileSystemProviderCapabilities.Readonly + FileSystemProviderCapabilities.FileReadWrite;
+	readonly capabilities: FileSystemProviderCapabilities =
+		FileSystemProviderCapabilities.Readonly + FileSystemProviderCapabilities.FileReadWrite;
 
 	async readFile(uri: URI): Promise<Uint8Array> {
 		if (uri.scheme !== SettingsFileSystemProvider.SCHEMA) {
@@ -65,14 +96,17 @@ export class SettingsFileSystemProvider extends Disposable implements IFileSyste
 	}
 
 	async stat(uri: URI): Promise<IStat> {
-		if (schemaRegistry.hasSchemaContent(uri.toString()) || this.preferencesService.hasDefaultSettingsContent(uri)) {
+		if (
+			schemaRegistry.hasSchemaContent(uri.toString()) ||
+			this.preferencesService.hasDefaultSettingsContent(uri)
+		) {
 			const currentTime = Date.now();
 			return {
 				type: FileType.File,
 				permissions: FilePermission.Readonly,
 				mtime: currentTime,
 				ctime: currentTime,
-				size: 0
+				size: 0,
 			};
 		}
 		if (isEqual(uri, SettingsFileSystemProvider.SCHEMA_ASSOCIATIONS)) {
@@ -82,7 +116,7 @@ export class SettingsFileSystemProvider extends Disposable implements IFileSyste
 				permissions: FilePermission.Readonly,
 				mtime: currentTime,
 				ctime: currentTime,
-				size: 0
+				size: 0,
 			};
 		}
 		throw FileSystemProviderErrorCode.FileNotFound;
@@ -90,13 +124,17 @@ export class SettingsFileSystemProvider extends Disposable implements IFileSyste
 
 	readonly onDidChangeCapabilities = Event.None;
 
-	watch(resource: URI, opts: IWatchOptions): IDisposable { return Disposable.None; }
+	watch(resource: URI, opts: IWatchOptions): IDisposable {
+		return Disposable.None;
+	}
 
-	async mkdir(resource: URI): Promise<void> { }
-	async readdir(resource: URI): Promise<[string, FileType][]> { return []; }
+	async mkdir(resource: URI): Promise<void> {}
+	async readdir(resource: URI): Promise<[string, FileType][]> {
+		return [];
+	}
 
-	async rename(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> { }
-	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> { }
+	async rename(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {}
+	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {}
 
 	async writeFile() {
 		throw new NotSupportedError();
@@ -104,12 +142,18 @@ export class SettingsFileSystemProvider extends Disposable implements IFileSyste
 
 	private getSchemaContent(uri: URI): string {
 		const startTime = Date.now();
-		const content = schemaRegistry.getSchemaContent(uri.toString()) ?? '{}' /* Use empty schema if not yet registered */;
+		const content =
+			schemaRegistry.getSchemaContent(uri.toString()) ??
+			'{}'; /* Use empty schema if not yet registered */
 		const logLevel = this.logService.getLevel();
 		if (logLevel === LogLevel.Debug || logLevel === LogLevel.Trace) {
 			const endTime = Date.now();
-			const uncompressed = JSON.stringify(schemaRegistry.getSchemaContributions().schemas[uri.toString()]);
-			this.logService.debug(`${uri.toString()}: ${uncompressed.length} -> ${content.length} (${Math.round((uncompressed.length - content.length) / uncompressed.length * 100)}%) Took ${endTime - startTime}ms`);
+			const uncompressed = JSON.stringify(
+				schemaRegistry.getSchemaContributions().schemas[uri.toString()]
+			);
+			this.logService.debug(
+				`${uri.toString()}: ${uncompressed.length} -> ${content.length} (${Math.round(((uncompressed.length - content.length) / uncompressed.length) * 100)}%) Took ${endTime - startTime}ms`
+			);
 		}
 		return content;
 	}

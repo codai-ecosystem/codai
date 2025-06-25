@@ -14,12 +14,9 @@ import { IDisposable } from '../../../common/lifecycle.js';
 import { isMacintosh } from '../../../common/platform.js';
 import './selectBox.css';
 
-
-
 // Public SelectBox interface - Calls routed to appropriate select implementation class
 
 export interface ISelectBoxDelegate extends IDisposable {
-
 	// Public SelectBox Interface
 	readonly onDidSelect: Event<ISelectData>;
 	setOptions(options: ISelectOptionItem[], selected?: number): void;
@@ -82,14 +79,26 @@ export interface ISelectData {
 export class SelectBox extends Widget implements ISelectBoxDelegate {
 	private selectBoxDelegate: ISelectBoxDelegate;
 
-	constructor(options: ISelectOptionItem[], selected: number, contextViewProvider: IContextViewProvider, styles: ISelectBoxStyles, selectBoxOptions?: ISelectBoxOptions) {
+	constructor(
+		options: ISelectOptionItem[],
+		selected: number,
+		contextViewProvider: IContextViewProvider,
+		styles: ISelectBoxStyles,
+		selectBoxOptions?: ISelectBoxOptions
+	) {
 		super();
 
 		// Default to native SelectBox for OSX unless overridden
 		if (isMacintosh && !selectBoxOptions?.useCustomDrawn) {
 			this.selectBoxDelegate = new SelectBoxNative(options, selected, styles, selectBoxOptions);
 		} else {
-			this.selectBoxDelegate = new SelectBoxList(options, selected, contextViewProvider, styles, selectBoxOptions);
+			this.selectBoxDelegate = new SelectBoxList(
+				options,
+				selected,
+				contextViewProvider,
+				styles,
+				selectBoxOptions
+			);
 		}
 
 		this._register(this.selectBoxDelegate);

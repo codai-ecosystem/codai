@@ -17,7 +17,7 @@
 export const enum MonarchBracket {
 	None = 0,
 	Open = 1,
-	Close = -1
+	Close = -1,
 }
 
 export interface ILexerMin {
@@ -52,7 +52,7 @@ export interface IBracket {
 export type FuzzyAction = IAction | string;
 
 export function isFuzzyActionArr(what: FuzzyAction | FuzzyAction[]): what is FuzzyAction[] {
-	return (Array.isArray(what));
+	return Array.isArray(what);
 }
 
 export function isFuzzyAction(what: FuzzyAction | FuzzyAction[]): what is FuzzyAction {
@@ -60,7 +60,7 @@ export function isFuzzyAction(what: FuzzyAction | FuzzyAction[]): what is FuzzyA
 }
 
 export function isString(what: FuzzyAction): what is string {
-	return (typeof what === 'string');
+	return typeof what === 'string';
 }
 
 export function isIAction(what: FuzzyAction): what is IAction {
@@ -105,14 +105,14 @@ export interface IBranch {
  * Is a string null, undefined, or empty?
  */
 export function empty(s: string): boolean {
-	return (s ? false : true);
+	return s ? false : true;
 }
 
 /**
  * Puts a string to lower case if 'ignoreCase' is set.
  */
 export function fixCase(lexer: ILexerMin, str: string): string {
-	return (lexer.ignoreCase && str ? str.toLowerCase() : str);
+	return lexer.ignoreCase && str ? str.toLowerCase() : str;
 }
 
 /**
@@ -148,7 +148,13 @@ export function createError(lexer: ILexerMin, msg: string): Error {
  *
  * See documentation for more info
  */
-export function substituteMatches(lexer: ILexerMin, str: string, id: string, matches: string[], state: string): string {
+export function substituteMatches(
+	lexer: ILexerMin,
+	str: string,
+	id: string,
+	matches: string[],
+	state: string
+): string {
 	const re = /\$((\$)|(#)|(\d\d?)|[sS](\d\d?)|@(\w+))/g;
 	let stateMatches: string[] | null = null;
 	return str.replace(re, function (full, sub?, dollar?, hash?, n?, s?, attr?, ofs?, total?) {
@@ -156,15 +162,16 @@ export function substituteMatches(lexer: ILexerMin, str: string, id: string, mat
 			return '$'; // $$
 		}
 		if (!empty(hash)) {
-			return fixCase(lexer, id);   // default $#
+			return fixCase(lexer, id); // default $#
 		}
 		if (!empty(n) && n < matches.length) {
 			return fixCase(lexer, matches[n]); // $n
 		}
-		if (!empty(attr) && lexer && typeof (lexer[attr]) === 'string') {
+		if (!empty(attr) && lexer && typeof lexer[attr] === 'string') {
 			return lexer[attr]; //@attribute
 		}
-		if (stateMatches === null) { // split state on demand
+		if (stateMatches === null) {
+			// split state on demand
 			stateMatches = state.split('.');
 			stateMatches.unshift(state);
 		}
@@ -184,7 +191,8 @@ export function substituteMatchesRe(lexer: ILexerMin, str: string, state: string
 	const re = /\$[sS](\d\d?)/g;
 	let stateMatches: string[] | null = null;
 	return str.replace(re, function (full, s) {
-		if (stateMatches === null) { // split state on demand
+		if (stateMatches === null) {
+			// split state on demand
 			stateMatches = state.split('.');
 			stateMatches.unshift(state);
 		}

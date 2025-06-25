@@ -12,7 +12,7 @@ import { InlineEditWithChanges } from './inlineEditWithChanges.js';
 export enum InlineEditTabAction {
 	Jump = 'jump',
 	Accept = 'accept',
-	Inactive = 'inactive'
+	Inactive = 'inactive',
 }
 
 export interface IInlineEditsView {

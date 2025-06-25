@@ -11,7 +11,10 @@ import { getDefaultHoverDelegate } from '../../../base/browser/ui/hover/hoverDel
 import { IAction } from '../../../base/common/actions.js';
 import { IDisposable } from '../../../base/common/lifecycle.js';
 import { IActionWidgetService } from '../../actionWidget/browser/actionWidget.js';
-import { ActionWidgetDropdown, IActionWidgetDropdownOptions } from '../../actionWidget/browser/actionWidgetDropdown.js';
+import {
+	ActionWidgetDropdown,
+	IActionWidgetDropdownOptions,
+} from '../../actionWidget/browser/actionWidgetDropdown.js';
 import { IContextKeyService } from '../../contextkey/common/contextkey.js';
 import { IKeybindingService } from '../../keybinding/common/keybinding.js';
 
@@ -24,10 +27,13 @@ export class ActionWidgetDropdownActionViewItem extends BaseActionViewItem {
 	private actionItem: HTMLElement | null = null;
 	constructor(
 		action: IAction,
-		private readonly actionWidgetOptions: Omit<IActionWidgetDropdownOptions, 'label' | 'labelRenderer'>,
+		private readonly actionWidgetOptions: Omit<
+			IActionWidgetDropdownOptions,
+			'label' | 'labelRenderer'
+		>,
 		@IActionWidgetService private readonly _actionWidgetService: IActionWidgetService,
 		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService private readonly _contextKeyService: IContextKeyService
 	) {
 		super(undefined, action);
 	}
@@ -40,10 +46,19 @@ export class ActionWidgetDropdownActionViewItem extends BaseActionViewItem {
 			return this.renderLabel(this.element);
 		};
 
-		this.actionWidgetDropdown = this._register(new ActionWidgetDropdown(container, { ...this.actionWidgetOptions, labelRenderer }, this._actionWidgetService, this._keybindingService));
-		this._register(this.actionWidgetDropdown.onDidChangeVisibility(visible => {
-			this.element?.setAttribute('aria-expanded', `${visible}`);
-		}));
+		this.actionWidgetDropdown = this._register(
+			new ActionWidgetDropdown(
+				container,
+				{ ...this.actionWidgetOptions, labelRenderer },
+				this._actionWidgetService,
+				this._keybindingService
+			)
+		);
+		this._register(
+			this.actionWidgetDropdown.onDidChangeVisibility(visible => {
+				this.element?.setAttribute('aria-expanded', `${visible}`);
+			})
+		);
 
 		this.updateTooltip();
 		this.updateEnabled();
@@ -54,7 +69,13 @@ export class ActionWidgetDropdownActionViewItem extends BaseActionViewItem {
 		element.classList.add('codicon');
 
 		if (this._action.label) {
-			this._register(getBaseLayerHoverDelegate().setupManagedHover(this.options.hoverDelegate ?? getDefaultHoverDelegate('mouse'), element, this._action.label));
+			this._register(
+				getBaseLayerHoverDelegate().setupManagedHover(
+					this.options.hoverDelegate ?? getDefaultHoverDelegate('mouse'),
+					element,
+					this._action.label
+				)
+			);
 		}
 
 		return null;
@@ -70,17 +91,19 @@ export class ActionWidgetDropdownActionViewItem extends BaseActionViewItem {
 		element.setAttribute('role', 'button');
 		element.setAttribute('aria-haspopup', 'true');
 		element.setAttribute('aria-expanded', 'false');
-		element.ariaLabel = (this.getTooltip() + ' - ' + (element.textContent || this._action.label)) || '';
+		element.ariaLabel =
+			this.getTooltip() + ' - ' + (element.textContent || this._action.label) || '';
 	}
 
 	protected override getTooltip() {
-		const keybinding = this._keybindingService.lookupKeybinding(this.action.id, this._contextKeyService);
+		const keybinding = this._keybindingService.lookupKeybinding(
+			this.action.id,
+			this._contextKeyService
+		);
 		const keybindingLabel = keybinding && keybinding.getLabel();
 
 		const tooltip = this.action.tooltip ?? this.action.label;
-		return keybindingLabel
-			? `${tooltip} (${keybindingLabel})`
-			: tooltip;
+		return keybindingLabel ? `${tooltip} (${keybindingLabel})` : tooltip;
 	}
 
 	show(): void {
@@ -92,5 +115,4 @@ export class ActionWidgetDropdownActionViewItem extends BaseActionViewItem {
 		this.actionItem?.classList.toggle('disabled', disabled);
 		this.element?.classList.toggle('disabled', disabled);
 	}
-
 }

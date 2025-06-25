@@ -11,313 +11,313 @@ define({
 		value: 'a',
 		withShift: 'A',
 		withAltGr: 'a',
-		withShiftAltGr: 'A'
+		withShiftAltGr: 'A',
 	},
 	KeyB: {
 		value: 'b',
 		withShift: 'B',
 		withAltGr: 'b',
-		withShiftAltGr: 'B'
+		withShiftAltGr: 'B',
 	},
 	KeyC: {
 		value: 'c',
 		withShift: 'C',
 		withAltGr: 'c',
-		withShiftAltGr: 'C'
+		withShiftAltGr: 'C',
 	},
 	KeyD: {
 		value: 'd',
 		withShift: 'D',
 		withAltGr: 'd',
-		withShiftAltGr: 'D'
+		withShiftAltGr: 'D',
 	},
 	KeyE: {
 		value: 'e',
 		withShift: 'E',
 		withAltGr: 'e',
-		withShiftAltGr: 'E'
+		withShiftAltGr: 'E',
 	},
 	KeyF: {
 		value: 'f',
 		withShift: 'F',
 		withAltGr: 'f',
-		withShiftAltGr: 'F'
+		withShiftAltGr: 'F',
 	},
 	KeyG: {
 		value: 'g',
 		withShift: 'G',
 		withAltGr: 'g',
-		withShiftAltGr: 'G'
+		withShiftAltGr: 'G',
 	},
 	KeyH: {
 		value: 'h',
 		withShift: 'H',
 		withAltGr: 'h',
-		withShiftAltGr: 'H'
+		withShiftAltGr: 'H',
 	},
 	KeyI: {
 		value: 'i',
 		withShift: 'I',
 		withAltGr: 'i',
-		withShiftAltGr: 'I'
+		withShiftAltGr: 'I',
 	},
 	KeyJ: {
 		value: 'j',
 		withShift: 'J',
 		withAltGr: 'j',
-		withShiftAltGr: 'J'
+		withShiftAltGr: 'J',
 	},
 	KeyK: {
 		value: 'k',
 		withShift: 'K',
 		withAltGr: 'k',
-		withShiftAltGr: 'K'
+		withShiftAltGr: 'K',
 	},
 	KeyL: {
 		value: 'l',
 		withShift: 'L',
 		withAltGr: 'l',
-		withShiftAltGr: 'L'
+		withShiftAltGr: 'L',
 	},
 	KeyM: {
 		value: 'm',
 		withShift: 'M',
 		withAltGr: 'm',
-		withShiftAltGr: 'M'
+		withShiftAltGr: 'M',
 	},
 	KeyN: {
 		value: 'n',
 		withShift: 'N',
 		withAltGr: 'n',
-		withShiftAltGr: 'N'
+		withShiftAltGr: 'N',
 	},
 	KeyO: {
 		value: 'o',
 		withShift: 'O',
 		withAltGr: 'o',
-		withShiftAltGr: 'O'
+		withShiftAltGr: 'O',
 	},
 	KeyP: {
 		value: 'p',
 		withShift: 'P',
 		withAltGr: 'p',
-		withShiftAltGr: 'P'
+		withShiftAltGr: 'P',
 	},
 	KeyQ: {
 		value: 'q',
 		withShift: 'Q',
 		withAltGr: 'q',
-		withShiftAltGr: 'Q'
+		withShiftAltGr: 'Q',
 	},
 	KeyR: {
 		value: 'r',
 		withShift: 'R',
 		withAltGr: 'r',
-		withShiftAltGr: 'R'
+		withShiftAltGr: 'R',
 	},
 	KeyS: {
 		value: 's',
 		withShift: 'S',
 		withAltGr: 's',
-		withShiftAltGr: 'S'
+		withShiftAltGr: 'S',
 	},
 	KeyT: {
 		value: 't',
 		withShift: 'T',
 		withAltGr: 't',
-		withShiftAltGr: 'T'
+		withShiftAltGr: 'T',
 	},
 	KeyU: {
 		value: 'u',
 		withShift: 'U',
 		withAltGr: 'u',
-		withShiftAltGr: 'U'
+		withShiftAltGr: 'U',
 	},
 	KeyV: {
 		value: 'v',
 		withShift: 'V',
 		withAltGr: 'v',
-		withShiftAltGr: 'V'
+		withShiftAltGr: 'V',
 	},
 	KeyW: {
 		value: 'w',
 		withShift: 'W',
 		withAltGr: 'w',
-		withShiftAltGr: 'W'
+		withShiftAltGr: 'W',
 	},
 	KeyX: {
 		value: 'x',
 		withShift: 'X',
 		withAltGr: 'x',
-		withShiftAltGr: 'X'
+		withShiftAltGr: 'X',
 	},
 	KeyY: {
 		value: 'y',
 		withShift: 'Y',
 		withAltGr: 'y',
-		withShiftAltGr: 'Y'
+		withShiftAltGr: 'Y',
 	},
 	KeyZ: {
 		value: 'z',
 		withShift: 'Z',
 		withAltGr: 'z',
-		withShiftAltGr: 'Z'
+		withShiftAltGr: 'Z',
 	},
 	Digit1: {
 		value: '1',
 		withShift: '!',
 		withAltGr: '1',
-		withShiftAltGr: '!'
+		withShiftAltGr: '!',
 	},
 	Digit2: {
 		value: '2',
 		withShift: '@',
 		withAltGr: '2',
-		withShiftAltGr: '@'
+		withShiftAltGr: '@',
 	},
 	Digit3: {
 		value: '3',
 		withShift: '#',
 		withAltGr: '3',
-		withShiftAltGr: '#'
+		withShiftAltGr: '#',
 	},
 	Digit4: {
 		value: '4',
 		withShift: '$',
 		withAltGr: '4',
-		withShiftAltGr: '$'
+		withShiftAltGr: '$',
 	},
 	Digit5: {
 		value: '5',
 		withShift: '%',
 		withAltGr: '5',
-		withShiftAltGr: '%'
+		withShiftAltGr: '%',
 	},
 	Digit6: {
 		value: '6',
 		withShift: '^',
 		withAltGr: '6',
-		withShiftAltGr: '^'
+		withShiftAltGr: '^',
 	},
 	Digit7: {
 		value: '7',
 		withShift: '&',
 		withAltGr: '7',
-		withShiftAltGr: '&'
+		withShiftAltGr: '&',
 	},
 	Digit8: {
 		value: '8',
 		withShift: '*',
 		withAltGr: '8',
-		withShiftAltGr: '*'
+		withShiftAltGr: '*',
 	},
 	Digit9: {
 		value: '9',
 		withShift: '(',
 		withAltGr: '9',
-		withShiftAltGr: '('
+		withShiftAltGr: '(',
 	},
 	Digit0: {
 		value: '0',
 		withShift: ')',
 		withAltGr: '0',
-		withShiftAltGr: ')'
+		withShiftAltGr: ')',
 	},
 	Enter: {
 		value: '\r',
 		withShift: '\r',
 		withAltGr: '\r',
-		withShiftAltGr: '\r'
+		withShiftAltGr: '\r',
 	},
 	Escape: {
 		value: '\u001b',
 		withShift: '\u001b',
 		withAltGr: '\u001b',
-		withShiftAltGr: '\u001b'
+		withShiftAltGr: '\u001b',
 	},
 	Backspace: {
 		value: '\b',
 		withShift: '\b',
 		withAltGr: '\b',
-		withShiftAltGr: '\b'
+		withShiftAltGr: '\b',
 	},
 	Tab: {
 		value: '\t',
 		withShift: '',
 		withAltGr: '\t',
-		withShiftAltGr: ''
+		withShiftAltGr: '',
 	},
 	Space: {
 		value: ' ',
 		withShift: ' ',
 		withAltGr: ' ',
-		withShiftAltGr: ' '
+		withShiftAltGr: ' ',
 	},
 	Minus: {
 		value: '-',
 		withShift: '_',
 		withAltGr: '-',
-		withShiftAltGr: '_'
+		withShiftAltGr: '_',
 	},
 	Equal: {
 		value: '=',
 		withShift: '+',
 		withAltGr: '=',
-		withShiftAltGr: '+'
+		withShiftAltGr: '+',
 	},
 	BracketLeft: {
 		value: '[',
 		withShift: '{',
 		withAltGr: '[',
-		withShiftAltGr: '{'
+		withShiftAltGr: '{',
 	},
 	BracketRight: {
 		value: ']',
 		withShift: '}',
 		withAltGr: ']',
-		withShiftAltGr: '}'
+		withShiftAltGr: '}',
 	},
 	Backslash: {
 		value: '\\',
 		withShift: '|',
 		withAltGr: '\\',
-		withShiftAltGr: '|'
+		withShiftAltGr: '|',
 	},
 	Semicolon: {
 		value: ';',
 		withShift: ':',
 		withAltGr: ';',
-		withShiftAltGr: ':'
+		withShiftAltGr: ':',
 	},
 	Quote: {
-		value: '\'',
+		value: "'",
 		withShift: '"',
-		withAltGr: '\'',
-		withShiftAltGr: '"'
+		withAltGr: "'",
+		withShiftAltGr: '"',
 	},
 	Backquote: {
 		value: '`',
 		withShift: '~',
 		withAltGr: '`',
-		withShiftAltGr: '~'
+		withShiftAltGr: '~',
 	},
 	Comma: {
 		value: ',',
 		withShift: '<',
 		withAltGr: ',',
-		withShiftAltGr: '<'
+		withShiftAltGr: '<',
 	},
 	Period: {
 		value: '.',
 		withShift: '>',
 		withAltGr: '.',
-		withShiftAltGr: '>'
+		withShiftAltGr: '>',
 	},
 	Slash: {
 		value: '/',
 		withShift: '?',
 		withAltGr: '/',
-		withShiftAltGr: '?'
+		withShiftAltGr: '?',
 	},
 	CapsLock: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	F1: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
@@ -342,7 +342,7 @@ define({
 		value: '',
 		withShift: '',
 		withAltGr: '',
-		withShiftAltGr: ''
+		withShiftAltGr: '',
 	},
 	End: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	PageDown: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
@@ -355,31 +355,31 @@ define({
 		value: '/',
 		withShift: '/',
 		withAltGr: '/',
-		withShiftAltGr: '/'
+		withShiftAltGr: '/',
 	},
 	NumpadMultiply: {
 		value: '*',
 		withShift: '*',
 		withAltGr: '*',
-		withShiftAltGr: '*'
+		withShiftAltGr: '*',
 	},
 	NumpadSubtract: {
 		value: '-',
 		withShift: '-',
 		withAltGr: '-',
-		withShiftAltGr: '-'
+		withShiftAltGr: '-',
 	},
 	NumpadAdd: {
 		value: '+',
 		withShift: '+',
 		withAltGr: '+',
-		withShiftAltGr: '+'
+		withShiftAltGr: '+',
 	},
 	NumpadEnter: {
 		value: '\r',
 		withShift: '\r',
 		withAltGr: '\r',
-		withShiftAltGr: '\r'
+		withShiftAltGr: '\r',
 	},
 	Numpad1: { value: '', withShift: '1', withAltGr: '', withShiftAltGr: '1' },
 	Numpad2: { value: '', withShift: '2', withAltGr: '', withShiftAltGr: '2' },
@@ -396,7 +396,7 @@ define({
 		value: '<',
 		withShift: '>',
 		withAltGr: '|',
-		withShiftAltGr: '¦'
+		withShiftAltGr: '¦',
 	},
 	ContextMenu: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	Power: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
@@ -404,7 +404,7 @@ define({
 		value: '=',
 		withShift: '=',
 		withAltGr: '=',
-		withShiftAltGr: '='
+		withShiftAltGr: '=',
 	},
 	F13: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	F14: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
@@ -434,7 +434,7 @@ define({
 		value: '.',
 		withShift: '.',
 		withAltGr: '.',
-		withShiftAltGr: '.'
+		withShiftAltGr: '.',
 	},
 	IntlRo: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	KanaMode: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
@@ -450,13 +450,13 @@ define({
 		value: '(',
 		withShift: '(',
 		withAltGr: '(',
-		withShiftAltGr: '('
+		withShiftAltGr: '(',
 	},
 	NumpadParenRight: {
 		value: ')',
 		withShift: ')',
 		withAltGr: ')',
-		withShiftAltGr: ')'
+		withShiftAltGr: ')',
 	},
 	ControlLeft: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	ShiftLeft: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
@@ -492,6 +492,5 @@ define({
 	BrowserFavorites: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	MailReply: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	MailForward: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
-	MailSend: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' }
-
+	MailSend: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 });

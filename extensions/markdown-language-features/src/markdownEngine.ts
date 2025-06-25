@@ -32,17 +32,18 @@ const pluginSourceMap: MarkdownIt.PluginSimple = (md): void => {
 	// The 'html_block' renderer doesn't respect `attrs`. We need to insert a marker.
 	const originalHtmlBlockRenderer = md.renderer.rules['html_block'];
 	if (originalHtmlBlockRenderer) {
-		md.renderer.rules['html_block'] = (tokens, idx, options, env, self) => (
+		md.renderer.rules['html_block'] = (tokens, idx, options, env, self) =>
 			`<div ${self.renderAttrs(tokens[idx])} ></div>\n` +
-			originalHtmlBlockRenderer(tokens, idx, options, env, self)
-		);
+			originalHtmlBlockRenderer(tokens, idx, options, env, self);
 	}
 };
 
 /**
  * The markdown-it options that we expose in the settings.
  */
-type MarkdownItConfig = Readonly<Required<Pick<MarkdownIt.Options, 'breaks' | 'linkify' | 'typographer'>>>;
+type MarkdownItConfig = Readonly<
+	Required<Pick<MarkdownIt.Options, 'breaks' | 'linkify' | 'typographer'>>
+>;
 
 class TokenCache {
 	private _cachedDocument?: {
@@ -53,11 +54,13 @@ class TokenCache {
 	private _tokens?: Token[];
 
 	public tryGetCached(document: ITextDocument, config: MarkdownItConfig): Token[] | undefined {
-		if (this._cachedDocument
-			&& this._cachedDocument.uri.toString() === document.uri.toString()
-			&& document.version >= 0 && this._cachedDocument.version === document.version
-			&& this._cachedDocument.config.breaks === config.breaks
-			&& this._cachedDocument.config.linkify === config.linkify
+		if (
+			this._cachedDocument &&
+			this._cachedDocument.uri.toString() === document.uri.toString() &&
+			document.version >= 0 &&
+			this._cachedDocument.version === document.version &&
+			this._cachedDocument.config.breaks === config.breaks &&
+			this._cachedDocument.config.linkify === config.linkify
 		) {
 			return this._tokens;
 		}
@@ -97,7 +100,6 @@ export interface IMdParser {
 }
 
 export class MarkdownItEngine implements IMdParser {
-
 	private _md?: Promise<MarkdownIt>;
 
 	private _slugCount = new Map<string, number>();
@@ -108,7 +110,7 @@ export class MarkdownItEngine implements IMdParser {
 	public constructor(
 		private readonly _contributionProvider: MarkdownContributionProvider,
 		slugifier: Slugifier,
-		private readonly _logger: ILogger,
+		private readonly _logger: ILogger
 	) {
 		this.slugifier = slugifier;
 
@@ -118,7 +120,6 @@ export class MarkdownItEngine implements IMdParser {
 			this._tokenCache.clean();
 		});
 	}
-
 
 	public async getEngine(resource: vscode.Uri | undefined): Promise<MarkdownIt> {
 		const config = this._getConfig(resource);
@@ -143,16 +144,23 @@ export class MarkdownItEngine implements IMdParser {
 				const frontMatterPlugin = await import('markdown-it-front-matter');
 				// Extract rules from front matter plugin and apply at a lower precedence
 				let fontMatterRule: any;
-				frontMatterPlugin.default(<any>{
-					block: {
-						ruler: {
-							before: (_id: any, _id2: any, rule: any) => { fontMatterRule = rule; }
-						}
+				frontMatterPlugin.default(
+					<any>{
+						block: {
+							ruler: {
+								before: (_id: any, _id2: any, rule: any) => {
+									fontMatterRule = rule;
+								},
+							},
+						},
+					},
+					() => {
+						/* noop */
 					}
-				}, () => { /* noop */ });
+				);
 
 				md.block.ruler.before('fence', 'front_matter', fontMatterRule, {
-					alt: ['paragraph', 'reference', 'blockquote', 'list']
+					alt: ['paragraph', 'reference', 'blockquote', 'list'],
 				});
 
 				this._addImageRenderer(md);
@@ -202,13 +210,17 @@ export class MarkdownItEngine implements IMdParser {
 		this._slugCount = new Map<string, number>();
 	}
 
-	public async render(input: ITextDocument | string, resourceProvider?: WebviewResourceProvider): Promise<RenderOutput> {
+	public async render(
+		input: ITextDocument | string,
+		resourceProvider?: WebviewResourceProvider
+	): Promise<RenderOutput> {
 		const config = this._getConfig(typeof input === 'string' ? undefined : input.uri);
 		const engine = await this._getEngine(config);
 
-		const tokens = typeof input === 'string'
-			? this._tokenizeString(input, engine)
-			: this._tokenizeDocument(input, config, engine);
+		const tokens =
+			typeof input === 'string'
+				? this._tokenizeString(input, engine)
+				: this._tokenizeDocument(input, config, engine);
 
 		const env: RenderEnv = {
 			containingImages: new Set<string>(),
@@ -216,14 +228,18 @@ export class MarkdownItEngine implements IMdParser {
 			resourceProvider,
 		};
 
-		const html = engine.renderer.render(tokens, {
-			...engine.options,
-			...config
-		}, env);
+		const html = engine.renderer.render(
+			tokens,
+			{
+				...engine.options,
+				...config,
+			},
+			env
+		);
 
 		return {
 			html,
-			containingImages: env.containingImages
+			containingImages: env.containingImages,
 		};
 	}
 
@@ -290,9 +306,10 @@ export class MarkdownItEngine implements IMdParser {
 			try {
 				// Normalize VS Code schemes to target the current version
 				if (isOfScheme(Schemes.vscode, link) || isOfScheme(Schemes['vscode-insiders'], link)) {
-					return normalizeLink(vscode.Uri.parse(link).with({ scheme: vscode.env.uriScheme }).toString());
+					return normalizeLink(
+						vscode.Uri.parse(link).with({ scheme: vscode.env.uriScheme }).toString()
+					);
 				}
-
 			} catch (e) {
 				// noop
 			}
@@ -303,10 +320,12 @@ export class MarkdownItEngine implements IMdParser {
 	private _addLinkValidator(md: MarkdownIt): void {
 		const validateLink = md.validateLink;
 		md.validateLink = (link: string) => {
-			return validateLink(link)
-				|| isOfScheme(Schemes.vscode, link)
-				|| isOfScheme(Schemes['vscode-insiders'], link)
-				|| /^data:image\/.*?;/.test(link);
+			return (
+				validateLink(link) ||
+				isOfScheme(Schemes.vscode, link) ||
+				isOfScheme(Schemes['vscode-insiders'], link) ||
+				/^data:image\/.*?;/.test(link)
+			);
 		};
 	}
 
@@ -367,7 +386,11 @@ export class MarkdownItEngine implements IMdParser {
 		};
 	}
 
-	private _toResourceUri(href: string, currentDocument: vscode.Uri | undefined, resourceProvider: WebviewResourceProvider | undefined): string {
+	private _toResourceUri(
+		href: string,
+		currentDocument: vscode.Uri | undefined,
+		resourceProvider: WebviewResourceProvider | undefined
+	): string {
 		try {
 			// Support file:// links
 			if (isOfScheme(Schemes.file, href)) {
@@ -424,11 +447,10 @@ async function getMarkdownOptions(md: () => MarkdownIt): Promise<MarkdownIt.Opti
 						language: lang,
 						ignoreIllegals: true,
 					}).value;
-				}
-				catch (error) { }
+				} catch (error) {}
 			}
 			return md().utils.escapeHtml(str);
-		}
+		},
 	};
 }
 

@@ -14,10 +14,7 @@ export async function POST(req: NextRequest) {
 
 		if (!signature) {
 			console.error('GitHub webhook: Missing signature');
-			return NextResponse.json(
-				{ error: 'Missing signature' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
 		}
 
 		// Verify webhook signature
@@ -26,15 +23,9 @@ export async function POST(req: NextRequest) {
 			.update(body)
 			.digest('hex')}`;
 
-		if (!crypto.timingSafeEqual(
-			Buffer.from(signature),
-			Buffer.from(expectedSignature)
-		)) {
+		if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
 			console.error('GitHub webhook: Invalid signature');
-			return NextResponse.json(
-				{ error: 'Invalid signature' },
-				{ status: 401 }
-			);
+			return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
 		}
 
 		const payload = JSON.parse(body);
@@ -92,13 +83,9 @@ export async function POST(req: NextRequest) {
 		}
 
 		return NextResponse.json({ received: true });
-
 	} catch (error) {
 		console.error('GitHub webhook error:', error);
-		return NextResponse.json(
-			{ error: 'Webhook processing failed' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
 	}
 }
 
@@ -140,18 +127,15 @@ async function handleInstallation(db: any, payload: any) {
 				// Store repository access if provided
 				if (repositories) {
 					for (const repo of repositories) {
-						await db
-							.collection('github_repositories')
-							.doc(repo.id.toString())
-							.set({
-								repositoryId: repo.id,
-								name: repo.name,
-								fullName: repo.full_name,
-								private: repo.private,
-								installationId: installation.id,
-								accountLogin: installation.account.login,
-								addedAt: new Date(),
-							});
+						await db.collection('github_repositories').doc(repo.id.toString()).set({
+							repositoryId: repo.id,
+							name: repo.name,
+							fullName: repo.full_name,
+							private: repo.private,
+							installationId: installation.id,
+							accountLogin: installation.account.login,
+							addedAt: new Date(),
+						});
 					}
 				}
 				break;
@@ -159,10 +143,7 @@ async function handleInstallation(db: any, payload: any) {
 
 			case 'deleted': {
 				// Remove installation and associated repositories
-				await db
-					.collection('github_installations')
-					.doc(installation.id.toString())
-					.delete();
+				await db.collection('github_installations').doc(installation.id.toString()).delete();
 
 				// Remove associated repositories
 				const reposSnapshot = await db
@@ -212,18 +193,15 @@ async function handleInstallationRepositories(db: any, payload: any) {
 		// Add new repositories
 		if (repositories_added) {
 			for (const repo of repositories_added) {
-				await db
-					.collection('github_repositories')
-					.doc(repo.id.toString())
-					.set({
-						repositoryId: repo.id,
-						name: repo.name,
-						fullName: repo.full_name,
-						private: repo.private,
-						installationId: installation.id,
-						accountLogin: installation.account.login,
-						addedAt: new Date(),
-					});
+				await db.collection('github_repositories').doc(repo.id.toString()).set({
+					repositoryId: repo.id,
+					name: repo.name,
+					fullName: repo.full_name,
+					private: repo.private,
+					installationId: installation.id,
+					accountLogin: installation.account.login,
+					addedAt: new Date(),
+				});
 			}
 		}
 

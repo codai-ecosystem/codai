@@ -1,5 +1,6 @@
 {
-	"extends": "../../tsconfig.base.json",	"compilerOptions": {
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"jsx": "react-jsx",
@@ -11,7 +12,5 @@
 	},
 	"include": ["src/**/*"],
 	"exclude": ["**/dist/**", "node_modules", "**/*.test.*", "**/*.spec.*"],
-	"references": [
-		{ "path": "../memory-graph" }
-	]
+	"references": [{ "path": "../memory-graph" }]
 }

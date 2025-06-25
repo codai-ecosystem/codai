@@ -4,8 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { compareIgnoreCase } from '../../../base/common/strings.js';
-import { IExtensionIdentifier, IGalleryExtension, ILocalExtension, MaliciousExtensionInfo, getTargetPlatform } from './extensionManagement.js';
-import { ExtensionIdentifier, IExtension, TargetPlatform, UNDEFINED_PUBLISHER } from '../../extensions/common/extensions.js';
+import {
+	IExtensionIdentifier,
+	IGalleryExtension,
+	ILocalExtension,
+	MaliciousExtensionInfo,
+	getTargetPlatform,
+} from './extensionManagement.js';
+import {
+	ExtensionIdentifier,
+	IExtension,
+	TargetPlatform,
+	UNDEFINED_PUBLISHER,
+} from '../../extensions/common/extensions.js';
 import { IFileService } from '../../files/common/files.js';
 import { isLinux, platform } from '../../../base/common/platform.js';
 import { URI } from '../../../base/common/uri.js';
@@ -28,16 +39,25 @@ export function areSameExtensions(a: IExtensionIdentifier, b: IExtensionIdentifi
 const ExtensionKeyRegex = /^([^.]+\..+)-(\d+\.\d+\.\d+)(-(.+))?$/;
 
 export class ExtensionKey {
-
 	static create(extension: IExtension | IGalleryExtension): ExtensionKey {
-		const version = (extension as IExtension).manifest ? (extension as IExtension).manifest.version : (extension as IGalleryExtension).version;
-		const targetPlatform = (extension as IExtension).manifest ? (extension as IExtension).targetPlatform : (extension as IGalleryExtension).properties.targetPlatform;
+		const version = (extension as IExtension).manifest
+			? (extension as IExtension).manifest.version
+			: (extension as IGalleryExtension).version;
+		const targetPlatform = (extension as IExtension).manifest
+			? (extension as IExtension).targetPlatform
+			: (extension as IGalleryExtension).properties.targetPlatform;
 		return new ExtensionKey(extension.identifier, version, targetPlatform);
 	}
 
 	static parse(key: string): ExtensionKey | null {
 		const matches = ExtensionKeyRegex.exec(key);
-		return matches && matches[1] && matches[2] ? new ExtensionKey({ id: matches[1] }, matches[2], matches[4] as TargetPlatform || undefined) : null;
+		return matches && matches[1] && matches[2]
+			? new ExtensionKey(
+					{ id: matches[1] },
+					matches[2],
+					(matches[4] as TargetPlatform) || undefined
+				)
+			: null;
 	}
 
 	readonly id: string;
@@ -45,7 +65,7 @@ export class ExtensionKey {
 	constructor(
 		readonly identifier: IExtensionIdentifier,
 		readonly version: string,
-		readonly targetPlatform: TargetPlatform = TargetPlatform.UNDEFINED,
+		readonly targetPlatform: TargetPlatform = TargetPlatform.UNDEFINED
 	) {
 		this.id = identifier.id;
 	}
@@ -58,11 +78,16 @@ export class ExtensionKey {
 		if (!(o instanceof ExtensionKey)) {
 			return false;
 		}
-		return areSameExtensions(this, o) && this.version === o.version && this.targetPlatform === o.targetPlatform;
+		return (
+			areSameExtensions(this, o) &&
+			this.version === o.version &&
+			this.targetPlatform === o.targetPlatform
+		);
 	}
 }
 
-const EXTENSION_IDENTIFIER_WITH_VERSION_REGEX = /^([^.]+\..+)@((prerelease)|(\d+\.\d+\.\d+(-.*)?))$/;
+const EXTENSION_IDENTIFIER_WITH_VERSION_REGEX =
+	/^([^.]+\..+)@((prerelease)|(\d+\.\d+\.\d+(-.*)?))$/;
 export function getIdAndVersion(id: string): [string, string | undefined] {
 	const matches = EXTENSION_IDENTIFIER_WITH_VERSION_REGEX.exec(id);
 	if (matches && matches[1]) {
@@ -83,11 +108,18 @@ export function getGalleryExtensionId(publisher: string | undefined, name: strin
 	return adoptToGalleryExtensionId(getExtensionId(publisher ?? UNDEFINED_PUBLISHER, name));
 }
 
-export function groupByExtension<T>(extensions: T[], getExtensionIdentifier: (t: T) => IExtensionIdentifier): T[][] {
+export function groupByExtension<T>(
+	extensions: T[],
+	getExtensionIdentifier: (t: T) => IExtensionIdentifier
+): T[][] {
 	const byExtension: T[][] = [];
 	const findGroup = (extension: T) => {
 		for (const group of byExtension) {
-			if (group.some(e => areSameExtensions(getExtensionIdentifier(e), getExtensionIdentifier(extension)))) {
+			if (
+				group.some(e =>
+					areSameExtensions(getExtensionIdentifier(e), getExtensionIdentifier(extension))
+				)
+			) {
 				return group;
 			}
 		}
@@ -112,10 +144,11 @@ export function getLocalExtensionTelemetryData(extension: ILocalExtension) {
 		publisherId: extension.publisherId,
 		publisherName: extension.manifest.publisher,
 		publisherDisplayName: extension.publisherDisplayName,
-		dependencies: extension.manifest.extensionDependencies && extension.manifest.extensionDependencies.length > 0
+		dependencies:
+			extension.manifest.extensionDependencies &&
+			extension.manifest.extensionDependencies.length > 0,
 	};
 }
-
 
 /* __GDPR__FRAGMENT__
 	"GalleryExtensionTelemetryData" : {
@@ -144,15 +177,20 @@ export function getGalleryExtensionTelemetryData(extension: IGalleryExtension) {
 		publisherName: extension.publisher,
 		publisherDisplayName: extension.publisherDisplayName,
 		isPreReleaseVersion: extension.properties.isPreReleaseVersion,
-		dependencies: !!(extension.properties.dependencies && extension.properties.dependencies.length > 0),
+		dependencies: !!(
+			extension.properties.dependencies && extension.properties.dependencies.length > 0
+		),
 		isSigned: extension.isSigned,
-		...extension.telemetryData
+		...extension.telemetryData,
 	};
 }
 
 export const BetterMergeId = new ExtensionIdentifier('pprice.better-merge');
 
-export function getExtensionDependencies(installedExtensions: ReadonlyArray<IExtension>, extension: IExtension): IExtension[] {
+export function getExtensionDependencies(
+	installedExtensions: ReadonlyArray<IExtension>,
+	extension: IExtension
+): IExtension[] {
 	const dependencies: IExtension[] = [];
 	const extensions = extension.manifest.extensionDependencies?.slice(0) ?? [];
 
@@ -163,7 +201,7 @@ export function getExtensionDependencies(installedExtensions: ReadonlyArray<IExt
 			const ext = installedExtensions.filter(e => areSameExtensions(e.identifier, { id }));
 			if (ext.length === 1) {
 				dependencies.push(ext[0]);
-				extensions.push(...ext[0].manifest.extensionDependencies?.slice(0) ?? []);
+				extensions.push(...(ext[0].manifest.extensionDependencies?.slice(0) ?? []));
 			}
 		}
 	}
@@ -191,18 +229,27 @@ async function isAlpineLinux(fileService: IFileService, logService: ILogService)
 	return !!content && (content.match(/^ID=([^\u001b\r\n]*)/m) || [])[1] === 'alpine';
 }
 
-export async function computeTargetPlatform(fileService: IFileService, logService: ILogService): Promise<TargetPlatform> {
+export async function computeTargetPlatform(
+	fileService: IFileService,
+	logService: ILogService
+): Promise<TargetPlatform> {
 	const alpineLinux = await isAlpineLinux(fileService, logService);
 	const targetPlatform = getTargetPlatform(alpineLinux ? 'alpine' : platform, arch);
 	logService.info('ComputeTargetPlatform:', targetPlatform);
 	return targetPlatform;
 }
 
-export function isMalicious(identifier: IExtensionIdentifier, malicious: ReadonlyArray<MaliciousExtensionInfo>): boolean {
+export function isMalicious(
+	identifier: IExtensionIdentifier,
+	malicious: ReadonlyArray<MaliciousExtensionInfo>
+): boolean {
 	return findMatchingMaliciousEntry(identifier, malicious) !== undefined;
 }
 
-export function findMatchingMaliciousEntry(identifier: IExtensionIdentifier, malicious: ReadonlyArray<MaliciousExtensionInfo>): MaliciousExtensionInfo | undefined {
+export function findMatchingMaliciousEntry(
+	identifier: IExtensionIdentifier,
+	malicious: ReadonlyArray<MaliciousExtensionInfo>
+): MaliciousExtensionInfo | undefined {
 	return malicious.find(({ extensionOrPublisher }) => {
 		if (isString(extensionOrPublisher)) {
 			return compareIgnoreCase(identifier.id.split('.')[0], extensionOrPublisher) === 0;

@@ -277,7 +277,7 @@ export class BackendProvisioningService {
 				throw new Error('User not found');
 			}
 
-			const userData = userDoc.data()!;			// Provision Firebase project if upgrading from free
+			const userData = userDoc.data()!; // Provision Firebase project if upgrading from free
 			const currentPlan = userData.plan as string;
 			if (currentPlan === 'free' && newPlan !== 'free') {
 				try {
@@ -354,7 +354,7 @@ export class BackendProvisioningService {
 			}
 
 			// Delete user data from Firestore
-			await this.deleteUserData(userId);			// Delete from Firebase Auth
+			await this.deleteUserData(userId); // Delete from Firebase Auth
 			try {
 				const auth = this.auth;
 				await auth.deleteUser(userId);

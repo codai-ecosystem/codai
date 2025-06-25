@@ -32,10 +32,13 @@ export const enum AccessibilitySupport {
 
 	Disabled = 1,
 
-	Enabled = 2
+	Enabled = 2,
 }
 
-export const CONTEXT_ACCESSIBILITY_MODE_ENABLED = new RawContextKey<boolean>('accessibilityModeEnabled', false);
+export const CONTEXT_ACCESSIBILITY_MODE_ENABLED = new RawContextKey<boolean>(
+	'accessibilityModeEnabled',
+	false
+);
 
 export interface IAccessibilityInformation {
 	label: string;
@@ -43,9 +46,12 @@ export interface IAccessibilityInformation {
 }
 
 export function isAccessibilityInformation(obj: any): obj is IAccessibilityInformation {
-	return obj && typeof obj === 'object'
-		&& typeof obj.label === 'string'
-		&& (typeof obj.role === 'undefined' || typeof obj.role === 'string');
+	return (
+		obj &&
+		typeof obj === 'object' &&
+		typeof obj.label === 'string' &&
+		(typeof obj.role === 'undefined' || typeof obj.role === 'string')
+	);
 }
 
 export const ACCESSIBLE_VIEW_SHOWN_STORAGE_PREFIX = 'ACCESSIBLE_VIEW_SHOWN_';

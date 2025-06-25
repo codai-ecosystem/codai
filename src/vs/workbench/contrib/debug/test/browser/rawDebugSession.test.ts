@@ -20,7 +20,7 @@ suite('RawDebugSession', () => {
 	function createTestObjects() {
 		const debugAdapter = new MockDebugAdapter();
 		const dbgr = mockObject<IDebugger>()({
-			type: 'mock-debug'
+			type: 'mock-debug',
 		});
 
 		const session = new RawDebugSession(
@@ -28,10 +28,11 @@ suite('RawDebugSession', () => {
 			dbgr as any as IDebugger,
 			'sessionId',
 			'name',
-			new (mock<IExtensionHostDebugService>()),
-			new (mock<IOpenerService>()),
-			new (mock<INotificationService>()),
-			new (mock<IDialogService>()));
+			new (mock<IExtensionHostDebugService>())(),
+			new (mock<IOpenerService>())(),
+			new (mock<INotificationService>())(),
+			new (mock<IDialogService>())()
+		);
 		disposables.add(session);
 		disposables.add(debugAdapter);
 
@@ -45,8 +46,8 @@ suite('RawDebugSession', () => {
 		debugAdapter.sendRequestBody('startDebugging', {
 			request: 'launch',
 			configuration: {
-				type: 'some-other-type'
-			}
+				type: 'some-other-type',
+			},
 		} as DebugProtocol.StartDebuggingRequestArguments);
 		const response = await debugAdapter.waitForResponseFromClient('startDebugging');
 		assert.strictEqual(response.command, 'startDebugging');
@@ -60,8 +61,8 @@ suite('RawDebugSession', () => {
 		debugAdapter.sendRequestBody('startDebugging', {
 			request: 'launch',
 			configuration: {
-				type: 'some-other-type'
-			}
+				type: 'some-other-type',
+			},
 		} as DebugProtocol.StartDebuggingRequestArguments);
 		const response = await debugAdapter.waitForResponseFromClient('startDebugging');
 		assert.strictEqual(response.command, 'startDebugging');

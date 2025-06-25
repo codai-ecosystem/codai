@@ -10,9 +10,11 @@ import { isWindows } from '../../common/platform.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('Paths', () => {
-
 	test('toForwardSlashes', () => {
-		assert.strictEqual(extpath.toSlashes('\\\\server\\share\\some\\path'), '//server/share/some/path');
+		assert.strictEqual(
+			extpath.toSlashes('\\\\server\\share\\some\\path'),
+			'//server/share/some/path'
+		);
 		assert.strictEqual(extpath.toSlashes('c:\\test'), 'c:/test');
 		assert.strictEqual(extpath.toSlashes('foo\\bar'), 'foo/bar');
 		assert.strictEqual(extpath.toSlashes('/user/far'), '/user/far');
@@ -83,17 +85,41 @@ suite('Paths', () => {
 			assert.strictEqual(extpath.sanitizeFilePath('C:\\', 'C:\\the\\cwd'), 'C:\\');
 			assert.strictEqual(extpath.sanitizeFilePath('C:\\\\', 'C:\\the\\cwd'), 'C:\\');
 
-			assert.strictEqual(extpath.sanitizeFilePath('C:\\folder\\my.txt', 'C:\\the\\cwd'), 'C:\\folder\\my.txt');
-			assert.strictEqual(extpath.sanitizeFilePath('C:\\folder\\my', 'C:\\the\\cwd'), 'C:\\folder\\my');
+			assert.strictEqual(
+				extpath.sanitizeFilePath('C:\\folder\\my.txt', 'C:\\the\\cwd'),
+				'C:\\folder\\my.txt'
+			);
+			assert.strictEqual(
+				extpath.sanitizeFilePath('C:\\folder\\my', 'C:\\the\\cwd'),
+				'C:\\folder\\my'
+			);
 			assert.strictEqual(extpath.sanitizeFilePath('C:\\folder\\..\\my', 'C:\\the\\cwd'), 'C:\\my');
-			assert.strictEqual(extpath.sanitizeFilePath('C:\\folder\\my\\', 'C:\\the\\cwd'), 'C:\\folder\\my');
-			assert.strictEqual(extpath.sanitizeFilePath('C:\\folder\\my\\\\\\', 'C:\\the\\cwd'), 'C:\\folder\\my');
+			assert.strictEqual(
+				extpath.sanitizeFilePath('C:\\folder\\my\\', 'C:\\the\\cwd'),
+				'C:\\folder\\my'
+			);
+			assert.strictEqual(
+				extpath.sanitizeFilePath('C:\\folder\\my\\\\\\', 'C:\\the\\cwd'),
+				'C:\\folder\\my'
+			);
 
-			assert.strictEqual(extpath.sanitizeFilePath('my.txt', 'C:\\the\\cwd'), 'C:\\the\\cwd\\my.txt');
-			assert.strictEqual(extpath.sanitizeFilePath('my.txt\\', 'C:\\the\\cwd'), 'C:\\the\\cwd\\my.txt');
+			assert.strictEqual(
+				extpath.sanitizeFilePath('my.txt', 'C:\\the\\cwd'),
+				'C:\\the\\cwd\\my.txt'
+			);
+			assert.strictEqual(
+				extpath.sanitizeFilePath('my.txt\\', 'C:\\the\\cwd'),
+				'C:\\the\\cwd\\my.txt'
+			);
 
-			assert.strictEqual(extpath.sanitizeFilePath('\\\\localhost\\folder\\my', 'C:\\the\\cwd'), '\\\\localhost\\folder\\my');
-			assert.strictEqual(extpath.sanitizeFilePath('\\\\localhost\\folder\\my\\', 'C:\\the\\cwd'), '\\\\localhost\\folder\\my');
+			assert.strictEqual(
+				extpath.sanitizeFilePath('\\\\localhost\\folder\\my', 'C:\\the\\cwd'),
+				'\\\\localhost\\folder\\my'
+			);
+			assert.strictEqual(
+				extpath.sanitizeFilePath('\\\\localhost\\folder\\my\\', 'C:\\the\\cwd'),
+				'\\\\localhost\\folder\\my'
+			);
 		} else {
 			assert.strictEqual(extpath.sanitizeFilePath('.', '/the/cwd'), '/the/cwd');
 			assert.strictEqual(extpath.sanitizeFilePath('', '/the/cwd'), '/the/cwd');

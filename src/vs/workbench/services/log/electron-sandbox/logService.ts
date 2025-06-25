@@ -11,15 +11,25 @@ import { windowLogGroup, windowLogId } from '../common/logConstants.js';
 import { LogService } from '../../../../platform/log/common/logService.js';
 
 export class NativeLogService extends LogService {
-
-	constructor(loggerService: LoggerChannelClient, environmentService: INativeWorkbenchEnvironmentService) {
-
+	constructor(
+		loggerService: LoggerChannelClient,
+		environmentService: INativeWorkbenchEnvironmentService
+	) {
 		const disposables = new DisposableStore();
 
-		const fileLogger = disposables.add(loggerService.createLogger(environmentService.logFile, { id: windowLogId, name: windowLogGroup.name, group: windowLogGroup }));
+		const fileLogger = disposables.add(
+			loggerService.createLogger(environmentService.logFile, {
+				id: windowLogId,
+				name: windowLogGroup.name,
+				group: windowLogGroup,
+			})
+		);
 
 		let consoleLogger: ILogger;
-		if (environmentService.isExtensionDevelopment && !!environmentService.extensionTestsLocationURI) {
+		if (
+			environmentService.isExtensionDevelopment &&
+			!!environmentService.extensionTestsLocationURI
+		) {
 			// Extension development test CLI: forward everything to main side
 			consoleLogger = loggerService.createConsoleMainLogger();
 		} else {

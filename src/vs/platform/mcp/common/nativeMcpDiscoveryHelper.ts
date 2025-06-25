@@ -7,7 +7,9 @@ import { Platform } from '../../../base/common/platform.js';
 import { URI } from '../../../base/common/uri.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 
-export const INativeMcpDiscoveryHelperService = createDecorator<INativeMcpDiscoveryHelperService>('INativeMcpDiscoveryHelperService');
+export const INativeMcpDiscoveryHelperService = createDecorator<INativeMcpDiscoveryHelperService>(
+	'INativeMcpDiscoveryHelperService'
+);
 
 export const NativeMcpDiscoveryHelperChannelName = 'NativeMcpDiscoveryHelper';
 

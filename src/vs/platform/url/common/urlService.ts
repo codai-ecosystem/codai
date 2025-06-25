@@ -10,7 +10,6 @@ import { IProductService } from '../../product/common/productService.js';
 import { IOpenURLOptions, IURLHandler, IURLService } from './url.js';
 
 export abstract class AbstractURLService extends Disposable implements IURLService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private handlers = new Set<IURLHandler>();
@@ -19,7 +18,11 @@ export abstract class AbstractURLService extends Disposable implements IURLServi
 
 	open(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
 		const handlers = [...this.handlers.values()];
-		return first(handlers.map(h => () => h.handleURL(uri, options)), undefined, false).then(val => val || false);
+		return first(
+			handlers.map(h => () => h.handleURL(uri, options)),
+			undefined,
+			false
+		).then(val => val || false);
 	}
 
 	registerHandler(handler: IURLHandler): IDisposable {
@@ -29,15 +32,14 @@ export abstract class AbstractURLService extends Disposable implements IURLServi
 }
 
 export class NativeURLService extends AbstractURLService {
-
-	constructor(
-		@IProductService protected readonly productService: IProductService
-	) {
+	constructor(@IProductService protected readonly productService: IProductService) {
 		super();
 	}
 
 	create(options?: Partial<UriComponents>): URI {
-		let { authority, path, query, fragment } = options ? options : { authority: undefined, path: undefined, query: undefined, fragment: undefined };
+		let { authority, path, query, fragment } = options
+			? options
+			: { authority: undefined, path: undefined, query: undefined, fragment: undefined };
 
 		if (authority && path && path.indexOf('/') !== 0) {
 			path = `/${path}`; // URI validation requires a path if there is an authority

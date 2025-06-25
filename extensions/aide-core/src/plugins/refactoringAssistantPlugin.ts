@@ -8,7 +8,8 @@ export class RefactoringAssistantPlugin {
 	readonly id = 'aide.refactoringAssistant';
 	readonly name = 'AIDE Refactoring Assistant';
 	readonly version = '1.0.0';
-	readonly description = 'Provides intelligent code refactoring suggestions and automated transformations';
+	readonly description =
+		'Provides intelligent code refactoring suggestions and automated transformations';
 
 	private refactoringCommands: Map<string, RefactoringCommand> = new Map();
 
@@ -27,7 +28,7 @@ export class RefactoringAssistantPlugin {
 					return this.extractMethod(doc, sel);
 				}
 				return { success: false, message: 'Selection required for extract method' };
-			}
+			},
 		});
 
 		this.refactoringCommands.set('extractVariable', {
@@ -40,7 +41,7 @@ export class RefactoringAssistantPlugin {
 					return this.extractVariable(doc, sel);
 				}
 				return { success: false, message: 'Selection required for extract variable' };
-			}
+			},
 		});
 
 		this.refactoringCommands.set('renameSymbol', {
@@ -53,7 +54,7 @@ export class RefactoringAssistantPlugin {
 					return this.renameSymbol(doc, pos);
 				}
 				return this.renameSymbol(doc, pos.active);
-			}
+			},
 		});
 
 		this.refactoringCommands.set('inlineMethod', {
@@ -66,7 +67,7 @@ export class RefactoringAssistantPlugin {
 					return this.inlineMethod(doc, pos);
 				}
 				return this.inlineMethod(doc, pos.active);
-			}
+			},
 		});
 
 		this.refactoringCommands.set('moveClass', {
@@ -79,21 +80,24 @@ export class RefactoringAssistantPlugin {
 					return this.moveClass(doc, pos);
 				}
 				return this.moveClass(doc, pos.active);
-			}
+			},
 		});
 	}
 
 	/**
 	 * Extract selected code into a new method
 	 */
-	async extractMethod(document: vscode.TextDocument, selection: vscode.Selection): Promise<RefactoringResult> {
+	async extractMethod(
+		document: vscode.TextDocument,
+		selection: vscode.Selection
+	): Promise<RefactoringResult> {
 		const selectedText = document.getText(selection);
 		const language = document.languageId;
 
 		if (!selectedText.trim()) {
 			return {
 				success: false,
-				message: 'No code selected for extraction'
+				message: 'No code selected for extraction',
 			};
 		}
 
@@ -102,7 +106,7 @@ export class RefactoringAssistantPlugin {
 		if (!analysis.canExtract) {
 			return {
 				success: false,
-				message: analysis.reason || 'Cannot extract the selected code'
+				message: analysis.reason || 'Cannot extract the selected code',
 			};
 		}
 
@@ -113,7 +117,13 @@ export class RefactoringAssistantPlugin {
 		const { parameters, returnType } = this.extractParametersAndReturn(selectedText, language);
 
 		// Generate the new method
-		const newMethod = this.generateMethod(methodName, parameters, returnType, selectedText, language);
+		const newMethod = this.generateMethod(
+			methodName,
+			parameters,
+			returnType,
+			selectedText,
+			language
+		);
 
 		// Generate method call
 		const methodCall = this.generateMethodCall(methodName, parameters, language);
@@ -124,29 +134,32 @@ export class RefactoringAssistantPlugin {
 				{
 					type: 'replace',
 					range: selection,
-					newText: methodCall
+					newText: methodCall,
 				},
 				{
 					type: 'insert',
 					position: this.findInsertionPoint(document, selection),
-					newText: newMethod
-				}
+					newText: newMethod,
+				},
 			],
-			message: `Successfully extracted method: ${methodName}`
+			message: `Successfully extracted method: ${methodName}`,
 		};
 	}
 
 	/**
 	 * Extract selected expression into a variable
 	 */
-	async extractVariable(document: vscode.TextDocument, selection: vscode.Selection): Promise<RefactoringResult> {
+	async extractVariable(
+		document: vscode.TextDocument,
+		selection: vscode.Selection
+	): Promise<RefactoringResult> {
 		const selectedText = document.getText(selection);
 		const language = document.languageId;
 
 		if (!selectedText.trim()) {
 			return {
 				success: false,
-				message: 'No expression selected for extraction'
+				message: 'No expression selected for extraction',
 			};
 		}
 
@@ -173,28 +186,31 @@ export class RefactoringAssistantPlugin {
 				{
 					type: 'insert',
 					position: insertionPoint,
-					newText: variableDeclaration + '\n'
+					newText: variableDeclaration + '\n',
 				},
 				{
 					type: 'replace',
 					range: selection,
-					newText: variableName
-				}
+					newText: variableName,
+				},
 			],
-			message: `Successfully extracted variable: ${variableName}`
+			message: `Successfully extracted variable: ${variableName}`,
 		};
 	}
 
 	/**
 	 * Rename symbol and update all references
 	 */
-	async renameSymbol(document: vscode.TextDocument, position: vscode.Position): Promise<RefactoringResult> {
+	async renameSymbol(
+		document: vscode.TextDocument,
+		position: vscode.Position
+	): Promise<RefactoringResult> {
 		// Get symbol at position
 		const wordRange = document.getWordRangeAtPosition(position);
 		if (!wordRange) {
 			return {
 				success: false,
-				message: 'No symbol found at cursor position'
+				message: 'No symbol found at cursor position',
 			};
 		}
 
@@ -204,7 +220,7 @@ export class RefactoringAssistantPlugin {
 		const newName = await vscode.window.showInputBox({
 			prompt: `Rename '${currentName}' to:`,
 			value: currentName,
-			validateInput: (input) => {
+			validateInput: input => {
 				if (!input || input.trim().length === 0) {
 					return 'Name cannot be empty';
 				}
@@ -212,13 +228,13 @@ export class RefactoringAssistantPlugin {
 					return 'Invalid identifier name';
 				}
 				return null;
-			}
+			},
 		});
 
 		if (!newName || newName === currentName) {
 			return {
 				success: false,
-				message: 'Rename operation cancelled'
+				message: 'Rename operation cancelled',
 			};
 		}
 
@@ -228,35 +244,41 @@ export class RefactoringAssistantPlugin {
 		const changes: RefactoringChange[] = references.map(ref => ({
 			type: 'replace',
 			range: ref.range,
-			newText: newName
+			newText: newName,
 		}));
 
 		return {
 			success: true,
 			changes,
-			message: `Successfully renamed '${currentName}' to '${newName}' (${changes.length} references updated)`
+			message: `Successfully renamed '${currentName}' to '${newName}' (${changes.length} references updated)`,
 		};
 	}
 
 	/**
 	 * Inline method - replace method calls with method body
 	 */
-	async inlineMethod(document: vscode.TextDocument, position: vscode.Position): Promise<RefactoringResult> {
+	async inlineMethod(
+		document: vscode.TextDocument,
+		position: vscode.Position
+	): Promise<RefactoringResult> {
 		// This is a simplified implementation
 		return {
 			success: false,
-			message: 'Inline method refactoring is not yet implemented'
+			message: 'Inline method refactoring is not yet implemented',
 		};
 	}
 
 	/**
 	 * Move class to a different file
 	 */
-	async moveClass(document: vscode.TextDocument, position: vscode.Position): Promise<RefactoringResult> {
+	async moveClass(
+		document: vscode.TextDocument,
+		position: vscode.Position
+	): Promise<RefactoringResult> {
 		// This is a simplified implementation
 		return {
 			success: false,
-			message: 'Move class refactoring is not yet implemented'
+			message: 'Move class refactoring is not yet implemented',
 		};
 	}
 
@@ -265,7 +287,7 @@ export class RefactoringAssistantPlugin {
 		if (code.trim().length < 10) {
 			return {
 				canExtract: false,
-				reason: 'Selected code is too short to extract'
+				reason: 'Selected code is too short to extract',
 			};
 		}
 
@@ -276,18 +298,20 @@ export class RefactoringAssistantPlugin {
 		if (openBraces !== closeBraces) {
 			return {
 				canExtract: false,
-				reason: 'Selected code contains incomplete statements'
+				reason: 'Selected code contains incomplete statements',
 			};
 		}
 
 		return {
-			canExtract: true
+			canExtract: true,
 		};
 	}
 
 	private async suggestMethodName(code: string, language: string): Promise<string> {
 		// Simple heuristic-based method name suggestion
-		const keywords = code.toLowerCase().match(/\b(get|set|find|create|delete|update|calculate|process|handle|validate)\w*/g);
+		const keywords = code
+			.toLowerCase()
+			.match(/\b(get|set|find|create|delete|update|calculate|process|handle|validate)\w*/g);
 
 		if (keywords && keywords.length > 0) {
 			return this.toCamelCase(keywords[0]);
@@ -315,7 +339,10 @@ export class RefactoringAssistantPlugin {
 		return 'extractedValue';
 	}
 
-	private extractParametersAndReturn(code: string, language: string): { parameters: Parameter[], returnType: string } {
+	private extractParametersAndReturn(
+		code: string,
+		language: string
+	): { parameters: Parameter[]; returnType: string } {
 		// Simplified parameter extraction
 		const parameters: Parameter[] = [];
 		const returnType = 'void'; // Default for now
@@ -323,7 +350,13 @@ export class RefactoringAssistantPlugin {
 		return { parameters, returnType };
 	}
 
-	private generateMethod(name: string, parameters: Parameter[], returnType: string, body: string, language: string): string {
+	private generateMethod(
+		name: string,
+		parameters: Parameter[],
+		returnType: string,
+		body: string,
+		language: string
+	): string {
 		switch (language) {
 			case 'typescript':
 			case 'javascript':
@@ -344,7 +377,12 @@ export class RefactoringAssistantPlugin {
 		return `this.${name}(${args})`;
 	}
 
-	private generateVariableDeclaration(name: string, type: string, value: string, language: string): string {
+	private generateVariableDeclaration(
+		name: string,
+		type: string,
+		value: string,
+		language: string
+	): string {
 		switch (language) {
 			case 'typescript':
 				return `\t\tconst ${name}: ${type} = ${value};`;
@@ -360,7 +398,10 @@ export class RefactoringAssistantPlugin {
 		}
 	}
 
-	private findInsertionPoint(document: vscode.TextDocument, selection: vscode.Selection): vscode.Position {
+	private findInsertionPoint(
+		document: vscode.TextDocument,
+		selection: vscode.Selection
+	): vscode.Position {
 		// Find the end of the current function/class to insert the new method
 		let line = selection.end.line;
 		while (line < document.lineCount - 1) {
@@ -373,12 +414,19 @@ export class RefactoringAssistantPlugin {
 		return new vscode.Position(document.lineCount, 0);
 	}
 
-	private findVariableInsertionPoint(document: vscode.TextDocument, selection: vscode.Selection): vscode.Position {
+	private findVariableInsertionPoint(
+		document: vscode.TextDocument,
+		selection: vscode.Selection
+	): vscode.Position {
 		// Insert at the beginning of the current line
 		return new vscode.Position(selection.start.line, 0);
 	}
 
-	private async findAllReferences(document: vscode.TextDocument, position: vscode.Position, symbolName: string): Promise<SymbolReference[]> {
+	private async findAllReferences(
+		document: vscode.TextDocument,
+		position: vscode.Position,
+		symbolName: string
+	): Promise<SymbolReference[]> {
 		const references: SymbolReference[] = [];
 		const text = document.getText();
 		const regex = new RegExp(`\\b${symbolName}\\b`, 'g');
@@ -389,7 +437,7 @@ export class RefactoringAssistantPlugin {
 			const endPos = document.positionAt(match.index + symbolName.length);
 			references.push({
 				range: new vscode.Range(startPos, endPos),
-				uri: document.uri
+				uri: document.uri,
 			});
 		}
 
@@ -434,7 +482,10 @@ export interface RefactoringCommand {
 	title: string;
 	description: string;
 	languages: string[];
-	execute: (document: vscode.TextDocument, selectionOrPosition: vscode.Selection | vscode.Position) => Promise<RefactoringResult>;
+	execute: (
+		document: vscode.TextDocument,
+		selectionOrPosition: vscode.Selection | vscode.Position
+	) => Promise<RefactoringResult>;
 }
 
 export interface RefactoringResult {

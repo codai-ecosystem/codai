@@ -32,7 +32,7 @@ async function startPtyHost() {
 	const reconnectConstants: IReconnectConstants = {
 		graceTime: parseInt(process.env.VSCODE_RECONNECT_GRACE_TIME || '0'),
 		shortGraceTime: parseInt(process.env.VSCODE_RECONNECT_SHORT_GRACE_TIME || '0'),
-		scrollback: parseInt(process.env.VSCODE_RECONNECT_SCROLLBACK || '100')
+		scrollback: parseInt(process.env.VSCODE_RECONNECT_SCROLLBACK || '100'),
 	};
 
 	// Sanitize environment
@@ -59,10 +59,19 @@ async function startPtyHost() {
 
 	// Services
 	const productService: IProductService = { _serviceBrand: undefined, ...product };
-	const environmentService = new NativeEnvironmentService(parseArgs(process.argv, OPTIONS), productService);
-	const loggerService = new LoggerService(getLogLevel(environmentService), environmentService.logsHome);
-	server.registerChannel(TerminalIpcChannels.Logger, new LoggerChannel(loggerService, () => DefaultURITransformer));
-	const logger = loggerService.createLogger('ptyhost', { name: localize('ptyHost', "Pty Host") });
+	const environmentService = new NativeEnvironmentService(
+		parseArgs(process.argv, OPTIONS),
+		productService
+	);
+	const loggerService = new LoggerService(
+		getLogLevel(environmentService),
+		environmentService.logsHome
+	);
+	server.registerChannel(
+		TerminalIpcChannels.Logger,
+		new LoggerChannel(loggerService, () => DefaultURITransformer)
+	);
+	const logger = loggerService.createLogger('ptyhost', { name: localize('ptyHost', 'Pty Host') });
 	const logService = new LogService(logger);
 
 	// Log developer config
@@ -77,10 +86,18 @@ async function startPtyHost() {
 
 	// Heartbeat responsiveness tracking
 	const heartbeatService = new HeartbeatService();
-	server.registerChannel(TerminalIpcChannels.Heartbeat, ProxyChannel.fromService(heartbeatService, disposables));
+	server.registerChannel(
+		TerminalIpcChannels.Heartbeat,
+		ProxyChannel.fromService(heartbeatService, disposables)
+	);
 
 	// Init pty service
-	const ptyService = new PtyService(logService, productService, reconnectConstants, simulatedLatency);
+	const ptyService = new PtyService(
+		logService,
+		productService,
+		reconnectConstants,
+		simulatedLatency
+	);
 	const ptyServiceChannel = ProxyChannel.fromService(ptyService, disposables);
 	server.registerChannel(TerminalIpcChannels.PtyHost, ptyServiceChannel);
 

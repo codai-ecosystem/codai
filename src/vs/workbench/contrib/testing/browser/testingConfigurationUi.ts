@@ -8,7 +8,12 @@ import { isDefined } from '../../../../base/common/types.js';
 import { ServicesAccessor } from '../../../../editor/browser/editorExtensions.js';
 import { localize } from '../../../../nls.js';
 import { CommandsRegistry } from '../../../../platform/commands/common/commands.js';
-import { QuickPickInput, IQuickPickItem, IQuickInputService, IQuickPickItemButtonEvent } from '../../../../platform/quickinput/common/quickInput.js';
+import {
+	QuickPickInput,
+	IQuickPickItem,
+	IQuickInputService,
+	IQuickPickItemButtonEvent,
+} from '../../../../platform/quickinput/common/quickInput.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { testingUpdateProfiles } from './icons.js';
 import { testConfigurationGroupNames } from '../common/constants.js';
@@ -29,13 +34,16 @@ interface IConfigurationPickerOptions {
 	onlyConfigurable?: boolean;
 }
 
-function buildPicker(accessor: ServicesAccessor, {
-	onlyGroup,
-	showConfigureButtons = true,
-	onlyForTest,
-	onlyConfigurable,
-	placeholder = localize('testConfigurationUi.pick', 'Pick a test profile to use'),
-}: IConfigurationPickerOptions) {
+function buildPicker(
+	accessor: ServicesAccessor,
+	{
+		onlyGroup,
+		showConfigureButtons = true,
+		onlyForTest,
+		onlyConfigurable,
+		placeholder = localize('testConfigurationUi.pick', 'Pick a test profile to use'),
+	}: IConfigurationPickerOptions
+) {
 	const profileService = accessor.get(ITestProfileService);
 	const items: QuickPickInput<IQuickPickItem & { profile: ITestRunProfile }>[] = [];
 	const pushItems = (allProfiles: ITestRunProfile[], description?: string) => {
@@ -59,37 +67,48 @@ function buildPicker(accessor: ServicesAccessor, {
 					addedHeader = true;
 				}
 
-				items.push(({
+				items.push({
 					type: 'item',
 					profile,
 					label: profile.label,
 					description,
 					alwaysShow: true,
-					buttons: profile.hasConfigurationHandler && showConfigureButtons
-						? [{
-							iconClass: ThemeIcon.asClassName(testingUpdateProfiles),
-							tooltip: localize('updateTestConfiguration', 'Update Test Configuration')
-						}] : []
-				}));
+					buttons:
+						profile.hasConfigurationHandler && showConfigureButtons
+							? [
+									{
+										iconClass: ThemeIcon.asClassName(testingUpdateProfiles),
+										tooltip: localize('updateTestConfiguration', 'Update Test Configuration'),
+									},
+								]
+							: [],
+				});
 			}
 		}
 	};
 
 	if (onlyForTest !== undefined) {
-		pushItems(profileService.getControllerProfiles(onlyForTest.controllerId).filter(p => canUseProfileWithTest(p, onlyForTest)));
+		pushItems(
+			profileService
+				.getControllerProfiles(onlyForTest.controllerId)
+				.filter(p => canUseProfileWithTest(p, onlyForTest))
+		);
 	} else {
 		for (const { profiles, controller } of profileService.all()) {
 			pushItems(profiles, controller.label.get());
 		}
 	}
 
-	const quickpick = accessor.get(IQuickInputService).createQuickPick<IQuickPickItem & { profile: ITestRunProfile }>({ useSeparators: true });
+	const quickpick = accessor
+		.get(IQuickInputService)
+		.createQuickPick<IQuickPickItem & { profile: ITestRunProfile }>({ useSeparators: true });
 	quickpick.items = items;
 	quickpick.placeholder = placeholder;
 	return quickpick;
 }
 
-const triggerButtonHandler = (service: ITestProfileService, resolve: (arg: undefined) => void) =>
+const triggerButtonHandler =
+	(service: ITestProfileService, resolve: (arg: undefined) => void) =>
 	(evt: IQuickPickItemButtonEvent<IQuickPickItem>) => {
 		const profile = (evt.item as { profile?: ITestRunProfile }).profile;
 		if (profile) {
@@ -100,9 +119,12 @@ const triggerButtonHandler = (service: ITestProfileService, resolve: (arg: undef
 
 CommandsRegistry.registerCommand({
 	id: 'vscode.pickMultipleTestProfiles',
-	handler: async (accessor: ServicesAccessor, options: IConfigurationPickerOptions & {
-		selected?: ITestRunProfile[];
-	}) => {
+	handler: async (
+		accessor: ServicesAccessor,
+		options: IConfigurationPickerOptions & {
+			selected?: ITestRunProfile[];
+		}
+	) => {
 		const profileService = accessor.get(ITestProfileService);
 		const quickpick = buildPicker(accessor, options);
 		if (!quickpick) {
@@ -116,22 +138,30 @@ CommandsRegistry.registerCommand({
 		if (options.selected) {
 			quickpick.selectedItems = quickpick.items
 				.filter((i): i is IQuickPickItem & { profile: ITestRunProfile } => i.type === 'item')
-				.filter(i => options.selected!.some(s => s.controllerId === i.profile.controllerId && s.profileId === i.profile.profileId));
+				.filter(i =>
+					options.selected!.some(
+						s => s.controllerId === i.profile.controllerId && s.profileId === i.profile.profileId
+					)
+				);
 		}
 
 		const pick = await new Promise<ITestRunProfile[] | undefined>(resolve => {
-			disposables.add(quickpick.onDidAccept(() => {
-				const selected = quickpick.selectedItems as readonly { profile?: ITestRunProfile }[];
-				resolve(selected.map(s => s.profile).filter(isDefined));
-			}));
+			disposables.add(
+				quickpick.onDidAccept(() => {
+					const selected = quickpick.selectedItems as readonly { profile?: ITestRunProfile }[];
+					resolve(selected.map(s => s.profile).filter(isDefined));
+				})
+			);
 			disposables.add(quickpick.onDidHide(() => resolve(undefined)));
-			disposables.add(quickpick.onDidTriggerItemButton(triggerButtonHandler(profileService, resolve)));
+			disposables.add(
+				quickpick.onDidTriggerItemButton(triggerButtonHandler(profileService, resolve))
+			);
 			quickpick.show();
 		});
 
 		disposables.dispose();
 		return pick;
-	}
+	},
 });
 
 CommandsRegistry.registerCommand({
@@ -147,14 +177,19 @@ CommandsRegistry.registerCommand({
 		disposables.add(quickpick);
 
 		const pick = await new Promise<ITestRunProfile | undefined>(resolve => {
-			disposables.add(quickpick.onDidAccept(() => resolve((quickpick.selectedItems[0] as { profile?: ITestRunProfile })?.profile)));
+			disposables.add(
+				quickpick.onDidAccept(() =>
+					resolve((quickpick.selectedItems[0] as { profile?: ITestRunProfile })?.profile)
+				)
+			);
 			disposables.add(quickpick.onDidHide(() => resolve(undefined)));
-			disposables.add(quickpick.onDidTriggerItemButton(triggerButtonHandler(profileService, resolve)));
+			disposables.add(
+				quickpick.onDidTriggerItemButton(triggerButtonHandler(profileService, resolve))
+			);
 			quickpick.show();
 		});
 
 		disposables.dispose();
 		return pick;
-	}
+	},
 });
-

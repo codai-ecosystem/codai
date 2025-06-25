@@ -4,19 +4,50 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { DeferredPromise, raceCancellationError, Sequencer, timeout } from '../../../base/common/async.js';
+import {
+	DeferredPromise,
+	raceCancellationError,
+	Sequencer,
+	timeout,
+} from '../../../base/common/async.js';
 import { CancellationToken, CancellationTokenSource } from '../../../base/common/cancellation.js';
-import { Disposable, DisposableMap, DisposableStore, IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableMap,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from '../../../base/common/lifecycle.js';
 import { SSEParser } from '../../../base/common/sseParser.js';
-import { ExtensionIdentifier, IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionIdentifier,
+	IExtensionDescription,
+} from '../../../platform/extensions/common/extensions.js';
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
 import { LogLevel } from '../../../platform/log/common/log.js';
 import { StorageScope } from '../../../platform/storage/common/storage.js';
-import { extensionPrefixedIdentifier, McpCollectionDefinition, McpConnectionState, McpServerDefinition, McpServerLaunch, McpServerTransportHTTP, McpServerTransportType } from '../../contrib/mcp/common/mcpTypes.js';
+import {
+	extensionPrefixedIdentifier,
+	McpCollectionDefinition,
+	McpConnectionState,
+	McpServerDefinition,
+	McpServerLaunch,
+	McpServerTransportHTTP,
+	McpServerTransportType,
+} from '../../contrib/mcp/common/mcpTypes.js';
 import { ExtHostMcpShape, MainContext, MainThreadMcpShape } from './extHost.protocol.js';
 import { IExtHostRpcService } from './extHostRpcService.js';
 import * as Convert from './extHostTypeConverters.js';
-import { AUTH_SERVER_METADATA_DISCOVERY_PATH, getDefaultMetadataForUrl, getMetadataWithDefaultValues, IAuthorizationProtectedResourceMetadata, IAuthorizationServerMetadata, isAuthorizationProtectedResourceMetadata, isAuthorizationServerMetadata, parseWWWAuthenticateHeader } from '../../../base/common/oauth.js';
+import {
+	AUTH_SERVER_METADATA_DISCOVERY_PATH,
+	getDefaultMetadataForUrl,
+	getMetadataWithDefaultValues,
+	IAuthorizationProtectedResourceMetadata,
+	IAuthorizationServerMetadata,
+	isAuthorizationProtectedResourceMetadata,
+	isAuthorizationServerMetadata,
+	parseWWWAuthenticateHeader,
+} from '../../../base/common/oauth.js';
 import { URI } from '../../../base/common/uri.js';
 import { MCP } from '../../contrib/mcp/common/modelContextProtocol.js';
 import { CancellationError } from '../../../base/common/errors.js';
@@ -24,21 +55,26 @@ import { CancellationError } from '../../../base/common/errors.js';
 export const IExtHostMpcService = createDecorator<IExtHostMpcService>('IExtHostMpcService');
 
 export interface IExtHostMpcService extends ExtHostMcpShape {
-	registerMcpConfigurationProvider(extension: IExtensionDescription, id: string, provider: vscode.McpServerDefinitionProvider): IDisposable;
+	registerMcpConfigurationProvider(
+		extension: IExtensionDescription,
+		id: string,
+		provider: vscode.McpServerDefinitionProvider
+	): IDisposable;
 }
 
 export class ExtHostMcpService extends Disposable implements IExtHostMpcService {
 	protected _proxy: MainThreadMcpShape;
 	private readonly _initialProviderPromises = new Set<Promise<void>>();
 	private readonly _sseEventSources = this._register(new DisposableMap<number, McpHTTPHandle>());
-	private readonly _unresolvedMcpServers = new Map</* collectionId */ string, {
-		provider: vscode.McpServerDefinitionProvider;
-		servers: vscode.McpServerDefinition[];
-	}>();
+	private readonly _unresolvedMcpServers = new Map<
+		/* collectionId */ string,
+		{
+			provider: vscode.McpServerDefinitionProvider;
+			servers: vscode.McpServerDefinition[];
+		}
+	>();
 
-	constructor(
-		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-	) {
+	constructor(@IExtHostRpcService extHostRpc: IExtHostRpcService) {
 		super();
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadMcp);
 	}
@@ -71,7 +107,10 @@ export class ExtHostMcpService extends Disposable implements IExtHostMpcService 
 		await Promise.all(this._initialProviderPromises);
 	}
 
-	async $resolveMcpLaunch(collectionId: string, label: string): Promise<McpServerLaunch.Serialized | undefined> {
+	async $resolveMcpLaunch(
+		collectionId: string,
+		label: string
+	): Promise<McpServerLaunch.Serialized | undefined> {
 		const rec = this._unresolvedMcpServers.get(collectionId);
 		if (!rec) {
 			return;
@@ -90,12 +129,18 @@ export class ExtHostMcpService extends Disposable implements IExtHostMpcService 
 	}
 
 	/** {@link vscode.lm.registerMcpServerDefinitionProvider} */
-	public registerMcpConfigurationProvider(extension: IExtensionDescription, id: string, provider: vscode.McpServerDefinitionProvider): IDisposable {
+	public registerMcpConfigurationProvider(
+		extension: IExtensionDescription,
+		id: string,
+		provider: vscode.McpServerDefinitionProvider
+	): IDisposable {
 		const store = new DisposableStore();
 
 		const metadata = extension.contributes?.mcpServerDefinitionProviders?.find(m => m.id === id);
 		if (!metadata) {
-			throw new Error(`MCP configuration providers must be registered in the contributes.mcpServerDefinitionProviders array within your package.json, but "${id}" was not`);
+			throw new Error(
+				`MCP configuration providers must be registered in the contributes.mcpServerDefinitionProviders array within your package.json, but "${id}" was not`
+			);
 		}
 
 		const mcp: McpCollectionDefinition.FromExtHost = {
@@ -116,7 +161,9 @@ export class ExtHostMcpService extends Disposable implements IExtHostMpcService 
 				let id = ExtensionIdentifier.toKey(extension.identifier) + '/' + item.label;
 				if (servers.some(s => s.id === id)) {
 					let i = 2;
-					while (servers.some(s => s.id === id + i)) { i++; }
+					while (servers.some(s => s.id === id + i)) {
+						i++;
+					}
 					id = id + i;
 				}
 
@@ -124,17 +171,19 @@ export class ExtHostMcpService extends Disposable implements IExtHostMpcService 
 					id,
 					label: item.label,
 					cacheNonce: item.version,
-					launch: Convert.McpServerDefinition.from(item)
+					launch: Convert.McpServerDefinition.from(item),
 				});
 			}
 
 			this._proxy.$upsertMcpCollection(mcp, servers);
 		};
 
-		store.add(toDisposable(() => {
-			this._unresolvedMcpServers.delete(mcp.id);
-			this._proxy.$deleteMcpCollection(mcp.id);
-		}));
+		store.add(
+			toDisposable(() => {
+				this._unresolvedMcpServers.delete(mcp.id);
+				this._proxy.$deleteMcpCollection(mcp.id);
+			})
+		);
 
 		if (provider.onDidChangeMcpServerDefinitions) {
 			store.add(provider.onDidChangeMcpServerDefinitions(update));
@@ -148,10 +197,14 @@ export class ExtHostMcpService extends Disposable implements IExtHostMpcService 
 		}
 
 		const promise = new Promise<void>(resolve => {
-			setTimeout(() => update().finally(() => {
-				this._initialProviderPromises.delete(promise);
-				resolve();
-			}), 0);
+			setTimeout(
+				() =>
+					update().finally(() => {
+						this._initialProviderPromises.delete(promise);
+						resolve();
+					}),
+				0
+			);
 		});
 
 		this._initialProviderPromises.add(promise);
@@ -180,7 +233,10 @@ type HttpModeT =
  */
 class McpHTTPHandle extends Disposable {
 	private readonly _requestSequencer = new Sequencer();
-	private readonly _postEndpoint = new DeferredPromise<{ url: string; transport: McpServerTransportHTTP }>();
+	private readonly _postEndpoint = new DeferredPromise<{
+		url: string;
+		transport: McpServerTransportHTTP;
+	}>();
 	private _mode: HttpModeT = { value: HttpMode.Unknown };
 	private readonly _cts = new CancellationTokenSource();
 	private readonly _abortCtrl = new AbortController();
@@ -196,10 +252,12 @@ class McpHTTPHandle extends Disposable {
 	) {
 		super();
 
-		this._register(toDisposable(() => {
-			this._abortCtrl.abort();
-			this._cts.dispose(true);
-		}));
+		this._register(
+			toDisposable(() => {
+				this._abortCtrl.abort();
+				this._cts.dispose(true);
+			})
+		);
 		this._proxy.$onDidChangeState(this._id, { state: McpConnectionState.Kind.Running });
 	}
 
@@ -209,12 +267,18 @@ class McpHTTPHandle extends Disposable {
 				if (this._mode.value === HttpMode.SSE) {
 					return this._sendLegacySSE(this._mode.endpoint, message);
 				} else {
-					return this._sendStreamableHttp(message, this._mode.value === HttpMode.Http ? this._mode.sessionId : undefined);
+					return this._sendStreamableHttp(
+						message,
+						this._mode.value === HttpMode.Http ? this._mode.sessionId : undefined
+					);
 				}
 			});
 		} catch (err) {
 			const msg = `Error sending message to ${this._launch.uri}: ${String(err)}`;
-			this._proxy.$onDidChangeState(this._id, { state: McpConnectionState.Kind.Error, message: msg });
+			this._proxy.$onDidChangeState(this._id, {
+				state: McpConnectionState.Kind.Error,
+				message: msg,
+			});
 		}
 	}
 
@@ -237,15 +301,13 @@ class McpHTTPHandle extends Disposable {
 		}
 		await this._addAuthHeader(headers);
 
-		const doFetch = () => fetch(
-			this._launch.uri.toString(true),
-			{
+		const doFetch = () =>
+			fetch(this._launch.uri.toString(true), {
 				method: 'POST',
 				signal: this._abortCtrl.signal,
 				headers,
 				body: asBytes,
-			}
-		);
+			});
 
 		let res = await doFetch();
 		if (res.status === 401) {
@@ -267,7 +329,10 @@ class McpHTTPHandle extends Disposable {
 		}
 
 		if (this._mode.value === HttpMode.Unknown && res.status >= 400 && res.status < 500) {
-			this._log(LogLevel.Info, `${res.status} status sending message to ${this._launch.uri}, will attempt to fall back to legacy SSE`);
+			this._log(
+				LogLevel.Info,
+				`${res.status} status sending message to ${this._launch.uri}, will attempt to fall back to legacy SSE`
+			);
 			this._sseFallbackWithMessage(message);
 			return;
 		}
@@ -276,11 +341,18 @@ class McpHTTPHandle extends Disposable {
 			// "When a client receives HTTP 404 in response to a request containing an Mcp-Session-Id, it MUST start a new session by sending a new InitializeRequest without a session ID attached"
 			// Though this says only 404, some servers send 400s as well, including their example
 			// https://github.com/modelcontextprotocol/typescript-sdk/issues/389
-			const retryWithSessionId = this._mode.value === HttpMode.Http && !!this._mode.sessionId && (res.status === 400 || res.status === 404);
+			const retryWithSessionId =
+				this._mode.value === HttpMode.Http &&
+				!!this._mode.sessionId &&
+				(res.status === 400 || res.status === 404);
 
 			this._proxy.$onDidChangeState(this._id, {
 				state: McpConnectionState.Kind.Error,
-				message: `${res.status} status sending message to ${this._launch.uri}: ${await this._getErrText(res)}` + retryWithSessionId ? `; will retry with new session ID` : '',
+				message:
+					`${res.status} status sending message to ${this._launch.uri}: ${await this._getErrText(res)}` +
+					retryWithSessionId
+						? `; will retry with new session ID`
+						: '',
 				shouldRetry: retryWithSessionId,
 			});
 			return;
@@ -338,11 +410,14 @@ class McpHTTPHandle extends Disposable {
 			serverMetadataUrl = baseUrl;
 			// Maintain the launch headers when talking to the MCP origin.
 			addtionalHeaders = {
-				...Object.fromEntries(this._launch.headers)
+				...Object.fromEntries(this._launch.headers),
 			};
 		}
 		try {
-			const serverMetadataResponse = await this._getAuthorizationServerMetadata(serverMetadataUrl, addtionalHeaders);
+			const serverMetadataResponse = await this._getAuthorizationServerMetadata(
+				serverMetadataUrl,
+				addtionalHeaders
+			);
 			const serverMetadataWithDefaults = getMetadataWithDefaultValues(serverMetadataResponse);
 			this._authMetadata = {
 				server: {
@@ -353,9 +428,9 @@ class McpHTTPHandle extends Disposable {
 					// API a bit to instead pass in these other endpoints, but for now, just user the serverMetadataUrl
 					// as the isser.
 					issuer: serverMetadataUrl,
-					scopes_supported: scopesSupported ?? serverMetadataWithDefaults.scopes_supported
+					scopes_supported: scopesSupported ?? serverMetadataWithDefaults.scopes_supported,
 				},
-				resource
+				resource,
 			};
 			return;
 		} catch (e) {
@@ -367,18 +442,20 @@ class McpHTTPHandle extends Disposable {
 		defaultMetadata.scopes_supported = scopesSupported ?? defaultMetadata.scopes_supported ?? [];
 		this._authMetadata = {
 			server: defaultMetadata,
-			resource
+			resource,
 		};
 	}
 
-	private async _getResourceMetadata(resourceMetadata: string): Promise<IAuthorizationProtectedResourceMetadata> {
+	private async _getResourceMetadata(
+		resourceMetadata: string
+	): Promise<IAuthorizationProtectedResourceMetadata> {
 		// detect if the resourceMetadata, which is a URL, is in the same origin as the MCP server
 		const resourceMetadataUrl = new URL(resourceMetadata);
 		const mcpServerUrl = new URL(this._launch.uri.toString(true));
 		let additionalHeaders: Record<string, string> = {};
 		if (resourceMetadataUrl.origin === mcpServerUrl.origin) {
 			additionalHeaders = {
-				...Object.fromEntries(this._launch.headers)
+				...Object.fromEntries(this._launch.headers),
 			};
 		}
 		const resourceMetadataResponse = await fetch(resourceMetadata, {
@@ -386,12 +463,14 @@ class McpHTTPHandle extends Disposable {
 			signal: this._abortCtrl.signal,
 			headers: {
 				...additionalHeaders,
-				'Accept': 'application/json',
-				'MCP-Protocol-Version': MCP.LATEST_PROTOCOL_VERSION
-			}
+				Accept: 'application/json',
+				'MCP-Protocol-Version': MCP.LATEST_PROTOCOL_VERSION,
+			},
 		});
 		if (resourceMetadataResponse.status !== 200) {
-			throw new Error(`Failed to fetch resource metadata: ${resourceMetadataResponse.status} ${await this._getErrText(resourceMetadataResponse)}`);
+			throw new Error(
+				`Failed to fetch resource metadata: ${resourceMetadataResponse.status} ${await this._getErrText(resourceMetadataResponse)}`
+			);
 		}
 		const body = await resourceMetadataResponse.json();
 		if (isAuthorizationProtectedResourceMetadata(body)) {
@@ -401,40 +480,50 @@ class McpHTTPHandle extends Disposable {
 		}
 	}
 
-	private async _getAuthorizationServerMetadata(authorizationServer: string, addtionalHeaders: Record<string, string>): Promise<IAuthorizationServerMetadata> {
+	private async _getAuthorizationServerMetadata(
+		authorizationServer: string,
+		addtionalHeaders: Record<string, string>
+	): Promise<IAuthorizationServerMetadata> {
 		// For the oauth server metadata discovery path, we _INSERT_
 		// the well known path after the origin and before the path.
 		// https://datatracker.ietf.org/doc/html/rfc8414#section-3
 		const issuer = new URL(authorizationServer);
 		const extraPath = issuer.pathname === '/' ? '' : issuer.pathname;
-		const pathToFetch = new URL(AUTH_SERVER_METADATA_DISCOVERY_PATH, authorizationServer).toString() + extraPath;
+		const pathToFetch =
+			new URL(AUTH_SERVER_METADATA_DISCOVERY_PATH, authorizationServer).toString() + extraPath;
 		let authServerMetadataResponse = await fetch(pathToFetch, {
 			method: 'GET',
 			signal: this._abortCtrl.signal,
 			headers: {
 				...addtionalHeaders,
-				'Accept': 'application/json',
+				Accept: 'application/json',
 				'MCP-Protocol-Version': MCP.LATEST_PROTOCOL_VERSION,
-			}
+			},
 		});
 		if (authServerMetadataResponse.status !== 200) {
 			// Try fetching the other discovery URL. For the openid metadata discovery
 			// path, we _ADD_ the well known path after the existing path.
 			// https://datatracker.ietf.org/doc/html/rfc8414#section-3
 			authServerMetadataResponse = await fetch(
-				URI.joinPath(URI.parse(authorizationServer), '.well-known', 'openid-configuration').toString(true),
+				URI.joinPath(
+					URI.parse(authorizationServer),
+					'.well-known',
+					'openid-configuration'
+				).toString(true),
 				{
 					method: 'GET',
 					signal: this._abortCtrl.signal,
 					headers: {
 						...addtionalHeaders,
-						'Accept': 'application/json',
-						'MCP-Protocol-Version': MCP.LATEST_PROTOCOL_VERSION
-					}
+						Accept: 'application/json',
+						'MCP-Protocol-Version': MCP.LATEST_PROTOCOL_VERSION,
+					},
 				}
 			);
 			if (authServerMetadataResponse.status !== 200) {
-				throw new Error(`Failed to fetch authorization server metadata: ${authServerMetadataResponse.status} ${await this._getErrText(authServerMetadataResponse)}`);
+				throw new Error(
+					`Failed to fetch authorization server metadata: ${authServerMetadataResponse.status} ${await this._getErrText(authServerMetadataResponse)}`
+				);
 			}
 		}
 		const body = await authServerMetadataResponse.json();
@@ -456,7 +545,10 @@ class McpHTTPHandle extends Disposable {
 						this._proxy.$onDidReceiveMessage(this._id, event.data);
 					} else if (event.type === 'endpoint') {
 						// An SSE server that didn't correctly return a 4xx status when we POSTed
-						this._log(LogLevel.Warning, `Received SSE endpoint from a POST to ${this._launch.uri}, will fall back to legacy SSE`);
+						this._log(
+							LogLevel.Warning,
+							`Received SSE endpoint from a POST to ${this._launch.uri}, will fall back to legacy SSE`
+						);
 						this._sseFallbackWithMessage(message);
 						throw new CancellationError(); // just to end the SSE stream
 					}
@@ -474,10 +566,14 @@ class McpHTTPHandle extends Disposable {
 				break;
 			default: {
 				const responseBody = await res.text();
-				if (isJSON(responseBody)) { // try to read as JSON even if the server didn't set the content type
+				if (isJSON(responseBody)) {
+					// try to read as JSON even if the server didn't set the content type
 					this._proxy.$onDidReceiveMessage(this._id, responseBody);
 				} else {
-					this._log(LogLevel.Warning, `Unexpected ${res.status} response for request: ${responseBody}`);
+					this._log(
+						LogLevel.Warning,
+						`Unexpected ${res.status} response for request: ${responseBody}`
+					);
 				}
 			}
 		}
@@ -497,7 +593,7 @@ class McpHTTPHandle extends Disposable {
 			try {
 				const headers: Record<string, string> = {
 					...Object.fromEntries(this._launch.headers),
-					'Accept': 'text/event-stream',
+					Accept: 'text/event-stream',
 				};
 				await this._addAuthHeader(headers);
 
@@ -514,12 +610,18 @@ class McpHTTPHandle extends Disposable {
 					headers,
 				});
 			} catch (e) {
-				this._log(LogLevel.Info, `Error connecting to ${this._launch.uri} for async notifications, will retry`);
+				this._log(
+					LogLevel.Info,
+					`Error connecting to ${this._launch.uri} for async notifications, will retry`
+				);
 				continue;
 			}
 
 			if (res.status >= 400) {
-				this._log(LogLevel.Debug, `${res.status} status connecting to ${this._launch.uri} for async notifications; they will be disabled: ${await this._getErrText(res)}`);
+				this._log(
+					LogLevel.Debug,
+					`${res.status} status connecting to ${this._launch.uri} for async notifications; they will be disabled: ${await this._getErrText(res)}`
+				);
 				return;
 			}
 
@@ -550,7 +652,7 @@ class McpHTTPHandle extends Disposable {
 		const postEndpoint = new DeferredPromise<string>();
 		const headers: Record<string, string> = {
 			...Object.fromEntries(this._launch.headers),
-			'Accept': 'text/event-stream',
+			Accept: 'text/event-stream',
 		};
 		await this._addAuthHeader(headers);
 
@@ -562,11 +664,17 @@ class McpHTTPHandle extends Disposable {
 				headers,
 			});
 			if (res.status >= 300) {
-				this._proxy.$onDidChangeState(this._id, { state: McpConnectionState.Kind.Error, message: `${res.status} status connecting to ${this._launch.uri} as SSE: ${await this._getErrText(res)}` });
+				this._proxy.$onDidChangeState(this._id, {
+					state: McpConnectionState.Kind.Error,
+					message: `${res.status} status connecting to ${this._launch.uri} as SSE: ${await this._getErrText(res)}`,
+				});
 				return;
 			}
 		} catch (e) {
-			this._proxy.$onDidChangeState(this._id, { state: McpConnectionState.Kind.Error, message: `Error connecting to ${this._launch.uri} as SSE: ${e}` });
+			this._proxy.$onDidChangeState(this._id, {
+				state: McpConnectionState.Kind.Error,
+				message: `Error connecting to ${this._launch.uri} as SSE: ${e}`,
+			});
 			return;
 		}
 
@@ -580,7 +688,10 @@ class McpHTTPHandle extends Disposable {
 
 		this._register(toDisposable(() => postEndpoint.cancel()));
 		this._doSSE(parser, res).catch(err => {
-			this._proxy.$onDidChangeState(this._id, { state: McpConnectionState.Kind.Error, message: `Error reading SSE stream: ${String(err)}` });
+			this._proxy.$onDidChangeState(this._id, {
+				state: McpConnectionState.Kind.Error,
+				message: `Error reading SSE stream: ${String(err)}`,
+			});
 		});
 
 		return postEndpoint.p;
@@ -606,7 +717,10 @@ class McpHTTPHandle extends Disposable {
 		});
 
 		if (res.status >= 300) {
-			this._log(LogLevel.Warning, `${res.status} status sending message to ${this._postEndpoint}: ${await this._getErrText(res)}`);
+			this._log(
+				LogLevel.Warning,
+				`${res.status} status sending message to ${this._postEndpoint}: ${await this._getErrText(res)}`
+			);
 		}
 	}
 
@@ -639,7 +753,11 @@ class McpHTTPHandle extends Disposable {
 	private async _addAuthHeader(headers: Record<string, string>) {
 		if (this._authMetadata) {
 			try {
-				const token = await this._proxy.$getTokenFromServerMetadata(this._id, this._authMetadata.server, this._authMetadata.resource);
+				const token = await this._proxy.$getTokenFromServerMetadata(
+					this._id,
+					this._authMetadata.server,
+					this._authMetadata.resource
+				);
 				if (token) {
 					headers['Authorization'] = `Bearer ${token}`;
 				}

@@ -29,7 +29,7 @@ class ManyRectVisualizer implements IVisualizationEffect {
 	constructor(
 		private readonly _rects: Record<string, Rect>,
 		private readonly _elem: HTMLElement
-	) { }
+	) {}
 
 	visualize(): IDisposable {
 		const d: IDisposable[] = [];
@@ -41,7 +41,7 @@ class ManyRectVisualizer implements IVisualizationEffect {
 		return {
 			dispose: () => {
 				d.forEach(d => d.dispose());
-			}
+			},
 		};
 	}
 }
@@ -51,7 +51,7 @@ class HtmlRectVisualizer implements IVisualizationEffect {
 		private readonly _rect: Rect,
 		private readonly _elem: HTMLElement,
 		private readonly _name: string
-	) { }
+	) {}
 
 	visualize(): IDisposable {
 		const div = document.createElement('div');
@@ -73,8 +73,8 @@ class HtmlRectVisualizer implements IVisualizationEffect {
 		const updatePosition = () => {
 			const elemRect = this._elem.getBoundingClientRect();
 			console.log(elemRect);
-			div.style.left = (elemRect.left + this._rect.left) + 'px';
-			div.style.top = (elemRect.top + this._rect.top) + 'px';
+			div.style.left = elemRect.left + this._rect.left + 'px';
+			div.style.top = elemRect.top + this._rect.top + 'px';
 			div.style.width = this._rect.width + 'px';
 			div.style.height = this._rect.height + 'px';
 		};
@@ -91,7 +91,7 @@ class HtmlRectVisualizer implements IVisualizationEffect {
 			dispose: () => {
 				observer.disconnect();
 				div.remove();
-			}
+			},
 		};
 	}
 }
@@ -104,7 +104,7 @@ export function debugView(value: unknown, reader: IReader): void {
 }
 
 function debugReadDisposable(d: IDisposable, reader: IReader): void {
-	derived((_reader) => {
+	derived(_reader => {
 		_reader.store.add(d);
 		return undefined;
 	}).read(reader);

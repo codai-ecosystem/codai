@@ -9,7 +9,11 @@ import { Emitter, Event } from '../../../base/common/event.js';
 import { dispose } from '../../../base/common/lifecycle.js';
 import { URI } from '../../../base/common/uri.js';
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
-import { ExtHostDocumentsAndEditorsShape, IDocumentsAndEditorsDelta, MainContext } from './extHost.protocol.js';
+import {
+	ExtHostDocumentsAndEditorsShape,
+	IDocumentsAndEditorsDelta,
+	MainContext,
+} from './extHost.protocol.js';
 import { ExtHostDocumentData } from './extHostDocumentData.js';
 import { IExtHostRpcService } from './extHostRpcService.js';
 import { ExtHostTextEditor } from './extHostTextEditor.js';
@@ -22,7 +26,7 @@ import { Lazy } from '../../../base/common/lazy.js';
 
 class Reference<T> {
 	private _count = 0;
-	constructor(readonly value: T) { }
+	constructor(readonly value: T) {}
 	ref() {
 		this._count++;
 	}
@@ -32,7 +36,6 @@ class Reference<T> {
 }
 
 export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsShape {
-
 	readonly _serviceBrand: undefined;
 
 	private _activeEditorId: string | null = null;
@@ -46,21 +49,23 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
 	private readonly _onDidChangeActiveTextEditor = new Emitter<vscode.TextEditor | undefined>();
 
 	readonly onDidAddDocuments: Event<readonly ExtHostDocumentData[]> = this._onDidAddDocuments.event;
-	readonly onDidRemoveDocuments: Event<readonly ExtHostDocumentData[]> = this._onDidRemoveDocuments.event;
-	readonly onDidChangeVisibleTextEditors: Event<readonly vscode.TextEditor[]> = this._onDidChangeVisibleTextEditors.event;
-	readonly onDidChangeActiveTextEditor: Event<vscode.TextEditor | undefined> = this._onDidChangeActiveTextEditor.event;
+	readonly onDidRemoveDocuments: Event<readonly ExtHostDocumentData[]> =
+		this._onDidRemoveDocuments.event;
+	readonly onDidChangeVisibleTextEditors: Event<readonly vscode.TextEditor[]> =
+		this._onDidChangeVisibleTextEditors.event;
+	readonly onDidChangeActiveTextEditor: Event<vscode.TextEditor | undefined> =
+		this._onDidChangeActiveTextEditor.event;
 
 	constructor(
 		@IExtHostRpcService private readonly _extHostRpc: IExtHostRpcService,
 		@ILogService private readonly _logService: ILogService
-	) { }
+	) {}
 
 	$acceptDocumentsAndEditorsDelta(delta: IDocumentsAndEditorsDelta): void {
 		this.acceptDocumentsAndEditorsDelta(delta);
 	}
 
 	acceptDocumentsAndEditorsDelta(delta: IDocumentsAndEditorsDelta): void {
-
 		const removedDocuments: ExtHostDocumentData[] = [];
 		const addedDocuments: ExtHostDocumentData[] = [];
 		const removedEditors: ExtHostTextEditor[] = [];
@@ -84,21 +89,26 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
 				// double check -> only notebook cell documents should be
 				// referenced/opened more than once...
 				if (ref) {
-					if (resource.scheme !== Schemas.vscodeNotebookCell && resource.scheme !== Schemas.vscodeInteractiveInput) {
+					if (
+						resource.scheme !== Schemas.vscodeNotebookCell &&
+						resource.scheme !== Schemas.vscodeInteractiveInput
+					) {
 						throw new Error(`document '${resource} already exists!'`);
 					}
 				}
 				if (!ref) {
-					ref = new Reference(new ExtHostDocumentData(
-						this._extHostRpc.getProxy(MainContext.MainThreadDocuments),
-						resource,
-						data.lines,
-						data.EOL,
-						data.versionId,
-						data.languageId,
-						data.isDirty,
-						data.encoding
-					));
+					ref = new Reference(
+						new ExtHostDocumentData(
+							this._extHostRpc.getProxy(MainContext.MainThreadDocuments),
+							resource,
+							data.lines,
+							data.EOL,
+							data.versionId,
+							data.languageId,
+							data.isDirty,
+							data.encoding
+						)
+					);
 					this._documents.set(resource, ref);
 					addedDocuments.push(ref.value);
 				}
@@ -132,14 +142,19 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
 					data.selections.map(typeConverters.Selection.to),
 					data.options,
 					data.visibleRanges.map(range => typeConverters.Range.to(range)),
-					typeof data.editorPosition === 'number' ? typeConverters.ViewColumn.to(data.editorPosition) : undefined
+					typeof data.editorPosition === 'number'
+						? typeConverters.ViewColumn.to(data.editorPosition)
+						: undefined
 				);
 				this._editors.set(data.id, editor);
 			}
 		}
 
 		if (delta.newActiveEditor !== undefined) {
-			assert.ok(delta.newActiveEditor === null || this._editors.has(delta.newActiveEditor), `active editor '${delta.newActiveEditor}' does not exist`);
+			assert.ok(
+				delta.newActiveEditor === null || this._editors.has(delta.newActiveEditor),
+				`active editor '${delta.newActiveEditor}' does not exist`
+			);
 			this._activeEditorId = delta.newActiveEditor;
 		}
 
@@ -193,5 +208,7 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
 	}
 }
 
-export interface IExtHostDocumentsAndEditors extends ExtHostDocumentsAndEditors { }
-export const IExtHostDocumentsAndEditors = createDecorator<IExtHostDocumentsAndEditors>('IExtHostDocumentsAndEditors');
+export interface IExtHostDocumentsAndEditors extends ExtHostDocumentsAndEditors {}
+export const IExtHostDocumentsAndEditors = createDecorator<IExtHostDocumentsAndEditors>(
+	'IExtHostDocumentsAndEditors'
+);

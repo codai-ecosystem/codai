@@ -4,7 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 import assert from 'assert';
 import * as extHostTypes from '../../common/extHostTypes.js';
-import { MainContext, IWorkspaceEditDto, MainThreadBulkEditsShape, IWorkspaceTextEditDto } from '../../common/extHost.protocol.js';
+import {
+	MainContext,
+	IWorkspaceEditDto,
+	MainThreadBulkEditsShape,
+	IWorkspaceTextEditDto,
+} from '../../common/extHost.protocol.js';
 import { URI } from '../../../../base/common/uri.js';
 import { mock } from '../../../../base/test/common/mock.js';
 import { ExtHostDocumentsAndEditors } from '../../common/extHostDocumentsAndEditors.js';
@@ -16,7 +21,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { SerializableObjectWithBuffers } from '../../../services/extensions/common/proxyIdentifier.js';
 
 suite('ExtHostBulkEdits.applyWorkspaceEdit', () => {
-
 	const resource = URI.parse('foo:bar');
 	let bulkEdits: ExtHostBulkEdits;
 	let workspaceResourceEdits: IWorkspaceEditDto;
@@ -25,23 +29,33 @@ suite('ExtHostBulkEdits.applyWorkspaceEdit', () => {
 		workspaceResourceEdits = null!;
 
 		const rpcProtocol = new TestRPCProtocol();
-		rpcProtocol.set(MainContext.MainThreadBulkEdits, new class extends mock<MainThreadBulkEditsShape>() {
-			override $tryApplyWorkspaceEdit(_workspaceResourceEdits: SerializableObjectWithBuffers<IWorkspaceEditDto>): Promise<boolean> {
-				workspaceResourceEdits = _workspaceResourceEdits.value;
-				return Promise.resolve(true);
-			}
-		});
-		const documentsAndEditors = new ExtHostDocumentsAndEditors(SingleProxyRPCProtocol(null), new NullLogService());
+		rpcProtocol.set(
+			MainContext.MainThreadBulkEdits,
+			new (class extends mock<MainThreadBulkEditsShape>() {
+				override $tryApplyWorkspaceEdit(
+					_workspaceResourceEdits: SerializableObjectWithBuffers<IWorkspaceEditDto>
+				): Promise<boolean> {
+					workspaceResourceEdits = _workspaceResourceEdits.value;
+					return Promise.resolve(true);
+				}
+			})()
+		);
+		const documentsAndEditors = new ExtHostDocumentsAndEditors(
+			SingleProxyRPCProtocol(null),
+			new NullLogService()
+		);
 		documentsAndEditors.$acceptDocumentsAndEditorsDelta({
-			addedDocuments: [{
-				isDirty: false,
-				languageId: 'foo',
-				uri: resource,
-				versionId: 1337,
-				lines: ['foo'],
-				EOL: '\n',
-				encoding: 'utf8'
-			}]
+			addedDocuments: [
+				{
+					isDirty: false,
+					languageId: 'foo',
+					uri: resource,
+					versionId: 1337,
+					lines: ['foo'],
+					EOL: '\n',
+					encoding: 'utf8',
+				},
+			],
 		});
 		bulkEdits = new ExtHostBulkEdits(rpcProtocol, documentsAndEditors);
 	});
@@ -65,5 +79,4 @@ suite('ExtHostBulkEdits.applyWorkspaceEdit', () => {
 		const [first] = workspaceResourceEdits.edits;
 		assert.ok(typeof (<IWorkspaceTextEditDto>first).versionId === 'undefined');
 	});
-
 });

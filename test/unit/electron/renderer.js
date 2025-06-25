@@ -14,7 +14,7 @@ const fs = require('fs');
 	let logging = false;
 	let withStacks = false;
 
-	globalThis.beginLoggingFS = (_withStacks) => {
+	globalThis.beginLoggingFS = _withStacks => {
 		logging = true;
 		withStacks = _withStacks || false;
 	};
@@ -26,7 +26,11 @@ const fs = require('fs');
 	function createSpy(element, cnt) {
 		return function (...args) {
 			if (logging) {
-				console.log(`calling ${element}: ` + args.slice(0, cnt).join(',') + (withStacks ? (`\n` + new Error().stack?.split('\n').slice(2).join('\n')) : ''));
+				console.log(
+					`calling ${element}: ` +
+						args.slice(0, cnt).join(',') +
+						(withStacks ? `\n` + new Error().stack?.split('\n').slice(2).join('\n') : '')
+				);
 			}
 			return originals[element].call(this, ...args);
 		};
@@ -57,7 +61,7 @@ const fs = require('fs');
 		['read', 1],
 		['unlink', 1],
 		['rmdir', 1],
-	].forEach((element) => {
+	].forEach(element => {
 		intercept(element[0], element[1]);
 	});
 })();
@@ -90,7 +94,6 @@ Object.assign(globalThis, {
 
 const IS_CI = !!process.env.BUILD_ARTIFACTSTAGINGDIRECTORY;
 const _tests_glob = '**/test/**/*.test.js';
-
 
 /**
  * Loads one or N modules.
@@ -132,9 +135,7 @@ function initLoadFn(opts) {
 			});
 		});
 
-		return Array.isArray(modules)
-			? Promise.all(tasks)
-			: tasks[0];
+		return Array.isArray(modules) ? Promise.all(tasks) : tasks[0];
 	}
 	importModules._out = out;
 	loadFn = importModules;
@@ -159,7 +160,6 @@ async function loadModules(modules) {
 const globAsync = util.promisify(glob);
 
 async function loadTestModules(opts) {
-
 	if (opts.run) {
 		const files = Array.isArray(opts.run) ? opts.run : [opts.run];
 		const modules = files.map(file => {
@@ -179,7 +179,6 @@ async function loadTestModules(opts) {
 let currentTest;
 
 async function loadTests(opts) {
-
 	//#region Unexpected Output
 
 	const _allowedTestOutput = [
@@ -205,20 +204,29 @@ async function loadTests(opts) {
 		'property limits', // https://github.com/microsoft/vscode/issues/192443
 		'Error events', // https://github.com/microsoft/vscode/issues/192443
 		'fetch returns keybinding with user first if title and id matches', //
-		'throw ListenerLeakError'
+		'throw ListenerLeakError',
 	]);
 
-	const _allowedSuitesWithOutput = new Set([
-		'InlineChatController'
-	]);
+	const _allowedSuitesWithOutput = new Set(['InlineChatController']);
 
 	let _testsWithUnexpectedOutput = false;
 
-	for (const consoleFn of [console.log, console.error, console.info, console.warn, console.trace, console.debug]) {
+	for (const consoleFn of [
+		console.log,
+		console.error,
+		console.info,
+		console.warn,
+		console.trace,
+		console.debug,
+	]) {
 		console[consoleFn.name] = function (msg) {
 			if (!currentTest) {
 				consoleFn.apply(console, arguments);
-			} else if (!_allowedTestOutput.some(a => a.test(msg)) && !_allowedTestsWithOutput.has(currentTest.title) && !_allowedSuitesWithOutput.has(currentTest.parent?.title ?? '')) {
+			} else if (
+				!_allowedTestOutput.some(a => a.test(msg)) &&
+				!_allowedTestsWithOutput.has(currentTest.title) &&
+				!_allowedSuitesWithOutput.has(currentTest.parent?.title ?? '')
+			) {
 				_testsWithUnexpectedOutput = true;
 				consoleFn.apply(console, arguments);
 			}
@@ -237,7 +245,7 @@ async function loadTests(opts) {
 		'onBeforeShutdown - veto with error is treated as veto',
 		'onBeforeShutdown - final veto with error is treated as veto',
 		// Search tests
-		'Search Model: Search reports timed telemetry on search when error is called'
+		'Search Model: Search reports timed telemetry on search when error is called',
 	]);
 
 	const errors = await loadFn('vs/base/common/errors');
@@ -246,7 +254,7 @@ async function loadTests(opts) {
 			return; // ignore canceled errors that are common
 		}
 
-		let stack = (err ? err.stack : null);
+		let stack = err ? err.stack : null;
 		if (!stack) {
 			stack = new Error().stack;
 		}
@@ -257,7 +265,7 @@ async function loadTests(opts) {
 	process.on('uncaughtException', error => onUnexpectedError(error));
 	process.on('unhandledRejection', (reason, promise) => {
 		onUnexpectedError(reason);
-		promise.catch(() => { });
+		promise.catch(() => {});
 	});
 	window.addEventListener('unhandledrejection', event => {
 		event.preventDefault(); // Do not log to test output, we show an error later when test ends
@@ -288,7 +296,10 @@ async function loadTests(opts) {
 
 		// should not have unexpected output
 		if (_testsWithUnexpectedOutput && !opts.dev) {
-			assert.ok(false, 'Error: Unexpected console output in test run. Please ensure no console.[log|error|info|warn] usage in tests or runtime errors.');
+			assert.ok(
+				false,
+				'Error: Unexpected console output in test run. Please ensure no console.[log|error|info|warn] usage in tests or runtime errors.'
+			);
 		}
 
 		// should not have unexpected errors
@@ -297,13 +308,14 @@ async function loadTests(opts) {
 			const msg = [];
 			for (const error of errors) {
 				console.error(`Error: Test run should not have unexpected errors:\n${error}`);
-				msg.push(String(error))
+				msg.push(String(error));
 			}
 			assert.ok(false, `Error: Test run should not have unexpected errors:\n${msg.join('\n')}`);
 		}
 	});
 
-	suiteTeardown(() => { // intentionally not in teardown because some tests only cleanup in suiteTeardown
+	suiteTeardown(() => {
+		// intentionally not in teardown because some tests only cleanup in suiteTeardown
 
 		// should have cleaned up in registries
 		assertCleanState();
@@ -323,7 +335,7 @@ function serializeSuite(suite) {
 		timeout: suite.timeout(),
 		retries: suite.retries(),
 		slow: suite.slow(),
-		bail: suite.bail()
+		bail: suite.bail(),
 	};
 }
 
@@ -335,7 +347,7 @@ function serializeRunnable(runnable) {
 		async: runnable.async,
 		slow: runnable.slow(),
 		speed: runnable.speed,
-		duration: runnable.duration
+		duration: runnable.duration,
 	};
 }
 
@@ -348,7 +360,7 @@ function serializeError(err) {
 		expected: safeStringify({ value: err.expected }),
 		uncaught: err.uncaught,
 		showDiff: err.showDiff,
-		inspect: typeof err.inspect === 'function' ? err.inspect() : ''
+		inspect: typeof err.inspect === 'function' ? err.inspect() : '',
 	};
 }
 
@@ -374,15 +386,16 @@ function isObject(obj) {
 	// The method can't do a type cast since there are type (like strings) which
 	// are subclasses of any put not positively matched by the function. Hence type
 	// narrowing results in wrong results.
-	return typeof obj === 'object'
-		&& obj !== null
-		&& !Array.isArray(obj)
-		&& !(obj instanceof RegExp)
-		&& !(obj instanceof Date);
+	return (
+		typeof obj === 'object' &&
+		obj !== null &&
+		!Array.isArray(obj) &&
+		!(obj instanceof RegExp) &&
+		!(obj instanceof Date)
+	);
 }
 
 class IPCReporter {
-
 	constructor(runner) {
 		runner.on('start', () => ipcRenderer.send('start'));
 		runner.on('end', () => ipcRenderer.send('end'));
@@ -393,13 +406,16 @@ class IPCReporter {
 		runner.on('hook', hook => ipcRenderer.send('hook', serializeRunnable(hook)));
 		runner.on('hook end', hook => ipcRenderer.send('hook end', serializeRunnable(hook)));
 		runner.on('pass', test => ipcRenderer.send('pass', serializeRunnable(test)));
-		runner.on('fail', (test, err) => ipcRenderer.send('fail', serializeRunnable(test), serializeError(err)));
+		runner.on('fail', (test, err) =>
+			ipcRenderer.send('fail', serializeRunnable(test), serializeError(err))
+		);
 		runner.on('pending', test => ipcRenderer.send('pending', serializeRunnable(test)));
 	}
 }
 
 const $globalThis = globalThis;
-const setTimeout0IsFaster = (typeof $globalThis.postMessage === 'function' && !$globalThis.importScripts);
+const setTimeout0IsFaster =
+	typeof $globalThis.postMessage === 'function' && !$globalThis.importScripts;
 
 /**
  * See https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#:~:text=than%204%2C%20then-,set%20timeout%20to%204,-.
@@ -411,7 +427,7 @@ const setTimeout0 = (() => {
 	if (setTimeout0IsFaster) {
 		const pending = [];
 
-		$globalThis.addEventListener('message', (e) => {
+		$globalThis.addEventListener('message', e => {
 			if (e.data && e.data.vscodeScheduleAsyncWork) {
 				for (let i = 0, len = pending.length; i < len; i++) {
 					const candidate = pending[i];
@@ -424,16 +440,16 @@ const setTimeout0 = (() => {
 			}
 		});
 		let lastId = 0;
-		return (callback) => {
+		return callback => {
 			const myId = ++lastId;
 			pending.push({
 				id: myId,
-				callback: callback
+				callback: callback,
 			});
 			$globalThis.postMessage({ vscodeScheduleAsyncWork: myId }, '*');
 		};
 	}
-	return (callback) => setTimeout(callback);
+	return callback => setTimeout(callback);
 })();
 
 async function runTests(opts) {
@@ -446,7 +462,7 @@ async function runTests(opts) {
 		reporter: opts.dev ? 'html' : IPCReporter,
 		grep: opts.grep,
 		timeout: opts.timeout ?? (IS_CI ? 30000 : 5000),
-		forbidOnly: IS_CI // disallow .only() when running on build machine
+		forbidOnly: IS_CI, // disallow .only() when running on build machine
 	});
 
 	// this *must* come before loadTests, or it doesn't work.
@@ -457,11 +473,11 @@ async function runTests(opts) {
 	await loadTests(opts);
 
 	const runner = mocha.run(async () => {
-		await createCoverageReport(opts)
+		await createCoverageReport(opts);
 		ipcRenderer.send('all done');
 	});
 
-	runner.on('test', test => currentTest = test);
+	runner.on('test', test => (currentTest = test));
 
 	if (opts.dev) {
 		runner.on('fail', (test, err) => {

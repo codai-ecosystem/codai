@@ -43,8 +43,8 @@ const dotnetBuild: ITaskEntry = {
 		'\t\t\t"problemMatcher": "$msCompile"',
 		'\t\t}',
 		'\t]',
-		'}'
-	].join('\n')
+		'}',
+	].join('\n'),
 };
 
 const msbuild: ITaskEntry = {
@@ -78,8 +78,8 @@ const msbuild: ITaskEntry = {
 		'\t\t\t"problemMatcher": "$msCompile"',
 		'\t\t}',
 		'\t]',
-		'}'
-	].join('\n')
+		'}',
+	].join('\n'),
 };
 
 const command: ITaskEntry = {
@@ -99,8 +99,8 @@ const command: ITaskEntry = {
 		'\t\t\t"command": "echo Hello"',
 		'\t\t}',
 		'\t]',
-		'}'
-	].join('\n')
+		'}',
+	].join('\n'),
 };
 
 const maven: ITaskEntry = {
@@ -128,8 +128,8 @@ const maven: ITaskEntry = {
 		'\t\t\t"group": "test"',
 		'\t\t}',
 		'\t]',
-		'}'
-	].join('\n')
+		'}',
+	].join('\n'),
 };
 
 let _templates: ITaskEntry[] | null = null;
@@ -142,7 +142,6 @@ export function getTemplates(): ITaskEntry[] {
 	}
 	return _templates;
 }
-
 
 /** Version 1.0 templates
  *

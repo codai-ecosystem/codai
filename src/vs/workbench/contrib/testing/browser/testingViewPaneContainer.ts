@@ -19,7 +19,6 @@ import { IWorkbenchLayoutService } from '../../../services/layout/browser/layout
 import { ILogService } from '../../../../platform/log/common/log.js';
 
 export class TestingViewPaneContainer extends ViewPaneContainer {
-
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -31,9 +30,23 @@ export class TestingViewPaneContainer extends ViewPaneContainer {
 		@IExtensionService extensionService: IExtensionService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
-		super(Testing.ViewletId, { mergeViewWithContainerWhenSingleView: true }, instantiationService, configurationService, layoutService, contextMenuService, telemetryService, extensionService, themeService, storageService, contextService, viewDescriptorService, logService);
+		super(
+			Testing.ViewletId,
+			{ mergeViewWithContainerWhenSingleView: true },
+			instantiationService,
+			configurationService,
+			layoutService,
+			contextMenuService,
+			telemetryService,
+			extensionService,
+			themeService,
+			storageService,
+			contextService,
+			viewDescriptorService,
+			logService
+		);
 	}
 
 	override create(parent: HTMLElement): void {
@@ -46,6 +59,6 @@ export class TestingViewPaneContainer extends ViewPaneContainer {
 	}
 
 	override getTitle(): string {
-		return localize('testing', "Testing");
+		return localize('testing', 'Testing');
 	}
 }

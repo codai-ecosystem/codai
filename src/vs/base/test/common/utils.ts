@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DisposableStore, DisposableTracker, IDisposable, setDisposableTracker } from '../../common/lifecycle.js';
+import {
+	DisposableStore,
+	DisposableTracker,
+	IDisposable,
+	setDisposableTracker,
+} from '../../common/lifecycle.js';
 import { join } from '../../common/path.js';
 import { isWindows } from '../../common/platform.js';
 import { URI } from '../../common/uri.js';
@@ -30,7 +35,10 @@ export function testRepeat(n: number, description: string, callback: (this: any)
 	}
 }
 
-export async function assertThrowsAsync(block: () => any, message: string | Error = 'Missing expected exception'): Promise<void> {
+export async function assertThrowsAsync(
+	block: () => any,
+	message: string | Error = 'Missing expected exception'
+): Promise<void> {
 	try {
 		await block();
 	} catch {
@@ -49,7 +57,7 @@ export async function assertThrowsAsync(block: () => any, message: string | Erro
  *
  * @returns A {@link DisposableStore} that can optionally be used to track disposables in the test.
  * This will be automatically disposed on test teardown.
-*/
+ */
 export function ensureNoDisposablesAreLeakedInTestSuite(): Pick<DisposableStore, 'add'> {
 	let tracker: DisposableTracker | undefined;
 	let store: DisposableStore;
@@ -66,7 +74,9 @@ export function ensureNoDisposablesAreLeakedInTestSuite(): Pick<DisposableStore,
 			const result = tracker!.computeLeakingDisposables();
 			if (result) {
 				console.error(result.details);
-				throw new Error(`There are ${result.leaks.length} undisposed disposables!${result.details}`);
+				throw new Error(
+					`There are ${result.leaks.length} undisposed disposables!${result.details}`
+				);
 			}
 		}
 	});
@@ -75,7 +85,7 @@ export function ensureNoDisposablesAreLeakedInTestSuite(): Pick<DisposableStore,
 	const testContext = {
 		add<T extends IDisposable>(o: T): T {
 			return store.add(o);
-		}
+		},
 	};
 	return testContext;
 }

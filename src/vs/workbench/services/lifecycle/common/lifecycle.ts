@@ -19,7 +19,6 @@ export const ILifecycleService = createDecorator<ILifecycleService>('lifecycleSe
  * to return a boolean directly. Returning a promise has quite an impact on the shutdown sequence!
  */
 export interface BeforeShutdownEvent {
-
 	/**
 	 * The reason why the application will be shutting down.
 	 */
@@ -36,7 +35,6 @@ export interface BeforeShutdownEvent {
 }
 
 export interface InternalBeforeShutdownEvent extends BeforeShutdownEvent {
-
 	/**
 	 * Allows to set a veto operation to run after all other
 	 * vetos have been handled from the `BeforeShutdownEvent`
@@ -53,7 +51,6 @@ export interface InternalBeforeShutdownEvent extends BeforeShutdownEvent {
  * condition that is treated like a veto.
  */
 export interface BeforeShutdownErrorEvent {
-
 	/**
 	 * The reason why the application is shutting down.
 	 */
@@ -66,7 +63,6 @@ export interface BeforeShutdownErrorEvent {
 }
 
 export enum WillShutdownJoinerOrder {
-
 	/**
 	 * Joiners to run before the `Last` joiners. This is the default order and best for
 	 * most cases. You can be sure that services are still functional at this point.
@@ -78,7 +74,7 @@ export enum WillShutdownJoinerOrder {
 	 * dependencies to workbench services or state. The workbench may be in a state where
 	 * resources can no longer be accessed or changed.
 	 */
-	Last
+	Last,
 }
 
 export interface IWillShutdownEventJoiner {
@@ -104,7 +100,6 @@ export interface IWillShutdownEventLastJoiner extends IWillShutdownEventJoiner {
  * to return a boolean directly. Returning a promise has quite an impact on the shutdown sequence!
  */
 export interface WillShutdownEvent {
-
 	/**
 	 * The reason why the application is shutting down.
 	 */
@@ -134,7 +129,7 @@ export interface WillShutdownEvent {
 	 * @param joiner to identify the join operation in case it takes very long or never
 	 * completes.
 	 */
-	join(promiseFn: (() => Promise<void>), joiner: IWillShutdownEventLastJoiner): void;
+	join(promiseFn: () => Promise<void>, joiner: IWillShutdownEventLastJoiner): void;
 
 	/**
 	 * Allows to access the joiners that have not finished joining this event.
@@ -149,7 +144,6 @@ export interface WillShutdownEvent {
 }
 
 export const enum ShutdownReason {
-
 	/**
 	 * The window is closed.
 	 */
@@ -168,25 +162,27 @@ export const enum ShutdownReason {
 	/**
 	 * The window is loaded into a different workspace context.
 	 */
-	LOAD
+	LOAD,
 }
 
 export const enum StartupKind {
 	NewWindow = 1,
 	ReloadedWindow = 3,
-	ReopenedWindow = 4
+	ReopenedWindow = 4,
 }
 
 export function StartupKindToString(startupKind: StartupKind): string {
 	switch (startupKind) {
-		case StartupKind.NewWindow: return 'NewWindow';
-		case StartupKind.ReloadedWindow: return 'ReloadedWindow';
-		case StartupKind.ReopenedWindow: return 'ReopenedWindow';
+		case StartupKind.NewWindow:
+			return 'NewWindow';
+		case StartupKind.ReloadedWindow:
+			return 'ReloadedWindow';
+		case StartupKind.ReopenedWindow:
+			return 'ReopenedWindow';
 	}
 }
 
 export const enum LifecyclePhase {
-
 	/**
 	 * The first phase signals that we are about to startup getting ready.
 	 *
@@ -213,15 +209,19 @@ export const enum LifecyclePhase {
 	 * The last phase after views, panels and editors have restored and
 	 * some time has passed (2-5 seconds).
 	 */
-	Eventually = 4
+	Eventually = 4,
 }
 
 export function LifecyclePhaseToString(phase: LifecyclePhase): string {
 	switch (phase) {
-		case LifecyclePhase.Starting: return 'Starting';
-		case LifecyclePhase.Ready: return 'Ready';
-		case LifecyclePhase.Restored: return 'Restored';
-		case LifecyclePhase.Eventually: return 'Eventually';
+		case LifecyclePhase.Starting:
+			return 'Starting';
+		case LifecyclePhase.Ready:
+			return 'Ready';
+		case LifecyclePhase.Restored:
+			return 'Restored';
+		case LifecyclePhase.Eventually:
+			return 'Eventually';
 	}
 }
 
@@ -230,7 +230,6 @@ export function LifecyclePhaseToString(phase: LifecyclePhase): string {
  * application, such as shutdown.
  */
 export interface ILifecycleService {
-
 	readonly _serviceBrand: undefined;
 
 	/**

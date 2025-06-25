@@ -20,7 +20,11 @@ import { RawContextKey } from '../../../../platform/contextkey/common/contextkey
 import { IEditorOptions } from '../../../../platform/editor/common/editor.js';
 import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IGalleryMcpServer, ILocalMcpServer, IQueryOptions } from '../../../../platform/mcp/common/mcpManagement.js';
+import {
+	IGalleryMcpServer,
+	ILocalMcpServer,
+	IQueryOptions,
+} from '../../../../platform/mcp/common/mcpManagement.js';
 import { IMcpDevModeConfig } from '../../../../platform/mcp/common/mcpPlatformTypes.js';
 import { StorageScope } from '../../../../platform/storage/common/storage.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
@@ -96,10 +100,12 @@ export namespace McpCollectionDefinition {
 	}
 
 	export function equals(a: McpCollectionDefinition, b: McpCollectionDefinition): boolean {
-		return a.id === b.id
-			&& a.remoteAuthority === b.remoteAuthority
-			&& a.label === b.label
-			&& a.isTrustedByDefault === b.isTrustedByDefault;
+		return (
+			a.id === b.id &&
+			a.remoteAuthority === b.remoteAuthority &&
+			a.label === b.label &&
+			a.isTrustedByDefault === b.isTrustedByDefault
+		);
 	}
 }
 
@@ -146,21 +152,24 @@ export namespace McpServerDefinition {
 			label: def.label,
 			cacheNonce: def.cacheNonce,
 			launch: McpServerLaunch.fromSerialized(def.launch),
-			variableReplacement: def.variableReplacement ? McpServerDefinitionVariableReplacement.fromSerialized(def.variableReplacement) : undefined,
+			variableReplacement: def.variableReplacement
+				? McpServerDefinitionVariableReplacement.fromSerialized(def.variableReplacement)
+				: undefined,
 		};
 	}
 
 	export function equals(a: McpServerDefinition, b: McpServerDefinition): boolean {
-		return a.id === b.id
-			&& a.label === b.label
-			&& arraysEqual(a.roots, b.roots, (a, b) => a.toString() === b.toString())
-			&& objectsEqual(a.launch, b.launch)
-			&& objectsEqual(a.presentation, b.presentation)
-			&& objectsEqual(a.variableReplacement, b.variableReplacement)
-			&& objectsEqual(a.devMode, b.devMode);
+		return (
+			a.id === b.id &&
+			a.label === b.label &&
+			arraysEqual(a.roots, b.roots, (a, b) => a.toString() === b.toString()) &&
+			objectsEqual(a.launch, b.launch) &&
+			objectsEqual(a.presentation, b.presentation) &&
+			objectsEqual(a.variableReplacement, b.variableReplacement) &&
+			objectsEqual(a.devMode, b.devMode)
+		);
 	}
 }
-
 
 export interface McpServerDefinitionVariableReplacement {
 	section?: string; // e.g. 'mcp'
@@ -175,11 +184,15 @@ export namespace McpServerDefinitionVariableReplacement {
 		folder?: { name: string; index: number; uri: UriComponents };
 	}
 
-	export function toSerialized(def: McpServerDefinitionVariableReplacement): McpServerDefinitionVariableReplacement.Serialized {
+	export function toSerialized(
+		def: McpServerDefinitionVariableReplacement
+	): McpServerDefinitionVariableReplacement.Serialized {
 		return def;
 	}
 
-	export function fromSerialized(def: McpServerDefinitionVariableReplacement.Serialized): McpServerDefinitionVariableReplacement {
+	export function fromSerialized(
+		def: McpServerDefinitionVariableReplacement.Serialized
+	): McpServerDefinitionVariableReplacement {
 		return {
 			section: def.section,
 			folder: def.folder ? { ...def.folder, uri: URI.revive(def.folder.uri) } : undefined,
@@ -235,7 +248,10 @@ export interface IMcpServer extends IDisposable {
 	 * Full definition as it exists in the MCP registry. Unlike the references
 	 * in `collection` and `definition`, this may change over time.
 	 */
-	readDefinitions(): IObservable<{ server: McpServerDefinition | undefined; collection: McpCollectionDefinition | undefined }>;
+	readDefinitions(): IObservable<{
+		server: McpServerDefinition | undefined;
+		collection: McpCollectionDefinition | undefined;
+	}>;
 
 	/**
 	 * Reflects the MCP server trust state. True if trusted, false if untrusted,
@@ -297,7 +313,9 @@ export interface IMcpResourceTemplate {
 	resolveURI(vars: Record<string, unknown>): URI;
 }
 
-export const isMcpResourceTemplate = (obj: IMcpResource | IMcpResourceTemplate): obj is IMcpResourceTemplate => {
+export const isMcpResourceTemplate = (
+	obj: IMcpResource | IMcpResourceTemplate
+): obj is IMcpResourceTemplate => {
 	return (obj as IMcpResourceTemplate).template !== undefined;
 };
 export const isMcpResource = (obj: IMcpResource | IMcpResourceTemplate): obj is IMcpResource => {
@@ -328,13 +346,15 @@ export interface IMcpPrompt {
 	/** Gets string completions for the given prompt part. */
 	complete(argument: string, prefix: string, token: CancellationToken): Promise<string[]>;
 
-	resolve(args: Record<string, string | undefined>, token?: CancellationToken): Promise<IMcpPromptMessage[]>;
+	resolve(
+		args: Record<string, string | undefined>,
+		token?: CancellationToken
+	): Promise<IMcpPromptMessage[]>;
 }
 
-export interface IMcpPromptMessage extends MCP.PromptMessage { }
+export interface IMcpPromptMessage extends MCP.PromptMessage {}
 
 export interface IMcpTool {
-
 	readonly id: string;
 
 	readonly definition: MCP.Tool;
@@ -349,7 +369,11 @@ export interface IMcpTool {
 	/**
 	 * Identical to {@link call}, but reports progress.
 	 */
-	callWithProgress(params: Record<string, unknown>, progress: ToolProgress, token?: CancellationToken): Promise<MCP.CallToolResult>;
+	callWithProgress(
+		params: Record<string, unknown>,
+		progress: ToolProgress,
+		token?: CancellationToken
+	): Promise<MCP.CallToolResult>;
 }
 
 export const enum McpServerTransportType {
@@ -383,14 +407,19 @@ export interface McpServerTransportHTTP {
 	readonly headers: [string, string][];
 }
 
-export type McpServerLaunch =
-	| McpServerTransportStdio
-	| McpServerTransportHTTP;
+export type McpServerLaunch = McpServerTransportStdio | McpServerTransportHTTP;
 
 export namespace McpServerLaunch {
 	export type Serialized =
 		| { type: McpServerTransportType.HTTP; uri: UriComponents; headers: [string, string][] }
-		| { type: McpServerTransportType.Stdio; cwd: UriComponents | undefined; command: string; args: readonly string[]; env: Record<string, string | number | null>; envFile: string | undefined };
+		| {
+				type: McpServerTransportType.Stdio;
+				cwd: UriComponents | undefined;
+				command: string;
+				args: readonly string[];
+				env: Record<string, string | number | null>;
+				envFile: string | undefined;
+		  };
 
 	export function toSerialized(launch: McpServerLaunch): McpServerLaunch.Serialized {
 		return launch;
@@ -516,12 +545,16 @@ export type McpConnectionState =
 	| McpConnectionState.Error;
 
 export class MpcResponseError extends Error {
-	constructor(message: string, public readonly code: number, public readonly data: unknown) {
+	constructor(
+		message: string,
+		public readonly code: number,
+		public readonly data: unknown
+	) {
 		super(`MPC ${code}: ${message}`);
 	}
 }
 
-export class McpConnectionFailedError extends Error { }
+export class McpConnectionFailedError extends Error {}
 
 export interface IMcpServerContainer extends IDisposable {
 	mcpServer: IWorkbenchMcpServer | null;
@@ -568,7 +601,7 @@ export class McpServerContainers extends Disposable {
 	}
 
 	set mcpServer(extension: IWorkbenchMcpServer | null) {
-		this.containers.forEach(c => c.mcpServer = extension);
+		this.containers.forEach(c => (c.mcpServer = extension));
 	}
 
 	update(server: IWorkbenchMcpServer | undefined): void {
@@ -584,10 +617,20 @@ export class McpServerContainers extends Disposable {
 	}
 }
 
-export const McpServersGalleryEnabledContext = new RawContextKey<boolean>('mcpServersGalleryEnabled', false);
-export const HasInstalledMcpServersContext = new RawContextKey<boolean>('hasInstalledMcpServers', false);
+export const McpServersGalleryEnabledContext = new RawContextKey<boolean>(
+	'mcpServersGalleryEnabled',
+	false
+);
+export const HasInstalledMcpServersContext = new RawContextKey<boolean>(
+	'hasInstalledMcpServers',
+	false
+);
 export const InstalledMcpServersViewId = 'workbench.views.mcp.installed';
-export const mcpServerIcon = registerIcon('mcp-server', Codicon.mcp, localize('mcpServer', 'Icon used for the MCP server.'));
+export const mcpServerIcon = registerIcon(
+	'mcp-server',
+	Codicon.mcp,
+	localize('mcpServer', 'Icon used for the MCP server.')
+);
 
 export namespace McpResourceURI {
 	export const scheme = 'mcp-resource';
@@ -624,7 +667,6 @@ export namespace McpResourceURI {
 			}),
 		};
 	}
-
 }
 
 /** Warning: this enum is cached in `mcpServer.ts` and all changes MUST only be additive. */

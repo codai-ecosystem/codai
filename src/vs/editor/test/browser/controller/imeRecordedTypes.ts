@@ -46,7 +46,10 @@ export interface IRecordedInputEvent {
 	isComposing: boolean | undefined;
 }
 
-export type IRecordedEvent = IRecordedKeyboardEvent | IRecordedCompositionEvent | IRecordedInputEvent;
+export type IRecordedEvent =
+	| IRecordedKeyboardEvent
+	| IRecordedCompositionEvent
+	| IRecordedInputEvent;
 
 export interface IRecorded {
 	env: {

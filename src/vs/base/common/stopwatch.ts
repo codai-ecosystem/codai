@@ -9,7 +9,6 @@ declare const globalThis: { performance: { now(): number } };
 const performanceNow = globalThis.performance.now.bind(globalThis.performance);
 
 export class StopWatch {
-
 	private _startTime: number;
 	private _stopTime: number;
 

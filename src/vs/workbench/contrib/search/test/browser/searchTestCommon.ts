@@ -20,7 +20,10 @@ import { NotebookEditorWidgetService } from '../../../notebook/browser/services/
 import { IEditorGroupsService } from '../../../../services/editor/common/editorGroupsService.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 import { IFileMatch } from '../../../../services/search/common/search.js';
-import { TestEditorGroupsService, TestEditorService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestEditorGroupsService,
+	TestEditorService,
+} from '../../../../test/browser/workbenchTestServices.js';
 import { ISearchResult } from '../../browser/searchTreeModel/searchTreeCommon.js';
 
 export function createFileUriFromPathFromRoot(path?: string): URI {
@@ -44,7 +47,10 @@ export function getRootName(): string {
 	}
 }
 
-export function stubModelService(instantiationService: TestInstantiationService, addDisposable: (e: IDisposable) => void): IModelService {
+export function stubModelService(
+	instantiationService: TestInstantiationService,
+	addDisposable: (e: IDisposable) => void
+): IModelService {
 	instantiationService.stub(IThemeService, new TestThemeService());
 	const config = new TestConfigurationService();
 	config.setUserConfiguration('search', { searchOnType: true });
@@ -54,17 +60,26 @@ export function stubModelService(instantiationService: TestInstantiationService,
 	return modelService;
 }
 
-export function stubNotebookEditorService(instantiationService: TestInstantiationService, addDisposable: (e: IDisposable) => void): INotebookEditorService {
+export function stubNotebookEditorService(
+	instantiationService: TestInstantiationService,
+	addDisposable: (e: IDisposable) => void
+): INotebookEditorService {
 	instantiationService.stub(IEditorGroupsService, new TestEditorGroupsService());
 	instantiationService.stub(IContextKeyService, new MockContextKeyService());
 	const es = new TestEditorService();
 	addDisposable(es);
 	instantiationService.stub(IEditorService, es);
-	const notebookEditorWidgetService = instantiationService.createInstance(NotebookEditorWidgetService);
+	const notebookEditorWidgetService = instantiationService.createInstance(
+		NotebookEditorWidgetService
+	);
 	addDisposable(notebookEditorWidgetService);
 	return notebookEditorWidgetService;
 }
 
-export function addToSearchResult(searchResult: ISearchResult, allRaw: IFileMatch[], searchInstanceID = '') {
+export function addToSearchResult(
+	searchResult: ISearchResult,
+	allRaw: IFileMatch[],
+	searchInstanceID = ''
+) {
 	searchResult.add(allRaw, searchInstanceID, false);
 }

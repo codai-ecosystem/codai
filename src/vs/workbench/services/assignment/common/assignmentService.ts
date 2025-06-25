@@ -8,19 +8,32 @@ import { createDecorator } from '../../../../platform/instantiation/common/insta
 import type { IKeyValueStorage, IExperimentationTelemetry } from 'tas-client-umd';
 import { MementoObject, Memento } from '../../../common/memento.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { ITelemetryData } from '../../../../base/common/actions.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { IAssignmentService } from '../../../../platform/assignment/common/assignment.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { BaseAssignmentService } from '../../../../platform/assignment/common/assignmentService.js';
 import { workbenchConfigurationNodeBase } from '../../../common/configuration.js';
-import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from '../../../../platform/configuration/common/configurationRegistry.js';
+import {
+	IConfigurationRegistry,
+	Extensions as ConfigurationExtensions,
+	ConfigurationScope,
+} from '../../../../platform/configuration/common/configurationRegistry.js';
 import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
 
-export const IWorkbenchAssignmentService = createDecorator<IWorkbenchAssignmentService>('WorkbenchAssignmentService');
+export const IWorkbenchAssignmentService = createDecorator<IWorkbenchAssignmentService>(
+	'WorkbenchAssignmentService'
+);
 
 export interface IWorkbenchAssignmentService extends IAssignmentService {
 	getCurrentExperiments(): Promise<string[] | undefined>;
@@ -48,7 +61,7 @@ class WorkbenchAssignmentServiceTelemetry implements IExperimentationTelemetry {
 	constructor(
 		private telemetryService: ITelemetryService,
 		private productService: IProductService
-	) { }
+	) {}
 
 	get assignmentContext(): string[] | undefined {
 		return this._lastAssignmentContext?.split(';');
@@ -88,7 +101,6 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 		@IProductService productService: IProductService,
 		@IEnvironmentService environmentService: IEnvironmentService
 	) {
-
 		super(
 			telemetryService.machineId,
 			configurationService,
@@ -103,7 +115,9 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 		return this.configurationService.getValue('workbench.enableExperiments') === true;
 	}
 
-	override async getTreatment<T extends string | number | boolean>(name: string): Promise<T | undefined> {
+	override async getTreatment<T extends string | number | boolean>(
+		name: string
+	): Promise<T | undefined> {
 		const result = await super.getTreatment<T>(name);
 		type TASClientReadTreatmentData = {
 			treatmentName: string;
@@ -113,12 +127,25 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 		type TASClientReadTreatmentClassification = {
 			owner: 'sbatten';
 			comment: 'Logged when a treatment value is read from the experiment service';
-			treatmentValue: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The value of the read treatment' };
-			treatmentName: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The name of the treatment that was read' };
+			treatmentValue: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'The value of the read treatment';
+			};
+			treatmentName: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'The name of the treatment that was read';
+			};
 		};
 
-		this.telemetryService.publicLog2<TASClientReadTreatmentData, TASClientReadTreatmentClassification>('tasClientReadTreatmentComplete',
-			{ treatmentName: name, treatmentValue: JSON.stringify(result) });
+		this.telemetryService.publicLog2<
+			TASClientReadTreatmentData,
+			TASClientReadTreatmentClassification
+		>('tasClientReadTreatmentComplete', {
+			treatmentName: name,
+			treatmentValue: JSON.stringify(result),
+		});
 
 		return result;
 	}
@@ -138,18 +165,25 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 	}
 }
 
-registerSingleton(IWorkbenchAssignmentService, WorkbenchAssignmentService, InstantiationType.Delayed);
+registerSingleton(
+	IWorkbenchAssignmentService,
+	WorkbenchAssignmentService,
+	InstantiationType.Delayed
+);
 const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
 registry.registerConfiguration({
 	...workbenchConfigurationNodeBase,
-	'properties': {
+	properties: {
 		'workbench.enableExperiments': {
-			'type': 'boolean',
-			'description': localize('workbench.enableExperiments', "Fetches experiments to run from a Microsoft online service."),
-			'default': true,
-			'scope': ConfigurationScope.APPLICATION,
-			'restricted': true,
-			'tags': ['usesOnlineServices']
-		}
-	}
+			type: 'boolean',
+			description: localize(
+				'workbench.enableExperiments',
+				'Fetches experiments to run from a Microsoft online service.'
+			),
+			default: true,
+			scope: ConfigurationScope.APPLICATION,
+			restricted: true,
+			tags: ['usesOnlineServices'],
+		},
+	},
 });

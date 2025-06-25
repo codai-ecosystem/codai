@@ -8,7 +8,12 @@ import * as nls from '../../../../nls.js';
 import * as dom from '../../../../base/browser/dom.js';
 import { ZoneWidget } from '../../../../editor/contrib/zoneWidget/browser/zoneWidget.js';
 import { ICodeEditor } from '../../../../editor/browser/editorBrowser.js';
-import { IExceptionInfo, IDebugSession, IDebugEditorContribution, EDITOR_CONTRIBUTION_ID } from '../common/debug.js';
+import {
+	IExceptionInfo,
+	IDebugSession,
+	IDebugEditorContribution,
+	EDITOR_CONTRIBUTION_ID,
+} from '../common/debug.js';
 import { RunOnceScheduler } from '../../../../base/common/async.js';
 import { IThemeService, IColorTheme } from '../../../../platform/theme/common/themeService.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
@@ -24,11 +29,18 @@ const $ = dom.$;
 
 // theming
 
-const debugExceptionWidgetBorder = registerColor('debugExceptionWidget.border', '#a31515', nls.localize('debugExceptionWidgetBorder', 'Exception widget border color.'));
-const debugExceptionWidgetBackground = registerColor('debugExceptionWidget.background', { dark: '#420b0d', light: '#f1dfde', hcDark: '#420b0d', hcLight: '#f1dfde' }, nls.localize('debugExceptionWidgetBackground', 'Exception widget background color.'));
+const debugExceptionWidgetBorder = registerColor(
+	'debugExceptionWidget.border',
+	'#a31515',
+	nls.localize('debugExceptionWidgetBorder', 'Exception widget border color.')
+);
+const debugExceptionWidgetBackground = registerColor(
+	'debugExceptionWidget.background',
+	{ dark: '#420b0d', light: '#f1dfde', hcDark: '#420b0d', hcLight: '#f1dfde' },
+	nls.localize('debugExceptionWidgetBackground', 'Exception widget background color.')
+);
 
 export class ExceptionWidget extends ZoneWidget {
-
 	private backgroundColor: Color | undefined;
 
 	constructor(
@@ -38,14 +50,25 @@ export class ExceptionWidget extends ZoneWidget {
 		@IThemeService themeService: IThemeService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
-		super(editor, { showFrame: true, showArrow: true, isAccessible: true, frameWidth: 1, className: 'exception-widget-container' });
+		super(editor, {
+			showFrame: true,
+			showArrow: true,
+			isAccessible: true,
+			frameWidth: 1,
+			className: 'exception-widget-container',
+		});
 
 		this.applyTheme(themeService.getColorTheme());
 		this._disposables.add(themeService.onDidColorThemeChange(this.applyTheme.bind(this)));
 
 		this.create();
-		const onDidLayoutChangeScheduler = new RunOnceScheduler(() => this._doLayout(undefined, undefined), 50);
-		this._disposables.add(this.editor.onDidLayoutChange(() => onDidLayoutChangeScheduler.schedule()));
+		const onDidLayoutChangeScheduler = new RunOnceScheduler(
+			() => this._doLayout(undefined, undefined),
+			50
+		);
+		this._disposables.add(
+			this.editor.onDidLayoutChange(() => onDidLayoutChangeScheduler.schedule())
+		);
 		this._disposables.add(onDidLayoutChangeScheduler);
 	}
 
@@ -54,13 +77,15 @@ export class ExceptionWidget extends ZoneWidget {
 		const frameColor = theme.getColor(debugExceptionWidgetBorder);
 		this.style({
 			arrowColor: frameColor,
-			frameColor: frameColor
+			frameColor: frameColor,
 		}); // style() will trigger _applyStyles
 	}
 
 	protected override _applyStyles(): void {
 		if (this.container) {
-			this.container.style.backgroundColor = this.backgroundColor ? this.backgroundColor.toString() : '';
+			this.container.style.backgroundColor = this.backgroundColor
+				? this.backgroundColor.toString()
+				: '';
 		}
 		super._applyStyles();
 	}
@@ -77,14 +102,26 @@ export class ExceptionWidget extends ZoneWidget {
 		dom.append(title, label);
 		const actions = $('.actions');
 		dom.append(title, actions);
-		label.textContent = this.exceptionInfo.id ? nls.localize('exceptionThrownWithId', 'Exception has occurred: {0}', this.exceptionInfo.id) : nls.localize('exceptionThrown', 'Exception has occurred.');
+		label.textContent = this.exceptionInfo.id
+			? nls.localize('exceptionThrownWithId', 'Exception has occurred: {0}', this.exceptionInfo.id)
+			: nls.localize('exceptionThrown', 'Exception has occurred.');
 		let ariaLabel = label.textContent;
 
 		const actionBar = new ActionBar(actions);
-		actionBar.push(new Action('editor.closeExceptionWidget', nls.localize('close', "Close"), ThemeIcon.asClassName(widgetClose), true, async () => {
-			const contribution = this.editor.getContribution<IDebugEditorContribution>(EDITOR_CONTRIBUTION_ID);
-			contribution?.closeExceptionWidget();
-		}), { label: false, icon: true });
+		actionBar.push(
+			new Action(
+				'editor.closeExceptionWidget',
+				nls.localize('close', 'Close'),
+				ThemeIcon.asClassName(widgetClose),
+				true,
+				async () => {
+					const contribution =
+						this.editor.getContribution<IDebugEditorContribution>(EDITOR_CONTRIBUTION_ID);
+					contribution?.closeExceptionWidget();
+				}
+			),
+			{ label: false, icon: true }
+		);
 
 		dom.append(container, title);
 
@@ -98,7 +135,13 @@ export class ExceptionWidget extends ZoneWidget {
 		if (this.exceptionInfo.details && this.exceptionInfo.details.stackTrace) {
 			const stackTrace = $('.stack-trace');
 			const linkDetector = this.instantiationService.createInstance(LinkDetector);
-			const linkedStackTrace = linkDetector.linkify(this.exceptionInfo.details.stackTrace, true, this.debugSession ? this.debugSession.root : undefined, undefined, { type: DebugLinkHoverBehavior.Rich, store: this._disposables });
+			const linkedStackTrace = linkDetector.linkify(
+				this.exceptionInfo.details.stackTrace,
+				true,
+				this.debugSession ? this.debugSession.root : undefined,
+				undefined,
+				{ type: DebugLinkHoverBehavior.Rich, store: this._disposables }
+			);
 			stackTrace.appendChild(linkedStackTrace);
 			dom.append(container, stackTrace);
 			ariaLabel += ', ' + this.exceptionInfo.details.stackTrace;
@@ -106,13 +149,18 @@ export class ExceptionWidget extends ZoneWidget {
 		container.setAttribute('aria-label', ariaLabel);
 	}
 
-	protected override _doLayout(_heightInPixel: number | undefined, _widthInPixel: number | undefined): void {
+	protected override _doLayout(
+		_heightInPixel: number | undefined,
+		_widthInPixel: number | undefined
+	): void {
 		// Reload the height with respect to the exception text content and relayout it to match the line count.
 		this.container!.style.height = 'initial';
 
 		const lineHeight = this.editor.getOption(EditorOption.lineHeight);
 		const arrowHeight = Math.round(lineHeight / 3);
-		const computedLinesNumber = Math.ceil((this.container!.offsetHeight + arrowHeight) / lineHeight);
+		const computedLinesNumber = Math.ceil(
+			(this.container!.offsetHeight + arrowHeight) / lineHeight
+		);
 
 		this._relayout(computedLinesNumber);
 	}

@@ -76,9 +76,11 @@ export class PromptInstructionsAttachmentsCollectionWidget extends Disposable {
 	 * Check if any of the attachments is a prompt file.
 	 */
 	public get hasInstructions(): boolean {
-		return this.references.some((uri) => {
+		return this.references.some(uri => {
 			const model = this.modelService.getModel(uri);
-			const languageId = model ? model.getLanguageId() : this.languageService.guessLanguageIdByFilepathOrFirstLine(uri);
+			const languageId = model
+				? model.getLanguageId()
+				: this.languageService.guessLanguageIdByFilepathOrFirstLine(uri);
 			return languageId === INSTRUCTIONS_LANGUAGE_ID;
 		});
 	}
@@ -89,33 +91,35 @@ export class PromptInstructionsAttachmentsCollectionWidget extends Disposable {
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IModelService private readonly modelService: IModelService,
-		@ILogService private readonly logService: ILogService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
 
 		// when a new attachment model is added, create a new child widget for it
-		this._register(this.model.onAdd((attachment) => {
-			const widget = this.instantiationService.createInstance(
-				InstructionsAttachmentWidget,
-				attachment,
-				this.resourceLabels,
-			);
+		this._register(
+			this.model.onAdd(attachment => {
+				const widget = this.instantiationService.createInstance(
+					InstructionsAttachmentWidget,
+					attachment,
+					this.resourceLabels
+				);
 
-			// handle the child widget disposal event, removing it from the list
-			widget.onDispose(this.handleAttachmentDispose.bind(this, widget));
+				// handle the child widget disposal event, removing it from the list
+				widget.onDispose(this.handleAttachmentDispose.bind(this, widget));
 
-			// register the new child widget
-			this.children.push(widget);
+				// register the new child widget
+				this.children.push(widget);
 
-			// if parent node is present - append the widget to it, otherwise wait
-			// until the `render` method will be called
-			if (this.parentNode) {
-				this.parentNode.appendChild(widget.domNode);
-			}
+				// if parent node is present - append the widget to it, otherwise wait
+				// until the `render` method will be called
+				if (this.parentNode) {
+					this.parentNode.appendChild(widget.domNode);
+				}
 
-			// fire the event to notify about the change in the number of attachments
-			this._onAttachmentsChange.fire();
-		}));
+				// fire the event to notify about the change in the number of attachments
+				this._onAttachmentsChange.fire();
+			})
+		);
 	}
 
 	/**
@@ -130,13 +134,13 @@ export class PromptInstructionsAttachmentsCollectionWidget extends Disposable {
 		let widgetExists = false;
 
 		// filter out disposed child widget from the list
-		this.children = this.children.filter((child) => {
+		this.children = this.children.filter(child => {
 			if (child === widget) {
 				// because we filter out all objects here it might be ok to have multiple of them, but
 				// it also highlights a potential issue in our logic somewhere else, so trace a warning here
 				if (widgetExists) {
 					this.logService.warn(
-						`${logPrefix} is present in the children references list multiple times.`,
+						`${logPrefix} is present in the children references list multiple times.`
 					);
 				}
 
@@ -150,15 +154,11 @@ export class PromptInstructionsAttachmentsCollectionWidget extends Disposable {
 		// no widget was found in the children list, while it might be ok it also
 		// highlights a potential issue in our logic, so trace a warning here
 		if (!widgetExists) {
-			this.logService.warn(
-				`${logPrefix} was disposed, but was not found in the child references.`,
-			);
+			this.logService.warn(`${logPrefix} was disposed, but was not found in the child references.`);
 		}
 
 		if (!this.parentNode) {
-			this.logService.warn(
-				`${logPrefix} no parent node reference found.`,
-			);
+			this.logService.warn(`${logPrefix} no parent node reference found.`);
 		}
 
 		// remove the child widget root node from the DOM
@@ -175,9 +175,7 @@ export class PromptInstructionsAttachmentsCollectionWidget extends Disposable {
 	 *
 	 * Note! this method assumes that the provided `parentNode` is cleared by the caller.
 	 */
-	public render(
-		parentNode: HTMLElement,
-	): this {
+	public render(parentNode: HTMLElement): this {
 		this.parentNode = parentNode;
 
 		for (const widget of this.children) {

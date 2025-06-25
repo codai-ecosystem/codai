@@ -16,7 +16,8 @@ import pluginHeader from 'eslint-plugin-header';
 pluginHeader.rules.header.meta.schema = false;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ignores = fs.readFileSync(path.join(__dirname, '.eslint-ignore'), 'utf8')
+const ignores = fs
+	.readFileSync(path.join(__dirname, '.eslint-ignore'), 'utf8')
 	.toString()
 	.split(/\r\n|\n/)
 	.filter(line => line && !line.startsWith('#'));
@@ -24,28 +25,26 @@ const ignores = fs.readFileSync(path.join(__dirname, '.eslint-ignore'), 'utf8')
 export default tseslint.config(
 	// Global ignores
 	{
-		ignores: [
-			...ignores,
-			'!**/.eslint-plugin-local/**/*'
-		],
+		ignores: [...ignores, '!**/.eslint-plugin-local/**/*'],
 	},
 	// All files (JS and TS)
 	{
 		languageOptions: {
 			parser: tseslint.parser,
-		}, plugins: {
+		},
+		plugins: {
 			// 'local': pluginLocal, // Temporarily disabled
-			'header': pluginHeader,
+			header: pluginHeader,
 		},
 		rules: {
 			'constructor-super': 'warn',
-			'curly': 'warn',
-			'eqeqeq': 'warn',
+			curly: 'warn',
+			eqeqeq: 'warn',
 			'prefer-const': [
 				'warn',
 				{
-					'destructuring': 'all'
-				}
+					destructuring: 'all',
+				},
 			],
 			'no-buffer-constructor': 'warn',
 			'no-caller': 'warn',
@@ -73,10 +72,10 @@ export default tseslint.config(
 				'status',
 				'origin',
 				'orientation',
-				'context'
+				'context',
 			], // non-complete list of globals that are easy to access unintentionally
 			'no-var': 'warn',
-			'semi': 'off',
+			semi: 'off',
 			'local/code-translation-remind': 'warn',
 			'local/code-no-native-private': 'warn',
 			'local/code-parameter-properties-must-have-explicit-accessibility': 'warn',
@@ -87,31 +86,20 @@ export default tseslint.config(
 			'local/code-no-unexternalized-strings': 'warn',
 			'local/code-must-use-super-dispose': 'warn',
 			'local/code-declare-service-brand': 'warn',
-			'local/code-no-deep-import-of-internal': ['error', { '.*Internal': true, 'searchExtTypesInternal': false }],
+			'local/code-no-deep-import-of-internal': [
+				'error',
+				{ '.*Internal': true, searchExtTypesInternal: false },
+			],
 			'local/code-layering': [
 				'warn',
 				{
-					'common': [],
-					'node': [
-						'common'
-					],
-					'browser': [
-						'common'
-					],
-					'electron-sandbox': [
-						'common',
-						'browser'
-					],
-					'electron-utility': [
-						'common',
-						'node'
-					],
-					'electron-main': [
-						'common',
-						'node',
-						'electron-utility'
-					]
-				}
+					common: [],
+					node: ['common'],
+					browser: ['common'],
+					'electron-sandbox': ['common', 'browser'],
+					'electron-utility': ['common', 'node'],
+					'electron-main': ['common', 'node', 'electron-utility'],
+				},
 			],
 			'header/header': [
 				2,
@@ -120,24 +108,22 @@ export default tseslint.config(
 					'---------------------------------------------------------------------------------------------',
 					' *  Copyright (c) Microsoft Corporation. All rights reserved.',
 					' *  Licensed under the MIT License. See License.txt in the project root for license information.',
-					' *--------------------------------------------------------------------------------------------'
-				]
-			]
+					' *--------------------------------------------------------------------------------------------',
+				],
+			],
 		},
 	},
 	// TS
 	{
-		files: [
-			'**/*.ts',
-		],
+		files: ['**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
 			'@stylistic/ts': stylisticTs,
 			'@typescript-eslint': tseslint.plugin,
-			'local': pluginLocal,
-			'jsdoc': pluginJsdoc,
+			local: pluginLocal,
+			jsdoc: pluginJsdoc,
 		},
 		rules: {
 			'@stylistic/ts/semi': 'warn',
@@ -145,18 +131,16 @@ export default tseslint.config(
 			'local/code-no-unused-expressions': [
 				'warn',
 				{
-					'allowTernary': true
-				}
+					allowTernary: true,
+				},
 			],
 			'jsdoc/no-types': 'warn',
-			'local/code-no-static-self-ref': 'warn'
-		}
+			'local/code-no-static-self-ref': 'warn',
+		},
 	},
 	// vscode TS
 	{
-		files: [
-			'src/**/*.ts',
-		],
+		files: ['src/**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
@@ -167,24 +151,20 @@ export default tseslint.config(
 			'@typescript-eslint/naming-convention': [
 				'warn',
 				{
-					'selector': 'class',
-					'format': [
-						'PascalCase'
-					]
-				}
-			]
-		}
+					selector: 'class',
+					format: ['PascalCase'],
+				},
+			],
+		},
 	},
 	// Tests
 	{
-		files: [
-			'**/*.test.ts'
-		],
+		files: ['**/*.test.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
-			'local': pluginLocal,
+			local: pluginLocal,
 		},
 		rules: {
 			'local/code-must-use-super-dispose': 'off',
@@ -195,57 +175,49 @@ export default tseslint.config(
 				'warn',
 				[
 					{
-						'message': 'Expression must be awaited',
-						'functions': [
-							'assertSnapshot',
-							'assertHeap'
-						]
-					}
-				]
-			]
-		}
+						message: 'Expression must be awaited',
+						functions: ['assertSnapshot', 'assertHeap'],
+					},
+				],
+			],
+		},
 	},
 	// vscode tests specific rules
 	{
-		files: [
-			'src/vs/**/*.test.ts'
-		],
+		files: ['src/vs/**/*.test.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
-			'local': pluginLocal,
+			local: pluginLocal,
 		},
 		rules: {
 			'local/code-ensure-no-disposables-leak-in-test': [
 				'warn',
 				{
 					// Files should (only) be removed from the list they adopt the leak detector
-					'exclude': [
+					exclude: [
 						'src/vs/workbench/services/userActivity/test/browser/domActivityTracker.test.ts',
-					]
-				}
-			]
-		}
+					],
+				},
+			],
+		},
 	},
 	// vscode API
 	{
-		files: [
-			'**/vscode.d.ts',
-			'**/vscode.proposed.*.d.ts'
-		],
+		files: ['**/vscode.d.ts', '**/vscode.proposed.*.d.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
-			'local': pluginLocal,
+			local: pluginLocal,
 		},
 		rules: {
 			'no-restricted-syntax': [
 				'warn',
 				{
-					'selector': `TSArrayType > TSUnionType`,
-					'message': 'Use Array<...> for arrays of union types.'
+					selector: `TSArrayType > TSUnionType`,
+					message: 'Use Array<...> for arrays of union types.',
 				},
 			],
 			'local/vscode-dts-create-func': 'warn',
@@ -259,7 +231,7 @@ export default tseslint.config(
 			'local/vscode-dts-provider-naming': [
 				'warn',
 				{
-					'allowed': [
+					allowed: [
 						'FileSystemProvider',
 						'TreeDataProvider',
 						'TestProvider',
@@ -267,18 +239,15 @@ export default tseslint.config(
 						'CustomReadonlyEditorProvider',
 						'TerminalLinkProvider',
 						'AuthenticationProvider',
-						'NotebookContentProvider'
-					]
-				}
+						'NotebookContentProvider',
+					],
+				},
 			],
 			'local/vscode-dts-event-naming': [
 				'warn',
 				{
-					'allowed': [
-						'onCancellationRequested',
-						'event'
-					],
-					'verbs': [
+					allowed: ['onCancellationRequested', 'event'],
+					verbs: [
 						'accept',
 						'change',
 						'close',
@@ -308,17 +277,15 @@ export default tseslint.config(
 						'terminate',
 						'trigger',
 						'unregister',
-						'write'
-					]
-				}
-			]
-		}
+						'write',
+					],
+				},
+			],
+		},
 	},
 	// vscode.d.ts
 	{
-		files: [
-			'**/vscode.d.ts'
-		],
+		files: ['**/vscode.d.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
@@ -328,14 +295,14 @@ export default tseslint.config(
 			'jsdoc/no-multi-asterisks': [
 				'warn',
 				{
-					'allowWhitespace': true
-				}
+					allowWhitespace: true,
+				},
 			],
 			'jsdoc/require-jsdoc': [
 				'warn',
 				{
-					'enableFixer': false,
-					'contexts': [
+					enableFixer: false,
+					contexts: [
 						'TSInterfaceDeclaration',
 						'TSPropertySignature',
 						'TSMethodSignature',
@@ -345,46 +312,41 @@ export default tseslint.config(
 						'PropertyDeclaration',
 						'TSEnumDeclaration',
 						'TSEnumMember',
-						'ExportNamedDeclaration'
-					]
-				}
+						'ExportNamedDeclaration',
+					],
+				},
 			],
 			'jsdoc/check-param-names': [
 				'warn',
 				{
-					'enableFixer': false,
-					'checkDestructured': false
-				}
+					enableFixer: false,
+					checkDestructured: false,
+				},
 			],
-			'jsdoc/require-returns': 'warn'
-		}
+			'jsdoc/require-returns': 'warn',
+		},
 	},
 	// common/browser layer
 	{
-		files: [
-			'src/**/{common,browser}/**/*.ts'
-		],
+		files: ['src/**/{common,browser}/**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
-			'local': pluginLocal,
+			local: pluginLocal,
 		},
 		rules: {
-			'local/code-amd-node-module': 'warn'
-		}
+			'local/code-amd-node-module': 'warn',
+		},
 	},
 	// node/electron layer
 	{
-		files: [
-			'src/*.ts',
-			'src/**/{node,electron-main,electron-utility}/**/*.ts'
-		],
+		files: ['src/*.ts', 'src/**/{node,electron-main,electron-utility}/**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
-			'local': pluginLocal,
+			local: pluginLocal,
 		},
 		rules: {
 			'no-restricted-globals': [
@@ -401,169 +363,197 @@ export default tseslint.config(
 				// Below are globals that are unsupported in ESM
 				'__dirname',
 				'__filename',
-				'require'
-			]
-		}
+				'require',
+			],
+		},
 	},
 	// browser/electron-sandbox layer
 	{
-		files: [
-			'src/**/{browser,electron-sandbox}/**/*.ts'
-		],
+		files: ['src/**/{browser,electron-sandbox}/**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
-			'local': pluginLocal,
+			local: pluginLocal,
 		},
 		rules: {
 			'local/code-no-global-document-listener': 'warn',
 			'no-restricted-syntax': [
 				'warn',
 				{
-					'selector': `NewExpression[callee.object.name='Intl']`,
-					'message': 'Use safeIntl helper instead for safe and lazy use of potentially expensive Intl methods.'
+					selector: `NewExpression[callee.object.name='Intl']`,
+					message:
+						'Use safeIntl helper instead for safe and lazy use of potentially expensive Intl methods.',
 				},
 				{
-					'selector': `BinaryExpression[operator='instanceof'][right.name='MouseEvent']`,
-					'message': 'Use DOM.isMouseEvent() to support multi-window scenarios.'
+					selector: `BinaryExpression[operator='instanceof'][right.name='MouseEvent']`,
+					message: 'Use DOM.isMouseEvent() to support multi-window scenarios.',
 				},
 				{
-					'selector': `BinaryExpression[operator='instanceof'][right.name=/^HTML\\w+/]`,
-					'message': 'Use DOM.isHTMLElement() and related methods to support multi-window scenarios.'
+					selector: `BinaryExpression[operator='instanceof'][right.name=/^HTML\\w+/]`,
+					message: 'Use DOM.isHTMLElement() and related methods to support multi-window scenarios.',
 				},
 				{
-					'selector': `BinaryExpression[operator='instanceof'][right.name=/^SVG\\w+/]`,
-					'message': 'Use DOM.isSVGElement() and related methods to support multi-window scenarios.'
+					selector: `BinaryExpression[operator='instanceof'][right.name=/^SVG\\w+/]`,
+					message: 'Use DOM.isSVGElement() and related methods to support multi-window scenarios.',
 				},
 				{
-					'selector': `BinaryExpression[operator='instanceof'][right.name='KeyboardEvent']`,
-					'message': 'Use DOM.isKeyboardEvent() to support multi-window scenarios.'
+					selector: `BinaryExpression[operator='instanceof'][right.name='KeyboardEvent']`,
+					message: 'Use DOM.isKeyboardEvent() to support multi-window scenarios.',
 				},
 				{
-					'selector': `BinaryExpression[operator='instanceof'][right.name='PointerEvent']`,
-					'message': 'Use DOM.isPointerEvent() to support multi-window scenarios.'
+					selector: `BinaryExpression[operator='instanceof'][right.name='PointerEvent']`,
+					message: 'Use DOM.isPointerEvent() to support multi-window scenarios.',
 				},
 				{
-					'selector': `BinaryExpression[operator='instanceof'][right.name='DragEvent']`,
-					'message': 'Use DOM.isDragEvent() to support multi-window scenarios.'
+					selector: `BinaryExpression[operator='instanceof'][right.name='DragEvent']`,
+					message: 'Use DOM.isDragEvent() to support multi-window scenarios.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='activeElement']`,
-					'message': 'Use <targetWindow>.document.activeElement to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='activeElement']`,
+					message:
+						'Use <targetWindow>.document.activeElement to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='contains']`,
-					'message': 'Use <targetWindow>.document.contains to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='contains']`,
+					message:
+						'Use <targetWindow>.document.contains to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='styleSheets']`,
-					'message': 'Use <targetWindow>.document.styleSheets to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='styleSheets']`,
+					message:
+						'Use <targetWindow>.document.styleSheets to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='fullscreenElement']`,
-					'message': 'Use <targetWindow>.document.fullscreenElement to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='fullscreenElement']`,
+					message:
+						'Use <targetWindow>.document.fullscreenElement to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='body']`,
-					'message': 'Use <targetWindow>.document.body to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='body']`,
+					message:
+						'Use <targetWindow>.document.body to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='addEventListener']`,
-					'message': 'Use <targetWindow>.document.addEventListener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='addEventListener']`,
+					message:
+						'Use <targetWindow>.document.addEventListener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='removeEventListener']`,
-					'message': 'Use <targetWindow>.document.removeEventListener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='removeEventListener']`,
+					message:
+						'Use <targetWindow>.document.removeEventListener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='hasFocus']`,
-					'message': 'Use <targetWindow>.document.hasFocus to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='hasFocus']`,
+					message:
+						'Use <targetWindow>.document.hasFocus to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='head']`,
-					'message': 'Use <targetWindow>.document.head to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='head']`,
+					message:
+						'Use <targetWindow>.document.head to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='exitFullscreen']`,
-					'message': 'Use <targetWindow>.document.exitFullscreen to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='exitFullscreen']`,
+					message:
+						'Use <targetWindow>.document.exitFullscreen to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='getElementById']`,
-					'message': 'Use <targetWindow>.document.getElementById to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='getElementById']`,
+					message:
+						'Use <targetWindow>.document.getElementById to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='getElementsByClassName']`,
-					'message': 'Use <targetWindow>.document.getElementsByClassName to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='getElementsByClassName']`,
+					message:
+						'Use <targetWindow>.document.getElementsByClassName to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='getElementsByName']`,
-					'message': 'Use <targetWindow>.document.getElementsByName to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='getElementsByName']`,
+					message:
+						'Use <targetWindow>.document.getElementsByName to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='getElementsByTagName']`,
-					'message': 'Use <targetWindow>.document.getElementsByTagName to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='getElementsByTagName']`,
+					message:
+						'Use <targetWindow>.document.getElementsByTagName to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='getElementsByTagNameNS']`,
-					'message': 'Use <targetWindow>.document.getElementsByTagNameNS to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='getElementsByTagNameNS']`,
+					message:
+						'Use <targetWindow>.document.getElementsByTagNameNS to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='getSelection']`,
-					'message': 'Use <targetWindow>.document.getSelection to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='getSelection']`,
+					message:
+						'Use <targetWindow>.document.getSelection to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='open']`,
-					'message': 'Use <targetWindow>.document.open to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='open']`,
+					message:
+						'Use <targetWindow>.document.open to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='close']`,
-					'message': 'Use <targetWindow>.document.close to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='close']`,
+					message:
+						'Use <targetWindow>.document.close to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='documentElement']`,
-					'message': 'Use <targetWindow>.document.documentElement to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='documentElement']`,
+					message:
+						'Use <targetWindow>.document.documentElement to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='visibilityState']`,
-					'message': 'Use <targetWindow>.document.visibilityState to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='visibilityState']`,
+					message:
+						'Use <targetWindow>.document.visibilityState to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='querySelector']`,
-					'message': 'Use <targetWindow>.document.querySelector to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='querySelector']`,
+					message:
+						'Use <targetWindow>.document.querySelector to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='querySelectorAll']`,
-					'message': 'Use <targetWindow>.document.querySelectorAll to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='querySelectorAll']`,
+					message:
+						'Use <targetWindow>.document.querySelectorAll to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='elementFromPoint']`,
-					'message': 'Use <targetWindow>.document.elementFromPoint to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='elementFromPoint']`,
+					message:
+						'Use <targetWindow>.document.elementFromPoint to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='elementsFromPoint']`,
-					'message': 'Use <targetWindow>.document.elementsFromPoint to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='elementsFromPoint']`,
+					message:
+						'Use <targetWindow>.document.elementsFromPoint to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='onkeydown']`,
-					'message': 'Use <targetWindow>.document.onkeydown to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='onkeydown']`,
+					message:
+						'Use <targetWindow>.document.onkeydown to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='onkeyup']`,
-					'message': 'Use <targetWindow>.document.onkeyup to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='onkeyup']`,
+					message:
+						'Use <targetWindow>.document.onkeyup to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='onmousedown']`,
-					'message': 'Use <targetWindow>.document.onmousedown to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='onmousedown']`,
+					message:
+						'Use <targetWindow>.document.onmousedown to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='onmouseup']`,
-					'message': 'Use <targetWindow>.document.onmouseup to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					selector: `MemberExpression[object.name='document'][property.name='onmouseup']`,
+					message:
+						'Use <targetWindow>.document.onmouseup to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'selector': `MemberExpression[object.name='document'][property.name='execCommand']`,
-					'message': 'Use <targetWindow>.document.execCommand to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
-				}
+					selector: `MemberExpression[object.name='document'][property.name='execCommand']`,
+					message:
+						'Use <targetWindow>.document.execCommand to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
+				},
 			],
 			'no-restricted-globals': [
 				'warn',
@@ -577,161 +567,196 @@ export default tseslint.config(
 				'orientation',
 				'context',
 				{
-					'name': 'setInterval',
-					'message': 'Use <targetWindow>.setInterval to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'setInterval',
+					message:
+						'Use <targetWindow>.setInterval to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'clearInterval',
-					'message': 'Use <targetWindow>.clearInterval to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'clearInterval',
+					message:
+						'Use <targetWindow>.clearInterval to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'requestAnimationFrame',
-					'message': 'Use <targetWindow>.requestAnimationFrame to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'requestAnimationFrame',
+					message:
+						'Use <targetWindow>.requestAnimationFrame to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'cancelAnimationFrame',
-					'message': 'Use <targetWindow>.cancelAnimationFrame to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'cancelAnimationFrame',
+					message:
+						'Use <targetWindow>.cancelAnimationFrame to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'requestIdleCallback',
-					'message': 'Use <targetWindow>.requestIdleCallback to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'requestIdleCallback',
+					message:
+						'Use <targetWindow>.requestIdleCallback to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'cancelIdleCallback',
-					'message': 'Use <targetWindow>.cancelIdleCallback to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'cancelIdleCallback',
+					message:
+						'Use <targetWindow>.cancelIdleCallback to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'window',
-					'message': 'Use <targetWindow> to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'window',
+					message:
+						'Use <targetWindow> to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'addEventListener',
-					'message': 'Use <targetWindow>.addEventListener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'addEventListener',
+					message:
+						'Use <targetWindow>.addEventListener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'removeEventListener',
-					'message': 'Use <targetWindow>.removeEventListener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'removeEventListener',
+					message:
+						'Use <targetWindow>.removeEventListener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'getComputedStyle',
-					'message': 'Use <targetWindow>.getComputedStyle to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'getComputedStyle',
+					message:
+						'Use <targetWindow>.getComputedStyle to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'focus',
-					'message': 'Use <targetWindow>.focus to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'focus',
+					message:
+						'Use <targetWindow>.focus to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'blur',
-					'message': 'Use <targetWindow>.blur to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'blur',
+					message:
+						'Use <targetWindow>.blur to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'close',
-					'message': 'Use <targetWindow>.close to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'close',
+					message:
+						'Use <targetWindow>.close to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'dispatchEvent',
-					'message': 'Use <targetWindow>.dispatchEvent to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'dispatchEvent',
+					message:
+						'Use <targetWindow>.dispatchEvent to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'getSelection',
-					'message': 'Use <targetWindow>.getSelection to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'getSelection',
+					message:
+						'Use <targetWindow>.getSelection to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'matchMedia',
-					'message': 'Use <targetWindow>.matchMedia to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'matchMedia',
+					message:
+						'Use <targetWindow>.matchMedia to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'open',
-					'message': 'Use <targetWindow>.open to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'open',
+					message:
+						'Use <targetWindow>.open to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'parent',
-					'message': 'Use <targetWindow>.parent to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'parent',
+					message:
+						'Use <targetWindow>.parent to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'postMessage',
-					'message': 'Use <targetWindow>.postMessage to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'postMessage',
+					message:
+						'Use <targetWindow>.postMessage to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'devicePixelRatio',
-					'message': 'Use <targetWindow>.devicePixelRatio to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'devicePixelRatio',
+					message:
+						'Use <targetWindow>.devicePixelRatio to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'frames',
-					'message': 'Use <targetWindow>.frames to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'frames',
+					message:
+						'Use <targetWindow>.frames to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'frameElement',
-					'message': 'Use <targetWindow>.frameElement to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'frameElement',
+					message:
+						'Use <targetWindow>.frameElement to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'innerHeight',
-					'message': 'Use <targetWindow>.innerHeight to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'innerHeight',
+					message:
+						'Use <targetWindow>.innerHeight to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'innerWidth',
-					'message': 'Use <targetWindow>.innerWidth to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'innerWidth',
+					message:
+						'Use <targetWindow>.innerWidth to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'outerHeight',
-					'message': 'Use <targetWindow>.outerHeight to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'outerHeight',
+					message:
+						'Use <targetWindow>.outerHeight to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'outerWidth',
-					'message': 'Use <targetWindow>.outerWidth to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'outerWidth',
+					message:
+						'Use <targetWindow>.outerWidth to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'opener',
-					'message': 'Use <targetWindow>.opener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'opener',
+					message:
+						'Use <targetWindow>.opener to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'origin',
-					'message': 'Use <targetWindow>.origin to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'origin',
+					message:
+						'Use <targetWindow>.origin to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'screen',
-					'message': 'Use <targetWindow>.screen to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'screen',
+					message:
+						'Use <targetWindow>.screen to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'screenLeft',
-					'message': 'Use <targetWindow>.screenLeft to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'screenLeft',
+					message:
+						'Use <targetWindow>.screenLeft to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'screenTop',
-					'message': 'Use <targetWindow>.screenTop to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'screenTop',
+					message:
+						'Use <targetWindow>.screenTop to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'screenX',
-					'message': 'Use <targetWindow>.screenX to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'screenX',
+					message:
+						'Use <targetWindow>.screenX to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'screenY',
-					'message': 'Use <targetWindow>.screenY to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'screenY',
+					message:
+						'Use <targetWindow>.screenY to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'scrollX',
-					'message': 'Use <targetWindow>.scrollX to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'scrollX',
+					message:
+						'Use <targetWindow>.scrollX to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'scrollY',
-					'message': 'Use <targetWindow>.scrollY to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'scrollY',
+					message:
+						'Use <targetWindow>.scrollY to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'top',
-					'message': 'Use <targetWindow>.top to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
+					name: 'top',
+					message:
+						'Use <targetWindow>.top to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
 				},
 				{
-					'name': 'visualViewport',
-					'message': 'Use <targetWindow>.visualViewport to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.'
-				}
-			]
-		}
+					name: 'visualViewport',
+					message:
+						'Use <targetWindow>.visualViewport to support multi-window scenarios. Resolve targetWindow with DOM.getWindow(element) or DOM.getActiveWindow() or use the predefined mainWindow constant.',
+				},
+			],
+		},
 	},
 	// electron-utility layer
 	{
-		files: [
-			'src/**/electron-utility/**/*.ts'
-		],
+		files: ['src/**/electron-utility/**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
@@ -739,29 +764,24 @@ export default tseslint.config(
 			'no-restricted-imports': [
 				'warn',
 				{
-					'paths': [
+					paths: [
 						{
-							'name': 'electron',
-							'allowImportNames': [
-								'net',
-								'system-preferences',
-							],
-							'message': 'Only net and system-preferences are allowed to be imported from electron'
-						}
-					]
-				}
-			]
-		}
+							name: 'electron',
+							allowImportNames: ['net', 'system-preferences'],
+							message: 'Only net and system-preferences are allowed to be imported from electron',
+						},
+					],
+				},
+			],
+		},
 	},
 	{
-		files: [
-			'src/**/*.ts'
-		],
+		files: ['src/**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
-			'local': pluginLocal,
+			local: pluginLocal,
 		},
 		rules: {
 			'local/code-import-patterns': [
@@ -770,16 +790,16 @@ export default tseslint.config(
 					// imports that are allowed in all files of layers:
 					// - browser
 					// - electron-sandbox
-					'when': 'hasBrowser',
-					'allow': []
+					when: 'hasBrowser',
+					allow: [],
 				},
 				{
 					// imports that are allowed in all files of layers:
 					// - node
 					// - electron-utility
 					// - electron-main
-					'when': 'hasNode',
-					'allow': [
+					when: 'hasNode',
+					allow: [
 						'@parcel/watcher',
 						'@vscode/sqlite3',
 						'@vscode/vscode-languagedetection',
@@ -832,26 +852,20 @@ export default tseslint.config(
 						'@xterm/xterm',
 						'yauzl',
 						'yazl',
-						'zlib'
-					]
+						'zlib',
+					],
 				},
 				{
 					// imports that are allowed in all files of layers:
 					// - electron-utility
 					// - electron-main
-					'when': 'hasElectron',
-					'allow': [
-						'electron'
-					]
+					when: 'hasElectron',
+					allow: ['electron'],
 				},
 				{
 					// imports that are allowed in all /test/ files
-					'when': 'test',
-					'allow': [
-						'assert',
-						'sinon',
-						'sinon-test'
-					]
+					when: 'test',
+					allow: ['assert', 'sinon', 'sinon-test'],
 				},
 				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				// !!! Do not relax these rules !!!
@@ -882,98 +896,88 @@ export default tseslint.config(
 				// It is possible to use /~ in the restrictions property even without using it in
 				// the target property by adding a layer property.
 				{
-					'target': 'src/vs/base/~',
-					'restrictions': [
-						'vs/base/~'
-					]
+					target: 'src/vs/base/~',
+					restrictions: ['vs/base/~'],
 				},
 				{
-					'target': 'src/vs/base/parts/*/~',
-					'restrictions': [
-						'vs/base/~',
-						'vs/base/parts/*/~'
-					]
+					target: 'src/vs/base/parts/*/~',
+					restrictions: ['vs/base/~', 'vs/base/parts/*/~'],
 				},
 				{
-					'target': 'src/vs/platform/*/~',
-					'restrictions': [
+					target: 'src/vs/platform/*/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
 						'tas-client-umd', // node module allowed even in /common/
 						'@microsoft/1ds-core-js', // node module allowed even in /common/
 						'@microsoft/1ds-post-js', // node module allowed even in /common/
-						'@xterm/headless' // node module allowed even in /common/
-					]
+						'@xterm/headless', // node module allowed even in /common/
+					],
 				},
 				{
-					'target': 'src/vs/editor/~',
-					'restrictions': [
+					target: 'src/vs/editor/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
 						'vs/editor/~',
-						'@vscode/tree-sitter-wasm' // node module allowed even in /common/
-					]
+						'@vscode/tree-sitter-wasm', // node module allowed even in /common/
+					],
 				},
 				{
-					'target': 'src/vs/editor/contrib/*/~',
-					'restrictions': [
+					target: 'src/vs/editor/contrib/*/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
 						'vs/editor/~',
-						'vs/editor/contrib/*/~'
-					]
+						'vs/editor/contrib/*/~',
+					],
 				},
 				{
-					'target': 'src/vs/editor/standalone/~',
-					'restrictions': [
+					target: 'src/vs/editor/standalone/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
 						'vs/editor/~',
 						'vs/editor/contrib/*/~',
 						'vs/editor/standalone/~',
-						'@vscode/tree-sitter-wasm' // type import
-					]
+						'@vscode/tree-sitter-wasm', // type import
+					],
 				},
 				{
-					'target': 'src/vs/editor/editor.all.ts',
-					'layer': 'browser',
-					'restrictions': [
+					target: 'src/vs/editor/editor.all.ts',
+					layer: 'browser',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
 						'vs/editor/~',
-						'vs/editor/contrib/*/~'
-					]
+						'vs/editor/contrib/*/~',
+					],
 				},
 				{
-					'target': 'src/vs/editor/editor.worker.start.ts',
-					'layer': 'worker',
-					'restrictions': [
-						'vs/base/~',
-						'vs/base/parts/*/~',
-						'vs/platform/*/~',
-						'vs/editor/~'
-					]
+					target: 'src/vs/editor/editor.worker.start.ts',
+					layer: 'worker',
+					restrictions: ['vs/base/~', 'vs/base/parts/*/~', 'vs/platform/*/~', 'vs/editor/~'],
 				},
 				{
-					'target': 'src/vs/editor/{editor.api.ts,editor.main.ts}',
-					'layer': 'browser',
-					'restrictions': [
+					target: 'src/vs/editor/{editor.api.ts,editor.main.ts}',
+					layer: 'browser',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/editor/~',
 						'vs/editor/contrib/*/~',
 						'vs/editor/standalone/~',
-						'vs/editor/*'
-					]
+						'vs/editor/*',
+					],
 				},
 				{
-					'target': 'src/vs/workbench/~',
-					'restrictions': [
+					target: 'src/vs/workbench/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -983,14 +987,14 @@ export default tseslint.config(
 						'vs/workbench/services/*/~',
 						'assert',
 						{
-							'when': 'test',
-							'pattern': 'vs/workbench/contrib/*/~'
-						} // TODO@layers
-					]
+							when: 'test',
+							pattern: 'vs/workbench/contrib/*/~',
+						}, // TODO@layers
+					],
 				},
 				{
-					'target': 'src/vs/workbench/api/~',
-					'restrictions': [
+					target: 'src/vs/workbench/api/~',
+					restrictions: [
 						'vscode',
 						'vs/base/~',
 						'vs/base/parts/*/~',
@@ -1001,12 +1005,12 @@ export default tseslint.config(
 						'vs/workbench/~',
 						'vs/workbench/services/*/~',
 						'vs/workbench/contrib/*/~',
-						'vs/workbench/contrib/terminalContrib/*/~'
-					]
+						'vs/workbench/contrib/terminalContrib/*/~',
+					],
 				},
 				{
-					'target': 'src/vs/workbench/services/*/~',
-					'restrictions': [
+					target: 'src/vs/workbench/services/*/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -1015,22 +1019,22 @@ export default tseslint.config(
 						'vs/workbench/~',
 						'vs/workbench/services/*/~',
 						{
-							'when': 'test',
-							'pattern': 'vs/workbench/contrib/*/~'
+							when: 'test',
+							pattern: 'vs/workbench/contrib/*/~',
 						}, // TODO@layers
 						'tas-client-umd', // node module allowed even in /common/
 						'vscode-textmate', // node module allowed even in /common/
 						'@vscode/vscode-languagedetection', // node module allowed even in /common/
 						'@vscode/tree-sitter-wasm', // type import
 						{
-							'when': 'hasBrowser',
-							'pattern': '@xterm/xterm'
-						} // node module allowed even in /browser/
-					]
+							when: 'hasBrowser',
+							pattern: '@xterm/xterm',
+						}, // node module allowed even in /browser/
+					],
 				},
 				{
-					'target': 'src/vs/workbench/contrib/*/~',
-					'restrictions': [
+					target: 'src/vs/workbench/contrib/*/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -1044,22 +1048,22 @@ export default tseslint.config(
 						'vscode-notebook-renderer', // Type only import
 						'@vscode/tree-sitter-wasm', // type import
 						{
-							'when': 'hasBrowser',
-							'pattern': '@xterm/xterm'
+							when: 'hasBrowser',
+							pattern: '@xterm/xterm',
 						}, // node module allowed even in /browser/
 						{
-							'when': 'hasBrowser',
-							'pattern': '@xterm/addon-*'
+							when: 'hasBrowser',
+							pattern: '@xterm/addon-*',
 						}, // node module allowed even in /browser/
 						{
-							'when': 'hasBrowser',
-							'pattern': 'vscode-textmate'
-						} // node module allowed even in /browser/
-					]
+							when: 'hasBrowser',
+							pattern: 'vscode-textmate',
+						}, // node module allowed even in /browser/
+					],
 				},
 				{
-					'target': 'src/vs/workbench/contrib/terminalContrib/*/~',
-					'restrictions': [
+					target: 'src/vs/workbench/contrib/terminalContrib/*/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -1073,23 +1077,23 @@ export default tseslint.config(
 						'vs/workbench/contrib/terminalContrib/*/~',
 						'vscode-notebook-renderer', // Type only import
 						{
-							'when': 'hasBrowser',
-							'pattern': '@xterm/xterm'
+							when: 'hasBrowser',
+							pattern: '@xterm/xterm',
 						}, // node module allowed even in /browser/
 						{
-							'when': 'hasBrowser',
-							'pattern': '@xterm/addon-*'
+							when: 'hasBrowser',
+							pattern: '@xterm/addon-*',
 						}, // node module allowed even in /browser/
 						{
-							'when': 'hasBrowser',
-							'pattern': 'vscode-textmate'
+							when: 'hasBrowser',
+							pattern: 'vscode-textmate',
 						}, // node module allowed even in /browser/
-						'@xterm/headless' // node module allowed even in /common/ and /browser/
-					]
+						'@xterm/headless', // node module allowed even in /common/ and /browser/
+					],
 				},
 				{
-					'target': 'src/vs/code/~',
-					'restrictions': [
+					target: 'src/vs/code/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -1097,26 +1101,26 @@ export default tseslint.config(
 						'vs/editor/contrib/*/~',
 						'vs/code/~',
 						{
-							'when': 'hasBrowser',
-							'pattern': 'vs/workbench/workbench.web.main.js'
+							when: 'hasBrowser',
+							pattern: 'vs/workbench/workbench.web.main.js',
 						},
 						{
-							'when': 'hasBrowser',
-							'pattern': 'vs/workbench/workbench.web.main.internal.js'
+							when: 'hasBrowser',
+							pattern: 'vs/workbench/workbench.web.main.internal.js',
 						},
 						{
-							'when': 'hasBrowser',
-							'pattern': 'vs/workbench/~'
+							when: 'hasBrowser',
+							pattern: 'vs/workbench/~',
 						},
 						{
-							'when': 'hasBrowser',
-							'pattern': 'vs/workbench/services/*/~'
-						}
-					]
+							when: 'hasBrowser',
+							pattern: 'vs/workbench/services/*/~',
+						},
+					],
 				},
 				{
-					'target': 'src/vs/server/~',
-					'restrictions': [
+					target: 'src/vs/server/~',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -1124,35 +1128,28 @@ export default tseslint.config(
 						'vs/workbench/api/~',
 						'vs/workbench/services/*/~',
 						'vs/workbench/contrib/*/~',
-						'vs/server/~'
-					]
+						'vs/server/~',
+					],
 				},
 				{
-					'target': 'src/vs/workbench/contrib/terminal/terminal.all.ts',
-					'layer': 'browser',
-					'restrictions': [
-						'vs/workbench/contrib/**'
-					]
+					target: 'src/vs/workbench/contrib/terminal/terminal.all.ts',
+					layer: 'browser',
+					restrictions: ['vs/workbench/contrib/**'],
 				},
 				{
-					'target': 'src/vs/workbench/contrib/terminal/terminalContribChatExports.ts',
-					'layer': 'browser',
-					'restrictions': [
-						'vs/workbench/contrib/terminalContrib/*/~'
-					]
+					target: 'src/vs/workbench/contrib/terminal/terminalContribChatExports.ts',
+					layer: 'browser',
+					restrictions: ['vs/workbench/contrib/terminalContrib/*/~'],
 				},
 				{
-					'target': 'src/vs/workbench/contrib/terminal/terminalContribExports.ts',
-					'layer': 'browser',
-					'restrictions': [
-						'vs/platform/*/~',
-						'vs/workbench/contrib/terminalContrib/*/~'
-					]
+					target: 'src/vs/workbench/contrib/terminal/terminalContribExports.ts',
+					layer: 'browser',
+					restrictions: ['vs/platform/*/~', 'vs/workbench/contrib/terminalContrib/*/~'],
 				},
 				{
-					'target': 'src/vs/workbench/workbench.common.main.ts',
-					'layer': 'browser',
-					'restrictions': [
+					target: 'src/vs/workbench/workbench.common.main.ts',
+					layer: 'browser',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -1163,13 +1160,13 @@ export default tseslint.config(
 						'vs/workbench/api/~',
 						'vs/workbench/services/*/~',
 						'vs/workbench/contrib/*/~',
-						'vs/workbench/contrib/terminal/terminal.all.js'
-					]
+						'vs/workbench/contrib/terminal/terminal.all.js',
+					],
 				},
 				{
-					'target': 'src/vs/workbench/workbench.web.main.ts',
-					'layer': 'browser',
-					'restrictions': [
+					target: 'src/vs/workbench/workbench.web.main.ts',
+					layer: 'browser',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -1180,13 +1177,13 @@ export default tseslint.config(
 						'vs/workbench/api/~',
 						'vs/workbench/services/*/~',
 						'vs/workbench/contrib/*/~',
-						'vs/workbench/workbench.common.main.js'
-					]
+						'vs/workbench/workbench.common.main.js',
+					],
 				},
 				{
-					'target': 'src/vs/workbench/workbench.web.main.internal.ts',
-					'layer': 'browser',
-					'restrictions': [
+					target: 'src/vs/workbench/workbench.web.main.internal.ts',
+					layer: 'browser',
+					restrictions: [
 						'vs/base/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -1197,13 +1194,13 @@ export default tseslint.config(
 						'vs/workbench/api/~',
 						'vs/workbench/services/*/~',
 						'vs/workbench/contrib/*/~',
-						'vs/workbench/workbench.common.main.js'
-					]
+						'vs/workbench/workbench.common.main.js',
+					],
 				},
 				{
-					'target': 'src/vs/workbench/workbench.desktop.main.ts',
-					'layer': 'electron-sandbox',
-					'restrictions': [
+					target: 'src/vs/workbench/workbench.desktop.main.ts',
+					layer: 'electron-sandbox',
+					restrictions: [
 						'vs/base/*/~',
 						'vs/base/parts/*/~',
 						'vs/platform/*/~',
@@ -1214,129 +1211,120 @@ export default tseslint.config(
 						'vs/workbench/api/~',
 						'vs/workbench/services/*/~',
 						'vs/workbench/contrib/*/~',
-						'vs/workbench/workbench.common.main.js'
-					]
+						'vs/workbench/workbench.common.main.js',
+					],
 				},
 				{
-					'target': 'src/vs/amdX.ts',
-					'restrictions': [
-						'vs/base/common/*'
-					]
+					target: 'src/vs/amdX.ts',
+					restrictions: ['vs/base/common/*'],
 				},
 				{
-					'target': 'src/vs/{loader.d.ts,monaco.d.ts,nls.ts,nls.messages.ts}',
-					'restrictions': []
+					target: 'src/vs/{loader.d.ts,monaco.d.ts,nls.ts,nls.messages.ts}',
+					restrictions: [],
 				},
 				{
-					'target': 'src/vscode-dts/**',
-					'restrictions': []
+					target: 'src/vscode-dts/**',
+					restrictions: [],
 				},
 				{
-					'target': 'src/vs/nls.ts',
-					'restrictions': [
-						'vs/*'
-					]
+					target: 'src/vs/nls.ts',
+					restrictions: ['vs/*'],
 				},
 				{
-					'target': 'src/{bootstrap-cli.ts,bootstrap-esm.ts,bootstrap-fork.ts,bootstrap-import.ts,bootstrap-meta.ts,bootstrap-node.ts,bootstrap-server.ts,cli.ts,main.ts,server-cli.ts,server-main.ts}',
-					'restrictions': [
+					target:
+						'src/{bootstrap-cli.ts,bootstrap-esm.ts,bootstrap-fork.ts,bootstrap-import.ts,bootstrap-meta.ts,bootstrap-node.ts,bootstrap-server.ts,cli.ts,main.ts,server-cli.ts,server-main.ts}',
+					restrictions: [
 						'vs/**/common/*',
 						'vs/**/node/*',
 						'vs/nls.js',
 						'src/*.js',
-						'*' // node.js
-					]
-				}
-			]
-		}
+						'*', // node.js
+					],
+				},
+			],
+		},
 	},
 	{
-		files: [
-			'test/**/*.ts'
-		],
+		files: ['test/**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
-			'local': pluginLocal,
+			local: pluginLocal,
 		},
 		rules: {
 			'local/code-import-patterns': [
 				'warn',
 				{
-					'target': 'test/smoke/**',
-					'restrictions': [
+					target: 'test/smoke/**',
+					restrictions: [
 						'test/automation',
 						'test/smoke/**',
 						'@vscode/*',
 						'@parcel/*',
 						'@playwright/*',
-						'*' // node modules
-					]
+						'*', // node modules
+					],
 				},
 				{
-					'target': 'test/automation/**',
-					'restrictions': [
+					target: 'test/automation/**',
+					restrictions: [
 						'test/automation/**',
 						'@vscode/*',
 						'@parcel/*',
 						'playwright-core/**',
 						'@playwright/*',
-						'*' // node modules
-					]
+						'*', // node modules
+					],
 				},
 				{
-					'target': 'test/integration/**',
-					'restrictions': [
+					target: 'test/integration/**',
+					restrictions: [
 						'test/integration/**',
 						'@vscode/*',
 						'@parcel/*',
 						'@playwright/*',
-						'*' // node modules
-					]
+						'*', // node modules
+					],
 				},
 				{
-					'target': 'test/monaco/**',
-					'restrictions': [
+					target: 'test/monaco/**',
+					restrictions: [
 						'test/monaco/**',
 						'@vscode/*',
 						'@parcel/*',
 						'@playwright/*',
-						'*' // node modules
-					]
-				}
-			]
-		}
+						'*', // node modules
+					],
+				},
+			],
+		},
 	},
 	{
-		files: [
-			'src/vs/workbench/contrib/notebook/browser/view/renderers/*.ts'
-		],
+		files: ['src/vs/workbench/contrib/notebook/browser/view/renderers/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
 		plugins: {
-			'local': pluginLocal,
+			local: pluginLocal,
 		},
 		rules: {
 			'local/code-no-runtime-import': [
 				'error',
 				{
-					'src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts': [
-						'**/*'
-					]
-				}
+					'src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts': ['**/*'],
+				},
 			],
 			'local/code-limited-top-functions': [
 				'error',
 				{
 					'src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts': [
 						'webviewPreloads',
-						'preloadsScriptStr'
-					]
-				}
-			]
-		}
+						'preloadsScriptStr',
+					],
+				},
+			],
+		},
 	},
 	// Terminal
 	{
@@ -1351,26 +1339,34 @@ export default tseslint.config(
 			'@typescript-eslint/naming-convention': [
 				'warn',
 				// variableLike
-				{ 'selector': 'variable', 'format': ['camelCase', 'UPPER_CASE', 'PascalCase'] },
-				{ 'selector': 'variable', 'filter': '^I.+Service$', 'format': ['PascalCase'], 'prefix': ['I'] },
+				{ selector: 'variable', format: ['camelCase', 'UPPER_CASE', 'PascalCase'] },
+				{ selector: 'variable', filter: '^I.+Service$', format: ['PascalCase'], prefix: ['I'] },
 				// memberLike
-				{ 'selector': 'memberLike', 'modifiers': ['private'], 'format': ['camelCase'], 'leadingUnderscore': 'require' },
-				{ 'selector': 'memberLike', 'modifiers': ['protected'], 'format': ['camelCase'], 'leadingUnderscore': 'require' },
-				{ 'selector': 'enumMember', 'format': ['PascalCase'] },
+				{
+					selector: 'memberLike',
+					modifiers: ['private'],
+					format: ['camelCase'],
+					leadingUnderscore: 'require',
+				},
+				{
+					selector: 'memberLike',
+					modifiers: ['protected'],
+					format: ['camelCase'],
+					leadingUnderscore: 'require',
+				},
+				{ selector: 'enumMember', format: ['PascalCase'] },
 				// memberLike - Allow enum-like objects to use UPPER_CASE
-				{ 'selector': 'method', 'modifiers': ['public'], 'format': ['camelCase', 'UPPER_CASE'] },
+				{ selector: 'method', modifiers: ['public'], format: ['camelCase', 'UPPER_CASE'] },
 				// typeLike
-				{ 'selector': 'typeLike', 'format': ['PascalCase'] },
-				{ 'selector': 'interface', 'format': ['PascalCase'] }
+				{ selector: 'typeLike', format: ['PascalCase'] },
+				{ selector: 'interface', format: ['PascalCase'] },
 			],
-			'comma-dangle': ['warn', 'only-multiline']
-		}
+			'comma-dangle': ['warn', 'only-multiline'],
+		},
 	},
 	// markdown-language-features
 	{
-		files: [
-			'extensions/markdown-language-features/**/*.ts',
-		],
+		files: ['extensions/markdown-language-features/**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 		},
@@ -1381,33 +1377,31 @@ export default tseslint.config(
 			'@typescript-eslint/naming-convention': [
 				'warn',
 				{
-					'selector': 'default',
-					'modifiers': ['private'],
-					'format': null,
-					'leadingUnderscore': 'require'
+					selector: 'default',
+					modifiers: ['private'],
+					format: null,
+					leadingUnderscore: 'require',
 				},
 				{
-					'selector': 'default',
-					'modifiers': ['public'],
-					'format': null,
-					'leadingUnderscore': 'forbid'
-				}
-			]
-		}
+					selector: 'default',
+					modifiers: ['public'],
+					format: null,
+					leadingUnderscore: 'forbid',
+				},
+			],
+		},
 	},
 	// typescript-language-features
 	{
-		files: [
-			'extensions/typescript-language-features/**/*.ts',
-		],
+		files: ['extensions/typescript-language-features/**/*.ts'],
 		languageOptions: {
 			parser: tseslint.parser,
 			parserOptions: {
 				project: [
 					'extensions/typescript-language-features/tsconfig.json',
-					'extensions/typescript-language-features/web/tsconfig.json'
+					'extensions/typescript-language-features/web/tsconfig.json',
 				],
-			}
+			},
 		},
 		plugins: {
 			'@typescript-eslint': tseslint.plugin,
@@ -1415,6 +1409,6 @@ export default tseslint.config(
 		rules: {
 			'@typescript-eslint/prefer-optional-chain': 'warn',
 			'@typescript-eslint/prefer-readonly': 'warn',
-		}
-	},
+		},
+	}
 );

@@ -10,9 +10,14 @@ import { TextLength } from '../../../core/text/textLength.js';
 
 /**
  * The end must be greater than or equal to the start.
-*/
-export function lengthDiff(startLineCount: number, startColumnCount: number, endLineCount: number, endColumnCount: number): Length {
-	return (startLineCount !== endLineCount)
+ */
+export function lengthDiff(
+	startLineCount: number,
+	startColumnCount: number,
+	endLineCount: number,
+	endColumnCount: number
+): Length {
+	return startLineCount !== endLineCount
 		? toLength(endLineCount - startLineCount, endColumnCount)
 		: toLength(0, endColumnCount - startColumnCount);
 }
@@ -20,13 +25,13 @@ export function lengthDiff(startLineCount: number, startColumnCount: number, end
 /**
  * Represents a non-negative length in terms of line and column count.
  * Does not allocate.
-*/
+ */
 export type Length = { _brand: 'Length' };
 
 export const lengthZero = 0 as any as Length;
 
 export function lengthIsZero(length: Length): boolean {
-	return length as any as number === 0;
+	return (length as any as number) === 0;
 }
 
 /*
@@ -57,23 +62,24 @@ export function lengthToObj(length: Length): TextLength {
 }
 
 export function lengthGetLineCount(length: Length): number {
-	return Math.floor(length as any as number / factor);
+	return Math.floor((length as any as number) / factor);
 }
 
 /**
  * Returns the amount of columns of the given length, assuming that it does not span any line.
-*/
+ */
 export function lengthGetColumnCountIfZeroLineCount(length: Length): number {
 	return length as any as number;
 }
-
 
 // [10 lines, 5 cols] + [ 0 lines, 3 cols] = [10 lines, 8 cols]
 // [10 lines, 5 cols] + [20 lines, 3 cols] = [30 lines, 3 cols]
 export function lengthAdd(length1: Length, length2: Length): Length;
 export function lengthAdd(l1: any, l2: any): Length {
 	let r = l1 + l2;
-	if (l2 >= factor) { r = r - (l1 % factor); }
+	if (l2 >= factor) {
+		r = r - (l1 % factor);
+	}
 	return r;
 }
 
@@ -174,7 +180,7 @@ export function lengthOfStringObj(str: string): TextLength {
 
 /**
  * Computes a numeric hash of the given length.
-*/
+ */
 export function lengthHash(length: Length): number {
 	return length as any;
 }

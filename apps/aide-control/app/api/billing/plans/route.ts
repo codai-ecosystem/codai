@@ -20,10 +20,7 @@ async function getPlans(request: NextRequest) {
 		return NextResponse.json({ plans });
 	} catch (error) {
 		console.error('Error fetching billing plans:', error);
-		return NextResponse.json(
-			{ error: 'Failed to fetch billing plans' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to fetch billing plans' }, { status: 500 });
 	}
 }
 
@@ -46,26 +43,17 @@ async function createPlan(request: NextRequest) {
 
 		// Validate price is a positive number
 		if (typeof price !== 'number' || price < 0) {
-			return NextResponse.json(
-				{ error: 'Price must be a positive number' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Price must be a positive number' }, { status: 400 });
 		}
 
 		// Validate interval
 		if (!['month', 'year'].includes(interval)) {
-			return NextResponse.json(
-				{ error: 'Interval must be "month" or "year"' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Interval must be "month" or "year"' }, { status: 400 });
 		}
 
 		// Validate features array
 		if (!Array.isArray(features) || features.length === 0) {
-			return NextResponse.json(
-				{ error: 'Features must be a non-empty array' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Features must be a non-empty array' }, { status: 400 });
 		}
 
 		// Validate each feature
@@ -91,7 +79,7 @@ async function createPlan(request: NextRequest) {
 			description,
 			price,
 			interval,
-			features
+			features,
 		};
 
 		const newPlan = await billingService.createBillingPlan(planData);
@@ -107,25 +95,25 @@ async function createPlan(request: NextRequest) {
 				planId: newPlan.id,
 				name: newPlan.name,
 				price: newPlan.price,
-				interval: newPlan.interval
+				interval: newPlan.interval,
 			},
 			timestamp: new Date(),
 			metadata: {
 				userAgent: request.headers.get('user-agent'),
-				ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-			}
+				ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+			},
 		});
 
-		return NextResponse.json({
-			message: 'Billing plan created successfully',
-			plan: newPlan
-		}, { status: 201 });
+		return NextResponse.json(
+			{
+				message: 'Billing plan created successfully',
+				plan: newPlan,
+			},
+			{ status: 201 }
+		);
 	} catch (error) {
 		console.error('Error creating billing plan:', error);
-		return NextResponse.json(
-			{ error: 'Failed to create billing plan' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to create billing plan' }, { status: 500 });
 	}
 }
 

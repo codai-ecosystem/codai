@@ -4,14 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { EditorAction, IActionOptions, registerEditorAction, ServicesAccessor } from '../../../browser/editorExtensions.js';
+import {
+	EditorAction,
+	IActionOptions,
+	registerEditorAction,
+	ServicesAccessor,
+} from '../../../browser/editorExtensions.js';
 import { ICommand } from '../../../common/editorCommon.js';
 import { EditorContextKeys } from '../../../common/editorContextKeys.js';
 import { MoveCaretCommand } from './moveCaretCommand.js';
 import * as nls from '../../../../nls.js';
 
 class MoveCaretAction extends EditorAction {
-
 	private readonly left: boolean;
 
 	constructor(left: boolean, opts: IActionOptions) {
@@ -42,8 +46,8 @@ class MoveCaretLeftAction extends MoveCaretAction {
 	constructor() {
 		super(true, {
 			id: 'editor.action.moveCarretLeftAction',
-			label: nls.localize2('caret.moveLeft', "Move Selected Text Left"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('caret.moveLeft', 'Move Selected Text Left'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 }
@@ -52,8 +56,8 @@ class MoveCaretRightAction extends MoveCaretAction {
 	constructor() {
 		super(false, {
 			id: 'editor.action.moveCarretRightAction',
-			label: nls.localize2('caret.moveRight', "Move Selected Text Right"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('caret.moveRight', 'Move Selected Text Right'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 }

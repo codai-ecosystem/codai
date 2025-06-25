@@ -43,7 +43,6 @@ Before deploying, you need to set up the following environment variables:
 The Firebase Admin SDK credentials need to be encoded in base64 format:
 
 1. Generate a Firebase Admin SDK private key from the Firebase Console:
-
    - Go to **Project Settings** > **Service Accounts** > **Generate new private key**
    - This will download a JSON file with your credentials
 

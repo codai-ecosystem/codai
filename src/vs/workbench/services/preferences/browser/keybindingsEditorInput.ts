@@ -19,10 +19,13 @@ export interface IKeybindingsEditorSearchOptions {
 	sortByPrecedence: boolean;
 }
 
-const KeybindingsEditorIcon = registerIcon('keybindings-editor-label-icon', Codicon.keyboard, nls.localize('keybindingsEditorLabelIcon', 'Icon of the keybindings editor label.'));
+const KeybindingsEditorIcon = registerIcon(
+	'keybindings-editor-label-icon',
+	Codicon.keyboard,
+	nls.localize('keybindingsEditorLabelIcon', 'Icon of the keybindings editor label.')
+);
 
 export class KeybindingsEditorInput extends EditorInput {
-
 	static readonly ID: string = 'workbench.input.keybindings';
 	readonly keybindingsModel: KeybindingsEditorModel;
 
@@ -41,7 +44,7 @@ export class KeybindingsEditorInput extends EditorInput {
 	}
 
 	override getName(): string {
-		return nls.localize('keybindingsInputName', "Keyboard Shortcuts");
+		return nls.localize('keybindingsInputName', 'Keyboard Shortcuts');
 	}
 
 	override getIcon(): ThemeIcon {

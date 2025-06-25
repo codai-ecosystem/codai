@@ -5,10 +5,16 @@
 
 import { URI } from '../../../base/common/uri.js';
 import { NativeParsedArgs } from './argv.js';
-import { createDecorator, refineServiceDecorator } from '../../instantiation/common/instantiation.js';
+import {
+	createDecorator,
+	refineServiceDecorator,
+} from '../../instantiation/common/instantiation.js';
 
 export const IEnvironmentService = createDecorator<IEnvironmentService>('environmentService');
-export const INativeEnvironmentService = refineServiceDecorator<IEnvironmentService, INativeEnvironmentService>(IEnvironmentService);
+export const INativeEnvironmentService = refineServiceDecorator<
+	IEnvironmentService,
+	INativeEnvironmentService
+>(IEnvironmentService);
 
 export interface IDebugParams {
 	port: number | null;
@@ -33,7 +39,6 @@ export type ExtensionKind = 'ui' | 'workspace' | 'web';
  * service for specific environment.
  */
 export interface IEnvironmentService {
-
 	readonly _serviceBrand: undefined;
 
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -107,7 +112,6 @@ export interface IEnvironmentService {
  * environments (Windows, Linux, macOS) but not e.g. web.
  */
 export interface INativeEnvironmentService extends IEnvironmentService {
-
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//
 	// NOTE: KEEP THIS INTERFACE AS SMALL AS POSSIBLE.

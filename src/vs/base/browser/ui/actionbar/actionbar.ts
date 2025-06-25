@@ -8,10 +8,22 @@ import { StandardKeyboardEvent } from '../../keyboardEvent.js';
 import { ActionViewItem, BaseActionViewItem, IActionViewItemOptions } from './actionViewItems.js';
 import { createInstantHoverDelegate } from '../hover/hoverDelegateFactory.js';
 import { IHoverDelegate } from '../hover/hoverDelegate.js';
-import { ActionRunner, IAction, IActionRunner, IRunEvent, Separator } from '../../../common/actions.js';
+import {
+	ActionRunner,
+	IAction,
+	IActionRunner,
+	IRunEvent,
+	Separator,
+} from '../../../common/actions.js';
 import { Emitter } from '../../../common/event.js';
 import { KeyCode, KeyMod } from '../../../common/keyCodes.js';
-import { Disposable, DisposableMap, DisposableStore, dispose, IDisposable } from '../../../common/lifecycle.js';
+import {
+	Disposable,
+	DisposableMap,
+	DisposableStore,
+	dispose,
+	IDisposable,
+} from '../../../common/lifecycle.js';
 import * as types from '../../../common/types.js';
 import './actionbar.css';
 
@@ -65,7 +77,6 @@ export interface IActionOptions extends IActionViewItemOptions {
 }
 
 export class ActionBar extends Disposable implements IActionRunner {
-
 	private readonly options: IActionBarOptions;
 	private readonly _hoverDelegate: IHoverDelegate;
 
@@ -97,7 +108,9 @@ export class ActionBar extends Disposable implements IActionRunner {
 	private readonly _onDidBlur = this._register(new Emitter<void>());
 	readonly onDidBlur = this._onDidBlur.event;
 
-	private readonly _onDidCancel = this._register(new Emitter<void>({ onWillAddFirstListener: () => this.cancelHasListener = true }));
+	private readonly _onDidCancel = this._register(
+		new Emitter<void>({ onWillAddFirstListener: () => (this.cancelHasListener = true) })
+	);
 	readonly onDidCancel = this._onDidCancel.event;
 	private cancelHasListener = false;
 
@@ -115,7 +128,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 		this._orientation = this.options.orientation ?? ActionsOrientation.HORIZONTAL;
 		this._triggerKeys = {
 			keyDown: this.options.triggerKeys?.keyDown ?? false,
-			keys: this.options.triggerKeys?.keys ?? [KeyCode.Enter, KeyCode.Space]
+			keys: this.options.triggerKeys?.keys ?? [KeyCode.Enter, KeyCode.Space],
 		};
 
 		this._hoverDelegate = options.hoverDelegate ?? this._register(createInstantHoverDelegate());
@@ -151,70 +164,91 @@ export class ActionBar extends Disposable implements IActionRunner {
 				break;
 		}
 
-		this._register(DOM.addDisposableListener(this.domNode, DOM.EventType.KEY_DOWN, e => {
-			const event = new StandardKeyboardEvent(e);
-			let eventHandled = true;
-			const focusedItem = typeof this.focusedItem === 'number' ? this.viewItems[this.focusedItem] : undefined;
+		this._register(
+			DOM.addDisposableListener(this.domNode, DOM.EventType.KEY_DOWN, e => {
+				const event = new StandardKeyboardEvent(e);
+				let eventHandled = true;
+				const focusedItem =
+					typeof this.focusedItem === 'number' ? this.viewItems[this.focusedItem] : undefined;
 
-			if (previousKeys && (event.equals(previousKeys[0]) || event.equals(previousKeys[1]))) {
-				eventHandled = this.focusPrevious();
-			} else if (nextKeys && (event.equals(nextKeys[0]) || event.equals(nextKeys[1]))) {
-				eventHandled = this.focusNext();
-			} else if (event.equals(KeyCode.Escape) && this.cancelHasListener) {
-				this._onDidCancel.fire();
-			} else if (event.equals(KeyCode.Home)) {
-				eventHandled = this.focusFirst();
-			} else if (event.equals(KeyCode.End)) {
-				eventHandled = this.focusLast();
-			} else if (event.equals(KeyCode.Tab) && focusedItem instanceof BaseActionViewItem && focusedItem.trapsArrowNavigation) {
-				// Tab, so forcibly focus next #219199
-				eventHandled = this.focusNext(undefined, true);
-			} else if (this.isTriggerKeyEvent(event)) {
-				// Staying out of the else branch even if not triggered
-				if (this._triggerKeys.keyDown) {
-					this.doTrigger(event);
+				if (previousKeys && (event.equals(previousKeys[0]) || event.equals(previousKeys[1]))) {
+					eventHandled = this.focusPrevious();
+				} else if (nextKeys && (event.equals(nextKeys[0]) || event.equals(nextKeys[1]))) {
+					eventHandled = this.focusNext();
+				} else if (event.equals(KeyCode.Escape) && this.cancelHasListener) {
+					this._onDidCancel.fire();
+				} else if (event.equals(KeyCode.Home)) {
+					eventHandled = this.focusFirst();
+				} else if (event.equals(KeyCode.End)) {
+					eventHandled = this.focusLast();
+				} else if (
+					event.equals(KeyCode.Tab) &&
+					focusedItem instanceof BaseActionViewItem &&
+					focusedItem.trapsArrowNavigation
+				) {
+					// Tab, so forcibly focus next #219199
+					eventHandled = this.focusNext(undefined, true);
+				} else if (this.isTriggerKeyEvent(event)) {
+					// Staying out of the else branch even if not triggered
+					if (this._triggerKeys.keyDown) {
+						this.doTrigger(event);
+					} else {
+						this.triggerKeyDown = true;
+					}
 				} else {
-					this.triggerKeyDown = true;
-				}
-			} else {
-				eventHandled = false;
-			}
-
-			if (eventHandled) {
-				event.preventDefault();
-				event.stopPropagation();
-			}
-		}));
-
-		this._register(DOM.addDisposableListener(this.domNode, DOM.EventType.KEY_UP, e => {
-			const event = new StandardKeyboardEvent(e);
-
-			// Run action on Enter/Space
-			if (this.isTriggerKeyEvent(event)) {
-				if (!this._triggerKeys.keyDown && this.triggerKeyDown) {
-					this.triggerKeyDown = false;
-					this.doTrigger(event);
+					eventHandled = false;
 				}
 
-				event.preventDefault();
-				event.stopPropagation();
-			}
+				if (eventHandled) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
+			})
+		);
 
-			// Recompute focused item
-			else if (event.equals(KeyCode.Tab) || event.equals(KeyMod.Shift | KeyCode.Tab) || event.equals(KeyCode.UpArrow) || event.equals(KeyCode.DownArrow) || event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow)) {
-				this.updateFocusedItem();
-			}
-		}));
+		this._register(
+			DOM.addDisposableListener(this.domNode, DOM.EventType.KEY_UP, e => {
+				const event = new StandardKeyboardEvent(e);
+
+				// Run action on Enter/Space
+				if (this.isTriggerKeyEvent(event)) {
+					if (!this._triggerKeys.keyDown && this.triggerKeyDown) {
+						this.triggerKeyDown = false;
+						this.doTrigger(event);
+					}
+
+					event.preventDefault();
+					event.stopPropagation();
+				}
+
+				// Recompute focused item
+				else if (
+					event.equals(KeyCode.Tab) ||
+					event.equals(KeyMod.Shift | KeyCode.Tab) ||
+					event.equals(KeyCode.UpArrow) ||
+					event.equals(KeyCode.DownArrow) ||
+					event.equals(KeyCode.LeftArrow) ||
+					event.equals(KeyCode.RightArrow)
+				) {
+					this.updateFocusedItem();
+				}
+			})
+		);
 
 		this.focusTracker = this._register(DOM.trackFocus(this.domNode));
-		this._register(this.focusTracker.onDidBlur(() => {
-			if (DOM.getActiveElement() === this.domNode || !DOM.isAncestor(DOM.getActiveElement(), this.domNode)) {
-				this._onDidBlur.fire();
-				this.previouslyFocusedItem = this.focusedItem;
-				this.focusedItem = undefined;
-				this.triggerKeyDown = false;
-			}
-		}));
+		this._register(
+			this.focusTracker.onDidBlur(() => {
+				if (
+					DOM.getActiveElement() === this.domNode ||
+					!DOM.isAncestor(DOM.getActiveElement(), this.domNode)
+				) {
+					this._onDidBlur.fire();
+					this.previouslyFocusedItem = this.focusedItem;
+					this.focusedItem = undefined;
+					this.triggerKeyDown = false;
+				}
+			})
+		);
 
 		this._register(this.focusTracker.onDidFocus(() => this.updateFocusedItem()));
 
@@ -256,7 +290,9 @@ export class ActionBar extends Disposable implements IActionRunner {
 	setFocusable(focusable: boolean): void {
 		this.focusable = focusable;
 		if (this.focusable) {
-			const firstEnabled = this.viewItems.find(vi => vi instanceof BaseActionViewItem && vi.isEnabled());
+			const firstEnabled = this.viewItems.find(
+				vi => vi instanceof BaseActionViewItem && vi.isEnabled()
+			);
 			if (firstEnabled instanceof BaseActionViewItem) {
 				firstEnabled.setFocusable(true);
 			}
@@ -310,7 +346,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 		this._actionRunnerDisposables.clear();
 		this._actionRunnerDisposables.add(this._actionRunner.onDidRun(e => this._onDidRun.fire(e)));
 		this._actionRunnerDisposables.add(this._actionRunner.onWillRun(e => this._onWillRun.fire(e)));
-		this.viewItems.forEach(item => item.actionRunner = actionRunner);
+		this.viewItems.forEach(item => (item.actionRunner = actionRunner));
 	}
 
 	getContainer(): HTMLElement {
@@ -322,7 +358,6 @@ export class ActionBar extends Disposable implements IActionRunner {
 	}
 
 	getAction(indexOrElement: number | HTMLElement): IAction | undefined {
-
 		// by index
 		if (typeof indexOrElement === 'number') {
 			return this.viewItems[indexOrElement]?.action;
@@ -358,7 +393,11 @@ export class ActionBar extends Disposable implements IActionRunner {
 
 			let item: IActionViewItem | undefined;
 
-			const viewItemOptions: IActionViewItemOptions = { hoverDelegate: this._hoverDelegate, ...options, isTabList: this.options.ariaRole === 'tablist' };
+			const viewItemOptions: IActionViewItemOptions = {
+				hoverDelegate: this._hoverDelegate,
+				...options,
+				isTabList: this.options.ariaRole === 'tablist',
+			};
 			if (this.options.actionViewItemProvider) {
 				item = this.options.actionViewItemProvider(action, viewItemOptions);
 			}
@@ -369,9 +408,16 @@ export class ActionBar extends Disposable implements IActionRunner {
 
 			// Prevent native context menu on actions
 			if (!this.options.allowContextMenu) {
-				this.viewItemDisposables.set(item, DOM.addDisposableListener(actionViewItemElement, DOM.EventType.CONTEXT_MENU, (e: DOM.EventLike) => {
-					DOM.EventHelper.stop(e, true);
-				}));
+				this.viewItemDisposables.set(
+					item,
+					DOM.addDisposableListener(
+						actionViewItemElement,
+						DOM.EventType.CONTEXT_MENU,
+						(e: DOM.EventLike) => {
+							DOM.EventHelper.stop(e, true);
+						}
+					)
+				);
 			}
 
 			item.actionRunner = this._actionRunner;
@@ -496,15 +542,21 @@ export class ActionBar extends Disposable implements IActionRunner {
 		const startIndex = this.focusedItem;
 		let item: IActionViewItem;
 		do {
-
-			if (!forceLoop && this.options.preventLoopNavigation && this.focusedItem + 1 >= this.viewItems.length) {
+			if (
+				!forceLoop &&
+				this.options.preventLoopNavigation &&
+				this.focusedItem + 1 >= this.viewItems.length
+			) {
 				this.focusedItem = startIndex;
 				return false;
 			}
 
 			this.focusedItem = (this.focusedItem + 1) % this.viewItems.length;
 			item = this.viewItems[this.focusedItem];
-		} while (this.focusedItem !== startIndex && ((this.options.focusOnlyEnabledItems && !item.isEnabled()) || item.action.id === Separator.ID));
+		} while (
+			this.focusedItem !== startIndex &&
+			((this.options.focusOnlyEnabledItems && !item.isEnabled()) || item.action.id === Separator.ID)
+		);
 
 		this.updateFocus(undefined, undefined, forceFocus);
 		return true;
@@ -531,22 +583,32 @@ export class ActionBar extends Disposable implements IActionRunner {
 				this.focusedItem = this.viewItems.length - 1;
 			}
 			item = this.viewItems[this.focusedItem];
-		} while (this.focusedItem !== startIndex && ((this.options.focusOnlyEnabledItems && !item.isEnabled()) || item.action.id === Separator.ID));
-
+		} while (
+			this.focusedItem !== startIndex &&
+			((this.options.focusOnlyEnabledItems && !item.isEnabled()) || item.action.id === Separator.ID)
+		);
 
 		this.updateFocus(true);
 		return true;
 	}
 
-	protected updateFocus(fromRight?: boolean, preventScroll?: boolean, forceFocus: boolean = false): void {
+	protected updateFocus(
+		fromRight?: boolean,
+		preventScroll?: boolean,
+		forceFocus: boolean = false
+	): void {
 		if (typeof this.focusedItem === 'undefined') {
 			this.actionsList.focus({ preventScroll });
 		}
 
-		if (this.previouslyFocusedItem !== undefined && this.previouslyFocusedItem !== this.focusedItem) {
+		if (
+			this.previouslyFocusedItem !== undefined &&
+			this.previouslyFocusedItem !== this.focusedItem
+		) {
 			this.viewItems[this.previouslyFocusedItem]?.blur();
 		}
-		const actionViewItem = this.focusedItem !== undefined ? this.viewItems[this.focusedItem] : undefined;
+		const actionViewItem =
+			this.focusedItem !== undefined ? this.viewItems[this.focusedItem] : undefined;
 		if (actionViewItem) {
 			let focusItem = true;
 
@@ -554,7 +616,11 @@ export class ActionBar extends Disposable implements IActionRunner {
 				focusItem = false;
 			}
 
-			if (this.options.focusOnlyEnabledItems && types.isFunction(actionViewItem.isEnabled) && !actionViewItem.isEnabled()) {
+			if (
+				this.options.focusOnlyEnabledItems &&
+				types.isFunction(actionViewItem.isEnabled) &&
+				!actionViewItem.isEnabled()
+			) {
 				focusItem = false;
 			}
 
@@ -582,7 +648,10 @@ export class ActionBar extends Disposable implements IActionRunner {
 		// trigger action
 		const actionViewItem = this.viewItems[this.focusedItem];
 		if (actionViewItem instanceof BaseActionViewItem) {
-			const context = (actionViewItem._context === null || actionViewItem._context === undefined) ? event : actionViewItem._context;
+			const context =
+				actionViewItem._context === null || actionViewItem._context === undefined
+					? event
+					: actionViewItem._context;
 			this.run(actionViewItem._action, context);
 		}
 	}

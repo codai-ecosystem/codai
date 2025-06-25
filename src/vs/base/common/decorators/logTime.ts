@@ -62,19 +62,14 @@ type TObjectWithLogFunction<T extends object> = T & { logTime: TLogFunction };
  * ```
  */
 export function logTime<TObject extends object>() {
-	return function logExecutionTimeDecorator<
-		TObject extends TObjectWithLogFunction<object>,
-	>(
+	return function logExecutionTimeDecorator<TObject extends TObjectWithLogFunction<object>>(
 		_proto: TObject,
 		methodName: string,
-		descriptor: TypedPropertyDescriptor<(...args: any[]) => any | Promise<any>>,
+		descriptor: TypedPropertyDescriptor<(...args: any[]) => any | Promise<any>>
 	) {
 		const originalMethod = descriptor.value;
 
-		assertDefined(
-			originalMethod,
-			`Method '${methodName}' is not defined.`,
-		);
+		assertDefined(originalMethod, `Method '${methodName}' is not defined.`);
 
 		// override the decorated method with the one that logs
 		// a timing message after the original method finishes execution
@@ -85,7 +80,7 @@ export function logTime<TObject extends object>() {
 			return logExecutionTime(
 				`${this.constructor.name}.${methodName}`,
 				originalMethod.bind(this, ...args),
-				this.logTime.bind(this),
+				this.logTime.bind(this)
 			);
 		};
 
@@ -125,7 +120,7 @@ export function logTime<TObject extends object>() {
 export const logExecutionTime = <T>(
 	blockName: string,
 	callback: () => T | Promise<T>,
-	logger: TLogFunction,
+	logger: TLogFunction
 ): ReturnType<typeof callback> => {
 	const startTime = performance.now();
 	const result = callback();
@@ -133,24 +128,16 @@ export const logExecutionTime = <T>(
 
 	// handle asynchronous decorated methods
 	if (result instanceof Promise) {
-		return result.then((resolved) => {
+		return result.then(resolved => {
 			const asyncTimeMs = performance.now() - startTime;
 
-			log(
-				blockName,
-				asyncTimeMs,
-				logger,
-			);
+			log(blockName, asyncTimeMs, logger);
 			return resolved;
 		});
 	}
 
 	// handle synchronous decorated methods
-	log(
-		blockName,
-		syncTimeMs,
-		logger,
-	);
+	log(blockName, syncTimeMs, logger);
 
 	return result;
 };
@@ -159,13 +146,9 @@ export const logExecutionTime = <T>(
  * Internal helper to log the timing message with
  * provided details and logger.
  */
-const log = (
-	methodName: string,
-	timeMs: number,
-	logger: TLogFunction,
-): void => {
+const log = (methodName: string, timeMs: number, logger: TLogFunction): void => {
 	return logger(
 		// allow-any-unicode-next-line
-		`[⏱][${methodName}] took ${timeMs.toFixed(2)} ms`,
+		`[⏱][${methodName}] took ${timeMs.toFixed(2)} ms`
 	);
 };

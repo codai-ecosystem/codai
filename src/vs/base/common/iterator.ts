@@ -6,9 +6,12 @@
 import { isIterable } from './types.js';
 
 export namespace Iterable {
-
 	export function is<T = any>(thing: unknown): thing is Iterable<T> {
-		return !!thing && typeof thing === 'object' && typeof (thing as Iterable<T>)[Symbol.iterator] === 'function';
+		return (
+			!!thing &&
+			typeof thing === 'object' &&
+			typeof (thing as Iterable<T>)[Symbol.iterator] === 'function'
+		);
 	}
 
 	const _empty: Iterable<any> = Object.freeze([]);
@@ -56,7 +59,10 @@ export namespace Iterable {
 		return false;
 	}
 
-	export function find<T, R extends T>(iterable: Iterable<T>, predicate: (t: T) => t is R): R | undefined;
+	export function find<T, R extends T>(
+		iterable: Iterable<T>,
+		predicate: (t: T) => t is R
+	): R | undefined;
 	export function find<T>(iterable: Iterable<T>, predicate: (t: T) => boolean): T | undefined;
 	export function find<T>(iterable: Iterable<T>, predicate: (t: T) => boolean): T | undefined {
 		for (const element of iterable) {
@@ -68,7 +74,10 @@ export namespace Iterable {
 		return undefined;
 	}
 
-	export function filter<T, R extends T>(iterable: Iterable<T>, predicate: (t: T) => t is R): Iterable<R>;
+	export function filter<T, R extends T>(
+		iterable: Iterable<T>,
+		predicate: (t: T) => t is R
+	): Iterable<R>;
 	export function filter<T>(iterable: Iterable<T>, predicate: (t: T) => boolean): Iterable<T>;
 	export function* filter<T>(iterable: Iterable<T>, predicate: (t: T) => boolean): Iterable<T> {
 		for (const element of iterable) {
@@ -85,7 +94,10 @@ export namespace Iterable {
 		}
 	}
 
-	export function* flatMap<T, R>(iterable: Iterable<T>, fn: (t: T, index: number) => Iterable<R>): Iterable<R> {
+	export function* flatMap<T, R>(
+		iterable: Iterable<T>,
+		fn: (t: T, index: number) => Iterable<R>
+	): Iterable<R> {
 		let index = 0;
 		for (const element of iterable) {
 			yield* fn(element, index++);
@@ -102,7 +114,11 @@ export namespace Iterable {
 		}
 	}
 
-	export function reduce<T, R>(iterable: Iterable<T>, reducer: (previousValue: R, currentValue: T) => R, initialValue: R): R {
+	export function reduce<T, R>(
+		iterable: Iterable<T>,
+		reducer: (previousValue: R, currentValue: T) => R,
+		initialValue: R
+	): R {
 		let value = initialValue;
 		for (const element of iterable) {
 			value = reducer(value, element);
@@ -144,7 +160,10 @@ export namespace Iterable {
 	 * Consumes `atMost` elements from iterable and returns the consumed elements,
 	 * and an iterable for the rest of the elements.
 	 */
-	export function consume<T>(iterable: Iterable<T>, atMost: number = Number.POSITIVE_INFINITY): [T[], Iterable<T>] {
+	export function consume<T>(
+		iterable: Iterable<T>,
+		atMost: number = Number.POSITIVE_INFINITY
+	): [T[], Iterable<T>] {
 		const consumed: T[] = [];
 
 		if (atMost === 0) {
@@ -163,7 +182,14 @@ export namespace Iterable {
 			consumed.push(next.value);
 		}
 
-		return [consumed, { [Symbol.iterator]() { return iterator; } }];
+		return [
+			consumed,
+			{
+				[Symbol.iterator]() {
+					return iterator;
+				},
+			},
+		];
 	}
 
 	export async function asyncToArray<T>(iterable: AsyncIterable<T>): Promise<T[]> {

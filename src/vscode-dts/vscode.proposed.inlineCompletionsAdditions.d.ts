@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// https://github.com/microsoft/vscode/issues/124024 @hediet
 
 	export namespace languages {
@@ -20,14 +19,18 @@ declare module 'vscode' {
 		 * @param metadata Metadata about the provider.
 		 * @return A {@link Disposable} that unregisters this provider when being disposed.
 		 */
-		export function registerInlineCompletionItemProvider(selector: DocumentSelector, provider: InlineCompletionItemProvider, metadata: InlineCompletionItemProviderMetadata): Disposable;
+		export function registerInlineCompletionItemProvider(
+			selector: DocumentSelector,
+			provider: InlineCompletionItemProvider,
+			metadata: InlineCompletionItemProviderMetadata
+		): Disposable;
 	}
 
 	export interface InlineCompletionItem {
 		/**
 		 * If set to `true`, unopened closing brackets are removed and unclosed opening brackets are closed.
 		 * Defaults to `false`.
-		*/
+		 */
 		completeBracketPairs?: boolean;
 
 		warning?: InlineCompletionWarning;
@@ -76,28 +79,42 @@ declare module 'vscode' {
 		 * @param updatedInsertText The actual insert text (after brackets were fixed).
 		 */
 		// eslint-disable-next-line local/vscode-dts-provider-naming
-		handleDidShowCompletionItem?(completionItem: InlineCompletionItem, updatedInsertText: string): void;
+		handleDidShowCompletionItem?(
+			completionItem: InlineCompletionItem,
+			updatedInsertText: string
+		): void;
 
 		/**
 		 * Is called when an inline completion item was accepted partially.
 		 * @param info Additional info for the partial accepted trigger.
 		 */
 		// eslint-disable-next-line local/vscode-dts-provider-naming
-		handleDidPartiallyAcceptCompletionItem?(completionItem: InlineCompletionItem, info: PartialAcceptInfo): void;
+		handleDidPartiallyAcceptCompletionItem?(
+			completionItem: InlineCompletionItem,
+			info: PartialAcceptInfo
+		): void;
 
 		/**
 		 * Is called when an inline completion item is no longer being used.
 		 * Provides a reason of why it is not used anymore.
-		*/
+		 */
 		// eslint-disable-next-line local/vscode-dts-provider-naming
-		handleEndOfLifetime?(completionItem: InlineCompletionItem, reason: InlineCompletionEndOfLifeReason): void;
+		handleEndOfLifetime?(
+			completionItem: InlineCompletionItem,
+			reason: InlineCompletionEndOfLifeReason
+		): void;
 
 		onDidChange?: Event<void>;
 
 		// #region Deprecated methods
 
 		/** @deprecated */
-		provideInlineEditsForRange?(document: TextDocument, range: Range, context: InlineCompletionContext, token: CancellationToken): ProviderResult<InlineCompletionItem[] | InlineCompletionList>;
+		provideInlineEditsForRange?(
+			document: TextDocument,
+			range: Range,
+			context: InlineCompletionContext,
+			token: CancellationToken
+		): ProviderResult<InlineCompletionItem[] | InlineCompletionList>;
 
 		/**
 		 * Is called when an inline completion item was accepted partially.
@@ -105,12 +122,15 @@ declare module 'vscode' {
 		 * @deprecated Use `handleDidPartiallyAcceptCompletionItem` with `PartialAcceptInfo` instead.
 		 */
 		// eslint-disable-next-line local/vscode-dts-provider-naming
-		handleDidPartiallyAcceptCompletionItem?(completionItem: InlineCompletionItem, acceptedLength: number): void;
+		handleDidPartiallyAcceptCompletionItem?(
+			completionItem: InlineCompletionItem,
+			acceptedLength: number
+		): void;
 
 		/**
 		 * @param completionItem The completion item that was rejected.
 		 * @deprecated Use {@link handleEndOfLifetime} instead.
-		*/
+		 */
 		// eslint-disable-next-line local/vscode-dts-provider-naming
 		handleDidRejectCompletionItem?(completionItem: InlineCompletionItem): void;
 
@@ -123,15 +143,18 @@ declare module 'vscode' {
 		Ignored = 2,
 	}
 
-	export type InlineCompletionEndOfLifeReason = {
-		kind: InlineCompletionEndOfLifeReasonKind.Accepted; // User did an explicit action to accept
-	} | {
-		kind: InlineCompletionEndOfLifeReasonKind.Rejected; // User did an explicit action to reject
-	} | {
-		kind: InlineCompletionEndOfLifeReasonKind.Ignored;
-		supersededBy?: InlineCompletionItem;
-		userTypingDisagreed: boolean;
-	};
+	export type InlineCompletionEndOfLifeReason =
+		| {
+				kind: InlineCompletionEndOfLifeReasonKind.Accepted; // User did an explicit action to accept
+		  }
+		| {
+				kind: InlineCompletionEndOfLifeReasonKind.Rejected; // User did an explicit action to reject
+		  }
+		| {
+				kind: InlineCompletionEndOfLifeReasonKind.Ignored;
+				supersededBy?: InlineCompletionItem;
+				userTypingDisagreed: boolean;
+		  };
 
 	export interface InlineCompletionContext {
 		readonly userPrompt?: string;
@@ -143,7 +166,7 @@ declare module 'vscode' {
 		kind: PartialAcceptTriggerKind;
 		/**
 		 * The length of the substring of the provided inline completion text that was accepted already.
-		*/
+		 */
 		acceptedLength: number;
 	}
 

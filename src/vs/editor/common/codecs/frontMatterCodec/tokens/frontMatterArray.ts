@@ -10,11 +10,10 @@ import { FrontMatterValueToken, type TValueTypeName } from './frontMatterToken.j
 /**
  * Token that represents an `array` value in a Front Matter header.
  */
-export class FrontMatterArray extends FrontMatterValueToken<'array', [
-	LeftBracket,
-	...FrontMatterValueToken<TValueTypeName>[],
-	RightBracket,
-]> {
+export class FrontMatterArray extends FrontMatterValueToken<
+	'array',
+	[LeftBracket, ...FrontMatterValueToken<TValueTypeName>[], RightBracket]
+> {
 	/**
 	 * Name of the `array` value type.
 	 */

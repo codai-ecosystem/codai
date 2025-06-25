@@ -22,11 +22,14 @@ suite('Assert', () => {
 			ok();
 		});
 
-		assert.throws(function () {
-			ok(null, 'Foo Bar');
-		}, function (e: Error) {
-			return e.message.indexOf('Foo Bar') >= 0;
-		});
+		assert.throws(
+			function () {
+				ok(null, 'Foo Bar');
+			},
+			function (e: Error) {
+				return e.message.indexOf('Foo Bar') >= 0;
+			}
+		);
 
 		ok(true);
 		ok('foo');
@@ -39,21 +42,14 @@ suite('Assert', () => {
 			const originalError = new Error('Oh no!');
 
 			try {
-				commonAssert(
-					false,
-					originalError,
-				);
+				commonAssert(false, originalError);
 			} catch (thrownError) {
-				assert.strictEqual(
-					thrownError,
-					originalError,
-					'Must throw the provided error instance.',
-				);
+				assert.strictEqual(thrownError, originalError, 'Must throw the provided error instance.');
 
 				assert.strictEqual(
 					thrownError.message,
 					'Oh no!',
-					'Must throw the provided error instance.',
+					'Must throw the provided error instance.'
 				);
 			}
 		});
@@ -62,16 +58,9 @@ suite('Assert', () => {
 			const originalError = new CancellationError();
 
 			try {
-				commonAssert(
-					false,
-					originalError,
-				);
+				commonAssert(false, originalError);
 			} catch (thrownError) {
-				assert.strictEqual(
-					thrownError,
-					originalError,
-					'Must throw the provided error instance.',
-				);
+				assert.strictEqual(thrownError, originalError, 'Must throw the provided error instance.');
 			}
 		});
 
@@ -79,21 +68,14 @@ suite('Assert', () => {
 			const originalError = new ReadonlyError('World');
 
 			try {
-				commonAssert(
-					false,
-					originalError,
-				);
+				commonAssert(false, originalError);
 			} catch (thrownError) {
-				assert.strictEqual(
-					thrownError,
-					originalError,
-					'Must throw the provided error instance.',
-				);
+				assert.strictEqual(thrownError, originalError, 'Must throw the provided error instance.');
 
 				assert.strictEqual(
 					thrownError.message,
 					'World is read-only and cannot be changed',
-					'Must throw the provided error instance.',
+					'Must throw the provided error instance.'
 				);
 			}
 		});

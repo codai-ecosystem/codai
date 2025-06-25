@@ -36,7 +36,11 @@ export { useConversation } from './hooks/useConversation';
 export { useTaskProgress } from './hooks/useTaskProgress';
 
 // Types
-export type { ConversationViewProps, MessageBubbleProps, MemoryGraphVisualizationProps } from './types';
+export type {
+	ConversationViewProps,
+	MessageBubbleProps,
+	MemoryGraphVisualizationProps,
+} from './types';
 
 // Styles
 import './styles/globals.css';

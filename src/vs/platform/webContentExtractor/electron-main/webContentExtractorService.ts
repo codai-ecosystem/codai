@@ -32,7 +32,7 @@ export class NativeWebContentExtractorService implements IWebContentExtractorSer
 		if (uris.length === 0) {
 			return Promise.resolve([]);
 		}
-		return Promise.all(uris.map((uri) => this._limiter.queue(() => this.doExtract(uri))));
+		return Promise.all(uris.map(uri => this._limiter.queue(() => this.doExtract(uri))));
 	}
 
 	async doExtract(uri: URI): Promise<string> {
@@ -53,13 +53,15 @@ export class NativeWebContentExtractorService implements IWebContentExtractorSer
 				javascript: true,
 				offscreen: true,
 				sandbox: true,
-				webgl: false
-			}
+				webgl: false,
+			},
 		});
 		try {
 			await win.loadURL(uri.toString(true));
 			win.webContents.debugger.attach('1.1');
-			const result: { nodes: AXNode[] } = await win.webContents.debugger.sendCommand('Accessibility.getFullAXTree');
+			const result: { nodes: AXNode[] } = await win.webContents.debugger.sendCommand(
+				'Accessibility.getFullAXTree'
+			);
 			const str = convertAXTreeToMarkdown(uri, result.nodes);
 			this._webContentsCache.set(uri, { content: str, timestamp: Date.now() });
 			return str;

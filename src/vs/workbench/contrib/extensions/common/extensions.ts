@@ -6,12 +6,29 @@
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { Event } from '../../../../base/common/event.js';
 import { IPager } from '../../../../base/common/paging.js';
-import { IQueryOptions, ILocalExtension, IGalleryExtension, IExtensionIdentifier, IExtensionInfo, IExtensionQueryOptions, IDeprecationInfo, InstallExtensionResult, InstallOptions } from '../../../../platform/extensionManagement/common/extensionManagement.js';
-import { EnablementState, IExtensionManagementServer, IResourceExtension } from '../../../services/extensionManagement/common/extensionManagement.js';
+import {
+	IQueryOptions,
+	ILocalExtension,
+	IGalleryExtension,
+	IExtensionIdentifier,
+	IExtensionInfo,
+	IExtensionQueryOptions,
+	IDeprecationInfo,
+	InstallExtensionResult,
+	InstallOptions,
+} from '../../../../platform/extensionManagement/common/extensionManagement.js';
+import {
+	EnablementState,
+	IExtensionManagementServer,
+	IResourceExtension,
+} from '../../../services/extensionManagement/common/extensionManagement.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
 import { areSameExtensions } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';
-import { IExtensionManifest, ExtensionType } from '../../../../platform/extensions/common/extensions.js';
+import {
+	IExtensionManifest,
+	ExtensionType,
+} from '../../../../platform/extensions/common/extensions.js';
 import { URI } from '../../../../base/common/uri.js';
 import { IView, IViewPaneContainer } from '../../../common/views.js';
 import { RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
@@ -24,7 +41,7 @@ import { IMarkdownString } from '../../../../base/common/htmlContent.js';
 import { localize2 } from '../../../../nls.js';
 
 export const VIEWLET_ID = 'workbench.view.extensions';
-export const EXTENSIONS_CATEGORY = localize2('extensions', "Extensions");
+export const EXTENSIONS_CATEGORY = localize2('extensions', 'Extensions');
 
 export interface IExtensionsViewPaneContainer extends IViewPaneContainer {
 	readonly searchValue: string | undefined;
@@ -40,7 +57,7 @@ export const enum ExtensionState {
 	Installing,
 	Installed,
 	Uninstalling,
-	Uninstalled
+	Uninstalled,
 }
 
 export const enum ExtensionRuntimeActionType {
@@ -109,7 +126,9 @@ export interface IExtension {
 	readonly deprecationInfo?: IDeprecationInfo;
 }
 
-export const IExtensionsWorkbenchService = createDecorator<IExtensionsWorkbenchService>('extensionsWorkbenchService');
+export const IExtensionsWorkbenchService = createDecorator<IExtensionsWorkbenchService>(
+	'extensionsWorkbenchService'
+);
 
 export interface InstallExtensionOptions extends InstallOptions {
 	version?: string;
@@ -137,21 +156,47 @@ export interface IExtensionsWorkbenchService {
 	queryGallery(token: CancellationToken): Promise<IPager<IExtension>>;
 	queryGallery(options: IQueryOptions, token: CancellationToken): Promise<IPager<IExtension>>;
 	getExtensions(extensionInfos: IExtensionInfo[], token: CancellationToken): Promise<IExtension[]>;
-	getExtensions(extensionInfos: IExtensionInfo[], options: IExtensionQueryOptions, token: CancellationToken): Promise<IExtension[]>;
+	getExtensions(
+		extensionInfos: IExtensionInfo[],
+		options: IExtensionQueryOptions,
+		token: CancellationToken
+	): Promise<IExtension[]>;
 	getResourceExtensions(locations: URI[], isWorkspaceScoped: boolean): Promise<IExtension[]>;
 	canInstall(extension: IExtension): Promise<true | IMarkdownString>;
-	install(id: string, installOptions?: InstallExtensionOptions, progressLocation?: ProgressLocation | string): Promise<IExtension>;
-	install(vsix: URI, installOptions?: InstallExtensionOptions, progressLocation?: ProgressLocation | string): Promise<IExtension>;
-	install(extension: IExtension, installOptions?: InstallExtensionOptions, progressLocation?: ProgressLocation | string): Promise<IExtension>;
-	installInServer(extension: IExtension, server: IExtensionManagementServer, installOptions?: InstallOptions): Promise<void>;
+	install(
+		id: string,
+		installOptions?: InstallExtensionOptions,
+		progressLocation?: ProgressLocation | string
+	): Promise<IExtension>;
+	install(
+		vsix: URI,
+		installOptions?: InstallExtensionOptions,
+		progressLocation?: ProgressLocation | string
+	): Promise<IExtension>;
+	install(
+		extension: IExtension,
+		installOptions?: InstallExtensionOptions,
+		progressLocation?: ProgressLocation | string
+	): Promise<IExtension>;
+	installInServer(
+		extension: IExtension,
+		server: IExtensionManagementServer,
+		installOptions?: InstallOptions
+	): Promise<void>;
 	downloadVSIX(extension: string, prerelease: boolean): Promise<void>;
 	uninstall(extension: IExtension): Promise<void>;
 	togglePreRelease(extension: IExtension): Promise<void>;
 	canSetLanguage(extension: IExtension): boolean;
 	setLanguage(extension: IExtension): Promise<void>;
-	setEnablement(extensions: IExtension | IExtension[], enablementState: EnablementState): Promise<void>;
+	setEnablement(
+		extensions: IExtension | IExtension[],
+		enablementState: EnablementState
+	): Promise<void>;
 	isAutoUpdateEnabledFor(extensionOrPublisher: IExtension | string): boolean;
-	updateAutoUpdateEnablementFor(extensionOrPublisher: IExtension | string, enable: boolean): Promise<void>;
+	updateAutoUpdateEnablementFor(
+		extensionOrPublisher: IExtension | string,
+		enable: boolean
+	): Promise<void>;
 	shouldRequireConsentToUpdate(extension: IExtension): Promise<string | undefined>;
 	updateAutoUpdateForAllExtensions(value: boolean): Promise<void>;
 	open(extension: IExtension | string, options?: IExtensionEditorOptions): Promise<void>;
@@ -185,7 +230,10 @@ export const AutoCheckUpdatesConfigurationKey = 'extensions.autoCheckUpdates';
 export const CloseExtensionDetailsOnViewChangeKey = 'extensions.closeExtensionDetailsOnViewChange';
 export const AutoRestartConfigurationKey = 'extensions.autoRestart';
 
-export type AutoUpdateConfigurationValue = boolean | 'onlyEnabledExtensions' | 'onlySelectedExtensions';
+export type AutoUpdateConfigurationValue =
+	| boolean
+	| 'onlyEnabledExtensions'
+	| 'onlySelectedExtensions';
 
 export interface IExtensionsConfiguration {
 	autoUpdate: boolean;
@@ -209,7 +257,6 @@ export interface IExtensionsViewState {
 }
 
 export class ExtensionContainers extends Disposable {
-
 	constructor(
 		private readonly containers: IExtensionContainer[],
 		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService
@@ -219,14 +266,18 @@ export class ExtensionContainers extends Disposable {
 	}
 
 	set extension(extension: IExtension) {
-		this.containers.forEach(c => c.extension = extension);
+		this.containers.forEach(c => (c.extension = extension));
 	}
 
 	private update(extension: IExtension | undefined): void {
 		for (const container of this.containers) {
 			if (extension && container.extension) {
 				if (areSameExtensions(container.extension.identifier, extension.identifier)) {
-					if (container.extension.server && extension.server && container.extension.server !== extension.server) {
+					if (
+						container.extension.server &&
+						extension.server &&
+						container.extension.server !== extension.server
+					) {
 						if (container.updateWhenCounterExtensionChanges) {
 							container.update();
 						}
@@ -241,19 +292,29 @@ export class ExtensionContainers extends Disposable {
 	}
 }
 
-export const WORKSPACE_RECOMMENDATIONS_VIEW_ID = 'workbench.views.extensions.workspaceRecommendations';
+export const WORKSPACE_RECOMMENDATIONS_VIEW_ID =
+	'workbench.views.extensions.workspaceRecommendations';
 export const OUTDATED_EXTENSIONS_VIEW_ID = 'workbench.views.extensions.searchOutdated';
-export const TOGGLE_IGNORE_EXTENSION_ACTION_ID = 'workbench.extensions.action.toggleIgnoreExtension';
+export const TOGGLE_IGNORE_EXTENSION_ACTION_ID =
+	'workbench.extensions.action.toggleIgnoreExtension';
 export const SELECT_INSTALL_VSIX_EXTENSION_COMMAND_ID = 'workbench.extensions.action.installVSIX';
-export const INSTALL_EXTENSION_FROM_VSIX_COMMAND_ID = 'workbench.extensions.command.installFromVSIX';
+export const INSTALL_EXTENSION_FROM_VSIX_COMMAND_ID =
+	'workbench.extensions.command.installFromVSIX';
 
-export const LIST_WORKSPACE_UNSUPPORTED_EXTENSIONS_COMMAND_ID = 'workbench.extensions.action.listWorkspaceUnsupportedExtensions';
+export const LIST_WORKSPACE_UNSUPPORTED_EXTENSIONS_COMMAND_ID =
+	'workbench.extensions.action.listWorkspaceUnsupportedExtensions';
 
 // Context Keys
 export const DefaultViewsContext = new RawContextKey<boolean>('defaultExtensionViews', true);
-export const HasOutdatedExtensionsContext = new RawContextKey<boolean>('hasOutdatedExtensions', false);
+export const HasOutdatedExtensionsContext = new RawContextKey<boolean>(
+	'hasOutdatedExtensions',
+	false
+);
 export const CONTEXT_HAS_GALLERY = new RawContextKey<boolean>('hasGallery', false);
-export const ExtensionResultsListFocused = new RawContextKey<boolean>('extensionResultListFocused ', true);
+export const ExtensionResultsListFocused = new RawContextKey<boolean>(
+	'extensionResultListFocused ',
+	true
+);
 export const SearchMcpServersContext = new RawContextKey<boolean>('searchMcpServers', false);
 
 // Context Menu Groups

@@ -28,7 +28,11 @@ export interface ITestingPeekOpener {
 	 * Tries to peek the first test error, if the item is in a failed state.
 	 * @returns a boolean indicating whether a peek was opened
 	 */
-	tryPeekFirstError(result: ITestResult, test: TestResultItem, options?: Partial<ITextEditorOptions>): boolean;
+	tryPeekFirstError(
+		result: ITestResult,
+		test: TestResultItem,
+		options?: Partial<ITextEditorOptions>
+	): boolean;
 
 	/**
 	 * Peeks at the given test message uri.
@@ -53,4 +57,3 @@ export interface ITestingPeekOpener {
 }
 
 export const ITestingPeekOpener = createDecorator<ITestingPeekOpener>('testingPeekOpener');
-

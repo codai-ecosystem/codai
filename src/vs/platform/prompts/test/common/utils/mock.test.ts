@@ -33,27 +33,13 @@ suite('mockService', () => {
 
 			typeCheck<ITestObject>(mock);
 
-			assert.strictEqual(
-				mock.bar,
-				'oh hi!',
-				'bar should be overriden',
-			);
+			assert.strictEqual(mock.bar, 'oh hi!', 'bar should be overriden');
 
-			assert.strictEqual(
-				mock.baz,
-				42,
-				'baz should be overriden',
-			);
+			assert.strictEqual(mock.baz, 42, 'baz should be overriden');
 
-			assert(
-				!(mock.anotherMethod(randomInt(100))),
-				'Must execute overriden method correctly 1.',
-			);
+			assert(!mock.anotherMethod(randomInt(100)), 'Must execute overriden method correctly 1.');
 
-			assert(
-				mock.anotherMethod(NaN),
-				'Must execute overriden method correctly 2.',
-			);
+			assert(mock.anotherMethod(NaN), 'Must execute overriden method correctly 2.');
 
 			assert.throws(() => {
 				// property is not overriden so must throw
@@ -82,11 +68,7 @@ suite('mockService', () => {
 			const mock = mockObject<ITestObject>(overrides);
 			typeCheck<ITestObject>(mock);
 
-			assert.strictEqual(
-				mock.baz,
-				4,
-				'baz should be overridden',
-			);
+			assert.strictEqual(mock.baz, 4, 'baz should be overridden');
 
 			// overrides object must be immutable
 			assert.throws(() => {
@@ -122,27 +104,13 @@ suite('mockService', () => {
 
 			typeCheck<ITestService>(mock);
 
-			assert.strictEqual(
-				mock.id,
-				'ciao!',
-				'id should be overridden',
-			);
+			assert.strictEqual(mock.id, 'ciao!', 'id should be overridden');
 
-			assert.strictEqual(
-				mock.counter,
-				74,
-				'counter should be overridden',
-			);
+			assert.strictEqual(mock.counter, 74, 'counter should be overridden');
 
-			assert(
-				mock.testMethod2(randomInt(100)),
-				'Must execute overridden method correctly 1.',
-			);
+			assert(mock.testMethod2(randomInt(100)), 'Must execute overridden method correctly 1.');
 
-			assert(
-				!(mock.testMethod2(NaN)),
-				'Must execute overridden method correctly 2.',
-			);
+			assert(!mock.testMethod2(NaN), 'Must execute overridden method correctly 2.');
 
 			assert.throws(() => {
 				// property is not overridden so must throw
@@ -172,11 +140,7 @@ suite('mockService', () => {
 			const mock = mockService<ITestService>(overrides);
 			typeCheck<ITestService>(mock);
 
-			assert.strictEqual(
-				mock.baz,
-				false,
-				'baz should be overridden',
-			);
+			assert.strictEqual(mock.baz, false, 'baz should be overridden');
 
 			// overrides object must be immutable
 			assert.throws(() => {

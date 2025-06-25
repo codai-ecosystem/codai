@@ -10,7 +10,13 @@ import { ViewPart } from '../../view/viewPart.js';
 import { Position } from '../../../common/core/position.js';
 import { IEditorConfiguration } from '../../../common/config/editorConfiguration.js';
 import { TokenizationRegistry } from '../../../common/languages.js';
-import { editorCursorForeground, editorOverviewRulerBorder, editorOverviewRulerBackground, editorMultiCursorSecondaryForeground, editorMultiCursorPrimaryForeground } from '../../../common/core/editorColorRegistry.js';
+import {
+	editorCursorForeground,
+	editorOverviewRulerBorder,
+	editorOverviewRulerBackground,
+	editorMultiCursorSecondaryForeground,
+	editorMultiCursorPrimaryForeground,
+} from '../../../common/core/editorColorRegistry.js';
 import { RenderingContext, RestrictedRenderingContext } from '../../view/renderingContext.js';
 import { ViewContext } from '../../../common/viewModel/viewContext.js';
 import { EditorTheme } from '../../../common/editorTheme.js';
@@ -20,7 +26,6 @@ import { OverviewRulerDecorationsGroup } from '../../../common/viewModel.js';
 import { equals } from '../../../../base/common/arrays.js';
 
 class Settings {
-
 	public readonly lineHeight: number;
 	public readonly pixelRatio: number;
 	public readonly overviewRulerLanes: number;
@@ -58,11 +63,17 @@ class Settings {
 
 		this.hideCursor = options.get(EditorOption.hideCursorInOverviewRuler);
 		const cursorColorSingle = theme.getColor(editorCursorForeground);
-		this.cursorColorSingle = cursorColorSingle ? cursorColorSingle.transparent(0.7).toString() : null;
+		this.cursorColorSingle = cursorColorSingle
+			? cursorColorSingle.transparent(0.7).toString()
+			: null;
 		const cursorColorPrimary = theme.getColor(editorMultiCursorPrimaryForeground);
-		this.cursorColorPrimary = cursorColorPrimary ? cursorColorPrimary.transparent(0.7).toString() : null;
+		this.cursorColorPrimary = cursorColorPrimary
+			? cursorColorPrimary.transparent(0.7).toString()
+			: null;
 		const cursorColorSecondary = theme.getColor(editorMultiCursorSecondaryForeground);
-		this.cursorColorSecondary = cursorColorSecondary ? cursorColorSecondary.transparent(0.7).toString() : null;
+		this.cursorColorSecondary = cursorColorSecondary
+			? cursorColorSecondary.transparent(0.7).toString()
+			: null;
 
 		this.themeType = theme.type;
 
@@ -100,7 +111,11 @@ class Settings {
 		this.w = w;
 	}
 
-	private _initLanes(canvasLeftOffset: number, canvasWidth: number, laneCount: number): [number[], number[]] {
+	private _initLanes(
+		canvasLeftOffset: number,
+		canvasWidth: number,
+		laneCount: number
+	): [number[], number[]] {
 		const remainingWidth = canvasWidth - canvasLeftOffset;
 
 		if (laneCount >= 3) {
@@ -121,7 +136,8 @@ class Settings {
 					leftOffset, // Left | Right
 					centerOffset, // Center | Right
 					leftOffset, // Left | Center | Right
-				], [
+				],
+				[
 					0,
 					leftWidth, // Left
 					centerWidth, // Center
@@ -130,7 +146,7 @@ class Settings {
 					leftWidth + centerWidth + rightWidth, // Left | Right
 					centerWidth + rightWidth, // Center | Right
 					leftWidth + centerWidth + rightWidth, // Left | Center | Right
-				]
+				],
 			];
 		} else if (laneCount === 2) {
 			const leftWidth = Math.floor(remainingWidth / 2);
@@ -148,7 +164,8 @@ class Settings {
 					leftOffset, // Left | Right
 					leftOffset, // Center | Right
 					leftOffset, // Left | Center | Right
-				], [
+				],
+				[
 					0,
 					leftWidth, // Left
 					leftWidth, // Center
@@ -157,7 +174,7 @@ class Settings {
 					leftWidth + rightWidth, // Left | Right
 					leftWidth + rightWidth, // Center | Right
 					leftWidth + rightWidth, // Left | Center | Right
-				]
+				],
 			];
 		} else {
 			const offset = canvasLeftOffset;
@@ -173,7 +190,8 @@ class Settings {
 					offset, // Left | Right
 					offset, // Center | Right
 					offset, // Left | Center | Right
-				], [
+				],
+				[
 					0,
 					width, // Left
 					width, // Center
@@ -182,43 +200,43 @@ class Settings {
 					width, // Left | Right
 					width, // Center | Right
 					width, // Left | Center | Right
-				]
+				],
 			];
 		}
 	}
 
 	public equals(other: Settings): boolean {
 		return (
-			this.lineHeight === other.lineHeight
-			&& this.pixelRatio === other.pixelRatio
-			&& this.overviewRulerLanes === other.overviewRulerLanes
-			&& this.renderBorder === other.renderBorder
-			&& this.borderColor === other.borderColor
-			&& this.hideCursor === other.hideCursor
-			&& this.cursorColorSingle === other.cursorColorSingle
-			&& this.cursorColorPrimary === other.cursorColorPrimary
-			&& this.cursorColorSecondary === other.cursorColorSecondary
-			&& this.themeType === other.themeType
-			&& Color.equals(this.backgroundColor, other.backgroundColor)
-			&& this.top === other.top
-			&& this.right === other.right
-			&& this.domWidth === other.domWidth
-			&& this.domHeight === other.domHeight
-			&& this.canvasWidth === other.canvasWidth
-			&& this.canvasHeight === other.canvasHeight
+			this.lineHeight === other.lineHeight &&
+			this.pixelRatio === other.pixelRatio &&
+			this.overviewRulerLanes === other.overviewRulerLanes &&
+			this.renderBorder === other.renderBorder &&
+			this.borderColor === other.borderColor &&
+			this.hideCursor === other.hideCursor &&
+			this.cursorColorSingle === other.cursorColorSingle &&
+			this.cursorColorPrimary === other.cursorColorPrimary &&
+			this.cursorColorSecondary === other.cursorColorSecondary &&
+			this.themeType === other.themeType &&
+			Color.equals(this.backgroundColor, other.backgroundColor) &&
+			this.top === other.top &&
+			this.right === other.right &&
+			this.domWidth === other.domWidth &&
+			this.domHeight === other.domHeight &&
+			this.canvasWidth === other.canvasWidth &&
+			this.canvasHeight === other.canvasHeight
 		);
 	}
 }
 
 const enum Constants {
-	MIN_DECORATION_HEIGHT = 6
+	MIN_DECORATION_HEIGHT = 6,
 }
 
 const enum OverviewRulerLane {
 	Left = 1,
 	Center = 2,
 	Right = 4,
-	Full = 7
+	Full = 7,
 }
 
 type Cursor = {
@@ -229,11 +247,10 @@ type Cursor = {
 const enum ShouldRenderValue {
 	NotNeeded = 0,
 	Maybe = 1,
-	Needed = 2
+	Needed = 2,
 }
 
 export class DecorationsOverviewRuler extends ViewPart {
-
 	private _actualShouldRender: ShouldRenderValue = ShouldRenderValue.NotNeeded;
 
 	private readonly _tokensColorTrackerListener: IDisposable;
@@ -256,13 +273,15 @@ export class DecorationsOverviewRuler extends ViewPart {
 
 		this._updateSettings(false);
 
-		this._tokensColorTrackerListener = TokenizationRegistry.onDidChange((e) => {
+		this._tokensColorTrackerListener = TokenizationRegistry.onDidChange(e => {
 			if (e.changedColorMap) {
 				this._updateSettings(true);
 			}
 		});
 
-		this._cursorPositions = [{ position: new Position(1, 1), color: this._settings.cursorColorSingle }];
+		this._cursorPositions = [
+			{ position: new Position(1, 1), color: this._settings.cursorColorSingle },
+		];
 	}
 
 	public override dispose(): void {
@@ -358,7 +377,9 @@ export class DecorationsOverviewRuler extends ViewPart {
 		const backgroundColor = this._settings.backgroundColor;
 		if (this._settings.overviewRulerLanes === 0) {
 			// overview ruler is off
-			this._domNode.setBackgroundColor(backgroundColor ? Color.Format.CSS.formatHexA(backgroundColor) : '');
+			this._domNode.setBackgroundColor(
+				backgroundColor ? Color.Format.CSS.formatHexA(backgroundColor) : ''
+			);
 			this._domNode.setDisplay('none');
 			return;
 		}
@@ -366,10 +387,20 @@ export class DecorationsOverviewRuler extends ViewPart {
 		const decorations = this._context.viewModel.getAllOverviewRulerDecorations(this._context.theme);
 		decorations.sort(OverviewRulerDecorationsGroup.compareByRenderingProps);
 
-		if (this._actualShouldRender === ShouldRenderValue.Maybe && !OverviewRulerDecorationsGroup.equalsArr(this._renderedDecorations, decorations)) {
+		if (
+			this._actualShouldRender === ShouldRenderValue.Maybe &&
+			!OverviewRulerDecorationsGroup.equalsArr(this._renderedDecorations, decorations)
+		) {
 			this._actualShouldRender = ShouldRenderValue.Needed;
 		}
-		if (this._actualShouldRender === ShouldRenderValue.Maybe && !equals(this._renderedCursorPositions, this._cursorPositions, (a, b) => a.position.lineNumber === b.position.lineNumber && a.color === b.color)) {
+		if (
+			this._actualShouldRender === ShouldRenderValue.Maybe &&
+			!equals(
+				this._renderedCursorPositions,
+				this._cursorPositions,
+				(a, b) => a.position.lineNumber === b.position.lineNumber && a.color === b.color
+			)
+		) {
 			this._actualShouldRender = ShouldRenderValue.Needed;
 		}
 		if (this._actualShouldRender === ShouldRenderValue.Maybe) {
@@ -411,8 +442,6 @@ export class DecorationsOverviewRuler extends ViewPart {
 		const x = this._settings.x;
 		const w = this._settings.w;
 
-
-
 		for (const decorationGroup of decorations) {
 			const color = decorationGroup.color;
 			const decorationGroupData = decorationGroup.data;
@@ -428,7 +457,9 @@ export class DecorationsOverviewRuler extends ViewPart {
 				const endLineNumber = decorationGroupData[3 * i + 2];
 
 				let y1 = (viewLayout.getVerticalOffsetForLineNumber(startLineNumber) * heightRatio) | 0;
-				let y2 = ((viewLayout.getVerticalOffsetForLineNumber(endLineNumber) + lineHeight) * heightRatio) | 0;
+				let y2 =
+					((viewLayout.getVerticalOffsetForLineNumber(endLineNumber) + lineHeight) * heightRatio) |
+					0;
 				const height = y2 - y1;
 				if (height < minDecorationHeight) {
 					let yCenter = ((y1 + y2) / 2) | 0;
@@ -476,7 +507,8 @@ export class DecorationsOverviewRuler extends ViewPart {
 				}
 				const cursor = this._cursorPositions[i].position;
 
-				let yCenter = (viewLayout.getVerticalOffsetForLineNumber(cursor.lineNumber) * heightRatio) | 0;
+				let yCenter =
+					(viewLayout.getVerticalOffsetForLineNumber(cursor.lineNumber) * heightRatio) | 0;
 				if (yCenter < halfCursorHeight) {
 					yCenter = halfCursorHeight;
 				} else if (yCenter + halfCursorHeight > canvasHeight) {
@@ -506,7 +538,11 @@ export class DecorationsOverviewRuler extends ViewPart {
 			}
 		}
 
-		if (this._settings.renderBorder && this._settings.borderColor && this._settings.overviewRulerLanes > 0) {
+		if (
+			this._settings.renderBorder &&
+			this._settings.borderColor &&
+			this._settings.overviewRulerLanes > 0
+		) {
 			canvasCtx.beginPath();
 			canvasCtx.lineWidth = 1;
 			canvasCtx.strokeStyle = this._settings.borderColor;

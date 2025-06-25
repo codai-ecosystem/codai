@@ -27,7 +27,7 @@ export class AgentAdapter implements Agent {
 			...cap,
 			domain: this.agentName,
 			actions: cap.outputs.map(output => output.name),
-			priority: 'medium' as const
+			priority: 'medium' as const,
 		}));
 	}
 
@@ -39,15 +39,17 @@ export class AgentAdapter implements Agent {
 			const task: Task = {
 				id: request.id,
 				title: `${request.type} task`,
-				description: typeof request.payload === 'string' ? request.payload :
-					request.payload?.description || `Execute ${request.type}`,
+				description:
+					typeof request.payload === 'string'
+						? request.payload
+						: request.payload?.description || `Execute ${request.type}`,
 				agentId: this.agentName,
 				status: 'in_progress',
 				priority: request.priority,
 				inputs: request.payload,
 				dependencies: [],
 				createdAt: new Date(request.timestamp),
-				progress: 0
+				progress: 0,
 			};
 
 			// Check if agent can execute the task
@@ -59,13 +61,13 @@ export class AgentAdapter implements Agent {
 					error: {
 						type: 'capability_mismatch',
 						message: `Agent ${this.agentName} cannot execute task of type ${request.type}`,
-						details: { agentId: this.agentName, taskType: request.type }
+						details: { agentId: this.agentName, taskType: request.type },
 					},
 					timestamp: Date.now(),
 					duration: Date.now() - startTime,
-					metadata: {}
+					metadata: {},
 				};
-			}			// Execute the task
+			} // Execute the task
 			const result: TaskResult = await this.baseAgent.executeTask(task);
 
 			const response: AgentResponse = {
@@ -76,8 +78,8 @@ export class AgentAdapter implements Agent {
 				duration: result.duration,
 				metadata: {
 					memoryChanges: result.memoryChanges || [],
-					agentId: this.agentName
-				}
+					agentId: this.agentName,
+				},
 			};
 
 			// Add error field only if there's an error
@@ -85,12 +87,11 @@ export class AgentAdapter implements Agent {
 				response.error = {
 					type: 'execution_error',
 					message: result.error,
-					details: { agentId: this.agentName }
+					details: { agentId: this.agentName },
 				};
 			}
 
 			return response;
-
 		} catch (error) {
 			return {
 				id: request.id,
@@ -99,11 +100,11 @@ export class AgentAdapter implements Agent {
 				error: {
 					type: 'execution_error',
 					message: error instanceof Error ? error.message : String(error),
-					details: { agentId: this.agentName }
+					details: { agentId: this.agentName },
 				},
 				timestamp: Date.now(),
 				duration: Date.now() - startTime,
-				metadata: {}
+				metadata: {},
 			};
 		}
 	}

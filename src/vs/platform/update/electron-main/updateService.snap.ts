@@ -11,10 +11,15 @@ import * as path from '../../../base/common/path.js';
 import { IEnvironmentMainService } from '../../environment/electron-main/environmentMainService.js';
 import { ILifecycleMainService } from '../../lifecycle/electron-main/lifecycleMainService.js';
 import { ILogService } from '../../log/common/log.js';
-import { AvailableForDownload, IUpdateService, State, StateType, UpdateType } from '../common/update.js';
+import {
+	AvailableForDownload,
+	IUpdateService,
+	State,
+	StateType,
+	UpdateType,
+} from '../common/update.js';
 
 abstract class AbstractUpdateService implements IUpdateService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private _state: State = State.Uninitialized;
@@ -35,7 +40,7 @@ abstract class AbstractUpdateService implements IUpdateService {
 	constructor(
 		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
 		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
-		@ILogService protected logService: ILogService,
+		@ILogService protected logService: ILogService
 	) {
 		if (environmentMainService.disableUpdates) {
 			this.logService.info('update#ctor - updates are disabled');
@@ -117,7 +122,6 @@ abstract class AbstractUpdateService implements IUpdateService {
 		return Promise.resolve(undefined);
 	}
 
-
 	protected getUpdateType(): UpdateType {
 		return UpdateType.Snap;
 	}
@@ -136,18 +140,21 @@ abstract class AbstractUpdateService implements IUpdateService {
 }
 
 export class SnapUpdateService extends AbstractUpdateService {
-
 	constructor(
 		private snap: string,
 		private snapRevision: string,
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		super(lifecycleMainService, environmentMainService, logService);
 
 		const watcher = watch(path.dirname(this.snap));
-		const onChange = Event.fromNodeEventEmitter(watcher, 'change', (_, fileName: string) => fileName);
+		const onChange = Event.fromNodeEventEmitter(
+			watcher,
+			'change',
+			(_, fileName: string) => fileName
+		);
 		const onCurrentChange = Event.filter(onChange, n => n === 'current');
 		const onDebouncedCurrentChange = Event.debounce(onCurrentChange, (_, e) => e, 2000);
 		const listener = onDebouncedCurrentChange(() => this.checkForUpdates(false));
@@ -160,16 +167,19 @@ export class SnapUpdateService extends AbstractUpdateService {
 
 	protected doCheckForUpdates(): void {
 		this.setState(State.CheckingForUpdates(false));
-		this.isUpdateAvailable().then(result => {
-			if (result) {
-				this.setState(State.Ready({ version: 'something' }));
-			} else {
-				this.setState(State.Idle(UpdateType.Snap));
+		this.isUpdateAvailable().then(
+			result => {
+				if (result) {
+					this.setState(State.Ready({ version: 'something' }));
+				} else {
+					this.setState(State.Idle(UpdateType.Snap));
+				}
+			},
+			err => {
+				this.logService.error(err);
+				this.setState(State.Idle(UpdateType.Snap, err.message || err));
 			}
-		}, err => {
-			this.logService.error(err);
-			this.setState(State.Idle(UpdateType.Snap, err.message || err));
-		});
+		);
 	}
 
 	protected override doQuitAndInstall(): void {
@@ -184,7 +194,9 @@ export class SnapUpdateService extends AbstractUpdateService {
 	}
 
 	private async isUpdateAvailable(): Promise<boolean> {
-		const resolvedCurrentSnapPath = await new Promise<string>((c, e) => realpath(`${path.dirname(this.snap)}/current`, (err, r) => err ? e(err) : c(r)));
+		const resolvedCurrentSnapPath = await new Promise<string>((c, e) =>
+			realpath(`${path.dirname(this.snap)}/current`, (err, r) => (err ? e(err) : c(r)))
+		);
 		const currentRevision = path.basename(resolvedCurrentSnapPath);
 		return this.snapRevision !== currentRevision;
 	}

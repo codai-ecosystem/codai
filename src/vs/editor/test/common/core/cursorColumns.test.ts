@@ -7,12 +7,15 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { CursorColumns } from '../../../common/core/cursorColumns.js';
 
 suite('CursorColumns', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('visibleColumnFromColumn', () => {
-
-		function testVisibleColumnFromColumn(text: string, tabSize: number, column: number, expected: number): void {
+		function testVisibleColumnFromColumn(
+			text: string,
+			tabSize: number,
+			column: number,
+			expected: number
+		): void {
 			assert.strictEqual(CursorColumns.visibleColumnFromColumn(text, column, tabSize), expected);
 		}
 
@@ -70,9 +73,12 @@ suite('CursorColumns', () => {
 	});
 
 	test('toStatusbarColumn', () => {
-
 		function t(text: string, tabSize: number, column: number, expected: number): void {
-			assert.strictEqual(CursorColumns.toStatusbarColumn(text, column, tabSize), expected, `<<t('${text}', ${tabSize}, ${column}, ${expected})>>`);
+			assert.strictEqual(
+				CursorColumns.toStatusbarColumn(text, column, tabSize),
+				expected,
+				`<<t('${text}', ${tabSize}, ${column}, ${expected})>>`
+			);
 		}
 
 		t('    spaces', 4, 1, 1);
@@ -126,9 +132,16 @@ suite('CursorColumns', () => {
 	});
 
 	test('columnFromVisibleColumn', () => {
-
-		function testColumnFromVisibleColumn(text: string, tabSize: number, visibleColumn: number, expected: number): void {
-			assert.strictEqual(CursorColumns.columnFromVisibleColumn(text, visibleColumn, tabSize), expected);
+		function testColumnFromVisibleColumn(
+			text: string,
+			tabSize: number,
+			visibleColumn: number,
+			expected: number
+		): void {
+			assert.strictEqual(
+				CursorColumns.columnFromVisibleColumn(text, visibleColumn, tabSize),
+				expected
+			);
 		}
 
 		// testColumnFromVisibleColumn('\t\tvar x = 3;', 4, 0, 1);
@@ -277,5 +290,4 @@ suite('CursorColumns', () => {
 			assert.strictEqual(fn(9, 1), 8);
 		});
 	}
-
 });

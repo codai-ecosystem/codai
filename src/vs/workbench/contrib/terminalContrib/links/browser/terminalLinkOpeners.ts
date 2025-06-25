@@ -15,7 +15,10 @@ import { IQuickInputService } from '../../../../../platform/quickinput/common/qu
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
 import { ITerminalLinkOpener, ITerminalSimpleLink } from './links.js';
 import { osPathModule, updateLinkWithRelativeCwd } from './terminalLinkHelpers.js';
-import { ITerminalCapabilityStore, TerminalCapability } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	ITerminalCapabilityStore,
+	TerminalCapability,
+} from '../../../../../platform/terminal/common/capabilities/capabilities.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 import { IWorkbenchEnvironmentService } from '../../../../services/environment/common/environmentService.js';
 import { IHostService } from '../../../../services/host/browser/host.js';
@@ -26,10 +29,7 @@ import { detectLinks, getLinkSuffix } from './terminalLinkParsing.js';
 import { ITerminalLogService } from '../../../../../platform/terminal/common/terminal.js';
 
 export class TerminalLocalFileLinkOpener implements ITerminalLinkOpener {
-	constructor(
-		@IEditorService private readonly _editorService: IEditorService,
-	) {
-	}
+	constructor(@IEditorService private readonly _editorService: IEditorService) {}
 
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
@@ -38,23 +38,25 @@ export class TerminalLocalFileLinkOpener implements ITerminalLinkOpener {
 		const linkSuffix = link.parsedLink ? link.parsedLink.suffix : getLinkSuffix(link.text);
 		let selection: ITextEditorSelection | undefined = link.selection;
 		if (!selection) {
-			selection = linkSuffix?.row === undefined ? undefined : {
-				startLineNumber: linkSuffix.row ?? 1,
-				startColumn: linkSuffix.col ?? 1,
-				endLineNumber: linkSuffix.rowEnd,
-				endColumn: linkSuffix.colEnd
-			};
+			selection =
+				linkSuffix?.row === undefined
+					? undefined
+					: {
+							startLineNumber: linkSuffix.row ?? 1,
+							startColumn: linkSuffix.col ?? 1,
+							endLineNumber: linkSuffix.rowEnd,
+							endColumn: linkSuffix.colEnd,
+						};
 		}
 		await this._editorService.openEditor({
 			resource: link.uri,
-			options: { pinned: true, selection, revealIfOpened: true }
+			options: { pinned: true, selection, revealIfOpened: true },
 		});
 	}
 }
 
 export class TerminalLocalFolderInWorkspaceLinkOpener implements ITerminalLinkOpener {
-	constructor(@ICommandService private readonly _commandService: ICommandService) {
-	}
+	constructor(@ICommandService private readonly _commandService: ICommandService) {}
 
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
@@ -65,8 +67,7 @@ export class TerminalLocalFolderInWorkspaceLinkOpener implements ITerminalLinkOp
 }
 
 export class TerminalLocalFolderOutsideWorkspaceLinkOpener implements ITerminalLinkOpener {
-	constructor(@IHostService private readonly _hostService: IHostService) {
-	}
+	constructor(@IHostService private readonly _hostService: IHostService) {}
 
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
@@ -90,8 +91,9 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 		@IQuickInputService private readonly _quickInputService: IQuickInputService,
 		@ISearchService private readonly _searchService: ISearchService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@IWorkbenchEnvironmentService private readonly _workbenchEnvironmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly _workbenchEnvironmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService
 	) {
 		this._fileQueryBuilder = instantiationService.createInstance(QueryBuilder);
 	}
@@ -113,7 +115,9 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 			const parsedLinks = detectLinks(link.contextLine, this._getOS());
 			// Optimistically check that the link _starts with_ the parsed link text. If so,
 			// continue to use the parsed link
-			const matchingParsedLink = parsedLinks.find(parsedLink => parsedLink.suffix && link.text.startsWith(parsedLink.path.text));
+			const matchingParsedLink = parsedLinks.find(
+				parsedLink => parsedLink.suffix && link.text.startsWith(parsedLink.path.text)
+			);
 			if (matchingParsedLink) {
 				if (matchingParsedLink.suffix?.row !== undefined) {
 					// Normalize the path based on the parsed link
@@ -143,7 +147,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 
 		// If any of the names of the folders in the workspace matches
 		// a prefix of the link, remove that prefix and continue
-		this._workspaceContextService.getWorkspace().folders.forEach((folder) => {
+		this._workspaceContextService.getWorkspace().folders.forEach(folder => {
 			if (text.substring(0, folder.name.length + 1) === folder.name + pathSeparator) {
 				text = text.substring(folder.name.length + 1);
 				return;
@@ -151,7 +155,14 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 		});
 		let cwdResolvedText = text;
 		if (this._capabilities.has(TerminalCapability.CommandDetection)) {
-			cwdResolvedText = updateLinkWithRelativeCwd(this._capabilities, link.bufferRange.start.y, text, osPath, this._logService)?.[0] || text;
+			cwdResolvedText =
+				updateLinkWithRelativeCwd(
+					this._capabilities,
+					link.bufferRange.start.y,
+					text,
+					osPath,
+					this._logService
+				)?.[0] || text;
 		}
 
 		// Try open the cwd resolved link first
@@ -196,7 +207,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 				uri = URI.from({
 					scheme: Schemas.vscodeRemote,
 					authority: this._workbenchEnvironmentService.remoteAuthority,
-					path: normalizedAbsolutePath
+					path: normalizedAbsolutePath,
 				});
 			} else {
 				uri = URI.file(normalizedAbsolutePath);
@@ -214,7 +225,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 			const results = await this._searchService.fileSearch(
 				this._fileQueryBuilder.file(this._workspaceContextService.getWorkspace().folders, {
 					filePattern: sanitizedLink,
-					maxResults: 2
+					maxResults: 2,
 				})
 			);
 			if (results.results.length > 0) {
@@ -230,11 +241,13 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 					// relative paths with folders such as `src/foo.txt`.
 					const results = await this._searchService.fileSearch(
 						this._fileQueryBuilder.file(this._workspaceContextService.getWorkspace().folders, {
-							filePattern: `**/${sanitizedLink}`
+							filePattern: `**/${sanitizedLink}`,
 						})
 					);
 					// Find an exact match if it exists
-					const exactMatches = results.results.filter(e => e.resource.toString().endsWith(sanitizedLink));
+					const exactMatches = results.results.filter(e =>
+						e.resource.toString().endsWith(sanitizedLink)
+					);
 					if (exactMatches.length === 1) {
 						resourceMatch = { uri: exactMatches[0].resource };
 					}
@@ -255,10 +268,12 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 					text: result.uri.path + (text.match(/:\d+(:\d+)?$/)?.[0] || ''),
 					uri,
 					bufferRange: link.bufferRange,
-					type: link.type
+					type: link.type,
 				};
 				if (uri) {
-					await (isDirectory ? this._localFolderInWorkspaceOpener.open(linkToOpen) : this._localFileOpener.open(linkToOpen));
+					await (isDirectory
+						? this._localFolderInWorkspaceOpener.open(linkToOpen)
+						: this._localFileOpener.open(linkToOpen));
 					return true;
 				}
 			}
@@ -279,8 +294,7 @@ export class TerminalUrlLinkOpener implements ITerminalLinkOpener {
 		private readonly _isRemote: boolean,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService
-	) {
-	}
+	) {}
 
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
@@ -291,7 +305,7 @@ export class TerminalUrlLinkOpener implements ITerminalLinkOpener {
 		this._openerService.open(link.text, {
 			allowTunneling: this._isRemote && this._configurationService.getValue('remote.forwardOnOpen'),
 			allowContributedOpeners: true,
-			openExternal: true
+			openExternal: true,
 		});
 	}
 }

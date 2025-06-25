@@ -12,7 +12,10 @@ import * as readline from 'readline';
 import { performance } from 'perf_hooks';
 import { fileURLToPath } from 'url';
 import minimist from 'minimist';
-import { devInjectNodeModuleLookupPath, removeGlobalNodeJsModuleLookupPaths } from './bootstrap-node.js';
+import {
+	devInjectNodeModuleLookupPath,
+	removeGlobalNodeJsModuleLookupPaths,
+} from './bootstrap-node.js';
 import { bootstrapESM } from './bootstrap-esm.js';
 import { resolveNLSConfiguration } from './vs/base/node/nls.js';
 import { product } from './bootstrap-meta.js';
@@ -27,9 +30,26 @@ perf.mark('code/server/start');
 
 // Do a quick parse to determine if a server or the cli needs to be started
 const parsedArgs = minimist(process.argv.slice(2), {
-	boolean: ['start-server', 'list-extensions', 'print-ip-address', 'help', 'version', 'accept-server-license-terms', 'update-extensions'],
-	string: ['install-extension', 'install-builtin-extension', 'uninstall-extension', 'locate-extension', 'socket-path', 'host', 'port', 'compatibility'],
-	alias: { help: 'h', version: 'v' }
+	boolean: [
+		'start-server',
+		'list-extensions',
+		'print-ip-address',
+		'help',
+		'version',
+		'accept-server-license-terms',
+		'update-extensions',
+	],
+	string: [
+		'install-extension',
+		'install-builtin-extension',
+		'uninstall-extension',
+		'locate-extension',
+		'socket-path',
+		'host',
+		'port',
+		'compatibility',
+	],
+	alias: { help: 'h', version: 'v' },
 });
 ['host', 'port', 'accept-server-license-terms'].forEach(e => {
 	if (!parsedArgs[e]) {
@@ -41,14 +61,29 @@ const parsedArgs = minimist(process.argv.slice(2), {
 });
 
 const extensionLookupArgs = ['list-extensions', 'locate-extension'];
-const extensionInstallArgs = ['install-extension', 'install-builtin-extension', 'uninstall-extension', 'update-extensions'];
+const extensionInstallArgs = [
+	'install-extension',
+	'install-builtin-extension',
+	'uninstall-extension',
+	'update-extensions',
+];
 
-const shouldSpawnCli = parsedArgs.help || parsedArgs.version || extensionLookupArgs.some(a => !!parsedArgs[a]) || (extensionInstallArgs.some(a => !!parsedArgs[a]) && !parsedArgs['start-server']);
+const shouldSpawnCli =
+	parsedArgs.help ||
+	parsedArgs.version ||
+	extensionLookupArgs.some(a => !!parsedArgs[a]) ||
+	(extensionInstallArgs.some(a => !!parsedArgs[a]) && !parsedArgs['start-server']);
 
-const nlsConfiguration = await resolveNLSConfiguration({ userLocale: 'en', osLocale: 'en', commit: product.commit, userDataPath: '', nlsMetadataPath: __dirname });
+const nlsConfiguration = await resolveNLSConfiguration({
+	userLocale: 'en',
+	osLocale: 'en',
+	commit: product.commit,
+	userDataPath: '',
+	nlsMetadataPath: __dirname,
+});
 
 if (shouldSpawnCli) {
-	loadCode(nlsConfiguration).then((mod) => {
+	loadCode(nlsConfiguration).then(mod => {
 		mod.spawnCli();
 	});
 } else {
@@ -56,7 +91,7 @@ if (shouldSpawnCli) {
 	let _remoteExtensionHostAgentServerPromise: Promise<IServerAPI> | null = null;
 	const getRemoteExtensionHostAgentServer = () => {
 		if (!_remoteExtensionHostAgentServerPromise) {
-			_remoteExtensionHostAgentServerPromise = loadCode(nlsConfiguration).then(async (mod) => {
+			_remoteExtensionHostAgentServerPromise = loadCode(nlsConfiguration).then(async mod => {
 				const server = await mod.createServer(address);
 				_remoteExtensionHostAgentServer = server;
 				return server;
@@ -69,7 +104,9 @@ if (shouldSpawnCli) {
 		console.log(product.serverLicense.join('\n'));
 		if (product.serverLicensePrompt && parsedArgs['accept-server-license-terms'] !== true) {
 			if (hasStdinWithoutTty()) {
-				console.log('To accept the license terms, start the server with --accept-server-license-terms');
+				console.log(
+					'To accept the license terms, start the server with --accept-server-license-terms'
+				);
 				process.exit(1);
 			}
 			try {
@@ -105,19 +142,22 @@ if (shouldSpawnCli) {
 		// @ts-ignore
 		return remoteExtensionHostAgentServer.handleUpgrade(req, socket);
 	});
-	server.on('error', async (err) => {
+	server.on('error', async err => {
 		const remoteExtensionHostAgentServer = await getRemoteExtensionHostAgentServer();
 		return remoteExtensionHostAgentServer.handleServerError(err);
 	});
 
-	const host = sanitizeStringArg(parsedArgs['host']) || (parsedArgs['compatibility'] !== '1.63' ? 'localhost' : undefined);
-	const nodeListenOptions = (
-		parsedArgs['socket-path']
-			? { path: sanitizeStringArg(parsedArgs['socket-path']) }
-			: { host, port: await parsePort(host, sanitizeStringArg(parsedArgs['port'])) }
-	);
+	const host =
+		sanitizeStringArg(parsedArgs['host']) ||
+		(parsedArgs['compatibility'] !== '1.63' ? 'localhost' : undefined);
+	const nodeListenOptions = parsedArgs['socket-path']
+		? { path: sanitizeStringArg(parsedArgs['socket-path']) }
+		: { host, port: await parsePort(host, sanitizeStringArg(parsedArgs['port'])) };
 	server.listen(nodeListenOptions, async () => {
-		let output = Array.isArray(product.serverGreeting) && product.serverGreeting.length ? `\n\n${product.serverGreeting.join('\n')}\n\n` : ``;
+		let output =
+			Array.isArray(product.serverGreeting) && product.serverGreeting.length
+				? `\n\n${product.serverGreeting.join('\n')}\n\n`
+				: ``;
 
 		if (typeof nodeListenOptions.port === 'number' && parsedArgs['print-ip-address']) {
 			const ifaces = os.networkInterfaces();
@@ -155,7 +195,8 @@ if (shouldSpawnCli) {
 }
 
 function sanitizeStringArg(val: any): string | undefined {
-	if (Array.isArray(val)) { // if an argument is passed multiple times, minimist creates an array
+	if (Array.isArray(val)) {
+		// if an argument is passed multiple times, minimist creates an array
 		val = val.pop(); // take the last item
 	}
 	return typeof val === 'string' ? val : undefined;
@@ -175,17 +216,20 @@ async function parsePort(host: string | undefined, strPort: string | undefined):
 		let range: { start: number; end: number } | undefined;
 		if (strPort.match(/^\d+$/)) {
 			return parseInt(strPort, 10);
-		} else if (range = parseRange(strPort)) {
+		} else if ((range = parseRange(strPort))) {
 			const port = await findFreePort(host, range.start, range.end);
 			if (port !== undefined) {
 				return port;
 			}
 			// Remote-SSH extension relies on this exact port error message, treat as an API
-			console.warn(`--port: Could not find free port in range: ${range.start} - ${range.end} (inclusive).`);
+			console.warn(
+				`--port: Could not find free port in range: ${range.start} - ${range.end} (inclusive).`
+			);
 			process.exit(1);
-
 		} else {
-			console.warn(`--port "${strPort}" is not a valid number or range. Ranges must be in the form 'from-to' with 'from' an integer larger than 0 and not larger than 'end'.`);
+			console.warn(
+				`--port "${strPort}" is not a valid number or range. Ranges must be in the form 'from-to' with 'from' an integer larger than 0 and not larger than 'end'.`
+			);
 			process.exit(1);
 		}
 	}
@@ -195,7 +239,8 @@ async function parsePort(host: string | undefined, strPort: string | undefined):
 function parseRange(strRange: string): { start: number; end: number } | undefined {
 	const match = strRange.match(/^(\d+)-(\d+)$/);
 	if (match) {
-		const start = parseInt(match[1], 10), end = parseInt(match[2], 10);
+		const start = parseInt(match[1], 10),
+			end = parseInt(match[2], 10);
 		if (start > 0 && start <= end && end <= 65535) {
 			return { start, end };
 		}
@@ -207,16 +252,22 @@ function parseRange(strRange: string): { start: number; end: number } | undefine
  * Starting at the `start` port, look for a free port incrementing
  * by 1 until `end` inclusive. If no free port is found, undefined is returned.
  */
-async function findFreePort(host: string | undefined, start: number, end: number): Promise<number | undefined> {
+async function findFreePort(
+	host: string | undefined,
+	start: number,
+	end: number
+): Promise<number | undefined> {
 	const testPort = (port: number) => {
-		return new Promise((resolve) => {
+		return new Promise(resolve => {
 			const server = http.createServer();
-			server.listen(port, host, () => {
-				server.close();
-				resolve(true);
-			}).on('error', () => {
-				resolve(false);
-			});
+			server
+				.listen(port, host, () => {
+					server.close();
+					resolve(true);
+				})
+				.on('error', () => {
+					resolve(false);
+				});
 		});
 	};
 	for (let port = start; port <= end; port++) {
@@ -228,7 +279,6 @@ async function findFreePort(host: string | undefined, start: number, end: number
 }
 
 async function loadCode(nlsConfiguration: INLSConfiguration) {
-
 	// required for `bootstrap-esm` to pick up NLS messages
 	process.env['VSCODE_NLS_CONFIG'] = JSON.stringify(nlsConfiguration);
 
@@ -241,7 +291,9 @@ async function loadCode(nlsConfiguration: INLSConfiguration) {
 	if (process.env['VSCODE_DEV']) {
 		// When running out of sources, we need to load node modules from remote/node_modules,
 		// which are compiled against nodejs, not electron
-		process.env['VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH'] = process.env['VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH'] || path.join(__dirname, '..', 'remote', 'node_modules');
+		process.env['VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH'] =
+			process.env['VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH'] ||
+			path.join(__dirname, '..', 'remote', 'node_modules');
 		devInjectNodeModuleLookupPath(process.env['VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH']);
 	} else {
 		delete process.env['VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH'];
@@ -269,7 +321,7 @@ function hasStdinWithoutTty(): boolean {
 function prompt(question: string): Promise<boolean> {
 	const rl = readline.createInterface({
 		input: process.stdin,
-		output: process.stdout
+		output: process.stdout,
 	});
 	return new Promise((resolve, reject) => {
 		rl.question(question + ' ', async function (data) {

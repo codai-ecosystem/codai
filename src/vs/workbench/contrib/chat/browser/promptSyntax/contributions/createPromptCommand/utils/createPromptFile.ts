@@ -9,7 +9,10 @@ import { assert } from '../../../../../../../../base/common/assert.js';
 import { VSBuffer } from '../../../../../../../../base/common/buffer.js';
 import { dirname } from '../../../../../../../../base/common/resources.js';
 import { IFileService } from '../../../../../../../../platform/files/common/files.js';
-import { isPromptOrInstructionsFile, PROMPT_FILE_EXTENSION } from '../../../../../../../../platform/prompts/common/prompts.js';
+import {
+	isPromptOrInstructionsFile,
+	PROMPT_FILE_EXTENSION,
+} from '../../../../../../../../platform/prompts/common/prompts.js';
 
 /**
  * Options for the {@link createPromptFile} utility.
@@ -42,26 +45,20 @@ interface ICreatePromptFileOptions {
  */
 export async function createPromptFile(
 	fileService: IFileService,
-	options: ICreatePromptFileOptions,
+	options: ICreatePromptFileOptions
 ): Promise<URI> {
 	const { fileName, folder, content } = options;
 
 	const promptUri = URI.joinPath(folder, fileName);
 
-	assert(
-		isPromptOrInstructionsFile(promptUri),
-		new InvalidPromptName(fileName),
-	);
+	assert(isPromptOrInstructionsFile(promptUri), new InvalidPromptName(fileName));
 
 	// if a folder or file with the same name exists, throw an error
 	if (await fileService.exists(promptUri)) {
 		const promptInfo = await fileService.resolve(promptUri);
 
 		// if existing object is a folder, throw an error
-		assert(
-			!promptInfo.isDirectory,
-			new FolderExists(promptUri.fsPath),
-		);
+		assert(!promptInfo.isDirectory, new FolderExists(promptUri.fsPath));
 
 		return promptUri;
 	}

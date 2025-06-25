@@ -18,8 +18,8 @@ async function testAuthentication() {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
 				email: 'test@example.com',
-				password: 'TestPassword123!'
-			})
+				password: 'TestPassword123!',
+			}),
 		});
 
 		if (registerResponse.ok) {
@@ -41,8 +41,8 @@ async function testAuthentication() {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
 				email: 'test@example.com',
-				password: 'TestPassword123!'
-			})
+				password: 'TestPassword123!',
+			}),
 		});
 
 		if (loginResponse.ok) {
@@ -68,14 +68,14 @@ async function testBilling(authToken) {
 
 	const headers = {
 		'Content-Type': 'application/json',
-		...(authToken && { 'Authorization': `Bearer ${authToken}` })
+		...(authToken && { Authorization: `Bearer ${authToken}` }),
 	};
 
 	// 1. Test getting billing info
 	console.log('1. Testing get billing info...');
 	try {
 		const billingResponse = await fetch(`${API_BASE}/api/billing`, {
-			headers
+			headers,
 		});
 
 		if (billingResponse.ok) {
@@ -98,8 +98,8 @@ async function testBilling(authToken) {
 			body: JSON.stringify({
 				priceId: 'price_test_123', // Test price ID
 				successUrl: `${API_BASE}/success`,
-				cancelUrl: `${API_BASE}/cancel`
-			})
+				cancelUrl: `${API_BASE}/cancel`,
+			}),
 		});
 
 		if (checkoutResponse.ok) {
@@ -120,7 +120,7 @@ async function testBilling(authToken) {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'stripe-signature': 'test-signature'
+				'stripe-signature': 'test-signature',
 			},
 			body: JSON.stringify({
 				type: 'checkout.session.completed',
@@ -130,11 +130,11 @@ async function testBilling(authToken) {
 						customer: 'cus_test_123',
 						subscription: 'sub_test_123',
 						metadata: {
-							userId: 'test-user-id'
-						}
-					}
-				}
-			})
+							userId: 'test-user-id',
+						},
+					},
+				},
+			}),
 		});
 
 		if (webhookResponse.ok) {

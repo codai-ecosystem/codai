@@ -5,12 +5,15 @@
 
 import { IDisposable } from '../../../../base/common/lifecycle.js';
 import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { CompletionModel } from './completionModel.js';
 import { ISelectedSuggestion } from './suggestWidget.js';
 
 export class SuggestAlternatives {
-
 	static readonly OtherSuggestions = new RawContextKey<boolean>('hasOtherSuggestions', false);
 
 	private readonly _ckOtherSuggestions: IContextKey<boolean>;
@@ -40,8 +43,10 @@ export class SuggestAlternatives {
 		this._ignore = false;
 	}
 
-	set({ model, index }: ISelectedSuggestion, acceptNext: (selected: ISelectedSuggestion) => any): void {
-
+	set(
+		{ model, index }: ISelectedSuggestion,
+		acceptNext: (selected: ISelectedSuggestion) => any
+	): void {
 		// no suggestions -> nothing to do
 		if (model.items.length === 0) {
 			this.reset();
@@ -96,7 +101,11 @@ export class SuggestAlternatives {
 		try {
 			this._ignore = true;
 			this._index = SuggestAlternatives._moveIndex(fwd, this._model, this._index);
-			this._acceptNext!({ index: this._index, item: this._model.items[this._index], model: this._model });
+			this._acceptNext!({
+				index: this._index,
+				item: this._model.items[this._index],
+				model: this._model,
+			});
 		} finally {
 			this._ignore = false;
 		}

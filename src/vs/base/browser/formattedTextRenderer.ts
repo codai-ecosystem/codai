@@ -26,9 +26,17 @@ export function renderText(text: string, options: FormattedTextRenderOptions = {
 	return element;
 }
 
-export function renderFormattedText(formattedText: string, options: FormattedTextRenderOptions = {}): HTMLElement {
+export function renderFormattedText(
+	formattedText: string,
+	options: FormattedTextRenderOptions = {}
+): HTMLElement {
 	const element = createElement(options);
-	_renderFormattedText(element, parseFormattedText(formattedText, !!options.renderCodeSegments), options.actionHandler, options.renderCodeSegments);
+	_renderFormattedText(
+		element,
+		parseFormattedText(formattedText, !!options.renderCodeSegments),
+		options.actionHandler,
+		options.renderCodeSegments
+	);
 	return element;
 }
 
@@ -78,7 +86,7 @@ const enum FormatType {
 	Action,
 	ActionClose,
 	Code,
-	NewLine
+	NewLine,
 }
 
 interface IFormatParseTree {
@@ -88,7 +96,12 @@ interface IFormatParseTree {
 	children?: IFormatParseTree[];
 }
 
-function _renderFormattedText(element: Node, treeNode: IFormatParseTree, actionHandler?: IContentActionHandler, renderCodeSegments?: boolean) {
+function _renderFormattedText(
+	element: Node,
+	treeNode: IFormatParseTree,
+	actionHandler?: IContentActionHandler,
+	renderCodeSegments?: boolean
+) {
 	let child: Node | undefined;
 
 	if (treeNode.type === FormatType.Text) {
@@ -101,9 +114,11 @@ function _renderFormattedText(element: Node, treeNode: IFormatParseTree, actionH
 		child = document.createElement('code');
 	} else if (treeNode.type === FormatType.Action && actionHandler) {
 		const a = document.createElement('a');
-		actionHandler.disposables.add(DOM.addStandardDisposableListener(a, 'click', (event) => {
-			actionHandler.callback(String(treeNode.index), event);
-		}));
+		actionHandler.disposables.add(
+			DOM.addStandardDisposableListener(a, 'click', event => {
+				actionHandler.callback(String(treeNode.index), event);
+			})
+		);
 
 		child = a;
 	} else if (treeNode.type === FormatType.NewLine) {
@@ -117,17 +132,16 @@ function _renderFormattedText(element: Node, treeNode: IFormatParseTree, actionH
 	}
 
 	if (child && Array.isArray(treeNode.children)) {
-		treeNode.children.forEach((nodeChild) => {
+		treeNode.children.forEach(nodeChild => {
 			_renderFormattedText(child, nodeChild, actionHandler, renderCodeSegments);
 		});
 	}
 }
 
 function parseFormattedText(content: string, parseCodeSegments: boolean): IFormatParseTree {
-
 	const root: IFormatParseTree = {
 		type: FormatType.Root,
-		children: []
+		children: [],
 	};
 
 	let actionViewItemIndex = 0;
@@ -138,7 +152,8 @@ function parseFormattedText(content: string, parseCodeSegments: boolean): IForma
 	while (!stream.eos()) {
 		let next = stream.next();
 
-		const isEscapedFormatType = (next === '\\' && formatTagType(stream.peek(), parseCodeSegments) !== FormatType.Invalid);
+		const isEscapedFormatType =
+			next === '\\' && formatTagType(stream.peek(), parseCodeSegments) !== FormatType.Invalid;
 		if (isEscapedFormatType) {
 			next = stream.next(); // unread the backslash if it escapes a format tag type
 		}
@@ -151,12 +166,15 @@ function parseFormattedText(content: string, parseCodeSegments: boolean): IForma
 			}
 
 			const type = formatTagType(next, parseCodeSegments);
-			if (current.type === type || (current.type === FormatType.Action && type === FormatType.ActionClose)) {
+			if (
+				current.type === type ||
+				(current.type === FormatType.Action && type === FormatType.ActionClose)
+			) {
 				current = stack.pop()!;
 			} else {
 				const newCurrent: IFormatParseTree = {
 					type: type,
-					children: []
+					children: [],
 				};
 
 				if (type === FormatType.Action) {
@@ -174,19 +192,17 @@ function parseFormattedText(content: string, parseCodeSegments: boolean): IForma
 			}
 
 			current.children!.push({
-				type: FormatType.NewLine
+				type: FormatType.NewLine,
 			});
-
 		} else {
 			if (current.type !== FormatType.Text) {
 				const textCurrent: IFormatParseTree = {
 					type: FormatType.Text,
-					content: next
+					content: next,
 				};
 				current.children!.push(textCurrent);
 				stack.push(current);
 				current = textCurrent;
-
 			} else {
 				current.content += next;
 			}

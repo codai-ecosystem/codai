@@ -3,8 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator, IInstantiationService } from '../../instantiation/common/instantiation.js';
-import { ILifecycleMainService, LifecycleMainPhase } from '../../lifecycle/electron-main/lifecycleMainService.js';
+import {
+	createDecorator,
+	IInstantiationService,
+} from '../../instantiation/common/instantiation.js';
+import {
+	ILifecycleMainService,
+	LifecycleMainPhase,
+} from '../../lifecycle/electron-main/lifecycleMainService.js';
 import { ILogService } from '../../log/common/log.js';
 import { ICommonMenubarService, IMenubarData } from '../common/menubar.js';
 import { Menubar } from './menubar.js';
@@ -17,7 +23,6 @@ export interface IMenubarMainService extends ICommonMenubarService {
 }
 
 export class MenubarMainService extends Disposable implements IMenubarMainService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly menubar: Promise<Menubar>;

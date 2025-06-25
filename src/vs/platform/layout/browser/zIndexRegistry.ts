@@ -16,10 +16,13 @@ export enum ZIndex {
 	MenubarMenuItemsHolder = 2000, // quick-input-widget
 	ContextView = 2500,
 	ModalDialog = 2600,
-	PaneDropOverlay = 10000
+	PaneDropOverlay = 10000,
 }
 
-const ZIndexValues = Object.keys(ZIndex).filter(key => !isNaN(Number(key))).map(key => Number(key)).sort((a, b) => b - a);
+const ZIndexValues = Object.keys(ZIndex)
+	.filter(key => !isNaN(Number(key)))
+	.map(key => Number(key))
+	.sort((a, b) => b - a);
 function findBase(z: number) {
 	for (const zi of ZIndexValues) {
 		if (z >= zi) {
@@ -47,7 +50,9 @@ class ZIndexRegistry {
 
 		const proposedZValue = relativeLayer + z;
 		if (findBase(proposedZValue) !== relativeLayer) {
-			throw new Error(`Relative layer: ${relativeLayer} + z-index: ${z} exceeds next layer ${proposedZValue}.`);
+			throw new Error(
+				`Relative layer: ${relativeLayer} + z-index: ${z} exceeds next layer ${proposedZValue}.`
+			);
 		}
 
 		this.zIndexMap.set(name, proposedZValue);

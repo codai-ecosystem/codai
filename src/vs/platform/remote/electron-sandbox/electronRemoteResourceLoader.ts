@@ -10,15 +10,24 @@ import { getMediaOrTextMime } from '../../../base/common/mime.js';
 import { Schemas } from '../../../base/common/network.js';
 import { URI } from '../../../base/common/uri.js';
 import { IServerChannel } from '../../../base/parts/ipc/common/ipc.js';
-import { FileOperationError, FileOperationResult, IFileContent, IFileService } from '../../files/common/files.js';
+import {
+	FileOperationError,
+	FileOperationResult,
+	IFileContent,
+	IFileService,
+} from '../../files/common/files.js';
 import { IMainProcessService } from '../../ipc/common/mainProcessService.js';
-import { NODE_REMOTE_RESOURCE_CHANNEL_NAME, NODE_REMOTE_RESOURCE_IPC_METHOD_NAME, NodeRemoteResourceResponse } from '../common/electronRemoteResources.js';
+import {
+	NODE_REMOTE_RESOURCE_CHANNEL_NAME,
+	NODE_REMOTE_RESOURCE_IPC_METHOD_NAME,
+	NodeRemoteResourceResponse,
+} from '../common/electronRemoteResources.js';
 
 export class ElectronRemoteResourceLoader extends Disposable {
 	constructor(
 		private readonly windowId: number,
 		@IMainProcessService mainProcessService: IMainProcessService,
-		@IFileService private readonly fileService: IFileService,
+		@IFileService private readonly fileService: IFileService
 	) {
 		super();
 
@@ -29,11 +38,12 @@ export class ElectronRemoteResourceLoader extends Disposable {
 
 			call: (_: unknown, command: string, arg?: any): Promise<any> => {
 				switch (command) {
-					case NODE_REMOTE_RESOURCE_IPC_METHOD_NAME: return this.doRequest(URI.revive(arg[0]));
+					case NODE_REMOTE_RESOURCE_IPC_METHOD_NAME:
+						return this.doRequest(URI.revive(arg[0]));
 				}
 
 				throw new Error(`Call not found: ${command}`);
-			}
+			},
 		};
 
 		mainProcessService.registerChannel(NODE_REMOTE_RESOURCE_CHANNEL_NAME, channel);
@@ -51,7 +61,10 @@ export class ElectronRemoteResourceLoader extends Disposable {
 			content = await this.fileService.readFile(actual);
 		} catch (e) {
 			const str = encodeBase64(VSBuffer.fromString(e.message));
-			if (e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND) {
+			if (
+				e instanceof FileOperationError &&
+				e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND
+			) {
 				return { statusCode: 404, body: str };
 			} else {
 				return { statusCode: 500, body: str };
@@ -63,10 +76,11 @@ export class ElectronRemoteResourceLoader extends Disposable {
 	}
 
 	public getResourceUriProvider() {
-		return (uri: URI) => uri.with({
-			scheme: Schemas.vscodeManagedRemoteResource,
-			authority: `window:${this.windowId}`,
-			query: new URLSearchParams({ authority: uri.authority, scheme: uri.scheme }).toString(),
-		});
+		return (uri: URI) =>
+			uri.with({
+				scheme: Schemas.vscodeManagedRemoteResource,
+				authority: `window:${this.windowId}`,
+				query: new URLSearchParams({ authority: uri.authority, scheme: uri.scheme }).toString(),
+			});
 	}
 }

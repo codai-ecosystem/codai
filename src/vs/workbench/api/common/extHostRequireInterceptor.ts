@@ -18,7 +18,6 @@ import { ExtensionPaths, IExtHostExtensionService } from './extHostExtensionServ
 import { ILogService } from '../../../platform/log/common/log.js';
 import { escapeRegExpCharacters } from '../../../base/common/strings.js';
 
-
 interface LoadFunction {
 	(request: string): any;
 }
@@ -33,7 +32,6 @@ export interface INodeModuleFactory extends Partial<IAlternativeModuleProvider> 
 }
 
 export abstract class RequireInterceptor {
-
 	protected readonly _factories: Map<string, INodeModuleFactory>;
 	protected readonly _alternatives: ((moduleName: string) => string | undefined)[];
 
@@ -44,14 +42,13 @@ export abstract class RequireInterceptor {
 		@IExtHostConfiguration private readonly _extHostConfiguration: IExtHostConfiguration,
 		@IExtHostExtensionService private readonly _extHostExtensionService: IExtHostExtensionService,
 		@IExtHostInitDataService private readonly _initData: IExtHostInitDataService,
-		@ILogService private readonly _logService: ILogService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		this._factories = new Map<string, INodeModuleFactory>();
 		this._alternatives = [];
 	}
 
 	async install(): Promise<void> {
-
 		this._installInterceptor();
 
 		performance.mark('code/extHost/willWaitForConfig');
@@ -59,10 +56,24 @@ export abstract class RequireInterceptor {
 		performance.mark('code/extHost/didWaitForConfig');
 		const extensionPaths = await this._extHostExtensionService.getExtensionPathIndex();
 
-		this.register(new VSCodeNodeModuleFactory(this._apiFactory, extensionPaths, this._extensionRegistry, configProvider, this._logService));
+		this.register(
+			new VSCodeNodeModuleFactory(
+				this._apiFactory,
+				extensionPaths,
+				this._extensionRegistry,
+				configProvider,
+				this._logService
+			)
+		);
 		this.register(this._instaService.createInstance(NodeModuleAliasingModuleFactory));
 		if (this._initData.remote.isRemote) {
-			this.register(this._instaService.createInstance(OpenNodeModuleFactory, extensionPaths, this._initData.environment.appUriScheme));
+			this.register(
+				this._instaService.createInstance(
+					OpenNodeModuleFactory,
+					extensionPaths,
+					this._initData.environment.appUriScheme
+				)
+			);
 		}
 	}
 
@@ -80,7 +91,7 @@ export abstract class RequireInterceptor {
 		}
 
 		if (typeof interceptor.alternativeModuleName === 'function') {
-			this._alternatives.push((moduleName) => {
+			this._alternatives.push(moduleName => {
 				return interceptor.alternativeModuleName!(moduleName);
 			});
 		}
@@ -103,7 +114,9 @@ class NodeModuleAliasingModuleFactory implements IAlternativeModuleProvider {
 
 	constructor(@IExtHostInitDataService initData: IExtHostInitDataService) {
 		if (initData.environment.appRoot && NodeModuleAliasingModuleFactory.aliased.size) {
-			const root = escapeRegExpCharacters(this.forceForwardSlashes(initData.environment.appRoot.fsPath));
+			const root = escapeRegExpCharacters(
+				this.forceForwardSlashes(initData.environment.appRoot.fsPath)
+			);
 			// decompose ${appRoot}/node_modules/foo/bin to ['${appRoot}/node_modules/', 'foo', '/bin'],
 			// and likewise the more complex form ${appRoot}/node_modules.asar.unpacked/@vcode/foo/bin
 			// to ['${appRoot}/node_modules.asar.unpacked/',' @vscode/foo', '/bin'].
@@ -155,12 +168,10 @@ class VSCodeNodeModuleFactory implements INodeModuleFactory {
 		private readonly _extensionPaths: ExtensionPaths,
 		private readonly _extensionRegistry: IExtensionRegistries,
 		private readonly _configProvider: ExtHostConfigProvider,
-		private readonly _logService: ILogService,
-	) {
-	}
+		private readonly _logService: ILogService
+	) {}
 
 	public load(_request: string, parent: URI): any {
-
 		// get extension id from filename and api for extension
 		const ext = this._extensionPaths.findSubstr(parent);
 		if (ext) {
@@ -175,9 +186,17 @@ class VSCodeNodeModuleFactory implements INodeModuleFactory {
 		// fall back to a default implementation
 		if (!this._defaultApiImpl) {
 			let extensionPathsPretty = '';
-			this._extensionPaths.forEach((value, index) => extensionPathsPretty += `\t${index} -> ${value.identifier.value}\n`);
-			this._logService.warn(`Could not identify extension for 'vscode' require call from ${parent}. These are the extension path mappings: \n${extensionPathsPretty}`);
-			this._defaultApiImpl = this._apiFactory(nullExtensionDescription, this._extensionRegistry, this._configProvider);
+			this._extensionPaths.forEach(
+				(value, index) => (extensionPathsPretty += `\t${index} -> ${value.identifier.value}\n`)
+			);
+			this._logService.warn(
+				`Could not identify extension for 'vscode' require call from ${parent}. These are the extension path mappings: \n${extensionPathsPretty}`
+			);
+			this._defaultApiImpl = this._apiFactory(
+				nullExtensionDescription,
+				this._extensionRegistry,
+				this._configProvider
+			);
 		}
 		return this._defaultApiImpl;
 	}
@@ -201,7 +220,6 @@ interface IOpenModule {
 }
 
 class OpenNodeModuleFactory implements INodeModuleFactory {
-
 	public readonly nodeModuleName: string[] = ['open', 'opn'];
 
 	private _extensionId: string | undefined;
@@ -212,9 +230,8 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
 	constructor(
 		private readonly _extensionPaths: ExtensionPaths,
 		private readonly _appUriScheme: string,
-		@IExtHostRpcService rpcService: IExtHostRpcService,
+		@IExtHostRpcService rpcService: IExtHostRpcService
 	) {
-
 		this._mainThreadTelemetry = rpcService.getProxy(MainContext.MainThreadTelemetry);
 		const mainThreadWindow = rpcService.getProxy(MainContext.MainThreadWindow);
 
@@ -257,9 +274,16 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
 		type ShimmingOpenClassification = {
 			owner: 'jrieken';
 			comment: 'Know when the open-shim was used';
-			extension: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The extension is question' };
+			extension: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				comment: 'The extension is question';
+			};
 		};
-		this._mainThreadTelemetry.$publicLog2<{ extension: string }, ShimmingOpenClassification>('shimming.open', { extension: this._extensionId });
+		this._mainThreadTelemetry.$publicLog2<{ extension: string }, ShimmingOpenClassification>(
+			'shimming.open',
+			{ extension: this._extensionId }
+		);
 	}
 
 	private sendNoForwardTelemetry(): void {
@@ -269,9 +293,16 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
 		type ShimmingOpenCallNoForwardClassification = {
 			owner: 'jrieken';
 			comment: 'Know when the open-shim was used';
-			extension: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The extension is question' };
+			extension: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				comment: 'The extension is question';
+			};
 		};
-		this._mainThreadTelemetry.$publicLog2<{ extension: string }, ShimmingOpenCallNoForwardClassification>('shimming.open.call.noForward', { extension: this._extensionId });
+		this._mainThreadTelemetry.$publicLog2<
+			{ extension: string },
+			ShimmingOpenCallNoForwardClassification
+		>('shimming.open.call.noForward', { extension: this._extensionId });
 	}
 }
 

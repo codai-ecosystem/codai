@@ -13,7 +13,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
 	currentFilter,
 	nodeTypes,
 	className,
-	nodeTypeIcons = {}
+	nodeTypeIcons = {},
 }) => {
 	// Track if the panel is collapsed
 	const [collapsed, setCollapsed] = useState(false);
@@ -27,9 +27,16 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
 	const activeFilterCount = currentFilter ? 1 : 0;
 
 	return (
-		<div className={`memory-graph-controls ${collapsed ? 'memory-graph-controls--collapsed' : ''} ${className || ''}`}>
+		<div
+			className={`memory-graph-controls ${collapsed ? 'memory-graph-controls--collapsed' : ''} ${className || ''}`}
+		>
 			<div className="memory-graph-controls__header">
-				<span className="memory-graph-controls__title">Filters {activeFilterCount > 0 && <span className="memory-graph-controls__badge">{activeFilterCount}</span>}</span>
+				<span className="memory-graph-controls__title">
+					Filters{' '}
+					{activeFilterCount > 0 && (
+						<span className="memory-graph-controls__badge">{activeFilterCount}</span>
+					)}
+				</span>
 				<button
 					className="memory-graph-controls__toggle"
 					onClick={togglePanel}
@@ -50,9 +57,12 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
 							All
 						</button>
 
-						{nodeTypes.map((type) => {
+						{nodeTypes.map(type => {
 							// Add dynamic active class based on node type
-							const activeClass = currentFilter === type ? `memory-graph-controls__button--active memory-graph-controls__button--active-${type}` : '';
+							const activeClass =
+								currentFilter === type
+									? `memory-graph-controls__button--active memory-graph-controls__button--active-${type}`
+									: '';
 
 							return (
 								<button

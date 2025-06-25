@@ -16,7 +16,6 @@ import { setDefaultGetWordAtTextConfig } from '../../../../editor/common/core/wo
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('ExtHostDocumentData', () => {
-
 	let data: ExtHostDocumentData;
 
 	function assertPositionAt(offset: number, line: number, character: number) {
@@ -32,45 +31,66 @@ suite('ExtHostDocumentData', () => {
 	}
 
 	setup(function () {
-		data = new ExtHostDocumentData(undefined!, URI.file(''), [
-			'This is line one', //16
-			'and this is line number two', //27
-			'it is followed by #3', //20
-			'and finished with the fourth.', //29
-		], '\n', 1, 'text', false, 'utf8');
+		data = new ExtHostDocumentData(
+			undefined!,
+			URI.file(''),
+			[
+				'This is line one', //16
+				'and this is line number two', //27
+				'it is followed by #3', //20
+				'and finished with the fourth.', //29
+			],
+			'\n',
+			1,
+			'text',
+			false,
+			'utf8'
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('readonly-ness', () => {
-		assert.throws(() => (data as any).document.uri = null);
-		assert.throws(() => (data as any).document.fileName = 'foofile');
-		assert.throws(() => (data as any).document.isDirty = false);
-		assert.throws(() => (data as any).document.isUntitled = false);
-		assert.throws(() => (data as any).document.languageId = 'dddd');
-		assert.throws(() => (data as any).document.lineCount = 9);
+		assert.throws(() => ((data as any).document.uri = null));
+		assert.throws(() => ((data as any).document.fileName = 'foofile'));
+		assert.throws(() => ((data as any).document.isDirty = false));
+		assert.throws(() => ((data as any).document.isUntitled = false));
+		assert.throws(() => ((data as any).document.languageId = 'dddd'));
+		assert.throws(() => ((data as any).document.lineCount = 9));
 	});
 
 	test('save, when disposed', function () {
 		let saved: URI;
-		const data = new ExtHostDocumentData(new class extends mock<MainThreadDocumentsShape>() {
-			override $trySaveDocument(uri: URI) {
-				assert.ok(!saved);
-				saved = uri;
-				return Promise.resolve(true);
-			}
-		}, URI.parse('foo:bar'), [], '\n', 1, 'text', true, 'utf8');
+		const data = new ExtHostDocumentData(
+			new (class extends mock<MainThreadDocumentsShape>() {
+				override $trySaveDocument(uri: URI) {
+					assert.ok(!saved);
+					saved = uri;
+					return Promise.resolve(true);
+				}
+			})(),
+			URI.parse('foo:bar'),
+			[],
+			'\n',
+			1,
+			'text',
+			true,
+			'utf8'
+		);
 
 		return data.document.save().then(() => {
 			assert.strictEqual(saved.toString(), 'foo:bar');
 
 			data.dispose();
 
-			return data.document.save().then(() => {
-				assert.ok(false, 'expected failure');
-			}, err => {
-				assert.ok(err);
-			});
+			return data.document.save().then(
+				() => {
+					assert.ok(false, 'expected failure');
+				},
+				err => {
+					assert.ok(err);
+				}
+			);
 		});
 	});
 
@@ -83,7 +103,6 @@ suite('ExtHostDocumentData', () => {
 	});
 
 	test('lines', () => {
-
 		assert.strictEqual(data.document.lineCount, 4);
 
 		assert.throws(() => data.document.lineAt(-1));
@@ -100,12 +119,14 @@ suite('ExtHostDocumentData', () => {
 		assert.strictEqual(line.firstNonWhitespaceCharacterIndex, 0);
 
 		data.onEvents({
-			changes: [{
-				range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
-				rangeOffset: undefined!,
-				rangeLength: undefined!,
-				text: '\t '
-			}],
+			changes: [
+				{
+					range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
+					rangeOffset: undefined!,
+					rangeLength: undefined!,
+					text: '\t ',
+				},
+			],
 			eol: undefined!,
 			versionId: undefined!,
 			isRedoing: false,
@@ -123,7 +144,6 @@ suite('ExtHostDocumentData', () => {
 	});
 
 	test('line, issue #5704', function () {
-
 		let line = data.document.lineAt(0);
 		let { range, rangeIncludingLineBreak } = line;
 		assert.strictEqual(range.end.line, 0);
@@ -138,7 +158,6 @@ suite('ExtHostDocumentData', () => {
 		assert.strictEqual(range.end.character, 29);
 		assert.strictEqual(rangeIncludingLineBreak.end.line, 3);
 		assert.strictEqual(rangeIncludingLineBreak.end.character, 29);
-
 	});
 
 	test('offsetAt', () => {
@@ -157,14 +176,15 @@ suite('ExtHostDocumentData', () => {
 	});
 
 	test('offsetAt, after remove', function () {
-
 		data.onEvents({
-			changes: [{
-				range: { startLineNumber: 1, startColumn: 3, endLineNumber: 1, endColumn: 6 },
-				rangeOffset: undefined!,
-				rangeLength: undefined!,
-				text: ''
-			}],
+			changes: [
+				{
+					range: { startLineNumber: 1, startColumn: 3, endLineNumber: 1, endColumn: 6 },
+					rangeOffset: undefined!,
+					rangeLength: undefined!,
+					text: '',
+				},
+			],
 			eol: undefined!,
 			versionId: undefined!,
 			isRedoing: false,
@@ -177,14 +197,15 @@ suite('ExtHostDocumentData', () => {
 	});
 
 	test('offsetAt, after replace', function () {
-
 		data.onEvents({
-			changes: [{
-				range: { startLineNumber: 1, startColumn: 3, endLineNumber: 1, endColumn: 6 },
-				rangeOffset: undefined!,
-				rangeLength: undefined!,
-				text: 'is could be'
-			}],
+			changes: [
+				{
+					range: { startLineNumber: 1, startColumn: 3, endLineNumber: 1, endColumn: 6 },
+					rangeOffset: undefined!,
+					rangeLength: undefined!,
+					text: 'is could be',
+				},
+			],
 			eol: undefined!,
 			versionId: undefined!,
 			isRedoing: false,
@@ -197,14 +218,15 @@ suite('ExtHostDocumentData', () => {
 	});
 
 	test('offsetAt, after insert line', function () {
-
 		data.onEvents({
-			changes: [{
-				range: { startLineNumber: 1, startColumn: 3, endLineNumber: 1, endColumn: 6 },
-				rangeOffset: undefined!,
-				rangeLength: undefined!,
-				text: 'is could be\na line with number'
-			}],
+			changes: [
+				{
+					range: { startLineNumber: 1, startColumn: 3, endLineNumber: 1, endColumn: 6 },
+					rangeOffset: undefined!,
+					rangeLength: undefined!,
+					text: 'is could be\na line with number',
+				},
+			],
 			eol: undefined!,
 			versionId: undefined!,
 			isRedoing: false,
@@ -220,14 +242,15 @@ suite('ExtHostDocumentData', () => {
 	});
 
 	test('offsetAt, after remove line', function () {
-
 		data.onEvents({
-			changes: [{
-				range: { startLineNumber: 1, startColumn: 3, endLineNumber: 2, endColumn: 6 },
-				rangeOffset: undefined!,
-				rangeLength: undefined!,
-				text: ''
-			}],
+			changes: [
+				{
+					range: { startLineNumber: 1, startColumn: 3, endLineNumber: 2, endColumn: 6 },
+					rangeOffset: undefined!,
+					rangeLength: undefined!,
+					text: '',
+				},
+			],
 			eol: undefined!,
 			versionId: undefined!,
 			isRedoing: false,
@@ -254,9 +277,16 @@ suite('ExtHostDocumentData', () => {
 	});
 
 	test('getWordRangeAtPosition', () => {
-		data = new ExtHostDocumentData(undefined!, URI.file(''), [
-			'aaaa bbbb+cccc abc'
-		], '\n', 1, 'text', false, 'utf8');
+		data = new ExtHostDocumentData(
+			undefined!,
+			URI.file(''),
+			['aaaa bbbb+cccc abc'],
+			'\n',
+			1,
+			'text',
+			false,
+			'utf8'
+		);
 
 		let range = data.document.getWordRangeAtPosition(new Position(0, 2))!;
 		assert.strictEqual(range.start.line, 0);
@@ -283,14 +313,17 @@ suite('ExtHostDocumentData', () => {
 		assert.strictEqual(range, undefined);
 	});
 
-	test('getWordRangeAtPosition doesn\'t quite use the regex as expected, #29102', function () {
-		data = new ExtHostDocumentData(undefined!, URI.file(''), [
-			'some text here',
-			'/** foo bar */',
-			'function() {',
-			'	"far boo"',
-			'}'
-		], '\n', 1, 'text', false, 'utf8');
+	test("getWordRangeAtPosition doesn't quite use the regex as expected, #29102", function () {
+		data = new ExtHostDocumentData(
+			undefined!,
+			URI.file(''),
+			['some text here', '/** foo bar */', 'function() {', '	"far boo"', '}'],
+			'\n',
+			1,
+			'text',
+			false,
+			'utf8'
+		);
 
 		let range = data.document.getWordRangeAtPosition(new Position(0, 0), /\/\*.+\*\//);
 		assert.strictEqual(range, undefined);
@@ -311,14 +344,20 @@ suite('ExtHostDocumentData', () => {
 		assert.strictEqual(range.end.character, 10);
 	});
 
-
 	test('getWordRangeAtPosition can freeze the extension host #95319', function () {
+		const regex =
+			/(https?:\/\/github\.com\/(([^\s]+)\/([^\s]+))\/([^\s]+\/)?(issues|pull)\/([0-9]+))|(([^\s]+)\/([^\s]+))?#([1-9][0-9]*)($|[\s\:\;\-\(\=])/;
 
-		const regex = /(https?:\/\/github\.com\/(([^\s]+)\/([^\s]+))\/([^\s]+\/)?(issues|pull)\/([0-9]+))|(([^\s]+)\/([^\s]+))?#([1-9][0-9]*)($|[\s\:\;\-\(\=])/;
-
-		data = new ExtHostDocumentData(undefined!, URI.file(''), [
-			perfData._$_$_expensive
-		], '\n', 1, 'text', false, 'utf8');
+		data = new ExtHostDocumentData(
+			undefined!,
+			URI.file(''),
+			[perfData._$_$_expensive],
+			'\n',
+			1,
+			'text',
+			false,
+			'utf8'
+		);
 
 		// this test only ensures that we eventually give and timeout (when searching "funny" words and long lines)
 		// for the sake of speedy tests we lower the timeBudget here
@@ -332,20 +371,26 @@ suite('ExtHostDocumentData', () => {
 			assert.ok(range);
 			assert.ok(range.contains(pos));
 			assert.strictEqual(data.document.getText(range), 'TaskDefinition');
-
 		} finally {
 			config.dispose();
 		}
 	});
 
 	test('Rename popup sometimes populates with text on the left side omitted #96013', function () {
-
-		const regex = /(-?\d*\.\d\w*)|([^\`\~\!\@\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g;
+		const regex =
+			/(-?\d*\.\d\w*)|([^\`\~\!\@\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g;
 		const line = 'int abcdefhijklmnopqwvrstxyz;';
 
-		data = new ExtHostDocumentData(undefined!, URI.file(''), [
-			line
-		], '\n', 1, 'text', false, 'utf8');
+		data = new ExtHostDocumentData(
+			undefined!,
+			URI.file(''),
+			[line],
+			'\n',
+			1,
+			'text',
+			false,
+			'utf8'
+		);
 
 		const range = data.document.getWordRangeAtPosition(new Position(0, 27), regex)!;
 		assert.strictEqual(range.start.line, 0);
@@ -355,10 +400,18 @@ suite('ExtHostDocumentData', () => {
 	});
 
 	test('Custom snippet $TM_SELECTED_TEXT not show suggestion #108892', function () {
-
-		data = new ExtHostDocumentData(undefined!, URI.file(''), [
-			`        <p><span xml:lang="en">Sheldon</span>, soprannominato "<span xml:lang="en">Shelly</span> dalla madre e dalla sorella, è nato a <span xml:lang="en">Galveston</span>, in <span xml:lang="en">Texas</span>, il 26 febbraio 1980 in un supermercato. È stato un bambino prodigio, come testimoniato dal suo quoziente d'intelligenza (187, di molto superiore alla norma) e dalla sua rapida carriera scolastica: si è diplomato all'eta di 11 anni approdando alla stessa età alla formazione universitaria e all'età di 16 anni ha ottenuto il suo primo dottorato di ricerca. All'inizio della serie e per gran parte di essa vive con il coinquilino Leonard nell'appartamento 4A al 2311 <span xml:lang="en">North Los Robles Avenue</span> di <span xml:lang="en">Pasadena</span>, per poi trasferirsi nell'appartamento di <span xml:lang="en">Penny</span> con <span xml:lang="en">Amy</span> nella decima stagione. Come più volte afferma lui stesso possiede una memoria eidetica e un orecchio assoluto. È stato educato da una madre estremamente religiosa e, in più occasioni, questo aspetto contrasta con il rigore scientifico di <span xml:lang="en">Sheldon</span>; tuttavia la donna sembra essere l'unica persona in grado di comandarlo a bacchetta.</p>`
-		], '\n', 1, 'text', false, 'utf8');
+		data = new ExtHostDocumentData(
+			undefined!,
+			URI.file(''),
+			[
+				`        <p><span xml:lang="en">Sheldon</span>, soprannominato "<span xml:lang="en">Shelly</span> dalla madre e dalla sorella, è nato a <span xml:lang="en">Galveston</span>, in <span xml:lang="en">Texas</span>, il 26 febbraio 1980 in un supermercato. È stato un bambino prodigio, come testimoniato dal suo quoziente d'intelligenza (187, di molto superiore alla norma) e dalla sua rapida carriera scolastica: si è diplomato all'eta di 11 anni approdando alla stessa età alla formazione universitaria e all'età di 16 anni ha ottenuto il suo primo dottorato di ricerca. All'inizio della serie e per gran parte di essa vive con il coinquilino Leonard nell'appartamento 4A al 2311 <span xml:lang="en">North Los Robles Avenue</span> di <span xml:lang="en">Pasadena</span>, per poi trasferirsi nell'appartamento di <span xml:lang="en">Penny</span> con <span xml:lang="en">Amy</span> nella decima stagione. Come più volte afferma lui stesso possiede una memoria eidetica e un orecchio assoluto. È stato educato da una madre estremamente religiosa e, in più occasioni, questo aspetto contrasta con il rigore scientifico di <span xml:lang="en">Sheldon</span>; tuttavia la donna sembra essere l'unica persona in grado di comandarlo a bacchetta.</p>`,
+			],
+			'\n',
+			1,
+			'text',
+			false,
+			'utf8'
+		);
 
 		const pos = new Position(0, 55);
 		const range = data.document.getWordRangeAtPosition(pos)!;
@@ -372,31 +425,46 @@ suite('ExtHostDocumentData', () => {
 
 enum AssertDocumentLineMappingDirection {
 	OffsetToPosition,
-	PositionToOffset
+	PositionToOffset,
 }
 
 suite('ExtHostDocumentData updates line mapping', () => {
-
 	function positionToStr(position: { line: number; character: number }): string {
 		return '(' + position.line + ',' + position.character + ')';
 	}
 
-	function assertDocumentLineMapping(doc: ExtHostDocumentData, direction: AssertDocumentLineMappingDirection): void {
+	function assertDocumentLineMapping(
+		doc: ExtHostDocumentData,
+		direction: AssertDocumentLineMappingDirection
+	): void {
 		const allText = doc.getText();
 
-		let line = 0, character = 0, previousIsCarriageReturn = false;
+		let line = 0,
+			character = 0,
+			previousIsCarriageReturn = false;
 		for (let offset = 0; offset <= allText.length; offset++) {
 			// The position coordinate system cannot express the position between \r and \n
-			const position: Position = new Position(line, character + (previousIsCarriageReturn ? -1 : 0));
+			const position: Position = new Position(
+				line,
+				character + (previousIsCarriageReturn ? -1 : 0)
+			);
 
 			if (direction === AssertDocumentLineMappingDirection.OffsetToPosition) {
 				const actualPosition = doc.document.positionAt(offset);
-				assert.strictEqual(positionToStr(actualPosition), positionToStr(position), 'positionAt mismatch for offset ' + offset);
+				assert.strictEqual(
+					positionToStr(actualPosition),
+					positionToStr(position),
+					'positionAt mismatch for offset ' + offset
+				);
 			} else {
 				// The position coordinate system cannot express the position between \r and \n
 				const expectedOffset: number = offset + (previousIsCarriageReturn ? -1 : 0);
 				const actualOffset = doc.document.offsetAt(position);
-				assert.strictEqual(actualOffset, expectedOffset, 'offsetAt mismatch for position ' + positionToStr(position));
+				assert.strictEqual(
+					actualOffset,
+					expectedOffset,
+					'offsetAt mismatch for position ' + positionToStr(position)
+				);
 			}
 
 			if (allText.charAt(offset) === '\n') {
@@ -406,18 +474,20 @@ suite('ExtHostDocumentData updates line mapping', () => {
 				character++;
 			}
 
-			previousIsCarriageReturn = (allText.charAt(offset) === '\r');
+			previousIsCarriageReturn = allText.charAt(offset) === '\r';
 		}
 	}
 
 	function createChangeEvent(range: Range, text: string, eol?: string): IModelChangedEvent {
 		return {
-			changes: [{
-				range: range,
-				rangeOffset: undefined!,
-				rangeLength: undefined!,
-				text: text
-			}],
+			changes: [
+				{
+					range: range,
+					rangeOffset: undefined!,
+					rangeLength: undefined!,
+					text: text,
+				},
+			],
 			eol: eol!,
 			versionId: undefined!,
 			isRedoing: false,
@@ -425,8 +495,22 @@ suite('ExtHostDocumentData updates line mapping', () => {
 		};
 	}
 
-	function testLineMappingDirectionAfterEvents(lines: string[], eol: string, direction: AssertDocumentLineMappingDirection, e: IModelChangedEvent): void {
-		const myDocument = new ExtHostDocumentData(undefined!, URI.file(''), lines.slice(0), eol, 1, 'text', false, 'utf8');
+	function testLineMappingDirectionAfterEvents(
+		lines: string[],
+		eol: string,
+		direction: AssertDocumentLineMappingDirection,
+		e: IModelChangedEvent
+	): void {
+		const myDocument = new ExtHostDocumentData(
+			undefined!,
+			URI.file(''),
+			lines.slice(0),
+			eol,
+			1,
+			'text',
+			false,
+			'utf8'
+		);
 		assertDocumentLineMapping(myDocument, direction);
 
 		myDocument.onEvents(e);
@@ -434,111 +518,164 @@ suite('ExtHostDocumentData updates line mapping', () => {
 	}
 
 	function testLineMappingAfterEvents(lines: string[], e: IModelChangedEvent): void {
-		testLineMappingDirectionAfterEvents(lines, '\n', AssertDocumentLineMappingDirection.PositionToOffset, e);
-		testLineMappingDirectionAfterEvents(lines, '\n', AssertDocumentLineMappingDirection.OffsetToPosition, e);
+		testLineMappingDirectionAfterEvents(
+			lines,
+			'\n',
+			AssertDocumentLineMappingDirection.PositionToOffset,
+			e
+		);
+		testLineMappingDirectionAfterEvents(
+			lines,
+			'\n',
+			AssertDocumentLineMappingDirection.OffsetToPosition,
+			e
+		);
 
-		testLineMappingDirectionAfterEvents(lines, '\r\n', AssertDocumentLineMappingDirection.PositionToOffset, e);
-		testLineMappingDirectionAfterEvents(lines, '\r\n', AssertDocumentLineMappingDirection.OffsetToPosition, e);
+		testLineMappingDirectionAfterEvents(
+			lines,
+			'\r\n',
+			AssertDocumentLineMappingDirection.PositionToOffset,
+			e
+		);
+		testLineMappingDirectionAfterEvents(
+			lines,
+			'\r\n',
+			AssertDocumentLineMappingDirection.OffsetToPosition,
+			e
+		);
 	}
 
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('line mapping', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], { changes: [], eol: undefined!, versionId: 7, isRedoing: false, isUndoing: false });
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			{ changes: [], eol: undefined!, versionId: 7, isRedoing: false, isUndoing: false }
+		);
 	});
 
 	test('after remove', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 3, 1, 6), ''));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 3, 1, 6), '')
+		);
 	});
 
 	test('after replace', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 3, 1, 6), 'is could be'));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 3, 1, 6), 'is could be')
+		);
 	});
 
 	test('after insert line', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 3, 1, 6), 'is could be\na line with number'));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 3, 1, 6), 'is could be\na line with number')
+		);
 	});
 
 	test('after insert two lines', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 3, 1, 6), 'is could be\na line with number\nyet another line'));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 3, 1, 6), 'is could be\na line with number\nyet another line')
+		);
 	});
 
 	test('after remove line', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 3, 2, 6), ''));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 3, 2, 6), '')
+		);
 	});
 
 	test('after remove two lines', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 3, 3, 6), ''));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 3, 3, 6), '')
+		);
 	});
 
 	test('after deleting entire content', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 3, 4, 30), ''));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 3, 4, 30), '')
+		);
 	});
 
 	test('after replacing entire content', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 3, 4, 30), 'some new text\nthat\nspans multiple lines'));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 3, 4, 30), 'some new text\nthat\nspans multiple lines')
+		);
 	});
 
 	test('after changing EOL to CRLF', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 1, 1, 1), '', '\r\n'));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 1, 1, 1), '', '\r\n')
+		);
 	});
 
 	test('after changing EOL to LF', () => {
-		testLineMappingAfterEvents([
-			'This is line one',
-			'and this is line number two',
-			'it is followed by #3',
-			'and finished with the fourth.',
-		], createChangeEvent(new Range(1, 1, 1, 1), '', '\n'));
+		testLineMappingAfterEvents(
+			[
+				'This is line one',
+				'and this is line number two',
+				'it is followed by #3',
+				'and finished with the fourth.',
+			],
+			createChangeEvent(new Range(1, 1, 1, 1), '', '\n')
+		);
 	});
 });

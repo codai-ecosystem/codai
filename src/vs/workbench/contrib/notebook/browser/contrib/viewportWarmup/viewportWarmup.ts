@@ -6,7 +6,14 @@
 import { RunOnceScheduler } from '../../../../../../base/common/async.js';
 import { Disposable } from '../../../../../../base/common/lifecycle.js';
 import { IAccessibilityService } from '../../../../../../platform/accessibility/common/accessibility.js';
-import { CellEditState, IInsetRenderOutput, INotebookEditor, INotebookEditorContribution, INotebookEditorDelegate, RenderOutputType } from '../../notebookBrowser.js';
+import {
+	CellEditState,
+	IInsetRenderOutput,
+	INotebookEditor,
+	INotebookEditorContribution,
+	INotebookEditorDelegate,
+	RenderOutputType,
+} from '../../notebookBrowser.js';
 import { registerNotebookContribution } from '../../notebookEditorExtensions.js';
 import { CodeCellViewModel, outputDisplayLimit } from '../../viewModel/codeCellViewModel.js';
 import { CellKind } from '../../../common/notebookCommon.js';
@@ -21,23 +28,27 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IAccessibilityService accessibilityService: IAccessibilityService,
+		@IAccessibilityService accessibilityService: IAccessibilityService
 	) {
 		super();
 
 		this._warmupViewport = new RunOnceScheduler(() => this._warmupViewportNow(), 200);
 		this._register(this._warmupViewport);
-		this._register(this._notebookEditor.onDidScroll(() => {
-			this._warmupViewport.schedule();
-		}));
+		this._register(
+			this._notebookEditor.onDidScroll(() => {
+				this._warmupViewport.schedule();
+			})
+		);
 
 		this._warmupDocument = new RunOnceScheduler(() => this._warmupDocumentNow(), 200);
 		this._register(this._warmupDocument);
-		this._register(this._notebookEditor.onDidAttachViewModel(() => {
-			if (this._notebookEditor.hasModel()) {
-				this._warmupDocument?.schedule();
-			}
-		}));
+		this._register(
+			this._notebookEditor.onDidAttachViewModel(() => {
+				if (this._notebookEditor.hasModel()) {
+					this._warmupDocument?.schedule();
+				}
+			})
+		);
 
 		if (this._notebookEditor.hasModel()) {
 			this._warmupDocument?.schedule();
@@ -49,11 +60,15 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
 			for (let i = 0; i < this._notebookEditor.getLength(); i++) {
 				const cell = this._notebookEditor.cellAt(i);
 
-				if (cell?.cellKind === CellKind.Markup && cell?.getEditState() === CellEditState.Preview && !cell.isInputCollapsed) {
+				if (
+					cell?.cellKind === CellKind.Markup &&
+					cell?.getEditState() === CellEditState.Preview &&
+					!cell.isInputCollapsed
+				) {
 					// TODO@rebornix currently we disable markdown cell rendering in webview for accessibility
 					// this._notebookEditor.createMarkupPreview(cell);
 				} else if (cell?.cellKind === CellKind.Code) {
-					this._warmupCodeCell((cell as CodeCellViewModel));
+					this._warmupCodeCell(cell as CodeCellViewModel);
 				}
 			}
 		}
@@ -72,10 +87,14 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
 		cellRangesToIndexes(visibleRanges).forEach(index => {
 			const cell = this._notebookEditor.cellAt(index);
 
-			if (cell?.cellKind === CellKind.Markup && cell?.getEditState() === CellEditState.Preview && !cell.isInputCollapsed) {
+			if (
+				cell?.cellKind === CellKind.Markup &&
+				cell?.getEditState() === CellEditState.Preview &&
+				!cell.isInputCollapsed
+			) {
 				(this._notebookEditor as INotebookEditorDelegate).createMarkupPreview(cell);
 			} else if (cell?.cellKind === CellKind.Code) {
-				this._warmupCodeCell((cell as CodeCellViewModel));
+				this._warmupCodeCell(cell as CodeCellViewModel);
 			}
 		});
 	}
@@ -108,10 +127,14 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
 				return;
 			}
 
-			const result: IInsetRenderOutput = { type: RenderOutputType.Extension, renderer, source: output, mimeType: pickedMimeTypeRenderer.mimeType };
+			const result: IInsetRenderOutput = {
+				type: RenderOutputType.Extension,
+				renderer,
+				source: output,
+				mimeType: pickedMimeTypeRenderer.mimeType,
+			};
 			this._notebookEditor.createOutput(viewCell, result, 0, true);
 		}
-
 	}
 }
 

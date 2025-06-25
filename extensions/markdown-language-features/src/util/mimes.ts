@@ -17,16 +17,20 @@ export const rootMediaMimesTypes = Object.freeze({
 export enum MediaKind {
 	Image = 1,
 	Video,
-	Audio
+	Audio,
 }
 
 export function getMediaKindForMime(mime: string): MediaKind | undefined {
 	const root = mime.toLowerCase().split('/').at(0);
 	switch (root) {
-		case 'image': return MediaKind.Image;
-		case 'video': return MediaKind.Video;
-		case 'audio': return MediaKind.Audio;
-		default: return undefined;
+		case 'image':
+			return MediaKind.Image;
+		case 'video':
+			return MediaKind.Video;
+		case 'audio':
+			return MediaKind.Audio;
+		default:
+			return undefined;
 	}
 }
 

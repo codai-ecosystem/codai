@@ -10,21 +10,31 @@ import { IReference } from '../../../../../../base/common/lifecycle.js';
 import { mock } from '../../../../../../base/test/common/mock.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { ITextModel } from '../../../../../../editor/common/model.js';
-import { IOutlineModelService, OutlineModel } from '../../../../../../editor/contrib/documentSymbols/browser/outlineModel.js';
+import {
+	IOutlineModelService,
+	OutlineModel,
+} from '../../../../../../editor/contrib/documentSymbols/browser/outlineModel.js';
 import { TestConfigurationService } from '../../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { TestThemeService } from '../../../../../../platform/theme/test/common/testThemeService.js';
-import { NotebookBreadcrumbsProvider, NotebookCellOutline, NotebookOutlinePaneProvider, NotebookQuickPickProvider } from '../../../browser/contrib/outline/notebookOutline.js';
+import {
+	NotebookBreadcrumbsProvider,
+	NotebookCellOutline,
+	NotebookOutlinePaneProvider,
+	NotebookQuickPickProvider,
+} from '../../../browser/contrib/outline/notebookOutline.js';
 import { ICellViewModel } from '../../../browser/notebookBrowser.js';
 import { INotebookCellOutlineDataSource } from '../../../browser/viewModel/notebookOutlineDataSource.js';
 import { NotebookOutlineEntryFactory } from '../../../browser/viewModel/notebookOutlineEntryFactory.js';
 import { OutlineEntry } from '../../../browser/viewModel/OutlineEntry.js';
 import { INotebookExecutionStateService } from '../../../common/notebookExecutionStateService.js';
 import { MockDocumentSymbol } from '../testNotebookEditor.js';
-import { IResolvedTextEditorModel, ITextModelService } from '../../../../../../editor/common/services/resolverService.js';
+import {
+	IResolvedTextEditorModel,
+	ITextModelService,
+} from '../../../../../../editor/common/services/resolverService.js';
 import { URI } from '../../../../../../base/common/uri.js';
 
 suite('Notebook Outline View Providers', function () {
-
 	// #region Setup
 
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
@@ -37,18 +47,20 @@ suite('Notebook Outline View Providers', function () {
 		symbolsPerTextModel[textmodelId] = symbols;
 	}
 
-	const executionService = new class extends mock<INotebookExecutionStateService>() {
-		override getCellExecution() { return undefined; }
-	};
+	const executionService = new (class extends mock<INotebookExecutionStateService>() {
+		override getCellExecution() {
+			return undefined;
+		}
+	})();
 
 	class OutlineModelStub {
-		constructor(private textId: string) { }
+		constructor(private textId: string) {}
 
 		getTopLevelSymbols() {
 			return symbolsPerTextModel[this.textId];
 		}
 	}
-	const outlineModelService = new class extends mock<IOutlineModelService>() {
+	const outlineModelService = new (class extends mock<IOutlineModelService>() {
 		override getOrCreate(model: ITextModel, arg1: any) {
 			const outline = new OutlineModelStub(model.id) as unknown as OutlineModel;
 			return Promise.resolve(outline);
@@ -56,30 +68,38 @@ suite('Notebook Outline View Providers', function () {
 		override getDebounceValue(arg0: any) {
 			return 0;
 		}
-	};
-	const textModelService = new class extends mock<ITextModelService>() {
+	})();
+	const textModelService = new (class extends mock<ITextModelService>() {
 		override createModelReference(uri: URI) {
 			return Promise.resolve({
 				object: {
 					textEditorModel: {
 						id: uri.toString(),
-						getVersionId() { return 1; }
-					}
+						getVersionId() {
+							return 1;
+						},
+					},
 				},
-				dispose() { }
+				dispose() {},
 			} as IReference<IResolvedTextEditorModel>);
 		}
-	};
+	})();
 
 	// #endregion
 	// #region Helpers
 
 	function createCodeCellViewModel(version: number = 1, source = '# code', textmodelId = 'textId') {
 		return {
-			uri: { toString() { return textmodelId; } },
+			uri: {
+				toString() {
+					return textmodelId;
+				},
+			},
 			id: textmodelId,
 			textBuffer: {
-				getLineCount() { return 0; }
+				getLineCount() {
+					return 0;
+				},
 			},
 			getText() {
 				return source;
@@ -87,29 +107,41 @@ suite('Notebook Outline View Providers', function () {
 			model: {
 				textModel: {
 					id: textmodelId,
-					getVersionId() { return version; }
-				}
+					getVersionId() {
+						return version;
+					},
+				},
 			},
 			resolveTextModel() {
 				return this.model.textModel as unknown;
 			},
-			cellKind: 2
+			cellKind: 2,
 		} as ICellViewModel;
 	}
 
-	function createMockOutlineDataSource(entries: OutlineEntry[], activeElement: OutlineEntry | undefined = undefined) {
-		return new class extends mock<IReference<INotebookCellOutlineDataSource>>() {
+	function createMockOutlineDataSource(
+		entries: OutlineEntry[],
+		activeElement: OutlineEntry | undefined = undefined
+	) {
+		return new (class extends mock<IReference<INotebookCellOutlineDataSource>>() {
 			override object: INotebookCellOutlineDataSource = {
 				entries: entries,
 				activeElement: activeElement,
 			};
-		};
+		})();
 	}
 
-	function createMarkupCellViewModel(version: number = 1, source = 'markup', textmodelId = 'textId', alternativeId = 1) {
+	function createMarkupCellViewModel(
+		version: number = 1,
+		source = 'markup',
+		textmodelId = 'textId',
+		alternativeId = 1
+	) {
 		return {
 			textBuffer: {
-				getLineCount() { return 0; }
+				getLineCount() {
+					return 0;
+				},
 			},
 			getText() {
 				return source;
@@ -120,17 +152,22 @@ suite('Notebook Outline View Providers', function () {
 			model: {
 				textModel: {
 					id: textmodelId,
-					getVersionId() { return version; }
-				}
+					getVersionId() {
+						return version;
+					},
+				},
 			},
 			resolveTextModel() {
 				return this.model.textModel as unknown;
 			},
-			cellKind: 1
+			cellKind: 1,
 		} as ICellViewModel;
 	}
 
-	function flatten(element: OutlineEntry, dataSource: IDataSource<NotebookCellOutline, OutlineEntry>): OutlineEntry[] {
+	function flatten(
+		element: OutlineEntry,
+		dataSource: IDataSource<NotebookCellOutline, OutlineEntry>
+	): OutlineEntry[] {
 		const elements: OutlineEntry[] = [];
 
 		const children = dataSource.getChildren(element);
@@ -157,7 +194,6 @@ suite('Notebook Outline View Providers', function () {
 						result.push(entry);
 						parentStack.push(entry);
 						break;
-
 					} else {
 						const parentCandidate = parentStack[len - 1];
 						if (parentCandidate.level < entry.level) {
@@ -191,11 +227,26 @@ suite('Notebook Outline View Providers', function () {
 		quickPickShowAllSymbols: boolean;
 		breadcrumbsShowCodeCells: boolean;
 	}) {
-		await configurationService.setUserConfiguration('notebook.outline.showMarkdownHeadersOnly', config.outlineShowMarkdownHeadersOnly);
-		await configurationService.setUserConfiguration('notebook.outline.showCodeCells', config.outlineShowCodeCells);
-		await configurationService.setUserConfiguration('notebook.outline.showCodeCellSymbols', config.outlineShowCodeCellSymbols);
-		await configurationService.setUserConfiguration('notebook.gotoSymbols.showAllSymbols', config.quickPickShowAllSymbols);
-		await configurationService.setUserConfiguration('notebook.breadcrumbs.showCodeCells', config.breadcrumbsShowCodeCells);
+		await configurationService.setUserConfiguration(
+			'notebook.outline.showMarkdownHeadersOnly',
+			config.outlineShowMarkdownHeadersOnly
+		);
+		await configurationService.setUserConfiguration(
+			'notebook.outline.showCodeCells',
+			config.outlineShowCodeCells
+		);
+		await configurationService.setUserConfiguration(
+			'notebook.outline.showCodeCellSymbols',
+			config.outlineShowCodeCellSymbols
+		);
+		await configurationService.setUserConfiguration(
+			'notebook.gotoSymbols.showAllSymbols',
+			config.quickPickShowAllSymbols
+		);
+		await configurationService.setUserConfiguration(
+			'notebook.breadcrumbs.showCodeCells',
+			config.breadcrumbsShowCodeCells
+		);
 	}
 
 	// #endregion
@@ -207,7 +258,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: false,
 			outlineShowCodeCellSymbols: true,
 			quickPickShowAllSymbols: false,
-			breadcrumbsShowCodeCells: false
+			breadcrumbsShowCodeCells: false,
 		});
 
 		// Create models + symbols
@@ -215,7 +266,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -223,19 +274,34 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {} }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createCodeCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createCodeCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 
 		// Generate filtered outline (view model)
-		const outlinePaneProvider = store.add(new NotebookOutlinePaneProvider(undefined, configurationService));
+		const outlinePaneProvider = store.add(
+			new NotebookOutlinePaneProvider(undefined, configurationService)
+		);
 		const results = flatten(outlineModel, outlinePaneProvider);
 
 		// Validate
@@ -250,7 +316,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: false,
 			outlineShowCodeCellSymbols: false,
 			quickPickShowAllSymbols: false,
-			breadcrumbsShowCodeCells: false
+			breadcrumbsShowCodeCells: false,
 		});
 
 		// Create models + symbols
@@ -258,7 +324,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -266,19 +332,34 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {} }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createCodeCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createCodeCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 
 		// Generate filtered outline (view model)
-		const outlinePaneProvider = store.add(new NotebookOutlinePaneProvider(undefined, configurationService));
+		const outlinePaneProvider = store.add(
+			new NotebookOutlinePaneProvider(undefined, configurationService)
+		);
 		const results = flatten(outlineModel, outlinePaneProvider);
 
 		assert.equal(results.length, 2);
@@ -296,7 +377,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: false,
 			outlineShowCodeCellSymbols: false,
 			quickPickShowAllSymbols: false,
-			breadcrumbsShowCodeCells: false
+			breadcrumbsShowCodeCells: false,
 		});
 
 		// Create models + symbols
@@ -304,7 +385,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -312,19 +393,34 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {} }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createCodeCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createCodeCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 
 		// Generate filtered outline (view model)
-		const outlinePaneProvider = store.add(new NotebookOutlinePaneProvider(undefined, configurationService));
+		const outlinePaneProvider = store.add(
+			new NotebookOutlinePaneProvider(undefined, configurationService)
+		);
 		const results = flatten(outlineModel, outlinePaneProvider);
 
 		assert.equal(results.length, 1);
@@ -339,7 +435,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: true,
 			outlineShowCodeCellSymbols: false,
 			quickPickShowAllSymbols: false,
-			breadcrumbsShowCodeCells: false
+			breadcrumbsShowCodeCells: false,
 		});
 
 		// Create models + symbols
@@ -347,7 +443,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -355,19 +451,34 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {} }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createCodeCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createCodeCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 
 		// Generate filtered outline (view model)
-		const outlinePaneProvider = store.add(new NotebookOutlinePaneProvider(undefined, configurationService));
+		const outlinePaneProvider = store.add(
+			new NotebookOutlinePaneProvider(undefined, configurationService)
+		);
 		const results = flatten(outlineModel, outlinePaneProvider);
 
 		assert.equal(results.length, 3);
@@ -388,7 +499,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: true,
 			outlineShowCodeCellSymbols: true,
 			quickPickShowAllSymbols: false,
-			breadcrumbsShowCodeCells: false
+			breadcrumbsShowCodeCells: false,
 		});
 
 		// Create models + symbols
@@ -396,7 +507,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -404,19 +515,34 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {} }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createCodeCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createCodeCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 
 		// Generate filtered outline (view model)
-		const outlinePaneProvider = store.add(new NotebookOutlinePaneProvider(undefined, configurationService));
+		const outlinePaneProvider = store.add(
+			new NotebookOutlinePaneProvider(undefined, configurationService)
+		);
 		const results = flatten(outlineModel, outlinePaneProvider);
 
 		// validate
@@ -447,7 +573,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: false,
 			outlineShowCodeCellSymbols: false,
 			quickPickShowAllSymbols: true,
-			breadcrumbsShowCodeCells: false
+			breadcrumbsShowCodeCells: false,
 		});
 
 		// Create models + symbols
@@ -455,7 +581,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -463,19 +589,38 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {}, kind: 12 }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createCodeCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createCodeCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 
 		// Generate filtered outline (view model)
-		const quickPickProvider = store.add(new NotebookQuickPickProvider(createMockOutlineDataSource([...outlineModel.children]), configurationService, themeService));
+		const quickPickProvider = store.add(
+			new NotebookQuickPickProvider(
+				createMockOutlineDataSource([...outlineModel.children]),
+				configurationService,
+				themeService
+			)
+		);
 		const results = quickPickProvider.getQuickPickElements();
 
 		// Validate
@@ -500,7 +645,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: false,
 			outlineShowCodeCellSymbols: false,
 			quickPickShowAllSymbols: true,
-			breadcrumbsShowCodeCells: false
+			breadcrumbsShowCodeCells: false,
 		});
 
 		// Create models + symbols
@@ -508,7 +653,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -516,19 +661,38 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {}, kind: 12 }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createCodeCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createCodeCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 
 		// Generate filtered outline (view model)
-		const quickPickProvider = store.add(new NotebookQuickPickProvider(createMockOutlineDataSource([...outlineModel.children]), configurationService, themeService));
+		const quickPickProvider = store.add(
+			new NotebookQuickPickProvider(
+				createMockOutlineDataSource([...outlineModel.children]),
+				configurationService,
+				themeService
+			)
+		);
 		const results = quickPickProvider.getQuickPickElements();
 
 		// Validate
@@ -553,7 +717,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: false,
 			outlineShowCodeCellSymbols: false,
 			quickPickShowAllSymbols: false,
-			breadcrumbsShowCodeCells: false
+			breadcrumbsShowCodeCells: false,
 		});
 
 		// Create models + symbols
@@ -561,7 +725,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -569,19 +733,38 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {}, kind: 12 }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createCodeCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createCodeCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 
 		// Generate filtered outline (view model)
-		const quickPickProvider = store.add(new NotebookQuickPickProvider(createMockOutlineDataSource([...outlineModel.children]), configurationService, themeService));
+		const quickPickProvider = store.add(
+			new NotebookQuickPickProvider(
+				createMockOutlineDataSource([...outlineModel.children]),
+				configurationService,
+				themeService
+			)
+		);
 		const results = quickPickProvider.getQuickPickElements();
 
 		// Validate
@@ -609,7 +792,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: false,
 			outlineShowCodeCellSymbols: false,
 			quickPickShowAllSymbols: false,
-			breadcrumbsShowCodeCells: true
+			breadcrumbsShowCodeCells: true,
 		});
 
 		// Create models + symbols
@@ -617,7 +800,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -625,20 +808,38 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {}, kind: 12 }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createMarkupCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createMarkupCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 		const outlineTree = buildOutlineTree([...outlineModel.children]);
 
 		// Generate filtered outline (view model)
-		const breadcrumbsProvider = store.add(new NotebookBreadcrumbsProvider(createMockOutlineDataSource([], [...outlineTree![0].children][1]), configurationService));
+		const breadcrumbsProvider = store.add(
+			new NotebookBreadcrumbsProvider(
+				createMockOutlineDataSource([], [...outlineTree![0].children][1]),
+				configurationService
+			)
+		);
 		const results = breadcrumbsProvider.getBreadcrumbElements();
 
 		// Validate
@@ -660,7 +861,7 @@ suite('Notebook Outline View Providers', function () {
 			outlineShowCodeCells: false,
 			outlineShowCodeCellSymbols: false,
 			quickPickShowAllSymbols: false,
-			breadcrumbsShowCodeCells: false
+			breadcrumbsShowCodeCells: false,
 		});
 
 		// Create models + symbols
@@ -668,7 +869,7 @@ suite('Notebook Outline View Providers', function () {
 			createMarkupCellViewModel(1, '# h1', '$0', 0),
 			createMarkupCellViewModel(1, 'plaintext', '$1', 0),
 			createCodeCellViewModel(1, '# code cell 2', '$2'),
-			createCodeCellViewModel(1, '# code cell 3', '$3')
+			createCodeCellViewModel(1, '# code cell 3', '$3'),
 		];
 		setSymbolsForTextModel([], '$0');
 		setSymbolsForTextModel([], '$1');
@@ -676,20 +877,38 @@ suite('Notebook Outline View Providers', function () {
 		setSymbolsForTextModel([{ name: 'var3', range: {}, kind: 12 }], '$3');
 
 		// Cache symbols
-		const entryFactory = new NotebookOutlineEntryFactory(executionService, outlineModelService, textModelService);
+		const entryFactory = new NotebookOutlineEntryFactory(
+			executionService,
+			outlineModelService,
+			textModelService
+		);
 		for (const cell of cells) {
 			await entryFactory.cacheSymbols(cell, CancellationToken.None);
 		}
 
 		// Generate raw outline
-		const outlineModel = new OutlineEntry(-1, -1, createMarkupCellViewModel(), 'fakeRoot', false, false, undefined, undefined);
+		const outlineModel = new OutlineEntry(
+			-1,
+			-1,
+			createMarkupCellViewModel(),
+			'fakeRoot',
+			false,
+			false,
+			undefined,
+			undefined
+		);
 		for (const cell of cells) {
 			entryFactory.getOutlineEntries(cell, 0).forEach(entry => outlineModel.addChild(entry));
 		}
 		const outlineTree = buildOutlineTree([...outlineModel.children]);
 
 		// Generate filtered outline (view model)
-		const breadcrumbsProvider = store.add(new NotebookBreadcrumbsProvider(createMockOutlineDataSource([], [...outlineTree![0].children][1]), configurationService));
+		const breadcrumbsProvider = store.add(
+			new NotebookBreadcrumbsProvider(
+				createMockOutlineDataSource([], [...outlineTree![0].children][1]),
+				configurationService
+			)
+		);
 		const results = breadcrumbsProvider.getBreadcrumbElements();
 
 		// Validate

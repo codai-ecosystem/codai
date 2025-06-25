@@ -20,7 +20,7 @@ suite('SSEParser', () => {
 
 	setup(() => {
 		receivedEvents = [];
-		parser = new SSEParser((event) => receivedEvents.push(event));
+		parser = new SSEParser(event => receivedEvents.push(event));
 	});
 	test('handles basic events', () => {
 		parser.feed(toUint8Array('data: hello world\n\n'));
@@ -51,7 +51,9 @@ suite('SSEParser', () => {
 	});
 	test('stream processing chunks', () => {
 		for (const lf of ['\n', '\r\n', '\r']) {
-			const message = toUint8Array(`event: custom${lf}data: hello world${lf}${lf}event: custom2${lf}data: hello world2${lf}${lf}`);
+			const message = toUint8Array(
+				`event: custom${lf}data: hello world${lf}${lf}event: custom2${lf}data: hello world2${lf}${lf}`
+			);
 			for (let chunkSize = 1; chunkSize < 5; chunkSize++) {
 				receivedEvents.length = 0;
 
@@ -60,10 +62,14 @@ suite('SSEParser', () => {
 					parser.feed(chunk);
 				}
 
-				assert.deepStrictEqual(receivedEvents, [
-					{ type: 'custom', data: 'hello world' },
-					{ type: 'custom2', data: 'hello world2' }
-				], `Failed for chunk size ${chunkSize} and line ending ${JSON.stringify(lf)}`);
+				assert.deepStrictEqual(
+					receivedEvents,
+					[
+						{ type: 'custom', data: 'hello world' },
+						{ type: 'custom2', data: 'hello world2' },
+					],
+					`Failed for chunk size ${chunkSize} and line ending ${JSON.stringify(lf)}`
+				);
 			}
 		}
 	});

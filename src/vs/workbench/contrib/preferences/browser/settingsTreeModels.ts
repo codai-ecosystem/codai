@@ -11,16 +11,47 @@ import { escapeRegExpCharacters, isFalsyOrWhitespace } from '../../../../base/co
 import { isUndefinedOrNull } from '../../../../base/common/types.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ILanguageService } from '../../../../editor/common/languages/language.js';
-import { ConfigurationTarget, IConfigurationValue } from '../../../../platform/configuration/common/configuration.js';
-import { ConfigurationDefaultValueSource, ConfigurationScope, EditPresentationTypes, Extensions, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
+import {
+	ConfigurationTarget,
+	IConfigurationValue,
+} from '../../../../platform/configuration/common/configuration.js';
+import {
+	ConfigurationDefaultValueSource,
+	ConfigurationScope,
+	EditPresentationTypes,
+	Extensions,
+	IConfigurationRegistry,
+} from '../../../../platform/configuration/common/configurationRegistry.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { USER_LOCAL_AND_REMOTE_SETTINGS } from '../../../../platform/request/common/request.js';
-import { APPLICATION_SCOPES, FOLDER_SCOPES, IWorkbenchConfigurationService, LOCAL_MACHINE_SCOPES, REMOTE_MACHINE_SCOPES, WORKSPACE_SCOPES } from '../../../services/configuration/common/configuration.js';
+import {
+	APPLICATION_SCOPES,
+	FOLDER_SCOPES,
+	IWorkbenchConfigurationService,
+	LOCAL_MACHINE_SCOPES,
+	REMOTE_MACHINE_SCOPES,
+	WORKSPACE_SCOPES,
+} from '../../../services/configuration/common/configuration.js';
 import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
-import { IExtensionSetting, ISearchResult, ISetting, ISettingMatch, SettingMatchType, SettingValueType } from '../../../services/preferences/common/preferences.js';
+import {
+	IExtensionSetting,
+	ISearchResult,
+	ISetting,
+	ISettingMatch,
+	SettingMatchType,
+	SettingValueType,
+} from '../../../services/preferences/common/preferences.js';
 import { IUserDataProfileService } from '../../../services/userDataProfile/common/userDataProfile.js';
-import { ENABLE_EXTENSION_TOGGLE_SETTINGS, ENABLE_LANGUAGE_FILTER, MODIFIED_SETTING_TAG, POLICY_SETTING_TAG, REQUIRE_TRUSTED_WORKSPACE_SETTING_TAG, compareTwoNullableNumbers, wordifyKey } from '../common/preferences.js';
+import {
+	ENABLE_EXTENSION_TOGGLE_SETTINGS,
+	ENABLE_LANGUAGE_FILTER,
+	MODIFIED_SETTING_TAG,
+	POLICY_SETTING_TAG,
+	REQUIRE_TRUSTED_WORKSPACE_SETTING_TAG,
+	compareTwoNullableNumbers,
+	wordifyKey,
+} from '../common/preferences.js';
 import { SettingsTarget } from './preferencesWidgets.js';
 import { ITOCEntry, tocData } from './settingsLayout.js';
 
@@ -60,7 +91,10 @@ export abstract class SettingsTreeElement extends Disposable {
 	}
 }
 
-export type SettingsTreeGroupChild = (SettingsTreeGroupElement | SettingsTreeSettingElement | SettingsTreeNewExtensionsElement);
+export type SettingsTreeGroupChild =
+	| SettingsTreeGroupElement
+	| SettingsTreeSettingElement
+	| SettingsTreeNewExtensionsElement;
 
 export class SettingsTreeGroupElement extends SettingsTreeElement {
 	count?: number;
@@ -86,7 +120,13 @@ export class SettingsTreeGroupElement extends SettingsTreeElement {
 		});
 	}
 
-	constructor(_id: string, count: number | undefined, label: string, level: number, isFirstGroup: boolean) {
+	constructor(
+		_id: string,
+		count: number | undefined,
+		label: string,
+		level: number,
+		isFirstGroup: boolean
+	) {
 		super(_id);
 
 		this.count = count;
@@ -104,7 +144,10 @@ export class SettingsTreeGroupElement extends SettingsTreeElement {
 }
 
 export class SettingsTreeNewExtensionsElement extends SettingsTreeElement {
-	constructor(_id: string, public readonly extensionIds: string[]) {
+	constructor(
+		_id: string,
+		public readonly extensionIds: string[]
+	) {
 		super(_id);
 	}
 }
@@ -160,7 +203,10 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 	/**
 	 * For each language that contributes setting values or default overrides, we can see those values here.
 	 */
-	languageOverrideValues: Map<string, IConfigurationValue<unknown>> = new Map<string, IConfigurationValue<unknown>>();
+	languageOverrideValues: Map<string, IConfigurationValue<unknown>> = new Map<
+		string,
+		IConfigurationValue<unknown>
+	>();
 
 	description!: string;
 	valueType!: SettingValueType;
@@ -174,7 +220,7 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 		private readonly languageService: ILanguageService,
 		private readonly productService: IProductService,
 		private readonly userDataProfileService: IUserDataProfileService,
-		private readonly configurationService: IWorkbenchConfigurationService,
+		private readonly configurationService: IWorkbenchConfigurationService
 	) {
 		super(sanitizeId(parent.id + '_' + setting.key));
 		this.setting = setting;
@@ -207,14 +253,21 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 			this._displayCategory = this.setting.categoryLabel ?? null;
 			return;
 		}
-		const displayKeyFormat = settingKeyToDisplayFormat(this.setting.key, this.parent!.id, this.setting.isLanguageTagSetting);
+		const displayKeyFormat = settingKeyToDisplayFormat(
+			this.setting.key,
+			this.parent!.id,
+			this.setting.isLanguageTagSetting
+		);
 		this._displayLabel = displayKeyFormat.label;
 		this._displayCategory = displayKeyFormat.category;
 	}
 
 	private initSettingDescription() {
 		if (this.setting.description.length > SettingsTreeSettingElement.MAX_DESC_LINES) {
-			const truncatedDescLines = this.setting.description.slice(0, SettingsTreeSettingElement.MAX_DESC_LINES);
+			const truncatedDescLines = this.setting.description.slice(
+				0,
+				SettingsTreeSettingElement.MAX_DESC_LINES
+			);
 			truncatedDescLines.push('[...]');
 			this.description = truncatedDescLines.join('\n');
 		} else {
@@ -225,7 +278,10 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 	private initSettingValueType() {
 		if (isExtensionToggleSetting(this.setting, this.productService)) {
 			this.valueType = SettingValueType.ExtensionToggle;
-		} else if (this.setting.enum && (!this.setting.type || settingTypeEnumRenderable(this.setting.type))) {
+		} else if (
+			this.setting.enum &&
+			(!this.setting.type || settingTypeEnumRenderable(this.setting.type))
+		) {
 			this.valueType = SettingValueType.Enum;
 		} else if (this.setting.type === 'string') {
 			if (this.setting.editPresentation === EditPresentationTypes.Multiline) {
@@ -243,10 +299,17 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 			this.valueType = SettingValueType.Number;
 		} else if (this.setting.type === 'boolean') {
 			this.valueType = SettingValueType.Boolean;
-		} else if (this.setting.type === 'array' && this.setting.arrayItemType &&
-			['string', 'enum', 'number', 'integer'].includes(this.setting.arrayItemType)) {
+		} else if (
+			this.setting.type === 'array' &&
+			this.setting.arrayItemType &&
+			['string', 'enum', 'number', 'integer'].includes(this.setting.arrayItemType)
+		) {
 			this.valueType = SettingValueType.Array;
-		} else if (Array.isArray(this.setting.type) && this.setting.type.includes(SettingValueType.Null) && this.setting.type.length === 2) {
+		} else if (
+			Array.isArray(this.setting.type) &&
+			this.setting.type.includes(SettingValueType.Null) &&
+			this.setting.type.length === 2
+		) {
 			if (this.setting.type.includes(SettingValueType.Integer)) {
 				this.valueType = SettingValueType.NullableInteger;
 			} else if (this.setting.type.includes(SettingValueType.Number)) {
@@ -274,16 +337,27 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 
 	inspectSelf() {
 		const targetToInspect = this.getTargetToInspect(this.setting);
-		const inspectResult = inspectSetting(this.setting.key, targetToInspect, this.languageFilter, this.configurationService);
+		const inspectResult = inspectSetting(
+			this.setting.key,
+			targetToInspect,
+			this.languageFilter,
+			this.configurationService
+		);
 		this.update(inspectResult, this.isWorkspaceTrusted);
 	}
 
 	private getTargetToInspect(setting: ISetting): SettingsTarget {
-		if (!this.userDataProfileService.currentProfile.isDefault && !this.userDataProfileService.currentProfile.useDefaultFlags?.settings) {
+		if (
+			!this.userDataProfileService.currentProfile.isDefault &&
+			!this.userDataProfileService.currentProfile.useDefaultFlags?.settings
+		) {
 			if (setting.scope === ConfigurationScope.APPLICATION) {
 				return ConfigurationTarget.APPLICATION;
 			}
-			if (this.configurationService.isSettingAppliedForAllProfiles(setting.key) && this.settingsTarget === ConfigurationTarget.USER_LOCAL) {
+			if (
+				this.configurationService.isSettingAppliedForAllProfiles(setting.key) &&
+				this.settingsTarget === ConfigurationTarget.USER_LOCAL
+			) {
 				return ConfigurationTarget.APPLICATION;
 			}
 		}
@@ -291,7 +365,8 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 	}
 
 	private update(inspectResult: IInspectResult, isWorkspaceTrusted: boolean): void {
-		let { isConfigured, inspected, targetSelector, inspectedLanguageOverrides, languageSelector } = inspectResult;
+		let { isConfigured, inspected, targetSelector, inspectedLanguageOverrides, languageSelector } =
+			inspectResult;
 
 		switch (targetSelector) {
 			case 'workspaceFolderValue':
@@ -303,13 +378,22 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 		let displayValue = isConfigured ? inspected[targetSelector] : inspected.defaultValue;
 		const overriddenScopeList: string[] = [];
 		const overriddenDefaultsLanguageList: string[] = [];
-		if ((languageSelector || targetSelector !== 'workspaceValue') && typeof inspected.workspaceValue !== 'undefined') {
+		if (
+			(languageSelector || targetSelector !== 'workspaceValue') &&
+			typeof inspected.workspaceValue !== 'undefined'
+		) {
 			overriddenScopeList.push('workspace:');
 		}
-		if ((languageSelector || targetSelector !== 'userRemoteValue') && typeof inspected.userRemoteValue !== 'undefined') {
+		if (
+			(languageSelector || targetSelector !== 'userRemoteValue') &&
+			typeof inspected.userRemoteValue !== 'undefined'
+		) {
 			overriddenScopeList.push('remote:');
 		}
-		if ((languageSelector || targetSelector !== 'userLocalValue') && typeof inspected.userLocalValue !== 'undefined') {
+		if (
+			(languageSelector || targetSelector !== 'userLocalValue') &&
+			typeof inspected.userLocalValue !== 'undefined'
+		) {
 			overriddenScopeList.push('user:');
 		}
 
@@ -318,16 +402,28 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 				const inspectedOverride = inspectedLanguageOverrides.get(overrideIdentifier);
 				if (inspectedOverride) {
 					if (this.languageService.isRegisteredLanguageId(overrideIdentifier)) {
-						if (languageSelector !== overrideIdentifier && typeof inspectedOverride.default?.override !== 'undefined') {
+						if (
+							languageSelector !== overrideIdentifier &&
+							typeof inspectedOverride.default?.override !== 'undefined'
+						) {
 							overriddenDefaultsLanguageList.push(overrideIdentifier);
 						}
-						if ((languageSelector !== overrideIdentifier || targetSelector !== 'workspaceValue') && typeof inspectedOverride.workspace?.override !== 'undefined') {
+						if (
+							(languageSelector !== overrideIdentifier || targetSelector !== 'workspaceValue') &&
+							typeof inspectedOverride.workspace?.override !== 'undefined'
+						) {
 							overriddenScopeList.push(`workspace:${overrideIdentifier}`);
 						}
-						if ((languageSelector !== overrideIdentifier || targetSelector !== 'userRemoteValue') && typeof inspectedOverride.userRemote?.override !== 'undefined') {
+						if (
+							(languageSelector !== overrideIdentifier || targetSelector !== 'userRemoteValue') &&
+							typeof inspectedOverride.userRemote?.override !== 'undefined'
+						) {
 							overriddenScopeList.push(`remote:${overrideIdentifier}`);
 						}
-						if ((languageSelector !== overrideIdentifier || targetSelector !== 'userLocalValue') && typeof inspectedOverride.userLocal?.override !== 'undefined') {
+						if (
+							(languageSelector !== overrideIdentifier || targetSelector !== 'userLocalValue') &&
+							typeof inspectedOverride.userLocal?.override !== 'undefined'
+						) {
 							overriddenScopeList.push(`user:${overrideIdentifier}`);
 						}
 					}
@@ -352,11 +448,15 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 			const overrideValues = this.languageOverrideValues.get(languageSelector)!;
 			// In the worst case, go back to using the previous display value.
 			// Also, sometimes the override is in the form of a default value override, so consider that second.
-			displayValue = (isConfigured ? overrideValues[targetSelector] : overrideValues.defaultValue) ?? displayValue;
+			displayValue =
+				(isConfigured ? overrideValues[targetSelector] : overrideValues.defaultValue) ??
+				displayValue;
 			this.scopeValue = isConfigured && overrideValues[targetSelector];
 			this.defaultValue = overrideValues.defaultValue ?? inspected.defaultValue;
 
-			const registryValues = Registry.as<IConfigurationRegistry>(Extensions.Configuration).getConfigurationDefaultsOverrides();
+			const registryValues = Registry.as<IConfigurationRegistry>(
+				Extensions.Configuration
+			).getConfigurationDefaultsOverrides();
 			const source = registryValues.get(`[${languageSelector}]`)?.source;
 			const overrideValueSource = source instanceof Map ? source.get(this.setting.key) : undefined;
 			if (overrideValueSource) {
@@ -369,7 +469,13 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 
 		this.value = displayValue;
 		this.isConfigured = isConfigured;
-		if (isConfigured || this.setting.tags || this.tags || this.setting.restricted || this.hasPolicyValue) {
+		if (
+			isConfigured ||
+			this.setting.tags ||
+			this.tags ||
+			this.setting.restricted ||
+			this.hasPolicyValue
+		) {
 			// Don't create an empty Set for all 1000 settings, only if needed
 			this.tags = new Set<string>();
 			if (isConfigured) {
@@ -402,8 +508,7 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 		}
 
 		// Check that the filter tags are a subset of this setting's tags
-		return !!this.tags?.size &&
-			Array.from(tagFilters).every(tag => this.tags!.has(tag));
+		return !!this.tags?.size && Array.from(tagFilters).every(tag => this.tags!.has(tag));
 	}
 
 	matchesScope(scope: SettingsTarget, isRemote: boolean): boolean {
@@ -426,12 +531,18 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 		}
 
 		if (configTarget === ConfigurationTarget.USER_REMOTE) {
-			return REMOTE_MACHINE_SCOPES.includes(this.setting.scope) || USER_LOCAL_AND_REMOTE_SETTINGS.includes(this.setting.key);
+			return (
+				REMOTE_MACHINE_SCOPES.includes(this.setting.scope) ||
+				USER_LOCAL_AND_REMOTE_SETTINGS.includes(this.setting.key)
+			);
 		}
 
 		if (configTarget === ConfigurationTarget.USER_LOCAL) {
 			if (isRemote) {
-				return LOCAL_MACHINE_SCOPES.includes(this.setting.scope) || USER_LOCAL_AND_REMOTE_SETTINGS.includes(this.setting.key);
+				return (
+					LOCAL_MACHINE_SCOPES.includes(this.setting.scope) ||
+					USER_LOCAL_AND_REMOTE_SETTINGS.includes(this.setting.key)
+				);
 			}
 		}
 
@@ -447,7 +558,9 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 			return false;
 		}
 
-		return Array.from(extensionFilters).some(extensionId => extensionId.toLowerCase() === this.setting.extensionInfo!.id.toLowerCase());
+		return Array.from(extensionFilters).some(
+			extensionId => extensionId.toLowerCase() === this.setting.extensionInfo!.id.toLowerCase()
+		);
 	}
 
 	matchesAnyFeature(featureFilters?: Set<string>): boolean {
@@ -462,7 +575,11 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 				const feature = features.children.find(feature => 'features/' + filter === feature.id);
 				if (feature) {
 					const patterns = feature.settings?.map(setting => createSettingMatchRegExp(setting));
-					return patterns && !this.setting.extensionInfo && patterns.some(pattern => pattern.test(this.setting.key.toLowerCase()));
+					return (
+						patterns &&
+						!this.setting.extensionInfo &&
+						patterns.some(pattern => pattern.test(this.setting.key.toLowerCase()))
+					);
 				} else {
 					return false;
 				}
@@ -502,10 +619,8 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 	}
 }
 
-
 function createSettingMatchRegExp(pattern: string): RegExp {
-	pattern = escapeRegExpCharacters(pattern)
-		.replace(/\\\*/g, '.*');
+	pattern = escapeRegExpCharacters(pattern).replace(/\\\*/g, '.*');
 
 	return new RegExp(`^${pattern}$`, 'i');
 }
@@ -518,12 +633,12 @@ export class SettingsTreeModel implements IDisposable {
 	constructor(
 		protected readonly _viewState: ISettingsEditorViewState,
 		private _isWorkspaceTrusted: boolean,
-		@IWorkbenchConfigurationService private readonly _configurationService: IWorkbenchConfigurationService,
+		@IWorkbenchConfigurationService
+		private readonly _configurationService: IWorkbenchConfigurationService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IUserDataProfileService private readonly _userDataProfileService: IUserDataProfileService,
 		@IProductService private readonly _productService: IProductService
-	) {
-	}
+	) {}
 
 	get root(): SettingsTreeGroupElement {
 		return this._root;
@@ -578,7 +693,9 @@ export class SettingsTreeModel implements IDisposable {
 	}
 
 	private updateRequireTrustedTargetElements(): void {
-		this.reinspectSettings([...this._treeElementsBySettingName.values()].flat().filter(s => s.isUntrusted));
+		this.reinspectSettings(
+			[...this._treeElementsBySettingName.values()].flat().filter(s => s.isUntrusted)
+		);
 	}
 
 	private reinspectSettings(settings: SettingsTreeSettingElement[]): void {
@@ -587,14 +704,25 @@ export class SettingsTreeModel implements IDisposable {
 		}
 	}
 
-	private createSettingsTreeGroupElement(tocEntry: ITOCEntry<ISetting>, parent?: SettingsTreeGroupElement): SettingsTreeGroupElement {
+	private createSettingsTreeGroupElement(
+		tocEntry: ITOCEntry<ISetting>,
+		parent?: SettingsTreeGroupElement
+	): SettingsTreeGroupElement {
 		const depth = parent ? this.getDepth(parent) + 1 : 0;
-		const element = new SettingsTreeGroupElement(tocEntry.id, undefined, tocEntry.label, depth, false);
+		const element = new SettingsTreeGroupElement(
+			tocEntry.id,
+			undefined,
+			tocEntry.label,
+			depth,
+			false
+		);
 		element.parent = parent;
 
 		const children: SettingsTreeGroupChild[] = [];
 		if (tocEntry.settings) {
-			const settingChildren = tocEntry.settings.map(s => this.createSettingsTreeSettingElement(s, element));
+			const settingChildren = tocEntry.settings.map(s =>
+				this.createSettingsTreeSettingElement(s, element)
+			);
 			for (const child of settingChildren) {
 				if (!child.setting.deprecationMessage) {
 					children.push(child);
@@ -610,7 +738,9 @@ export class SettingsTreeModel implements IDisposable {
 		}
 
 		if (tocEntry.children) {
-			const groupChildren = tocEntry.children.map(child => this.createSettingsTreeGroupElement(child, element));
+			const groupChildren = tocEntry.children.map(child =>
+				this.createSettingsTreeGroupElement(child, element)
+			);
 			children.push(...groupChildren);
 		}
 
@@ -627,7 +757,10 @@ export class SettingsTreeModel implements IDisposable {
 		}
 	}
 
-	private createSettingsTreeSettingElement(setting: ISetting, parent: SettingsTreeGroupElement): SettingsTreeSettingElement {
+	private createSettingsTreeSettingElement(
+		setting: ISetting,
+		parent: SettingsTreeGroupElement
+	): SettingsTreeSettingElement {
 		const element = new SettingsTreeSettingElement(
 			setting,
 			parent,
@@ -637,7 +770,8 @@ export class SettingsTreeModel implements IDisposable {
 			this._languageService,
 			this._productService,
 			this._userDataProfileService,
-			this._configurationService);
+			this._configurationService
+		);
 
 		const nameElements = this._treeElementsBySettingName.get(setting.key) ?? [];
 		nameElements.push(element);
@@ -654,24 +788,44 @@ export class SettingsTreeModel implements IDisposable {
 interface IInspectResult {
 	isConfigured: boolean;
 	inspected: IConfigurationValue<unknown>;
-	targetSelector: 'applicationValue' | 'userLocalValue' | 'userRemoteValue' | 'workspaceValue' | 'workspaceFolderValue';
+	targetSelector:
+		| 'applicationValue'
+		| 'userLocalValue'
+		| 'userRemoteValue'
+		| 'workspaceValue'
+		| 'workspaceFolderValue';
 	inspectedLanguageOverrides: Map<string, IConfigurationValue<unknown>>;
 	languageSelector: string | undefined;
 }
 
-export function inspectSetting(key: string, target: SettingsTarget, languageFilter: string | undefined, configurationService: IWorkbenchConfigurationService): IInspectResult {
+export function inspectSetting(
+	key: string,
+	target: SettingsTarget,
+	languageFilter: string | undefined,
+	configurationService: IWorkbenchConfigurationService
+): IInspectResult {
 	const inspectOverrides = URI.isUri(target) ? { resource: target } : undefined;
 	const inspected = configurationService.inspect(key, inspectOverrides);
-	const targetSelector = target === ConfigurationTarget.APPLICATION ? 'applicationValue' :
-		target === ConfigurationTarget.USER_LOCAL ? 'userLocalValue' :
-			target === ConfigurationTarget.USER_REMOTE ? 'userRemoteValue' :
-				target === ConfigurationTarget.WORKSPACE ? 'workspaceValue' :
-					'workspaceFolderValue';
-	const targetOverrideSelector = target === ConfigurationTarget.APPLICATION ? 'application' :
-		target === ConfigurationTarget.USER_LOCAL ? 'userLocal' :
-			target === ConfigurationTarget.USER_REMOTE ? 'userRemote' :
-				target === ConfigurationTarget.WORKSPACE ? 'workspace' :
-					'workspaceFolder';
+	const targetSelector =
+		target === ConfigurationTarget.APPLICATION
+			? 'applicationValue'
+			: target === ConfigurationTarget.USER_LOCAL
+				? 'userLocalValue'
+				: target === ConfigurationTarget.USER_REMOTE
+					? 'userRemoteValue'
+					: target === ConfigurationTarget.WORKSPACE
+						? 'workspaceValue'
+						: 'workspaceFolderValue';
+	const targetOverrideSelector =
+		target === ConfigurationTarget.APPLICATION
+			? 'application'
+			: target === ConfigurationTarget.USER_LOCAL
+				? 'userLocal'
+				: target === ConfigurationTarget.USER_REMOTE
+					? 'userRemote'
+					: target === ConfigurationTarget.WORKSPACE
+						? 'workspace'
+						: 'workspaceFolder';
 	let isConfigured = typeof inspected[targetSelector] !== 'undefined';
 
 	const overrideIdentifiers = inspected.overrideIdentifiers;
@@ -685,13 +839,17 @@ export function inspectSetting(key: string, target: SettingsTarget, languageFilt
 	if (overrideIdentifiers) {
 		// The setting we're looking at has language overrides.
 		for (const overrideIdentifier of overrideIdentifiers) {
-			inspectedLanguageOverrides.set(overrideIdentifier, configurationService.inspect(key, { overrideIdentifier }));
+			inspectedLanguageOverrides.set(
+				overrideIdentifier,
+				configurationService.inspect(key, { overrideIdentifier })
+			);
 		}
 
 		// For all language filters, see if there's an override for that filter.
 		if (languageFilter) {
 			if (inspectedLanguageOverrides.has(languageFilter)) {
-				const overrideValue = inspectedLanguageOverrides.get(languageFilter)![targetOverrideSelector]?.override;
+				const overrideValue =
+					inspectedLanguageOverrides.get(languageFilter)![targetOverrideSelector]?.override;
 				if (typeof overrideValue !== 'undefined') {
 					isConfigured = true;
 				}
@@ -699,14 +857,24 @@ export function inspectSetting(key: string, target: SettingsTarget, languageFilt
 		}
 	}
 
-	return { isConfigured, inspected, targetSelector, inspectedLanguageOverrides, languageSelector: languageFilter };
+	return {
+		isConfigured,
+		inspected,
+		targetSelector,
+		inspectedLanguageOverrides,
+		languageSelector: languageFilter,
+	};
 }
 
 function sanitizeId(id: string): string {
 	return id.replace(/[\.\/]/, '_');
 }
 
-export function settingKeyToDisplayFormat(key: string, groupId: string = '', isLanguageTagSetting: boolean = false): { category: string; label: string } {
+export function settingKeyToDisplayFormat(
+	key: string,
+	groupId: string = '',
+	isLanguageTagSetting: boolean = false
+): { category: string; label: string } {
 	const lastDotIdx = key.lastIndexOf('.');
 	let category = '';
 	if (lastDotIdx >= 0) {
@@ -741,15 +909,14 @@ function trimCategoryForGroup(category: string, groupId: string): string {
 		if (!/insiders$/i.test(category)) {
 			groupId = groupId.replace(/-?insiders$/i, '');
 		}
-		const parts = groupId.split('.')
-			.map(part => {
-				// Remove hyphens, but only if that results in a match with the category.
-				if (part.replace(/-/g, '').toLowerCase() === category.toLowerCase()) {
-					return part.replace(/-/g, '');
-				} else {
-					return part;
-				}
-			});
+		const parts = groupId.split('.').map(part => {
+			// Remove hyphens, but only if that results in a match with the category.
+			if (part.replace(/-/g, '').toLowerCase() === category.toLowerCase()) {
+				return part.replace(/-/g, '');
+			} else {
+				return part;
+			}
+		});
 		while (parts.length) {
 			const reg = new RegExp(`^${parts.join('\\.')}(\\.|$)`, 'i');
 			if (reg.test(category)) {
@@ -779,18 +946,22 @@ function trimCategoryForGroup(category: string, groupId: string): string {
 }
 
 function isExtensionToggleSetting(setting: ISetting, productService: IProductService): boolean {
-	return ENABLE_EXTENSION_TOGGLE_SETTINGS &&
+	return (
+		ENABLE_EXTENSION_TOGGLE_SETTINGS &&
 		!!productService.extensionRecommendations &&
-		!!setting.displayExtensionId;
+		!!setting.displayExtensionId
+	);
 }
 
 function isExcludeSetting(setting: ISetting): boolean {
-	return setting.key === 'files.exclude' ||
+	return (
+		setting.key === 'files.exclude' ||
 		setting.key === 'search.exclude' ||
 		setting.key === 'workbench.localHistory.exclude' ||
 		setting.key === 'explorer.autoRevealExclude' ||
 		setting.key === 'files.readonlyExclude' ||
-		setting.key === 'files.watcherExclude';
+		setting.key === 'files.watcherExclude'
+	);
 }
 
 function isIncludeSetting(setting: ISetting): boolean {
@@ -806,12 +977,21 @@ function isSimpleType(type: string | undefined): boolean {
 	return type === 'string' || type === 'boolean' || type === 'integer' || type === 'number';
 }
 
-function getObjectRenderableSchemaType(schema: IJSONSchema, key: string): 'simple' | 'complex' | false {
+function getObjectRenderableSchemaType(
+	schema: IJSONSchema,
+	key: string
+): 'simple' | 'complex' | false {
 	const { type } = schema;
 
 	if (Array.isArray(type)) {
 		if (objectSettingSupportsRemoveDefaultValue(key) && type.length === 2) {
-			if (type.includes('null') && (type.includes('string') || type.includes('boolean') || type.includes('integer') || type.includes('number'))) {
+			if (
+				type.includes('null') &&
+				(type.includes('string') ||
+					type.includes('boolean') ||
+					type.includes('integer') ||
+					type.includes('number'))
+			) {
 				return 'simple';
 			}
 		}
@@ -857,7 +1037,7 @@ function getObjectSettingSchemaType({
 	type,
 	objectProperties,
 	objectPatternProperties,
-	objectAdditionalProperties
+	objectAdditionalProperties,
 }: ISetting): 'simple' | 'complex' | false {
 	if (type !== 'object') {
 		return false;
@@ -876,12 +1056,17 @@ function getObjectSettingSchemaType({
 	// but if there's a pattern property that handles everything, then every
 	// property will match that patternProperty, so we don't need to look at
 	// the value of objectAdditionalProperties in that case.
-	if ((objectAdditionalProperties === true || objectAdditionalProperties === undefined)
-		&& !Object.keys(objectPatternProperties ?? {}).includes('.*')) {
+	if (
+		(objectAdditionalProperties === true || objectAdditionalProperties === undefined) &&
+		!Object.keys(objectPatternProperties ?? {}).includes('.*')
+	) {
 		return false;
 	}
 
-	const schemas = [...Object.values(objectProperties ?? {}), ...Object.values(objectPatternProperties ?? {})];
+	const schemas = [
+		...Object.values(objectProperties ?? {}),
+		...Object.values(objectPatternProperties ?? {}),
+	];
 
 	if (objectAdditionalProperties && typeof objectAdditionalProperties === 'object') {
 		schemas.push(objectAdditionalProperties);
@@ -912,7 +1097,7 @@ function settingTypeEnumRenderable(_type: string | string[]) {
 export const enum SearchResultIdx {
 	Local = 0,
 	Remote = 1,
-	NewExtensions = 2
+	NewExtensions = 2,
 }
 
 export class SearchResultModel extends SettingsTreeModel {
@@ -934,7 +1119,14 @@ export class SearchResultModel extends SettingsTreeModel {
 		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
 		@IProductService productService: IProductService
 	) {
-		super(viewState, isWorkspaceTrusted, configurationService, languageService, userDataProfileService, productService);
+		super(
+			viewState,
+			isWorkspaceTrusted,
+			configurationService,
+			languageService,
+			userDataProfileService,
+			productService
+		);
 		this.settingsOrderByTocIndex = settingsOrderByTocIndex;
 		this.update({ id: 'searchResultModel', label: '' });
 	}
@@ -948,7 +1140,9 @@ export class SearchResultModel extends SettingsTreeModel {
 
 		// The search only has filters, so we can sort by the order in the TOC.
 		if (!this._viewState.query) {
-			return filterMatches.sort((a, b) => compareTwoNullableNumbers(a.setting.internalOrder, b.setting.internalOrder));
+			return filterMatches.sort((a, b) =>
+				compareTwoNullableNumbers(a.setting.internalOrder, b.setting.internalOrder)
+			);
 		}
 
 		// Sort the settings according to their relevancy.
@@ -958,10 +1152,16 @@ export class SearchResultModel extends SettingsTreeModel {
 				// Sort by match type if the match types are not the same.
 				// The priority of the match type is given by the SettingMatchType enum.
 				return b.matchType - a.matchType;
-			} else if ((a.matchType & SettingMatchType.NonContiguousWordsInSettingsLabel) || (a.matchType & SettingMatchType.ContiguousWordsInSettingsLabel)) {
+			} else if (
+				a.matchType & SettingMatchType.NonContiguousWordsInSettingsLabel ||
+				a.matchType & SettingMatchType.ContiguousWordsInSettingsLabel
+			) {
 				// The match types of a and b are the same and can be sorted by their number of matched words.
 				// If those numbers are the same, sort by the order in the table of contents.
-				return (b.keyMatchScore - a.keyMatchScore) || compareTwoNullableNumbers(a.setting.internalOrder, b.setting.internalOrder);
+				return (
+					b.keyMatchScore - a.keyMatchScore ||
+					compareTwoNullableNumbers(a.setting.internalOrder, b.setting.internalOrder)
+				);
 			} else if (a.matchType === SettingMatchType.RemoteMatch) {
 				// The match types are the same and are RemoteMatch.
 				// Sort by score.
@@ -975,7 +1175,7 @@ export class SearchResultModel extends SettingsTreeModel {
 
 		// Remove duplicates, which sometimes occur with settings
 		// such as the experimental toggle setting.
-		return arrays.distinct(filterMatches, (match) => match.setting.key);
+		return arrays.distinct(filterMatches, match => match.setting.key);
 	}
 
 	getUniqueSearchResults(): ISearchResult | null {
@@ -998,7 +1198,9 @@ export class SearchResultModel extends SettingsTreeModel {
 
 		const remoteResult = this.rawSearchResults[SearchResultIdx.Remote];
 		if (remoteResult) {
-			remoteResult.filterMatches = remoteResult.filterMatches.filter(m => !localMatchKeys.has(m.setting.key));
+			remoteResult.filterMatches = remoteResult.filterMatches.filter(
+				m => !localMatchKeys.has(m.setting.key)
+			);
 			combinedFilterMatches = combinedFilterMatches.concat(remoteResult.filterMatches);
 
 			this.newExtensionSearchResults = this.rawSearchResults[SearchResultIdx.NewExtensions];
@@ -1008,7 +1210,7 @@ export class SearchResultModel extends SettingsTreeModel {
 
 		this.cachedUniqueSearchResults = {
 			filterMatches: combinedFilterMatches,
-			exactMatch: localResult.exactMatch // remote results should never have an exact match
+			exactMatch: localResult.exactMatch, // remote results should never have an exact match
 		};
 
 		return this.cachedUniqueSearchResults;
@@ -1026,7 +1228,7 @@ export class SearchResultModel extends SettingsTreeModel {
 		this.update({
 			id: 'searchResultModel',
 			label: 'searchResultModel',
-			settings: this.getUniqueSearchResultSettings()
+			settings: this.getUniqueSearchResultSettings(),
 		});
 
 		// Save time by filtering children in the search model instead of relying on the tree filter, which still requires heights to be calculated.
@@ -1034,13 +1236,15 @@ export class SearchResultModel extends SettingsTreeModel {
 
 		const newChildren = [];
 		for (const child of this.root.children) {
-			if (child instanceof SettingsTreeSettingElement
-				&& child.matchesAllTags(this._viewState.tagFilters)
-				&& child.matchesScope(this._viewState.settingsTarget, isRemote)
-				&& child.matchesAnyExtension(this._viewState.extensionFilters)
-				&& child.matchesAnyId(this._viewState.idFilters)
-				&& child.matchesAnyFeature(this._viewState.featureFilters)
-				&& child.matchesAllLanguages(this._viewState.languageFilter)) {
+			if (
+				child instanceof SettingsTreeSettingElement &&
+				child.matchesAllTags(this._viewState.tagFilters) &&
+				child.matchesScope(this._viewState.settingsTarget, isRemote) &&
+				child.matchesAnyExtension(this._viewState.extensionFilters) &&
+				child.matchesAnyId(this._viewState.idFilters) &&
+				child.matchesAnyFeature(this._viewState.featureFilters) &&
+				child.matchesAllLanguages(this._viewState.languageFilter)
+			) {
 				newChildren.push(child);
 			} else {
 				child.dispose();
@@ -1051,13 +1255,16 @@ export class SearchResultModel extends SettingsTreeModel {
 
 		if (this.newExtensionSearchResults?.filterMatches.length) {
 			let resultExtensionIds = this.newExtensionSearchResults.filterMatches
-				.map(result => (<IExtensionSetting>result.setting))
+				.map(result => <IExtensionSetting>result.setting)
 				.filter(setting => setting.extensionName && setting.extensionPublisher)
 				.map(setting => `${setting.extensionPublisher}.${setting.extensionName}`);
 			resultExtensionIds = arrays.distinct(resultExtensionIds);
 
 			if (resultExtensionIds.length) {
-				const newExtElement = new SettingsTreeNewExtensionsElement('newExtensions', resultExtensionIds);
+				const newExtElement = new SettingsTreeNewExtensionsElement(
+					'newExtensions',
+					resultExtensionIds
+				);
 				newExtElement.parent = this._root;
 				this._root.children.push(newExtElement);
 			}
@@ -1111,7 +1318,12 @@ export function parseQuery(query: string): IParsedQuery {
 		return query.replace(filterRegex, (_, __, quotedParsedElement, unquotedParsedElement) => {
 			const parsedElement: string = unquotedParsedElement || quotedParsedElement;
 			if (parsedElement) {
-				parsedParts.push(...parsedElement.split(',').map(s => s.trim()).filter(s => !isFalsyOrWhitespace(s)));
+				parsedParts.push(
+					...parsedElement
+						.split(',')
+						.map(s => s.trim())
+						.filter(s => !isFalsyOrWhitespace(s))
+				);
 			}
 			return '';
 		});

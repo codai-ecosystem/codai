@@ -8,7 +8,10 @@ import { timeout } from '../../../../base/common/async.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
-import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IShellLaunchConfig } from '../../../../platform/terminal/common/terminal.js';
 import { IViewDescriptorService } from '../../../common/views.js';
@@ -39,7 +42,9 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 
 	private _isQuickInputOpened: boolean = false;
 
-	private readonly _onDidChangeActiveGroup = this._register(new Emitter<ITerminalGroup | undefined>());
+	private readonly _onDidChangeActiveGroup = this._register(
+		new Emitter<ITerminalGroup | undefined>()
+	);
 	readonly onDidChangeActiveGroup = this._onDidChangeActiveGroup.event;
 	private readonly _onDidDisposeGroup = this._register(new Emitter<ITerminalGroup>());
 	readonly onDidDisposeGroup = this._onDidDisposeGroup.event;
@@ -52,11 +57,15 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 	readonly onDidDisposeInstance = this._onDidDisposeInstance.event;
 	private readonly _onDidFocusInstance = this._register(new Emitter<ITerminalInstance>());
 	readonly onDidFocusInstance = this._onDidFocusInstance.event;
-	private readonly _onDidChangeActiveInstance = this._register(new Emitter<ITerminalInstance | undefined>());
+	private readonly _onDidChangeActiveInstance = this._register(
+		new Emitter<ITerminalInstance | undefined>()
+	);
 	readonly onDidChangeActiveInstance = this._onDidChangeActiveInstance.event;
 	private readonly _onDidChangeInstances = this._register(new Emitter<void>());
 	readonly onDidChangeInstances = this._onDidChangeInstances.event;
-	private readonly _onDidChangeInstanceCapability = this._register(new Emitter<ITerminalInstance>());
+	private readonly _onDidChangeInstanceCapability = this._register(
+		new Emitter<ITerminalInstance>()
+	);
 	readonly onDidChangeInstanceCapability = this._onDidChangeInstanceCapability.event;
 
 	private readonly _onDidChangePanelOrientation = this._register(new Emitter<Orientation>());
@@ -71,19 +80,31 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 	) {
 		super();
 
-		this._terminalGroupCountContextKey = TerminalContextKeys.groupCount.bindTo(this._contextKeyService);
+		this._terminalGroupCountContextKey = TerminalContextKeys.groupCount.bindTo(
+			this._contextKeyService
+		);
 
 		this._register(this.onDidDisposeGroup(group => this._removeGroup(group)));
-		this._register(this.onDidChangeGroups(() => this._terminalGroupCountContextKey.set(this.groups.length)));
-		this._register(Event.any(this.onDidChangeActiveGroup, this.onDidChangeInstances)(() => this.updateVisibility()));
-		this._register(this._quickInputService.onShow(() => this._isQuickInputOpened = true));
-		this._register(this._quickInputService.onHide(() => this._isQuickInputOpened = false));
+		this._register(
+			this.onDidChangeGroups(() => this._terminalGroupCountContextKey.set(this.groups.length))
+		);
+		this._register(
+			Event.any(
+				this.onDidChangeActiveGroup,
+				this.onDidChangeInstances
+			)(() => this.updateVisibility())
+		);
+		this._register(this._quickInputService.onShow(() => (this._isQuickInputOpened = true)));
+		this._register(this._quickInputService.onHide(() => (this._isQuickInputOpened = false)));
 	}
 
 	hidePanel(): void {
 		// Hide the panel if the terminal is in the panel and it has no sibling views
 		const panel = this._viewDescriptorService.getViewContainerByViewId(TERMINAL_VIEW_ID);
-		if (panel && this._viewDescriptorService.getViewContainerModel(panel).visibleViewDescriptors.length === 1) {
+		if (
+			panel &&
+			this._viewDescriptorService.getViewContainerModel(panel).visibleViewDescriptors.length === 1
+		) {
 			this._viewsService.closeView(TERMINAL_VIEW_ID);
 			TerminalContextKeys.tabsMouse.bindTo(this._contextKeyService).set(false);
 		}
@@ -115,7 +136,9 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 	private _getIndexFromId(terminalId: number): number {
 		const terminalIndex = this.instances.findIndex(e => e.instanceId === terminalId);
 		if (terminalIndex === -1) {
-			throw new Error(`Terminal with ID ${terminalId} does not exist (has it already been disposed?)`);
+			throw new Error(
+				`Terminal with ID ${terminalId} does not exist (has it already been disposed?)`
+			);
 		}
 		return terminalIndex;
 	}
@@ -152,19 +175,29 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 	}
 
 	createGroup(slcOrInstance?: IShellLaunchConfig | ITerminalInstance): ITerminalGroup {
-		const group = this._instantiationService.createInstance(TerminalGroup, this._container, slcOrInstance);
+		const group = this._instantiationService.createInstance(
+			TerminalGroup,
+			this._container,
+			slcOrInstance
+		);
 		this.groups.push(group);
-		group.addDisposable(Event.forward(group.onPanelOrientationChanged, this._onDidChangePanelOrientation));
+		group.addDisposable(
+			Event.forward(group.onPanelOrientationChanged, this._onDidChangePanelOrientation)
+		);
 		group.addDisposable(Event.forward(group.onDidDisposeInstance, this._onDidDisposeInstance));
 		group.addDisposable(Event.forward(group.onDidFocusInstance, this._onDidFocusInstance));
-		group.addDisposable(Event.forward(group.onDidChangeInstanceCapability, this._onDidChangeInstanceCapability));
+		group.addDisposable(
+			Event.forward(group.onDidChangeInstanceCapability, this._onDidChangeInstanceCapability)
+		);
 		group.addDisposable(Event.forward(group.onInstancesChanged, this._onDidChangeInstances));
 		group.addDisposable(Event.forward(group.onDisposed, this._onDidDisposeGroup));
-		group.addDisposable(group.onDidChangeActiveInstance(e => {
-			if (group === this.activeGroup) {
-				this._onDidChangeActiveInstance.fire(e);
-			}
-		}));
+		group.addDisposable(
+			group.onDidChangeActiveInstance(e => {
+				if (group === this.activeGroup) {
+					this._onDidChangeActiveInstance.fire(e);
+				}
+			})
+		);
 		if (group.terminalInstances.length > 0) {
 			this._onDidChangeInstances.fire();
 		}
@@ -178,8 +211,9 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 	}
 
 	async showPanel(focus?: boolean): Promise<void> {
-		const pane = this._viewsService.getActiveViewWithId(TERMINAL_VIEW_ID)
-			?? await this._viewsService.openView(TERMINAL_VIEW_ID, focus);
+		const pane =
+			this._viewsService.getActiveViewWithId(TERMINAL_VIEW_ID) ??
+			(await this._viewsService.openView(TERMINAL_VIEW_ID, focus));
 		pane?.setExpanded(true);
 
 		if (focus) {
@@ -279,7 +313,7 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 					group,
 					groupIndex: currentGroupIndex,
 					instance: group.terminalInstances[index],
-					instanceIndex: index
+					instanceIndex: index,
 				};
 			}
 			index -= count;
@@ -291,7 +325,8 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 	setActiveInstanceByIndex(index: number) {
 		const activeInstance = this.activeInstance;
 		const instanceLocation = this._getInstanceLocation(index);
-		const newActiveInstance = instanceLocation?.group.terminalInstances[instanceLocation.instanceIndex];
+		const newActiveInstance =
+			instanceLocation?.group.terminalInstances[instanceLocation.instanceIndex];
 		if (!instanceLocation || activeInstance === newActiveInstance) {
 			return;
 		}
@@ -327,9 +362,7 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 
 	private _getValidTerminalGroups = (sources: ITerminalInstance[]): Set<ITerminalGroup> => {
 		return new Set(
-			sources
-				.map(source => this.getGroupForInstance(source))
-				.filter((group) => group !== undefined)
+			sources.map(source => this.getGroupForInstance(source)).filter(group => group !== undefined)
 		);
 	};
 
@@ -360,11 +393,15 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 			return this.groups.indexOf(a) - this.groups.indexOf(b);
 		});
 		const firstSourceGroupIndex = this.groups.indexOf(sortedSourceGroups[0]);
-		const position: 'before' | 'after' = firstSourceGroupIndex < targetGroupIndex ? 'after' : 'before';
+		const position: 'before' | 'after' =
+			firstSourceGroupIndex < targetGroupIndex ? 'after' : 'before';
 		const insertIndex = position === 'after' ? targetGroupIndex + 1 : targetGroupIndex;
 		this.groups.splice(insertIndex, 0, ...sortedSourceGroups);
 		for (const sourceGroup of sortedSourceGroups) {
-			const originSourceGroupIndex = position === 'after' ? this.groups.indexOf(sourceGroup) : this.groups.lastIndexOf(sourceGroup);
+			const originSourceGroupIndex =
+				position === 'after'
+					? this.groups.indexOf(sourceGroup)
+					: this.groups.lastIndexOf(sourceGroup);
 			this.groups.splice(originSourceGroupIndex, 1);
 		}
 		this._onDidChangeInstances.fire();
@@ -488,9 +525,11 @@ export class TerminalGroupService extends Disposable implements ITerminalGroupSe
 	}
 
 	getGroupLabels(): string[] {
-		return this.groups.filter(group => group.terminalInstances.length > 0).map((group, index) => {
-			return `${index + 1}: ${group.title ? group.title : ''}`;
-		});
+		return this.groups
+			.filter(group => group.terminalInstances.length > 0)
+			.map((group, index) => {
+				return `${index + 1}: ${group.title ? group.title : ''}`;
+			});
 	}
 
 	/**

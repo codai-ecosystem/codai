@@ -11,7 +11,11 @@ import { TestInstantiationService } from '../../../../../platform/instantiation/
 import { ILoggerService } from '../../../../../platform/log/common/log.js';
 import { IProductService } from '../../../../../platform/product/common/productService.js';
 import { IStorageService } from '../../../../../platform/storage/common/storage.js';
-import { TestLoggerService, TestProductService, TestStorageService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	TestLoggerService,
+	TestProductService,
+	TestStorageService,
+} from '../../../../test/common/workbenchTestServices.js';
 import { IMcpHostDelegate } from '../../common/mcpRegistryTypes.js';
 import { McpServerRequestHandler } from '../../common/mcpServerRequestHandler.js';
 import { McpConnectionState } from '../../common/mcpTypes.js';
@@ -65,9 +69,9 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 		// Setup test services
 		const services = new ServiceCollection(
 			[ILoggerService, store.add(new TestLoggerService())],
-			[IOutputService, upcast({ showChannel: () => { } })],
+			[IOutputService, upcast({ showChannel: () => {} })],
 			[IStorageService, store.add(new TestStorageService())],
-			[IProductService, TestProductService],
+			[IProductService, TestProductService]
 		);
 
 		instantiationService = store.add(new TestInstantiationService(services));
@@ -75,11 +79,21 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 		transport.setConnectionState({ state: McpConnectionState.Kind.Running });
 
 		// Manually create the handler since we need the transport already set up
-		const logger = store.add((instantiationService.get(ILoggerService) as TestLoggerService)
-			.createLogger('mcpServerTest', { hidden: true, name: 'MCP Test' }));
+		const logger = store.add(
+			(instantiationService.get(ILoggerService) as TestLoggerService).createLogger(
+				'mcpServerTest',
+				{ hidden: true, name: 'MCP Test' }
+			)
+		);
 
 		// Start the handler creation
-		const handlerPromise = McpServerRequestHandler.create(instantiationService, transport, logger, undefined, cts.token);
+		const handlerPromise = McpServerRequestHandler.create(
+			instantiationService,
+			transport,
+			logger,
+			undefined,
+			cts.token
+		);
 
 		handler = await handlerPromise;
 		store.add(handler);
@@ -106,9 +120,9 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 			result: {
 				resources: [
 					{ uri: 'resource1', type: 'text/plain', name: 'Test Resource 1' },
-					{ uri: 'resource2', type: 'text/plain', name: 'Test Resource 2' }
-				]
-			}
+					{ uri: 'resource2', type: 'text/plain', name: 'Test Resource 2' },
+				],
+			},
 		});
 
 		// Verify the result
@@ -131,11 +145,9 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 			jsonrpc: MCP.JSONRPC_VERSION,
 			id: listResourcesRequest.id,
 			result: {
-				resources: [
-					{ uri: 'resource1', type: 'text/plain', name: 'Test Resource 1' }
-				],
-				nextCursor: 'page2'
-			}
+				resources: [{ uri: 'resource1', type: 'text/plain', name: 'Test Resource 1' }],
+				nextCursor: 'page2',
+			},
 		});
 
 		// Clear the sent messages to only capture the next page request
@@ -157,10 +169,8 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 			jsonrpc: MCP.JSONRPC_VERSION,
 			id: listResourcesRequest2.id,
 			result: {
-				resources: [
-					{ uri: 'resource2', type: 'text/plain', name: 'Test Resource 2' }
-				]
-			}
+				resources: [{ uri: 'resource2', type: 'text/plain', name: 'Test Resource 2' }],
+			},
 		});
 
 		// Verify the combined result
@@ -184,8 +194,8 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 			id: readResourceRequest.id,
 			error: {
 				code: MCP.METHOD_NOT_FOUND,
-				message: 'Resource not found'
-			}
+				message: 'Resource not found',
+			},
 		});
 
 		// Verify the error is thrown correctly
@@ -203,15 +213,15 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 		const pingRequest: MCP.JSONRPCRequest & MCP.PingRequest = {
 			jsonrpc: MCP.JSONRPC_VERSION,
 			id: 100,
-			method: 'ping'
+			method: 'ping',
 		};
 
 		transport.simulateReceiveMessage(pingRequest);
 
 		// The handler should have sent a response
 		const sentMessages = transport.getSentMessages();
-		const pingResponse = sentMessages.find(m =>
-			'id' in m && m.id === pingRequest.id && 'result' in m
+		const pingResponse = sentMessages.find(
+			m => 'id' in m && m.id === pingRequest.id && 'result' in m
 		) as MCP.JSONRPCResponse;
 
 		assert.ok(pingResponse, 'No ping response was sent');
@@ -222,37 +232,42 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 		// Set roots
 		handler.roots = [
 			{ uri: 'file:///test/root1', name: 'Root 1' },
-			{ uri: 'file:///test/root2', name: 'Root 2' }
+			{ uri: 'file:///test/root2', name: 'Root 2' },
 		];
 
 		// Simulate roots/list request from server
 		const rootsRequest: MCP.JSONRPCRequest & MCP.ListRootsRequest = {
 			jsonrpc: MCP.JSONRPC_VERSION,
 			id: 101,
-			method: 'roots/list'
+			method: 'roots/list',
 		};
 
 		transport.simulateReceiveMessage(rootsRequest);
 
 		// The handler should have sent a response
 		const sentMessages = transport.getSentMessages();
-		const rootsResponse = sentMessages.find(m =>
-			'id' in m && m.id === rootsRequest.id && 'result' in m
+		const rootsResponse = sentMessages.find(
+			m => 'id' in m && m.id === rootsRequest.id && 'result' in m
 		) as MCP.JSONRPCResponse;
 
 		assert.ok(rootsResponse, 'No roots/list response was sent');
 		assert.strictEqual((rootsResponse.result as MCP.ListRootsResult).roots.length, 2);
-		assert.strictEqual((rootsResponse.result as MCP.ListRootsResult).roots[0].uri, 'file:///test/root1');
+		assert.strictEqual(
+			(rootsResponse.result as MCP.ListRootsResult).roots[0].uri,
+			'file:///test/root1'
+		);
 	});
 
 	test('should handle server notifications', async () => {
 		let progressNotificationReceived = false;
-		store.add(handler.onDidReceiveProgressNotification(notification => {
-			progressNotificationReceived = true;
-			assert.strictEqual(notification.method, 'notifications/progress');
-			assert.strictEqual(notification.params.progressToken, 'token1');
-			assert.strictEqual(notification.params.progress, 50);
-		}));
+		store.add(
+			handler.onDidReceiveProgressNotification(notification => {
+				progressNotificationReceived = true;
+				assert.strictEqual(notification.method, 'notifications/progress');
+				assert.strictEqual(notification.params.progressToken, 'token1');
+				assert.strictEqual(notification.params.progress, 50);
+			})
+		);
 
 		// Simulate progress notification with correct format
 		const progressNotification: MCP.JSONRPCNotification & MCP.ProgressNotification = {
@@ -261,8 +276,8 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 			params: {
 				progressToken: 'token1',
 				progress: 50,
-				total: 100
-			}
+				total: 100,
+			},
 		};
 
 		transport.simulateReceiveMessage(progressNotification);
@@ -283,13 +298,17 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 		testCts.cancel();
 
 		// Check that a cancellation notification was sent
-		const cancelNotification = transport.getSentMessages().find(m =>
-			!('id' in m) &&
-			'method' in m &&
-			m.method === 'notifications/cancelled' &&
-			'params' in m &&
-			m.params && m.params.requestId === requestId
-		);
+		const cancelNotification = transport
+			.getSentMessages()
+			.find(
+				m =>
+					!('id' in m) &&
+					'method' in m &&
+					m.method === 'notifications/cancelled' &&
+					'params' in m &&
+					m.params &&
+					m.params.requestId === requestId
+			);
 
 		assert.ok(cancelNotification, 'No cancellation notification was sent');
 
@@ -316,8 +335,8 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 			jsonrpc: MCP.JSONRPC_VERSION,
 			method: 'notifications/cancelled',
 			params: {
-				requestId
-			}
+				requestId,
+			},
 		};
 
 		transport.simulateReceiveMessage(cancelledNotification);
@@ -362,7 +381,7 @@ suite('Workbench - MCP - ServerRequestHandler', () => {
 		// Simulate connection error
 		transport.setConnectionState({
 			state: McpConnectionState.Kind.Error,
-			message: 'Connection lost'
+			message: 'Connection lost',
 		});
 
 		// Verify the promise was cancelled

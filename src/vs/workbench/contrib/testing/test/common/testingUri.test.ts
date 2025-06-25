@@ -12,9 +12,27 @@ suite('Workbench - Testing URIs', () => {
 
 	test('round trip', () => {
 		const uris: ParsedTestUri[] = [
-			{ type: TestUriType.ResultActualOutput, taskIndex: 1, messageIndex: 42, resultId: 'r', testExtId: 't' },
-			{ type: TestUriType.ResultExpectedOutput, taskIndex: 1, messageIndex: 42, resultId: 'r', testExtId: 't' },
-			{ type: TestUriType.ResultMessage, taskIndex: 1, messageIndex: 42, resultId: 'r', testExtId: 't' },
+			{
+				type: TestUriType.ResultActualOutput,
+				taskIndex: 1,
+				messageIndex: 42,
+				resultId: 'r',
+				testExtId: 't',
+			},
+			{
+				type: TestUriType.ResultExpectedOutput,
+				taskIndex: 1,
+				messageIndex: 42,
+				resultId: 'r',
+				testExtId: 't',
+			},
+			{
+				type: TestUriType.ResultMessage,
+				taskIndex: 1,
+				messageIndex: 42,
+				resultId: 'r',
+				testExtId: 't',
+			},
 		];
 
 		for (const uri of uris) {

@@ -12,8 +12,23 @@ import { IUriIdentityService } from '../../../../../platform/uriIdentity/common/
 import { NotebookEditorWidget } from '../../../notebook/browser/notebookEditorWidget.js';
 import { INotebookService } from '../../../notebook/common/notebookService.js';
 import { INotebookSearchService } from '../../common/notebookSearch.js';
-import { INotebookCellMatchWithModel, INotebookFileMatchWithModel, contentMatchesToTextSearchMatches, webviewMatchesToTextSearchMatches } from './searchNotebookHelpers.js';
-import { ITextQuery, QueryType, ISearchProgressItem, ISearchComplete, ISearchConfigurationProperties, pathIncludedInQuery, ISearchService, IFolderQuery, DEFAULT_MAX_SEARCH_RESULTS } from '../../../../services/search/common/search.js';
+import {
+	INotebookCellMatchWithModel,
+	INotebookFileMatchWithModel,
+	contentMatchesToTextSearchMatches,
+	webviewMatchesToTextSearchMatches,
+} from './searchNotebookHelpers.js';
+import {
+	ITextQuery,
+	QueryType,
+	ISearchProgressItem,
+	ISearchComplete,
+	ISearchConfigurationProperties,
+	pathIncludedInQuery,
+	ISearchService,
+	IFolderQuery,
+	DEFAULT_MAX_SEARCH_RESULTS,
+} from '../../../../services/search/common/search.js';
 import * as arrays from '../../../../../base/common/arrays.js';
 import { isNumber } from '../../../../../base/common/types.js';
 import { IEditorResolverService } from '../../../../services/editor/common/editorResolverService.js';
@@ -48,12 +63,16 @@ export class NotebookSearchService implements INotebookSearchService {
 		this.queryBuilder = instantiationService.createInstance(QueryBuilder);
 	}
 
-	notebookSearch(query: ITextQuery, token: CancellationToken | undefined, searchInstanceID: string, onProgress?: (result: ISearchProgressItem) => void): {
+	notebookSearch(
+		query: ITextQuery,
+		token: CancellationToken | undefined,
+		searchInstanceID: string,
+		onProgress?: (result: ISearchProgressItem) => void
+	): {
 		openFilesToScan: ResourceSet;
 		completeData: Promise<ISearchComplete>;
 		allScannedFiles: Promise<ResourceSet>;
 	} {
-
 		if (query.type !== QueryType.Text) {
 			return {
 				openFilesToScan: new ResourceSet(),
@@ -68,17 +87,34 @@ export class NotebookSearchService implements INotebookSearchService {
 
 		const localNotebookWidgets = this.getLocalNotebookWidgets();
 		const localNotebookFiles = localNotebookWidgets.map(widget => widget.viewModel!.uri);
-		const getAllResults = (): { completeData: Promise<ISearchComplete>; allScannedFiles: Promise<ResourceSet> } => {
+		const getAllResults = (): {
+			completeData: Promise<ISearchComplete>;
+			allScannedFiles: Promise<ResourceSet>;
+		} => {
 			const searchStart = Date.now();
 
-			const localResultPromise = this.getLocalNotebookResults(query, token ?? CancellationToken.None, localNotebookWidgets, searchInstanceID);
+			const localResultPromise = this.getLocalNotebookResults(
+				query,
+				token ?? CancellationToken.None,
+				localNotebookWidgets,
+				searchInstanceID
+			);
 			const searchLocalEnd = Date.now();
 
-			const experimentalNotebooksEnabled = this.configurationService.getValue<ISearchConfigurationProperties>('search').experimental?.closedNotebookRichContentResults ?? false;
+			const experimentalNotebooksEnabled =
+				this.configurationService.getValue<ISearchConfigurationProperties>('search').experimental
+					?.closedNotebookRichContentResults ?? false;
 
-			let closedResultsPromise: Promise<IClosedNotebookSearchResults | undefined> = Promise.resolve(undefined);
+			let closedResultsPromise: Promise<IClosedNotebookSearchResults | undefined> =
+				Promise.resolve(undefined);
 			if (experimentalNotebooksEnabled) {
-				closedResultsPromise = this.getClosedNotebookResults(query, new ResourceSet(localNotebookFiles, uri => this.uriIdentityService.extUri.getComparisonKey(uri)), token ?? CancellationToken.None);
+				closedResultsPromise = this.getClosedNotebookResults(
+					query,
+					new ResourceSet(localNotebookFiles, uri =>
+						this.uriIdentityService.extUri.getComparisonKey(uri)
+					),
+					token ?? CancellationToken.None
+				);
 			}
 
 			const promise = Promise.all([localResultPromise, closedResultsPromise]);
@@ -87,8 +123,13 @@ export class NotebookSearchService implements INotebookSearchService {
 					const openNotebookResult = resolvedPromise[0];
 					const closedNotebookResult = resolvedPromise[1];
 
-					const resolved = resolvedPromise.filter((e): e is IOpenNotebookSearchResults | IClosedNotebookSearchResults => !!e);
-					const resultArray = [...openNotebookResult.results.values(), ...closedNotebookResult?.results.values() ?? []];
+					const resolved = resolvedPromise.filter(
+						(e): e is IOpenNotebookSearchResults | IClosedNotebookSearchResults => !!e
+					);
+					const resultArray = [
+						...openNotebookResult.results.values(),
+						...(closedNotebookResult?.results.values() ?? []),
+					];
 					const results = arrays.coalesce(resultArray);
 					if (onProgress) {
 						results.forEach(onProgress);
@@ -103,30 +144,39 @@ export class NotebookSearchService implements INotebookSearchService {
 				allScannedFiles: promise.then(resolvedPromise => {
 					const openNotebookResults = resolvedPromise[0];
 					const closedNotebookResults = resolvedPromise[1];
-					const results = arrays.coalesce([...openNotebookResults.results.keys(), ...closedNotebookResults?.results.keys() ?? []]);
-					return new ResourceSet(results, uri => this.uriIdentityService.extUri.getComparisonKey(uri));
-				})
+					const results = arrays.coalesce([
+						...openNotebookResults.results.keys(),
+						...(closedNotebookResults?.results.keys() ?? []),
+					]);
+					return new ResourceSet(results, uri =>
+						this.uriIdentityService.extUri.getComparisonKey(uri)
+					);
+				}),
 			};
 		};
 		const promiseResults = getAllResults();
 		return {
 			openFilesToScan: new ResourceSet(localNotebookFiles),
 			completeData: promiseResults.completeData,
-			allScannedFiles: promiseResults.allScannedFiles
+			allScannedFiles: promiseResults.allScannedFiles,
 		};
 	}
 
-	private async doesFileExist(includes: string[], folderQueries: IFolderQuery<URI>[], token: CancellationToken): Promise<boolean> {
+	private async doesFileExist(
+		includes: string[],
+		folderQueries: IFolderQuery<URI>[],
+		token: CancellationToken
+	): Promise<boolean> {
 		const promises: Promise<boolean>[] = includes.map(async includePattern => {
-			const query = this.queryBuilder.file(folderQueries.map(e => e.folder), {
-				includePattern: includePattern.startsWith('/') ? includePattern : '**/' + includePattern, // todo: find cleaner way to ensure that globs match all appropriate filetypes
-				exists: true,
-				onlyFileScheme: true,
-			});
-			return this.searchService.fileSearch(
-				query,
-				token
-			).then((ret) => {
+			const query = this.queryBuilder.file(
+				folderQueries.map(e => e.folder),
+				{
+					includePattern: includePattern.startsWith('/') ? includePattern : '**/' + includePattern, // todo: find cleaner way to ensure that globs match all appropriate filetypes
+					exists: true,
+					onlyFileScheme: true,
+				}
+			);
+			return this.searchService.fileSearch(query, token).then(ret => {
 				return !!ret.limitHit;
 			});
 		});
@@ -134,15 +184,16 @@ export class NotebookSearchService implements INotebookSearchService {
 		return Promise.any(promises);
 	}
 
-	private async getClosedNotebookResults(textQuery: ITextQuery, scannedFiles: ResourceSet, token: CancellationToken): Promise<IClosedNotebookSearchResults> {
-
+	private async getClosedNotebookResults(
+		textQuery: ITextQuery,
+		scannedFiles: ResourceSet,
+		token: CancellationToken
+	): Promise<IClosedNotebookSearchResults> {
 		const userAssociations = this.editorResolverService.getAllUserAssociations();
 		const allPriorityInfo: Map<string, NotebookPriorityInfo[]> = new Map();
 		const contributedNotebookTypes = this.notebookService.getContributedNotebookTypes();
 
-
 		userAssociations.forEach(association => {
-
 			// we gather the editor associations here, but cannot check them until we actually have the files that the glob matches
 			// this is because longer patterns take precedence over shorter ones, and even if there is a user association that
 			// specifies the exact same glob as a contributed notebook type, there might be another user association that is longer/more specific
@@ -153,7 +204,7 @@ export class NotebookSearchService implements INotebookSearchService {
 
 			const info: NotebookPriorityInfo = {
 				isFromSettings: true,
-				filenamePatterns: [association.filenamePattern]
+				filenamePatterns: [association.filenamePattern],
 			};
 
 			const existingEntry = allPriorityInfo.get(association.viewType);
@@ -164,31 +215,43 @@ export class NotebookSearchService implements INotebookSearchService {
 			}
 		});
 
-		const promises: Promise<{
-			results: INotebookFileMatchNoModel<URI>[];
-			limitHit: boolean;
-		} | undefined>[] = [];
+		const promises: Promise<
+			| {
+					results: INotebookFileMatchNoModel<URI>[];
+					limitHit: boolean;
+			  }
+			| undefined
+		>[] = [];
 
-		contributedNotebookTypes.forEach((notebook) => {
+		contributedNotebookTypes.forEach(notebook => {
 			if (notebook.selectors.length > 0) {
-				promises.push((async () => {
-					const includes = notebook.selectors.map((selector) => {
-						const globPattern = (selector as INotebookExclusiveDocumentFilter).include || selector as glob.IRelativePattern | string;
-						return globPattern.toString();
-					});
+				promises.push(
+					(async () => {
+						const includes = notebook.selectors.map(selector => {
+							const globPattern =
+								(selector as INotebookExclusiveDocumentFilter).include ||
+								(selector as glob.IRelativePattern | string);
+							return globPattern.toString();
+						});
 
-					const isInWorkspace = await this.doesFileExist(includes, textQuery.folderQueries, token);
-					if (isInWorkspace) {
-						const canResolve = await this.notebookService.canResolve(notebook.id);
-						if (!canResolve) {
+						const isInWorkspace = await this.doesFileExist(
+							includes,
+							textQuery.folderQueries,
+							token
+						);
+						if (isInWorkspace) {
+							const canResolve = await this.notebookService.canResolve(notebook.id);
+							if (!canResolve) {
+								return undefined;
+							}
+							const serializer = (await this.notebookService.withNotebookDataProvider(notebook.id))
+								.serializer;
+							return await serializer.searchInNotebooks(textQuery, token, allPriorityInfo);
+						} else {
 							return undefined;
 						}
-						const serializer = (await this.notebookService.withNotebookDataProvider(notebook.id)).serializer;
-						return await serializer.searchInNotebooks(textQuery, token, allPriorityInfo);
-					} else {
-						return undefined;
-					}
-				})());
+					})()
+				);
 			}
 		});
 
@@ -198,7 +261,9 @@ export class NotebookSearchService implements INotebookSearchService {
 		let limitHit = searchComplete.some(e => e.limitHit);
 
 		// results are already sorted with high priority first, filter out duplicates.
-		const uniqueResults = new ResourceMap<INotebookFileMatchNoModel | null>(uri => this.uriIdentityService.extUri.getComparisonKey(uri));
+		const uniqueResults = new ResourceMap<INotebookFileMatchNoModel | null>(uri =>
+			this.uriIdentityService.extUri.getComparisonKey(uri)
+		);
 
 		let numResults = 0;
 		for (const result of results) {
@@ -219,36 +284,50 @@ export class NotebookSearchService implements INotebookSearchService {
 
 		return {
 			results: uniqueResults,
-			limitHit
+			limitHit,
 		};
 	}
 
-	private async getLocalNotebookResults(query: ITextQuery, token: CancellationToken, widgets: Array<NotebookEditorWidget>, searchID: string): Promise<IOpenNotebookSearchResults> {
-		const localResults = new ResourceMap<INotebookFileMatchWithModel | null>(uri => this.uriIdentityService.extUri.getComparisonKey(uri));
+	private async getLocalNotebookResults(
+		query: ITextQuery,
+		token: CancellationToken,
+		widgets: Array<NotebookEditorWidget>,
+		searchID: string
+	): Promise<IOpenNotebookSearchResults> {
+		const localResults = new ResourceMap<INotebookFileMatchWithModel | null>(uri =>
+			this.uriIdentityService.extUri.getComparisonKey(uri)
+		);
 		let limitHit = false;
 
 		for (const widget of widgets) {
 			if (!widget.hasModel()) {
 				continue;
 			}
-			const askMax = (isNumber(query.maxResults) ? query.maxResults : DEFAULT_MAX_SEARCH_RESULTS) + 1;
+			const askMax =
+				(isNumber(query.maxResults) ? query.maxResults : DEFAULT_MAX_SEARCH_RESULTS) + 1;
 			const uri = widget.viewModel!.uri;
 
 			if (!pathIncludedInQuery(query, uri.fsPath)) {
 				continue;
 			}
 
-			let matches = await widget
-				.find(query.contentPattern.pattern, {
+			let matches = await widget.find(
+				query.contentPattern.pattern,
+				{
 					regex: query.contentPattern.isRegExp,
 					wholeWord: query.contentPattern.isWordMatch,
 					caseSensitive: query.contentPattern.isCaseSensitive,
 					includeMarkupInput: query.contentPattern.notebookInfo?.isInNotebookMarkdownInput ?? true,
-					includeMarkupPreview: query.contentPattern.notebookInfo?.isInNotebookMarkdownPreview ?? true,
+					includeMarkupPreview:
+						query.contentPattern.notebookInfo?.isInNotebookMarkdownPreview ?? true,
 					includeCodeInput: query.contentPattern.notebookInfo?.isInNotebookCellInput ?? true,
 					includeOutput: query.contentPattern.notebookInfo?.isInNotebookCellOutput ?? true,
-				}, token, false, true, searchID);
-
+				},
+				token,
+				false,
+				true,
+				searchID
+			);
 
 			if (matches.length) {
 				if (askMax && matches.length >= askMax) {
@@ -256,7 +335,10 @@ export class NotebookSearchService implements INotebookSearchService {
 					matches = matches.slice(0, askMax - 1);
 				}
 				const cellResults: INotebookCellMatchWithModel[] = matches.map(match => {
-					const contentResults = contentMatchesToTextSearchMatches(match.contentMatches, match.cell);
+					const contentResults = contentMatchesToTextSearchMatches(
+						match.contentMatches,
+						match.cell
+					);
 					const webviewResults = webviewMatchesToTextSearchMatches(match.webviewMatches);
 					return {
 						cell: match.cell,
@@ -267,7 +349,8 @@ export class NotebookSearchService implements INotebookSearchService {
 				});
 
 				const fileMatch: INotebookFileMatchWithModel = {
-					resource: uri, cellResults: cellResults
+					resource: uri,
+					cellResults: cellResults,
 				};
 				localResults.set(uri, fileMatch);
 			} else {
@@ -277,10 +360,9 @@ export class NotebookSearchService implements INotebookSearchService {
 
 		return {
 			results: localResults,
-			limitHit
+			limitHit,
 		};
 	}
-
 
 	private getLocalNotebookWidgets(): Array<NotebookEditorWidget> {
 		const notebookWidgets = this.notebookEditorService.retrieveAllExistingWidgets();
@@ -289,5 +371,3 @@ export class NotebookSearchService implements INotebookSearchService {
 			.filter((val): val is NotebookEditorWidget => !!val && val.hasModel());
 	}
 }
-
-

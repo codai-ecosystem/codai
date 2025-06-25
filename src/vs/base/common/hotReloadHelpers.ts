@@ -4,7 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isHotReloadEnabled, registerHotReloadHandler } from './hotReload.js';
-import { constObservable, IObservable, IReader, ISettableObservable, observableSignalFromEvent, observableValue } from './observable.js';
+import {
+	constObservable,
+	IObservable,
+	IReader,
+	ISettableObservable,
+	observableSignalFromEvent,
+	observableValue,
+} from './observable.js';
 
 export function readHotReloadableExport<T>(value: T, reader: IReader | undefined): T {
 	observeHotReloadableExports([value], reader);
@@ -13,13 +20,12 @@ export function readHotReloadableExport<T>(value: T, reader: IReader | undefined
 
 export function observeHotReloadableExports(values: any[], reader: IReader | undefined): void {
 	if (isHotReloadEnabled()) {
-		const o = observableSignalFromEvent(
-			'reload',
-			event => registerHotReloadHandler(({ oldExports }) => {
+		const o = observableSignalFromEvent('reload', event =>
+			registerHotReloadHandler(({ oldExports }) => {
 				if (![...Object.values(oldExports)].some(v => values.includes(v))) {
 					return undefined;
 				}
-				return (_newExports) => {
+				return _newExports => {
 					event(undefined);
 					return true;
 				};

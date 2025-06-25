@@ -93,11 +93,11 @@ export class MemoryService {
 			content: JSON.stringify(conversation.messages.slice(-3)), // Last 3 messages
 			metadata: {
 				projectName: conversation.projectContext.name,
-				messageCount: conversation.messages.length
+				messageCount: conversation.messages.length,
 			},
 			connections: [],
 			timestamp: conversation.timestamp,
-			weight: conversation.messages.length * 0.1
+			weight: conversation.messages.length * 0.1,
 		};
 
 		this.addMemoryNode(conversationNode);
@@ -119,16 +119,18 @@ export class MemoryService {
 		for (const node of this.memoryGraph.values()) {
 			if (type && node.type !== type) continue;
 
-			if (node.content.toLowerCase().includes(query.toLowerCase()) ||
-				JSON.stringify(node.metadata).toLowerCase().includes(query.toLowerCase())) {
+			if (
+				node.content.toLowerCase().includes(query.toLowerCase()) ||
+				JSON.stringify(node.metadata).toLowerCase().includes(query.toLowerCase())
+			) {
 				results.push(node);
 			}
 		}
 
 		// Sort by relevance (weight and timestamp)
 		return results.sort((a, b) => {
-			const aScore = a.weight * (Date.now() - a.timestamp) / 1000000;
-			const bScore = b.weight * (Date.now() - b.timestamp) / 1000000;
+			const aScore = (a.weight * (Date.now() - a.timestamp)) / 1000000;
+			const bScore = (b.weight * (Date.now() - b.timestamp)) / 1000000;
 			return bScore - aScore;
 		});
 	}
@@ -144,11 +146,11 @@ export class MemoryService {
 			metadata: {
 				technologies: context.technologies,
 				dependencies: context.dependencies,
-				structure: context.structure
+				structure: context.structure,
 			},
 			connections: [],
 			timestamp: Date.now(),
-			weight: 1.0
+			weight: 1.0,
 		};
 
 		this.addMemoryNode(projectNode);
@@ -163,7 +165,7 @@ export class MemoryService {
 			conversations: this.conversations.size,
 			nodesByType: {} as Record<string, number>,
 			totalConnections: 0,
-			avgWeight: 0
+			avgWeight: 0,
 		};
 
 		let totalWeight = 0;
@@ -186,7 +188,7 @@ export class MemoryService {
 			type: node.type,
 			label: node.content.substring(0, 50),
 			weight: node.weight,
-			timestamp: node.timestamp
+			timestamp: node.timestamp,
 		}));
 
 		const edges = [];
@@ -202,7 +204,8 @@ export class MemoryService {
 	/**
 	 * Clear old memory nodes to prevent memory bloat
 	 */
-	cleanupOldMemory(maxAge: number = 30 * 24 * 60 * 60 * 1000): void { // 30 days
+	cleanupOldMemory(maxAge: number = 30 * 24 * 60 * 60 * 1000): void {
+		// 30 days
 		const cutoff = Date.now() - maxAge;
 		const toDelete: string[] = [];
 

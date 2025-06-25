@@ -13,16 +13,28 @@ import { URI } from '../../../../base/common/uri.js';
 import * as nls from '../../../../nls.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
-import { EditorInputCapabilities, IEditorIdentifier, IEditorSerializer, IUntypedEditorInput } from '../../../common/editor.js';
+import {
+	EditorInputCapabilities,
+	IEditorIdentifier,
+	IEditorSerializer,
+	IUntypedEditorInput,
+} from '../../../common/editor.js';
 import { EditorInput, IEditorCloseHandler } from '../../../common/editor/editorInput.js';
 import type { IChatEditorOptions } from './chatEditor.js';
 import { IChatModel } from '../common/chatModel.js';
 import { IChatService } from '../common/chatService.js';
 import { ChatAgentLocation } from '../common/constants.js';
 import { ConfirmResult, IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
-import { shouldShowClearEditingSessionConfirmation, showClearEditingSessionConfirmation } from './actions/chatActions.js';
+import {
+	shouldShowClearEditingSessionConfirmation,
+	showClearEditingSessionConfirmation,
+} from './actions/chatActions.js';
 
-const ChatEditorIcon = registerIcon('chat-editor-label-icon', Codicon.commentDiscussion, nls.localize('chatEditorLabelIcon', 'Icon of the chat editor label.'));
+const ChatEditorIcon = registerIcon(
+	'chat-editor-label-icon',
+	Codicon.commentDiscussion,
+	nls.localize('chatEditorLabelIcon', 'Icon of the chat editor label.')
+);
 
 export class ChatEditorInput extends EditorInput implements IEditorCloseHandler {
 	static readonly countsInUse = new Set<number>();
@@ -53,7 +65,7 @@ export class ChatEditorInput extends EditorInput implements IEditorCloseHandler 
 		readonly resource: URI,
 		readonly options: IChatEditorOptions,
 		@IChatService private readonly chatService: IChatService,
-		@IDialogService private readonly dialogService: IDialogService,
+		@IDialogService private readonly dialogService: IDialogService
 	) {
 		super();
 
@@ -62,9 +74,8 @@ export class ChatEditorInput extends EditorInput implements IEditorCloseHandler 
 			throw new Error('Invalid chat URI');
 		}
 
-		this.sessionId = (options.target && 'sessionId' in options.target) ?
-			options.target.sessionId :
-			undefined;
+		this.sessionId =
+			options.target && 'sessionId' in options.target ? options.target.sessionId : undefined;
 		this.inputCount = ChatEditorInput.getNextCount();
 		ChatEditorInput.countsInUse.add(this.inputCount);
 		this._register(toDisposable(() => ChatEditorInput.countsInUse.delete(this.inputCount)));
@@ -73,7 +84,9 @@ export class ChatEditorInput extends EditorInput implements IEditorCloseHandler 
 	override closeHandler = this;
 
 	showConfirm(): boolean {
-		return this.model?.editingSession ? shouldShowClearEditingSessionConfirmation(this.model.editingSession) : false;
+		return this.model?.editingSession
+			? shouldShowClearEditingSessionConfirmation(this.model.editingSession)
+			: false;
 	}
 
 	async confirm(editors: ReadonlyArray<IEditorIdentifier>): Promise<ConfirmResult> {
@@ -81,9 +94,16 @@ export class ChatEditorInput extends EditorInput implements IEditorCloseHandler 
 			return ConfirmResult.SAVE;
 		}
 
-		const titleOverride = nls.localize('chatEditorConfirmTitle', "Close Chat Editor");
-		const messageOverride = nls.localize('chat.startEditing.confirmation.pending.message.default', "Closing the chat editor will end your current edit session.");
-		const result = await showClearEditingSessionConfirmation(this.model.editingSession, this.dialogService, { titleOverride, messageOverride });
+		const titleOverride = nls.localize('chatEditorConfirmTitle', 'Close Chat Editor');
+		const messageOverride = nls.localize(
+			'chat.startEditing.confirmation.pending.message.default',
+			'Closing the chat editor will end your current edit session.'
+		);
+		const result = await showClearEditingSessionConfirmation(
+			this.model.editingSession,
+			this.dialogService,
+			{ titleOverride, messageOverride }
+		);
 		return result ? ConfirmResult.SAVE : ConfirmResult.CANCEL;
 	}
 
@@ -92,11 +112,18 @@ export class ChatEditorInput extends EditorInput implements IEditorCloseHandler 
 	}
 
 	override get capabilities(): EditorInputCapabilities {
-		return super.capabilities | EditorInputCapabilities.Singleton | EditorInputCapabilities.CanDropIntoEditor;
+		return (
+			super.capabilities |
+			EditorInputCapabilities.Singleton |
+			EditorInputCapabilities.CanDropIntoEditor
+		);
 	}
 
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
-		return otherInput instanceof ChatEditorInput && otherInput.resource.toString() === this.resource.toString();
+		return (
+			otherInput instanceof ChatEditorInput &&
+			otherInput.resource.toString() === this.resource.toString()
+		);
 	}
 
 	override get typeId(): string {
@@ -104,7 +131,11 @@ export class ChatEditorInput extends EditorInput implements IEditorCloseHandler 
 	}
 
 	override getName(): string {
-		return this.model?.title || nls.localize('chatEditorName', "Chat") + (this.inputCount > 0 ? ` ${this.inputCount + 1}` : '');
+		return (
+			this.model?.title ||
+			nls.localize('chatEditorName', 'Chat') +
+				(this.inputCount > 0 ? ` ${this.inputCount + 1}` : '')
+		);
 	}
 
 	override getIcon(): ThemeIcon {
@@ -113,8 +144,9 @@ export class ChatEditorInput extends EditorInput implements IEditorCloseHandler 
 
 	override async resolve(): Promise<ChatEditorModel | null> {
 		if (typeof this.sessionId === 'string') {
-			this.model = await this.chatService.getOrRestoreSession(this.sessionId)
-				?? this.chatService.startSession(ChatAgentLocation.Panel, CancellationToken.None);
+			this.model =
+				(await this.chatService.getOrRestoreSession(this.sessionId)) ??
+				this.chatService.startSession(ChatAgentLocation.Panel, CancellationToken.None);
 		} else if (!this.options.target) {
 			this.model = this.chatService.startSession(ChatAgentLocation.Panel, CancellationToken.None);
 		} else if ('data' in this.options.target) {
@@ -146,9 +178,9 @@ export class ChatEditorModel extends Disposable {
 	private _isDisposed = false;
 	private _isResolved = false;
 
-	constructor(
-		readonly model: IChatModel
-	) { super(); }
+	constructor(readonly model: IChatModel) {
+		super();
+	}
 
 	async resolve(): Promise<void> {
 		this._isResolved = true;
@@ -169,9 +201,7 @@ export class ChatEditorModel extends Disposable {
 }
 
 export namespace ChatUri {
-
 	export const scheme = Schemas.vscodeChatSesssion;
-
 
 	export function generate(handle: number): URI {
 		return URI.from({ scheme, path: `chat-${handle}` });
@@ -216,16 +246,22 @@ export class ChatEditorInputSerializer implements IEditorSerializer {
 		const obj: ISerializedChatEditorInput = {
 			options: input.options,
 			sessionId: input.sessionId,
-			resource: input.resource
+			resource: input.resource,
 		};
 		return JSON.stringify(obj);
 	}
 
-	deserialize(instantiationService: IInstantiationService, serializedEditor: string): EditorInput | undefined {
+	deserialize(
+		instantiationService: IInstantiationService,
+		serializedEditor: string
+	): EditorInput | undefined {
 		try {
 			const parsed: ISerializedChatEditorInput = JSON.parse(serializedEditor);
 			const resource = URI.revive(parsed.resource);
-			return instantiationService.createInstance(ChatEditorInput, resource, { ...parsed.options, target: { sessionId: parsed.sessionId } });
+			return instantiationService.createInstance(ChatEditorInput, resource, {
+				...parsed.options,
+				target: { sessionId: parsed.sessionId },
+			});
 		} catch (err) {
 			return undefined;
 		}

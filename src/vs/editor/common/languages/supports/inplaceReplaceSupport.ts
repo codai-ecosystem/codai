@@ -7,17 +7,21 @@ import { IRange } from '../../core/range.js';
 import { IInplaceReplaceSupportResult } from '../../languages.js';
 
 export class BasicInplaceReplace {
-
 	public static readonly INSTANCE = new BasicInplaceReplace();
 
-	public navigateValueSet(range1: IRange, text1: string, range2: IRange, text2: string | null, up: boolean): IInplaceReplaceSupportResult | null {
-
+	public navigateValueSet(
+		range1: IRange,
+		text1: string,
+		range2: IRange,
+		text2: string | null,
+		up: boolean
+	): IInplaceReplaceSupportResult | null {
 		if (range1 && text1) {
 			const result = this.doNavigateValueSet(text1, up);
 			if (result) {
 				return {
 					range: range1,
-					value: result
+					value: result,
 				};
 			}
 		}
@@ -27,7 +31,7 @@ export class BasicInplaceReplace {
 			if (result) {
 				return {
 					range: range2,
-					value: result
+					value: result,
 				};
 			}
 		}
@@ -49,7 +53,6 @@ export class BasicInplaceReplace {
 		const n2 = parseFloat(value);
 
 		if (!isNaN(n1) && !isNaN(n2) && n1 === n2) {
-
 			if (n1 === 0 && !up) {
 				return null; // don't do negative
 				//			} else if(n1 === 9 && up) {

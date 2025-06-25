@@ -13,7 +13,7 @@ export class MemorAIService {
 	private getHeaders() {
 		return {
 			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${this.apiKey}`,
+			Authorization: `Bearer ${this.apiKey}`,
 			'X-Agent-ID': this.agentId,
 		};
 	}

@@ -7,12 +7,16 @@ import { getZoomLevel, setZoomFactor, setZoomLevel } from '../../../base/browser
 import { getActiveWindow, getWindows } from '../../../base/browser/dom.js';
 import { mainWindow } from '../../../base/browser/window.js';
 import { ISandboxConfiguration } from '../../../base/parts/sandbox/common/sandboxTypes.js';
-import { ISandboxGlobals, ipcRenderer, webFrame } from '../../../base/parts/sandbox/electron-sandbox/globals.js';
+import {
+	ISandboxGlobals,
+	ipcRenderer,
+	webFrame,
+} from '../../../base/parts/sandbox/electron-sandbox/globals.js';
 import { zoomLevelToZoomFactor } from '../common/window.js';
 
 export enum ApplyZoomTarget {
 	ACTIVE_WINDOW = 1,
-	ALL_WINDOWS
+	ALL_WINDOWS,
 }
 
 export const MAX_ZOOM_LEVEL = 8;

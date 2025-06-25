@@ -6,15 +6,24 @@
 import * as assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { ColorIdentifier } from '../../../../../platform/theme/common/colorUtils.js';
-import { colorRegistry, historyItemBaseRefColor, historyItemRefColor, historyItemRemoteRefColor, toISCMHistoryItemViewModelArray } from '../../browser/scmHistory.js';
+import {
+	colorRegistry,
+	historyItemBaseRefColor,
+	historyItemRefColor,
+	historyItemRemoteRefColor,
+	toISCMHistoryItemViewModelArray,
+} from '../../browser/scmHistory.js';
 import { ISCMHistoryItem, ISCMHistoryItemRef } from '../../common/history.js';
 
-function toSCMHistoryItem(id: string, parentIds: string[], references?: ISCMHistoryItemRef[]): ISCMHistoryItem {
+function toSCMHistoryItem(
+	id: string,
+	parentIds: string[],
+	references?: ISCMHistoryItemRef[]
+): ISCMHistoryItem {
 	return { id, parentIds, subject: '', message: '', references } satisfies ISCMHistoryItem;
 }
 
 suite('toISCMHistoryItemViewModelArray', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('empty graph', () => {
@@ -23,15 +32,12 @@ suite('toISCMHistoryItemViewModelArray', () => {
 		assert.strictEqual(viewModels.length, 0);
 	});
 
-
 	/**
 	 *	* a
 	 */
 
 	test('single commit', () => {
-		const models = [
-			toSCMHistoryItem('a', []),
-		];
+		const models = [toSCMHistoryItem('a', [])];
 
 		const viewModels = toISCMHistoryItemViewModelArray(models);
 
@@ -373,7 +379,6 @@ suite('toISCMHistoryItemViewModelArray', () => {
 		assert.strictEqual(viewModels[5].outputSwimlanes[1].color, colorRegistry[2]);
 	});
 
-
 	/**
 	 * 	* a(b,c)
 	 * 	|\
@@ -522,7 +527,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 			toSCMHistoryItem('c', ['d'], [{ id: 'origin/topic', name: 'origin/topic' }]),
 			toSCMHistoryItem('d', ['e']),
 			toSCMHistoryItem('e', ['f', 'g']),
-			toSCMHistoryItem('g', ['h'], [{ id: 'origin/main', name: 'origin/main' }])
+			toSCMHistoryItem('g', ['h'], [{ id: 'origin/main', name: 'origin/main' }]),
 		];
 
 		const colorMap = new Map<string, ColorIdentifier>([

@@ -6,16 +6,28 @@
 import { IIdentityProvider, IListVirtualDelegate } from '../list/list.js';
 import { AbstractTree, AbstractTreeViewState, IAbstractTreeOptions } from './abstractTree.js';
 import { ObjectTreeModel } from './objectTreeModel.js';
-import { IDataSource, ITreeElement, ITreeModel, ITreeNode, ITreeRenderer, ITreeSorter, TreeError } from './tree.js';
+import {
+	IDataSource,
+	ITreeElement,
+	ITreeModel,
+	ITreeNode,
+	ITreeRenderer,
+	ITreeSorter,
+	TreeError,
+} from './tree.js';
 import { Iterable } from '../../../common/iterator.js';
 
-export interface IDataTreeOptions<T, TFilterData = void> extends IAbstractTreeOptions<T, TFilterData> {
+export interface IDataTreeOptions<T, TFilterData = void>
+	extends IAbstractTreeOptions<T, TFilterData> {
 	readonly sorter?: ITreeSorter<T>;
 }
 
-export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | null, TFilterData, T | null> {
-
-	protected declare model: ObjectTreeModel<T, TFilterData>;
+export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
+	T | null,
+	TFilterData,
+	T | null
+> {
+	declare protected model: ObjectTreeModel<T, TFilterData>;
 	private input: TInput | undefined;
 
 	private identityProvider: IIdentityProvider<T> | undefined;
@@ -41,7 +53,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | nu
 
 	setInput(input: TInput | undefined, viewState?: AbstractTreeViewState): void {
 		if (viewState && !this.identityProvider) {
-			throw new TreeError(this.user, 'Can\'t restore tree view state without an identity provider');
+			throw new TreeError(this.user, "Can't restore tree view state without an identity provider");
 		}
 
 		this.input = input;
@@ -126,7 +138,11 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | nu
 
 	// Implementation
 
-	private _refresh(element: TInput | T, isCollapsed?: (el: T) => boolean | undefined, onDidCreateNode?: (node: ITreeNode<T, TFilterData>) => void): void {
+	private _refresh(
+		element: TInput | T,
+		isCollapsed?: (el: T) => boolean | undefined,
+		onDidCreateNode?: (node: ITreeNode<T, TFilterData>) => void
+	): void {
 		let onDidDeleteNode: ((node: ITreeNode<T, TFilterData>) => void) | undefined;
 
 		if (this.identityProvider) {
@@ -151,15 +167,24 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | nu
 			};
 		}
 
-		this.model.setChildren((element === this.input ? null : element) as T, this.iterate(element, isCollapsed).elements, { onDidCreateNode, onDidDeleteNode });
+		this.model.setChildren(
+			(element === this.input ? null : element) as T,
+			this.iterate(element, isCollapsed).elements,
+			{ onDidCreateNode, onDidDeleteNode }
+		);
 	}
 
-	private iterate(element: TInput | T, isCollapsed?: (el: T) => boolean | undefined): { elements: Iterable<ITreeElement<T>>; size: number } {
+	private iterate(
+		element: TInput | T,
+		isCollapsed?: (el: T) => boolean | undefined
+	): { elements: Iterable<ITreeElement<T>>; size: number } {
 		const children = [...this.dataSource.getChildren(element)];
 		const elements = Iterable.map(children, element => {
 			const { elements: children, size } = this.iterate(element, isCollapsed);
-			const collapsible = this.dataSource.hasChildren ? this.dataSource.hasChildren(element) : undefined;
-			const collapsed = size === 0 ? undefined : (isCollapsed && isCollapsed(element));
+			const collapsible = this.dataSource.hasChildren
+				? this.dataSource.hasChildren(element)
+				: undefined;
+			const collapsed = size === 0 ? undefined : isCollapsed && isCollapsed(element);
 
 			return { element, children, collapsible, collapsed };
 		});
@@ -167,7 +192,10 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | nu
 		return { elements, size: children.length };
 	}
 
-	protected createModel(user: string, options: IDataTreeOptions<T, TFilterData>): ITreeModel<T | null, TFilterData, T | null> {
+	protected createModel(
+		user: string,
+		options: IDataTreeOptions<T, TFilterData>
+	): ITreeModel<T | null, TFilterData, T | null> {
 		return new ObjectTreeModel(user, options);
 	}
 }

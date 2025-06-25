@@ -12,16 +12,31 @@ import { VSBufferReadableStream } from '../../../../../../base/common/buffer.js'
 import { CancellationToken } from '../../../../../../base/common/cancellation.js';
 import { IModelService } from '../../../../../../editor/common/services/model.js';
 import { ILanguageService } from '../../../../../../editor/common/languages/language.js';
-import { IPromptContentsProviderOptions, PromptContentsProviderBase } from './promptContentsProviderBase.js';
+import {
+	IPromptContentsProviderOptions,
+	PromptContentsProviderBase,
+} from './promptContentsProviderBase.js';
 import { isPromptOrInstructionsFile } from '../../../../../../platform/prompts/common/prompts.js';
-import { OpenFailed, NotPromptFile, ResolveError, FolderReference } from '../../promptFileReferenceErrors.js';
-import { FileChangesEvent, FileChangeType, IFileService } from '../../../../../../platform/files/common/files.js';
+import {
+	OpenFailed,
+	NotPromptFile,
+	ResolveError,
+	FolderReference,
+} from '../../promptFileReferenceErrors.js';
+import {
+	FileChangesEvent,
+	FileChangeType,
+	IFileService,
+} from '../../../../../../platform/files/common/files.js';
 
 /**
  * Prompt contents provider for a file on the disk referenced by
  * a provided {@link URI}.
  */
-export class FilePromptContentProvider extends PromptContentsProviderBase<FileChangesEvent> implements IPromptContentsProvider {
+export class FilePromptContentProvider
+	extends PromptContentsProviderBase<FileChangesEvent>
+	implements IPromptContentsProvider
+{
 	public override get sourceName(): string {
 		return 'file';
 	}
@@ -33,8 +48,7 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 			return model.getLanguageId();
 		}
 
-		const inferredId = this.languageService
-			.guessLanguageIdByFilepathOrFirstLine(this.uri);
+		const inferredId = this.languageService.guessLanguageIdByFilepathOrFirstLine(this.uri);
 
 		if (inferredId !== null) {
 			return inferredId;
@@ -49,13 +63,13 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 		options: Partial<IPromptContentsProviderOptions>,
 		@IFileService private readonly fileService: IFileService,
 		@IModelService private readonly modelService: IModelService,
-		@ILanguageService private readonly languageService: ILanguageService,
+		@ILanguageService private readonly languageService: ILanguageService
 	) {
 		super(options);
 
 		// make sure the object is updated on file changes
 		this._register(
-			this.fileService.onDidFilesChange((event) => {
+			this.fileService.onDidFilesChange(event => {
 				// if file was added or updated, forward the event to
 				// the `getContentsStream()` produce a new stream for file contents
 				if (event.contains(this.uri, FileChangeType.ADDED, FileChangeType.UPDATED)) {
@@ -71,7 +85,7 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 					this.onChangeEmitter.fire(event);
 					return;
 				}
-			}),
+			})
 		);
 	}
 
@@ -85,12 +99,9 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 	 */
 	protected async getContentsStream(
 		_event: FileChangesEvent | 'full',
-		cancellationToken?: CancellationToken,
+		cancellationToken?: CancellationToken
 	): Promise<VSBufferReadableStream> {
-		assert(
-			!cancellationToken?.isCancellationRequested,
-			new CancellationError(),
-		);
+		assert(!cancellationToken?.isCancellationRequested, new CancellationError());
 
 		// get the binary stream of the file contents
 		let fileStream;
@@ -100,21 +111,15 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 			const info = await this.fileService.resolve(this.uri);
 
 			// validate that the cancellation was not yet requested
-			assert(
-				!cancellationToken?.isCancellationRequested,
-				new CancellationError(),
-			);
+			assert(!cancellationToken?.isCancellationRequested, new CancellationError());
 
-			assert(
-				info.isFile,
-				new FolderReference(this.uri),
-			);
+			assert(info.isFile, new FolderReference(this.uri));
 
 			const { allowNonPromptFiles } = this.options;
 
 			// if URI doesn't point to a prompt file, don't try to resolve it,
 			// unless the `allowNonPromptFiles` option is set to `true`
-			if ((allowNonPromptFiles !== true) && (isPromptOrInstructionsFile(this.uri) === false)) {
+			if (allowNonPromptFiles !== true && isPromptOrInstructionsFile(this.uri) === false) {
 				throw new NotPromptFile(this.uri);
 			}
 
@@ -130,7 +135,7 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 
 			return fileStream.value;
 		} catch (error) {
-			if ((error instanceof ResolveError) || (error instanceof CancellationError)) {
+			if (error instanceof ResolveError || error instanceof CancellationError) {
 				throw error;
 			}
 
@@ -140,14 +145,14 @@ export class FilePromptContentProvider extends PromptContentsProviderBase<FileCh
 
 	public override createNew(
 		promptContentsSource: { uri: URI },
-		options: Partial<IPromptContentsProviderOptions> = {},
+		options: Partial<IPromptContentsProviderOptions> = {}
 	): IPromptContentsProvider {
 		return new FilePromptContentProvider(
 			promptContentsSource.uri,
 			options,
 			this.fileService,
 			this.modelService,
-			this.languageService,
+			this.languageService
 		);
 	}
 

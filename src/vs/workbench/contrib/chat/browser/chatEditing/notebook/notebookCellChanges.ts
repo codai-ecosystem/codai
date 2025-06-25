@@ -3,11 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISettableObservable, ObservablePromise } from '../../../../../../base/common/observable.js';
+import {
+	ISettableObservable,
+	ObservablePromise,
+} from '../../../../../../base/common/observable.js';
 import { IDocumentDiff } from '../../../../../../editor/common/diff/documentDiffProvider.js';
 import { DetailedLineRangeMapping } from '../../../../../../editor/common/diff/rangeMapping.js';
 import { ITextModel } from '../../../../../../editor/common/model.js';
-
 
 /**
  * This structure is used to represent the state of a Notebook document compared to the original.
@@ -17,29 +19,27 @@ import { ITextModel } from '../../../../../../editor/common/model.js';
  * Even when there are no changes, diff will contain the number of lines in the document.
  * This way we can always calculate the total number of lines in the document.
  */
-export type ICellDiffInfo = |
-	{
-		originalCellIndex: number;
-		modifiedCellIndex: number;
-		type: 'unchanged';
-	} & IDocumentDiffWithModelsAndActions |
-	{
-		originalCellIndex: number;
-		modifiedCellIndex: number;
-		type: 'modified';
-	} & IDocumentDiffWithModelsAndActions |
-	{
-		modifiedCellIndex: undefined;
-		originalCellIndex: number;
-		type: 'delete';
-	} & IDocumentDiffWithModelsAndActions |
-	{
-		modifiedCellIndex: number;
-		originalCellIndex: undefined;
-		type: 'insert';
-	} & IDocumentDiffWithModelsAndActions;
-
-
+export type ICellDiffInfo =
+	| ({
+			originalCellIndex: number;
+			modifiedCellIndex: number;
+			type: 'unchanged';
+	  } & IDocumentDiffWithModelsAndActions)
+	| ({
+			originalCellIndex: number;
+			modifiedCellIndex: number;
+			type: 'modified';
+	  } & IDocumentDiffWithModelsAndActions)
+	| ({
+			modifiedCellIndex: undefined;
+			originalCellIndex: number;
+			type: 'delete';
+	  } & IDocumentDiffWithModelsAndActions)
+	| ({
+			modifiedCellIndex: number;
+			originalCellIndex: undefined;
+			type: 'insert';
+	  } & IDocumentDiffWithModelsAndActions);
 
 interface IDocumentDiffWithModelsAndActions {
 	/**
@@ -60,7 +60,6 @@ interface IDocumentDiffWithModelsAndActions {
 	undo(changes: DetailedLineRangeMapping): Promise<boolean>;
 }
 
-
 export function countChanges(changes: ICellDiffInfo[]): number {
 	return changes.reduce((count, change) => {
 		const diff = change.diff.get();
@@ -79,14 +78,15 @@ export function countChanges(changes: ICellDiffInfo[]): number {
 				return count;
 		}
 	}, 0);
-
 }
 
 export function sortCellChanges(changes: ICellDiffInfo[]): ICellDiffInfo[] {
 	return [...changes].sort((a, b) => {
 		// For unchanged and modified, use modifiedCellIndex
-		if ((a.type === 'unchanged' || a.type === 'modified') &&
-			(b.type === 'unchanged' || b.type === 'modified')) {
+		if (
+			(a.type === 'unchanged' || a.type === 'modified') &&
+			(b.type === 'unchanged' || b.type === 'modified')
+		) {
 			return a.modifiedCellIndex - b.modifiedCellIndex;
 		}
 
@@ -107,15 +107,26 @@ export function sortCellChanges(changes: ICellDiffInfo[]): ICellDiffInfo[] {
 			return 1;
 		}
 
-		if ((a.type === 'delete' && b.type !== 'insert') || (a.type !== 'insert' && b.type === 'delete')) {
+		if (
+			(a.type === 'delete' && b.type !== 'insert') ||
+			(a.type !== 'insert' && b.type === 'delete')
+		) {
 			return a.originalCellIndex - b.originalCellIndex;
 		}
 
 		// Mixed types: compare based on available indices
-		const aIndex = a.type === 'delete' ? a.originalCellIndex :
-			(a.type === 'insert' ? a.modifiedCellIndex : a.modifiedCellIndex);
-		const bIndex = b.type === 'delete' ? b.originalCellIndex :
-			(b.type === 'insert' ? b.modifiedCellIndex : b.modifiedCellIndex);
+		const aIndex =
+			a.type === 'delete'
+				? a.originalCellIndex
+				: a.type === 'insert'
+					? a.modifiedCellIndex
+					: a.modifiedCellIndex;
+		const bIndex =
+			b.type === 'delete'
+				? b.originalCellIndex
+				: b.type === 'insert'
+					? b.modifiedCellIndex
+					: b.modifiedCellIndex;
 
 		return aIndex - bIndex;
 	});

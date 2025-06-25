@@ -15,7 +15,6 @@ import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('TextDiffEditorModel', () => {
-
 	const disposables = new DisposableStore();
 	let instantiationService: IInstantiationService;
 	let accessor: TestServiceAccessor;
@@ -30,24 +29,55 @@ suite('TextDiffEditorModel', () => {
 	});
 
 	test('basics', async () => {
-		disposables.add(accessor.textModelResolverService.registerTextModelContentProvider('test', {
-			provideTextContent: async function (resource: URI): Promise<ITextModel | null> {
-				if (resource.scheme === 'test') {
-					const modelContent = 'Hello Test';
-					const languageSelection = accessor.languageService.createById('json');
+		disposables.add(
+			accessor.textModelResolverService.registerTextModelContentProvider('test', {
+				provideTextContent: async function (resource: URI): Promise<ITextModel | null> {
+					if (resource.scheme === 'test') {
+						const modelContent = 'Hello Test';
+						const languageSelection = accessor.languageService.createById('json');
 
-					return disposables.add(accessor.modelService.createModel(modelContent, languageSelection, resource));
-				}
+						return disposables.add(
+							accessor.modelService.createModel(modelContent, languageSelection, resource)
+						);
+					}
 
-				return null;
-			}
-		}));
+					return null;
+				},
+			})
+		);
 
-		const input = disposables.add(instantiationService.createInstance(TextResourceEditorInput, URI.from({ scheme: 'test', authority: null!, path: 'thePath' }), 'name', 'description', undefined, undefined));
-		const otherInput = disposables.add(instantiationService.createInstance(TextResourceEditorInput, URI.from({ scheme: 'test', authority: null!, path: 'thePath' }), 'name2', 'description', undefined, undefined));
-		const diffInput = disposables.add(instantiationService.createInstance(DiffEditorInput, 'name', 'description', input, otherInput, undefined));
+		const input = disposables.add(
+			instantiationService.createInstance(
+				TextResourceEditorInput,
+				URI.from({ scheme: 'test', authority: null!, path: 'thePath' }),
+				'name',
+				'description',
+				undefined,
+				undefined
+			)
+		);
+		const otherInput = disposables.add(
+			instantiationService.createInstance(
+				TextResourceEditorInput,
+				URI.from({ scheme: 'test', authority: null!, path: 'thePath' }),
+				'name2',
+				'description',
+				undefined,
+				undefined
+			)
+		);
+		const diffInput = disposables.add(
+			instantiationService.createInstance(
+				DiffEditorInput,
+				'name',
+				'description',
+				input,
+				otherInput,
+				undefined
+			)
+		);
 
-		let model = disposables.add(await diffInput.resolve() as TextDiffEditorModel);
+		let model = disposables.add((await diffInput.resolve()) as TextDiffEditorModel);
 
 		assert(model);
 		assert(model instanceof TextDiffEditorModel);
@@ -56,7 +86,7 @@ suite('TextDiffEditorModel', () => {
 		assert(diffEditorModel.original);
 		assert(diffEditorModel.modified);
 
-		model = disposables.add(await diffInput.resolve() as TextDiffEditorModel);
+		model = disposables.add((await diffInput.resolve()) as TextDiffEditorModel);
 		assert(model.isResolved());
 
 		assert(diffEditorModel !== model.textDiffEditorModel);

@@ -7,11 +7,24 @@ import type { Terminal as RawXtermTerminal } from '@xterm/xterm';
 import { Event } from '../../../../../base/common/event.js';
 import { IMouseWheelEvent } from '../../../../../base/browser/mouseEvent.js';
 import { MouseWheelClassifier } from '../../../../../base/browser/ui/scrollbar/scrollableElement.js';
-import { Disposable, MutableDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	MutableDisposable,
+	toDisposable,
+} from '../../../../../base/common/lifecycle.js';
 import { isMacintosh } from '../../../../../base/common/platform.js';
 import { TerminalSettingId } from '../../../../../platform/terminal/common/terminal.js';
-import { IDetachedTerminalInstance, ITerminalContribution, ITerminalInstance, IXtermTerminal } from '../../../terminal/browser/terminal.js';
-import { registerTerminalContribution, type IDetachedCompatibleTerminalContributionContext, type ITerminalContributionContext } from '../../../terminal/browser/terminalExtensions.js';
+import {
+	IDetachedTerminalInstance,
+	ITerminalContribution,
+	ITerminalInstance,
+	IXtermTerminal,
+} from '../../../terminal/browser/terminal.js';
+import {
+	registerTerminalContribution,
+	type IDetachedCompatibleTerminalContributionContext,
+	type ITerminalContributionContext,
+} from '../../../terminal/browser/terminalExtensions.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { registerTerminalAction } from '../../../terminal/browser/terminalActions.js';
 import { localize2 } from '../../../../../nls.js';
@@ -28,29 +41,35 @@ class TerminalMouseWheelZoomContribution extends Disposable implements ITerminal
 	 */
 	static activeFindWidget?: TerminalMouseWheelZoomContribution;
 
-	static get(instance: ITerminalInstance | IDetachedTerminalInstance): TerminalMouseWheelZoomContribution | null {
-		return instance.getContribution<TerminalMouseWheelZoomContribution>(TerminalMouseWheelZoomContribution.ID);
+	static get(
+		instance: ITerminalInstance | IDetachedTerminalInstance
+	): TerminalMouseWheelZoomContribution | null {
+		return instance.getContribution<TerminalMouseWheelZoomContribution>(
+			TerminalMouseWheelZoomContribution.ID
+		);
 	}
 
 	private readonly _listener = this._register(new MutableDisposable());
 
 	constructor(
 		_ctx: ITerminalContributionContext | IDetachedCompatibleTerminalContributionContext,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService private readonly _configurationService: IConfigurationService
 	) {
 		super();
 	}
 
 	xtermOpen(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
-		this._register(Event.runAndSubscribe(this._configurationService.onDidChangeConfiguration, e => {
-			if (!e || e.affectsConfiguration(TerminalZoomSettingId.MouseWheelZoom)) {
-				if (!!this._configurationService.getValue(TerminalZoomSettingId.MouseWheelZoom)) {
-					this._setupMouseWheelZoomListener(xterm.raw);
-				} else {
-					this._listener.clear();
+		this._register(
+			Event.runAndSubscribe(this._configurationService.onDidChangeConfiguration, e => {
+				if (!e || e.affectsConfiguration(TerminalZoomSettingId.MouseWheelZoom)) {
+					if (!!this._configurationService.getValue(TerminalZoomSettingId.MouseWheelZoom)) {
+						this._setupMouseWheelZoomListener(xterm.raw);
+					} else {
+						this._listener.clear();
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	private _getConfigFontSize(): number {
@@ -72,7 +91,10 @@ class TerminalMouseWheelZoomContribution extends Disposable implements ITerminal
 			if (classifier.isPhysicalMouseWheel()) {
 				if (this._hasMouseWheelZoomModifiers(browserEvent)) {
 					const delta = browserEvent.deltaY > 0 ? -1 : 1;
-					this._configurationService.updateValue(TerminalSettingId.FontSize, this._getConfigFontSize() + delta);
+					this._configurationService.updateValue(
+						TerminalSettingId.FontSize,
+						this._getConfigFontSize() + delta
+					);
 					// EditorZoom.setZoomLevel(zoomLevel + delta);
 					browserEvent.preventDefault();
 					browserEvent.stopPropagation();
@@ -96,7 +118,10 @@ class TerminalMouseWheelZoomContribution extends Disposable implements ITerminal
 					const deltaAbs = Math.ceil(Math.abs(gestureAccumulatedDelta / 5));
 					const deltaDirection = gestureAccumulatedDelta > 0 ? -1 : 1;
 					const delta = deltaAbs * deltaDirection;
-					this._configurationService.updateValue(TerminalSettingId.FontSize, gestureStartFontSize + delta);
+					this._configurationService.updateValue(
+						TerminalSettingId.FontSize,
+						gestureStartFontSize + delta
+					);
 					gestureAccumulatedDelta += browserEvent.deltaY;
 					browserEvent.preventDefault();
 					browserEvent.stopPropagation();
@@ -109,17 +134,24 @@ class TerminalMouseWheelZoomContribution extends Disposable implements ITerminal
 	}
 
 	private _hasMouseWheelZoomModifiers(browserEvent: IMouseWheelEvent): boolean {
-		return (
-			isMacintosh
-				// on macOS we support cmd + two fingers scroll (`metaKey` set)
+		return isMacintosh
+			? // on macOS we support cmd + two fingers scroll (`metaKey` set)
 				// and also the two fingers pinch gesture (`ctrKey` set)
-				? ((browserEvent.metaKey || browserEvent.ctrlKey) && !browserEvent.shiftKey && !browserEvent.altKey)
-				: (browserEvent.ctrlKey && !browserEvent.metaKey && !browserEvent.shiftKey && !browserEvent.altKey)
-		);
+				(browserEvent.metaKey || browserEvent.ctrlKey) &&
+					!browserEvent.shiftKey &&
+					!browserEvent.altKey
+			: browserEvent.ctrlKey &&
+					!browserEvent.metaKey &&
+					!browserEvent.shiftKey &&
+					!browserEvent.altKey;
 	}
 }
 
-registerTerminalContribution(TerminalMouseWheelZoomContribution.ID, TerminalMouseWheelZoomContribution, true);
+registerTerminalContribution(
+	TerminalMouseWheelZoomContribution.ID,
+	TerminalMouseWheelZoomContribution,
+	true
+);
 
 registerTerminalAction({
 	id: TerminalZoomCommandId.FontZoomIn,
@@ -130,7 +162,7 @@ registerTerminalAction({
 		if (isNumber(value)) {
 			await configurationService.updateValue(TerminalSettingId.FontSize, value + 1);
 		}
-	}
+	},
 });
 
 registerTerminalAction({
@@ -142,7 +174,7 @@ registerTerminalAction({
 		if (isNumber(value)) {
 			await configurationService.updateValue(TerminalSettingId.FontSize, value - 1);
 		}
-	}
+	},
 });
 
 registerTerminalAction({
@@ -151,5 +183,5 @@ registerTerminalAction({
 	run: async (c, accessor) => {
 		const configurationService = accessor.get(IConfigurationService);
 		await configurationService.updateValue(TerminalSettingId.FontSize, defaultTerminalFontSize);
-	}
+	},
 });

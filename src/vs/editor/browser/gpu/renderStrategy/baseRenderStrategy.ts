@@ -12,8 +12,9 @@ import { GlyphRasterizer } from '../raster/glyphRasterizer.js';
 import type { ViewGpuContext } from '../viewGpuContext.js';
 
 export abstract class BaseRenderStrategy extends ViewEventHandler implements IGpuRenderStrategy {
-
-	get glyphRasterizer() { return this._glyphRasterizer.value; }
+	get glyphRasterizer() {
+		return this._glyphRasterizer.value;
+	}
 
 	abstract type: string;
 	abstract wgsl: string;
@@ -23,7 +24,7 @@ export abstract class BaseRenderStrategy extends ViewEventHandler implements IGp
 		protected readonly _context: ViewContext,
 		protected readonly _viewGpuContext: ViewGpuContext,
 		protected readonly _device: GPUDevice,
-		protected readonly _glyphRasterizer: { value: GlyphRasterizer },
+		protected readonly _glyphRasterizer: { value: GlyphRasterizer }
 	) {
 		super();
 

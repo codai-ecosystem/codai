@@ -8,7 +8,10 @@ import { ReadableStream } from '../../../../base/common/stream.js';
 import { BaseDecoder } from '../../../../base/common/codecs/baseDecoder.js';
 import { MarkdownExtensionsToken } from './tokens/markdownExtensionsToken.js';
 import { SimpleDecoder, TSimpleDecoderToken } from '../simpleCodec/simpleDecoder.js';
-import { PartialFrontMatterHeader, PartialFrontMatterStartMarker } from './parsers/frontMatterHeader.js';
+import {
+	PartialFrontMatterHeader,
+	PartialFrontMatterStartMarker,
+} from './parsers/frontMatterHeader.js';
 
 /**
  * Tokens produced by this decoder.
@@ -19,22 +22,23 @@ export type TMarkdownExtensionsToken = MarkdownExtensionsToken | TSimpleDecoderT
  * Decoder responsible for decoding extensions of markdown syntax,
  * e.g., a `Front Matter` header, etc.
  */
-export class MarkdownExtensionsDecoder extends BaseDecoder<TMarkdownExtensionsToken, TSimpleDecoderToken> {
+export class MarkdownExtensionsDecoder extends BaseDecoder<
+	TMarkdownExtensionsToken,
+	TSimpleDecoderToken
+> {
 	/**
 	 * Current parser object that is responsible for parsing a sequence of tokens into
 	 * some markdown entity. Set to `undefined` when no parsing is in progress at the moment.
 	 */
 	private current?: PartialFrontMatterStartMarker | PartialFrontMatterHeader;
 
-	constructor(
-		stream: ReadableStream<VSBuffer>,
-	) {
+	constructor(stream: ReadableStream<VSBuffer>) {
 		super(new SimpleDecoder(stream));
 	}
 
 	protected override onStreamData(token: TSimpleDecoderToken): void {
 		// front matter headers start with a `-` at the first column of the first line
-		if ((this.current === undefined) && PartialFrontMatterStartMarker.mayStartHeader(token)) {
+		if (this.current === undefined && PartialFrontMatterStartMarker.mayStartHeader(token)) {
 			this.current = new PartialFrontMatterStartMarker(token);
 
 			return;
@@ -86,13 +90,10 @@ export class MarkdownExtensionsDecoder extends BaseDecoder<TMarkdownExtensionsTo
 			// if current parser can be converted into a valid Front Matter
 			// header, then emit it and reset the current parser object
 			if (this.current instanceof PartialFrontMatterHeader) {
-				this._onData.fire(
-					this.current.asFrontMatterHeader(),
-				);
+				this._onData.fire(this.current.asFrontMatterHeader());
 				delete this.current;
 				return;
 			}
-
 		} catch {
 			// if failed to convert current parser object to a token,
 			// re-emit the tokens accumulated so far

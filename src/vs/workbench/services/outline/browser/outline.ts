@@ -20,20 +20,28 @@ export const IOutlineService = createDecorator<IOutlineService>('IOutlineService
 export const enum OutlineTarget {
 	OutlinePane = 1,
 	Breadcrumbs = 2,
-	QuickPick = 4
+	QuickPick = 4,
 }
 
 export interface IOutlineService {
 	_serviceBrand: undefined;
 	onDidChange: Event<void>;
 	canCreateOutline(editor: IEditorPane): boolean;
-	createOutline(editor: IEditorPane, target: OutlineTarget, token: CancellationToken): Promise<IOutline<any> | undefined>;
+	createOutline(
+		editor: IEditorPane,
+		target: OutlineTarget,
+		token: CancellationToken
+	): Promise<IOutline<any> | undefined>;
 	registerOutlineCreator(creator: IOutlineCreator<any, any>): IDisposable;
 }
 
 export interface IOutlineCreator<P extends IEditorPane, E> {
 	matches(candidate: IEditorPane): candidate is P;
-	createOutline(editor: P, target: OutlineTarget, token: CancellationToken): Promise<IOutline<E> | undefined>;
+	createOutline(
+		editor: P,
+		target: OutlineTarget,
+		token: CancellationToken
+	): Promise<IOutline<E> | undefined>;
 }
 
 export interface IBreadcrumbsDataSource<E> {
@@ -73,7 +81,6 @@ export interface OutlineChangeEvent {
 }
 
 export interface IOutline<E> {
-
 	readonly uri: URI | undefined;
 
 	readonly config: IOutlineListConfig<E>;
@@ -83,22 +90,26 @@ export interface IOutline<E> {
 	readonly activeElement: E | undefined;
 	readonly onDidChange: Event<OutlineChangeEvent>;
 
-	reveal(entry: E, options: IEditorOptions, sideBySide: boolean, select: boolean): Promise<void> | void;
+	reveal(
+		entry: E,
+		options: IEditorOptions,
+		sideBySide: boolean,
+		select: boolean
+	): Promise<void> | void;
 	preview(entry: E): IDisposable;
 	captureViewState(): IDisposable;
 	dispose(): void;
 }
-
 
 export const enum OutlineConfigKeys {
 	'icons' = 'outline.icons',
 	'collapseItems' = 'outline.collapseItems',
 	'problemsEnabled' = 'outline.problems.enabled',
 	'problemsColors' = 'outline.problems.colors',
-	'problemsBadges' = 'outline.problems.badges'
+	'problemsBadges' = 'outline.problems.badges',
 }
 
 export const enum OutlineConfigCollapseItemsValues {
 	Collapsed = 'alwaysCollapse',
-	Expanded = 'alwaysExpand'
+	Expanded = 'alwaysExpand',
 }

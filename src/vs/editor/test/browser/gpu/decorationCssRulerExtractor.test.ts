@@ -28,7 +28,10 @@ suite('DecorationCssRulerExtractor', () => {
 	}
 
 	function assertStyles(className: string, expectedCssText: string[]): void {
-		deepStrictEqual(extractor.getStyleRules(container, className).map(e => e.cssText), expectedCssText);
+		deepStrictEqual(
+			extractor.getStyleRules(container, className).map(e => e.cssText),
+			expectedCssText
+		);
 	}
 
 	setup(() => {
@@ -49,23 +52,21 @@ suite('DecorationCssRulerExtractor', () => {
 
 	test('single style should be picked up', () => {
 		addStyleElement(`.${testClassName} { color: red; }`);
-		assertStyles(testClassName, [
-			`.${testClassName} { color: red; }`
-		]);
+		assertStyles(testClassName, [`.${testClassName} { color: red; }`]);
 	});
 
 	test('multiple styles from the same selector should be picked up', () => {
 		addStyleElement(`.${testClassName} { color: red; opacity: 0.5; }`);
-		assertStyles(testClassName, [
-			`.${testClassName} { color: red; opacity: 0.5; }`
-		]);
+		assertStyles(testClassName, [`.${testClassName} { color: red; opacity: 0.5; }`]);
 	});
 
 	test('multiple styles from  different selectors should be picked up', () => {
-		addStyleElement([
-			`.${testClassName} { color: red; opacity: 0.5; }`,
-			`.${testClassName}:hover { opacity: 1; }`,
-		].join('\n'));
+		addStyleElement(
+			[
+				`.${testClassName} { color: red; opacity: 0.5; }`,
+				`.${testClassName}:hover { opacity: 1; }`,
+			].join('\n')
+		);
 		assertStyles(testClassName, [
 			`.${testClassName} { color: red; opacity: 0.5; }`,
 			`.${testClassName}:hover { opacity: 1; }`,
@@ -82,13 +83,13 @@ suite('DecorationCssRulerExtractor', () => {
 	});
 
 	test('should not pick up styles from selectors where the prefix is the class', () => {
-		addStyleElement([
-			`.${testClassName} { color: red; }`,
-			`.${testClassName}-ignoreme { opacity: 1; }`,
-			`.${testClassName}fake { opacity: 1; }`,
-		].join('\n'));
-		assertStyles(testClassName, [
-			`.${testClassName} { color: red; }`,
-		]);
+		addStyleElement(
+			[
+				`.${testClassName} { color: red; }`,
+				`.${testClassName}-ignoreme { opacity: 1; }`,
+				`.${testClassName}fake { opacity: 1; }`,
+			].join('\n')
+		);
+		assertStyles(testClassName, [`.${testClassName} { color: red; }`]);
 	});
 });

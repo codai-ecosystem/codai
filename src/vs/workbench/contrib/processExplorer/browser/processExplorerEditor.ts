@@ -13,7 +13,6 @@ import { IEditorGroup } from '../../../services/editor/common/editorGroupsServic
 import { BrowserProcessExplorerControl, ProcessExplorerControl } from './processExplorerControl.js';
 
 export class ProcessExplorerEditor extends EditorPane {
-
 	static readonly ID: string = 'workbench.editor.processExplorer';
 
 	protected processExplorerControl: ProcessExplorerControl | undefined = undefined;
@@ -29,7 +28,9 @@ export class ProcessExplorerEditor extends EditorPane {
 	}
 
 	protected override createEditor(parent: HTMLElement): void {
-		this.processExplorerControl = this._register(this.instantiationService.createInstance(BrowserProcessExplorerControl, parent));
+		this.processExplorerControl = this._register(
+			this.instantiationService.createInstance(BrowserProcessExplorerControl, parent)
+		);
 	}
 
 	override focus(): void {

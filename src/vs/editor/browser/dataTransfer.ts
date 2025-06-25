@@ -4,11 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DataTransfers } from '../../base/browser/dnd.js';
-import { createFileDataTransferItem, createStringDataTransferItem, IDataTransferItem, UriList, VSDataTransfer } from '../../base/common/dataTransfer.js';
+import {
+	createFileDataTransferItem,
+	createStringDataTransferItem,
+	IDataTransferItem,
+	UriList,
+	VSDataTransfer,
+} from '../../base/common/dataTransfer.js';
 import { Mimes } from '../../base/common/mime.js';
 import { URI } from '../../base/common/uri.js';
 import { CodeDataTransfers, getPathForFile } from '../../platform/dnd/browser/dnd.js';
-
 
 export function toVSDataTransfer(dataTransfer: DataTransfer): VSDataTransfer {
 	const vsDataTransfer = new VSDataTransfer();
@@ -42,7 +47,10 @@ const INTERNAL_DND_MIME_TYPES = Object.freeze([
 	DataTransfers.INTERNAL_URI_LIST,
 ]);
 
-export function toExternalVSDataTransfer(sourceDataTransfer: DataTransfer, overwriteUriList = false): VSDataTransfer {
+export function toExternalVSDataTransfer(
+	sourceDataTransfer: DataTransfer,
+	overwriteUriList = false
+): VSDataTransfer {
 	const vsDataTransfer = toVSDataTransfer(sourceDataTransfer);
 
 	// Try to expose the internal uri-list type as the standard type
@@ -70,7 +78,10 @@ export function toExternalVSDataTransfer(sourceDataTransfer: DataTransfer, overw
 			}
 
 			if (editorData.length) {
-				vsDataTransfer.replace(Mimes.uriList, createStringDataTransferItem(UriList.create(editorData)));
+				vsDataTransfer.replace(
+					Mimes.uriList,
+					createStringDataTransferItem(UriList.create(editorData))
+				);
 			}
 		}
 	}

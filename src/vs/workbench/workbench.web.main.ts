@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 // ####################################
 // ###                              ###
 // ### !!! PLEASE DO NOT MODIFY !!! ###
@@ -13,7 +12,6 @@
 // TODO@esm remove me once we stop supporting our web-esm-bridge
 
 (function () {
-
 	// #region Types
 	type IGlobalDefine = {
 		(moduleName: string, dependencies: string[], callback: (...args: any[]) => any): any;
@@ -25,9 +23,20 @@
 	};
 
 	interface ILoaderPlugin {
-		load: (pluginParam: string, parentRequire: IRelativeRequire, loadCallback: IPluginLoadCallback, options: IConfigurationOptions) => void;
+		load: (
+			pluginParam: string,
+			parentRequire: IRelativeRequire,
+			loadCallback: IPluginLoadCallback,
+			options: IConfigurationOptions
+		) => void;
 		write?: (pluginName: string, moduleName: string, write: IPluginWriteCallback) => void;
-		writeFile?: (pluginName: string, moduleName: string, req: IRelativeRequire, write: IPluginWriteFileCallback, config: IConfigurationOptions) => void;
+		writeFile?: (
+			pluginName: string,
+			moduleName: string,
+			req: IRelativeRequire,
+			write: IPluginWriteFileCallback,
+			config: IConfigurationOptions
+		) => void;
 		finishBuild?: (write: (filename: string, contents: string) => void) => void;
 	}
 	interface IRelativeRequire {
@@ -59,19 +68,28 @@
 	const require: { getConfig?(): any } | undefined = (globalThis as any).require;
 
 	if (!define || !require || typeof require.getConfig !== 'function') {
-		throw new Error('Expected global define() and require() functions. Please only load this module in an AMD context!');
+		throw new Error(
+			'Expected global define() and require() functions. Please only load this module in an AMD context!'
+		);
 	}
 
 	let baseUrl = require?.getConfig().baseUrl;
 	if (!baseUrl) {
-		throw new Error('Failed to determine baseUrl for loading AMD modules (tried require.getConfig().baseUrl)');
+		throw new Error(
+			'Failed to determine baseUrl for loading AMD modules (tried require.getConfig().baseUrl)'
+		);
 	}
 	if (!baseUrl.endsWith('/')) {
 		baseUrl = baseUrl + '/';
 	}
 	globalThis._VSCODE_FILE_ROOT = baseUrl;
 
-	const trustedTypesPolicy: Pick<TrustedTypePolicy<{ createScriptURL(value: string): string }>, 'name' | 'createScriptURL'> | undefined = require.getConfig().trustedTypesPolicy;
+	const trustedTypesPolicy:
+		| Pick<
+				TrustedTypePolicy<{ createScriptURL(value: string): string }>,
+				'name' | 'createScriptURL'
+		  >
+		| undefined = require.getConfig().trustedTypesPolicy;
 	if (trustedTypesPolicy) {
 		globalThis._VSCODE_WEB_PACKAGE_TTP = trustedTypesPolicy;
 	}
@@ -85,19 +103,23 @@
 			load: (_name, _req, _load, _config) => {
 				const script: any = document.createElement('script');
 				script.type = 'module';
-				script.src = trustedTypesPolicy ? trustedTypesPolicy.createScriptURL(`${baseUrl}vs/workbench/workbench.web.main.internal.js`) as any as string : `${baseUrl}vs/workbench/workbench.web.main.internal.js`;
+				script.src = trustedTypesPolicy
+					? (trustedTypesPolicy.createScriptURL(
+							`${baseUrl}vs/workbench/workbench.web.main.internal.js`
+						) as any as string)
+					: `${baseUrl}vs/workbench/workbench.web.main.internal.js`;
 				document.head.appendChild(script);
 
 				return promise.then(mod => _load(mod));
-			}
+			},
 		};
 	});
 
-	define(
-		'vs/workbench/workbench.web.main',
-		['require', 'exports', 'vs/web-api!'],
-		function (_require, exports, webApi) {
-			Object.assign(exports, webApi);
-		}
-	);
+	define('vs/workbench/workbench.web.main', ['require', 'exports', 'vs/web-api!'], function (
+		_require,
+		exports,
+		webApi
+	) {
+		Object.assign(exports, webApi);
+	});
 })();

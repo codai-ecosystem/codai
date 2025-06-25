@@ -12,30 +12,30 @@ const vscodeModule = {
 		workspaceFolders: [
 			{
 				uri: {
-					fsPath: process.cwd()
-				}
-			}
-		]
+					fsPath: process.cwd(),
+				},
+			},
+		],
 	},
 	window: {
 		createOutputChannel: () => ({
-			appendLine: () => { },
-			show: () => { },
-			clear: () => { }
+			appendLine: () => {},
+			show: () => {},
+			clear: () => {},
 		}),
 		showInformationMessage: () => Promise.resolve(undefined),
-		showErrorMessage: () => Promise.resolve(undefined)
+		showErrorMessage: () => Promise.resolve(undefined),
 	},
 	Uri: {
-		file: (path) => ({ fsPath: path, path }),
-		parse: (str) => ({ fsPath: str, path: str })
+		file: path => ({ fsPath: path, path }),
+		parse: str => ({ fsPath: str, path: str }),
 	},
 	env: {
-		openExternal: () => Promise.resolve(true)
+		openExternal: () => Promise.resolve(true),
 	},
 	commands: {
-		executeCommand: () => Promise.resolve(undefined)
-	}
+		executeCommand: () => Promise.resolve(undefined),
+	},
 };
 
 Module.prototype.require = function (id) {
@@ -55,7 +55,7 @@ async function runCriticalFixesTest() {
 	const results = {
 		passed: 0,
 		failed: 0,
-		errors: []
+		errors: [],
 	};
 
 	// Test 1: CodeAgent Integration
@@ -99,7 +99,7 @@ async function runCriticalFixesTest() {
 			description: 'Test plugin',
 			author: 'Test',
 			main: 'index.js',
-			dependencies: []
+			dependencies: [],
 		};
 
 		// Test context creation (this should not throw with our implementations)
@@ -142,10 +142,12 @@ async function runCriticalFixesTest() {
 		// Mock request/response objects
 		const mockReq = { headers: { authorization: 'Bearer aide-test123456789' } };
 		const mockRes = {
-			status: (code) => ({ json: (data) => ({ statusCode: code, data }) })
+			status: code => ({ json: data => ({ statusCode: code, data }) }),
 		};
 		let nextCalled = false;
-		const mockNext = () => { nextCalled = true; };
+		const mockNext = () => {
+			nextCalled = true;
+		};
 
 		// Test authentication
 		authenticate(mockReq, mockRes, mockNext);
@@ -219,7 +221,7 @@ async function runCriticalFixesTest() {
 			name: 'test-target',
 			type: 'heroku',
 			url: 'https://test.herokuapp.com',
-			branch: 'main'
+			branch: 'main',
 		});
 
 		console.log('✅ Deployment service functionality test passed');
@@ -253,7 +255,9 @@ async function runCriticalFixesTest() {
 	console.log('=====================================');
 	console.log(`✅ Passed: ${results.passed}`);
 	console.log(`❌ Failed: ${results.failed}`);
-	console.log(`📈 Success Rate: ${((results.passed / (results.passed + results.failed)) * 100).toFixed(1)}%`);
+	console.log(
+		`📈 Success Rate: ${((results.passed / (results.passed + results.failed)) * 100).toFixed(1)}%`
+	);
 
 	if (results.errors.length > 0) {
 		console.log('\n🔍 Error Details:');

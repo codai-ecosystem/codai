@@ -52,7 +52,7 @@ export const DEFAULT_WORD_REGEXP = createWordRegExp();
 export function ensureValidWordDefinition(wordDefinition?: RegExp | null): RegExp {
 	let result: RegExp = DEFAULT_WORD_REGEXP;
 
-	if (wordDefinition && (wordDefinition instanceof RegExp)) {
+	if (wordDefinition && wordDefinition instanceof RegExp) {
 		if (!wordDefinition.global) {
 			let flags = 'g';
 			if (wordDefinition.ignoreCase) {
@@ -75,19 +75,17 @@ export function ensureValidWordDefinition(wordDefinition?: RegExp | null): RegEx
 	return result;
 }
 
-
 export interface IGetWordAtTextConfig {
 	maxLen: number;
 	windowSize: number;
 	timeBudget: number;
 }
 
-
 const _defaultConfig = new LinkedList<IGetWordAtTextConfig>();
 _defaultConfig.unshift({
 	maxLen: 1000,
 	windowSize: 15,
-	timeBudget: 150
+	timeBudget: 150,
 });
 
 export function setDefaultGetWordAtTextConfig(value: IGetWordAtTextConfig) {
@@ -95,7 +93,13 @@ export function setDefaultGetWordAtTextConfig(value: IGetWordAtTextConfig) {
 	return toDisposable(rm);
 }
 
-export function getWordAtText(column: number, wordDefinition: RegExp, text: string, textOffset: number, config?: IGetWordAtTextConfig): IWordAtPosition | null {
+export function getWordAtText(
+	column: number,
+	wordDefinition: RegExp,
+	text: string,
+	textOffset: number,
+	config?: IGetWordAtTextConfig
+): IWordAtPosition | null {
 	// Ensure the regex has the 'g' flag, otherwise this will loop forever
 	wordDefinition = ensureValidWordDefinition(wordDefinition);
 
@@ -152,7 +156,7 @@ export function getWordAtText(column: number, wordDefinition: RegExp, text: stri
 		const result = {
 			word: match[0],
 			startColumn: textOffset + 1 + match.index,
-			endColumn: textOffset + 1 + match.index + match[0].length
+			endColumn: textOffset + 1 + match.index + match[0].length,
 		};
 		wordDefinition.lastIndex = 0;
 		return result;
@@ -161,9 +165,14 @@ export function getWordAtText(column: number, wordDefinition: RegExp, text: stri
 	return null;
 }
 
-function _findRegexMatchEnclosingPosition(wordDefinition: RegExp, text: string, pos: number, stopPos: number): RegExpExecArray | null {
+function _findRegexMatchEnclosingPosition(
+	wordDefinition: RegExp,
+	text: string,
+	pos: number,
+	stopPos: number
+): RegExpExecArray | null {
 	let match: RegExpExecArray | null;
-	while (match = wordDefinition.exec(text)) {
+	while ((match = wordDefinition.exec(text))) {
 		const matchIndex = match.index || 0;
 		if (matchIndex <= pos && wordDefinition.lastIndex >= pos) {
 			return match;

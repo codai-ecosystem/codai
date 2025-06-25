@@ -6,11 +6,15 @@
 import { IChannel, ProxyChannel } from '../../../base/parts/ipc/common/ipc.js';
 import { SyncDescriptor } from '../../instantiation/common/descriptors.js';
 import { registerSingleton } from '../../instantiation/common/extensions.js';
-import { createDecorator, IInstantiationService, ServiceIdentifier } from '../../instantiation/common/instantiation.js';
+import {
+	createDecorator,
+	IInstantiationService,
+	ServiceIdentifier,
+} from '../../instantiation/common/instantiation.js';
 import { IMainProcessService } from '../common/mainProcessService.js';
 import { IRemoteService } from '../common/services.js';
 
-type ChannelClientCtor<T> = { new(channel: IChannel, ...args: any[]): T };
+type ChannelClientCtor<T> = { new (channel: IChannel, ...args: any[]): T };
 type Remote = { getChannel(channelName: string): IChannel };
 
 abstract class RemoteServiceStub<T extends object> {
@@ -23,7 +27,9 @@ abstract class RemoteServiceStub<T extends object> {
 		const channel = remote.getChannel(channelName);
 
 		if (isRemoteServiceWithChannelClientOptions(options)) {
-			return instantiationService.createInstance(new SyncDescriptor(options.channelClientCtor, [channel]));
+			return instantiationService.createInstance(
+				new SyncDescriptor(options.channelClientCtor, [channel])
+			);
 		}
 
 		return ProxyChannel.toService(channel, options?.proxyOptions);
@@ -38,7 +44,9 @@ export interface IRemoteServiceWithProxyOptions {
 	readonly proxyOptions?: ProxyChannel.ICreateProxyServiceOptions;
 }
 
-function isRemoteServiceWithChannelClientOptions<T>(obj: unknown): obj is IRemoteServiceWithChannelClientOptions<T> {
+function isRemoteServiceWithChannelClientOptions<T>(
+	obj: unknown
+): obj is IRemoteServiceWithChannelClientOptions<T> {
 	const candidate = obj as IRemoteServiceWithChannelClientOptions<T> | undefined;
 
 	return !!candidate?.channelClientCtor;
@@ -47,13 +55,25 @@ function isRemoteServiceWithChannelClientOptions<T>(obj: unknown): obj is IRemot
 //#region Main Process
 
 class MainProcessRemoteServiceStub<T extends object> extends RemoteServiceStub<T> {
-	constructor(channelName: string, options: IRemoteServiceWithChannelClientOptions<T> | IRemoteServiceWithProxyOptions | undefined, @IMainProcessService ipcService: IMainProcessService, @IInstantiationService instantiationService: IInstantiationService) {
+	constructor(
+		channelName: string,
+		options: IRemoteServiceWithChannelClientOptions<T> | IRemoteServiceWithProxyOptions | undefined,
+		@IMainProcessService ipcService: IMainProcessService,
+		@IInstantiationService instantiationService: IInstantiationService
+	) {
 		super(channelName, options, ipcService, instantiationService);
 	}
 }
 
-export function registerMainProcessRemoteService<T>(id: ServiceIdentifier<T>, channelName: string, options?: IRemoteServiceWithChannelClientOptions<T> | IRemoteServiceWithProxyOptions): void {
-	registerSingleton(id, new SyncDescriptor(MainProcessRemoteServiceStub, [channelName, options], true));
+export function registerMainProcessRemoteService<T>(
+	id: ServiceIdentifier<T>,
+	channelName: string,
+	options?: IRemoteServiceWithChannelClientOptions<T> | IRemoteServiceWithProxyOptions
+): void {
+	registerSingleton(
+		id,
+		new SyncDescriptor(MainProcessRemoteServiceStub, [channelName, options], true)
+	);
 }
 
 //#endregion
@@ -63,7 +83,6 @@ export function registerMainProcessRemoteService<T>(id: ServiceIdentifier<T>, ch
 export const ISharedProcessService = createDecorator<ISharedProcessService>('sharedProcessService');
 
 export interface ISharedProcessService extends IRemoteService {
-
 	/**
 	 * Allows to create a `MessagePort` connection between the
 	 * shared process and the renderer process.
@@ -81,13 +100,25 @@ export interface ISharedProcessService extends IRemoteService {
 }
 
 class SharedProcessRemoteServiceStub<T extends object> extends RemoteServiceStub<T> {
-	constructor(channelName: string, options: IRemoteServiceWithChannelClientOptions<T> | IRemoteServiceWithProxyOptions | undefined, @ISharedProcessService ipcService: ISharedProcessService, @IInstantiationService instantiationService: IInstantiationService) {
+	constructor(
+		channelName: string,
+		options: IRemoteServiceWithChannelClientOptions<T> | IRemoteServiceWithProxyOptions | undefined,
+		@ISharedProcessService ipcService: ISharedProcessService,
+		@IInstantiationService instantiationService: IInstantiationService
+	) {
 		super(channelName, options, ipcService, instantiationService);
 	}
 }
 
-export function registerSharedProcessRemoteService<T>(id: ServiceIdentifier<T>, channelName: string, options?: IRemoteServiceWithChannelClientOptions<T> | IRemoteServiceWithProxyOptions): void {
-	registerSingleton(id, new SyncDescriptor(SharedProcessRemoteServiceStub, [channelName, options], true));
+export function registerSharedProcessRemoteService<T>(
+	id: ServiceIdentifier<T>,
+	channelName: string,
+	options?: IRemoteServiceWithChannelClientOptions<T> | IRemoteServiceWithProxyOptions
+): void {
+	registerSingleton(
+		id,
+		new SyncDescriptor(SharedProcessRemoteServiceStub, [channelName, options], true)
+	);
 }
 
 //#endregion

@@ -11,7 +11,11 @@ import { IndentConsts } from './supports/indentRules.js';
 import { EditorAutoIndentStrategy } from '../config/editorOptions.js';
 import { ILanguageConfigurationService } from './languageConfigurationRegistry.js';
 import { IViewLineTokens } from '../tokens/lineTokens.js';
-import { IndentationContextProcessor, isLanguageDifferentFromLineStart, ProcessedIndentRulesSupport } from './supports/indentationLineProcessor.js';
+import {
+	IndentationContextProcessor,
+	isLanguageDifferentFromLineStart,
+	ProcessedIndentRulesSupport,
+} from './supports/indentationLineProcessor.js';
 import { CursorConfiguration } from '../cursorCommon.js';
 
 export interface IVirtualModel {
@@ -37,7 +41,11 @@ export interface IIndentConverter {
  * 0: every line above are invalid
  * else: nearest preceding line of the same language
  */
-function getPrecedingValidLine(model: IVirtualModel, lineNumber: number, processedIndentRulesSupport: ProcessedIndentRulesSupport) {
+function getPrecedingValidLine(
+	model: IVirtualModel,
+	lineNumber: number,
+	processedIndentRulesSupport: ProcessedIndentRulesSupport
+) {
 	const languageId = model.tokenization.getLanguageIdAtPosition(lineNumber, 0);
 	if (lineNumber > 1) {
 		let lastLineNumber: number;
@@ -48,7 +56,11 @@ function getPrecedingValidLine(model: IVirtualModel, lineNumber: number, process
 				return resultLineNumber;
 			}
 			const text = model.getLineContent(lastLineNumber);
-			if (processedIndentRulesSupport.shouldIgnore(lastLineNumber) || /^\s+$/.test(text) || text === '') {
+			if (
+				processedIndentRulesSupport.shouldIgnore(lastLineNumber) ||
+				/^\s+$/.test(text) ||
+				text === ''
+			) {
 				resultLineNumber = lastLineNumber;
 				continue;
 			}
@@ -83,16 +95,22 @@ export function getInheritIndentForLine(
 		return null;
 	}
 
-	const indentRulesSupport = languageConfigurationService.getLanguageConfiguration(model.tokenization.getLanguageId()).indentRulesSupport;
+	const indentRulesSupport = languageConfigurationService.getLanguageConfiguration(
+		model.tokenization.getLanguageId()
+	).indentRulesSupport;
 	if (!indentRulesSupport) {
 		return null;
 	}
-	const processedIndentRulesSupport = new ProcessedIndentRulesSupport(model, indentRulesSupport, languageConfigurationService);
+	const processedIndentRulesSupport = new ProcessedIndentRulesSupport(
+		model,
+		indentRulesSupport,
+		languageConfigurationService
+	);
 
 	if (lineNumber <= 1) {
 		return {
 			indentation: '',
-			action: null
+			action: null,
 		};
 	}
 
@@ -104,34 +122,41 @@ export function getInheritIndentForLine(
 		if (priorLineNumber === 1) {
 			return {
 				indentation: '',
-				action: null
+				action: null,
 			};
 		}
 	}
 
-	const precedingUnIgnoredLine = getPrecedingValidLine(model, lineNumber, processedIndentRulesSupport);
+	const precedingUnIgnoredLine = getPrecedingValidLine(
+		model,
+		lineNumber,
+		processedIndentRulesSupport
+	);
 	if (precedingUnIgnoredLine < 0) {
 		return null;
 	} else if (precedingUnIgnoredLine < 1) {
 		return {
 			indentation: '',
-			action: null
+			action: null,
 		};
 	}
 
-	if (processedIndentRulesSupport.shouldIncrease(precedingUnIgnoredLine) || processedIndentRulesSupport.shouldIndentNextLine(precedingUnIgnoredLine)) {
+	if (
+		processedIndentRulesSupport.shouldIncrease(precedingUnIgnoredLine) ||
+		processedIndentRulesSupport.shouldIndentNextLine(precedingUnIgnoredLine)
+	) {
 		const precedingUnIgnoredLineContent = model.getLineContent(precedingUnIgnoredLine);
 		return {
 			indentation: strings.getLeadingWhitespace(precedingUnIgnoredLineContent),
 			action: IndentAction.Indent,
-			line: precedingUnIgnoredLine
+			line: precedingUnIgnoredLine,
 		};
 	} else if (processedIndentRulesSupport.shouldDecrease(precedingUnIgnoredLine)) {
 		const precedingUnIgnoredLineContent = model.getLineContent(precedingUnIgnoredLine);
 		return {
 			indentation: strings.getLeadingWhitespace(precedingUnIgnoredLineContent),
 			action: null,
-			line: precedingUnIgnoredLine
+			line: precedingUnIgnoredLine,
 		};
 	} else {
 		// precedingUnIgnoredLine can not be ignored.
@@ -143,15 +168,19 @@ export function getInheritIndentForLine(
 			return {
 				indentation: strings.getLeadingWhitespace(model.getLineContent(precedingUnIgnoredLine)),
 				action: null,
-				line: precedingUnIgnoredLine
+				line: precedingUnIgnoredLine,
 			};
 		}
 
 		const previousLine = precedingUnIgnoredLine - 1;
 
-		const previousLineIndentMetadata = indentRulesSupport.getIndentMetadata(model.getLineContent(previousLine));
-		if (!(previousLineIndentMetadata & (IndentConsts.INCREASE_MASK | IndentConsts.DECREASE_MASK)) &&
-			(previousLineIndentMetadata & IndentConsts.INDENT_NEXTLINE_MASK)) {
+		const previousLineIndentMetadata = indentRulesSupport.getIndentMetadata(
+			model.getLineContent(previousLine)
+		);
+		if (
+			!(previousLineIndentMetadata & (IndentConsts.INCREASE_MASK | IndentConsts.DECREASE_MASK)) &&
+			previousLineIndentMetadata & IndentConsts.INDENT_NEXTLINE_MASK
+		) {
 			let stopLine = 0;
 			for (let i = previousLine - 1; i > 0; i--) {
 				if (processedIndentRulesSupport.shouldIndentNextLine(i)) {
@@ -164,7 +193,7 @@ export function getInheritIndentForLine(
 			return {
 				indentation: strings.getLeadingWhitespace(model.getLineContent(stopLine + 1)),
 				action: null,
-				line: stopLine + 1
+				line: stopLine + 1,
 			};
 		}
 
@@ -172,7 +201,7 @@ export function getInheritIndentForLine(
 			return {
 				indentation: strings.getLeadingWhitespace(model.getLineContent(precedingUnIgnoredLine)),
 				action: null,
-				line: precedingUnIgnoredLine
+				line: precedingUnIgnoredLine,
 			};
 		} else {
 			// search from precedingUnIgnoredLine until we find one whose indent is not temporary
@@ -181,7 +210,7 @@ export function getInheritIndentForLine(
 					return {
 						indentation: strings.getLeadingWhitespace(model.getLineContent(i)),
 						action: IndentAction.Indent,
-						line: i
+						line: i,
 					};
 				} else if (processedIndentRulesSupport.shouldIndentNextLine(i)) {
 					let stopLine = 0;
@@ -196,13 +225,13 @@ export function getInheritIndentForLine(
 					return {
 						indentation: strings.getLeadingWhitespace(model.getLineContent(stopLine + 1)),
 						action: null,
-						line: stopLine + 1
+						line: stopLine + 1,
 					};
 				} else if (processedIndentRulesSupport.shouldDecrease(i)) {
 					return {
 						indentation: strings.getLeadingWhitespace(model.getLineContent(i)),
 						action: null,
-						line: i
+						line: i,
 					};
 				}
 			}
@@ -210,7 +239,7 @@ export function getInheritIndentForLine(
 			return {
 				indentation: strings.getLeadingWhitespace(model.getLineContent(1)),
 				action: null,
-				line: 1
+				line: 1,
 			};
 		}
 	}
@@ -233,13 +262,24 @@ export function getGoodIndentForLine(
 		return null;
 	}
 
-	const indentRulesSupport = languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
+	const indentRulesSupport =
+		languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
 	if (!indentRulesSupport) {
 		return null;
 	}
 
-	const processedIndentRulesSupport = new ProcessedIndentRulesSupport(virtualModel, indentRulesSupport, languageConfigurationService);
-	const indent = getInheritIndentForLine(autoIndent, virtualModel, lineNumber, undefined, languageConfigurationService);
+	const processedIndentRulesSupport = new ProcessedIndentRulesSupport(
+		virtualModel,
+		indentRulesSupport,
+		languageConfigurationService
+	);
+	const indent = getInheritIndentForLine(
+		autoIndent,
+		virtualModel,
+		lineNumber,
+		undefined,
+		languageConfigurationService
+	);
 
 	if (indent) {
 		const inheritLine = indent.line;
@@ -253,7 +293,12 @@ export function getGoodIndentForLine(
 				}
 			}
 			if (shouldApplyEnterRules) {
-				const enterResult = richEditSupport.onEnter(autoIndent, '', virtualModel.getLineContent(inheritLine), '');
+				const enterResult = richEditSupport.onEnter(
+					autoIndent,
+					'',
+					virtualModel.getLineContent(inheritLine),
+					''
+				);
 
 				if (enterResult) {
 					let indentation = strings.getLeadingWhitespace(virtualModel.getLineContent(inheritLine));
@@ -263,8 +308,8 @@ export function getGoodIndentForLine(
 					}
 
 					if (
-						(enterResult.indentAction === IndentAction.Indent) ||
-						(enterResult.indentAction === IndentAction.IndentOutdent)
+						enterResult.indentAction === IndentAction.Indent ||
+						enterResult.indentAction === IndentAction.IndentOutdent
 					) {
 						indentation = indentConverter.shiftIndent(indentation);
 					} else if (enterResult.indentAction === IndentAction.Outdent) {
@@ -312,32 +357,54 @@ export function getIndentForEnter(
 		return null;
 	}
 	const languageId = model.getLanguageIdAtPosition(range.startLineNumber, range.startColumn);
-	const indentRulesSupport = languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
+	const indentRulesSupport =
+		languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
 	if (!indentRulesSupport) {
 		return null;
 	}
 
 	model.tokenization.forceTokenization(range.startLineNumber);
-	const indentationContextProcessor = new IndentationContextProcessor(model, languageConfigurationService);
-	const processedContextTokens = indentationContextProcessor.getProcessedTokenContextAroundRange(range);
+	const indentationContextProcessor = new IndentationContextProcessor(
+		model,
+		languageConfigurationService
+	);
+	const processedContextTokens =
+		indentationContextProcessor.getProcessedTokenContextAroundRange(range);
 	const afterEnterProcessedTokens = processedContextTokens.afterRangeProcessedTokens;
 	const beforeEnterProcessedTokens = processedContextTokens.beforeRangeProcessedTokens;
-	const beforeEnterIndent = strings.getLeadingWhitespace(beforeEnterProcessedTokens.getLineContent());
+	const beforeEnterIndent = strings.getLeadingWhitespace(
+		beforeEnterProcessedTokens.getLineContent()
+	);
 
-	const virtualModel = createVirtualModelWithModifiedTokensAtLine(model, range.startLineNumber, beforeEnterProcessedTokens);
-	const languageIsDifferentFromLineStart = isLanguageDifferentFromLineStart(model, range.getStartPosition());
+	const virtualModel = createVirtualModelWithModifiedTokensAtLine(
+		model,
+		range.startLineNumber,
+		beforeEnterProcessedTokens
+	);
+	const languageIsDifferentFromLineStart = isLanguageDifferentFromLineStart(
+		model,
+		range.getStartPosition()
+	);
 	const currentLine = model.getLineContent(range.startLineNumber);
 	const currentLineIndent = strings.getLeadingWhitespace(currentLine);
-	const afterEnterAction = getInheritIndentForLine(autoIndent, virtualModel, range.startLineNumber + 1, undefined, languageConfigurationService);
+	const afterEnterAction = getInheritIndentForLine(
+		autoIndent,
+		virtualModel,
+		range.startLineNumber + 1,
+		undefined,
+		languageConfigurationService
+	);
 	if (!afterEnterAction) {
 		const beforeEnter = languageIsDifferentFromLineStart ? currentLineIndent : beforeEnterIndent;
 		return {
 			beforeEnter: beforeEnter,
-			afterEnter: beforeEnter
+			afterEnter: beforeEnter,
 		};
 	}
 
-	let afterEnterIndent = languageIsDifferentFromLineStart ? currentLineIndent : afterEnterAction.indentation;
+	let afterEnterIndent = languageIsDifferentFromLineStart
+		? currentLineIndent
+		: afterEnterAction.indentation;
 
 	if (afterEnterAction.action === IndentAction.Indent) {
 		afterEnterIndent = indentConverter.shiftIndent(afterEnterIndent);
@@ -349,7 +416,7 @@ export function getIndentForEnter(
 
 	return {
 		beforeEnter: languageIsDifferentFromLineStart ? currentLineIndent : beforeEnterIndent,
-		afterEnter: afterEnterIndent
+		afterEnter: afterEnterIndent,
 	};
 }
 
@@ -369,20 +436,28 @@ export function getIndentActionForType(
 	if (autoIndent < EditorAutoIndentStrategy.Full) {
 		return null;
 	}
-	const languageIsDifferentFromLineStart = isLanguageDifferentFromLineStart(model, range.getStartPosition());
+	const languageIsDifferentFromLineStart = isLanguageDifferentFromLineStart(
+		model,
+		range.getStartPosition()
+	);
 	if (languageIsDifferentFromLineStart) {
 		// this line has mixed languages and indentation rules will not work
 		return null;
 	}
 
 	const languageId = model.getLanguageIdAtPosition(range.startLineNumber, range.startColumn);
-	const indentRulesSupport = languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
+	const indentRulesSupport =
+		languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
 	if (!indentRulesSupport) {
 		return null;
 	}
 
-	const indentationContextProcessor = new IndentationContextProcessor(model, languageConfigurationService);
-	const processedContextTokens = indentationContextProcessor.getProcessedTokenContextAroundRange(range);
+	const indentationContextProcessor = new IndentationContextProcessor(
+		model,
+		languageConfigurationService
+	);
+	const processedContextTokens =
+		indentationContextProcessor.getProcessedTokenContextAroundRange(range);
 	const beforeRangeText = processedContextTokens.beforeRangeProcessedTokens.getLineContent();
 	const afterRangeText = processedContextTokens.afterRangeProcessedTokens.getLineContent();
 	const textAroundRange = beforeRangeText + afterRangeText;
@@ -390,10 +465,19 @@ export function getIndentActionForType(
 
 	// If previous content already matches decreaseIndentPattern, it means indentation of this line should already be adjusted
 	// Users might change the indentation by purpose and we should honor that instead of readjusting.
-	if (!indentRulesSupport.shouldDecrease(textAroundRange) && indentRulesSupport.shouldDecrease(textAroundRangeWithCharacter)) {
+	if (
+		!indentRulesSupport.shouldDecrease(textAroundRange) &&
+		indentRulesSupport.shouldDecrease(textAroundRangeWithCharacter)
+	) {
 		// after typing `ch`, the content matches decreaseIndentPattern, we should adjust the indent to a good manner.
 		// 1. Get inherited indent action
-		const r = getInheritIndentForLine(autoIndent, model, range.startLineNumber, false, languageConfigurationService);
+		const r = getInheritIndentForLine(
+			autoIndent,
+			model,
+			range.startLineNumber,
+			false,
+			languageConfigurationService
+		);
 		if (!r) {
 			return null;
 		}
@@ -409,20 +493,34 @@ export function getIndentActionForType(
 	const previousLineNumber = range.startLineNumber - 1;
 	if (previousLineNumber > 0) {
 		const previousLine = model.getLineContent(previousLineNumber);
-		if (indentRulesSupport.shouldIndentNextLine(previousLine) && indentRulesSupport.shouldIncrease(textAroundRangeWithCharacter)) {
-			const inheritedIndentationData = getInheritIndentForLine(autoIndent, model, range.startLineNumber, false, languageConfigurationService);
+		if (
+			indentRulesSupport.shouldIndentNextLine(previousLine) &&
+			indentRulesSupport.shouldIncrease(textAroundRangeWithCharacter)
+		) {
+			const inheritedIndentationData = getInheritIndentForLine(
+				autoIndent,
+				model,
+				range.startLineNumber,
+				false,
+				languageConfigurationService
+			);
 			const inheritedIndentation = inheritedIndentationData?.indentation;
 			if (inheritedIndentation !== undefined) {
 				const currentLine = model.getLineContent(range.startLineNumber);
 				const actualCurrentIndentation = strings.getLeadingWhitespace(currentLine);
 				const inferredCurrentIndentation = indentConverter.shiftIndent(inheritedIndentation);
 				// If the inferred current indentation is not equal to the actual current indentation, then the indentation has been intentionally changed, in that case keep it
-				const inferredIndentationEqualsActual = inferredCurrentIndentation === actualCurrentIndentation;
+				const inferredIndentationEqualsActual =
+					inferredCurrentIndentation === actualCurrentIndentation;
 				const textAroundRangeContainsOnlyWhitespace = /^\s*$/.test(textAroundRange);
 				const autoClosingPairs = cursorConfig.autoClosingPairs.autoClosingPairsOpenByEnd.get(ch);
 				const autoClosingPairExists = autoClosingPairs && autoClosingPairs.length > 0;
-				const isChFirstNonWhitespaceCharacterAndInAutoClosingPair = autoClosingPairExists && textAroundRangeContainsOnlyWhitespace;
-				if (inferredIndentationEqualsActual && isChFirstNonWhitespaceCharacterAndInAutoClosingPair) {
+				const isChFirstNonWhitespaceCharacterAndInAutoClosingPair =
+					autoClosingPairExists && textAroundRangeContainsOnlyWhitespace;
+				if (
+					inferredIndentationEqualsActual &&
+					isChFirstNonWhitespaceCharacterAndInAutoClosingPair
+				) {
 					return inheritedIndentation;
 				}
 			}
@@ -437,7 +535,9 @@ export function getIndentMetadata(
 	lineNumber: number,
 	languageConfigurationService: ILanguageConfigurationService
 ): number | null {
-	const indentRulesSupport = languageConfigurationService.getLanguageConfiguration(model.getLanguageId()).indentRulesSupport;
+	const indentRulesSupport = languageConfigurationService.getLanguageConfiguration(
+		model.getLanguageId()
+	).indentRulesSupport;
 	if (!indentRulesSupport) {
 		return null;
 	}
@@ -447,7 +547,11 @@ export function getIndentMetadata(
 	return indentRulesSupport.getIndentMetadata(model.getLineContent(lineNumber));
 }
 
-function createVirtualModelWithModifiedTokensAtLine(model: ITextModel, modifiedLineNumber: number, modifiedTokens: IViewLineTokens): IVirtualModel {
+function createVirtualModelWithModifiedTokensAtLine(
+	model: ITextModel,
+	modifiedLineNumber: number,
+	modifiedTokens: IViewLineTokens
+): IVirtualModel {
 	const virtualModel: IVirtualModel = {
 		tokenization: {
 			getLineTokens: (lineNumber: number): IViewLineTokens => {
@@ -470,8 +574,7 @@ function createVirtualModelWithModifiedTokensAtLine(model: ITextModel, modifiedL
 			} else {
 				return model.getLineContent(lineNumber);
 			}
-		}
+		},
 	};
 	return virtualModel;
 }
-

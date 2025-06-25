@@ -12,7 +12,7 @@ const path = require('path');
 const vscode = {
 	workspace: {
 		fs: {
-			readFile: async (uri) => {
+			readFile: async uri => {
 				const filePath = uri.fsPath || uri.path || uri;
 				return Buffer.from(fs.readFileSync(filePath, 'utf8'));
 			},
@@ -20,46 +20,48 @@ const vscode = {
 				const filePath = uri.fsPath || uri.path || uri;
 				fs.writeFileSync(filePath, data);
 			},
-			readDirectory: async (uri) => {
+			readDirectory: async uri => {
 				const dirPath = uri.fsPath || uri.path || uri;
 				const items = fs.readdirSync(dirPath, { withFileTypes: true });
 				return items.map(item => [
 					item.name,
-					item.isDirectory() ? 1 : 2 // FileType.Directory = 1, FileType.File = 2
+					item.isDirectory() ? 1 : 2, // FileType.Directory = 1, FileType.File = 2
 				]);
 			},
-			createDirectory: async (uri) => {
+			createDirectory: async uri => {
 				const dirPath = uri.fsPath || uri.path || uri;
 				fs.mkdirSync(dirPath, { recursive: true });
 			},
-			stat: async (uri) => {
+			stat: async uri => {
 				const filePath = uri.fsPath || uri.path || uri;
 				return fs.statSync(filePath);
-			}
+			},
 		},
-		workspaceFolders: [{
-			uri: {
-				fsPath: __dirname,
-				path: __dirname
-			}
-		}]
+		workspaceFolders: [
+			{
+				uri: {
+					fsPath: __dirname,
+					path: __dirname,
+				},
+			},
+		],
 	},
 	Uri: {
-		file: (path) => ({ fsPath: path, path }),
+		file: path => ({ fsPath: path, path }),
 		joinPath: (base, ...segments) => ({
 			fsPath: path.join(base.fsPath || base.path, ...segments),
-			path: path.join(base.fsPath || base.path, ...segments)
-		})
+			path: path.join(base.fsPath || base.path, ...segments),
+		}),
 	},
 	window: {
-		showInformationMessage: (msg) => console.log('INFO:', msg),
-		showErrorMessage: (msg) => console.error('ERROR:', msg),
-		showWarningMessage: (msg) => console.warn('WARN:', msg)
+		showInformationMessage: msg => console.log('INFO:', msg),
+		showErrorMessage: msg => console.error('ERROR:', msg),
+		showWarningMessage: msg => console.warn('WARN:', msg),
 	},
 	FileType: {
 		Directory: 1,
-		File: 2
-	}
+		File: 2,
+	},
 };
 
 // Mock the required modules
@@ -71,9 +73,9 @@ const PluginManager = require('./out/plugins/pluginManager').PluginManager;
 
 // Mock memory graph
 const mockMemoryGraph = {
-	addNode: () => { },
-	addRelation: () => { },
-	updateNode: () => { }
+	addNode: () => {},
+	addRelation: () => {},
+	updateNode: () => {},
 };
 
 async function testPluginGeneration() {
@@ -94,7 +96,7 @@ async function testPluginGeneration() {
 			id: 'test-agent-plugin',
 			author: 'Test Author',
 			description: 'A test agent plugin for validation',
-			outputPath: path.join(testPluginsDir, 'test-agent-plugin')
+			outputPath: path.join(testPluginsDir, 'test-agent-plugin'),
 		},
 		{
 			type: 'command',
@@ -102,8 +104,8 @@ async function testPluginGeneration() {
 			id: 'test-command-plugin',
 			author: 'Test Author',
 			description: 'A test command plugin for validation',
-			outputPath: path.join(testPluginsDir, 'test-command-plugin')
-		}
+			outputPath: path.join(testPluginsDir, 'test-command-plugin'),
+		},
 	];
 
 	let successCount = 0;
@@ -126,11 +128,7 @@ async function testPluginGeneration() {
 				console.log(`✅ Plugin generated successfully at: ${testCase.outputPath}`);
 
 				// Verify essential files exist
-				const expectedFiles = [
-					'package.json',
-					'src/extension.ts',
-					'tsconfig.json'
-				];
+				const expectedFiles = ['package.json', 'src/extension.ts', 'tsconfig.json'];
 
 				let allFilesExist = true;
 				for (const file of expectedFiles) {
@@ -157,7 +155,6 @@ async function testPluginGeneration() {
 				} else {
 					console.log(`❌ Package.json content is incorrect for ${testCase.id}`);
 				}
-
 			} else {
 				console.log(`❌ Failed to generate plugin: ${testCase.name}`);
 			}
@@ -254,7 +251,7 @@ async function runAllTests() {
 	const testResults = [
 		{ name: 'Plugin Generation', result: results.generation },
 		{ name: 'Plugin Discovery', result: results.discovery },
-		{ name: 'Plugin Loading', result: results.loading }
+		{ name: 'Plugin Loading', result: results.loading },
 	];
 
 	let passedTests = 0;

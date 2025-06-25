@@ -33,36 +33,24 @@ export class MarkdownImage extends MarkdownToken {
 		/**
 		 * The reference of the image, including the parentheses.
 		 */
-		private readonly reference: string,
+		private readonly reference: string
 	) {
-		assert(
-			!isNaN(lineNumber),
-			`The line number must not be a NaN.`,
-		);
+		assert(!isNaN(lineNumber), `The line number must not be a NaN.`);
 
-		assert(
-			lineNumber > 0,
-			`The line number must be >= 1, got "${lineNumber}".`,
-		);
+		assert(lineNumber > 0, `The line number must be >= 1, got "${lineNumber}".`);
 
-		assert(
-			columnNumber > 0,
-			`The column number must be >= 1, got "${columnNumber}".`,
-		);
+		assert(columnNumber > 0, `The column number must be >= 1, got "${columnNumber}".`);
 
-		assert(
-			caption[0] === '!',
-			`The caption must start with '!' character, got "${caption}".`,
-		);
+		assert(caption[0] === '!', `The caption must start with '!' character, got "${caption}".`);
 
 		assert(
 			caption[1] === '[' && caption[caption.length - 1] === ']',
-			`The caption must be enclosed in square brackets, got "${caption}".`,
+			`The caption must be enclosed in square brackets, got "${caption}".`
 		);
 
 		assert(
 			reference[0] === '(' && reference[reference.length - 1] === ')',
-			`The reference must be enclosed in parentheses, got "${reference}".`,
+			`The reference must be enclosed in parentheses, got "${reference}".`
 		);
 
 		super(
@@ -70,8 +58,8 @@ export class MarkdownImage extends MarkdownToken {
 				lineNumber,
 				columnNumber,
 				lineNumber,
-				columnNumber + caption.length + reference.length,
-			),
+				columnNumber + caption.length + reference.length
+			)
 		);
 
 		// set up the `isURL` flag based on the current
@@ -108,12 +96,7 @@ export class MarkdownImage extends MarkdownToken {
 		const startColumn = range.startColumn + this.caption.length + 1;
 		const endColumn = startColumn + this.path.length;
 
-		return new Range(
-			range.startLineNumber,
-			startColumn,
-			range.endLineNumber,
-			endColumn,
-		);
+		return new Range(range.startLineNumber, startColumn, range.endLineNumber, endColumn);
 	}
 
 	/**

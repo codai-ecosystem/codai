@@ -9,7 +9,9 @@ import { ResourceMap } from '../../../../base/common/map.js';
 import { URI } from '../../../../base/common/uri.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 
-export const IInteractiveHistoryService = createDecorator<IInteractiveHistoryService>('IInteractiveHistoryService');
+export const IInteractiveHistoryService = createDecorator<IInteractiveHistoryService>(
+	'IInteractiveHistoryService'
+);
 
 export interface IInteractiveHistoryService {
 	readonly _serviceBrand: undefined;
@@ -82,5 +84,4 @@ export class InteractiveHistoryService extends Disposable implements IInteractiv
 	has(uri: URI) {
 		return this._history.has(uri) ? true : false;
 	}
-
 }

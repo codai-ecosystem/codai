@@ -10,12 +10,11 @@ import { IMainProcessService } from '../../ipc/common/mainProcessService.js';
 import { RemoteUserDataProfileStorageService } from '../common/userDataProfileStorageService.js';
 
 export class SharedProcessUserDataProfileStorageService extends RemoteUserDataProfileStorageService {
-
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
 		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
 		@IStorageService storageService: IStorageService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		super(true, mainProcessService, userDataProfilesService, storageService, logService);
 	}

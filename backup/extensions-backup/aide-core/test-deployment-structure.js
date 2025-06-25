@@ -17,7 +17,7 @@ const colors = {
 	yellow: '\x1b[33m',
 	blue: '\x1b[34m',
 	reset: '\x1b[0m',
-	bold: '\x1b[1m'
+	bold: '\x1b[1m',
 };
 
 function log(message, color = colors.reset) {
@@ -53,8 +53,8 @@ async function setupTestEnvironment() {
 		scripts: {
 			build: 'echo "Building project..."',
 			test: 'echo "Running tests..."',
-			start: 'echo "Starting application..."'
-		}
+			start: 'echo "Starting application..."',
+		},
 	};
 	fs.writeFileSync(
 		path.join(TEST_PROJECT_DIR, 'package.json'),
@@ -236,7 +236,7 @@ steps:
 	// Test pipeline components
 	assert(content.includes('trigger:'), 'Should have trigger configuration');
 	assert(content.includes('pool:'), 'Should specify agent pool');
-	assert(content.includes('vmImage: \'ubuntu-latest\''), 'Should use Ubuntu image');
+	assert(content.includes("vmImage: 'ubuntu-latest'"), 'Should use Ubuntu image');
 	assert(content.includes('NodeTool@0'), 'Should setup Node.js');
 	assert(content.includes('npm ci'), 'Should install dependencies');
 	assert(content.includes('npm test'), 'Should run tests');
@@ -338,22 +338,22 @@ async function testDeploymentConfiguration() {
 				type: 'vercel',
 				buildCommand: 'npm run build',
 				outputDirectory: 'dist',
-				status: 'pending'
+				status: 'pending',
 			},
 			{
 				name: 'Staging Netlify',
 				type: 'netlify',
 				buildCommand: 'npm run build:staging',
 				outputDirectory: 'build',
-				status: 'pending'
+				status: 'pending',
 			},
 			{
 				name: 'Preview GitHub Pages',
 				type: 'github-pages',
 				buildCommand: 'npm run build:static',
 				outputDirectory: 'public',
-				status: 'pending'
-			}
+				status: 'pending',
+			},
 		],
 		history: [
 			{
@@ -366,12 +366,12 @@ async function testDeploymentConfiguration() {
 					'Starting Vercel deployment...',
 					'Running build command: npm run build',
 					'Deploying to Vercel...',
-					'Deployment successful!'
+					'Deployment successful!',
 				],
 				commitHash: 'abc123def456',
-				version: '1.0.0'
-			}
-		]
+				version: '1.0.0',
+			},
+		],
 	};
 
 	const aideDir = path.join(TEST_PROJECT_DIR, '.aide');
@@ -420,15 +420,15 @@ async function testVercelConfiguration() {
 		framework: 'vite',
 		functions: {
 			'api/*.js': {
-				runtime: 'nodejs18.x'
-			}
+				runtime: 'nodejs18.x',
+			},
 		},
 		rewrites: [
 			{
 				source: '/api/(.*)',
-				destination: '/api/$1'
-			}
-		]
+				destination: '/api/$1',
+			},
+		],
 	};
 
 	const vercelConfigPath = path.join(TEST_PROJECT_DIR, 'vercel.json');
@@ -497,29 +497,29 @@ async function testCICDBestPractices() {
 			hasEnvironments: true,
 			hasMatrix: false,
 			hasCaching: true,
-			hasArtifacts: true
+			hasArtifacts: true,
 		},
 		gitlabCI: {
 			hasStages: true,
 			hasCache: true,
 			hasArtifacts: true,
 			hasVariables: true,
-			hasManualTrigger: true
+			hasManualTrigger: true,
 		},
 		azureDevOps: {
 			hasTriggers: true,
 			hasPool: true,
 			hasTasks: true,
 			hasVariables: true,
-			hasArtifacts: false
+			hasArtifacts: false,
 		},
 		docker: {
 			hasMultiStage: true,
 			hasNonRootUser: false,
 			hasHealthCheck: false,
 			hasOptimizedLayers: true,
-			hasSecrets: false
-		}
+			hasSecrets: false,
+		},
 	};
 
 	// Verify best practices structure
@@ -547,7 +547,9 @@ async function cleanup() {
 // Main test runner
 async function runTests() {
 	log(`${colors.bold}${colors.blue}🚀 AIDE Deployment Structure Test Suite${colors.reset}`);
-	log(`${colors.blue}Testing deployment configuration and CI/CD pipeline structures${colors.reset}\n`);
+	log(
+		`${colors.blue}Testing deployment configuration and CI/CD pipeline structures${colors.reset}\n`
+	);
 
 	let passed = 0;
 	let failed = 0;
@@ -562,7 +564,7 @@ async function runTests() {
 		{ name: 'Vercel Configuration', fn: testVercelConfiguration },
 		{ name: 'Netlify Configuration', fn: testNetlifyConfiguration },
 		{ name: 'CI/CD Best Practices', fn: testCICDBestPractices },
-		{ name: 'Cleanup', fn: cleanup }
+		{ name: 'Cleanup', fn: cleanup },
 	];
 
 	for (const test of tests) {
@@ -581,12 +583,18 @@ async function runTests() {
 	log(`\n${colors.bold}${colors.blue}📊 Test Results Summary${colors.reset}`);
 	log(`${colors.green}✅ Passed: ${passed}${colors.reset}`);
 	log(`${colors.red}❌ Failed: ${failed}${colors.reset}`);
-	log(`${colors.blue}📈 Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%${colors.reset}`);
+	log(
+		`${colors.blue}📈 Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%${colors.reset}`
+	);
 
 	if (failed === 0) {
-		log(`\n${colors.bold}${colors.green}🎉 All tests passed! Deployment structure and CI/CD configurations are valid.${colors.reset}`);
+		log(
+			`\n${colors.bold}${colors.green}🎉 All tests passed! Deployment structure and CI/CD configurations are valid.${colors.reset}`
+		);
 	} else {
-		log(`\n${colors.bold}${colors.red}⚠️ Some tests failed. Please review the errors above.${colors.reset}`);
+		log(
+			`\n${colors.bold}${colors.red}⚠️ Some tests failed. Please review the errors above.${colors.reset}`
+		);
 		process.exit(1);
 	}
 }

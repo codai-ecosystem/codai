@@ -13,10 +13,7 @@ export class CellChatPart extends CellContentPart {
 		return this.currentCell;
 	}
 
-	constructor(
-		_notebookEditor: INotebookEditorDelegate,
-		_partContainer: HTMLElement,
-	) {
+	constructor(_notebookEditor: INotebookEditorDelegate, _partContainer: HTMLElement) {
 		super();
 	}
 
@@ -28,11 +25,9 @@ export class CellChatPart extends CellContentPart {
 		super.unrenderCell(element);
 	}
 
-	override updateInternalLayoutNow(element: ICellViewModel): void {
-	}
+	override updateInternalLayoutNow(element: ICellViewModel): void {}
 
 	override dispose() {
 		super.dispose();
 	}
 }
-

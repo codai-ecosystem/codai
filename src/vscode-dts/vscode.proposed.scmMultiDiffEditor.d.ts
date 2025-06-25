@@ -29,6 +29,10 @@ declare module 'vscode' {
 		 * 				Set `multiDiffEditorEnableViewChanges` to `true` to enable the "View Changes" option which opens the multi file diff editor.
 		 * @return An instance of {@link SourceControlResourceGroup resource group}.
 		 */
-		createResourceGroup(id: string, label: string, options: { multiDiffEditorEnableViewChanges?: boolean }): SourceControlResourceGroup;
+		createResourceGroup(
+			id: string,
+			label: string,
+			options: { multiDiffEditorEnableViewChanges?: boolean }
+		): SourceControlResourceGroup;
 	}
 }

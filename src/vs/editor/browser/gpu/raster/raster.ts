@@ -30,7 +30,7 @@ export interface IGlyphRasterizer {
 		chars: string,
 		tokenMetadata: number,
 		decorationStyleSetId: number,
-		colorMap: string[],
+		colorMap: string[]
 	): Readonly<IRasterizedGlyph>;
 
 	getTextMetrics(text: string): TextMetrics;

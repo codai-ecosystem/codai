@@ -4,7 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Barrier } from '../../../../base/common/async.js';
-import { IProcessPropertyMap, ITerminalChildProcess, ITerminalLaunchError, ITerminalLogService, ProcessPropertyType } from '../../../../platform/terminal/common/terminal.js';
+import {
+	IProcessPropertyMap,
+	ITerminalChildProcess,
+	ITerminalLaunchError,
+	ITerminalLogService,
+	ProcessPropertyType,
+} from '../../../../platform/terminal/common/terminal.js';
 import { BasePty } from '../common/basePty.js';
 import { RemoteTerminalChannelClient } from '../common/remote/remoteTerminalChannel.js';
 import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
@@ -70,7 +76,10 @@ export class RemotePty extends BasePty implements ITerminalChildProcess {
 	}
 
 	resize(cols: number, rows: number): void {
-		if (this._inReplay || this._lastDimensions.cols === cols && this._lastDimensions.rows === rows) {
+		if (
+			this._inReplay ||
+			(this._lastDimensions.cols === cols && this._lastDimensions.rows === rows)
+		) {
 			return;
 		}
 		this._startBarrier.wait().then(_ => {
@@ -110,7 +119,10 @@ export class RemotePty extends BasePty implements ITerminalChildProcess {
 		return this._remoteTerminalChannel.refreshProperty(this.id, type);
 	}
 
-	async updateProperty<T extends ProcessPropertyType>(type: T, value: IProcessPropertyMap[T]): Promise<void> {
+	async updateProperty<T extends ProcessPropertyType>(
+		type: T,
+		value: IProcessPropertyMap[T]
+	): Promise<void> {
 		return this._remoteTerminalChannel.updateProperty(this.id, type, value);
 	}
 

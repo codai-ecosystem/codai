@@ -5,7 +5,15 @@
 
 import assert from 'assert';
 import { IMatch } from '../../common/filters.js';
-import { escapeIcons, getCodiconAriaLabel, IParsedLabelWithIcons, markdownEscapeEscapedIcons, matchesFuzzyIconAware, parseLabelWithIcons, stripIcons } from '../../common/iconLabels.js';
+import {
+	escapeIcons,
+	getCodiconAriaLabel,
+	IParsedLabelWithIcons,
+	markdownEscapeEscapedIcons,
+	matchesFuzzyIconAware,
+	parseLabelWithIcons,
+	stripIcons,
+} from '../../common/iconLabels.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 interface IIconFilter {
@@ -13,7 +21,12 @@ interface IIconFilter {
 	(query: string, target: IParsedLabelWithIcons): IMatch[] | null;
 }
 
-function filterOk(filter: IIconFilter, word: string, target: IParsedLabelWithIcons, highlights?: { start: number; end: number }[]) {
+function filterOk(
+	filter: IIconFilter,
+	word: string,
+	target: IParsedLabelWithIcons,
+	highlights?: { start: number; end: number }[]
+) {
 	const r = filter(word, target);
 	assert(r);
 	if (highlights) {
@@ -42,47 +55,73 @@ suite('Icon Labels', () => {
 	});
 
 	test('matchesFuzzyIconAware', () => {
-
 		// Camel Case
 
-		filterOk(matchesFuzzyIconAware, 'ccr', parseLabelWithIcons('$(codicon)CamelCaseRocks$(codicon)'), [
-			{ start: 10, end: 11 },
-			{ start: 15, end: 16 },
-			{ start: 19, end: 20 }
-		]);
+		filterOk(
+			matchesFuzzyIconAware,
+			'ccr',
+			parseLabelWithIcons('$(codicon)CamelCaseRocks$(codicon)'),
+			[
+				{ start: 10, end: 11 },
+				{ start: 15, end: 16 },
+				{ start: 19, end: 20 },
+			]
+		);
 
-		filterOk(matchesFuzzyIconAware, 'ccr', parseLabelWithIcons('$(codicon) CamelCaseRocks $(codicon)'), [
-			{ start: 11, end: 12 },
-			{ start: 16, end: 17 },
-			{ start: 20, end: 21 }
-		]);
+		filterOk(
+			matchesFuzzyIconAware,
+			'ccr',
+			parseLabelWithIcons('$(codicon) CamelCaseRocks $(codicon)'),
+			[
+				{ start: 11, end: 12 },
+				{ start: 16, end: 17 },
+				{ start: 20, end: 21 },
+			]
+		);
 
-		filterOk(matchesFuzzyIconAware, 'iut', parseLabelWithIcons('$(codicon) Indent $(octico) Using $(octic) Tpaces'), [
-			{ start: 11, end: 12 },
-			{ start: 28, end: 29 },
-			{ start: 43, end: 44 },
-		]);
+		filterOk(
+			matchesFuzzyIconAware,
+			'iut',
+			parseLabelWithIcons('$(codicon) Indent $(octico) Using $(octic) Tpaces'),
+			[
+				{ start: 11, end: 12 },
+				{ start: 28, end: 29 },
+				{ start: 43, end: 44 },
+			]
+		);
 
 		// Prefix
 
-		filterOk(matchesFuzzyIconAware, 'using', parseLabelWithIcons('$(codicon) Indent Using Spaces'), [
-			{ start: 18, end: 23 },
-		]);
+		filterOk(
+			matchesFuzzyIconAware,
+			'using',
+			parseLabelWithIcons('$(codicon) Indent Using Spaces'),
+			[{ start: 18, end: 23 }]
+		);
 
 		// Broken Codicon
 
-		filterOk(matchesFuzzyIconAware, 'codicon', parseLabelWithIcons('This $(codicon Indent Using Spaces'), [
-			{ start: 7, end: 14 },
-		]);
+		filterOk(
+			matchesFuzzyIconAware,
+			'codicon',
+			parseLabelWithIcons('This $(codicon Indent Using Spaces'),
+			[{ start: 7, end: 14 }]
+		);
 
-		filterOk(matchesFuzzyIconAware, 'indent', parseLabelWithIcons('This $codicon Indent Using Spaces'), [
-			{ start: 14, end: 20 },
-		]);
+		filterOk(
+			matchesFuzzyIconAware,
+			'indent',
+			parseLabelWithIcons('This $codicon Indent Using Spaces'),
+			[{ start: 14, end: 20 }]
+		);
 
 		// Testing #59343
-		filterOk(matchesFuzzyIconAware, 'unt', parseLabelWithIcons('$(primitive-dot) $(file-text) Untitled-1'), [
-			{ start: 30, end: 33 },
-		]);
+		filterOk(
+			matchesFuzzyIconAware,
+			'unt',
+			parseLabelWithIcons('$(primitive-dot) $(file-text) Untitled-1'),
+			[{ start: 30, end: 33 }]
+		);
 
 		// Testing #136172
 		filterOk(matchesFuzzyIconAware, 's', parseLabelWithIcons('$(loading~spin) start'), [
@@ -96,7 +135,6 @@ suite('Icon Labels', () => {
 		assert.strictEqual(stripIcons('$(Hello) World'), ' World');
 		assert.strictEqual(stripIcons('$(Hello) W$(oi)rld'), ' Wrld');
 	});
-
 
 	test('escapeIcons', () => {
 		assert.strictEqual(escapeIcons('Hello World'), 'Hello World');

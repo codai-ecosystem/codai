@@ -22,7 +22,6 @@ export interface IResourceNode<T, C = void> {
 }
 
 class Node<T, C> implements IResourceNode<T, C> {
-
 	private _children = new Map<string, Node<T, C>>();
 
 	get childrenCount(): number {
@@ -44,7 +43,7 @@ class Node<T, C> implements IResourceNode<T, C> {
 		readonly context: C,
 		public element: T | undefined = undefined,
 		readonly parent: IResourceNode<T, C> | undefined = undefined
-	) { }
+	) {}
 
 	get(path: string): Node<T, C> | undefined {
 		return this._children.get(path);
@@ -76,7 +75,6 @@ function collect<T, C>(node: IResourceNode<T, C>, result: T[]): T[] {
 }
 
 export class ResourceTree<T extends NonNullable<any>, C> {
-
 	readonly root: Node<T, C>;
 
 	static getRoot<T, C>(node: IResourceNode<T, C>): IResourceNode<T, C> {
@@ -95,7 +93,11 @@ export class ResourceTree<T extends NonNullable<any>, C> {
 		return obj instanceof Node;
 	}
 
-	constructor(context: C, rootURI: URI = URI.file('/'), private extUri: IExtUri = defaultExtUri) {
+	constructor(
+		context: C,
+		rootURI: URI = URI.file('/'),
+		private extUri: IExtUri = defaultExtUri
+	) {
 		this.root = new Node(rootURI, '', context);
 	}
 

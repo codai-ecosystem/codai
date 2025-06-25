@@ -25,7 +25,11 @@ export function tail<T>(arr: T[]): [T[], T] {
 	return [arr.slice(0, arr.length - 1), arr[arr.length - 1]];
 }
 
-export function equals<T>(one: ReadonlyArray<T> | undefined, other: ReadonlyArray<T> | undefined, itemEquals: (a: T, b: T) => boolean = (a, b) => a === b): boolean {
+export function equals<T>(
+	one: ReadonlyArray<T> | undefined,
+	other: ReadonlyArray<T> | undefined,
+	itemEquals: (a: T, b: T) => boolean = (a, b) => a === b
+): boolean {
 	if (one === other) {
 		return true;
 	}
@@ -70,7 +74,11 @@ export function removeFastWithoutKeepingOrder<T>(array: T[], index: number) {
  *   precedes the first one.
  * @return See {@link binarySearch2}
  */
-export function binarySearch<T>(array: ReadonlyArray<T>, key: T, comparator: (op1: T, op2: T) => number): number {
+export function binarySearch<T>(
+	array: ReadonlyArray<T>,
+	key: T,
+	comparator: (op1: T, op2: T) => number
+): number {
 	return binarySearch2(array.length, i => comparator(array[i], key));
 }
 
@@ -109,9 +117,7 @@ export function binarySearch2(length: number, compareToKey: (index: number) => n
 
 type Compare<T> = (a: T, b: T) => number;
 
-
 export function quickSelect<T>(nth: number, data: T[], compare: Compare<T>): T {
-
 	nth = nth | 0;
 
 	if (nth >= data.length) {
@@ -162,7 +168,10 @@ export function groupBy<T>(data: ReadonlyArray<T>, compare: (a: T, b: T) => numb
  * `shouldBeGrouped` is used to decide if two consecutive items should be in the same group.
  * The order of the items is preserved.
  */
-export function* groupAdjacentBy<T>(items: Iterable<T>, shouldBeGrouped: (item1: T, item2: T) => boolean): Iterable<T[]> {
+export function* groupAdjacentBy<T>(
+	items: Iterable<T>,
+	shouldBeGrouped: (item1: T, item2: T) => boolean
+): Iterable<T[]> {
 	let currentGroup: T[] | undefined;
 	let last: T | undefined;
 	for (const item of items) {
@@ -181,13 +190,19 @@ export function* groupAdjacentBy<T>(items: Iterable<T>, shouldBeGrouped: (item1:
 	}
 }
 
-export function forEachAdjacent<T>(arr: T[], f: (item1: T | undefined, item2: T | undefined) => void): void {
+export function forEachAdjacent<T>(
+	arr: T[],
+	f: (item1: T | undefined, item2: T | undefined) => void
+): void {
 	for (let i = 0; i <= arr.length; i++) {
 		f(i === 0 ? undefined : arr[i - 1], i === arr.length ? undefined : arr[i]);
 	}
 }
 
-export function forEachWithNeighbors<T>(arr: T[], f: (before: T | undefined, element: T, after: T | undefined) => void): void {
+export function forEachWithNeighbors<T>(
+	arr: T[],
+	f: (before: T | undefined, element: T, after: T | undefined) => void
+): void {
 	for (let i = 0; i < arr.length; i++) {
 		f(i === 0 ? undefined : arr[i - 1], arr[i], i + 1 === arr.length ? undefined : arr[i + 1]);
 	}
@@ -205,7 +220,11 @@ interface IMutableSplice<T> extends ISplice<T> {
 /**
  * Diffs two *sorted* arrays and computes the splices which apply the diff.
  */
-export function sortedDiff<T>(before: ReadonlyArray<T>, after: ReadonlyArray<T>, compare: (a: T, b: T) => number): ISplice<T>[] {
+export function sortedDiff<T>(
+	before: ReadonlyArray<T>,
+	after: ReadonlyArray<T>,
+	compare: (a: T, b: T) => number
+): ISplice<T>[] {
 	const result: IMutableSplice<T>[] = [];
 
 	function pushSplice(start: number, deleteCount: number, toInsert: T[]): void {
@@ -261,7 +280,11 @@ export function sortedDiff<T>(before: ReadonlyArray<T>, after: ReadonlyArray<T>,
  * Takes two *sorted* arrays and computes their delta (removed, added elements).
  * Finishes in `Math.min(before.length, after.length)` steps.
  */
-export function delta<T>(before: ReadonlyArray<T>, after: ReadonlyArray<T>, compare: (a: T, b: T) => number): { removed: T[]; added: T[] } {
+export function delta<T>(
+	before: ReadonlyArray<T>,
+	after: ReadonlyArray<T>,
+	compare: (a: T, b: T) => number
+): { removed: T[]; added: T[] } {
 	const splices = sortedDiff(before, after, compare);
 	const removed: T[] = [];
 	const added: T[] = [];
@@ -306,7 +329,13 @@ export function top<T>(array: ReadonlyArray<T>, compare: (a: T, b: T) => number,
  * @param batch The number of elements to examine before yielding to the event loop.
  * @return The first n elements from array when sorted with compare.
  */
-export function topAsync<T>(array: T[], compare: (a: T, b: T) => number, n: number, batch: number, token?: CancellationToken): Promise<T[]> {
+export function topAsync<T>(
+	array: T[],
+	compare: (a: T, b: T) => number,
+	n: number,
+	batch: number,
+	token?: CancellationToken
+): Promise<T[]> {
 	if (n === 0) {
 		return Promise.resolve([]);
 	}
@@ -325,12 +354,17 @@ export function topAsync<T>(array: T[], compare: (a: T, b: T) => number, n: numb
 				topStep(array, compare, result, i, m);
 			}
 			return result;
-		})()
-			.then(resolve, reject);
+		})().then(resolve, reject);
 	});
 }
 
-function topStep<T>(array: ReadonlyArray<T>, compare: (a: T, b: T) => number, result: T[], i: number, m: number): void {
+function topStep<T>(
+	array: ReadonlyArray<T>,
+	compare: (a: T, b: T) => number,
+	result: T[],
+	i: number,
+	m: number
+): void {
 	for (const n = result.length; i < m; i++) {
 		const element = array[i];
 		if (compare(element, result[n - 1]) < 0) {
@@ -381,7 +415,9 @@ export function isFalsyOrEmpty(obj: unknown): boolean {
  */
 export function isNonEmptyArray<T>(obj: T[] | undefined | null): obj is T[];
 export function isNonEmptyArray<T>(obj: readonly T[] | undefined | null): obj is readonly T[];
-export function isNonEmptyArray<T>(obj: T[] | readonly T[] | undefined | null): obj is T[] | readonly T[] {
+export function isNonEmptyArray<T>(
+	obj: T[] | readonly T[] | undefined | null
+): obj is T[] | readonly T[] {
 	return Array.isArray(obj) && obj.length > 0;
 }
 
@@ -389,7 +425,10 @@ export function isNonEmptyArray<T>(obj: T[] | readonly T[] | undefined | null): 
  * Removes duplicates from the given array. The optional keyFn allows to specify
  * how elements are checked for equality by returning an alternate value for each.
  */
-export function distinct<T>(array: ReadonlyArray<T>, keyFn: (value: T) => unknown = value => value): T[] {
+export function distinct<T>(
+	array: ReadonlyArray<T>,
+	keyFn: (value: T) => unknown = value => value
+): T[] {
 	const seen = new Set<any>();
 
 	return array.filter(element => {
@@ -417,10 +456,18 @@ export function uniqueFilter<T, R>(keyFn: (t: T) => R): (t: T) => boolean {
 	};
 }
 
-export function commonPrefixLength<T>(one: ReadonlyArray<T>, other: ReadonlyArray<T>, equals: (a: T, b: T) => boolean = (a, b) => a === b): number {
+export function commonPrefixLength<T>(
+	one: ReadonlyArray<T>,
+	other: ReadonlyArray<T>,
+	equals: (a: T, b: T) => boolean = (a, b) => a === b
+): number {
 	let result = 0;
 
-	for (let i = 0, len = Math.min(one.length, other.length); i < len && equals(one[i], other[i]); i++) {
+	for (
+		let i = 0, len = Math.min(one.length, other.length);
+		i < len && equals(one[i], other[i]);
+		i++
+	) {
 		result++;
 	}
 
@@ -455,8 +502,16 @@ export function range(arg: number, to?: number): number[] {
 }
 
 export function index<T>(array: ReadonlyArray<T>, indexer: (t: T) => string): { [key: string]: T };
-export function index<T, R>(array: ReadonlyArray<T>, indexer: (t: T) => string, mapper: (t: T) => R): { [key: string]: R };
-export function index<T, R>(array: ReadonlyArray<T>, indexer: (t: T) => string, mapper?: (t: T) => R): { [key: string]: R } {
+export function index<T, R>(
+	array: ReadonlyArray<T>,
+	indexer: (t: T) => string,
+	mapper: (t: T) => R
+): { [key: string]: R };
+export function index<T, R>(
+	array: ReadonlyArray<T>,
+	indexer: (t: T) => string,
+	mapper?: (t: T) => R
+): { [key: string]: R } {
 	return array.reduce((r, t) => {
 		r[indexer(t)] = mapper ? mapper(t) : t;
 		return r;
@@ -558,9 +613,7 @@ export function pushMany<T>(arr: T[], items: ReadonlyArray<T>): void {
 }
 
 export function mapArrayOrNot<T, U>(items: T | T[], fn: (_: T) => U): U | U[] {
-	return Array.isArray(items) ?
-		items.map(fn) :
-		fn(items);
+	return Array.isArray(items) ? items.map(fn) : fn(items);
 }
 
 export function asArray<T>(x: T | T[]): T[];
@@ -646,9 +699,7 @@ function getActualStartIndex<T>(array: T[], start: number): number {
  * );
  * ```
  */
-export const pick = <TObject, TKeyName extends keyof TObject>(
-	key: TKeyName,
-) => {
+export const pick = <TObject, TKeyName extends keyof TObject>(key: TKeyName) => {
 	return (obj: TObject): TObject[TKeyName] => {
 		return obj[key];
 	};
@@ -659,7 +710,7 @@ export const pick = <TObject, TKeyName extends keyof TObject>(
  * a negative number indicates that the first value is less than the second,
  * a positive number indicates that the first value is greater than the second,
  * and zero indicates that neither is the case.
-*/
+ */
 export type CompareResult = number;
 
 export namespace CompareResult {
@@ -688,10 +739,13 @@ export namespace CompareResult {
  * A comparator `c` defines a total order `<=` on `T` as following:
  * `c(a, b) <= 0` iff `a` <= `b`.
  * We also have `c(a, b) == 0` iff `c(b, a) == 0`.
-*/
+ */
 export type Comparator<T> = (a: T, b: T) => CompareResult;
 
-export function compareBy<TItem, TCompareBy>(selector: (item: TItem) => TCompareBy, comparator: Comparator<TCompareBy>): Comparator<TItem> {
+export function compareBy<TItem, TCompareBy>(
+	selector: (item: TItem) => TCompareBy,
+	comparator: Comparator<TCompareBy>
+): Comparator<TItem> {
 	return (a, b) => comparator(selector(a), selector(b));
 }
 
@@ -709,10 +763,11 @@ export function tieBreakComparators<TItem>(...comparators: Comparator<TItem>[]):
 
 /**
  * The natural order on numbers.
-*/
+ */
 export const numberComparator: Comparator<number> = (a, b) => a - b;
 
-export const booleanComparator: Comparator<boolean> = (a, b) => numberComparator(a ? 1 : 0, b ? 1 : 0);
+export const booleanComparator: Comparator<boolean> = (a, b) =>
+	numberComparator(a ? 1 : 0, b ? 1 : 0);
 
 export function reverseOrder<TItem>(comparator: Comparator<TItem>): Comparator<TItem> {
 	return (a, b) => -comparator(a, b);
@@ -721,7 +776,7 @@ export function reverseOrder<TItem>(comparator: Comparator<TItem>): Comparator<T
 /**
  * Returns a new comparator that treats `undefined` as the smallest value.
  * All other values are compared using the given comparator.
-*/
+ */
 export function compareUndefinedSmallest<T>(comparator: Comparator<T>): Comparator<T | undefined> {
 	return (a, b) => {
 		if (a === undefined) {
@@ -741,7 +796,7 @@ export class ArrayQueue<T> {
 
 	/**
 	 * Constructs a queue that is backed by the given array. Runtime is O(1).
-	*/
+	 */
 	constructor(items: readonly T[]) {
 		this.items = items;
 		this.lastIdx = this.items.length - 1;
@@ -754,7 +809,7 @@ export class ArrayQueue<T> {
 	/**
 	 * Consumes elements from the beginning of the queue as long as the predicate returns true.
 	 * If no elements were consumed, `null` is returned. Has a runtime of O(result.length).
-	*/
+	 */
 	takeWhile(predicate: (value: T) => boolean): T[] | null {
 		// P(k) := k <= this.lastIdx && predicate(this.items[k])
 		// Find s := min { k | k >= this.firstIdx && !P(k) } and return this.data[this.firstIdx...s)
@@ -772,7 +827,7 @@ export class ArrayQueue<T> {
 	 * Consumes elements from the end of the queue as long as the predicate returns true.
 	 * If no elements were consumed, `null` is returned.
 	 * The result has the same order as the underlying array!
-	*/
+	 */
 	takeFromEndWhile(predicate: (value: T) => boolean): T[] | null {
 		// P(k) := this.firstIdx >= k && predicate(this.items[k])
 		// Find s := max { k | k <= this.lastIdx && !P(k) } and return this.data(s...this.lastIdx]
@@ -821,31 +876,36 @@ export class ArrayQueue<T> {
 
 /**
  * This class is faster than an iterator and array for lazy computed data.
-*/
+ */
 export class CallbackIterable<T> {
-	public static readonly empty = new CallbackIterable<never>(_callback => { });
+	public static readonly empty = new CallbackIterable<never>(_callback => {});
 
 	constructor(
 		/**
 		 * Calls the callback for every item.
 		 * Stops when the callback returns false.
-		*/
+		 */
 		public readonly iterate: (callback: (item: T) => boolean) => void
-	) {
-	}
+	) {}
 
 	forEach(handler: (item: T) => void) {
-		this.iterate(item => { handler(item); return true; });
+		this.iterate(item => {
+			handler(item);
+			return true;
+		});
 	}
 
 	toArray(): T[] {
 		const result: T[] = [];
-		this.iterate(item => { result.push(item); return true; });
+		this.iterate(item => {
+			result.push(item);
+			return true;
+		});
 		return result;
 	}
 
 	filter(predicate: (item: T) => boolean): CallbackIterable<T> {
-		return new CallbackIterable(cb => this.iterate(item => predicate(item) ? cb(item) : true));
+		return new CallbackIterable(cb => this.iterate(item => (predicate(item) ? cb(item) : true)));
 	}
 
 	map<TResult>(mapFn: (item: T) => TResult): CallbackIterable<TResult> {
@@ -854,7 +914,10 @@ export class CallbackIterable<T> {
 
 	some(predicate: (item: T) => boolean): boolean {
 		let result = false;
-		this.iterate(item => { result = predicate(item); return !result; });
+		this.iterate(item => {
+			result = predicate(item);
+			return !result;
+		});
 		return result;
 	}
 
@@ -899,13 +962,18 @@ export class CallbackIterable<T> {
  * Represents a re-arrangement of items in an array.
  */
 export class Permutation {
-	constructor(private readonly _indexMap: readonly number[]) { }
+	constructor(private readonly _indexMap: readonly number[]) {}
 
 	/**
 	 * Returns a permutation that sorts the given array according to the given compare function.
 	 */
-	public static createSortPermutation<T>(arr: readonly T[], compareFn: (a: T, b: T) => number): Permutation {
-		const sortIndices = Array.from(arr.keys()).sort((index1, index2) => compareFn(arr[index1], arr[index2]));
+	public static createSortPermutation<T>(
+		arr: readonly T[],
+		compareFn: (a: T, b: T) => number
+	): Permutation {
+		const sortIndices = Array.from(arr.keys()).sort((index1, index2) =>
+			compareFn(arr[index1], arr[index2])
+		);
 		return new Permutation(sortIndices);
 	}
 
@@ -918,7 +986,7 @@ export class Permutation {
 
 	/**
 	 * Returns a new permutation that undoes the re-arrangement of this permutation.
-	*/
+	 */
 	inverse(): Permutation {
 		const inverseIndexMap = this._indexMap.slice();
 		for (let i = 0; i < this._indexMap.length; i++) {
@@ -935,10 +1003,13 @@ export class Permutation {
  * This implementation does not bail early and waits for all promises to
  * resolve before returning.
  */
-export async function findAsync<T>(array: readonly T[], predicate: (element: T, index: number) => Promise<boolean>): Promise<T | undefined> {
-	const results = await Promise.all(array.map(
-		async (element, index) => ({ element, ok: await predicate(element, index) })
-	));
+export async function findAsync<T>(
+	array: readonly T[],
+	predicate: (element: T, index: number) => Promise<boolean>
+): Promise<T | undefined> {
+	const results = await Promise.all(
+		array.map(async (element, index) => ({ element, ok: await predicate(element, index) }))
+	);
 
 	return results.find(r => r.ok)?.element;
 }

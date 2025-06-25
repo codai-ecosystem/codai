@@ -5,10 +5,15 @@
 
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { Length, lengthAdd, lengthDiffNonNegative, lengthToObj, toLength } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/length.js';
+import {
+	Length,
+	lengthAdd,
+	lengthDiffNonNegative,
+	lengthToObj,
+	toLength,
+} from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/length.js';
 
 suite('Bracket Pair Colorizer - Length', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function toStr(length: Length): string {
@@ -26,38 +31,22 @@ suite('Bracket Pair Colorizer - Length', () => {
 
 	test('lengthDiffNonNeg', () => {
 		assert.deepStrictEqual(
-			toStr(
-				lengthDiffNonNegative(
-					toLength(100, 10),
-					toLength(100, 20))
-			),
+			toStr(lengthDiffNonNegative(toLength(100, 10), toLength(100, 20))),
 			'0,10'
 		);
 
 		assert.deepStrictEqual(
-			toStr(
-				lengthDiffNonNegative(
-					toLength(100, 10),
-					toLength(101, 20))
-			),
+			toStr(lengthDiffNonNegative(toLength(100, 10), toLength(101, 20))),
 			'1,20'
 		);
 
 		assert.deepStrictEqual(
-			toStr(
-				lengthDiffNonNegative(
-					toLength(101, 30),
-					toLength(101, 20))
-			),
+			toStr(lengthDiffNonNegative(toLength(101, 30), toLength(101, 20))),
 			'0,0'
 		);
 
 		assert.deepStrictEqual(
-			toStr(
-				lengthDiffNonNegative(
-					toLength(102, 10),
-					toLength(101, 20))
-			),
+			toStr(lengthDiffNonNegative(toLength(102, 10), toLength(101, 20))),
 			'0,0'
 		);
 	});

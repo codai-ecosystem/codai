@@ -10,17 +10,26 @@ import { InstantiationType, registerSingleton } from '../../instantiation/common
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 import { MenuId } from '../common/actions.js';
 
-
-export const IActionViewItemService = createDecorator<IActionViewItemService>('IActionViewItemService');
+export const IActionViewItemService =
+	createDecorator<IActionViewItemService>('IActionViewItemService');
 
 export interface IActionViewItemService {
-
 	_serviceBrand: undefined;
 
 	onDidChange: Event<MenuId>;
 
-	register(menu: MenuId, submenu: MenuId, provider: IActionViewItemProvider, event?: Event<unknown>): IDisposable;
-	register(menu: MenuId, commandId: string, provider: IActionViewItemProvider, event?: Event<unknown>): IDisposable;
+	register(
+		menu: MenuId,
+		submenu: MenuId,
+		provider: IActionViewItemProvider,
+		event?: Event<unknown>
+	): IDisposable;
+	register(
+		menu: MenuId,
+		commandId: string,
+		provider: IActionViewItemProvider,
+		event?: Event<unknown>
+	): IDisposable;
 
 	lookUp(menu: MenuId, submenu: MenuId): IActionViewItemProvider | undefined;
 	lookUp(menu: MenuId, commandId: string): IActionViewItemProvider | undefined;
@@ -31,7 +40,12 @@ export class NullActionViewItemService implements IActionViewItemService {
 
 	onDidChange: Event<MenuId> = Event.None;
 
-	register(menu: MenuId, commandId: string | MenuId, provider: IActionViewItemProvider, event?: Event<unknown>): IDisposable {
+	register(
+		menu: MenuId,
+		commandId: string | MenuId,
+		provider: IActionViewItemProvider,
+		event?: Event<unknown>
+	): IDisposable {
 		return Disposable.None;
 	}
 
@@ -41,7 +55,6 @@ export class NullActionViewItemService implements IActionViewItemService {
 }
 
 class ActionViewItemService implements IActionViewItemService {
-
 	declare _serviceBrand: undefined;
 
 	private readonly _providers = new Map<string, IActionViewItemProvider>();
@@ -53,10 +66,17 @@ class ActionViewItemService implements IActionViewItemService {
 		this._onDidChange.dispose();
 	}
 
-	register(menu: MenuId, commandOrSubmenuId: string | MenuId, provider: IActionViewItemProvider, event?: Event<unknown>): IDisposable {
+	register(
+		menu: MenuId,
+		commandOrSubmenuId: string | MenuId,
+		provider: IActionViewItemProvider,
+		event?: Event<unknown>
+	): IDisposable {
 		const id = this._makeKey(menu, commandOrSubmenuId);
 		if (this._providers.has(id)) {
-			throw new Error(`A provider for the command ${commandOrSubmenuId} and menu ${menu} is already registered.`);
+			throw new Error(
+				`A provider for the command ${commandOrSubmenuId} and menu ${menu} is already registered.`
+			);
 		}
 		this._providers.set(id, provider);
 
@@ -75,7 +95,7 @@ class ActionViewItemService implements IActionViewItemService {
 	}
 
 	private _makeKey(menu: MenuId, commandOrMenuId: string | MenuId) {
-		return `${menu.id}/${(commandOrMenuId instanceof MenuId ? commandOrMenuId.id : commandOrMenuId)}`;
+		return `${menu.id}/${commandOrMenuId instanceof MenuId ? commandOrMenuId.id : commandOrMenuId}`;
 	}
 }
 

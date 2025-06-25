@@ -8,7 +8,6 @@ import { ipcRenderer, process, webFrame, webUtils } from '../../electron-sandbox
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../test/common/utils.js';
 
 suite('Sandbox', () => {
-
 	test('globals', async () => {
 		assert.ok(typeof ipcRenderer.send === 'function');
 		assert.ok(typeof webFrame.setZoomLevel === 'function');

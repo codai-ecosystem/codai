@@ -5,7 +5,12 @@
 
 import Severity from '../../../base/common/severity.js';
 import type * as vscode from 'vscode';
-import { MainContext, MainThreadMessageServiceShape, MainThreadMessageOptions, IMainContext } from './extHost.protocol.js';
+import {
+	MainContext,
+	MainThreadMessageServiceShape,
+	MainThreadMessageOptions,
+	IMainContext,
+} from './extHost.protocol.js';
 import { IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
 import { ILogService } from '../../../platform/log/common/log.js';
 import { checkProposedApiEnabled } from '../../services/extensions/common/extensions.js';
@@ -15,7 +20,6 @@ function isMessageItem(item: any): item is vscode.MessageItem {
 }
 
 export class ExtHostMessageService {
-
 	private _proxy: MainThreadMessageServiceShape;
 
 	constructor(
@@ -25,14 +29,36 @@ export class ExtHostMessageService {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadMessageService);
 	}
 
-
-	showMessage(extension: IExtensionDescription, severity: Severity, message: string, optionsOrFirstItem: vscode.MessageOptions | string | undefined, rest: string[]): Promise<string | undefined>;
-	showMessage(extension: IExtensionDescription, severity: Severity, message: string, optionsOrFirstItem: vscode.MessageOptions | vscode.MessageItem | undefined, rest: vscode.MessageItem[]): Promise<vscode.MessageItem | undefined>;
-	showMessage(extension: IExtensionDescription, severity: Severity, message: string, optionsOrFirstItem: vscode.MessageOptions | vscode.MessageItem | string | undefined, rest: Array<vscode.MessageItem | string>): Promise<string | vscode.MessageItem | undefined>;
-	showMessage(extension: IExtensionDescription, severity: Severity, message: string, optionsOrFirstItem: vscode.MessageOptions | string | vscode.MessageItem | undefined, rest: Array<string | vscode.MessageItem>): Promise<string | vscode.MessageItem | undefined> {
-
+	showMessage(
+		extension: IExtensionDescription,
+		severity: Severity,
+		message: string,
+		optionsOrFirstItem: vscode.MessageOptions | string | undefined,
+		rest: string[]
+	): Promise<string | undefined>;
+	showMessage(
+		extension: IExtensionDescription,
+		severity: Severity,
+		message: string,
+		optionsOrFirstItem: vscode.MessageOptions | vscode.MessageItem | undefined,
+		rest: vscode.MessageItem[]
+	): Promise<vscode.MessageItem | undefined>;
+	showMessage(
+		extension: IExtensionDescription,
+		severity: Severity,
+		message: string,
+		optionsOrFirstItem: vscode.MessageOptions | vscode.MessageItem | string | undefined,
+		rest: Array<vscode.MessageItem | string>
+	): Promise<string | vscode.MessageItem | undefined>;
+	showMessage(
+		extension: IExtensionDescription,
+		severity: Severity,
+		message: string,
+		optionsOrFirstItem: vscode.MessageOptions | string | vscode.MessageItem | undefined,
+		rest: Array<string | vscode.MessageItem>
+	): Promise<string | vscode.MessageItem | undefined> {
 		const options: MainThreadMessageOptions = {
-			source: { identifier: extension.identifier, label: extension.displayName || extension.name }
+			source: { identifier: extension.identifier, label: extension.displayName || extension.name },
 		};
 		let items: (string | vscode.MessageItem)[];
 
@@ -61,7 +87,10 @@ export class ExtHostMessageService {
 				commands.push({ title, isCloseAffordance: !!isCloseAffordance, handle });
 				if (isCloseAffordance) {
 					if (hasCloseAffordance) {
-						this._logService.warn(`[${extension.identifier}] Only one message item can have 'isCloseAffordance':`, command);
+						this._logService.warn(
+							`[${extension.identifier}] Only one message item can have 'isCloseAffordance':`,
+							command
+						);
 					} else {
 						hasCloseAffordance = true;
 					}

@@ -43,7 +43,6 @@ export function getUserDataPath(cliArgs: NativeParsedArgs, productName: string):
 }
 
 function doGetUserDataPath(cliArgs: NativeParsedArgs, productName: string): string {
-
 	// 0. Running out of sources has a fixed productName
 	if (process.env['VSCODE_DEV']) {
 		productName = 'code-oss-dev';

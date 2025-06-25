@@ -10,7 +10,6 @@ type ResourceToKey = (uri: vscode.Uri) => string;
 const defaultResourceToKey = (resource: vscode.Uri): string => resource.toString();
 
 export class ResourceMap<T> {
-
 	private readonly _map = new Map<string, { readonly uri: vscode.Uri; readonly value: T }>();
 
 	private readonly _toKey: ResourceToKey;

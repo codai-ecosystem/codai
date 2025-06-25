@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { incrementFileName } from '../../browser/fileActions.js';
 
 suite('Files - Increment file name simple', () => {
-
 	test('Increment file name without any version', function () {
 		const name = 'test.js';
 		const result = incrementFileName(name, false, 'simple');
@@ -139,7 +138,6 @@ suite('Files - Increment file name simple', () => {
 });
 
 suite('Files - Increment file name smart', () => {
-
 	test('Increment file name without any version', function () {
 		const name = 'test.js';
 		const result = incrementFileName(name, false, 'smart');

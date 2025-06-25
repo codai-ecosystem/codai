@@ -44,7 +44,9 @@ suite('ChatMarkdownRenderer', () => {
 	});
 
 	test('invalid HTML with attributes', async () => {
-		const md = new MarkdownString('1<details id="id1" style="display: none">2<details id="my id 2">3</details></details>4');
+		const md = new MarkdownString(
+			'1<details id="id1" style="display: none">2<details id="my id 2">3</details></details>4'
+		);
 		md.supportHtml = true;
 		const result = store.add(testRenderer.render(md));
 		await assertSnapshot(result.element.outerHTML);
@@ -86,7 +88,9 @@ suite('ChatMarkdownRenderer', () => {
 	});
 
 	test('html comments', async () => {
-		const md = new MarkdownString('<!-- comment1 <div></div> --><div>content</div><!-- comment2 -->');
+		const md = new MarkdownString(
+			'<!-- comment1 <div></div> --><div>content</div><!-- comment2 -->'
+		);
 		md.supportHtml = true;
 		const result = store.add(testRenderer.render(md));
 		await assertSnapshot(result.element.outerHTML);

@@ -109,7 +109,8 @@ function generateLinkSuffixRegex(eolOnly: boolean) {
 		// "foo", line 339, characters 12-789      [#171880]
 		// "foo", lines 339-341                    [#171880]
 		// "foo", lines 339-341, characters 12-789 [#178287]
-		`['"]?(?:,? |: ?| on )lines? ${r()}(?:-${re()})?(?:,? (?:col(?:umn)?|characters?) ${c()}(?:-${ce()})?)?` + eolSuffix,
+		`['"]?(?:,? |: ?| on )lines? ${r()}(?:-${re()})?(?:,? (?:col(?:umn)?|characters?) ${c()}(?:-${ce()})?)?` +
+			eolSuffix,
 		// () and [] are interchangeable
 		// foo(339)
 		// foo(339,12)
@@ -194,7 +195,7 @@ export function toLinkSuffix(match: RegExpExecArray | null): ILinkSuffix | null 
 		col: parseIntOptional(groups.col0 || groups.col1 || groups.col2),
 		rowEnd: parseIntOptional(groups.rowEnd0 || groups.rowEnd1 || groups.rowEnd2),
 		colEnd: parseIntOptional(groups.colEnd0 || groups.colEnd1 || groups.colEnd2),
-		suffix: { index: match.index, text: match[0] }
+		suffix: { index: match.index, text: match[0] },
 	};
 }
 
@@ -243,12 +244,15 @@ function binaryInsert(list: IParsedLink[], newItem: IParsedLink, low: number, hi
 	const mid = Math.floor((low + high) / 2);
 	if (
 		mid >= list.length ||
-		(newItem.path.index < list[mid].path.index && (mid === 0 || newItem.path.index > list[mid - 1].path.index))
+		(newItem.path.index < list[mid].path.index &&
+			(mid === 0 || newItem.path.index > list[mid - 1].path.index))
 	) {
 		// Check if it conflicts with an existing link before adding
 		if (
 			mid >= list.length ||
-			(newItem.path.index + newItem.path.text.length < list[mid].path.index && (mid === 0 || newItem.path.index > list[mid - 1].path.index + list[mid - 1].path.text.length))
+			(newItem.path.index + newItem.path.text.length < list[mid].path.index &&
+				(mid === 0 ||
+					newItem.path.index > list[mid - 1].path.index + list[mid - 1].path.text.length))
 		) {
 			list.splice(mid, 0, newItem);
 		}
@@ -269,7 +273,11 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 	for (const suffix of suffixes) {
 		const beforeSuffix = line.substring(0, suffix.suffix.index);
 		const possiblePathMatch = beforeSuffix.match(linkWithSuffixPathCharacters);
-		if (possiblePathMatch && possiblePathMatch.index !== undefined && possiblePathMatch.groups?.path) {
+		if (
+			possiblePathMatch &&
+			possiblePathMatch.index !== undefined &&
+			possiblePathMatch.groups?.path
+		) {
 			let linkStartIndex = possiblePathMatch.index;
 			let path = possiblePathMatch.groups.path;
 			// Extract a path prefix if it exists (not part of the path, but part of the underlined
@@ -279,7 +287,7 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 			if (prefixMatch?.groups?.prefix) {
 				prefix = {
 					index: linkStartIndex,
-					text: prefixMatch.groups.prefix
+					text: prefixMatch.groups.prefix,
 				};
 				path = path.substring(prefix.text.length);
 
@@ -298,7 +306,11 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 				//
 				// If this fails on a multi-character prefix, just keep the original.
 				if (prefixMatch.groups.prefix.length > 1) {
-					if (suffix.suffix.text[0].match(/['"]/) && prefixMatch.groups.prefix[prefixMatch.groups.prefix.length - 1] === suffix.suffix.text[0]) {
+					if (
+						suffix.suffix.text[0].match(/['"]/) &&
+						prefixMatch.groups.prefix[prefixMatch.groups.prefix.length - 1] ===
+							suffix.suffix.text[0]
+					) {
 						const trimPrefixAmount = prefixMatch.groups.prefix.length - 1;
 						prefix.index += trimPrefixAmount;
 						prefix.text = prefixMatch.groups.prefix[prefixMatch.groups.prefix.length - 1];
@@ -309,10 +321,10 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 			results.push({
 				path: {
 					index: linkStartIndex + (prefix?.text.length || 0),
-					text: path
+					text: path,
 				},
 				prefix,
-				suffix
+				suffix,
 			});
 
 			// If the path contains an opening bracket, provide the path starting immediately after
@@ -324,10 +336,10 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 					results.push({
 						path: {
 							index: linkStartIndex + (prefix?.text.length || 0) + match.index + 1,
-							text: path.substring(match.index + bracket.length)
+							text: path.substring(match.index + bracket.length),
 						},
 						prefix,
-						suffix
+						suffix,
 					});
 				}
 			}
@@ -355,7 +367,17 @@ enum RegexPathConstants {
  * A regex that matches non-Windows paths, such as `/foo`, `~/foo`, `./foo`, `../foo` and
  * `foo/bar`.
  */
-const unixLocalLinkClause = '(?:(?:' + RegexPathConstants.PathPrefix + '|(?:' + RegexPathConstants.ExcludedStartPathCharactersClause + RegexPathConstants.ExcludedPathCharactersClause + '*))?(?:' + RegexPathConstants.PathSeparatorClause + '(?:' + RegexPathConstants.ExcludedPathCharactersClause + ')+)+)';
+const unixLocalLinkClause =
+	'(?:(?:' +
+	RegexPathConstants.PathPrefix +
+	'|(?:' +
+	RegexPathConstants.ExcludedStartPathCharactersClause +
+	RegexPathConstants.ExcludedPathCharactersClause +
+	'*))?(?:' +
+	RegexPathConstants.PathSeparatorClause +
+	'(?:' +
+	RegexPathConstants.ExcludedPathCharactersClause +
+	')+)+)';
 
 /**
  * A regex clause that matches the start of an absolute path on Windows, such as: `C:`, `c:`,
@@ -367,12 +389,25 @@ export const winDrivePrefix = '(?:\\\\\\\\\\?\\\\|file:\\/\\/\\/)?[a-zA-Z]:';
  * A regex that matches Windows paths, such as `\\?\c:\foo`, `c:\foo`, `~\foo`, `.\foo`, `..\foo`
  * and `foo\bar`.
  */
-const winLocalLinkClause = '(?:(?:' + `(?:${winDrivePrefix}|${RegexPathConstants.WinOtherPathPrefix})` + '|(?:' + RegexPathConstants.WinExcludedStartPathCharactersClause + RegexPathConstants.WinExcludedPathCharactersClause + '*))?(?:' + RegexPathConstants.WinPathSeparatorClause + '(?:' + RegexPathConstants.WinExcludedPathCharactersClause + ')+)+)';
+const winLocalLinkClause =
+	'(?:(?:' +
+	`(?:${winDrivePrefix}|${RegexPathConstants.WinOtherPathPrefix})` +
+	'|(?:' +
+	RegexPathConstants.WinExcludedStartPathCharactersClause +
+	RegexPathConstants.WinExcludedPathCharactersClause +
+	'*))?(?:' +
+	RegexPathConstants.WinPathSeparatorClause +
+	'(?:' +
+	RegexPathConstants.WinExcludedPathCharactersClause +
+	')+)+)';
 
 function detectPathsNoSuffix(line: string, os: OperatingSystem): IParsedLink[] {
 	const results: IParsedLink[] = [];
 
-	const regex = new RegExp(os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause, 'g');
+	const regex = new RegExp(
+		os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause,
+		'g'
+	);
 	let match;
 	while ((match = regex.exec(line)) !== null) {
 		let text = match[0];
@@ -398,10 +433,10 @@ function detectPathsNoSuffix(line: string, os: OperatingSystem): IParsedLink[] {
 		results.push({
 			path: {
 				index,
-				text
+				text,
 			},
 			prefix: undefined,
-			suffix: undefined
+			suffix: undefined,
 		});
 	}
 

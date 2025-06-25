@@ -40,15 +40,14 @@ async function testWSLFeatureInstalled(): Promise<boolean> {
 				if ((await fs.promises.stat(dllPath)).isFile()) {
 					return true;
 				}
-			} catch (e) {
-			}
+			} catch (e) {}
 		}
 	}
 	return false;
 }
 
 function getWindowsBuildNumber(): number | undefined {
-	const osVersion = (/(\d+)\.(\d+)\.(\d+)/g).exec(os.release());
+	const osVersion = /(\d+)\.(\d+)\.(\d+)/g.exec(os.release());
 	if (osVersion) {
 		return parseInt(osVersion[3]);
 	}

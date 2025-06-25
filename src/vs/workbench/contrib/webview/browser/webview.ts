@@ -12,27 +12,43 @@ import { IDisposable } from '../../../../base/common/lifecycle.js';
 import { isEqual } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { generateUuid } from '../../../../base/common/uuid.js';
-import { IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKeyService,
+	RawContextKey,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { IWebviewPortMapping } from '../../../../platform/webview/common/webviewPortMapping.js';
 import { Memento, MementoObject } from '../../../common/memento.js';
 
 /**
  * Set when the find widget in a webview in a webview is visible.
  */
-export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_VISIBLE = new RawContextKey<boolean>('webviewFindWidgetVisible', false);
+export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_VISIBLE = new RawContextKey<boolean>(
+	'webviewFindWidgetVisible',
+	false
+);
 
 /**
  * Set when the find widget in a webview is focused.
  */
-export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED = new RawContextKey<boolean>('webviewFindWidgetFocused', false);
+export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED = new RawContextKey<boolean>(
+	'webviewFindWidgetFocused',
+	false
+);
 
 /**
  * Set when the find widget in a webview is enabled in a webview
  */
-export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED = new RawContextKey<boolean>('webviewFindWidgetEnabled', false);
+export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED = new RawContextKey<boolean>(
+	'webviewFindWidgetEnabled',
+	false
+);
 
 export const IWebviewService = createDecorator<IWebviewService>('webviewService');
 
@@ -143,14 +159,21 @@ export interface WebviewContentOptions {
 /**
  * Check if two {@link WebviewContentOptions} are equal.
  */
-export function areWebviewContentOptionsEqual(a: WebviewContentOptions, b: WebviewContentOptions): boolean {
+export function areWebviewContentOptionsEqual(
+	a: WebviewContentOptions,
+	b: WebviewContentOptions
+): boolean {
 	return (
-		a.allowMultipleAPIAcquire === b.allowMultipleAPIAcquire
-		&& a.allowScripts === b.allowScripts
-		&& a.allowForms === b.allowForms
-		&& equals(a.localResourceRoots, b.localResourceRoots, isEqual)
-		&& equals(a.portMapping, b.portMapping, (a, b) => a.extensionHostPort === b.extensionHostPort && a.webviewPort === b.webviewPort)
-		&& areEnableCommandUrisEqual(a, b)
+		a.allowMultipleAPIAcquire === b.allowMultipleAPIAcquire &&
+		a.allowScripts === b.allowScripts &&
+		a.allowForms === b.allowForms &&
+		equals(a.localResourceRoots, b.localResourceRoots, isEqual) &&
+		equals(
+			a.portMapping,
+			b.portMapping,
+			(a, b) => a.extensionHostPort === b.extensionHostPort && a.webviewPort === b.webviewPort
+		) &&
+		areEnableCommandUrisEqual(a, b)
 	);
 }
 
@@ -177,7 +200,6 @@ export interface WebviewMessageReceivedEvent {
 }
 
 export interface IWebview extends IDisposable {
-
 	/**
 	 * The original view type of the webview.
 	 */
@@ -307,7 +329,11 @@ export interface IOverlayWebview extends IWebview {
 	 * @param claimant Identifier for the object claiming the webview.
 	 *   This must match the `claimant` passed to {@link IOverlayWebview.release}.
 	 */
-	claim(claimant: any, targetWindow: CodeWindow, scopedContextKeyService: IContextKeyService | undefined): void;
+	claim(
+		claimant: any,
+		targetWindow: CodeWindow,
+		scopedContextKeyService: IContextKeyService | undefined
+	): void;
 
 	/**
 	 * Release ownership of the webview.
@@ -328,7 +354,11 @@ export interface IOverlayWebview extends IWebview {
 	 * @param dimension Optional explicit dimensions to use for sizing the webview.
 	 * @param clippingContainer Optional container to clip the webview to. This should generally be a parent of `element`.
 	 */
-	layoutWebviewOverElement(element: HTMLElement, dimension?: Dimension, clippingContainer?: HTMLElement): void;
+	layoutWebviewOverElement(
+		element: HTMLElement,
+		dimension?: Dimension,
+		clippingContainer?: HTMLElement
+	): void;
 }
 
 /**
@@ -337,14 +367,10 @@ export interface IOverlayWebview extends IWebview {
  * These are randomly generated
  */
 export class WebviewOriginStore {
-
 	private readonly _memento: Memento;
 	private readonly _state: MementoObject;
 
-	constructor(
-		rootStorageKey: string,
-		@IStorageService storageService: IStorageService,
-	) {
+	constructor(rootStorageKey: string, @IStorageService storageService: IStorageService) {
 		this._memento = new Memento(rootStorageKey, storageService);
 		this._state = this._memento.getMemento(StorageScope.APPLICATION, StorageTarget.MACHINE);
 	}
@@ -374,13 +400,9 @@ export class WebviewOriginStore {
  * These are randomly generated, but keyed on extension and webview viewType.
  */
 export class ExtensionKeyedWebviewOriginStore {
-
 	private readonly _store: WebviewOriginStore;
 
-	constructor(
-		rootStorageKey: string,
-		@IStorageService storageService: IStorageService,
-	) {
+	constructor(rootStorageKey: string, @IStorageService storageService: IStorageService) {
 		this._store = new WebviewOriginStore(rootStorageKey, storageService);
 	}
 

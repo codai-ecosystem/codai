@@ -6,7 +6,9 @@
 import { Event } from '../../../base/common/event.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 
-export const IExtensionHostDebugService = createDecorator<IExtensionHostDebugService>('extensionHostDebugService');
+export const IExtensionHostDebugService = createDecorator<IExtensionHostDebugService>(
+	'extensionHostDebugService'
+);
 
 export interface IAttachSessionEvent {
 	sessionId: string;
@@ -47,5 +49,8 @@ export interface IExtensionHostDebugService {
 	terminateSession(sessionId: string, subId?: string): void;
 	readonly onTerminateSession: Event<ITerminateSessionEvent>;
 
-	openExtensionDevelopmentHostWindow(args: string[], debugRenderer: boolean): Promise<IOpenExtensionWindowResult>;
+	openExtensionDevelopmentHostWindow(
+		args: string[],
+		debugRenderer: boolean
+	): Promise<IOpenExtensionWindowResult>;
 }

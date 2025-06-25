@@ -5,14 +5,18 @@
 
 import './overlayWidgets.css';
 import { FastDomNode, createFastDomNode } from '../../../../base/browser/fastDomNode.js';
-import { IOverlayWidget, IOverlayWidgetPosition, IOverlayWidgetPositionCoordinates, OverlayWidgetPositionPreference } from '../../editorBrowser.js';
+import {
+	IOverlayWidget,
+	IOverlayWidgetPosition,
+	IOverlayWidgetPositionCoordinates,
+	OverlayWidgetPositionPreference,
+} from '../../editorBrowser.js';
 import { PartFingerprint, PartFingerprints, ViewPart } from '../../view/viewPart.js';
 import { RenderingContext, RestrictedRenderingContext } from '../../view/renderingContext.js';
 import { ViewContext } from '../../../common/viewModel/viewContext.js';
 import * as viewEvents from '../../../common/viewEvents.js';
 import { EditorOption } from '../../../common/config/editorOptions.js';
 import * as dom from '../../../../base/browser/dom.js';
-
 
 interface IWidgetData {
 	widget: IOverlayWidget;
@@ -31,7 +35,6 @@ interface IWidgetMap {
  * such as the find widget.
  */
 export class ViewOverlayWidgets extends ViewPart {
-
 	private readonly _viewDomNode: FastDomNode<HTMLElement>;
 	private _widgets: IWidgetMap;
 	private _viewDomNodeRect: dom.IDomNodePagePosition;
@@ -63,7 +66,10 @@ export class ViewOverlayWidgets extends ViewPart {
 		this._domNode.setClassName('overlayWidgets');
 
 		this.overflowingOverlayWidgetsDomNode = createFastDomNode(document.createElement('div'));
-		PartFingerprints.write(this.overflowingOverlayWidgetsDomNode, PartFingerprint.OverflowingOverlayWidgets);
+		PartFingerprints.write(
+			this.overflowingOverlayWidgetsDomNode,
+			PartFingerprint.OverflowingOverlayWidgets
+		);
 		this.overflowingOverlayWidgetsDomNode.setClassName('overflowingOverlayWidgets');
 	}
 
@@ -98,7 +104,7 @@ export class ViewOverlayWidgets extends ViewPart {
 		this._widgets[widget.getId()] = {
 			widget: widget,
 			preference: null,
-			domNode: domNode
+			domNode: domNode,
 		};
 
 		// This is sync because a widget wants to be in the dom
@@ -115,7 +121,10 @@ export class ViewOverlayWidgets extends ViewPart {
 		this._updateMaxMinWidth();
 	}
 
-	public setWidgetPosition(widget: IOverlayWidget, position: IOverlayWidgetPosition | null): boolean {
+	public setWidgetPosition(
+		widget: IOverlayWidget,
+		position: IOverlayWidgetPosition | null
+	): boolean {
 		const widgetData = this._widgets[widget.getId()];
 		const preference = position ? position.preference : null;
 		const stack = position?.stackOridinal;
@@ -167,11 +176,14 @@ export class ViewOverlayWidgets extends ViewPart {
 			return;
 		}
 
-		const maxRight = (2 * this._verticalScrollbarWidth) + this._minimapWidth;
-		if (widgetData.preference === OverlayWidgetPositionPreference.TOP_RIGHT_CORNER || widgetData.preference === OverlayWidgetPositionPreference.BOTTOM_RIGHT_CORNER) {
+		const maxRight = 2 * this._verticalScrollbarWidth + this._minimapWidth;
+		if (
+			widgetData.preference === OverlayWidgetPositionPreference.TOP_RIGHT_CORNER ||
+			widgetData.preference === OverlayWidgetPositionPreference.BOTTOM_RIGHT_CORNER
+		) {
 			if (widgetData.preference === OverlayWidgetPositionPreference.BOTTOM_RIGHT_CORNER) {
 				const widgetHeight = domNode.domNode.clientHeight;
-				domNode.setTop((this._editorHeight - widgetHeight - 2 * this._horizontalScrollbarHeight));
+				domNode.setTop(this._editorHeight - widgetHeight - 2 * this._horizontalScrollbarHeight);
 			} else {
 				domNode.setTop(0);
 			}
@@ -186,20 +198,22 @@ export class ViewOverlayWidgets extends ViewPart {
 			domNode.domNode.style.right = '50%';
 			if (widgetData.stack !== undefined) {
 				domNode.setTop(stackCoordinates[OverlayWidgetPositionPreference.TOP_CENTER]);
-				stackCoordinates[OverlayWidgetPositionPreference.TOP_CENTER] += domNode.domNode.clientHeight;
+				stackCoordinates[OverlayWidgetPositionPreference.TOP_CENTER] +=
+					domNode.domNode.clientHeight;
 			} else {
 				domNode.setTop(0);
 			}
 		} else {
 			const { top, left } = widgetData.preference;
-			const fixedOverflowWidgets = this._context.configuration.options.get(EditorOption.fixedOverflowWidgets);
+			const fixedOverflowWidgets = this._context.configuration.options.get(
+				EditorOption.fixedOverflowWidgets
+			);
 			if (fixedOverflowWidgets && widgetData.widget.allowEditorOverflow) {
 				// top, left are computed relative to the editor and we need them relative to the page
 				const editorBoundingBox = this._viewDomNodeRect;
 				domNode.setTop(top + editorBoundingBox.top);
 				domNode.setLeft(left + editorBoundingBox.left);
 				domNode.setPosition('fixed');
-
 			} else {
 				domNode.setTop(top);
 				domNode.setLeft(left);
@@ -216,7 +230,10 @@ export class ViewOverlayWidgets extends ViewPart {
 		this._domNode.setWidth(this._editorWidth);
 
 		const keys = Object.keys(this._widgets);
-		const stackCoordinates = Array.from({ length: OverlayWidgetPositionPreference.TOP_CENTER + 1 }, () => 0);
+		const stackCoordinates = Array.from(
+			{ length: OverlayWidgetPositionPreference.TOP_CENTER + 1 },
+			() => 0
+		);
 		keys.sort((a, b) => (this._widgets[a].stack || 0) - (this._widgets[b].stack || 0));
 
 		for (let i = 0, len = keys.length; i < len; i++) {

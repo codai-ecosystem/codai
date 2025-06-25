@@ -11,8 +11,13 @@ import product from '../../../product/common/product.js';
 import { IProductService } from '../../../product/common/productService.js';
 
 suite('Dialog', () => {
-
-	function assertOptions({ options, buttonIndeces }: IMassagedMessageBoxOptions, buttons: string[], defaultId: number, cancelId: number, indeces: number[]): void {
+	function assertOptions(
+		{ options, buttonIndeces }: IMassagedMessageBoxOptions,
+		buttons: string[],
+		defaultId: number,
+		cancelId: number,
+		indeces: number[]
+	): void {
 		deepEqual(options.buttons, buttons);
 		deepEqual(options.defaultId, defaultId);
 		deepEqual(options.cancelId, cancelId);
@@ -23,42 +28,111 @@ suite('Dialog', () => {
 		const testProductService: IProductService = {
 			_serviceBrand: undefined,
 			...product,
-			nameLong: 'Test'
+			nameLong: 'Test',
 		};
 
 		// All platforms
-		const allPlatformsMassagedOptions = massageMessageBoxOptions({ buttons: ['1'], message: 'message' }, testProductService);
+		const allPlatformsMassagedOptions = massageMessageBoxOptions(
+			{ buttons: ['1'], message: 'message' },
+			testProductService
+		);
 		deepEqual(allPlatformsMassagedOptions.options.title, 'Test');
 		deepEqual(allPlatformsMassagedOptions.options.message, 'message');
 		deepEqual(allPlatformsMassagedOptions.options.noLink, true);
 
 		// Specific cases
 
-		const oneButtonNoCancel = massageMessageBoxOptions({ buttons: ['1'], cancelId: undefined, message: 'message' }, testProductService);
-		const oneButtonCancel_0 = massageMessageBoxOptions({ buttons: ['1'], cancelId: 0, message: 'message' }, testProductService);
-		const oneButtonCancel_1 = massageMessageBoxOptions({ buttons: ['1'], cancelId: 1, message: 'message' }, testProductService);
-		const oneButtonNegativeCancel = massageMessageBoxOptions({ buttons: ['1'], cancelId: -1, message: 'message' }, testProductService);
+		const oneButtonNoCancel = massageMessageBoxOptions(
+			{ buttons: ['1'], cancelId: undefined, message: 'message' },
+			testProductService
+		);
+		const oneButtonCancel_0 = massageMessageBoxOptions(
+			{ buttons: ['1'], cancelId: 0, message: 'message' },
+			testProductService
+		);
+		const oneButtonCancel_1 = massageMessageBoxOptions(
+			{ buttons: ['1'], cancelId: 1, message: 'message' },
+			testProductService
+		);
+		const oneButtonNegativeCancel = massageMessageBoxOptions(
+			{ buttons: ['1'], cancelId: -1, message: 'message' },
+			testProductService
+		);
 
-		const twoButtonNoCancel = massageMessageBoxOptions({ buttons: ['1', '2'], cancelId: undefined, message: 'message' }, testProductService);
-		const twoButtonCancel_0 = massageMessageBoxOptions({ buttons: ['1', '2'], cancelId: 0, message: 'message' }, testProductService);
-		const twoButtonCancel_1 = massageMessageBoxOptions({ buttons: ['1', '2'], cancelId: 1, message: 'message' }, testProductService);
-		const twoButtonCancel_2 = massageMessageBoxOptions({ buttons: ['1', '2'], cancelId: 2, message: 'message' }, testProductService);
-		const twoButtonNegativeCancel = massageMessageBoxOptions({ buttons: ['1', '2'], cancelId: -1, message: 'message' }, testProductService);
+		const twoButtonNoCancel = massageMessageBoxOptions(
+			{ buttons: ['1', '2'], cancelId: undefined, message: 'message' },
+			testProductService
+		);
+		const twoButtonCancel_0 = massageMessageBoxOptions(
+			{ buttons: ['1', '2'], cancelId: 0, message: 'message' },
+			testProductService
+		);
+		const twoButtonCancel_1 = massageMessageBoxOptions(
+			{ buttons: ['1', '2'], cancelId: 1, message: 'message' },
+			testProductService
+		);
+		const twoButtonCancel_2 = massageMessageBoxOptions(
+			{ buttons: ['1', '2'], cancelId: 2, message: 'message' },
+			testProductService
+		);
+		const twoButtonNegativeCancel = massageMessageBoxOptions(
+			{ buttons: ['1', '2'], cancelId: -1, message: 'message' },
+			testProductService
+		);
 
-		const threeButtonNoCancel = massageMessageBoxOptions({ buttons: ['1', '2', '3'], cancelId: undefined, message: 'message' }, testProductService);
-		const threeButtonCancel_0 = massageMessageBoxOptions({ buttons: ['1', '2', '3'], cancelId: 0, message: 'message' }, testProductService);
-		const threeButtonCancel_1 = massageMessageBoxOptions({ buttons: ['1', '2', '3'], cancelId: 1, message: 'message' }, testProductService);
-		const threeButtonCancel_2 = massageMessageBoxOptions({ buttons: ['1', '2', '3'], cancelId: 2, message: 'message' }, testProductService);
-		const threeButtonCancel_3 = massageMessageBoxOptions({ buttons: ['1', '2', '3'], cancelId: 3, message: 'message' }, testProductService);
-		const threeButtonNegativeCancel = massageMessageBoxOptions({ buttons: ['1', '2', '3'], cancelId: -1, message: 'message' }, testProductService);
+		const threeButtonNoCancel = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3'], cancelId: undefined, message: 'message' },
+			testProductService
+		);
+		const threeButtonCancel_0 = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3'], cancelId: 0, message: 'message' },
+			testProductService
+		);
+		const threeButtonCancel_1 = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3'], cancelId: 1, message: 'message' },
+			testProductService
+		);
+		const threeButtonCancel_2 = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3'], cancelId: 2, message: 'message' },
+			testProductService
+		);
+		const threeButtonCancel_3 = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3'], cancelId: 3, message: 'message' },
+			testProductService
+		);
+		const threeButtonNegativeCancel = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3'], cancelId: -1, message: 'message' },
+			testProductService
+		);
 
-		const fourButtonNoCancel = massageMessageBoxOptions({ buttons: ['1', '2', '3', '4'], cancelId: undefined, message: 'message' }, testProductService);
-		const fourButtonCancel_0 = massageMessageBoxOptions({ buttons: ['1', '2', '3', '4'], cancelId: 0, message: 'message' }, testProductService);
-		const fourButtonCancel_1 = massageMessageBoxOptions({ buttons: ['1', '2', '3', '4'], cancelId: 1, message: 'message' }, testProductService);
-		const fourButtonCancel_2 = massageMessageBoxOptions({ buttons: ['1', '2', '3', '4'], cancelId: 2, message: 'message' }, testProductService);
-		const fourButtonCancel_3 = massageMessageBoxOptions({ buttons: ['1', '2', '3', '4'], cancelId: 3, message: 'message' }, testProductService);
-		const fourButtonCancel_4 = massageMessageBoxOptions({ buttons: ['1', '2', '3', '4'], cancelId: 4, message: 'message' }, testProductService);
-		const fourButtonNegativeCancel = massageMessageBoxOptions({ buttons: ['1', '2', '3', '4'], cancelId: -1, message: 'message' }, testProductService);
+		const fourButtonNoCancel = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3', '4'], cancelId: undefined, message: 'message' },
+			testProductService
+		);
+		const fourButtonCancel_0 = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3', '4'], cancelId: 0, message: 'message' },
+			testProductService
+		);
+		const fourButtonCancel_1 = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3', '4'], cancelId: 1, message: 'message' },
+			testProductService
+		);
+		const fourButtonCancel_2 = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3', '4'], cancelId: 2, message: 'message' },
+			testProductService
+		);
+		const fourButtonCancel_3 = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3', '4'], cancelId: 3, message: 'message' },
+			testProductService
+		);
+		const fourButtonCancel_4 = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3', '4'], cancelId: 4, message: 'message' },
+			testProductService
+		);
+		const fourButtonNegativeCancel = massageMessageBoxOptions(
+			{ buttons: ['1', '2', '3', '4'], cancelId: -1, message: 'message' },
+			testProductService
+		);
 
 		if (isWindows) {
 			assertOptions(oneButtonNoCancel, ['1'], 0, 0, [0]);

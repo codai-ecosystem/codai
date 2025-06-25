@@ -21,11 +21,11 @@ class OpenChatStorageFolderAction extends Action2 {
 	constructor() {
 		super({
 			id: OpenChatStorageFolderAction.ID,
-			title: localize2('workbench.action.chat.openStorageFolder.label', "Open Chat Storage Folder"),
+			title: localize2('workbench.action.chat.openStorageFolder.label', 'Open Chat Storage Folder'),
 			icon: Codicon.attach,
 			category: Categories.Developer,
 			f1: true,
-			precondition: ChatContextKeys.enabled
+			precondition: ChatContextKeys.enabled,
 		});
 	}
 

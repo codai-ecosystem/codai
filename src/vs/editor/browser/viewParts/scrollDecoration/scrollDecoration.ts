@@ -11,9 +11,7 @@ import { ViewContext } from '../../../common/viewModel/viewContext.js';
 import * as viewEvents from '../../../common/viewEvents.js';
 import { EditorOption } from '../../../common/config/editorOptions.js';
 
-
 export class ScrollDecorationViewPart extends ViewPart {
-
 	private readonly _domNode: FastDomNode<HTMLElement>;
 	private _scrollTop: number;
 	private _width: number;
@@ -40,7 +38,7 @@ export class ScrollDecorationViewPart extends ViewPart {
 	}
 
 	private _updateShouldShow(): boolean {
-		const newShouldShow = (this._useShadows && this._scrollTop > 0);
+		const newShouldShow = this._useShadows && this._scrollTop > 0;
 		if (this._shouldShow !== newShouldShow) {
 			this._shouldShow = newShouldShow;
 			return true;
@@ -56,7 +54,10 @@ export class ScrollDecorationViewPart extends ViewPart {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
-		if (layoutInfo.minimap.renderMinimap === 0 || (layoutInfo.minimap.minimapWidth > 0 && layoutInfo.minimap.minimapLeft === 0)) {
+		if (
+			layoutInfo.minimap.renderMinimap === 0 ||
+			(layoutInfo.minimap.minimapWidth > 0 && layoutInfo.minimap.minimapLeft === 0)
+		) {
 			this._width = layoutInfo.width;
 		} else {
 			this._width = layoutInfo.width - layoutInfo.verticalScrollbarWidth;

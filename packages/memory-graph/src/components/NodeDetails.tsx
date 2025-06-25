@@ -7,11 +7,7 @@ interface NodeDetailsProps {
 	onUpdate?: (updates: Partial<AnyNode>) => void;
 }
 
-export const NodeDetails: React.FC<NodeDetailsProps> = ({
-	node,
-	readOnly = true,
-	onUpdate
-}) => {
+export const NodeDetails: React.FC<NodeDetailsProps> = ({ node, readOnly = true, onUpdate }) => {
 	// Mark unused parameters as intentionally unused
 	void readOnly;
 	void onUpdate;
@@ -110,15 +106,9 @@ export const NodeDetails: React.FC<NodeDetailsProps> = ({
 				<div className="node-details__type">{node.type}</div>
 			</div>
 
-			{node.description && (
-				<div className="node-details__description">
-					{node.description}
-				</div>
-			)}
+			{node.description && <div className="node-details__description">{node.description}</div>}
 
-			<div className="node-details__content">
-				{renderDetails()}
-			</div>
+			<div className="node-details__content">{renderDetails()}</div>
 
 			<div className="node-details__meta">
 				<div className="node-details__id">ID: {node.id}</div>

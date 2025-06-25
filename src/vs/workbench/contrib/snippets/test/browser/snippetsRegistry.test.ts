@@ -9,12 +9,11 @@ import { Position } from '../../../../../editor/common/core/position.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('getNonWhitespacePrefix', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function assertGetNonWhitespacePrefix(line: string, column: number, expected: string): void {
 		const model = {
-			getLineContent: (lineNumber: number) => line
+			getLineContent: (lineNumber: number) => line,
 		};
 		const actual = getNonWhitespacePrefix(model, new Position(1, column));
 		assert.strictEqual(actual, expected);
@@ -76,6 +75,5 @@ suite('getNonWhitespacePrefix', () => {
 		assertGetNonWhitespacePrefix('something\u2028interesting', 22, 'interesting');
 		assertGetNonWhitespacePrefix('something\u3000interesting', 22, 'interesting');
 		assertGetNonWhitespacePrefix('something\ufeffinteresting', 22, 'interesting');
-
 	});
 });

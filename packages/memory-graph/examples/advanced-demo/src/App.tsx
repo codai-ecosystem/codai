@@ -7,7 +7,7 @@ import {
 	Relationship,
 	ApiNode,
 	LogicNode,
-	FeatureNode
+	FeatureNode,
 } from '@codai/memory-graph';
 import { v4 as uuid } from 'uuid';
 import {
@@ -20,7 +20,7 @@ import {
 	Network,
 	Activity,
 	BarChart3,
-	Layers
+	Layers,
 } from 'lucide-react';
 
 // Import our agent runtime components
@@ -35,7 +35,7 @@ const createAdvancedDemoData = () => {
 	const relationships: Relationship[] = [];
 
 	const now = new Date();
-	const version = "1.0.0";
+	const version = '1.0.0';
 	const graphId = uuid();
 
 	// Core Infrastructure
@@ -54,8 +54,8 @@ const createAdvancedDemoData = () => {
 			status: 'production',
 			owner: 'Security Team',
 			criticalPath: true,
-			content: 'Handles user authentication, authorization, and session management'
-		}
+			content: 'Handles user authentication, authorization, and session management',
+		},
 	};
 
 	const userService: ApiNode = {
@@ -72,8 +72,8 @@ const createAdvancedDemoData = () => {
 			technology: 'Python + FastAPI',
 			status: 'production',
 			owner: 'Backend Team',
-			content: 'CRUD operations for user data, preferences, and account settings'
-		}
+			content: 'CRUD operations for user data, preferences, and account settings',
+		},
 	};
 	const notificationService: LogicNode = {
 		id: 'notification-service',
@@ -88,8 +88,8 @@ const createAdvancedDemoData = () => {
 			technology: 'Go + RabbitMQ',
 			status: 'production',
 			owner: 'Platform Team',
-			content: 'Email, SMS, push notifications, and in-app messaging'
-		}
+			content: 'Email, SMS, push notifications, and in-app messaging',
+		},
 	};
 
 	// Data Layer
@@ -107,8 +107,8 @@ const createAdvancedDemoData = () => {
 			status: 'production',
 			owner: 'Database Team',
 			criticalPath: true,
-			content: 'Main transactional database with ACID compliance'
-		}
+			content: 'Main transactional database with ACID compliance',
+		},
 	};
 	const cacheLayer: LogicNode = {
 		id: 'cache-layer',
@@ -123,8 +123,8 @@ const createAdvancedDemoData = () => {
 			technology: 'Redis Cluster',
 			status: 'production',
 			owner: 'Infrastructure Team',
-			content: 'Session storage, API response caching, and real-time data'
-		}
+			content: 'Session storage, API response caching, and real-time data',
+		},
 	};
 
 	const searchEngine: LogicNode = {
@@ -140,8 +140,8 @@ const createAdvancedDemoData = () => {
 			technology: 'Elasticsearch 8',
 			status: 'production',
 			owner: 'Data Team',
-			content: 'Document indexing, search APIs, and data analytics'
-		}
+			content: 'Document indexing, search APIs, and data analytics',
+		},
 	};
 
 	// Frontend Applications
@@ -160,8 +160,8 @@ const createAdvancedDemoData = () => {
 			status: 'production',
 			owner: 'Frontend Team',
 			criticalPath: true,
-			content: 'SPA with modern React, TypeScript, and state management'
-		}
+			content: 'SPA with modern React, TypeScript, and state management',
+		},
 	};
 	const mobileApp: FeatureNode = {
 		id: 'mobile-app',
@@ -177,8 +177,8 @@ const createAdvancedDemoData = () => {
 			technology: 'React Native',
 			status: 'production',
 			owner: 'Mobile Team',
-			content: 'React Native app with offline support and push notifications'
-		}
+			content: 'React Native app with offline support and push notifications',
+		},
 	};
 
 	const adminDashboard: FeatureNode = {
@@ -195,8 +195,8 @@ const createAdvancedDemoData = () => {
 			technology: 'Vue.js 3',
 			status: 'production',
 			owner: 'Platform Team',
-			content: 'Real-time monitoring, user management, and system controls'
-		}
+			content: 'Real-time monitoring, user management, and system controls',
+		},
 	};
 
 	// AI/ML Components
@@ -213,8 +213,8 @@ const createAdvancedDemoData = () => {
 			technology: 'Python + MLflow',
 			status: 'production',
 			owner: 'ML Team',
-			content: 'Data preprocessing, model training, validation, and deployment'
-		}
+			content: 'Data preprocessing, model training, validation, and deployment',
+		},
 	};
 	const aiService: ApiNode = {
 		id: 'ai-service',
@@ -230,8 +230,8 @@ const createAdvancedDemoData = () => {
 			technology: 'TensorFlow Serving',
 			status: 'production',
 			owner: 'ML Team',
-			content: 'Recommendation engine, content analysis, and prediction APIs'
-		}
+			content: 'Recommendation engine, content analysis, and prediction APIs',
+		},
 	};
 
 	// Infrastructure
@@ -250,8 +250,8 @@ const createAdvancedDemoData = () => {
 			status: 'production',
 			owner: 'Infrastructure Team',
 			criticalPath: true,
-			content: 'Rate limiting, authentication, routing, and API analytics'
-		}
+			content: 'Rate limiting, authentication, routing, and API analytics',
+		},
 	};
 
 	const monitoringSystem: LogicNode = {
@@ -267,16 +267,24 @@ const createAdvancedDemoData = () => {
 			technology: 'Prometheus + Grafana',
 			status: 'production',
 			owner: 'SRE Team',
-			content: 'Metrics, logging, tracing, and alerting across all services'
-		}
+			content: 'Metrics, logging, tracing, and alerting across all services',
+		},
 	};
 
 	nodes.push(
-		authService, userService, notificationService,
-		primaryDb, cacheLayer, searchEngine,
-		webApp, mobileApp, adminDashboard,
-		mlPipeline, aiService,
-		apiGateway, monitoringSystem
+		authService,
+		userService,
+		notificationService,
+		primaryDb,
+		cacheLayer,
+		searchEngine,
+		webApp,
+		mobileApp,
+		adminDashboard,
+		mlPipeline,
+		aiService,
+		apiGateway,
+		monitoringSystem
 	);
 
 	// Create relationships	// Since the schema only supports a limited set of relationship types, let's map our use cases to those
@@ -311,7 +319,7 @@ const createAdvancedDemoData = () => {
 		{ from: 'monitoring-system', to: 'user-service', type: 'tests' },
 		{ from: 'monitoring-system', to: 'ai-service', type: 'tests' },
 		{ from: 'monitoring-system', to: 'primary-db', type: 'tests' },
-		{ from: 'monitoring-system', to: 'api-gateway', type: 'tests' }
+		{ from: 'monitoring-system', to: 'api-gateway', type: 'tests' },
 	];
 
 	relationshipData.forEach(({ from, to, type }) => {
@@ -322,8 +330,8 @@ const createAdvancedDemoData = () => {
 			type: type as Relationship['type'],
 			metadata: {
 				strength: Math.random() * 0.5 + 0.5,
-				latency: Math.floor(Math.random() * 100) + 10
-			}
+				latency: Math.floor(Math.random() * 100) + 10,
+			},
 		});
 	});
 
@@ -331,8 +339,8 @@ const createAdvancedDemoData = () => {
 	return {
 		graph: {
 			id: graphId,
-			name: "Advanced Software Architecture",
-			description: "Complex system architecture visualization with service connections",
+			name: 'Advanced Software Architecture',
+			description: 'Complex system architecture visualization with service connections',
 			version,
 			createdAt: now,
 			updatedAt: now,
@@ -341,20 +349,24 @@ const createAdvancedDemoData = () => {
 			metadata: {
 				teams: 5,
 				services: nodes.length,
-				connections: relationships.length
-			}
+				connections: relationships.length,
+			},
 		},
 		nodes,
-		relationships
+		relationships,
 	};
 };
 
 const NodeIcon = ({ type }: { type: string }) => {
 	switch (type) {
-		case 'api': return <Globe className="w-4 h-4" />;
-		case 'logic': return <Brain className="w-4 h-4" />;
-		case 'feature': return <Code className="w-4 h-4" />;
-		default: return <Network className="w-4 h-4" />;
+		case 'api':
+			return <Globe className="w-4 h-4" />;
+		case 'logic':
+			return <Brain className="w-4 h-4" />;
+		case 'feature':
+			return <Code className="w-4 h-4" />;
+		default:
+			return <Network className="w-4 h-4" />;
 	}
 };
 
@@ -363,11 +375,13 @@ const StatusBadge = ({ status }: { status: string }) => {
 		production: 'bg-green-500',
 		staging: 'bg-yellow-500',
 		development: 'bg-blue-500',
-		deprecated: 'bg-red-500'
+		deprecated: 'bg-red-500',
 	};
 
 	return (
-		<span className={`inline-block w-2 h-2 rounded-full ${colors[status as keyof typeof colors] || 'bg-gray-500'}`} />
+		<span
+			className={`inline-block w-2 h-2 rounded-full ${colors[status as keyof typeof colors] || 'bg-gray-500'}`}
+		/>
 	);
 };
 
@@ -411,7 +425,9 @@ function App() {
 
 		// Add the initial nodes and relationships to the memory graph engine
 		initialNodes.forEach(node => memoryGraphEngine.addNode(node));
-		initialRelationships.forEach(rel => memoryGraphEngine.addRelationship(rel.fromNodeId, rel.toNodeId, rel.type));
+		initialRelationships.forEach(rel =>
+			memoryGraphEngine.addRelationship(rel.fromNodeId, rel.toNodeId, rel.type)
+		);
 	}, [memoryGraphEngine]);
 
 	// Effect to listen for memory graph changes
@@ -438,12 +454,12 @@ function App() {
 	}, [nodes]);
 	const filteredNodes = useMemo(() => {
 		return nodes.filter(node => {
-			const matchesFilter = filter === '' ||
+			const matchesFilter =
+				filter === '' ||
 				node.name.toLowerCase().includes(filter.toLowerCase()) ||
 				(node.description?.toLowerCase()?.includes(filter.toLowerCase()) ?? false);
 
-			const matchesTeam = selectedTeam === 'all' ||
-				node.metadata?.owner === selectedTeam;
+			const matchesTeam = selectedTeam === 'all' || node.metadata?.owner === selectedTeam;
 
 			return matchesFilter && matchesTeam;
 		});
@@ -500,21 +516,24 @@ function App() {
 									type="text"
 									placeholder="Search services..."
 									value={filter}
-									onChange={(e) => setFilter(e.target.value)}
+									onChange={e => setFilter(e.target.value)}
 									className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-purple-400"
 								/>
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium text-gray-300 mb-2">Team</label>								<select
+								<label className="block text-sm font-medium text-gray-300 mb-2">Team</label>{' '}
+								<select
 									value={selectedTeam}
-									onChange={(e) => setSelectedTeam(e.target.value)}
+									onChange={e => setSelectedTeam(e.target.value)}
 									className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-purple-400"
 									aria-label="Filter by team"
 								>
 									<option value="all">All Teams</option>
 									{teams.map(team => (
-										<option key={team} value={team}>{team}</option>
+										<option key={team} value={team}>
+											{team}
+										</option>
 									))}
 								</select>
 							</div>
@@ -524,14 +543,15 @@ function App() {
 						<div>
 							<label className="block text-sm font-medium text-gray-300 mb-2">Layout</label>
 							<div className="grid grid-cols-3 gap-2">
-								{(['force', 'hierarchical', 'circular'] as const).map((layoutType) => (
+								{(['force', 'hierarchical', 'circular'] as const).map(layoutType => (
 									<button
 										key={layoutType}
 										onClick={() => setLayout(layoutType)}
-										className={`px-3 py-2 text-xs rounded-lg transition-colors ${layout === layoutType
-											? 'bg-purple-600 text-white'
-											: 'bg-white/5 text-gray-300 hover:bg-white/10'
-											}`}
+										className={`px-3 py-2 text-xs rounded-lg transition-colors ${
+											layout === layoutType
+												? 'bg-purple-600 text-white'
+												: 'bg-white/5 text-gray-300 hover:bg-white/10'
+										}`}
 									>
 										{layoutType}
 									</button>
@@ -543,30 +563,31 @@ function App() {
 						<div className="space-y-3">
 							<button
 								onClick={() => setEditMode(!editMode)}
-								className={`w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center space-x-2 ${editMode
-									? 'bg-blue-600 text-white'
-									: 'bg-white/5 text-gray-300 hover:bg-white/10'
-									}`}
+								className={`w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center space-x-2 ${
+									editMode ? 'bg-blue-600 text-white' : 'bg-white/5 text-gray-300 hover:bg-white/10'
+								}`}
 							>
 								<Settings className="w-4 h-4" />
 								<span>Edit Mode</span>
 							</button>
-
 							<button
 								onClick={() => setShowMetrics(!showMetrics)}
-								className={`w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center space-x-2 ${showMetrics
-									? 'bg-green-600 text-white'
-									: 'bg-white/5 text-gray-300 hover:bg-white/10'
-									}`}
+								className={`w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center space-x-2 ${
+									showMetrics
+										? 'bg-green-600 text-white'
+										: 'bg-white/5 text-gray-300 hover:bg-white/10'
+								}`}
 							>
 								<BarChart3 className="w-4 h-4" />
 								<span>Metrics</span>
-							</button>							<button
+							</button>{' '}
+							<button
 								onClick={toggleAgentPanel}
-								className={`w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center space-x-2 ${showAgentPanel
-									? 'bg-blue-600 text-white'
-									: 'bg-white/5 text-gray-300 hover:bg-white/10'
-									}`}
+								className={`w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center space-x-2 ${
+									showAgentPanel
+										? 'bg-blue-600 text-white'
+										: 'bg-white/5 text-gray-300 hover:bg-white/10'
+								}`}
 							>
 								<Brain className="w-4 h-4" />
 								<span>{showAgentPanel ? 'Hide Agent Panel' : 'Show Agent Panel'}</span>
@@ -576,14 +597,8 @@ function App() {
 						{/* Agent Panel (conditionally rendered) */}
 						{showAgentPanel && (
 							<div className="space-y-4 mt-4 p-3 bg-white/5 rounded-lg border border-white/10">
-								<AgentControlPanel
-									agentRuntime={agentRuntime}
-									onTaskSubmit={handleTaskSubmit}
-								/>
-								<TaskList
-									agentRuntime={agentRuntime}
-									maxItems={5}
-								/>
+								<AgentControlPanel agentRuntime={agentRuntime} onTaskSubmit={handleTaskSubmit} />
+								<TaskList agentRuntime={agentRuntime} maxItems={5} />
 							</div>
 						)}
 
@@ -620,20 +635,24 @@ function App() {
 									<div
 										key={node.id}
 										onClick={() => setSelectedNode(node)}
-										className={`p-3 rounded-lg cursor-pointer transition-colors ${selectedNode?.id === node.id
-											? 'bg-purple-600/30 border border-purple-400/50'
-											: 'bg-white/5 hover:bg-white/10 border border-white/10'
-											}`}
+										className={`p-3 rounded-lg cursor-pointer transition-colors ${
+											selectedNode?.id === node.id
+												? 'bg-purple-600/30 border border-purple-400/50'
+												: 'bg-white/5 hover:bg-white/10 border border-white/10'
+										}`}
 									>
 										<div className="flex items-start space-x-3">
 											<NodeIcon type={node.type} />
 											<div className="flex-1 min-w-0">
 												<div className="flex items-center space-x-2">
 													<span className="text-sm font-medium truncate">{node.name}</span>
-													<StatusBadge status={node.metadata?.status as string || 'unknown'} />
+													<StatusBadge status={(node.metadata?.status as string) || 'unknown'} />
 												</div>
-												<p className="text-xs text-gray-400 mt-1 truncate">{node.description}</p>												{node.metadata && 'technology' in node.metadata && (
-													<p className="text-xs text-purple-300 mt-1">{String(node.metadata.technology)}</p>
+												<p className="text-xs text-gray-400 mt-1 truncate">{node.description}</p>{' '}
+												{node.metadata && 'technology' in node.metadata && (
+													<p className="text-xs text-purple-300 mt-1">
+														{String(node.metadata.technology)}
+													</p>
 												)}
 											</div>
 										</div>
@@ -645,26 +664,30 @@ function App() {
 				</div>
 
 				{/* Main Content */}
-				<div className="flex-1 flex">					{/* Graph View */}
-					<div className="flex-1 relative">						<MemoryGraphVisualization
-						graph={{
-							id: 'memory-graph',
-							name: 'Memory Graph',
-							createdAt: new Date(),
-							updatedAt: new Date(),
-							version: '1.0.0',
-							nodes: filteredNodes,
-							relationships: relationships.filter(rel =>
-								filteredNodes.some(n => n.id === rel.fromNodeId) &&
-								filteredNodes.some(n => n.id === rel.toNodeId)
-							)
-						}}
-						layout={layout}
-						isEditable={editMode}
-						onNodeSelect={setSelectedNode}
-						className="w-full h-full"
-					/>
-
+				<div className="flex-1 flex">
+					{' '}
+					{/* Graph View */}
+					<div className="flex-1 relative">
+						{' '}
+						<MemoryGraphVisualization
+							graph={{
+								id: 'memory-graph',
+								name: 'Memory Graph',
+								createdAt: new Date(),
+								updatedAt: new Date(),
+								version: '1.0.0',
+								nodes: filteredNodes,
+								relationships: relationships.filter(
+									rel =>
+										filteredNodes.some(n => n.id === rel.fromNodeId) &&
+										filteredNodes.some(n => n.id === rel.toNodeId)
+								),
+							}}
+							layout={layout}
+							isEditable={editMode}
+							onNodeSelect={setSelectedNode}
+							className="w-full h-full"
+						/>
 						{showMetrics && (
 							<motion.div
 								initial={{ opacity: 0, y: 20 }}
@@ -693,7 +716,6 @@ function App() {
 							</motion.div>
 						)}
 					</div>
-
 					{/* Details Panel */}
 					<AnimatePresence>
 						{selectedNode && (
@@ -712,14 +734,16 @@ function App() {
 													<h2 className="text-xl font-bold text-white">{selectedNode.name}</h2>
 													<p className="text-gray-400 text-sm mt-1">{selectedNode.description}</p>
 												</div>
-												<StatusBadge status={selectedNode.metadata?.status as string || 'unknown'} />
+												<StatusBadge
+													status={(selectedNode.metadata?.status as string) || 'unknown'}
+												/>
 											</div>
 
 											<div className="bg-white/5 rounded-lg p-4">
 												<p className="text-gray-300 text-sm leading-relaxed">
-													{selectedNode.metadata?.content ?
-														selectedNode.metadata.content as string :
-														selectedNode.description}
+													{selectedNode.metadata?.content
+														? (selectedNode.metadata.content as string)
+														: selectedNode.description}
 												</p>
 											</div>
 										</div>
@@ -730,9 +754,15 @@ function App() {
 												<div className="space-y-2">
 													{Object.entries(selectedNode.metadata).map(([key, value]) => (
 														<div key={key} className="flex justify-between text-sm">
-															<span className="text-gray-400 capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+															<span className="text-gray-400 capitalize">
+																{key.replace(/([A-Z])/g, ' $1')}:
+															</span>
 															<span className="text-white text-right max-w-48 truncate">
-																{typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
+																{typeof value === 'boolean'
+																	? value
+																		? 'Yes'
+																		: 'No'
+																	: String(value)}
 															</span>
 														</div>
 													))}
@@ -742,23 +772,35 @@ function App() {
 
 										<div>
 											<h3 className="text-sm font-medium text-gray-300 mb-3">Connections</h3>
-											<div className="space-y-2">											{relationships
-												.filter(rel => rel.fromNodeId === selectedNode.id || rel.toNodeId === selectedNode.id)
-												.map(rel => {
-													const isOutgoing = rel.fromNodeId === selectedNode.id;
-													const connectedNodeId = isOutgoing ? rel.toNodeId : rel.fromNodeId;
-													const connectedNode = nodes.find(n => n.id === connectedNodeId);
+											<div className="space-y-2">
+												{' '}
+												{relationships
+													.filter(
+														rel =>
+															rel.fromNodeId === selectedNode.id || rel.toNodeId === selectedNode.id
+													)
+													.map(rel => {
+														const isOutgoing = rel.fromNodeId === selectedNode.id;
+														const connectedNodeId = isOutgoing ? rel.toNodeId : rel.fromNodeId;
+														const connectedNode = nodes.find(n => n.id === connectedNodeId);
 
-													return (
-														<div key={rel.id} className="flex items-center space-x-2 text-sm">
-															<span className={`px-2 py-1 rounded text-xs ${isOutgoing ? 'bg-blue-500/20 text-blue-300' : 'bg-green-500/20 text-green-300'
-																}`}>
-																{isOutgoing ? '→' : '←'} {rel.type.replace('_', ' ')}
-															</span>
-															<span className="text-gray-300 truncate">{connectedNode?.name}</span>
-														</div>
-													);
-												})}
+														return (
+															<div key={rel.id} className="flex items-center space-x-2 text-sm">
+																<span
+																	className={`px-2 py-1 rounded text-xs ${
+																		isOutgoing
+																			? 'bg-blue-500/20 text-blue-300'
+																			: 'bg-green-500/20 text-green-300'
+																	}`}
+																>
+																	{isOutgoing ? '→' : '←'} {rel.type.replace('_', ' ')}
+																</span>
+																<span className="text-gray-300 truncate">
+																	{connectedNode?.name}
+																</span>
+															</div>
+														);
+													})}
 											</div>
 										</div>
 									</div>

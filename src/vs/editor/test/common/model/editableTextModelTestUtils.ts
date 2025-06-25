@@ -12,7 +12,12 @@ import { TextModel } from '../../../common/model/textModel.js';
 import { IModelContentChangedEvent } from '../../../common/textModelEvents.js';
 import { createTextModel } from '../testTextModel.js';
 
-export function testApplyEditsWithSyncedModels(original: string[], edits: ISingleEditOperation[], expected: string[], inputEditsAreInvalid: boolean = false): void {
+export function testApplyEditsWithSyncedModels(
+	original: string[],
+	edits: ISingleEditOperation[],
+	expected: string[],
+	inputEditsAreInvalid: boolean = false
+): void {
 	const originalStr = original.join('\n');
 	const expectedStr = expected.join('\n');
 
@@ -36,7 +41,7 @@ export function testApplyEditsWithSyncedModels(original: string[], edits: ISingl
 				return {
 					range: edit.range,
 					text: edit.text,
-					forceMoveMarkers: edit.forceMoveMarkers || false
+					forceMoveMarkers: edit.forceMoveMarkers || false,
 				};
 			};
 			// Assert the inverse of the inverse edits are the original edits
@@ -49,25 +54,39 @@ export function testApplyEditsWithSyncedModels(original: string[], edits: ISingl
 
 const enum AssertDocumentLineMappingDirection {
 	OffsetToPosition,
-	PositionToOffset
+	PositionToOffset,
 }
 
-function assertOneDirectionLineMapping(model: TextModel, direction: AssertDocumentLineMappingDirection, msg: string): void {
+function assertOneDirectionLineMapping(
+	model: TextModel,
+	direction: AssertDocumentLineMappingDirection,
+	msg: string
+): void {
 	const allText = model.getValue();
 
-	let line = 1, column = 1, previousIsCarriageReturn = false;
+	let line = 1,
+		column = 1,
+		previousIsCarriageReturn = false;
 	for (let offset = 0; offset <= allText.length; offset++) {
 		// The position coordinate system cannot express the position between \r and \n
 		const position: Position = new Position(line, column + (previousIsCarriageReturn ? -1 : 0));
 
 		if (direction === AssertDocumentLineMappingDirection.OffsetToPosition) {
 			const actualPosition = model.getPositionAt(offset);
-			assert.strictEqual(actualPosition.toString(), position.toString(), msg + ' - getPositionAt mismatch for offset ' + offset);
+			assert.strictEqual(
+				actualPosition.toString(),
+				position.toString(),
+				msg + ' - getPositionAt mismatch for offset ' + offset
+			);
 		} else {
 			// The position coordinate system cannot express the position between \r and \n
 			const expectedOffset: number = offset + (previousIsCarriageReturn ? -1 : 0);
 			const actualOffset = model.getOffsetAt(position);
-			assert.strictEqual(actualOffset, expectedOffset, msg + ' - getOffsetAt mismatch for position ' + position.toString());
+			assert.strictEqual(
+				actualOffset,
+				expectedOffset,
+				msg + ' - getOffsetAt mismatch for position ' + position.toString()
+			);
 		}
 
 		if (allText.charAt(offset) === '\n') {
@@ -77,7 +96,7 @@ function assertOneDirectionLineMapping(model: TextModel, direction: AssertDocume
 			column++;
 		}
 
-		previousIsCarriageReturn = (allText.charAt(offset) === '\r');
+		previousIsCarriageReturn = allText.charAt(offset) === '\r';
 	}
 }
 
@@ -86,8 +105,11 @@ function assertLineMapping(model: TextModel, msg: string): void {
 	assertOneDirectionLineMapping(model, AssertDocumentLineMappingDirection.OffsetToPosition, msg);
 }
 
-
-export function assertSyncedModels(text: string, callback: (model: TextModel, assertMirrorModels: () => void) => void, setup: ((model: TextModel) => void) | null = null): void {
+export function assertSyncedModels(
+	text: string,
+	callback: (model: TextModel, assertMirrorModels: () => void) => void,
+	setup: ((model: TextModel) => void) | null = null
+): void {
 	const model = createTextModel(text);
 	model.setEOL(EndOfLineSequence.LF);
 	assertLineMapping(model, 'model');
@@ -97,7 +119,12 @@ export function assertSyncedModels(text: string, callback: (model: TextModel, as
 		assertLineMapping(model, 'model');
 	}
 
-	const mirrorModel2 = new MirrorTextModel(null!, model.getLinesContent(), model.getEOL(), model.getVersionId());
+	const mirrorModel2 = new MirrorTextModel(
+		null!,
+		model.getLinesContent(),
+		model.getEOL(),
+		model.getVersionId()
+	);
 	let mirrorModel2PrevVersionId = model.getVersionId();
 
 	const disposable = model.onDidChangeContent((e: IModelContentChangedEvent) => {

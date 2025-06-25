@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isSigPipeError, onUnexpectedError, setUnexpectedErrorHandler } from '../../../base/common/errors.js';
+import {
+	isSigPipeError,
+	onUnexpectedError,
+	setUnexpectedErrorHandler,
+} from '../../../base/common/errors.js';
 import BaseErrorTelemetry from '../common/errorTelemetry.js';
 import { ITelemetryService } from '../common/telemetry.js';
 import { ILogService } from '../../../platform/log/common/log.js';

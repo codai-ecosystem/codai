@@ -80,14 +80,14 @@ export class AgentCoordinator {
 			data: {
 				name,
 				capabilities: agent.getCapabilities(),
-				registered: Date.now()
+				registered: Date.now(),
 			},
 			timestamp: Date.now(),
 			relationships: [],
 			metadata: {
 				priority: 'high',
-				tags: ['agent', 'registration']
-			}
+				tags: ['agent', 'registration'],
+			},
 		});
 	}
 
@@ -104,11 +104,11 @@ export class AgentCoordinator {
 				error: {
 					type: 'agent_not_found',
 					message: `Agent '${agentName}' not found`,
-					details: { availableAgents: Array.from(this.agents.keys()) }
+					details: { availableAgents: Array.from(this.agents.keys()) },
 				},
 				timestamp: Date.now(),
 				duration: 0,
-				metadata: {}
+				metadata: {},
 			};
 		}
 
@@ -121,11 +121,11 @@ export class AgentCoordinator {
 				agentName,
 				requestType: request.type,
 				payload: request.payload,
-				timestamp: startTime
+				timestamp: startTime,
 			});
 
 			const response = await agent.execute(request);
-			const duration = Date.now() - startTime;			// Record workflow step in memory graph
+			const duration = Date.now() - startTime; // Record workflow step in memory graph
 			this.memoryGraph.recordWorkflowStep(request.id, {
 				phase: request.type,
 				agent: agentName,
@@ -134,14 +134,13 @@ export class AgentCoordinator {
 				timestamp: startTime,
 				duration,
 				success: response.success,
-				...(response.error?.message && { error: response.error.message })
+				...(response.error?.message && { error: response.error.message }),
 			});
 
 			return {
 				...response,
-				duration
+				duration,
 			};
-
 		} catch (error) {
 			const duration = Date.now() - startTime;
 
@@ -154,7 +153,7 @@ export class AgentCoordinator {
 				timestamp: startTime,
 				duration,
 				success: false,
-				error: error instanceof Error ? error.message : String(error)
+				error: error instanceof Error ? error.message : String(error),
 			});
 
 			return {
@@ -164,11 +163,11 @@ export class AgentCoordinator {
 				error: {
 					type: 'execution_error',
 					message: error instanceof Error ? error.message : String(error),
-					details: { agent: agentName, duration }
+					details: { agent: agentName, duration },
 				},
 				timestamp: Date.now(),
 				duration,
-				metadata: {}
+				metadata: {},
 			};
 		}
 	}
@@ -193,12 +192,12 @@ export class AgentCoordinator {
 					error: {
 						type: 'dependency_error',
 						message: `Dependency '${step.dependency}' not satisfied for agent '${step.agent}'`,
-						details: { step, availableResults: Object.keys(results) }
+						details: { step, availableResults: Object.keys(results) },
 					},
 					timestamp: Date.now(),
 					duration: 0,
 					metadata: {},
-					executionOrder
+					executionOrder,
 				};
 			}
 
@@ -209,7 +208,7 @@ export class AgentCoordinator {
 			if (!response.success) {
 				return {
 					...response,
-					executionOrder
+					executionOrder,
 				};
 			}
 
@@ -222,8 +221,8 @@ export class AgentCoordinator {
 					...currentRequest.payload,
 					previousResults: results,
 					lastAgent: step.agent,
-					lastResult: response.result
-				}
+					lastResult: response.result,
+				},
 			};
 		}
 
@@ -234,7 +233,7 @@ export class AgentCoordinator {
 			timestamp: Date.now(),
 			duration: Date.now() - baseRequest.timestamp,
 			metadata: { executionOrder },
-			executionOrder
+			executionOrder,
 		};
 	}
 
@@ -261,8 +260,8 @@ export class AgentCoordinator {
 						attempted: attempts > 1,
 						strategy: 'retry',
 						attempts,
-						success: true
-					}
+						success: true,
+					},
 				};
 			}
 
@@ -286,8 +285,8 @@ export class AgentCoordinator {
 							attempted: true,
 							strategy: 'fallback',
 							attempts,
-							success: fallbackResponse.success
-						}
+							success: fallbackResponse.success,
+						},
 					};
 				}
 			}
@@ -310,8 +309,8 @@ export class AgentCoordinator {
 				attempted: true,
 				strategy: 'retry_with_fallback',
 				attempts,
-				success: false
-			}
+				success: false,
+			},
 		};
 	}
 	/**
@@ -321,10 +320,13 @@ export class AgentCoordinator {
 		const matchingAgents: string[] = [];
 
 		for (const [agentName, capabilities] of this.capabilities.entries()) {
-			if (capabilities.some(cap =>
-				cap.domain === capability.domain &&
-				cap.actions.some((action: string) => capability.actions.includes(action))
-			)) {
+			if (
+				capabilities.some(
+					cap =>
+						cap.domain === capability.domain &&
+						cap.actions.some((action: string) => capability.actions.includes(action))
+				)
+			) {
 				matchingAgents.push(agentName);
 			}
 		}
@@ -377,11 +379,12 @@ export class AgentCoordinator {
 			outputs: [],
 			domain: request.type,
 			actions: ['execute'],
-			priority: 'medium'
+			priority: 'medium',
 		};
 
-		const candidates = this.findAgentsByCapability(requestCapability)
-			.filter(agent => agent !== originalAgent);
+		const candidates = this.findAgentsByCapability(requestCapability).filter(
+			agent => agent !== originalAgent
+		);
 
 		return candidates.length > 0 ? candidates[0] : null;
 	}
@@ -424,23 +427,22 @@ export class AgentCoordinator {
 		successRate: number;
 	} {
 		const workflowHistory = this.memoryGraph.getNodesByType('workflow');
-		const completedWorkflows = workflowHistory.filter(node =>
-			node.data.success !== undefined
-		);
+		const completedWorkflows = workflowHistory.filter(node => node.data.success !== undefined);
 
 		const successfulWorkflows = completedWorkflows.filter(node => node.data.success);
-		const totalDuration = completedWorkflows.reduce((sum, node) =>
-			sum + (node.data.duration || 0), 0
+		const totalDuration = completedWorkflows.reduce(
+			(sum, node) => sum + (node.data.duration || 0),
+			0
 		);
 
 		return {
 			totalAgents: this.agents.size,
 			activeWorkflows: this.activeWorkflows.size,
 			completedWorkflows: completedWorkflows.length,
-			averageExecutionTime: completedWorkflows.length > 0 ?
-				totalDuration / completedWorkflows.length : 0,
-			successRate: completedWorkflows.length > 0 ?
-				successfulWorkflows.length / completedWorkflows.length : 0
+			averageExecutionTime:
+				completedWorkflows.length > 0 ? totalDuration / completedWorkflows.length : 0,
+			successRate:
+				completedWorkflows.length > 0 ? successfulWorkflows.length / completedWorkflows.length : 0,
 		};
 	}
 }

@@ -3,15 +3,17 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth } from '../../../../lib/auth-middleware';
-import { FirestoreService, adminAuth, adminDb, type UserDocument } from '../../../../lib/firebase-admin';
+import {
+	FirestoreService,
+	adminAuth,
+	adminDb,
+	type UserDocument,
+} from '../../../../lib/firebase-admin';
 
 /**
  * GET /api/users/[id] - Get a specific user (admin only)
  */
-export async function GET(
-	req: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	return withAdminAuth(async (request, user) => {
 		try {
 			const { id: userId } = await params;
@@ -19,10 +21,7 @@ export async function GET(
 			// Get user document from Firestore
 			const userDoc = await FirestoreService.getUserDocument(userId);
 			if (!userDoc) {
-				return NextResponse.json(
-					{ error: 'User not found' },
-					{ status: 404 }
-				);
+				return NextResponse.json({ error: 'User not found' }, { status: 404 });
 			}
 
 			// Log audit entry
@@ -34,8 +33,8 @@ export async function GET(
 				details: {
 					action: 'Viewed user profile',
 					targetEmail: userDoc.email,
-					targetRole: userDoc.role
-				}
+					targetRole: userDoc.role,
+				},
 			});
 
 			// Remove sensitive data before returning
@@ -45,15 +44,12 @@ export async function GET(
 				success: true,
 				user: {
 					id: userId,
-					...safeUserData
-				}
+					...safeUserData,
+				},
 			});
 		} catch (error) {
 			console.error('Error getting user:', error);
-			return NextResponse.json(
-				{ error: 'Failed to retrieve user' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to retrieve user' }, { status: 500 });
 		}
 	})(req);
 }
@@ -61,10 +57,7 @@ export async function GET(
 /**
  * PUT /api/users/[id] - Update a specific user (admin only)
  */
-export async function PUT(
-	req: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	return withAdminAuth(async (request, user) => {
 		try {
 			const { id: userId } = await params;
@@ -73,10 +66,7 @@ export async function PUT(
 			// Validate user exists
 			const existingUser = await FirestoreService.getUserDocument(userId);
 			if (!existingUser) {
-				return NextResponse.json(
-					{ error: 'User not found' },
-					{ status: 404 }
-				);
+				return NextResponse.json({ error: 'User not found' }, { status: 404 });
 			}
 
 			// Validate update data
@@ -134,8 +124,8 @@ export async function PUT(
 					action: 'Updated user profile',
 					updatedFields: Object.keys(filteredData),
 					previousEmail: existingUser.email,
-					newEmail: filteredData.email || existingUser.email
-				}
+					newEmail: filteredData.email || existingUser.email,
+				},
 			});
 
 			// Get updated user data
@@ -147,15 +137,12 @@ export async function PUT(
 				message: 'User updated successfully',
 				user: {
 					id: userId,
-					...safeUserData
-				}
+					...safeUserData,
+				},
 			});
 		} catch (error) {
 			console.error('Error updating user:', error);
-			return NextResponse.json(
-				{ error: 'Failed to update user' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
 		}
 	})(req);
 }
@@ -163,29 +150,20 @@ export async function PUT(
 /**
  * DELETE /api/users/[id] - Delete a specific user (admin only)
  */
-export async function DELETE(
-	req: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	return withAdminAuth(async (request, user) => {
 		try {
 			const { id: userId } = await params;
 
 			// Don't allow deleting yourself
 			if (userId === user.uid) {
-				return NextResponse.json(
-					{ error: 'Cannot delete your own account' },
-					{ status: 403 }
-				);
+				return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 403 });
 			}
 
 			// Validate user exists
 			const existingUser = await FirestoreService.getUserDocument(userId);
 			if (!existingUser) {
-				return NextResponse.json(
-					{ error: 'User not found' },
-					{ status: 404 }
-				);
+				return NextResponse.json({ error: 'User not found' }, { status: 404 });
 			}
 
 			// Prevent deleting superadmin unless you are superadmin
@@ -211,20 +189,17 @@ export async function DELETE(
 				details: {
 					action: 'Deleted user account',
 					deletedUserEmail: existingUser.email,
-					deletedUserRole: existingUser.role
-				}
+					deletedUserRole: existingUser.role,
+				},
 			});
 
 			return NextResponse.json({
 				success: true,
-				message: 'User deleted successfully'
+				message: 'User deleted successfully',
 			});
 		} catch (error) {
 			console.error('Error deleting user:', error);
-			return NextResponse.json(
-				{ error: 'Failed to delete user' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
 		}
 	})(req);
 }

@@ -28,7 +28,8 @@ export abstract class AbstractText {
 	}
 
 	getLineLength(lineNumber: number): number {
-		return this.getValueOfRange(new Range(lineNumber, 1, lineNumber, Number.MAX_SAFE_INTEGER)).length;
+		return this.getValueOfRange(new Range(lineNumber, 1, lineNumber, Number.MAX_SAFE_INTEGER))
+			.length;
 	}
 
 	private _transformer: PositionOffsetTransformer | undefined = undefined;
@@ -62,7 +63,10 @@ export class LineBasedText extends AbstractText {
 
 	override getValueOfRange(range: Range): string {
 		if (range.startLineNumber === range.endLineNumber) {
-			return this._getLineContent(range.startLineNumber).substring(range.startColumn - 1, range.endColumn - 1);
+			return this._getLineContent(range.startLineNumber).substring(
+				range.startColumn - 1,
+				range.endColumn - 1
+			);
 		}
 		let result = this._getLineContent(range.startLineNumber).substring(range.startColumn - 1);
 		for (let i = range.startLineNumber + 1; i < range.endLineNumber; i++) {
@@ -84,10 +88,7 @@ export class LineBasedText extends AbstractText {
 
 export class ArrayText extends LineBasedText {
 	constructor(lines: string[]) {
-		super(
-			lineNumber => lines[lineNumber - 1],
-			lines.length
-		);
+		super(lineNumber => lines[lineNumber - 1], lines.length);
 	}
 }
 

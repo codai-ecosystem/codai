@@ -112,7 +112,10 @@ export class TestId {
 	 * todo@connor4312: review usages of this to see if using the WellDefinedPrefixTree is better
 	 */
 	public static isChild(maybeParent: string, maybeChild: string) {
-		return maybeChild[maybeParent.length] === TestIdPathParts.Delimiter && maybeChild.startsWith(maybeParent);
+		return (
+			maybeChild[maybeParent.length] === TestIdPathParts.Delimiter &&
+			maybeChild.startsWith(maybeParent)
+		);
 	}
 
 	/**
@@ -158,7 +161,7 @@ export class TestId {
 
 	constructor(
 		public readonly path: readonly string[],
-		private readonly viewEnd = path.length,
+		private readonly viewEnd = path.length
 	) {
 		if (path.length === 0 || viewEnd < 1) {
 			throw new Error('cannot create test with empty path');

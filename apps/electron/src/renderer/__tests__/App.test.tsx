@@ -48,7 +48,7 @@ vi.mock('@aide/ui-components', () => ({
 			<input
 				data-testid="message-input"
 				placeholder={placeholder}
-				onKeyDown={(e) => {
+				onKeyDown={e => {
 					if (e.key === 'Enter') {
 						onSendMessage((e.target as HTMLInputElement).value);
 						(e.target as HTMLInputElement).value = '';
@@ -64,12 +64,8 @@ vi.mock('@aide/ui-components', () => ({
 			{selectedNodeId && <div data-testid="selected-node">{selectedNodeId}</div>}
 		</div>
 	),
-	Sidebar: ({ children }: any) => (
-		<div data-testid="sidebar">{children}</div>
-	),
-	StatusBar: ({ children }: any) => (
-		<div data-testid="status-bar">{children}</div>
-	),
+	Sidebar: ({ children }: any) => <div data-testid="sidebar">{children}</div>,
+	StatusBar: ({ children }: any) => <div data-testid="status-bar">{children}</div>,
 	Button: ({ children, onClick }: any) => (
 		<button data-testid="button" onClick={onClick}>
 			{children}
@@ -140,9 +136,12 @@ describe('App', () => {
 		});
 
 		// Should add assistant response after delay
-		await waitFor(() => {
-			expect(screen.getByText(/I received your message/)).toBeInTheDocument();
-		}, { timeout: 2000 });
+		await waitFor(
+			() => {
+				expect(screen.getByText(/I received your message/)).toBeInTheDocument();
+			},
+			{ timeout: 2000 }
+		);
 	});
 
 	it('should show loading state when sending message', async () => {

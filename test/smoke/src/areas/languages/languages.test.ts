@@ -9,7 +9,6 @@ import { installAllHandlers } from '../../utils';
 
 export function setup(logger: Logger) {
 	describe('Language Features', () => {
-
 		// Shared before/after handling
 		installAllHandlers(logger);
 
@@ -24,7 +23,9 @@ export function setup(logger: Logger) {
 
 		it('verifies quick outline (css)', async function () {
 			const app = this.app as Application;
-			await app.workbench.quickaccess.openFile(join(app.workspacePathOrFolder, 'public', 'stylesheets', 'style.css'));
+			await app.workbench.quickaccess.openFile(
+				join(app.workspacePathOrFolder, 'public', 'stylesheets', 'style.css')
+			);
 
 			await app.workbench.quickaccess.openQuickOutline();
 			await app.workbench.quickinput.waitForQuickInputElements(names => names.length === 2);
@@ -33,7 +34,9 @@ export function setup(logger: Logger) {
 
 		it('verifies problems view (css)', async function () {
 			const app = this.app as Application;
-			await app.workbench.quickaccess.openFile(join(app.workspacePathOrFolder, 'public', 'stylesheets', 'style.css'));
+			await app.workbench.quickaccess.openFile(
+				join(app.workspacePathOrFolder, 'public', 'stylesheets', 'style.css')
+			);
 			await app.workbench.editor.waitForTypeInEditor('style.css', '.foo{}');
 
 			await app.code.waitForElement(Problems.getSelectorInEditor(ProblemSeverity.WARNING));
@@ -46,7 +49,9 @@ export function setup(logger: Logger) {
 		it('verifies settings (css)', async function () {
 			const app = this.app as Application;
 			await app.workbench.settingsEditor.addUserSetting('css.lint.emptyRules', '"error"');
-			await app.workbench.quickaccess.openFile(join(app.workspacePathOrFolder, 'public', 'stylesheets', 'style.css'));
+			await app.workbench.quickaccess.openFile(
+				join(app.workspacePathOrFolder, 'public', 'stylesheets', 'style.css')
+			);
 
 			await app.code.waitForElement(Problems.getSelectorInEditor(ProblemSeverity.ERROR));
 

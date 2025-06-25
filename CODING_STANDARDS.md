@@ -30,19 +30,20 @@ This document outlines the coding standards and best practices for the AIDE plat
 - Use descriptive names that clearly convey purpose
 
 Examples:
+
 ```typescript
 // Good
 const userProfile = fetchUserProfile();
-function calculateTotalPrice(items) { }
-class UserRepository { }
-interface ApiResponse { }
+function calculateTotalPrice(items) {}
+class UserRepository {}
+interface ApiResponse {}
 const MAX_RETRY_COUNT = 3;
 
 // Bad
 const up = fetchUserProfile();
-function calc(i) { }
-class UR { }
-interface resp { }
+function calc(i) {}
+class UR {}
+interface resp {}
 const max = 3;
 ```
 
@@ -55,6 +56,7 @@ const max = 3;
 - Open curly braces on the same line as the statement
 
 Example:
+
 ```typescript
 // Good
 if (condition) {
@@ -62,12 +64,10 @@ if (condition) {
 }
 
 // Bad
-if (condition)
-	doSomething();
+if (condition) doSomething();
 
 // Also bad
-if (condition)
-{
+if (condition) {
 	doSomething();
 }
 ```
@@ -80,6 +80,7 @@ if (condition)
 - Use inline comments sparingly and only when necessary
 
 Example:
+
 ```typescript
 /**
  * Fetches user data from the database
@@ -104,6 +105,7 @@ async function fetchUserData(userId: string): Promise<UserData> {
 - Use generics for reusable components and functions
 
 Example:
+
 ```typescript
 // Define interface for object shape
 interface User {
@@ -130,6 +132,7 @@ function getFirstItem<T>(items: T[]): T | undefined {
 - Use the nullish coalescing operator (`??`) for fallback values
 
 Example:
+
 ```typescript
 // Good
 interface Config {
@@ -160,6 +163,7 @@ function initialize(config: Config | null) {
 - Use custom hooks to share logic between components
 
 Example:
+
 ```typescript
 // Good
 function UserProfile({ userId }: UserProfileProps) {
@@ -198,6 +202,7 @@ function useUser(userId: string) {
 - Keep prop lists small; consider breaking up complex components
 
 Example:
+
 ```typescript
 interface ButtonProps {
 	label: string;
@@ -206,12 +211,7 @@ interface ButtonProps {
 	disabled?: boolean;
 }
 
-function Button({
-	label,
-	onClick,
-	variant = 'primary',
-	disabled = false
-}: ButtonProps) {
+function Button({ label, onClick, variant = 'primary', disabled = false }: ButtonProps) {
 	// Implementation
 }
 ```
@@ -226,6 +226,7 @@ function Button({
 - Implement retry logic for transient failures
 
 Example:
+
 ```typescript
 interface GetUserRequest {
 	userId: string;
@@ -256,6 +257,7 @@ class UserApiClient {
 - Provide user-friendly error messages
 
 Example:
+
 ```typescript
 class ApiError extends Error {
 	constructor(
@@ -276,7 +278,7 @@ function handleApiError(error: any) {
 			code: error.code,
 			status: error.statusCode,
 			message: error.message,
-			details: error.details
+			details: error.details,
 		});
 		// Return user-friendly message
 		return `Operation failed: ${getUserFriendlyMessage(error)}`;
@@ -299,13 +301,14 @@ function handleApiError(error: any) {
 - Test both success and failure cases
 
 Example:
+
 ```typescript
 describe('calculateTotalPrice', () => {
 	test('should calculate total price with tax for multiple items', () => {
 		// Arrange
 		const items = [
 			{ name: 'Item 1', price: 10 },
-			{ name: 'Item 2', price: 20 }
+			{ name: 'Item 2', price: 20 },
 		];
 		const taxRate = 0.1;
 
@@ -361,6 +364,7 @@ describe('calculateTotalPrice', () => {
 - Use transactions for related operations
 
 Example:
+
 ```typescript
 // Good - Retrieve only what's needed
 const userRef = doc(db, 'users', userId);
@@ -389,13 +393,14 @@ const user = usersSnap.docs.find(doc => doc.id === userId);
 - Implement rate limiting for API endpoints
 
 Example:
+
 ```typescript
 import { z } from 'zod';
 
 const UserSchema = z.object({
 	name: z.string().min(2).max(100),
 	email: z.string().email(),
-	age: z.number().int().positive().optional()
+	age: z.number().int().positive().optional(),
 });
 
 function createUser(data: unknown) {
@@ -425,6 +430,7 @@ function createUser(data: unknown) {
 - Reference issue numbers when applicable
 
 Example:
+
 ```
 feat(user): add password reset functionality
 
@@ -459,5 +465,5 @@ Remember that these standards may evolve over time as the project grows and new 
 
 ---
 
-*Coding Standards Document Version: 1.0*
-*Last Updated: June 5, 2025*
+_Coding Standards Document Version: 1.0_
+_Last Updated: June 5, 2025_

@@ -5,7 +5,6 @@
 import { URI } from '../../../../base/common/uri.js';
 import { testUrlMatchesGlob } from './urlGlob.js';
 
-
 /**
  * Check whether a domain like https://www.microsoft.com matches
  * the list of trusted domains.
@@ -48,7 +47,9 @@ export function normalizeURL(url: string | URI): string {
 		} else {
 			return parsed.toString(true);
 		}
-	} catch { return url.toString(); }
+	} catch {
+		return url.toString();
+	}
 }
 const rLocalhost = /^localhost(:\d+)?$/i;
 const r127 = /^127.0.0.1(:\d+)?$/;
@@ -56,4 +57,3 @@ const r127 = /^127.0.0.1(:\d+)?$/;
 export function isLocalhostAuthority(authority: string) {
 	return rLocalhost.test(authority) || r127.test(authority);
 }
-

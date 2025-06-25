@@ -4,7 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IFilter, matchesFuzzy, matchesFuzzy2 } from '../../../../base/common/filters.js';
-import { IExpression, splitGlobAware, getEmptyExpression, ParsedExpression, parse } from '../../../../base/common/glob.js';
+import {
+	IExpression,
+	splitGlobAware,
+	getEmptyExpression,
+	ParsedExpression,
+	parse,
+} from '../../../../base/common/glob.js';
 import * as strings from '../../../../base/common/strings.js';
 import { URI } from '../../../../base/common/uri.js';
 import { relativePath } from '../../../../base/common/resources.js';
@@ -12,9 +18,11 @@ import { TernarySearchTree } from '../../../../base/common/ternarySearchTree.js'
 import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
 
 export class ResourceGlobMatcher {
-
 	private readonly globalExpression: ParsedExpression;
-	private readonly expressionsByRoot: TernarySearchTree<URI, { root: URI; expression: ParsedExpression }>;
+	private readonly expressionsByRoot: TernarySearchTree<
+		URI,
+		{ root: URI; expression: ParsedExpression }
+	>;
 
 	constructor(
 		globalExpression: IExpression,
@@ -22,9 +30,14 @@ export class ResourceGlobMatcher {
 		uriIdentityService: IUriIdentityService
 	) {
 		this.globalExpression = parse(globalExpression);
-		this.expressionsByRoot = TernarySearchTree.forUris<{ root: URI; expression: ParsedExpression }>(uri => uriIdentityService.extUri.ignorePathCasing(uri));
+		this.expressionsByRoot = TernarySearchTree.forUris<{ root: URI; expression: ParsedExpression }>(
+			uri => uriIdentityService.extUri.ignorePathCasing(uri)
+		);
 		for (const expression of rootExpressions) {
-			this.expressionsByRoot.set(expression.root, { root: expression.root, expression: parse(expression.expression) });
+			this.expressionsByRoot.set(expression.root, {
+				root: expression.root,
+				expression: parse(expression.expression),
+			});
 		}
 	}
 
@@ -41,7 +54,6 @@ export class ResourceGlobMatcher {
 }
 
 export class FilterOptions {
-
 	static readonly _filter: IFilter = matchesFuzzy2;
 	static readonly _messageFilter: IFilter = matchesFuzzy;
 
@@ -52,7 +64,9 @@ export class FilterOptions {
 	readonly excludesMatcher: ResourceGlobMatcher;
 	readonly includesMatcher: ResourceGlobMatcher;
 
-	static EMPTY(uriIdentityService: IUriIdentityService) { return new FilterOptions('', [], false, false, false, uriIdentityService); }
+	static EMPTY(uriIdentityService: IUriIdentityService) {
+		return new FilterOptions('', [], false, false, false, uriIdentityService);
+	}
 
 	constructor(
 		readonly filter: string,
@@ -68,7 +82,9 @@ export class FilterOptions {
 		this.showInfos = showInfos;
 
 		const filesExcludeByRoot = Array.isArray(filesExclude) ? filesExclude : [];
-		const excludesExpression: IExpression = Array.isArray(filesExclude) ? getEmptyExpression() : filesExclude;
+		const excludesExpression: IExpression = Array.isArray(filesExclude)
+			? getEmptyExpression()
+			: filesExclude;
 
 		for (const { expression } of filesExcludeByRoot) {
 			for (const pattern of Object.keys(expression)) {
@@ -84,7 +100,9 @@ export class FilterOptions {
 		const includeExpression: IExpression = getEmptyExpression();
 
 		if (filter) {
-			const filters = splitGlobAware(filter, ',').map(s => s.trim()).filter(s => !!s.length);
+			const filters = splitGlobAware(filter, ',')
+				.map(s => s.trim())
+				.filter(s => !!s.length);
 			for (const f of filters) {
 				if (f.startsWith('!')) {
 					const filterText = strings.ltrim(f, '!');
@@ -97,7 +115,11 @@ export class FilterOptions {
 			}
 		}
 
-		this.excludesMatcher = new ResourceGlobMatcher(excludesExpression, filesExcludeByRoot, uriIdentityService);
+		this.excludesMatcher = new ResourceGlobMatcher(
+			excludesExpression,
+			filesExcludeByRoot,
+			uriIdentityService
+		);
 		this.includesMatcher = new ResourceGlobMatcher(includeExpression, [], uriIdentityService);
 	}
 

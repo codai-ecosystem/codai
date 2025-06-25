@@ -33,7 +33,8 @@ export function getLanguageParticipants(): LanguageParticipants {
 	let autoInsert = new Set<string>();
 
 	function update() {
-		const oldLanguages = languages, oldAutoInsert = autoInsert;
+		const oldLanguages = languages,
+			oldAutoInsert = autoInsert;
 
 		languages = new Set();
 		languages.add('html');
@@ -41,7 +42,8 @@ export function getLanguageParticipants(): LanguageParticipants {
 		autoInsert.add('html');
 
 		for (const extension of extensions.allAcrossExtensionHosts) {
-			const htmlLanguageParticipants = extension.packageJSON?.contributes?.htmlLanguageParticipants as LanguageParticipantContribution[];
+			const htmlLanguageParticipants = extension.packageJSON?.contributes
+				?.htmlLanguageParticipants as LanguageParticipantContribution[];
 			if (Array.isArray(htmlLanguageParticipants)) {
 				for (const htmlLanguageParticipant of htmlLanguageParticipants) {
 					const languageId = htmlLanguageParticipant.languageId;
@@ -66,10 +68,16 @@ export function getLanguageParticipants(): LanguageParticipants {
 
 	return {
 		onDidChange: onDidChangeEmmiter.event,
-		get documentSelector() { return Array.from(languages); },
-		hasLanguage(languageId: string) { return languages.has(languageId); },
-		useAutoInsert(languageId: string) { return autoInsert.has(languageId); },
-		dispose: () => changeListener.dispose()
+		get documentSelector() {
+			return Array.from(languages);
+		},
+		hasLanguage(languageId: string) {
+			return languages.has(languageId);
+		},
+		useAutoInsert(languageId: string) {
+			return autoInsert.has(languageId);
+		},
+		dispose: () => changeListener.dispose(),
 	};
 }
 

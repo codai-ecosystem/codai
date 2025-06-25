@@ -26,7 +26,11 @@ suite('TestExplorerFilterState', () => {
 
 	const assertFilteringFor = (expected: { [T in TestFilterTerm]?: boolean }) => {
 		for (const [term, expectation] of Object.entries(expected)) {
-			assert.strictEqual(t.isFilteringFor(term as TestFilterTerm), expectation, `expected filtering for ${term} === ${expectation}`);
+			assert.strictEqual(
+				t.isFilteringFor(term as TestFilterTerm),
+				expectation,
+				`expected filtering for ${term} === ${expectation}`
+			);
 		}
 	};
 
@@ -39,7 +43,10 @@ suite('TestExplorerFilterState', () => {
 
 	test('filters simple globs', () => {
 		t.setText('hello, !world');
-		assert.deepStrictEqual(t.globList, [{ text: 'hello', include: true }, { text: 'world', include: false }]);
+		assert.deepStrictEqual(t.globList, [
+			{ text: 'hello', include: true },
+			{ text: 'world', include: false },
+		]);
 		assert.deepStrictEqual(t.includeTags, new Set());
 		assert.deepStrictEqual(t.excludeTags, new Set());
 		assertFilteringFor(termFiltersOff);
@@ -66,7 +73,10 @@ suite('TestExplorerFilterState', () => {
 
 	test('filters to mixed terms and tags', () => {
 		t.setText('@hello:world foo, !bar @doc !@foo:bar');
-		assert.deepStrictEqual(t.globList, [{ text: 'foo', include: true }, { text: 'bar', include: false }]);
+		assert.deepStrictEqual(t.globList, [
+			{ text: 'foo', include: true },
+			{ text: 'bar', include: false },
+		]);
 		assert.deepStrictEqual(t.includeTags, new Set(['hello\0world']));
 		assert.deepStrictEqual(t.excludeTags, new Set(['foo\0bar']));
 		assertFilteringFor({

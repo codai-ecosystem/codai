@@ -10,7 +10,7 @@ describe('ModernAIService', () => {
 	it('should create service with OpenAI config', () => {
 		const config: LLMModelConfig = {
 			...modernAIConfigs.openai,
-			apiKey: 'test-key'
+			apiKey: 'test-key',
 		};
 
 		const service = createModernAIService(config);
@@ -22,7 +22,7 @@ describe('ModernAIService', () => {
 	it('should create service with Anthropic config', () => {
 		const config: LLMModelConfig = {
 			...modernAIConfigs.anthropic,
-			apiKey: 'test-key'
+			apiKey: 'test-key',
 		};
 
 		const service = createModernAIService(config);
@@ -34,7 +34,7 @@ describe('ModernAIService', () => {
 	it('should create service with Google config', () => {
 		const config: LLMModelConfig = {
 			...modernAIConfigs.google,
-			apiKey: 'test-key'
+			apiKey: 'test-key',
 		};
 
 		const service = createModernAIService(config);
@@ -46,7 +46,7 @@ describe('ModernAIService', () => {
 	it('should update configuration', () => {
 		const config: LLMModelConfig = {
 			...modernAIConfigs.openai,
-			apiKey: 'test-key'
+			apiKey: 'test-key',
 		};
 
 		const service = createModernAIService(config);
@@ -58,7 +58,7 @@ describe('ModernAIService', () => {
 	it('should estimate token count', async () => {
 		const config: LLMModelConfig = {
 			...modernAIConfigs.openai,
-			apiKey: 'test-key'
+			apiKey: 'test-key',
 		};
 
 		const service = createModernAIService(config);

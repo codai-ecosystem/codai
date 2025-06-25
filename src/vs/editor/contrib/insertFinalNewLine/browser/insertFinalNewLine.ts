@@ -4,20 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { EditorAction, registerEditorAction, ServicesAccessor } from '../../../browser/editorExtensions.js';
+import {
+	EditorAction,
+	registerEditorAction,
+	ServicesAccessor,
+} from '../../../browser/editorExtensions.js';
 import { InsertFinalNewLineCommand } from './insertFinalNewLineCommand.js';
 import { EditorContextKeys } from '../../../common/editorContextKeys.js';
 import * as nls from '../../../../nls.js';
 
 export class InsertFinalNewLineAction extends EditorAction {
-
 	public static readonly ID = 'editor.action.insertFinalNewLine';
 
 	constructor() {
 		super({
 			id: InsertFinalNewLineAction.ID,
-			label: nls.localize2('insertFinalNewLine', "Insert Final New Line"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('insertFinalNewLine', 'Insert Final New Line'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 

@@ -4,8 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { reverseOrder, compareBy, numberComparator } from '../../../../base/common/arrays.js';
-import { observableValue, observableSignalFromEvent, autorunWithStore, IReader } from '../../../../base/common/observable.js';
-import { HideUnchangedRegionsFeature, IDiffEditorBreadcrumbsSource } from '../../../browser/widget/diffEditor/features/hideUnchangedRegionsFeature.js';
+import {
+	observableValue,
+	observableSignalFromEvent,
+	autorunWithStore,
+	IReader,
+} from '../../../../base/common/observable.js';
+import {
+	HideUnchangedRegionsFeature,
+	IDiffEditorBreadcrumbsSource,
+} from '../../../browser/widget/diffEditor/features/hideUnchangedRegionsFeature.js';
 import { DisposableCancellationTokenSource } from '../../../browser/widget/diffEditor/utils.js';
 import { LineRange } from '../../../common/core/ranges/lineRange.js';
 import { ITextModel } from '../../../common/model.js';
@@ -21,7 +29,7 @@ class DiffEditorBreadcrumbsSource extends Disposable implements IDiffEditorBread
 	constructor(
 		private readonly _textModel: ITextModel,
 		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IOutlineModelService private readonly _outlineModelService: IOutlineModelService,
+		@IOutlineModelService private readonly _outlineModelService: IOutlineModelService
 	) {
 		super();
 
@@ -32,28 +40,54 @@ class DiffEditorBreadcrumbsSource extends Disposable implements IDiffEditorBread
 
 		const textModelChanged = observableSignalFromEvent(
 			'_textModel.onDidChangeContent',
-			Event.debounce<any>(e => this._textModel.onDidChangeContent(e), () => undefined, 100)
+			Event.debounce<any>(
+				e => this._textModel.onDidChangeContent(e),
+				() => undefined,
+				100
+			)
 		);
 
-		this._register(autorunWithStore(async (reader, store) => {
-			documentSymbolProviderChanged.read(reader);
-			textModelChanged.read(reader);
+		this._register(
+			autorunWithStore(async (reader, store) => {
+				documentSymbolProviderChanged.read(reader);
+				textModelChanged.read(reader);
 
-			const src = store.add(new DisposableCancellationTokenSource());
-			const model = await this._outlineModelService.getOrCreate(this._textModel, src.token);
-			if (store.isDisposed) { return; }
+				const src = store.add(new DisposableCancellationTokenSource());
+				const model = await this._outlineModelService.getOrCreate(this._textModel, src.token);
+				if (store.isDisposed) {
+					return;
+				}
 
-			this._currentModel.set(model, undefined);
-		}));
+				this._currentModel.set(model, undefined);
+			})
+		);
 	}
 
-	public getBreadcrumbItems(startRange: LineRange, reader: IReader): { name: string; kind: SymbolKind; startLineNumber: number }[] {
+	public getBreadcrumbItems(
+		startRange: LineRange,
+		reader: IReader
+	): { name: string; kind: SymbolKind; startLineNumber: number }[] {
 		const m = this._currentModel.read(reader);
-		if (!m) { return []; }
-		const symbols = m.asListOfDocumentSymbols()
-			.filter(s => startRange.contains(s.range.startLineNumber) && !startRange.contains(s.range.endLineNumber));
-		symbols.sort(reverseOrder(compareBy(s => s.range.endLineNumber - s.range.startLineNumber, numberComparator)));
-		return symbols.map(s => ({ name: s.name, kind: s.kind, startLineNumber: s.range.startLineNumber }));
+		if (!m) {
+			return [];
+		}
+		const symbols = m
+			.asListOfDocumentSymbols()
+			.filter(
+				s =>
+					startRange.contains(s.range.startLineNumber) &&
+					!startRange.contains(s.range.endLineNumber)
+			);
+		symbols.sort(
+			reverseOrder(
+				compareBy(s => s.range.endLineNumber - s.range.startLineNumber, numberComparator)
+			)
+		);
+		return symbols.map(s => ({
+			name: s.name,
+			kind: s.kind,
+			startLineNumber: s.range.startLineNumber,
+		}));
 	}
 }
 

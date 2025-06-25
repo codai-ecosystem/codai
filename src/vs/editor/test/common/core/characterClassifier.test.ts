@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { CharacterClassifier } from '../../../common/core/characterClassifier.js';
 
 suite('CharacterClassifier', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('works', () => {
@@ -36,5 +35,4 @@ suite('CharacterClassifier', () => {
 		assert.strictEqual(classifier.get(1000), 3);
 		assert.strictEqual(classifier.get(2000), 0);
 	});
-
 });

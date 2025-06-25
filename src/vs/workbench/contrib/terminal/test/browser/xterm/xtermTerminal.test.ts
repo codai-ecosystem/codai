@@ -15,14 +15,33 @@ import { TestConfigurationService } from '../../../../../../platform/configurati
 import { TestInstantiationService } from '../../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 import { TerminalCapabilityStore } from '../../../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
 import { IThemeService } from '../../../../../../platform/theme/common/themeService.js';
-import { TestColorTheme, TestThemeService } from '../../../../../../platform/theme/test/common/testThemeService.js';
+import {
+	TestColorTheme,
+	TestThemeService,
+} from '../../../../../../platform/theme/test/common/testThemeService.js';
 import { PANEL_BACKGROUND, SIDE_BAR_BACKGROUND } from '../../../../../common/theme.js';
-import { IViewDescriptor, IViewDescriptorService, ViewContainerLocation } from '../../../../../common/views.js';
+import {
+	IViewDescriptor,
+	IViewDescriptorService,
+	ViewContainerLocation,
+} from '../../../../../common/views.js';
 import { XtermTerminal } from '../../../browser/xterm/xtermTerminal.js';
 import { ITerminalConfiguration, TERMINAL_VIEW_ID } from '../../../common/terminal.js';
-import { registerColors, TERMINAL_BACKGROUND_COLOR, TERMINAL_CURSOR_BACKGROUND_COLOR, TERMINAL_CURSOR_FOREGROUND_COLOR, TERMINAL_FOREGROUND_COLOR, TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR, TERMINAL_SELECTION_BACKGROUND_COLOR, TERMINAL_SELECTION_FOREGROUND_COLOR } from '../../../common/terminalColorRegistry.js';
+import {
+	registerColors,
+	TERMINAL_BACKGROUND_COLOR,
+	TERMINAL_CURSOR_BACKGROUND_COLOR,
+	TERMINAL_CURSOR_FOREGROUND_COLOR,
+	TERMINAL_FOREGROUND_COLOR,
+	TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR,
+	TERMINAL_SELECTION_BACKGROUND_COLOR,
+	TERMINAL_SELECTION_FOREGROUND_COLOR,
+} from '../../../common/terminalColorRegistry.js';
 import { workbenchInstantiationService } from '../../../../../test/browser/workbenchTestServices.js';
-import { IXtermAddonNameToCtor, XtermAddonImporter } from '../../../browser/xterm/xtermAddonImporter.js';
+import {
+	IXtermAddonNameToCtor,
+	XtermAddonImporter,
+} from '../../../browser/xterm/xtermAddonImporter.js';
 
 registerColors();
 
@@ -42,11 +61,13 @@ class TestWebglAddon implements WebglAddon {
 	dispose() {
 		TestWebglAddon.isEnabled = false;
 	}
-	clearTextureAtlas() { }
+	clearTextureAtlas() {}
 }
 
 class TestXtermAddonImporter extends XtermAddonImporter {
-	override async importAddon<T extends keyof IXtermAddonNameToCtor>(name: T): Promise<IXtermAddonNameToCtor[T]> {
+	override async importAddon<T extends keyof IXtermAddonNameToCtor>(
+		name: T
+	): Promise<IXtermAddonNameToCtor[T]> {
 		if (name === 'webgl') {
 			return Promise.resolve(TestWebglAddon) as any;
 		}
@@ -56,7 +77,11 @@ class TestXtermAddonImporter extends XtermAddonImporter {
 
 export class TestViewDescriptorService implements Partial<IViewDescriptorService> {
 	private _location = ViewContainerLocation.Panel;
-	private _onDidChangeLocation = new Emitter<{ views: IViewDescriptor[]; from: ViewContainerLocation; to: ViewContainerLocation }>();
+	private _onDidChangeLocation = new Emitter<{
+		views: IViewDescriptor[];
+		from: ViewContainerLocation;
+		to: ViewContainerLocation;
+	}>();
 	onDidChangeLocation = this._onDidChangeLocation.event;
 	getViewLocationById(id: string) {
 		return this._location;
@@ -65,11 +90,9 @@ export class TestViewDescriptorService implements Partial<IViewDescriptorService
 		const oldLocation = this._location;
 		this._location = to;
 		this._onDidChangeLocation.fire({
-			views: [
-				{ id: TERMINAL_VIEW_ID } as any
-			],
+			views: [{ id: TERMINAL_VIEW_ID } as any],
 			from: oldLocation,
-			to
+			to,
 		});
 	}
 }
@@ -82,7 +105,7 @@ const defaultTerminalConfig: Partial<ITerminalConfiguration> = {
 	scrollback: 1000,
 	fastScrollSensitivity: 2,
 	mouseWheelScrollSensitivity: 1,
-	unicodeVersion: '6'
+	unicodeVersion: '6',
 };
 
 suite('XtermTerminal', () => {
@@ -98,30 +121,37 @@ suite('XtermTerminal', () => {
 		configurationService = new TestConfigurationService({
 			editor: {
 				fastScrollSensitivity: 2,
-				mouseWheelScrollSensitivity: 1
+				mouseWheelScrollSensitivity: 1,
 			} as Partial<IEditorOptions>,
 			files: {},
 			terminal: {
-				integrated: defaultTerminalConfig
-			}
+				integrated: defaultTerminalConfig,
+			},
 		});
 
-		instantiationService = workbenchInstantiationService({
-			configurationService: () => configurationService
-		}, store);
+		instantiationService = workbenchInstantiationService(
+			{
+				configurationService: () => configurationService,
+			},
+			store
+		);
 		themeService = instantiationService.get(IThemeService) as TestThemeService;
 
-		XTermBaseCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		XTermBaseCtor = (
+			await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')
+		).Terminal;
 
 		const capabilityStore = store.add(new TerminalCapabilityStore());
-		xterm = store.add(instantiationService.createInstance(XtermTerminal, XTermBaseCtor, {
-			cols: 80,
-			rows: 30,
-			xtermColorProvider: { getBackgroundColor: () => undefined },
-			capabilities: capabilityStore,
-			disableShellIntegrationReporting: true,
-			xtermAddonImporter: new TestXtermAddonImporter(),
-		}));
+		xterm = store.add(
+			instantiationService.createInstance(XtermTerminal, XTermBaseCtor, {
+				cols: 80,
+				rows: 30,
+				xtermColorProvider: { getBackgroundColor: () => undefined },
+				capabilities: capabilityStore,
+				disableShellIntegrationReporting: true,
+				xtermAddonImporter: new TestXtermAddonImporter(),
+			})
+		);
 
 		TestWebglAddon.shouldThrow = false;
 		TestWebglAddon.isEnabled = false;
@@ -134,54 +164,62 @@ suite('XtermTerminal', () => {
 
 	suite('theme', () => {
 		test('should apply correct background color based on getBackgroundColor', () => {
-			themeService.setTheme(new TestColorTheme({
-				[PANEL_BACKGROUND]: '#ff0000',
-				[SIDE_BAR_BACKGROUND]: '#00ff00'
-			}));
-			xterm = store.add(instantiationService.createInstance(XtermTerminal, XTermBaseCtor, {
-				cols: 80,
-				rows: 30,
-				xtermAddonImporter: new TestXtermAddonImporter(),
-				xtermColorProvider: { getBackgroundColor: () => new Color(new RGBA(255, 0, 0)) },
-				capabilities: store.add(new TerminalCapabilityStore()),
-				disableShellIntegrationReporting: true,
-			}));
+			themeService.setTheme(
+				new TestColorTheme({
+					[PANEL_BACKGROUND]: '#ff0000',
+					[SIDE_BAR_BACKGROUND]: '#00ff00',
+				})
+			);
+			xterm = store.add(
+				instantiationService.createInstance(XtermTerminal, XTermBaseCtor, {
+					cols: 80,
+					rows: 30,
+					xtermAddonImporter: new TestXtermAddonImporter(),
+					xtermColorProvider: { getBackgroundColor: () => new Color(new RGBA(255, 0, 0)) },
+					capabilities: store.add(new TerminalCapabilityStore()),
+					disableShellIntegrationReporting: true,
+				})
+			);
 			strictEqual(xterm.raw.options.theme?.background, '#ff0000');
 		});
 		test('should react to and apply theme changes', () => {
-			themeService.setTheme(new TestColorTheme({
-				[TERMINAL_BACKGROUND_COLOR]: '#000100',
-				[TERMINAL_FOREGROUND_COLOR]: '#000200',
-				[TERMINAL_CURSOR_FOREGROUND_COLOR]: '#000300',
-				[TERMINAL_CURSOR_BACKGROUND_COLOR]: '#000400',
-				[TERMINAL_SELECTION_BACKGROUND_COLOR]: '#000500',
-				[TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR]: '#000600',
-				[TERMINAL_SELECTION_FOREGROUND_COLOR]: undefined,
-				'terminal.ansiBlack': '#010000',
-				'terminal.ansiRed': '#020000',
-				'terminal.ansiGreen': '#030000',
-				'terminal.ansiYellow': '#040000',
-				'terminal.ansiBlue': '#050000',
-				'terminal.ansiMagenta': '#060000',
-				'terminal.ansiCyan': '#070000',
-				'terminal.ansiWhite': '#080000',
-				'terminal.ansiBrightBlack': '#090000',
-				'terminal.ansiBrightRed': '#100000',
-				'terminal.ansiBrightGreen': '#110000',
-				'terminal.ansiBrightYellow': '#120000',
-				'terminal.ansiBrightBlue': '#130000',
-				'terminal.ansiBrightMagenta': '#140000',
-				'terminal.ansiBrightCyan': '#150000',
-				'terminal.ansiBrightWhite': '#160000',
-			}));
-			xterm = store.add(instantiationService.createInstance(XtermTerminal, XTermBaseCtor, {
-				cols: 80,
-				rows: 30,
-				xtermAddonImporter: new TestXtermAddonImporter(),
-				xtermColorProvider: { getBackgroundColor: () => undefined },
-				capabilities: store.add(new TerminalCapabilityStore()),
-				disableShellIntegrationReporting: true
-			}));
+			themeService.setTheme(
+				new TestColorTheme({
+					[TERMINAL_BACKGROUND_COLOR]: '#000100',
+					[TERMINAL_FOREGROUND_COLOR]: '#000200',
+					[TERMINAL_CURSOR_FOREGROUND_COLOR]: '#000300',
+					[TERMINAL_CURSOR_BACKGROUND_COLOR]: '#000400',
+					[TERMINAL_SELECTION_BACKGROUND_COLOR]: '#000500',
+					[TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR]: '#000600',
+					[TERMINAL_SELECTION_FOREGROUND_COLOR]: undefined,
+					'terminal.ansiBlack': '#010000',
+					'terminal.ansiRed': '#020000',
+					'terminal.ansiGreen': '#030000',
+					'terminal.ansiYellow': '#040000',
+					'terminal.ansiBlue': '#050000',
+					'terminal.ansiMagenta': '#060000',
+					'terminal.ansiCyan': '#070000',
+					'terminal.ansiWhite': '#080000',
+					'terminal.ansiBrightBlack': '#090000',
+					'terminal.ansiBrightRed': '#100000',
+					'terminal.ansiBrightGreen': '#110000',
+					'terminal.ansiBrightYellow': '#120000',
+					'terminal.ansiBrightBlue': '#130000',
+					'terminal.ansiBrightMagenta': '#140000',
+					'terminal.ansiBrightCyan': '#150000',
+					'terminal.ansiBrightWhite': '#160000',
+				})
+			);
+			xterm = store.add(
+				instantiationService.createInstance(XtermTerminal, XTermBaseCtor, {
+					cols: 80,
+					rows: 30,
+					xtermAddonImporter: new TestXtermAddonImporter(),
+					xtermColorProvider: { getBackgroundColor: () => undefined },
+					capabilities: store.add(new TerminalCapabilityStore()),
+					disableShellIntegrationReporting: true,
+				})
+			);
 			deepStrictEqual(xterm.raw.options.theme, {
 				background: undefined,
 				foreground: '#000200',
@@ -211,31 +249,33 @@ suite('XtermTerminal', () => {
 				brightCyan: '#150000',
 				brightWhite: '#160000',
 			});
-			themeService.setTheme(new TestColorTheme({
-				[TERMINAL_BACKGROUND_COLOR]: '#00010f',
-				[TERMINAL_FOREGROUND_COLOR]: '#00020f',
-				[TERMINAL_CURSOR_FOREGROUND_COLOR]: '#00030f',
-				[TERMINAL_CURSOR_BACKGROUND_COLOR]: '#00040f',
-				[TERMINAL_SELECTION_BACKGROUND_COLOR]: '#00050f',
-				[TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR]: '#00060f',
-				[TERMINAL_SELECTION_FOREGROUND_COLOR]: '#00070f',
-				'terminal.ansiBlack': '#01000f',
-				'terminal.ansiRed': '#02000f',
-				'terminal.ansiGreen': '#03000f',
-				'terminal.ansiYellow': '#04000f',
-				'terminal.ansiBlue': '#05000f',
-				'terminal.ansiMagenta': '#06000f',
-				'terminal.ansiCyan': '#07000f',
-				'terminal.ansiWhite': '#08000f',
-				'terminal.ansiBrightBlack': '#09000f',
-				'terminal.ansiBrightRed': '#10000f',
-				'terminal.ansiBrightGreen': '#11000f',
-				'terminal.ansiBrightYellow': '#12000f',
-				'terminal.ansiBrightBlue': '#13000f',
-				'terminal.ansiBrightMagenta': '#14000f',
-				'terminal.ansiBrightCyan': '#15000f',
-				'terminal.ansiBrightWhite': '#16000f',
-			}));
+			themeService.setTheme(
+				new TestColorTheme({
+					[TERMINAL_BACKGROUND_COLOR]: '#00010f',
+					[TERMINAL_FOREGROUND_COLOR]: '#00020f',
+					[TERMINAL_CURSOR_FOREGROUND_COLOR]: '#00030f',
+					[TERMINAL_CURSOR_BACKGROUND_COLOR]: '#00040f',
+					[TERMINAL_SELECTION_BACKGROUND_COLOR]: '#00050f',
+					[TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR]: '#00060f',
+					[TERMINAL_SELECTION_FOREGROUND_COLOR]: '#00070f',
+					'terminal.ansiBlack': '#01000f',
+					'terminal.ansiRed': '#02000f',
+					'terminal.ansiGreen': '#03000f',
+					'terminal.ansiYellow': '#04000f',
+					'terminal.ansiBlue': '#05000f',
+					'terminal.ansiMagenta': '#06000f',
+					'terminal.ansiCyan': '#07000f',
+					'terminal.ansiWhite': '#08000f',
+					'terminal.ansiBrightBlack': '#09000f',
+					'terminal.ansiBrightRed': '#10000f',
+					'terminal.ansiBrightGreen': '#11000f',
+					'terminal.ansiBrightYellow': '#12000f',
+					'terminal.ansiBrightBlue': '#13000f',
+					'terminal.ansiBrightMagenta': '#14000f',
+					'terminal.ansiBrightCyan': '#15000f',
+					'terminal.ansiBrightWhite': '#16000f',
+				})
+			);
 			deepStrictEqual(xterm.raw.options.theme, {
 				background: undefined,
 				foreground: '#00020f',

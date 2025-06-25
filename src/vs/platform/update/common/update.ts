@@ -49,7 +49,7 @@ export const enum StateType {
 export const enum UpdateType {
 	Setup,
 	Archive,
-	Snap
+	Snap,
 }
 
 export const enum DisablementReason {
@@ -71,14 +71,33 @@ export type Downloaded = { type: StateType.Downloaded; update: IUpdate };
 export type Updating = { type: StateType.Updating; update: IUpdate };
 export type Ready = { type: StateType.Ready; update: IUpdate };
 
-export type State = Uninitialized | Disabled | Idle | CheckingForUpdates | AvailableForDownload | Downloading | Downloaded | Updating | Ready;
+export type State =
+	| Uninitialized
+	| Disabled
+	| Idle
+	| CheckingForUpdates
+	| AvailableForDownload
+	| Downloading
+	| Downloaded
+	| Updating
+	| Ready;
 
 export const State = {
 	Uninitialized: upcast<Uninitialized>({ type: StateType.Uninitialized }),
 	Disabled: (reason: DisablementReason): Disabled => ({ type: StateType.Disabled, reason }),
-	Idle: (updateType: UpdateType, error?: string): Idle => ({ type: StateType.Idle, updateType, error }),
-	CheckingForUpdates: (explicit: boolean): CheckingForUpdates => ({ type: StateType.CheckingForUpdates, explicit }),
-	AvailableForDownload: (update: IUpdate): AvailableForDownload => ({ type: StateType.AvailableForDownload, update }),
+	Idle: (updateType: UpdateType, error?: string): Idle => ({
+		type: StateType.Idle,
+		updateType,
+		error,
+	}),
+	CheckingForUpdates: (explicit: boolean): CheckingForUpdates => ({
+		type: StateType.CheckingForUpdates,
+		explicit,
+	}),
+	AvailableForDownload: (update: IUpdate): AvailableForDownload => ({
+		type: StateType.AvailableForDownload,
+		update,
+	}),
 	Downloading: upcast<Downloading>({ type: StateType.Downloading }),
 	Downloaded: (update: IUpdate): Downloaded => ({ type: StateType.Downloaded, update }),
 	Updating: (update: IUpdate): Updating => ({ type: StateType.Updating, update }),

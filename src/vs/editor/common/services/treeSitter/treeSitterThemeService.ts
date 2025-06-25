@@ -6,11 +6,17 @@
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { IObservable, IReader } from '../../../../base/common/observable.js';
 
-export const ITreeSitterThemeService = createDecorator<ITreeSitterThemeService>('treeSitterThemeService');
+export const ITreeSitterThemeService =
+	createDecorator<ITreeSitterThemeService>('treeSitterThemeService');
 
 export interface ITreeSitterThemeService {
 	readonly _serviceBrand: undefined;
 	readonly onChange: IObservable<void>;
 
-	findMetadata(captureNames: string[], languageId: number, bracket: boolean, reader: IReader | undefined): number;
+	findMetadata(
+		captureNames: string[],
+		languageId: number,
+		bracket: boolean,
+		reader: IReader | undefined
+	): number;
 }

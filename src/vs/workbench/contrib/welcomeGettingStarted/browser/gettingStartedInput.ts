@@ -23,9 +23,11 @@ export interface GettingStartedEditorOptions extends IEditorOptions {
 }
 
 export class GettingStartedInput extends EditorInput {
-
 	static readonly ID = gettingStartedInputTypeId;
-	static readonly RESOURCE = URI.from({ scheme: Schemas.walkThrough, authority: 'vscode_getting_started_page' });
+	static readonly RESOURCE = URI.from({
+		scheme: Schemas.walkThrough,
+		authority: 'vscode_getting_started_page',
+	});
 	private _selectedCategory: string | undefined;
 	private _selectedStep: string | undefined;
 	private _showTelemetryNotice: boolean;
@@ -46,8 +48,8 @@ export class GettingStartedInput extends EditorInput {
 			resource: GettingStartedInput.RESOURCE,
 			options: {
 				override: GettingStartedInput.ID,
-				pinned: false
-			}
+				pinned: false,
+			},
 		};
 	}
 
@@ -66,8 +68,7 @@ export class GettingStartedInput extends EditorInput {
 		return false;
 	}
 
-	constructor(
-		options: GettingStartedEditorOptions) {
+	constructor(options: GettingStartedEditorOptions) {
 		super();
 		this._selectedCategory = options.selectedCategory;
 		this._selectedStep = options.selectedStep;
@@ -77,7 +78,9 @@ export class GettingStartedInput extends EditorInput {
 	}
 
 	override getName() {
-		return this.walkthroughPageTitle ? localize('walkthroughPageTitle', 'Walkthrough: {0}', this.walkthroughPageTitle) : localize('getStarted', "Welcome");
+		return this.walkthroughPageTitle
+			? localize('walkthroughPageTitle', 'Walkthrough: {0}', this.walkthroughPageTitle)
+			: localize('getStarted', 'Welcome');
 	}
 
 	get selectedCategory() {

@@ -4,7 +4,13 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth } from '../../../lib/auth-middleware';
-import { adminDb, adminAuth, COLLECTIONS, UserDocument, FirestoreService } from '../../../lib/firebase-admin';
+import {
+	adminDb,
+	adminAuth,
+	COLLECTIONS,
+	UserDocument,
+	FirestoreService,
+} from '../../../lib/firebase-admin';
 
 /**
  * GET /api/users - Get all users with pagination and filtering (admin only)
@@ -37,10 +43,7 @@ async function handleGetUsers(req: NextRequest, adminUser: UserDocument) {
 		let paginatedQuery = query.orderBy('createdAt', 'desc').limit(limit);
 
 		if (offset > 0) {
-			const startAfterDoc = await query
-				.orderBy('createdAt', 'desc')
-				.limit(offset)
-				.get();
+			const startAfterDoc = await query.orderBy('createdAt', 'desc').limit(offset).get();
 			if (!startAfterDoc.empty) {
 				const lastDoc = startAfterDoc.docs[startAfterDoc.docs.length - 1];
 				paginatedQuery = paginatedQuery.startAfter(lastDoc);
@@ -69,9 +72,10 @@ async function handleGetUsers(req: NextRequest, adminUser: UserDocument) {
 		// Apply search filter (client-side for simplicity)
 		if (search) {
 			const searchLower = search.toLowerCase();
-			users = users.filter(user =>
-				user.email.toLowerCase().includes(searchLower) ||
-				user.displayName?.toLowerCase().includes(searchLower)
+			users = users.filter(
+				user =>
+					user.email.toLowerCase().includes(searchLower) ||
+					user.displayName?.toLowerCase().includes(searchLower)
 			);
 		}
 
@@ -86,10 +90,7 @@ async function handleGetUsers(req: NextRequest, adminUser: UserDocument) {
 		});
 	} catch (error) {
 		console.error('Error getting users:', error);
-		return NextResponse.json(
-			{ error: 'Failed to retrieve users' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to retrieve users' }, { status: 500 });
 	}
 }
 
@@ -102,10 +103,7 @@ async function handleCreateUser(req: NextRequest, adminUser: UserDocument) {
 		const { email, password, displayName, role = 'user' } = body;
 
 		if (!email || !password) {
-			return NextResponse.json(
-				{ error: 'Email and password are required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
 		}
 
 		// Create user in Firebase Auth
@@ -146,19 +144,19 @@ async function handleCreateUser(req: NextRequest, adminUser: UserDocument) {
 			details: { email, role },
 		});
 
-		return NextResponse.json({
-			id: userRecord.uid,
-			email,
-			displayName,
-			role,
-			status: 'active',
-		}, { status: 201 });
+		return NextResponse.json(
+			{
+				id: userRecord.uid,
+				email,
+				displayName,
+				role,
+				status: 'active',
+			},
+			{ status: 201 }
+		);
 	} catch (error) {
 		console.error('Error creating user:', error);
-		return NextResponse.json(
-			{ error: 'Failed to create user' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
 	}
 }
 

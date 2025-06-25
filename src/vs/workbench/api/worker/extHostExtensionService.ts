@@ -15,8 +15,7 @@ import { ExtHostConsoleForwarder } from './extHostConsoleForwarder.js';
 import { extname } from '../../../base/common/path.js';
 
 class WorkerRequireInterceptor extends RequireInterceptor {
-
-	protected _installInterceptor() { }
+	protected _installInterceptor() {}
 
 	getModule(request: string, parent: URI): undefined | any {
 		for (const alternativeModuleName of this._alternatives) {
@@ -28,7 +27,9 @@ class WorkerRequireInterceptor extends RequireInterceptor {
 		}
 
 		if (this._factories.has(request)) {
-			return this._factories.get(request)!.load(request, parent, () => { throw new Error('CANNOT LOAD MODULE from here.'); });
+			return this._factories.get(request)!.load(request, parent, () => {
+				throw new Error('CANNOT LOAD MODULE from here.');
+			});
 		}
 		return undefined;
 	}
@@ -45,7 +46,10 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 
 		// initialize API and register actors
 		const apiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);
-		this._fakeModules = this._instaService.createInstance(WorkerRequireInterceptor, apiFactory, { mine: this._myRegistry, all: this._globalRegistry });
+		this._fakeModules = this._instaService.createInstance(WorkerRequireInterceptor, apiFactory, {
+			mine: this._myRegistry,
+			all: this._globalRegistry,
+		});
 		await this._fakeModules.install();
 		performance.mark('code/extHost/didInitAPI');
 
@@ -56,7 +60,11 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		return extensionDescription.browser;
 	}
 
-	protected async _loadCommonJSModule<T extends object | undefined>(extension: IExtensionDescription | null, module: URI, activationTimesBuilder: ExtensionActivationTimesBuilder): Promise<T> {
+	protected async _loadCommonJSModule<T extends object | undefined>(
+		extension: IExtensionDescription | null,
+		module: URI,
+		activationTimesBuilder: ExtensionActivationTimesBuilder
+	): Promise<T> {
 		module = module.with({ path: ensureSuffix(module.path, '.js') });
 		const extensionId = extension?.identifier.value;
 		if (extensionId) {
@@ -91,7 +99,9 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 			} else {
 				console.error(`Loading code failed: ${err.message}`);
 			}
-			console.error(`${module.toString(true)}${typeof err.line === 'number' ? ` line ${err.line}` : ''}${typeof err.column === 'number' ? ` column ${err.column}` : ''}`);
+			console.error(
+				`${module.toString(true)}${typeof err.line === 'number' ? ` line ${err.line}` : ''}${typeof err.column === 'number' ? ` column ${err.column}` : ''}`
+			);
 			console.error(err);
 			throw err;
 		}
@@ -126,7 +136,11 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		}
 	}
 
-	protected override _loadESMModule<T>(extension: IExtensionDescription | null, module: URI, activationTimesBuilder: ExtensionActivationTimesBuilder): Promise<T> {
+	protected override _loadESMModule<T>(
+		extension: IExtensionDescription | null,
+		module: URI,
+		activationTimesBuilder: ExtensionActivationTimesBuilder
+	): Promise<T> {
 		throw new Error('ESM modules are not supported in the web worker extension host');
 	}
 

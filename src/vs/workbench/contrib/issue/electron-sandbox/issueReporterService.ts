@@ -30,7 +30,6 @@ const MAX_URL_LENGTH = 7500;
 // ref https://github.com/github/issues/issues/12858
 const MAX_GITHUB_API_LENGTH = 65500;
 
-
 export class IssueReporter extends BaseIssueReporterService {
 	private readonly processService: IProcessService;
 	constructor(
@@ -51,7 +50,18 @@ export class IssueReporter extends BaseIssueReporterService {
 		@IFileDialogService fileDialogService: IFileDialogService,
 		@IUpdateService private readonly updateService: IUpdateService
 	) {
-		super(disableExtensions, data, os, product, window, false, issueFormService, themeService, fileService, fileDialogService);
+		super(
+			disableExtensions,
+			data,
+			os,
+			product,
+			window,
+			false,
+			issueFormService,
+			themeService,
+			fileService,
+			fileDialogService
+		);
 		this.processService = processService;
 		this.processService.getSystemInfo().then(info => {
 			this.issueReporterModel.update({ systemInfo: info });
@@ -83,7 +93,11 @@ export class IssueReporter extends BaseIssueReporterService {
 			if (updateBanner && includeAcknowledgement) {
 				includeAcknowledgement.classList.remove('hidden');
 				updateBanner.classList.remove('hidden');
-				updateBanner.textContent = localize('updateAvailable', "A new version of {0} is available.", this.product.nameLong);
+				updateBanner.textContent = localize(
+					'updateAvailable',
+					'A new version of {0} is available.',
+					this.product.nameLong
+				);
 			}
 		}
 	}
@@ -103,7 +117,7 @@ export class IssueReporter extends BaseIssueReporterService {
 			// Resets placeholder
 			const descriptionTextArea = <HTMLInputElement>this.getElementById('issue-title');
 			if (descriptionTextArea) {
-				descriptionTextArea.placeholder = localize('undefinedPlaceholder', "Please enter a title");
+				descriptionTextArea.placeholder = localize('undefinedPlaceholder', 'Please enter a title');
 			}
 
 			this.updatePreviewButtonState();
@@ -112,7 +126,11 @@ export class IssueReporter extends BaseIssueReporterService {
 		});
 	}
 
-	public override async submitToGitHub(issueTitle: string, issueBody: string, gitHubDetails: { owner: string; repositoryName: string }): Promise<boolean> {
+	public override async submitToGitHub(
+		issueTitle: string,
+		issueBody: string,
+		gitHubDetails: { owner: string; repositoryName: string }
+	): Promise<boolean> {
 		if (issueBody.length > MAX_GITHUB_API_LENGTH) {
 			const extensionData = this.issueReporterModel.getData().extensionData;
 			if (extensionData) {
@@ -123,9 +141,12 @@ export class IssueReporter extends BaseIssueReporterService {
 				const fileName = `extensionData_${formattedDate}_${formattedTime}.md`;
 				try {
 					const downloadPath = await this.fileDialogService.showSaveDialog({
-						title: localize('saveExtensionData', "Save Extension Data"),
+						title: localize('saveExtensionData', 'Save Extension Data'),
 						availableFileSystems: [Schemas.file],
-						defaultUri: joinPath(await this.fileDialogService.defaultFilePath(Schemas.file), fileName),
+						defaultUri: joinPath(
+							await this.fileDialogService.defaultFilePath(Schemas.file),
+							fileName
+						),
 					});
 
 					if (downloadPath) {
@@ -145,12 +166,12 @@ export class IssueReporter extends BaseIssueReporterService {
 			method: 'POST',
 			body: JSON.stringify({
 				title: issueTitle,
-				body: issueBody
+				body: issueBody,
 			}),
 			headers: new Headers({
 				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${this.data.githubAccessToken}`
-			})
+				Authorization: `Bearer ${this.data.githubAccessToken}`,
+			}),
 		};
 
 		const response = await fetch(url, init);
@@ -225,7 +246,10 @@ export class IssueReporter extends BaseIssueReporterService {
 
 		const gitHubDetails = this.parseGitHubUrl(issueUrl);
 
-		const baseUrl = this.getIssueUrlWithTitle((<HTMLInputElement>this.getElementById('issue-title')).value, issueUrl);
+		const baseUrl = this.getIssueUrlWithTitle(
+			(<HTMLInputElement>this.getElementById('issue-title')).value,
+			issueUrl
+		);
 		let url = baseUrl + `&body=${encodeURIComponent(issueBody)}`;
 
 		url += this.addTemplateToUrl(gitHubDetails?.owner, gitHubDetails?.repositoryName);
@@ -238,7 +262,9 @@ export class IssueReporter extends BaseIssueReporterService {
 
 		try {
 			if (url.length > MAX_URL_LENGTH || issueBody.length > MAX_GITHUB_API_LENGTH) {
-				url = await this.writeToClipboard(baseUrl, issueBody) + this.addTemplateToUrl(gitHubDetails?.owner, gitHubDetails?.repositoryName);
+				url =
+					(await this.writeToClipboard(baseUrl, issueBody)) +
+					this.addTemplateToUrl(gitHubDetails?.owner, gitHubDetails?.repositoryName);
 			}
 		} catch (_) {
 			console.error('Writing to clipboard failed');
@@ -257,7 +283,10 @@ export class IssueReporter extends BaseIssueReporterService {
 
 		await this.nativeHostService.writeClipboardText(issueBody);
 
-		return baseUrl + `&body=${encodeURIComponent(localize('pasteData', "We have written the needed data into your clipboard because it was too large to send. Please paste."))}`;
+		return (
+			baseUrl +
+			`&body=${encodeURIComponent(localize('pasteData', 'We have written the needed data into your clipboard because it was too large to send. Please paste.'))}`
+		);
 	}
 
 	private updateSystemInfo(state: IssueReporterModelData) {
@@ -265,71 +294,92 @@ export class IssueReporter extends BaseIssueReporterService {
 
 		if (target) {
 			const systemInfo = state.systemInfo!;
-			const renderedDataTable = $('table', undefined,
-				$('tr', undefined,
-					$('td', undefined, 'CPUs'),
-					$('td', undefined, systemInfo.cpus || '')
-				),
-				$('tr', undefined,
+			const renderedDataTable = $(
+				'table',
+				undefined,
+				$('tr', undefined, $('td', undefined, 'CPUs'), $('td', undefined, systemInfo.cpus || '')),
+				$(
+					'tr',
+					undefined,
 					$('td', undefined, 'GPU Status' as string),
-					$('td', undefined, Object.keys(systemInfo.gpuStatus).map(key => `${key}: ${systemInfo.gpuStatus[key]}`).join('\n'))
+					$(
+						'td',
+						undefined,
+						Object.keys(systemInfo.gpuStatus)
+							.map(key => `${key}: ${systemInfo.gpuStatus[key]}`)
+							.join('\n')
+					)
 				),
-				$('tr', undefined,
+				$(
+					'tr',
+					undefined,
 					$('td', undefined, 'Load (avg)' as string),
 					$('td', undefined, systemInfo.load || '')
 				),
-				$('tr', undefined,
+				$(
+					'tr',
+					undefined,
 					$('td', undefined, 'Memory (System)' as string),
 					$('td', undefined, systemInfo.memory)
 				),
-				$('tr', undefined,
+				$(
+					'tr',
+					undefined,
 					$('td', undefined, 'Process Argv' as string),
 					$('td', undefined, systemInfo.processArgs)
 				),
-				$('tr', undefined,
+				$(
+					'tr',
+					undefined,
 					$('td', undefined, 'Screen Reader' as string),
 					$('td', undefined, systemInfo.screenReader)
 				),
-				$('tr', undefined,
-					$('td', undefined, 'VM'),
-					$('td', undefined, systemInfo.vmHint)
-				)
+				$('tr', undefined, $('td', undefined, 'VM'), $('td', undefined, systemInfo.vmHint))
 			);
 			reset(target, renderedDataTable);
 
 			systemInfo.remoteData.forEach(remote => {
 				target.appendChild($<HTMLHRElement>('hr'));
 				if (isRemoteDiagnosticError(remote)) {
-					const remoteDataTable = $('table', undefined,
-						$('tr', undefined,
-							$('td', undefined, 'Remote'),
-							$('td', undefined, remote.hostName)
-						),
-						$('tr', undefined,
-							$('td', undefined, ''),
-							$('td', undefined, remote.errorMessage)
-						)
+					const remoteDataTable = $(
+						'table',
+						undefined,
+						$('tr', undefined, $('td', undefined, 'Remote'), $('td', undefined, remote.hostName)),
+						$('tr', undefined, $('td', undefined, ''), $('td', undefined, remote.errorMessage))
 					);
 					target.appendChild(remoteDataTable);
 				} else {
-					const remoteDataTable = $('table', undefined,
-						$('tr', undefined,
+					const remoteDataTable = $(
+						'table',
+						undefined,
+						$(
+							'tr',
+							undefined,
 							$('td', undefined, 'Remote'),
-							$('td', undefined, remote.latency ? `${remote.hostName} (latency: ${remote.latency.current.toFixed(2)}ms last, ${remote.latency.average.toFixed(2)}ms average)` : remote.hostName)
+							$(
+								'td',
+								undefined,
+								remote.latency
+									? `${remote.hostName} (latency: ${remote.latency.current.toFixed(2)}ms last, ${remote.latency.average.toFixed(2)}ms average)`
+									: remote.hostName
+							)
 						),
-						$('tr', undefined,
-							$('td', undefined, 'OS'),
-							$('td', undefined, remote.machineInfo.os)
-						),
-						$('tr', undefined,
+						$('tr', undefined, $('td', undefined, 'OS'), $('td', undefined, remote.machineInfo.os)),
+						$(
+							'tr',
+							undefined,
 							$('td', undefined, 'CPUs'),
 							$('td', undefined, remote.machineInfo.cpus || '')
 						),
-						$('tr', undefined,
+						$(
+							'tr',
+							undefined,
 							$('td', undefined, 'Memory (System)' as string),
 							$('td', undefined, remote.machineInfo.memory)
 						),
-						$('tr', undefined,
+						$(
+							'tr',
+							undefined,
 							$('td', undefined, 'VM'),
 							$('td', undefined, remote.machineInfo.vmHint)
 						)
@@ -350,9 +400,13 @@ export class IssueReporter extends BaseIssueReporterService {
 
 	private updateExperimentsInfo(experimentInfo: string | undefined) {
 		this.issueReporterModel.update({ experimentInfo });
-		const target = this.window.document.querySelector<HTMLElement>('.block-experiments .block-info');
+		const target = this.window.document.querySelector<HTMLElement>(
+			'.block-experiments .block-info'
+		);
 		if (target) {
-			target.textContent = experimentInfo ? experimentInfo : localize('noCurrentExperiments', "No current experiments.");
+			target.textContent = experimentInfo
+				? experimentInfo
+				: localize('noCurrentExperiments', 'No current experiments.');
 		}
 	}
 }

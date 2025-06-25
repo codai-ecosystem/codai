@@ -12,7 +12,7 @@ export interface IOffsetRange {
 
 /**
  * A range of offsets (0-based).
-*/
+ */
 export class OffsetRange implements IOffsetRange {
 	public static fromTo(start: number, endExclusive: number): OffsetRange {
 		return new OffsetRange(start, endExclusive);
@@ -55,7 +55,10 @@ export class OffsetRange implements IOffsetRange {
 		return new OffsetRange(offset, offset);
 	}
 
-	constructor(public readonly start: number, public readonly endExclusive: number) {
+	constructor(
+		public readonly start: number,
+		public readonly endExclusive: number
+	) {
 		if (start > endExclusive) {
 			throw new BugIndicatingError(`Invalid range: ${this.toString()}`);
 		}
@@ -102,7 +105,10 @@ export class OffsetRange implements IOffsetRange {
 	 * The joined range is the smallest range that contains both ranges.
 	 */
 	public join(other: OffsetRange): OffsetRange {
-		return new OffsetRange(Math.min(this.start, other.start), Math.max(this.endExclusive, other.endExclusive));
+		return new OffsetRange(
+			Math.min(this.start, other.start),
+			Math.max(this.endExclusive, other.endExclusive)
+		);
 	}
 
 	/**
@@ -201,7 +207,7 @@ export class OffsetRange implements IOffsetRange {
 	/**
 	 * this: [ 5, 10), range: [10, 15) => [5, 15)]
 	 * Throws if the ranges are not touching.
-	*/
+	 */
 	public joinRightTouching(range: OffsetRange): OffsetRange {
 		if (this.endExclusive !== range.start) {
 			throw new BugIndicatingError(`Invalid join: ${this.toString()} and ${range.toString()}`);

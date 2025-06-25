@@ -10,16 +10,20 @@ import { AbstractLogger, ILogger, ILoggerService } from '../../log/common/log.js
 import { IUserDataSyncLogService, USER_DATA_SYNC_LOG_ID } from './userDataSync.js';
 
 export class UserDataSyncLogService extends AbstractLogger implements IUserDataSyncLogService {
-
 	declare readonly _serviceBrand: undefined;
 	private readonly logger: ILogger;
 
 	constructor(
 		@ILoggerService loggerService: ILoggerService,
-		@IEnvironmentService environmentService: IEnvironmentService,
+		@IEnvironmentService environmentService: IEnvironmentService
 	) {
 		super();
-		this.logger = this._register(loggerService.createLogger(joinPath(environmentService.logsHome, `${USER_DATA_SYNC_LOG_ID}.log`), { id: USER_DATA_SYNC_LOG_ID, name: localize('userDataSyncLog', "Settings Sync") }));
+		this.logger = this._register(
+			loggerService.createLogger(
+				joinPath(environmentService.logsHome, `${USER_DATA_SYNC_LOG_ID}.log`),
+				{ id: USER_DATA_SYNC_LOG_ID, name: localize('userDataSyncLog', 'Settings Sync') }
+			)
+		);
 	}
 
 	trace(message: string, ...args: any[]): void {
@@ -45,5 +49,4 @@ export class UserDataSyncLogService extends AbstractLogger implements IUserDataS
 	flush(): void {
 		this.logger.flush();
 	}
-
 }

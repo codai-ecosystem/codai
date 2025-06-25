@@ -10,25 +10,21 @@ import { ProcessItem } from '../common/processes.js';
 import { isWindows } from '../common/platform.js';
 
 export function listProcesses(rootPid: number): Promise<ProcessItem> {
-
 	return new Promise((resolve, reject) => {
-
 		let rootItem: ProcessItem | undefined;
 		const map = new Map<number, ProcessItem>();
 		const totalMemory = totalmem();
 
 		function addToTree(pid: number, ppid: number, cmd: string, load: number, mem: number) {
-
 			const parent = map.get(ppid);
 			if (pid === rootPid || parent) {
-
 				const item: ProcessItem = {
 					name: findName(cmd),
 					cmd,
 					pid,
 					ppid,
 					load,
-					mem: isWindows ? mem : (totalMemory * (mem / 100))
+					mem: isWindows ? mem : totalMemory * (mem / 100),
 				};
 				map.set(pid, item);
 
@@ -49,7 +45,6 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 		}
 
 		function findName(cmd: string): string {
-
 			const UTILITY_NETWORK_HINT = /--utility-sub-type=network/i;
 			const WINDOWS_CRASH_REPORTER = /--crashes-directory/i;
 			const WINPTY = /\\pipe\\winpty-control/i;
@@ -108,7 +103,6 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 		}
 
 		if (process.platform === 'win32') {
-
 			const cleanUNCPrefix = (value: string): string => {
 				if (value.indexOf('\\\\?\\') === 0) {
 					return value.substring(4);
@@ -123,51 +117,56 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 				}
 			};
 
-			(import('@vscode/windows-process-tree')).then(windowsProcessTree => {
-				windowsProcessTree.getProcessList(rootPid, (processList) => {
-					if (!processList) {
-						reject(new Error(`Root process ${rootPid} not found`));
-						return;
-					}
-					windowsProcessTree.getProcessCpuUsage(processList, (completeProcessList) => {
-						const processItems: Map<number, ProcessItem> = new Map();
-						completeProcessList.forEach(process => {
-							const commandLine = cleanUNCPrefix(process.commandLine || '');
-							processItems.set(process.pid, {
-								name: findName(commandLine),
-								cmd: commandLine,
-								pid: process.pid,
-								ppid: process.ppid,
-								load: process.cpu || 0,
-								mem: process.memory || 0
-							});
-						});
-
-						rootItem = processItems.get(rootPid);
-						if (rootItem) {
-							processItems.forEach(item => {
-								const parent = processItems.get(item.ppid);
-								if (parent) {
-									if (!parent.children) {
-										parent.children = [];
-									}
-									parent.children.push(item);
-								}
-							});
-
-							processItems.forEach(item => {
-								if (item.children) {
-									item.children = item.children.sort((a, b) => a.pid - b.pid);
-								}
-							});
-							resolve(rootItem);
-						} else {
+			import('@vscode/windows-process-tree').then(windowsProcessTree => {
+				windowsProcessTree.getProcessList(
+					rootPid,
+					processList => {
+						if (!processList) {
 							reject(new Error(`Root process ${rootPid} not found`));
+							return;
 						}
-					});
-				}, windowsProcessTree.ProcessDataFlag.CommandLine | windowsProcessTree.ProcessDataFlag.Memory);
+						windowsProcessTree.getProcessCpuUsage(processList, completeProcessList => {
+							const processItems: Map<number, ProcessItem> = new Map();
+							completeProcessList.forEach(process => {
+								const commandLine = cleanUNCPrefix(process.commandLine || '');
+								processItems.set(process.pid, {
+									name: findName(commandLine),
+									cmd: commandLine,
+									pid: process.pid,
+									ppid: process.ppid,
+									load: process.cpu || 0,
+									mem: process.memory || 0,
+								});
+							});
+
+							rootItem = processItems.get(rootPid);
+							if (rootItem) {
+								processItems.forEach(item => {
+									const parent = processItems.get(item.ppid);
+									if (parent) {
+										if (!parent.children) {
+											parent.children = [];
+										}
+										parent.children.push(item);
+									}
+								});
+
+								processItems.forEach(item => {
+									if (item.children) {
+										item.children = item.children.sort((a, b) => a.pid - b.pid);
+									}
+								});
+								resolve(rootItem);
+							} else {
+								reject(new Error(`Root process ${rootPid} not found`));
+							}
+						});
+					},
+					windowsProcessTree.ProcessDataFlag.CommandLine | windowsProcessTree.ProcessDataFlag.Memory
+				);
 			});
-		} else {	// OS X & Linux
+		} else {
+			// OS X & Linux
 			function calculateLinuxCpuUsage() {
 				// Flatten rootItem to get a list of all VSCode processes
 				let processes = [rootItem];
@@ -228,37 +227,50 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 					const args = '-ax -o pid=,ppid=,pcpu=,pmem=,command=';
 
 					// Set numeric locale to ensure '.' is used as the decimal separator
-					exec(`${ps} ${args}`, { maxBuffer: 1000 * 1024, env: { LC_NUMERIC: 'en_US.UTF-8' } }, (err, stdout, stderr) => {
-						// Silently ignoring the screen size is bogus error. See https://github.com/microsoft/vscode/issues/98590
-						if (err || (stderr && !stderr.includes('screen size is bogus'))) {
-							reject(err || new Error(stderr.toString()));
-						} else {
-							parsePsOutput(stdout, addToTree);
-
-							if (process.platform === 'linux') {
-								calculateLinuxCpuUsage();
+					exec(
+						`${ps} ${args}`,
+						{ maxBuffer: 1000 * 1024, env: { LC_NUMERIC: 'en_US.UTF-8' } },
+						(err, stdout, stderr) => {
+							// Silently ignoring the screen size is bogus error. See https://github.com/microsoft/vscode/issues/98590
+							if (err || (stderr && !stderr.includes('screen size is bogus'))) {
+								reject(err || new Error(stderr.toString()));
 							} else {
-								if (!rootItem) {
-									reject(new Error(`Root process ${rootPid} not found`));
+								parsePsOutput(stdout, addToTree);
+
+								if (process.platform === 'linux') {
+									calculateLinuxCpuUsage();
 								} else {
-									resolve(rootItem);
+									if (!rootItem) {
+										reject(new Error(`Root process ${rootPid} not found`));
+									} else {
+										resolve(rootItem);
+									}
 								}
 							}
 						}
-					});
+					);
 				}
 			});
 		}
 	});
 }
 
-function parsePsOutput(stdout: string, addToTree: (pid: number, ppid: number, cmd: string, load: number, mem: number) => void): void {
+function parsePsOutput(
+	stdout: string,
+	addToTree: (pid: number, ppid: number, cmd: string, load: number, mem: number) => void
+): void {
 	const PID_CMD = /^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+\.[0-9]+)\s+([0-9]+\.[0-9]+)\s+(.+)$/;
 	const lines = stdout.toString().split('\n');
 	for (const line of lines) {
 		const matches = PID_CMD.exec(line.trim());
 		if (matches && matches.length === 6) {
-			addToTree(parseInt(matches[1]), parseInt(matches[2]), matches[5], parseFloat(matches[3]), parseFloat(matches[4]));
+			addToTree(
+				parseInt(matches[1]),
+				parseInt(matches[2]),
+				matches[5],
+				parseFloat(matches[3]),
+				parseFloat(matches[4])
+			);
 		}
 	}
 }

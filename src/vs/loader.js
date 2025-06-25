@@ -58,10 +58,19 @@ var AMDLoader;
 			}
 			this._detected = true;
 			this._isWindows = Environment._isWindows();
-			this._isNode = (typeof module !== 'undefined' && !!module.exports);
-			this._isElectronRenderer = (typeof process !== 'undefined' && typeof process.versions !== 'undefined' && typeof process.versions.electron !== 'undefined' && process.type === 'renderer');
-			this._isWebWorker = (typeof AMDLoader.global.importScripts === 'function');
-			this._isElectronNodeIntegrationWebWorker = this._isWebWorker && (typeof process !== 'undefined' && typeof process.versions !== 'undefined' && typeof process.versions.electron !== 'undefined' && process.type === 'worker');
+			this._isNode = typeof module !== 'undefined' && !!module.exports;
+			this._isElectronRenderer =
+				typeof process !== 'undefined' &&
+				typeof process.versions !== 'undefined' &&
+				typeof process.versions.electron !== 'undefined' &&
+				process.type === 'renderer';
+			this._isWebWorker = typeof AMDLoader.global.importScripts === 'function';
+			this._isElectronNodeIntegrationWebWorker =
+				this._isWebWorker &&
+				typeof process !== 'undefined' &&
+				typeof process.versions !== 'undefined' &&
+				typeof process.versions.electron !== 'undefined' &&
+				process.type === 'worker';
 		}
 		static _isWindows() {
 			if (typeof navigator !== 'undefined') {
@@ -70,7 +79,7 @@ var AMDLoader;
 				}
 			}
 			if (typeof process !== 'undefined') {
-				return (process.platform === 'win32');
+				return process.platform === 'win32';
 			}
 			return false;
 		}
@@ -93,10 +102,14 @@ var AMDLoader;
 	AMDLoader.LoaderEvent = LoaderEvent;
 	class LoaderEventRecorder {
 		constructor(loaderAvailableTimestamp) {
-			this._events = [new LoaderEvent(1 /* LoaderEventType.LoaderAvailable */, '', loaderAvailableTimestamp)];
+			this._events = [
+				new LoaderEvent(1 /* LoaderEventType.LoaderAvailable */, '', loaderAvailableTimestamp),
+			];
 		}
 		record(type, detail) {
-			this._events.push(new LoaderEvent(type, detail, AMDLoader.Utilities.getHighPerformanceTimestamp()));
+			this._events.push(
+				new LoaderEvent(type, detail, AMDLoader.Utilities.getHighPerformanceTimestamp())
+			);
 		}
 		getEvents() {
 			return this._events;
@@ -134,8 +147,7 @@ var AMDLoader;
 				if (/^file:\/\//.test(uri)) {
 					return uri.substr(5);
 				}
-			}
-			else {
+			} else {
 				if (/^file:\/\//.test(uri)) {
 					return uri.substr(7);
 				}
@@ -147,7 +159,10 @@ var AMDLoader;
 			return haystack.length >= needle.length && haystack.substr(0, needle.length) === needle;
 		}
 		static endsWith(haystack, needle) {
-			return haystack.length >= needle.length && haystack.substr(haystack.length - needle.length) === needle;
+			return (
+				haystack.length >= needle.length &&
+				haystack.substr(haystack.length - needle.length) === needle
+			);
 		}
 		// only check for "?" before "#" to ensure that there is a real Query-String
 		static containsQueryString(url) {
@@ -188,15 +203,14 @@ var AMDLoader;
 			Utilities.forEachProperty(obj, (key, value) => {
 				if (value && typeof value === 'object') {
 					result[key] = Utilities.recursiveClone(value);
-				}
-				else {
+				} else {
 					result[key] = value;
 				}
 			});
 			return result;
 		}
 		static generateAnonymousModule() {
-			return '===anonymous' + (Utilities.NEXT_ANONYMOUS_ID++) + '===';
+			return '===anonymous' + Utilities.NEXT_ANONYMOUS_ID++ + '===';
 		}
 		static isAnonymousModule(id) {
 			return Utilities.startsWith(id, '===anonymous');
@@ -204,9 +218,10 @@ var AMDLoader;
 		static getHighPerformanceTimestamp() {
 			if (!this.PERFORMANCE_NOW_PROBED) {
 				this.PERFORMANCE_NOW_PROBED = true;
-				this.HAS_PERFORMANCE_NOW = (AMDLoader.global.performance && typeof AMDLoader.global.performance.now === 'function');
+				this.HAS_PERFORMANCE_NOW =
+					AMDLoader.global.performance && typeof AMDLoader.global.performance.now === 'function';
 			}
-			return (this.HAS_PERFORMANCE_NOW ? AMDLoader.global.performance.now() : Date.now());
+			return this.HAS_PERFORMANCE_NOW ? AMDLoader.global.performance.now() : Date.now();
 		}
 	}
 	Utilities.NEXT_ANONYMOUS_ID = 1;
@@ -231,7 +246,6 @@ var AMDLoader;
 		return result;
 	}
 	AMDLoader.ensureError = ensureError;
-	;
 	class ConfigurationOptionsUtil {
 		/**
 		 * Ensure configuration options make sense
@@ -296,11 +310,16 @@ var AMDLoader;
 				if (typeof options.nodeCachedData.seed !== 'string') {
 					options.nodeCachedData.seed = 'seed';
 				}
-				if (typeof options.nodeCachedData.writeDelay !== 'number' || options.nodeCachedData.writeDelay < 0) {
+				if (
+					typeof options.nodeCachedData.writeDelay !== 'number' ||
+					options.nodeCachedData.writeDelay < 0
+				) {
 					options.nodeCachedData.writeDelay = 1000 * 7;
 				}
 				if (!options.nodeCachedData.path || typeof options.nodeCachedData.path !== 'string') {
-					const err = ensureError(new Error('INVALID cached data configuration, \'path\' MUST be set'));
+					const err = ensureError(
+						new Error("INVALID cached data configuration, 'path' MUST be set")
+					);
 					err.phase = 'configuration';
 					options.onError(err);
 					options.nodeCachedData = undefined;
@@ -312,16 +331,22 @@ var AMDLoader;
 			let result = AMDLoader.Utilities.recursiveClone(base || {});
 			// Merge known properties and overwrite the unknown ones
 			AMDLoader.Utilities.forEachProperty(overwrite, (key, value) => {
-				if (key === 'ignoreDuplicateModules' && typeof result.ignoreDuplicateModules !== 'undefined') {
+				if (
+					key === 'ignoreDuplicateModules' &&
+					typeof result.ignoreDuplicateModules !== 'undefined'
+				) {
 					result.ignoreDuplicateModules = result.ignoreDuplicateModules.concat(value);
-				}
-				else if (key === 'paths' && typeof result.paths !== 'undefined') {
-					AMDLoader.Utilities.forEachProperty(value, (key2, value2) => result.paths[key2] = value2);
-				}
-				else if (key === 'config' && typeof result.config !== 'undefined') {
-					AMDLoader.Utilities.forEachProperty(value, (key2, value2) => result.config[key2] = value2);
-				}
-				else {
+				} else if (key === 'paths' && typeof result.paths !== 'undefined') {
+					AMDLoader.Utilities.forEachProperty(
+						value,
+						(key2, value2) => (result.paths[key2] = value2)
+					);
+				} else if (key === 'config' && typeof result.config !== 'undefined') {
+					AMDLoader.Utilities.forEachProperty(
+						value,
+						(key2, value2) => (result.config[key2] = value2)
+					);
+				} else {
 					result[key] = AMDLoader.Utilities.recursiveClone(value);
 				}
 			});
@@ -336,7 +361,12 @@ var AMDLoader;
 			this._createIgnoreDuplicateModulesMap();
 			this._createSortedPathsRules();
 			if (this.options.baseUrl === '') {
-				if (this.options.nodeRequire && this.options.nodeRequire.main && this.options.nodeRequire.main.filename && this._env.isNode) {
+				if (
+					this.options.nodeRequire &&
+					this.options.nodeRequire.main &&
+					this.options.nodeRequire.main.filename &&
+					this._env.isNode
+				) {
 					let nodeMain = this.options.nodeRequire.main.filename;
 					let dirnameIndex = Math.max(nodeMain.lastIndexOf('/'), nodeMain.lastIndexOf('\\'));
 					this.options.baseUrl = nodeMain.substring(0, dirnameIndex + 1);
@@ -358,13 +388,12 @@ var AMDLoader;
 				if (!Array.isArray(to)) {
 					this.sortedPathsRules.push({
 						from: from,
-						to: [to]
+						to: [to],
 					});
-				}
-				else {
+				} else {
 					this.sortedPathsRules.push({
 						from: from,
-						to: to
+						to: to,
 					});
 				}
 			});
@@ -378,7 +407,10 @@ var AMDLoader;
 		 * @result A new configuration
 		 */
 		cloneAndMerge(options) {
-			return new Configuration(this._env, ConfigurationOptionsUtil.mergeConfigurationOptions(options, this.options));
+			return new Configuration(
+				this._env,
+				ConfigurationOptionsUtil.mergeConfigurationOptions(options, this.options)
+			);
 		}
 		/**
 		 * Get current options bag. Useful for passing it forward to plugins.
@@ -403,8 +435,7 @@ var AMDLoader;
 		_addUrlArgsToUrl(url) {
 			if (AMDLoader.Utilities.containsQueryString(url)) {
 				return url + '&' + this.options.urlArgs;
-			}
-			else {
+			} else {
 				return url + '?' + this.options.urlArgs;
 			}
 		}
@@ -427,15 +458,15 @@ var AMDLoader;
 		 */
 		moduleIdToPaths(moduleId) {
 			if (this._env.isNode) {
-				const isNodeModule = (this.options.amdModulesPattern instanceof RegExp
-					&& !this.options.amdModulesPattern.test(moduleId));
+				const isNodeModule =
+					this.options.amdModulesPattern instanceof RegExp &&
+					!this.options.amdModulesPattern.test(moduleId);
 				if (isNodeModule) {
 					// This is a node module...
 					if (this.isBuild()) {
 						// ...and we are at build time, drop it
 						return ['empty:'];
-					}
-					else {
+					} else {
 						// ...and at runtime we create a `shortcut`-path
 						return ['node|' + moduleId];
 					}
@@ -443,7 +474,10 @@ var AMDLoader;
 			}
 			let result = moduleId;
 			let results;
-			if (!AMDLoader.Utilities.endsWith(result, '.js') && !AMDLoader.Utilities.isAbsolutePath(result)) {
+			if (
+				!AMDLoader.Utilities.endsWith(result, '.js') &&
+				!AMDLoader.Utilities.isAbsolutePath(result)
+			) {
 				results = this._applyPaths(result);
 				for (let i = 0, len = results.length; i < len; i++) {
 					if (this.isBuild() && results[i] === 'empty:') {
@@ -452,13 +486,18 @@ var AMDLoader;
 					if (!AMDLoader.Utilities.isAbsolutePath(results[i])) {
 						results[i] = this.options.baseUrl + results[i];
 					}
-					if (!AMDLoader.Utilities.endsWith(results[i], '.js') && !AMDLoader.Utilities.containsQueryString(results[i])) {
+					if (
+						!AMDLoader.Utilities.endsWith(results[i], '.js') &&
+						!AMDLoader.Utilities.containsQueryString(results[i])
+					) {
 						results[i] = results[i] + '.js';
 					}
 				}
-			}
-			else {
-				if (!AMDLoader.Utilities.endsWith(result, '.js') && !AMDLoader.Utilities.containsQueryString(result)) {
+			} else {
+				if (
+					!AMDLoader.Utilities.endsWith(result, '.js') &&
+					!AMDLoader.Utilities.containsQueryString(result)
+				) {
 					result = result + '.js';
 				}
 				results = [result];
@@ -493,7 +532,10 @@ var AMDLoader;
 			if (AMDLoader.Utilities.isAnonymousModule(strModuleId)) {
 				return true;
 			}
-			if (this.options.buildForceInvokeFactory && this.options.buildForceInvokeFactory[strModuleId]) {
+			if (
+				this.options.buildForceInvokeFactory &&
+				this.options.buildForceInvokeFactory[strModuleId]
+			) {
 				return true;
 			}
 			return false;
@@ -552,33 +594,34 @@ var AMDLoader;
 			if (!this._scriptLoader) {
 				if (this._env.isWebWorker) {
 					this._scriptLoader = new WorkerScriptLoader();
-				}
-				else if (this._env.isElectronRenderer) {
+				} else if (this._env.isElectronRenderer) {
 					const { preferScriptTags } = moduleManager.getConfig().getOptionsLiteral();
 					if (preferScriptTags) {
 						this._scriptLoader = new BrowserScriptLoader();
-					}
-					else {
+					} else {
 						this._scriptLoader = new NodeScriptLoader(this._env);
 					}
-				}
-				else if (this._env.isNode) {
+				} else if (this._env.isNode) {
 					this._scriptLoader = new NodeScriptLoader(this._env);
-				}
-				else {
+				} else {
 					this._scriptLoader = new BrowserScriptLoader();
 				}
 			}
 			let scriptCallbacks = {
 				callback: callback,
-				errorback: errorback
+				errorback: errorback,
 			};
 			if (this._callbackMap.hasOwnProperty(scriptSrc)) {
 				this._callbackMap[scriptSrc].push(scriptCallbacks);
 				return;
 			}
 			this._callbackMap[scriptSrc] = [scriptCallbacks];
-			this._scriptLoader.load(moduleManager, scriptSrc, () => this.triggerCallback(scriptSrc), (err) => this.triggerErrorback(scriptSrc, err));
+			this._scriptLoader.load(
+				moduleManager,
+				scriptSrc,
+				() => this.triggerCallback(scriptSrc),
+				err => this.triggerErrorback(scriptSrc, err)
+			);
 		}
 		triggerCallback(scriptSrc) {
 			let scriptCallbacks = this._callbackMap[scriptSrc];
@@ -605,11 +648,11 @@ var AMDLoader;
 				script.removeEventListener('load', loadEventListener);
 				script.removeEventListener('error', errorEventListener);
 			};
-			let loadEventListener = (e) => {
+			let loadEventListener = e => {
 				unbind();
 				callback();
 			};
-			let errorEventListener = (e) => {
+			let errorEventListener = e => {
 				unbind();
 				errorback(e);
 			};
@@ -619,20 +662,21 @@ var AMDLoader;
 		load(moduleManager, scriptSrc, callback, errorback) {
 			if (/^node\|/.test(scriptSrc)) {
 				let opts = moduleManager.getConfig().getOptionsLiteral();
-				let nodeRequire = ensureRecordedNodeRequire(moduleManager.getRecorder(), (opts.nodeRequire || AMDLoader.global.nodeRequire));
+				let nodeRequire = ensureRecordedNodeRequire(
+					moduleManager.getRecorder(),
+					opts.nodeRequire || AMDLoader.global.nodeRequire
+				);
 				let pieces = scriptSrc.split('|');
 				let moduleExports = null;
 				try {
 					moduleExports = nodeRequire(pieces[1]);
-				}
-				catch (err) {
+				} catch (err) {
 					errorback(err);
 					return;
 				}
 				moduleManager.enqueueDefineAnonymousModule([], () => moduleExports);
 				callback();
-			}
-			else {
+			} else {
 				let script = document.createElement('script');
 				script.setAttribute('async', 'async');
 				script.setAttribute('type', 'text/javascript');
@@ -654,14 +698,12 @@ var AMDLoader;
 	function canUseEval(moduleManager) {
 		const { trustedTypesPolicy } = moduleManager.getConfig().getOptionsLiteral();
 		try {
-			const func = (trustedTypesPolicy
+			const func = trustedTypesPolicy
 				? self.eval(trustedTypesPolicy.createScript('', 'true')) // CodeQL [SM01632] the loader is responsible with loading code, fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
-				: new Function('true') // CodeQL [SM01632] the loader is responsible with loading code, fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
-			);
+				: new Function('true'); // CodeQL [SM01632] the loader is responsible with loading code, fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
 			func.call(self);
 			return true;
-		}
-		catch (err) {
+		} catch (err) {
 			return false;
 		}
 	}
@@ -678,39 +720,46 @@ var AMDLoader;
 		load(moduleManager, scriptSrc, callback, errorback) {
 			if (/^node\|/.test(scriptSrc)) {
 				const opts = moduleManager.getConfig().getOptionsLiteral();
-				const nodeRequire = ensureRecordedNodeRequire(moduleManager.getRecorder(), (opts.nodeRequire || AMDLoader.global.nodeRequire));
+				const nodeRequire = ensureRecordedNodeRequire(
+					moduleManager.getRecorder(),
+					opts.nodeRequire || AMDLoader.global.nodeRequire
+				);
 				const pieces = scriptSrc.split('|');
 				let moduleExports = null;
 				try {
 					moduleExports = nodeRequire(pieces[1]);
-				}
-				catch (err) {
+				} catch (err) {
 					errorback(err);
 					return;
 				}
-				moduleManager.enqueueDefineAnonymousModule([], function () { return moduleExports; });
+				moduleManager.enqueueDefineAnonymousModule([], function () {
+					return moduleExports;
+				});
 				callback();
-			}
-			else {
+			} else {
 				const { trustedTypesPolicy } = moduleManager.getConfig().getOptionsLiteral();
-				const isCrossOrigin = (/^((http:)|(https:)|(file:))/.test(scriptSrc) && scriptSrc.substring(0, self.origin.length) !== self.origin);
+				const isCrossOrigin =
+					/^((http:)|(https:)|(file:))/.test(scriptSrc) &&
+					scriptSrc.substring(0, self.origin.length) !== self.origin;
 				if (!isCrossOrigin && this._canUseEval(moduleManager)) {
 					// use `fetch` if possible because `importScripts`
 					// is synchronous and can lead to deadlocks on Safari
-					fetch(scriptSrc).then((response) => {
-						if (response.status !== 200) {
-							throw new Error(response.statusText);
-						}
-						return response.text();
-					}).then((text) => {
-						text = `${text}\n//# sourceURL=${scriptSrc}`;
-						const func = (trustedTypesPolicy
-							? self.eval(trustedTypesPolicy.createScript('', text)) // CodeQL [SM01632] the loader is responsible with loading code, fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
-							: new Function(text) // CodeQL [SM01632] the loader is responsible with loading code, fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
-						);
-						func.call(self);
-						callback();
-					}).then(undefined, errorback);
+					fetch(scriptSrc)
+						.then(response => {
+							if (response.status !== 200) {
+								throw new Error(response.statusText);
+							}
+							return response.text();
+						})
+						.then(text => {
+							text = `${text}\n//# sourceURL=${scriptSrc}`;
+							const func = trustedTypesPolicy
+								? self.eval(trustedTypesPolicy.createScript('', text)) // CodeQL [SM01632] the loader is responsible with loading code, fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
+								: new Function(text); // CodeQL [SM01632] the loader is responsible with loading code, fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
+							func.call(self);
+							callback();
+						})
+						.then(undefined, errorback);
 					return;
 				}
 				try {
@@ -719,8 +768,7 @@ var AMDLoader;
 					}
 					importScripts(scriptSrc);
 					callback();
-				}
-				catch (e) {
+				} catch (e) {
 					errorback(e);
 				}
 			}
@@ -763,8 +811,7 @@ var AMDLoader;
 				let require = function require(path) {
 					try {
 						return mod.require(path);
-					}
-					finally {
+					} finally {
 						// nothing
 					}
 				};
@@ -792,8 +839,7 @@ var AMDLoader;
 					hashData = data.slice(0, 16);
 					options.cachedData = data.slice(16);
 					recorder.record(60 /* LoaderEventType.CachedDataFound */, cachedDataPath);
-				}
-				catch (_e) {
+				} catch (_e) {
 					recorder.record(61 /* LoaderEventType.CachedDataMissed */, cachedDataPath);
 				}
 				const script = new that._vm.Script(scriptSource, options);
@@ -801,18 +847,40 @@ var AMDLoader;
 				// run script
 				const dirname = that._path.dirname(filename);
 				const require = makeRequireFunction(this);
-				const args = [this.exports, require, this, filename, dirname, process, _commonjsGlobal, Buffer];
+				const args = [
+					this.exports,
+					require,
+					this,
+					filename,
+					dirname,
+					process,
+					_commonjsGlobal,
+					Buffer,
+				];
 				const result = compileWrapper.apply(this.exports, args);
 				// cached data aftermath
-				that._handleCachedData(script, scriptSource, cachedDataPath, !options.cachedData, moduleManager);
+				that._handleCachedData(
+					script,
+					scriptSource,
+					cachedDataPath,
+					!options.cachedData,
+					moduleManager
+				);
 				that._verifyCachedData(script, scriptSource, cachedDataPath, hashData, moduleManager);
 				return result;
 			};
 		}
 		load(moduleManager, scriptSrc, callback, errorback) {
 			const opts = moduleManager.getConfig().getOptionsLiteral();
-			const nodeRequire = ensureRecordedNodeRequire(moduleManager.getRecorder(), (opts.nodeRequire || AMDLoader.global.nodeRequire));
-			const nodeInstrumenter = (opts.nodeInstrumenter || function (c) { return c; });
+			const nodeRequire = ensureRecordedNodeRequire(
+				moduleManager.getRecorder(),
+				opts.nodeRequire || AMDLoader.global.nodeRequire
+			);
+			const nodeInstrumenter =
+				opts.nodeInstrumenter ||
+				function (c) {
+					return c;
+				};
 			this._init(nodeRequire);
 			this._initNodeRequire(nodeRequire, moduleManager);
 			let recorder = moduleManager.getRecorder();
@@ -821,38 +889,55 @@ var AMDLoader;
 				let moduleExports = null;
 				try {
 					moduleExports = nodeRequire(pieces[1]);
-				}
-				catch (err) {
+				} catch (err) {
 					errorback(err);
 					return;
 				}
 				moduleManager.enqueueDefineAnonymousModule([], () => moduleExports);
 				callback();
-			}
-			else {
+			} else {
 				scriptSrc = AMDLoader.Utilities.fileUriToFilePath(this._env.isWindows, scriptSrc);
 				const normalizedScriptSrc = this._path.normalize(scriptSrc);
 				const vmScriptPathOrUri = this._getElectronRendererScriptPathOrUri(normalizedScriptSrc);
 				const wantsCachedData = Boolean(opts.nodeCachedData);
-				const cachedDataPath = wantsCachedData ? this._getCachedDataPath(opts.nodeCachedData, scriptSrc) : undefined;
-				this._readSourceAndCachedData(normalizedScriptSrc, cachedDataPath, recorder, (err, data, cachedData, hashData) => {
-					if (err) {
-						errorback(err);
-						return;
+				const cachedDataPath = wantsCachedData
+					? this._getCachedDataPath(opts.nodeCachedData, scriptSrc)
+					: undefined;
+				this._readSourceAndCachedData(
+					normalizedScriptSrc,
+					cachedDataPath,
+					recorder,
+					(err, data, cachedData, hashData) => {
+						if (err) {
+							errorback(err);
+							return;
+						}
+						let scriptSource;
+						if (data.charCodeAt(0) === NodeScriptLoader._BOM) {
+							scriptSource =
+								NodeScriptLoader._PREFIX + data.substring(1) + NodeScriptLoader._SUFFIX;
+						} else {
+							scriptSource = NodeScriptLoader._PREFIX + data + NodeScriptLoader._SUFFIX;
+						}
+						scriptSource = nodeInstrumenter(scriptSource, normalizedScriptSrc);
+						const scriptOpts = { filename: vmScriptPathOrUri, cachedData };
+						const script = this._createAndEvalScript(
+							moduleManager,
+							scriptSource,
+							scriptOpts,
+							callback,
+							errorback
+						);
+						this._handleCachedData(
+							script,
+							scriptSource,
+							cachedDataPath,
+							wantsCachedData && !cachedData,
+							moduleManager
+						);
+						this._verifyCachedData(script, scriptSource, cachedDataPath, hashData, moduleManager);
 					}
-					let scriptSource;
-					if (data.charCodeAt(0) === NodeScriptLoader._BOM) {
-						scriptSource = NodeScriptLoader._PREFIX + data.substring(1) + NodeScriptLoader._SUFFIX;
-					}
-					else {
-						scriptSource = NodeScriptLoader._PREFIX + data + NodeScriptLoader._SUFFIX;
-					}
-					scriptSource = nodeInstrumenter(scriptSource, normalizedScriptSrc);
-					const scriptOpts = { filename: vmScriptPathOrUri, cachedData };
-					const script = this._createAndEvalScript(moduleManager, scriptSource, scriptOpts, callback, errorback);
-					this._handleCachedData(script, scriptSource, cachedDataPath, wantsCachedData && !cachedData, moduleManager);
-					this._verifyCachedData(script, scriptSource, cachedDataPath, hashData, moduleManager);
-				});
+				);
 			}
 		}
 		_createAndEvalScript(moduleManager, contents, options, callback, errorback) {
@@ -867,12 +952,17 @@ var AMDLoader;
 				return globalDefineFunc.apply(null, arguments);
 			};
 			localDefineFunc.amd = globalDefineFunc.amd;
-			ret.call(AMDLoader.global, moduleManager.getGlobalAMDRequireFunc(), localDefineFunc, options.filename, this._path.dirname(options.filename));
+			ret.call(
+				AMDLoader.global,
+				moduleManager.getGlobalAMDRequireFunc(),
+				localDefineFunc,
+				options.filename,
+				this._path.dirname(options.filename)
+			);
 			recorder.record(32 /* LoaderEventType.NodeEndEvaluatingScript */, options.filename);
 			if (receivedDefineCall) {
 				callback();
-			}
-			else {
+			} else {
 				errorback(new Error(`Didn't receive define call in ${options.filename}!`));
 			}
 			return script;
@@ -885,14 +975,18 @@ var AMDLoader;
 			if (driveLetterMatch) {
 				// windows
 				return `file:///${(driveLetterMatch[1].toUpperCase() + ':' + driveLetterMatch[2]).replace(/\\/g, '/')}`;
-			}
-			else {
+			} else {
 				// nix
 				return `file://${path}`;
 			}
 		}
 		_getCachedDataPath(config, filename) {
-			const hash = this._crypto.createHash('md5').update(filename, 'utf8').update(config.seed, 'utf8').update(process.arch, '').digest('hex');
+			const hash = this._crypto
+				.createHash('md5')
+				.update(filename, 'utf8')
+				.update(config.seed, 'utf8')
+				.update(process.arch, '')
+				.digest('hex');
 			const basename = this._path.basename(filename).replace(/\.js$/, '');
 			return this._path.join(config.path, `${basename}-${hash}.code`);
 		}
@@ -900,14 +994,15 @@ var AMDLoader;
 			if (script.cachedDataRejected) {
 				// cached data got rejected -> delete and re-create
 				this._fs.unlink(cachedDataPath, err => {
-					moduleManager.getRecorder().record(62 /* LoaderEventType.CachedDataRejected */, cachedDataPath);
+					moduleManager
+						.getRecorder()
+						.record(62 /* LoaderEventType.CachedDataRejected */, cachedDataPath);
 					this._createAndWriteCachedData(script, scriptSource, cachedDataPath, moduleManager);
 					if (err) {
 						moduleManager.getConfig().onError(err);
 					}
 				});
-			}
-			else if (createCachedData) {
+			} else if (createCachedData) {
 				// no cached data, but wanted
 				this._createAndWriteCachedData(script, scriptSource, cachedDataPath, moduleManager);
 			}
@@ -916,34 +1011,42 @@ var AMDLoader;
 		// -SOURCE_HASH is the md5 hash of the JS source (always 16 bytes)
 		// -V8_CACHED_DATA is what v8 produces
 		_createAndWriteCachedData(script, scriptSource, cachedDataPath, moduleManager) {
-			let timeout = Math.ceil(moduleManager.getConfig().getOptionsLiteral().nodeCachedData.writeDelay * (1 + Math.random()));
+			let timeout = Math.ceil(
+				moduleManager.getConfig().getOptionsLiteral().nodeCachedData.writeDelay *
+					(1 + Math.random())
+			);
 			let lastSize = -1;
 			let iteration = 0;
 			let hashData = undefined;
 			const createLoop = () => {
-				setTimeout(() => {
-					if (!hashData) {
-						hashData = this._crypto.createHash('md5').update(scriptSource, 'utf8').digest();
-					}
-					const cachedData = script.createCachedData();
-					if (cachedData.length === 0 || cachedData.length === lastSize || iteration >= 5) {
-						// done
-						return;
-					}
-					if (cachedData.length < lastSize) {
-						// less data than before: skip, try again next round
-						createLoop();
-						return;
-					}
-					lastSize = cachedData.length;
-					this._fs.writeFile(cachedDataPath, Buffer.concat([hashData, cachedData]), err => {
-						if (err) {
-							moduleManager.getConfig().onError(err);
+				setTimeout(
+					() => {
+						if (!hashData) {
+							hashData = this._crypto.createHash('md5').update(scriptSource, 'utf8').digest();
 						}
-						moduleManager.getRecorder().record(63 /* LoaderEventType.CachedDataCreated */, cachedDataPath);
-						createLoop();
-					});
-				}, timeout * (Math.pow(4, iteration++)));
+						const cachedData = script.createCachedData();
+						if (cachedData.length === 0 || cachedData.length === lastSize || iteration >= 5) {
+							// done
+							return;
+						}
+						if (cachedData.length < lastSize) {
+							// less data than before: skip, try again next round
+							createLoop();
+							return;
+						}
+						lastSize = cachedData.length;
+						this._fs.writeFile(cachedDataPath, Buffer.concat([hashData, cachedData]), err => {
+							if (err) {
+								moduleManager.getConfig().onError(err);
+							}
+							moduleManager
+								.getRecorder()
+								.record(63 /* LoaderEventType.CachedDataCreated */, cachedDataPath);
+							createLoop();
+						});
+					},
+					timeout * Math.pow(4, iteration++)
+				);
 			};
 			// with some delay (`timeout`) create cached data
 			// and repeat that (with backoff delay) until the
@@ -954,18 +1057,16 @@ var AMDLoader;
 			if (!cachedDataPath) {
 				// no cached data case
 				this._fs.readFile(sourcePath, { encoding: 'utf8' }, callback);
-			}
-			else {
+			} else {
 				// cached data case: read both files in parallel
 				let source = undefined;
 				let cachedData = undefined;
 				let hashData = undefined;
 				let steps = 2;
-				const step = (err) => {
+				const step = err => {
 					if (err) {
 						callback(err);
-					}
-					else if (--steps === 0) {
+					} else if (--steps === 0) {
 						callback(undefined, source, cachedData, hashData);
 					}
 				};
@@ -978,8 +1079,7 @@ var AMDLoader;
 						hashData = data.slice(0, 16);
 						cachedData = data.slice(16);
 						recorder.record(60 /* LoaderEventType.CachedDataFound */, cachedDataPath);
-					}
-					else {
+					} else {
 						recorder.record(61 /* LoaderEventType.CachedDataMissed */, cachedDataPath);
 					}
 					step(); // ignored: cached data is optional
@@ -995,23 +1095,32 @@ var AMDLoader;
 				// invalid anyways
 				return;
 			}
-			setTimeout(() => {
-				// check source hash - the contract is that file paths change when file content
-				// change (e.g use the commit or version id as cache path). this check is
-				// for violations of this contract.
-				const hashDataNow = this._crypto.createHash('md5').update(scriptSource, 'utf8').digest();
-				if (!hashData.equals(hashDataNow)) {
-					moduleManager.getConfig().onError(new Error(`FAILED TO VERIFY CACHED DATA, deleting stale '${cachedDataPath}' now, but a RESTART IS REQUIRED`));
-					this._fs.unlink(cachedDataPath, err => {
-						if (err) {
-							moduleManager.getConfig().onError(err);
-						}
-					});
-				}
-			}, Math.ceil(5000 * (1 + Math.random())));
+			setTimeout(
+				() => {
+					// check source hash - the contract is that file paths change when file content
+					// change (e.g use the commit or version id as cache path). this check is
+					// for violations of this contract.
+					const hashDataNow = this._crypto.createHash('md5').update(scriptSource, 'utf8').digest();
+					if (!hashData.equals(hashDataNow)) {
+						moduleManager
+							.getConfig()
+							.onError(
+								new Error(
+									`FAILED TO VERIFY CACHED DATA, deleting stale '${cachedDataPath}' now, but a RESTART IS REQUIRED`
+								)
+							);
+						this._fs.unlink(cachedDataPath, err => {
+							if (err) {
+								moduleManager.getConfig().onError(err);
+							}
+						});
+					}
+				},
+				Math.ceil(5000 * (1 + Math.random()))
+			);
 		}
 	}
-	NodeScriptLoader._BOM = 0xFEFF;
+	NodeScriptLoader._BOM = 0xfeff;
 	NodeScriptLoader._PREFIX = '(function (require, define, __filename, __dirname) { ';
 	NodeScriptLoader._SUFFIX = '\n});';
 	function ensureRecordedNodeRequire(recorder, _nodeRequire) {
@@ -1023,8 +1132,7 @@ var AMDLoader;
 			recorder.record(33 /* LoaderEventType.NodeBeginNativeRequire */, what);
 			try {
 				return _nodeRequire(what);
-			}
-			finally {
+			} finally {
 				recorder.record(34 /* LoaderEventType.NodeEndNativeRequire */, what);
 			}
 		};
@@ -1050,8 +1158,7 @@ var AMDLoader;
 			let lastSlash = fromModuleId.lastIndexOf('/');
 			if (lastSlash !== -1) {
 				this.fromModulePath = fromModuleId.substr(0, lastSlash + 1);
-			}
-			else {
+			} else {
 				this.fromModulePath = '';
 			}
 		}
@@ -1059,7 +1166,8 @@ var AMDLoader;
 		 * Normalize 'a/../name' to 'name', etc.
 		 */
 		static _normalizeModuleId(moduleId) {
-			let r = moduleId, pattern;
+			let r = moduleId,
+				pattern;
 			// replace /./ => /
 			pattern = /\/\.\//;
 			while (pattern.test(r)) {
@@ -1082,7 +1190,10 @@ var AMDLoader;
 		resolveModule(moduleId) {
 			let result = moduleId;
 			if (!AMDLoader.Utilities.isAbsolutePath(result)) {
-				if (AMDLoader.Utilities.startsWith(result, './') || AMDLoader.Utilities.startsWith(result, '../')) {
+				if (
+					AMDLoader.Utilities.startsWith(result, './') ||
+					AMDLoader.Utilities.startsWith(result, '../')
+				) {
 					result = ModuleIdResolver._normalizeModuleId(this.fromModulePath + result);
 				}
 			}
@@ -1111,13 +1222,12 @@ var AMDLoader;
 			try {
 				return {
 					returnedValue: callback.apply(AMDLoader.global, args),
-					producedError: null
+					producedError: null,
 				};
-			}
-			catch (e) {
+			} catch (e) {
 				return {
 					returnedValue: null,
-					producedError: e
+					producedError: e,
 				};
 			}
 		}
@@ -1125,7 +1235,7 @@ var AMDLoader;
 			if (!config.shouldInvokeFactory(strModuleId)) {
 				return {
 					returnedValue: null,
-					producedError: null
+					producedError: null,
 				};
 			}
 			if (config.shouldCatchError()) {
@@ -1133,7 +1243,7 @@ var AMDLoader;
 			}
 			return {
 				returnedValue: callback.apply(AMDLoader.global, dependenciesValues),
-				producedError: null
+				producedError: null,
 			};
 		}
 		complete(recorder, config, dependenciesValues, inversedependenciesProvider) {
@@ -1145,11 +1255,14 @@ var AMDLoader;
 					let r = Module._invokeFactory(config, this.strId, this._callback, dependenciesValues);
 					producedError = r.producedError;
 					recorder.record(22 /* LoaderEventType.EndInvokeFactory */, this.strId);
-					if (!producedError && typeof r.returnedValue !== 'undefined' && (!this.exportsPassedIn || AMDLoader.Utilities.isEmpty(this.exports))) {
+					if (
+						!producedError &&
+						typeof r.returnedValue !== 'undefined' &&
+						(!this.exportsPassedIn || AMDLoader.Utilities.isEmpty(this.exports))
+					) {
 						this.exports = r.returnedValue;
 					}
-				}
-				else {
+				} else {
 					this.exports = this._callback;
 				}
 			}
@@ -1251,7 +1364,13 @@ var AMDLoader;
 			this._requireFunc.moduleManager = this;
 		}
 		reset() {
-			return new ModuleManager(this._env, this._scriptLoader, this._defineFunc, this._requireFunc, this._loaderAvailableTimestamp);
+			return new ModuleManager(
+				this._env,
+				this._scriptLoader,
+				this._defineFunc,
+				this._requireFunc,
+				this._loaderAvailableTimestamp
+			);
 		}
 		getGlobalAMDDefineFunc() {
 			return this._defineFunc;
@@ -1260,7 +1379,7 @@ var AMDLoader;
 			return this._requireFunc;
 		}
 		static _findRelevantLocationInStack(needle, stack) {
-			let normalize = (str) => str.replace(/\\/g, '/');
+			let normalize = str => str.replace(/\\/g, '/');
 			let normalizedPath = normalize(needle);
 			let stackPieces = stack.split(/\n/);
 			for (let i = 0; i < stackPieces.length; i++) {
@@ -1269,13 +1388,16 @@ var AMDLoader;
 					let stackPath = m[1];
 					let stackLine = m[2];
 					let stackColumn = m[3];
-					let trimPathOffset = Math.max(stackPath.lastIndexOf(' ') + 1, stackPath.lastIndexOf('(') + 1);
+					let trimPathOffset = Math.max(
+						stackPath.lastIndexOf(' ') + 1,
+						stackPath.lastIndexOf('(') + 1
+					);
 					stackPath = stackPath.substr(trimPathOffset);
 					stackPath = normalize(stackPath);
 					if (stackPath === normalizedPath) {
 						let r = {
 							line: parseInt(stackLine, 10),
-							col: parseInt(stackColumn, 10)
+							col: parseInt(stackColumn, 10),
 						};
 						if (r.line === 1) {
 							r.col -= '(function (require, define, __filename, __dirname) { '.length;
@@ -1290,7 +1412,8 @@ var AMDLoader;
 			if (!this._config.isBuild()) {
 				return null;
 			}
-			let result = [], resultLen = 0;
+			let result = [],
+				resultLen = 0;
 			for (let i = 0, len = this._modules2.length; i < len; i++) {
 				let m = this._modules2[i];
 				if (!m) {
@@ -1302,10 +1425,13 @@ var AMDLoader;
 				result[resultLen++] = {
 					id: m.strId,
 					path: location,
-					defineLocation: (location && defineStack ? ModuleManager._findRelevantLocationInStack(location, defineStack) : null),
+					defineLocation:
+						location && defineStack
+							? ModuleManager._findRelevantLocationInStack(location, defineStack)
+							: null,
 					dependencies: dependencies,
 					shim: null,
-					exports: m.exports
+					exports: m.exports,
 				};
 			}
 			return result;
@@ -1314,8 +1440,7 @@ var AMDLoader;
 			if (!this._recorder) {
 				if (this._config.shouldRecordStats()) {
 					this._recorder = new AMDLoader.LoaderEventRecorder(this._loaderAvailableTimestamp);
-				}
-				else {
+				} else {
 					this._recorder = AMDLoader.NullLoaderEventRecorder.INSTANCE;
 				}
 			}
@@ -1340,7 +1465,7 @@ var AMDLoader;
 			this._currentAnonymousDefineCall = {
 				stack: stack,
 				dependencies: dependencies,
-				callback: callback
+				callback: callback,
 			};
 		}
 		/**
@@ -1349,20 +1474,36 @@ var AMDLoader;
 		 * @param dependencies An array with the dependencies of the module. Special keys are: "require", "exports" and "module"
 		 * @param callback if callback is a function, it will be called with the resolved dependencies. if callback is an object, it will be considered as the exports of the module.
 		 */
-		defineModule(strModuleId, dependencies, callback, errorback, stack, moduleIdResolver = new ModuleIdResolver(strModuleId)) {
+		defineModule(
+			strModuleId,
+			dependencies,
+			callback,
+			errorback,
+			stack,
+			moduleIdResolver = new ModuleIdResolver(strModuleId)
+		) {
 			let moduleId = this._moduleIdProvider.getModuleId(strModuleId);
 			if (this._modules2[moduleId]) {
 				if (!this._config.isDuplicateMessageIgnoredFor(strModuleId)) {
-					console.warn('Duplicate definition of module \'' + strModuleId + '\'');
+					console.warn("Duplicate definition of module '" + strModuleId + "'");
 				}
 				// Super important! Completely ignore duplicate module definition
 				return;
 			}
-			let m = new Module(moduleId, strModuleId, this._normalizeDependencies(dependencies, moduleIdResolver), callback, errorback, moduleIdResolver);
+			let m = new Module(
+				moduleId,
+				strModuleId,
+				this._normalizeDependencies(dependencies, moduleIdResolver),
+				callback,
+				errorback,
+				moduleIdResolver
+			);
 			this._modules2[moduleId] = m;
 			if (this._config.isBuild()) {
 				this._buildInfoDefineStack[moduleId] = stack;
-				this._buildInfoDependencies[moduleId] = (m.dependencies || []).map(dep => this._moduleIdProvider.getStrModuleId(dep.id));
+				this._buildInfoDependencies[moduleId] = (m.dependencies || []).map(dep =>
+					this._moduleIdProvider.getStrModuleId(dep.id)
+				);
 			}
 			// Resolving of dependencies is immediate (not in a timeout). If there's a need to support a packer that concatenates in an
 			// unordered manner, in order to finish processing the file, execute the following method in a timeout
@@ -1387,10 +1528,13 @@ var AMDLoader;
 				let pluginId = this._moduleIdProvider.getModuleId(strPluginId);
 				return new PluginDependency(dependencyId, pluginId, pluginParam);
 			}
-			return new RegularDependency(this._moduleIdProvider.getModuleId(moduleIdResolver.resolveModule(dependency)));
+			return new RegularDependency(
+				this._moduleIdProvider.getModuleId(moduleIdResolver.resolveModule(dependency))
+			);
 		}
 		_normalizeDependencies(dependencies, moduleIdResolver) {
-			let result = [], resultLen = 0;
+			let result = [],
+				resultLen = 0;
 			for (let i = 0, len = dependencies.length; i < len; i++) {
 				result[resultLen++] = this._normalizeDependency(dependencies[i], moduleIdResolver);
 			}
@@ -1400,7 +1544,14 @@ var AMDLoader;
 			if (typeof dependencies === 'string') {
 				return this.synchronousRequire(dependencies, moduleIdResolver);
 			}
-			this.defineModule(AMDLoader.Utilities.generateAnonymousModule(), dependencies, callback, errorback, null, moduleIdResolver);
+			this.defineModule(
+				AMDLoader.Utilities.generateAnonymousModule(),
+				dependencies,
+				callback,
+				errorback,
+				null,
+				moduleIdResolver
+			);
 		}
 		/**
 		 * Require synchronously a module by its absolute id. If the module is not loaded, an exception will be thrown.
@@ -1411,10 +1562,18 @@ var AMDLoader;
 			let dependency = this._normalizeDependency(_strModuleId, moduleIdResolver);
 			let m = this._modules2[dependency.id];
 			if (!m) {
-				throw new Error('Check dependency list! Synchronous require cannot resolve module \'' + _strModuleId + '\'. This is the first mention of this module!');
+				throw new Error(
+					"Check dependency list! Synchronous require cannot resolve module '" +
+						_strModuleId +
+						"'. This is the first mention of this module!"
+				);
 			}
 			if (!m.isComplete()) {
-				throw new Error('Check dependency list! Synchronous require cannot resolve module \'' + _strModuleId + '\'. This module has not been resolved completely yet.');
+				throw new Error(
+					"Check dependency list! Synchronous require cannot resolve module '" +
+						_strModuleId +
+						"'. This module has not been resolved completely yet."
+				);
 			}
 			if (m.error) {
 				throw m.error;
@@ -1425,8 +1584,7 @@ var AMDLoader;
 			let oldShouldRecordStats = this._config.shouldRecordStats();
 			if (shouldOverwrite) {
 				this._config = new AMDLoader.Configuration(this._env, params);
-			}
-			else {
+			} else {
 				this._config = this._config.cloneAndMerge(params);
 			}
 			if (this._config.shouldRecordStats() && !oldShouldRecordStats) {
@@ -1445,12 +1603,20 @@ var AMDLoader;
 				let defineCall = this._currentAnonymousDefineCall;
 				this._currentAnonymousDefineCall = null;
 				// Hit an anonymous define call
-				this.defineModule(this._moduleIdProvider.getStrModuleId(moduleId), defineCall.dependencies, defineCall.callback, null, defineCall.stack);
+				this.defineModule(
+					this._moduleIdProvider.getStrModuleId(moduleId),
+					defineCall.dependencies,
+					defineCall.callback,
+					null,
+					defineCall.stack
+				);
 			}
 		}
 		_createLoadError(moduleId, _err) {
 			let strModuleId = this._moduleIdProvider.getStrModuleId(moduleId);
-			let neededBy = (this._inverseDependencies2[moduleId] || []).map((intModuleId) => this._moduleIdProvider.getStrModuleId(intModuleId));
+			let neededBy = (this._inverseDependencies2[moduleId] || []).map(intModuleId =>
+				this._moduleIdProvider.getStrModuleId(intModuleId)
+			);
 			const err = AMDLoader.ensureError(_err);
 			err.phase = 'loading';
 			err.moduleId = strModuleId;
@@ -1464,7 +1630,14 @@ var AMDLoader;
 		_onLoadError(moduleId, err) {
 			const error = this._createLoadError(moduleId, err);
 			if (!this._modules2[moduleId]) {
-				this._modules2[moduleId] = new Module(moduleId, this._moduleIdProvider.getStrModuleId(moduleId), [], () => { }, null, null);
+				this._modules2[moduleId] = new Module(
+					moduleId,
+					this._moduleIdProvider.getStrModuleId(moduleId),
+					[],
+					() => {},
+					null,
+					null
+				);
 			}
 			// Find any 'local' error handlers, walk the entire chain of inverse dependencies if necessary.
 			let seenModuleId = [];
@@ -1570,10 +1743,10 @@ var AMDLoader;
 		 * Create the local 'require' that is passed into modules
 		 */
 		_createRequire(moduleIdResolver) {
-			let result = ((dependencies, callback, errorback) => {
+			let result = (dependencies, callback, errorback) => {
 				return this._relativeRequire(moduleIdResolver, dependencies, callback, errorback);
-			});
-			result.toUrl = (id) => {
+			};
+			result.toUrl = id => {
 				return this._config.requireToUrl(moduleIdResolver.resolveModule(id));
 			};
 			result.getStats = () => {
@@ -1597,36 +1770,49 @@ var AMDLoader;
 			let strModuleId = this._moduleIdProvider.getStrModuleId(moduleId);
 			let paths = this._config.moduleIdToPaths(strModuleId);
 			let scopedPackageRegex = /^@[^\/]+\/[^\/]+$/; // matches @scope/package-name
-			if (this._env.isNode && (strModuleId.indexOf('/') === -1 || scopedPackageRegex.test(strModuleId))) {
+			if (
+				this._env.isNode &&
+				(strModuleId.indexOf('/') === -1 || scopedPackageRegex.test(strModuleId))
+			) {
 				paths.push('node|' + strModuleId);
 			}
 			let lastPathIndex = -1;
-			let loadNextPath = (err) => {
+			let loadNextPath = err => {
 				lastPathIndex++;
 				if (lastPathIndex >= paths.length) {
 					// No more paths to try
 					this._onLoadError(moduleId, err);
-				}
-				else {
+				} else {
 					let currentPath = paths[lastPathIndex];
 					let recorder = this.getRecorder();
 					if (this._config.isBuild() && currentPath === 'empty:') {
 						this._buildInfoPath[moduleId] = currentPath;
-						this.defineModule(this._moduleIdProvider.getStrModuleId(moduleId), [], null, null, null);
+						this.defineModule(
+							this._moduleIdProvider.getStrModuleId(moduleId),
+							[],
+							null,
+							null,
+							null
+						);
 						this._onLoad(moduleId);
 						return;
 					}
 					recorder.record(10 /* LoaderEventType.BeginLoadingScript */, currentPath);
-					this._scriptLoader.load(this, currentPath, () => {
-						if (this._config.isBuild()) {
-							this._buildInfoPath[moduleId] = currentPath;
+					this._scriptLoader.load(
+						this,
+						currentPath,
+						() => {
+							if (this._config.isBuild()) {
+								this._buildInfoPath[moduleId] = currentPath;
+							}
+							recorder.record(11 /* LoaderEventType.EndLoadingScriptOK */, currentPath);
+							this._onLoad(moduleId);
+						},
+						err => {
+							recorder.record(12 /* LoaderEventType.EndLoadingScriptError */, currentPath);
+							loadNextPath(err);
 						}
-						recorder.record(11 /* LoaderEventType.EndLoadingScriptOK */, currentPath);
-						this._onLoad(moduleId);
-					}, (err) => {
-						recorder.record(12 /* LoaderEventType.EndLoadingScriptError */, currentPath);
-						loadNextPath(err);
-					});
+					);
 				}
 			};
 			loadNextPath(null);
@@ -1644,13 +1830,24 @@ var AMDLoader;
 			}
 			this._knownModules2[pluginDependency.id] = true;
 			// Delegate the loading of the resource to the plugin
-			let load = ((value) => {
-				this.defineModule(this._moduleIdProvider.getStrModuleId(pluginDependency.id), [], value, null, null);
-			});
-			load.error = (err) => {
+			let load = value => {
+				this.defineModule(
+					this._moduleIdProvider.getStrModuleId(pluginDependency.id),
+					[],
+					value,
+					null,
+					null
+				);
+			};
+			load.error = err => {
 				this._config.onError(this._createLoadError(pluginDependency.id, err));
 			};
-			plugin.load(pluginDependency.pluginParam, this._createRequire(ModuleIdResolver.ROOT), load, this._config.getOptionsLiteral());
+			plugin.load(
+				pluginDependency.pluginParam,
+				this._createRequire(ModuleIdResolver.ROOT),
+				load,
+				this._config.getOptionsLiteral()
+			);
 		}
 		/**
 		 * Examine the dependencies of module 'module' and resolve them as needed.
@@ -1684,17 +1881,26 @@ var AMDLoader;
 					}
 					if (this._hasDependencyPath(dependency.id, module.id)) {
 						this._hasDependencyCycle = true;
-						console.warn('There is a dependency cycle between \'' + this._moduleIdProvider.getStrModuleId(dependency.id) + '\' and \'' + this._moduleIdProvider.getStrModuleId(module.id) + '\'. The cyclic path follows:');
+						console.warn(
+							"There is a dependency cycle between '" +
+								this._moduleIdProvider.getStrModuleId(dependency.id) +
+								"' and '" +
+								this._moduleIdProvider.getStrModuleId(module.id) +
+								"'. The cyclic path follows:"
+						);
 						let cyclePath = this._findCyclePath(dependency.id, module.id, 0) || [];
 						cyclePath.reverse();
 						cyclePath.push(dependency.id);
-						console.warn(cyclePath.map(id => this._moduleIdProvider.getStrModuleId(id)).join(' => \n'));
+						console.warn(
+							cyclePath.map(id => this._moduleIdProvider.getStrModuleId(id)).join(' => \n')
+						);
 						// Break the cycle
 						module.unresolvedDependenciesCount--;
 						continue;
 					}
 					// record inverse dependency
-					this._inverseDependencies2[dependency.id] = this._inverseDependencies2[dependency.id] || [];
+					this._inverseDependencies2[dependency.id] =
+						this._inverseDependencies2[dependency.id] || [];
 					this._inverseDependencies2[dependency.id].push(module.id);
 					if (dependency instanceof PluginDependency) {
 						let plugin = this._modules2[dependency.pluginId];
@@ -1739,7 +1945,7 @@ var AMDLoader;
 							id: module.strId,
 							config: () => {
 								return this._config.getConfigForModule(module.strId);
-							}
+							},
 						};
 						continue;
 					}
@@ -1755,8 +1961,10 @@ var AMDLoader;
 					dependenciesValues[i] = null;
 				}
 			}
-			const inversedependenciesProvider = (moduleId) => {
-				return (this._inverseDependencies2[moduleId] || []).map((intModuleId) => this._moduleIdProvider.getStrModuleId(intModuleId));
+			const inversedependenciesProvider = moduleId => {
+				return (this._inverseDependencies2[moduleId] || []).map(intModuleId =>
+					this._moduleIdProvider.getStrModuleId(intModuleId)
+				);
 			};
 			module.complete(recorder, this._config, dependenciesValues, inversedependenciesProvider);
 			// Fetch and clear inverse dependencies
@@ -1808,20 +2016,19 @@ var AMDLoader;
 		}
 		if (id) {
 			moduleManager.defineModule(id, dependencies, callback, null, null);
-		}
-		else {
+		} else {
 			moduleManager.enqueueDefineAnonymousModule(dependencies, callback);
 		}
 	};
 	DefineFunc.amd = {
-		jQuery: true
+		jQuery: true,
 	};
 	const _requireFunc_config = function (params, shouldOverwrite = false) {
 		moduleManager.configure(params, shouldOverwrite);
 	};
 	const RequireFunc = function () {
 		if (arguments.length === 1) {
-			if ((arguments[0] instanceof Object) && !Array.isArray(arguments[0])) {
+			if (arguments[0] instanceof Object && !Array.isArray(arguments[0])) {
 				_requireFunc_config(arguments[0]);
 				return;
 			}
@@ -1831,7 +2038,13 @@ var AMDLoader;
 		}
 		if (arguments.length === 2 || arguments.length === 3) {
 			if (Array.isArray(arguments[0])) {
-				moduleManager.defineModule(AMDLoader.Utilities.generateAnonymousModule(), arguments[0], arguments[1], arguments[2], null);
+				moduleManager.defineModule(
+					AMDLoader.Utilities.generateAnonymousModule(),
+					arguments[0],
+					arguments[1],
+					arguments[2],
+					null
+				);
 				return;
 			}
 		}
@@ -1853,10 +2066,13 @@ var AMDLoader;
 	RequireFunc.define = DefineFunc;
 	function init() {
 		if (typeof AMDLoader.global.require !== 'undefined' || typeof require !== 'undefined') {
-			const _nodeRequire = (AMDLoader.global.require || require);
+			const _nodeRequire = AMDLoader.global.require || require;
 			if (typeof _nodeRequire === 'function' && typeof _nodeRequire.resolve === 'function') {
 				// re-expose node's require function
-				const nodeRequire = AMDLoader.ensureRecordedNodeRequire(moduleManager.getRecorder(), _nodeRequire);
+				const nodeRequire = AMDLoader.ensureRecordedNodeRequire(
+					moduleManager.getRecorder(),
+					_nodeRequire
+				);
 				AMDLoader.global.nodeRequire = nodeRequire;
 				RequireFunc.nodeRequire = nodeRequire;
 				RequireFunc.__$__nodeRequire = nodeRequire;
@@ -1864,8 +2080,7 @@ var AMDLoader;
 		}
 		if (env.isNode && !env.isElectronRenderer && !env.isElectronNodeIntegrationWebWorker) {
 			module.exports = RequireFunc;
-		}
-		else {
+		} else {
 			if (!env.isElectronRenderer) {
 				AMDLoader.global.define = DefineFunc;
 			}
@@ -1874,9 +2089,18 @@ var AMDLoader;
 	}
 	AMDLoader.init = init;
 	if (typeof AMDLoader.global.define !== 'function' || !AMDLoader.global.define.amd) {
-		moduleManager = new AMDLoader.ModuleManager(env, AMDLoader.createScriptLoader(env), DefineFunc, RequireFunc, AMDLoader.Utilities.getHighPerformanceTimestamp());
+		moduleManager = new AMDLoader.ModuleManager(
+			env,
+			AMDLoader.createScriptLoader(env),
+			DefineFunc,
+			RequireFunc,
+			AMDLoader.Utilities.getHighPerformanceTimestamp()
+		);
 		// The global variable require can configure the loader
-		if (typeof AMDLoader.global.require !== 'undefined' && typeof AMDLoader.global.require !== 'function') {
+		if (
+			typeof AMDLoader.global.require !== 'undefined' &&
+			typeof AMDLoader.global.require !== 'function'
+		) {
 			RequireFunc.config(AMDLoader.global.require);
 		}
 		// This define is for the local closure defined in node in the case that the loader is concatenated

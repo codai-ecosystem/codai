@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStorageService, IStorageValueChangeEvent, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	IStorageValueChangeEvent,
+	StorageScope,
+	StorageTarget,
+} from '../../platform/storage/common/storage.js';
 import { isEmptyObject } from '../../base/common/types.js';
 import { onUnexpectedError } from '../../base/common/errors.js';
 import { DisposableStore } from '../../base/common/lifecycle.js';
@@ -12,7 +17,6 @@ import { Event } from '../../base/common/event.js';
 export type MementoObject = { [key: string]: any };
 
 export class Memento {
-
 	private static readonly applicationMementos = new Map<string, ScopedMemento>();
 	private static readonly profileMementos = new Map<string, ScopedMemento>();
 	private static readonly workspaceMementos = new Map<string, ScopedMemento>();
@@ -21,7 +25,10 @@ export class Memento {
 
 	private readonly id: string;
 
-	constructor(id: string, private storageService: IStorageService) {
+	constructor(
+		id: string,
+		private storageService: IStorageService
+	) {
 		this.id = Memento.COMMON_PREFIX + id;
 	}
 
@@ -59,7 +66,10 @@ export class Memento {
 		}
 	}
 
-	onDidChangeValue(scope: StorageScope, disposables: DisposableStore): Event<IStorageValueChangeEvent> {
+	onDidChangeValue(
+		scope: StorageScope,
+		disposables: DisposableStore
+	): Event<IStorageValueChangeEvent> {
 		return this.storageService.onDidChangeValue(scope, this.id, disposables);
 	}
 
@@ -102,10 +112,14 @@ export class Memento {
 }
 
 class ScopedMemento {
-
 	private mementoObj: MementoObject;
 
-	constructor(private id: string, private scope: StorageScope, private target: StorageTarget, private storageService: IStorageService) {
+	constructor(
+		private id: string,
+		private scope: StorageScope,
+		private target: StorageTarget,
+		private storageService: IStorageService
+	) {
 		this.mementoObj = this.doLoad();
 	}
 
@@ -117,7 +131,9 @@ class ScopedMemento {
 			// from memento parsing exceptions. Log the contents
 			// to diagnose further
 			// https://github.com/microsoft/vscode/issues/102251
-			onUnexpectedError(`[memento]: failed to parse contents: ${error} (id: ${this.id}, scope: ${this.scope}, contents: ${this.storageService.get(this.id, this.scope)})`);
+			onUnexpectedError(
+				`[memento]: failed to parse contents: ${error} (id: ${this.id}, scope: ${this.scope}, contents: ${this.storageService.get(this.id, this.scope)})`
+			);
 		}
 
 		return {};
@@ -128,7 +144,6 @@ class ScopedMemento {
 	}
 
 	reload(): void {
-
 		// Clear old
 		for (const name of Object.getOwnPropertyNames(this.mementoObj)) {
 			delete this.mementoObj[name];

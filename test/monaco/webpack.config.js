@@ -9,13 +9,14 @@ const WarningsToErrorsPlugin = require('warnings-to-errors-webpack-plugin');
 module.exports = {
 	mode: 'production',
 	entry: {
-		'core': './core.js',
-		'editorWebWorkerMain': '../../out-monaco-editor-core/esm/vs/editor/common/services/editorWebWorkerMain.js',
+		core: './core.js',
+		editorWebWorkerMain:
+			'../../out-monaco-editor-core/esm/vs/editor/common/services/editorWebWorkerMain.js',
 	},
 	output: {
 		globalObject: 'self',
 		filename: '[name].bundle.js',
-		path: path.resolve(__dirname, './dist')
+		path: path.resolve(__dirname, './dist'),
 	},
 	module: {
 		rules: [
@@ -30,17 +31,20 @@ module.exports = {
 						loader: 'file-loader',
 						options: {
 							name: '[name].[ext]',
-							outputPath: 'fonts/'
-						}
-					}
-				]
-			}
-		]
+							outputPath: 'fonts/',
+						},
+					},
+				],
+			},
+		],
 	},
 	resolve: {
 		alias: {
-			'monaco-editor-core': path.resolve(__dirname, '../../out-monaco-editor-core/esm/vs/editor/editor.main.js'),
-		}
+			'monaco-editor-core': path.resolve(
+				__dirname,
+				'../../out-monaco-editor-core/esm/vs/editor/editor.main.js'
+			),
+		},
 	},
 	stats: {
 		all: false,
@@ -50,11 +54,9 @@ module.exports = {
 		// our additional options
 		moduleTrace: true,
 		errorDetails: true,
-		chunks: true
+		chunks: true,
 	},
-	plugins: [
-		new WarningsToErrorsPlugin()
-	],
+	plugins: [new WarningsToErrorsPlugin()],
 	optimization: {
 		// Without it, CI fails, which indicates a webpack minification bug.
 		minimize: false,

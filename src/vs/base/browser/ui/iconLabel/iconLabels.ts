@@ -6,12 +6,16 @@
 import * as dom from '../../dom.js';
 import { ThemeIcon } from '../../../common/themables.js';
 
-const labelWithIconsRegex = new RegExp(`(\\\\)?\\$\\((${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?)\\)`, 'g');
+const labelWithIconsRegex = new RegExp(
+	`(\\\\)?\\$\\((${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?)\\)`,
+	'g'
+);
 export function renderLabelWithIcons(text: string): Array<HTMLSpanElement | string> {
 	const elements = new Array<HTMLSpanElement | string>();
 	let match: RegExpExecArray | null;
 
-	let textStart = 0, textStop = 0;
+	let textStart = 0,
+		textStop = 0;
 	while ((match = labelWithIconsRegex.exec(text)) !== null) {
 		textStop = match.index || 0;
 		if (textStart < textStop) {

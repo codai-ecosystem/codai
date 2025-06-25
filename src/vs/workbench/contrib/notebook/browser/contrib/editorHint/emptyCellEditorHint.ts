@@ -5,7 +5,10 @@
 
 import { Schemas } from '../../../../../../base/common/network.js';
 import { ICodeEditor } from '../../../../../../editor/browser/editorBrowser.js';
-import { EditorContributionInstantiation, registerEditorContribution } from '../../../../../../editor/browser/editorExtensions.js';
+import {
+	EditorContributionInstantiation,
+	registerEditorContribution,
+} from '../../../../../../editor/browser/editorExtensions.js';
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
 import { IChatAgentService } from '../../../../chat/common/chatAgents.js';
 import { EmptyTextEditorHintContribution } from '../../../../codeEditor/browser/emptyTextEditorHint/emptyTextEditorHint.js';
@@ -71,4 +74,8 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 	}
 }
 
-registerEditorContribution(EmptyCellEditorHintContribution.CONTRIB_ID, EmptyCellEditorHintContribution, EditorContributionInstantiation.Eager); // eager because it needs to render a help message
+registerEditorContribution(
+	EmptyCellEditorHintContribution.CONTRIB_ID,
+	EmptyCellEditorHintContribution,
+	EditorContributionInstantiation.Eager
+); // eager because it needs to render a help message

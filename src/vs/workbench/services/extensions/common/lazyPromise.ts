@@ -6,7 +6,6 @@
 import { CancellationError, onUnexpectedError } from '../../../../base/common/errors.js';
 
 export class LazyPromise implements Promise<any> {
-
 	private _actual: Promise<any> | null;
 	private _actualOk: ((value?: any) => any) | null;
 	private _actualErr: ((err?: any) => any) | null;

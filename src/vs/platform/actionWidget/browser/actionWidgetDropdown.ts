@@ -5,7 +5,11 @@
 
 import { IActionWidgetService } from './actionWidget.js';
 import { IAction } from '../../../base/common/actions.js';
-import { BaseDropdown, IActionProvider, IBaseDropdownOptions } from '../../../base/browser/ui/dropdown/dropdown.js';
+import {
+	BaseDropdown,
+	IActionProvider,
+	IBaseDropdownOptions,
+} from '../../../base/browser/ui/dropdown/dropdown.js';
 import { ActionListItemKind, IActionListDelegate, IActionListItem } from './actionList.js';
 import { ThemeIcon } from '../../../base/common/themables.js';
 import { Codicon } from '../../../base/common/codicons.js';
@@ -42,13 +46,14 @@ export class ActionWidgetDropdown extends BaseDropdown {
 		container: HTMLElement,
 		private readonly _options: IActionWidgetDropdownOptions,
 		@IActionWidgetService private readonly actionWidgetService: IActionWidgetService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService private readonly keybindingService: IKeybindingService
 	) {
 		super(container, _options);
 	}
 
 	override show(): void {
-		let actionBarActions = this._options.actionBarActions ?? this._options.actionBarActionProvider?.getActions() ?? [];
+		let actionBarActions =
+			this._options.actionBarActions ?? this._options.actionBarActionProvider?.getActions() ?? [];
 		const actions = this._options.actions ?? this._options.actionProvider?.getActions() ?? [];
 		const actionWidgetItems: IActionListItem<IActionWidgetDropdownAction>[] = [];
 
@@ -65,15 +70,13 @@ export class ActionWidgetDropdown extends BaseDropdown {
 		}
 
 		// Sort categories by order
-		const sortedCategories = Array.from(actionsByCategory.entries())
-			.sort((a, b) => {
-				const aOrder = a[1][0]?.category?.order ?? Number.MAX_SAFE_INTEGER;
-				const bOrder = b[1][0]?.category?.order ?? Number.MAX_SAFE_INTEGER;
-				return aOrder - bOrder;
-			});
+		const sortedCategories = Array.from(actionsByCategory.entries()).sort((a, b) => {
+			const aOrder = a[1][0]?.category?.order ?? Number.MAX_SAFE_INTEGER;
+			const bOrder = b[1][0]?.category?.order ?? Number.MAX_SAFE_INTEGER;
+			return aOrder - bOrder;
+		});
 
 		for (const [categoryLabel, categoryActions] of sortedCategories) {
-
 			if (categoryLabel !== '') {
 				// Push headers for each category
 				actionWidgetItems.push({
@@ -92,19 +95,21 @@ export class ActionWidgetDropdown extends BaseDropdown {
 					description: action.description,
 					kind: ActionListItemKind.Action,
 					canPreview: false,
-					group: { title: '', icon: ThemeIcon.fromId(action.checked ? Codicon.check.id : Codicon.blank.id) },
+					group: {
+						title: '',
+						icon: ThemeIcon.fromId(action.checked ? Codicon.check.id : Codicon.blank.id),
+					},
 					disabled: false,
 					hideIcon: false,
 					label: action.label,
-					keybinding: this._options.showItemKeybindings ?
-						this.keybindingService.lookupKeybinding(action.id) :
-						undefined,
+					keybinding: this._options.showItemKeybindings
+						? this.keybindingService.lookupKeybinding(action.id)
+						: undefined,
 				});
 			}
 		}
 
 		const previouslyFocusedElement = getActiveElement();
-
 
 		const actionWidgetDelegate: IActionListDelegate<IActionWidgetDropdownAction> = {
 			onSelect: (action, preview) => {
@@ -115,7 +120,7 @@ export class ActionWidgetDropdown extends BaseDropdown {
 				if (isHTMLElement(previouslyFocusedElement)) {
 					previouslyFocusedElement.focus();
 				}
-			}
+			},
 		};
 
 		actionBarActions = actionBarActions.map(action => ({
@@ -123,7 +128,7 @@ export class ActionWidgetDropdown extends BaseDropdown {
 			run: async (...args: any[]) => {
 				this.actionWidgetService.hide();
 				return action.run(...args);
-			}
+			},
 		}));
 
 		this.actionWidgetService.show<IActionWidgetDropdownAction>(

@@ -7,9 +7,23 @@ import { Emitter } from '../../../base/common/event.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { URI } from '../../../base/common/uri.js';
 import { ILogService } from '../../../platform/log/common/log.js';
-import { MainContext, MainThreadTimelineShape, ExtHostTimelineShape, ExtHostContext } from '../common/extHost.protocol.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
-import { TimelineChangeEvent, TimelineOptions, TimelineProviderDescriptor, ITimelineService, Timeline } from '../../contrib/timeline/common/timeline.js';
+import {
+	MainContext,
+	MainThreadTimelineShape,
+	ExtHostTimelineShape,
+	ExtHostContext,
+} from '../common/extHost.protocol.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
+import {
+	TimelineChangeEvent,
+	TimelineOptions,
+	TimelineProviderDescriptor,
+	ITimelineService,
+	Timeline,
+} from '../../contrib/timeline/common/timeline.js';
 import { revive } from '../../../base/common/marshalling.js';
 
 @extHostNamedCustomer(MainContext.MainThreadTimeline)
@@ -46,7 +60,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 			dispose() {
 				emitters.delete(provider.id);
 				onDidChange?.dispose();
-			}
+			},
 		});
 	}
 
@@ -57,7 +71,9 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 	}
 
 	$emitTimelineChangeEvent(e: TimelineChangeEvent): void {
-		this.logService.trace(`MainThreadTimeline#emitChangeEvent: id=${e.id}, uri=${e.uri?.toString(true)}`);
+		this.logService.trace(
+			`MainThreadTimeline#emitChangeEvent: id=${e.id}, uri=${e.uri?.toString(true)}`
+		);
 
 		const emitter = this._providerEmitters.get(e.id);
 		emitter?.fire(e);

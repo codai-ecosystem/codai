@@ -8,14 +8,39 @@ import '../media/chatEditorController.css';
 import { getTotalWidth } from '../../../../../base/browser/dom.js';
 import { Event } from '../../../../../base/common/event.js';
 import { DisposableStore, dispose, toDisposable } from '../../../../../base/common/lifecycle.js';
-import { autorun, constObservable, derived, IObservable, observableFromEvent, observableValue } from '../../../../../base/common/observable.js';
+import {
+	autorun,
+	constObservable,
+	derived,
+	IObservable,
+	observableFromEvent,
+	observableValue,
+} from '../../../../../base/common/observable.js';
 import { basename, isEqual } from '../../../../../base/common/resources.js';
 import { themeColorFromId } from '../../../../../base/common/themables.js';
-import { ICodeEditor, IOverlayWidget, IOverlayWidgetPosition, IOverlayWidgetPositionCoordinates, IViewZone, MouseTargetType } from '../../../../../editor/browser/editorBrowser.js';
+import {
+	ICodeEditor,
+	IOverlayWidget,
+	IOverlayWidgetPosition,
+	IOverlayWidgetPositionCoordinates,
+	IViewZone,
+	MouseTargetType,
+} from '../../../../../editor/browser/editorBrowser.js';
 import { observableCodeEditor } from '../../../../../editor/browser/observableCodeEditor.js';
-import { AccessibleDiffViewer, IAccessibleDiffViewerModel } from '../../../../../editor/browser/widget/diffEditor/components/accessibleDiffViewer.js';
-import { RenderOptions, LineSource, renderLines } from '../../../../../editor/browser/widget/diffEditor/components/diffEditorViewZones/renderLines.js';
-import { diffAddDecoration, diffWholeLineAddDecoration, diffDeleteDecoration } from '../../../../../editor/browser/widget/diffEditor/registrations.contribution.js';
+import {
+	AccessibleDiffViewer,
+	IAccessibleDiffViewerModel,
+} from '../../../../../editor/browser/widget/diffEditor/components/accessibleDiffViewer.js';
+import {
+	RenderOptions,
+	LineSource,
+	renderLines,
+} from '../../../../../editor/browser/widget/diffEditor/components/diffEditorViewZones/renderLines.js';
+import {
+	diffAddDecoration,
+	diffWholeLineAddDecoration,
+	diffDeleteDecoration,
+} from '../../../../../editor/browser/widget/diffEditor/registrations.contribution.js';
 import { EditorOption, IEditorOptions } from '../../../../../editor/common/config/editorOptions.js';
 import { LineRange } from '../../../../../editor/common/core/ranges/lineRange.js';
 import { Position } from '../../../../../editor/common/core/position.js';
@@ -23,26 +48,49 @@ import { Range } from '../../../../../editor/common/core/range.js';
 import { Selection } from '../../../../../editor/common/core/selection.js';
 import { IDocumentDiff } from '../../../../../editor/common/diff/documentDiffProvider.js';
 import { DetailedLineRangeMapping } from '../../../../../editor/common/diff/rangeMapping.js';
-import { IModelDeltaDecoration, ITextModel, MinimapPosition, OverviewRulerLane, TrackedRangeStickiness } from '../../../../../editor/common/model.js';
+import {
+	IModelDeltaDecoration,
+	ITextModel,
+	MinimapPosition,
+	OverviewRulerLane,
+	TrackedRangeStickiness,
+} from '../../../../../editor/common/model.js';
 import { ModelDecorationOptions } from '../../../../../editor/common/model/textModel.js';
 import { InlineDecoration, InlineDecorationType } from '../../../../../editor/common/viewModel.js';
 import { localize } from '../../../../../nls.js';
-import { AccessibilitySignal, IAccessibilitySignalService } from '../../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
-import { MenuWorkbenchToolBar, HiddenItemStrategy } from '../../../../../platform/actions/browser/toolbar.js';
+import {
+	AccessibilitySignal,
+	IAccessibilitySignalService,
+} from '../../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
+import {
+	MenuWorkbenchToolBar,
+	HiddenItemStrategy,
+} from '../../../../../platform/actions/browser/toolbar.js';
 import { MenuId } from '../../../../../platform/actions/common/actions.js';
 import { TextEditorSelectionRevealType } from '../../../../../platform/editor/common/editor.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { EditorsOrder, IEditorIdentifier, isDiffEditorInput } from '../../../../common/editor.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
-import { overviewRulerModifiedForeground, minimapGutterModifiedBackground, overviewRulerAddedForeground, minimapGutterAddedBackground, overviewRulerDeletedForeground, minimapGutterDeletedBackground } from '../../../scm/common/quickDiff.js';
+import {
+	overviewRulerModifiedForeground,
+	minimapGutterModifiedBackground,
+	overviewRulerAddedForeground,
+	minimapGutterAddedBackground,
+	overviewRulerDeletedForeground,
+	minimapGutterDeletedBackground,
+} from '../../../scm/common/quickDiff.js';
 import { IChatAgentService } from '../../common/chatAgents.js';
-import { IModifiedFileEntry, IModifiedFileEntryChangeHunk, IModifiedFileEntryEditorIntegration, ModifiedFileEntryState } from '../../common/chatEditingService.js';
+import {
+	IModifiedFileEntry,
+	IModifiedFileEntryChangeHunk,
+	IModifiedFileEntryEditorIntegration,
+	ModifiedFileEntryState,
+} from '../../common/chatEditingService.js';
 import { isTextDiffEditorForEntry } from './chatEditing.js';
 import { IEditorDecorationsCollection } from '../../../../../editor/common/editorCommon.js';
 import { ChatAgentLocation } from '../../common/constants.js';
 
 export interface IDocumentDiff2 extends IDocumentDiff {
-
 	originalModel: ITextModel;
 	modifiedModel: ITextModel;
 
@@ -51,8 +99,9 @@ export interface IDocumentDiff2 extends IDocumentDiff {
 }
 
 export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEditorIntegration {
-
-	private static readonly _diffLineDecorationData = ModelDecorationOptions.register({ description: 'diff-line-decoration' });
+	private static readonly _diffLineDecorationData = ModelDecorationOptions.register({
+		description: 'diff-line-decoration',
+	});
 
 	private readonly _currentIndex = observableValue(this, -1);
 	readonly currentIndex: IObservable<number> = this._currentIndex;
@@ -73,8 +122,9 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 		renderDiffImmediately: boolean,
 		@IChatAgentService private readonly _chatAgentService: IChatAgentService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalsService: IAccessibilitySignalService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalsService: IAccessibilitySignalService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		this._diffLineDecorations = _editor.createDecorationsCollection();
 		const codeEditorObs = observableCodeEditor(_editor);
@@ -86,125 +136,155 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 			if (!isEqual(codeEditorObs.model.read(r)?.uri, documentDiffInfo.read(r).modifiedModel.uri)) {
 				return false;
 			}
-			if (this._editor.getOption(EditorOption.inDiffEditor) && !instantiationService.invokeFunction(isTextDiffEditorForEntry, _entry, this._editor)) {
+			if (
+				this._editor.getOption(EditorOption.inDiffEditor) &&
+				!instantiationService.invokeFunction(isTextDiffEditorForEntry, _entry, this._editor)
+			) {
 				return false;
 			}
 			return true;
 		});
 
-
 		// update decorations
-		this._store.add(autorun(r => {
+		this._store.add(
+			autorun(r => {
+				if (!enabledObs.read(r)) {
+					this._diffLineDecorations.clear();
+					return;
+				}
 
-			if (!enabledObs.read(r)) {
-				this._diffLineDecorations.clear();
-				return;
-			}
-
-			const data: IModelDeltaDecoration[] = [];
-			const diff = documentDiffInfo.read(r);
-			for (const diffEntry of diff.changes) {
-				data.push({
-					range: diffEntry.modified.toInclusiveRange() ?? new Range(diffEntry.modified.startLineNumber, 1, diffEntry.modified.startLineNumber, Number.MAX_SAFE_INTEGER),
-					options: ChatEditingCodeEditorIntegration._diffLineDecorationData
-				});
-			}
-			this._diffLineDecorations.set(data);
-		}));
+				const data: IModelDeltaDecoration[] = [];
+				const diff = documentDiffInfo.read(r);
+				for (const diffEntry of diff.changes) {
+					data.push({
+						range:
+							diffEntry.modified.toInclusiveRange() ??
+							new Range(
+								diffEntry.modified.startLineNumber,
+								1,
+								diffEntry.modified.startLineNumber,
+								Number.MAX_SAFE_INTEGER
+							),
+						options: ChatEditingCodeEditorIntegration._diffLineDecorationData,
+					});
+				}
+				this._diffLineDecorations.set(data);
+			})
+		);
 
 		// INIT current index when: enabled, not streaming anymore, once per request, and when having changes
 		let lastModifyingRequestId: string | undefined;
-		this._store.add(autorun(r => {
-
-			if (enabledObs.read(r)
-				&& !_entry.isCurrentlyBeingModifiedBy.read(r)
-				&& lastModifyingRequestId !== _entry.lastModifyingRequestId
-				&& !documentDiffInfo.read(r).identical
-			) {
-				lastModifyingRequestId = _entry.lastModifyingRequestId;
-				const position = _editor.getPosition() ?? new Position(1, 1);
-				const ranges = this._diffLineDecorations.getRanges();
-				let initialIndex = ranges.findIndex(r => r.containsPosition(position));
-				if (initialIndex < 0) {
-					initialIndex = 0;
-					for (; initialIndex < ranges.length - 1; initialIndex++) {
-						const range = ranges[initialIndex];
-						if (range.endLineNumber >= position.lineNumber) {
-							break;
+		this._store.add(
+			autorun(r => {
+				if (
+					enabledObs.read(r) &&
+					!_entry.isCurrentlyBeingModifiedBy.read(r) &&
+					lastModifyingRequestId !== _entry.lastModifyingRequestId &&
+					!documentDiffInfo.read(r).identical
+				) {
+					lastModifyingRequestId = _entry.lastModifyingRequestId;
+					const position = _editor.getPosition() ?? new Position(1, 1);
+					const ranges = this._diffLineDecorations.getRanges();
+					let initialIndex = ranges.findIndex(r => r.containsPosition(position));
+					if (initialIndex < 0) {
+						initialIndex = 0;
+						for (; initialIndex < ranges.length - 1; initialIndex++) {
+							const range = ranges[initialIndex];
+							if (range.endLineNumber >= position.lineNumber) {
+								break;
+							}
 						}
 					}
+					this._currentIndex.set(initialIndex, undefined);
+					_editor.revealRange(ranges[initialIndex]);
 				}
-				this._currentIndex.set(initialIndex, undefined);
-				_editor.revealRange(ranges[initialIndex]);
-			}
-		}));
+			})
+		);
 
 		// render diff decorations
-		this._store.add(autorun(r => {
+		this._store.add(
+			autorun(r => {
+				if (!enabledObs.read(r)) {
+					this._clearDiffRendering();
+					return;
+				}
 
-			if (!enabledObs.read(r)) {
-				this._clearDiffRendering();
-				return;
-			}
+				// done: render diff
+				if (!_entry.isCurrentlyBeingModifiedBy.read(r) || renderDiffImmediately) {
+					const isDiffEditor = this._editor.getOption(EditorOption.inDiffEditor);
 
-			// done: render diff
-			if (!_entry.isCurrentlyBeingModifiedBy.read(r) || renderDiffImmediately) {
-				const isDiffEditor = this._editor.getOption(EditorOption.inDiffEditor);
+					codeEditorObs.getOption(EditorOption.fontInfo).read(r);
+					codeEditorObs.getOption(EditorOption.lineHeight).read(r);
 
-				codeEditorObs.getOption(EditorOption.fontInfo).read(r);
-				codeEditorObs.getOption(EditorOption.lineHeight).read(r);
-
-				const reviewMode = _entry.reviewMode.read(r);
-				const diff = documentDiffInfo.read(r);
-				this._updateDiffRendering(diff, reviewMode, isDiffEditor);
-			}
-		}));
-
+					const reviewMode = _entry.reviewMode.read(r);
+					const diff = documentDiffInfo.read(r);
+					this._updateDiffRendering(diff, reviewMode, isDiffEditor);
+				}
+			})
+		);
 
 		// accessibility: signals while cursor changes
-		this._store.add(autorun(r => {
-			const position = codeEditorObs.positions.read(r)?.at(0);
-			if (!position || !enabledObs.read(r)) {
-				return;
-			}
+		this._store.add(
+			autorun(r => {
+				const position = codeEditorObs.positions.read(r)?.at(0);
+				if (!position || !enabledObs.read(r)) {
+					return;
+				}
 
-			const diff = documentDiffInfo.read(r);
-			const mapping = diff.changes.find(m => m.modified.contains(position.lineNumber) || m.modified.isEmpty && m.modified.startLineNumber === position.lineNumber);
-			if (mapping?.modified.isEmpty) {
-				this._accessibilitySignalsService.playSignal(AccessibilitySignal.diffLineDeleted, { source: 'chatEditingEditor.cursorPositionChanged' });
-			} else if (mapping?.original.isEmpty) {
-				this._accessibilitySignalsService.playSignal(AccessibilitySignal.diffLineInserted, { source: 'chatEditingEditor.cursorPositionChanged' });
-			} else if (mapping) {
-				this._accessibilitySignalsService.playSignal(AccessibilitySignal.diffLineModified, { source: 'chatEditingEditor.cursorPositionChanged' });
-			}
-		}));
+				const diff = documentDiffInfo.read(r);
+				const mapping = diff.changes.find(
+					m =>
+						m.modified.contains(position.lineNumber) ||
+						(m.modified.isEmpty && m.modified.startLineNumber === position.lineNumber)
+				);
+				if (mapping?.modified.isEmpty) {
+					this._accessibilitySignalsService.playSignal(AccessibilitySignal.diffLineDeleted, {
+						source: 'chatEditingEditor.cursorPositionChanged',
+					});
+				} else if (mapping?.original.isEmpty) {
+					this._accessibilitySignalsService.playSignal(AccessibilitySignal.diffLineInserted, {
+						source: 'chatEditingEditor.cursorPositionChanged',
+					});
+				} else if (mapping) {
+					this._accessibilitySignalsService.playSignal(AccessibilitySignal.diffLineModified, {
+						source: 'chatEditingEditor.cursorPositionChanged',
+					});
+				}
+			})
+		);
 
 		// accessibility: diff view
-		this._store.add(autorun(r => {
+		this._store.add(
+			autorun(r => {
+				const visible = this._accessibleDiffViewVisible.read(r);
 
-			const visible = this._accessibleDiffViewVisible.read(r);
+				if (!visible || !enabledObs.read(r)) {
+					return;
+				}
 
-			if (!visible || !enabledObs.read(r)) {
-				return;
-			}
+				const accessibleDiffWidget = new AccessibleDiffViewContainer();
+				_editor.addOverlayWidget(accessibleDiffWidget);
+				r.store.add(toDisposable(() => _editor.removeOverlayWidget(accessibleDiffWidget)));
 
-			const accessibleDiffWidget = new AccessibleDiffViewContainer();
-			_editor.addOverlayWidget(accessibleDiffWidget);
-			r.store.add(toDisposable(() => _editor.removeOverlayWidget(accessibleDiffWidget)));
-
-			r.store.add(instantiationService.createInstance(
-				AccessibleDiffViewer,
-				accessibleDiffWidget.getDomNode(),
-				enabledObs,
-				(visible, tx) => this._accessibleDiffViewVisible.set(visible, tx),
-				constObservable(true),
-				codeEditorObs.layoutInfo.map((v, r) => v.width),
-				codeEditorObs.layoutInfo.map((v, r) => v.height),
-				documentDiffInfo.map(diff => diff.changes.slice()),
-				instantiationService.createInstance(AccessibleDiffViewerModel, documentDiffInfo, _editor),
-			));
-		}));
-
+				r.store.add(
+					instantiationService.createInstance(
+						AccessibleDiffViewer,
+						accessibleDiffWidget.getDomNode(),
+						enabledObs,
+						(visible, tx) => this._accessibleDiffViewVisible.set(visible, tx),
+						constObservable(true),
+						codeEditorObs.layoutInfo.map((v, r) => v.width),
+						codeEditorObs.layoutInfo.map((v, r) => v.height),
+						documentDiffInfo.map(diff => diff.changes.slice()),
+						instantiationService.createInstance(
+							AccessibleDiffViewerModel,
+							documentDiffInfo,
+							_editor
+						)
+					)
+				);
+			})
+		);
 
 		// ---- readonly while streaming
 
@@ -223,27 +303,28 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 			return enabledObs.read(r) && Boolean(_entry.isCurrentlyBeingModifiedBy.read(r));
 		});
 
-		this._store.add(autorun(r => {
-			const value = renderAsBeingModified.read(r);
-			if (value) {
+		this._store.add(
+			autorun(r => {
+				const value = renderAsBeingModified.read(r);
+				if (value) {
+					actualOptions ??= {
+						readOnly: this._editor.getOption(EditorOption.readOnly),
+						stickyScroll: this._editor.getOption(EditorOption.stickyScroll),
+						codeLens: this._editor.getOption(EditorOption.codeLens),
+						guides: this._editor.getOption(EditorOption.guides),
+					};
 
-				actualOptions ??= {
-					readOnly: this._editor.getOption(EditorOption.readOnly),
-					stickyScroll: this._editor.getOption(EditorOption.stickyScroll),
-					codeLens: this._editor.getOption(EditorOption.codeLens),
-					guides: this._editor.getOption(EditorOption.guides)
-				};
-
-				this._editor.updateOptions({
-					readOnly: true,
-					stickyScroll: { enabled: false },
-					codeLens: false,
-					guides: { indentation: false, bracketPairs: false }
-				});
-			} else {
-				restoreActualOptions();
-			}
-		}));
+					this._editor.updateOptions({
+						readOnly: true,
+						stickyScroll: { enabled: false },
+						codeLens: false,
+						guides: { indentation: false, bracketPairs: false },
+					});
+				} else {
+					restoreActualOptions();
+				}
+			})
+		);
 	}
 
 	dispose(): void {
@@ -260,7 +341,7 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 	// ---- diff rendering logic
 
 	private _clearDiffRendering() {
-		this._editor.changeViewZones((viewZoneChangeAccessor) => {
+		this._editor.changeViewZones(viewZoneChangeAccessor => {
 			for (const id of this._viewZones) {
 				viewZoneChangeAccessor.removeZone(id);
 			}
@@ -271,10 +352,9 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 	}
 
 	private _updateDiffRendering(diff: IDocumentDiff2, reviewMode: boolean, diffMode: boolean): void {
-
 		const chatDiffAddDecoration = ModelDecorationOptions.createDynamic({
 			...diffAddDecoration,
-			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		});
 		const chatDiffWholeLineAddDecoration = ModelDecorationOptions.createDynamic({
 			...diffWholeLineAddDecoration,
@@ -283,19 +363,31 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 		const createOverviewDecoration = (overviewRulerColor: string, minimapColor: string) => {
 			return ModelDecorationOptions.createDynamic({
 				description: 'chat-editing-decoration',
-				overviewRuler: { color: themeColorFromId(overviewRulerColor), position: OverviewRulerLane.Left },
+				overviewRuler: {
+					color: themeColorFromId(overviewRulerColor),
+					position: OverviewRulerLane.Left,
+				},
 				minimap: { color: themeColorFromId(minimapColor), position: MinimapPosition.Gutter },
 			});
 		};
-		const modifiedDecoration = createOverviewDecoration(overviewRulerModifiedForeground, minimapGutterModifiedBackground);
-		const addedDecoration = createOverviewDecoration(overviewRulerAddedForeground, minimapGutterAddedBackground);
-		const deletedDecoration = createOverviewDecoration(overviewRulerDeletedForeground, minimapGutterDeletedBackground);
+		const modifiedDecoration = createOverviewDecoration(
+			overviewRulerModifiedForeground,
+			minimapGutterModifiedBackground
+		);
+		const addedDecoration = createOverviewDecoration(
+			overviewRulerAddedForeground,
+			minimapGutterAddedBackground
+		);
+		const deletedDecoration = createOverviewDecoration(
+			overviewRulerDeletedForeground,
+			minimapGutterDeletedBackground
+		);
 
 		this._diffHunksRenderStore.clear();
 		this._diffHunkWidgets.length = 0;
 		const diffHunkDecorations: IModelDeltaDecoration[] = [];
 
-		this._editor.changeViewZones((viewZoneChangeAccessor) => {
+		this._editor.changeViewZones(viewZoneChangeAccessor => {
 			for (const id of this._viewZones) {
 				viewZoneChangeAccessor.removeZone(id);
 			}
@@ -307,29 +399,40 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 			const editorLineCount = this._editor.getModel()?.getLineCount();
 
 			for (const diffEntry of diff.changes) {
-
 				const originalRange = diffEntry.original;
-				diff.originalModel.tokenization.forceTokenization(Math.max(1, originalRange.endLineNumberExclusive - 1));
+				diff.originalModel.tokenization.forceTokenization(
+					Math.max(1, originalRange.endLineNumberExclusive - 1)
+				);
 				const source = new LineSource(
 					originalRange.mapToLineArray(l => diff.originalModel.tokenization.getLineTokens(l)),
 					[],
 					mightContainNonBasicASCII,
-					mightContainRTL,
+					mightContainRTL
 				);
 				const decorations: InlineDecoration[] = [];
 
 				if (reviewMode) {
 					for (const i of diffEntry.innerChanges || []) {
-						decorations.push(new InlineDecoration(
-							i.originalRange.delta(-(diffEntry.original.startLineNumber - 1)),
-							diffDeleteDecoration.className!,
-							InlineDecorationType.Regular
-						));
+						decorations.push(
+							new InlineDecoration(
+								i.originalRange.delta(-(diffEntry.original.startLineNumber - 1)),
+								diffDeleteDecoration.className!,
+								InlineDecorationType.Regular
+							)
+						);
 
 						// If the original range is empty, the start line number is 1 and the new range spans the entire file, don't draw an Added decoration
-						if (!(i.originalRange.isEmpty() && i.originalRange.startLineNumber === 1 && i.modifiedRange.endLineNumber === editorLineCount) && !i.modifiedRange.isEmpty()) {
+						if (
+							!(
+								i.originalRange.isEmpty() &&
+								i.originalRange.startLineNumber === 1 &&
+								i.modifiedRange.endLineNumber === editorLineCount
+							) &&
+							!i.modifiedRange.isEmpty()
+						) {
 							modifiedVisualDecorations.push({
-								range: i.modifiedRange, options: chatDiffAddDecoration
+								range: i.modifiedRange,
+								options: chatDiffAddDecoration,
 							});
 						}
 					}
@@ -337,12 +440,18 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 
 				// Render an added decoration but don't also render a deleted decoration for newly inserted content at the start of the file
 				// Note, this is a workaround for the `LineRange.isEmpty()` in diffEntry.original being `false` for newly inserted content
-				const isCreatedContent = decorations.length === 1 && decorations[0].range.isEmpty() && diffEntry.original.startLineNumber === 1;
+				const isCreatedContent =
+					decorations.length === 1 &&
+					decorations[0].range.isEmpty() &&
+					diffEntry.original.startLineNumber === 1;
 
-				if (!diffEntry.modified.isEmpty && !(isCreatedContent && (diffEntry.modified.endLineNumberExclusive - 1) === editorLineCount)) {
+				if (
+					!diffEntry.modified.isEmpty &&
+					!(isCreatedContent && diffEntry.modified.endLineNumberExclusive - 1 === editorLineCount)
+				) {
 					modifiedVisualDecorations.push({
 						range: diffEntry.modified.toInclusiveRange()!,
-						options: chatDiffWholeLineAddDecoration
+						options: chatDiffWholeLineAddDecoration,
 					});
 				}
 
@@ -350,35 +459,40 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 					// insertion
 					modifiedVisualDecorations.push({
 						range: diffEntry.modified.toInclusiveRange()!,
-						options: addedDecoration
+						options: addedDecoration,
 					});
 				} else if (diffEntry.modified.isEmpty) {
 					// deletion
 					modifiedVisualDecorations.push({
-						range: new Range(diffEntry.modified.startLineNumber - 1, 1, diffEntry.modified.startLineNumber, 1),
-						options: deletedDecoration
+						range: new Range(
+							diffEntry.modified.startLineNumber - 1,
+							1,
+							diffEntry.modified.startLineNumber,
+							1
+						),
+						options: deletedDecoration,
 					});
 				} else {
 					// modification
 					modifiedVisualDecorations.push({
 						range: diffEntry.modified.toInclusiveRange()!,
-						options: modifiedDecoration
+						options: modifiedDecoration,
 					});
 				}
 
 				let extraLines = 0;
 				if (reviewMode && !diffMode) {
 					const domNode = document.createElement('div');
-					domNode.className = 'chat-editing-original-zone view-lines line-delete monaco-mouse-cursor-text';
+					domNode.className =
+						'chat-editing-original-zone view-lines line-delete monaco-mouse-cursor-text';
 					const result = renderLines(source, renderOptions, decorations, domNode);
 					extraLines = result.heightInLines;
 					if (!isCreatedContent) {
-
 						const viewZoneData: IViewZone = {
 							afterLineNumber: diffEntry.modified.startLineNumber - 1,
 							heightInLines: result.heightInLines,
 							domNode,
-							ordinal: 50000 + 2 // more than https://github.com/microsoft/vscode/blob/bf52a5cfb2c75a7327c9adeaefbddc06d529dcad/src/vs/workbench/contrib/inlineChat/browser/inlineChatZoneWidget.ts#L42
+							ordinal: 50000 + 2, // more than https://github.com/microsoft/vscode/blob/bf52a5cfb2c75a7327c9adeaefbddc06d529dcad/src/vs/workbench/contrib/inlineChat/browser/inlineChatZoneWidget.ts#L42
 						};
 
 						this._viewZones.push(viewZoneChangeAccessor.addZone(viewZoneData));
@@ -386,22 +500,35 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 				}
 
 				if (reviewMode || diffMode) {
-
 					// Add content widget for each diff change
 					const widget = this._editor.invokeWithinContext(accessor => {
 						const instaService = accessor.get(IInstantiationService);
-						return instaService.createInstance(DiffHunkWidget, diff, diffEntry, this._editor.getModel()!.getVersionId(), this._editor, isCreatedContent ? 0 : extraLines);
+						return instaService.createInstance(
+							DiffHunkWidget,
+							diff,
+							diffEntry,
+							this._editor.getModel()!.getVersionId(),
+							this._editor,
+							isCreatedContent ? 0 : extraLines
+						);
 					});
 
 					widget.layout(diffEntry.modified.startLineNumber);
 
 					this._diffHunkWidgets.push(widget);
 					diffHunkDecorations.push({
-						range: diffEntry.modified.toInclusiveRange() ?? new Range(diffEntry.modified.startLineNumber, 1, diffEntry.modified.startLineNumber, Number.MAX_SAFE_INTEGER),
+						range:
+							diffEntry.modified.toInclusiveRange() ??
+							new Range(
+								diffEntry.modified.startLineNumber,
+								1,
+								diffEntry.modified.startLineNumber,
+								Number.MAX_SAFE_INTEGER
+							),
 						options: {
 							description: 'diff-hunk-widget',
-							stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
-						}
+							stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
+						},
 					});
 				}
 			}
@@ -411,13 +538,17 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 
 		const diffHunkDecoCollection = this._editor.createDecorationsCollection(diffHunkDecorations);
 
-		this._diffHunksRenderStore.add(toDisposable(() => {
-			dispose(this._diffHunkWidgets);
-			this._diffHunkWidgets.length = 0;
-			diffHunkDecoCollection.clear();
-		}));
+		this._diffHunksRenderStore.add(
+			toDisposable(() => {
+				dispose(this._diffHunkWidgets);
+				this._diffHunkWidgets.length = 0;
+				diffHunkDecoCollection.clear();
+			})
+		);
 
-		const positionObs = observableFromEvent(this._editor.onDidChangeCursorPosition, _ => this._editor.getPosition());
+		const positionObs = observableFromEvent(this._editor.onDidChangeCursorPosition, _ =>
+			this._editor.getPosition()
+		);
 
 		const activeWidgetIdx = derived(r => {
 			const position = positionObs.read(r);
@@ -435,48 +566,54 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 			}
 		};
 
-		this._diffHunksRenderStore.add(autorun(r => {
-			// reveal when cursor inside
-			const idx = activeWidgetIdx.read(r);
-			const widget = this._diffHunkWidgets[idx];
-			toggleWidget(widget);
-		}));
-
-
-		this._diffHunksRenderStore.add(this._editor.onMouseMove(e => {
-
-			// reveal when hovering over
-			if (e.target.type === MouseTargetType.OVERLAY_WIDGET) {
-				const id = e.target.detail;
-				const widget = this._diffHunkWidgets.find(w => w.getId() === id);
+		this._diffHunksRenderStore.add(
+			autorun(r => {
+				// reveal when cursor inside
+				const idx = activeWidgetIdx.read(r);
+				const widget = this._diffHunkWidgets[idx];
 				toggleWidget(widget);
+			})
+		);
 
-			} else if (e.target.type === MouseTargetType.CONTENT_VIEW_ZONE) {
-				const zone = e.target.detail;
-				const idx = this._viewZones.findIndex(id => id === zone.viewZoneId);
-				toggleWidget(this._diffHunkWidgets[idx]);
-
-			} else if (e.target.position) {
-				const { position } = e.target;
-				const idx = diffHunkDecoCollection.getRanges().findIndex(r => r.containsPosition(position));
-				toggleWidget(this._diffHunkWidgets[idx]);
-
-			} else {
-				toggleWidget(undefined);
-			}
-		}));
-
-		this._diffHunksRenderStore.add(Event.any(this._editor.onDidScrollChange, this._editor.onDidLayoutChange)(() => {
-			for (let i = 0; i < this._diffHunkWidgets.length; i++) {
-				const widget = this._diffHunkWidgets[i];
-				const range = diffHunkDecoCollection.getRange(i);
-				if (range) {
-					widget.layout(range?.startLineNumber);
+		this._diffHunksRenderStore.add(
+			this._editor.onMouseMove(e => {
+				// reveal when hovering over
+				if (e.target.type === MouseTargetType.OVERLAY_WIDGET) {
+					const id = e.target.detail;
+					const widget = this._diffHunkWidgets.find(w => w.getId() === id);
+					toggleWidget(widget);
+				} else if (e.target.type === MouseTargetType.CONTENT_VIEW_ZONE) {
+					const zone = e.target.detail;
+					const idx = this._viewZones.findIndex(id => id === zone.viewZoneId);
+					toggleWidget(this._diffHunkWidgets[idx]);
+				} else if (e.target.position) {
+					const { position } = e.target;
+					const idx = diffHunkDecoCollection
+						.getRanges()
+						.findIndex(r => r.containsPosition(position));
+					toggleWidget(this._diffHunkWidgets[idx]);
 				} else {
-					widget.dispose();
+					toggleWidget(undefined);
 				}
-			}
-		}));
+			})
+		);
+
+		this._diffHunksRenderStore.add(
+			Event.any(
+				this._editor.onDidScrollChange,
+				this._editor.onDidLayoutChange
+			)(() => {
+				for (let i = 0; i < this._diffHunkWidgets.length; i++) {
+					const widget = this._diffHunkWidgets[i];
+					const range = diffHunkDecoCollection.getRange(i);
+					if (range) {
+						widget.layout(range?.startLineNumber);
+					} else {
+						widget.dispose();
+					}
+				}
+			})
+		);
 	}
 
 	enableAccessibleDiffView(): void {
@@ -486,7 +623,6 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 	// ---- navigation logic
 
 	reveal(firstOrLast: boolean, preserveFocus?: boolean): void {
-
 		const decorations = this._diffLineDecorations
 			.getRanges()
 			.sort((a, b) => Range.compareRangesUsingStarts(a, b));
@@ -512,7 +648,6 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 	}
 
 	private _reveal(next: boolean, strict: boolean) {
-
 		const position = this._editor.getPosition();
 		if (!position) {
 			this._currentIndex.set(-1, undefined);
@@ -564,12 +699,16 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 		if (!this._editor.hasModel()) {
 			return undefined;
 		}
-		const lineRelativeTop = this._editor.getTopForLineNumber(this._editor.getPosition().lineNumber) - this._editor.getScrollTop();
+		const lineRelativeTop =
+			this._editor.getTopForLineNumber(this._editor.getPosition().lineNumber) -
+			this._editor.getScrollTop();
 		let closestWidget: DiffHunkWidget | undefined;
 		let closestDistance = Number.MAX_VALUE;
 
 		for (const widget of this._diffHunkWidgets) {
-			const widgetTop = (<IOverlayWidgetPositionCoordinates | undefined>widget.getPosition()?.preference)?.top;
+			const widgetTop = (<IOverlayWidgetPositionCoordinates | undefined>(
+				widget.getPosition()?.preference
+			))?.top;
 			if (widgetTop !== undefined) {
 				const distance = Math.abs(widgetTop - lineRelativeTop);
 				if (distance < closestDistance) {
@@ -598,7 +737,10 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 		}
 	}
 
-	async toggleDiff(widget: IModifiedFileEntryChangeHunk | undefined, show?: boolean): Promise<void> {
+	async toggleDiff(
+		widget: IModifiedFileEntryChangeHunk | undefined,
+		show?: boolean
+	): Promise<void> {
 		if (!this._editor.hasModel()) {
 			return;
 		}
@@ -617,27 +759,40 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 		// Use the 'show' argument to control the diff state if provided
 		if (show !== undefined ? show : !isDiffEditor) {
 			// Open DIFF editor
-			const defaultAgentName = this._chatAgentService.getDefaultAgent(ChatAgentLocation.Panel)?.fullName;
+			const defaultAgentName = this._chatAgentService.getDefaultAgent(
+				ChatAgentLocation.Panel
+			)?.fullName;
 			const diffEditor = await this._editorService.openEditor({
 				original: { resource: this._entry.originalURI },
 				modified: { resource: this._entry.modifiedURI },
 				options: { selection },
 				label: defaultAgentName
-					? localize('diff.agent', '{0} (changes from {1})', basename(this._entry.modifiedURI), defaultAgentName)
-					: localize('diff.generic', '{0} (changes from chat)', basename(this._entry.modifiedURI))
+					? localize(
+							'diff.agent',
+							'{0} (changes from {1})',
+							basename(this._entry.modifiedURI),
+							defaultAgentName
+						)
+					: localize('diff.generic', '{0} (changes from chat)', basename(this._entry.modifiedURI)),
 			});
 
 			if (diffEditor && diffEditor.input) {
 				diffEditor.getControl()?.setSelection(selection);
 				const d = autorun(r => {
 					const state = this._entry.state.read(r);
-					if (state === ModifiedFileEntryState.Accepted || state === ModifiedFileEntryState.Rejected) {
+					if (
+						state === ModifiedFileEntryState.Accepted ||
+						state === ModifiedFileEntryState.Rejected
+					) {
 						d.dispose();
 						const editorIdents: IEditorIdentifier[] = [];
-						for (const candidate of this._editorService.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
-							if (isDiffEditorInput(candidate.editor)
-								&& isEqual(candidate.editor.original.resource, this._entry.originalURI)
-								&& isEqual(candidate.editor.modified.resource, this._entry.modifiedURI)
+						for (const candidate of this._editorService.getEditors(
+							EditorsOrder.MOST_RECENTLY_ACTIVE
+						)) {
+							if (
+								isDiffEditorInput(candidate.editor) &&
+								isEqual(candidate.editor.original.resource, this._entry.originalURI) &&
+								isEqual(candidate.editor.modified.resource, this._entry.modifiedURI)
 							) {
 								editorIdents.push(candidate);
 							}
@@ -653,15 +808,14 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
 				resource: this._entry.modifiedURI,
 				options: {
 					selection,
-					selectionRevealType: TextEditorSelectionRevealType.NearTopIfOutsideViewport
-				}
+					selectionRevealType: TextEditorSelectionRevealType.NearTopIfOutsideViewport,
+				},
 			});
 		}
 	}
 }
 
 class DiffHunkWidget implements IOverlayWidget, IModifiedFileEntryChangeHunk {
-
 	private static _idPool = 0;
 	private readonly _id: string = `diff-change-widget-${DiffHunkWidget._idPool++}`;
 
@@ -670,27 +824,31 @@ class DiffHunkWidget implements IOverlayWidget, IModifiedFileEntryChangeHunk {
 	private _position: IOverlayWidgetPosition | undefined;
 	private _lastStartLineNumber: number | undefined;
 
-
 	constructor(
 		private readonly _diffInfo: IDocumentDiff2,
 		private readonly _change: DetailedLineRangeMapping,
 		private readonly _versionId: number,
 		private readonly _editor: ICodeEditor,
 		private readonly _lineDelta: number,
-		@IInstantiationService instaService: IInstantiationService,
+		@IInstantiationService instaService: IInstantiationService
 	) {
 		this._domNode = document.createElement('div');
 		this._domNode.className = 'chat-diff-change-content-widget';
 
-		const toolbar = instaService.createInstance(MenuWorkbenchToolBar, this._domNode, MenuId.ChatEditingEditorHunk, {
-			telemetrySource: 'chatEditingEditorHunk',
-			hiddenItemStrategy: HiddenItemStrategy.NoHide,
-			toolbarOptions: { primaryGroup: () => true, },
-			menuOptions: {
-				renderShortTitle: true,
-				arg: this,
-			},
-		});
+		const toolbar = instaService.createInstance(
+			MenuWorkbenchToolBar,
+			this._domNode,
+			MenuId.ChatEditingEditorHunk,
+			{
+				telemetrySource: 'chatEditingEditorHunk',
+				hiddenItemStrategy: HiddenItemStrategy.NoHide,
+				toolbarOptions: { primaryGroup: () => true },
+				menuOptions: {
+					renderShortTitle: true,
+					arg: this,
+				},
+			}
+		);
 
 		this._store.add(toolbar);
 		this._store.add(toolbar.actionRunner.onWillRun(_ => _editor.focus()));
@@ -707,7 +865,6 @@ class DiffHunkWidget implements IOverlayWidget, IModifiedFileEntryChangeHunk {
 	}
 
 	layout(startLineNumber: number): void {
-
 		const lineHeight = this._editor.getOption(EditorOption.lineHeight);
 		const { contentLeft, contentWidth, verticalScrollbarWidth } = this._editor.getLayoutInfo();
 		const scrollTop = this._editor.getScrollTop();
@@ -715,9 +872,13 @@ class DiffHunkWidget implements IOverlayWidget, IModifiedFileEntryChangeHunk {
 		this._position = {
 			stackOridinal: 1,
 			preference: {
-				top: this._editor.getTopForLineNumber(startLineNumber) - scrollTop - (lineHeight * this._lineDelta),
-				left: contentLeft + contentWidth - (2 * verticalScrollbarWidth + getTotalWidth(this._domNode))
-			}
+				top:
+					this._editor.getTopForLineNumber(startLineNumber) -
+					scrollTop -
+					lineHeight * this._lineDelta,
+				left:
+					contentLeft + contentWidth - (2 * verticalScrollbarWidth + getTotalWidth(this._domNode)),
+			},
 		};
 
 		this._editor.layoutOverlayWidget(this);
@@ -760,9 +921,7 @@ class DiffHunkWidget implements IOverlayWidget, IModifiedFileEntryChangeHunk {
 	}
 }
 
-
 class AccessibleDiffViewContainer implements IOverlayWidget {
-
 	private readonly _domNode: HTMLElement;
 
 	constructor() {
@@ -783,7 +942,7 @@ class AccessibleDiffViewContainer implements IOverlayWidget {
 	getPosition(): IOverlayWidgetPosition | null {
 		return {
 			preference: { top: 0, left: 0 },
-			stackOridinal: 1
+			stackOridinal: 1,
 		};
 	}
 }
@@ -791,8 +950,8 @@ class AccessibleDiffViewContainer implements IOverlayWidget {
 class AccessibleDiffViewerModel implements IAccessibleDiffViewerModel {
 	constructor(
 		private readonly _documentDiffInfo: IObservable<IDocumentDiff2>,
-		private readonly _editor: ICodeEditor,
-	) { }
+		private readonly _editor: ICodeEditor
+	) {}
 
 	getOriginalModel() {
 		return this._documentDiffInfo.get().originalModel;

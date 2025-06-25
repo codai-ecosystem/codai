@@ -9,7 +9,7 @@ export class TextModelEditReason {
 
 	/**
 	 * Sets the reason for all text model edits done in the callback.
-	*/
+	 */
 	public static editWithReason<T>(reason: TextModelEditReason, runner: () => T): T {
 		const id = this._nextMetadataId++;
 		this._metaDataMap.set(id, reason.metadata);
@@ -29,7 +29,7 @@ export class TextModelEditReason {
 		return result;
 	}
 
-	constructor(public readonly metadata: ITextModelEditReasonMetadata) { }
+	constructor(public readonly metadata: ITextModelEditReasonMetadata) {}
 }
 
 interface ITextModelEditReasonMetadata {

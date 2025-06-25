@@ -5,8 +5,18 @@
 
 import { PromptMetadataRecord } from './base/record.js';
 import { localize } from '../../../../../../../../nls.js';
-import { PromptMetadataDiagnostic, PromptMetadataError, PromptMetadataWarning } from '../diagnostics.js';
-import { FrontMatterArray, FrontMatterRecord, FrontMatterString, FrontMatterToken, FrontMatterValueToken } from '../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
+import {
+	PromptMetadataDiagnostic,
+	PromptMetadataError,
+	PromptMetadataWarning,
+} from '../diagnostics.js';
+import {
+	FrontMatterArray,
+	FrontMatterRecord,
+	FrontMatterString,
+	FrontMatterToken,
+	FrontMatterValueToken,
+} from '../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
 
 /**
  * Name of the metadata record in the prompt header.
@@ -44,10 +54,7 @@ export class PromptToolsMetadata extends PromptMetadataRecord {
 		return [...this.validToolNames.values()];
 	}
 
-	constructor(
-		recordToken: FrontMatterRecord,
-		languageId: string,
-	) {
+	constructor(recordToken: FrontMatterRecord, languageId: string) {
 		super(RECORD_NAME, recordToken, languageId);
 	}
 
@@ -59,7 +66,7 @@ export class PromptToolsMetadata extends PromptMetadataRecord {
 		const { valueToken } = this.recordToken;
 
 		// validate that the record value is an array
-		if ((valueToken instanceof FrontMatterArray) === false) {
+		if (valueToken instanceof FrontMatterArray === false) {
 			this.issues.push(
 				new PromptMetadataError(
 					valueToken.range,
@@ -67,9 +74,9 @@ export class PromptToolsMetadata extends PromptMetadataRecord {
 						'prompt.header.metadata.tools.diagnostics.invalid-value-type',
 						"The '{0}' metadata must be an array of tool names, got '{2}'.",
 						RECORD_NAME,
-						valueToken.valueTypeName.toString(),
-					),
-				),
+						valueToken.valueTypeName.toString()
+					)
+				)
 			);
 
 			delete this.valueToken;
@@ -81,9 +88,7 @@ export class PromptToolsMetadata extends PromptMetadataRecord {
 		// validate that all array items
 		this.validToolNames = new Set<string>();
 		for (const item of this.valueToken.items) {
-			this.issues.push(
-				...this.validateToolName(item, this.validToolNames),
-			);
+			this.issues.push(...this.validateToolName(item, this.validToolNames));
 		}
 
 		return this.issues;
@@ -95,12 +100,12 @@ export class PromptToolsMetadata extends PromptMetadataRecord {
 	 */
 	private validateToolName(
 		valueToken: FrontMatterValueToken,
-		validToolNames: Set<string>,
+		validToolNames: Set<string>
 	): readonly PromptMetadataDiagnostic[] {
 		const issues: PromptMetadataDiagnostic[] = [];
 
 		// tool name must be a string
-		if ((valueToken instanceof FrontMatterString) === false) {
+		if (valueToken instanceof FrontMatterString === false) {
 			issues.push(
 				new PromptMetadataWarning(
 					valueToken.range,
@@ -108,9 +113,9 @@ export class PromptToolsMetadata extends PromptMetadataRecord {
 						'prompt.header.metadata.tools.diagnostics.invalid-tool-name-type',
 						"Unexpected tool name '{0}', expected '{1}'.",
 						valueToken.text,
-						'string',
-					),
-				),
+						'string'
+					)
+				)
 			);
 
 			return issues;
@@ -124,9 +129,9 @@ export class PromptToolsMetadata extends PromptMetadataRecord {
 					valueToken.range,
 					localize(
 						'prompt.header.metadata.tools.diagnostics.empty-tool-name',
-						"Tool name cannot be empty.",
-					),
-				),
+						'Tool name cannot be empty.'
+					)
+				)
 			);
 
 			return issues;
@@ -140,9 +145,9 @@ export class PromptToolsMetadata extends PromptMetadataRecord {
 					localize(
 						'prompt.header.metadata.tools.diagnostics.duplicate-tool-name',
 						"Duplicate tool name '{0}'.",
-						cleanToolName,
-					),
-				),
+						cleanToolName
+					)
+				)
 			);
 
 			return issues;
@@ -156,10 +161,8 @@ export class PromptToolsMetadata extends PromptMetadataRecord {
 	 * Check if a provided front matter token is a metadata record
 	 * with name equal to `tools`.
 	 */
-	public static isToolsRecord(
-		token: FrontMatterToken,
-	): boolean {
-		if ((token instanceof FrontMatterRecord) === false) {
+	public static isToolsRecord(token: FrontMatterToken): boolean {
+		if (token instanceof FrontMatterRecord === false) {
 			return false;
 		}
 

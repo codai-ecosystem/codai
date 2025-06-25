@@ -15,10 +15,13 @@ export class TerminalExternalLinkDetector implements ITerminalLinkDetector {
 		readonly id: string,
 		readonly xterm: Terminal,
 		private readonly _provideLinks: OmitFirstArg<ITerminalExternalLinkProvider['provideLinks']>
-	) {
-	}
+	) {}
 
-	async detect(lines: IBufferLine[], startLine: number, endLine: number): Promise<ITerminalSimpleLink[]> {
+	async detect(
+		lines: IBufferLine[],
+		startLine: number,
+		endLine: number
+	): Promise<ITerminalSimpleLink[]> {
 		// Get the text representation of the wrapped line
 		const text = getXtermLineContent(this.xterm.buffer.active, startLine, endLine, this.xterm.cols);
 		if (text === '' || text.length > this.maxLinkLength) {
@@ -31,12 +34,17 @@ export class TerminalExternalLinkDetector implements ITerminalLinkDetector {
 		}
 
 		const result = externalLinks.map(link => {
-			const bufferRange = convertLinkRangeToBuffer(lines, this.xterm.cols, {
-				startColumn: link.startIndex + 1,
-				startLineNumber: 1,
-				endColumn: link.startIndex + link.length + 1,
-				endLineNumber: 1
-			}, startLine);
+			const bufferRange = convertLinkRangeToBuffer(
+				lines,
+				this.xterm.cols,
+				{
+					startColumn: link.startIndex + 1,
+					startLineNumber: 1,
+					endColumn: link.startIndex + link.length + 1,
+					endLineNumber: 1,
+				},
+				startLine
+			);
 			const matchingText = text.substring(link.startIndex, link.startIndex + link.length) || '';
 
 			const l: ITerminalSimpleLink = {
@@ -44,7 +52,7 @@ export class TerminalExternalLinkDetector implements ITerminalLinkDetector {
 				label: link.label,
 				bufferRange,
 				type: { id: this.id },
-				activate: link.activate
+				activate: link.activate,
 			};
 			return l;
 		});

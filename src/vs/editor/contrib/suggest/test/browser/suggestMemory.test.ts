@@ -13,7 +13,6 @@ import { createSuggestItem } from './completionModel.test.js';
 import { createTextModel } from '../../../../test/common/testTextModel.js';
 
 suite('SuggestMemories', function () {
-
 	let pos: IPosition;
 	let buffer: ITextModel;
 	let items: CompletionItem[];
@@ -21,10 +20,7 @@ suite('SuggestMemories', function () {
 	setup(function () {
 		pos = { lineNumber: 1, column: 1 };
 		buffer = createTextModel('This is some text.\nthis.\nfoo: ,');
-		items = [
-			createSuggestItem('foo', 0),
-			createSuggestItem('bar', 0)
-		];
+		items = [createSuggestItem('foo', 0), createSuggestItem('bar', 0)];
 	});
 
 	teardown(() => {
@@ -34,20 +30,20 @@ suite('SuggestMemories', function () {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('AbstractMemory, select', function () {
-
-		const mem = new class extends Memory {
+		const mem = new (class extends Memory {
 			constructor() {
 				super('first');
 			}
 			memorize(model: ITextModel, pos: IPosition, item: CompletionItem): void {
 				throw new Error('Method not implemented.');
-			} toJSON(): object {
+			}
+			toJSON(): object {
 				throw new Error('Method not implemented.');
 			}
 			fromJSON(data: object): void {
 				throw new Error('Method not implemented.');
 			}
-		};
+		})();
 
 		const item1 = createSuggestItem('fazz', 0);
 		const item2 = createSuggestItem('bazz', 0);
@@ -70,14 +66,12 @@ suite('SuggestMemories', function () {
 		item3.completion.preselect = true;
 		const items = [item1, item2, item3, item4];
 
-
 		assert.strictEqual(new NoMemory().select(buffer, pos, items), 1);
 		assert.strictEqual(new LRUMemory().select(buffer, pos, items), 1);
 		assert.strictEqual(new PrefixMemory().select(buffer, pos, items), 1);
 	});
 
 	test('NoMemory', () => {
-
 		const mem = new NoMemory();
 
 		assert.strictEqual(mem.select(buffer, pos, items), 0);
@@ -88,7 +82,6 @@ suite('SuggestMemories', function () {
 	});
 
 	test('LRUMemory', () => {
-
 		pos = { lineNumber: 2, column: 6 };
 
 		const mem = new LRUMemory();
@@ -100,19 +93,18 @@ suite('SuggestMemories', function () {
 		mem.memorize(buffer, pos, items[0]);
 		assert.strictEqual(mem.select(buffer, pos, items), 0);
 
-		assert.strictEqual(mem.select(buffer, pos, [
-			createSuggestItem('new', 0),
-			createSuggestItem('bar', 0)
-		]), 1);
+		assert.strictEqual(
+			mem.select(buffer, pos, [createSuggestItem('new', 0), createSuggestItem('bar', 0)]),
+			1
+		);
 
-		assert.strictEqual(mem.select(buffer, pos, [
-			createSuggestItem('new1', 0),
-			createSuggestItem('new2', 0)
-		]), 0);
+		assert.strictEqual(
+			mem.select(buffer, pos, [createSuggestItem('new1', 0), createSuggestItem('new2', 0)]),
+			0
+		);
 	});
 
 	test('`"editor.suggestSelection": "recentlyUsed"` should be a little more sticky #78571', function () {
-
 		const item1 = createSuggestItem('gamma', 0);
 		const item2 = createSuggestItem('game', 0);
 		items = [item1, item2];
@@ -131,7 +123,6 @@ suite('SuggestMemories', function () {
 
 		item1.score = [10, 0, 0];
 		assert.strictEqual(mem.select(buffer, { lineNumber: 1, column: 10 }, items), 0); // foo.g, 'gamma' has higher score
-
 	});
 
 	test('intellisense is not showing top options first #43429', function () {
@@ -148,7 +139,6 @@ suite('SuggestMemories', function () {
 	});
 
 	test('PrefixMemory', () => {
-
 		const mem = new PrefixMemory();
 		buffer.setValue('constructor');
 		const item0 = createSuggestItem('console', 0);
@@ -167,5 +157,4 @@ suite('SuggestMemories', function () {
 		assert.strictEqual(mem.select(buffer, { lineNumber: 1, column: 4 }, items), 2);
 		assert.strictEqual(mem.select(buffer, { lineNumber: 1, column: 7 }, items), 2); // find substr
 	});
-
 });

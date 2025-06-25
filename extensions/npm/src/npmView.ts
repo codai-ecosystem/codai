@@ -5,22 +5,43 @@
 
 import * as path from 'path';
 import {
-	commands, Event, EventEmitter, ExtensionContext,
+	commands,
+	Event,
+	EventEmitter,
+	ExtensionContext,
 	Range,
-	Selection, Task,
-	TaskGroup, tasks, TextDocument, TextDocumentShowOptions, ThemeIcon, TreeDataProvider, TreeItem, TreeItemLabel, TreeItemCollapsibleState, Uri,
-	window, workspace, WorkspaceFolder, Position, Location, l10n
+	Selection,
+	Task,
+	TaskGroup,
+	tasks,
+	TextDocument,
+	TextDocumentShowOptions,
+	ThemeIcon,
+	TreeDataProvider,
+	TreeItem,
+	TreeItemLabel,
+	TreeItemCollapsibleState,
+	Uri,
+	window,
+	workspace,
+	WorkspaceFolder,
+	Position,
+	Location,
+	l10n,
 } from 'vscode';
 import { readScripts } from './readScripts';
 import {
-	createInstallationTask, getTaskName, isAutoDetectionEnabled, isWorkspaceFolder, INpmTaskDefinition,
+	createInstallationTask,
+	getTaskName,
+	isAutoDetectionEnabled,
+	isWorkspaceFolder,
+	INpmTaskDefinition,
 	NpmTaskProvider,
 	startDebugging,
 	detectPackageManager,
 	ITaskWithLocation,
-	INSTALL_SCRIPT
+	INSTALL_SCRIPT,
 } from './tasks';
-
 
 class Folder extends TreeItem {
 	packages: PackageJSON[] = [];
@@ -59,7 +80,9 @@ class PackageJSON extends TreeItem {
 		this.path = relativePath;
 		this.contextValue = 'packageJSON';
 		if (relativePath) {
-			this.resourceUri = Uri.file(path.join(folder!.resourceUri!.fsPath, relativePath, packageName));
+			this.resourceUri = Uri.file(
+				path.join(folder!.resourceUri!.fsPath, relativePath, packageName)
+			);
 		} else {
 			this.resourceUri = Uri.file(path.join(folder!.resourceUri!.fsPath, packageName));
 		}
@@ -79,31 +102,35 @@ class NpmScript extends TreeItem {
 	taskLocation?: Location;
 
 	constructor(_context: ExtensionContext, packageJson: PackageJSON, task: ITaskWithLocation) {
-		const name = packageJson.path.length > 0
-			? task.task.name.substring(0, task.task.name.length - packageJson.path.length - 2)
-			: task.task.name;
+		const name =
+			packageJson.path.length > 0
+				? task.task.name.substring(0, task.task.name.length - packageJson.path.length - 2)
+				: task.task.name;
 		super(name, TreeItemCollapsibleState.None);
 		this.taskLocation = task.location;
-		const command: ExplorerCommands = name === `${INSTALL_SCRIPT} ` ? 'run' : workspace.getConfiguration('npm').get<ExplorerCommands>('scriptExplorerAction') || 'open';
+		const command: ExplorerCommands =
+			name === `${INSTALL_SCRIPT} `
+				? 'run'
+				: workspace.getConfiguration('npm').get<ExplorerCommands>('scriptExplorerAction') || 'open';
 
 		const commandList = {
-			'open': {
+			open: {
 				title: 'Edit Script',
 				command: 'vscode.open',
 				arguments: [
 					this.taskLocation?.uri,
-					this.taskLocation ?
-						{
-							selection: new Range(this.taskLocation.range.start, this.taskLocation.range.start)
-						} satisfies TextDocumentShowOptions
-						: undefined
-				]
+					this.taskLocation
+						? ({
+								selection: new Range(this.taskLocation.range.start, this.taskLocation.range.start),
+							} satisfies TextDocumentShowOptions)
+						: undefined,
+				],
 			},
-			'run': {
+			run: {
 				title: 'Run Script',
 				command: 'npm.runScript',
-				arguments: [this]
-			}
+				arguments: [this],
+			},
 		};
 		this.contextValue = 'script';
 		this.package = packageJson;
@@ -141,7 +168,10 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 	private _onDidChangeTreeData: EventEmitter<TreeItem | null> = new EventEmitter<TreeItem | null>();
 	readonly onDidChangeTreeData: Event<TreeItem | null> = this._onDidChangeTreeData.event;
 
-	constructor(private context: ExtensionContext, public taskProvider: NpmTaskProvider) {
+	constructor(
+		private context: ExtensionContext,
+		public taskProvider: NpmTaskProvider
+	) {
 		const subscriptions = context.subscriptions;
 		this.extensionContext = context;
 		subscriptions.push(commands.registerCommand('npm.runScript', this.runScript, this));
@@ -157,7 +187,12 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 	}
 
 	private async debugScript(script: NpmScript) {
-		startDebugging(this.extensionContext, script.task.definition.script, path.dirname(script.package.resourceUri!.fsPath), script.getFolder());
+		startDebugging(
+			this.extensionContext,
+			script.task.definition.script,
+			path.dirname(script.package.resourceUri!.fsPath),
+			script.getFolder()
+		);
 	}
 
 	private findScriptPosition(document: TextDocument, script?: NpmScript) {
@@ -170,7 +205,9 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 			return scripts.location.range.start;
 		}
 
-		const found = scripts.scripts.find(s => getTaskName(s.name, script.task.definition.path) === script.task.name);
+		const found = scripts.scripts.find(
+			s => getTaskName(s.name, script.task.definition.path) === script.task.name
+		);
 		return found?.nameRange.start;
 	}
 
@@ -197,8 +234,13 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 			return;
 		}
 		const document: TextDocument = await workspace.openTextDocument(uri);
-		const position = this.findScriptPosition(document, selection instanceof NpmScript ? selection : undefined) || new Position(0, 0);
-		await window.showTextDocument(document, { preserveFocus: true, selection: new Selection(position, position) });
+		const position =
+			this.findScriptPosition(document, selection instanceof NpmScript ? selection : undefined) ||
+			new Position(0, 0);
+		await window.showTextDocument(document, {
+			preserveFocus: true,
+			selection: new Selection(position, position),
+		});
 	}
 
 	public refresh() {
@@ -233,7 +275,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 				const taskTree = this.buildTaskTree(taskItems);
 				this.taskTree = this.sortTaskTree(taskTree);
 				if (this.taskTree.length === 0) {
-					let message = l10n.t("No scripts found.");
+					let message = l10n.t('No scripts found.');
 					if (!isAutoDetectionEnabled()) {
 						message = l10n.t('The setting "npm.autoDetect" is "off".');
 					}
@@ -298,12 +340,25 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 		tasks.forEach(each => {
 			const location = each.location;
 			if (location && !excludeConfig.has(location.uri.toString())) {
-				const regularExpressionsSetting = workspace.getConfiguration('npm', location.uri).get<string[]>('scriptExplorerExclude', []);
-				excludeConfig.set(location.uri.toString(), regularExpressionsSetting?.map(value => RegExp(value)));
+				const regularExpressionsSetting = workspace
+					.getConfiguration('npm', location.uri)
+					.get<string[]>('scriptExplorerExclude', []);
+				excludeConfig.set(
+					location.uri.toString(),
+					regularExpressionsSetting?.map(value => RegExp(value))
+				);
 			}
-			const regularExpressions = (location && excludeConfig.has(location.uri.toString())) ? excludeConfig.get(location.uri.toString()) : undefined;
+			const regularExpressions =
+				location && excludeConfig.has(location.uri.toString())
+					? excludeConfig.get(location.uri.toString())
+					: undefined;
 
-			if (regularExpressions && regularExpressions.some((regularExpression) => (<INpmTaskDefinition>each.task.definition).script.match(regularExpression))) {
+			if (
+				regularExpressions &&
+				regularExpressions.some(regularExpression =>
+					(<INpmTaskDefinition>each.task.definition).script.match(regularExpression)
+				)
+			) {
 				return;
 			}
 

@@ -17,11 +17,10 @@ type StorageDatabase = { [key: string]: unknown };
 
 export const enum SaveStrategy {
 	IMMEDIATE,
-	DELAYED
+	DELAYED,
 }
 
 export class FileStorage extends Disposable {
-
 	private storage: StorageDatabase = Object.create(null);
 	private lastSavedStorageContents = '';
 
@@ -34,11 +33,15 @@ export class FileStorage extends Disposable {
 		private readonly storagePath: URI,
 		saveStrategy: SaveStrategy,
 		private readonly logService: ILogService,
-		private readonly fileService: IFileService,
+		private readonly fileService: IFileService
 	) {
 		super();
 
-		this.flushDelayer = this._register(new ThrottledDelayer<void>(saveStrategy === SaveStrategy.IMMEDIATE ? 0 : 100 /* buffer saves over a short time */));
+		this.flushDelayer = this._register(
+			new ThrottledDelayer<void>(
+				saveStrategy === SaveStrategy.IMMEDIATE ? 0 : 100 /* buffer saves over a short time */
+			)
+		);
 	}
 
 	init(): Promise<void> {
@@ -51,7 +54,9 @@ export class FileStorage extends Disposable {
 
 	private async doInit(): Promise<void> {
 		try {
-			this.lastSavedStorageContents = (await this.fileService.readFile(this.storagePath)).value.toString();
+			this.lastSavedStorageContents = (
+				await this.fileService.readFile(this.storagePath)
+			).value.toString();
 			this.storage = JSON.parse(this.lastSavedStorageContents);
 		} catch (error) {
 			if ((<FileOperationError>error).fileOperationResult !== FileOperationResult.FILE_NOT_FOUND) {
@@ -75,11 +80,12 @@ export class FileStorage extends Disposable {
 		this.setItems([{ key, data }]);
 	}
 
-	setItems(items: readonly { key: string; data?: object | string | number | boolean | undefined | null }[]): void {
+	setItems(
+		items: readonly { key: string; data?: object | string | number | boolean | undefined | null }[]
+	): void {
 		let save = false;
 
 		for (const { key, data } of items) {
-
 			// Shortcut for data that did not change
 			if (this.storage[key] === data) {
 				continue;
@@ -106,7 +112,6 @@ export class FileStorage extends Disposable {
 	}
 
 	removeItem(key: string): void {
-
 		// Only update if the key is actually present (not undefined)
 		if (!isUndefined(this.storage[key])) {
 			this.storage[key] = undefined;
@@ -138,7 +143,9 @@ export class FileStorage extends Disposable {
 
 		// Write to disk
 		try {
-			await this.fileService.writeFile(this.storagePath, VSBuffer.fromString(serializedDatabase), { atomic: { postfix: '.vsctmp' } });
+			await this.fileService.writeFile(this.storagePath, VSBuffer.fromString(serializedDatabase), {
+				atomic: { postfix: '.vsctmp' },
+			});
 			this.lastSavedStorageContents = serializedDatabase;
 		} catch (error) {
 			this.logService.error(error);
@@ -155,7 +162,6 @@ export class FileStorage extends Disposable {
 }
 
 export class StateReadonlyService extends Disposable implements IStateReadService {
-
 	declare readonly _serviceBrand: undefined;
 
 	protected readonly fileStorage: FileStorage;
@@ -168,7 +174,9 @@ export class StateReadonlyService extends Disposable implements IStateReadServic
 	) {
 		super();
 
-		this.fileStorage = this._register(new FileStorage(environmentService.stateResource, saveStrategy, logService, fileService));
+		this.fileStorage = this._register(
+			new FileStorage(environmentService.stateResource, saveStrategy, logService, fileService)
+		);
 	}
 
 	async init(): Promise<void> {
@@ -183,14 +191,15 @@ export class StateReadonlyService extends Disposable implements IStateReadServic
 }
 
 export class StateService extends StateReadonlyService implements IStateService {
-
 	declare readonly _serviceBrand: undefined;
 
 	setItem(key: string, data?: object | string | number | boolean | undefined | null): void {
 		this.fileStorage.setItem(key, data);
 	}
 
-	setItems(items: readonly { key: string; data?: object | string | number | boolean | undefined | null }[]): void {
+	setItems(
+		items: readonly { key: string; data?: object | string | number | boolean | undefined | null }[]
+	): void {
 		this.fileStorage.setItems(items);
 	}
 

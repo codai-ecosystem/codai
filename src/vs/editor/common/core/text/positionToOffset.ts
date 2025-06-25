@@ -114,6 +114,8 @@ export class PositionOffsetTransformer extends PositionOffsetTransformerBase {
 	}
 
 	getLineLength(lineNumber: number): number {
-		return this.lineEndOffsetByLineIdx[lineNumber - 1] - this.lineStartOffsetByLineIdx[lineNumber - 1];
+		return (
+			this.lineEndOffsetByLineIdx[lineNumber - 1] - this.lineStartOffsetByLineIdx[lineNumber - 1]
+		);
 	}
 }

@@ -14,7 +14,10 @@ import { ITerminalStatus } from '../../common/terminal.js';
 import { workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
 
 function statusesEqual(list: TerminalStatusList, expected: [string, Severity][]) {
-	deepStrictEqual(list.statuses.map(e => [e.id, e.severity]), expected);
+	deepStrictEqual(
+		list.statuses.map(e => [e.id, e.severity]),
+		expected
+	);
 }
 
 suite('Workbench - TerminalStatusList', () => {
@@ -101,35 +104,43 @@ suite('Workbench - TerminalStatusList', () => {
 	test('add', () => {
 		statusesEqual(list, []);
 		list.add({ id: 'info', severity: Severity.Info });
-		statusesEqual(list, [
-			['info', Severity.Info]
-		]);
+		statusesEqual(list, [['info', Severity.Info]]);
 		list.add({ id: 'warning', severity: Severity.Warning });
 		statusesEqual(list, [
 			['info', Severity.Info],
-			['warning', Severity.Warning]
+			['warning', Severity.Warning],
 		]);
 		list.add({ id: 'error', severity: Severity.Error });
 		statusesEqual(list, [
 			['info', Severity.Info],
 			['warning', Severity.Warning],
-			['error', Severity.Error]
+			['error', Severity.Error],
 		]);
 	});
 
 	test('add should remove animation', () => {
 		statusesEqual(list, []);
 		list.add({ id: 'info', severity: Severity.Info, icon: spinningLoading });
-		statusesEqual(list, [
-			['info', Severity.Info]
-		]);
-		strictEqual(list.statuses[0].icon!.id, Codicon.play.id, 'loading~spin should be converted to play');
-		list.add({ id: 'warning', severity: Severity.Warning, icon: ThemeIcon.modify(Codicon.zap, 'spin') });
+		statusesEqual(list, [['info', Severity.Info]]);
+		strictEqual(
+			list.statuses[0].icon!.id,
+			Codicon.play.id,
+			'loading~spin should be converted to play'
+		);
+		list.add({
+			id: 'warning',
+			severity: Severity.Warning,
+			icon: ThemeIcon.modify(Codicon.zap, 'spin'),
+		});
 		statusesEqual(list, [
 			['info', Severity.Info],
-			['warning', Severity.Warning]
+			['warning', Severity.Warning],
 		]);
-		strictEqual(list.statuses[1].icon!.id, Codicon.zap.id, 'zap~spin should have animation removed only');
+		strictEqual(
+			list.statuses[1].icon!.id,
+			Codicon.zap.id,
+			'zap~spin should have animation removed only'
+		);
 	});
 
 	test('add should fire onDidRemoveStatus if same status id with a different object reference was added', () => {
@@ -138,11 +149,7 @@ suite('Workbench - TerminalStatusList', () => {
 		store.add(list.onDidRemoveStatus(() => eventCalls.push('remove')));
 		list.add({ id: 'test', severity: Severity.Info });
 		list.add({ id: 'test', severity: Severity.Info });
-		deepStrictEqual(eventCalls, [
-			'add',
-			'remove',
-			'add'
-		]);
+		deepStrictEqual(eventCalls, ['add', 'remove', 'add']);
 	});
 
 	test('remove', () => {
@@ -152,17 +159,15 @@ suite('Workbench - TerminalStatusList', () => {
 		statusesEqual(list, [
 			['info', Severity.Info],
 			['warning', Severity.Warning],
-			['error', Severity.Error]
+			['error', Severity.Error],
 		]);
 		list.remove('warning');
 		statusesEqual(list, [
 			['info', Severity.Info],
-			['error', Severity.Error]
+			['error', Severity.Error],
 		]);
 		list.remove('info');
-		statusesEqual(list, [
-			['error', Severity.Error]
-		]);
+		statusesEqual(list, [['error', Severity.Error]]);
 		list.remove('error');
 		statusesEqual(list, []);
 	});
@@ -170,9 +175,7 @@ suite('Workbench - TerminalStatusList', () => {
 	test('toggle', () => {
 		const status = { id: 'info', severity: Severity.Info };
 		list.toggle(status, true);
-		statusesEqual(list, [
-			['info', Severity.Info]
-		]);
+		statusesEqual(list, [['info', Severity.Info]]);
 		list.toggle(status, false);
 		statusesEqual(list, []);
 	});

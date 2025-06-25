@@ -12,11 +12,22 @@ import { Emitter, Event } from '../../../../common/event.js';
 import { DisposableStore } from '../../../../common/lifecycle.js';
 import { isEqual } from '../../../../common/resources.js';
 import { URI } from '../../../../common/uri.js';
-import { BufferReader, BufferWriter, ClientConnectionEvent, deserialize, IChannel, IMessagePassingProtocol, IPCClient, IPCServer, IServerChannel, ProxyChannel, serialize } from '../../common/ipc.js';
+import {
+	BufferReader,
+	BufferWriter,
+	ClientConnectionEvent,
+	deserialize,
+	IChannel,
+	IMessagePassingProtocol,
+	IPCClient,
+	IPCServer,
+	IServerChannel,
+	ProxyChannel,
+	serialize,
+} from '../../common/ipc.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../test/common/utils.js';
 
 class QueueProtocol implements IMessagePassingProtocol {
-
 	private buffering = true;
 	private buffers: VSBuffer[] = [];
 
@@ -31,7 +42,7 @@ class QueueProtocol implements IMessagePassingProtocol {
 		},
 		onDidRemoveLastListener: () => {
 			this.buffering = true;
-		}
+		},
 	});
 
 	readonly onMessage = this._onMessage.event;
@@ -60,7 +71,6 @@ function createProtocolPair(): [IMessagePassingProtocol, IMessagePassingProtocol
 }
 
 class TestIPCClient extends IPCClient<string> {
-
 	private readonly _onDidDisconnect = new Emitter<void>();
 	readonly onDidDisconnect = this._onDidDisconnect.event;
 
@@ -75,7 +85,6 @@ class TestIPCClient extends IPCClient<string> {
 }
 
 class TestIPCServer extends IPCServer<string> {
-
 	private readonly onDidClientConnect: Emitter<ClientConnectionEvent>;
 
 	constructor() {
@@ -90,7 +99,7 @@ class TestIPCServer extends IPCServer<string> {
 
 		this.onDidClientConnect.fire({
 			protocol: ps,
-			onDidClientDisconnect: client.onDidDisconnect
+			onDidClientDisconnect: client.onDidDisconnect,
 		});
 
 		return client;
@@ -112,7 +121,6 @@ interface ITestService {
 }
 
 class TestService implements ITestService {
-
 	private readonly disposables = new DisposableStore();
 
 	private readonly _onPong = new Emitter<string>();
@@ -127,7 +135,7 @@ class TestService implements ITestService {
 	}
 
 	neverComplete(): Promise<void> {
-		return new Promise(_ => { });
+		return new Promise(_ => {});
 	}
 
 	neverCompleteCT(cancellationToken: CancellationToken): Promise<void> {
@@ -135,7 +143,9 @@ class TestService implements ITestService {
 			return Promise.reject(canceled());
 		}
 
-		return new Promise((_, e) => this.disposables.add(cancellationToken.onCancellationRequested(() => e(canceled()))));
+		return new Promise((_, e) =>
+			this.disposables.add(cancellationToken.onCancellationRequested(() => e(canceled())))
+		);
 	}
 
 	buffersLength(buffers: VSBuffer[]): Promise<number> {
@@ -160,35 +170,41 @@ class TestService implements ITestService {
 }
 
 class TestChannel implements IServerChannel {
-
-	constructor(private service: ITestService) { }
+	constructor(private service: ITestService) {}
 
 	call(_: unknown, command: string, arg: any, cancellationToken: CancellationToken): Promise<any> {
 		switch (command) {
-			case 'marco': return this.service.marco();
-			case 'error': return this.service.error(arg);
-			case 'neverComplete': return this.service.neverComplete();
-			case 'neverCompleteCT': return this.service.neverCompleteCT(cancellationToken);
-			case 'buffersLength': return this.service.buffersLength(arg);
-			default: return Promise.reject(new Error('not implemented'));
+			case 'marco':
+				return this.service.marco();
+			case 'error':
+				return this.service.error(arg);
+			case 'neverComplete':
+				return this.service.neverComplete();
+			case 'neverCompleteCT':
+				return this.service.neverCompleteCT(cancellationToken);
+			case 'buffersLength':
+				return this.service.buffersLength(arg);
+			default:
+				return Promise.reject(new Error('not implemented'));
 		}
 	}
 
 	listen(_: unknown, event: string, arg?: any): Event<any> {
 		switch (event) {
-			case 'onPong': return this.service.onPong;
-			default: throw new Error('not implemented');
+			case 'onPong':
+				return this.service.onPong;
+			default:
+				throw new Error('not implemented');
 		}
 	}
 }
 
 class TestChannelClient implements ITestService {
-
 	get onPong(): Event<string> {
 		return this.channel.listen('onPong');
 	}
 
-	constructor(private channel: IChannel) { }
+	constructor(private channel: IChannel) {}
 
 	marco(): Promise<string> {
 		return this.channel.call('marco');
@@ -220,7 +236,6 @@ class TestChannelClient implements ITestService {
 }
 
 suite('Base IPC', function () {
-
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('createProtocolPair', async function () {
@@ -326,15 +341,7 @@ suite('Base IPC', function () {
 		});
 
 		test('round trips numbers', () => {
-			const input = [
-				0,
-				1,
-				-1,
-				12345,
-				-12345,
-				42.6,
-				123412341234
-			];
+			const input = [0, 1, -1, 12345, -12345, 42.6, 123412341234];
 
 			const writer = new BufferWriter();
 			serialize(writer, input);
@@ -425,7 +432,9 @@ suite('Base IPC', function () {
 			server.registerChannel(TestChannelId, ProxyChannel.fromService(service, disposables));
 
 			client = disposables.add(testServer.createConnection('client1'));
-			ipcService = ProxyChannel.toService(client.getChannel(TestChannelId), { context: 'Super Context' });
+			ipcService = ProxyChannel.toService(client.getChannel(TestChannelId), {
+				context: 'Super Context',
+			});
 		});
 
 		teardown(function () {
@@ -448,12 +457,12 @@ suite('Base IPC', function () {
 			let client1GotPinged = false;
 			const client1 = store.add(server.createConnection('client1'));
 			const ipcService1 = new TestChannelClient(client1.getChannel('channel'));
-			store.add(ipcService1.onPong(() => client1GotPinged = true));
+			store.add(ipcService1.onPong(() => (client1GotPinged = true)));
 
 			let client2GotPinged = false;
 			const client2 = store.add(server.createConnection('client2'));
 			const ipcService2 = new TestChannelClient(client2.getChannel('channel'));
-			store.add(ipcService2.onPong(() => client2GotPinged = true));
+			store.add(ipcService2.onPong(() => (client2GotPinged = true)));
 
 			await timeout(1);
 			service.ping('hello');

@@ -11,7 +11,6 @@ import { rtrim, startsWithIgnoreCase } from './strings.js';
 import { URI } from './uri.js';
 
 export interface IPathLabelFormatting {
-
 	/**
 	 * The OS the path label is from to produce a label
 	 * that matches OS expectations.
@@ -35,7 +34,6 @@ export interface IPathLabelFormatting {
 }
 
 export interface IRelativePathProvider {
-
 	/**
 	 * Whether to not add a prefix when in multi-root workspace.
 	 */
@@ -79,7 +77,11 @@ export function getPathLabel(resource: URI, formatting: IPathLabelFormatting): s
 		// to a user home resource. We cannot assume that the resource is
 		// already a user home resource.
 		let userHomeCandidate: string;
-		if (resource.scheme !== tildifier.userHome.scheme && resource.path[0] === posix.sep && resource.path[1] !== posix.sep) {
+		if (
+			resource.scheme !== tildifier.userHome.scheme &&
+			resource.path[0] === posix.sep &&
+			resource.path[1] !== posix.sep
+		) {
 			userHomeCandidate = tildifier.userHome.with({ path: resource.path }).fsPath;
 		} else {
 			userHomeCandidate = absolutePath;
@@ -93,7 +95,11 @@ export function getPathLabel(resource: URI, formatting: IPathLabelFormatting): s
 	return pathLib.normalize(normalizeDriveLetter(absolutePath, os === OperatingSystem.Windows));
 }
 
-function getRelativePathLabel(resource: URI, relativePathProvider: IRelativePathProvider, os: OperatingSystem): string | undefined {
+function getRelativePathLabel(
+	resource: URI,
+	relativePathProvider: IRelativePathProvider,
+	os: OperatingSystem
+): string | undefined {
 	const pathLib = os === OperatingSystem.Windows ? win32 : posix;
 	const extUriLib = os === OperatingSystem.Linux ? extUri : extUriIgnorePathCase;
 
@@ -107,7 +113,11 @@ function getRelativePathLabel(resource: URI, relativePathProvider: IRelativePath
 	// the resource belongs to, we need to make sure to convert it
 	// to a workspace resource. We cannot assume that the resource is
 	// already matching the workspace.
-	if (resource.scheme !== firstFolder.uri.scheme && resource.path[0] === posix.sep && resource.path[1] !== posix.sep) {
+	if (
+		resource.scheme !== firstFolder.uri.scheme &&
+		resource.path[0] === posix.sep &&
+		resource.path[1] !== posix.sep
+	) {
 		resource = firstFolder.uri.with({ path: resource.path });
 	}
 
@@ -151,7 +161,10 @@ export function tildify(path: string, userHome: string, os = OS): string {
 		return path; // unsupported on Windows
 	}
 
-	let normalizedUserHome = normalizedUserHomeCached.original === userHome ? normalizedUserHomeCached.normalized : undefined;
+	let normalizedUserHome =
+		normalizedUserHomeCached.original === userHome
+			? normalizedUserHomeCached.normalized
+			: undefined;
 	if (!normalizedUserHome) {
 		normalizedUserHome = userHome;
 		if (isWindows) {
@@ -167,7 +180,11 @@ export function tildify(path: string, userHome: string, os = OS): string {
 	}
 
 	// Linux: case sensitive, macOS: case insensitive
-	if (os === OperatingSystem.Linux ? normalizedPath.startsWith(normalizedUserHome) : startsWithIgnoreCase(normalizedPath, normalizedUserHome)) {
+	if (
+		os === OperatingSystem.Linux
+			? normalizedPath.startsWith(normalizedUserHome)
+			: startsWithIgnoreCase(normalizedPath, normalizedUserHome)
+	) {
 		return `~/${normalizedPath.substr(normalizedUserHome.length)}`;
 	}
 
@@ -253,14 +270,20 @@ export function shorten(paths: string[], pathSeparator: string = sep): string[] 
 
 				// that is unique to any other path
 				for (let otherPathIndex = 0; !match && otherPathIndex < paths.length; otherPathIndex++) {
-
 					// suffix subpath treated specially as we consider no match 'x' and 'x/...'
-					if (otherPathIndex !== pathIndex && paths[otherPathIndex] && paths[otherPathIndex].indexOf(subpath) > -1) {
-						const isSubpathEnding: boolean = (start + subpathLength === segments.length);
+					if (
+						otherPathIndex !== pathIndex &&
+						paths[otherPathIndex] &&
+						paths[otherPathIndex].indexOf(subpath) > -1
+					) {
+						const isSubpathEnding: boolean = start + subpathLength === segments.length;
 
 						// Adding separator as prefix for subpath, such that 'endsWith(src, trgt)' considers subpath as directory name instead of plain string.
 						// prefix is not added when either subpath is root directory or path[otherPathIndex] does not have multiple directories.
-						const subpathWithSep: string = (start > 0 && paths[otherPathIndex].indexOf(pathSeparator) > -1) ? pathSeparator + subpath : subpath;
+						const subpathWithSep: string =
+							start > 0 && paths[otherPathIndex].indexOf(pathSeparator) > -1
+								? pathSeparator + subpath
+								: subpath;
 						const isOtherPathEnding: boolean = paths[otherPathIndex].endsWith(subpathWithSep);
 
 						match = !isSubpathEnding || isOtherPathEnding;
@@ -319,7 +342,7 @@ export interface ISeparator {
 enum Type {
 	TEXT,
 	VARIABLE,
-	SEPARATOR
+	SEPARATOR,
 }
 
 interface ISegment {
@@ -333,7 +356,10 @@ interface ISegment {
  * @param value string to which template is applied
  * @param values the values of the templates to use
  */
-export function template(template: string, values: { [key: string]: string | ISeparator | undefined | null } = Object.create(null)): string {
+export function template(
+	template: string,
+	values: { [key: string]: string | ISeparator | undefined | null } = Object.create(null)
+): string {
 	const segments: ISegment[] = [];
 
 	let inVariable = false;
@@ -383,19 +409,26 @@ export function template(template: string, values: { [key: string]: string | ISe
 		segments.push({ value: curVal, type: Type.TEXT });
 	}
 
-	return segments.filter((segment, index) => {
+	return segments
+		.filter((segment, index) => {
+			// Only keep separator if we have values to the left and right
+			if (segment.type === Type.SEPARATOR) {
+				const left = segments[index - 1];
+				const right = segments[index + 1];
 
-		// Only keep separator if we have values to the left and right
-		if (segment.type === Type.SEPARATOR) {
-			const left = segments[index - 1];
-			const right = segments[index + 1];
+				return [left, right].every(
+					segment =>
+						segment &&
+						(segment.type === Type.VARIABLE || segment.type === Type.TEXT) &&
+						segment.value.length > 0
+				);
+			}
 
-			return [left, right].every(segment => segment && (segment.type === Type.VARIABLE || segment.type === Type.TEXT) && segment.value.length > 0);
-		}
-
-		// accept any TEXT and VARIABLE
-		return true;
-	}).map(segment => segment.value).join('');
+			// accept any TEXT and VARIABLE
+			return true;
+		})
+		.map(segment => segment.value)
+		.join('');
 }
 
 /**
@@ -409,7 +442,7 @@ export function mnemonicMenuLabel(label: string, forceDisableMnemonics?: boolean
 		return label.replace(/\(&&\w\)|&&/g, '').replace(/&/g, isMacintosh ? '&' : '&&');
 	}
 
-	return label.replace(/&&|&/g, m => m === '&' ? '&&' : '&');
+	return label.replace(/&&|&/g, m => (m === '&' ? '&&' : '&'));
 }
 
 /**
@@ -420,8 +453,14 @@ export function mnemonicMenuLabel(label: string, forceDisableMnemonics?: boolean
  * When forceDisableMnemonics is set, returns just the label without mnemonics.
  */
 export function mnemonicButtonLabel(label: string, forceDisableMnemonics: true): string;
-export function mnemonicButtonLabel(label: string, forceDisableMnemonics?: false): { readonly withMnemonic: string; readonly withoutMnemonic: string };
-export function mnemonicButtonLabel(label: string, forceDisableMnemonics?: boolean): { readonly withMnemonic: string; readonly withoutMnemonic: string } | string {
+export function mnemonicButtonLabel(
+	label: string,
+	forceDisableMnemonics?: false
+): { readonly withMnemonic: string; readonly withoutMnemonic: string };
+export function mnemonicButtonLabel(
+	label: string,
+	forceDisableMnemonics?: boolean
+): { readonly withMnemonic: string; readonly withoutMnemonic: string } | string {
 	const withoutMnemonic = label.replace(/\(&&\w\)|&&/g, '');
 
 	if (forceDisableMnemonics) {
@@ -433,7 +472,7 @@ export function mnemonicButtonLabel(label: string, forceDisableMnemonics?: boole
 
 	let withMnemonic: string;
 	if (isWindows) {
-		withMnemonic = label.replace(/&&|&/g, m => m === '&' ? '&&' : '&');
+		withMnemonic = label.replace(/&&|&/g, m => (m === '&' ? '&&' : '&'));
 	} else {
 		withMnemonic = label.replace(/&&/g, '_');
 	}

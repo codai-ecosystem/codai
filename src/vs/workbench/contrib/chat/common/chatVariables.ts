@@ -29,19 +29,33 @@ export interface IChatRequestProblemsVariable {
 }
 
 export const isIChatRequestProblemsVariable = (obj: unknown): obj is IChatRequestProblemsVariable =>
-	typeof obj === 'object' && obj !== null && 'id' in obj && (obj as IChatRequestProblemsVariable).id === 'vscode.problems';
+	typeof obj === 'object' &&
+	obj !== null &&
+	'id' in obj &&
+	(obj as IChatRequestProblemsVariable).id === 'vscode.problems';
 
-export type IChatRequestVariableValue = string | URI | Location | Uint8Array | IChatRequestProblemsVariable | unknown;
+export type IChatRequestVariableValue =
+	| string
+	| URI
+	| Location
+	| Uint8Array
+	| IChatRequestProblemsVariable
+	| unknown;
 
-export type IChatVariableResolverProgress =
-	| IChatContentReference
-	| IChatProgressMessage;
+export type IChatVariableResolverProgress = IChatContentReference | IChatProgressMessage;
 
 export interface IChatVariableResolver {
-	(messageText: string, arg: string | undefined, model: IChatModel, progress: (part: IChatVariableResolverProgress) => void, token: CancellationToken): Promise<IChatRequestVariableValue | undefined>;
+	(
+		messageText: string,
+		arg: string | undefined,
+		model: IChatModel,
+		progress: (part: IChatVariableResolverProgress) => void,
+		token: CancellationToken
+	): Promise<IChatRequestVariableValue | undefined>;
 }
 
-export const IChatVariablesService = createDecorator<IChatVariablesService>('IChatVariablesService');
+export const IChatVariablesService =
+	createDecorator<IChatVariablesService>('IChatVariablesService');
 
 export interface IChatVariablesService {
 	_serviceBrand: undefined;

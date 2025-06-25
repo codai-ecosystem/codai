@@ -28,7 +28,10 @@ const kKDESessionEnvVar = 'KDE_SESSION_VERSION';
 export function getDesktopEnvironment(): DesktopEnvironment {
 	const xdgCurrentDesktop = env[kXdgCurrentDesktopEnvVar];
 	if (xdgCurrentDesktop) {
-		const values = xdgCurrentDesktop.split(':').map(value => value.trim()).filter(value => value.length > 0);
+		const values = xdgCurrentDesktop
+			.split(':')
+			.map(value => value.trim())
+			.filter(value => value.length > 0);
 		for (const value of values) {
 			switch (value) {
 				case 'Unity': {
@@ -47,8 +50,12 @@ export function getDesktopEnvironment(): DesktopEnvironment {
 					return DesktopEnvironment.CINNAMON;
 				case 'KDE': {
 					const kdeSession = env[kKDESessionEnvVar];
-					if (kdeSession === '5') { return DesktopEnvironment.KDE5; }
-					if (kdeSession === '6') { return DesktopEnvironment.KDE6; }
+					if (kdeSession === '5') {
+						return DesktopEnvironment.KDE5;
+					}
+					if (kdeSession === '6') {
+						return DesktopEnvironment.KDE6;
+					}
 					return DesktopEnvironment.KDE4;
 				}
 				case 'Pantheon':

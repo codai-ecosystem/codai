@@ -7,7 +7,6 @@ import * as vscode from 'vscode';
 import { Repository } from './typings/git.js';
 
 export class DisposableStore {
-
 	private disposables = new Set<vscode.Disposable>();
 
 	add(disposable: vscode.Disposable): void {
@@ -48,7 +47,7 @@ function _sequentialize(fn: Function, key: string): Function {
 	const currentKey = `__$sequence$${key}`;
 
 	return function (this: any, ...args: any[]) {
-		const currentPromise = this[currentKey] as Promise<any> || Promise.resolve(null);
+		const currentPromise = (this[currentKey] as Promise<any>) || Promise.resolve(null);
 		const run = async () => await fn.apply(this, args);
 		this[currentKey] = currentPromise.then(run, run);
 		return this[currentKey];
@@ -72,8 +71,9 @@ export function groupBy<T>(data: ReadonlyArray<T>, compare: (a: T, b: T) => numb
 }
 
 export function getRepositoryFromUrl(url: string): { owner: string; repo: string } | undefined {
-	const match = /^https:\/\/github\.com\/([^/]+)\/([^/]+?)(\.git)?$/i.exec(url)
-		|| /^git@github\.com:([^/]+)\/([^/]+?)(\.git)?$/i.exec(url);
+	const match =
+		/^https:\/\/github\.com\/([^/]+)\/([^/]+?)(\.git)?$/i.exec(url) ||
+		/^git@github\.com:([^/]+)\/([^/]+?)(\.git)?$/i.exec(url);
 	return match ? { owner: match[1], repo: match[2] } : undefined;
 }
 
@@ -83,26 +83,32 @@ export function getRepositoryFromQuery(query: string): { owner: string; repo: st
 }
 
 export function repositoryHasGitHubRemote(repository: Repository) {
-	return !!repository.state.remotes.find(remote => remote.fetchUrl ? getRepositoryFromUrl(remote.fetchUrl) : undefined);
+	return !!repository.state.remotes.find(remote =>
+		remote.fetchUrl ? getRepositoryFromUrl(remote.fetchUrl) : undefined
+	);
 }
 
 export function getRepositoryDefaultRemoteUrl(repository: Repository): string | undefined {
-	const remotes = repository.state.remotes
-		.filter(remote => remote.fetchUrl && getRepositoryFromUrl(remote.fetchUrl));
+	const remotes = repository.state.remotes.filter(
+		remote => remote.fetchUrl && getRepositoryFromUrl(remote.fetchUrl)
+	);
 
 	if (remotes.length === 0) {
 		return undefined;
 	}
 
 	// upstream -> origin -> first
-	const remote = remotes.find(remote => remote.name === 'upstream')
-		?? remotes.find(remote => remote.name === 'origin')
-		?? remotes[0];
+	const remote =
+		remotes.find(remote => remote.name === 'upstream') ??
+		remotes.find(remote => remote.name === 'origin') ??
+		remotes[0];
 
 	return remote.fetchUrl;
 }
 
-export function getRepositoryDefaultRemote(repository: Repository): { owner: string; repo: string } | undefined {
+export function getRepositoryDefaultRemote(
+	repository: Repository
+): { owner: string; repo: string } | undefined {
 	const fetchUrl = getRepositoryDefaultRemoteUrl(repository);
 	return fetchUrl ? getRepositoryFromUrl(fetchUrl) : undefined;
 }

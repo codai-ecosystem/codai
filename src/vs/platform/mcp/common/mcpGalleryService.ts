@@ -15,12 +15,18 @@ import { IFileService } from '../../files/common/files.js';
 import { ILogService } from '../../log/common/log.js';
 import { IProductService } from '../../product/common/productService.js';
 import { asJson, asText, IRequestService } from '../../request/common/request.js';
-import { IGalleryMcpServer, IMcpGalleryService, IMcpServerManifest, IQueryOptions, mcpGalleryServiceUrlConfig, PackageType } from './mcpManagement.js';
+import {
+	IGalleryMcpServer,
+	IMcpGalleryService,
+	IMcpServerManifest,
+	IQueryOptions,
+	mcpGalleryServiceUrlConfig,
+	PackageType,
+} from './mcpManagement.js';
 
 interface IRawGalleryServersResult {
 	readonly servers: readonly IRawGalleryMcpServer[];
 }
-
 
 interface IRawGalleryMcpServer {
 	readonly id: string;
@@ -48,7 +54,6 @@ interface IRawGalleryMcpServer {
 type RawGalleryMcpServerManifest = IRawGalleryMcpServer & IMcpServerManifest;
 
 export class McpGalleryService extends Disposable implements IMcpGalleryService {
-
 	_serviceBrand: undefined;
 
 	constructor(
@@ -56,7 +61,7 @@ export class McpGalleryService extends Disposable implements IMcpGalleryService 
 		@IRequestService private readonly requestService: IRequestService,
 		@IFileService private readonly fileService: IFileService,
 		@IProductService private readonly productService: IProductService,
-		@ILogService private readonly logService: ILogService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
 	}
@@ -65,12 +70,19 @@ export class McpGalleryService extends Disposable implements IMcpGalleryService 
 		return this.getMcpGalleryUrl() !== undefined;
 	}
 
-	async query(options?: IQueryOptions, token: CancellationToken = CancellationToken.None): Promise<IGalleryMcpServer[]> {
+	async query(
+		options?: IQueryOptions,
+		token: CancellationToken = CancellationToken.None
+	): Promise<IGalleryMcpServer[]> {
 		let { servers } = await this.fetchGallery(token);
 
 		if (options?.text) {
 			const searchText = options.text.toLowerCase();
-			servers = servers.filter(item => item.name.toLowerCase().includes(searchText) || item.description.toLowerCase().includes(searchText));
+			servers = servers.filter(
+				item =>
+					item.name.toLowerCase().includes(searchText) ||
+					item.description.toLowerCase().includes(searchText)
+			);
 		}
 
 		const galleryServers: IGalleryMcpServer[] = [];
@@ -81,7 +93,10 @@ export class McpGalleryService extends Disposable implements IMcpGalleryService 
 		return galleryServers;
 	}
 
-	async getManifest(gallery: IGalleryMcpServer, token: CancellationToken): Promise<IMcpServerManifest> {
+	async getManifest(
+		gallery: IGalleryMcpServer,
+		token: CancellationToken
+	): Promise<IMcpServerManifest> {
 		const uri = URI.parse(gallery.manifestUrl);
 		if (uri.scheme === Schemas.file) {
 			try {
@@ -93,10 +108,13 @@ export class McpGalleryService extends Disposable implements IMcpGalleryService 
 			}
 		}
 
-		const context = await this.requestService.request({
-			type: 'GET',
-			url: gallery.manifestUrl,
-		}, token);
+		const context = await this.requestService.request(
+			{
+				type: 'GET',
+				url: gallery.manifestUrl,
+			},
+			token
+		);
 
 		const result = await asJson<RawGalleryMcpServerManifest>(context);
 		if (!result) {
@@ -125,10 +143,13 @@ export class McpGalleryService extends Disposable implements IMcpGalleryService 
 			}
 		}
 
-		const context = await this.requestService.request({
-			type: 'GET',
-			url: readmeUrl,
-		}, token);
+		const context = await this.requestService.request(
+			{
+				type: 'GET',
+				url: readmeUrl,
+			},
+			token
+		);
 
 		const result = await asText(context);
 		if (!result) {
@@ -151,7 +172,12 @@ export class McpGalleryService extends Disposable implements IMcpGalleryService 
 		return {
 			id: item.id,
 			name: item.name,
-			displayName: item.displayName ?? nameParts[nameParts.length - 1].split('-').map(s => uppercaseFirstLetter(s)).join(' '),
+			displayName:
+				item.displayName ??
+				nameParts[nameParts.length - 1]
+					.split('-')
+					.map(s => uppercaseFirstLetter(s))
+					.join(' '),
 			url: item.repository.url,
 			description: item.description,
 			version: item.version_detail.version,
@@ -162,10 +188,12 @@ export class McpGalleryService extends Disposable implements IMcpGalleryService 
 			packageTypes: item.package_types ?? [],
 			publisher,
 			publisherDisplayName: item.publisher?.displayName,
-			publisherDomain: item.publisher ? {
-				link: item.publisher.url,
-				verified: item.publisher.is_verified,
-			} : undefined,
+			publisherDomain: item.publisher
+				? {
+						link: item.publisher.url,
+						verified: item.publisher.is_verified,
+					}
+				: undefined,
 		};
 	}
 
@@ -186,10 +214,13 @@ export class McpGalleryService extends Disposable implements IMcpGalleryService 
 			}
 		}
 
-		const context = await this.requestService.request({
-			type: 'GET',
-			url: mcpGalleryUrl,
-		}, token);
+		const context = await this.requestService.request(
+			{
+				type: 'GET',
+				url: mcpGalleryUrl,
+			},
+			token
+		);
 
 		const result = await asJson<IRawGalleryServersResult>(context);
 		return result || { servers: [] };
@@ -216,5 +247,4 @@ export class McpGalleryService extends Disposable implements IMcpGalleryService 
 		}
 		return this.configurationService.getValue<string>(mcpGalleryServiceUrlConfig);
 	}
-
 }

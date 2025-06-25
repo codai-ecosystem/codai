@@ -4,7 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as glob from '../../../../base/common/glob.js';
-import { GroupIdentifier, ISaveOptions, IMoveResult, IRevertOptions, EditorInputCapabilities, Verbosity, IUntypedEditorInput, IFileLimitedEditorInputOptions, isResourceEditorInput } from '../../../common/editor.js';
+import {
+	GroupIdentifier,
+	ISaveOptions,
+	IMoveResult,
+	IRevertOptions,
+	EditorInputCapabilities,
+	Verbosity,
+	IUntypedEditorInput,
+	IFileLimitedEditorInputOptions,
+	isResourceEditorInput,
+} from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
 import { INotebookService, SimpleNotebookProviderInfo } from './notebookService.js';
 import { URI } from '../../../../base/common/uri.js';
@@ -42,9 +52,20 @@ export interface NotebookEditorInputOptions {
 }
 
 export class NotebookEditorInput extends AbstractResourceEditorInput {
-
-	static getOrCreate(instantiationService: IInstantiationService, resource: URI, preferredResource: URI | undefined, viewType: string, options: NotebookEditorInputOptions = {}) {
-		const editor = instantiationService.createInstance(NotebookEditorInput, resource, preferredResource, viewType, options);
+	static getOrCreate(
+		instantiationService: IInstantiationService,
+		resource: URI,
+		preferredResource: URI | undefined,
+		viewType: string,
+		options: NotebookEditorInputOptions = {}
+	) {
+		const editor = instantiationService.createInstance(
+			NotebookEditorInput,
+			resource,
+			preferredResource,
+			viewType,
+			options
+		);
 		if (preferredResource) {
 			editor.setPreferredResource(preferredResource);
 		}
@@ -63,17 +84,27 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		public readonly viewType: string,
 		public readonly options: NotebookEditorInputOptions,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookEditorModelResolverService private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
+		@INotebookEditorModelResolverService
+		private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
 		@IFileDialogService private readonly _fileDialogService: IFileDialogService,
 		@ILabelService labelService: ILabelService,
 		@IFileService fileService: IFileService,
 		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
 		@IExtensionService extensionService: IExtensionService,
 		@IEditorService editorService: IEditorService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService
 	) {
-		super(resource, preferredResource, labelService, fileService, filesConfigurationService, textResourceConfigurationService, customEditorLabelService);
+		super(
+			resource,
+			preferredResource,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService,
+			customEditorLabelService
+		);
 		this._defaultDirtyState = !!options.startDirty;
 
 		// Automatically resolve this input when the "wanted" model comes to life via
@@ -85,29 +116,42 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 			}
 		});
 
-		this._register(extensionService.onWillStop(e => {
-			if (!e.auto && !this.isDirty()) {
-				return;
-			}
-
-			const reason = e.auto
-				? localize('vetoAutoExtHostRestart', "An extension provided notebook for '{0}' is still open that would close otherwise.", this.getName())
-				: localize('vetoExtHostRestart', "An extension provided notebook for '{0}' could not be saved.", this.getName());
-
-			e.veto((async () => {
-				const editors = editorService.findEditors(this);
-				if (e.auto) {
-					return true;
+		this._register(
+			extensionService.onWillStop(e => {
+				if (!e.auto && !this.isDirty()) {
+					return;
 				}
-				if (editors.length > 0) {
-					const result = await editorService.save(editors[0]);
-					if (result.success) {
-						return false; // Don't Veto
-					}
-				}
-				return true; // Veto
-			})(), reason);
-		}));
+
+				const reason = e.auto
+					? localize(
+							'vetoAutoExtHostRestart',
+							"An extension provided notebook for '{0}' is still open that would close otherwise.",
+							this.getName()
+						)
+					: localize(
+							'vetoExtHostRestart',
+							"An extension provided notebook for '{0}' could not be saved.",
+							this.getName()
+						);
+
+				e.veto(
+					(async () => {
+						const editors = editorService.findEditors(this);
+						if (e.auto) {
+							return true;
+						}
+						if (editors.length > 0) {
+							const result = await editorService.save(editors[0]);
+							if (result.success) {
+								return false; // Don't Veto
+							}
+						}
+						return true; // Veto
+					})(),
+					reason
+				);
+			})
+		);
 	}
 
 	override dispose() {
@@ -150,7 +194,10 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 	}
 
 	override getDescription(verbosity = Verbosity.MEDIUM): string | undefined {
-		if (!this.hasCapability(EditorInputCapabilities.Untitled) || this.editorModelReference?.object.hasAssociatedFilePath()) {
+		if (
+			!this.hasCapability(EditorInputCapabilities.Untitled) ||
+			this.editorModelReference?.object.hasAssociatedFilePath()
+		) {
 			return super.getDescription(verbosity);
 		}
 
@@ -173,7 +220,12 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 
 	override isSaving(): boolean {
 		const model = this.editorModelReference?.object;
-		if (!model || !model.isDirty() || model.hasErrorState || this.hasCapability(EditorInputCapabilities.Untitled)) {
+		if (
+			!model ||
+			!model.isDirty() ||
+			model.hasErrorState ||
+			this.hasCapability(EditorInputCapabilities.Untitled)
+		) {
 			return false; // require the model to be dirty, file-backed and not in an error state
 		}
 
@@ -181,9 +233,11 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		return this.filesConfigurationService.hasShortAutoSaveDelay(this);
 	}
 
-	override async save(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	override async save(
+		group: GroupIdentifier,
+		options?: ISaveOptions
+	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		if (this.editorModelReference) {
-
 			if (this.hasCapability(EditorInputCapabilities.Untitled)) {
 				return this.saveAs(group, options);
 			} else {
@@ -196,7 +250,10 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		return undefined;
 	}
 
-	override async saveAs(group: GroupIdentifier, options?: ISaveOptions): Promise<IUntypedEditorInput | undefined> {
+	override async saveAs(
+		group: GroupIdentifier,
+		options?: ISaveOptions
+	): Promise<IUntypedEditorInput | undefined> {
 		if (!this.editorModelReference) {
 			return undefined;
 		}
@@ -207,35 +264,43 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 			return undefined;
 		}
 
-		const pathCandidate = this.hasCapability(EditorInputCapabilities.Untitled) ? await this._suggestName(provider, this.labelService.getUriBasenameLabel(this.resource)) : this.editorModelReference.object.resource;
+		const pathCandidate = this.hasCapability(EditorInputCapabilities.Untitled)
+			? await this._suggestName(provider, this.labelService.getUriBasenameLabel(this.resource))
+			: this.editorModelReference.object.resource;
 		let target: URI | undefined;
 		if (this.editorModelReference.object.hasAssociatedFilePath()) {
 			target = pathCandidate;
 		} else {
-			target = await this._fileDialogService.pickFileToSave(pathCandidate, options?.availableFileSystems);
+			target = await this._fileDialogService.pickFileToSave(
+				pathCandidate,
+				options?.availableFileSystems
+			);
 			if (!target) {
 				return undefined; // save cancelled
 			}
 		}
 
 		if (!provider.matches(target)) {
-			const patterns = provider.selectors.map(pattern => {
-				if (typeof pattern === 'string') {
-					return pattern;
-				}
+			const patterns = provider.selectors
+				.map(pattern => {
+					if (typeof pattern === 'string') {
+						return pattern;
+					}
 
-				if (glob.isRelativePattern(pattern)) {
-					return `${pattern} (base ${pattern.base})`;
-				}
+					if (glob.isRelativePattern(pattern)) {
+						return `${pattern} (base ${pattern.base})`;
+					}
 
-				if (pattern.exclude) {
-					return `${pattern.include} (exclude: ${pattern.exclude})`;
-				} else {
-					return `${pattern.include}`;
-				}
-
-			}).join(', ');
-			throw new Error(`File name ${target} is not supported by ${provider.providerDisplayName}.\n\nPlease make sure the file name matches following patterns:\n${patterns}`);
+					if (pattern.exclude) {
+						return `${pattern.include} (exclude: ${pattern.exclude})`;
+					} else {
+						return `${pattern.include}`;
+					}
+				})
+				.join(', ');
+			throw new Error(
+				`File name ${target} is not supported by ${provider.providerDisplayName}.\n\nPlease make sure the file name matches following patterns:\n${patterns}`
+			);
 		}
 
 		return await this.editorModelReference.object.saveAs(target);
@@ -244,7 +309,8 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 	private async _suggestName(provider: NotebookProviderInfo, suggestedFilename: string) {
 		// guess file extensions
 		const firstSelector = provider.selectors[0];
-		let selectorStr = firstSelector && typeof firstSelector === 'string' ? firstSelector : undefined;
+		let selectorStr =
+			firstSelector && typeof firstSelector === 'string' ? firstSelector : undefined;
 		if (!selectorStr && firstSelector) {
 			const include = (firstSelector as { include?: string }).include;
 			if (typeof include === 'string') {
@@ -257,7 +323,10 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 			if (matches && matches.length > 1) {
 				const fileExt = matches[1];
 				if (!suggestedFilename.endsWith(fileExt)) {
-					return joinPath(await this._fileDialogService.defaultFilePath(), suggestedFilename + '.' + fileExt);
+					return joinPath(
+						await this._fileDialogService.defaultFilePath(),
+						suggestedFilename + '.' + fileExt
+					);
 				}
 			}
 		}
@@ -269,7 +338,6 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 	override async rename(group: GroupIdentifier, target: URI): Promise<IMoveResult | undefined> {
 		if (this.editorModelReference) {
 			return { editor: { resource: target }, options: { override: this.viewType } };
-
 		}
 		return undefined;
 	}
@@ -280,8 +348,11 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		}
 	}
 
-	override async resolve(_options?: IFileLimitedEditorInputOptions, perf?: NotebookPerfMarks): Promise<IResolvedNotebookEditorModel | null> {
-		if (!await this._notebookService.canResolve(this.viewType)) {
+	override async resolve(
+		_options?: IFileLimitedEditorInputOptions,
+		perf?: NotebookPerfMarks
+	): Promise<IResolvedNotebookEditorModel | null> {
+		if (!(await this._notebookService.canResolve(this.viewType))) {
 			return null;
 		}
 
@@ -293,7 +364,11 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 
 		if (!this.editorModelReference) {
 			const scratchpad = this.capabilities & EditorInputCapabilities.Scratchpad ? true : false;
-			const ref = await this._notebookModelResolverService.resolve(this.resource, this.viewType, { limits: this.ensureLimits(_options), scratchpad, viewType: this.editorId });
+			const ref = await this._notebookModelResolverService.resolve(this.resource, this.viewType, {
+				limits: this.ensureLimits(_options),
+				scratchpad,
+				viewType: this.editorId,
+			});
 			if (this.editorModelReference) {
 				// Re-entrant, double resolve happened. Dispose the addition references and proceed
 				// with the truth.
@@ -306,8 +381,14 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 				this.editorModelReference = null;
 				return null;
 			}
-			this._register(this.editorModelReference.object.onDidChangeDirty(() => this._onDidChangeDirty.fire()));
-			this._register(this.editorModelReference.object.onDidChangeReadonly(() => this._onDidChangeCapabilities.fire()));
+			this._register(
+				this.editorModelReference.object.onDidChangeDirty(() => this._onDidChangeDirty.fire())
+			);
+			this._register(
+				this.editorModelReference.object.onDidChangeReadonly(() =>
+					this._onDidChangeCapabilities.fire()
+				)
+			);
 			this._register(this.editorModelReference.object.onDidRevertUntitled(() => this.dispose()));
 			if (this.editorModelReference.object.isDirty()) {
 				this._onDidChangeDirty.fire();
@@ -317,20 +398,31 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		}
 
 		if (this.options._backupId) {
-			const info = await this._notebookService.withNotebookDataProvider(this.editorModelReference.object.notebook.viewType);
+			const info = await this._notebookService.withNotebookDataProvider(
+				this.editorModelReference.object.notebook.viewType
+			);
 			if (!(info instanceof SimpleNotebookProviderInfo)) {
 				throw new Error('CANNOT open file notebook with this provider');
 			}
 
-			const data = await info.serializer.dataToNotebook(VSBuffer.fromString(JSON.stringify({ __webview_backup: this.options._backupId })));
-			this.editorModelReference.object.notebook.applyEdits([
-				{
-					editType: CellEditType.Replace,
-					index: 0,
-					count: this.editorModelReference.object.notebook.length,
-					cells: data.cells
-				}
-			], true, undefined, () => undefined, undefined, false);
+			const data = await info.serializer.dataToNotebook(
+				VSBuffer.fromString(JSON.stringify({ __webview_backup: this.options._backupId }))
+			);
+			this.editorModelReference.object.notebook.applyEdits(
+				[
+					{
+						editType: CellEditType.Replace,
+						index: 0,
+						count: this.editorModelReference.object.notebook.length,
+						cells: data.cells,
+					},
+				],
+				true,
+				undefined,
+				() => undefined,
+				undefined,
+				false
+			);
 
 			if (this.options._workingCopy) {
 				this.options._backupId = undefined;
@@ -346,8 +438,8 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		return {
 			resource: this.resource,
 			options: {
-				override: this.viewType
-			}
+				override: this.viewType,
+			},
 		};
 	}
 
@@ -369,15 +461,21 @@ export interface ICompositeNotebookEditorInput {
 	readonly editorInputs: NotebookEditorInput[];
 }
 
-export function isCompositeNotebookEditorInput(thing: unknown): thing is ICompositeNotebookEditorInput {
-	return !!thing
-		&& typeof thing === 'object'
-		&& Array.isArray((<ICompositeNotebookEditorInput>thing).editorInputs)
-		&& ((<ICompositeNotebookEditorInput>thing).editorInputs.every(input => input instanceof NotebookEditorInput));
+export function isCompositeNotebookEditorInput(
+	thing: unknown
+): thing is ICompositeNotebookEditorInput {
+	return (
+		!!thing &&
+		typeof thing === 'object' &&
+		Array.isArray((<ICompositeNotebookEditorInput>thing).editorInputs) &&
+		(<ICompositeNotebookEditorInput>thing).editorInputs.every(
+			input => input instanceof NotebookEditorInput
+		)
+	);
 }
 
-export function isNotebookEditorInput(thing: EditorInput | undefined): thing is NotebookEditorInput {
-	return !!thing
-		&& typeof thing === 'object'
-		&& thing.typeId === NotebookEditorInput.ID;
+export function isNotebookEditorInput(
+	thing: EditorInput | undefined
+): thing is NotebookEditorInput {
+	return !!thing && typeof thing === 'object' && thing.typeId === NotebookEditorInput.ID;
 }

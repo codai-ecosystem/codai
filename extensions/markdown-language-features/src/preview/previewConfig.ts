@@ -40,14 +40,23 @@ export class MarkdownPreviewConfiguration {
 			this.wordWrap = markdownEditorConfig['editor.wordWrap'] !== 'off';
 		}
 
-		this.scrollPreviewWithEditor = !!markdownConfig.get<boolean>('preview.scrollPreviewWithEditor', true);
-		this.scrollEditorWithPreview = !!markdownConfig.get<boolean>('preview.scrollEditorWithPreview', true);
+		this.scrollPreviewWithEditor = !!markdownConfig.get<boolean>(
+			'preview.scrollPreviewWithEditor',
+			true
+		);
+		this.scrollEditorWithPreview = !!markdownConfig.get<boolean>(
+			'preview.scrollEditorWithPreview',
+			true
+		);
 
 		this.previewLineBreaks = !!markdownConfig.get<boolean>('preview.breaks', false);
 		this.previewLinkify = !!markdownConfig.get<boolean>('preview.linkify', true);
 		this.previewTypographer = !!markdownConfig.get<boolean>('preview.typographer', false);
 
-		this.doubleClickToSwitchToEditor = !!markdownConfig.get<boolean>('preview.doubleClickToSwitchToEditor', true);
+		this.doubleClickToSwitchToEditor = !!markdownConfig.get<boolean>(
+			'preview.doubleClickToSwitchToEditor',
+			true
+		);
 		this.markEditorSelection = !!markdownConfig.get<boolean>('preview.markEditorSelection', true);
 
 		this.fontFamily = markdownConfig.get<string | undefined>('preview.fontFamily', undefined);
@@ -73,28 +82,25 @@ export class MarkdownPreviewConfiguration {
 }
 
 export class MarkdownPreviewConfigurationManager {
-	private readonly _previewConfigurationsForWorkspaces = new Map<string, MarkdownPreviewConfiguration>();
+	private readonly _previewConfigurationsForWorkspaces = new Map<
+		string,
+		MarkdownPreviewConfiguration
+	>();
 
-	public loadAndCacheConfiguration(
-		resource: vscode.Uri
-	): MarkdownPreviewConfiguration {
+	public loadAndCacheConfiguration(resource: vscode.Uri): MarkdownPreviewConfiguration {
 		const config = MarkdownPreviewConfiguration.getForResource(resource);
 		this._previewConfigurationsForWorkspaces.set(this._getKey(resource), config);
 		return config;
 	}
 
-	public hasConfigurationChanged(
-		resource: vscode.Uri
-	): boolean {
+	public hasConfigurationChanged(resource: vscode.Uri): boolean {
 		const key = this._getKey(resource);
 		const currentConfig = this._previewConfigurationsForWorkspaces.get(key);
 		const newConfig = MarkdownPreviewConfiguration.getForResource(resource);
-		return (!currentConfig || !currentConfig.isEqualTo(newConfig));
+		return !currentConfig || !currentConfig.isEqualTo(newConfig);
 	}
 
-	private _getKey(
-		resource: vscode.Uri
-	): string {
+	private _getKey(resource: vscode.Uri): string {
 		const folder = vscode.workspace.getWorkspaceFolder(resource);
 		return folder ? folder.uri.toString() : '';
 	}

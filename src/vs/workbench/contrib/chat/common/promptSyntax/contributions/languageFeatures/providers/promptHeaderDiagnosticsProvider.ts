@@ -8,8 +8,16 @@ import { ProviderInstanceBase } from './providerInstanceBase.js';
 import { ITextModel } from '../../../../../../../../editor/common/model.js';
 import { assertNever } from '../../../../../../../../base/common/assert.js';
 import { ProviderInstanceManagerBase, TProviderClass } from './providerInstanceManagerBase.js';
-import { TDiagnostic, PromptMetadataError, PromptMetadataWarning } from '../../../parsers/promptHeader/diagnostics.js';
-import { IMarkerData, IMarkerService, MarkerSeverity } from '../../../../../../../../platform/markers/common/markers.js';
+import {
+	TDiagnostic,
+	PromptMetadataError,
+	PromptMetadataWarning,
+} from '../../../parsers/promptHeader/diagnostics.js';
+import {
+	IMarkerData,
+	IMarkerService,
+	MarkerSeverity,
+} from '../../../../../../../../platform/markers/common/markers.js';
 import { CancellationToken } from '../../../../../../../../base/common/cancellation.js';
 
 /**
@@ -25,7 +33,7 @@ class PromptHeaderDiagnosticsProvider extends ProviderInstanceBase {
 	constructor(
 		model: ITextModel,
 		@IPromptsService promptsService: IPromptsService,
-		@IMarkerService private readonly markerService: IMarkerService,
+		@IMarkerService private readonly markerService: IMarkerService
 	) {
 		super(model, promptsService);
 	}
@@ -33,10 +41,7 @@ class PromptHeaderDiagnosticsProvider extends ProviderInstanceBase {
 	/**
 	 * Update diagnostic markers for the current editor.
 	 */
-	protected override onPromptSettled(
-		_error: Error | undefined,
-		token: CancellationToken,
-	): this {
+	protected override onPromptSettled(_error: Error | undefined, token: CancellationToken): this {
 		// clean up all previously added markers
 		this.markerService.remove(MARKERS_OWNER_ID, [this.model.uri]);
 
@@ -59,11 +64,7 @@ class PromptHeaderDiagnosticsProvider extends ProviderInstanceBase {
 				markers.push(toMarker(diagnostic));
 			}
 
-			this.markerService.changeOne(
-				MARKERS_OWNER_ID,
-				this.model.uri,
-				markers,
-			);
+			this.markerService.changeOne(MARKERS_OWNER_ID, this.model.uri, markers);
 		});
 
 		return this;
@@ -80,9 +81,7 @@ class PromptHeaderDiagnosticsProvider extends ProviderInstanceBase {
 /**
  * Convert a provided diagnostic object into a marker data object.
  */
-const toMarker = (
-	diagnostic: TDiagnostic,
-): IMarkerData => {
+const toMarker = (diagnostic: TDiagnostic): IMarkerData => {
 	if (diagnostic instanceof PromptMetadataWarning) {
 		return {
 			message: diagnostic.message,
@@ -99,10 +98,7 @@ const toMarker = (
 		};
 	}
 
-	assertNever(
-		diagnostic,
-		`Unknown prompt metadata diagnostic type '${diagnostic}'.`,
-	);
+	assertNever(diagnostic, `Unknown prompt metadata diagnostic type '${diagnostic}'.`);
 };
 
 /**

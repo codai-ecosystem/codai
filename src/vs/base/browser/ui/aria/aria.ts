@@ -159,5 +159,4 @@ export type AriaRole =
 	| 'tree'
 	| 'treegrid'
 	| 'treeitem'
-	| (string & {}) // Prevent type collapsing to `string`
-	;
+	| (string & {}); // Prevent type collapsing to `string`

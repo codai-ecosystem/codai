@@ -10,20 +10,23 @@ import { ILanguageService } from '../../../../../editor/common/languages/languag
 import { SnippetController2 } from '../../../../../editor/contrib/snippet/browser/snippetController2.js';
 import { localize, localize2 } from '../../../../../nls.js';
 import { ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
-import { IQuickInputService, IQuickPickItem, IQuickPickSeparator } from '../../../../../platform/quickinput/common/quickInput.js';
+import {
+	IQuickInputService,
+	IQuickPickItem,
+	IQuickPickSeparator,
+} from '../../../../../platform/quickinput/common/quickInput.js';
 import { SnippetsAction } from './abstractSnippetsActions.js';
 import { ISnippetsService } from '../snippets.js';
 import { Snippet } from '../snippetsFile.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 
 export class ApplyFileSnippetAction extends SnippetsAction {
-
 	static readonly Id = 'workbench.action.populateFileFromSnippet';
 
 	constructor() {
 		super({
 			id: ApplyFileSnippetAction.Id,
-			title: localize2('label', "Fill File with Snippet"),
+			title: localize2('label', 'Fill File with Snippet'),
 			f1: true,
 		});
 	}
@@ -39,7 +42,11 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 			return;
 		}
 
-		const snippets = await snippetService.getSnippets(undefined, { fileTemplateSnippets: true, noRecencySort: true, includeNoPrefixSnippets: true });
+		const snippets = await snippetService.getSnippets(undefined, {
+			fileTemplateSnippets: true,
+			noRecencySort: true,
+			includeNoPrefixSnippets: true,
+		});
 		if (snippets.length === 0) {
 			return;
 		}
@@ -51,20 +58,27 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 
 		if (editor.hasModel()) {
 			// apply snippet edit -> replaces everything
-			SnippetController2.get(editor)?.apply([{
-				range: editor.getModel().getFullModelRange(),
-				template: selection.snippet.body
-			}]);
+			SnippetController2.get(editor)?.apply([
+				{
+					range: editor.getModel().getFullModelRange(),
+					template: selection.snippet.body,
+				},
+			]);
 
 			// set language if possible
-			editor.getModel().setLanguage(langService.createById(selection.langId), ApplyFileSnippetAction.Id);
+			editor
+				.getModel()
+				.setLanguage(langService.createById(selection.langId), ApplyFileSnippetAction.Id);
 
 			editor.focus();
 		}
 	}
 
-	private async _pick(quickInputService: IQuickInputService, langService: ILanguageService, snippets: Snippet[]) {
-
+	private async _pick(
+		quickInputService: IQuickInputService,
+		langService: ILanguageService,
+		snippets: Snippet[]
+	) {
 		// spread snippet onto each language it supports
 		type SnippetAndLanguage = { langId: string; snippet: Snippet };
 		const all: SnippetAndLanguage[] = [];
@@ -86,11 +100,10 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 		for (const group of groups) {
 			let first = true;
 			for (const item of group) {
-
 				if (first) {
 					picks.push({
 						type: 'separator',
-						label: langService.getLanguageName(item.langId) ?? item.langId
+						label: langService.getLanguageName(item.langId) ?? item.langId,
 					});
 					first = false;
 				}
@@ -98,7 +111,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 				picks.push({
 					snippet: item,
 					label: item.snippet.prefix || item.snippet.name,
-					detail: item.snippet.description
+					detail: item.snippet.description,
 				});
 			}
 		}

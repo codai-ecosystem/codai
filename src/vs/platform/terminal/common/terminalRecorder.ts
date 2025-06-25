@@ -7,7 +7,7 @@ import { IPtyHostProcessReplayEvent } from './capabilities/capabilities.js';
 import { ReplayEntry } from './terminalProcess.js';
 
 const enum Constants {
-	MaxRecorderDataSize = 10 * 1024 * 1024 // 10MB
+	MaxRecorderDataSize = 10 * 1024 * 1024, // 10MB
 }
 
 interface RecorderEntry {
@@ -21,7 +21,6 @@ export interface IRemoteTerminalProcessReplayEvent {
 }
 
 export class TerminalRecorder {
-
 	private _entries: RecorderEntry[];
 	private _totalDataLength: number = 0;
 
@@ -81,20 +80,24 @@ export class TerminalRecorder {
 
 	generateReplayEventSync(): IPtyHostProcessReplayEvent {
 		// normalize entries to one element per data array
-		this._entries.forEach((entry) => {
+		this._entries.forEach(entry => {
 			if (entry.data.length > 0) {
 				entry.data = [entry.data.join('')];
 			}
 		});
 		return {
-			events: this._entries.map(entry => ({ cols: entry.cols, rows: entry.rows, data: entry.data[0] ?? '' })),
+			events: this._entries.map(entry => ({
+				cols: entry.cols,
+				rows: entry.rows,
+				data: entry.data[0] ?? '',
+			})),
 			// No command restoration is needed when relaunching terminals
 			commands: {
 				isWindowsPty: false,
 				hasRichCommandDetection: false,
 				commands: [],
 				promptInputModel: undefined,
-			}
+			},
 		};
 	}
 

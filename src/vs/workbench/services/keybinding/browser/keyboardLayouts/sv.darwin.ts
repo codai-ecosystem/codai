@@ -5,7 +5,6 @@
 
 import { KeyboardLayoutContribution } from './_.contribution.js';
 
-
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 	layout: { id: 'com.apple.keylayout.Swedish-Pro', lang: 'sv', localizedName: 'Swedish - Pro' },
 	secondaryLayouts: [],
@@ -55,7 +54,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		Equal: ['´', '`', '´', '`', 3],
 		BracketLeft: ['å', 'Å', '˙', '˚', 0],
 		BracketRight: ['¨', '^', '~', '^', 7],
-		Backslash: ['\'', '*', '™', '’', 0],
+		Backslash: ["'", '*', '™', '’', 0],
 		Semicolon: ['ö', 'Ö', 'ø', 'Ø', 0],
 		Quote: ['ä', 'Ä', 'æ', 'Æ', 0],
 		Backquote: ['<', '>', '≤', '≥', 0],
@@ -127,6 +126,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		ControlRight: [],
 		ShiftRight: [],
 		AltRight: [],
-		MetaRight: []
-	}
+		MetaRight: [],
+	},
 });

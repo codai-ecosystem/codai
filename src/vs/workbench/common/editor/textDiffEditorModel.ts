@@ -13,15 +13,20 @@ import { IMarkdownString } from '../../../base/common/htmlContent.js';
  * and the modified version.
  */
 export class TextDiffEditorModel extends DiffEditorModel {
-
 	protected override readonly _originalModel: BaseTextEditorModel | undefined;
-	override get originalModel(): BaseTextEditorModel | undefined { return this._originalModel; }
+	override get originalModel(): BaseTextEditorModel | undefined {
+		return this._originalModel;
+	}
 
 	protected override readonly _modifiedModel: BaseTextEditorModel | undefined;
-	override get modifiedModel(): BaseTextEditorModel | undefined { return this._modifiedModel; }
+	override get modifiedModel(): BaseTextEditorModel | undefined {
+		return this._modifiedModel;
+	}
 
 	private _textDiffEditorModel: IDiffEditorModel | undefined = undefined;
-	get textDiffEditorModel(): IDiffEditorModel | undefined { return this._textDiffEditorModel; }
+	get textDiffEditorModel(): IDiffEditorModel | undefined {
+		return this._textDiffEditorModel;
+	}
 
 	constructor(originalModel: BaseTextEditorModel, modifiedModel: BaseTextEditorModel) {
 		super(originalModel, modifiedModel);
@@ -40,12 +45,11 @@ export class TextDiffEditorModel extends DiffEditorModel {
 
 	private updateTextDiffEditorModel(): void {
 		if (this.originalModel?.isResolved() && this.modifiedModel?.isResolved()) {
-
 			// Create new
 			if (!this._textDiffEditorModel) {
 				this._textDiffEditorModel = {
 					original: this.originalModel.textEditorModel,
-					modified: this.modifiedModel.textEditorModel
+					modified: this.modifiedModel.textEditorModel,
 				};
 			}
 
@@ -66,7 +70,6 @@ export class TextDiffEditorModel extends DiffEditorModel {
 	}
 
 	override dispose(): void {
-
 		// Free the diff editor model but do not propagate the dispose() call to the two models
 		// inside. We never created the two models (original and modified) so we can not dispose
 		// them without sideeffects. Rather rely on the models getting disposed when their related

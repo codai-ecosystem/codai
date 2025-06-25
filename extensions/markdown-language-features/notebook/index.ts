@@ -8,7 +8,8 @@ import MarkdownIt from 'markdown-it';
 import type * as MarkdownItToken from 'markdown-it/lib/token';
 import type { ActivationFunction } from 'vscode-notebook-renderer';
 
-const allowedHtmlTags = Object.freeze(['a',
+const allowedHtmlTags = Object.freeze([
+	'a',
 	'abbr',
 	'b',
 	'bdo',
@@ -123,13 +124,10 @@ const allowedSvgTags = Object.freeze([
 ]);
 
 const sanitizerOptions: DOMPurify.Config = {
-	ALLOWED_TAGS: [
-		...allowedHtmlTags,
-		...allowedSvgTags,
-	],
+	ALLOWED_TAGS: [...allowedHtmlTags, ...allowedSvgTags],
 };
 
-export const activate: ActivationFunction<void> = (ctx) => {
+export const activate: ActivationFunction<void> = ctx => {
 	const markdownIt: MarkdownIt = new MarkdownIt({
 		html: true,
 		linkify: true,
@@ -138,7 +136,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 				return `<div class="vscode-code-block" data-vscode-code-block-lang="${markdownIt.utils.escapeHtml(lang)}">${markdownIt.utils.escapeHtml(str)}</div>`;
 			}
 			return markdownIt.utils.escapeHtml(str);
-		}
+		},
 	});
 	markdownIt.linkify.set({ fuzzyLink: false });
 
@@ -331,14 +329,19 @@ export const activate: ActivationFunction<void> = (ctx) => {
 				previewNode.classList.add('emptyMarkdownCell');
 			} else {
 				previewNode.classList.remove('emptyMarkdownCell');
-				const markdownText = outputInfo.mime.startsWith('text/x-') ? `\`\`\`${outputInfo.mime.substr(7)}\n${text}\n\`\`\``
-					: (outputInfo.mime.startsWith('application/') ? `\`\`\`${outputInfo.mime.substr(12)}\n${text}\n\`\`\`` : text);
+				const markdownText = outputInfo.mime.startsWith('text/x-')
+					? `\`\`\`${outputInfo.mime.substr(7)}\n${text}\n\`\`\``
+					: outputInfo.mime.startsWith('application/')
+						? `\`\`\`${outputInfo.mime.substr(12)}\n${text}\n\`\`\``
+						: text;
 				const unsanitizedRenderedMarkdown = markdownIt.render(markdownText, {
 					outputItem: outputInfo,
 				});
-				previewNode.innerHTML = (ctx.workspace.isTrusted
-					? unsanitizedRenderedMarkdown
-					: DOMPurify.sanitize(unsanitizedRenderedMarkdown, sanitizerOptions)) as string;
+				previewNode.innerHTML = (
+					ctx.workspace.isTrusted
+						? unsanitizedRenderedMarkdown
+						: DOMPurify.sanitize(unsanitizedRenderedMarkdown, sanitizerOptions)
+				) as string;
 			}
 		},
 		extendMarkdownIt: (f: (md: typeof markdownIt) => void) => {
@@ -347,10 +350,9 @@ export const activate: ActivationFunction<void> = (ctx) => {
 			} catch (err) {
 				console.error('Error extending markdown-it', err);
 			}
-		}
+		},
 	};
 };
-
 
 function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
 	const slugCounter = new Map<string, number>();
@@ -403,11 +405,15 @@ function addLinkRenderer(md: MarkdownIt): void {
 
 function slugify(text: string): string {
 	const slugifiedHeading = encodeURI(
-		text.trim()
+		text
+			.trim()
 			.toLowerCase()
 			.replace(/\s+/g, '-') // Replace whitespace with -
 			// allow-any-unicode-next-line
-			.replace(/[\]\[\!\/\'\"\#\$\%\&\(\)\*\+\,\.\/\:\;\<\=\>\?\@\\\^\{\|\}\~\`。，、；：？！…—·ˉ¨‘’“”々～‖∶＂＇｀｜〃〔〕〈〉《》「」『』．〖〗【】（）［］｛｝]/g, '') // Remove known punctuators
+			.replace(
+				/[\]\[\!\/\'\"\#\$\%\&\(\)\*\+\,\.\/\:\;\<\=\>\?\@\\\^\{\|\}\~\`。，、；：？！…—·ˉ¨‘’“”々～‖∶＂＇｀｜〃〔〕〈〉《》「」『』．〖〗【】（）［］｛｝]/g,
+				''
+			) // Remove known punctuators
 			.replace(/^\-+/, '') // Remove leading -
 			.replace(/\-+$/, '') // Remove trailing -
 	);

@@ -69,7 +69,7 @@ export abstract class ParserBase<TToken extends BaseToken, TNextObject> {
 		/**
 		 * Set of tokens that were accumulated so far.
 		 */
-		protected readonly currentTokens: TToken[] = [],
+		protected readonly currentTokens: TToken[] = []
 	) {
 		this.startTokensCount = this.currentTokens.length;
 	}
@@ -100,7 +100,7 @@ export abstract class ParserBase<TToken extends BaseToken, TNextObject> {
 	protected assertNotConsumed(): void {
 		assert(
 			this.isConsumed === false,
-			`The parser object is already consumed and should not be used anymore.`,
+			`The parser object is already consumed and should not be used anymore.`
 		);
 	}
 }
@@ -114,7 +114,7 @@ export abstract class ParserBase<TToken extends BaseToken, TNextObject> {
 export function assertNotConsumed<T extends ParserBase<BaseToken, unknown>>(
 	_target: T,
 	propertyKey: 'accept',
-	descriptor: PropertyDescriptor,
+	descriptor: PropertyDescriptor
 ): PropertyDescriptor {
 	// store the original method reference
 	const originalMethod = descriptor.value;
@@ -127,7 +127,7 @@ export function assertNotConsumed<T extends ParserBase<BaseToken, unknown>>(
 	): ReturnType<T[typeof propertyKey]> {
 		assert(
 			this.isConsumed === false,
-			`The parser object is already consumed and should not be used anymore.`,
+			`The parser object is already consumed and should not be used anymore.`
 		);
 
 		return originalMethod.apply(this, args);

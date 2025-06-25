@@ -19,7 +19,6 @@ export interface IAuxiliaryWindow extends IBaseWindow {
 }
 
 export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
-
 	readonly id: number;
 	parentId = -1;
 
@@ -69,7 +68,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 				// that contains that info in `window-fullscreen`. However, we can
 				// probe the `options.show` value for whether the window should be maximized
 				// or not because we never show maximized windows initially to reduce flicker.
-				mode: options.show === false ? WindowMode.Maximized : WindowMode.Normal
+				mode: options.show === false ? WindowMode.Maximized : WindowMode.Normal,
 			});
 		}
 	}
@@ -88,7 +87,13 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 
 			// Disable Menu
 			window.setMenu(null);
-			if ((isWindows || isLinux) && hasNativeTitlebar(this.configurationService, options?.titleBarStyle === 'hidden' ? TitlebarStyle.CUSTOM : undefined /* unknown */)) {
+			if (
+				(isWindows || isLinux) &&
+				hasNativeTitlebar(
+					this.configurationService,
+					options?.titleBarStyle === 'hidden' ? TitlebarStyle.CUSTOM : undefined /* unknown */
+				)
+			) {
 				window.setAutoHideMenuBar(true); // Fix for https://github.com/microsoft/vscode/issues/200615
 			}
 

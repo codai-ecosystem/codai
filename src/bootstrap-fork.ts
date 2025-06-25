@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as performance from './vs/base/common/performance.js';
-import { removeGlobalNodeJsModuleLookupPaths, devInjectNodeModuleLookupPath } from './bootstrap-node.js';
+import {
+	removeGlobalNodeJsModuleLookupPaths,
+	devInjectNodeModuleLookupPath,
+} from './bootstrap-node.js';
 import { bootstrapESM } from './bootstrap-esm.js';
 
 performance.mark('code/fork/start');
@@ -51,7 +54,6 @@ function pipeLoggingToParent(): void {
 
 		try {
 			const res = JSON.stringify(argsArray, function (key, value: unknown) {
-
 				// Objects get special treatment to prevent circles
 				if (isObject(value) || Array.isArray(value)) {
 					if (seen.indexOf(value) !== -1) {
@@ -85,11 +87,13 @@ function pipeLoggingToParent(): void {
 	}
 
 	function isObject(obj: unknown): boolean {
-		return typeof obj === 'object'
-			&& obj !== null
-			&& !Array.isArray(obj)
-			&& !(obj instanceof RegExp)
-			&& !(obj instanceof Date);
+		return (
+			typeof obj === 'object' &&
+			obj !== null &&
+			!Array.isArray(obj) &&
+			!(obj instanceof RegExp) &&
+			!(obj instanceof Date)
+		);
 	}
 
 	function safeSendConsoleMessage(severity: 'log' | 'warn' | 'error', args: string): void {
@@ -102,10 +106,16 @@ function pipeLoggingToParent(): void {
 	 * The wrapped property is not defined with `writable: false` to avoid
 	 * throwing errors, but rather a no-op setting. See https://github.com/microsoft/vscode-extension-telemetry/issues/88
 	 */
-	function wrapConsoleMethod(method: 'log' | 'info' | 'warn' | 'error', severity: 'log' | 'warn' | 'error'): void {
+	function wrapConsoleMethod(
+		method: 'log' | 'info' | 'warn' | 'error',
+		severity: 'log' | 'warn' | 'error'
+	): void {
 		Object.defineProperty(console, method, {
-			set: () => { },
-			get: () => function () { safeSendConsoleMessage(severity, safeToString(arguments)); },
+			set: () => {},
+			get: () =>
+				function () {
+					safeSendConsoleMessage(severity, safeToString(arguments));
+				},
 		});
 	}
 
@@ -122,17 +132,23 @@ function pipeLoggingToParent(): void {
 		let buf = '';
 
 		Object.defineProperty(stream, 'write', {
-			set: () => { },
-			get: () => (chunk: string | Buffer | Uint8Array, encoding: BufferEncoding | undefined, callback: ((err?: Error | undefined) => void) | undefined) => {
-				buf += chunk.toString(encoding);
-				const eol = buf.length > MAX_STREAM_BUFFER_LENGTH ? buf.length : buf.lastIndexOf('\n');
-				if (eol !== -1) {
-					console[severity](buf.slice(0, eol));
-					buf = buf.slice(eol + 1);
-				}
+			set: () => {},
+			get:
+				() =>
+				(
+					chunk: string | Buffer | Uint8Array,
+					encoding: BufferEncoding | undefined,
+					callback: ((err?: Error | undefined) => void) | undefined
+				) => {
+					buf += chunk.toString(encoding);
+					const eol = buf.length > MAX_STREAM_BUFFER_LENGTH ? buf.length : buf.lastIndexOf('\n');
+					if (eol !== -1) {
+						console[severity](buf.slice(0, eol));
+						buf = buf.slice(eol + 1);
+					}
 
-				original.call(stream, chunk, encoding, callback);
-			},
+					original.call(stream, chunk, encoding, callback);
+				},
 		});
 	}
 
@@ -143,9 +159,15 @@ function pipeLoggingToParent(): void {
 		wrapConsoleMethod('warn', 'warn');
 		wrapConsoleMethod('error', 'error');
 	} else {
-		console.log = function () { /* ignore */ };
-		console.warn = function () { /* ignore */ };
-		console.info = function () { /* ignore */ };
+		console.log = function () {
+			/* ignore */
+		};
+		console.warn = function () {
+			/* ignore */
+		};
+		console.info = function () {
+			/* ignore */
+		};
 		wrapConsoleMethod('error', 'error');
 	}
 
@@ -154,7 +176,6 @@ function pipeLoggingToParent(): void {
 }
 
 function handleExceptions(): void {
-
 	// Handle uncaught exceptions
 	process.on('uncaughtException', function (err) {
 		console.error('Uncaught Exception: ', err);
@@ -185,7 +206,10 @@ function configureCrashReporter(): void {
 	if (crashReporterProcessType) {
 		try {
 			//@ts-ignore
-			if (process['crashReporter'] && typeof process['crashReporter'].addExtraParameter === 'function' /* Electron only */) {
+			if (
+				process['crashReporter'] &&
+				typeof process['crashReporter'].addExtraParameter === 'function' /* Electron only */
+			) {
 				//@ts-ignore
 				process['crashReporter'].addExtraParameter('processType', crashReporterProcessType);
 			}
@@ -226,4 +250,8 @@ if (process.env['VSCODE_PARENT_PID']) {
 await bootstrapESM();
 
 // Load ESM entry point
-await import([`./${process.env['VSCODE_ESM_ENTRYPOINT']}.js`].join('/') /* workaround: esbuild prints some strange warnings when trying to inline? */);
+await import(
+	[`./${process.env['VSCODE_ESM_ENTRYPOINT']}.js`].join(
+		'/'
+	) /* workaround: esbuild prints some strange warnings when trying to inline? */
+);

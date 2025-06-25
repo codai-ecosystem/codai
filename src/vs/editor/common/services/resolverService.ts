@@ -25,7 +25,10 @@ export interface ITextModelService {
 	/**
 	 * Registers a specific `scheme` content provider.
 	 */
-	registerTextModelContentProvider(scheme: string, provider: ITextModelContentProvider): IDisposable;
+	registerTextModelContentProvider(
+		scheme: string,
+		provider: ITextModelContentProvider
+	): IDisposable;
 
 	/**
 	 * Check if the given resource can be resolved to a text model.
@@ -34,7 +37,6 @@ export interface ITextModelService {
 }
 
 export interface ITextModelContentProvider {
-
 	/**
 	 * Given a resource, return the content of the resource as `ITextModel`.
 	 */
@@ -42,7 +44,6 @@ export interface ITextModelContentProvider {
 }
 
 export interface ITextEditorModel extends IResolvableEditorModel {
-
 	/**
 	 * Emitted when the text model is about to be disposed.
 	 */
@@ -76,14 +77,15 @@ export interface ITextEditorModel extends IResolvableEditorModel {
 }
 
 export interface IResolvedTextEditorModel extends ITextEditorModel {
-
 	/**
 	 * Same as ITextEditorModel#textEditorModel, but never null.
 	 */
 	readonly textEditorModel: ITextModel;
 }
 
-export function isResolvedTextEditorModel(model: ITextEditorModel): model is IResolvedTextEditorModel {
+export function isResolvedTextEditorModel(
+	model: ITextEditorModel
+): model is IResolvedTextEditorModel {
 	const candidate = model as IResolvedTextEditorModel;
 
 	return !!candidate.textEditorModel;

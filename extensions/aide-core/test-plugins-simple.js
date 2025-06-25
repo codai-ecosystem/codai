@@ -25,67 +25,54 @@ function createTestPlugin() {
 
 	// Create package.json
 	const packageJson = {
-		"name": "test-simple-plugin",
-		"displayName": "Test Simple Plugin",
-		"description": "A simple test plugin for AIDE",
-		"version": "1.0.0",
-		"author": "Test Author",
-		"main": "./out/extension.js",
-		"engines": {
-			"aide": "^0.1.0"
+		name: 'test-simple-plugin',
+		displayName: 'Test Simple Plugin',
+		description: 'A simple test plugin for AIDE',
+		version: '1.0.0',
+		author: 'Test Author',
+		main: './out/extension.js',
+		engines: {
+			aide: '^0.1.0',
 		},
-		"activationEvents": [
-			"*"
-		],
-		"contributes": {
-			"agents": [
+		activationEvents: ['*'],
+		contributes: {
+			agents: [
 				{
-					"id": "test-simple-agent",
-					"name": "Test Simple Agent",
-					"description": "A simple test agent",
-					"capabilities": ["general"],
-					"priority": 1
-				}
-			]
+					id: 'test-simple-agent',
+					name: 'Test Simple Agent',
+					description: 'A simple test agent',
+					capabilities: ['general'],
+					priority: 1,
+				},
+			],
 		},
-		"scripts": {
-			"compile": "tsc -p ./"
+		scripts: {
+			compile: 'tsc -p ./',
 		},
-		"devDependencies": {
-			"@types/vscode": "^1.85.0",
-			"@types/node": "^20.x",
-			"typescript": "^5.3.0"
-		}
+		devDependencies: {
+			'@types/vscode': '^1.85.0',
+			'@types/node': '^20.x',
+			typescript: '^5.3.0',
+		},
 	};
 
-	fs.writeFileSync(
-		path.join(testPluginDir, 'package.json'),
-		JSON.stringify(packageJson, null, 2)
-	);
+	fs.writeFileSync(path.join(testPluginDir, 'package.json'), JSON.stringify(packageJson, null, 2));
 
 	// Create tsconfig.json
 	const tsConfig = {
-		"compilerOptions": {
-			"module": "commonjs",
-			"target": "ES2020",
-			"outDir": "out",
-			"lib": [
-				"ES2020"
-			],
-			"sourceMap": true,
-			"rootDir": "src",
-			"strict": true
+		compilerOptions: {
+			module: 'commonjs',
+			target: 'ES2020',
+			outDir: 'out',
+			lib: ['ES2020'],
+			sourceMap: true,
+			rootDir: 'src',
+			strict: true,
 		},
-		"exclude": [
-			"node_modules",
-			".vscode-test/**"
-		]
+		exclude: ['node_modules', '.vscode-test/**'],
 	};
 
-	fs.writeFileSync(
-		path.join(testPluginDir, 'tsconfig.json'),
-		JSON.stringify(tsConfig, null, 2)
-	);
+	fs.writeFileSync(path.join(testPluginDir, 'tsconfig.json'), JSON.stringify(tsConfig, null, 2));
 
 	// Create main extension file
 	const extensionCode = `import * as vscode from 'vscode';
@@ -109,10 +96,7 @@ export function deactivate() {
 	console.log('Test Simple Plugin deactivated');
 }`;
 
-	fs.writeFileSync(
-		path.join(srcDir, 'extension.ts'),
-		extensionCode
-	);
+	fs.writeFileSync(path.join(srcDir, 'extension.ts'), extensionCode);
 
 	// Create agents directory and agent file
 	const agentsDir = path.join(srcDir, 'agents');
@@ -134,10 +118,7 @@ export function deactivate() {
 	}
 }`;
 
-	fs.writeFileSync(
-		path.join(agentsDir, 'simpleTestAgent.ts'),
-		agentCode
-	);
+	fs.writeFileSync(path.join(agentsDir, 'simpleTestAgent.ts'), agentCode);
 
 	console.log(`✅ Test plugin created at: ${testPluginDir}`);
 	return testPluginDir;
@@ -150,7 +131,7 @@ function validatePluginStructure(pluginDir) {
 		'package.json',
 		'tsconfig.json',
 		'src/extension.ts',
-		'src/agents/simpleTestAgent.ts'
+		'src/agents/simpleTestAgent.ts',
 	];
 
 	let allValid = true;
@@ -194,7 +175,6 @@ function validatePluginStructure(pluginDir) {
 			console.log(`❌ Package.json missing agent contributions`);
 			allValid = false;
 		}
-
 	} catch (error) {
 		console.log(`❌ Invalid package.json: ${error.message}`);
 		allValid = false;
@@ -229,9 +209,11 @@ function listPluginsInDirectory() {
 						id: packageJson.name,
 						version: packageJson.version,
 						description: packageJson.description,
-						path: pluginDir
+						path: pluginDir,
 					});
-					console.log(`✅ Found plugin: ${packageJson.displayName || packageJson.name} (${packageJson.name}) v${packageJson.version}`);
+					console.log(
+						`✅ Found plugin: ${packageJson.displayName || packageJson.name} (${packageJson.name}) v${packageJson.version}`
+					);
 				} catch (error) {
 					console.log(`❌ Invalid plugin manifest in ${item.name}: ${error.message}`);
 				}

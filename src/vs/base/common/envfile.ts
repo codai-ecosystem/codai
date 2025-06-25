@@ -60,9 +60,11 @@ export function parseEnvFile(src: string) {
 			const firstChar = value[0];
 			const lastChar = value[value.length - 1];
 
-			if ((firstChar === '"' && lastChar === '"') ||
-				(firstChar === '\'' && lastChar === '\'') ||
-				(firstChar === '`' && lastChar === '`')) {
+			if (
+				(firstChar === '"' && lastChar === '"') ||
+				(firstChar === "'" && lastChar === "'") ||
+				(firstChar === '`' && lastChar === '`')
+			) {
 				// Remove surrounding quotes
 				value = value.substring(1, value.length - 1);
 
@@ -87,7 +89,7 @@ export function parseEnvFile(src: string) {
 				if (char === quoteChar && text[i - 1] !== '\\') {
 					inQuote = false;
 				}
-			} else if (char === '"' || char === '\'' || char === '`') {
+			} else if (char === '"' || char === "'" || char === '`') {
 				inQuote = true;
 				quoteChar = char;
 			} else if (predicate(char)) {

@@ -14,8 +14,10 @@ const SCM_INPUT_TEXTAREA = `${VIEWLET} .scm-editor textarea`;
 const SCM_RESOURCE = `${VIEWLET} .monaco-list-row .resource`;
 const REFRESH_COMMAND = `div[id="workbench.parts.sidebar"] .actions-container a.action-label[aria-label="Refresh"]`;
 const COMMIT_COMMAND = `div[id="workbench.parts.sidebar"] .actions-container a.action-label[aria-label="Commit"]`;
-const SCM_RESOURCE_CLICK = (name: string) => `${SCM_RESOURCE} .monaco-icon-label[aria-label*="${name}"] .label-name`;
-const SCM_RESOURCE_ACTION_CLICK = (name: string, actionName: string) => `${SCM_RESOURCE} .monaco-icon-label[aria-label*="${name}"] .actions .action-label[aria-label="${actionName}"]`;
+const SCM_RESOURCE_CLICK = (name: string) =>
+	`${SCM_RESOURCE} .monaco-icon-label[aria-label*="${name}"] .label-name`;
+const SCM_RESOURCE_ACTION_CLICK = (name: string, actionName: string) =>
+	`${SCM_RESOURCE} .monaco-icon-label[aria-label*="${name}"] .actions .action-label[aria-label="${actionName}"]`;
 
 interface Change {
 	name: string;
@@ -33,24 +35,26 @@ function toChange(element: IElement): Change {
 	return {
 		name: name.textContent || '',
 		type,
-		actions
+		actions,
 	};
 }
 
-
 export class SCM extends Viewlet {
-
 	constructor(code: Code) {
 		super(code);
 	}
 
 	async openSCMViewlet(): Promise<any> {
-		await this.code.sendKeybinding('ctrl+shift+g', async () => { await this.code.waitForElement(this._editContextSelector()); });
+		await this.code.sendKeybinding('ctrl+shift+g', async () => {
+			await this.code.waitForElement(this._editContextSelector());
+		});
 	}
 
 	async waitForChange(name: string, type?: string): Promise<void> {
 		const func = (change: Change) => change.name === name && (!type || change.type === type);
-		await this.code.waitForElements(SCM_RESOURCE, true, elements => elements.some(e => func(toChange(e))));
+		await this.code.waitForElements(SCM_RESOURCE, true, elements =>
+			elements.some(e => func(toChange(e)))
+		);
 	}
 
 	async refreshSCMViewlet(): Promise<any> {
@@ -79,6 +83,8 @@ export class SCM extends Viewlet {
 	}
 
 	private _editContextSelector(): string {
-		return this.code.quality === Quality.Stable ? SCM_INPUT_TEXTAREA : SCM_INPUT_NATIVE_EDIT_CONTEXT;
+		return this.code.quality === Quality.Stable
+			? SCM_INPUT_TEXTAREA
+			: SCM_INPUT_NATIVE_EDIT_CONTEXT;
 	}
 }

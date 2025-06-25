@@ -18,7 +18,7 @@ export class FrontMatterHeader extends MarkdownExtensionsToken {
 		range: Range,
 		public readonly startMarker: FrontMatterMarker,
 		public readonly content: Text,
-		public readonly endMarker: FrontMatterMarker,
+		public readonly endMarker: FrontMatterMarker
 	) {
 		super(range);
 	}
@@ -27,11 +27,7 @@ export class FrontMatterHeader extends MarkdownExtensionsToken {
 	 * Return complete text representation of the token.
 	 */
 	public get text(): string {
-		const text: string[] = [
-			this.startMarker.text,
-			this.content.text,
-			this.endMarker.text,
-		];
+		const text: string[] = [this.startMarker.text, this.content.text, this.endMarker.text];
 
 		return text.join('');
 	}
@@ -56,17 +52,15 @@ export class FrontMatterHeader extends MarkdownExtensionsToken {
 	public static fromTokens(
 		startMarkerTokens: readonly TMarkerToken[],
 		contentTokens: readonly TSimpleDecoderToken[],
-		endMarkerTokens: readonly TMarkerToken[],
+		endMarkerTokens: readonly TMarkerToken[]
 	): FrontMatterHeader {
-		const range = BaseToken.fullRange(
-			[...startMarkerTokens, ...endMarkerTokens],
-		);
+		const range = BaseToken.fullRange([...startMarkerTokens, ...endMarkerTokens]);
 
 		return new FrontMatterHeader(
 			range,
 			FrontMatterMarker.fromTokens(startMarkerTokens),
 			new Text(contentTokens),
-			FrontMatterMarker.fromTokens(endMarkerTokens),
+			FrontMatterMarker.fromTokens(endMarkerTokens)
 		);
 	}
 

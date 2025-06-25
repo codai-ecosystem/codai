@@ -18,7 +18,6 @@ import { LanguageFeatureRegistry } from '../../../common/languageFeatureRegistry
 import { ILanguageFeaturesService } from '../../../common/services/languageFeatures.js';
 
 export class Link implements ILink {
-
 	private _link: ILink;
 	private readonly _provider: LinkProvider;
 
@@ -31,7 +30,7 @@ export class Link implements ILink {
 		return {
 			range: this.range,
 			url: this.url,
-			tooltip: this.tooltip
+			tooltip: this.tooltip,
 		};
 	}
 
@@ -69,7 +68,6 @@ export class Link implements ILink {
 }
 
 export class LinksList {
-
 	static readonly Empty = new LinksList([]);
 
 	readonly links: Link[];
@@ -77,7 +75,6 @@ export class LinksList {
 	private readonly _disposables: DisposableStore | undefined = new DisposableStore();
 
 	constructor(tuples: [ILinksList, LinkProvider][]) {
-
 		let links: Link[] = [];
 		for (const [list, provider] of tuples) {
 			// merge all links
@@ -105,7 +102,11 @@ export class LinksList {
 		let newIndex: number;
 		let newLen: number;
 
-		for (oldIndex = 0, newIndex = 0, oldLen = oldLinks.length, newLen = newLinks.length; oldIndex < oldLen && newIndex < newLen;) {
+		for (
+			oldIndex = 0, newIndex = 0, oldLen = oldLinks.length, newLen = newLinks.length;
+			oldIndex < oldLen && newIndex < newLen;
+
+		) {
 			const oldLink = oldLinks[oldIndex];
 			const newLink = newLinks[newIndex];
 
@@ -137,23 +138,29 @@ export class LinksList {
 
 		return result;
 	}
-
 }
 
-export async function getLinks(providers: LanguageFeatureRegistry<LinkProvider>, model: ITextModel, token: CancellationToken): Promise<LinksList> {
+export async function getLinks(
+	providers: LanguageFeatureRegistry<LinkProvider>,
+	model: ITextModel,
+	token: CancellationToken
+): Promise<LinksList> {
 	const lists: [ILinksList, LinkProvider][] = [];
 
 	// ask all providers for links in parallel
-	const promises = providers.ordered(model).reverse().map(async (provider, i) => {
-		try {
-			const result = await provider.provideLinks(model, token);
-			if (result) {
-				lists[i] = [result, provider];
+	const promises = providers
+		.ordered(model)
+		.reverse()
+		.map(async (provider, i) => {
+			try {
+				const result = await provider.provideLinks(model, token);
+				if (result) {
+					lists[i] = [result, provider];
+				}
+			} catch (err) {
+				onUnexpectedExternalError(err);
 			}
-		} catch (err) {
-			onUnexpectedExternalError(err);
-		}
-	});
+		});
 
 	await Promise.all(promises);
 
@@ -167,31 +174,33 @@ export async function getLinks(providers: LanguageFeatureRegistry<LinkProvider>,
 	return res;
 }
 
+CommandsRegistry.registerCommand(
+	'_executeLinkProvider',
+	async (accessor, ...args): Promise<ILink[]> => {
+		let [uri, resolveCount] = args;
+		assertType(uri instanceof URI);
 
-CommandsRegistry.registerCommand('_executeLinkProvider', async (accessor, ...args): Promise<ILink[]> => {
-	let [uri, resolveCount] = args;
-	assertType(uri instanceof URI);
+		if (typeof resolveCount !== 'number') {
+			resolveCount = 0;
+		}
 
-	if (typeof resolveCount !== 'number') {
-		resolveCount = 0;
+		const { linkProvider } = accessor.get(ILanguageFeaturesService);
+		const model = accessor.get(IModelService).getModel(uri);
+		if (!model) {
+			return [];
+		}
+		const list = await getLinks(linkProvider, model, CancellationToken.None);
+		if (!list) {
+			return [];
+		}
+
+		// resolve links
+		for (let i = 0; i < Math.min(resolveCount, list.links.length); i++) {
+			await list.links[i].resolve(CancellationToken.None);
+		}
+
+		const result = list.links.slice(0);
+		list.dispose();
+		return result;
 	}
-
-	const { linkProvider } = accessor.get(ILanguageFeaturesService);
-	const model = accessor.get(IModelService).getModel(uri);
-	if (!model) {
-		return [];
-	}
-	const list = await getLinks(linkProvider, model, CancellationToken.None);
-	if (!list) {
-		return [];
-	}
-
-	// resolve links
-	for (let i = 0; i < Math.min(resolveCount, list.links.length); i++) {
-		await list.links[i].resolve(CancellationToken.None);
-	}
-
-	const result = list.links.slice(0);
-	list.dispose();
-	return result;
-});
+);

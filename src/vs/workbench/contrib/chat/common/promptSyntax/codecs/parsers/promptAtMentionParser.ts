@@ -18,33 +18,66 @@ import { VerticalTab } from '../../../../../../../editor/common/codecs/simpleCod
 import { TSimpleDecoderToken } from '../../../../../../../editor/common/codecs/simpleCodec/simpleDecoder.js';
 import { CarriageReturn } from '../../../../../../../editor/common/codecs/linesCodec/tokens/carriageReturn.js';
 import { ExclamationMark } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/exclamationMark.js';
-import { LeftBracket, RightBracket } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/brackets.js';
-import { LeftAngleBracket, RightAngleBracket } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/angleBrackets.js';
-import { assertNotConsumed, ParserBase, TAcceptTokenResult } from '../../../../../../../editor/common/codecs/simpleCodec/parserBase.js';
+import {
+	LeftBracket,
+	RightBracket,
+} from '../../../../../../../editor/common/codecs/simpleCodec/tokens/brackets.js';
+import {
+	LeftAngleBracket,
+	RightAngleBracket,
+} from '../../../../../../../editor/common/codecs/simpleCodec/tokens/angleBrackets.js';
+import {
+	assertNotConsumed,
+	ParserBase,
+	TAcceptTokenResult,
+} from '../../../../../../../editor/common/codecs/simpleCodec/parserBase.js';
 
 /**
  * List of characters that terminate the prompt at-mention sequence.
  */
-export const STOP_CHARACTERS: readonly string[] = [Space, Tab, NewLine, CarriageReturn, VerticalTab, FormFeed, At, Colon, Hash]
-	.map((token) => { return token.symbol; });
+export const STOP_CHARACTERS: readonly string[] = [
+	Space,
+	Tab,
+	NewLine,
+	CarriageReturn,
+	VerticalTab,
+	FormFeed,
+	At,
+	Colon,
+	Hash,
+].map(token => {
+	return token.symbol;
+});
 
 /**
  * List of characters that cannot be in an at-mention name (excluding the {@link STOP_CHARACTERS}).
  */
-export const INVALID_NAME_CHARACTERS: readonly string[] = [ExclamationMark, LeftAngleBracket, RightAngleBracket, LeftBracket, RightBracket]
-	.map((token) => { return token.symbol; });
+export const INVALID_NAME_CHARACTERS: readonly string[] = [
+	ExclamationMark,
+	LeftAngleBracket,
+	RightAngleBracket,
+	LeftBracket,
+	RightBracket,
+].map(token => {
+	return token.symbol;
+});
 
 /**
  * The parser responsible for parsing a `prompt @mention` sequences.
  * E.g., `@workspace` or `@github` participant mention.
  */
-export class PartialPromptAtMention extends ParserBase<TSimpleDecoderToken, PartialPromptAtMention | PromptAtMention> {
+export class PartialPromptAtMention extends ParserBase<
+	TSimpleDecoderToken,
+	PartialPromptAtMention | PromptAtMention
+> {
 	constructor(token: At) {
 		super([token]);
 	}
 
 	@assertNotConsumed
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialPromptAtMention | PromptAtMention> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<PartialPromptAtMention | PromptAtMention> {
 		// if a `stop` character is encountered, finish the parsing process
 		if (STOP_CHARACTERS.includes(token.text)) {
 			try {
@@ -98,7 +131,7 @@ export class PartialPromptAtMention extends ParserBase<TSimpleDecoderToken, Part
 		// must be the starting `@` one), then fail
 		assert(
 			this.currentTokens.length > 1,
-			'Cannot create a prompt @mention out of incomplete token sequence.',
+			'Cannot create a prompt @mention out of incomplete token sequence.'
 		);
 
 		const firstToken = this.currentTokens[0];
@@ -113,9 +146,9 @@ export class PartialPromptAtMention extends ParserBase<TSimpleDecoderToken, Part
 				firstToken.range.startLineNumber,
 				firstToken.range.startColumn,
 				lastToken.range.endLineNumber,
-				lastToken.range.endColumn,
+				lastToken.range.endColumn
 			),
-			atMentionName,
+			atMentionName
 		);
 	}
 }

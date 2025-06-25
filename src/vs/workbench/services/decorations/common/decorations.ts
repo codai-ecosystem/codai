@@ -33,7 +33,10 @@ export interface IDecoration extends IDisposable {
 export interface IDecorationsProvider {
 	readonly label: string;
 	readonly onDidChange: Event<readonly URI[]>;
-	provideDecorations(uri: URI, token: CancellationToken): IDecorationData | Promise<IDecorationData | undefined> | undefined;
+	provideDecorations(
+		uri: URI,
+		token: CancellationToken
+	): IDecorationData | Promise<IDecorationData | undefined> | undefined;
 }
 
 export interface IResourceDecorationChangeEvent {
@@ -41,7 +44,6 @@ export interface IResourceDecorationChangeEvent {
 }
 
 export interface IDecorationsService {
-
 	readonly _serviceBrand: undefined;
 
 	readonly onDidChangeDecorations: Event<IResourceDecorationChangeEvent>;

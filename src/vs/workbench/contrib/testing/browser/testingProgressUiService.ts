@@ -8,7 +8,11 @@ import { autorun } from '../../../../base/common/observable.js';
 import { localize } from '../../../../nls.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { ExplorerTestCoverageBars } from './testCoverageBars.js';
-import { AutoOpenTesting, getTestingConfiguration, TestingConfigKeys } from '../common/configuration.js';
+import {
+	AutoOpenTesting,
+	getTestingConfiguration,
+	TestingConfigKeys,
+} from '../common/configuration.js';
 import { Testing } from '../common/constants.js';
 import { ITestCoverageService } from '../common/testCoverageService.js';
 import { isFailedState } from '../common/testingStates.js';
@@ -23,15 +27,17 @@ export class TestingProgressTrigger extends Disposable {
 		@ITestResultService resultService: ITestResultService,
 		@ITestCoverageService testCoverageService: ITestCoverageService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IViewsService private readonly viewsService: IViewsService,
+		@IViewsService private readonly viewsService: IViewsService
 	) {
 		super();
 
-		this._register(resultService.onResultsChanged((e) => {
-			if ('started' in e) {
-				this.attachAutoOpenForNewResults(e.started);
-			}
-		}));
+		this._register(
+			resultService.onResultsChanged(e => {
+				if ('started' in e) {
+					this.attachAutoOpenForNewResults(e.started);
+				}
+			})
+		);
 
 		const barContributionRegistration = autorun(reader => {
 			const hasCoverage = !!testCoverageService.selected.read(reader);
@@ -67,12 +73,17 @@ export class TestingProgressTrigger extends Disposable {
 		// open on failure
 		const disposable = new DisposableStore();
 		disposable.add(result.onComplete(() => disposable.dispose()));
-		disposable.add(result.onChange(e => {
-			if (e.reason === TestResultItemChangeReason.OwnStateChange && isFailedState(e.item.ownComputedState)) {
-				this.openResultsView();
-				disposable.dispose();
-			}
-		}));
+		disposable.add(
+			result.onChange(e => {
+				if (
+					e.reason === TestResultItemChangeReason.OwnStateChange &&
+					isFailedState(e.item.ownComputedState)
+				) {
+					this.openResultsView();
+					disposable.dispose();
+				}
+			})
+		);
 	}
 
 	private openExplorerView() {
@@ -112,8 +123,15 @@ export const collectTestStateCounts = (isRunning: boolean, results: ReadonlyArra
 	};
 };
 
-export const getTestProgressText = ({ isRunning, passed, runSoFar, totalWillBeRun, skipped, failed }: CountSummary) => {
-	let percent = passed / runSoFar * 100;
+export const getTestProgressText = ({
+	isRunning,
+	passed,
+	runSoFar,
+	totalWillBeRun,
+	skipped,
+	failed,
+}: CountSummary) => {
+	let percent = (passed / runSoFar) * 100;
 	if (failed > 0) {
 		// fix: prevent from rounding to 100 if there's any failed test
 		percent = Math.min(percent, 99.9);
@@ -125,15 +143,41 @@ export const getTestProgressText = ({ isRunning, passed, runSoFar, totalWillBeRu
 		if (runSoFar === 0) {
 			return localize('testProgress.runningInitial', 'Running tests...');
 		} else if (skipped === 0) {
-			return localize('testProgress.running', 'Running tests, {0}/{1} passed ({2}%)', passed, totalWillBeRun, percent.toPrecision(3));
+			return localize(
+				'testProgress.running',
+				'Running tests, {0}/{1} passed ({2}%)',
+				passed,
+				totalWillBeRun,
+				percent.toPrecision(3)
+			);
 		} else {
-			return localize('testProgressWithSkip.running', 'Running tests, {0}/{1} tests passed ({2}%, {3} skipped)', passed, totalWillBeRun, percent.toPrecision(3), skipped);
+			return localize(
+				'testProgressWithSkip.running',
+				'Running tests, {0}/{1} tests passed ({2}%, {3} skipped)',
+				passed,
+				totalWillBeRun,
+				percent.toPrecision(3),
+				skipped
+			);
 		}
 	} else {
 		if (skipped === 0) {
-			return localize('testProgress.completed', '{0}/{1} tests passed ({2}%)', passed, runSoFar, percent.toPrecision(3));
+			return localize(
+				'testProgress.completed',
+				'{0}/{1} tests passed ({2}%)',
+				passed,
+				runSoFar,
+				percent.toPrecision(3)
+			);
 		} else {
-			return localize('testProgressWithSkip.completed', '{0}/{1} tests passed ({2}%, {3} skipped)', passed, runSoFar, percent.toPrecision(3), skipped);
+			return localize(
+				'testProgressWithSkip.completed',
+				'{0}/{1} tests passed ({2}%, {3} skipped)',
+				passed,
+				runSoFar,
+				percent.toPrecision(3),
+				skipped
+			);
 		}
 	}
 };

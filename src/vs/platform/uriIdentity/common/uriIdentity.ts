@@ -7,11 +7,9 @@ import { URI } from '../../../base/common/uri.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 import { IExtUri } from '../../../base/common/resources.js';
 
-
 export const IUriIdentityService = createDecorator<IUriIdentityService>('IUriIdentityService');
 
 export interface IUriIdentityService {
-
 	readonly _serviceBrand: undefined;
 
 	/**

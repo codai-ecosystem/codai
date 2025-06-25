@@ -10,8 +10,10 @@ import { ITextModel } from '../../../common/model.js';
 import { SelectionRange, SelectionRangeProvider } from '../../../common/languages.js';
 
 export class BracketSelectionRangeProvider implements SelectionRangeProvider {
-
-	async provideSelectionRanges(model: ITextModel, positions: Position[]): Promise<SelectionRange[][]> {
+	async provideSelectionRanges(
+		model: ITextModel,
+		positions: Position[]
+	): Promise<SelectionRange[][]> {
 		const result: SelectionRange[][] = [];
 
 		for (const position of positions) {
@@ -19,8 +21,19 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 			result.push(bucket);
 
 			const ranges = new Map<string, LinkedList<Range>>();
-			await new Promise<void>(resolve => BracketSelectionRangeProvider._bracketsRightYield(resolve, 0, model, position, ranges));
-			await new Promise<void>(resolve => BracketSelectionRangeProvider._bracketsLeftYield(resolve, 0, model, position, ranges, bucket));
+			await new Promise<void>(resolve =>
+				BracketSelectionRangeProvider._bracketsRightYield(resolve, 0, model, position, ranges)
+			);
+			await new Promise<void>(resolve =>
+				BracketSelectionRangeProvider._bracketsLeftYield(
+					resolve,
+					0,
+					model,
+					position,
+					ranges,
+					bucket
+				)
+			);
 		}
 
 		return result;
@@ -29,7 +42,13 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 	public static _maxDuration = 30;
 	private static readonly _maxRounds = 2;
 
-	private static _bracketsRightYield(resolve: () => void, round: number, model: ITextModel, pos: Position, ranges: Map<string, LinkedList<Range>>): void {
+	private static _bracketsRightYield(
+		resolve: () => void,
+		round: number,
+		model: ITextModel,
+		pos: Position,
+		ranges: Map<string, LinkedList<Range>>
+	): void {
 		const counts = new Map<string, number>();
 		const t1 = Date.now();
 		while (true) {
@@ -48,7 +67,9 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 			}
 			const d = Date.now() - t1;
 			if (d > BracketSelectionRangeProvider._maxDuration) {
-				setTimeout(() => BracketSelectionRangeProvider._bracketsRightYield(resolve, round + 1, model, pos, ranges));
+				setTimeout(() =>
+					BracketSelectionRangeProvider._bracketsRightYield(resolve, round + 1, model, pos, ranges)
+				);
 				break;
 			}
 			if (bracket.bracketInfo.isOpeningBracket) {
@@ -75,7 +96,14 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 		}
 	}
 
-	private static _bracketsLeftYield(resolve: () => void, round: number, model: ITextModel, pos: Position, ranges: Map<string, LinkedList<Range>>, bucket: SelectionRange[]): void {
+	private static _bracketsLeftYield(
+		resolve: () => void,
+		round: number,
+		model: ITextModel,
+		pos: Position,
+		ranges: Map<string, LinkedList<Range>>,
+		bucket: SelectionRange[]
+	): void {
 		const counts = new Map<string, number>();
 		const t1 = Date.now();
 		while (true) {
@@ -94,7 +122,16 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 			}
 			const d = Date.now() - t1;
 			if (d > BracketSelectionRangeProvider._maxDuration) {
-				setTimeout(() => BracketSelectionRangeProvider._bracketsLeftYield(resolve, round + 1, model, pos, ranges, bucket));
+				setTimeout(() =>
+					BracketSelectionRangeProvider._bracketsLeftYield(
+						resolve,
+						round + 1,
+						model,
+						pos,
+						ranges,
+						bucket
+					)
+				);
 				break;
 			}
 			if (!bracket.bracketInfo.isOpeningBracket) {
@@ -115,8 +152,14 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 						if (list.size === 0) {
 							ranges.delete(key);
 						}
-						const innerBracket = Range.fromPositions(bracket.range.getEndPosition(), closing!.getStartPosition());
-						const outerBracket = Range.fromPositions(bracket.range.getStartPosition(), closing!.getEndPosition());
+						const innerBracket = Range.fromPositions(
+							bracket.range.getEndPosition(),
+							closing!.getStartPosition()
+						);
+						const outerBracket = Range.fromPositions(
+							bracket.range.getStartPosition(),
+							closing!.getEndPosition()
+						);
 						bucket.push({ range: innerBracket });
 						bucket.push({ range: outerBracket });
 						BracketSelectionRangeProvider._addBracketLeading(model, outerBracket, bucket);
@@ -127,7 +170,11 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 		}
 	}
 
-	private static _addBracketLeading(model: ITextModel, bracket: Range, bucket: SelectionRange[]): void {
+	private static _addBracketLeading(
+		model: ITextModel,
+		bracket: Range,
+		bucket: SelectionRange[]
+	): void {
 		if (bracket.startLineNumber === bracket.endLineNumber) {
 			return;
 		}
@@ -137,8 +184,12 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 		const startLine = bracket.startLineNumber;
 		const column = model.getLineFirstNonWhitespaceColumn(startLine);
 		if (column !== 0 && column !== bracket.startColumn) {
-			bucket.push({ range: Range.fromPositions(new Position(startLine, column), bracket.getEndPosition()) });
-			bucket.push({ range: Range.fromPositions(new Position(startLine, 1), bracket.getEndPosition()) });
+			bucket.push({
+				range: Range.fromPositions(new Position(startLine, column), bracket.getEndPosition()),
+			});
+			bucket.push({
+				range: Range.fromPositions(new Position(startLine, 1), bracket.getEndPosition()),
+			});
 		}
 
 		// xxxxxxxx
@@ -148,9 +199,16 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 		const aboveLine = startLine - 1;
 		if (aboveLine > 0) {
 			const column = model.getLineFirstNonWhitespaceColumn(aboveLine);
-			if (column === bracket.startColumn && column !== model.getLineLastNonWhitespaceColumn(aboveLine)) {
-				bucket.push({ range: Range.fromPositions(new Position(aboveLine, column), bracket.getEndPosition()) });
-				bucket.push({ range: Range.fromPositions(new Position(aboveLine, 1), bracket.getEndPosition()) });
+			if (
+				column === bracket.startColumn &&
+				column !== model.getLineLastNonWhitespaceColumn(aboveLine)
+			) {
+				bucket.push({
+					range: Range.fromPositions(new Position(aboveLine, column), bracket.getEndPosition()),
+				});
+				bucket.push({
+					range: Range.fromPositions(new Position(aboveLine, 1), bracket.getEndPosition()),
+				});
 			}
 		}
 	}

@@ -5,7 +5,11 @@
 
 import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
 import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { EditorAction, registerEditorAction, ServicesAccessor } from '../../../browser/editorExtensions.js';
+import {
+	EditorAction,
+	registerEditorAction,
+	ServicesAccessor,
+} from '../../../browser/editorExtensions.js';
 import { CursorChangeReason } from '../../../common/cursorEvents.js';
 import { CursorMoveCommands } from '../../../common/cursor/cursorMoveCommands.js';
 import { EditorContextKeys } from '../../../common/editorContextKeys.js';
@@ -16,12 +20,12 @@ export class ExpandLineSelectionAction extends EditorAction {
 	constructor() {
 		super({
 			id: 'expandLineSelection',
-			label: nls.localize2('expandLineSelection', "Expand Line Selection"),
+			label: nls.localize2('expandLineSelection', 'Expand Line Selection'),
 			precondition: undefined,
 			kbOpts: {
 				weight: KeybindingWeight.EditorCore,
 				kbExpr: EditorContextKeys.textInputFocus,
-				primary: KeyMod.CtrlCmd | KeyCode.KeyL
+				primary: KeyMod.CtrlCmd | KeyCode.KeyL,
 			},
 		});
 	}

@@ -17,7 +17,10 @@ import { localize } from '../../../nls.js';
 import { release } from 'os';
 import { ISerializableCommandAction } from '../../action/common/action.js';
 import { IBackupMainService } from '../../backup/electron-main/backup.js';
-import { IConfigurationChangeEvent, IConfigurationService } from '../../configuration/common/configuration.js';
+import {
+	IConfigurationChangeEvent,
+	IConfigurationService,
+} from '../../configuration/common/configuration.js';
 import { IDialogMainService } from '../../dialogs/electron-main/dialogMainService.js';
 import { NativeParsedArgs } from '../../environment/common/argv.js';
 import { IEnvironmentMainService } from '../../environment/electron-main/environmentMainService.js';
@@ -28,15 +31,52 @@ import { ILogService } from '../../log/common/log.js';
 import { IProductService } from '../../product/common/productService.js';
 import { IIPCObjectUrl, IProtocolMainService } from '../../protocol/electron-main/protocol.js';
 import { resolveMarketplaceHeaders } from '../../externalServices/common/marketplace.js';
-import { IApplicationStorageMainService, IStorageMainService } from '../../storage/electron-main/storageMainService.js';
+import {
+	IApplicationStorageMainService,
+	IStorageMainService,
+} from '../../storage/electron-main/storageMainService.js';
 import { ITelemetryService } from '../../telemetry/common/telemetry.js';
 import { ThemeIcon } from '../../../base/common/themables.js';
 import { IThemeMainService } from '../../theme/electron-main/themeMainService.js';
-import { getMenuBarVisibility, IFolderToOpen, INativeWindowConfiguration, IWindowSettings, IWorkspaceToOpen, MenuBarVisibility, hasNativeTitlebar, useNativeFullScreen, useWindowControlsOverlay, DEFAULT_CUSTOM_TITLEBAR_HEIGHT, TitlebarStyle, MenuSettings } from '../../window/common/window.js';
-import { defaultBrowserWindowOptions, getAllWindowsExcludingOffscreen, IWindowsMainService, OpenContext, WindowStateValidator } from './windows.js';
-import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier, isWorkspaceIdentifier, toWorkspaceIdentifier } from '../../workspace/common/workspace.js';
+import {
+	getMenuBarVisibility,
+	IFolderToOpen,
+	INativeWindowConfiguration,
+	IWindowSettings,
+	IWorkspaceToOpen,
+	MenuBarVisibility,
+	hasNativeTitlebar,
+	useNativeFullScreen,
+	useWindowControlsOverlay,
+	DEFAULT_CUSTOM_TITLEBAR_HEIGHT,
+	TitlebarStyle,
+	MenuSettings,
+} from '../../window/common/window.js';
+import {
+	defaultBrowserWindowOptions,
+	getAllWindowsExcludingOffscreen,
+	IWindowsMainService,
+	OpenContext,
+	WindowStateValidator,
+} from './windows.js';
+import {
+	ISingleFolderWorkspaceIdentifier,
+	IWorkspaceIdentifier,
+	isSingleFolderWorkspaceIdentifier,
+	isWorkspaceIdentifier,
+	toWorkspaceIdentifier,
+} from '../../workspace/common/workspace.js';
 import { IWorkspacesManagementMainService } from '../../workspaces/electron-main/workspacesManagementMainService.js';
-import { IWindowState, ICodeWindow, ILoadEvent, WindowMode, WindowError, LoadReason, defaultWindowState, IBaseWindow } from '../../window/electron-main/window.js';
+import {
+	IWindowState,
+	ICodeWindow,
+	ILoadEvent,
+	WindowMode,
+	WindowError,
+	LoadReason,
+	defaultWindowState,
+	IBaseWindow,
+} from '../../window/electron-main/window.js';
 import { IPolicyService } from '../../policy/common/policy.js';
 import { IUserDataProfile } from '../../userDataProfile/common/userDataProfile.js';
 import { IStateService } from '../../state/node/state.js';
@@ -63,7 +103,6 @@ interface ILoadOptions {
 }
 
 const enum ReadyState {
-
 	/**
 	 * This window has not loaded anything yet
 	 * and this is the initial state of every
@@ -81,11 +120,10 @@ const enum ReadyState {
 	 * This window has finished loading and is ready
 	 * to forward IPC requests to the web contents.
 	 */
-	READY
+	READY,
 }
 
 export abstract class BaseWindow extends Disposable implements IBaseWindow {
-
 	//#region Events
 
 	private readonly _onDidClose = this._register(new Emitter<void>());
@@ -97,7 +135,9 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 	private readonly _onDidUnmaximize = this._register(new Emitter<void>());
 	readonly onDidUnmaximize = this._onDidUnmaximize.event;
 
-	private readonly _onDidTriggerSystemContextMenu = this._register(new Emitter<{ x: number; y: number }>());
+	private readonly _onDidTriggerSystemContextMenu = this._register(
+		new Emitter<{ x: number; y: number }>()
+	);
 	readonly onDidTriggerSystemContextMenu = this._onDidTriggerSystemContextMenu.event;
 
 	private readonly _onDidEnterFullScreen = this._register(new Emitter<void>());
@@ -114,57 +154,109 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 	abstract readonly id: number;
 
 	protected _lastFocusTime = Date.now(); // window is shown on creation so take current time
-	get lastFocusTime(): number { return this._lastFocusTime; }
+	get lastFocusTime(): number {
+		return this._lastFocusTime;
+	}
 
 	private maximizedWindowState: IWindowState | undefined;
 
 	protected _win: electron.BrowserWindow | null = null;
-	get win() { return this._win; }
+	get win() {
+		return this._win;
+	}
 	protected setWin(win: electron.BrowserWindow, options?: BrowserWindowConstructorOptions): void {
 		this._win = win;
 
 		// Window Events
-		this._register(Event.fromNodeEventEmitter(win, 'maximize')(() => {
-			if (isWindows && this.environmentMainService.enableRDPDisplayTracking && this._win) {
-				const [x, y] = this._win.getPosition();
-				const [width, height] = this._win.getSize();
+		this._register(
+			Event.fromNodeEventEmitter(
+				win,
+				'maximize'
+			)(() => {
+				if (isWindows && this.environmentMainService.enableRDPDisplayTracking && this._win) {
+					const [x, y] = this._win.getPosition();
+					const [width, height] = this._win.getSize();
 
-				this.maximizedWindowState = { mode: WindowMode.Maximized, width, height, x, y };
-				this.logService.debug(`Saved maximized window ${this.id} display state:`, this.maximizedWindowState);
-			}
+					this.maximizedWindowState = { mode: WindowMode.Maximized, width, height, x, y };
+					this.logService.debug(
+						`Saved maximized window ${this.id} display state:`,
+						this.maximizedWindowState
+					);
+				}
 
-			this._onDidMaximize.fire();
-		}));
-		this._register(Event.fromNodeEventEmitter(win, 'unmaximize')(() => {
-			if (isWindows && this.environmentMainService.enableRDPDisplayTracking && this.maximizedWindowState) {
-				this.maximizedWindowState = undefined;
+				this._onDidMaximize.fire();
+			})
+		);
+		this._register(
+			Event.fromNodeEventEmitter(
+				win,
+				'unmaximize'
+			)(() => {
+				if (
+					isWindows &&
+					this.environmentMainService.enableRDPDisplayTracking &&
+					this.maximizedWindowState
+				) {
+					this.maximizedWindowState = undefined;
 
-				this.logService.debug(`Cleared maximized window ${this.id} state`);
-			}
+					this.logService.debug(`Cleared maximized window ${this.id} state`);
+				}
 
-			this._onDidUnmaximize.fire();
-		}));
-		this._register(Event.fromNodeEventEmitter(win, 'closed')(() => {
-			this._onDidClose.fire();
+				this._onDidUnmaximize.fire();
+			})
+		);
+		this._register(
+			Event.fromNodeEventEmitter(
+				win,
+				'closed'
+			)(() => {
+				this._onDidClose.fire();
 
-			this.dispose();
-		}));
-		this._register(Event.fromNodeEventEmitter(win, 'focus')(() => {
-			this._lastFocusTime = Date.now();
-		}));
-		this._register(Event.fromNodeEventEmitter(this._win, 'enter-full-screen')(() => this._onDidEnterFullScreen.fire()));
-		this._register(Event.fromNodeEventEmitter(this._win, 'leave-full-screen')(() => this._onDidLeaveFullScreen.fire()));
-		this._register(Event.fromNodeEventEmitter(this._win, 'always-on-top-changed', (_, alwaysOnTop) => alwaysOnTop)(alwaysOnTop => this._onDidChangeAlwaysOnTop.fire(alwaysOnTop)));
+				this.dispose();
+			})
+		);
+		this._register(
+			Event.fromNodeEventEmitter(
+				win,
+				'focus'
+			)(() => {
+				this._lastFocusTime = Date.now();
+			})
+		);
+		this._register(
+			Event.fromNodeEventEmitter(
+				this._win,
+				'enter-full-screen'
+			)(() => this._onDidEnterFullScreen.fire())
+		);
+		this._register(
+			Event.fromNodeEventEmitter(
+				this._win,
+				'leave-full-screen'
+			)(() => this._onDidLeaveFullScreen.fire())
+		);
+		this._register(
+			Event.fromNodeEventEmitter(
+				this._win,
+				'always-on-top-changed',
+				(_, alwaysOnTop) => alwaysOnTop
+			)(alwaysOnTop => this._onDidChangeAlwaysOnTop.fire(alwaysOnTop))
+		);
 
 		// Sheet Offsets
-		const useCustomTitleStyle = !hasNativeTitlebar(this.configurationService, options?.titleBarStyle === 'hidden' ? TitlebarStyle.CUSTOM : undefined /* unknown */);
+		const useCustomTitleStyle = !hasNativeTitlebar(
+			this.configurationService,
+			options?.titleBarStyle === 'hidden' ? TitlebarStyle.CUSTOM : undefined /* unknown */
+		);
 		if (isMacintosh && useCustomTitleStyle) {
 			win.setSheetOffset(isBigSurOrNewer(release()) ? 28 : 22); // offset dialogs by the height of the custom title bar if we have any
 		}
 
 		// Update the window controls immediately based on cached or default values
 		if (useCustomTitleStyle && useWindowControlsOverlay(this.configurationService)) {
-			const cachedWindowControlHeight = this.stateService.getItem<number>((BaseWindow.windowControlHeightStateStorageKey));
+			const cachedWindowControlHeight = this.stateService.getItem<number>(
+				BaseWindow.windowControlHeightStateStorageKey
+			);
 			if (cachedWindowControlHeight) {
 				this.updateWindowControls({ height: cachedWindowControlHeight });
 			} else {
@@ -174,33 +266,39 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 		// Setup windows system context menu so it only is allowed in certain cases
 		if (isWindows && useCustomTitleStyle) {
-			this._register(Event.fromNodeEventEmitter(win, 'system-context-menu', (event: Electron.Event, point: Electron.Point) => ({ event, point }))((e) => {
-				const [x, y] = win.getPosition();
-				const cursorPos = electron.screen.screenToDipPoint(e.point);
-				const cx = Math.floor(cursorPos.x) - x;
-				const cy = Math.floor(cursorPos.y) - y;
+			this._register(
+				Event.fromNodeEventEmitter(
+					win,
+					'system-context-menu',
+					(event: Electron.Event, point: Electron.Point) => ({ event, point })
+				)(e => {
+					const [x, y] = win.getPosition();
+					const cursorPos = electron.screen.screenToDipPoint(e.point);
+					const cx = Math.floor(cursorPos.x) - x;
+					const cy = Math.floor(cursorPos.y) - y;
 
-				// In some cases, show the default system context menu
-				// 1) The mouse position is not within the title bar
-				// 2) The mouse position is within the title bar, but over the app icon
-				// We do not know the exact title bar height but we make an estimate based on window height
-				const shouldTriggerDefaultSystemContextMenu = () => {
-					// Use the custom context menu when over the title bar, but not over the app icon
-					// The app icon is estimated to be 30px wide
-					// The title bar is estimated to be the max of 35px and 15% of the window height
-					if (cx > 30 && cy >= 0 && cy <= Math.max(win.getBounds().height * 0.15, 35)) {
-						return false;
+					// In some cases, show the default system context menu
+					// 1) The mouse position is not within the title bar
+					// 2) The mouse position is within the title bar, but over the app icon
+					// We do not know the exact title bar height but we make an estimate based on window height
+					const shouldTriggerDefaultSystemContextMenu = () => {
+						// Use the custom context menu when over the title bar, but not over the app icon
+						// The app icon is estimated to be 30px wide
+						// The title bar is estimated to be the max of 35px and 15% of the window height
+						if (cx > 30 && cy >= 0 && cy <= Math.max(win.getBounds().height * 0.15, 35)) {
+							return false;
+						}
+
+						return true;
+					};
+
+					if (!shouldTriggerDefaultSystemContextMenu()) {
+						e.event.preventDefault();
+
+						this._onDidTriggerSystemContextMenu.fire({ x: cx, y: cy });
 					}
-
-					return true;
-				};
-
-				if (!shouldTriggerDefaultSystemContextMenu()) {
-					e.event.preventDefault();
-
-					this._onDidTriggerSystemContextMenu.fire({ x: cx, y: cy });
-				}
-			}));
+				})
+			);
 		}
 
 		// Open devtools if instructed from command line args
@@ -210,29 +308,42 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 		// macOS: Window Fullscreen Transitions
 		if (isMacintosh) {
-			this._register(this.onDidEnterFullScreen(() => {
-				this.joinNativeFullScreenTransition?.complete(true);
-			}));
+			this._register(
+				this.onDidEnterFullScreen(() => {
+					this.joinNativeFullScreenTransition?.complete(true);
+				})
+			);
 
-			this._register(this.onDidLeaveFullScreen(() => {
-				this.joinNativeFullScreenTransition?.complete(true);
-			}));
+			this._register(
+				this.onDidLeaveFullScreen(() => {
+					this.joinNativeFullScreenTransition?.complete(true);
+				})
+			);
 		}
 
 		if (isWindows && this.environmentMainService.enableRDPDisplayTracking) {
 			// Handles the display-added event on Windows RDP multi-monitor scenarios.
 			// This helps restore maximized windows to their correct monitor after RDP reconnection.
 			// Refs https://github.com/electron/electron/issues/47016
-			this._register(Event.fromNodeEventEmitter(screen, 'display-added', (event: Electron.Event, display: Display) => ({ event, display }))((e) => {
-				this.onDisplayAdded(e.display);
-			}));
+			this._register(
+				Event.fromNodeEventEmitter(
+					screen,
+					'display-added',
+					(event: Electron.Event, display: Display) => ({ event, display })
+				)(e => {
+					this.onDisplayAdded(e.display);
+				})
+			);
 		}
 	}
 
 	private onDisplayAdded(display: Display): void {
 		const state = this.maximizedWindowState;
 		if (state && this._win && WindowStateValidator.validateWindowStateOnDisplay(state, display)) {
-			this.logService.debug(`Setting maximized window ${this.id} bounds to match newly added display`, state);
+			this.logService.debug(
+				`Setting maximized window ${this.id} bounds to match newly added display`,
+				state
+			);
 
 			this._win.setBounds(state);
 		}
@@ -247,8 +358,10 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		super();
 	}
 
-	protected applyState(state: IWindowState, hasMultipleDisplays = electron.screen.getAllDisplays().length > 0): void {
-
+	protected applyState(
+		state: IWindowState,
+		hasMultipleDisplays = electron.screen.getAllDisplays().length > 0
+	): void {
 		// TODO@electron (Electron 4 regression): when running on multiple displays where the target display
 		// to open the window has a larger resolution than the primary display, the window will not size
 		// correctly unless we set the bounds again (https://github.com/microsoft/vscode/issues/74872)
@@ -259,21 +372,26 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		// because there is a potential that the new window will be added as native tab instead of being
 		// a window on its own. In that case calling setBounds() would cause https://github.com/microsoft/vscode/issues/75830
 
-		const windowSettings = this.configurationService.getValue<IWindowSettings | undefined>('window');
+		const windowSettings = this.configurationService.getValue<IWindowSettings | undefined>(
+			'window'
+		);
 		const useNativeTabs = isMacintosh && windowSettings?.nativeTabs === true;
-		if ((isMacintosh || isWindows) && hasMultipleDisplays && (!useNativeTabs || getAllWindowsExcludingOffscreen().length === 1)) {
+		if (
+			(isMacintosh || isWindows) &&
+			hasMultipleDisplays &&
+			(!useNativeTabs || getAllWindowsExcludingOffscreen().length === 1)
+		) {
 			if ([state.width, state.height, state.x, state.y].every(value => typeof value === 'number')) {
 				this._win?.setBounds({
 					width: state.width,
 					height: state.height,
 					x: state.x,
-					y: state.y
+					y: state.y,
 				});
 			}
 		}
 
 		if (state.mode === WindowMode.Maximized || state.mode === WindowMode.Fullscreen) {
-
 			// this call may or may not show the window, depends
 			// on the platform: currently on Windows and Linux will
 			// show the window as active. To be on the safe side,
@@ -368,7 +486,11 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 	private static readonly windowControlHeightStateStorageKey = 'windowControlHeight';
 
-	updateWindowControls(options: { height?: number; backgroundColor?: string; foregroundColor?: string }): void {
+	updateWindowControls(options: {
+		height?: number;
+		backgroundColor?: string;
+		foregroundColor?: string;
+	}): void {
 		const win = this.win;
 		if (!win) {
 			return;
@@ -376,7 +498,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 		// Cache the height for speeds lookups on startup
 		if (options.height) {
-			this.stateService.setItem((CodeWindow.windowControlHeightStateStorageKey), options.height);
+			this.stateService.setItem(CodeWindow.windowControlHeightStateStorageKey, options.height);
 		}
 
 		// Windows/Linux: update window controls via setTitleBarOverlay()
@@ -384,7 +506,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 			win.setTitleBarOverlay({
 				color: options.backgroundColor?.trim() === '' ? undefined : options.backgroundColor,
 				symbolColor: options.foregroundColor?.trim() === '' ? undefined : options.foregroundColor,
-				height: options.height ? options.height - 1 : undefined // account for window border
+				height: options.height ? options.height - 1 : undefined, // account for window border
 			});
 		}
 
@@ -416,7 +538,6 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 	}
 
 	protected setFullScreen(fullscreen: boolean, fromRestore: boolean): void {
-
 		// Set fullscreen state
 		if (useNativeFullScreen(this.configurationService)) {
 			this.setNativeFullScreen(fullscreen, fromRestore);
@@ -448,7 +569,6 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 	private doSetNativeFullScreen(fullscreen: boolean, fromRestore: boolean): void {
 		if (isMacintosh) {
-
 			// macOS: Electron windows report `false` for `isFullScreen()` for as long
 			// as the fullscreen transition animation takes place. As such, we need to
 			// listen to the transition events and carry around an intermediate state
@@ -457,11 +577,12 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 			this.transientIsNativeFullScreen = fullscreen;
 
-			const joinNativeFullScreenTransition = this.joinNativeFullScreenTransition = new DeferredPromise<boolean>();
+			const joinNativeFullScreenTransition = (this.joinNativeFullScreenTransition =
+				new DeferredPromise<boolean>());
 			(async () => {
 				const transitioned = await Promise.race([
 					joinNativeFullScreenTransition.p,
-					timeout(10000).then(() => false)
+					timeout(10000).then(() => false),
 				]);
 
 				if (this.joinNativeFullScreenTransition !== joinNativeFullScreenTransition) {
@@ -479,7 +600,6 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 				// signal to leave fullscreen if the window reports as not being in fullscreen.
 
 				if (!transitioned && fullscreen && fromRestore && this.win && !this.win.isFullScreen()) {
-
 					// We have seen requests for fullscreen failing eventually after some
 					// time, for example when an OS update was performed and windows restore.
 					// In those cases a user would find a window that is not in fullscreen
@@ -489,7 +609,9 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 					// As a workaround in that case we emit a warning and leave fullscreen
 					// so that at least the window controls are back.
 
-					this.logService.warn('window: native macOS fullscreen transition did not happen within 10s from restoring');
+					this.logService.warn(
+						'window: native macOS fullscreen transition did not happen within 10s from restoring'
+					);
 
 					this._onDidLeaveFullScreen.fire();
 				}
@@ -522,7 +644,6 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 }
 
 export class CodeWindow extends BaseWindow implements ICodeWindow {
-
 	//#region Events
 
 	private readonly _onWillLoad = this._register(new Emitter<ILoadEvent>());
@@ -536,41 +657,63 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 	//#endregion
 
-
 	//#region Properties
 
 	private _id: number;
-	get id(): number { return this._id; }
+	get id(): number {
+		return this._id;
+	}
 
 	protected override _win: electron.BrowserWindow;
 
-	get backupPath(): string | undefined { return this._config?.backupPath; }
+	get backupPath(): string | undefined {
+		return this._config?.backupPath;
+	}
 
-	get openedWorkspace(): IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | undefined { return this._config?.workspace; }
+	get openedWorkspace(): IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | undefined {
+		return this._config?.workspace;
+	}
 
 	get profile(): IUserDataProfile | undefined {
 		if (!this.config) {
 			return undefined;
 		}
 
-		const profile = this.userDataProfilesService.profiles.find(profile => profile.id === this.config?.profiles.profile.id);
+		const profile = this.userDataProfilesService.profiles.find(
+			profile => profile.id === this.config?.profiles.profile.id
+		);
 		if (this.isExtensionDevelopmentHost && profile) {
 			return profile;
 		}
 
-		return this.userDataProfilesService.getProfileForWorkspace(this.config.workspace ?? toWorkspaceIdentifier(this.backupPath, this.isExtensionDevelopmentHost)) ?? this.userDataProfilesService.defaultProfile;
+		return (
+			this.userDataProfilesService.getProfileForWorkspace(
+				this.config.workspace ??
+					toWorkspaceIdentifier(this.backupPath, this.isExtensionDevelopmentHost)
+			) ?? this.userDataProfilesService.defaultProfile
+		);
 	}
 
-	get remoteAuthority(): string | undefined { return this._config?.remoteAuthority; }
+	get remoteAuthority(): string | undefined {
+		return this._config?.remoteAuthority;
+	}
 
 	private _config: INativeWindowConfiguration | undefined;
-	get config(): INativeWindowConfiguration | undefined { return this._config; }
+	get config(): INativeWindowConfiguration | undefined {
+		return this._config;
+	}
 
-	get isExtensionDevelopmentHost(): boolean { return !!(this._config?.extensionDevelopmentPath); }
+	get isExtensionDevelopmentHost(): boolean {
+		return !!this._config?.extensionDevelopmentPath;
+	}
 
-	get isExtensionTestHost(): boolean { return !!(this._config?.extensionTestsPath); }
+	get isExtensionTestHost(): boolean {
+		return !!this._config?.extensionTestsPath;
+	}
 
-	get isExtensionDevelopmentTestFromCli(): boolean { return this.isExtensionDevelopmentHost && this.isExtensionTestHost && !this._config?.debugId; }
+	get isExtensionDevelopmentTestFromCli(): boolean {
+		return this.isExtensionDevelopmentHost && this.isExtensionTestHost && !this._config?.debugId;
+	}
 
 	//#endregion
 
@@ -601,13 +744,16 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		@ILoggerMainService private readonly loggerMainService: ILoggerMainService,
 		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
 		@IPolicyService private readonly policyService: IPolicyService,
-		@IUserDataProfilesMainService private readonly userDataProfilesService: IUserDataProfilesMainService,
+		@IUserDataProfilesMainService
+		private readonly userDataProfilesService: IUserDataProfilesMainService,
 		@IFileService private readonly fileService: IFileService,
-		@IApplicationStorageMainService private readonly applicationStorageMainService: IApplicationStorageMainService,
+		@IApplicationStorageMainService
+		private readonly applicationStorageMainService: IApplicationStorageMainService,
 		@IStorageMainService private readonly storageMainService: IStorageMainService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IThemeMainService private readonly themeMainService: IThemeMainService,
-		@IWorkspacesManagementMainService private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
+		@IWorkspacesManagementMainService
+		private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
 		@IBackupMainService private readonly backupMainService: IBackupMainService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IDialogMainService private readonly dialogMainService: IDialogMainService,
@@ -622,18 +768,27 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 		//#region create browser window
 		{
-			this.configObjectUrl = this._register(protocolMainService.createIPCObjectUrl<INativeWindowConfiguration>());
+			this.configObjectUrl = this._register(
+				protocolMainService.createIPCObjectUrl<INativeWindowConfiguration>()
+			);
 
 			// Load window state
 			const [state, hasMultipleDisplays] = this.restoreWindowState(config.state);
 			this.windowState = state;
 			this.logService.trace('window#ctor: using window state', state);
 
-			const options = instantiationService.invokeFunction(defaultBrowserWindowOptions, this.windowState, undefined, {
-				preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-sandbox/preload.js').fsPath,
-				additionalArguments: [`--vscode-window-config=${this.configObjectUrl.resource.toString()}`],
-				v8CacheOptions: this.environmentMainService.useCodeCache ? 'bypassHeatCheck' : 'none',
-			});
+			const options = instantiationService.invokeFunction(
+				defaultBrowserWindowOptions,
+				this.windowState,
+				undefined,
+				{
+					preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-sandbox/preload.js').fsPath,
+					additionalArguments: [
+						`--vscode-window-config=${this.configObjectUrl.resource.toString()}`,
+					],
+					v8CacheOptions: this.environmentMainService.useCodeCache ? 'bypassHeatCheck' : 'none',
+				}
+			);
 
 			// Create the browser window
 			mark('code/willCreateCodeBrowserWindow');
@@ -652,10 +807,16 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 		//#region JS Callstack Collector
 
-		let sampleInterval = parseInt(this.environmentMainService.args['unresponsive-sample-interval'] || '1000');
-		let samplePeriod = parseInt(this.environmentMainService.args['unresponsive-sample-period'] || '15000');
+		let sampleInterval = parseInt(
+			this.environmentMainService.args['unresponsive-sample-interval'] || '1000'
+		);
+		let samplePeriod = parseInt(
+			this.environmentMainService.args['unresponsive-sample-period'] || '15000'
+		);
 		if (sampleInterval <= 0 || samplePeriod <= 0 || sampleInterval > samplePeriod) {
-			this.logService.warn(`Invalid unresponsive sample interval (${sampleInterval}ms) or period (${samplePeriod}ms), using defaults.`);
+			this.logService.warn(
+				`Invalid unresponsive sample interval (${sampleInterval}ms) or period (${samplePeriod}ms), using defaults.`
+			);
 			sampleInterval = 1000;
 			samplePeriod = 15000;
 		}
@@ -663,9 +824,11 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		this.jsCallStackMap = new Map<string, number>();
 		this.jsCallStackEffectiveSampleCount = Math.round(samplePeriod / sampleInterval);
 		this.jsCallStackCollector = this._register(new Delayer<void>(sampleInterval));
-		this.jsCallStackCollectorStopScheduler = this._register(new RunOnceScheduler(() => {
-			this.stopCollectingJScallStacks(); // Stop collecting after 15s max
-		}, samplePeriod));
+		this.jsCallStackCollectorStopScheduler = this._register(
+			new RunOnceScheduler(() => {
+				this.stopCollectingJScallStacks(); // Stop collecting after 15s max
+			}, samplePeriod)
+		);
 
 		//#endregion
 
@@ -712,7 +875,6 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 	get whenClosedOrLoaded(): Promise<void> {
 		return new Promise<void>(resolve => {
-
 			function handle() {
 				closeListener.dispose();
 				loadListener.dispose();
@@ -726,58 +888,102 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	}
 
 	private registerListeners(): void {
-
 		// Window error conditions to handle
-		this._register(Event.fromNodeEventEmitter(this._win, 'unresponsive')(() => this.onWindowError(WindowError.UNRESPONSIVE)));
-		this._register(Event.fromNodeEventEmitter(this._win, 'responsive')(() => this.onWindowError(WindowError.RESPONSIVE)));
-		this._register(Event.fromNodeEventEmitter(this._win.webContents, 'render-process-gone', (event, details) => details)(details => this.onWindowError(WindowError.PROCESS_GONE, { ...details })));
-		this._register(Event.fromNodeEventEmitter(this._win.webContents, 'did-fail-load', (event, exitCode, reason) => ({ exitCode, reason }))(({ exitCode, reason }) => this.onWindowError(WindowError.LOAD, { reason, exitCode })));
+		this._register(
+			Event.fromNodeEventEmitter(
+				this._win,
+				'unresponsive'
+			)(() => this.onWindowError(WindowError.UNRESPONSIVE))
+		);
+		this._register(
+			Event.fromNodeEventEmitter(
+				this._win,
+				'responsive'
+			)(() => this.onWindowError(WindowError.RESPONSIVE))
+		);
+		this._register(
+			Event.fromNodeEventEmitter(
+				this._win.webContents,
+				'render-process-gone',
+				(event, details) => details
+			)(details => this.onWindowError(WindowError.PROCESS_GONE, { ...details }))
+		);
+		this._register(
+			Event.fromNodeEventEmitter(
+				this._win.webContents,
+				'did-fail-load',
+				(event, exitCode, reason) => ({ exitCode, reason })
+			)(({ exitCode, reason }) => this.onWindowError(WindowError.LOAD, { reason, exitCode }))
+		);
 
 		// Prevent windows/iframes from blocking the unload
 		// through DOM events. We have our own logic for
 		// unloading a window that should not be confused
 		// with the DOM way.
 		// (https://github.com/microsoft/vscode/issues/122736)
-		this._register(Event.fromNodeEventEmitter<electron.Event>(this._win.webContents, 'will-prevent-unload')(event => event.preventDefault()));
+		this._register(
+			Event.fromNodeEventEmitter<electron.Event>(
+				this._win.webContents,
+				'will-prevent-unload'
+			)(event => event.preventDefault())
+		);
 
 		// Remember that we loaded
-		this._register(Event.fromNodeEventEmitter(this._win.webContents, 'did-finish-load')(() => {
+		this._register(
+			Event.fromNodeEventEmitter(
+				this._win.webContents,
+				'did-finish-load'
+			)(() => {
+				// Associate properties from the load request if provided
+				if (this.pendingLoadConfig) {
+					this._config = this.pendingLoadConfig;
 
-			// Associate properties from the load request if provided
-			if (this.pendingLoadConfig) {
-				this._config = this.pendingLoadConfig;
-
-				this.pendingLoadConfig = undefined;
-			}
-		}));
+					this.pendingLoadConfig = undefined;
+				}
+			})
+		);
 
 		// Window (Un)Maximize
-		this._register(this.onDidMaximize(() => {
-			if (this._config) {
-				this._config.maximized = true;
-			}
-		}));
+		this._register(
+			this.onDidMaximize(() => {
+				if (this._config) {
+					this._config.maximized = true;
+				}
+			})
+		);
 
-		this._register(this.onDidUnmaximize(() => {
-			if (this._config) {
-				this._config.maximized = false;
-			}
-		}));
+		this._register(
+			this.onDidUnmaximize(() => {
+				if (this._config) {
+					this._config.maximized = false;
+				}
+			})
+		);
 
 		// Window Fullscreen
-		this._register(this.onDidEnterFullScreen(() => {
-			this.sendWhenReady('vscode:enterFullScreen', CancellationToken.None);
-		}));
+		this._register(
+			this.onDidEnterFullScreen(() => {
+				this.sendWhenReady('vscode:enterFullScreen', CancellationToken.None);
+			})
+		);
 
-		this._register(this.onDidLeaveFullScreen(() => {
-			this.sendWhenReady('vscode:leaveFullScreen', CancellationToken.None);
-		}));
+		this._register(
+			this.onDidLeaveFullScreen(() => {
+				this.sendWhenReady('vscode:leaveFullScreen', CancellationToken.None);
+			})
+		);
 
 		// Handle configuration changes
-		this._register(this.configurationService.onDidChangeConfiguration(e => this.onConfigurationUpdated(e)));
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => this.onConfigurationUpdated(e))
+		);
 
 		// Handle Workspace events
-		this._register(this.workspacesManagementMainService.onDidDeleteUntitledWorkspace(e => this.onDidDeleteUntitledWorkspace(e)));
+		this._register(
+			this.workspacesManagementMainService.onDidDeleteUntitledWorkspace(e =>
+				this.onDidDeleteUntitledWorkspace(e)
+			)
+		);
 
 		// Inject headers when requests are incoming
 		const urls = ['https://*.vsassets.io/*'];
@@ -802,7 +1008,8 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				this.configurationService,
 				this.fileService,
 				this.applicationStorageMainService,
-				this.telemetryService);
+				this.telemetryService
+			);
 		}
 
 		return this.marketplaceHeadersPromise;
@@ -810,13 +1017,23 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 	private async onWindowError(error: WindowError.UNRESPONSIVE): Promise<void>;
 	private async onWindowError(error: WindowError.RESPONSIVE): Promise<void>;
-	private async onWindowError(error: WindowError.PROCESS_GONE, details: { reason: string; exitCode: number }): Promise<void>;
-	private async onWindowError(error: WindowError.LOAD, details: { reason: string; exitCode: number }): Promise<void>;
-	private async onWindowError(type: WindowError, details?: { reason?: string; exitCode?: number }): Promise<void> {
-
+	private async onWindowError(
+		error: WindowError.PROCESS_GONE,
+		details: { reason: string; exitCode: number }
+	): Promise<void>;
+	private async onWindowError(
+		error: WindowError.LOAD,
+		details: { reason: string; exitCode: number }
+	): Promise<void>;
+	private async onWindowError(
+		type: WindowError,
+		details?: { reason?: string; exitCode?: number }
+	): Promise<void> {
 		switch (type) {
 			case WindowError.PROCESS_GONE:
-				this.logService.error(`CodeWindow: renderer process gone (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`);
+				this.logService.error(
+					`CodeWindow: renderer process gone (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`
+				);
 				break;
 			case WindowError.UNRESPONSIVE:
 				this.logService.error('CodeWindow: detected unresponsive');
@@ -825,15 +1042,29 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				this.logService.error('CodeWindow: recovered from unresponsive');
 				break;
 			case WindowError.LOAD:
-				this.logService.error(`CodeWindow: failed to load (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`);
+				this.logService.error(
+					`CodeWindow: failed to load (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`
+				);
 				break;
 		}
 
 		// Telemetry
 		type WindowErrorClassification = {
-			type: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The type of window error to understand the nature of the error better.' };
-			reason: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The reason of the window error to understand the nature of the error better.' };
-			code: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The exit code of the window process to understand the nature of the error better' };
+			type: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'The type of window error to understand the nature of the error better.';
+			};
+			reason: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'The reason of the window error to understand the nature of the error better.';
+			};
+			code: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'The exit code of the window process to understand the nature of the error better';
+			};
 			owner: 'bpasero';
 			comment: 'Provides insight into reasons the vscode window had an error.';
 		};
@@ -845,14 +1076,13 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		this.telemetryService.publicLog2<WindowErrorEvent, WindowErrorClassification>('windowerror', {
 			type,
 			reason: details?.reason,
-			code: details?.exitCode
+			code: details?.exitCode,
 		});
 
 		// Inform User if non-recoverable
 		switch (type) {
 			case WindowError.UNRESPONSIVE:
 			case WindowError.PROCESS_GONE:
-
 				// If we run extension tests from CLI, we want to signal
 				// back this state to the test runner by exiting with a
 				// non-zero exit code.
@@ -872,7 +1102,11 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 				// Unresponsive
 				if (type === WindowError.UNRESPONSIVE) {
-					if (this.isExtensionDevelopmentHost || this.isExtensionTestHost || (this._win && this._win.webContents && this._win.webContents.isDevToolsOpened())) {
+					if (
+						this.isExtensionDevelopmentHost ||
+						this.isExtensionTestHost ||
+						(this._win && this._win.webContents && this._win.webContents.isDevToolsOpened())
+					) {
 						// TODO@electron Workaround for https://github.com/microsoft/vscode/issues/56994
 						// In certain cases the window can report unresponsiveness because a breakpoint was hit
 						// and the process is stopped executing. The most typical cases are:
@@ -891,17 +1125,25 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 					this.jsCallStackCollectorStopScheduler.schedule();
 
 					// Show Dialog
-					const { response, checkboxChecked } = await this.dialogMainService.showMessageBox({
-						type: 'warning',
-						buttons: [
-							localize({ key: 'reopen', comment: ['&& denotes a mnemonic'] }, "&&Reopen"),
-							localize({ key: 'close', comment: ['&& denotes a mnemonic'] }, "&&Close"),
-							localize({ key: 'wait', comment: ['&& denotes a mnemonic'] }, "&&Keep Waiting")
-						],
-						message: localize('appStalled', "The window is not responding"),
-						detail: localize('appStalledDetail', "You can reopen or close the window or keep waiting."),
-						checkboxLabel: this._config?.workspace ? localize('doNotRestoreEditors', "Don't restore editors") : undefined
-					}, this._win);
+					const { response, checkboxChecked } = await this.dialogMainService.showMessageBox(
+						{
+							type: 'warning',
+							buttons: [
+								localize({ key: 'reopen', comment: ['&& denotes a mnemonic'] }, '&&Reopen'),
+								localize({ key: 'close', comment: ['&& denotes a mnemonic'] }, '&&Close'),
+								localize({ key: 'wait', comment: ['&& denotes a mnemonic'] }, '&&Keep Waiting'),
+							],
+							message: localize('appStalled', 'The window is not responding'),
+							detail: localize(
+								'appStalledDetail',
+								'You can reopen or close the window or keep waiting.'
+							),
+							checkboxLabel: this._config?.workspace
+								? localize('doNotRestoreEditors', "Don't restore editors")
+								: undefined,
+						},
+						this._win
+					);
 
 					// Handle choice
 					if (response !== 2 /* keep waiting */) {
@@ -915,24 +1157,45 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				else if (type === WindowError.PROCESS_GONE) {
 					let message: string;
 					if (!details) {
-						message = localize('appGone', "The window terminated unexpectedly");
+						message = localize('appGone', 'The window terminated unexpectedly');
 					} else {
-						message = localize('appGoneDetails', "The window terminated unexpectedly (reason: '{0}', code: '{1}')", details.reason, details.exitCode ?? '<unknown>');
+						message = localize(
+							'appGoneDetails',
+							"The window terminated unexpectedly (reason: '{0}', code: '{1}')",
+							details.reason,
+							details.exitCode ?? '<unknown>'
+						);
 					}
 
 					// Show Dialog
-					const { response, checkboxChecked } = await this.dialogMainService.showMessageBox({
-						type: 'warning',
-						buttons: [
-							this._config?.workspace ? localize({ key: 'reopen', comment: ['&& denotes a mnemonic'] }, "&&Reopen") : localize({ key: 'newWindow', comment: ['&& denotes a mnemonic'] }, "&&New Window"),
-							localize({ key: 'close', comment: ['&& denotes a mnemonic'] }, "&&Close")
-						],
-						message,
-						detail: this._config?.workspace ?
-							localize('appGoneDetailWorkspace', "We are sorry for the inconvenience. You can reopen the window to continue where you left off.") :
-							localize('appGoneDetailEmptyWindow', "We are sorry for the inconvenience. You can open a new empty window to start again."),
-						checkboxLabel: this._config?.workspace ? localize('doNotRestoreEditors', "Don't restore editors") : undefined
-					}, this._win);
+					const { response, checkboxChecked } = await this.dialogMainService.showMessageBox(
+						{
+							type: 'warning',
+							buttons: [
+								this._config?.workspace
+									? localize({ key: 'reopen', comment: ['&& denotes a mnemonic'] }, '&&Reopen')
+									: localize(
+											{ key: 'newWindow', comment: ['&& denotes a mnemonic'] },
+											'&&New Window'
+										),
+								localize({ key: 'close', comment: ['&& denotes a mnemonic'] }, '&&Close'),
+							],
+							message,
+							detail: this._config?.workspace
+								? localize(
+										'appGoneDetailWorkspace',
+										'We are sorry for the inconvenience. You can reopen the window to continue where you left off.'
+									)
+								: localize(
+										'appGoneDetailEmptyWindow',
+										'We are sorry for the inconvenience. You can open a new empty window to start again.'
+									),
+							checkboxLabel: this._config?.workspace
+								? localize('doNotRestoreEditors', "Don't restore editors")
+								: undefined,
+						},
+						this._win
+					);
 
 					// Handle choice
 					const reopen = response === 0;
@@ -966,7 +1229,6 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		try {
 			// ask the windows service to open a new fresh window if specified
 			if (reopen && this._config) {
-
 				// We have to reconstruct a openable from the current workspace
 				let uriToOpen: IWorkspaceToOpen | IFolderToOpen | undefined = undefined;
 				let forceEmpty = undefined;
@@ -979,18 +1241,20 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				}
 
 				// Delegate to windows service
-				const window = (await this.windowsMainService.open({
-					context: OpenContext.API,
-					userEnv: this._config.userEnv,
-					cli: {
-						...this.environmentMainService.args,
-						_: [] // we pass in the workspace to open explicitly via `urisToOpen`
-					},
-					urisToOpen: uriToOpen ? [uriToOpen] : undefined,
-					forceEmpty,
-					forceNewWindow: true,
-					remoteAuthority: this.remoteAuthority
-				})).at(0);
+				const window = (
+					await this.windowsMainService.open({
+						context: OpenContext.API,
+						userEnv: this._config.userEnv,
+						cli: {
+							...this.environmentMainService.args,
+							_: [], // we pass in the workspace to open explicitly via `urisToOpen`
+						},
+						urisToOpen: uriToOpen ? [uriToOpen] : undefined,
+						forceEmpty,
+						forceNewWindow: true,
+						remoteAuthority: this.remoteAuthority,
+					})
+				).at(0);
 				window?.focus();
 			}
 		} finally {
@@ -1002,7 +1266,6 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	}
 
 	private onDidDeleteUntitledWorkspace(workspace: IWorkspaceIdentifier): void {
-
 		// Make sure to update our workspace config if we detect that it
 		// was deleted
 		if (this._config?.workspace?.id === workspace.id) {
@@ -1011,7 +1274,6 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	}
 
 	private onConfigurationUpdated(e?: IConfigurationChangeEvent): void {
-
 		// Menubar
 		if (!e || e.affectsConfiguration(MenuSettings.MenuBarVisibility)) {
 			const newMenuBarVisibility = this.getMenuBarVisibility();
@@ -1024,25 +1286,38 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// Proxy
 		if (!e || e.affectsConfiguration('http.proxy') || e.affectsConfiguration('http.noProxy')) {
 			const inspect = this.configurationService.inspect<string>('http.proxy');
-			let newHttpProxy = (inspect.userLocalValue || '').trim()
-				|| (process.env['https_proxy'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['HTTP_PROXY'] || '').trim() // Not standardized.
-				|| undefined;
+			let newHttpProxy =
+				(inspect.userLocalValue || '').trim() ||
+				(
+					process.env['https_proxy'] ||
+					process.env['HTTPS_PROXY'] ||
+					process.env['http_proxy'] ||
+					process.env['HTTP_PROXY'] ||
+					''
+				).trim() || // Not standardized.
+				undefined;
 
 			if (newHttpProxy?.indexOf('@') !== -1) {
 				const uri = URI.parse(newHttpProxy!);
 				const i = uri.authority.indexOf('@');
 				if (i !== -1) {
-					newHttpProxy = uri.with({ authority: uri.authority.substring(i + 1) })
-						.toString();
+					newHttpProxy = uri.with({ authority: uri.authority.substring(i + 1) }).toString();
 				}
 			}
 			if (newHttpProxy?.endsWith('/')) {
 				newHttpProxy = newHttpProxy.substr(0, newHttpProxy.length - 1);
 			}
 
-			const newNoProxy = (this.configurationService.getValue<string[]>('http.noProxy') || []).map((item) => item.trim()).join(',')
-				|| (process.env['no_proxy'] || process.env['NO_PROXY'] || '').trim() || undefined; // Not standardized.
-			if ((newHttpProxy || '').indexOf('@') === -1 && (newHttpProxy !== this.currentHttpProxy || newNoProxy !== this.currentNoProxy)) {
+			const newNoProxy =
+				(this.configurationService.getValue<string[]>('http.noProxy') || [])
+					.map(item => item.trim())
+					.join(',') ||
+				(process.env['no_proxy'] || process.env['NO_PROXY'] || '').trim() ||
+				undefined; // Not standardized.
+			if (
+				(newHttpProxy || '').indexOf('@') === -1 &&
+				(newHttpProxy !== this.currentHttpProxy || newNoProxy !== this.currentNoProxy)
+			) {
 				this.currentHttpProxy = newHttpProxy;
 				this.currentNoProxy = newNoProxy;
 
@@ -1061,7 +1336,10 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		}
 	}
 
-	load(configuration: INativeWindowConfiguration, options: ILoadOptions = Object.create(null)): void {
+	load(
+		configuration: INativeWindowConfiguration,
+		options: ILoadOptions = Object.create(null)
+	): void {
 		this.logService.trace(`window#load: attempt to load window (id: ${this._id})`);
 
 		// Clear Document Edited if needed
@@ -1102,7 +1380,11 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		this.readyState = ReadyState.NAVIGATING;
 
 		// Load URL
-		this._win.loadURL(FileAccess.asBrowserUri(`vs/code/electron-sandbox/workbench/workbench${this.environmentMainService.isBuilt ? '' : '-dev'}.html`).toString(true));
+		this._win.loadURL(
+			FileAccess.asBrowserUri(
+				`vs/code/electron-sandbox/workbench/workbench${this.environmentMainService.isBuilt ? '' : '-dev'}.html`
+			).toString(true)
+		);
 
 		// Remember that we did load
 		const wasLoaded = this.wasLoaded;
@@ -1110,22 +1392,36 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 		// Make window visible if it did not open in N seconds because this indicates an error
 		// Only do this when running out of sources and not when running tests
-		if (!this.environmentMainService.isBuilt && !this.environmentMainService.extensionTestsLocationURI) {
-			this._register(new RunOnceScheduler(() => {
-				if (this._win && !this._win.isVisible() && !this._win.isMinimized()) {
-					this._win.show();
-					this.focus({ mode: FocusMode.Force });
-					this._win.webContents.openDevTools();
-				}
-			}, 10000)).schedule();
+		if (
+			!this.environmentMainService.isBuilt &&
+			!this.environmentMainService.extensionTestsLocationURI
+		) {
+			this._register(
+				new RunOnceScheduler(() => {
+					if (this._win && !this._win.isVisible() && !this._win.isMinimized()) {
+						this._win.show();
+						this.focus({ mode: FocusMode.Force });
+						this._win.webContents.openDevTools();
+					}
+				}, 10000)
+			).schedule();
 		}
 
 		// Event
-		this._onWillLoad.fire({ workspace: configuration.workspace, reason: options.isReload ? LoadReason.RELOAD : wasLoaded ? LoadReason.LOAD : LoadReason.INITIAL });
+		this._onWillLoad.fire({
+			workspace: configuration.workspace,
+			reason: options.isReload
+				? LoadReason.RELOAD
+				: wasLoaded
+					? LoadReason.LOAD
+					: LoadReason.INITIAL,
+		});
 	}
 
-	private updateConfiguration(configuration: INativeWindowConfiguration, options: ILoadOptions): void {
-
+	private updateConfiguration(
+		configuration: INativeWindowConfiguration,
+		options: ILoadOptions
+	): void {
 		// If this window was loaded before from the command line
 		// (as indicated by VSCODE_CLI environment), make sure to
 		// preserve that user environment in subsequent loads,
@@ -1136,7 +1432,8 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// (for https://github.com/microsoft/vscode/issues/123508)
 		const currentUserEnv = (this._config ?? this.pendingLoadConfig)?.userEnv;
 		if (currentUserEnv) {
-			const shouldPreserveLaunchCliEnvironment = isLaunchedFromCli(currentUserEnv) && !isLaunchedFromCli(configuration.userEnv);
+			const shouldPreserveLaunchCliEnvironment =
+				isLaunchedFromCli(currentUserEnv) && !isLaunchedFromCli(configuration.userEnv);
 			const shouldPreserveDebugEnvironmnet = this.isExtensionDevelopmentHost;
 			if (shouldPreserveLaunchCliEnvironment || shouldPreserveDebugEnvironmnet) {
 				configuration.userEnv = { ...currentUserEnv, ...configuration.userEnv }; // still allow to override certain environment as passed in
@@ -1148,7 +1445,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// Ref: https://github.com/microsoft/vscode/issues/115874
 		if (process.env['CHROME_CRASHPAD_PIPE_NAME']) {
 			Object.assign(configuration.userEnv, {
-				CHROME_CRASHPAD_PIPE_NAME: process.env['CHROME_CRASHPAD_PIPE_NAME']
+				CHROME_CRASHPAD_PIPE_NAME: process.env['CHROME_CRASHPAD_PIPE_NAME'],
 			});
 		}
 
@@ -1182,7 +1479,6 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	}
 
 	async reload(cli?: NativeParsedArgs): Promise<void> {
-
 		// Copy our current config for reuse
 		const configuration = Object.assign({}, this._config);
 
@@ -1213,7 +1509,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		configuration.profiles = {
 			all: this.userDataProfilesService.profiles,
 			profile: this.profile || this.userDataProfilesService.defaultProfile,
-			home: this.userDataProfilesService.profilesHome
+			home: this.userDataProfilesService.profilesHome,
 		};
 		configuration.logLevel = this.loggerMainService.getLogLevel();
 		configuration.loggers = this.loggerMainService.getGlobalLoggers();
@@ -1222,8 +1518,9 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		this.load(configuration, { isReload: true, disableExtensions: cli?.['disable-extensions'] });
 	}
 
-	private async validateWorkspaceBeforeReload(configuration: INativeWindowConfiguration): Promise<IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | undefined> {
-
+	private async validateWorkspaceBeforeReload(
+		configuration: INativeWindowConfiguration
+	): Promise<IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | undefined> {
 		// Multi folder
 		if (isWorkspaceIdentifier(configuration.workspace)) {
 			const configPath = configuration.workspace.configPath;
@@ -1281,7 +1578,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				height: this.windowState.height || defaultState.height,
 				x: this.windowState.x || 0,
 				y: this.windowState.y || 0,
-				zoomLevel: this.customZoomLevel
+				zoomLevel: this.customZoomLevel,
 			};
 		}
 
@@ -1322,12 +1619,13 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		return state;
 	}
 
-	private restoreWindowState(state?: IWindowState): [IWindowState, boolean? /* has multiple displays */] {
+	private restoreWindowState(
+		state?: IWindowState
+	): [IWindowState, boolean? /* has multiple displays */] {
 		mark('code/willRestoreCodeWindowState');
 
 		let hasMultipleDisplays = false;
 		if (state) {
-
 			// Window zoom
 			this.customZoomLevel = state.zoomLevel;
 
@@ -1358,7 +1656,10 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		super.setFullScreen(fullscreen, fromRestore);
 
 		// Events
-		this.sendWhenReady(fullscreen ? 'vscode:enterFullScreen' : 'vscode:leaveFullScreen', CancellationToken.None);
+		this.sendWhenReady(
+			fullscreen ? 'vscode:enterFullScreen' : 'vscode:leaveFullScreen',
+			CancellationToken.None
+		);
 
 		// Respect configured menu bar visibility or default to toggle if not set
 		if (this.currentMenuBarVisibility) {
@@ -1382,7 +1683,10 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 		if (visibility === 'toggle') {
 			if (notify) {
-				this.send('vscode:showInfoMessage', localize('hiddenMenuBar', "You can still access the menu bar by pressing the Alt-key."));
+				this.send(
+					'vscode:showInfoMessage',
+					localize('hiddenMenuBar', 'You can still access the menu bar by pressing the Alt-key.')
+				);
 			}
 		}
 
@@ -1404,22 +1708,22 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		const isFullscreen = this.isFullScreen;
 
 		switch (visibility) {
-			case ('classic'):
+			case 'classic':
 				this._win.setMenuBarVisibility(!isFullscreen);
 				this._win.autoHideMenuBar = isFullscreen;
 				break;
 
-			case ('visible'):
+			case 'visible':
 				this._win.setMenuBarVisibility(true);
 				this._win.autoHideMenuBar = false;
 				break;
 
-			case ('toggle'):
+			case 'toggle':
 				this._win.setMenuBarVisibility(false);
 				this._win.autoHideMenuBar = true;
 				break;
 
-			case ('hidden'):
+			case 'hidden':
 				this._win.setMenuBarVisibility(false);
 				this._win.autoHideMenuBar = false;
 				break;
@@ -1435,7 +1739,9 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			return this.customZoomLevel;
 		}
 
-		const windowSettings = this.configurationService.getValue<IWindowSettings | undefined>('window');
+		const windowSettings = this.configurationService.getValue<IWindowSettings | undefined>(
+			'window'
+		);
 		return windowSettings?.zoomLevel;
 	}
 
@@ -1458,14 +1764,18 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	send(channel: string, ...args: any[]): void {
 		if (this._win) {
 			if (this._win.isDestroyed() || this._win.webContents.isDestroyed()) {
-				this.logService.warn(`Sending IPC message to channel '${channel}' for window that is destroyed`);
+				this.logService.warn(
+					`Sending IPC message to channel '${channel}' for window that is destroyed`
+				);
 				return;
 			}
 
 			try {
 				this._win.webContents.send(channel, ...args);
 			} catch (error) {
-				this.logService.warn(`Error sending IPC message to channel '${channel}' of window ${this._id}: ${toErrorMessage(error)}`);
+				this.logService.warn(
+					`Error sending IPC message to channel '${channel}' of window ${this._id}: ${toErrorMessage(error)}`
+				);
 			}
 		}
 	}
@@ -1499,8 +1809,9 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		this._win.setTouchBar(new electron.TouchBar({ items: this.touchBarGroups }));
 	}
 
-	private createTouchBarGroup(items: ISerializableCommandAction[] = []): electron.TouchBarSegmentedControl {
-
+	private createTouchBarGroup(
+		items: ISerializableCommandAction[] = []
+	): electron.TouchBarSegmentedControl {
 		// Group Segments
 		const segments = this.createTouchBarGroupSegments(items);
 
@@ -1509,18 +1820,27 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			segments,
 			mode: 'buttons',
 			segmentStyle: 'automatic',
-			change: (selectedIndex) => {
-				this.sendWhenReady('vscode:runAction', CancellationToken.None, { id: (control.segments[selectedIndex] as ITouchBarSegment).id, from: 'touchbar' });
-			}
+			change: selectedIndex => {
+				this.sendWhenReady('vscode:runAction', CancellationToken.None, {
+					id: (control.segments[selectedIndex] as ITouchBarSegment).id,
+					from: 'touchbar',
+				});
+			},
 		});
 
 		return control;
 	}
 
-	private createTouchBarGroupSegments(items: ISerializableCommandAction[] = []): ITouchBarSegment[] {
+	private createTouchBarGroupSegments(
+		items: ISerializableCommandAction[] = []
+	): ITouchBarSegment[] {
 		const segments: ITouchBarSegment[] = items.map(item => {
 			let icon: electron.NativeImage | undefined;
-			if (item.icon && !ThemeIcon.isThemeIcon(item.icon) && item.icon?.dark?.scheme === Schemas.file) {
+			if (
+				item.icon &&
+				!ThemeIcon.isThemeIcon(item.icon) &&
+				item.icon?.dark?.scheme === Schemas.file
+			) {
 				icon = electron.nativeImage.createFromPath(URI.revive(item.icon.dark).fsPath);
 				if (icon.isEmpty()) {
 					icon = undefined;
@@ -1537,7 +1857,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			return {
 				id: item.id,
 				label: !icon ? title : undefined,
-				icon
+				icon,
 			};
 		});
 
@@ -1566,22 +1886,26 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			let logMessage = `CodeWindow unresponsive samples:\n`;
 			let samples = 0;
 
-			const sortedEntries = Array.from(this.jsCallStackMap.entries())
-				.sort((a, b) => b[1] - a[1]);
+			const sortedEntries = Array.from(this.jsCallStackMap.entries()).sort((a, b) => b[1] - a[1]);
 
 			for (const [stack, count] of sortedEntries) {
 				samples += count;
 				// If the stack appears more than 20 percent of the time, log it
 				// to the error telemetry as UnresponsiveSampleError.
 				if (Math.round((count * 100) / this.jsCallStackEffectiveSampleCount) > 20) {
-					const fakeError = new UnresponsiveError(stack, this.id, this.win?.webContents.getOSProcessId());
+					const fakeError = new UnresponsiveError(
+						stack,
+						this.id,
+						this.win?.webContents.getOSProcessId()
+					);
 					errorHandler.onUnexpectedError(fakeError);
 				}
 				logMessage += `<${count}> ${stack}\n`;
 			}
 
 			logMessage += `Total Samples: ${samples}\n`;
-			logMessage += 'For full overview of the unresponsive period, capture cpu profile via https://aka.ms/vscode-tracing-cpu-profile';
+			logMessage +=
+				'For full overview of the unresponsive period, capture cpu profile via https://aka.ms/vscode-tracing-cpu-profile';
 			this.logService.error(logMessage);
 		}
 
@@ -1601,13 +1925,14 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 }
 
 class UnresponsiveError extends Error {
-
 	constructor(sample: string, windowId: number, pid: number = 0) {
 		// Since the stacks are available via the sample
 		// we can avoid collecting them when constructing the error.
 		const stackTraceLimit = Error.stackTraceLimit;
 		Error.stackTraceLimit = 0;
-		super(`UnresponsiveSampleError: from window with ID ${windowId} belonging to process with pid ${pid}`);
+		super(
+			`UnresponsiveSampleError: from window with ID ${windowId} belonging to process with pid ${pid}`
+		);
 		Error.stackTraceLimit = stackTraceLimit;
 		this.name = 'UnresponsiveSampleError';
 		this.stack = sample;

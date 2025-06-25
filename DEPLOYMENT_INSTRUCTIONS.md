@@ -30,6 +30,7 @@ git push -u origin aide-main
 ### 3. Publish NPM Packages
 
 #### Prerequisites
+
 - Ensure you're logged into npm: `npm whoami`
 - Verify @codai organization exists: `npm org ls codai`
 - If organization doesn't exist: `npm org create codai`
@@ -43,7 +44,7 @@ Run these commands in order:
 cd packages/memory-graph
 npm publish --access public
 
-# 2. Agent Runtime Package  
+# 2. Agent Runtime Package
 cd ../agent-runtime
 npm publish --access public
 
@@ -86,4 +87,4 @@ The AIDE to codai.ro transformation is technically complete with all development
 
 ---
 
-*Run the deployment steps above to complete the final 5% and make the project live!*
+_Run the deployment steps above to complete the final 5% and make the project live!_

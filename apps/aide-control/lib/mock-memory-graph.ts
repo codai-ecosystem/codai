@@ -49,7 +49,7 @@ export class MemoryGraphEngine {
 	async serialize(): Promise<any> {
 		return {
 			nodes: Array.from(this.nodes.values()),
-			edges: Array.from(this.edges.values())
+			edges: Array.from(this.edges.values()),
 		};
 	}
 

@@ -16,21 +16,22 @@ export interface WebviewIcons {
 }
 
 export class WebviewIconManager extends Disposable {
-
 	private readonly _icons = new Map<string, WebviewIcons>();
 
 	private _styleElement: HTMLStyleElement | undefined;
 
 	constructor(
 		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
+		@IConfigurationService private readonly _configService: IConfigurationService
 	) {
 		super();
-		this._register(this._configService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('workbench.iconTheme')) {
-				this.updateStyleSheet();
-			}
-		}));
+		this._register(
+			this._configService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('workbench.iconTheme')) {
+					this.updateStyleSheet();
+				}
+			})
+		);
 	}
 	override dispose() {
 		super.dispose();
@@ -45,10 +46,7 @@ export class WebviewIconManager extends Disposable {
 		return this._styleElement;
 	}
 
-	public setIcons(
-		webviewId: string,
-		iconPath: WebviewIcons | undefined,
-	) {
+	public setIcons(webviewId: string, iconPath: WebviewIcons | undefined) {
 		if (iconPath) {
 			this._icons.set(webviewId, iconPath);
 		} else {

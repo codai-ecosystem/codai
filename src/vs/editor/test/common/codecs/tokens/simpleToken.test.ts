@@ -6,13 +6,19 @@
 import assert from 'assert';
 import { Range } from '../../../../common/core/range.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { SpacingToken, SimpleToken, Space, Tab, VerticalTab } from '../../../../common/codecs/simpleCodec/tokens/index.js';
+import {
+	SpacingToken,
+	SimpleToken,
+	Space,
+	Tab,
+	VerticalTab,
+} from '../../../../common/codecs/simpleCodec/tokens/index.js';
 
 suite('SimpleToken', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	suite('• SpacingToken', () => {
-		test('• extends \'SimpleToken\'', () => {
+		test("• extends 'SimpleToken'", () => {
 			class TestClass extends SpacingToken {
 				public override get text(): string {
 					throw new Error('Method not implemented.');
@@ -24,43 +30,31 @@ suite('SimpleToken', () => {
 
 			const token = new TestClass(new Range(1, 1, 1, 1));
 
-			assert(
-				token instanceof SimpleToken,
-				'SpacingToken must extend SimpleToken.',
-			);
+			assert(token instanceof SimpleToken, 'SpacingToken must extend SimpleToken.');
 		});
 	});
 
 	suite('• Space', () => {
-		test('• extends \'SpacingToken\'', () => {
+		test("• extends 'SpacingToken'", () => {
 			const token = new Space(new Range(1, 1, 1, 2));
 
-			assert(
-				token instanceof SimpleToken,
-				'Space must extend SpacingToken.',
-			);
+			assert(token instanceof SimpleToken, 'Space must extend SpacingToken.');
 		});
 	});
 
 	suite('• Tab', () => {
-		test('• extends \'SpacingToken\'', () => {
+		test("• extends 'SpacingToken'", () => {
 			const token = new Tab(new Range(1, 1, 1, 2));
 
-			assert(
-				token instanceof SimpleToken,
-				'Tab must extend SpacingToken.',
-			);
+			assert(token instanceof SimpleToken, 'Tab must extend SpacingToken.');
 		});
 	});
 
 	suite('• VerticalTab', () => {
-		test('• extends \'SpacingToken\'', () => {
+		test("• extends 'SpacingToken'", () => {
 			const token = new VerticalTab(new Range(1, 1, 1, 2));
 
-			assert(
-				token instanceof SimpleToken,
-				'VerticalTab must extend SpacingToken.',
-			);
+			assert(token instanceof SimpleToken, 'VerticalTab must extend SpacingToken.');
 		});
 	});
 });

@@ -3,9 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IPickOptions, IInputOptions, IQuickInputService, IQuickInput, IQuickPick, IQuickPickItem } from '../../../platform/quickinput/common/quickInput.js';
-import { ExtHostContext, MainThreadQuickOpenShape, ExtHostQuickOpenShape, TransferQuickPickItem, MainContext, TransferQuickInput, TransferQuickInputButton, IInputBoxOptions, TransferQuickPickItemOrSeparator } from '../common/extHost.protocol.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
+import {
+	IPickOptions,
+	IInputOptions,
+	IQuickInputService,
+	IQuickInput,
+	IQuickPick,
+	IQuickPickItem,
+} from '../../../platform/quickinput/common/quickInput.js';
+import {
+	ExtHostContext,
+	MainThreadQuickOpenShape,
+	ExtHostQuickOpenShape,
+	TransferQuickPickItem,
+	MainContext,
+	TransferQuickInput,
+	TransferQuickInputButton,
+	IInputBoxOptions,
+	TransferQuickPickItemOrSeparator,
+} from '../common/extHost.protocol.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
 import { URI } from '../../../base/common/uri.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { DisposableStore } from '../../../base/common/lifecycle.js';
@@ -25,13 +45,15 @@ function reviveIconPathUris(iconPath: { dark: URI; light?: URI | undefined }) {
 
 @extHostNamedCustomer(MainContext.MainThreadQuickOpen)
 export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
-
 	private readonly _proxy: ExtHostQuickOpenShape;
 	private readonly _quickInputService: IQuickInputService;
-	private readonly _items: Record<number, {
-		resolve(items: TransferQuickPickItemOrSeparator[]): void;
-		reject(error: Error): void;
-	}> = {};
+	private readonly _items: Record<
+		number,
+		{
+			resolve(items: TransferQuickPickItemOrSeparator[]): void;
+			reject(error: Error): void;
+		}
+	> = {};
 
 	constructor(
 		extHostContext: IExtHostContext,
@@ -47,7 +69,11 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 		}
 	}
 
-	$show(instance: number, options: IPickOptions<TransferQuickPickItem>, token: CancellationToken): Promise<number | number[] | undefined> {
+	$show(
+		instance: number,
+		options: IPickOptions<TransferQuickPickItem>,
+		token: CancellationToken
+	): Promise<number | number[] | undefined> {
 		const contents = new Promise<TransferQuickPickItemOrSeparator[]>((resolve, reject) => {
 			this._items[instance] = { resolve, reject };
 		});
@@ -58,16 +84,18 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 				if (el) {
 					this._proxy.$onItemSelected((<TransferQuickPickItem>el).handle);
 				}
-			}
+			},
 		};
 
 		if (options.canPickMany) {
-			return this._quickInputService.pick(contents, options as { canPickMany: true }, token).then(items => {
-				if (items) {
-					return items.map(item => item.handle);
-				}
-				return undefined;
-			});
+			return this._quickInputService
+				.pick(contents, options as { canPickMany: true }, token)
+				.then(items => {
+					if (items) {
+						return items.map(item => item.handle);
+					}
+					return undefined;
+				});
 		} else {
 			return this._quickInputService.pick(contents, options, token).then(item => {
 				if (item) {
@@ -96,7 +124,11 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 
 	// ---- input
 
-	$input(options: IInputBoxOptions | undefined, validateInput: boolean, token: CancellationToken): Promise<string | undefined> {
+	$input(
+		options: IInputBoxOptions | undefined,
+		validateInput: boolean,
+		token: CancellationToken
+	): Promise<string | undefined> {
 		const inputOptions: IInputOptions = Object.create(null);
 
 		if (options) {
@@ -110,7 +142,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 		}
 
 		if (validateInput) {
-			inputOptions.validateInput = (value) => {
+			inputOptions.validateInput = value => {
 				return this._proxy.$validateInput(value);
 			};
 		}
@@ -127,39 +159,66 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 		let session = this.sessions.get(sessionId);
 		if (!session) {
 			const store = new DisposableStore();
-			const input = params.type === 'quickPick' ? this._quickInputService.createQuickPick() : this._quickInputService.createInputBox();
+			const input =
+				params.type === 'quickPick'
+					? this._quickInputService.createQuickPick()
+					: this._quickInputService.createInputBox();
 			store.add(input);
-			store.add(input.onDidAccept(() => {
-				this._proxy.$onDidAccept(sessionId);
-			}));
-			store.add(input.onDidTriggerButton(button => {
-				this._proxy.$onDidTriggerButton(sessionId, (button as TransferQuickInputButton).handle);
-			}));
-			store.add(input.onDidChangeValue(value => {
-				this._proxy.$onDidChangeValue(sessionId, value);
-			}));
-			store.add(input.onDidHide(() => {
-				this._proxy.$onDidHide(sessionId);
-			}));
+			store.add(
+				input.onDidAccept(() => {
+					this._proxy.$onDidAccept(sessionId);
+				})
+			);
+			store.add(
+				input.onDidTriggerButton(button => {
+					this._proxy.$onDidTriggerButton(sessionId, (button as TransferQuickInputButton).handle);
+				})
+			);
+			store.add(
+				input.onDidChangeValue(value => {
+					this._proxy.$onDidChangeValue(sessionId, value);
+				})
+			);
+			store.add(
+				input.onDidHide(() => {
+					this._proxy.$onDidHide(sessionId);
+				})
+			);
 
 			if (params.type === 'quickPick') {
 				// Add extra events specific for quickpick
 				const quickpick = input as IQuickPick<IQuickPickItem>;
-				store.add(quickpick.onDidChangeActive(items => {
-					this._proxy.$onDidChangeActive(sessionId, items.map(item => (item as TransferQuickPickItem).handle));
-				}));
-				store.add(quickpick.onDidChangeSelection(items => {
-					this._proxy.$onDidChangeSelection(sessionId, items.map(item => (item as TransferQuickPickItem).handle));
-				}));
-				store.add(quickpick.onDidTriggerItemButton((e) => {
-					this._proxy.$onDidTriggerItemButton(sessionId, (e.item as TransferQuickPickItem).handle, (e.button as TransferQuickInputButton).handle);
-				}));
+				store.add(
+					quickpick.onDidChangeActive(items => {
+						this._proxy.$onDidChangeActive(
+							sessionId,
+							items.map(item => (item as TransferQuickPickItem).handle)
+						);
+					})
+				);
+				store.add(
+					quickpick.onDidChangeSelection(items => {
+						this._proxy.$onDidChangeSelection(
+							sessionId,
+							items.map(item => (item as TransferQuickPickItem).handle)
+						);
+					})
+				);
+				store.add(
+					quickpick.onDidTriggerItemButton(e => {
+						this._proxy.$onDidTriggerItemButton(
+							sessionId,
+							(e.item as TransferQuickPickItem).handle,
+							(e.button as TransferQuickInputButton).handle
+						);
+					})
+				);
 			}
 
 			session = {
 				input,
 				handlesToItems: new Map(),
-				store
+				store,
 			};
 			this.sessions.set(sessionId, session);
 		}

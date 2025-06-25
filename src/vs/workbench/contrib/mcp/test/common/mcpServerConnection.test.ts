@@ -12,14 +12,28 @@ import { URI } from '../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
-import { ILogger, ILoggerService, LogLevel, NullLogger } from '../../../../../platform/log/common/log.js';
+import {
+	ILogger,
+	ILoggerService,
+	LogLevel,
+	NullLogger,
+} from '../../../../../platform/log/common/log.js';
 import { IProductService } from '../../../../../platform/product/common/productService.js';
 import { IStorageService, StorageScope } from '../../../../../platform/storage/common/storage.js';
 import { IOutputService } from '../../../../services/output/common/output.js';
-import { TestLoggerService, TestProductService, TestStorageService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	TestLoggerService,
+	TestProductService,
+	TestStorageService,
+} from '../../../../test/common/workbenchTestServices.js';
 import { IMcpHostDelegate, IMcpMessageTransport } from '../../common/mcpRegistryTypes.js';
 import { McpServerConnection } from '../../common/mcpServerConnection.js';
-import { McpCollectionDefinition, McpConnectionState, McpServerDefinition, McpServerTransportType } from '../../common/mcpTypes.js';
+import {
+	McpCollectionDefinition,
+	McpConnectionState,
+	McpServerDefinition,
+	McpServerTransportType,
+} from '../../common/mcpTypes.js';
 import { TestMcpMessageTransport } from './mcpRegistryTypes.js';
 
 class TestMcpHostDelegate extends Disposable implements IMcpHostDelegate {
@@ -73,9 +87,9 @@ suite('Workbench - MCP - ServerConnection', () => {
 		// Setup test services
 		const services = new ServiceCollection(
 			[ILoggerService, store.add(new TestLoggerService())],
-			[IOutputService, upcast({ showChannel: () => { } })],
+			[IOutputService, upcast({ showChannel: () => {} })],
 			[IStorageService, store.add(new TestStorageService())],
-			[IProductService, TestProductService],
+			[IProductService, TestProductService]
 		);
 
 		instantiationService = store.add(new TestInstantiationService(services));
@@ -87,7 +101,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 			remoteAuthority: null,
 			serverDefinitions: observableValue('serverDefs', []),
 			isTrustedByDefault: true,
-			scope: StorageScope.APPLICATION
+			scope: StorageScope.APPLICATION,
 		};
 
 		// Create server definition
@@ -100,8 +114,8 @@ suite('Workbench - MCP - ServerConnection', () => {
 				args: [],
 				env: {},
 				envFile: undefined,
-				cwd: URI.parse('file:///test')
-			}
+				cwd: URI.parse('file:///test'),
+			},
 		};
 	});
 
@@ -130,7 +144,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 			serverDefinition,
 			delegate,
 			serverDefinition.launch,
-			new NullLogger(),
+			new NullLogger()
 		);
 		store.add(connection);
 
@@ -158,7 +172,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 			serverDefinition,
 			delegate,
 			serverDefinition.launch,
-			new NullLogger(),
+			new NullLogger()
 		);
 		store.add(connection);
 
@@ -177,7 +191,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 			serverDefinition,
 			delegate,
 			serverDefinition.launch,
-			new NullLogger(),
+			new NullLogger()
 		);
 		store.add(connection);
 
@@ -187,7 +201,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 		// Simulate error in transport
 		transport.setConnectionState({
 			state: McpConnectionState.Kind.Error,
-			message: 'Test error message'
+			message: 'Test error message',
 		});
 
 		const state = await startPromise;
@@ -203,7 +217,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 			serverDefinition,
 			delegate,
 			serverDefinition.launch,
-			new NullLogger(),
+			new NullLogger()
 		);
 		store.add(connection);
 
@@ -227,7 +241,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 			serverDefinition,
 			delegate,
 			serverDefinition.launch,
-			new NullLogger(),
+			new NullLogger()
 		);
 		store.add(connection);
 
@@ -261,7 +275,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 			serverDefinition,
 			delegate,
 			serverDefinition.launch,
-			new NullLogger(),
+			new NullLogger()
 		);
 
 		// Start the connection
@@ -291,9 +305,9 @@ suite('Workbench - MCP - ServerConnection', () => {
 				info: (message: string) => {
 					loggedMessages.push(message);
 				},
-				error: () => { },
-				dispose: () => { }
-			} as Partial<ILogger> as ILogger,
+				error: () => {},
+				dispose: () => {},
+			} as Partial<ILogger> as ILogger
 		);
 		store.add(connection);
 
@@ -322,7 +336,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 			serverDefinition,
 			delegate,
 			serverDefinition.launch,
-			new NullLogger(),
+			new NullLogger()
 		);
 		store.add(connection);
 
@@ -332,13 +346,12 @@ suite('Workbench - MCP - ServerConnection', () => {
 		// Transition to error state
 		const errorState: McpConnectionState = {
 			state: McpConnectionState.Kind.Error,
-			message: 'Temporary error'
+			message: 'Temporary error',
 		};
 		transport.setConnectionState(errorState);
 
 		let state = await startPromise;
 		assert.equal(state, errorState);
-
 
 		transport.setConnectionState({ state: McpConnectionState.Kind.Stopped });
 
@@ -360,7 +373,7 @@ suite('Workbench - MCP - ServerConnection', () => {
 			serverDefinition,
 			delegate,
 			serverDefinition.launch,
-			new NullLogger(),
+			new NullLogger()
 		);
 		store.add(connection);
 

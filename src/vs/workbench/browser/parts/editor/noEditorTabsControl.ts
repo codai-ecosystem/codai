@@ -16,7 +16,7 @@ export class NoEditorTabsControl extends EditorTabsControl {
 	protected prepareEditorActions(editorActions: IToolbarActions): IToolbarActions {
 		return {
 			primary: [],
-			secondary: []
+			secondary: [],
 		};
 	}
 
@@ -36,16 +36,17 @@ export class NoEditorTabsControl extends EditorTabsControl {
 
 	private activeEditorChanged(): boolean {
 		if (
-			!this.activeEditor && this.tabsModel.activeEditor || 				// active editor changed from null => editor
-			this.activeEditor && !this.tabsModel.activeEditor || 				// active editor changed from editor => null
-			(!this.activeEditor || !this.tabsModel.isActive(this.activeEditor))	// active editor changed from editorA => editorB
+			(!this.activeEditor && this.tabsModel.activeEditor) || // active editor changed from null => editor
+			(this.activeEditor && !this.tabsModel.activeEditor) || // active editor changed from editor => null
+			!this.activeEditor ||
+			!this.tabsModel.isActive(this.activeEditor) // active editor changed from editorA => editorB
 		) {
 			return true;
 		}
 		return false;
 	}
 
-	beforeCloseEditor(editor: EditorInput): void { }
+	beforeCloseEditor(editor: EditorInput): void {}
 
 	closeEditor(editor: EditorInput): void {
 		this.handleClosedEditors();
@@ -59,21 +60,21 @@ export class NoEditorTabsControl extends EditorTabsControl {
 		this.activeEditor = this.tabsModel.activeEditor;
 	}
 
-	moveEditor(editor: EditorInput, fromIndex: number, targetIndex: number): void { }
+	moveEditor(editor: EditorInput, fromIndex: number, targetIndex: number): void {}
 
-	pinEditor(editor: EditorInput): void { }
+	pinEditor(editor: EditorInput): void {}
 
-	stickEditor(editor: EditorInput): void { }
+	stickEditor(editor: EditorInput): void {}
 
-	unstickEditor(editor: EditorInput): void { }
+	unstickEditor(editor: EditorInput): void {}
 
-	setActive(isActive: boolean): void { }
+	setActive(isActive: boolean): void {}
 
-	updateEditorSelections(): void { }
+	updateEditorSelections(): void {}
 
-	updateEditorLabel(editor: EditorInput): void { }
+	updateEditorLabel(editor: EditorInput): void {}
 
-	updateEditorDirty(editor: EditorInput): void { }
+	updateEditorDirty(editor: EditorInput): void {}
 
 	getHeight(): number {
 		return 0;

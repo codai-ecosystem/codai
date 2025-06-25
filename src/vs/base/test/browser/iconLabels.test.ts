@@ -9,7 +9,6 @@ import { renderLabelWithIcons } from '../../browser/ui/iconLabel/iconLabels.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../common/utils.js';
 
 suite('renderLabelWithIcons', () => {
-
 	test('no icons', () => {
 		const result = renderLabelWithIcons(' hello World .');
 
@@ -25,13 +24,19 @@ suite('renderLabelWithIcons', () => {
 	test('icon and non-icon strings', () => {
 		const result = renderLabelWithIcons(` $(alert) Unresponsive`);
 
-		assert.strictEqual(elementsToString(result), ' <span class="codicon codicon-alert"></span> Unresponsive');
+		assert.strictEqual(
+			elementsToString(result),
+			' <span class="codicon codicon-alert"></span> Unresponsive'
+		);
 	});
 
 	test('multiple icons', () => {
 		const result = renderLabelWithIcons('$(check)$(error)');
 
-		assert.strictEqual(elementsToString(result), '<span class="codicon codicon-check"></span><span class="codicon codicon-error"></span>');
+		assert.strictEqual(
+			elementsToString(result),
+			'<span class="codicon codicon-check"></span><span class="codicon codicon-error"></span>'
+		);
 	});
 
 	test('escaped icons', () => {
@@ -43,12 +48,15 @@ suite('renderLabelWithIcons', () => {
 	test('icon with animation', () => {
 		const result = renderLabelWithIcons('$(zip~anim)');
 
-		assert.strictEqual(elementsToString(result), '<span class="codicon codicon-zip codicon-modifier-anim"></span>');
+		assert.strictEqual(
+			elementsToString(result),
+			'<span class="codicon codicon-zip codicon-modifier-anim"></span>'
+		);
 	});
 
 	const elementsToString = (elements: Array<HTMLElement | string>): string => {
 		return elements
-			.map(elem => isHTMLElement(elem) ? elem.outerHTML : elem)
+			.map(elem => (isHTMLElement(elem) ? elem.outerHTML : elem))
 			.reduce((a, b) => a + b, '');
 	};
 

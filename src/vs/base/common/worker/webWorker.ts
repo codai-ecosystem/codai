@@ -28,7 +28,9 @@ export function logOnceWebWorkerWarning(err: any): void {
 	}
 	if (!webWorkerWarningLogged) {
 		webWorkerWarningLogged = true;
-		console.warn('Could not create web worker(s). Falling back to loading web worker code in main thread, which might cause UI freezes. Please see https://github.com/microsoft/monaco-editor#faq');
+		console.warn(
+			'Could not create web worker(s). Falling back to loading web worker code in main thread, which might cause UI freezes. Please see https://github.com/microsoft/monaco-editor#faq'
+		);
 	}
 	console.warn(err.message);
 }
@@ -38,7 +40,7 @@ const enum MessageType {
 	Reply,
 	SubscribeEvent,
 	Event,
-	UnsubscribeEvent
+	UnsubscribeEvent,
 }
 class RequestMessage {
 	public readonly type = MessageType.Request;
@@ -48,7 +50,7 @@ class RequestMessage {
 		public readonly channel: string,
 		public readonly method: string,
 		public readonly args: any[]
-	) { }
+	) {}
 }
 class ReplyMessage {
 	public readonly type = MessageType.Reply;
@@ -57,7 +59,7 @@ class ReplyMessage {
 		public readonly seq: string,
 		public readonly res: any,
 		public readonly err: any
-	) { }
+	) {}
 }
 class SubscribeEventMessage {
 	public readonly type = MessageType.SubscribeEvent;
@@ -67,7 +69,7 @@ class SubscribeEventMessage {
 		public readonly channel: string,
 		public readonly eventName: string,
 		public readonly arg: any
-	) { }
+	) {}
 }
 class EventMessage {
 	public readonly type = MessageType.Event;
@@ -75,16 +77,21 @@ class EventMessage {
 		public readonly vsWorker: number,
 		public readonly req: string,
 		public readonly event: any
-	) { }
+	) {}
 }
 class UnsubscribeEventMessage {
 	public readonly type = MessageType.UnsubscribeEvent;
 	constructor(
 		public readonly vsWorker: number,
 		public readonly req: string
-	) { }
+	) {}
 }
-export type Message = RequestMessage | ReplyMessage | SubscribeEventMessage | EventMessage | UnsubscribeEventMessage;
+export type Message =
+	| RequestMessage
+	| ReplyMessage
+	| SubscribeEventMessage
+	| EventMessage
+	| UnsubscribeEventMessage;
 
 interface IMessageReply {
 	resolve: (value?: any) => void;
@@ -98,7 +105,6 @@ interface IMessageHandler {
 }
 
 class WebWorkerProtocol {
-
 	private _workerId: number;
 	private _lastSentReq: number;
 	private _pendingReplies: { [req: string]: IMessageReply };
@@ -124,7 +130,7 @@ class WebWorkerProtocol {
 		return new Promise<any>((resolve, reject) => {
 			this._pendingReplies[req] = {
 				resolve: resolve,
-				reject: reject
+				reject: reject,
 			};
 			this._send(new RequestMessage(this._workerId, req, channel, method, args));
 		});
@@ -142,7 +148,7 @@ class WebWorkerProtocol {
 				this._pendingEmitters.delete(req!);
 				this._send(new UnsubscribeEventMessage(this._workerId, req!));
 				req = null;
-			}
+			},
 		});
 		return emitter.event;
 	}
@@ -157,17 +163,23 @@ class WebWorkerProtocol {
 		this._handleMessage(message);
 	}
 
-	public createProxyToRemoteChannel<T extends object>(channel: string, sendMessageBarrier?: () => Promise<void>): T {
+	public createProxyToRemoteChannel<T extends object>(
+		channel: string,
+		sendMessageBarrier?: () => Promise<void>
+	): T {
 		const handler = {
 			get: (target: any, name: PropertyKey) => {
 				if (typeof name === 'string' && !target[name]) {
-					if (propertyIsDynamicEvent(name)) { // onDynamic...
+					if (propertyIsDynamicEvent(name)) {
+						// onDynamic...
 						target[name] = (arg: any): Event<any> => {
 							return this.listen(channel, name, arg);
 						};
-					} else if (propertyIsEvent(name)) { // on...
+					} else if (propertyIsEvent(name)) {
+						// on...
 						target[name] = this.listen(channel, name, undefined);
-					} else if (name.charCodeAt(0) === CharCode.DollarSign) { // $...
+					} else if (name.charCodeAt(0) === CharCode.DollarSign) {
+						// $...
 						target[name] = async (...myArgs: any[]) => {
 							await sendMessageBarrier?.();
 							return this.sendMessage(channel, name, myArgs);
@@ -175,7 +187,7 @@ class WebWorkerProtocol {
 					}
 				}
 				return target[name];
-			}
+			},
 		};
 		return new Proxy(Object.create(null), handler);
 	}
@@ -221,21 +233,34 @@ class WebWorkerProtocol {
 
 	private _handleRequestMessage(requestMessage: RequestMessage): void {
 		const req = requestMessage.req;
-		const result = this._handler.handleMessage(requestMessage.channel, requestMessage.method, requestMessage.args);
-		result.then((r) => {
-			this._send(new ReplyMessage(this._workerId, req, r, undefined));
-		}, (e) => {
-			if (e.detail instanceof Error) {
-				// Loading errors have a detail property that points to the actual error
-				e.detail = transformErrorForSerialization(e.detail);
+		const result = this._handler.handleMessage(
+			requestMessage.channel,
+			requestMessage.method,
+			requestMessage.args
+		);
+		result.then(
+			r => {
+				this._send(new ReplyMessage(this._workerId, req, r, undefined));
+			},
+			e => {
+				if (e.detail instanceof Error) {
+					// Loading errors have a detail property that points to the actual error
+					e.detail = transformErrorForSerialization(e.detail);
+				}
+				this._send(
+					new ReplyMessage(this._workerId, req, undefined, transformErrorForSerialization(e))
+				);
 			}
-			this._send(new ReplyMessage(this._workerId, req, undefined, transformErrorForSerialization(e)));
-		});
+		);
 	}
 
 	private _handleSubscribeEventMessage(msg: SubscribeEventMessage): void {
 		const req = msg.req;
-		const disposable = this._handler.handleEvent(msg.channel, msg.eventName, msg.arg)((event) => {
+		const disposable = this._handler.handleEvent(
+			msg.channel,
+			msg.eventName,
+			msg.arg
+		)(event => {
 			this._send(new EventMessage(this._workerId, req, event));
 		});
 		this._pendingEvents.set(req, disposable);
@@ -275,15 +300,14 @@ class WebWorkerProtocol {
 	}
 }
 
-type ProxiedMethodName = (`$${string}` | `on${string}`);
+type ProxiedMethodName = `$${string}` | `on${string}`;
 
-export type Proxied<T> = { [K in keyof T]: T[K] extends (...args: infer A) => infer R
-	? (
-		K extends ProxiedMethodName
-		? (...args: A) => Promise<Awaited<R>>
-		: never
-	)
-	: never
+export type Proxied<T> = {
+	[K in keyof T]: T[K] extends (...args: infer A) => infer R
+		? K extends ProxiedMethodName
+			? (...args: A) => Promise<Awaited<R>>
+			: never
+		: never;
 };
 
 export interface IWebWorkerClient<TProxy> {
@@ -302,7 +326,6 @@ export interface IWebWorkerServer {
  * Main thread side
  */
 export class WebWorkerClient<W extends object> extends Disposable implements IWebWorkerClient<W> {
-
 	private readonly _worker: IWebWorker;
 	private readonly _onModuleLoaded: Promise<void>;
 	private readonly _protocol: WebWorkerProtocol;
@@ -310,19 +333,21 @@ export class WebWorkerClient<W extends object> extends Disposable implements IWe
 	private readonly _localChannels: Map<string, object> = new Map();
 	private readonly _remoteChannels: Map<string, object> = new Map();
 
-	constructor(
-		worker: IWebWorker
-	) {
+	constructor(worker: IWebWorker) {
 		super();
 
 		this._worker = worker;
-		this._register(this._worker.onMessage((msg) => {
-			this._protocol.handleMessage(msg);
-		}));
-		this._register(this._worker.onError((err) => {
-			logOnceWebWorkerWarning(err);
-			onUnexpectedError(err);
-		}));
+		this._register(
+			this._worker.onMessage(msg => {
+				this._protocol.handleMessage(msg);
+			})
+		);
+		this._register(
+			this._worker.onError(err => {
+				logOnceWebWorkerWarning(err);
+				onUnexpectedError(err);
+			})
+		);
 
 		this._protocol = new WebWorkerProtocol({
 			sendMessage: (msg: any, transfer: ArrayBuffer[]): void => {
@@ -333,7 +358,7 @@ export class WebWorkerClient<W extends object> extends Disposable implements IWe
 			},
 			handleEvent: (channel: string, eventName: string, arg: any): Event<any> => {
 				return this._handleEvent(channel, eventName, arg);
-			}
+			},
 		});
 		this._protocol.setWorkerId(this._worker.getId());
 
@@ -342,8 +367,10 @@ export class WebWorkerClient<W extends object> extends Disposable implements IWe
 			this._worker.getId(),
 		]);
 
-		this.proxy = this._protocol.createProxyToRemoteChannel(DEFAULT_CHANNEL, async () => { await this._onModuleLoaded; });
-		this._onModuleLoaded.catch((e) => {
+		this.proxy = this._protocol.createProxyToRemoteChannel(DEFAULT_CHANNEL, async () => {
+			await this._onModuleLoaded;
+		});
+		this._onModuleLoaded.catch(e => {
 			this._onError('Worker failed to load ', e);
 		});
 	}
@@ -354,7 +381,9 @@ export class WebWorkerClient<W extends object> extends Disposable implements IWe
 			return Promise.reject(new Error(`Missing channel ${channelName} on main thread`));
 		}
 		if (typeof (channel as any)[method] !== 'function') {
-			return Promise.reject(new Error(`Missing method ${method} on main thread channel ${channelName}`));
+			return Promise.reject(
+				new Error(`Missing method ${method} on main thread channel ${channelName}`)
+			);
 		}
 
 		try {
@@ -372,7 +401,9 @@ export class WebWorkerClient<W extends object> extends Disposable implements IWe
 		if (propertyIsDynamicEvent(eventName)) {
 			const event = (channel as any)[eventName].call(channel, arg);
 			if (typeof event !== 'function') {
-				throw new Error(`Missing dynamic event ${eventName} on main thread channel ${channelName}.`);
+				throw new Error(
+					`Missing dynamic event ${eventName} on main thread channel ${channelName}.`
+				);
 			}
 			return event;
 		}
@@ -392,7 +423,9 @@ export class WebWorkerClient<W extends object> extends Disposable implements IWe
 
 	public getChannel<T extends object>(channel: string): Proxied<T> {
 		if (!this._remoteChannels.has(channel)) {
-			const inst = this._protocol.createProxyToRemoteChannel(channel, async () => { await this._onModuleLoaded; });
+			const inst = this._protocol.createProxyToRemoteChannel(channel, async () => {
+				await this._onModuleLoaded;
+			});
 			this._remoteChannels.set(channel, inst);
 		}
 		return this._remoteChannels.get(channel) as Proxied<T>;
@@ -427,19 +460,23 @@ export interface IWebWorkerServerRequestHandlerFactory<T extends IWebWorkerServe
  * Worker side
  */
 export class WebWorkerServer<T extends IWebWorkerServerRequestHandler> implements IWebWorkerServer {
-
 	public readonly requestHandler: T;
 	private _protocol: WebWorkerProtocol;
 	private readonly _localChannels: Map<string, object> = new Map();
 	private readonly _remoteChannels: Map<string, object> = new Map();
 
-	constructor(postMessage: (msg: Message, transfer?: ArrayBuffer[]) => void, requestHandlerFactory: IWebWorkerServerRequestHandlerFactory<T>) {
+	constructor(
+		postMessage: (msg: Message, transfer?: ArrayBuffer[]) => void,
+		requestHandlerFactory: IWebWorkerServerRequestHandlerFactory<T>
+	) {
 		this._protocol = new WebWorkerProtocol({
 			sendMessage: (msg: any, transfer: ArrayBuffer[]): void => {
 				postMessage(msg, transfer);
 			},
-			handleMessage: (channel: string, method: string, args: any[]): Promise<any> => this._handleMessage(channel, method, args),
-			handleEvent: (channel: string, eventName: string, arg: any): Event<any> => this._handleEvent(channel, eventName, arg)
+			handleMessage: (channel: string, method: string, args: any[]): Promise<any> =>
+				this._handleMessage(channel, method, args),
+			handleEvent: (channel: string, eventName: string, arg: any): Event<any> =>
+				this._handleEvent(channel, eventName, arg),
 		});
 		this.requestHandler = requestHandlerFactory(this);
 	}
@@ -453,12 +490,15 @@ export class WebWorkerServer<T extends IWebWorkerServerRequestHandler> implement
 			return this.initialize(<number>args[0]);
 		}
 
-		const requestHandler: object | null | undefined = (channel === DEFAULT_CHANNEL ? this.requestHandler : this._localChannels.get(channel));
+		const requestHandler: object | null | undefined =
+			channel === DEFAULT_CHANNEL ? this.requestHandler : this._localChannels.get(channel);
 		if (!requestHandler) {
 			return Promise.reject(new Error(`Missing channel ${channel} on worker thread`));
 		}
 		if (typeof (requestHandler as any)[method] !== 'function') {
-			return Promise.reject(new Error(`Missing method ${method} on worker thread channel ${channel}`));
+			return Promise.reject(
+				new Error(`Missing method ${method} on worker thread channel ${channel}`)
+			);
 		}
 
 		try {
@@ -469,7 +509,8 @@ export class WebWorkerServer<T extends IWebWorkerServerRequestHandler> implement
 	}
 
 	private _handleEvent(channel: string, eventName: string, arg: any): Event<any> {
-		const requestHandler: object | null | undefined = (channel === DEFAULT_CHANNEL ? this.requestHandler : this._localChannels.get(channel));
+		const requestHandler: object | null | undefined =
+			channel === DEFAULT_CHANNEL ? this.requestHandler : this._localChannels.get(channel);
 		if (!requestHandler) {
 			throw new Error(`Missing channel ${channel} on worker thread`);
 		}

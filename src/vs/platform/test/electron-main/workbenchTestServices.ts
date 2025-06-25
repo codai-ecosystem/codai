@@ -7,12 +7,17 @@ import { Promises } from '../../../base/common/async.js';
 import { Event, Emitter } from '../../../base/common/event.js';
 import { IAuxiliaryWindow } from '../../auxiliaryWindow/electron-main/auxiliaryWindow.js';
 import { NativeParsedArgs } from '../../environment/common/argv.js';
-import { ILifecycleMainService, IRelaunchHandler, LifecycleMainPhase, ShutdownEvent, ShutdownReason } from '../../lifecycle/electron-main/lifecycleMainService.js';
+import {
+	ILifecycleMainService,
+	IRelaunchHandler,
+	LifecycleMainPhase,
+	ShutdownEvent,
+	ShutdownReason,
+} from '../../lifecycle/electron-main/lifecycleMainService.js';
 import { IStateService } from '../../state/node/state.js';
 import { ICodeWindow, UnloadReason } from '../../window/electron-main/window.js';
 
 export class TestLifecycleMainService implements ILifecycleMainService {
-
 	_serviceBrand: undefined;
 
 	onBeforeShutdown = Event.None;
@@ -27,7 +32,7 @@ export class TestLifecycleMainService implements ILifecycleMainService {
 			reason: ShutdownReason.QUIT,
 			join(id, promise) {
 				joiners.push(promise);
-			}
+			},
 		});
 
 		await Promises.settled(joiners);
@@ -41,19 +46,25 @@ export class TestLifecycleMainService implements ILifecycleMainService {
 
 	phase = LifecycleMainPhase.Ready;
 
-	registerWindow(window: ICodeWindow): void { }
-	registerAuxWindow(auxWindow: IAuxiliaryWindow): void { }
-	async reload(window: ICodeWindow, cli?: NativeParsedArgs): Promise<void> { }
-	async unload(window: ICodeWindow, reason: UnloadReason): Promise<boolean> { return true; }
-	setRelaunchHandler(handler: IRelaunchHandler): void { }
-	async relaunch(options?: { addArgs?: string[] | undefined; removeArgs?: string[] | undefined }): Promise<void> { }
-	async quit(willRestart?: boolean): Promise<boolean> { return true; }
-	async kill(code?: number): Promise<void> { }
-	async when(phase: LifecycleMainPhase): Promise<void> { }
+	registerWindow(window: ICodeWindow): void {}
+	registerAuxWindow(auxWindow: IAuxiliaryWindow): void {}
+	async reload(window: ICodeWindow, cli?: NativeParsedArgs): Promise<void> {}
+	async unload(window: ICodeWindow, reason: UnloadReason): Promise<boolean> {
+		return true;
+	}
+	setRelaunchHandler(handler: IRelaunchHandler): void {}
+	async relaunch(options?: {
+		addArgs?: string[] | undefined;
+		removeArgs?: string[] | undefined;
+	}): Promise<void> {}
+	async quit(willRestart?: boolean): Promise<boolean> {
+		return true;
+	}
+	async kill(code?: number): Promise<void> {}
+	async when(phase: LifecycleMainPhase): Promise<void> {}
 }
 
 export class InMemoryTestStateMainService implements IStateService {
-
 	_serviceBrand: undefined;
 
 	private readonly data = new Map<string, object | string | number | boolean | undefined | null>();
@@ -62,7 +73,9 @@ export class InMemoryTestStateMainService implements IStateService {
 		this.data.set(key, data);
 	}
 
-	setItems(items: readonly { key: string; data?: object | string | number | boolean | undefined | null }[]): void {
+	setItems(
+		items: readonly { key: string; data?: object | string | number | boolean | undefined | null }[]
+	): void {
 		for (const { key, data } of items) {
 			this.data.set(key, data);
 		}
@@ -76,5 +89,5 @@ export class InMemoryTestStateMainService implements IStateService {
 		this.data.delete(key);
 	}
 
-	async close(): Promise<void> { }
+	async close(): Promise<void> {}
 }

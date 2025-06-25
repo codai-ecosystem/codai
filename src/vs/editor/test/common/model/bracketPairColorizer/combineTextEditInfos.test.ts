@@ -9,7 +9,13 @@ import { Range } from '../../../../common/core/range.js';
 import { TextReplacement } from '../../../../common/core/edits/textEdit.js';
 import { TextEditInfo } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/beforeEditPositionMapper.js';
 import { combineTextEditInfos } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/combineTextEditInfos.js';
-import { lengthAdd, lengthToObj, lengthToPosition, positionToLength, toLength } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/length.js';
+import {
+	lengthAdd,
+	lengthToObj,
+	lengthToPosition,
+	positionToLength,
+	toLength,
+} from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/length.js';
 import { TextModel } from '../../../../common/model/textModel.js';
 import { Random } from '../../core/random.js';
 import { createTextModel } from '../../testTextModel.js';
@@ -40,15 +46,22 @@ function runTest(seed: number) {
 
 	const combinedEdits = combineTextEditInfos(edits1, edits2);
 	for (const edit of combinedEdits) {
-		const range = Range.fromPositions(lengthToPosition(edit.startOffset), lengthToPosition(lengthAdd(edit.startOffset, edit.newLength)));
+		const range = Range.fromPositions(
+			lengthToPosition(edit.startOffset),
+			lengthToPosition(lengthAdd(edit.startOffset, edit.newLength))
+		);
 		const value = textModelS2.getValueInRange(range);
 		if (!value.match(/^(L|C|\n)*$/)) {
 			throw new Error('Invalid edit: ' + value);
 		}
-		textModelS2.applyEdits([{
-			range,
-			text: textModelS0.getValueInRange(Range.fromPositions(lengthToPosition(edit.startOffset), lengthToPosition(edit.endOffset))),
-		}]);
+		textModelS2.applyEdits([
+			{
+				range,
+				text: textModelS0.getValueInRange(
+					Range.fromPositions(lengthToPosition(edit.startOffset), lengthToPosition(edit.endOffset))
+				),
+			},
+		]);
 	}
 
 	assert.deepStrictEqual(textModelS2.getValue(), textModelS0.getValue());
@@ -58,7 +71,12 @@ function runTest(seed: number) {
 	textModelS2.dispose();
 }
 
-export function getRandomEditInfos(textModel: TextModel, count: number, rng: Random, disjoint: boolean = false): TextEditInfo[] {
+export function getRandomEditInfos(
+	textModel: TextModel,
+	count: number,
+	rng: Random,
+	disjoint: boolean = false
+): TextEditInfo[] {
 	const edits: TextEditInfo[] = [];
 	let i = 0;
 	for (let j = 0; j < count; j++) {
@@ -76,7 +94,11 @@ function getRandomEdit(textModel: TextModel, rangeOffsetStart: number, rng: Rand
 	const lineCount = rng.nextIntRange(0, 3);
 	const columnCount = rng.nextIntRange(0, 5);
 
-	return new TextEditInfo(positionToLength(textModel.getPositionAt(offsetStart)), positionToLength(textModel.getPositionAt(offsetEnd)), toLength(lineCount, columnCount));
+	return new TextEditInfo(
+		positionToLength(textModel.getPositionAt(offsetStart)),
+		positionToLength(textModel.getPositionAt(offsetEnd)),
+		toLength(lineCount, columnCount)
+	);
 }
 
 function toEdit(editInfo: TextEditInfo): TextReplacement {

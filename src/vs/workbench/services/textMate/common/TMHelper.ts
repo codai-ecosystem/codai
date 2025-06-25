@@ -16,10 +16,14 @@ export interface ITokenColorizationRule {
 export interface ITokenColorizationSetting {
 	foreground?: string;
 	background?: string;
-	fontStyle?: string;  // italic, underline, strikethrough, bold
+	fontStyle?: string; // italic, underline, strikethrough, bold
 }
 
-export function findMatchingThemeRule(theme: IColorTheme, scopes: string[], onlyColorRules: boolean = true): ThemeRule | null {
+export function findMatchingThemeRule(
+	theme: IColorTheme,
+	scopes: string[],
+	onlyColorRules: boolean = true
+): ThemeRule | null {
 	for (let i = scopes.length - 1; i >= 0; i--) {
 		const parentScopes = scopes.slice(0, i);
 		const scope = scopes[i];
@@ -31,7 +35,12 @@ export function findMatchingThemeRule(theme: IColorTheme, scopes: string[], only
 	return null;
 }
 
-function findMatchingThemeRule2(theme: IColorTheme, scope: string, parentScopes: string[], onlyColorRules: boolean): ThemeRule | null {
+function findMatchingThemeRule2(
+	theme: IColorTheme,
+	scope: string,
+	parentScopes: string[],
+	onlyColorRules: boolean
+): ThemeRule | null {
 	let result: ThemeRule | null = null;
 
 	// Loop backwards, to ensure the last most specific rule wins
@@ -116,7 +125,7 @@ export class ThemeRule {
 	}
 
 	public isMoreSpecific(other: ThemeRule | null): boolean {
-		return (ThemeRule._cmp(this, other) > 0);
+		return ThemeRule._cmp(this, other) > 0;
 	}
 
 	private static _matchesOne(selectorScope: string, scope: string): boolean {
@@ -127,7 +136,12 @@ export class ThemeRule {
 		return false;
 	}
 
-	private static _matches(selectorScope: string, selectorParentScopes: string[], scope: string, parentScopes: string[]): boolean {
+	private static _matches(
+		selectorScope: string,
+		selectorParentScopes: string[],
+		scope: string,
+		parentScopes: string[]
+	): boolean {
 		if (!this._matchesOne(selectorScope, scope)) {
 			return false;
 		}

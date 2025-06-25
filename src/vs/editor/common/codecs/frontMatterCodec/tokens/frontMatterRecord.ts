@@ -6,7 +6,11 @@
 import { BaseToken } from '../../baseToken.js';
 import { FrontMatterSequence } from './frontMatterSequence.js';
 import { Colon, Word, Dash, SpacingToken } from '../../simpleCodec/tokens/index.js';
-import { FrontMatterToken, FrontMatterValueToken, type TValueTypeName } from '../tokens/frontMatterToken.js';
+import {
+	FrontMatterToken,
+	FrontMatterValueToken,
+	type TValueTypeName,
+} from '../tokens/frontMatterToken.js';
 
 /**
  * Type for tokens that can be used inside a record name.
@@ -59,7 +63,11 @@ export class FrontMatterRecordDelimiter extends FrontMatterToken<readonly [Colon
  * ```
  */
 export class FrontMatterRecord extends FrontMatterToken<
-	readonly [FrontMatterRecordName, FrontMatterRecordDelimiter, FrontMatterValueToken<TValueTypeName>]
+	readonly [
+		FrontMatterRecordName,
+		FrontMatterRecordDelimiter,
+		FrontMatterValueToken<TValueTypeName>,
+	]
 > {
 	/**
 	 * Token that represent `name` of the record.
@@ -99,15 +107,13 @@ export class FrontMatterRecord extends FrontMatterToken<
 
 		// only the "generic sequence" value tokens can hold
 		// some spacing tokens at the end of them
-		if ((valueToken instanceof FrontMatterSequence) === false) {
+		if (valueToken instanceof FrontMatterSequence === false) {
 			return [];
 		}
 
 		const trimmedTokens = valueToken.trimEnd();
 		// update the current range to reflect the current trimmed value
-		this.withRange(
-			BaseToken.fullRange(this.children),
-		);
+		this.withRange(BaseToken.fullRange(this.children));
 
 		return trimmedTokens;
 	}

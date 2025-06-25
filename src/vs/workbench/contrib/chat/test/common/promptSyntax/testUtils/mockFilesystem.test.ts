@@ -18,10 +18,8 @@ import { TestInstantiationService } from '../../../../../../../platform/instanti
 /**
  * Base attribute for an expected filesystem node (a file or a folder).
  */
-interface IExpectedFilesystemNode extends Pick<
-	IFileStat,
-	'resource' | 'name' | 'isFile' | 'isDirectory' | 'isSymbolicLink'
-> { }
+interface IExpectedFilesystemNode
+	extends Pick<IFileStat, 'resource' | 'name' | 'isFile' | 'isDirectory' | 'isSymbolicLink'> {}
 
 /**
  * Represents an expected `file` info.
@@ -49,7 +47,7 @@ interface IExpectedFolder extends IExpectedFilesystemNode {
 const validateFile = async (
 	filePath: string,
 	expectedFile: IExpectedFile,
-	fileService: IFileService,
+	fileService: IFileService
 ) => {
 	let readFile: IFileStat | undefined;
 	try {
@@ -61,44 +59,40 @@ const validateFile = async (
 	assert.strictEqual(
 		readFile.name,
 		expectedFile.name,
-		`File '${filePath}' must have correct 'name'.`,
+		`File '${filePath}' must have correct 'name'.`
 	);
 
 	assert.deepStrictEqual(
 		readFile.resource,
 		expectedFile.resource,
-		`File '${filePath}' must have correct 'URI'.`,
+		`File '${filePath}' must have correct 'URI'.`
 	);
 
 	assert.strictEqual(
 		readFile.isFile,
 		expectedFile.isFile,
-		`File '${filePath}' must have correct 'isFile' value.`,
+		`File '${filePath}' must have correct 'isFile' value.`
 	);
 
 	assert.strictEqual(
 		readFile.isDirectory,
 		expectedFile.isDirectory,
-		`File '${filePath}' must have correct 'isDirectory' value.`,
+		`File '${filePath}' must have correct 'isDirectory' value.`
 	);
 
 	assert.strictEqual(
 		readFile.isSymbolicLink,
 		expectedFile.isSymbolicLink,
-		`File '${filePath}' must have correct 'isSymbolicLink' value.`,
+		`File '${filePath}' must have correct 'isSymbolicLink' value.`
 	);
 
-	assert.strictEqual(
-		readFile.children,
-		undefined,
-		`File '${filePath}' must not have children.`,
-	);
+	assert.strictEqual(readFile.children, undefined, `File '${filePath}' must not have children.`);
 
 	const fileContents = await fileService.readFile(readFile.resource);
 	assert.strictEqual(
 		fileContents.value.toString(),
 		expectedFile.contents,
-		`File '${expectedFile.resource.fsPath}' must have correct contents.`,
+		`File '${expectedFile.resource.fsPath}' must have correct contents.`
 	);
 };
 
@@ -108,7 +102,7 @@ const validateFile = async (
 const validateFolder = async (
 	folderPath: string,
 	expectedFolder: IExpectedFolder,
-	fileService: IFileService,
+	fileService: IFileService
 ) => {
 	let readFolder: IFileStat | undefined;
 	try {
@@ -120,62 +114,51 @@ const validateFolder = async (
 	assert.strictEqual(
 		readFolder.name,
 		expectedFolder.name,
-		`Folder '${folderPath}' must have correct 'name'.`,
+		`Folder '${folderPath}' must have correct 'name'.`
 	);
 
 	assert.deepStrictEqual(
 		readFolder.resource,
 		expectedFolder.resource,
-		`Folder '${folderPath}' must have correct 'URI'.`,
+		`Folder '${folderPath}' must have correct 'URI'.`
 	);
 
 	assert.strictEqual(
 		readFolder.isFile,
 		expectedFolder.isFile,
-		`Folder '${folderPath}' must have correct 'isFile' value.`,
+		`Folder '${folderPath}' must have correct 'isFile' value.`
 	);
 
 	assert.strictEqual(
 		readFolder.isDirectory,
 		expectedFolder.isDirectory,
-		`Folder '${folderPath}' must have correct 'isDirectory' value.`,
+		`Folder '${folderPath}' must have correct 'isDirectory' value.`
 	);
 
 	assert.strictEqual(
 		readFolder.isSymbolicLink,
 		expectedFolder.isSymbolicLink,
-		`Folder '${folderPath}' must have correct 'isSymbolicLink' value.`,
+		`Folder '${folderPath}' must have correct 'isSymbolicLink' value.`
 	);
 
-	assertDefined(
-		readFolder.children,
-		`Folder '${folderPath}' must have children.`,
-	);
+	assertDefined(readFolder.children, `Folder '${folderPath}' must have children.`);
 
 	assert.strictEqual(
 		readFolder.children.length,
 		expectedFolder.children.length,
-		`Folder '${folderPath}' must have correct number of children.`,
+		`Folder '${folderPath}' must have correct number of children.`
 	);
 
 	for (const expectedChild of expectedFolder.children) {
 		const childPath = URI.joinPath(expectedFolder.resource, expectedChild.name).fsPath;
 
 		if ('children' in expectedChild) {
-			await validateFolder(
-				childPath,
-				expectedChild,
-				fileService,
-			);
+			await validateFolder(childPath, expectedChild, fileService);
 
 			continue;
 		}
 
-		await validateFile(
-			childPath,
-			expectedChild,
-			fileService,
-		);
+		await validateFile(childPath, expectedChild, fileService);
 	}
 };
 
@@ -219,10 +202,10 @@ suite('MockFilesystem', () => {
 								name: '.file-2.TEST.ts',
 								contents: 'test hello',
 							},
-						]
-					}
-				]
-			}
+						],
+					},
+				],
+			},
 		]);
 
 		await mockFilesystem.mock();
@@ -280,10 +263,10 @@ suite('MockFilesystem', () => {
 								contents: 'test hello',
 							},
 						],
-					}
+					},
 				],
 			},
-			fileService,
+			fileService
 		);
 	});
 });

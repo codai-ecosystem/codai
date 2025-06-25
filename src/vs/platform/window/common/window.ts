@@ -17,12 +17,16 @@ import { ILoggerResource, LogLevel } from '../../log/common/log.js';
 import { PolicyDefinition, PolicyValue } from '../../policy/common/policy.js';
 import { IPartsSplash } from '../../theme/common/themeService.js';
 import { IUserDataProfile } from '../../userDataProfile/common/userDataProfile.js';
-import { IAnyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from '../../workspace/common/workspace.js';
+import {
+	IAnyWorkspaceIdentifier,
+	ISingleFolderWorkspaceIdentifier,
+	IWorkspaceIdentifier,
+} from '../../workspace/common/workspace.js';
 
 export const WindowMinimumSize = {
 	WIDTH: 400,
 	WIDTH_WITH_VERTICAL_PANEL: 600,
-	HEIGHT: 270
+	HEIGHT: 270,
 };
 
 export interface IPoint {
@@ -36,7 +40,6 @@ export interface IRectangle extends IPoint {
 }
 
 export interface IBaseOpenWindowsOptions {
-
 	/**
 	 * Whether to reuse the window or open a new one.
 	 */
@@ -91,11 +94,13 @@ export interface IOpenedAuxiliaryWindow extends IOpenedWindow {
 	readonly parentId: number;
 }
 
-export function isOpenedAuxiliaryWindow(candidate: IOpenedMainWindow | IOpenedAuxiliaryWindow): candidate is IOpenedAuxiliaryWindow {
+export function isOpenedAuxiliaryWindow(
+	candidate: IOpenedMainWindow | IOpenedAuxiliaryWindow
+): candidate is IOpenedAuxiliaryWindow {
 	return typeof (candidate as IOpenedAuxiliaryWindow).parentId === 'number';
 }
 
-export interface IOpenEmptyWindowOptions extends IBaseOpenWindowsOptions { }
+export interface IOpenEmptyWindowOptions extends IBaseOpenWindowsOptions {}
 
 export type IWindowOpenable = IWorkspaceToOpen | IFolderToOpen | IFileToOpen;
 
@@ -129,7 +134,7 @@ export function isFileToOpen(uriToOpen: IWindowOpenable): uriToOpen is IFileToOp
 
 export const enum MenuSettings {
 	MenuStyle = 'window.menuStyle',
-	MenuBarVisibility = 'window.menuBarVisibility'
+	MenuBarVisibility = 'window.menuBarVisibility',
 }
 
 export const enum MenuStyleConfiguration {
@@ -138,7 +143,10 @@ export const enum MenuStyleConfiguration {
 	INHERIT = 'inherit',
 }
 
-export function hasNativeContextMenu(configurationService: IConfigurationService, titleBarStyle?: TitlebarStyle): boolean {
+export function hasNativeContextMenu(
+	configurationService: IConfigurationService,
+	titleBarStyle?: TitlebarStyle
+): boolean {
 	if (isWeb) {
 		return false;
 	}
@@ -161,7 +169,10 @@ export function hasNativeContextMenu(configurationService: IConfigurationService
 	return nativeTitle; // Default to inherit from title bar style
 }
 
-export function hasNativeMenu(configurationService: IConfigurationService, titleBarStyle?: TitlebarStyle): boolean {
+export function hasNativeMenu(
+	configurationService: IConfigurationService,
+	titleBarStyle?: TitlebarStyle
+): boolean {
 	if (isWeb) {
 		return false;
 	}
@@ -175,10 +186,18 @@ export function hasNativeMenu(configurationService: IConfigurationService, title
 
 export type MenuBarVisibility = 'classic' | 'visible' | 'toggle' | 'hidden' | 'compact';
 
-export function getMenuBarVisibility(configurationService: IConfigurationService): MenuBarVisibility {
-	const menuBarVisibility = configurationService.getValue<MenuBarVisibility | 'default'>(MenuSettings.MenuBarVisibility);
+export function getMenuBarVisibility(
+	configurationService: IConfigurationService
+): MenuBarVisibility {
+	const menuBarVisibility = configurationService.getValue<MenuBarVisibility | 'default'>(
+		MenuSettings.MenuBarVisibility
+	);
 
-	if (menuBarVisibility === 'default' || (menuBarVisibility === 'compact' && hasNativeMenu(configurationService)) || (isMacintosh && isNative)) {
+	if (
+		menuBarVisibility === 'default' ||
+		(menuBarVisibility === 'compact' && hasNativeMenu(configurationService)) ||
+		(isMacintosh && isNative)
+	) {
 		return 'classic';
 	} else {
 		return menuBarVisibility;
@@ -229,7 +248,7 @@ export const enum TitlebarStyle {
 export const enum WindowControlsStyle {
 	NATIVE = 'native',
 	CUSTOM = 'custom',
-	HIDDEN = 'hidden'
+	HIDDEN = 'hidden',
 }
 
 export const enum CustomTitleBarVisibility {
@@ -238,13 +257,19 @@ export const enum CustomTitleBarVisibility {
 	NEVER = 'never',
 }
 
-export function hasCustomTitlebar(configurationService: IConfigurationService, titleBarStyle?: TitlebarStyle): boolean {
+export function hasCustomTitlebar(
+	configurationService: IConfigurationService,
+	titleBarStyle?: TitlebarStyle
+): boolean {
 	// Returns if it possible to have a custom title bar in the curren session
 	// Does not imply that the title bar is visible
 	return true;
 }
 
-export function hasNativeTitlebar(configurationService: IConfigurationService, titleBarStyle?: TitlebarStyle): boolean {
+export function hasNativeTitlebar(
+	configurationService: IConfigurationService,
+	titleBarStyle?: TitlebarStyle
+): boolean {
 	if (!titleBarStyle) {
 		titleBarStyle = getTitleBarStyle(configurationService);
 	}
@@ -278,7 +303,9 @@ export function getTitleBarStyle(configurationService: IConfigurationService): T
 	return TitlebarStyle.CUSTOM; // default to custom on all OS
 }
 
-export function getWindowControlsStyle(configurationService: IConfigurationService): WindowControlsStyle {
+export function getWindowControlsStyle(
+	configurationService: IConfigurationService
+): WindowControlsStyle {
 	if (isWeb || isMacintosh || getTitleBarStyle(configurationService) === TitlebarStyle.NATIVE) {
 		return WindowControlsStyle.NATIVE; // only supported on Windows/Linux desktop with custom titlebar
 	}
@@ -326,9 +353,7 @@ export function useNativeFullScreen(configurationService: IConfigurationService)
 	return windowConfig.nativeFullScreen !== false;
 }
 
-
 export interface IPath<T = IEditorOptions> extends IPathData<T> {
-
 	/**
 	 * The file path to open within the instance
 	 */
@@ -336,7 +361,6 @@ export interface IPath<T = IEditorOptions> extends IPathData<T> {
 }
 
 export interface IPathData<T = IEditorOptions> {
-
 	/**
 	 * The file path to open within the instance
 	 */
@@ -420,7 +444,10 @@ export interface IOSConfiguration {
 	readonly arch: string;
 }
 
-export interface INativeWindowConfiguration extends IWindowConfiguration, NativeParsedArgs, ISandboxConfiguration {
+export interface INativeWindowConfiguration
+	extends IWindowConfiguration,
+		NativeParsedArgs,
+		ISandboxConfiguration {
 	mainPid: number;
 	handle?: VSBuffer;
 

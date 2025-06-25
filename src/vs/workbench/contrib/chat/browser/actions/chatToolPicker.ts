@@ -13,18 +13,37 @@ import { generateUuid } from '../../../../../base/common/uuid.js';
 import { localize } from '../../../../../nls.js';
 import { ICommandService } from '../../../../../platform/commands/common/commands.js';
 import { ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
-import { IQuickInputButton, IQuickInputService, IQuickPickItem, IQuickPickSeparator } from '../../../../../platform/quickinput/common/quickInput.js';
+import {
+	IQuickInputButton,
+	IQuickInputService,
+	IQuickPickItem,
+	IQuickPickSeparator,
+} from '../../../../../platform/quickinput/common/quickInput.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 import { IExtensionsWorkbenchService } from '../../../extensions/common/extensions.js';
 import { AddConfigurationAction } from '../../../mcp/browser/mcpCommands.js';
 import { IMcpRegistry } from '../../../mcp/common/mcpRegistryTypes.js';
 import { IMcpServer, IMcpService, McpConnectionState } from '../../../mcp/common/mcpTypes.js';
-import { IToolData, ToolSet, ToolDataSource, ILanguageModelToolsService } from '../../common/languageModelToolsService.js';
+import {
+	IToolData,
+	ToolSet,
+	ToolDataSource,
+	ILanguageModelToolsService,
+} from '../../common/languageModelToolsService.js';
 import { ConfigureToolSets } from '../tools/toolSetsContribution.js';
 
-
-const enum BucketOrdinal { User, BuiltIn, Mcp, Extension }
-type BucketPick = IQuickPickItem & { picked: boolean; ordinal: BucketOrdinal; status?: string; children: (ToolPick | ToolSetPick)[] };
+const enum BucketOrdinal {
+	User,
+	BuiltIn,
+	Mcp,
+	Extension,
+}
+type BucketPick = IQuickPickItem & {
+	picked: boolean;
+	ordinal: BucketOrdinal;
+	status?: string;
+	children: (ToolPick | ToolSetPick)[];
+};
 type ToolSetPick = IQuickPickItem & { picked: boolean; toolset: ToolSet; parent: BucketPick };
 type ToolPick = IQuickPickItem & { picked: boolean; tool: IToolData; parent: BucketPick };
 type CallbackPick = IQuickPickItem & { pickable: false; run: () => void };
@@ -53,7 +72,6 @@ export async function showToolsPicker(
 	toolsEntries?: ReadonlyMap<ToolSet | IToolData, boolean>,
 	onUpdate?: (toolsEntries: ReadonlyMap<ToolSet | IToolData, boolean>) => void
 ): Promise<ReadonlyMap<ToolSet | IToolData, boolean> | undefined> {
-
 	const quickPickService = accessor.get(IQuickInputService);
 	const mcpService = accessor.get(IMcpService);
 	const mcpRegistry = accessor.get(IMcpRegistry);
@@ -71,7 +89,7 @@ export async function showToolsPicker(
 	const builtinBucket: BucketPick = {
 		type: 'item',
 		children: [],
-		label: localize('defaultBucketLabel', "Built-In"),
+		label: localize('defaultBucketLabel', 'Built-In'),
 		ordinal: BucketOrdinal.BuiltIn,
 		picked: false,
 	};
@@ -79,26 +97,45 @@ export async function showToolsPicker(
 	const userBucket: BucketPick = {
 		type: 'item',
 		children: [],
-		label: localize('userBucket', "User Defined Tool Sets"),
+		label: localize('userBucket', 'User Defined Tool Sets'),
 		ordinal: BucketOrdinal.User,
 		alwaysShow: true,
 		picked: false,
 	};
 
-	const addMcpPick: CallbackPick = { type: 'item', label: localize('addServer', "Add MCP Server..."), iconClass: ThemeIcon.asClassName(Codicon.add), pickable: false, run: () => commandService.executeCommand(AddConfigurationAction.ID) };
-	const configureToolSetsPick: CallbackPick = { type: 'item', label: localize('configToolSet', "Configure Tool Sets..."), iconClass: ThemeIcon.asClassName(Codicon.tools), pickable: false, run: () => commandService.executeCommand(ConfigureToolSets.ID) };
-	const addExpPick: CallbackPick = { type: 'item', label: localize('addExtension', "Install Extension..."), iconClass: ThemeIcon.asClassName(Codicon.add), pickable: false, run: () => extensionWorkbenchService.openSearch('@tag:language-model-tools') };
+	const addMcpPick: CallbackPick = {
+		type: 'item',
+		label: localize('addServer', 'Add MCP Server...'),
+		iconClass: ThemeIcon.asClassName(Codicon.add),
+		pickable: false,
+		run: () => commandService.executeCommand(AddConfigurationAction.ID),
+	};
+	const configureToolSetsPick: CallbackPick = {
+		type: 'item',
+		label: localize('configToolSet', 'Configure Tool Sets...'),
+		iconClass: ThemeIcon.asClassName(Codicon.tools),
+		pickable: false,
+		run: () => commandService.executeCommand(ConfigureToolSets.ID),
+	};
+	const addExpPick: CallbackPick = {
+		type: 'item',
+		label: localize('addExtension', 'Install Extension...'),
+		iconClass: ThemeIcon.asClassName(Codicon.add),
+		pickable: false,
+		run: () => extensionWorkbenchService.openSearch('@tag:language-model-tools'),
+	};
 	const addPick: CallbackPick = {
-		type: 'item', label: localize('addAny', "Add More Tools..."), iconClass: ThemeIcon.asClassName(Codicon.add), pickable: false, run: async () => {
-			const pick = await quickPickService.pick(
-				[addMcpPick, addExpPick],
-				{
-					canPickMany: false,
-					placeHolder: localize('noTools', "Add tools to chat")
-				}
-			);
+		type: 'item',
+		label: localize('addAny', 'Add More Tools...'),
+		iconClass: ThemeIcon.asClassName(Codicon.add),
+		pickable: false,
+		run: async () => {
+			const pick = await quickPickService.pick([addMcpPick, addExpPick], {
+				canPickMany: false,
+				placeHolder: localize('noTools', 'Add tools to chat'),
+			});
 			pick?.run();
-		}
+		},
 	};
 
 	const toolBuckets = new Map<string, BucketPick>();
@@ -115,7 +152,6 @@ export async function showToolsPicker(
 	}
 
 	for (const [toolSetOrTool, picked] of toolsEntries) {
-
 		let bucket: BucketPick | undefined;
 		let description: string | undefined;
 		const buttons: ActionableButton[] = [];
@@ -124,7 +160,9 @@ export async function showToolsPicker(
 			const key = ToolDataSource.toKey(toolSetOrTool.source);
 
 			const { definitionId } = toolSetOrTool.source;
-			const mcpServer = mcpService.servers.get().find(candidate => candidate.definition.id === definitionId);
+			const mcpServer = mcpService.servers
+				.get()
+				.find(candidate => candidate.definition.id === definitionId);
 			if (!mcpServer) {
 				continue;
 			}
@@ -133,12 +171,12 @@ export async function showToolsPicker(
 
 			bucket = toolBuckets.get(key) ?? {
 				type: 'item',
-				label: localize('mcplabel', "MCP Server: {0}", toolSetOrTool.source.label),
+				label: localize('mcplabel', 'MCP Server: {0}', toolSetOrTool.source.label),
 				ordinal: BucketOrdinal.Mcp,
 				picked: false,
 				alwaysShow: true,
 				children: [],
-				buttons
+				buttons,
 			};
 			toolBuckets.set(key, bucket);
 
@@ -146,20 +184,20 @@ export async function showToolsPicker(
 			if (collection?.presentation?.origin) {
 				buttons.push({
 					iconClass: ThemeIcon.asClassName(Codicon.settingsGear),
-					tooltip: localize('configMcpCol', "Configure {0}", collection.label),
-					action: () => editorService.openEditor({
-						resource: collection!.presentation!.origin,
-					})
+					tooltip: localize('configMcpCol', 'Configure {0}', collection.label),
+					action: () =>
+						editorService.openEditor({
+							resource: collection!.presentation!.origin,
+						}),
 				});
 			}
 			if (mcpServer.connectionState.get().state === McpConnectionState.Kind.Error) {
 				buttons.push({
 					iconClass: ThemeIcon.asClassName(Codicon.warning),
-					tooltip: localize('mcpShowOutput', "Show Output"),
+					tooltip: localize('mcpShowOutput', 'Show Output'),
 					action: () => mcpServer.showOutput(),
 				});
 			}
-
 		} else if (toolSetOrTool.source.type === 'extension') {
 			const key = ToolDataSource.toKey(toolSetOrTool.source);
 			bucket = toolBuckets.get(key) ?? {
@@ -168,7 +206,7 @@ export async function showToolsPicker(
 				ordinal: BucketOrdinal.Extension,
 				picked: false,
 				alwaysShow: true,
-				children: []
+				children: [],
 			};
 			toolBuckets.set(key, bucket);
 		} else if (toolSetOrTool.source.type === 'internal') {
@@ -177,11 +215,11 @@ export async function showToolsPicker(
 			bucket = userBucket;
 			buttons.push({
 				iconClass: ThemeIcon.asClassName(Codicon.edit),
-				tooltip: localize('editUserBucket', "Edit Tool Set"),
+				tooltip: localize('editUserBucket', 'Edit Tool Set'),
 				action: () => {
 					assertType(toolSetOrTool.source.type === 'user');
 					editorService.openEditor({ resource: toolSetOrTool.source.file });
-				}
+				},
 			});
 		} else {
 			assertNever(toolSetOrTool.source);
@@ -196,8 +234,7 @@ export async function showToolsPicker(
 				label: toolSetOrTool.displayName,
 				description: description ?? toolSetOrTool.description,
 				indented: true,
-				buttons
-
+				buttons,
 			});
 		} else if (toolSetOrTool.canBeReferencedInPrompt) {
 			bucket.children.push({
@@ -229,7 +266,7 @@ export async function showToolsPicker(
 	for (const bucket of Array.from(toolBuckets.values()).sort((a, b) => a.ordinal - b.ordinal)) {
 		picks.push({
 			type: 'separator',
-			label: bucket.status
+			label: bucket.status,
 		});
 
 		picks.push(bucket);
@@ -244,18 +281,11 @@ export async function showToolsPicker(
 	picker.matchOnDescription = true;
 
 	if (picks.length === 0) {
-		picker.placeholder = localize('noTools', "Add tools to chat");
+		picker.placeholder = localize('noTools', 'Add tools to chat');
 		picker.canSelectMany = false;
-		picks.push(
-			addMcpPick,
-			addExpPick,
-		);
+		picks.push(addMcpPick, addExpPick);
 	} else {
-		picks.push(
-			{ type: 'separator' },
-			configureToolSetsPick,
-			addPick,
-		);
+		picks.push({ type: 'separator' }, configureToolSetsPick, addPick);
 	}
 
 	let lastSelectedItems = new Set<MyPick>();
@@ -303,7 +333,6 @@ export async function showToolsPicker(
 					onUpdate(result);
 				}
 			}
-
 		} finally {
 			ignoreEvent = false;
 		}
@@ -313,63 +342,72 @@ export async function showToolsPicker(
 	picker.items = picks;
 	picker.show();
 
-	store.add(picker.onDidTriggerItemButton(e => {
-		if (isActionableButton(e.button)) {
-			e.button.action();
-			store.dispose();
-		}
-	}));
-
-	store.add(picker.onDidChangeSelection(selectedPicks => {
-		if (ignoreEvent) {
-			return;
-		}
-
-		const addPick = selectedPicks.find(isCallbackPick);
-		if (addPick) {
-			addPick.run();
-			picker.hide();
-			return;
-		}
-
-		const { added, removed } = diffSets(lastSelectedItems, new Set(selectedPicks));
-
-		for (const item of added) {
-			item.picked = true;
-
-			if (isBucketPick(item)) {
-				// add server -> add back tools
-				for (const toolPick of item.children) {
-					toolPick.picked = true;
-				}
-			} else if (isToolPick(item) || isToolSetPick(item)) {
-				// add server when tool is picked
-				item.parent.picked = true;
+	store.add(
+		picker.onDidTriggerItemButton(e => {
+			if (isActionableButton(e.button)) {
+				e.button.action();
+				store.dispose();
 			}
-		}
+		})
+	);
 
-		for (const item of removed) {
-			item.picked = false;
-
-			if (isBucketPick(item)) {
-				// removed server -> remove tools
-				for (const toolPick of item.children) {
-					toolPick.picked = false;
-				}
-			} else if ((isToolPick(item) || isToolSetPick(item)) && item.parent.children.every(child => !child.picked)) {
-				// remove LAST tool -> remove server
-				item.parent.picked = false;
+	store.add(
+		picker.onDidChangeSelection(selectedPicks => {
+			if (ignoreEvent) {
+				return;
 			}
-		}
 
-		_update();
-	}));
+			const addPick = selectedPicks.find(isCallbackPick);
+			if (addPick) {
+				addPick.run();
+				picker.hide();
+				return;
+			}
+
+			const { added, removed } = diffSets(lastSelectedItems, new Set(selectedPicks));
+
+			for (const item of added) {
+				item.picked = true;
+
+				if (isBucketPick(item)) {
+					// add server -> add back tools
+					for (const toolPick of item.children) {
+						toolPick.picked = true;
+					}
+				} else if (isToolPick(item) || isToolSetPick(item)) {
+					// add server when tool is picked
+					item.parent.picked = true;
+				}
+			}
+
+			for (const item of removed) {
+				item.picked = false;
+
+				if (isBucketPick(item)) {
+					// removed server -> remove tools
+					for (const toolPick of item.children) {
+						toolPick.picked = false;
+					}
+				} else if (
+					(isToolPick(item) || isToolSetPick(item)) &&
+					item.parent.children.every(child => !child.picked)
+				) {
+					// remove LAST tool -> remove server
+					item.parent.picked = false;
+				}
+			}
+
+			_update();
+		})
+	);
 
 	let didAccept = false;
-	store.add(picker.onDidAccept(() => {
-		picker.activeItems.find(isCallbackPick)?.run();
-		didAccept = true;
-	}));
+	store.add(
+		picker.onDidAccept(() => {
+			picker.activeItems.find(isCallbackPick)?.run();
+			didAccept = true;
+		})
+	);
 
 	await Promise.race([Event.toPromise(Event.any(picker.onDidAccept, picker.onDidHide))]);
 

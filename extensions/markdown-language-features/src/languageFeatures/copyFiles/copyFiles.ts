@@ -23,15 +23,19 @@ export function getCopyFileConfiguration(document: vscode.TextDocument): CopyFil
 
 function readOverwriteBehavior(config: vscode.WorkspaceConfiguration): OverwriteBehavior {
 	switch (config.get('copyFiles.overwriteBehavior')) {
-		case 'overwrite': return 'overwrite';
-		default: return 'nameIncrementally';
+		case 'overwrite':
+			return 'overwrite';
+		default:
+			return 'nameIncrementally';
 	}
 }
 
 export function parseGlob(rawGlob: string): Iterable<string> {
 	if (rawGlob.startsWith('/')) {
 		// Anchor to workspace folders
-		return (vscode.workspace.workspaceFolders ?? []).map(folder => vscode.Uri.joinPath(folder.uri, rawGlob).path);
+		return (vscode.workspace.workspaceFolders ?? []).map(
+			folder => vscode.Uri.joinPath(folder.uri, rawGlob).path
+		);
 	}
 
 	// Relative path, so implicitly track on ** to match everything
@@ -44,8 +48,18 @@ export function parseGlob(rawGlob: string): Iterable<string> {
 
 type GetWorkspaceFolder = (documentUri: vscode.Uri) => vscode.Uri | undefined;
 
-export function resolveCopyDestination(documentUri: vscode.Uri, fileName: string, dest: string, getWorkspaceFolder: GetWorkspaceFolder): vscode.Uri {
-	const resolvedDest = resolveCopyDestinationSetting(documentUri, fileName, dest, getWorkspaceFolder);
+export function resolveCopyDestination(
+	documentUri: vscode.Uri,
+	fileName: string,
+	dest: string,
+	getWorkspaceFolder: GetWorkspaceFolder
+): vscode.Uri {
+	const resolvedDest = resolveCopyDestinationSetting(
+		documentUri,
+		fileName,
+		dest,
+		getWorkspaceFolder
+	);
 
 	if (resolvedDest.startsWith('/')) {
 		// Absolute path
@@ -57,8 +71,12 @@ export function resolveCopyDestination(documentUri: vscode.Uri, fileName: string
 	return Utils.resolvePath(dirName, resolvedDest);
 }
 
-
-function resolveCopyDestinationSetting(documentUri: vscode.Uri, fileName: string, dest: string, getWorkspaceFolder: GetWorkspaceFolder): string {
+function resolveCopyDestinationSetting(
+	documentUri: vscode.Uri,
+	fileName: string,
+	dest: string,
+	getWorkspaceFolder: GetWorkspaceFolder
+): string {
 	let outDest = dest.trim();
 	if (!outDest) {
 		outDest = '${fileName}';
@@ -83,15 +101,28 @@ function resolveCopyDestinationSetting(documentUri: vscode.Uri, fileName: string
 	const vars = new Map<string, string>([
 		// Document
 		['documentDirName', documentDirName.path], // Absolute parent directory path of the Markdown document, e.g. `/Users/me/myProject/docs`.
-		['documentRelativeDirName', workspaceFolder ? path.posix.relative(workspaceFolder.path, documentDirName.path) : documentDirName.path], // Relative parent directory path of the Markdown document, e.g. `docs`. This is the same as `${documentDirName}` if the file is not part of a workspace.
+		[
+			'documentRelativeDirName',
+			workspaceFolder
+				? path.posix.relative(workspaceFolder.path, documentDirName.path)
+				: documentDirName.path,
+		], // Relative parent directory path of the Markdown document, e.g. `docs`. This is the same as `${documentDirName}` if the file is not part of a workspace.
 		['documentFileName', documentBaseName], // The full filename of the Markdown document, e.g. `README.md`.
-		['documentBaseName', documentBaseName.slice(0, documentBaseName.length - documentExtName.length)], // The basename of the Markdown document, e.g. `README`.
+		[
+			'documentBaseName',
+			documentBaseName.slice(0, documentBaseName.length - documentExtName.length),
+		], // The basename of the Markdown document, e.g. `README`.
 		['documentExtName', documentExtName.replace('.', '')], // The extension of the Markdown document, e.g. `md`.
 		['documentFilePath', documentUri.path], // Absolute path of the Markdown document, e.g. `/Users/me/myProject/docs/README.md`.
-		['documentRelativeFilePath', workspaceFolder ? path.posix.relative(workspaceFolder.path, documentUri.path) : documentUri.path], // Relative path of the Markdown document, e.g. `docs/README.md`. This is the same as `${documentFilePath}` if the file is not part of a workspace.
+		[
+			'documentRelativeFilePath',
+			workspaceFolder
+				? path.posix.relative(workspaceFolder.path, documentUri.path)
+				: documentUri.path,
+		], // Relative path of the Markdown document, e.g. `docs/README.md`. This is the same as `${documentFilePath}` if the file is not part of a workspace.
 
 		// Workspace
-		['documentWorkspaceFolder', ((workspaceFolder ?? documentDirName).path)], // The workspace folder for the Markdown document, e.g. `/Users/me/myProject`. This is the same as `${documentDirName}` if the file is not part of a workspace.
+		['documentWorkspaceFolder', (workspaceFolder ?? documentDirName).path], // The workspace folder for the Markdown document, e.g. `/Users/me/myProject`. This is the same as `${documentDirName}` if the file is not part of a workspace.
 
 		// File
 		['fileName', fileName], // The file name of the dropped file, e.g. `image.png`.
@@ -99,26 +130,34 @@ function resolveCopyDestinationSetting(documentUri: vscode.Uri, fileName: string
 		['unixTime', Date.now().toString()], // The current Unix timestamp in milliseconds.
 	]);
 
-	return outDest.replaceAll(/(?<escape>\\\$)|(?<!\\)\$\{(?<name>\w+)(?:\/(?<pattern>(?:\\\/|[^\}\/])+)\/(?<replacement>(?:\\\/|[^\}\/])*)\/)?\}/g, (match, _escape, name, pattern, replacement, _offset, _str, groups) => {
-		if (groups?.['escape']) {
-			return '$';
-		}
-
-		const entry = vars.get(name);
-		if (typeof entry !== 'string') {
-			return match;
-		}
-
-		if (pattern && replacement) {
-			try {
-				return entry.replace(new RegExp(replaceTransformEscapes(pattern)), replaceTransformEscapes(replacement));
-			} catch (e) {
-				console.log(`Error applying 'resolveCopyDestinationSetting' transform: ${pattern} -> ${replacement}`);
+	return outDest.replaceAll(
+		/(?<escape>\\\$)|(?<!\\)\$\{(?<name>\w+)(?:\/(?<pattern>(?:\\\/|[^\}\/])+)\/(?<replacement>(?:\\\/|[^\}\/])*)\/)?\}/g,
+		(match, _escape, name, pattern, replacement, _offset, _str, groups) => {
+			if (groups?.['escape']) {
+				return '$';
 			}
-		}
 
-		return entry;
-	});
+			const entry = vars.get(name);
+			if (typeof entry !== 'string') {
+				return match;
+			}
+
+			if (pattern && replacement) {
+				try {
+					return entry.replace(
+						new RegExp(replaceTransformEscapes(pattern)),
+						replaceTransformEscapes(replacement)
+					);
+				} catch (e) {
+					console.log(
+						`Error applying 'resolveCopyDestinationSetting' transform: ${pattern} -> ${replacement}`
+					);
+				}
+			}
+
+			return entry;
+		}
+	);
 }
 
 function replaceTransformEscapes(str: string): string {

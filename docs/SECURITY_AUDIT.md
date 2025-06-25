@@ -8,18 +8,18 @@ This report outlines security issues identified in the AIDE codebase and configu
 
 ### 1. Critical Dependencies with Known Vulnerabilities
 
-| Package                  | Vulnerability                              | Severity | Status      |
-|--------------------------|-------------------------------------------|----------|-------------|
-| tar                      | Arbitrary File Creation/Overwrite          | HIGH     | Fixed       |
-| braces                   | Uncontrolled resource consumption          | HIGH     | Fixed       |
-| semver                   | RegEx Denial of Service                    | HIGH     | Fixed       |
-| postcss                  | Line return parsing error                  | MODERATE | Fixed       |
-| micromatch               | RegEx Denial of Service                    | MODERATE | Fixed       |
-| undici                   | Insufficiently Random Values               | MODERATE | Fixed       |
-| @octokit/request-error   | RegEx Denial of Service                    | MODERATE | Fixed       |
-| @octokit/request         | RegEx Denial of Service                    | MODERATE | Fixed       |
-| @octokit/plugin-paginate | RegEx Denial of Service                    | MODERATE | Fixed       |
-| next                     | Information exposure in dev server         | LOW      | Fixed       |
+| Package                  | Vulnerability                      | Severity | Status |
+| ------------------------ | ---------------------------------- | -------- | ------ |
+| tar                      | Arbitrary File Creation/Overwrite  | HIGH     | Fixed  |
+| braces                   | Uncontrolled resource consumption  | HIGH     | Fixed  |
+| semver                   | RegEx Denial of Service            | HIGH     | Fixed  |
+| postcss                  | Line return parsing error          | MODERATE | Fixed  |
+| micromatch               | RegEx Denial of Service            | MODERATE | Fixed  |
+| undici                   | Insufficiently Random Values       | MODERATE | Fixed  |
+| @octokit/request-error   | RegEx Denial of Service            | MODERATE | Fixed  |
+| @octokit/request         | RegEx Denial of Service            | MODERATE | Fixed  |
+| @octokit/plugin-paginate | RegEx Denial of Service            | MODERATE | Fixed  |
+| next                     | Information exposure in dev server | LOW      | Fixed  |
 
 ### 2. Environment Security Issues
 

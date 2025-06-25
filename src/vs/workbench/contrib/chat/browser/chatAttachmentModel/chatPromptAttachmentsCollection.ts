@@ -12,7 +12,11 @@ import { IPromptFileReference } from '../../common/promptSyntax/parsers/types.js
 import { Disposable, DisposableMap } from '../../../../../base/common/lifecycle.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
-import { IChatRequestVariableEntry, IPromptVariableEntry, isChatRequestFileEntry } from '../../common/chatModel.js';
+import {
+	IChatRequestVariableEntry,
+	IPromptVariableEntry,
+	isChatRequestFileEntry,
+} from '../../common/chatModel.js';
 
 /**
  * Prefix for all prompt instruction variable IDs.
@@ -27,10 +31,7 @@ const PROMPT_VARIABLE_ID_PREFIX = 'vscode.prompt.instructions';
  * @param isRoot Whether the prompt file is the root file, or a
  *               child reference that is nested inside the root file.
  */
-export const createPromptVariableId = (
-	uri: URI,
-	isRoot: boolean,
-): string => {
+export const createPromptVariableId = (uri: URI, isRoot: boolean): string => {
 	// the default prefix that is used for all prompt files
 	let prefix = PROMPT_VARIABLE_ID_PREFIX;
 	// if the reference is the root object, add the `.root` suffix
@@ -57,7 +58,7 @@ export const createPromptVariableId = (
  */
 export const toChatVariable = (
 	reference: Pick<IPromptFileReference, 'uri' | 'isPromptFile'>,
-	isRoot: boolean,
+	isRoot: boolean
 ): IPromptVariableEntry => {
 	const { uri, isPromptFile } = reference;
 
@@ -69,13 +70,9 @@ export const toChatVariable = (
 		id = createPromptVariableId(uri, isRoot);
 	}
 
-	const name = (isPromptFile)
-		? `prompt:${basename(uri)}`
-		: `file:${basename(uri)}`;
+	const name = isPromptFile ? `prompt:${basename(uri)}` : `file:${basename(uri)}`;
 
-	const modelDescription = (isPromptFile)
-		? 'Prompt instructions file'
-		: 'File attachment';
+	const modelDescription = isPromptFile ? 'Prompt instructions file' : 'File attachment';
 
 	return {
 		id,
@@ -91,10 +88,9 @@ export const toChatVariable = (
  * Checks of a provided chat variable is a `prompt file` variable.
  */
 export function isPromptFileChatVariable(
-	variable: IChatRequestVariableEntry,
+	variable: IChatRequestVariableEntry
 ): variable is IPromptVariableEntry {
-	return isChatRequestFileEntry(variable)
-		&& variable.id.startsWith(PROMPT_VARIABLE_ID_PREFIX);
+	return isChatRequestFileEntry(variable) && variable.id.startsWith(PROMPT_VARIABLE_ID_PREFIX);
 }
 
 /**
@@ -136,8 +132,9 @@ export class ChatPromptAttachmentsCollection extends Disposable {
 	/**
 	 * List of all prompt instruction attachments.
 	 */
-	private attachments: DisposableMap<string, ChatPromptAttachmentModel> =
-		this._register(new DisposableMap());
+	private attachments: DisposableMap<string, ChatPromptAttachmentModel> = this._register(
+		new DisposableMap()
+	);
 
 	/**
 	 * Get all `URI`s of all valid references, including all
@@ -187,20 +184,23 @@ export class ChatPromptAttachmentsCollection extends Disposable {
 			// the usual URIs list of prompt instructions is `bottom-up`, therefore
 			// we do the same here - first add all child references of the model
 			result.push(
-				...reference.allValidReferences.map((link) => {
+				...reference.allValidReferences.map(link => {
 					return toChatVariable(link, false);
-				}),
+				})
 			);
 
 			// then add the root reference of the model itself
 			result.push(
-				toChatVariable({
-					uri: reference.uri,
-					// the attached file must have been a prompt file therefore
-					// we force that assumption here; this makes sure that prompts
-					// in untitled documents can be also attached to the chat input
-					isPromptFile: true,
-				}, true),
+				toChatVariable(
+					{
+						uri: reference.uri,
+						// the attached file must have been a prompt file therefore
+						// we force that assumption here; this makes sure that prompts
+						// in untitled documents can be also attached to the chat input
+						isPromptFile: true,
+					},
+					true
+				)
 			);
 		}
 
@@ -215,9 +215,9 @@ export class ChatPromptAttachmentsCollection extends Disposable {
 		const attachments = [...this.attachments.values()];
 
 		await Promise.allSettled(
-			attachments.map((attachment) => {
+			attachments.map(attachment => {
 				return attachment.allSettled;
-			}),
+			})
 		);
 
 		return this;
@@ -225,7 +225,7 @@ export class ChatPromptAttachmentsCollection extends Disposable {
 
 	constructor(
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configService: IConfigurationService,
+		@IConfigurationService private readonly configService: IConfigurationService
 	) {
 		super();
 	}
@@ -257,7 +257,7 @@ export class ChatPromptAttachmentsCollection extends Disposable {
 					this._onUpdate.fire();
 					this._onRemove.fire(instruction);
 				}),
-				instruction.onUpdate(this._onUpdate.fire),
+				instruction.onUpdate(this._onUpdate.fire)
 			);
 
 			this.attachments.set(uri.path, instruction);

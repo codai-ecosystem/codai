@@ -13,9 +13,30 @@ import { NewLine } from '../../../../common/codecs/linesCodec/tokens/newLine.js'
 import { randomRange, randomRangeNotEqualTo } from '../testUtils/randomRange.js';
 import { CarriageReturn } from '../../../../common/codecs/linesCodec/tokens/carriageReturn.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { TSimpleToken, WELL_KNOWN_TOKENS } from '../../../../common/codecs/simpleCodec/simpleDecoder.js';
-import { ISimpleTokenClass, SimpleToken } from '../../../../common/codecs/simpleCodec/tokens/simpleToken.js';
-import { At, Colon, DollarSign, ExclamationMark, Hash, LeftAngleBracket, LeftBracket, LeftCurlyBrace, RightAngleBracket, RightBracket, RightCurlyBrace, Slash, Space, Word } from '../../../../common/codecs/simpleCodec/tokens/index.js';
+import {
+	TSimpleToken,
+	WELL_KNOWN_TOKENS,
+} from '../../../../common/codecs/simpleCodec/simpleDecoder.js';
+import {
+	ISimpleTokenClass,
+	SimpleToken,
+} from '../../../../common/codecs/simpleCodec/tokens/simpleToken.js';
+import {
+	At,
+	Colon,
+	DollarSign,
+	ExclamationMark,
+	Hash,
+	LeftAngleBracket,
+	LeftBracket,
+	LeftCurlyBrace,
+	RightAngleBracket,
+	RightBracket,
+	RightCurlyBrace,
+	Slash,
+	Space,
+	Word,
+} from '../../../../common/codecs/simpleCodec/tokens/index.js';
 
 /**
  * List of simple tokens to randomly select from
@@ -36,7 +57,7 @@ const randomSimpleToken = (): TSimpleToken => {
 	const Constructor = TOKENS[index];
 	assertDefined(
 		Constructor,
-		`Cannot find a constructor object for a well-known token at index '${index}'.`,
+		`Cannot find a constructor object for a well-known token at index '${index}'.`
 	);
 
 	return new Constructor(randomRange());
@@ -52,69 +73,78 @@ suite('BaseToken', () => {
 		 */
 		test('• a list of tokens', () => {
 			const tests: readonly [string, BaseToken[]][] = [
-				['/textoftheword$#', [
-					new Slash(randomRange()),
-					new Word(randomRange(), 'textoftheword'),
-					new DollarSign(randomRange()),
-					new Hash(randomRange()),
-				]],
-				['<:👋helou👋:>', [
-					new LeftAngleBracket(randomRange()),
-					new Colon(randomRange()),
-					new Word(randomRange(), '👋helou👋'),
-					new Colon(randomRange()),
-					new RightAngleBracket(randomRange()),
-				]],
-				[' {$#[ !@! ]#$} ', [
-					new Space(randomRange()),
-					new LeftCurlyBrace(randomRange()),
-					new DollarSign(randomRange()),
-					new Hash(randomRange()),
-					new LeftBracket(randomRange()),
-					new Space(randomRange()),
-					new ExclamationMark(randomRange()),
-					new At(randomRange()),
-					new ExclamationMark(randomRange()),
-					new Space(randomRange()),
-					new RightBracket(randomRange()),
-					new Hash(randomRange()),
-					new DollarSign(randomRange()),
-					new RightCurlyBrace(randomRange()),
-					new Space(randomRange()),
-				]],
+				[
+					'/textoftheword$#',
+					[
+						new Slash(randomRange()),
+						new Word(randomRange(), 'textoftheword'),
+						new DollarSign(randomRange()),
+						new Hash(randomRange()),
+					],
+				],
+				[
+					'<:👋helou👋:>',
+					[
+						new LeftAngleBracket(randomRange()),
+						new Colon(randomRange()),
+						new Word(randomRange(), '👋helou👋'),
+						new Colon(randomRange()),
+						new RightAngleBracket(randomRange()),
+					],
+				],
+				[
+					' {$#[ !@! ]#$} ',
+					[
+						new Space(randomRange()),
+						new LeftCurlyBrace(randomRange()),
+						new DollarSign(randomRange()),
+						new Hash(randomRange()),
+						new LeftBracket(randomRange()),
+						new Space(randomRange()),
+						new ExclamationMark(randomRange()),
+						new At(randomRange()),
+						new ExclamationMark(randomRange()),
+						new Space(randomRange()),
+						new RightBracket(randomRange()),
+						new Hash(randomRange()),
+						new DollarSign(randomRange()),
+						new RightCurlyBrace(randomRange()),
+						new Space(randomRange()),
+					],
+				],
 			];
 
 			for (const test of tests) {
 				const [expectedText, tokens] = test;
 
-				assert.strictEqual(
-					expectedText,
-					BaseToken.render(tokens),
-					'Must correctly render tokens.',
-				);
+				assert.strictEqual(expectedText, BaseToken.render(tokens), 'Must correctly render tokens.');
 			}
 		});
 
 		test('• accepts tokens delimiter', () => {
 			// couple of different delimiters to try
-			const delimiter = (randomBoolean())
-				? ', '
-				: ' | ';
+			const delimiter = randomBoolean() ? ', ' : ' | ';
 
 			const tests: readonly [string, BaseToken[]][] = [
-				[`/${delimiter}textoftheword${delimiter}$${delimiter}#`, [
-					new Slash(randomRange()),
-					new Word(randomRange(), 'textoftheword'),
-					new DollarSign(randomRange()),
-					new Hash(randomRange()),
-				]],
-				[`<${delimiter}:${delimiter}👋helou👋${delimiter}:${delimiter}>`, [
-					new LeftAngleBracket(randomRange()),
-					new Colon(randomRange()),
-					new Word(randomRange(), '👋helou👋'),
-					new Colon(randomRange()),
-					new RightAngleBracket(randomRange()),
-				]],
+				[
+					`/${delimiter}textoftheword${delimiter}$${delimiter}#`,
+					[
+						new Slash(randomRange()),
+						new Word(randomRange(), 'textoftheword'),
+						new DollarSign(randomRange()),
+						new Hash(randomRange()),
+					],
+				],
+				[
+					`<${delimiter}:${delimiter}👋helou👋${delimiter}:${delimiter}>`,
+					[
+						new LeftAngleBracket(randomRange()),
+						new Colon(randomRange()),
+						new Word(randomRange(), '👋helou👋'),
+						new Colon(randomRange()),
+						new RightAngleBracket(randomRange()),
+					],
+				],
 			];
 
 			for (const test of tests) {
@@ -123,7 +153,7 @@ suite('BaseToken', () => {
 				assert.strictEqual(
 					expectedText,
 					BaseToken.render(tokens, delimiter),
-					'Must correctly render tokens with a custom delimiter.',
+					'Must correctly render tokens with a custom delimiter.'
 				);
 			}
 		});
@@ -132,7 +162,7 @@ suite('BaseToken', () => {
 			assert.strictEqual(
 				'',
 				BaseToken.render([]),
-				`Must correctly render and empty list of tokens.`,
+				`Must correctly render and empty list of tokens.`
 			);
 		});
 	});
@@ -158,8 +188,8 @@ suite('BaseToken', () => {
 							startLineNumber,
 							lastToken.range.startColumn,
 							startLineNumber,
-							lastToken.range.startColumn + 1,
-						),
+							lastToken.range.startColumn + 1
+						)
 					);
 
 					BaseToken.fullRange([
@@ -186,8 +216,8 @@ suite('BaseToken', () => {
 							firstToken.range.startLineNumber,
 							firstToken.range.endColumn - 1,
 							firstToken.range.startLineNumber + randomInt(10),
-							firstToken.range.endColumn,
-						),
+							firstToken.range.endColumn
+						)
 					);
 
 					BaseToken.fullRange([
@@ -223,7 +253,7 @@ suite('BaseToken', () => {
 
 			assert(
 				token.range.equalsRange(rangeBefore),
-				'Token range must be unchanged before updating.',
+				'Token range must be unchanged before updating.'
 			);
 
 			const rangeAfter = randomRangeNotEqualTo(rangeBefore);
@@ -231,7 +261,7 @@ suite('BaseToken', () => {
 
 			assert(
 				token.range.equalsRange(rangeAfter),
-				`Token range must be to the new '${rangeAfter}' one.`,
+				`Token range must be to the new '${rangeAfter}' one.`
 			);
 		});
 	});
@@ -253,45 +283,39 @@ suite('BaseToken', () => {
 				startLineNumber,
 				startColumnNumber,
 				startLineNumber + randomInt(10, 1),
-				startColumnNumber + randomInt(10, 1),
+				startColumnNumber + randomInt(10, 1)
 			);
 
 			const token = new TestToken(range);
 
-			assert(
-				token.range.isEmpty() === false,
-				'Token range must not be empty before collapsing.',
-			);
+			assert(token.range.isEmpty() === false, 'Token range must not be empty before collapsing.');
 
 			token.collapseRangeToStart();
 
-			assert(
-				token.range.isEmpty(),
-				'Token range must be empty after collapsing.',
-			);
+			assert(token.range.isEmpty(), 'Token range must be empty after collapsing.');
 
 			assert.strictEqual(
 				token.range.startLineNumber,
 				startLineNumber,
-				'Token range start line number must not change.',
+				'Token range start line number must not change.'
 			);
 
 			assert.strictEqual(
 				token.range.startColumn,
 				startColumnNumber,
-				'Token range start column number must not change.',
+				'Token range start column number must not change.'
 			);
 
 			assert.strictEqual(
 				token.range.endLineNumber,
 				startLineNumber,
-				'Token range end line number must be equal to line start number.',
+				'Token range end line number must be equal to line start number.'
 			);
 
 			assert.strictEqual(
 				token.range.endColumn,
 				startColumnNumber,
-				'Token range end column number must be equal to column start number.',
+				'Token range end column number must be equal to column start number.'
 			);
 		});
 	});
@@ -301,7 +325,7 @@ suite('BaseToken', () => {
 			class TestToken extends BaseToken {
 				constructor(
 					range: Range,
-					private readonly value: string,
+					private readonly value: string
 				) {
 					super(range);
 				}
@@ -321,7 +345,7 @@ suite('BaseToken', () => {
 				startLineNumber,
 				startColumnNumber,
 				startLineNumber,
-				startColumnNumber + text.length,
+				startColumnNumber + text.length
 			);
 
 			const token1 = new TestToken(range, text);
@@ -329,12 +353,12 @@ suite('BaseToken', () => {
 
 			assert(
 				token1.equals(token2),
-				`Token of type '${token1.constructor.name}' must be equal to token of type '${token2.constructor.name}'.`,
+				`Token of type '${token1.constructor.name}' must be equal to token of type '${token2.constructor.name}'.`
 			);
 
 			assert(
 				token2.equals(token1),
-				`Token of type '${token2.constructor.name}' must be equal to token of type '${token1.constructor.name}'.`,
+				`Token of type '${token2.constructor.name}' must be equal to token of type '${token1.constructor.name}'.`
 			);
 		});
 
@@ -368,13 +392,13 @@ suite('BaseToken', () => {
 					assert.strictEqual(
 						token1.equals(token2),
 						false,
-						`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`,
+						`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`
 					);
 
 					assert.strictEqual(
 						token2.equals(token1),
 						false,
-						`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`,
+						`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`
 					);
 				});
 
@@ -389,7 +413,7 @@ suite('BaseToken', () => {
 						}
 					}
 
-					class TestToken2 extends TestToken1 { }
+					class TestToken2 extends TestToken1 {}
 
 					const range = randomRange();
 					const token1 = new TestToken1(range);
@@ -398,13 +422,13 @@ suite('BaseToken', () => {
 					assert.strictEqual(
 						token1.equals(token2),
 						false,
-						`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`,
+						`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`
 					);
 
 					assert.strictEqual(
 						token2.equals(token1),
 						false,
-						`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`,
+						`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`
 					);
 				});
 
@@ -429,7 +453,7 @@ suite('BaseToken', () => {
 						}
 					}
 
-					class TestToken2 extends TestToken3 { }
+					class TestToken2 extends TestToken3 {}
 
 					const range = randomRange();
 					const token1 = new TestToken1(range);
@@ -438,22 +462,20 @@ suite('BaseToken', () => {
 					assert.strictEqual(
 						token1.equals(token2),
 						false,
-						`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`,
+						`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`
 					);
 
 					assert.strictEqual(
 						token2.equals(token1),
 						false,
-						`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`,
+						`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`
 					);
 				});
 			});
 
 			test('• different text', () => {
 				class TestToken extends BaseToken {
-					constructor(
-						private readonly value: string,
-					) {
+					constructor(private readonly value: string) {
 						super(new Range(1, 1, 1, 1 + value.length));
 					}
 
@@ -472,13 +494,13 @@ suite('BaseToken', () => {
 				assert.strictEqual(
 					token1.equals(token2),
 					false,
-					`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`,
+					`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`
 				);
 
 				assert.strictEqual(
 					token2.equals(token1),
 					false,
-					`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`,
+					`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`
 				);
 			});
 
@@ -502,13 +524,13 @@ suite('BaseToken', () => {
 				assert.strictEqual(
 					token1.equals(token2),
 					false,
-					`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`,
+					`Token of type '${token1.constructor.name}' must not be equal to token of type '${token2.constructor.name}'.`
 				);
 
 				assert.strictEqual(
 					token2.equals(token1),
 					false,
-					`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`,
+					`Token of type '${token2.constructor.name}' must not be equal to token of type '${token1.constructor.name}'.`
 				);
 			});
 		});

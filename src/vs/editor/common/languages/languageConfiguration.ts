@@ -65,7 +65,7 @@ export interface LanguageConfiguration {
 	/**
 	 * Defines a list of bracket pairs that are colorized depending on their nesting level.
 	 * If not set, the configured brackets will be used.
-	*/
+	 */
 	colorizedBracketPairs?: CharacterPair[];
 	/**
 	 * Defines what characters must be after the cursor for bracket or quote autoclosing to occur when using the \'languageDefined\' autoclosing setting.
@@ -119,7 +119,6 @@ export interface IndentationRule {
 	 * If a line matches this pattern, then its indentation should not be changed and it should not be evaluated against the other rules.
 	 */
 	unIndentedLinePattern?: RegExp | null;
-
 }
 
 /**
@@ -223,7 +222,7 @@ export enum IndentAction {
 	/**
 	 * Insert new line and outdent once (relative to the previous line's indentation).
 	 */
-	Outdent = 3
+	Outdent = 3,
 }
 
 /**
@@ -270,7 +269,6 @@ export interface CompleteEnterAction {
  * @internal
  */
 export class StandardAutoClosingPairConditional {
-
 	readonly open: string;
 	readonly close: string;
 	private readonly _inString: boolean;
@@ -347,7 +345,10 @@ export class StandardAutoClosingPairConditional {
 		if (!this._neutralCharacterSearched) {
 			this._neutralCharacterSearched = true;
 			if (!this._neutralCharacter) {
-				this._neutralCharacter = this._findNeutralCharacterInRange(CharCode.Digit0, CharCode.Digit9);
+				this._neutralCharacter = this._findNeutralCharacterInRange(
+					CharCode.Digit0,
+					CharCode.Digit9
+				);
 			}
 			if (!this._neutralCharacter) {
 				this._neutralCharacter = this._findNeutralCharacterInRange(CharCode.a, CharCode.z);
@@ -375,7 +376,10 @@ export class AutoClosingPairs {
 	/** Key is last character of close */
 	public readonly autoClosingPairsCloseByEnd: Map<string, StandardAutoClosingPairConditional[]>;
 	/** Key is close. Only has pairs that are a single character */
-	public readonly autoClosingPairsCloseSingleChar: Map<string, StandardAutoClosingPairConditional[]>;
+	public readonly autoClosingPairsCloseSingleChar: Map<
+		string,
+		StandardAutoClosingPairConditional[]
+	>;
 
 	constructor(autoClosingPairs: StandardAutoClosingPairConditional[]) {
 		this.autoClosingPairsOpenByStart = new Map<string, StandardAutoClosingPairConditional[]>();

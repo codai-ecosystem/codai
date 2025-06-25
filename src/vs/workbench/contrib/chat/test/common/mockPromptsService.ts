@@ -8,10 +8,15 @@ import { URI } from '../../../../../base/common/uri.js';
 import { ITextModel } from '../../../../../editor/common/model.js';
 import { PromptsType } from '../../../../../platform/prompts/common/prompts.js';
 import { TextModelPromptParser } from '../../common/promptSyntax/parsers/textModelPromptParser.js';
-import { IChatPromptSlashCommand, ICustomChatMode, IMetadata, IPromptPath, IPromptsService } from '../../common/promptSyntax/service/types.js';
+import {
+	IChatPromptSlashCommand,
+	ICustomChatMode,
+	IMetadata,
+	IPromptPath,
+	IPromptsService,
+} from '../../common/promptSyntax/service/types.js';
 
 export class MockPromptsService implements IPromptsService {
-
 	_serviceBrand: undefined;
 
 	getAllMetadata(_files: readonly URI[]): Promise<readonly IMetadata[]> {
@@ -45,5 +50,5 @@ export class MockPromptsService implements IPromptsService {
 	getCustomChatModes(): Promise<readonly ICustomChatMode[]> {
 		throw new Error('Method not implemented.');
 	}
-	dispose(): void { }
+	dispose(): void {}
 }

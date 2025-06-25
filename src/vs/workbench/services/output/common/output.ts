@@ -39,19 +39,37 @@ export const OUTPUT_VIEW_ID = 'workbench.panel.output';
 
 export const CONTEXT_IN_OUTPUT = new RawContextKey<boolean>('inOutput', false);
 export const CONTEXT_ACTIVE_FILE_OUTPUT = new RawContextKey<boolean>('activeLogOutput', false);
-export const CONTEXT_ACTIVE_LOG_FILE_OUTPUT = new RawContextKey<boolean>('activeLogOutput.isLog', false);
-export const CONTEXT_ACTIVE_OUTPUT_LEVEL_SETTABLE = new RawContextKey<boolean>('activeLogOutput.levelSettable', false);
+export const CONTEXT_ACTIVE_LOG_FILE_OUTPUT = new RawContextKey<boolean>(
+	'activeLogOutput.isLog',
+	false
+);
+export const CONTEXT_ACTIVE_OUTPUT_LEVEL_SETTABLE = new RawContextKey<boolean>(
+	'activeLogOutput.levelSettable',
+	false
+);
 export const CONTEXT_ACTIVE_OUTPUT_LEVEL = new RawContextKey<string>('activeLogOutput.level', '');
-export const CONTEXT_ACTIVE_OUTPUT_LEVEL_IS_DEFAULT = new RawContextKey<boolean>('activeLogOutput.levelIsDefault', false);
-export const CONTEXT_OUTPUT_SCROLL_LOCK = new RawContextKey<boolean>(`outputView.scrollLock`, false);
+export const CONTEXT_ACTIVE_OUTPUT_LEVEL_IS_DEFAULT = new RawContextKey<boolean>(
+	'activeLogOutput.levelIsDefault',
+	false
+);
+export const CONTEXT_OUTPUT_SCROLL_LOCK = new RawContextKey<boolean>(
+	`outputView.scrollLock`,
+	false
+);
 export const ACTIVE_OUTPUT_CHANNEL_CONTEXT = new RawContextKey<string>('activeOutputChannel', '');
 export const SHOW_TRACE_FILTER_CONTEXT = new RawContextKey<boolean>('output.filter.trace', true);
 export const SHOW_DEBUG_FILTER_CONTEXT = new RawContextKey<boolean>('output.filter.debug', true);
 export const SHOW_INFO_FILTER_CONTEXT = new RawContextKey<boolean>('output.filter.info', true);
-export const SHOW_WARNING_FILTER_CONTEXT = new RawContextKey<boolean>('output.filter.warning', true);
+export const SHOW_WARNING_FILTER_CONTEXT = new RawContextKey<boolean>(
+	'output.filter.warning',
+	true
+);
 export const SHOW_ERROR_FILTER_CONTEXT = new RawContextKey<boolean>('output.filter.error', true);
 export const OUTPUT_FILTER_FOCUS_CONTEXT = new RawContextKey<boolean>('outputFilterFocus', false);
-export const HIDE_CATEGORY_FILTER_CONTEXT = new RawContextKey<string>('output.filter.categories', '');
+export const HIDE_CATEGORY_FILTER_CONTEXT = new RawContextKey<string>(
+	'output.filter.categories',
+	''
+);
 
 export interface IOutputViewFilters {
 	readonly onDidChange: Event<void>;
@@ -144,7 +162,7 @@ export interface IOutputService {
 export enum OutputChannelUpdateMode {
 	Append = 1,
 	Replace,
-	Clear
+	Clear,
 }
 
 export interface ILogEntry {
@@ -157,7 +175,6 @@ export interface ILogEntry {
 }
 
 export interface IOutputChannel {
-
 	/**
 	 * Identifier of the output channel.
 	 */
@@ -206,7 +223,7 @@ export interface IOutputChannel {
 }
 
 export const Extensions = {
-	OutputChannels: 'workbench.contributions.outputChannels'
+	OutputChannels: 'workbench.contributions.outputChannels',
 };
 
 export interface IOutputChannelDescriptor {
@@ -227,11 +244,15 @@ export interface IMultiSourceOutputChannelDescriptor extends IOutputChannelDescr
 	source: ReadonlyArray<IOutputContentSource>;
 }
 
-export function isSingleSourceOutputChannelDescriptor(descriptor: IOutputChannelDescriptor): descriptor is ISingleSourceOutputChannelDescriptor {
+export function isSingleSourceOutputChannelDescriptor(
+	descriptor: IOutputChannelDescriptor
+): descriptor is ISingleSourceOutputChannelDescriptor {
 	return !!descriptor.source && !Array.isArray(descriptor.source);
 }
 
-export function isMultiSourceOutputChannelDescriptor(descriptor: IOutputChannelDescriptor): descriptor is IMultiSourceOutputChannelDescriptor {
+export function isMultiSourceOutputChannelDescriptor(
+	descriptor: IOutputChannelDescriptor
+): descriptor is IMultiSourceOutputChannelDescriptor {
 	return Array.isArray(descriptor.source);
 }
 
@@ -241,7 +262,6 @@ export interface IOutputContentSource {
 }
 
 export interface IOutputChannelRegistry {
-
 	readonly onDidRegisterChannel: Event<string>;
 	readonly onDidRemoveChannel: Event<IOutputChannelDescriptor>;
 	readonly onDidUpdateChannelSources: Event<IMultiSourceOutputChannelDescriptor>;
@@ -281,7 +301,9 @@ class OutputChannelRegistry extends Disposable implements IOutputChannelRegistry
 	private readonly _onDidRemoveChannel = this._register(new Emitter<IOutputChannelDescriptor>());
 	readonly onDidRemoveChannel = this._onDidRemoveChannel.event;
 
-	private readonly _onDidUpdateChannelFiles = this._register(new Emitter<IMultiSourceOutputChannelDescriptor>());
+	private readonly _onDidUpdateChannelFiles = this._register(
+		new Emitter<IMultiSourceOutputChannelDescriptor>()
+	);
 	readonly onDidUpdateChannelSources = this._onDidUpdateChannelFiles.event;
 
 	public registerChannel(descriptor: IOutputChannelDescriptor): void {

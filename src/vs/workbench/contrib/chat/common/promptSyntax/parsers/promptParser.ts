@@ -22,23 +22,18 @@ const getContentsProvider = (
 	uri: URI,
 	options: Partial<IPromptParserOptions>,
 	modelService: IModelService,
-	instaService: IInstantiationService,
+	instaService: IInstantiationService
 ): IPromptContentsProvider => {
 	// use text model contents provider for `untitled` documents
 	if (isUntitled(uri)) {
 		const model = modelService.getModel(uri);
 
-		assertDefined(
-			model,
-			`Cannot find model of untitled document '${uri.path}'.`,
-		);
+		assertDefined(model, `Cannot find model of untitled document '${uri.path}'.`);
 
-		return instaService
-			.createInstance(TextModelContentsProvider, model, options);
+		return instaService.createInstance(TextModelContentsProvider, model, options);
 	}
 
-	return instaService
-		.createInstance(FilePromptContentProvider, uri, options);
+	return instaService.createInstance(FilePromptContentProvider, uri, options);
 };
 
 /**
@@ -57,17 +52,11 @@ export class PromptParser extends BasePromptParser<IPromptContentsProvider> {
 		@ILogService logService: ILogService,
 		@IModelService modelService: IModelService,
 		@IInstantiationService instaService: IInstantiationService,
-		@IWorkspaceContextService workspaceService: IWorkspaceContextService,
+		@IWorkspaceContextService workspaceService: IWorkspaceContextService
 	) {
 		const contentsProvider = getContentsProvider(uri, options, modelService, instaService);
 
-		super(
-			contentsProvider,
-			options,
-			instaService,
-			workspaceService,
-			logService,
-		);
+		super(contentsProvider, options, instaService, workspaceService, logService);
 
 		this.contentsProvider = this._register(contentsProvider);
 	}

@@ -12,14 +12,11 @@ import { IMainProcessService } from '../common/mainProcessService.js';
  * An implementation of `IMainProcessService` that leverages Electron's IPC.
  */
 export class ElectronIPCMainProcessService extends Disposable implements IMainProcessService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private mainProcessConnection: IPCElectronClient;
 
-	constructor(
-		windowId: number
-	) {
+	constructor(windowId: number) {
 		super();
 
 		this.mainProcessConnection = this._register(new IPCElectronClient(`window:${windowId}`));

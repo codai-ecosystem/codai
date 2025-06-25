@@ -8,24 +8,41 @@ import { CancellationToken } from '../../../base/common/cancellation.js';
 import { Emitter, Event } from '../../../base/common/event.js';
 import { IConfigurationService } from '../../configuration/common/configuration.js';
 import { IEnvironmentMainService } from '../../environment/electron-main/environmentMainService.js';
-import { ILifecycleMainService, LifecycleMainPhase } from '../../lifecycle/electron-main/lifecycleMainService.js';
+import {
+	ILifecycleMainService,
+	LifecycleMainPhase,
+} from '../../lifecycle/electron-main/lifecycleMainService.js';
 import { ILogService } from '../../log/common/log.js';
 import { IProductService } from '../../product/common/productService.js';
 import { IRequestService } from '../../request/common/request.js';
-import { AvailableForDownload, DisablementReason, IUpdateService, State, StateType, UpdateType } from '../common/update.js';
+import {
+	AvailableForDownload,
+	DisablementReason,
+	IUpdateService,
+	State,
+	StateType,
+	UpdateType,
+} from '../common/update.js';
 
-export function createUpdateURL(platform: string, quality: string, productService: IProductService): string {
+export function createUpdateURL(
+	platform: string,
+	quality: string,
+	productService: IProductService
+): string {
 	return `${productService.updateUrl}/api/update/${platform}/${quality}/${productService.commit}`;
 }
 
 export type UpdateErrorClassification = {
 	owner: 'joaomoreno';
-	messageHash: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The hash of the error message.' };
+	messageHash: {
+		classification: 'SystemMetaData';
+		purpose: 'FeatureInsight';
+		comment: 'The hash of the error message.';
+	};
 	comment: 'This is used to know how often VS Code updates have failed.';
 };
 
 export abstract class AbstractUpdateService implements IUpdateService {
-
 	declare readonly _serviceBrand: undefined;
 
 	protected url: string | undefined;
@@ -53,8 +70,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
 		@ILogService protected logService: ILogService,
 		@IProductService protected readonly productService: IProductService
 	) {
-		lifecycleMainService.when(LifecycleMainPhase.AfterWindowOpen)
-			.finally(() => this.initialize());
+		lifecycleMainService.when(LifecycleMainPhase.AfterWindowOpen).finally(() => this.initialize());
 	}
 
 	/**
@@ -80,7 +96,9 @@ export abstract class AbstractUpdateService implements IUpdateService {
 			return;
 		}
 
-		const updateMode = this.configurationService.getValue<'none' | 'manual' | 'start' | 'default'>('update.mode');
+		const updateMode = this.configurationService.getValue<'none' | 'manual' | 'start' | 'default'>(
+			'update.mode'
+		);
 		const quality = this.getProductQuality(updateMode);
 
 		if (!quality) {
@@ -106,12 +124,16 @@ export abstract class AbstractUpdateService implements IUpdateService {
 		this.setState(State.Idle(this.getUpdateType()));
 
 		if (updateMode === 'manual') {
-			this.logService.info('update#ctor - manual checks only; automatic updates are disabled by user preference');
+			this.logService.info(
+				'update#ctor - manual checks only; automatic updates are disabled by user preference'
+			);
 			return;
 		}
 
 		if (updateMode === 'start') {
-			this.logService.info('update#ctor - startup checks only; automatic updates are disabled by user preference');
+			this.logService.info(
+				'update#ctor - startup checks only; automatic updates are disabled by user preference'
+			);
 
 			// Check for updates only once after 30 seconds
 			setTimeout(() => this.checkForUpdates(false), 30 * 1000);
@@ -199,7 +221,9 @@ export abstract class AbstractUpdateService implements IUpdateService {
 			return undefined;
 		}
 
-		const mode = this.configurationService.getValue<'none' | 'manual' | 'start' | 'default'>('update.mode');
+		const mode = this.configurationService.getValue<'none' | 'manual' | 'start' | 'default'>(
+			'update.mode'
+		);
 
 		if (mode === 'none') {
 			return false;
@@ -210,7 +234,6 @@ export abstract class AbstractUpdateService implements IUpdateService {
 			// The update server replies with 204 (No Content) when no
 			// update is available - that's all we want to know.
 			return context.res.statusCode === 204;
-
 		} catch (error) {
 			this.logService.error('update#isLatestVersion(): failed to check for updates');
 			this.logService.error(error);

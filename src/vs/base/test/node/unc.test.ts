@@ -8,9 +8,7 @@ import { getUNCHost } from '../../node/unc.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../common/utils.js';
 
 suite('UNC', () => {
-
 	test('getUNCHost', () => {
-
 		strictEqual(getUNCHost(undefined), undefined);
 		strictEqual(getUNCHost(null), undefined);
 

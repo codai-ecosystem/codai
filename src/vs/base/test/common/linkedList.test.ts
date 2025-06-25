@@ -8,11 +8,9 @@ import { LinkedList } from '../../common/linkedList.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('LinkedList', function () {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function assertElements<E>(list: LinkedList<E>, ...elements: E[]) {
-
 		// check size
 		assert.strictEqual(list.size, elements.length);
 

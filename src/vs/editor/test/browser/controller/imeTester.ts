@@ -12,14 +12,20 @@ import * as platform from '../../../../base/common/platform.js';
 import { mainWindow } from '../../../../base/browser/window.js';
 import { TestAccessibilityService } from '../../../../platform/accessibility/test/common/testAccessibilityService.js';
 import { NullLogService } from '../../../../platform/log/common/log.js';
-import { ISimpleModel, PagedScreenReaderStrategy } from '../../../browser/controller/editContext/screenReaderUtils.js';
+import {
+	ISimpleModel,
+	PagedScreenReaderStrategy,
+} from '../../../browser/controller/editContext/screenReaderUtils.js';
 import { TextAreaState } from '../../../browser/controller/editContext/textArea/textAreaEditContextState.js';
-import { ITextAreaInputHost, TextAreaInput, TextAreaWrapper } from '../../../browser/controller/editContext/textArea/textAreaEditContextInput.js';
+import {
+	ITextAreaInputHost,
+	TextAreaInput,
+	TextAreaWrapper,
+} from '../../../browser/controller/editContext/textArea/textAreaEditContextInput.js';
 
 // To run this test, open imeTester.html
 
 class SingleLineTestModel implements ISimpleModel {
-
 	private _line: string;
 
 	constructor(line: string) {
@@ -43,7 +49,10 @@ class SingleLineTestModel implements ISimpleModel {
 	}
 
 	modifyPosition(position: Position, offset: number): Position {
-		const column = Math.min(this.getLineMaxColumn(position.lineNumber), Math.max(1, position.column + offset));
+		const column = Math.min(
+			this.getLineMaxColumn(position.lineNumber),
+			Math.max(1, position.column + offset)
+		);
 		return new Position(position.lineNumber, column);
 	}
 
@@ -57,7 +66,6 @@ class SingleLineTestModel implements ISimpleModel {
 }
 
 class TestView {
-
 	private readonly _model: SingleLineTestModel;
 
 	constructor(model: SingleLineTestModel) {
@@ -97,7 +105,6 @@ function doCreateTest(description: string, inputStr: string, expectedStr: string
 	startBtn.innerText = 'Start';
 	container.appendChild(startBtn);
 
-
 	const input = document.createElement('textarea');
 	input.setAttribute('rows', '10');
 	input.setAttribute('cols', '40');
@@ -112,26 +119,42 @@ function doCreateTest(description: string, inputStr: string, expectedStr: string
 				multicursorText: null,
 				text: '',
 				html: undefined,
-				mode: null
+				mode: null,
 			};
 		},
 		getScreenReaderContent: (): TextAreaState => {
 			const selection = new Range(1, 1 + cursorOffset, 1, 1 + cursorOffset + cursorLength);
 
-			const screenReaderContentState = PagedScreenReaderStrategy.fromEditorSelection(model, selection, 10, true);
+			const screenReaderContentState = PagedScreenReaderStrategy.fromEditorSelection(
+				model,
+				selection,
+				10,
+				true
+			);
 			return TextAreaState.fromScreenReaderContentState(screenReaderContentState);
 		},
-		deduceModelPosition: (viewAnchorPosition: Position, deltaOffset: number, lineFeedCnt: number): Position => {
+		deduceModelPosition: (
+			viewAnchorPosition: Position,
+			deltaOffset: number,
+			lineFeedCnt: number
+		): Position => {
 			return null!;
-		}
+		},
 	};
 
-	const handler = new TextAreaInput(textAreaInputHost, new TextAreaWrapper(input), platform.OS, {
-		isAndroid: browser.isAndroid,
-		isFirefox: browser.isFirefox,
-		isChrome: browser.isChrome,
-		isSafari: browser.isSafari,
-	}, new TestAccessibilityService(), new NullLogService());
+	const handler = new TextAreaInput(
+		textAreaInputHost,
+		new TextAreaWrapper(input),
+		platform.OS,
+		{
+			isAndroid: browser.isAndroid,
+			isFirefox: browser.isFirefox,
+			isChrome: browser.isChrome,
+			isSafari: browser.isSafari,
+		},
+		new TestAccessibilityService(),
+		new NullLogService()
+	);
 
 	const output = document.createElement('pre');
 	output.className = 'output';
@@ -170,7 +193,7 @@ function doCreateTest(description: string, inputStr: string, expectedStr: string
 		check.appendChild(document.createTextNode(expected));
 	};
 
-	handler.onType((e) => {
+	handler.onType(e => {
 		console.log('type text: ' + e.text + ', replaceCharCnt: ' + e.replacePrevCharCnt);
 		const text = model.getModelLineContent(1);
 		const preText = text.substring(0, cursorOffset - e.replacePrevCharCnt);
@@ -199,9 +222,9 @@ const TESTS = [
 	{ description: 'Chinese IME 2', in: 'ni [Space] hao [Space]', out: '你好' },
 	{ description: 'Chinese IME 3', in: 'hazni [Space]', out: '哈祝你' },
 	{ description: 'Mac dead key 1', in: '`.', out: '`.' },
-	{ description: 'Mac hold key 1', in: 'e long press and 1', out: 'é' }
+	{ description: 'Mac hold key 1', in: 'e long press and 1', out: 'é' },
 ];
 
-TESTS.forEach((t) => {
+TESTS.forEach(t => {
 	mainWindow.document.body.appendChild(doCreateTest(t.description, t.in, t.out));
 });

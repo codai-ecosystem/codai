@@ -11,7 +11,11 @@ import { IRequestService } from '../../request/common/request.js';
 import * as https from 'https';
 import { AbstractOneDataSystemAppender, IAppInsightsCore } from '../common/1dsAppender.js';
 
-type OnCompleteFunc = (status: number, headers: { [headerName: string]: string }, response?: string) => void;
+type OnCompleteFunc = (
+	status: number,
+	headers: { [headerName: string]: string },
+	response?: string
+) => void;
 
 interface IResponseData {
 	headers: { [headerName: string]: string };
@@ -25,7 +29,10 @@ interface IResponseData {
  * @param requestService The request service
  * @returns An object containing the headers, statusCode, and responseData
  */
-async function makeTelemetryRequest(options: IRequestOptions, requestService: IRequestService): Promise<IResponseData> {
+async function makeTelemetryRequest(
+	options: IRequestOptions,
+	requestService: IRequestService
+): Promise<IResponseData> {
 	const response = await requestService.request(options, CancellationToken.None);
 	const responseData = (await streamToBuffer(response.stream)).toString();
 	const statusCode = response.res.statusCode ?? 200;
@@ -33,7 +40,7 @@ async function makeTelemetryRequest(options: IRequestOptions, requestService: IR
 	return {
 		headers,
 		statusCode,
-		responseData
+		responseData,
 	};
 }
 
@@ -45,7 +52,7 @@ async function makeTelemetryRequest(options: IRequestOptions, requestService: IR
 async function makeLegacyTelemetryRequest(options: IRequestOptions): Promise<IResponseData> {
 	const httpsOptions = {
 		method: options.type,
-		headers: options.headers
+		headers: options.headers,
 	};
 	const responsePromise = new Promise<IResponseData>((resolve, reject) => {
 		const req = https.request(options.url ?? '', httpsOptions, res => {
@@ -53,7 +60,7 @@ async function makeLegacyTelemetryRequest(options: IRequestOptions): Promise<IRe
 				resolve({
 					headers: res.headers as Record<string, any>,
 					statusCode: res.statusCode ?? 200,
-					responseData: responseData.toString()
+					responseData: responseData.toString(),
 				});
 			});
 			// On response with error send status of 0 and a blank response to oncomplete so we can retry events
@@ -61,7 +68,7 @@ async function makeLegacyTelemetryRequest(options: IRequestOptions): Promise<IRe
 				reject(err);
 			});
 		});
-		req.write(options.data, (err) => {
+		req.write(options.data, err => {
 			if (err) {
 				reject(err);
 			}
@@ -71,21 +78,28 @@ async function makeLegacyTelemetryRequest(options: IRequestOptions): Promise<IRe
 	return responsePromise;
 }
 
-async function sendPostAsync(requestService: IRequestService | undefined, payload: IPayloadData, oncomplete: OnCompleteFunc) {
-	const telemetryRequestData = typeof payload.data === 'string' ? payload.data : new TextDecoder().decode(payload.data);
+async function sendPostAsync(
+	requestService: IRequestService | undefined,
+	payload: IPayloadData,
+	oncomplete: OnCompleteFunc
+) {
+	const telemetryRequestData =
+		typeof payload.data === 'string' ? payload.data : new TextDecoder().decode(payload.data);
 	const requestOptions: IRequestOptions = {
 		type: 'POST',
 		headers: {
 			...payload.headers,
 			'Content-Type': 'application/json',
-			'Content-Length': Buffer.byteLength(payload.data).toString()
+			'Content-Length': Buffer.byteLength(payload.data).toString(),
 		},
 		url: payload.urlString,
-		data: telemetryRequestData
+		data: telemetryRequestData,
 	};
 
 	try {
-		const responseData = requestService ? await makeTelemetryRequest(requestOptions, requestService) : await makeLegacyTelemetryRequest(requestOptions);
+		const responseData = requestService
+			? await makeTelemetryRequest(requestOptions, requestService)
+			: await makeLegacyTelemetryRequest(requestOptions);
 		oncomplete(responseData.statusCode, responseData.headers, responseData.responseData);
 	} catch {
 		// If it errors out, send status of 0 and a blank response to oncomplete so we can retry events
@@ -93,24 +107,28 @@ async function sendPostAsync(requestService: IRequestService | undefined, payloa
 	}
 }
 
-
 export class OneDataSystemAppender extends AbstractOneDataSystemAppender {
-
 	constructor(
 		requestService: IRequestService | undefined,
 		isInternalTelemetry: boolean,
 		eventPrefix: string,
 		defaultData: { [key: string]: any } | null,
-		iKeyOrClientFactory: string | (() => IAppInsightsCore), // allow factory function for testing
+		iKeyOrClientFactory: string | (() => IAppInsightsCore) // allow factory function for testing
 	) {
 		// Override the way events get sent since node doesn't have XHTMLRequest
 		const customHttpXHROverride: IXHROverride = {
 			sendPOST: (payload: IPayloadData, oncomplete: OnCompleteFunc) => {
 				// Fire off the async request without awaiting it
 				sendPostAsync(requestService, payload, oncomplete);
-			}
+			},
 		};
 
-		super(isInternalTelemetry, eventPrefix, defaultData, iKeyOrClientFactory, customHttpXHROverride);
+		super(
+			isInternalTelemetry,
+			eventPrefix,
+			defaultData,
+			iKeyOrClientFactory,
+			customHttpXHROverride
+		);
 	}
 }

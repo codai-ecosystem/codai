@@ -4,13 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ServicesAccessor } from '../../../../editor/browser/editorExtensions.js';
-import { AccessibleViewType, AccessibleContentProvider, AccessibleViewProviderId } from '../../../../platform/accessibility/browser/accessibleView.js';
+import {
+	AccessibleViewType,
+	AccessibleContentProvider,
+	AccessibleViewProviderId,
+} from '../../../../platform/accessibility/browser/accessibleView.js';
 import { IAccessibleViewImplementation } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 import { AccessibilityVerbositySettingId } from '../../accessibility/browser/accessibilityConfiguration.js';
 import { isReplEditorControl } from '../../replNotebook/browser/replEditor.js';
-import { IS_COMPOSITE_NOTEBOOK, NOTEBOOK_CELL_LIST_FOCUSED } from '../common/notebookContextKeys.js';
+import {
+	IS_COMPOSITE_NOTEBOOK,
+	NOTEBOOK_CELL_LIST_FOCUSED,
+} from '../common/notebookContextKeys.js';
 import { getAllOutputsText } from './viewModel/cellOutputTextHelper.js';
 
 /**
@@ -44,11 +51,13 @@ export function getAccessibleOutputProvider(editorService: IEditorService) {
 					return new AccessibleContentProvider(
 						AccessibleViewProviderId.Notebook,
 						{ type: AccessibleViewType.View },
-						() => { return outputContent; },
+						() => {
+							return outputContent;
+						},
 						() => {
 							editorControl.activeCodeEditor?.focus();
 						},
-						AccessibilityVerbositySettingId.ReplEditor,
+						AccessibilityVerbositySettingId.ReplEditor
 					);
 				}
 			}

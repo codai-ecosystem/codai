@@ -5,11 +5,11 @@ export default defineConfig({
 	plugins: [react()],
 	server: {
 		port: 3001,
-		open: true
+		open: true,
 	},
 	resolve: {
 		alias: {
-			'@codai/memory-graph': '../../src'
-		}
-	}
+			'@codai/memory-graph': '../../src',
+		},
+	},
 });

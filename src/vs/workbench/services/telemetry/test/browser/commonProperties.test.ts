@@ -8,9 +8,8 @@ import { InMemoryStorageService } from '../../../../../platform/storage/common/s
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('Browser Telemetry - common properties', function () {
-
-	const commit: string = (undefined)!;
-	const version: string = (undefined)!;
+	const commit: string = undefined!;
+	const version: string = undefined!;
 	let testStorageService: InMemoryStorageService;
 
 	teardown(() => {
@@ -26,11 +25,20 @@ suite('Browser Telemetry - common properties', function () {
 	test('mixes in additional properties', async function () {
 		const resolveCommonTelemetryProperties = () => {
 			return {
-				'userId': '1'
+				userId: '1',
 			};
 		};
 
-		const props = resolveWorkbenchCommonProperties(testStorageService, commit, version, false, undefined, undefined, false, resolveCommonTelemetryProperties);
+		const props = resolveWorkbenchCommonProperties(
+			testStorageService,
+			commit,
+			version,
+			false,
+			undefined,
+			undefined,
+			false,
+			resolveCommonTelemetryProperties
+		);
 
 		assert.ok('commitHash' in props);
 		assert.ok('sessionID' in props);
@@ -50,20 +58,41 @@ suite('Browser Telemetry - common properties', function () {
 	test('mixes in additional dyanmic properties', async function () {
 		let i = 1;
 		const resolveCommonTelemetryProperties = () => {
-			return Object.defineProperties({}, {
-				'userId': {
-					get: () => {
-						return i++;
+			return Object.defineProperties(
+				{},
+				{
+					userId: {
+						get: () => {
+							return i++;
+						},
+						enumerable: true,
 					},
-					enumerable: true
 				}
-			});
+			);
 		};
 
-		const props = resolveWorkbenchCommonProperties(testStorageService, commit, version, false, undefined, undefined, false, resolveCommonTelemetryProperties);
+		const props = resolveWorkbenchCommonProperties(
+			testStorageService,
+			commit,
+			version,
+			false,
+			undefined,
+			undefined,
+			false,
+			resolveCommonTelemetryProperties
+		);
 		assert.strictEqual(props['userId'], 1);
 
-		const props2 = resolveWorkbenchCommonProperties(testStorageService, commit, version, false, undefined, undefined, false, resolveCommonTelemetryProperties);
+		const props2 = resolveWorkbenchCommonProperties(
+			testStorageService,
+			commit,
+			version,
+			false,
+			undefined,
+			undefined,
+			false,
+			resolveCommonTelemetryProperties
+		);
 		assert.strictEqual(props2['userId'], 2);
 	});
 });

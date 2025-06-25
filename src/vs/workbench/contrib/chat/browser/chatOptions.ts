@@ -6,7 +6,10 @@
 import { Color } from '../../../../base/common/color.js';
 import { Emitter } from '../../../../base/common/event.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { IBracketPairColorizationOptions, IEditorOptions } from '../../../../editor/common/config/editorOptions.js';
+import {
+	IBracketPairColorizationOptions,
+	IEditorOptions,
+} from '../../../../editor/common/config/editorOptions.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 import { IViewDescriptorService } from '../../../common/views.js';
@@ -47,7 +50,6 @@ export interface IChatResultEditorOptions {
 	// readonly accessibilitySupport: string;
 }
 
-
 export class ChatEditorOptions extends Disposable {
 	private static readonly lineHeightEm = 1.4;
 
@@ -84,16 +86,20 @@ export class ChatEditorOptions extends Disposable {
 		super();
 
 		this._register(this.themeService.onDidColorThemeChange(e => this.update()));
-		this._register(this.viewDescriptorService.onDidChangeLocation(e => {
-			if (e.views.some(v => v.id === viewId)) {
-				this.update();
-			}
-		}));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (ChatEditorOptions.relevantSettingIds.some(id => e.affectsConfiguration(id))) {
-				this.update();
-			}
-		}));
+		this._register(
+			this.viewDescriptorService.onDidChangeLocation(e => {
+				if (e.views.some(v => v.id === viewId)) {
+					this.update();
+				}
+			})
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (ChatEditorOptions.relevantSettingIds.some(id => e.affectsConfiguration(id))) {
+					this.update();
+				}
+			})
+		);
 		this.update();
 	}
 
@@ -102,27 +108,41 @@ export class ChatEditorOptions extends Disposable {
 
 		// TODO shouldn't the setting keys be more specific?
 		const chatEditorConfig = this.configurationService.getValue<IChatConfiguration>('chat')?.editor;
-		const accessibilitySupport = this.configurationService.getValue<'auto' | 'off' | 'on'>('editor.accessibilitySupport');
+		const accessibilitySupport = this.configurationService.getValue<'auto' | 'off' | 'on'>(
+			'editor.accessibilitySupport'
+		);
 		this._config = {
 			foreground: this.themeService.getColorTheme().getColor(this.foreground),
 			inputEditor: {
-				backgroundColor: this.themeService.getColorTheme().getColor(this.inputEditorBackgroundColor),
+				backgroundColor: this.themeService
+					.getColorTheme()
+					.getColor(this.inputEditorBackgroundColor),
 				accessibilitySupport,
 			},
 			resultEditor: {
-				backgroundColor: this.themeService.getColorTheme().getColor(this.resultEditorBackgroundColor),
+				backgroundColor: this.themeService
+					.getColorTheme()
+					.getColor(this.resultEditorBackgroundColor),
 				fontSize: chatEditorConfig.fontSize,
-				fontFamily: chatEditorConfig.fontFamily === 'default' ? editorConfig.fontFamily : chatEditorConfig.fontFamily,
+				fontFamily:
+					chatEditorConfig.fontFamily === 'default'
+						? editorConfig.fontFamily
+						: chatEditorConfig.fontFamily,
 				fontWeight: chatEditorConfig.fontWeight,
-				lineHeight: chatEditorConfig.lineHeight ? chatEditorConfig.lineHeight : ChatEditorOptions.lineHeightEm * chatEditorConfig.fontSize,
+				lineHeight: chatEditorConfig.lineHeight
+					? chatEditorConfig.lineHeight
+					: ChatEditorOptions.lineHeightEm * chatEditorConfig.fontSize,
 				bracketPairColorization: {
-					enabled: this.configurationService.getValue<boolean>('editor.bracketPairColorization.enabled'),
-					independentColorPoolPerBracketType: this.configurationService.getValue<boolean>('editor.bracketPairColorization.independentColorPoolPerBracketType'),
+					enabled: this.configurationService.getValue<boolean>(
+						'editor.bracketPairColorization.enabled'
+					),
+					independentColorPoolPerBracketType: this.configurationService.getValue<boolean>(
+						'editor.bracketPairColorization.independentColorPoolPerBracketType'
+					),
 				},
 				wordWrap: chatEditorConfig.wordWrap,
 				fontLigatures: editorConfig.fontLigatures,
-			}
-
+			},
 		};
 		this._onDidChange.fire();
 	}

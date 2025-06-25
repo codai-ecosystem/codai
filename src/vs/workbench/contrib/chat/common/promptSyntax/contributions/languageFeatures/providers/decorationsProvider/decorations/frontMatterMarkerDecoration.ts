@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CssClassModifiers } from '../types.js';
-import { TDecorationStyles, ReactiveDecorationBase, IReactiveDecorationClassNames } from './utils/index.js';
+import {
+	TDecorationStyles,
+	ReactiveDecorationBase,
+	IReactiveDecorationClassNames,
+} from './utils/index.js';
 import { FrontMatterMarker } from '../../../../../../../../../../editor/common/codecs/markdownExtensionsCodec/tokens/frontMatterMarker.js';
 
 /**
@@ -20,14 +24,15 @@ export enum CssClassNames {
 /**
  * Editor decoration for a `marker` token of a Front Matter header.
  */
-export class FrontMatterMarkerDecoration extends ReactiveDecorationBase<FrontMatterMarker, CssClassNames> {
+export class FrontMatterMarkerDecoration extends ReactiveDecorationBase<
+	FrontMatterMarker,
+	CssClassNames
+> {
 	/**
 	 * Activate/deactivate the decoration.
 	 */
 	public activate(state: boolean): this {
-		const position = (state === true)
-			? this.token.range.getStartPosition()
-			: null;
+		const position = state === true ? this.token.range.getStartPosition() : null;
 
 		this.setCursorPosition(position);
 
@@ -44,12 +49,8 @@ export class FrontMatterMarkerDecoration extends ReactiveDecorationBase<FrontMat
 
 	public static get cssStyles(): TDecorationStyles {
 		return {
-			[CssClassNames.Inline]: [
-				'color: var(--vscode-disabledForeground);',
-			],
-			[CssClassNames.InlineInactive]: [
-				'opacity: 0.25;',
-			],
+			[CssClassNames.Inline]: ['color: var(--vscode-disabledForeground);'],
+			[CssClassNames.InlineInactive]: ['opacity: 0.25;'],
 		};
 	}
 }

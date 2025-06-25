@@ -16,28 +16,36 @@ import { ICodeEditor } from '../../../browser/editorBrowser.js';
 import { StickyScrollController } from './stickyScrollController.js';
 
 export class ToggleStickyScroll extends EditorAction2 {
-
 	constructor() {
 		super({
 			id: 'editor.action.toggleStickyScroll',
 			title: {
-				...localize2('toggleEditorStickyScroll', "Toggle Editor Sticky Scroll"),
-				mnemonicTitle: localize({ key: 'mitoggleStickyScroll', comment: ['&& denotes a mnemonic'] }, "&&Toggle Editor Sticky Scroll"),
+				...localize2('toggleEditorStickyScroll', 'Toggle Editor Sticky Scroll'),
+				mnemonicTitle: localize(
+					{ key: 'mitoggleStickyScroll', comment: ['&& denotes a mnemonic'] },
+					'&&Toggle Editor Sticky Scroll'
+				),
 			},
 			metadata: {
-				description: localize2('toggleEditorStickyScroll.description', "Toggle/enable the editor sticky scroll which shows the nested scopes at the top of the viewport"),
+				description: localize2(
+					'toggleEditorStickyScroll.description',
+					'Toggle/enable the editor sticky scroll which shows the nested scopes at the top of the viewport'
+				),
 			},
 			category: Categories.View,
 			toggled: {
 				condition: ContextKeyExpr.equals('config.editor.stickyScroll.enabled', true),
-				title: localize('stickyScroll', "Sticky Scroll"),
-				mnemonicTitle: localize({ key: 'miStickyScroll', comment: ['&& denotes a mnemonic'] }, "&&Sticky Scroll"),
+				title: localize('stickyScroll', 'Sticky Scroll'),
+				mnemonicTitle: localize(
+					{ key: 'miStickyScroll', comment: ['&& denotes a mnemonic'] },
+					'&&Sticky Scroll'
+				),
 			},
 			menu: [
 				{ id: MenuId.CommandPalette },
 				{ id: MenuId.MenubarAppearanceMenu, group: '4_editor', order: 3 },
-				{ id: MenuId.StickyScrollContext }
-			]
+				{ id: MenuId.StickyScrollContext },
+			],
 		});
 	}
 
@@ -55,18 +63,21 @@ export class ToggleStickyScroll extends EditorAction2 {
 const weight = KeybindingWeight.EditorContrib;
 
 export class FocusStickyScroll extends EditorAction2 {
-
 	constructor() {
 		super({
 			id: 'editor.action.focusStickyScroll',
 			title: {
-				...localize2('focusStickyScroll', "Focus Editor Sticky Scroll"),
-				mnemonicTitle: localize({ key: 'mifocusEditorStickyScroll', comment: ['&& denotes a mnemonic'] }, "&&Focus Editor Sticky Scroll"),
+				...localize2('focusStickyScroll', 'Focus Editor Sticky Scroll'),
+				mnemonicTitle: localize(
+					{ key: 'mifocusEditorStickyScroll', comment: ['&& denotes a mnemonic'] },
+					'&&Focus Editor Sticky Scroll'
+				),
 			},
-			precondition: ContextKeyExpr.and(ContextKeyExpr.has('config.editor.stickyScroll.enabled'), EditorContextKeys.stickyScrollVisible),
-			menu: [
-				{ id: MenuId.CommandPalette },
-			]
+			precondition: ContextKeyExpr.and(
+				ContextKeyExpr.has('config.editor.stickyScroll.enabled'),
+				EditorContextKeys.stickyScrollVisible
+			),
+			menu: [{ id: MenuId.CommandPalette }],
 		});
 	}
 
@@ -79,12 +90,15 @@ export class SelectNextStickyScrollLine extends EditorAction2 {
 	constructor() {
 		super({
 			id: 'editor.action.selectNextStickyScrollLine',
-			title: localize2('selectNextStickyScrollLine.title', "Select the next editor sticky scroll line"),
+			title: localize2(
+				'selectNextStickyScrollLine.title',
+				'Select the next editor sticky scroll line'
+			),
 			precondition: EditorContextKeys.stickyScrollFocused.isEqualTo(true),
 			keybinding: {
 				weight,
-				primary: KeyCode.DownArrow
-			}
+				primary: KeyCode.DownArrow,
+			},
 		});
 	}
 
@@ -97,12 +111,15 @@ export class SelectPreviousStickyScrollLine extends EditorAction2 {
 	constructor() {
 		super({
 			id: 'editor.action.selectPreviousStickyScrollLine',
-			title: localize2('selectPreviousStickyScrollLine.title', "Select the previous sticky scroll line"),
+			title: localize2(
+				'selectPreviousStickyScrollLine.title',
+				'Select the previous sticky scroll line'
+			),
 			precondition: EditorContextKeys.stickyScrollFocused.isEqualTo(true),
 			keybinding: {
 				weight,
-				primary: KeyCode.UpArrow
-			}
+				primary: KeyCode.UpArrow,
+			},
 		});
 	}
 
@@ -115,12 +132,12 @@ export class GoToStickyScrollLine extends EditorAction2 {
 	constructor() {
 		super({
 			id: 'editor.action.goToFocusedStickyScrollLine',
-			title: localize2('goToFocusedStickyScrollLine.title', "Go to the focused sticky scroll line"),
+			title: localize2('goToFocusedStickyScrollLine.title', 'Go to the focused sticky scroll line'),
 			precondition: EditorContextKeys.stickyScrollFocused.isEqualTo(true),
 			keybinding: {
 				weight,
-				primary: KeyCode.Enter
-			}
+				primary: KeyCode.Enter,
+			},
 		});
 	}
 
@@ -130,16 +147,15 @@ export class GoToStickyScrollLine extends EditorAction2 {
 }
 
 export class SelectEditor extends EditorAction2 {
-
 	constructor() {
 		super({
 			id: 'editor.action.selectEditor',
-			title: localize2('selectEditor.title', "Select Editor"),
+			title: localize2('selectEditor.title', 'Select Editor'),
 			precondition: EditorContextKeys.stickyScrollFocused.isEqualTo(true),
 			keybinding: {
 				weight,
-				primary: KeyCode.Escape
-			}
+				primary: KeyCode.Escape,
+			},
 		});
 	}
 

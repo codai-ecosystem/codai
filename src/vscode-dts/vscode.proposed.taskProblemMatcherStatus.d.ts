@@ -3,10 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 declare module 'vscode' {
-
-
 	export interface TaskProblemMatcherStartedEvent {
 		/**
 		 * The task item representing the task for which the problem matcher processing started.
@@ -27,7 +24,6 @@ declare module 'vscode' {
 	}
 
 	export namespace tasks {
-
 		/**
 		 * An event that is emitted when the task's problem matchers start processing lines.
 		 */
@@ -38,5 +34,4 @@ declare module 'vscode' {
 		 */
 		export const onDidEndTaskProblemMatchers: Event<TaskProblemMatcherEndedEvent>;
 	}
-
 }

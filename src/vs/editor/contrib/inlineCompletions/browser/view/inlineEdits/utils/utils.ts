@@ -4,11 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { getDomNodePagePosition, h } from '../../../../../../../base/browser/dom.js';
-import { KeybindingLabel, unthemedKeybindingLabelOptions } from '../../../../../../../base/browser/ui/keybindingLabel/keybindingLabel.js';
+import {
+	KeybindingLabel,
+	unthemedKeybindingLabelOptions,
+} from '../../../../../../../base/browser/ui/keybindingLabel/keybindingLabel.js';
 import { numberComparator } from '../../../../../../../base/common/arrays.js';
 import { findFirstMin } from '../../../../../../../base/common/arraysFind.js';
 import { DisposableStore, toDisposable } from '../../../../../../../base/common/lifecycle.js';
-import { derived, derivedObservableWithCache, derivedOpts, IObservable, IReader, observableValue, transaction } from '../../../../../../../base/common/observable.js';
+import {
+	derived,
+	derivedObservableWithCache,
+	derivedOpts,
+	IObservable,
+	IReader,
+	observableValue,
+	transaction,
+} from '../../../../../../../base/common/observable.js';
 import { OS } from '../../../../../../../base/common/platform.js';
 import { getIndentationLength, splitLines } from '../../../../../../../base/common/strings.js';
 import { URI } from '../../../../../../../base/common/uri.js';
@@ -27,12 +38,18 @@ import { RangeMapping } from '../../../../../../common/diff/rangeMapping.js';
 import { ITextModel } from '../../../../../../common/model.js';
 import { indentOfLine } from '../../../../../../common/model/textModel.js';
 
-export function maxContentWidthInRange(editor: ObservableCodeEditor, range: LineRange, reader: IReader | undefined): number {
+export function maxContentWidthInRange(
+	editor: ObservableCodeEditor,
+	range: LineRange,
+	reader: IReader | undefined
+): number {
 	editor.layoutInfo.read(reader);
 	editor.value.read(reader);
 
 	const model = editor.model.read(reader);
-	if (!model) { return 0; }
+	if (!model) {
+		return 0;
+	}
 	let maxContentWidth = 0;
 
 	editor.scrollTop.read(reader);
@@ -41,7 +58,9 @@ export function maxContentWidthInRange(editor: ObservableCodeEditor, range: Line
 		let lineContentWidth = editor.editor.getOffsetForColumn(i, column);
 		if (lineContentWidth === -1) {
 			// approximation
-			const typicalHalfwidthCharacterWidth = editor.editor.getOption(EditorOption.fontInfo).typicalHalfwidthCharacterWidth;
+			const typicalHalfwidthCharacterWidth = editor.editor.getOption(
+				EditorOption.fontInfo
+			).typicalHalfwidthCharacterWidth;
 			const approximation = column * typicalHalfwidthCharacterWidth;
 			lineContentWidth = approximation;
 		}
@@ -55,12 +74,18 @@ export function maxContentWidthInRange(editor: ObservableCodeEditor, range: Line
 	return maxContentWidth;
 }
 
-export function getOffsetForPos(editor: ObservableCodeEditor, pos: Position, reader: IReader): number {
+export function getOffsetForPos(
+	editor: ObservableCodeEditor,
+	pos: Position,
+	reader: IReader
+): number {
 	editor.layoutInfo.read(reader);
 	editor.value.read(reader);
 
 	const model = editor.model.read(reader);
-	if (!model) { return 0; }
+	if (!model) {
+		return 0;
+	}
 
 	editor.scrollTop.read(reader);
 	const lineContentWidth = editor.editor.getOffsetForColumn(pos.lineNumber, pos.column);
@@ -68,14 +93,21 @@ export function getOffsetForPos(editor: ObservableCodeEditor, pos: Position, rea
 	return lineContentWidth;
 }
 
-export function getPrefixTrim(diffRanges: Range[], originalLinesRange: LineRange, modifiedLines: string[], editor: ICodeEditor): { prefixTrim: number; prefixLeftOffset: number } {
+export function getPrefixTrim(
+	diffRanges: Range[],
+	originalLinesRange: LineRange,
+	modifiedLines: string[],
+	editor: ICodeEditor
+): { prefixTrim: number; prefixLeftOffset: number } {
 	const textModel = editor.getModel();
 	if (!textModel) {
 		return { prefixTrim: 0, prefixLeftOffset: 0 };
 	}
 
-	const replacementStart = diffRanges.map(r => r.isSingleLine() ? r.startColumn - 1 : 0);
-	const originalIndents = originalLinesRange.mapToLineArray(line => indentOfLine(textModel.getLineContent(line)));
+	const replacementStart = diffRanges.map(r => (r.isSingleLine() ? r.startColumn - 1 : 0));
+	const originalIndents = originalLinesRange.mapToLineArray(line =>
+		indentOfLine(textModel.getLineContent(line))
+	);
 	const modifiedIndents = modifiedLines.filter(line => line !== '').map(line => indentOfLine(line));
 	const prefixTrim = Math.min(...replacementStart, ...originalIndents, ...modifiedIndents);
 
@@ -83,10 +115,17 @@ export function getPrefixTrim(diffRanges: Range[], originalLinesRange: LineRange
 	const startLineIndent = textModel.getLineIndentColumn(originalLinesRange.startLineNumber);
 	if (startLineIndent >= prefixTrim + 1) {
 		// We can use the editor to get the offset
-		prefixLeftOffset = editor.getOffsetForColumn(originalLinesRange.startLineNumber, prefixTrim + 1);
+		prefixLeftOffset = editor.getOffsetForColumn(
+			originalLinesRange.startLineNumber,
+			prefixTrim + 1
+		);
 	} else if (modifiedLines.length > 0) {
 		// Content is not in the editor, we can use the content width to calculate the offset
-		prefixLeftOffset = getContentRenderWidth(modifiedLines[0].slice(0, prefixTrim), editor, textModel);
+		prefixLeftOffset = getContentRenderWidth(
+			modifiedLines[0].slice(0, prefixTrim),
+			editor,
+			textModel
+		);
 	} else {
 		// unable to approximate the offset
 		return { prefixTrim: 0, prefixLeftOffset: 0 };
@@ -112,7 +151,9 @@ export function getEditorValidOverlayRect(editor: ObservableCodeEditor): IObserv
 		const editorWidth = editor.layoutInfoWidth.read(r) - contentLeft.read(r);
 
 		if (hasMinimapOnTheRight) {
-			const minimapAndScrollbarWidth = editor.layoutInfoMinimap.read(r).minimapWidth + editor.layoutInfoVerticalScrollbarWidth.read(r);
+			const minimapAndScrollbarWidth =
+				editor.layoutInfoMinimap.read(r).minimapWidth +
+				editor.layoutInfoVerticalScrollbarWidth.read(r);
 			return editorWidth - minimapAndScrollbarWidth;
 		}
 
@@ -121,22 +162,32 @@ export function getEditorValidOverlayRect(editor: ObservableCodeEditor): IObserv
 
 	const height = derived(r => editor.layoutInfoHeight.read(r) + editor.contentHeight.read(r));
 
-	return derived(r => Rect.fromLeftTopWidthHeight(contentLeft.read(r), 0, width.read(r), height.read(r)));
+	return derived(r =>
+		Rect.fromLeftTopWidthHeight(contentLeft.read(r), 0, width.read(r), height.read(r))
+	);
 }
 
 export class StatusBarViewItem extends MenuEntryActionViewItem {
-	protected readonly _updateLabelListener = this._register(this._contextKeyService.onDidChangeContext(() => {
-		this.updateLabel();
-	}));
+	protected readonly _updateLabelListener = this._register(
+		this._contextKeyService.onDidChangeContext(() => {
+			this.updateLabel();
+		})
+	);
 
 	protected override updateLabel() {
-		const kb = this._keybindingService.lookupKeybinding(this._action.id, this._contextKeyService, true);
+		const kb = this._keybindingService.lookupKeybinding(
+			this._action.id,
+			this._contextKeyService,
+			true
+		);
 		if (!kb) {
 			return super.updateLabel();
 		}
 		if (this.label) {
 			const div = h('div.keybinding').root;
-			const keybindingLabel = this._register(new KeybindingLabel(div, OS, { disableTitle: true, ...unthemedKeybindingLabelOptions }));
+			const keybindingLabel = this._register(
+				new KeybindingLabel(div, OS, { disableTitle: true, ...unthemedKeybindingLabelOptions })
+			);
 			keybindingLabel.set(kb);
 			this.label.textContent = this._action.label;
 			this.label.appendChild(div);
@@ -152,15 +203,19 @@ export class StatusBarViewItem extends MenuEntryActionViewItem {
 export class UniqueUriGenerator {
 	private static _modelId = 0;
 
-	constructor(
-		public readonly scheme: string
-	) { }
+	constructor(public readonly scheme: string) {}
 
 	public getUniqueUri(): URI {
-		return URI.from({ scheme: this.scheme, path: new Date().toString() + String(UniqueUriGenerator._modelId++) });
+		return URI.from({
+			scheme: this.scheme,
+			path: new Date().toString() + String(UniqueUriGenerator._modelId++),
+		});
 	}
 }
-export function applyEditToModifiedRangeMappings(rangeMapping: RangeMapping[], edit: TextEdit): RangeMapping[] {
+export function applyEditToModifiedRangeMappings(
+	rangeMapping: RangeMapping[],
+	edit: TextEdit
+): RangeMapping[] {
 	const updatedMappings: RangeMapping[] = [];
 	for (const m of rangeMapping) {
 		const updatedRange = edit.mapRange(m.modifiedRange);
@@ -168,7 +223,6 @@ export function applyEditToModifiedRangeMappings(rangeMapping: RangeMapping[], e
 	}
 	return updatedMappings;
 }
-
 
 export function classNames(...classes: (string | false | undefined | null)[]) {
 	return classes.filter(c => typeof c === 'string').join(' ');
@@ -179,16 +233,24 @@ function offsetRangeToRange(columnOffsetRange: OffsetRange, startPos: Position):
 		startPos.lineNumber,
 		startPos.column + columnOffsetRange.start,
 		startPos.lineNumber,
-		startPos.column + columnOffsetRange.endExclusive,
+		startPos.column + columnOffsetRange.endExclusive
 	);
 }
 
 export function createReindentEdit(text: string, range: LineRange): TextEdit {
 	const newLines = splitLines(text);
 	const edits: TextReplacement[] = [];
-	const minIndent = findFirstMin(range.mapToLineArray(l => getIndentationLength(newLines[l - 1])), numberComparator)!;
+	const minIndent = findFirstMin(
+		range.mapToLineArray(l => getIndentationLength(newLines[l - 1])),
+		numberComparator
+	)!;
 	range.forEach(lineNumber => {
-		edits.push(new TextReplacement(offsetRangeToRange(new OffsetRange(0, minIndent), new Position(lineNumber, 1)), ''));
+		edits.push(
+			new TextReplacement(
+				offsetRangeToRange(new OffsetRange(0, minIndent), new Position(lineNumber, 1)),
+				''
+			)
+		);
 	});
 	return new TextEdit(edits);
 }
@@ -225,24 +287,40 @@ export class PathBuilder {
 export function createRectangle(
 	layout: { topLeft: Point; width: number; height: number },
 	padding: number | { top: number; right: number; bottom: number; left: number },
-	borderRadius: number | { topLeft: number; topRight: number; bottomLeft: number; bottomRight: number },
+	borderRadius:
+		| number
+		| { topLeft: number; topRight: number; bottomLeft: number; bottomRight: number },
 	options: { hideLeft?: boolean; hideRight?: boolean; hideTop?: boolean; hideBottom?: boolean } = {}
 ): string {
-
 	const topLeftInner = layout.topLeft;
 	const topRightInner = topLeftInner.deltaX(layout.width);
 	const bottomLeftInner = topLeftInner.deltaY(layout.height);
 	const bottomRightInner = bottomLeftInner.deltaX(layout.width);
 
 	// padding
-	const { top: paddingTop, bottom: paddingBottom, left: paddingLeft, right: paddingRight } = typeof padding === 'number' ?
-		{ top: padding, bottom: padding, left: padding, right: padding }
+	const {
+		top: paddingTop,
+		bottom: paddingBottom,
+		left: paddingLeft,
+		right: paddingRight,
+	} = typeof padding === 'number'
+		? { top: padding, bottom: padding, left: padding, right: padding }
 		: padding;
 
 	// corner radius
-	const { topLeft: radiusTL, topRight: radiusTR, bottomLeft: radiusBL, bottomRight: radiusBR } = typeof borderRadius === 'number' ?
-		{ topLeft: borderRadius, topRight: borderRadius, bottomLeft: borderRadius, bottomRight: borderRadius } :
-		borderRadius;
+	const {
+		topLeft: radiusTL,
+		topRight: radiusTR,
+		bottomLeft: radiusBL,
+		bottomRight: radiusBR,
+	} = typeof borderRadius === 'number'
+		? {
+				topLeft: borderRadius,
+				topRight: borderRadius,
+				bottomLeft: borderRadius,
+				bottomRight: borderRadius,
+			}
+		: borderRadius;
 
 	const totalHeight = layout.height + paddingTop + paddingBottom;
 	const totalWidth = layout.width + paddingLeft + paddingRight;
@@ -312,20 +390,28 @@ export function createRectangle(
 type RemoveFalsy<T> = T extends false | undefined | null ? never : T;
 type Falsy<T> = T extends false | undefined | null ? T : never;
 
-export function mapOutFalsy<T>(obs: IObservable<T>): IObservable<IObservable<RemoveFalsy<T>> | Falsy<T>> {
-	const nonUndefinedObs = derivedObservableWithCache<T | undefined | null | false>(undefined, (reader, lastValue) => obs.read(reader) || lastValue);
+export function mapOutFalsy<T>(
+	obs: IObservable<T>
+): IObservable<IObservable<RemoveFalsy<T>> | Falsy<T>> {
+	const nonUndefinedObs = derivedObservableWithCache<T | undefined | null | false>(
+		undefined,
+		(reader, lastValue) => obs.read(reader) || lastValue
+	);
 
-	return derivedOpts({
-		debugName: () => `${obs.debugName}.mapOutFalsy`
-	}, reader => {
-		nonUndefinedObs.read(reader);
-		const val = obs.read(reader);
-		if (!val) {
-			return undefined as Falsy<T>;
+	return derivedOpts(
+		{
+			debugName: () => `${obs.debugName}.mapOutFalsy`,
+		},
+		reader => {
+			nonUndefinedObs.read(reader);
+			const val = obs.read(reader);
+			if (!val) {
+				return undefined as Falsy<T>;
+			}
+
+			return nonUndefinedObs as IObservable<RemoveFalsy<T>>;
 		}
-
-		return nonUndefinedObs as IObservable<RemoveFalsy<T>>;
-	});
+	);
 }
 
 export function observeElementPosition(element: HTMLElement, store: DisposableStore) {
@@ -347,7 +433,7 @@ export function observeElementPosition(element: HTMLElement, store: DisposableSt
 
 	return {
 		top,
-		left
+		left,
 	};
 }
 

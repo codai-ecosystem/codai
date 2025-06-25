@@ -21,14 +21,11 @@ export interface IDetachPromptOptions {
  */
 export const detachPrompt = async (
 	file: URI,
-	options: IDetachPromptOptions,
+	options: IDetachPromptOptions
 ): Promise<IChatWidget> => {
 	const { widget } = options;
 
-	widget
-		.attachmentModel
-		.promptInstructions
-		.remove(file);
+	widget.attachmentModel.promptInstructions.remove(file);
 
 	return widget;
 };

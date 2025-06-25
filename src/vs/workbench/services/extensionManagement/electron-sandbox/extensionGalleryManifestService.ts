@@ -10,11 +10,18 @@ import { localize } from '../../../../nls.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
 import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
-import { IExtensionGalleryManifestService, IExtensionGalleryManifest, ExtensionGalleryServiceUrlConfigKey } from '../../../../platform/extensionManagement/common/extensionGalleryManifest.js';
+import {
+	IExtensionGalleryManifestService,
+	IExtensionGalleryManifest,
+	ExtensionGalleryServiceUrlConfigKey,
+} from '../../../../platform/extensionManagement/common/extensionGalleryManifest.js';
 import { ExtensionGalleryManifestService as ExtensionGalleryManifestService } from '../../../../platform/extensionManagement/common/extensionGalleryManifestService.js';
 import { resolveMarketplaceHeaders } from '../../../../platform/externalServices/common/marketplace.js';
 import { IFileService } from '../../../../platform/files/common/files.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { ISharedProcessService } from '../../../../platform/ipc/electron-sandbox/services.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
@@ -25,13 +32,18 @@ import { IDefaultAccount, IDefaultAccountService } from '../../accounts/common/d
 import { IHostService } from '../../host/browser/host.js';
 import { IRemoteAgentService } from '../../remote/common/remoteAgentService.js';
 
-export class WorkbenchExtensionGalleryManifestService extends ExtensionGalleryManifestService implements IExtensionGalleryManifestService {
-
+export class WorkbenchExtensionGalleryManifestService
+	extends ExtensionGalleryManifestService
+	implements IExtensionGalleryManifestService
+{
 	private readonly commonHeadersPromise: Promise<IHeaders>;
 	private extensionGalleryManifest: [string, IExtensionGalleryManifest] | null = null;
 
-	private _onDidChangeExtensionGalleryManifest = this._register(new Emitter<IExtensionGalleryManifest | null>());
-	override readonly onDidChangeExtensionGalleryManifest = this._onDidChangeExtensionGalleryManifest.event;
+	private _onDidChangeExtensionGalleryManifest = this._register(
+		new Emitter<IExtensionGalleryManifest | null>()
+	);
+	override readonly onDidChangeExtensionGalleryManifest =
+		this._onDidChangeExtensionGalleryManifest.event;
 
 	constructor(
 		@IProductService productService: IProductService,
@@ -46,7 +58,7 @@ export class WorkbenchExtensionGalleryManifestService extends ExtensionGalleryMa
 		@IDefaultAccountService private readonly defaultAccountService: IDefaultAccountService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IHostService private readonly hostService: IHostService,
-		@ILogService private readonly logService: ILogService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super(productService);
 		this.commonHeadersPromise = resolveMarketplaceHeaders(
@@ -56,7 +68,8 @@ export class WorkbenchExtensionGalleryManifestService extends ExtensionGalleryMa
 			configurationService,
 			fileService,
 			storageService,
-			telemetryService);
+			telemetryService
+		);
 
 		const channels = [sharedProcessService.getChannel('extensionGalleryManifest')];
 		const remoteConnection = remoteAgentService.getConnection();
@@ -65,7 +78,11 @@ export class WorkbenchExtensionGalleryManifestService extends ExtensionGalleryMa
 		}
 		this.getExtensionGalleryManifest().then(manifest => {
 			channels.forEach(channel => channel.call('setExtensionGalleryManifest', [manifest]));
-			this._register(this.onDidChangeExtensionGalleryManifest(manifest => channels.forEach(channel => channel.call('setExtensionGalleryManifest', [manifest]))));
+			this._register(
+				this.onDidChangeExtensionGalleryManifest(manifest =>
+					channels.forEach(channel => channel.call('setExtensionGalleryManifest', [manifest]))
+				)
+			);
 		});
 	}
 
@@ -85,9 +102,17 @@ export class WorkbenchExtensionGalleryManifestService extends ExtensionGalleryMa
 			return;
 		}
 
-		const configuredServiceUrl = this.configurationService.getValue<string>(ExtensionGalleryServiceUrlConfigKey);
-		if (configuredServiceUrl && this.checkAccess(await this.defaultAccountService.getDefaultAccount())) {
-			this.extensionGalleryManifest = [configuredServiceUrl, await this.getExtensionGalleryManifestFromServiceUrl(configuredServiceUrl)];
+		const configuredServiceUrl = this.configurationService.getValue<string>(
+			ExtensionGalleryServiceUrlConfigKey
+		);
+		if (
+			configuredServiceUrl &&
+			this.checkAccess(await this.defaultAccountService.getDefaultAccount())
+		) {
+			this.extensionGalleryManifest = [
+				configuredServiceUrl,
+				await this.getExtensionGalleryManifestFromServiceUrl(configuredServiceUrl),
+			];
 		}
 
 		if (!this.extensionGalleryManifest) {
@@ -97,64 +122,87 @@ export class WorkbenchExtensionGalleryManifestService extends ExtensionGalleryMa
 			}
 		}
 
-		this._register(this.defaultAccountService.onDidChangeDefaultAccount(account => {
-			if (!configuredServiceUrl) {
-				return;
-			}
-			const canAccess = this.checkAccess(account);
-			if (canAccess && this.extensionGalleryManifest?.[0] === configuredServiceUrl) {
-				return;
-			}
-			if (!canAccess && this.extensionGalleryManifest?.[0] === defaultServiceUrl) {
-				return;
-			}
-			this.extensionGalleryManifest = null;
-			this._onDidChangeExtensionGalleryManifest.fire(null);
-			this.requestRestart();
-		}));
+		this._register(
+			this.defaultAccountService.onDidChangeDefaultAccount(account => {
+				if (!configuredServiceUrl) {
+					return;
+				}
+				const canAccess = this.checkAccess(account);
+				if (canAccess && this.extensionGalleryManifest?.[0] === configuredServiceUrl) {
+					return;
+				}
+				if (!canAccess && this.extensionGalleryManifest?.[0] === defaultServiceUrl) {
+					return;
+				}
+				this.extensionGalleryManifest = null;
+				this._onDidChangeExtensionGalleryManifest.fire(null);
+				this.requestRestart();
+			})
+		);
 
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (!e.affectsConfiguration(ExtensionGalleryServiceUrlConfigKey)) {
-				return;
-			}
-			const configuredServiceUrl = this.configurationService.getValue<string>(ExtensionGalleryServiceUrlConfigKey);
-			if (!configuredServiceUrl && this.extensionGalleryManifest?.[0] === defaultServiceUrl) {
-				return;
-			}
-			if (configuredServiceUrl && this.extensionGalleryManifest?.[0] === configuredServiceUrl) {
-				return;
-			}
-			this.extensionGalleryManifest = null;
-			this._onDidChangeExtensionGalleryManifest.fire(null);
-			this.requestRestart();
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (!e.affectsConfiguration(ExtensionGalleryServiceUrlConfigKey)) {
+					return;
+				}
+				const configuredServiceUrl = this.configurationService.getValue<string>(
+					ExtensionGalleryServiceUrlConfigKey
+				);
+				if (!configuredServiceUrl && this.extensionGalleryManifest?.[0] === defaultServiceUrl) {
+					return;
+				}
+				if (configuredServiceUrl && this.extensionGalleryManifest?.[0] === configuredServiceUrl) {
+					return;
+				}
+				this.extensionGalleryManifest = null;
+				this._onDidChangeExtensionGalleryManifest.fire(null);
+				this.requestRestart();
+			})
+		);
 	}
 
 	private checkAccess(account: IDefaultAccount | null): boolean {
 		if (!account) {
-			this.logService.debug('[Marketplace] Checking account access for configured gallery: No account found');
+			this.logService.debug(
+				'[Marketplace] Checking account access for configured gallery: No account found'
+			);
 			return false;
 		}
-		this.logService.debug('[Marketplace] Checking Account SKU access for configured gallery', account.access_type_sku);
-		if (account.access_type_sku && this.productService.extensionsGallery?.accessSKUs?.includes(account.access_type_sku)) {
+		this.logService.debug(
+			'[Marketplace] Checking Account SKU access for configured gallery',
+			account.access_type_sku
+		);
+		if (
+			account.access_type_sku &&
+			this.productService.extensionsGallery?.accessSKUs?.includes(account.access_type_sku)
+		) {
 			this.logService.debug('[Marketplace] Account has access to configured gallery');
 			return true;
 		}
-		this.logService.debug('[Marketplace] Checking enterprise account access for configured gallery', account.enterprise);
+		this.logService.debug(
+			'[Marketplace] Checking enterprise account access for configured gallery',
+			account.enterprise
+		);
 		return account.enterprise;
 	}
 
 	private async requestRestart(): Promise<void> {
 		const confirmation = await this.dialogService.confirm({
-			message: localize('extensionGalleryManifestService.accountChange', "{0} is now configured to a different Marketplace. Please restart to apply the changes.", this.productService.nameLong),
-			primaryButton: localize({ key: 'restart', comment: ['&& denotes a mnemonic'] }, "&&Restart")
+			message: localize(
+				'extensionGalleryManifestService.accountChange',
+				'{0} is now configured to a different Marketplace. Please restart to apply the changes.',
+				this.productService.nameLong
+			),
+			primaryButton: localize({ key: 'restart', comment: ['&& denotes a mnemonic'] }, '&&Restart'),
 		});
 		if (confirmation.confirmed) {
 			return this.hostService.restart();
 		}
 	}
 
-	private async getExtensionGalleryManifestFromServiceUrl(url: string): Promise<IExtensionGalleryManifest> {
+	private async getExtensionGalleryManifestFromServiceUrl(
+		url: string
+	): Promise<IExtensionGalleryManifest> {
 		const commonHeaders = await this.commonHeadersPromise;
 		const headers = {
 			...commonHeaders,
@@ -163,11 +211,14 @@ export class WorkbenchExtensionGalleryManifestService extends ExtensionGalleryMa
 		};
 
 		try {
-			const context = await this.requestService.request({
-				type: 'GET',
-				url,
-				headers,
-			}, CancellationToken.None);
+			const context = await this.requestService.request(
+				{
+					type: 'GET',
+					url,
+					headers,
+				},
+				CancellationToken.None
+			);
 
 			const extensionGalleryManifest = await asJson<IExtensionGalleryManifest>(context);
 
@@ -183,4 +234,8 @@ export class WorkbenchExtensionGalleryManifestService extends ExtensionGalleryMa
 	}
 }
 
-registerSingleton(IExtensionGalleryManifestService, WorkbenchExtensionGalleryManifestService, InstantiationType.Eager);
+registerSingleton(
+	IExtensionGalleryManifestService,
+	WorkbenchExtensionGalleryManifestService,
+	InstantiationType.Eager
+);

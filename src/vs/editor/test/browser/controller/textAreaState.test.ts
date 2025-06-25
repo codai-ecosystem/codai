@@ -6,14 +6,16 @@
 import assert from 'assert';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { ITextAreaWrapper, TextAreaState } from '../../../browser/controller/editContext/textArea/textAreaEditContextState.js';
+import {
+	ITextAreaWrapper,
+	TextAreaState,
+} from '../../../browser/controller/editContext/textArea/textAreaEditContextState.js';
 import { Range } from '../../../common/core/range.js';
 import { Selection } from '../../../common/core/selection.js';
 import { createTextModel } from '../../common/testTextModel.js';
 import { PagedScreenReaderStrategy } from '../../../browser/controller/editContext/screenReaderUtils.js';
 
 class MockTextAreaWrapper extends Disposable implements ITextAreaWrapper {
-
 	public _value: string;
 	public _selectionStart: number;
 	public _selectionEnd: number;
@@ -63,21 +65,28 @@ class MockTextAreaWrapper extends Disposable implements ITextAreaWrapper {
 
 function equalsTextAreaState(a: TextAreaState, b: TextAreaState): boolean {
 	return (
-		a.value === b.value
-		&& a.selectionStart === b.selectionStart
-		&& a.selectionEnd === b.selectionEnd
-		&& Range.equalsRange(a.selection, b.selection)
-		&& a.newlineCountBeforeSelection === b.newlineCountBeforeSelection
+		a.value === b.value &&
+		a.selectionStart === b.selectionStart &&
+		a.selectionEnd === b.selectionEnd &&
+		Range.equalsRange(a.selection, b.selection) &&
+		a.newlineCountBeforeSelection === b.newlineCountBeforeSelection
 	);
 }
 
 suite('TextAreaState', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function assertTextAreaState(actual: TextAreaState, value: string, selectionStart: number, selectionEnd: number): void {
+	function assertTextAreaState(
+		actual: TextAreaState,
+		value: string,
+		selectionStart: number,
+		selectionEnd: number
+	): void {
 		const desired = new TextAreaState(value, selectionStart, selectionEnd, null, undefined);
-		assert.ok(equalsTextAreaState(desired, actual), desired.toString() + ' == ' + actual.toString());
+		assert.ok(
+			equalsTextAreaState(desired, actual),
+			desired.toString() + ' == ' + actual.toString()
+		);
 	}
 
 	test('fromTextArea', () => {
@@ -127,7 +136,15 @@ suite('TextAreaState', () => {
 		textArea.dispose();
 	});
 
-	function testDeduceInput(prevState: TextAreaState | null, value: string, selectionStart: number, selectionEnd: number, couldBeEmojiInput: boolean, expected: string, expectedCharReplaceCnt: number): void {
+	function testDeduceInput(
+		prevState: TextAreaState | null,
+		value: string,
+		selectionStart: number,
+		selectionEnd: number,
+		couldBeEmojiInput: boolean,
+		expected: string,
+		expectedCharReplaceCnt: number
+	): void {
 		prevState = prevState || TextAreaState.EMPTY;
 
 		const textArea = new MockTextAreaWrapper();
@@ -149,56 +166,34 @@ suite('TextAreaState', () => {
 	}
 
 	test('extractNewText - no previous state with selection', () => {
-		testDeduceInput(
-			null,
-			'a',
-			0, 1, true,
-			'a', 0
-		);
+		testDeduceInput(null, 'a', 0, 1, true, 'a', 0);
 	});
 
 	test('issue #2586: Replacing selected end-of-line with newline locks up the document', () => {
-		testDeduceInput(
-			new TextAreaState(']\n', 1, 2, null, undefined),
-			']\n',
-			2, 2, true,
-			'\n', 0
-		);
+		testDeduceInput(new TextAreaState(']\n', 1, 2, null, undefined), ']\n', 2, 2, true, '\n', 0);
 	});
 
 	test('extractNewText - no previous state without selection', () => {
-		testDeduceInput(
-			null,
-			'a',
-			1, 1, true,
-			'a', 0
-		);
+		testDeduceInput(null, 'a', 1, 1, true, 'a', 0);
 	});
 
 	test('extractNewText - typing does not cause a selection', () => {
-		testDeduceInput(
-			TextAreaState.EMPTY,
-			'a',
-			0, 1, true,
-			'a', 0
-		);
+		testDeduceInput(TextAreaState.EMPTY, 'a', 0, 1, true, 'a', 0);
 	});
 
 	test('extractNewText - had the textarea empty', () => {
-		testDeduceInput(
-			TextAreaState.EMPTY,
-			'a',
-			1, 1, true,
-			'a', 0
-		);
+		testDeduceInput(TextAreaState.EMPTY, 'a', 1, 1, true, 'a', 0);
 	});
 
 	test('extractNewText - had the entire line selected', () => {
 		testDeduceInput(
 			new TextAreaState('Hello world!', 0, 12, null, undefined),
 			'H',
-			1, 1, true,
-			'H', 0
+			1,
+			1,
+			true,
+			'H',
+			0
 		);
 	});
 
@@ -206,8 +201,11 @@ suite('TextAreaState', () => {
 		testDeduceInput(
 			new TextAreaState('Hello world!', 12, 12, null, undefined),
 			'Hello world!a',
-			13, 13, true,
-			'a', 0
+			13,
+			13,
+			true,
+			'a',
+			0
 		);
 	});
 
@@ -215,8 +213,11 @@ suite('TextAreaState', () => {
 		testDeduceInput(
 			new TextAreaState('Hello world!', 0, 0, null, undefined),
 			'aHello world!',
-			1, 1, true,
-			'a', 0
+			1,
+			1,
+			true,
+			'a',
+			0
 		);
 	});
 
@@ -224,26 +225,27 @@ suite('TextAreaState', () => {
 		testDeduceInput(
 			new TextAreaState('Hello world!', 6, 11, null, undefined),
 			'Hello other!',
-			11, 11, true,
-			'other', 0
+			11,
+			11,
+			true,
+			'other',
+			0
 		);
 	});
 
 	test('extractNewText - IME', () => {
-		testDeduceInput(
-			TextAreaState.EMPTY,
-			'これは',
-			3, 3, true,
-			'これは', 0
-		);
+		testDeduceInput(TextAreaState.EMPTY, 'これは', 3, 3, true, 'これは', 0);
 	});
 
 	test('extractNewText - isInOverwriteMode', () => {
 		testDeduceInput(
 			new TextAreaState('Hello world!', 0, 0, null, undefined),
 			'Aello world!',
-			1, 1, true,
-			'A', 0
+			1,
+			1,
+			true,
+			'A',
+			0
 		);
 	});
 
@@ -251,8 +253,11 @@ suite('TextAreaState', () => {
 		testDeduceInput(
 			new TextAreaState('Hello world!', 5, 5, null, undefined),
 			'Hellö world!',
-			4, 5, true,
-			'ö', 0
+			4,
+			5,
+			true,
+			'ö',
+			0
 		);
 	});
 
@@ -260,8 +265,11 @@ suite('TextAreaState', () => {
 		testDeduceInput(
 			new TextAreaState('Hello world!', 5, 5, null, undefined),
 			'Hellöö world!',
-			5, 5, true,
-			'öö', 1
+			5,
+			5,
+			true,
+			'öö',
+			1
 		);
 	});
 
@@ -269,8 +277,11 @@ suite('TextAreaState', () => {
 		testDeduceInput(
 			new TextAreaState('Hello world!', 5, 5, null, undefined),
 			'Helöö world!',
-			5, 5, true,
-			'öö', 2
+			5,
+			5,
+			true,
+			'öö',
+			2
 		);
 	});
 
@@ -278,33 +289,32 @@ suite('TextAreaState', () => {
 		testDeduceInput(
 			new TextAreaState('Hello world!', 5, 5, null, undefined),
 			'Hellö world!',
-			5, 5, true,
-			'ö', 1
+			5,
+			5,
+			true,
+			'ö',
+			1
 		);
 	});
 
 	test('issue #25101 - First key press ignored', () => {
-		testDeduceInput(
-			new TextAreaState('a', 0, 1, null, undefined),
-			'a',
-			1, 1, true,
-			'a', 0
-		);
+		testDeduceInput(new TextAreaState('a', 0, 1, null, undefined), 'a', 1, 1, true, 'a', 0);
 	});
 
 	test('issue #16520 - Cmd-d of single character followed by typing same character as has no effect', () => {
-		testDeduceInput(
-			new TextAreaState('x x', 0, 1, null, undefined),
-			'x x',
-			1, 1, true,
-			'x', 0
-		);
+		testDeduceInput(new TextAreaState('x x', 0, 1, null, undefined), 'x x', 1, 1, true, 'x', 0);
 	});
 
 	function testDeduceAndroidCompositionInput(
 		prevState: TextAreaState | null,
-		value: string, selectionStart: number, selectionEnd: number,
-		expected: string, expectedReplacePrevCharCnt: number, expectedReplaceNextCharCnt: number, expectedPositionDelta: number): void {
+		value: string,
+		selectionStart: number,
+		selectionEnd: number,
+		expected: string,
+		expectedReplacePrevCharCnt: number,
+		expectedReplaceNextCharCnt: number,
+		expectedPositionDelta: number
+	): void {
 		prevState = prevState || TextAreaState.EMPTY;
 
 		const textArea = new MockTextAreaWrapper();
@@ -329,8 +339,12 @@ suite('TextAreaState', () => {
 		testDeduceAndroidCompositionInput(
 			new TextAreaState('Microsoft', 4, 4, null, undefined),
 			'Microsoft',
-			4, 4,
-			'', 0, 0, 0,
+			4,
+			4,
+			'',
+			0,
+			0,
+			0
 		);
 	});
 
@@ -338,17 +352,25 @@ suite('TextAreaState', () => {
 		testDeduceAndroidCompositionInput(
 			new TextAreaState('Microsoft', 4, 4, null, undefined),
 			'Microsoft',
-			0, 9,
-			'', 0, 0, 5,
+			0,
+			9,
+			'',
+			0,
+			0,
+			5
 		);
 	});
 
 	test('Android composition input 3', () => {
 		testDeduceAndroidCompositionInput(
 			new TextAreaState('Microsoft', 0, 9, null, undefined),
-			'Microsoft\'s',
-			11, 11,
-			'\'s', 0, 0, 0,
+			"Microsoft's",
+			11,
+			11,
+			"'s",
+			0,
+			0,
+			0
 		);
 	});
 
@@ -356,16 +378,28 @@ suite('TextAreaState', () => {
 		testDeduceAndroidCompositionInput(
 			new TextAreaState('undefinedVariable', 2, 2, null, undefined),
 			'udefinedVariable',
-			1, 1,
-			'', 1, 0, 0,
+			1,
+			1,
+			'',
+			1,
+			0,
+			0
 		);
 	});
 
 	suite('PagedScreenReaderStrategy', () => {
-
-		function testPagedScreenReaderStrategy(lines: string[], selection: Selection, expected: TextAreaState): void {
+		function testPagedScreenReaderStrategy(
+			lines: string[],
+			selection: Selection,
+			expected: TextAreaState
+		): void {
 			const model = createTextModel(lines.join('\n'));
-			const screenReaderContentState = PagedScreenReaderStrategy.fromEditorSelection(model, selection, 10, true);
+			const screenReaderContentState = PagedScreenReaderStrategy.fromEditorSelection(
+				model,
+				selection,
+				10,
+				true
+			);
 			const textAreaState = TextAreaState.fromScreenReaderContentState(screenReaderContentState);
 			assert.ok(equalsTextAreaState(textAreaState, expected));
 			model.dispose();
@@ -373,25 +407,19 @@ suite('TextAreaState', () => {
 
 		test('simple', () => {
 			testPagedScreenReaderStrategy(
-				[
-					'Hello world!'
-				],
+				['Hello world!'],
 				new Selection(1, 13, 1, 13),
 				new TextAreaState('Hello world!', 12, 12, new Range(1, 13, 1, 13), 0)
 			);
 
 			testPagedScreenReaderStrategy(
-				[
-					'Hello world!'
-				],
+				['Hello world!'],
 				new Selection(1, 1, 1, 1),
 				new TextAreaState('Hello world!', 0, 0, new Range(1, 1, 1, 1), 0)
 			);
 
 			testPagedScreenReaderStrategy(
-				[
-					'Hello world!'
-				],
+				['Hello world!'],
 				new Selection(1, 1, 1, 6),
 				new TextAreaState('Hello world!', 0, 5, new Range(1, 1, 1, 6), 0)
 			);
@@ -399,19 +427,13 @@ suite('TextAreaState', () => {
 
 		test('multiline', () => {
 			testPagedScreenReaderStrategy(
-				[
-					'Hello world!',
-					'How are you?'
-				],
+				['Hello world!', 'How are you?'],
 				new Selection(1, 1, 1, 1),
 				new TextAreaState('Hello world!\nHow are you?', 0, 0, new Range(1, 1, 1, 1), 0)
 			);
 
 			testPagedScreenReaderStrategy(
-				[
-					'Hello world!',
-					'How are you?'
-				],
+				['Hello world!', 'How are you?'],
 				new Selection(2, 1, 2, 1),
 				new TextAreaState('Hello world!\nHow are you?', 13, 13, new Range(2, 1, 2, 1), 1)
 			);
@@ -420,36 +442,53 @@ suite('TextAreaState', () => {
 		test('page', () => {
 			testPagedScreenReaderStrategy(
 				[
-					'L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\nL11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\nL21'
+					'L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\nL11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\nL21',
 				],
 				new Selection(1, 1, 1, 1),
-				new TextAreaState('L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\n', 0, 0, new Range(1, 1, 1, 1), 0)
+				new TextAreaState(
+					'L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\n',
+					0,
+					0,
+					new Range(1, 1, 1, 1),
+					0
+				)
 			);
 
 			testPagedScreenReaderStrategy(
 				[
-					'L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\nL11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\nL21'
+					'L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\nL11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\nL21',
 				],
 				new Selection(11, 1, 11, 1),
-				new TextAreaState('L11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\n', 0, 0, new Range(11, 1, 11, 1), 0)
+				new TextAreaState(
+					'L11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\n',
+					0,
+					0,
+					new Range(11, 1, 11, 1),
+					0
+				)
 			);
 
 			testPagedScreenReaderStrategy(
 				[
-					'L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\nL11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\nL21'
+					'L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\nL11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\nL21',
 				],
 				new Selection(12, 1, 12, 1),
-				new TextAreaState('L11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\n', 4, 4, new Range(12, 1, 12, 1), 1)
+				new TextAreaState(
+					'L11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\n',
+					4,
+					4,
+					new Range(12, 1, 12, 1),
+					1
+				)
 			);
 
 			testPagedScreenReaderStrategy(
 				[
-					'L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\nL11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\nL21'
+					'L1\nL2\nL3\nL4\nL5\nL6\nL7\nL8\nL9\nL10\nL11\nL12\nL13\nL14\nL15\nL16\nL17\nL18\nL19\nL20\nL21',
 				],
 				new Selection(21, 1, 21, 1),
 				new TextAreaState('L21', 0, 0, new Range(21, 1, 21, 1), 0)
 			);
 		});
-
 	});
 });

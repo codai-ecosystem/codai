@@ -11,13 +11,20 @@ import { IMessagePassingProtocol } from '../../../base/parts/ipc/common/ipc.js';
 import { MainContext, MainThreadConsoleShape } from './extHost.protocol.js';
 import { IExtensionHostInitData } from '../../services/extensions/common/extensionHostProtocol.js';
 import { RPCProtocol } from '../../services/extensions/common/rpcProtocol.js';
-import { ExtensionError, ExtensionIdentifier, IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionError,
+	ExtensionIdentifier,
+	IExtensionDescription,
+} from '../../../platform/extensions/common/extensions.js';
 import { ILogService } from '../../../platform/log/common/log.js';
 import { getSingletonServiceDescriptors } from '../../../platform/instantiation/common/extensions.js';
 import { ServiceCollection } from '../../../platform/instantiation/common/serviceCollection.js';
 import { IExtHostInitDataService } from './extHostInitDataService.js';
 import { InstantiationService } from '../../../platform/instantiation/common/instantiationService.js';
-import { IInstantiationService, ServicesAccessor } from '../../../platform/instantiation/common/instantiation.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../../platform/instantiation/common/instantiation.js';
 import { IExtHostRpcService, ExtHostRpcService } from './extHostRpcService.js';
 import { IURITransformerService, URITransformerService } from './extHostUriTransformerService.js';
 import { IExtHostExtensionService, IHostUtils } from './extHostExtensionService.js';
@@ -33,9 +40,7 @@ export interface IConsolePatchFn {
 }
 
 export abstract class ErrorHandler {
-
 	static async installEarlyHandler(accessor: ServicesAccessor): Promise<void> {
-
 		// increase number of stack frames (from 10, https://github.com/v8/v8/wiki/Stack-Trace-API)
 		Error.stackTraceLimit = 100;
 
@@ -64,7 +69,10 @@ export abstract class ErrorHandler {
 		const mainThreadErrors = rpcService.getProxy(MainContext.MainThreadErrors);
 
 		const map = await extensionService.getExtensionPathIndex();
-		const extensionErrors = new WeakMap<Error, { extensionIdentifier: ExtensionIdentifier | undefined; stack: string }>();
+		const extensionErrors = new WeakMap<
+			Error,
+			{ extensionIdentifier: ExtensionIdentifier | undefined; stack: string }
+		>();
 
 		// PART 1
 		// set the prepareStackTrace-handle and use it as a side-effect to associate errors
@@ -142,7 +150,6 @@ export abstract class ErrorHandler {
 }
 
 export class ExtensionHostMain {
-
 	private readonly _hostUtils: IHostUtils;
 	private readonly _rpcProtocol: RPCProtocol;
 	private readonly _extensionService: IExtHostExtensionService;
@@ -186,7 +193,9 @@ export class ExtensionHostMain {
 		// ugly self - inject
 		// must call initialize *after* creating the extension service
 		// because `initialize` itself creates instances that depend on it
-		this._extensionService = instaService.invokeFunction(accessor => accessor.get(IExtHostExtensionService));
+		this._extensionService = instaService.invokeFunction(accessor =>
+			accessor.get(IExtHostExtensionService)
+		);
 		this._extensionService.initialize();
 
 		// install error handler that is extension-aware
@@ -194,7 +203,9 @@ export class ExtensionHostMain {
 	}
 
 	async asBrowserUri(uri: URI): Promise<URI> {
-		const mainThreadExtensionsProxy = this._rpcProtocol.getProxy(MainContext.MainThreadExtensionService);
+		const mainThreadExtensionsProxy = this._rpcProtocol.getProxy(
+			MainContext.MainThreadExtensionService
+		);
 		return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
 	}
 
@@ -202,18 +213,33 @@ export class ExtensionHostMain {
 		this._extensionService.terminate(reason);
 	}
 
-	private static _transform(initData: IExtensionHostInitData, rpcProtocol: RPCProtocol): IExtensionHostInitData {
-		initData.extensions.allExtensions.forEach((ext) => {
-			(<Mutable<IExtensionDescription>>ext).extensionLocation = URI.revive(rpcProtocol.transformIncomingURIs(ext.extensionLocation));
+	private static _transform(
+		initData: IExtensionHostInitData,
+		rpcProtocol: RPCProtocol
+	): IExtensionHostInitData {
+		initData.extensions.allExtensions.forEach(ext => {
+			(<Mutable<IExtensionDescription>>ext).extensionLocation = URI.revive(
+				rpcProtocol.transformIncomingURIs(ext.extensionLocation)
+			);
 		});
-		initData.environment.appRoot = URI.revive(rpcProtocol.transformIncomingURIs(initData.environment.appRoot));
+		initData.environment.appRoot = URI.revive(
+			rpcProtocol.transformIncomingURIs(initData.environment.appRoot)
+		);
 		const extDevLocs = initData.environment.extensionDevelopmentLocationURI;
 		if (extDevLocs) {
-			initData.environment.extensionDevelopmentLocationURI = extDevLocs.map(url => URI.revive(rpcProtocol.transformIncomingURIs(url)));
+			initData.environment.extensionDevelopmentLocationURI = extDevLocs.map(url =>
+				URI.revive(rpcProtocol.transformIncomingURIs(url))
+			);
 		}
-		initData.environment.extensionTestsLocationURI = URI.revive(rpcProtocol.transformIncomingURIs(initData.environment.extensionTestsLocationURI));
-		initData.environment.globalStorageHome = URI.revive(rpcProtocol.transformIncomingURIs(initData.environment.globalStorageHome));
-		initData.environment.workspaceStorageHome = URI.revive(rpcProtocol.transformIncomingURIs(initData.environment.workspaceStorageHome));
+		initData.environment.extensionTestsLocationURI = URI.revive(
+			rpcProtocol.transformIncomingURIs(initData.environment.extensionTestsLocationURI)
+		);
+		initData.environment.globalStorageHome = URI.revive(
+			rpcProtocol.transformIncomingURIs(initData.environment.globalStorageHome)
+		);
+		initData.environment.workspaceStorageHome = URI.revive(
+			rpcProtocol.transformIncomingURIs(initData.environment.workspaceStorageHome)
+		);
 		initData.nlsBaseUrl = URI.revive(rpcProtocol.transformIncomingURIs(initData.nlsBaseUrl));
 		initData.logsLocation = URI.revive(rpcProtocol.transformIncomingURIs(initData.logsLocation));
 		initData.workspace = rpcProtocol.transformIncomingURIs(initData.workspace);

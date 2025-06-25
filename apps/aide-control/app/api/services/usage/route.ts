@@ -35,21 +35,18 @@ export function POST(req: NextRequest) {
 				providerId,
 				requestDetails,
 				cost: cost || 0,
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 
 			return NextResponse.json({
 				message: 'Usage recorded successfully',
 				serviceType,
 				providerId,
-				endpoint: requestDetails.endpoint
+				endpoint: requestDetails.endpoint,
 			});
 		} catch (error) {
 			console.error('Error recording usage:', error);
-			return NextResponse.json(
-				{ error: 'Failed to record usage' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to record usage' }, { status: 500 });
 		}
 	})(req);
 }

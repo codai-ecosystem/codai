@@ -21,17 +21,21 @@ export const AgentMessageSchema = z.object({
 export const AgentCapabilitySchema = z.object({
 	name: z.string(),
 	description: z.string(),
-	inputs: z.array(z.object({
-		name: z.string(),
-		type: z.string(),
-		required: z.boolean().default(false),
-		description: z.string().optional(),
-	})),
-	outputs: z.array(z.object({
-		name: z.string(),
-		type: z.string(),
-		description: z.string().optional(),
-	})),
+	inputs: z.array(
+		z.object({
+			name: z.string(),
+			type: z.string(),
+			required: z.boolean().default(false),
+			description: z.string().optional(),
+		})
+	),
+	outputs: z.array(
+		z.object({
+			name: z.string(),
+			type: z.string(),
+			description: z.string().optional(),
+		})
+	),
 });
 
 // Agent configuration schema
@@ -40,7 +44,8 @@ export const AgentConfigSchema = z.object({
 	name: z.string(),
 	description: z.string(),
 	type: z.enum(['planner', 'builder', 'designer', 'tester', 'deployer', 'history', 'extension']),
-	capabilities: z.array(AgentCapabilitySchema), aiProvider: z.object({
+	capabilities: z.array(AgentCapabilitySchema),
+	aiProvider: z.object({
 		provider: z.enum(['openai', 'anthropic', 'ollama', 'local', 'azure', 'custom']),
 		model: z.string(),
 		apiKey: z.string().optional(),

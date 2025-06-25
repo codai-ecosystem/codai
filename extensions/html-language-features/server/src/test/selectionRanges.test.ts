@@ -5,7 +5,12 @@
 
 import 'mocha';
 import * as assert from 'assert';
-import { getLanguageModes, ClientCapabilities, TextDocument, SelectionRange } from '../modes/languageModes';
+import {
+	getLanguageModes,
+	ClientCapabilities,
+	TextDocument,
+	SelectionRange,
+} from '../modes/languageModes';
 import { getSelectionRanges } from '../modes/selectionRanges';
 import { getNodeFileFS } from '../node/nodeFs';
 
@@ -17,12 +22,19 @@ async function assertRanges(content: string, expected: (number | string)[][]): P
 
 	const workspace = {
 		settings: {},
-		folders: [{ name: 'foo', uri: 'test://foo' }]
+		folders: [{ name: 'foo', uri: 'test://foo' }],
 	};
-	const languageModes = getLanguageModes({ css: true, javascript: true }, workspace, ClientCapabilities.LATEST, getNodeFileFS());
+	const languageModes = getLanguageModes(
+		{ css: true, javascript: true },
+		workspace,
+		ClientCapabilities.LATEST,
+		getNodeFileFS()
+	);
 
 	const document = TextDocument.create('test://foo.html', 'html', 1, content);
-	const actualRanges = await getSelectionRanges(languageModes, document, [document.positionAt(offset)]);
+	const actualRanges = await getSelectionRanges(languageModes, document, [
+		document.positionAt(offset),
+	]);
 	assert.strictEqual(actualRanges.length, 1);
 	const offsetPairs: [number, string][] = [];
 	let curr: SelectionRange | undefined = actualRanges[0];
@@ -37,19 +49,22 @@ async function assertRanges(content: string, expected: (number | string)[][]): P
 
 suite('HTML SelectionRange', () => {
 	test('Embedded JavaScript', async () => {
-		await assertRanges('<html><head><script>  function foo() { return ((1|+2)*6) }</script></head></html>', [
-			[48, '1'],
-			[48, '1+2'],
-			[47, '(1+2)'],
-			[47, '(1+2)*6'],
-			[46, '((1+2)*6)'],
-			[39, 'return ((1+2)*6)'],
-			[22, 'function foo() { return ((1+2)*6) }'],
-			[20, '  function foo() { return ((1+2)*6) }'],
-			[12, '<script>  function foo() { return ((1+2)*6) }</script>'],
-			[6, '<head><script>  function foo() { return ((1+2)*6) }</script></head>'],
-			[0, '<html><head><script>  function foo() { return ((1+2)*6) }</script></head></html>'],
-		]);
+		await assertRanges(
+			'<html><head><script>  function foo() { return ((1|+2)*6) }</script></head></html>',
+			[
+				[48, '1'],
+				[48, '1+2'],
+				[47, '(1+2)'],
+				[47, '(1+2)*6'],
+				[46, '((1+2)*6)'],
+				[39, 'return ((1+2)*6)'],
+				[22, 'function foo() { return ((1+2)*6) }'],
+				[20, '  function foo() { return ((1+2)*6) }'],
+				[12, '<script>  function foo() { return ((1+2)*6) }</script>'],
+				[6, '<head><script>  function foo() { return ((1+2)*6) }</script></head>'],
+				[0, '<html><head><script>  function foo() { return ((1+2)*6) }</script></head></html>'],
+			]
+		);
 	});
 
 	test('Embedded CSS', async () => {
@@ -73,9 +88,7 @@ suite('HTML SelectionRange', () => {
 			[11, '"color: red"'],
 			[5, 'style="color: red"'],
 			[1, 'div style="color: red"'],
-			[0, '<div style="color: red"></div>']
+			[0, '<div style="color: red"></div>'],
 		]);
 	});
-
-
 });

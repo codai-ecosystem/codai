@@ -6,7 +6,12 @@
 import { BrowserFeatures } from '../../canIUse.js';
 import * as DOM from '../../dom.js';
 import { StandardMouseEvent } from '../../mouseEvent.js';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from '../../../common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from '../../../common/lifecycle.js';
 import * as platform from '../../../common/platform.js';
 import { Range } from '../../../common/range.js';
 import { OmitOptional } from '../../../common/types.js';
@@ -15,7 +20,7 @@ import './contextview.css';
 export const enum ContextViewDOMPosition {
 	ABSOLUTE = 1,
 	FIXED,
-	FIXED_SHADOW
+	FIXED_SHADOW,
 }
 
 export interface IAnchor {
@@ -32,15 +37,18 @@ export function isAnchor(obj: unknown): obj is IAnchor | OmitOptional<IAnchor> {
 }
 
 export const enum AnchorAlignment {
-	LEFT, RIGHT
+	LEFT,
+	RIGHT,
 }
 
 export const enum AnchorPosition {
-	BELOW, ABOVE
+	BELOW,
+	ABOVE,
 }
 
 export const enum AnchorAxisAlignment {
-	VERTICAL, HORIZONTAL
+	VERTICAL,
+	HORIZONTAL,
 }
 
 export interface IDelegate {
@@ -83,16 +91,16 @@ export interface ISize {
 	height: number;
 }
 
-export interface IView extends IPosition, ISize { }
+export interface IView extends IPosition, ISize {}
 
 export const enum LayoutAnchorPosition {
 	Before,
-	After
+	After,
 }
 
 export enum LayoutAnchorMode {
 	AVOID,
-	ALIGN
+	ALIGN,
 }
 
 export interface ILayoutAnchor {
@@ -108,8 +116,10 @@ export interface ILayoutAnchor {
  * @returns The view offset within the viewport.
  */
 export function layout(viewportSize: number, viewSize: number, anchor: ILayoutAnchor): number {
-	const layoutAfterAnchorBoundary = anchor.mode === LayoutAnchorMode.ALIGN ? anchor.offset : anchor.offset + anchor.size;
-	const layoutBeforeAnchorBoundary = anchor.mode === LayoutAnchorMode.ALIGN ? anchor.offset + anchor.size : anchor.offset;
+	const layoutAfterAnchorBoundary =
+		anchor.mode === LayoutAnchorMode.ALIGN ? anchor.offset : anchor.offset + anchor.size;
+	const layoutBeforeAnchorBoundary =
+		anchor.mode === LayoutAnchorMode.ALIGN ? anchor.offset + anchor.size : anchor.offset;
 
 	if (anchor.position === LayoutAnchorPosition.Before) {
 		if (viewSize <= viewportSize - layoutAfterAnchorBoundary) {
@@ -135,7 +145,6 @@ export function layout(viewportSize: number, viewSize: number, anchor: ILayoutAn
 }
 
 export class ContextView extends Disposable {
-
 	private static readonly BUBBLE_UP_EVENTS = ['click', 'keydown', 'focus', 'blur'];
 	private static readonly BUBBLE_DOWN_EVENTS = ['click'];
 
@@ -200,15 +209,24 @@ export class ContextView extends Disposable {
 			const toDisposeOnSetContainer = new DisposableStore();
 
 			ContextView.BUBBLE_UP_EVENTS.forEach(event => {
-				toDisposeOnSetContainer.add(DOM.addStandardDisposableListener(this.container!, event, e => {
-					this.onDOMEvent(e, false);
-				}));
+				toDisposeOnSetContainer.add(
+					DOM.addStandardDisposableListener(this.container!, event, e => {
+						this.onDOMEvent(e, false);
+					})
+				);
 			});
 
 			ContextView.BUBBLE_DOWN_EVENTS.forEach(event => {
-				toDisposeOnSetContainer.add(DOM.addStandardDisposableListener(this.container!, event, e => {
-					this.onDOMEvent(e, true);
-				}, true));
+				toDisposeOnSetContainer.add(
+					DOM.addStandardDisposableListener(
+						this.container!,
+						event,
+						e => {
+							this.onDOMEvent(e, true);
+						},
+						true
+					)
+				);
 			});
 
 			this.toDisposeOnSetContainer = toDisposeOnSetContainer;
@@ -251,7 +269,10 @@ export class ContextView extends Disposable {
 			return;
 		}
 
-		if (this.delegate!.canRelayout === false && !(platform.isIOS && BrowserFeatures.pointerEvents)) {
+		if (
+			this.delegate!.canRelayout === false &&
+			!(platform.isIOS && BrowserFeatures.pointerEvents)
+		) {
 			this.hide();
 			return;
 		}
@@ -286,14 +307,14 @@ export class ContextView extends Disposable {
 				top: elementPosition.top * zoom,
 				left: elementPosition.left * zoom,
 				width: elementPosition.width * zoom,
-				height: elementPosition.height * zoom
+				height: elementPosition.height * zoom,
 			};
 		} else if (isAnchor(anchor)) {
 			around = {
 				top: anchor.y,
 				left: anchor.x,
 				width: anchor.width || 1,
-				height: anchor.height || 2
+				height: anchor.height || 2,
 			};
 		} else {
 			around = {
@@ -304,7 +325,7 @@ export class ContextView extends Disposable {
 				// when showing and thus potentially triggering an action within,
 				// we treat the mouse location like a small sized block element.
 				width: 2,
-				height: 2
+				height: 2,
 			};
 		}
 
@@ -320,29 +341,71 @@ export class ContextView extends Disposable {
 
 		const activeWindow = DOM.getActiveWindow();
 		if (anchorAxisAlignment === AnchorAxisAlignment.VERTICAL) {
-			const verticalAnchor: ILayoutAnchor = { offset: around.top - activeWindow.pageYOffset, size: around.height, position: anchorPosition === AnchorPosition.BELOW ? LayoutAnchorPosition.Before : LayoutAnchorPosition.After };
-			const horizontalAnchor: ILayoutAnchor = { offset: around.left, size: around.width, position: anchorAlignment === AnchorAlignment.LEFT ? LayoutAnchorPosition.Before : LayoutAnchorPosition.After, mode: LayoutAnchorMode.ALIGN };
+			const verticalAnchor: ILayoutAnchor = {
+				offset: around.top - activeWindow.pageYOffset,
+				size: around.height,
+				position:
+					anchorPosition === AnchorPosition.BELOW
+						? LayoutAnchorPosition.Before
+						: LayoutAnchorPosition.After,
+			};
+			const horizontalAnchor: ILayoutAnchor = {
+				offset: around.left,
+				size: around.width,
+				position:
+					anchorAlignment === AnchorAlignment.LEFT
+						? LayoutAnchorPosition.Before
+						: LayoutAnchorPosition.After,
+				mode: LayoutAnchorMode.ALIGN,
+			};
 
-			top = layout(activeWindow.innerHeight, viewSizeHeight, verticalAnchor) + activeWindow.pageYOffset;
+			top =
+				layout(activeWindow.innerHeight, viewSizeHeight, verticalAnchor) + activeWindow.pageYOffset;
 
 			// if view intersects vertically with anchor,  we must avoid the anchor
-			if (Range.intersects({ start: top, end: top + viewSizeHeight }, { start: verticalAnchor.offset, end: verticalAnchor.offset + verticalAnchor.size })) {
+			if (
+				Range.intersects(
+					{ start: top, end: top + viewSizeHeight },
+					{ start: verticalAnchor.offset, end: verticalAnchor.offset + verticalAnchor.size }
+				)
+			) {
 				horizontalAnchor.mode = LayoutAnchorMode.AVOID;
 			}
 
 			left = layout(activeWindow.innerWidth, viewSizeWidth, horizontalAnchor);
 		} else {
-			const horizontalAnchor: ILayoutAnchor = { offset: around.left, size: around.width, position: anchorAlignment === AnchorAlignment.LEFT ? LayoutAnchorPosition.Before : LayoutAnchorPosition.After };
-			const verticalAnchor: ILayoutAnchor = { offset: around.top, size: around.height, position: anchorPosition === AnchorPosition.BELOW ? LayoutAnchorPosition.Before : LayoutAnchorPosition.After, mode: LayoutAnchorMode.ALIGN };
+			const horizontalAnchor: ILayoutAnchor = {
+				offset: around.left,
+				size: around.width,
+				position:
+					anchorAlignment === AnchorAlignment.LEFT
+						? LayoutAnchorPosition.Before
+						: LayoutAnchorPosition.After,
+			};
+			const verticalAnchor: ILayoutAnchor = {
+				offset: around.top,
+				size: around.height,
+				position:
+					anchorPosition === AnchorPosition.BELOW
+						? LayoutAnchorPosition.Before
+						: LayoutAnchorPosition.After,
+				mode: LayoutAnchorMode.ALIGN,
+			};
 
 			left = layout(activeWindow.innerWidth, viewSizeWidth, horizontalAnchor);
 
 			// if view intersects horizontally with anchor, we must avoid the anchor
-			if (Range.intersects({ start: left, end: left + viewSizeWidth }, { start: horizontalAnchor.offset, end: horizontalAnchor.offset + horizontalAnchor.size })) {
+			if (
+				Range.intersects(
+					{ start: left, end: left + viewSizeWidth },
+					{ start: horizontalAnchor.offset, end: horizontalAnchor.offset + horizontalAnchor.size }
+				)
+			) {
 				verticalAnchor.mode = LayoutAnchorMode.AVOID;
 			}
 
-			top = layout(activeWindow.innerHeight, viewSizeHeight, verticalAnchor) + activeWindow.pageYOffset;
+			top =
+				layout(activeWindow.innerHeight, viewSizeHeight, verticalAnchor) + activeWindow.pageYOffset;
 		}
 
 		this.view.classList.remove('top', 'bottom', 'left', 'right');

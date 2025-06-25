@@ -11,7 +11,7 @@
 
 export declare const enum PromptNodeType {
 	Piece = 1,
-	Text = 2
+	Text = 2,
 }
 export interface TextJSON {
 	type: PromptNodeType.Text;
@@ -26,7 +26,7 @@ export interface TextJSON {
 export declare const enum PieceCtorKind {
 	BaseChatMessage = 1,
 	Other = 2,
-	ImageChatMessage = 3
+	ImageChatMessage = 3,
 }
 export interface BasePieceJSON {
 	type: PromptNodeType.Piece;

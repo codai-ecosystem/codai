@@ -19,12 +19,23 @@ import { IRange } from '../../../../../editor/common/core/range.js';
 import { localize, localize2 } from '../../../../../nls.js';
 import { getFlatContextMenuActions } from '../../../../../platform/actions/browser/menuEntryActionViewItem.js';
 import { MenuWorkbenchToolBar } from '../../../../../platform/actions/browser/toolbar.js';
-import { Action2, IMenuService, MenuId, registerAction2 } from '../../../../../platform/actions/common/actions.js';
+import {
+	Action2,
+	IMenuService,
+	MenuId,
+	registerAction2,
+} from '../../../../../platform/actions/common/actions.js';
 import { IClipboardService } from '../../../../../platform/clipboard/common/clipboardService.js';
-import { ContextKeyExpr, IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
+import {
+	ContextKeyExpr,
+	IContextKeyService,
+} from '../../../../../platform/contextkey/common/contextkey.js';
 import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
 import { FileKind } from '../../../../../platform/files/common/files.js';
-import { IInstantiationService, ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../../../../platform/instantiation/common/instantiation.js';
 import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
 import { ILabelService } from '../../../../../platform/label/common/label.js';
 import { WorkbenchList } from '../../../../../platform/list/browser/listService.js';
@@ -38,8 +49,15 @@ import { ResourceContextKey } from '../../../../common/contextkeys.js';
 import { SETTINGS_AUTHORITY } from '../../../../services/preferences/common/preferences.js';
 import { createFileIconThemableTreeContainerScope } from '../../../files/browser/views/explorerView.js';
 import { ExplorerFolderContext } from '../../../files/common/files.js';
-import { chatEditingWidgetFileStateContextKey, ModifiedFileEntryState } from '../../common/chatEditingService.js';
-import { ChatResponseReferencePartStatusKind, IChatContentReference, IChatWarningMessage } from '../../common/chatService.js';
+import {
+	chatEditingWidgetFileStateContextKey,
+	ModifiedFileEntryState,
+} from '../../common/chatEditingService.js';
+import {
+	ChatResponseReferencePartStatusKind,
+	IChatContentReference,
+	IChatWarningMessage,
+} from '../../common/chatService.js';
 import { IChatRendererContent, IChatResponseViewModel } from '../../common/chatViewModel.js';
 import { ChatTreeItem, IChatWidgetService } from '../chat.js';
 import { ChatCollapsibleContentPart } from './chatCollapsibleContentPart.js';
@@ -58,7 +76,6 @@ export interface IChatReferenceListItem extends IChatContentReference {
 export type IChatCollapsibleListItem = IChatReferenceListItem | IChatWarningMessage;
 
 export class ChatCollapsibleListContentPart extends ChatCollapsibleContentPart {
-
 	constructor(
 		private readonly data: ReadonlyArray<IChatCollapsibleListItem>,
 		labelOverride: IMarkdownString | string | undefined,
@@ -67,62 +84,77 @@ export class ChatCollapsibleListContentPart extends ChatCollapsibleContentPart {
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IMenuService private readonly menuService: IMenuService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextMenuService private readonly contextMenuService: IContextMenuService
 	) {
-		super(labelOverride ?? (data.length > 1 ?
-			localize('usedReferencesPlural', "Used {0} references", data.length) :
-			localize('usedReferencesSingular', "Used {0} reference", 1)), context);
+		super(
+			labelOverride ??
+				(data.length > 1
+					? localize('usedReferencesPlural', 'Used {0} references', data.length)
+					: localize('usedReferencesSingular', 'Used {0} reference', 1)),
+			context
+		);
 	}
 
 	protected override initContent(): HTMLElement {
 		const ref = this._register(this.contentReferencesListPool.get());
 		const list = ref.object;
 
-		this._register(list.onDidOpen((e) => {
-			if (e.element && 'reference' in e.element && typeof e.element.reference === 'object') {
-				const uriOrLocation = 'variableName' in e.element.reference ? e.element.reference.value : e.element.reference;
-				const uri = URI.isUri(uriOrLocation) ? uriOrLocation :
-					uriOrLocation?.uri;
-				if (uri) {
-					this.openerService.open(
-						uri,
-						{
+		this._register(
+			list.onDidOpen(e => {
+				if (e.element && 'reference' in e.element && typeof e.element.reference === 'object') {
+					const uriOrLocation =
+						'variableName' in e.element.reference ? e.element.reference.value : e.element.reference;
+					const uri = URI.isUri(uriOrLocation) ? uriOrLocation : uriOrLocation?.uri;
+					if (uri) {
+						this.openerService.open(uri, {
 							fromUserGesture: true,
 							editorOptions: {
 								...e.editorOptions,
 								...{
-									selection: uriOrLocation && 'range' in uriOrLocation ? uriOrLocation.range : undefined
-								}
-							}
+									selection:
+										uriOrLocation && 'range' in uriOrLocation ? uriOrLocation.range : undefined,
+								},
+							},
 						});
+					}
 				}
-			}
-		}));
+			})
+		);
 
-		this._register(list.onContextMenu(e => {
-			dom.EventHelper.stop(e.browserEvent, true);
+		this._register(
+			list.onContextMenu(e => {
+				dom.EventHelper.stop(e.browserEvent, true);
 
-			const uri = e.element && getResourceForElement(e.element);
-			if (!uri) {
-				return;
-			}
-
-			this.contextMenuService.showContextMenu({
-				getAnchor: () => e.anchor,
-				getActions: () => {
-					const menu = this.menuService.getMenuActions(MenuId.ChatAttachmentsContext, list.contextKeyService, { shouldForwardArgs: true, arg: uri });
-					return getFlatContextMenuActions(menu);
+				const uri = e.element && getResourceForElement(e.element);
+				if (!uri) {
+					return;
 				}
-			});
-		}));
 
-		const resourceContextKey = this._register(this.instantiationService.createInstance(ResourceContextKey));
-		this._register(list.onDidChangeFocus(e => {
-			resourceContextKey.reset();
-			const element = e.elements.length ? e.elements[0] : undefined;
-			const uri = element && getResourceForElement(element);
-			resourceContextKey.set(uri ?? null);
-		}));
+				this.contextMenuService.showContextMenu({
+					getAnchor: () => e.anchor,
+					getActions: () => {
+						const menu = this.menuService.getMenuActions(
+							MenuId.ChatAttachmentsContext,
+							list.contextKeyService,
+							{ shouldForwardArgs: true, arg: uri }
+						);
+						return getFlatContextMenuActions(menu);
+					},
+				});
+			})
+		);
+
+		const resourceContextKey = this._register(
+			this.instantiationService.createInstance(ResourceContextKey)
+		);
+		this._register(
+			list.onDidChangeFocus(e => {
+				resourceContextKey.reset();
+				const element = e.elements.length ? e.elements[0] : undefined;
+				const uri = element && getResourceForElement(element);
+				resourceContextKey.set(uri ?? null);
+			})
+		);
 
 		const maxItemsShown = 6;
 		const itemsShown = Math.min(this.data.length, maxItemsShown);
@@ -134,8 +166,16 @@ export class ChatCollapsibleListContentPart extends ChatCollapsibleContentPart {
 		return list.getHTMLElement().parentElement!;
 	}
 
-	hasSameContent(other: IChatRendererContent, followingContent: IChatRendererContent[], element: ChatTreeItem): boolean {
-		return other.kind === 'references' && other.references.length === this.data.length && (!!followingContent.length === this.hasFollowingContent);
+	hasSameContent(
+		other: IChatRendererContent,
+		followingContent: IChatRendererContent[],
+		element: ChatTreeItem
+	): boolean {
+		return (
+			other.kind === 'references' &&
+			other.references.length === this.data.length &&
+			!!followingContent.length === this.hasFollowingContent
+		);
 	}
 }
 
@@ -153,9 +193,18 @@ export class ChatUsedReferencesListContentPart extends ChatCollapsibleListConten
 		@IOpenerService openerService: IOpenerService,
 		@IMenuService menuService: IMenuService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IContextMenuService contextMenuService: IContextMenuService,
+		@IContextMenuService contextMenuService: IContextMenuService
 	) {
-		super(data, labelOverride, context, contentReferencesListPool, openerService, menuService, instantiationService, contextMenuService);
+		super(
+			data,
+			labelOverride,
+			context,
+			contentReferencesListPool,
+			openerService,
+			menuService,
+			instantiationService,
+			contextMenuService
+		);
 		if (data.length === 0) {
 			dom.hide(this.domNode);
 		}
@@ -163,8 +212,9 @@ export class ChatUsedReferencesListContentPart extends ChatCollapsibleListConten
 
 	protected override isExpanded(): boolean {
 		const element = this.context.element as IChatResponseViewModel;
-		return element.usedReferencesExpanded ?? !!(
-			this.options.expandedWhenEmptyResponse && element.response.value.length === 0
+		return (
+			element.usedReferencesExpanded ??
+			!!(this.options.expandedWhenEmptyResponse && element.response.value.length === 0)
 		);
 	}
 
@@ -186,14 +236,18 @@ export class CollapsibleListPool extends Disposable {
 		private readonly menuId: MenuId | undefined,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IThemeService private readonly themeService: IThemeService,
-		@ILabelService private readonly labelService: ILabelService,
+		@ILabelService private readonly labelService: ILabelService
 	) {
 		super();
 		this._pool = this._register(new ResourcePool(() => this.listFactory()));
 	}
 
 	private listFactory(): WorkbenchList<IChatCollapsibleListItem> {
-		const resourceLabels = this._register(this.instantiationService.createInstance(ResourceLabels, { onDidChangeVisibility: this._onDidChangeVisibility }));
+		const resourceLabels = this._register(
+			this.instantiationService.createInstance(ResourceLabels, {
+				onDidChangeVisibility: this._onDidChangeVisibility,
+			})
+		);
 
 		const container = $('.chat-used-context-list');
 		this._register(createFileIconThemableTreeContainerScope(container, this.themeService));
@@ -203,7 +257,13 @@ export class CollapsibleListPool extends Disposable {
 			'ChatListRenderer',
 			container,
 			new CollapsibleListDelegate(),
-			[this.instantiationService.createInstance(CollapsibleListRenderer, resourceLabels, this.menuId)],
+			[
+				this.instantiationService.createInstance(
+					CollapsibleListRenderer,
+					resourceLabels,
+					this.menuId
+				),
+			],
 			{
 				alwaysConsumeMouseWheel: false,
 				accessibilityProvider: {
@@ -223,10 +283,11 @@ export class CollapsibleListPool extends Disposable {
 						}
 					},
 
-					getWidgetAriaLabel: () => localize('chatCollapsibleList', "Collapsible Chat List")
+					getWidgetAriaLabel: () => localize('chatCollapsibleList', 'Collapsible Chat List'),
 				},
 				dnd: {
-					getDragURI: (element: IChatCollapsibleListItem) => getResourceForElement(element)?.toString() ?? null,
+					getDragURI: (element: IChatCollapsibleListItem) =>
+						getResourceForElement(element)?.toString() ?? null,
 					getDragLabel: (elements, originalEvent) => {
 						const uris: URI[] = coalesce(elements.map(getResourceForElement));
 						if (!uris.length) {
@@ -237,20 +298,23 @@ export class CollapsibleListPool extends Disposable {
 							return `${uris.length}`;
 						}
 					},
-					dispose: () => { },
+					dispose: () => {},
 					onDragOver: () => false,
-					drop: () => { },
+					drop: () => {},
 					onDragStart: (data, originalEvent) => {
 						try {
 							const elements = data.getData() as IChatCollapsibleListItem[];
 							const uris: URI[] = coalesce(elements.map(getResourceForElement));
-							this.instantiationService.invokeFunction(accessor => fillEditorsDragData(accessor, uris, originalEvent));
+							this.instantiationService.invokeFunction(accessor =>
+								fillEditorsDragData(accessor, uris, originalEvent)
+							);
 						} catch {
 							// noop
 						}
 					},
 				},
-			});
+			}
+		);
 
 		return list;
 	}
@@ -264,7 +328,7 @@ export class CollapsibleListPool extends Disposable {
 			dispose: () => {
 				stale = true;
 				this._pool.release(object);
-			}
+			},
 		};
 	}
 }
@@ -287,7 +351,9 @@ interface ICollapsibleListTemplate {
 	actionBarContainer?: HTMLElement;
 }
 
-class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem, ICollapsibleListTemplate> {
+class CollapsibleListRenderer
+	implements IListRenderer<IChatCollapsibleListItem, ICollapsibleListTemplate>
+{
 	static TEMPLATE_ID = 'chatCollapsibleListRenderer';
 	readonly templateId: string = CollapsibleListRenderer.TEMPLATE_ID;
 
@@ -297,27 +363,41 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 		@IThemeService private readonly themeService: IThemeService,
 		@IProductService private readonly productService: IProductService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-	) { }
+		@IContextKeyService private readonly contextKeyService: IContextKeyService
+	) {}
 
 	renderTemplate(container: HTMLElement): ICollapsibleListTemplate {
 		const templateDisposables = new DisposableStore();
-		const label = templateDisposables.add(this.labels.create(container, { supportHighlights: true, supportIcons: true }));
+		const label = templateDisposables.add(
+			this.labels.create(container, { supportHighlights: true, supportIcons: true })
+		);
 
 		let toolbar;
 		let actionBarContainer;
 		let contextKeyService;
 		if (this.menuId) {
 			actionBarContainer = $('.chat-collapsible-list-action-bar');
-			contextKeyService = templateDisposables.add(this.contextKeyService.createScoped(actionBarContainer));
-			const scopedInstantiationService = templateDisposables.add(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, contextKeyService])));
-			toolbar = templateDisposables.add(scopedInstantiationService.createInstance(MenuWorkbenchToolBar, actionBarContainer, this.menuId, { menuOptions: { shouldForwardArgs: true, arg: undefined } }));
+			contextKeyService = templateDisposables.add(
+				this.contextKeyService.createScoped(actionBarContainer)
+			);
+			const scopedInstantiationService = templateDisposables.add(
+				this.instantiationService.createChild(
+					new ServiceCollection([IContextKeyService, contextKeyService])
+				)
+			);
+			toolbar = templateDisposables.add(
+				scopedInstantiationService.createInstance(
+					MenuWorkbenchToolBar,
+					actionBarContainer,
+					this.menuId,
+					{ menuOptions: { shouldForwardArgs: true, arg: undefined } }
+				)
+			);
 			label.element.appendChild(actionBarContainer);
 		}
 
 		return { templateDisposables, label, toolbar, actionBarContainer, contextKeyService };
 	}
-
 
 	private getReferenceIcon(data: IChatContentReference): URI | ThemeIcon | undefined {
 		if (ThemeIcon.isThemeIcon(data.iconPath)) {
@@ -329,7 +409,11 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 		}
 	}
 
-	renderElement(data: IChatCollapsibleListItem, index: number, templateData: ICollapsibleListTemplate): void {
+	renderElement(
+		data: IChatCollapsibleListItem,
+		index: number,
+		templateData: ICollapsibleListTemplate
+	): void {
 		if (data.kind === 'warning') {
 			templateData.label.setResource({ name: data.content.value }, { icon: Codicon.warning });
 			return;
@@ -348,32 +432,66 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 						name: basenameOrAuthority(uri),
 						description: `#${reference.variableName}`,
 						range: 'range' in reference.value ? reference.value.range : undefined,
-					}, { icon, title: data.options?.status?.description ?? data.title });
+					},
+					{ icon, title: data.options?.status?.description ?? data.title }
+				);
 			} else if (reference.variableName.startsWith('kernelVariable')) {
 				const variable = reference.variableName.split(':')[1];
 				const asVariableName = `${variable}`;
 				const label = `Kernel variable`;
-				templateData.label.setLabel(label, asVariableName, { title: data.options?.status?.description });
+				templateData.label.setLabel(label, asVariableName, {
+					title: data.options?.status?.description,
+				});
 			} else {
 				// Nothing else is expected to fall into here
 				templateData.label.setLabel('Unknown variable type');
 			}
 		} else if (typeof reference === 'string') {
-			templateData.label.setLabel(reference, undefined, { iconPath: URI.isUri(icon) ? icon : undefined, title: data.options?.status?.description ?? data.title });
-
+			templateData.label.setLabel(reference, undefined, {
+				iconPath: URI.isUri(icon) ? icon : undefined,
+				title: data.options?.status?.description ?? data.title,
+			});
 		} else {
 			const uri = 'uri' in reference ? reference.uri : reference;
 			arg = uri;
 			const extraClasses = data.excluded ? ['excluded'] : [];
-			if (uri.scheme === 'https' && isEqualAuthority(uri.authority, 'github.com') && uri.path.includes('/tree/')) {
+			if (
+				uri.scheme === 'https' &&
+				isEqualAuthority(uri.authority, 'github.com') &&
+				uri.path.includes('/tree/')
+			) {
 				// Parse a nicer label for GitHub URIs that point at a particular commit + file
-				templateData.label.setResource(getResourceLabelForGithubUri(uri), { icon: Codicon.github, title: data.title, strikethrough: data.excluded, extraClasses });
-			} else if (uri.scheme === this.productService.urlProtocol && isEqualAuthority(uri.authority, SETTINGS_AUTHORITY)) {
+				templateData.label.setResource(getResourceLabelForGithubUri(uri), {
+					icon: Codicon.github,
+					title: data.title,
+					strikethrough: data.excluded,
+					extraClasses,
+				});
+			} else if (
+				uri.scheme === this.productService.urlProtocol &&
+				isEqualAuthority(uri.authority, SETTINGS_AUTHORITY)
+			) {
 				// a nicer label for settings URIs
 				const settingId = uri.path.substring(1);
-				templateData.label.setResource({ resource: uri, name: settingId }, { icon: Codicon.settingsGear, title: localize('setting.hover', "Open setting '{0}'", settingId), strikethrough: data.excluded, extraClasses });
+				templateData.label.setResource(
+					{ resource: uri, name: settingId },
+					{
+						icon: Codicon.settingsGear,
+						title: localize('setting.hover', "Open setting '{0}'", settingId),
+						strikethrough: data.excluded,
+						extraClasses,
+					}
+				);
 			} else if (matchesSomeScheme(uri, Schemas.mailto, Schemas.http, Schemas.https)) {
-				templateData.label.setResource({ resource: uri, name: uri.toString() }, { icon: icon ?? Codicon.globe, title: data.options?.status?.description ?? data.title ?? uri.toString(), strikethrough: data.excluded, extraClasses });
+				templateData.label.setResource(
+					{ resource: uri, name: uri.toString() },
+					{
+						icon: icon ?? Codicon.globe,
+						title: data.options?.status?.description ?? data.title ?? uri.toString(),
+						strikethrough: data.excluded,
+						extraClasses,
+					}
+				);
 			} else {
 				templateData.label.setFile(uri, {
 					fileKind: FileKind.FILE,
@@ -382,7 +500,7 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 					range: 'range' in reference ? reference.range : undefined,
 					title: data.options?.status?.description ?? data.title,
 					strikethrough: data.excluded,
-					extraClasses
+					extraClasses,
 				});
 			}
 		}
@@ -390,7 +508,10 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 		for (const selector of ['.monaco-icon-suffix-container', '.monaco-icon-name-container']) {
 			const element = templateData.label.element.querySelector(selector);
 			if (element) {
-				if (data.options?.status?.kind === ChatResponseReferencePartStatusKind.Omitted || data.options?.status?.kind === ChatResponseReferencePartStatusKind.Partial) {
+				if (
+					data.options?.status?.kind === ChatResponseReferencePartStatusKind.Omitted ||
+					data.options?.status?.kind === ChatResponseReferencePartStatusKind.Partial
+				) {
 					element.classList.add('warning');
 				} else {
 					element.classList.remove('warning');
@@ -400,12 +521,19 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 
 		if (data.state !== undefined) {
 			if (templateData.actionBarContainer) {
-				if (data.state === ModifiedFileEntryState.Modified && !templateData.actionBarContainer.classList.contains('modified')) {
+				if (
+					data.state === ModifiedFileEntryState.Modified &&
+					!templateData.actionBarContainer.classList.contains('modified')
+				) {
 					templateData.actionBarContainer.classList.add('modified');
-					templateData.label.element.querySelector('.monaco-icon-name-container')?.classList.add('modified');
+					templateData.label.element
+						.querySelector('.monaco-icon-name-container')
+						?.classList.add('modified');
 				} else if (data.state !== ModifiedFileEntryState.Modified) {
 					templateData.actionBarContainer.classList.remove('modified');
-					templateData.label.element.querySelector('.monaco-icon-name-container')?.classList.remove('modified');
+					templateData.label.element
+						.querySelector('.monaco-icon-name-container')
+						?.classList.remove('modified');
 				}
 			}
 			if (templateData.toolbar) {
@@ -413,7 +541,9 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 			}
 			if (templateData.contextKeyService) {
 				if (data.state !== undefined) {
-					chatEditingWidgetFileStateContextKey.bindTo(templateData.contextKeyService).set(data.state);
+					chatEditingWidgetFileStateContextKey
+						.bindTo(templateData.contextKeyService)
+						.set(data.state);
 				}
 			}
 		}
@@ -433,7 +563,7 @@ function getResourceLabelForGithubUri(uri: URI): IResourceLabelProps {
 		resource: uri,
 		name: fileName ?? filePath.join('/'),
 		description: [repoPath, ...filePath.slice(0, -1)].join('/'),
-		range
+		range,
 	};
 }
 
@@ -463,7 +593,7 @@ function getLineRangeFromGithubUri(uri: URI): IRange | undefined {
 		startLineNumber: startLine,
 		startColumn: 1,
 		endLineNumber: endLine,
-		endColumn: 1
+		endColumn: 1,
 	};
 }
 
@@ -483,62 +613,74 @@ function getResourceForElement(element: IChatCollapsibleListItem): URI | null {
 
 //#region Resource context menu
 
-registerAction2(class AddToChatAction extends Action2 {
+registerAction2(
+	class AddToChatAction extends Action2 {
+		static readonly id = 'workbench.action.chat.addToChatAction';
 
-	static readonly id = 'workbench.action.chat.addToChatAction';
-
-	constructor() {
-		super({
-			id: AddToChatAction.id,
-			title: {
-				...localize2('addToChat', "Add File to Chat"),
-			},
-			f1: false,
-			menu: [{
-				id: MenuId.ChatAttachmentsContext,
-				group: 'chat',
-				order: 1,
-				when: ContextKeyExpr.and(ResourceContextKey.IsFileSystemResource, ExplorerFolderContext.negate()),
-			}]
-		});
-	}
-
-	override async run(accessor: ServicesAccessor, resource: URI): Promise<void> {
-		const chatWidgetService = accessor.get(IChatWidgetService);
-		if (!resource) {
-			return;
+		constructor() {
+			super({
+				id: AddToChatAction.id,
+				title: {
+					...localize2('addToChat', 'Add File to Chat'),
+				},
+				f1: false,
+				menu: [
+					{
+						id: MenuId.ChatAttachmentsContext,
+						group: 'chat',
+						order: 1,
+						when: ContextKeyExpr.and(
+							ResourceContextKey.IsFileSystemResource,
+							ExplorerFolderContext.negate()
+						),
+					},
+				],
+			});
 		}
 
-		const widget = chatWidgetService.lastFocusedWidget;
-		if (widget) {
-			widget.attachmentModel.addFile(resource);
+		override async run(accessor: ServicesAccessor, resource: URI): Promise<void> {
+			const chatWidgetService = accessor.get(IChatWidgetService);
+			if (!resource) {
+				return;
+			}
+
+			const widget = chatWidgetService.lastFocusedWidget;
+			if (widget) {
+				widget.attachmentModel.addFile(resource);
+			}
 		}
 	}
-});
+);
 
-registerAction2(class OpenChatReferenceLinkAction extends Action2 {
+registerAction2(
+	class OpenChatReferenceLinkAction extends Action2 {
+		static readonly id = 'workbench.action.chat.copyLink';
 
-	static readonly id = 'workbench.action.chat.copyLink';
+		constructor() {
+			super({
+				id: OpenChatReferenceLinkAction.id,
+				title: {
+					...localize2('copyLink', 'Copy Link'),
+				},
+				f1: false,
+				menu: [
+					{
+						id: MenuId.ChatAttachmentsContext,
+						group: 'chat',
+						order: 0,
+						when: ContextKeyExpr.or(
+							ResourceContextKey.Scheme.isEqualTo(Schemas.http),
+							ResourceContextKey.Scheme.isEqualTo(Schemas.https)
+						),
+					},
+				],
+			});
+		}
 
-	constructor() {
-		super({
-			id: OpenChatReferenceLinkAction.id,
-			title: {
-				...localize2('copyLink', "Copy Link"),
-			},
-			f1: false,
-			menu: [{
-				id: MenuId.ChatAttachmentsContext,
-				group: 'chat',
-				order: 0,
-				when: ContextKeyExpr.or(ResourceContextKey.Scheme.isEqualTo(Schemas.http), ResourceContextKey.Scheme.isEqualTo(Schemas.https)),
-			}]
-		});
+		override async run(accessor: ServicesAccessor, resource: URI): Promise<void> {
+			await accessor.get(IClipboardService).writeResources([resource]);
+		}
 	}
-
-	override async run(accessor: ServicesAccessor, resource: URI): Promise<void> {
-		await accessor.get(IClipboardService).writeResources([resource]);
-	}
-});
+);
 
 //#endregion

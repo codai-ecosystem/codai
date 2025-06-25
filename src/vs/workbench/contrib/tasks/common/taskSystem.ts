@@ -20,7 +20,7 @@ export const enum TaskErrors {
 	ConfigValidationError,
 	TaskNotFound,
 	NoValidTaskRunner,
-	UnknownError
+	UnknownError,
 }
 
 export class TaskError {
@@ -50,7 +50,7 @@ export interface ITaskSummary {
 
 export const enum TaskExecuteKind {
 	Started = 1,
-	Active = 2
+	Active = 2,
 }
 
 export interface ITaskExecuteResult {
@@ -67,7 +67,10 @@ export interface ITaskExecuteResult {
 }
 
 export interface ITaskResolver {
-	resolve(uri: URI | string, identifier: string | KeyedTaskIdentifier | undefined): Promise<Task | undefined>;
+	resolve(
+		uri: URI | string,
+		identifier: string | KeyedTaskIdentifier | undefined
+	): Promise<Task | undefined>;
 }
 
 export interface ITaskTerminateResponse extends TerminateResponse {
@@ -92,7 +95,11 @@ export interface ITaskSystemInfo {
 	platform: Platform;
 	context: any;
 	uriProvider: (this: void, path: string) => URI;
-	resolveVariables(workspaceFolder: IWorkspaceFolder, toResolve: IResolveSet, target: ConfigurationTarget): Promise<IResolvedVariables | undefined>;
+	resolveVariables(
+		workspaceFolder: IWorkspaceFolder,
+		toResolve: IResolveSet,
+		target: ConfigurationTarget
+	): Promise<IResolvedVariables | undefined>;
 	findExecutable(command: string, cwd?: string, paths?: string[]): Promise<string | undefined>;
 }
 

@@ -7,7 +7,10 @@ import { Position } from '../../../../common/core/position.js';
 import { Selection } from '../../../../common/core/selection.js';
 import { ILanguageConfigurationService } from '../../../../common/languages/languageConfigurationRegistry.js';
 import { BracketMatchingController } from '../../browser/bracketMatching.js';
-import { createCodeEditorServices, instantiateTestCodeEditor } from '../../../../test/browser/testCodeEditor.js';
+import {
+	createCodeEditorServices,
+	instantiateTestCodeEditor,
+} from '../../../../test/browser/testCodeEditor.js';
 import { instantiateTextModel } from '../../../../test/common/testTextModel.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
@@ -36,23 +39,32 @@ suite('bracket matching', () => {
 	function createTextModelWithBrackets(text: string) {
 		const languageId = 'bracketMode';
 		disposables.add(languageService.registerLanguage({ id: languageId }));
-		disposables.add(languageConfigurationService.register(languageId, {
-			brackets: [
-				['{', '}'],
-				['[', ']'],
-				['(', ')'],
-			]
-		}));
+		disposables.add(
+			languageConfigurationService.register(languageId, {
+				brackets: [
+					['{', '}'],
+					['[', ']'],
+					['(', ')'],
+				],
+			})
+		);
 		return disposables.add(instantiateTextModel(instantiationService, text, languageId));
 	}
 
 	function createCodeEditorWithBrackets(text: string) {
-		return disposables.add(instantiateTestCodeEditor(instantiationService, createTextModelWithBrackets(text)));
+		return disposables.add(
+			instantiateTestCodeEditor(instantiationService, createTextModelWithBrackets(text))
+		);
 	}
 
 	test('issue #183: jump to matching bracket position', () => {
 		const editor = createCodeEditorWithBrackets('var x = (3 + (5-7)) + ((5+3)+5);');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(
+				BracketMatchingController.ID,
+				BracketMatchingController
+			)
+		);
 
 		// start on closing bracket
 		editor.setPosition(new Position(1, 20));
@@ -75,7 +87,12 @@ suite('bracket matching', () => {
 
 	test('Jump to next bracket', () => {
 		const editor = createCodeEditorWithBrackets('var x = (3 + (5-7)); y();');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(
+				BracketMatchingController.ID,
+				BracketMatchingController
+			)
+		);
 
 		// start position between brackets
 		editor.setPosition(new Position(1, 16));
@@ -103,7 +120,12 @@ suite('bracket matching', () => {
 
 	test('Select to next bracket', () => {
 		const editor = createCodeEditorWithBrackets('var x = (3 + (5-7)); y();');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(
+				BracketMatchingController.ID,
+				BracketMatchingController
+			)
+		);
 
 		// start position in open brackets
 		editor.setPosition(new Position(1, 9));
@@ -145,7 +167,12 @@ suite('bracket matching', () => {
 			'};',
 		].join('\n');
 		const editor = createCodeEditorWithBrackets(text);
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(
+				BracketMatchingController.ID,
+				BracketMatchingController
+			)
+		);
 
 		editor.setPosition(new Position(3, 5));
 		bracketMatchingController.jumpToBracket();
@@ -161,7 +188,12 @@ suite('bracket matching', () => {
 			'};',
 		].join('\n');
 		const editor = createCodeEditorWithBrackets(text);
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(
+				BracketMatchingController.ID,
+				BracketMatchingController
+			)
+		);
 
 		editor.setPosition(new Position(3, 5));
 		bracketMatchingController.selectToBracket(false);
@@ -170,51 +202,61 @@ suite('bracket matching', () => {
 
 	test('issue #45369: Select to Bracket with multicursor', () => {
 		const editor = createCodeEditorWithBrackets('{  }   {   }   { }');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(
+				BracketMatchingController.ID,
+				BracketMatchingController
+			)
+		);
 
 		// cursors inside brackets become selections of the entire bracket contents
 		editor.setSelections([
 			new Selection(1, 3, 1, 3),
 			new Selection(1, 10, 1, 10),
-			new Selection(1, 17, 1, 17)
+			new Selection(1, 17, 1, 17),
 		]);
 		bracketMatchingController.selectToBracket(true);
 		assert.deepStrictEqual(editor.getSelections(), [
 			new Selection(1, 1, 1, 5),
 			new Selection(1, 8, 1, 13),
-			new Selection(1, 16, 1, 19)
+			new Selection(1, 16, 1, 19),
 		]);
 
 		// cursors to the left of bracket pairs become selections of the entire pair
 		editor.setSelections([
 			new Selection(1, 1, 1, 1),
 			new Selection(1, 6, 1, 6),
-			new Selection(1, 14, 1, 14)
+			new Selection(1, 14, 1, 14),
 		]);
 		bracketMatchingController.selectToBracket(true);
 		assert.deepStrictEqual(editor.getSelections(), [
 			new Selection(1, 1, 1, 5),
 			new Selection(1, 8, 1, 13),
-			new Selection(1, 16, 1, 19)
+			new Selection(1, 16, 1, 19),
 		]);
 
 		// cursors just right of a bracket pair become selections of the entire pair
 		editor.setSelections([
 			new Selection(1, 5, 1, 5),
 			new Selection(1, 13, 1, 13),
-			new Selection(1, 19, 1, 19)
+			new Selection(1, 19, 1, 19),
 		]);
 		bracketMatchingController.selectToBracket(true);
 		assert.deepStrictEqual(editor.getSelections(), [
 			new Selection(1, 5, 1, 1),
 			new Selection(1, 13, 1, 8),
-			new Selection(1, 19, 1, 16)
+			new Selection(1, 19, 1, 16),
 		]);
 	});
 
 	test('Removes brackets', () => {
 		const editor = createCodeEditorWithBrackets('var x = (3 + (5-7)); y();');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(
+				BracketMatchingController.ID,
+				BracketMatchingController
+			)
+		);
 		function removeBrackets() {
 			bracketMatchingController.removeBrackets();
 		}

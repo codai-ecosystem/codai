@@ -4,17 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Client as MessagePortClient } from '../../../../base/parts/ipc/common/ipc.mp.js';
-import { IChannel, IServerChannel, getDelayedChannel } from '../../../../base/parts/ipc/common/ipc.js';
+import {
+	IChannel,
+	IServerChannel,
+	getDelayedChannel,
+} from '../../../../base/parts/ipc/common/ipc.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { ISharedProcessService } from '../../../../platform/ipc/electron-sandbox/services.js';
-import { SharedProcessChannelConnection, SharedProcessRawConnection } from '../../../../platform/sharedProcess/common/sharedProcess.js';
+import {
+	SharedProcessChannelConnection,
+	SharedProcessRawConnection,
+} from '../../../../platform/sharedProcess/common/sharedProcess.js';
 import { mark } from '../../../../base/common/performance.js';
 import { Barrier, timeout } from '../../../../base/common/async.js';
 import { acquirePort } from '../../../../base/parts/ipc/electron-sandbox/ipc.mp.js';
 
 export class SharedProcessService extends Disposable implements ISharedProcessService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly withSharedProcessConnection: Promise<MessagePortClient>;
@@ -45,7 +51,10 @@ export class SharedProcessService extends Disposable implements ISharedProcessSe
 		// Acquire a message port connected to the shared process
 		mark('code/willConnectSharedProcess');
 		this.logService.trace('Renderer->SharedProcess#connect: before acquirePort');
-		const port = await acquirePort(SharedProcessChannelConnection.request, SharedProcessChannelConnection.response);
+		const port = await acquirePort(
+			SharedProcessChannelConnection.request,
+			SharedProcessChannelConnection.response
+		);
 		mark('code/didConnectSharedProcess');
 		this.logService.trace('Renderer->SharedProcess#connect: connection established');
 
@@ -59,21 +68,27 @@ export class SharedProcessService extends Disposable implements ISharedProcessSe
 	}
 
 	getChannel(channelName: string): IChannel {
-		return getDelayedChannel(this.withSharedProcessConnection.then(connection => connection.getChannel(channelName)));
+		return getDelayedChannel(
+			this.withSharedProcessConnection.then(connection => connection.getChannel(channelName))
+		);
 	}
 
 	registerChannel(channelName: string, channel: IServerChannel<string>): void {
-		this.withSharedProcessConnection.then(connection => connection.registerChannel(channelName, channel));
+		this.withSharedProcessConnection.then(connection =>
+			connection.registerChannel(channelName, channel)
+		);
 	}
 
 	async createRawConnection(): Promise<MessagePort> {
-
 		// Await initialization of the shared process
 		await this.withSharedProcessConnection;
 
 		// Create a new port to the shared process
 		this.logService.trace('Renderer->SharedProcess#createRawConnection: before acquirePort');
-		const port = await acquirePort(SharedProcessRawConnection.request, SharedProcessRawConnection.response);
+		const port = await acquirePort(
+			SharedProcessRawConnection.request,
+			SharedProcessRawConnection.response
+		);
 		this.logService.trace('Renderer->SharedProcess#createRawConnection: connection established');
 
 		return port;

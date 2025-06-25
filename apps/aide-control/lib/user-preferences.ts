@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
 /**
  * UserPreferences utility for storing and retrieving user preferences
  * Uses localStorage with fallbacks for SSR and incognito mode
  */
 
-export type ThemeMode = 'light' | 'dark' | 'system'
+export type ThemeMode = 'light' | 'dark' | 'system';
 
 export interface UserPreferences {
 	theme: ThemeMode;
@@ -30,8 +30,8 @@ const DEFAULT_PREFERENCES: UserPreferences = {
 	accessibilityPreferences: {
 		reducedMotion: false,
 		highContrast: false,
-		largeText: false
-	}
+		largeText: false,
+	},
 };
 
 const STORAGE_KEY = 'codai_user_preferences';
@@ -68,7 +68,7 @@ const safeStorage = {
 		} catch (error) {
 			console.error('Failed to write to localStorage:', error);
 		}
-	}
+	},
 };
 
 /**
@@ -122,16 +122,16 @@ export const userPreferences = {
 	 */
 	addRecentCommand: (commandId: string): void => {
 		const preferences = safeStorage.get<UserPreferences>(STORAGE_KEY, DEFAULT_PREFERENCES);
-		
+
 		// Remove the command if it already exists to avoid duplicates
 		const filteredCommands = preferences.recentCommands.filter(cmd => cmd.id !== commandId);
-		
+
 		// Add the command to the beginning of the list
-		const updatedCommands = [
-			{ id: commandId, timestamp: Date.now() },
-			...filteredCommands
-		].slice(0, MAX_RECENT_COMMANDS); // Keep only the most recent commands
-		
+		const updatedCommands = [{ id: commandId, timestamp: Date.now() }, ...filteredCommands].slice(
+			0,
+			MAX_RECENT_COMMANDS
+		); // Keep only the most recent commands
+
 		preferences.recentCommands = updatedCommands;
 		safeStorage.set(STORAGE_KEY, preferences);
 	},
@@ -141,13 +141,10 @@ export const userPreferences = {
 	 */
 	dismissNotification: (notificationId: string): void => {
 		const preferences = safeStorage.get<UserPreferences>(STORAGE_KEY, DEFAULT_PREFERENCES);
-		
+
 		// Add the notification ID if it's not already in the list
 		if (!preferences.dismissedNotifications.includes(notificationId)) {
-			preferences.dismissedNotifications = [
-				...preferences.dismissedNotifications,
-				notificationId
-			];
+			preferences.dismissedNotifications = [...preferences.dismissedNotifications, notificationId];
 			safeStorage.set(STORAGE_KEY, preferences);
 		}
 	},
@@ -169,9 +166,9 @@ export const userPreferences = {
 		const preferences = safeStorage.get<UserPreferences>(STORAGE_KEY, DEFAULT_PREFERENCES);
 		preferences.accessibilityPreferences = {
 			...preferences.accessibilityPreferences,
-			...updates
+			...updates,
 		};
 		safeStorage.set(STORAGE_KEY, preferences);
 		return preferences.accessibilityPreferences;
-	}
+	},
 };

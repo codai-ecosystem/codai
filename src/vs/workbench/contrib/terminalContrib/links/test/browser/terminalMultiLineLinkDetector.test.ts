@@ -93,7 +93,11 @@ const supportedLinkFormats: LinkFormatInfo[] = [
 	{ urlFormat: '{0}\r\n5:another link\r\n{1}:{2} foo', line: '5', column: '3' },
 	{ urlFormat: '{0}\r\n  {1}:{2} foo', line: '5', column: '3' },
 	{ urlFormat: '{0}\r\n  5:6  error  another one\r\n  {1}:{2}  error', line: '5', column: '3' },
-	{ urlFormat: `{0}\r\n  5:6  error  ${'a'.repeat(80)}\r\n  {1}:{2}  error`, line: '5', column: '3' },
+	{
+		urlFormat: `{0}\r\n  5:6  error  ${'a'.repeat(80)}\r\n  {1}:{2}  error`,
+		line: '5',
+		column: '3',
+	},
 
 	// @@ ... <to-file-range> @@ content...       [#182878]   (tests check the entire line, so they don't include the line content at the end of the last @@)
 	{ urlFormat: '+++ b/{0}\r\n@@ -7,6 +{1},7 @@', line: '5' },
@@ -113,12 +117,12 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 	async function assertLinks(
 		type: TerminalBuiltinLinkType,
 		text: string,
-		expected: ({ uri: URI; range: [number, number][] })[]
+		expected: { uri: URI; range: [number, number][] }[]
 	) {
 		let to;
 		const race = await Promise.race([
 			assertLinkHelper(text, expected, detector, type).then(() => 'success'),
-			(to = timeout(2)).then(() => 'timeout')
+			(to = timeout(2)).then(() => 'timeout'),
 		]);
 		strictEqual(race, 'success', `Awaiting link assertion for "${text}" timed out`);
 		to.cancel();
@@ -133,7 +137,15 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 		for (const line of lines) {
 			lineCount += Math.max(Math.ceil(line.length / 80), 1);
 		}
-		await assertLinks(TerminalBuiltinLinkType.LocalFile, link, [{ uri, range: [[1, lineCount], [lastLine.length, lineCount]] }]);
+		await assertLinks(TerminalBuiltinLinkType.LocalFile, link, [
+			{
+				uri,
+				range: [
+					[1, lineCount],
+					[lastLine.length, lineCount],
+				],
+			},
+		]);
 	}
 
 	setup(async () => {
@@ -143,28 +155,35 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 		instantiationService.stub(IFileService, {
 			async stat(resource) {
 				if (!validResources.map(e => e.path).includes(resource.path)) {
-					throw new Error('Doesn\'t exist');
+					throw new Error("Doesn't exist");
 				}
 				return createFileStat(resource);
-			}
+			},
 		});
 		instantiationService.stub(ITerminalLogService, new NullLogService());
 		resolver = instantiationService.createInstance(TerminalLinkResolver);
 		validResources = [];
 
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (
+			await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')
+		).Terminal;
 		xterm = new TerminalCtor({ allowProposedApi: true, cols: 80, rows: 30 });
 	});
 
 	suite('macOS/Linux', () => {
 		setup(() => {
-			detector = instantiationService.createInstance(TerminalMultiLineLinkDetector, xterm, {
-				initialCwd: '/parent/cwd',
-				os: OperatingSystem.Linux,
-				remoteAuthority: undefined,
-				userHome: '/home',
-				backend: undefined
-			}, resolver);
+			detector = instantiationService.createInstance(
+				TerminalMultiLineLinkDetector,
+				xterm,
+				{
+					initialCwd: '/parent/cwd',
+					os: OperatingSystem.Linux,
+					remoteAuthority: undefined,
+					userHome: '/home',
+					backend: undefined,
+				},
+				resolver
+			);
 		});
 
 		for (const l of unixLinks) {
@@ -173,7 +192,12 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 			suite(`Link: ${baseLink}`, () => {
 				for (let i = 0; i < supportedLinkFormats.length; i++) {
 					const linkFormat = supportedLinkFormats[i];
-					const formattedLink = format(linkFormat.urlFormat, baseLink, linkFormat.line, linkFormat.column);
+					const formattedLink = format(
+						linkFormat.urlFormat,
+						baseLink,
+						linkFormat.line,
+						linkFormat.column
+					);
 					test(`should detect in "${escapeMultilineTestName(formattedLink)}"`, async () => {
 						validResources = [resource];
 						await assertLinksMain(formattedLink, resource);
@@ -188,12 +212,17 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 	if (isWindows) {
 		suite('Windows', () => {
 			setup(() => {
-				detector = instantiationService.createInstance(TerminalMultiLineLinkDetector, xterm, {
-					initialCwd: 'C:\\Parent\\Cwd',
-					os: OperatingSystem.Windows,
-					remoteAuthority: undefined,
-					userHome: 'C:\\Home',
-				}, resolver);
+				detector = instantiationService.createInstance(
+					TerminalMultiLineLinkDetector,
+					xterm,
+					{
+						initialCwd: 'C:\\Parent\\Cwd',
+						os: OperatingSystem.Windows,
+						remoteAuthority: undefined,
+						userHome: 'C:\\Home',
+					},
+					resolver
+				);
 			});
 
 			for (const l of windowsLinks) {
@@ -202,7 +231,12 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 				suite(`Link "${baseLink}"`, () => {
 					for (let i = 0; i < supportedLinkFormats.length; i++) {
 						const linkFormat = supportedLinkFormats[i];
-						const formattedLink = format(linkFormat.urlFormat, baseLink, linkFormat.line, linkFormat.column);
+						const formattedLink = format(
+							linkFormat.urlFormat,
+							baseLink,
+							linkFormat.line,
+							linkFormat.column
+						);
 						test(`should detect in "${escapeMultilineTestName(formattedLink)}"`, async () => {
 							validResources = [resource];
 							await assertLinksMain(formattedLink, resource);

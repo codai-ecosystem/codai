@@ -14,7 +14,13 @@ import { ThemeIcon } from '../../../base/common/themables.js';
 
 const fileIconDirectoryRegex = /(?:\/|^)(?:([^\/]+)\/)?([^\/]+)$/;
 
-export function getIconClasses(modelService: IModelService, languageService: ILanguageService, resource: uri | undefined, fileKind?: FileKind, icon?: ThemeIcon | URI): string[] {
+export function getIconClasses(
+	modelService: IModelService,
+	languageService: ILanguageService,
+	resource: uri | undefined,
+	fileKind?: FileKind,
+	icon?: ThemeIcon | URI
+): string[] {
 	if (ThemeIcon.isThemeIcon(icon)) {
 		return [`codicon-${icon.id}`, 'predefined-file-icon'];
 	}
@@ -24,9 +30,13 @@ export function getIconClasses(modelService: IModelService, languageService: ILa
 	}
 
 	// we always set these base classes even if we do not have a path
-	const classes = fileKind === FileKind.ROOT_FOLDER ? ['rootfolder-icon'] : fileKind === FileKind.FOLDER ? ['folder-icon'] : ['file-icon'];
+	const classes =
+		fileKind === FileKind.ROOT_FOLDER
+			? ['rootfolder-icon']
+			: fileKind === FileKind.FOLDER
+				? ['folder-icon']
+				: ['file-icon'];
 	if (resource) {
-
 		// Get the path and name of the resource. For data-URIs, we need to parse specially
 		let name: string | undefined;
 		if (resource.scheme === Schemas.data) {
@@ -39,7 +49,6 @@ export function getIconClasses(modelService: IModelService, languageService: ILa
 				if (match[1]) {
 					classes.push(`${fileIconSelectorEscape(match[1].toLowerCase())}-name-dir-icon`); // parent directory
 				}
-
 			} else {
 				name = fileIconSelectorEscape(resource.authority.toLowerCase());
 			}
@@ -57,7 +66,6 @@ export function getIconClasses(modelService: IModelService, languageService: ILa
 
 		// Files
 		else {
-
 			// Name & Extension(s)
 			if (name) {
 				classes.push(`${name}-name-file-icon`);
@@ -88,7 +96,11 @@ export function getIconClassesForLanguageId(languageId: string): string[] {
 	return ['file-icon', `${fileIconSelectorEscape(languageId)}-lang-file-icon`];
 }
 
-function detectLanguageId(modelService: IModelService, languageService: ILanguageService, resource: uri): string | null {
+function detectLanguageId(
+	modelService: IModelService,
+	languageService: ILanguageService,
+	resource: uri
+): string | null {
 	if (!resource) {
 		return null; // we need a resource at least
 	}

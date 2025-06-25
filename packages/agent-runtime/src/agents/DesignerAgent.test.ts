@@ -137,7 +137,7 @@ describe('DesignerAgent', () => {
 				description: 'Create design system with colors and typography',
 				inputs: {
 					requirements: { type: 'web_app', brand: 'modern' },
-					brand: { primary_color: '#007bff', secondary_color: '#6c757d' }
+					brand: { primary_color: '#007bff', secondary_color: '#6c757d' },
 				},
 			});
 
@@ -161,9 +161,9 @@ describe('DesignerAgent', () => {
 					requirements: {
 						screens: [
 							{ name: 'Dashboard', type: 'main' },
-							{ name: 'Settings', type: 'secondary' }
-						]
-					}
+							{ name: 'Settings', type: 'secondary' },
+						],
+					},
 				},
 			});
 
@@ -185,9 +185,9 @@ describe('DesignerAgent', () => {
 				inputs: {
 					requirements: {
 						type: 'mobile_app',
-						features: ['authentication', 'dashboard', 'settings']
+						features: ['authentication', 'dashboard', 'settings'],
 					},
-					brand: { primary_color: '#007bff' }
+					brand: { primary_color: '#007bff' },
 				},
 			});
 
@@ -210,9 +210,9 @@ describe('DesignerAgent', () => {
 					requirements: {
 						name: 'Dashboard',
 						type: 'web_app',
-						features: ['analytics', 'reports', 'settings']
+						features: ['analytics', 'reports', 'settings'],
 					},
-					brand: { primary_color: '#007bff' }
+					brand: { primary_color: '#007bff' },
 				},
 			});
 
@@ -235,13 +235,15 @@ describe('DesignerAgent', () => {
 				title: 'Invalid design task',
 				description: 'This should fail',
 				inputs: {
-					requirements: {} // Empty object
+					requirements: {}, // Empty object
 				},
 			});
 
 			// Mock an error in the private method
 			const originalMethod = (designerAgent as any).analyzeUIRequirements;
-			(designerAgent as any).analyzeUIRequirements = vi.fn().mockRejectedValue(new Error('Analysis failed'));
+			(designerAgent as any).analyzeUIRequirements = vi
+				.fn()
+				.mockRejectedValue(new Error('Analysis failed'));
 
 			const result = await designerAgent.executeTask(task);
 
@@ -258,7 +260,7 @@ describe('DesignerAgent', () => {
 				title: 'UI Design',
 				description: 'Create user interface design',
 				inputs: {
-					requirements: { type: 'web_app' }
+					requirements: { type: 'web_app' },
 				},
 			});
 
@@ -273,7 +275,7 @@ describe('DesignerAgent', () => {
 				title: 'UI Design',
 				description: 'Create user interface design',
 				inputs: {
-					feature: { name: 'Authentication', type: 'web_app' }
+					feature: { name: 'Authentication', type: 'web_app' },
 				},
 			});
 
@@ -294,8 +296,8 @@ describe('DesignerAgent', () => {
 					brand: {
 						primary_color: '#007bff',
 						secondary_color: '#6c757d',
-						accent_color: '#28a745'
-					}
+						accent_color: '#28a745',
+					},
 				},
 			});
 
@@ -319,8 +321,8 @@ describe('DesignerAgent', () => {
 					requirements: { type: 'web_app' },
 					brand: {
 						primary_font: 'Inter',
-						secondary_font: 'Roboto Mono'
-					}
+						secondary_font: 'Roboto Mono',
+					},
 				},
 			});
 
@@ -341,7 +343,7 @@ describe('DesignerAgent', () => {
 				title: 'Create Tailwind design system',
 				description: 'Generate Tailwind configuration',
 				inputs: {
-					requirements: { type: 'web_app', framework: 'tailwind' }
+					requirements: { type: 'web_app', framework: 'tailwind' },
 				},
 			});
 
@@ -366,9 +368,9 @@ describe('DesignerAgent', () => {
 						screens: [
 							{ name: 'Home', type: 'landing', components: ['header', 'hero', 'footer'] },
 							{ name: 'About', type: 'info', components: ['header', 'content', 'footer'] },
-							{ name: 'Contact', type: 'form', components: ['header', 'form', 'footer'] }
-						]
-					}
+							{ name: 'Contact', type: 'form', components: ['header', 'form', 'footer'] },
+						],
+					},
 				},
 			});
 
@@ -390,8 +392,8 @@ describe('DesignerAgent', () => {
 					requirements: {
 						name: 'Landing Page',
 						type: 'landing',
-						components: ['header', 'hero', 'features', 'footer']
-					}
+						components: ['header', 'hero', 'features', 'footer'],
+					},
 				},
 			});
 
@@ -415,8 +417,8 @@ describe('DesignerAgent', () => {
 					requirements: {
 						type: 'mobile_app',
 						animations: true,
-						interactions: ['swipe', 'tap', 'pinch']
-					}
+						interactions: ['swipe', 'tap', 'pinch'],
+					},
 				},
 			});
 
@@ -439,8 +441,8 @@ describe('DesignerAgent', () => {
 				inputs: {
 					requirements: {
 						type: 'web_app',
-						data_types: ['users', 'products', 'orders']
-					}
+						data_types: ['users', 'products', 'orders'],
+					},
 				},
 			});
 
@@ -462,8 +464,8 @@ describe('DesignerAgent', () => {
 				inputs: {
 					requirements: {
 						components: ['button', 'input', 'card'],
-						variants: ['primary', 'secondary', 'outline', 'ghost']
-					}
+						variants: ['primary', 'secondary', 'outline', 'ghost'],
+					},
 				},
 			});
 
@@ -485,8 +487,8 @@ describe('DesignerAgent', () => {
 					requirements: {
 						responsive: true,
 						breakpoints: ['mobile', 'tablet', 'desktop'],
-						touch_friendly: true
-					}
+						touch_friendly: true,
+					},
 				},
 			});
 
@@ -506,7 +508,7 @@ describe('DesignerAgent', () => {
 				title: 'UI Design',
 				description: 'Create user interface design',
 				inputs: {
-					requirements: { type: 'web_app', store_in_memory: true }
+					requirements: { type: 'web_app', store_in_memory: true },
 				},
 			});
 
@@ -527,8 +529,8 @@ describe('DesignerAgent', () => {
 					requirements: {
 						accessibility: 'wcag-aa',
 						high_contrast: true,
-						keyboard_navigation: true
-					}
+						keyboard_navigation: true,
+					},
 				},
 			});
 

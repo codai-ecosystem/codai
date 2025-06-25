@@ -5,12 +5,16 @@
 
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { AstNode, AstNodeKind, ListAstNode, TextAstNode } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/ast.js';
+import {
+	AstNode,
+	AstNodeKind,
+	ListAstNode,
+	TextAstNode,
+} from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/ast.js';
 import { concat23Trees } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/concat23Trees.js';
 import { toLength } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/length.js';
 
 suite('Bracket Pair Colorizer - mergeItems', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('Clone', () => {
@@ -51,7 +55,9 @@ suite('Bracket Pair Colorizer - mergeItems', () => {
 	}
 
 	function testMerge(lists: AstNode[]) {
-		const node = (concat23Trees(lists.map(l => l.deepClone())) || ListAstNode.create([])).flattenLists();
+		const node = (
+			concat23Trees(lists.map(l => l.deepClone())) || ListAstNode.create([])
+		).flattenLists();
 		// This trivial merge does not maintain the (2,3) tree invariant.
 		const referenceNode = ListAstNode.create(lists).flattenLists();
 
@@ -65,7 +71,13 @@ suite('Bracket Pair Colorizer - mergeItems', () => {
 	test('Same Height Lists', () => {
 		const textNode = new TextAstNode(toLength(1, 1));
 		const tree = ListAstNode.create([textNode.deepClone(), textNode.deepClone()]);
-		testMerge([tree.deepClone(), tree.deepClone(), tree.deepClone(), tree.deepClone(), tree.deepClone()]);
+		testMerge([
+			tree.deepClone(),
+			tree.deepClone(),
+			tree.deepClone(),
+			tree.deepClone(),
+			tree.deepClone(),
+		]);
 	});
 
 	test('Different Height Lists 1', () => {

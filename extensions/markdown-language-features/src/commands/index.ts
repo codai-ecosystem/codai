@@ -13,7 +13,11 @@ import { InsertLinkFromWorkspace, InsertImageFromWorkspace } from './insertResou
 import { RefreshPreviewCommand } from './refreshPreview';
 import { ReloadPlugins } from './reloadPlugins';
 import { RenderDocument } from './renderDocument';
-import { ShowLockedPreviewToSideCommand, ShowPreviewCommand, ShowPreviewToSideCommand } from './showPreview';
+import {
+	ShowLockedPreviewToSideCommand,
+	ShowPreviewCommand,
+	ShowPreviewToSideCommand,
+} from './showPreview';
 import { CopyImageCommand } from './copyImage';
 import { ShowPreviewSecuritySelectorCommand } from './showPreviewSecuritySelector';
 import { ShowSourceCommand } from './showSource';
@@ -25,7 +29,7 @@ export function registerMarkdownCommands(
 	previewManager: MarkdownPreviewManager,
 	telemetryReporter: TelemetryReporter,
 	cspArbiter: ContentSecurityPolicyArbiter,
-	engine: MarkdownItEngine,
+	engine: MarkdownItEngine
 ): vscode.Disposable {
 	const previewSecuritySelector = new PreviewSecuritySelector(cspArbiter, previewManager);
 
@@ -36,7 +40,9 @@ export function registerMarkdownCommands(
 	commandManager.register(new ShowLockedPreviewToSideCommand(previewManager, telemetryReporter));
 	commandManager.register(new ShowSourceCommand(previewManager));
 	commandManager.register(new RefreshPreviewCommand(previewManager, engine));
-	commandManager.register(new ShowPreviewSecuritySelectorCommand(previewSecuritySelector, previewManager));
+	commandManager.register(
+		new ShowPreviewSecuritySelectorCommand(previewSecuritySelector, previewManager)
+	);
 	commandManager.register(new ToggleLockCommand(previewManager));
 	commandManager.register(new RenderDocument(engine));
 	commandManager.register(new ReloadPlugins(previewManager, engine));

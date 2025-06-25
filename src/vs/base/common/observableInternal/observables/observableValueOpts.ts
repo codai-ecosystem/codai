@@ -20,12 +20,12 @@ export function observableValueOpts<T, TChange = void>(
 		return new LazyObservableValue(
 			new DebugNameData(options.owner, options.debugName, undefined),
 			initialValue,
-			options.equalsFn ?? strictEquals,
+			options.equalsFn ?? strictEquals
 		);
 	}
 	return new ObservableValue(
 		new DebugNameData(options.owner, options.debugName, undefined),
 		initialValue,
-		options.equalsFn ?? strictEquals,
+		options.equalsFn ?? strictEquals
 	);
 }

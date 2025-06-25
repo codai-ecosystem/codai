@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// @alexr00 https://github.com/microsoft/vscode/issues/167253
 
 	export enum CommentThreadFocus {
@@ -15,14 +14,13 @@ declare module 'vscode' {
 		/**
 		 * Focus the revealed comment.
 		 */
-		Comment = 2
+		Comment = 2,
 	}
 
 	/**
 	 * Options to reveal a comment thread in an editor.
 	 */
 	export interface CommentThreadRevealOptions {
-
 		/**
 		 * Where to move the focus to when revealing the comment thread.
 		 * If undefined, the focus will not be changed.
@@ -41,5 +39,4 @@ declare module 'vscode' {
 		 */
 		hide(): Thenable<void>;
 	}
-
 }

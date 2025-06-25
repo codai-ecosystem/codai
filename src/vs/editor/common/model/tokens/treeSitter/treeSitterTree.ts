@@ -5,21 +5,34 @@
 import type * as TreeSitter from '@vscode/tree-sitter-wasm';
 import { TaskQueue } from '../../../../../base/common/async.js';
 import { Disposable, toDisposable } from '../../../../../base/common/lifecycle.js';
-import { IObservable, observableValue, transaction, IObservableWithChange } from '../../../../../base/common/observable.js';
+import {
+	IObservable,
+	observableValue,
+	transaction,
+	IObservableWithChange,
+} from '../../../../../base/common/observable.js';
 import { setTimeout0 } from '../../../../../base/common/platform.js';
 import { ILogService } from '../../../../../platform/log/common/log.js';
 import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
 import { TextLength } from '../../../core/text/textLength.js';
 import { IModelContentChangedEvent, IModelContentChange } from '../../../textModelEvents.js';
 import { TextModel } from '../../textModel.js';
-import { gotoParent, getClosestPreviousNodes, nextSiblingOrParentSibling, gotoNthChild } from './cursorUtils.js';
+import {
+	gotoParent,
+	getClosestPreviousNodes,
+	nextSiblingOrParentSibling,
+	gotoNthChild,
+} from './cursorUtils.js';
 import { rangesIntersect, rangesEqual } from './treeSitterSyntaxTokenBackend.js';
 import { Range } from '../../../core/range.js';
 
 export class TreeSitterTree extends Disposable {
-
-	private readonly _tree = observableValue<TreeSitter.Tree | undefined, TreeParseUpdateEvent>(this, undefined);
-	public readonly tree: IObservableWithChange<TreeSitter.Tree | undefined, TreeParseUpdateEvent> = this._tree;
+	private readonly _tree = observableValue<TreeSitter.Tree | undefined, TreeParseUpdateEvent>(
+		this,
+		undefined
+	);
+	public readonly tree: IObservableWithChange<TreeSitter.Tree | undefined, TreeParseUpdateEvent> =
+		this._tree;
 
 	private readonly _treeLastParsedVersion = observableValue(this, -1);
 	public readonly treeLastParsedVersion: IObservable<number> = this._treeLastParsedVersion;
@@ -46,16 +59,21 @@ export class TreeSitterTree extends Disposable {
 		this._tree = observableValue(this, undefined);
 		this.tree = this._tree;
 
-		this._register(toDisposable(() => {
-			this._tree.get()?.delete();
-			this._lastFullyParsed?.delete();
-			this._lastFullyParsedWithEdits?.delete();
-			this._parser.delete();
-		}));
+		this._register(
+			toDisposable(() => {
+				this._tree.get()?.delete();
+				this._lastFullyParsed?.delete();
+				this._lastFullyParsedWithEdits?.delete();
+				this._parser.delete();
+			})
+		);
 		this.handleContentChange(undefined, this._ranges);
 	}
 
-	public handleContentChange(e: IModelContentChangedEvent | undefined, ranges?: TreeSitter.Range[]): void {
+	public handleContentChange(
+		e: IModelContentChangedEvent | undefined,
+		ranges?: TreeSitter.Range[]
+	): void {
 		const version = this.textModel.getVersionId();
 		let newRanges: TreeSitter.Range[] = [];
 		if (ranges) {
@@ -75,7 +93,10 @@ export class TreeSitterTree extends Disposable {
 			const oldTree = this._lastFullyParsed;
 			let changedNodes: TreeSitter.Range[] | undefined;
 			if (this._lastFullyParsedWithEdits && this._lastFullyParsed) {
-				changedNodes = this._findChangedNodes(this._lastFullyParsedWithEdits, this._lastFullyParsed);
+				changedNodes = this._findChangedNodes(
+					this._lastFullyParsedWithEdits,
+					this._lastFullyParsed
+				);
 			}
 
 			const completed = await this._parseAndUpdateTree(version);
@@ -83,13 +104,29 @@ export class TreeSitterTree extends Disposable {
 				let ranges: RangeChange[] | undefined;
 				if (!changedNodes) {
 					if (this._ranges) {
-						ranges = this._ranges.map(r => ({ newRange: new Range(r.startPosition.row + 1, r.startPosition.column + 1, r.endPosition.row + 1, r.endPosition.column + 1), oldRangeLength: r.endIndex - r.startIndex, newRangeStartOffset: r.startIndex, newRangeEndOffset: r.endIndex }));
+						ranges = this._ranges.map(r => ({
+							newRange: new Range(
+								r.startPosition.row + 1,
+								r.startPosition.column + 1,
+								r.endPosition.row + 1,
+								r.endPosition.column + 1
+							),
+							oldRangeLength: r.endIndex - r.startIndex,
+							newRangeStartOffset: r.startIndex,
+							newRangeEndOffset: r.endIndex,
+						}));
 					}
 				} else if (oldTree && changedNodes) {
 					ranges = this._findTreeChanges(completed, changedNodes, newRanges);
 				}
 				if (!ranges) {
-					ranges = [{ newRange: this.textModel.getFullModelRange(), newRangeStartOffset: 0, newRangeEndOffset: this.textModel.getValueLength() }];
+					ranges = [
+						{
+							newRange: this.textModel.getFullModelRange(),
+							newRangeStartOffset: 0,
+							newRangeEndOffset: this.textModel.getValueLength(),
+						},
+					];
 				}
 
 				const previousTree = this._tree.get();
@@ -115,22 +152,40 @@ export class TreeSitterTree extends Disposable {
 		for (const change of changes) {
 			const originalTextLength = TextLength.ofRange(Range.lift(change.range));
 			const newTextLength = TextLength.ofText(change.text);
-			const summedTextLengths = change.text.length === 0 ? newTextLength : originalTextLength.add(newTextLength);
+			const summedTextLengths =
+				change.text.length === 0 ? newTextLength : originalTextLength.add(newTextLength);
 			const edit = {
 				startIndex: change.rangeOffset,
 				oldEndIndex: change.rangeOffset + change.rangeLength,
 				newEndIndex: change.rangeOffset + change.text.length,
-				startPosition: { row: change.range.startLineNumber - 1, column: change.range.startColumn - 1 },
+				startPosition: {
+					row: change.range.startLineNumber - 1,
+					column: change.range.startColumn - 1,
+				},
 				oldEndPosition: { row: change.range.endLineNumber - 1, column: change.range.endColumn - 1 },
-				newEndPosition: { row: change.range.startLineNumber + summedTextLengths.lineCount - 1, column: summedTextLengths.lineCount ? summedTextLengths.columnCount : (change.range.endColumn + summedTextLengths.columnCount) }
+				newEndPosition: {
+					row: change.range.startLineNumber + summedTextLengths.lineCount - 1,
+					column: summedTextLengths.lineCount
+						? summedTextLengths.columnCount
+						: change.range.endColumn + summedTextLengths.columnCount,
+				},
 			};
 			this._tree.get()?.edit(edit);
 			this._lastFullyParsedWithEdits?.edit(edit);
 		}
 	}
 
-	private _findChangedNodes(newTree: TreeSitter.Tree, oldTree: TreeSitter.Tree): TreeSitter.Range[] | undefined {
-		if ((this._ranges && this._ranges.every(range => range.startPosition.row !== newTree.rootNode.startPosition.row)) || newTree.rootNode.startPosition.row !== 0) {
+	private _findChangedNodes(
+		newTree: TreeSitter.Tree,
+		oldTree: TreeSitter.Tree
+	): TreeSitter.Range[] | undefined {
+		if (
+			(this._ranges &&
+				this._ranges.every(
+					range => range.startPosition.row !== newTree.rootNode.startPosition.row
+				)) ||
+			newTree.rootNode.startPosition.row !== 0
+		) {
 			return [];
 		}
 		const newCursor = newTree.walk();
@@ -148,14 +203,17 @@ export class TreeSitterTree extends Disposable {
 				const newChildren = newCursor.currentNode.children;
 				const indexChangedChildren: number[] = [];
 				const changedChildren = newChildren.filter((c, index) => {
-					if (c?.hasChanges || (oldCursor.currentNode.children.length <= index)) {
+					if (c?.hasChanges || oldCursor.currentNode.children.length <= index) {
 						indexChangedChildren.push(index);
 						return true;
 					}
 					return false;
 				});
 				// If we have changes and we *had* an error, the whole node should be refreshed.
-				if ((changedChildren.length === 0) || (newCursor.currentNode.hasError !== oldCursor.currentNode.hasError)) {
+				if (
+					changedChildren.length === 0 ||
+					newCursor.currentNode.hasError !== oldCursor.currentNode.hasError
+				) {
 					// walk up again until we get to the first one that's named as unnamed nodes can be too granular
 					while (newCursor.currentNode.parent && next && !newCursor.currentNode.isNamed) {
 						next = gotoParent(newCursor, oldCursor);
@@ -167,7 +225,7 @@ export class TreeSitterTree extends Disposable {
 						startIndex: closestPreviousNode.startIndex,
 						endIndex: newNode.endIndex,
 						startPosition: closestPreviousNode.startPosition,
-						endPosition: newNode.endPosition
+						endPosition: newNode.endPosition,
 					});
 					next = nextSiblingOrParentSibling(newCursor, oldCursor);
 				} else if (changedChildren.length >= 1) {
@@ -183,7 +241,11 @@ export class TreeSitterTree extends Disposable {
 		return nodes;
 	}
 
-	private _findTreeChanges(newTree: TreeSitter.Tree, changedNodes: TreeSitter.Range[], newRanges: TreeSitter.Range[]): RangeChange[] {
+	private _findTreeChanges(
+		newTree: TreeSitter.Tree,
+		changedNodes: TreeSitter.Range[],
+		newRanges: TreeSitter.Range[]
+	): RangeChange[] {
 		let newRangeIndex = 0;
 		const mergedChanges: RangeChange[] = [];
 
@@ -192,14 +254,18 @@ export class TreeSitterTree extends Disposable {
 			const node = changedNodes[nodeIndex];
 
 			if (mergedChanges.length > 0) {
-				if ((node.startIndex >= mergedChanges[mergedChanges.length - 1].newRangeStartOffset) && (node.endIndex <= mergedChanges[mergedChanges.length - 1].newRangeEndOffset)) {
+				if (
+					node.startIndex >= mergedChanges[mergedChanges.length - 1].newRangeStartOffset &&
+					node.endIndex <= mergedChanges[mergedChanges.length - 1].newRangeEndOffset
+				) {
 					// This node is within the previous range, skip it
 					continue;
 				}
 			}
 
 			const cursor = newTree.walk();
-			const cursorContainersNode = () => cursor.startIndex < node.startIndex && cursor.endIndex > node.endIndex;
+			const cursorContainersNode = () =>
+				cursor.startIndex < node.startIndex && cursor.endIndex > node.endIndex;
 
 			while (cursorContainersNode()) {
 				// See if we can go to a child
@@ -227,30 +293,67 @@ export class TreeSitterTree extends Disposable {
 			const startIndex = cursor.currentNode.startIndex;
 			const endIndex = cursor.currentNode.endIndex;
 
-			const newChange = { newRange: new Range(startPosition.row + 1, startPosition.column + 1, endPosition.row + 1, endPosition.column + 1), newRangeStartOffset: startIndex, newRangeEndOffset: endIndex };
-			if ((newRangeIndex < newRanges.length) && rangesIntersect(newRanges[newRangeIndex], { startIndex, endIndex, startPosition, endPosition })) {
+			const newChange = {
+				newRange: new Range(
+					startPosition.row + 1,
+					startPosition.column + 1,
+					endPosition.row + 1,
+					endPosition.column + 1
+				),
+				newRangeStartOffset: startIndex,
+				newRangeEndOffset: endIndex,
+			};
+			if (
+				newRangeIndex < newRanges.length &&
+				rangesIntersect(newRanges[newRangeIndex], {
+					startIndex,
+					endIndex,
+					startPosition,
+					endPosition,
+				})
+			) {
 				// combine the new change with the range
 				if (newRanges[newRangeIndex].startIndex < newChange.newRangeStartOffset) {
-					newChange.newRange = newChange.newRange.setStartPosition(newRanges[newRangeIndex].startPosition.row + 1, newRanges[newRangeIndex].startPosition.column + 1);
+					newChange.newRange = newChange.newRange.setStartPosition(
+						newRanges[newRangeIndex].startPosition.row + 1,
+						newRanges[newRangeIndex].startPosition.column + 1
+					);
 					newChange.newRangeStartOffset = newRanges[newRangeIndex].startIndex;
 				}
 				if (newRanges[newRangeIndex].endIndex > newChange.newRangeEndOffset) {
-					newChange.newRange = newChange.newRange.setEndPosition(newRanges[newRangeIndex].endPosition.row + 1, newRanges[newRangeIndex].endPosition.column + 1);
+					newChange.newRange = newChange.newRange.setEndPosition(
+						newRanges[newRangeIndex].endPosition.row + 1,
+						newRanges[newRangeIndex].endPosition.column + 1
+					);
 					newChange.newRangeEndOffset = newRanges[newRangeIndex].endIndex;
 				}
 				newRangeIndex++;
-			} else if (newRangeIndex < newRanges.length && newRanges[newRangeIndex].endIndex < newChange.newRangeStartOffset) {
+			} else if (
+				newRangeIndex < newRanges.length &&
+				newRanges[newRangeIndex].endIndex < newChange.newRangeStartOffset
+			) {
 				// add the full range to the merged changes
 				mergedChanges.push({
-					newRange: new Range(newRanges[newRangeIndex].startPosition.row + 1, newRanges[newRangeIndex].startPosition.column + 1, newRanges[newRangeIndex].endPosition.row + 1, newRanges[newRangeIndex].endPosition.column + 1),
+					newRange: new Range(
+						newRanges[newRangeIndex].startPosition.row + 1,
+						newRanges[newRangeIndex].startPosition.column + 1,
+						newRanges[newRangeIndex].endPosition.row + 1,
+						newRanges[newRangeIndex].endPosition.column + 1
+					),
 					newRangeStartOffset: newRanges[newRangeIndex].startIndex,
-					newRangeEndOffset: newRanges[newRangeIndex].endIndex
+					newRangeEndOffset: newRanges[newRangeIndex].endIndex,
 				});
 			}
 
-			if ((mergedChanges.length > 0) && (mergedChanges[mergedChanges.length - 1].newRangeEndOffset >= newChange.newRangeStartOffset)) {
+			if (
+				mergedChanges.length > 0 &&
+				mergedChanges[mergedChanges.length - 1].newRangeEndOffset >= newChange.newRangeStartOffset
+			) {
 				// Merge the changes
-				mergedChanges[mergedChanges.length - 1].newRange = Range.fromPositions(mergedChanges[mergedChanges.length - 1].newRange.getStartPosition(), newChange.newRange.getEndPosition());
+				mergedChanges[mergedChanges.length - 1].newRange = Range.fromPositions(
+					mergedChanges[mergedChanges.length - 1].newRange.getStartPosition(),
+					newChange.newRange.getEndPosition()
+				);
 				mergedChanges[mergedChanges.length - 1].newRangeEndOffset = newChange.newRangeEndOffset;
 			} else {
 				mergedChanges.push(newChange);
@@ -280,15 +383,25 @@ export class TreeSitterTree extends Disposable {
 				// Change is within the range, constrain it
 				const newRangeStartOffset = Math.max(change.newRangeStartOffset, range.startIndex);
 				const newRangeEndOffset = Math.min(change.newRangeEndOffset, range.endIndex);
-				const newRange = change.newRange.intersectRanges(new Range(range.startPosition.row + 1, range.startPosition.column + 1, range.endPosition.row + 1, range.endPosition.column + 1))!;
+				const newRange = change.newRange.intersectRanges(
+					new Range(
+						range.startPosition.row + 1,
+						range.startPosition.column + 1,
+						range.endPosition.row + 1,
+						range.endPosition.column + 1
+					)
+				)!;
 				constrainedChanges.push({
 					newRange,
 					newRangeEndOffset,
-					newRangeStartOffset
+					newRangeStartOffset,
 				});
 				// Remove the intersected range from the current change
 				if (newRangeEndOffset < change.newRangeEndOffset) {
-					change.newRange = Range.fromPositions(newRange.getEndPosition(), change.newRange.getEndPosition());
+					change.newRange = Range.fromPositions(
+						newRange.getEndPosition(),
+						change.newRange.getEndPosition()
+					);
 					change.newRangeStartOffset = newRangeEndOffset + 1;
 				} else {
 					// Move to the next change
@@ -325,7 +438,9 @@ export class TreeSitterTree extends Disposable {
 		return this._parseAndYield(parseType);
 	}
 
-	private async _parseAndYield(parseType: TelemetryParseType): Promise<TreeSitter.Tree | undefined> {
+	private async _parseAndYield(
+		parseType: TelemetryParseType
+	): Promise<TreeSitter.Tree | undefined> {
 		let time: number = 0;
 		let passes: number = 0;
 		const inProgressVersion = this.textModel.getVersionId();
@@ -336,17 +451,24 @@ export class TreeSitterTree extends Disposable {
 		do {
 			const timer = performance.now();
 
-			newTree = this._parser.parse((index: number, position?: TreeSitter.Point) => this._parseCallback(index), this._tree.get(), { progressCallback, includedRanges: this._ranges });
+			newTree = this._parser.parse(
+				(index: number, position?: TreeSitter.Point) => this._parseCallback(index),
+				this._tree.get(),
+				{ progressCallback, includedRanges: this._ranges }
+			);
 
 			time += performance.now() - timer;
 			passes++;
 
 			// So long as this isn't the initial parse, even if the model changes and edits are applied, the tree parsing will continue correctly after the await.
 			await new Promise<void>(resolve => setTimeout0(resolve));
-
-		} while (!this._store.isDisposed && !newTree && inProgressVersion === this.textModel.getVersionId());
+		} while (
+			!this._store.isDisposed &&
+			!newTree &&
+			inProgressVersion === this.textModel.getVersionId()
+		);
 		this._sendParseTimeTelemetry(parseType, time, passes);
-		return (newTree && (inProgressVersion === this.textModel.getVersionId())) ? newTree : undefined;
+		return newTree && inProgressVersion === this.textModel.getVersionId() ? newTree : undefined;
 	}
 
 	private _parseCallback(index: number): string | undefined {
@@ -387,19 +509,43 @@ export class TreeSitterTree extends Disposable {
 		return unKnownRanges;
 	}
 
-	private _sendParseTimeTelemetry(parseType: TelemetryParseType, time: number, passes: number): void {
+	private _sendParseTimeTelemetry(
+		parseType: TelemetryParseType,
+		time: number,
+		passes: number
+	): void {
 		this._logService.debug(`Tree parsing (${parseType}) took ${time} ms and ${passes} passes.`);
 		type ParseTimeClassification = {
 			owner: 'alexr00';
 			comment: 'Used to understand how long it takes to parse a tree-sitter tree';
-			languageId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The programming language ID.' };
-			time: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The ms it took to parse' };
-			passes: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The number of passes it took to parse' };
+			languageId: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				comment: 'The programming language ID.';
+			};
+			time: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				isMeasurement: true;
+				comment: 'The ms it took to parse';
+			};
+			passes: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				isMeasurement: true;
+				comment: 'The number of passes it took to parse';
+			};
 		};
 		if (parseType === TelemetryParseType.Full) {
-			this._telemetryService.publicLog2<{ languageId: string; time: number; passes: number }, ParseTimeClassification>(`treeSitter.fullParse`, { languageId: this.languageId, time, passes });
+			this._telemetryService.publicLog2<
+				{ languageId: string; time: number; passes: number },
+				ParseTimeClassification
+			>(`treeSitter.fullParse`, { languageId: this.languageId, time, passes });
 		} else {
-			this._telemetryService.publicLog2<{ languageId: string; time: number; passes: number }, ParseTimeClassification>(`treeSitter.incrementalParse`, { languageId: this.languageId, time, passes });
+			this._telemetryService.publicLog2<
+				{ languageId: string; time: number; passes: number },
+				ParseTimeClassification
+			>(`treeSitter.incrementalParse`, { languageId: this.languageId, time, passes });
 		}
 	}
 
@@ -414,7 +560,7 @@ export class TreeSitterTree extends Disposable {
 
 const enum TelemetryParseType {
 	Full = 'fullParse',
-	Incremental = 'incrementalParse'
+	Incremental = 'incrementalParse',
 }
 
 export interface TreeParseUpdateEvent {

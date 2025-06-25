@@ -9,11 +9,10 @@ import { IClipboardService } from '../../../platform/clipboard/common/clipboardS
 
 @extHostNamedCustomer(MainContext.MainThreadClipboard)
 export class MainThreadClipboard implements MainThreadClipboardShape {
-
 	constructor(
 		_context: any,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-	) { }
+		@IClipboardService private readonly _clipboardService: IClipboardService
+	) {}
 
 	dispose(): void {
 		// nothing

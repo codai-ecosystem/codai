@@ -5,7 +5,10 @@
 import * as nls from '../../../../nls.js';
 
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { Extensions as JSONExtensions, IJSONContributionRegistry } from '../../../../platform/jsonschemas/common/jsonContributionRegistry.js';
+import {
+	Extensions as JSONExtensions,
+	IJSONContributionRegistry,
+} from '../../../../platform/jsonschemas/common/jsonContributionRegistry.js';
 import { IJSONSchema } from '../../../../base/common/jsonSchema.js';
 
 import { workbenchColorsSchemaId } from '../../../../platform/theme/common/colorRegistry.js';
@@ -111,7 +114,7 @@ const textMateScopes = [
 	'variable.name',
 	'variable.other',
 	'variable.other.readwrite',
-	'variable.parameter'
+	'variable.parameter',
 ];
 
 export const textmateColorsSchemaId = 'vscode://schemas/textmate-colors';
@@ -125,12 +128,12 @@ const textmateColorSchema: IJSONSchema = {
 			anyOf: [
 				{
 					type: 'string',
-					format: 'color-hex'
+					format: 'color-hex',
 				},
 				{
-					$ref: '#/definitions/settings'
-				}
-			]
+					$ref: '#/definitions/settings',
+				},
+			],
 		},
 		settings: {
 			type: 'object',
@@ -140,19 +143,31 @@ const textmateColorSchema: IJSONSchema = {
 					type: 'string',
 					description: nls.localize('schema.token.foreground', 'Foreground color for the token.'),
 					format: 'color-hex',
-					default: '#ff0000'
+					default: '#ff0000',
 				},
 				background: {
 					type: 'string',
-					deprecationMessage: nls.localize('schema.token.background.warning', 'Token background colors are currently not supported.')
+					deprecationMessage: nls.localize(
+						'schema.token.background.warning',
+						'Token background colors are currently not supported.'
+					),
 				},
 				fontStyle: {
 					type: 'string',
-					description: nls.localize('schema.token.fontStyle', 'Font style of the rule: \'italic\', \'bold\', \'underline\', \'strikethrough\' or a combination. The empty string unsets inherited settings.'),
+					description: nls.localize(
+						'schema.token.fontStyle',
+						"Font style of the rule: 'italic', 'bold', 'underline', 'strikethrough' or a combination. The empty string unsets inherited settings."
+					),
 					pattern: '^(\\s*\\b(italic|bold|underline|strikethrough))*\\s*$',
-					patternErrorMessage: nls.localize('schema.fontStyle.error', 'Font style must be \'italic\', \'bold\', \'underline\', \'strikethrough\' or a combination or the empty string.'),
+					patternErrorMessage: nls.localize(
+						'schema.fontStyle.error',
+						"Font style must be 'italic', 'bold', 'underline', 'strikethrough' or a combination or the empty string."
+					),
 					defaultSnippets: [
-						{ label: nls.localize('schema.token.fontStyle.none', 'None (clear inherited style)'), bodyText: '""' },
+						{
+							label: nls.localize('schema.token.fontStyle.none', 'None (clear inherited style)'),
+							bodyText: '""',
+						},
 						{ body: 'italic' },
 						{ body: 'bold' },
 						{ body: 'underline' },
@@ -167,54 +182,57 @@ const textmateColorSchema: IJSONSchema = {
 						{ body: 'italic bold strikethrough' },
 						{ body: 'italic underline strikethrough' },
 						{ body: 'bold underline strikethrough' },
-						{ body: 'italic bold underline strikethrough' }
-					]
-				}
+						{ body: 'italic bold underline strikethrough' },
+					],
+				},
 			},
 			additionalProperties: false,
-			defaultSnippets: [{ body: { foreground: '${1:#FF0000}', fontStyle: '${2:bold}' } }]
-		}
+			defaultSnippets: [{ body: { foreground: '${1:#FF0000}', fontStyle: '${2:bold}' } }],
+		},
 	},
 	items: {
 		type: 'object',
-		defaultSnippets: [{ body: { scope: '${1:keyword.operator}', settings: { foreground: '${2:#FF0000}' } } }],
+		defaultSnippets: [
+			{ body: { scope: '${1:keyword.operator}', settings: { foreground: '${2:#FF0000}' } } },
+		],
 		properties: {
 			name: {
 				type: 'string',
-				description: nls.localize('schema.properties.name', 'Description of the rule.')
+				description: nls.localize('schema.properties.name', 'Description of the rule.'),
 			},
 			scope: {
-				description: nls.localize('schema.properties.scope', 'Scope selector against which this rule matches.'),
+				description: nls.localize(
+					'schema.properties.scope',
+					'Scope selector against which this rule matches.'
+				),
 				anyOf: [
 					{
-						enum: textMateScopes
+						enum: textMateScopes,
 					},
 					{
-						type: 'string'
-					},
-					{
-						type: 'array',
-						items: {
-							enum: textMateScopes
-						}
+						type: 'string',
 					},
 					{
 						type: 'array',
 						items: {
-							type: 'string'
-						}
-					}
-				]
+							enum: textMateScopes,
+						},
+					},
+					{
+						type: 'array',
+						items: {
+							type: 'string',
+						},
+					},
+				],
 			},
 			settings: {
-				$ref: '#/definitions/settings'
-			}
+				$ref: '#/definitions/settings',
+			},
 		},
-		required: [
-			'settings'
-		],
-		additionalProperties: false
-	}
+		required: ['settings'],
+		additionalProperties: false,
+	},
 };
 
 export const colorThemeSchemaId = 'vscode://schemas/color-theme';
@@ -227,32 +245,37 @@ const colorThemeSchema: IJSONSchema = {
 		colors: {
 			description: nls.localize('schema.workbenchColors', 'Colors in the workbench'),
 			$ref: workbenchColorsSchemaId,
-			additionalProperties: false
+			additionalProperties: false,
 		},
 		tokenColors: {
-			anyOf: [{
-				type: 'string',
-				description: nls.localize('schema.tokenColors.path', 'Path to a tmTheme file (relative to the current file).')
-			},
-			{
-				description: nls.localize('schema.colors', 'Colors for syntax highlighting'),
-				$ref: textmateColorsSchemaId
-			}
-			]
+			anyOf: [
+				{
+					type: 'string',
+					description: nls.localize(
+						'schema.tokenColors.path',
+						'Path to a tmTheme file (relative to the current file).'
+					),
+				},
+				{
+					description: nls.localize('schema.colors', 'Colors for syntax highlighting'),
+					$ref: textmateColorsSchemaId,
+				},
+			],
 		},
 		semanticHighlighting: {
 			type: 'boolean',
-			description: nls.localize('schema.supportsSemanticHighlighting', 'Whether semantic highlighting should be enabled for this theme.')
+			description: nls.localize(
+				'schema.supportsSemanticHighlighting',
+				'Whether semantic highlighting should be enabled for this theme.'
+			),
 		},
 		semanticTokenColors: {
 			type: 'object',
 			description: nls.localize('schema.semanticTokenColors', 'Colors for semantic tokens'),
-			$ref: tokenStylingSchemaId
-		}
-	}
+			$ref: tokenStylingSchemaId,
+		},
+	},
 };
-
-
 
 export function registerColorThemeSchemas() {
 	const schemaRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);

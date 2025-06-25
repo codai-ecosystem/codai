@@ -17,23 +17,34 @@ import { ColorPickerWidgetType } from './colorPickerParticipantUtils.js';
 const $ = dom.$;
 
 export class ColorPickerWidget extends Widget implements IEditorHoverColorPickerWidget {
-
 	private static readonly ID = 'editor.contrib.colorPickerWidget';
 	private readonly _domNode: HTMLElement;
 
 	body: ColorPickerBody;
 	header: ColorPickerHeader;
 
-	constructor(container: Node, readonly model: ColorPickerModel, private pixelRatio: number, themeService: IThemeService, type: ColorPickerWidgetType) {
+	constructor(
+		container: Node,
+		readonly model: ColorPickerModel,
+		private pixelRatio: number,
+		themeService: IThemeService,
+		type: ColorPickerWidgetType
+	) {
 		super();
 
-		this._register(PixelRatio.getInstance(dom.getWindow(container)).onDidChange(() => this.layout()));
+		this._register(
+			PixelRatio.getInstance(dom.getWindow(container)).onDidChange(() => this.layout())
+		);
 
 		this._domNode = $('.colorpicker-widget');
 		container.appendChild(this._domNode);
 
-		this.header = this._register(new ColorPickerHeader(this._domNode, this.model, themeService, type));
-		this.body = this._register(new ColorPickerBody(this._domNode, this.model, this.pixelRatio, type));
+		this.header = this._register(
+			new ColorPickerHeader(this._domNode, this.model, themeService, type)
+		);
+		this.body = this._register(
+			new ColorPickerBody(this._domNode, this.model, this.pixelRatio, type)
+		);
 	}
 
 	getId(): string {

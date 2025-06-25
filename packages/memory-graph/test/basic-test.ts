@@ -1,4 +1,10 @@
-import { AgentMemoryRuntime, createFeature, createScreen, createApi, MemoryGraphEngine } from '../src';
+import {
+	AgentMemoryRuntime,
+	createFeature,
+	createScreen,
+	createApi,
+	MemoryGraphEngine,
+} from '../src';
 
 // Test the memory graph functionality
 async function testMemoryGraph() {
@@ -41,12 +47,9 @@ async function testMemoryGraph() {
 
 	// Test adding relationships
 	if (featureNodes.length > 0 && screenNodes.length > 0) {
-		await runtime.addRelationship(
-			featureNodes[0].id,
-			screenNodes[0].id,
-			'contains',
-			{ description: 'Feature contains this screen' }
-		);
+		await runtime.addRelationship(featureNodes[0].id, screenNodes[0].id, 'contains', {
+			description: 'Feature contains this screen',
+		});
 		console.log('✅ Added relationship between feature and screen');
 	}
 
@@ -69,11 +72,7 @@ async function testMemoryGraph() {
 	// Test direct engine operations
 	const engine = runtime.graph;
 	const apiNode = engine.addNode(
-		createApi()
-			.name('User Authentication API')
-			.method('POST')
-			.path('/api/auth/login')
-			.build()
+		createApi().name('User Authentication API').method('POST').path('/api/auth/login').build()
 	);
 
 	console.log('✅ Added API node directly via engine');

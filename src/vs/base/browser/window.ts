@@ -3,16 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export type CodeWindow = Window & typeof globalThis & {
-	readonly vscodeWindowId: number;
-};
+export type CodeWindow = Window &
+	typeof globalThis & {
+		readonly vscodeWindowId: number;
+	};
 
-export function ensureCodeWindow(targetWindow: Window, fallbackWindowId: number): asserts targetWindow is CodeWindow {
+export function ensureCodeWindow(
+	targetWindow: Window,
+	fallbackWindowId: number
+): asserts targetWindow is CodeWindow {
 	const codeWindow = targetWindow as Partial<CodeWindow>;
 
 	if (typeof codeWindow.vscodeWindowId !== 'number') {
 		Object.defineProperty(codeWindow, 'vscodeWindowId', {
-			get: () => fallbackWindowId
+			get: () => fallbackWindowId,
 		});
 	}
 }

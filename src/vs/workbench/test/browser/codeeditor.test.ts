@@ -28,7 +28,6 @@ import { DisposableStore } from '../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/common/utils.js';
 
 suite('Editor - Range decorations', () => {
-
 	let disposables: DisposableStore;
 	let instantiationService: TestInstantiationService;
 	let codeEditor: ICodeEditor;
@@ -47,7 +46,11 @@ suite('Editor - Range decorations', () => {
 		model = disposables.add(aModel(URI.file('some_file')));
 		codeEditor = disposables.add(createTestCodeEditor(model));
 
-		instantiationService.stub(IEditorService, 'activeEditor', { get resource() { return codeEditor.getModel()!.uri; } });
+		instantiationService.stub(IEditorService, 'activeEditor', {
+			get resource() {
+				return codeEditor.getModel()!.uri;
+			},
+		});
 		instantiationService.stub(IEditorService, 'activeTextEditorControl', codeEditor);
 
 		testObject = disposables.add(instantiationService.createInstance(RangeHighlightDecorations));
@@ -71,7 +74,10 @@ suite('Editor - Range decorations', () => {
 	});
 
 	test('remove highlight range', function () {
-		testObject.highlightRange({ resource: model.uri, range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } });
+		testObject.highlightRange({
+			resource: model.uri,
+			range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
+		});
 		testObject.removeHighlightRange();
 
 		const actuals = rangeHighlightDecorations(model);
@@ -80,7 +86,10 @@ suite('Editor - Range decorations', () => {
 	});
 
 	test('highlight range for the resource removes previous highlight', function () {
-		testObject.highlightRange({ resource: model.uri, range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } });
+		testObject.highlightRange({
+			resource: model.uri,
+			range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
+		});
 		const range: IRange = new Range(2, 2, 4, 3);
 		testObject.highlightRange({ resource: model.uri, range });
 
@@ -90,7 +99,10 @@ suite('Editor - Range decorations', () => {
 	});
 
 	test('highlight range for a new resource removes highlight of previous resource', function () {
-		testObject.highlightRange({ resource: model.uri, range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } });
+		testObject.highlightRange({
+			resource: model.uri,
+			range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
+		});
 
 		const anotherModel = prepareActiveEditor('anotherModel');
 		const range: IRange = new Range(2, 2, 4, 3);
@@ -103,7 +115,10 @@ suite('Editor - Range decorations', () => {
 	});
 
 	test('highlight is removed on model change', function () {
-		testObject.highlightRange({ resource: model.uri, range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } });
+		testObject.highlightRange({
+			resource: model.uri,
+			range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
+		});
 		prepareActiveEditor('anotherModel');
 
 		const actuals = rangeHighlightDecorations(model);
@@ -111,9 +126,12 @@ suite('Editor - Range decorations', () => {
 	});
 
 	test('highlight is removed on cursor position change', function () {
-		testObject.highlightRange({ resource: model.uri, range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } });
+		testObject.highlightRange({
+			resource: model.uri,
+			range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
+		});
 		codeEditor.trigger('mouse', CoreNavigationCommands.MoveTo.id, {
-			position: new Position(2, 1)
+			position: new Position(2, 1),
 		});
 
 		const actuals = rangeHighlightDecorations(model);
@@ -122,7 +140,10 @@ suite('Editor - Range decorations', () => {
 
 	test('range is not highlight if not active editor', function () {
 		const model = aModel(URI.file('some model'));
-		testObject.highlightRange({ resource: model.uri, range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } });
+		testObject.highlightRange({
+			resource: model.uri,
+			range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
+		});
 
 		const actuals = rangeHighlightDecorations(model);
 		assert.deepStrictEqual(actuals, []);
@@ -133,7 +154,10 @@ suite('Editor - Range decorations', () => {
 		testObject.highlightRange({ resource: model.uri, range });
 
 		const model1 = aModel(URI.file('some model'));
-		testObject.highlightRange({ resource: model1.uri, range: { startLineNumber: 2, startColumn: 1, endLineNumber: 2, endColumn: 1 } });
+		testObject.highlightRange({
+			resource: model1.uri,
+			range: { startLineNumber: 2, startColumn: 1, endLineNumber: 2, endColumn: 1 },
+		});
 
 		const actuals = rangeHighlightDecorations(model);
 		assert.deepStrictEqual(actuals, [range]);

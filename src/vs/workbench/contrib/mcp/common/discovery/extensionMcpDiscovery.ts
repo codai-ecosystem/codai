@@ -8,7 +8,11 @@ import { observableValue } from '../../../../../base/common/observable.js';
 import { isFalsyOrWhitespace } from '../../../../../base/common/strings.js';
 import { localize } from '../../../../../nls.js';
 import { IMcpCollectionContribution } from '../../../../../platform/extensions/common/extensions.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../../platform/storage/common/storage.js';
 import { IExtensionService } from '../../../../services/extensions/common/extensions.js';
 import * as extensionsRegistry from '../../../../services/extensions/common/extensionsRegistry.js';
 import { mcpActivationEvent, mcpContributionPoint } from '../mcpConfiguration.js';
@@ -22,7 +26,8 @@ interface IServerCacheEntry {
 	readonly servers: readonly McpServerDefinition.Serialized[];
 }
 
-const _mcpExtensionPoint = extensionsRegistry.ExtensionsRegistry.registerExtensionPoint(mcpContributionPoint);
+const _mcpExtensionPoint =
+	extensionsRegistry.ExtensionsRegistry.registerExtensionPoint(mcpContributionPoint);
 
 export class ExtensionMcpDiscovery extends Disposable implements IMcpDiscovery {
 	private readonly _extensionCollectionIdsToPersist = new Set<string>();
@@ -31,84 +36,103 @@ export class ExtensionMcpDiscovery extends Disposable implements IMcpDiscovery {
 	constructor(
 		@IMcpRegistry private readonly _mcpRegistry: IMcpRegistry,
 		@IStorageService storageService: IStorageService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService private readonly _extensionService: IExtensionService
 	) {
 		super();
 		this.cachedServers = storageService.getObject(cacheKey, StorageScope.WORKSPACE, {});
 
-		this._register(storageService.onWillSaveState(() => {
-			let updated = false;
-			for (const collectionId of this._extensionCollectionIdsToPersist) {
-				const collection = this._mcpRegistry.collections.get().find(c => c.id === collectionId);
-				if (!collection || collection.lazy) {
-					continue;
+		this._register(
+			storageService.onWillSaveState(() => {
+				let updated = false;
+				for (const collectionId of this._extensionCollectionIdsToPersist) {
+					const collection = this._mcpRegistry.collections.get().find(c => c.id === collectionId);
+					if (!collection || collection.lazy) {
+						continue;
+					}
+
+					const defs = collection.serverDefinitions.get();
+					if (defs) {
+						updated = true;
+						this.cachedServers[collectionId] = {
+							servers: defs.map(McpServerDefinition.toSerialized),
+						};
+					}
 				}
 
-				const defs = collection.serverDefinitions.get();
-				if (defs) {
-					updated = true;
-					this.cachedServers[collectionId] = { servers: defs.map(McpServerDefinition.toSerialized) };
+				if (updated) {
+					storageService.store(
+						cacheKey,
+						this.cachedServers,
+						StorageScope.WORKSPACE,
+						StorageTarget.MACHINE
+					);
 				}
-			}
-
-			if (updated) {
-				storageService.store(cacheKey, this.cachedServers, StorageScope.WORKSPACE, StorageTarget.MACHINE);
-			}
-		}));
+			})
+		);
 	}
 
 	public start(): void {
 		const extensionCollections = this._register(new DisposableMap<string>());
-		this._register(_mcpExtensionPoint.setHandler((_extensions, delta) => {
-			const { added, removed } = delta;
+		this._register(
+			_mcpExtensionPoint.setHandler((_extensions, delta) => {
+				const { added, removed } = delta;
 
-			for (const collections of removed) {
-				for (const coll of collections.value) {
-					extensionCollections.deleteAndDispose(extensionPrefixedIdentifier(collections.description.identifier, coll.id));
-				}
-			}
-
-			for (const collections of added) {
-
-				if (!ExtensionMcpDiscovery._validate(collections)) {
-					continue;
+				for (const collections of removed) {
+					for (const coll of collections.value) {
+						extensionCollections.deleteAndDispose(
+							extensionPrefixedIdentifier(collections.description.identifier, coll.id)
+						);
+					}
 				}
 
-				for (const coll of collections.value) {
-					const id = extensionPrefixedIdentifier(collections.description.identifier, coll.id);
-					this._extensionCollectionIdsToPersist.add(id);
+				for (const collections of added) {
+					if (!ExtensionMcpDiscovery._validate(collections)) {
+						continue;
+					}
 
-					const serverDefs = this.cachedServers.hasOwnProperty(id) ? this.cachedServers[id].servers : undefined;
-					const dispo = this._mcpRegistry.registerCollection({
-						id,
-						label: coll.label,
-						remoteAuthority: null,
-						isTrustedByDefault: true,
-						scope: StorageScope.WORKSPACE,
-						serverDefinitions: observableValue<McpServerDefinition[]>(this, serverDefs?.map(McpServerDefinition.fromSerialized) || []),
-						lazy: {
-							isCached: !!serverDefs,
-							load: () => this._activateExtensionServers(coll.id),
-							removed: () => extensionCollections.deleteAndDispose(id),
-						}
-					});
+					for (const coll of collections.value) {
+						const id = extensionPrefixedIdentifier(collections.description.identifier, coll.id);
+						this._extensionCollectionIdsToPersist.add(id);
 
-					extensionCollections.set(id, dispo);
+						const serverDefs = this.cachedServers.hasOwnProperty(id)
+							? this.cachedServers[id].servers
+							: undefined;
+						const dispo = this._mcpRegistry.registerCollection({
+							id,
+							label: coll.label,
+							remoteAuthority: null,
+							isTrustedByDefault: true,
+							scope: StorageScope.WORKSPACE,
+							serverDefinitions: observableValue<McpServerDefinition[]>(
+								this,
+								serverDefs?.map(McpServerDefinition.fromSerialized) || []
+							),
+							lazy: {
+								isCached: !!serverDefs,
+								load: () => this._activateExtensionServers(coll.id),
+								removed: () => extensionCollections.deleteAndDispose(id),
+							},
+						});
+
+						extensionCollections.set(id, dispo);
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	private async _activateExtensionServers(collectionId: string): Promise<void> {
 		await this._extensionService.activateByEvent(mcpActivationEvent(collectionId));
-		await Promise.all(this._mcpRegistry.delegates.get()
-			.map(r => r.waitForInitialProviderPromises()));
+		await Promise.all(
+			this._mcpRegistry.delegates.get().map(r => r.waitForInitialProviderPromises())
+		);
 	}
 
-	private static _validate(user: extensionsRegistry.IExtensionPointUser<IMcpCollectionContribution[]>): boolean {
-
+	private static _validate(
+		user: extensionsRegistry.IExtensionPointUser<IMcpCollectionContribution[]>
+	): boolean {
 		if (!Array.isArray(user.value)) {
-			user.collector.error(localize('invalidData', "Expected an array of MCP collections"));
+			user.collector.error(localize('invalidData', 'Expected an array of MCP collections'));
 			return false;
 		}
 
@@ -118,7 +142,9 @@ export class ExtensionMcpDiscovery extends Disposable implements IMcpDiscovery {
 				return false;
 			}
 			if (typeof contribution.label !== 'string' || isFalsyOrWhitespace(contribution.label)) {
-				user.collector.error(localize('invalidLabel', "Expected 'label' to be a non-empty string."));
+				user.collector.error(
+					localize('invalidLabel', "Expected 'label' to be a non-empty string.")
+				);
 				return false;
 			}
 		}

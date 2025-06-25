@@ -9,13 +9,21 @@ import { TextureAtlas } from '../../../../browser/gpu/atlas/textureAtlas.js';
 import { isNumber } from '../../../../../base/common/types.js';
 import { ensureNonNullable } from '../../../../browser/gpu/gpuUtils.js';
 
-export function assertIsValidGlyph(glyph: Readonly<ITextureAtlasPageGlyph> | undefined, atlasOrSource: TextureAtlas | OffscreenCanvas) {
+export function assertIsValidGlyph(
+	glyph: Readonly<ITextureAtlasPageGlyph> | undefined,
+	atlasOrSource: TextureAtlas | OffscreenCanvas
+) {
 	if (glyph === undefined) {
 		fail('glyph is undefined');
 	}
-	const pageW = atlasOrSource instanceof TextureAtlas ? atlasOrSource.pageSize : atlasOrSource.width;
-	const pageH = atlasOrSource instanceof TextureAtlas ? atlasOrSource.pageSize : atlasOrSource.width;
-	const source = atlasOrSource instanceof TextureAtlas ? atlasOrSource.pages[glyph.pageIndex].source : atlasOrSource;
+	const pageW =
+		atlasOrSource instanceof TextureAtlas ? atlasOrSource.pageSize : atlasOrSource.width;
+	const pageH =
+		atlasOrSource instanceof TextureAtlas ? atlasOrSource.pageSize : atlasOrSource.width;
+	const source =
+		atlasOrSource instanceof TextureAtlas
+			? atlasOrSource.pages[glyph.pageIndex].source
+			: atlasOrSource;
 
 	// (x,y) are valid coordinates
 	ok(isNumber(glyph.x));
@@ -50,6 +58,6 @@ export function assertIsValidGlyph(glyph: Readonly<ITextureAtlasPageGlyph> | und
 		ctx.getImageData(glyph.x + glyph.w - 1, glyph.y, 1, glyph.h).data,
 	];
 	for (const edge of edges) {
-		ok(edge.some(color => (color & 0xFF) !== 0));
+		ok(edge.some(color => (color & 0xff) !== 0));
 	}
 }

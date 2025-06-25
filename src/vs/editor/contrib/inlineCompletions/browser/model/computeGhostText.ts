@@ -15,7 +15,7 @@ import { singleTextRemoveCommonPrefix } from './singleTextEditHelpers.js';
 /**
  * @param previewSuffixLength Sets where to split `inlineCompletion.text`.
  * 	If the text is `hello` and the suffix length is 2, the non-preview part is `hel` and the preview-part is `lo`.
-*/
+ */
 export function computeGhostText(
 	edit: TextReplacement,
 	model: ITextModel,
@@ -44,19 +44,23 @@ export function computeGhostText(
 		//                         ^^ suggestionAddedIndentationLength
 		const suggestionAddedIndentationLength = getLeadingWhitespace(e.text).length;
 
-		const replacedIndentation = sourceLine.substring(e.range.startColumn - 1, sourceIndentationLength);
+		const replacedIndentation = sourceLine.substring(
+			e.range.startColumn - 1,
+			sourceIndentationLength
+		);
 
 		const [startPosition, endPosition] = [e.range.getStartPosition(), e.range.getEndPosition()];
-		const newStartPosition = startPosition.column + replacedIndentation.length <= endPosition.column
-			? startPosition.delta(0, replacedIndentation.length)
-			: endPosition;
+		const newStartPosition =
+			startPosition.column + replacedIndentation.length <= endPosition.column
+				? startPosition.delta(0, replacedIndentation.length)
+				: endPosition;
 		const rangeThatDoesNotReplaceIndentation = Range.fromPositions(newStartPosition, endPosition);
 
 		const suggestionWithoutIndentationChange = e.text.startsWith(replacedIndentation)
-			// Adds more indentation without changing existing indentation: We can add ghost text for this
-			? e.text.substring(replacedIndentation.length)
-			// Changes or removes existing indentation. Only add ghost text for the non-indentation part.
-			: e.text.substring(suggestionAddedIndentationLength);
+			? // Adds more indentation without changing existing indentation: We can add ghost text for this
+				e.text.substring(replacedIndentation.length)
+			: // Changes or removes existing indentation. Only add ghost text for the non-indentation part.
+				e.text.substring(suggestionAddedIndentationLength);
 
 		e = new TextReplacement(rangeThatDoesNotReplaceIndentation, suggestionWithoutIndentationChange);
 	}
@@ -77,7 +81,11 @@ export function computeGhostText(
 
 	if (mode === 'prefix') {
 		const filteredChanges = changes.filter(c => c.originalLength === 0);
-		if (filteredChanges.length > 1 || filteredChanges.length === 1 && filteredChanges[0].originalStart !== valueToBeReplaced.length) {
+		if (
+			filteredChanges.length > 1 ||
+			(filteredChanges.length === 1 &&
+				filteredChanges[0].originalStart !== valueToBeReplaced.length)
+		) {
 			// Prefixes only have a single change.
 			return undefined;
 		}
@@ -88,7 +96,12 @@ export function computeGhostText(
 	for (const c of changes) {
 		const insertColumn = e.range.startColumn + c.originalStart + c.originalLength;
 
-		if (mode === 'subwordSmart' && cursorPosition && cursorPosition.lineNumber === e.range.startLineNumber && insertColumn < cursorPosition.column) {
+		if (
+			mode === 'subwordSmart' &&
+			cursorPosition &&
+			cursorPosition.lineNumber === e.range.startLineNumber &&
+			insertColumn < cursorPosition.column
+		) {
 			// No ghost text before cursor
 			return undefined;
 		}
@@ -102,7 +115,10 @@ export function computeGhostText(
 		}
 
 		const modifiedEnd = c.modifiedStart + c.modifiedLength;
-		const nonPreviewTextEnd = Math.max(c.modifiedStart, Math.min(modifiedEnd, previewStartInCompletionText));
+		const nonPreviewTextEnd = Math.max(
+			c.modifiedStart,
+			Math.min(modifiedEnd, previewStartInCompletionText)
+		);
 		const nonPreviewText = e.text.substring(c.modifiedStart, nonPreviewTextEnd);
 		const italicText = e.text.substring(nonPreviewTextEnd, Math.max(c.modifiedStart, modifiedEnd));
 
@@ -117,7 +133,9 @@ export function computeGhostText(
 	return new GhostText(lineNumber, parts);
 }
 
-let lastRequest: { originalValue: string; newValue: string; changes: readonly IDiffChange[] | undefined } | undefined = undefined;
+let lastRequest:
+	| { originalValue: string; newValue: string; changes: readonly IDiffChange[] | undefined }
+	| undefined = undefined;
 function cachingDiff(originalValue: string, newValue: string): readonly IDiffChange[] | undefined {
 	if (lastRequest?.originalValue === originalValue && lastRequest?.newValue === newValue) {
 		return lastRequest?.changes;
@@ -137,7 +155,7 @@ function cachingDiff(originalValue: string, newValue: string): readonly IDiffCha
 		lastRequest = {
 			originalValue,
 			newValue,
-			changes
+			changes,
 		};
 		return changes;
 	}
@@ -159,7 +177,11 @@ function deletedCharacters(changes: readonly IDiffChange[]): number {
  *
  * The parenthesis are preprocessed to ensure that they match correctly.
  */
-export function smartDiff(originalValue: string, newValue: string, smartBracketMatching: boolean): (readonly IDiffChange[]) | undefined {
+export function smartDiff(
+	originalValue: string,
+	newValue: string,
+	smartBracketMatching: boolean
+): readonly IDiffChange[] | undefined {
 	if (originalValue.length > 5000 || newValue.length > 5000) {
 		// We don't want to work on strings that are too big
 		return undefined;
@@ -211,5 +233,8 @@ export function smartDiff(originalValue: string, newValue: string, smartBracketM
 	const elements1 = getElements(originalValue);
 	const elements2 = getElements(newValue);
 
-	return new LcsDiff({ getElements: () => elements1 }, { getElements: () => elements2 }).ComputeDiff(false).changes;
+	return new LcsDiff(
+		{ getElements: () => elements1 },
+		{ getElements: () => elements2 }
+	).ComputeDiff(false).changes;
 }

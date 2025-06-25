@@ -10,7 +10,7 @@ import { assert } from './assert.js';
  * @returns whether the provided parameter is a JavaScript String or not.
  */
 export function isString(str: unknown): str is string {
-	return (typeof str === 'string');
+	return typeof str === 'string';
 }
 
 /**
@@ -28,11 +28,13 @@ export function isObject(obj: unknown): obj is Object {
 	// The method can't do a type cast since there are type (like strings) which
 	// are subclasses of any put not positvely matched by the function. Hence type
 	// narrowing results in wrong results.
-	return typeof obj === 'object'
-		&& obj !== null
-		&& !Array.isArray(obj)
-		&& !(obj instanceof RegExp)
-		&& !(obj instanceof Date);
+	return (
+		typeof obj === 'object' &&
+		obj !== null &&
+		!Array.isArray(obj) &&
+		!(obj instanceof RegExp) &&
+		!(obj instanceof Date)
+	);
 }
 
 /**
@@ -40,8 +42,7 @@ export function isObject(obj: unknown): obj is Object {
  */
 export function isTypedArray(obj: unknown): obj is Object {
 	const TypedArray = Object.getPrototypeOf(Uint8Array);
-	return typeof obj === 'object'
-		&& obj instanceof TypedArray;
+	return typeof obj === 'object' && obj instanceof TypedArray;
 }
 
 /**
@@ -49,7 +50,7 @@ export function isTypedArray(obj: unknown): obj is Object {
  * @returns whether the provided parameter is a JavaScript Number or not.
  */
 export function isNumber(obj: unknown): obj is number {
-	return (typeof obj === 'number' && !isNaN(obj));
+	return typeof obj === 'number' && !isNaN(obj);
 }
 
 /**
@@ -70,14 +71,14 @@ export function isAsyncIterable<T>(obj: unknown): obj is AsyncIterable<T> {
  * @returns whether the provided parameter is a JavaScript Boolean or not.
  */
 export function isBoolean(obj: unknown): obj is boolean {
-	return (obj === true || obj === false);
+	return obj === true || obj === false;
 }
 
 /**
  * @returns whether the provided parameter is undefined.
  */
 export function isUndefined(obj: unknown): obj is undefined {
-	return (typeof obj === 'undefined');
+	return typeof obj === 'undefined';
 }
 
 /**
@@ -91,9 +92,8 @@ export function isDefined<T>(arg: T | null | undefined): arg is T {
  * @returns whether the provided parameter is undefined or null.
  */
 export function isUndefinedOrNull(obj: unknown): obj is undefined | null {
-	return (isUndefined(obj) || obj === null);
+	return isUndefined(obj) || obj === null;
 }
-
 
 export function assertType(condition: unknown, type?: string): asserts condition {
 	if (!condition) {
@@ -107,10 +107,7 @@ export function assertType(condition: unknown, type?: string): asserts condition
  * @see {@link assertDefined} for a similar utility that leverages TS assertion functions to narrow down the type of `arg` to be non-nullable.
  */
 export function assertIsDefined<T>(arg: T | null | undefined): NonNullable<T> {
-	assert(
-		arg !== null && arg !== undefined,
-		'Argument is `undefined` or `null`.',
-	);
+	assert(arg !== null && arg !== undefined, 'Argument is `undefined` or `null`.');
 
 	return arg;
 }
@@ -141,7 +138,10 @@ export function assertIsDefined<T>(arg: T | null | undefined): NonNullable<T> {
  * @see {@link assertIsDefined} for a similar utility but without assertion.
  * @see {@link https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions typescript-3-7.html#assertion-functions}
  */
-export function assertDefined<T>(value: T, error: string | NonNullable<Error>): asserts value is NonNullable<T> {
+export function assertDefined<T>(
+	value: T,
+	error: string | NonNullable<Error>
+): asserts value is NonNullable<T> {
 	if (value === null || value === undefined) {
 		const errorToThrow = typeof error === 'string' ? new Error(error) : error;
 
@@ -152,9 +152,21 @@ export function assertDefined<T>(value: T, error: string | NonNullable<Error>): 
 /**
  * Asserts that each argument passed in is neither undefined nor null.
  */
-export function assertAllDefined<T1, T2>(t1: T1 | null | undefined, t2: T2 | null | undefined): [T1, T2];
-export function assertAllDefined<T1, T2, T3>(t1: T1 | null | undefined, t2: T2 | null | undefined, t3: T3 | null | undefined): [T1, T2, T3];
-export function assertAllDefined<T1, T2, T3, T4>(t1: T1 | null | undefined, t2: T2 | null | undefined, t3: T3 | null | undefined, t4: T4 | null | undefined): [T1, T2, T3, T4];
+export function assertAllDefined<T1, T2>(
+	t1: T1 | null | undefined,
+	t2: T2 | null | undefined
+): [T1, T2];
+export function assertAllDefined<T1, T2, T3>(
+	t1: T1 | null | undefined,
+	t2: T2 | null | undefined,
+	t3: T3 | null | undefined
+): [T1, T2, T3];
+export function assertAllDefined<T1, T2, T3, T4>(
+	t1: T1 | null | undefined,
+	t2: T2 | null | undefined,
+	t3: T3 | null | undefined,
+	t4: T4 | null | undefined
+): [T1, T2, T3, T4];
 export function assertAllDefined(...args: (unknown | null | undefined)[]): unknown[] {
 	const result = [];
 
@@ -196,7 +208,7 @@ export function assertAllDefined(...args: (unknown | null | undefined)[]): unkno
  */
 export const isOneOf = <TType, TSubtype extends TType>(
 	value: TType,
-	validValues: readonly TSubtype[],
+	validValues: readonly TSubtype[]
 ): value is TSubtype => {
 	// note! it is OK to type cast here, because we rely on the includes
 	//       utility to check if the value is present in the provided list
@@ -206,7 +218,7 @@ export const isOneOf = <TType, TSubtype extends TType>(
 /**
  * Compile-time type check of a variable.
  */
-export function typeCheck<T = never>(_thing: NoInfer<T>): void { }
+export function typeCheck<T = never>(_thing: NoInfer<T>): void {}
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -231,7 +243,7 @@ export function isEmptyObject(obj: unknown): obj is object {
  * @returns whether the provided parameter is a JavaScript Function or not.
  */
 export function isFunction(obj: unknown): obj is Function {
-	return (typeof obj === 'function');
+	return typeof obj === 'function';
 }
 
 /**
@@ -243,7 +255,10 @@ export function areFunctions(...objects: unknown[]): boolean {
 
 export type TypeConstraint = string | Function;
 
-export function validateConstraints(args: unknown[], constraints: Array<TypeConstraint | undefined>): void {
+export function validateConstraints(
+	args: unknown[],
+	constraints: Array<TypeConstraint | undefined>
+): void {
 	const len = Math.min(args.length, constraints.length);
 	for (let i = 0; i < len; i++) {
 		validateConstraint(args[i], constraints[i]);
@@ -251,7 +266,6 @@ export function validateConstraints(args: unknown[], constraints: Array<TypeCons
 }
 
 export function validateConstraint(arg: unknown, constraint: TypeConstraint | undefined): void {
-
 	if (isString(constraint)) {
 		if (typeof arg !== constraint) {
 			throw new Error(`argument does not match constraint: typeof ${constraint}`);
@@ -270,7 +284,9 @@ export function validateConstraint(arg: unknown, constraint: TypeConstraint | un
 		if (constraint.length === 1 && constraint.call(undefined, arg) === true) {
 			return;
 		}
-		throw new Error(`argument does not match one of these constraints: arg instanceof constraint, arg.constructor === constraint, nor constraint(arg) === true`);
+		throw new Error(
+			`argument does not match one of these constraints: arg instanceof constraint, arg.constructor === constraint, nor constraint(arg) === true`
+		);
 	}
 }
 
@@ -284,19 +300,24 @@ export function upcast<Base, Sub extends Base = Base>(x: Sub): Base {
 	return x;
 }
 
-type AddFirstParameterToFunction<T, TargetFunctionsReturnType, FirstParameter> = T extends (...args: any[]) => TargetFunctionsReturnType ?
-	// Function: add param to function
-	(firstArg: FirstParameter, ...args: Parameters<T>) => ReturnType<T> :
-
-	// Else: just leave as is
-	T;
+type AddFirstParameterToFunction<T, TargetFunctionsReturnType, FirstParameter> = T extends (
+	...args: any[]
+) => TargetFunctionsReturnType
+	? // Function: add param to function
+		(firstArg: FirstParameter, ...args: Parameters<T>) => ReturnType<T>
+	: // Else: just leave as is
+		T;
 
 /**
  * Allows to add a first parameter to functions of a type.
  */
 export type AddFirstParameterToFunctions<Target, TargetFunctionsReturnType, FirstParameter> = {
 	// For every property
-	[K in keyof Target]: AddFirstParameterToFunction<Target[K], TargetFunctionsReturnType, FirstParameter>;
+	[K in keyof Target]: AddFirstParameterToFunction<
+		Target[K],
+		TargetFunctionsReturnType,
+		FirstParameter
+	>;
 };
 
 /**
@@ -314,7 +335,7 @@ export type OmitOptional<T> = { [K in keyof T as T[K] extends Required<T>[K] ? K
  * A type that removed readonly-less from all properties of `T`
  */
 export type Mutable<T> = {
-	-readonly [P in keyof T]: T[P]
+	-readonly [P in keyof T]: T[P];
 };
 
 /**
@@ -322,14 +343,14 @@ export type Mutable<T> = {
  */
 export type SingleOrMany<T> = T | T[];
 
-
 /**
  * A type that recursively makes all properties of `T` required
  */
 export type DeepRequiredNonNullable<T> = {
-	[P in keyof T]-?: T[P] extends object ? DeepRequiredNonNullable<T[P]> : Required<NonNullable<T[P]>>;
+	[P in keyof T]-?: T[P] extends object
+		? DeepRequiredNonNullable<T[P]>
+		: Required<NonNullable<T[P]>>;
 };
-
 
 /**
  * Represents a type that is a partial version of a given type `T`, where all properties are optional and can be deeply nested.

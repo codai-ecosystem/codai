@@ -35,21 +35,27 @@ declare namespace DOMPurify {
 		sanitize(source: string | Node, config: Config & { RETURN_TRUSTED_TYPE: true }): TrustedHTML;
 		sanitize(
 			source: string | Node,
-			config: Config & { RETURN_DOM_FRAGMENT?: false | undefined; RETURN_DOM?: false | undefined },
+			config: Config & { RETURN_DOM_FRAGMENT?: false | undefined; RETURN_DOM?: false | undefined }
 		): string;
-		sanitize(source: string | Node, config: Config & { RETURN_DOM_FRAGMENT: true }): DocumentFragment;
+		sanitize(
+			source: string | Node,
+			config: Config & { RETURN_DOM_FRAGMENT: true }
+		): DocumentFragment;
 		sanitize(source: string | Node, config: Config & { RETURN_DOM: true }): HTMLElement;
 		sanitize(source: string | Node, config: Config): string | HTMLElement | DocumentFragment;
 
 		addHook(
 			hook: 'uponSanitizeElement',
-			cb: (currentNode: Element, data: SanitizeElementHookEvent, config: Config) => void,
+			cb: (currentNode: Element, data: SanitizeElementHookEvent, config: Config) => void
 		): void;
 		addHook(
 			hook: 'uponSanitizeAttribute',
-			cb: (currentNode: Element, data: SanitizeAttributeHookEvent, config: Config) => void,
+			cb: (currentNode: Element, data: SanitizeAttributeHookEvent, config: Config) => void
 		): void;
-		addHook(hook: HookName, cb: (currentNode: Element, data: HookEvent, config: Config) => void): void;
+		addHook(
+			hook: HookName,
+			cb: (currentNode: Element, data: HookEvent, config: Config) => void
+		): void;
 
 		setConfig(cfg: Config): void;
 		clearConfig(): void;
@@ -102,14 +108,14 @@ declare namespace DOMPurify {
 		/** @default false */
 		SANITIZE_NAMED_PROPS?: boolean | undefined;
 		USE_PROFILES?:
-		| false
-		| {
-			mathMl?: boolean | undefined;
-			svg?: boolean | undefined;
-			svgFilters?: boolean | undefined;
-			html?: boolean | undefined;
-		}
-		| undefined;
+			| false
+			| {
+					mathMl?: boolean | undefined;
+					svg?: boolean | undefined;
+					svgFilters?: boolean | undefined;
+					html?: boolean | undefined;
+			  }
+			| undefined;
 		WHOLE_DOCUMENT?: boolean | undefined;
 		CUSTOM_ELEMENT_HANDLING?: {
 			tagNameCheck?: RegExp | ((tagName: string) => boolean) | null | undefined;

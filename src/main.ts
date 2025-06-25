@@ -29,7 +29,7 @@ perf.mark('code/willLoadMainBundle', {
 	// When built, the main bundle is a single JS file with all
 	// dependencies inlined. As such, we mark `willLoadMainBundle`
 	// as the start of the main bundle loading process.
-	startTime: Math.floor(performance.timeOrigin)
+	startTime: Math.floor(performance.timeOrigin),
 });
 perf.mark('code/didLoadMainBundle');
 
@@ -43,12 +43,16 @@ const argvConfig = configureCommandlineSwitchesSync(args);
 // 1) disabled via command line using either
 //    `--no-sandbox` or `--disable-chromium-sandbox` argument.
 // 2) argv.json contains `disable-chromium-sandbox: true`.
-if (args['sandbox'] &&
+if (
+	args['sandbox'] &&
 	!args['disable-chromium-sandbox'] &&
-	!argvConfig['disable-chromium-sandbox']) {
+	!argvConfig['disable-chromium-sandbox']
+) {
 	app.enableSandbox();
-} else if (app.commandLine.hasSwitch('no-sandbox') &&
-	!app.commandLine.hasSwitch('disable-gpu-sandbox')) {
+} else if (
+	app.commandLine.hasSwitch('no-sandbox') &&
+	!app.commandLine.hasSwitch('disable-gpu-sandbox')
+) {
 	// Disable GPU sandbox whenever --no-sandbox is used.
 	app.commandLine.appendSwitch('disable-gpu-sandbox');
 } else {
@@ -82,7 +86,10 @@ perf.mark('code/willStartCrashReporter');
 // * --disable-crash-reporter command line parameter is not set
 //
 // Disable crash reporting in all other cases.
-if (args['crash-reporter-directory'] || (argvConfig['enable-crash-reporter'] && !args['disable-crash-reporter'])) {
+if (
+	args['crash-reporter-directory'] ||
+	(argvConfig['enable-crash-reporter'] && !args['disable-crash-reporter'])
+) {
 	configureCrashReporter();
 }
 perf.mark('code/didStartCrashReporter');
@@ -99,12 +106,25 @@ if (portable && portable.isPortable) {
 protocol.registerSchemesAsPrivileged([
 	{
 		scheme: 'vscode-webview',
-		privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, allowServiceWorkers: true, codeCache: true }
+		privileges: {
+			standard: true,
+			secure: true,
+			supportFetchAPI: true,
+			corsEnabled: true,
+			allowServiceWorkers: true,
+			codeCache: true,
+		},
 	},
 	{
 		scheme: 'vscode-file',
-		privileges: { secure: true, standard: true, supportFetchAPI: true, corsEnabled: true, codeCache: true }
-	}
+		privileges: {
+			secure: true,
+			standard: true,
+			supportFetchAPI: true,
+			corsEnabled: true,
+			codeCache: true,
+		},
+	},
 ]);
 
 // Global app listeners
@@ -129,7 +149,7 @@ if (userLocale) {
 		osLocale,
 		commit: product.commit,
 		userDataPath,
-		nlsMetadataPath: __dirname
+		nlsMetadataPath: __dirname,
 	});
 }
 
@@ -142,7 +162,7 @@ if (userLocale) {
 // In that case, use `en` as the Electron locale.
 
 if (process.platform === 'win32' || process.platform === 'linux') {
-	const electronLocale = (!userLocale || userLocale === 'qps-ploc') ? 'en' : userLocale;
+	const electronLocale = !userLocale || userLocale === 'qps-ploc' ? 'en' : userLocale;
 	app.commandLine.appendSwitch('lang', electronLocale);
 }
 
@@ -152,7 +172,10 @@ app.once('ready', function () {
 		let traceOptions: Electron.TraceConfig | Electron.TraceCategoriesAndOptions;
 		if (args['trace-memory-infra']) {
 			const customCategories = args['trace-category-filter']?.split(',') || [];
-			customCategories.push('disabled-by-default-memory-infra', 'disabled-by-default-memory-infra.v8.code_stats');
+			customCategories.push(
+				'disabled-by-default-memory-infra',
+				'disabled-by-default-memory-infra.v8.code_stats'
+			);
 			traceOptions = {
 				included_categories: customCategories,
 				excluded_categories: ['*'],
@@ -162,20 +185,20 @@ app.once('ready', function () {
 						{
 							type: 'periodic_interval',
 							mode: 'detailed',
-							min_time_between_dumps_ms: 10000
+							min_time_between_dumps_ms: 10000,
 						},
 						{
 							type: 'periodic_interval',
 							mode: 'light',
-							min_time_between_dumps_ms: 1000
-						}
-					]
-				}
+							min_time_between_dumps_ms: 1000,
+						},
+					],
+				},
 			};
 		} else {
 			traceOptions = {
 				categoryFilter: args['trace-category-filter'] || '*',
-				traceOptions: args['trace-options'] || 'record-until-full,enable-sampling'
+				traceOptions: args['trace-options'] || 'record-until-full,enable-sampling',
 			};
 		}
 
@@ -191,7 +214,7 @@ async function onReady() {
 	try {
 		const [, nlsConfig] = await Promise.all([
 			mkdirpIgnoreError(codeCachePath),
-			resolveNlsConfiguration()
+			resolveNlsConfiguration(),
 		]);
 
 		await startup(codeCachePath, nlsConfig);
@@ -203,7 +226,10 @@ async function onReady() {
 /**
  * Main startup routine
  */
-async function startup(codeCachePath: string | undefined, nlsConfig: INLSConfiguration): Promise<void> {
+async function startup(
+	codeCachePath: string | undefined,
+	nlsConfig: INLSConfiguration
+): Promise<void> {
 	process.env['VSCODE_NLS_CONFIG'] = JSON.stringify(nlsConfig);
 	process.env['VSCODE_CODE_CACHE_PATH'] = codeCachePath || '';
 
@@ -217,7 +243,6 @@ async function startup(codeCachePath: string | undefined, nlsConfig: INLSConfigu
 
 function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 	const SUPPORTED_ELECTRON_SWITCHES = [
-
 		// alias from us for --disable-gpu
 		'disable-hardware-acceleration',
 
@@ -228,11 +253,10 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 		'disable-lcd-text',
 
 		// bypass any specified proxy for the given semi-colon-separated list of hosts
-		'proxy-bypass-list'
+		'proxy-bypass-list',
 	];
 
 	if (process.platform === 'linux') {
-
 		// Force enable screen readers on Linux via this flag
 		SUPPORTED_ELECTRON_SWITCHES.push('force-renderer-accessibility');
 
@@ -241,7 +265,6 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 	}
 
 	const SUPPORTED_MAIN_PROCESS_SWITCHES = [
-
 		// Persistently enable proposed api via argv.json: https://github.com/microsoft/vscode/issues/99775
 		'enable-proposed-api',
 
@@ -252,7 +275,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 		'use-inmemory-secretstorage',
 
 		// Enables display tracking to restore maximized windows under RDP: https://github.com/electron/electron/issues/47016
-		'enable-rdp-display-tracking'
+		'enable-rdp-display-tracking',
 	];
 
 	// Read argv config
@@ -289,9 +312,13 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 			switch (argvKey) {
 				case 'enable-proposed-api':
 					if (Array.isArray(argvValue)) {
-						argvValue.forEach(id => id && typeof id === 'string' && process.argv.push('--enable-proposed-api', id));
+						argvValue.forEach(
+							id => id && typeof id === 'string' && process.argv.push('--enable-proposed-api', id)
+						);
 					} else {
-						console.error(`Unexpected value for \`enable-proposed-api\` in argv.json. Expected array of extension ids.`);
+						console.error(
+							`Unexpected value for \`enable-proposed-api\` in argv.json. Expected array of extension ids.`
+						);
 					}
 					break;
 
@@ -324,21 +351,18 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 	// `DocumentPolicyIncludeJSCallStacksInCrashReports` - https://www.electronjs.org/docs/latest/api/web-frame-main#framecollectjavascriptcallstack-experimental
 	// `EarlyEstablishGpuChannel` - Refs https://issues.chromium.org/issues/40208065
 	// `EstablishGpuChannelAsync` - Refs https://issues.chromium.org/issues/40208065
-	const featuresToEnable =
-		`DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,${app.commandLine.getSwitchValue('enable-features')}`;
+	const featuresToEnable = `DocumentPolicyIncludeJSCallStacksInCrashReports,EarlyEstablishGpuChannel,EstablishGpuChannelAsync,${app.commandLine.getSwitchValue('enable-features')}`;
 	app.commandLine.appendSwitch('enable-features', featuresToEnable);
 
 	// Following features are disabled from the runtime:
 	// `CalculateNativeWinOcclusion` - Disable native window occlusion tracker (https://groups.google.com/a/chromium.org/g/embedder-dev/c/ZF3uHHyWLKw/m/VDN2hDXMAAAJ)
-	const featuresToDisable =
-		`CalculateNativeWinOcclusion,${app.commandLine.getSwitchValue('disable-features')}`;
+	const featuresToDisable = `CalculateNativeWinOcclusion,${app.commandLine.getSwitchValue('disable-features')}`;
 	app.commandLine.appendSwitch('disable-features', featuresToDisable);
 
 	// Blink features to configure.
 	// `FontMatchingCTMigration` - Siwtch font matching on macOS to Appkit (Refs https://github.com/microsoft/vscode/issues/224496#issuecomment-2270418470).
 	// `StandardizedBrowserZoom` - Disable zoom adjustment for bounding box (https://github.com/microsoft/vscode/issues/232750#issuecomment-2459495394)
-	const blinkFeaturesToDisable =
-		`FontMatchingCTMigration,StandardizedBrowserZoom,${app.commandLine.getSwitchValue('disable-blink-features')}`;
+	const blinkFeaturesToDisable = `FontMatchingCTMigration,StandardizedBrowserZoom,${app.commandLine.getSwitchValue('disable-blink-features')}`;
 	app.commandLine.appendSwitch('disable-blink-features', blinkFeaturesToDisable);
 
 	// Support JS Flags
@@ -372,7 +396,6 @@ interface IArgvConfig {
 }
 
 function readArgvConfigSync(): IArgvConfig {
-
 	// Read or create the argv.json config file sync before app('ready')
 	const argvConfigPath = getArgvConfigPath();
 	let argvConfig: IArgvConfig | undefined = undefined;
@@ -382,7 +405,9 @@ function readArgvConfigSync(): IArgvConfig {
 		if (error && error.code === 'ENOENT') {
 			createDefaultArgvConfigSync(argvConfigPath);
 		} else {
-			console.warn(`Unable to read argv.json configuration file in ${argvConfigPath}, falling back to defaults (${error})`);
+			console.warn(
+				`Unable to read argv.json configuration file in ${argvConfigPath}, falling back to defaults (${error})`
+			);
 		}
 	}
 
@@ -396,7 +421,6 @@ function readArgvConfigSync(): IArgvConfig {
 
 function createDefaultArgvConfigSync(argvConfigPath: string): void {
 	try {
-
 		// Ensure argv config parent exists
 		const argvConfigPathDirname = path.dirname(argvConfigPath);
 		if (!fs.existsSync(argvConfigPathDirname)) {
@@ -416,13 +440,15 @@ function createDefaultArgvConfigSync(argvConfigPath: string): void {
 			'	// Use software rendering instead of hardware accelerated rendering.',
 			'	// This can help in cases where you see rendering issues in VS Code.',
 			'	// "disable-hardware-acceleration": true',
-			'}'
+			'}',
 		];
 
 		// Create initial argv.json with default content
 		fs.writeFileSync(argvConfigPath, defaultArgvConfigContent.join('\n'));
 	} catch (error) {
-		console.error(`Unable to create argv.json configuration file in ${argvConfigPath}, falling back to defaults (${error})`);
+		console.error(
+			`Unable to create argv.json configuration file in ${argvConfigPath}, falling back to defaults (${error})`
+		);
 	}
 }
 
@@ -447,7 +473,9 @@ function configureCrashReporter(): void {
 		crashReporterDirectory = path.normalize(crashReporterDirectory);
 
 		if (!path.isAbsolute(crashReporterDirectory)) {
-			console.error(`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`);
+			console.error(
+				`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`
+			);
 			app.exit(1);
 		}
 
@@ -455,14 +483,18 @@ function configureCrashReporter(): void {
 			try {
 				fs.mkdirSync(crashReporterDirectory, { recursive: true });
 			} catch (error) {
-				console.error(`The path '${crashReporterDirectory}' specified for --crash-reporter-directory does not seem to exist or cannot be created.`);
+				console.error(
+					`The path '${crashReporterDirectory}' specified for --crash-reporter-directory does not seem to exist or cannot be created.`
+				);
 				app.exit(1);
 			}
 		}
 
 		// Crashes are stored in the crashDumps directory by default, so we
 		// need to change that directory to the provided one
-		console.log(`Found --crash-reporter-directory argument. Setting crashDumps directory to be '${crashReporterDirectory}'`);
+		console.log(
+			`Found --crash-reporter-directory argument. Setting crashDumps directory to be '${crashReporterDirectory}'`
+		);
 		app.setPath('crashDumps', crashReporterDirectory);
 	}
 
@@ -470,9 +502,9 @@ function configureCrashReporter(): void {
 	else {
 		const appCenter = product.appCenter;
 		if (appCenter) {
-			const isWindows = (process.platform === 'win32');
-			const isLinux = (process.platform === 'linux');
-			const isDarwin = (process.platform === 'darwin');
+			const isWindows = process.platform === 'win32';
+			const isLinux = process.platform === 'linux';
+			const isDarwin = process.platform === 'darwin';
 			const crashReporterId = argvConfig['crash-reporter-id'];
 			const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 			if (crashReporterId && uuidPattern.test(crashReporterId)) {
@@ -501,7 +533,14 @@ function configureCrashReporter(): void {
 				} else if (isLinux) {
 					submitURL = appCenter['linux-x64'];
 				}
-				submitURL = submitURL.concat('&uid=', crashReporterId, '&iid=', crashReporterId, '&sid=', crashReporterId);
+				submitURL = submitURL.concat(
+					'&uid=',
+					crashReporterId,
+					'&iid=',
+					crashReporterId,
+					'&sid=',
+					crashReporterId
+				);
 				// Send the id for child node process that are explicitly starting crash reporter.
 				// For vscode this is ExtensionHost process currently.
 				const argv = process.argv;
@@ -519,15 +558,19 @@ function configureCrashReporter(): void {
 	}
 
 	// Start crash reporter for all processes
-	const productName = (product.crashReporter ? product.crashReporter.productName : undefined) || product.nameShort;
-	const companyName = (product.crashReporter ? product.crashReporter.companyName : undefined) || 'Microsoft';
-	const uploadToServer = Boolean(!process.env['VSCODE_DEV'] && submitURL && !crashReporterDirectory);
+	const productName =
+		(product.crashReporter ? product.crashReporter.productName : undefined) || product.nameShort;
+	const companyName =
+		(product.crashReporter ? product.crashReporter.companyName : undefined) || 'Microsoft';
+	const uploadToServer = Boolean(
+		!process.env['VSCODE_DEV'] && submitURL && !crashReporterDirectory
+	);
 	crashReporter.start({
 		companyName,
 		productName: process.env['VSCODE_DEV'] ? `${productName} Dev` : productName,
 		submitURL,
 		uploadToServer,
-		compress: true
+		compress: true,
 	});
 }
 
@@ -556,26 +599,18 @@ function getJSFlags(cliArgs: NativeParsedArgs): string | null {
 
 function parseCLIArgs(): NativeParsedArgs {
 	return minimist(process.argv, {
-		string: [
-			'user-data-dir',
-			'locale',
-			'js-flags',
-			'crash-reporter-directory'
-		],
-		boolean: [
-			'disable-chromium-sandbox',
-		],
+		string: ['user-data-dir', 'locale', 'js-flags', 'crash-reporter-directory'],
+		boolean: ['disable-chromium-sandbox'],
 		default: {
-			'sandbox': true
+			sandbox: true,
 		},
 		alias: {
-			'no-sandbox': 'sandbox'
-		}
+			'no-sandbox': 'sandbox',
+		},
 	});
 }
 
 function registerListeners(): void {
-
 	/**
 	 * macOS: when someone drops a file to the not-yet running VSCode, the open-file event fires even before
 	 * the app-ready event. We listen very early for open-file and remember this upon startup as path to open.
@@ -590,12 +625,11 @@ function registerListeners(): void {
 	 * macOS: react to open-url requests.
 	 */
 	const openUrls: string[] = [];
-	const onOpenUrl =
-		function (event: { preventDefault: () => void }, url: string) {
-			event.preventDefault();
+	const onOpenUrl = function (event: { preventDefault: () => void }, url: string) {
+		event.preventDefault();
 
-			openUrls.push(url);
-		};
+		openUrls.push(url);
+	};
 
 	app.on('will-finish-launching', function () {
 		app.on('open-url', onOpenUrl);
@@ -609,7 +643,6 @@ function registerListeners(): void {
 }
 
 function getCodeCachePath(): string | undefined {
-
 	// explicitly disabled via CLI args
 	if (process.argv.indexOf('--no-cached-data') > 0) {
 		return undefined;
@@ -672,7 +705,6 @@ function processZhLocale(appLocale: string): string {
  * Resolve the NLS configuration
  */
 async function resolveNlsConfiguration(): Promise<INLSConfiguration> {
-
 	// First, we need to test a user defined locale.
 	// If it fails we try the app locale.
 	// If that fails we fall back to English.
@@ -695,7 +727,7 @@ async function resolveNlsConfiguration(): Promise<INLSConfiguration> {
 
 			// NLS: below 2 are a relic from old times only used by vscode-nls and deprecated
 			locale: 'en',
-			availableLanguages: {}
+			availableLanguages: {},
 		};
 	}
 
@@ -707,7 +739,7 @@ async function resolveNlsConfiguration(): Promise<INLSConfiguration> {
 		osLocale,
 		commit: product.commit,
 		userDataPath,
-		nlsMetadataPath: __dirname
+		nlsMetadataPath: __dirname,
 	});
 }
 

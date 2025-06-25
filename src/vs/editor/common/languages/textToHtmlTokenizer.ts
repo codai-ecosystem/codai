@@ -6,7 +6,12 @@
 import { CharCode } from '../../../base/common/charCode.js';
 import * as strings from '../../../base/common/strings.js';
 import { IViewLineTokens, LineTokens } from '../tokens/lineTokens.js';
-import { ILanguageIdCodec, IState, ITokenizationSupport, TokenizationRegistry } from '../languages.js';
+import {
+	ILanguageIdCodec,
+	IState,
+	ITokenizationSupport,
+	TokenizationRegistry,
+} from '../languages.js';
 import { LanguageId } from '../encodedTokenAttributes.js';
 import { NullState, nullTokenizeEncoded } from './nullTokenize.js';
 import { ILanguageService } from './language.js';
@@ -15,14 +20,27 @@ export type IReducedTokenizationSupport = Omit<ITokenizationSupport, 'tokenize'>
 
 const fallback: IReducedTokenizationSupport = {
 	getInitialState: () => NullState,
-	tokenizeEncoded: (buffer: string, hasEOL: boolean, state: IState) => nullTokenizeEncoded(LanguageId.Null, state)
+	tokenizeEncoded: (buffer: string, hasEOL: boolean, state: IState) =>
+		nullTokenizeEncoded(LanguageId.Null, state),
 };
 
-export function tokenizeToStringSync(languageService: ILanguageService, text: string, languageId: string): string {
-	return _tokenizeToString(text, languageService.languageIdCodec, TokenizationRegistry.get(languageId) || fallback);
+export function tokenizeToStringSync(
+	languageService: ILanguageService,
+	text: string,
+	languageId: string
+): string {
+	return _tokenizeToString(
+		text,
+		languageService.languageIdCodec,
+		TokenizationRegistry.get(languageId) || fallback
+	);
 }
 
-export async function tokenizeToString(languageService: ILanguageService, text: string, languageId: string | null): Promise<string> {
+export async function tokenizeToString(
+	languageService: ILanguageService,
+	text: string,
+	languageId: string | null
+): Promise<string> {
 	if (!languageId) {
 		return _tokenizeToString(text, languageService.languageIdCodec, fallback);
 	}
@@ -30,14 +48,26 @@ export async function tokenizeToString(languageService: ILanguageService, text: 
 	return _tokenizeToString(text, languageService.languageIdCodec, tokenizationSupport || fallback);
 }
 
-export function tokenizeLineToHTML(text: string, viewLineTokens: IViewLineTokens, colorMap: string[], startOffset: number, endOffset: number, tabSize: number, useNbsp: boolean): string {
+export function tokenizeLineToHTML(
+	text: string,
+	viewLineTokens: IViewLineTokens,
+	colorMap: string[],
+	startOffset: number,
+	endOffset: number,
+	tabSize: number,
+	useNbsp: boolean
+): string {
 	let result = `<div>`;
 	let charIndex = startOffset;
 	let tabsCharDelta = 0;
 
 	let prevIsSpace = true;
 
-	for (let tokenIndex = 0, tokenCount = viewLineTokens.getCount(); tokenIndex < tokenCount; tokenIndex++) {
+	for (
+		let tokenIndex = 0, tokenCount = viewLineTokens.getCount();
+		tokenIndex < tokenCount;
+		tokenIndex++
+	) {
 		const tokenEndIndex = viewLineTokens.getEndOffset(tokenIndex);
 
 		if (tokenEndIndex <= startOffset) {
@@ -51,7 +81,7 @@ export function tokenizeLineToHTML(text: string, viewLineTokens: IViewLineTokens
 
 			switch (charCode) {
 				case CharCode.Tab: {
-					let insertSpacesCount = tabSize - (charIndex + tabsCharDelta) % tabSize;
+					let insertSpacesCount = tabSize - ((charIndex + tabsCharDelta) % tabSize);
 					tabsCharDelta += insertSpacesCount - 1;
 					while (insertSpacesCount > 0) {
 						if (useNbsp && prevIsSpace) {
@@ -126,7 +156,11 @@ export function tokenizeLineToHTML(text: string, viewLineTokens: IViewLineTokens
 	return result;
 }
 
-export function _tokenizeToString(text: string, languageIdCodec: ILanguageIdCodec, tokenizationSupport: IReducedTokenizationSupport): string {
+export function _tokenizeToString(
+	text: string,
+	languageIdCodec: ILanguageIdCodec,
+	tokenizationSupport: IReducedTokenizationSupport
+): string {
 	let result = `<div class="monaco-tokenized-source">`;
 	const lines = strings.splitLines(text);
 	let currentState = tokenizationSupport.getInitialState();

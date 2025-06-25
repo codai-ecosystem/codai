@@ -7,7 +7,6 @@ import { CancellationToken, CancellationTokenSource } from '../../common/cancell
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('CancellationToken', function () {
-
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('None', () => {
@@ -16,7 +15,6 @@ suite('CancellationToken', function () {
 	});
 
 	test('cancel before token', function () {
-
 		const source = new CancellationTokenSource();
 		assert.strictEqual(source.token.isCancellationRequested, false);
 		source.cancel();
@@ -29,7 +27,6 @@ suite('CancellationToken', function () {
 	});
 
 	test('cancel happens only once', function () {
-
 		const source = new CancellationTokenSource();
 		assert.strictEqual(source.token.isCancellationRequested, false);
 
@@ -47,7 +44,6 @@ suite('CancellationToken', function () {
 	});
 
 	test('cancel calls all listeners', function () {
-
 		let count = 0;
 
 		const source = new CancellationTokenSource();
@@ -60,7 +56,6 @@ suite('CancellationToken', function () {
 	});
 
 	test('token stays the same', function () {
-
 		let source = new CancellationTokenSource();
 		let token = source.token;
 		assert.ok(token === source.token); // doesn't change on get
@@ -78,7 +73,6 @@ suite('CancellationToken', function () {
 	});
 
 	test('dispose calls no listeners', function () {
-
 		let count = 0;
 
 		const source = new CancellationTokenSource();
@@ -90,7 +84,6 @@ suite('CancellationToken', function () {
 	});
 
 	test('dispose calls no listeners (unless told to cancel)', function () {
-
 		let count = 0;
 
 		const source = new CancellationTokenSource();
@@ -108,7 +101,6 @@ suite('CancellationToken', function () {
 	});
 
 	test('parent cancels child', function () {
-
 		const parent = new CancellationTokenSource();
 		const child = new CancellationTokenSource(parent.token);
 

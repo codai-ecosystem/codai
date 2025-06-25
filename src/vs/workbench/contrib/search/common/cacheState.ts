@@ -12,11 +12,10 @@ enum LoadingPhase {
 	Loading = 2,
 	Loaded = 3,
 	Errored = 4,
-	Disposed = 5
+	Disposed = 5,
 }
 
 export class FileQueryCacheState {
-
 	private readonly _cacheKey;
 	get cacheKey(): string {
 		if (this.loadingPhase === LoadingPhase.Loaded || !this.previousCacheState) {

@@ -50,7 +50,10 @@ const MAX_SECTION_LINES = 5;
  * @param options options to search with
  * @returns an array of section headers
  */
-export function findSectionHeaders(model: ISectionHeaderFinderTarget, options: FindSectionHeaderOptions): SectionHeader[] {
+export function findSectionHeaders(
+	model: ISectionHeaderFinderTarget,
+	options: FindSectionHeaderOptions
+): SectionHeader[] {
 	let headers: SectionHeader[] = [];
 	if (options.findRegionSectionHeaders && options.foldingRules?.markers) {
 		const regionHeaders = collectRegionHeaders(model, options);
@@ -63,19 +66,27 @@ export function findSectionHeaders(model: ISectionHeaderFinderTarget, options: F
 	return headers;
 }
 
-function collectRegionHeaders(model: ISectionHeaderFinderTarget, options: FindSectionHeaderOptions): SectionHeader[] {
+function collectRegionHeaders(
+	model: ISectionHeaderFinderTarget,
+	options: FindSectionHeaderOptions
+): SectionHeader[] {
 	const regionHeaders: SectionHeader[] = [];
 	const endLineNumber = model.getLineCount();
 	for (let lineNumber = 1; lineNumber <= endLineNumber; lineNumber++) {
 		const lineContent = model.getLineContent(lineNumber);
 		const match = lineContent.match(options.foldingRules!.markers!.start);
 		if (match) {
-			const range = { startLineNumber: lineNumber, startColumn: match[0].length + 1, endLineNumber: lineNumber, endColumn: lineContent.length + 1 };
+			const range = {
+				startLineNumber: lineNumber,
+				startColumn: match[0].length + 1,
+				endLineNumber: lineNumber,
+				endColumn: lineContent.length + 1,
+			};
 			if (range.endColumn > range.startColumn) {
 				const sectionHeader = {
 					range,
 					...getHeaderText(lineContent.substring(match[0].length)),
-					shouldBeInComments: false
+					shouldBeInComments: false,
 				};
 				if (sectionHeader.text || sectionHeader.hasSeparatorLine) {
 					regionHeaders.push(sectionHeader);
@@ -86,7 +97,10 @@ function collectRegionHeaders(model: ISectionHeaderFinderTarget, options: FindSe
 	return regionHeaders;
 }
 
-export function collectMarkHeaders(model: ISectionHeaderFinderTarget, options: FindSectionHeaderOptions): SectionHeader[] {
+export function collectMarkHeaders(
+	model: ISectionHeaderFinderTarget,
+	options: FindSectionHeaderOptions
+): SectionHeader[] {
 	const markHeaders: SectionHeader[] = [];
 	const endLineNumber = model.getLineCount();
 
@@ -128,13 +142,14 @@ export function collectMarkHeaders(model: ISectionHeaderFinderTarget, options: F
 
 			// Calculate end column - need to handle multi-line matches
 			const lastMatchLine = matchLines[matchLines.length - 1];
-			const endColumn = matchHeight === 1 ? startColumn + match[0].length : lastMatchLine.length + 1;
+			const endColumn =
+				matchHeight === 1 ? startColumn + match[0].length : lastMatchLine.length + 1;
 
 			const range = {
 				startLineNumber: lineNumber,
 				startColumn,
 				endLineNumber: matchEndLine,
-				endColumn
+				endColumn,
 			};
 
 			const text2 = (match.groups ?? {})['label'] ?? '';
@@ -144,12 +159,16 @@ export function collectMarkHeaders(model: ISectionHeaderFinderTarget, options: F
 				range,
 				text: text2,
 				hasSeparatorLine,
-				shouldBeInComments: true
+				shouldBeInComments: true,
 			};
 
 			if (sectionHeader.text || sectionHeader.hasSeparatorLine) {
 				// only push if the previous one doesn't have this same linbe
-				if (markHeaders.length === 0 || markHeaders[markHeaders.length - 1].range.endLineNumber < sectionHeader.range.startLineNumber) {
+				if (
+					markHeaders.length === 0 ||
+					markHeaders[markHeaders.length - 1].range.endLineNumber <
+						sectionHeader.range.startLineNumber
+				) {
 					markHeaders.push(sectionHeader);
 				}
 			}

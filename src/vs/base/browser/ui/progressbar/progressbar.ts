@@ -16,22 +16,20 @@ const CSS_INFINITE = 'infinite';
 const CSS_INFINITE_LONG_RUNNING = 'infinite-long-running';
 const CSS_DISCRETE = 'discrete';
 
-export interface IProgressBarOptions extends IProgressBarStyles {
-}
+export interface IProgressBarOptions extends IProgressBarStyles {}
 
 export interface IProgressBarStyles {
 	progressBarBackground: string | undefined;
 }
 
 export const unthemedProgressBarOptions: IProgressBarOptions = {
-	progressBarBackground: undefined
+	progressBarBackground: undefined,
 };
 
 /**
  * A progress bar with support for infinite or discrete progress.
  */
 export class ProgressBar extends Disposable {
-
 	/**
 	 * After a certain time of showing the progress bar, switch
 	 * to long-running mode and throttle animations to reduce
@@ -58,7 +56,12 @@ export class ProgressBar extends Disposable {
 		this.workedVal = 0;
 
 		this.showDelayedScheduler = this._register(new RunOnceScheduler(() => show(this.element), 0));
-		this.longRunningScheduler = this._register(new RunOnceScheduler(() => this.infiniteLongRunning(), ProgressBar.LONG_RUNNING_INFINITE_THRESHOLD));
+		this.longRunningScheduler = this._register(
+			new RunOnceScheduler(
+				() => this.infiniteLongRunning(),
+				ProgressBar.LONG_RUNNING_INFINITE_THRESHOLD
+			)
+		);
 
 		this.create(container, options);
 	}
@@ -79,7 +82,12 @@ export class ProgressBar extends Disposable {
 	private off(): void {
 		this.bit.style.width = 'inherit';
 		this.bit.style.opacity = '1';
-		this.element.classList.remove(CSS_ACTIVE, CSS_INFINITE, CSS_INFINITE_LONG_RUNNING, CSS_DISCRETE);
+		this.element.classList.remove(
+			CSS_ACTIVE,
+			CSS_INFINITE,
+			CSS_INFINITE_LONG_RUNNING,
+			CSS_DISCRETE
+		);
 
 		this.workedVal = 0;
 		this.totalWork = undefined;
@@ -195,7 +203,7 @@ export class ProgressBar extends Disposable {
 		this.element.classList.add(CSS_ACTIVE, CSS_DISCRETE);
 		this.element.setAttribute('aria-valuenow', value.toString());
 
-		this.bit.style.width = 100 * (this.workedVal / (totalWork)) + '%';
+		this.bit.style.width = 100 * (this.workedVal / totalWork) + '%';
 
 		return this;
 	}
@@ -206,7 +214,9 @@ export class ProgressBar extends Disposable {
 
 	show(delay?: number): void {
 		this.showDelayedScheduler.cancel();
-		this.progressSignal.value = getProgressAcccessibilitySignalScheduler(ProgressBar.PROGRESS_SIGNAL_DEFAULT_DELAY);
+		this.progressSignal.value = getProgressAcccessibilitySignalScheduler(
+			ProgressBar.PROGRESS_SIGNAL_DEFAULT_DELAY
+		);
 
 		if (typeof delay === 'number') {
 			this.showDelayedScheduler.schedule(delay);

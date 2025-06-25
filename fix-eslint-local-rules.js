@@ -53,14 +53,17 @@ const simpleLocalRules = [
 	"'local/code-no-test-only': 'error',",
 	"'local/code-no-test-async-suite': 'warn',",
 	"'local/code-no-unexternalized-strings': 'off',",
-	"'local/code-no-static-self-ref': 'warn'"
+	"'local/code-no-static-self-ref': 'warn'",
 ];
 
 // Comment out simple single-line local rules
 simpleLocalRules.forEach(rule => {
 	const ruleRegex = new RegExp(`\\s*${rule.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
 	content = content.replace(ruleRegex, match => {
-		return match.replace(rule, `// ${rule} // Temporarily disabled due to missing pluginLocal import`);
+		return match.replace(
+			rule,
+			`// ${rule} // Temporarily disabled due to missing pluginLocal import`
+		);
 	});
 });
 
@@ -68,40 +71,40 @@ simpleLocalRules.forEach(rule => {
 const complexRulesToComment = [
 	{
 		start: "'local/code-layering': [",
-		description: "code-layering rule"
+		description: 'code-layering rule',
 	},
 	{
 		start: "'local/code-import-patterns': [",
-		description: "code-import-patterns rule"
+		description: 'code-import-patterns rule',
 	},
 	{
 		start: "'local/code-no-runtime-import': [",
-		description: "code-no-runtime-import rule"
+		description: 'code-no-runtime-import rule',
 	},
 	{
 		start: "'local/code-limited-top-functions': [",
-		description: "code-limited-top-functions rule"
+		description: 'code-limited-top-functions rule',
 	},
 	{
 		start: "'local/code-must-use-result': [",
-		description: "code-must-use-result rule"
+		description: 'code-must-use-result rule',
 	},
 	{
 		start: "'local/code-ensure-no-disposables-leak-in-test': [",
-		description: "code-ensure-no-disposables-leak-in-test rule"
+		description: 'code-ensure-no-disposables-leak-in-test rule',
 	},
 	{
 		start: "'local/vscode-dts-provider-naming': [",
-		description: "vscode-dts-provider-naming rule"
+		description: 'vscode-dts-provider-naming rule',
 	},
 	{
 		start: "'local/vscode-dts-event-naming': [",
-		description: "vscode-dts-event-naming rule"
+		description: 'vscode-dts-event-naming rule',
 	},
 	{
 		start: "'local/code-no-unused-expressions': [",
-		description: "code-no-unused-expressions rule"
-	}
+		description: 'code-no-unused-expressions rule',
+	},
 ];
 
 // For each complex rule, find and comment it out
@@ -122,8 +125,12 @@ complexRulesToComment.forEach(({ start, description }) => {
 
 			// Count opening brackets in the starting line
 			for (const char of line) {
-				if (char === '[') { bracketCount++; }
-				if (char === ']') { bracketCount--; }
+				if (char === '[') {
+					bracketCount++;
+				}
+				if (char === ']') {
+					bracketCount--;
+				}
 			}
 		}
 
@@ -131,8 +138,12 @@ complexRulesToComment.forEach(({ start, description }) => {
 			// Count brackets in subsequent lines
 			if (i > ruleStartIndex) {
 				for (const char of line) {
-					if (char === '[') { bracketCount++; }
-					if (char === ']') { bracketCount--; }
+					if (char === '[') {
+						bracketCount++;
+					}
+					if (char === ']') {
+						bracketCount--;
+					}
 				}
 			}
 
@@ -145,10 +156,15 @@ complexRulesToComment.forEach(({ start, description }) => {
 	}
 
 	if (ruleStartIndex !== -1 && ruleEndIndex !== -1) {
-		console.log(`Commenting out ${description} from line ${ruleStartIndex + 1} to ${ruleEndIndex + 1}`);
+		console.log(
+			`Commenting out ${description} from line ${ruleStartIndex + 1} to ${ruleEndIndex + 1}`
+		);
 
 		// Add comment before the rule
-		lines[ruleStartIndex] = lines[ruleStartIndex].replace(start, `// Temporarily disabled due to missing pluginLocal import\n\t\t\t/*\n\t\t\t${start}`);
+		lines[ruleStartIndex] = lines[ruleStartIndex].replace(
+			start,
+			`// Temporarily disabled due to missing pluginLocal import\n\t\t\t/*\n\t\t\t${start}`
+		);
 
 		// Add closing comment after the rule
 		lines[ruleEndIndex] = lines[ruleEndIndex] + '\n\t\t\t*/';

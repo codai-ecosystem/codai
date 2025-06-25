@@ -1,11 +1,13 @@
 # Documentation Cleanup Plan
 
 ## Overview
+
 The project currently has extensive documentation that needs to be organized, archived, and updated to reflect the new codai.ro branding and simplified vision.
 
 ## Current Documentation State
 
 ### Files to Archive (Move to `docs/archive/`)
+
 These files represent development history but aren't needed for users:
 
 1. **Milestone Documentation**
@@ -36,6 +38,7 @@ These files represent development history but aren't needed for users:
    - `NEXT_ACTION_PLAN.md`
 
 ### Files to Remove Completely
+
 These files are no longer relevant:
 
 1. **Temporary Files**
@@ -59,6 +62,7 @@ These files are no longer relevant:
 ### Files to Update/Rewrite
 
 #### Priority 1: User-Facing Documentation
+
 1. **`README.md`**
    - Replace with `README_CODAI.md` content
    - Focus on user benefits, not technical details
@@ -75,6 +79,7 @@ These files are no longer relevant:
    - Remove complex build processes
 
 #### Priority 2: Technical Documentation
+
 1. **`CODING_STANDARDS.md`**
    - Keep essential coding guidelines
    - Remove overly complex rules
@@ -93,6 +98,7 @@ These files are no longer relevant:
 ### New Documentation to Create
 
 #### User Documentation
+
 1. **`docs/USER_GUIDE.md`**
    - How to use codai.ro
    - Chat-driven development examples
@@ -109,6 +115,7 @@ These files are no longer relevant:
    - Feature explanations
 
 #### Developer Documentation
+
 1. **`docs/ARCHITECTURE.md`**
    - Simplified architecture overview
    - Key components explanation
@@ -140,12 +147,14 @@ docs/
 ## Content Guidelines
 
 ### User-Focused Writing
+
 - Use simple, clear language
 - Focus on benefits, not features
 - Include practical examples
 - Avoid technical jargon
 
 ### Structure Standards
+
 - Start with what the user can achieve
 - Provide step-by-step instructions
 - Include screenshots where helpful
@@ -154,6 +163,7 @@ docs/
 ## Implementation Plan
 
 ### Phase 1: Archive Historical Docs
+
 ```bash
 mkdir -p docs/archive/milestone-reports
 mkdir -p docs/archive/phase2-planning
@@ -166,6 +176,7 @@ mv CODING_STANDARDS_IMPLEMENTATION*.md docs/archive/implementation-docs/
 ```
 
 ### Phase 2: Remove Temporary Files
+
 ```bash
 rm agent-test.md
 rm test-*.js
@@ -175,12 +186,14 @@ rm DOCKER*.md docker-compose.*.yml Dockerfile.*
 ```
 
 ### Phase 3: Update Core Documentation
+
 1. Replace `README.md` with simplified version
 2. Update `CONTRIBUTING.md` for community focus
 3. Simplify `DEVELOPMENT.md`
 4. Streamline `TESTING.md` and `SECURITY.md`
 
 ### Phase 4: Create New User Documentation
+
 1. Write `docs/QUICK_START.md`
 2. Create `docs/USER_GUIDE.md`
 3. Develop `docs/FAQ.md`
@@ -189,6 +202,7 @@ rm DOCKER*.md docker-compose.*.yml Dockerfile.*
 ## Content Checklist
 
 ### Every Documentation File Should:
+
 - [ ] Start with clear purpose statement
 - [ ] Use codai.ro branding (not AIDE)
 - [ ] Include practical examples
@@ -196,6 +210,7 @@ rm DOCKER*.md docker-compose.*.yml Dockerfile.*
 - [ ] Be accessible to target audience
 
 ### User Documentation Should:
+
 - [ ] Focus on what users can build
 - [ ] Provide copy-paste examples
 - [ ] Include screenshots/GIFs
@@ -203,6 +218,7 @@ rm DOCKER*.md docker-compose.*.yml Dockerfile.*
 - [ ] Link to related topics
 
 ### Technical Documentation Should:
+
 - [ ] Explain the "why" not just "how"
 - [ ] Include code examples
 - [ ] Show integration patterns
@@ -212,12 +228,14 @@ rm DOCKER*.md docker-compose.*.yml Dockerfile.*
 ## Success Metrics
 
 ### Before Cleanup
+
 - 25+ documentation files
 - Technical focus (80% developer, 20% user)
 - Complex setup procedures
 - Scattered information
 
 ### After Cleanup
+
 - 8-10 core documentation files
 - User focus (70% user, 30% developer)
 - Simple getting started process

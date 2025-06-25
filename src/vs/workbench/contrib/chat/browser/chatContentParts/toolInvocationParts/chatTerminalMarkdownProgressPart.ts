@@ -8,7 +8,12 @@ import { MarkdownString } from '../../../../../../base/common/htmlContent.js';
 import { ThemeIcon } from '../../../../../../base/common/themables.js';
 import { MarkdownRenderer } from '../../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
-import { IChatMarkdownContent, IChatTerminalToolInvocationData, IChatToolInvocation, IChatToolInvocationSerialized } from '../../../common/chatService.js';
+import {
+	IChatMarkdownContent,
+	IChatTerminalToolInvocationData,
+	IChatToolInvocation,
+	IChatToolInvocationSerialized,
+} from '../../../common/chatService.js';
 import { CodeBlockModelCollection } from '../../../common/codeBlockModelCollection.js';
 import { IChatCodeBlockInfo } from '../../chat.js';
 import { ICodeBlockRenderOptions } from '../../codeBlockPart.js';
@@ -34,11 +39,13 @@ export class ChatTerminalMarkdownProgressPart extends BaseChatToolInvocationSubP
 		currentWidthDelegate: () => number,
 		codeBlockStartIndex: number,
 		codeBlockModelCollection: CodeBlockModelCollection,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super(toolInvocation);
 
-		const content = new MarkdownString(`\`\`\`${terminalData.language}\n${terminalData.command}\n\`\`\``);
+		const content = new MarkdownString(
+			`\`\`\`${terminalData.language}\n${terminalData.command}\n\`\`\``
+		);
 		const chatMarkdownContent: IChatMarkdownContent = {
 			kind: 'markdownContent',
 			content: content,
@@ -49,16 +56,34 @@ export class ChatTerminalMarkdownProgressPart extends BaseChatToolInvocationSubP
 			reserveWidth: 19,
 			verticalPadding: 5,
 			editorOptions: {
-				wordWrap: 'on'
-			}
+				wordWrap: 'on',
+			},
 		};
-		this.markdownPart = this._register(instantiationService.createInstance(ChatMarkdownContentPart, chatMarkdownContent, context, editorPool, false, codeBlockStartIndex, renderer, currentWidthDelegate(), codeBlockModelCollection, { codeBlockRenderOptions }));
+		this.markdownPart = this._register(
+			instantiationService.createInstance(
+				ChatMarkdownContentPart,
+				chatMarkdownContent,
+				context,
+				editorPool,
+				false,
+				codeBlockStartIndex,
+				renderer,
+				currentWidthDelegate(),
+				codeBlockModelCollection,
+				{ codeBlockRenderOptions }
+			)
+		);
 		this._register(this.markdownPart.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
-		const icon = !toolInvocation.isConfirmed ?
-			Codicon.error :
-			toolInvocation.isComplete ?
-				Codicon.check : ThemeIcon.modify(Codicon.loading, 'spin');
-		const progressPart = instantiationService.createInstance(ChatCustomProgressPart, this.markdownPart.domNode, icon);
+		const icon = !toolInvocation.isConfirmed
+			? Codicon.error
+			: toolInvocation.isComplete
+				? Codicon.check
+				: ThemeIcon.modify(Codicon.loading, 'spin');
+		const progressPart = instantiationService.createInstance(
+			ChatCustomProgressPart,
+			this.markdownPart.domNode,
+			icon
+		);
 		this.domNode = progressPart.domNode;
 	}
 }

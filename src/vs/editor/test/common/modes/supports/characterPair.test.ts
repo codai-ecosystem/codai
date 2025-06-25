@@ -11,13 +11,18 @@ import { CharacterPairSupport } from '../../../../common/languages/supports/char
 import { TokenText, createFakeScopedLineTokens } from '../../modesTestUtils.js';
 
 suite('CharacterPairSupport', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('only autoClosingPairs', () => {
-		const characaterPairSupport = new CharacterPairSupport({ autoClosingPairs: [{ open: 'a', close: 'b' }] });
-		assert.deepStrictEqual(characaterPairSupport.getAutoClosingPairs(), [new StandardAutoClosingPairConditional({ open: 'a', close: 'b' })]);
-		assert.deepStrictEqual(characaterPairSupport.getSurroundingPairs(), [new StandardAutoClosingPairConditional({ open: 'a', close: 'b' })]);
+		const characaterPairSupport = new CharacterPairSupport({
+			autoClosingPairs: [{ open: 'a', close: 'b' }],
+		});
+		assert.deepStrictEqual(characaterPairSupport.getAutoClosingPairs(), [
+			new StandardAutoClosingPairConditional({ open: 'a', close: 'b' }),
+		]);
+		assert.deepStrictEqual(characaterPairSupport.getSurroundingPairs(), [
+			new StandardAutoClosingPairConditional({ open: 'a', close: 'b' }),
+		]);
 	});
 
 	test('only empty autoClosingPairs', () => {
@@ -28,8 +33,12 @@ suite('CharacterPairSupport', () => {
 
 	test('only brackets', () => {
 		const characaterPairSupport = new CharacterPairSupport({ brackets: [['a', 'b']] });
-		assert.deepStrictEqual(characaterPairSupport.getAutoClosingPairs(), [new StandardAutoClosingPairConditional({ open: 'a', close: 'b' })]);
-		assert.deepStrictEqual(characaterPairSupport.getSurroundingPairs(), [new StandardAutoClosingPairConditional({ open: 'a', close: 'b' })]);
+		assert.deepStrictEqual(characaterPairSupport.getAutoClosingPairs(), [
+			new StandardAutoClosingPairConditional({ open: 'a', close: 'b' }),
+		]);
+		assert.deepStrictEqual(characaterPairSupport.getSurroundingPairs(), [
+			new StandardAutoClosingPairConditional({ open: 'a', close: 'b' }),
+		]);
 	});
 
 	test('only empty brackets', () => {
@@ -39,9 +48,13 @@ suite('CharacterPairSupport', () => {
 	});
 
 	test('only surroundingPairs', () => {
-		const characaterPairSupport = new CharacterPairSupport({ surroundingPairs: [{ open: 'a', close: 'b' }] });
+		const characaterPairSupport = new CharacterPairSupport({
+			surroundingPairs: [{ open: 'a', close: 'b' }],
+		});
 		assert.deepStrictEqual(characaterPairSupport.getAutoClosingPairs(), []);
-		assert.deepStrictEqual(characaterPairSupport.getSurroundingPairs(), [{ open: 'a', close: 'b' }]);
+		assert.deepStrictEqual(characaterPairSupport.getSurroundingPairs(), [
+			{ open: 'a', close: 'b' },
+		]);
 	});
 
 	test('only empty surroundingPairs', () => {
@@ -51,43 +64,50 @@ suite('CharacterPairSupport', () => {
 	});
 
 	test('brackets is ignored when having autoClosingPairs', () => {
-		const characaterPairSupport = new CharacterPairSupport({ autoClosingPairs: [], brackets: [['a', 'b']] });
+		const characaterPairSupport = new CharacterPairSupport({
+			autoClosingPairs: [],
+			brackets: [['a', 'b']],
+		});
 		assert.deepStrictEqual(characaterPairSupport.getAutoClosingPairs(), []);
 		assert.deepStrictEqual(characaterPairSupport.getSurroundingPairs(), []);
 	});
 
-	function testShouldAutoClose(characterPairSupport: CharacterPairSupport, line: TokenText[], column: number): boolean {
+	function testShouldAutoClose(
+		characterPairSupport: CharacterPairSupport,
+		line: TokenText[],
+		column: number
+	): boolean {
 		const autoClosingPair = characterPairSupport.getAutoClosingPairs()[0];
 		return autoClosingPair.shouldAutoClose(createFakeScopedLineTokens(line), column);
 	}
 
 	test('shouldAutoClosePair in empty line', () => {
-		const sup = new CharacterPairSupport({ autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }] });
+		const sup = new CharacterPairSupport({
+			autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }],
+		});
 		const tokenText: TokenText[] = [];
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 1), true);
 	});
 
 	test('shouldAutoClosePair in not interesting line 1', () => {
-		const sup = new CharacterPairSupport({ autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }] });
-		const tokenText: TokenText[] = [
-			{ text: 'do', type: StandardTokenType.Other }
-		];
+		const sup = new CharacterPairSupport({
+			autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }],
+		});
+		const tokenText: TokenText[] = [{ text: 'do', type: StandardTokenType.Other }];
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 3), true);
 	});
 
 	test('shouldAutoClosePair in not interesting line 2', () => {
 		const sup = new CharacterPairSupport({ autoClosingPairs: [{ open: '{', close: '}' }] });
-		const tokenText: TokenText[] = [
-			{ text: 'do', type: StandardTokenType.String }
-		];
+		const tokenText: TokenText[] = [{ text: 'do', type: StandardTokenType.String }];
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 3), true);
 	});
 
 	test('shouldAutoClosePair in interesting line 1', () => {
-		const sup = new CharacterPairSupport({ autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }] });
-		const tokenText: TokenText[] = [
-			{ text: '"a"', type: StandardTokenType.String }
-		];
+		const sup = new CharacterPairSupport({
+			autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }],
+		});
+		const tokenText: TokenText[] = [{ text: '"a"', type: StandardTokenType.String }];
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 1), false);
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 2), false);
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 3), false);
@@ -95,11 +115,13 @@ suite('CharacterPairSupport', () => {
 	});
 
 	test('shouldAutoClosePair in interesting line 2', () => {
-		const sup = new CharacterPairSupport({ autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }] });
+		const sup = new CharacterPairSupport({
+			autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }],
+		});
 		const tokenText: TokenText[] = [
 			{ text: 'x=', type: StandardTokenType.Other },
 			{ text: '"a"', type: StandardTokenType.String },
-			{ text: ';', type: StandardTokenType.Other }
+			{ text: ';', type: StandardTokenType.Other },
 		];
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 1), true);
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 2), true);
@@ -111,10 +133,12 @@ suite('CharacterPairSupport', () => {
 	});
 
 	test('shouldAutoClosePair in interesting line 3', () => {
-		const sup = new CharacterPairSupport({ autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }] });
+		const sup = new CharacterPairSupport({
+			autoClosingPairs: [{ open: '{', close: '}', notIn: ['string', 'comment'] }],
+		});
 		const tokenText: TokenText[] = [
 			{ text: ' ', type: StandardTokenType.Other },
-			{ text: '//a', type: StandardTokenType.Comment }
+			{ text: '//a', type: StandardTokenType.Comment },
 		];
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 1), true);
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 2), true);
@@ -122,5 +146,4 @@ suite('CharacterPairSupport', () => {
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 4), false);
 		assert.strictEqual(testShouldAutoClose(sup, tokenText, 5), false);
 	});
-
 });

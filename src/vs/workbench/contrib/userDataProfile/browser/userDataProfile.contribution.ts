@@ -7,4 +7,8 @@ import { WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/
 import { UserDataProfilesWorkbenchContribution } from './userDataProfile.js';
 import './userDataProfileActions.js';
 
-registerWorkbenchContribution2(UserDataProfilesWorkbenchContribution.ID, UserDataProfilesWorkbenchContribution, WorkbenchPhase.BlockRestore);
+registerWorkbenchContribution2(
+	UserDataProfilesWorkbenchContribution.ID,
+	UserDataProfilesWorkbenchContribution,
+	WorkbenchPhase.BlockRestore
+);

@@ -5,12 +5,15 @@
 
 import { KeyboardLayoutContribution } from './_.contribution.js';
 
-
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 	layout: { id: 'com.apple.keylayout.US', lang: 'en', localizedName: 'U.S.', isUSStandard: true },
 	secondaryLayouts: [
 		{ id: 'com.apple.keylayout.ABC', lang: 'en', localizedName: 'ABC' },
-		{ id: 'com.sogou.inputmethod.sogou.pinyin', lang: 'zh-Hans', localizedName: 'Pinyin - Simplified' },
+		{
+			id: 'com.sogou.inputmethod.sogou.pinyin',
+			lang: 'zh-Hans',
+			localizedName: 'Pinyin - Simplified',
+		},
 		{ id: 'com.apple.inputmethod.Kotoeri.Roman', lang: 'en', localizedName: 'Romaji' },
 		{ id: 'com.apple.inputmethod.Kotoeri.Japanese', lang: 'ja', localizedName: 'Hiragana' },
 		{ id: 'com.apple.keylayout.Australian', lang: 'en', localizedName: 'Australian' },
@@ -65,7 +68,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		BracketRight: [']', '}', '‘', '’', 0],
 		Backslash: ['\\', '|', '«', '»', 0],
 		Semicolon: [';', ':', '…', 'Ú', 0],
-		Quote: ['\'', '"', 'æ', 'Æ', 0],
+		Quote: ["'", '"', 'æ', 'Æ', 0],
 		Backquote: ['`', '~', '`', '`', 4],
 		Comma: [',', '<', '≤', '¯', 0],
 		Period: ['.', '>', '≥', '˘', 0],
@@ -135,6 +138,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		ControlRight: [],
 		ShiftRight: [],
 		AltRight: [],
-		MetaRight: []
-	}
+		MetaRight: [],
+	},
 });

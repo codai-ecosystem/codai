@@ -4,21 +4,38 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { IKeyboardLayoutInfo, IKeyboardLayoutService, IKeyboardMapping, ILinuxKeyboardLayoutInfo, IMacKeyboardLayoutInfo, IMacLinuxKeyboardMapping, IWindowsKeyboardLayoutInfo, IWindowsKeyboardMapping } from '../../../../platform/keyboardLayout/common/keyboardLayout.js';
+import {
+	IKeyboardLayoutInfo,
+	IKeyboardLayoutService,
+	IKeyboardMapping,
+	ILinuxKeyboardLayoutInfo,
+	IMacKeyboardLayoutInfo,
+	IMacLinuxKeyboardMapping,
+	IWindowsKeyboardLayoutInfo,
+	IWindowsKeyboardMapping,
+} from '../../../../platform/keyboardLayout/common/keyboardLayout.js';
 import { Emitter } from '../../../../base/common/event.js';
 import { OperatingSystem, OS } from '../../../../base/common/platform.js';
-import { CachedKeyboardMapper, IKeyboardMapper } from '../../../../platform/keyboardLayout/common/keyboardMapper.js';
+import {
+	CachedKeyboardMapper,
+	IKeyboardMapper,
+} from '../../../../platform/keyboardLayout/common/keyboardMapper.js';
 import { WindowsKeyboardMapper } from '../common/windowsKeyboardMapper.js';
 import { FallbackKeyboardMapper } from '../common/fallbackKeyboardMapper.js';
 import { MacLinuxKeyboardMapper } from '../common/macLinuxKeyboardMapper.js';
-import { DispatchConfig, readKeyboardConfig } from '../../../../platform/keyboardLayout/common/keyboardConfig.js';
+import {
+	DispatchConfig,
+	readKeyboardConfig,
+} from '../../../../platform/keyboardLayout/common/keyboardConfig.js';
 import { IKeyboardEvent } from '../../../../platform/keybinding/common/keybinding.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { INativeKeyboardLayoutService } from './nativeKeyboardLayoutService.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 
 export class KeyboardLayoutService extends Disposable implements IKeyboardLayoutService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeKeyboardLayout = this._register(new Emitter<void>());
@@ -27,23 +44,28 @@ export class KeyboardLayoutService extends Disposable implements IKeyboardLayout
 	private _keyboardMapper: IKeyboardMapper | null;
 
 	constructor(
-		@INativeKeyboardLayoutService private readonly _nativeKeyboardLayoutService: INativeKeyboardLayoutService,
+		@INativeKeyboardLayoutService
+		private readonly _nativeKeyboardLayoutService: INativeKeyboardLayoutService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService
 	) {
 		super();
 		this._keyboardMapper = null;
 
-		this._register(this._nativeKeyboardLayoutService.onDidChangeKeyboardLayout(async () => {
-			this._keyboardMapper = null;
-			this._onDidChangeKeyboardLayout.fire();
-		}));
-
-		this._register(_configurationService.onDidChangeConfiguration(async (e) => {
-			if (e.affectsConfiguration('keyboard')) {
+		this._register(
+			this._nativeKeyboardLayoutService.onDidChangeKeyboardLayout(async () => {
 				this._keyboardMapper = null;
 				this._onDidChangeKeyboardLayout.fire();
-			}
-		}));
+			})
+		);
+
+		this._register(
+			_configurationService.onDidChangeConfiguration(async e => {
+				if (e.affectsConfiguration('keyboard')) {
+					this._keyboardMapper = null;
+					this._onDidChangeKeyboardLayout.fire();
+				}
+			})
+		);
 	}
 
 	public getRawKeyboardMapping(): IKeyboardMapping | null {
@@ -65,7 +87,13 @@ export class KeyboardLayoutService extends Disposable implements IKeyboardLayout
 			return new FallbackKeyboardMapper(config.mapAltGrToCtrlAlt, OS);
 		}
 		if (!this._keyboardMapper) {
-			this._keyboardMapper = new CachedKeyboardMapper(createKeyboardMapper(this.getCurrentKeyboardLayout(), this.getRawKeyboardMapping(), config.mapAltGrToCtrlAlt));
+			this._keyboardMapper = new CachedKeyboardMapper(
+				createKeyboardMapper(
+					this.getCurrentKeyboardLayout(),
+					this.getRawKeyboardMapping(),
+					config.mapAltGrToCtrlAlt
+				)
+			);
 		}
 		return this._keyboardMapper;
 	}
@@ -75,10 +103,18 @@ export class KeyboardLayoutService extends Disposable implements IKeyboardLayout
 	}
 }
 
-function createKeyboardMapper(layoutInfo: IKeyboardLayoutInfo | null, rawMapping: IKeyboardMapping | null, mapAltGrToCtrlAlt: boolean): IKeyboardMapper {
+function createKeyboardMapper(
+	layoutInfo: IKeyboardLayoutInfo | null,
+	rawMapping: IKeyboardMapping | null,
+	mapAltGrToCtrlAlt: boolean
+): IKeyboardMapper {
 	const _isUSStandard = isUSStandard(layoutInfo);
 	if (OS === OperatingSystem.Windows) {
-		return new WindowsKeyboardMapper(_isUSStandard, <IWindowsKeyboardMapping>rawMapping, mapAltGrToCtrlAlt);
+		return new WindowsKeyboardMapper(
+			_isUSStandard,
+			<IWindowsKeyboardMapping>rawMapping,
+			mapAltGrToCtrlAlt
+		);
 	}
 
 	if (!rawMapping || Object.keys(rawMapping).length === 0) {
@@ -94,7 +130,12 @@ function createKeyboardMapper(layoutInfo: IKeyboardLayoutInfo | null, rawMapping
 		}
 	}
 
-	return new MacLinuxKeyboardMapper(_isUSStandard, <IMacLinuxKeyboardMapping>rawMapping, mapAltGrToCtrlAlt, OS);
+	return new MacLinuxKeyboardMapper(
+		_isUSStandard,
+		<IMacLinuxKeyboardMapping>rawMapping,
+		mapAltGrToCtrlAlt,
+		OS
+	);
 }
 
 function isUSStandard(_kbInfo: IKeyboardLayoutInfo | null): boolean {
@@ -105,17 +146,17 @@ function isUSStandard(_kbInfo: IKeyboardLayoutInfo | null): boolean {
 	if (OS === OperatingSystem.Linux) {
 		const kbInfo = <ILinuxKeyboardLayoutInfo>_kbInfo;
 		const layouts = kbInfo.layout.split(/,/g);
-		return (layouts[kbInfo.group] === 'us');
+		return layouts[kbInfo.group] === 'us';
 	}
 
 	if (OS === OperatingSystem.Macintosh) {
 		const kbInfo = <IMacKeyboardLayoutInfo>_kbInfo;
-		return (kbInfo.id === 'com.apple.keylayout.US');
+		return kbInfo.id === 'com.apple.keylayout.US';
 	}
 
 	if (OS === OperatingSystem.Windows) {
 		const kbInfo = <IWindowsKeyboardLayoutInfo>_kbInfo;
-		return (kbInfo.name === '00000409');
+		return kbInfo.name === '00000409';
 	}
 
 	return false;

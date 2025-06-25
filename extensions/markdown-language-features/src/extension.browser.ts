@@ -26,8 +26,16 @@ export async function activate(context: vscode.ExtensionContext) {
 	activateShared(context, client, engine, logger, contributions);
 }
 
-function startServer(context: vscode.ExtensionContext, parser: IMdParser): Promise<MdLanguageClient> {
-	const serverMain = vscode.Uri.joinPath(context.extensionUri, 'dist', 'browser', 'serverWorkerMain.js');
+function startServer(
+	context: vscode.ExtensionContext,
+	parser: IMdParser
+): Promise<MdLanguageClient> {
+	const serverMain = vscode.Uri.joinPath(
+		context.extensionUri,
+		'dist',
+		'browser',
+		'serverWorkerMain.js'
+	);
 
 	const worker = new Worker(serverMain.toString());
 	worker.postMessage({ i10lLocation: vscode.l10n.uri?.toString() ?? '' });

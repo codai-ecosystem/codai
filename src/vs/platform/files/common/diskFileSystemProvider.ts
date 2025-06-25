@@ -12,12 +12,20 @@ import { Disposable, IDisposable, toDisposable } from '../../../base/common/life
 import { normalize } from '../../../base/common/path.js';
 import { URI } from '../../../base/common/uri.js';
 import { IFileChange, IFileSystemProvider, IWatchOptions } from './files.js';
-import { AbstractNonRecursiveWatcherClient, AbstractUniversalWatcherClient, ILogMessage, INonRecursiveWatchRequest, IRecursiveWatcherOptions, isRecursiveWatchRequest, IUniversalWatchRequest, reviveFileChanges } from './watcher.js';
+import {
+	AbstractNonRecursiveWatcherClient,
+	AbstractUniversalWatcherClient,
+	ILogMessage,
+	INonRecursiveWatchRequest,
+	IRecursiveWatcherOptions,
+	isRecursiveWatchRequest,
+	IUniversalWatchRequest,
+	reviveFileChanges,
+} from './watcher.js';
 import { ILogService, LogLevel } from '../../log/common/log.js';
 
 export interface IDiskFileSystemProviderOptions {
 	watcher?: {
-
 		/**
 		 * Extra options for the recursive file watching.
 		 */
@@ -37,11 +45,13 @@ export interface IDiskFileSystemProviderOptions {
 	};
 }
 
-export abstract class AbstractDiskFileSystemProvider extends Disposable implements
-	Pick<IFileSystemProvider, 'watch'>,
-	Pick<IFileSystemProvider, 'onDidChangeFile'>,
-	Pick<IFileSystemProvider, 'onDidWatchError'> {
-
+export abstract class AbstractDiskFileSystemProvider
+	extends Disposable
+	implements
+		Pick<IFileSystemProvider, 'watch'>,
+		Pick<IFileSystemProvider, 'onDidChangeFile'>,
+		Pick<IFileSystemProvider, 'onDidWatchError'>
+{
 	constructor(
 		protected readonly logService: ILogService,
 		private readonly options?: IDiskFileSystemProviderOptions
@@ -82,7 +92,9 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
 	private universalWatcher: AbstractUniversalWatcherClient | undefined;
 
 	private readonly universalWatchRequests: IUniversalWatchRequest[] = [];
-	private readonly universalWatchRequestDelayer = this._register(new ThrottledDelayer<void>(this.getRefreshWatchersDelay(this.universalWatchRequests.length)));
+	private readonly universalWatchRequestDelayer = this._register(
+		new ThrottledDelayer<void>(this.getRefreshWatchersDelay(this.universalWatchRequests.length))
+	);
 
 	private watchUniversal(resource: URI, opts: IWatchOptions): IDisposable {
 		const request = this.toWatchRequest(resource, opts);
@@ -92,7 +104,6 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
 		this.refreshUniversalWatchers();
 
 		return toDisposable(() => {
-
 			// Remove from list of paths to watch universally
 			remove();
 
@@ -108,11 +119,10 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
 			includes: opts.includes,
 			recursive: opts.recursive,
 			filter: opts.filter,
-			correlationId: opts.correlationId
+			correlationId: opts.correlationId,
 		};
 
 		if (isRecursiveWatchRequest(request)) {
-
 			// Adjust for polling
 			const usePolling = this.options?.watcher?.recursive?.usePolling;
 			if (usePolling === true) {
@@ -128,25 +138,30 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
 	}
 
 	private refreshUniversalWatchers(): void {
-		this.universalWatchRequestDelayer.trigger(() => {
-			return this.doRefreshUniversalWatchers();
-		}, this.getRefreshWatchersDelay(this.universalWatchRequests.length)).catch(error => onUnexpectedError(error));
+		this.universalWatchRequestDelayer
+			.trigger(() => {
+				return this.doRefreshUniversalWatchers();
+			}, this.getRefreshWatchersDelay(this.universalWatchRequests.length))
+			.catch(error => onUnexpectedError(error));
 	}
 
 	private doRefreshUniversalWatchers(): Promise<void> {
-
 		// Create watcher if this is the first time
 		if (!this.universalWatcher) {
-			this.universalWatcher = this._register(this.createUniversalWatcher(
-				changes => this._onDidChangeFile.fire(reviveFileChanges(changes)),
-				msg => this.onWatcherLogMessage(msg),
-				this.logService.getLevel() === LogLevel.Trace
-			));
+			this.universalWatcher = this._register(
+				this.createUniversalWatcher(
+					changes => this._onDidChangeFile.fire(reviveFileChanges(changes)),
+					msg => this.onWatcherLogMessage(msg),
+					this.logService.getLevel() === LogLevel.Trace
+				)
+			);
 
 			// Apply log levels dynamically
-			this._register(this.logService.onDidChangeLogLevel(() => {
-				this.universalWatcher?.setVerboseLogging(this.logService.getLevel() === LogLevel.Trace);
-			}));
+			this._register(
+				this.logService.onDidChangeLogLevel(() => {
+					this.universalWatcher?.setVerboseLogging(this.logService.getLevel() === LogLevel.Trace);
+				})
+			);
 		}
 
 		// Ask to watch the provided paths
@@ -166,10 +181,11 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
 	private nonRecursiveWatcher: AbstractNonRecursiveWatcherClient | undefined;
 
 	private readonly nonRecursiveWatchRequests: INonRecursiveWatchRequest[] = [];
-	private readonly nonRecursiveWatchRequestDelayer = this._register(new ThrottledDelayer<void>(this.getRefreshWatchersDelay(this.nonRecursiveWatchRequests.length)));
+	private readonly nonRecursiveWatchRequestDelayer = this._register(
+		new ThrottledDelayer<void>(this.getRefreshWatchersDelay(this.nonRecursiveWatchRequests.length))
+	);
 
 	private watchNonRecursive(resource: URI, opts: IWatchOptions): IDisposable {
-
 		// Add to list of paths to watch non-recursively
 		const request: INonRecursiveWatchRequest = {
 			path: this.toWatchPath(resource),
@@ -177,7 +193,7 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
 			includes: opts.includes,
 			recursive: false,
 			filter: opts.filter,
-			correlationId: opts.correlationId
+			correlationId: opts.correlationId,
 		};
 		const remove = insert(this.nonRecursiveWatchRequests, request);
 
@@ -185,7 +201,6 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
 		this.refreshNonRecursiveWatchers();
 
 		return toDisposable(() => {
-
 			// Remove from list of paths to watch non-recursively
 			remove();
 
@@ -195,25 +210,32 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
 	}
 
 	private refreshNonRecursiveWatchers(): void {
-		this.nonRecursiveWatchRequestDelayer.trigger(() => {
-			return this.doRefreshNonRecursiveWatchers();
-		}, this.getRefreshWatchersDelay(this.nonRecursiveWatchRequests.length)).catch(error => onUnexpectedError(error));
+		this.nonRecursiveWatchRequestDelayer
+			.trigger(() => {
+				return this.doRefreshNonRecursiveWatchers();
+			}, this.getRefreshWatchersDelay(this.nonRecursiveWatchRequests.length))
+			.catch(error => onUnexpectedError(error));
 	}
 
 	private doRefreshNonRecursiveWatchers(): Promise<void> {
-
 		// Create watcher if this is the first time
 		if (!this.nonRecursiveWatcher) {
-			this.nonRecursiveWatcher = this._register(this.createNonRecursiveWatcher(
-				changes => this._onDidChangeFile.fire(reviveFileChanges(changes)),
-				msg => this.onWatcherLogMessage(msg),
-				this.logService.getLevel() === LogLevel.Trace
-			));
+			this.nonRecursiveWatcher = this._register(
+				this.createNonRecursiveWatcher(
+					changes => this._onDidChangeFile.fire(reviveFileChanges(changes)),
+					msg => this.onWatcherLogMessage(msg),
+					this.logService.getLevel() === LogLevel.Trace
+				)
+			);
 
 			// Apply log levels dynamically
-			this._register(this.logService.onDidChangeLogLevel(() => {
-				this.nonRecursiveWatcher?.setVerboseLogging(this.logService.getLevel() === LogLevel.Trace);
-			}));
+			this._register(
+				this.logService.onDidChangeLogLevel(() => {
+					this.nonRecursiveWatcher?.setVerboseLogging(
+						this.logService.getLevel() === LogLevel.Trace
+					);
+				})
+			);
 		}
 
 		// Ask to watch the provided paths

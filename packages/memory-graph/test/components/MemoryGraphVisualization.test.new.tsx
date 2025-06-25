@@ -35,7 +35,7 @@ describe('MemoryGraphVisualization Component', () => {
 		const relationship = createRelationship({
 			fromNodeId: featureNode.id,
 			toNodeId: screenNode.id,
-			type: 'contains'
+			type: 'contains',
 		});
 
 		return {
@@ -45,14 +45,14 @@ describe('MemoryGraphVisualization Component', () => {
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			nodes: [featureNode, screenNode],
-			relationships: [relationship]
+			relationships: [relationship],
 		};
 	};
 
 	const defaultProps = {
 		graph: createTestGraph(),
 		isEditable: false,
-		layout: 'force' as const
+		layout: 'force' as const,
 	};
 
 	beforeEach(() => {
@@ -69,10 +69,7 @@ describe('MemoryGraphVisualization Component', () => {
 
 		it('applies custom className', () => {
 			const { container } = render(
-				<MemoryGraphVisualization
-					{...defaultProps}
-					className="custom-graph"
-				/>
+				<MemoryGraphVisualization {...defaultProps} className="custom-graph" />
 			);
 
 			expect((container.firstChild as HTMLElement)?.classList.contains('custom-graph')).toBe(true);
@@ -86,7 +83,7 @@ describe('MemoryGraphVisualization Component', () => {
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				nodes: [],
-				relationships: []
+				relationships: [],
 			};
 
 			expect(() => {
@@ -98,12 +95,7 @@ describe('MemoryGraphVisualization Component', () => {
 	describe('Node Interaction', () => {
 		it('selects node when clicked', async () => {
 			const onNodeSelect = vi.fn();
-			render(
-				<MemoryGraphVisualization
-					{...defaultProps}
-					onNodeSelect={onNodeSelect}
-				/>
-			);
+			render(<MemoryGraphVisualization {...defaultProps} onNodeSelect={onNodeSelect} />);
 
 			const featureNode = screen.getByText('Login Feature');
 			await fireEvent.click(featureNode);
@@ -127,10 +119,10 @@ describe('MemoryGraphVisualization Component', () => {
 						name: '',
 						createdAt: new Date(),
 						updatedAt: new Date(),
-						version: '1.0.0'
-					} as any
+						version: '1.0.0',
+					} as any,
 				],
-				relationships: []
+				relationships: [],
 			};
 
 			expect(() => {
@@ -145,14 +137,17 @@ describe('MemoryGraphVisualization Component', () => {
 				version: '1.0.0',
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				nodes: [createFeatureNode()], relationships: [{
-					id: 'invalid-rel',
-					fromNodeId: 'non-existent',
-					toNodeId: 'also-non-existent',
-					type: 'contains',
-					strength: 1,
-					createdAt: new Date()
-				}]
+				nodes: [createFeatureNode()],
+				relationships: [
+					{
+						id: 'invalid-rel',
+						fromNodeId: 'non-existent',
+						toNodeId: 'also-non-existent',
+						type: 'contains',
+						strength: 1,
+						createdAt: new Date(),
+					},
+				],
 			};
 
 			expect(() => {

@@ -5,7 +5,17 @@
 
 import { ContextKeyExpr } from '../../contextkey/common/contextkey.js';
 import type { IConfigurationService } from '../../configuration/common/configuration.js';
-import { CONFIG_KEY, PROMPT_DEFAULT_SOURCE_FOLDER, INSTRUCTIONS_LOCATIONS_CONFIG_KEY, PROMPT_LOCATIONS_CONFIG_KEY, INSTRUCTIONS_DEFAULT_SOURCE_FOLDER, PromptsType, getPromptFileDefaultLocation, MODE_LOCATIONS_CONFIG_KEY, getPromptFileLocationsConfigKey } from './prompts.js';
+import {
+	CONFIG_KEY,
+	PROMPT_DEFAULT_SOURCE_FOLDER,
+	INSTRUCTIONS_LOCATIONS_CONFIG_KEY,
+	PROMPT_LOCATIONS_CONFIG_KEY,
+	INSTRUCTIONS_DEFAULT_SOURCE_FOLDER,
+	PromptsType,
+	getPromptFileDefaultLocation,
+	MODE_LOCATIONS_CONFIG_KEY,
+	getPromptFileLocationsConfigKey,
+} from './prompts.js';
 
 /**
  * Configuration helper for the `reusable prompts` feature.
@@ -37,9 +47,7 @@ export namespace PromptsConfig {
 	 * Checks if the feature is enabled.
 	 * @see {@link CONFIG_KEY}.
 	 */
-	export const enabled = (
-		configService: IConfigurationService,
-	): boolean => {
+	export const enabled = (configService: IConfigurationService): boolean => {
 		const enabledValue = configService.getValue(CONFIG_KEY);
 
 		return asBoolean(enabledValue) ?? false;
@@ -76,7 +84,7 @@ export namespace PromptsConfig {
 
 				// if value can be mapped to a boolean, and the clean
 				// path is not empty, add it to the map
-				if ((booleanValue !== undefined) && cleanPath) {
+				if (booleanValue !== undefined && cleanPath) {
 					paths[cleanPath] = booleanValue;
 				}
 			}
@@ -99,7 +107,7 @@ export namespace PromptsConfig {
 		const defaultSourceFolder = getPromptFileDefaultLocation(type);
 
 		// note! the `value &&` part handles the `undefined`, `null`, and `false` cases
-		if (value && (typeof value === 'object')) {
+		if (value && typeof value === 'object') {
 			const paths: string[] = [];
 
 			// if the default source folder is not explicitly disabled, add it
@@ -110,7 +118,7 @@ export namespace PromptsConfig {
 			// copy all the enabled paths to the result list
 			for (const [path, enabledValue] of Object.entries(value)) {
 				// we already added the default source folder, so skip it
-				if ((enabledValue === false) || (path === defaultSourceFolder)) {
+				if (enabledValue === false || path === defaultSourceFolder) {
 					continue;
 				}
 

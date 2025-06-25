@@ -5,10 +5,12 @@
 
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { AtomicTabMoveOperations, Direction } from '../../../common/cursor/cursorAtomicMoveOperations.js';
+import {
+	AtomicTabMoveOperations,
+	Direction,
+} from '../../../common/cursor/cursorAtomicMoveOperations.js';
 
 suite('Cursor move command test', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('Test whitespaceVisibleColumn', () => {
@@ -74,11 +76,15 @@ suite('Cursor move command test', () => {
 		for (const testCase of testCases) {
 			const maxPosition = testCase.expectedVisibleColumn.length;
 			for (let position = 0; position < maxPosition; position++) {
-				const actual = AtomicTabMoveOperations.whitespaceVisibleColumn(testCase.lineContent, position, testCase.tabSize);
+				const actual = AtomicTabMoveOperations.whitespaceVisibleColumn(
+					testCase.lineContent,
+					position,
+					testCase.tabSize
+				);
 				const expected = [
 					testCase.expectedPrevTabStopPosition[position],
 					testCase.expectedPrevTabStopVisibleColumn[position],
-					testCase.expectedVisibleColumn[position]
+					testCase.expectedVisibleColumn[position],
 				];
 				assert.deepStrictEqual(actual, expected);
 			}
@@ -146,8 +152,14 @@ suite('Cursor move command test', () => {
 					expected: testCase.expectedNearest,
 				},
 			]) {
-
-				const actual = expected.map((_, i) => AtomicTabMoveOperations.atomicPosition(testCase.lineContent, i, testCase.tabSize, direction));
+				const actual = expected.map((_, i) =>
+					AtomicTabMoveOperations.atomicPosition(
+						testCase.lineContent,
+						i,
+						testCase.tabSize,
+						direction
+					)
+				);
 				assert.deepStrictEqual(actual, expected);
 			}
 		}

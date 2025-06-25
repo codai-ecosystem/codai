@@ -9,11 +9,10 @@ import { ExtensionHostDebugBroadcastChannel } from '../common/extensionHostDebug
 import { OPTIONS, parseArgs } from '../../environment/node/argv.js';
 import { IWindowsMainService, OpenContext } from '../../windows/electron-main/windows.js';
 
-export class ElectronExtensionHostDebugBroadcastChannel<TContext> extends ExtensionHostDebugBroadcastChannel<TContext> {
-
-	constructor(
-		private windowsMainService: IWindowsMainService
-	) {
+export class ElectronExtensionHostDebugBroadcastChannel<
+	TContext,
+> extends ExtensionHostDebugBroadcastChannel<TContext> {
+	constructor(private windowsMainService: IWindowsMainService) {
 		super();
 	}
 
@@ -25,7 +24,10 @@ export class ElectronExtensionHostDebugBroadcastChannel<TContext> extends Extens
 		}
 	}
 
-	private async openExtensionDevelopmentHostWindow(args: string[], debugRenderer: boolean): Promise<IOpenExtensionWindowResult> {
+	private async openExtensionDevelopmentHostWindow(
+		args: string[],
+		debugRenderer: boolean
+	): Promise<IOpenExtensionWindowResult> {
 		const pargs = parseArgs(args, OPTIONS);
 		pargs.debugRenderer = debugRenderer;
 
@@ -34,12 +36,15 @@ export class ElectronExtensionHostDebugBroadcastChannel<TContext> extends Extens
 			return { success: false };
 		}
 
-		const [codeWindow] = await this.windowsMainService.openExtensionDevelopmentHostWindow(extDevPaths, {
-			context: OpenContext.API,
-			cli: pargs,
-			forceProfile: pargs.profile,
-			forceTempProfile: pargs['profile-temp']
-		});
+		const [codeWindow] = await this.windowsMainService.openExtensionDevelopmentHostWindow(
+			extDevPaths,
+			{
+				context: OpenContext.API,
+				cli: pargs,
+				forceProfile: pargs.profile,
+				forceTempProfile: pargs['profile-temp'],
+			}
+		);
 
 		if (!debugRenderer) {
 			return { success: true };
@@ -60,13 +65,18 @@ export class ElectronExtensionHostDebugBroadcastChannel<TContext> extends Extens
 
 			let closed = false;
 			const writeMessage = (message: object) => {
-				if (!closed) { // in case sendCommand promises settle after closed
+				if (!closed) {
+					// in case sendCommand promises settle after closed
 					listener.write(JSON.stringify(message) + '\0'); // null-delimited, CDP-compatible
 				}
 			};
 
-			const onMessage = (_event: Electron.Event, method: string, params: unknown, sessionId?: string) =>
-				writeMessage(({ method, params, sessionId }));
+			const onMessage = (
+				_event: Electron.Event,
+				method: string,
+				params: unknown,
+				sessionId?: string
+			) => writeMessage({ method, params, sessionId });
 
 			win.on('close', () => {
 				debug.removeListener('message', onMessage);
@@ -91,9 +101,18 @@ export class ElectronExtensionHostDebugBroadcastChannel<TContext> extends Extens
 
 					// depends on a new API for which electron.d.ts has not been updated:
 					// @ts-ignore
-					debug.sendCommand(data.method, data.params, data.sessionId)
-						.then((result: object) => writeMessage({ id: data.id, sessionId: data.sessionId, result }))
-						.catch((error: Error) => writeMessage({ id: data.id, sessionId: data.sessionId, error: { code: 0, message: error.message } }));
+					debug
+						.sendCommand(data.method, data.params, data.sessionId)
+						.then((result: object) =>
+							writeMessage({ id: data.id, sessionId: data.sessionId, result })
+						)
+						.catch((error: Error) =>
+							writeMessage({
+								id: data.id,
+								sessionId: data.sessionId,
+								error: { code: 0, message: error.message },
+							})
+						);
 				}
 			});
 

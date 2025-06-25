@@ -7,15 +7,30 @@ import { ActionBar } from '../../../base/browser/ui/actionbar/actionbar.js';
 import { IAnchor } from '../../../base/browser/ui/contextview/contextview.js';
 import { IAction } from '../../../base/common/actions.js';
 import { KeyCode, KeyMod } from '../../../base/common/keyCodes.js';
-import { Disposable, DisposableStore, IDisposable, MutableDisposable } from '../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	MutableDisposable,
+} from '../../../base/common/lifecycle.js';
 import './actionWidget.css';
 import { localize, localize2 } from '../../../nls.js';
-import { acceptSelectedActionCommand, ActionList, IActionListDelegate, IActionListItem, previewSelectedActionCommand } from './actionList.js';
+import {
+	acceptSelectedActionCommand,
+	ActionList,
+	IActionListDelegate,
+	IActionListItem,
+	previewSelectedActionCommand,
+} from './actionList.js';
 import { Action2, registerAction2 } from '../../actions/common/actions.js';
 import { IContextKeyService, RawContextKey } from '../../contextkey/common/contextkey.js';
 import { IContextViewService } from '../../contextview/browser/contextView.js';
 import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
-import { createDecorator, IInstantiationService, ServicesAccessor } from '../../instantiation/common/instantiation.js';
+import {
+	createDecorator,
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../instantiation/common/instantiation.js';
 import { KeybindingWeight } from '../../keybinding/common/keybindingsRegistry.js';
 import { inputActiveOptionBackground, registerColor } from '../../theme/common/colorRegistry.js';
 import { StandardMouseEvent } from '../../../base/browser/mouseEvent.js';
@@ -23,11 +38,18 @@ import { StandardMouseEvent } from '../../../base/browser/mouseEvent.js';
 registerColor(
 	'actionBar.toggledBackground',
 	inputActiveOptionBackground,
-	localize('actionBar.toggledBackground', 'Background color for toggled action items in action bar.')
+	localize(
+		'actionBar.toggledBackground',
+		'Background color for toggled action items in action bar.'
+	)
 );
 
 const ActionWidgetContextKeys = {
-	Visible: new RawContextKey<boolean>('codeActionMenuVisible', false, localize('codeActionMenuVisible', "Whether the action widget list is visible"))
+	Visible: new RawContextKey<boolean>(
+		'codeActionMenuVisible',
+		false,
+		localize('codeActionMenuVisible', 'Whether the action widget list is visible')
+	),
 };
 
 export const IActionWidgetService = createDecorator<IActionWidgetService>('actionWidgetService');
@@ -35,7 +57,15 @@ export const IActionWidgetService = createDecorator<IActionWidgetService>('actio
 export interface IActionWidgetService {
 	readonly _serviceBrand: undefined;
 
-	show<T>(user: string, supportsPreview: boolean, items: readonly IActionListItem<T>[], delegate: IActionListDelegate<T>, anchor: HTMLElement | StandardMouseEvent | IAnchor, container: HTMLElement | undefined, actionBarActions?: readonly IAction[]): void;
+	show<T>(
+		user: string,
+		supportsPreview: boolean,
+		items: readonly IActionListItem<T>[],
+		delegate: IActionListDelegate<T>,
+		anchor: HTMLElement | StandardMouseEvent | IAnchor,
+		container: HTMLElement | undefined,
+		actionBarActions?: readonly IAction[]
+	): void;
 
 	hide(didCancel?: boolean): void;
 
@@ -59,21 +89,39 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		super();
 	}
 
-	show<T>(user: string, supportsPreview: boolean, items: readonly IActionListItem<T>[], delegate: IActionListDelegate<T>, anchor: HTMLElement | StandardMouseEvent | IAnchor, container: HTMLElement | undefined, actionBarActions?: readonly IAction[]): void {
+	show<T>(
+		user: string,
+		supportsPreview: boolean,
+		items: readonly IActionListItem<T>[],
+		delegate: IActionListDelegate<T>,
+		anchor: HTMLElement | StandardMouseEvent | IAnchor,
+		container: HTMLElement | undefined,
+		actionBarActions?: readonly IAction[]
+	): void {
 		const visibleContext = ActionWidgetContextKeys.Visible.bindTo(this._contextKeyService);
 
-		const list = this._instantiationService.createInstance(ActionList, user, supportsPreview, items, delegate);
-		this._contextViewService.showContextView({
-			getAnchor: () => anchor,
-			render: (container: HTMLElement) => {
-				visibleContext.set(true);
-				return this._renderWidget(container, list, actionBarActions ?? []);
+		const list = this._instantiationService.createInstance(
+			ActionList,
+			user,
+			supportsPreview,
+			items,
+			delegate
+		);
+		this._contextViewService.showContextView(
+			{
+				getAnchor: () => anchor,
+				render: (container: HTMLElement) => {
+					visibleContext.set(true);
+					return this._renderWidget(container, list, actionBarActions ?? []);
+				},
+				onHide: didCancel => {
+					visibleContext.reset();
+					this._onWidgetClosed(didCancel);
+				},
 			},
-			onHide: (didCancel) => {
-				visibleContext.reset();
-				this._onWidgetClosed(didCancel);
-			},
-		}, container, false);
+			container,
+			false
+		);
 	}
 
 	acceptSelected(preview?: boolean) {
@@ -97,7 +145,11 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		this._list.clear();
 	}
 
-	private _renderWidget(element: HTMLElement, list: ActionList<unknown>, actionBarActions: readonly IAction[]): IDisposable {
+	private _renderWidget(
+		element: HTMLElement,
+		list: ActionList<unknown>,
+		actionBarActions: readonly IAction[]
+	): IDisposable {
 		const widget = document.createElement('div');
 		widget.classList.add('action-widget');
 		element.appendChild(widget);
@@ -114,7 +166,9 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		const menuBlock = document.createElement('div');
 		const block = element.appendChild(menuBlock);
 		block.classList.add('context-view-block');
-		renderDisposables.add(dom.addDisposableListener(block, dom.EventType.MOUSE_DOWN, e => e.stopPropagation()));
+		renderDisposables.add(
+			dom.addDisposableListener(block, dom.EventType.MOUSE_DOWN, e => e.stopPropagation())
+		);
 
 		// Invisible div to block mouse interaction with the menu
 		const pointerBlockDiv = document.createElement('div');
@@ -122,8 +176,14 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		pointerBlock.classList.add('context-view-pointerBlock');
 
 		// Removes block on click INSIDE widget or ANY mouse movement
-		renderDisposables.add(dom.addDisposableListener(pointerBlock, dom.EventType.POINTER_MOVE, () => pointerBlock.remove()));
-		renderDisposables.add(dom.addDisposableListener(pointerBlock, dom.EventType.MOUSE_DOWN, () => pointerBlock.remove()));
+		renderDisposables.add(
+			dom.addDisposableListener(pointerBlock, dom.EventType.POINTER_MOVE, () =>
+				pointerBlock.remove()
+			)
+		);
+		renderDisposables.add(
+			dom.addDisposableListener(pointerBlock, dom.EventType.MOUSE_DOWN, () => pointerBlock.remove())
+		);
 
 		// Action bar
 		let actionBarWidth = 0;
@@ -165,110 +225,126 @@ registerSingleton(IActionWidgetService, ActionWidgetService, InstantiationType.D
 
 const weight = KeybindingWeight.EditorContrib + 1000;
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'hideCodeActionWidget',
-			title: localize2('hideCodeActionWidget.title', "Hide action widget"),
-			precondition: ActionWidgetContextKeys.Visible,
-			keybinding: {
-				weight,
-				primary: KeyCode.Escape,
-				secondary: [KeyMod.Shift | KeyCode.Escape]
-			},
-		});
-	}
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'hideCodeActionWidget',
+				title: localize2('hideCodeActionWidget.title', 'Hide action widget'),
+				precondition: ActionWidgetContextKeys.Visible,
+				keybinding: {
+					weight,
+					primary: KeyCode.Escape,
+					secondary: [KeyMod.Shift | KeyCode.Escape],
+				},
+			});
+		}
 
-	run(accessor: ServicesAccessor): void {
-		accessor.get(IActionWidgetService).hide(true);
-	}
-});
-
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'selectPrevCodeAction',
-			title: localize2('selectPrevCodeAction.title', "Select previous action"),
-			precondition: ActionWidgetContextKeys.Visible,
-			keybinding: {
-				weight,
-				primary: KeyCode.UpArrow,
-				secondary: [KeyMod.CtrlCmd | KeyCode.UpArrow],
-				mac: { primary: KeyCode.UpArrow, secondary: [KeyMod.CtrlCmd | KeyCode.UpArrow, KeyMod.WinCtrl | KeyCode.KeyP] },
-			}
-		});
-	}
-
-	run(accessor: ServicesAccessor): void {
-		const widgetService = accessor.get(IActionWidgetService);
-		if (widgetService instanceof ActionWidgetService) {
-			widgetService.focusPrevious();
+		run(accessor: ServicesAccessor): void {
+			accessor.get(IActionWidgetService).hide(true);
 		}
 	}
-});
+);
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'selectNextCodeAction',
-			title: localize2('selectNextCodeAction.title', "Select next action"),
-			precondition: ActionWidgetContextKeys.Visible,
-			keybinding: {
-				weight,
-				primary: KeyCode.DownArrow,
-				secondary: [KeyMod.CtrlCmd | KeyCode.DownArrow],
-				mac: { primary: KeyCode.DownArrow, secondary: [KeyMod.CtrlCmd | KeyCode.DownArrow, KeyMod.WinCtrl | KeyCode.KeyN] }
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'selectPrevCodeAction',
+				title: localize2('selectPrevCodeAction.title', 'Select previous action'),
+				precondition: ActionWidgetContextKeys.Visible,
+				keybinding: {
+					weight,
+					primary: KeyCode.UpArrow,
+					secondary: [KeyMod.CtrlCmd | KeyCode.UpArrow],
+					mac: {
+						primary: KeyCode.UpArrow,
+						secondary: [KeyMod.CtrlCmd | KeyCode.UpArrow, KeyMod.WinCtrl | KeyCode.KeyP],
+					},
+				},
+			});
+		}
+
+		run(accessor: ServicesAccessor): void {
+			const widgetService = accessor.get(IActionWidgetService);
+			if (widgetService instanceof ActionWidgetService) {
+				widgetService.focusPrevious();
 			}
-		});
-	}
-
-	run(accessor: ServicesAccessor): void {
-		const widgetService = accessor.get(IActionWidgetService);
-		if (widgetService instanceof ActionWidgetService) {
-			widgetService.focusNext();
 		}
 	}
-});
+);
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: acceptSelectedActionCommand,
-			title: localize2('acceptSelected.title', "Accept selected action"),
-			precondition: ActionWidgetContextKeys.Visible,
-			keybinding: {
-				weight,
-				primary: KeyCode.Enter,
-				secondary: [KeyMod.CtrlCmd | KeyCode.Period],
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'selectNextCodeAction',
+				title: localize2('selectNextCodeAction.title', 'Select next action'),
+				precondition: ActionWidgetContextKeys.Visible,
+				keybinding: {
+					weight,
+					primary: KeyCode.DownArrow,
+					secondary: [KeyMod.CtrlCmd | KeyCode.DownArrow],
+					mac: {
+						primary: KeyCode.DownArrow,
+						secondary: [KeyMod.CtrlCmd | KeyCode.DownArrow, KeyMod.WinCtrl | KeyCode.KeyN],
+					},
+				},
+			});
+		}
+
+		run(accessor: ServicesAccessor): void {
+			const widgetService = accessor.get(IActionWidgetService);
+			if (widgetService instanceof ActionWidgetService) {
+				widgetService.focusNext();
 			}
-		});
-	}
-
-	run(accessor: ServicesAccessor): void {
-		const widgetService = accessor.get(IActionWidgetService);
-		if (widgetService instanceof ActionWidgetService) {
-			widgetService.acceptSelected();
 		}
 	}
-});
+);
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: previewSelectedActionCommand,
-			title: localize2('previewSelected.title', "Preview selected action"),
-			precondition: ActionWidgetContextKeys.Visible,
-			keybinding: {
-				weight,
-				primary: KeyMod.CtrlCmd | KeyCode.Enter,
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: acceptSelectedActionCommand,
+				title: localize2('acceptSelected.title', 'Accept selected action'),
+				precondition: ActionWidgetContextKeys.Visible,
+				keybinding: {
+					weight,
+					primary: KeyCode.Enter,
+					secondary: [KeyMod.CtrlCmd | KeyCode.Period],
+				},
+			});
+		}
+
+		run(accessor: ServicesAccessor): void {
+			const widgetService = accessor.get(IActionWidgetService);
+			if (widgetService instanceof ActionWidgetService) {
+				widgetService.acceptSelected();
 			}
-		});
-	}
-
-	run(accessor: ServicesAccessor): void {
-		const widgetService = accessor.get(IActionWidgetService);
-		if (widgetService instanceof ActionWidgetService) {
-			widgetService.acceptSelected(true);
 		}
 	}
-});
+);
+
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: previewSelectedActionCommand,
+				title: localize2('previewSelected.title', 'Preview selected action'),
+				precondition: ActionWidgetContextKeys.Visible,
+				keybinding: {
+					weight,
+					primary: KeyMod.CtrlCmd | KeyCode.Enter,
+				},
+			});
+		}
+
+		run(accessor: ServicesAccessor): void {
+			const widgetService = accessor.get(IActionWidgetService);
+			if (widgetService instanceof ActionWidgetService) {
+				widgetService.acceptSelected(true);
+			}
+		}
+	}
+);

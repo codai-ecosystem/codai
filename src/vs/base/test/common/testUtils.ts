@@ -9,7 +9,6 @@ import { randomInt } from '../../common/numbers.js';
 
 export function flakySuite(title: string, fn: () => void) /* Suite */ {
 	return suite(title, function () {
-
 		// Flaky suites need retries and timeout to complete
 		// e.g. because they access browser features which can
 		// be unreliable depending on the environment.
@@ -55,28 +54,24 @@ export const randomBoolean = (): boolean => {
 /**
  * @deprecated use `mock.ts#mock` instead
  */
-export function mockObject<TObject extends Object>(
-	overrides: Partial<TObject>,
-): TObject {
+export function mockObject<TObject extends Object>(overrides: Partial<TObject>): TObject {
 	// ensure that the overrides object cannot be modified afterward
 	overrides = Object.freeze(overrides);
 
-	const keys = Object.keys(overrides) as (keyof (typeof overrides))[];
+	const keys = Object.keys(overrides) as (keyof typeof overrides)[];
 	const service = new Proxy(
 		{},
 		{
 			get: (_target, key: string | number | Symbol) => {
 				// sanity check for the provided `key`
-				assert(
-					isOneOf(key, keys),
-					`The '${key}' is not mocked.`,
-				);
+				assert(isOneOf(key, keys), `The '${key}' is not mocked.`);
 
 				return overrides[key];
 			},
-		});
+		}
+	);
 
 	// note! it's ok to `as TObject` here, because of
 	// 		 the runtime checks in the `Proxy` getter
-	return service as (typeof overrides) as TObject;
+	return service as typeof overrides as TObject;
 }

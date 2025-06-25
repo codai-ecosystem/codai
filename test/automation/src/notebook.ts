@@ -11,12 +11,11 @@ import { QuickInput } from './quickinput';
 const activeRowSelector = `.notebook-editor .monaco-list-row.focused`;
 
 export class Notebook {
-
 	constructor(
 		private readonly quickAccess: QuickAccess,
 		private readonly quickInput: QuickInput,
-		private readonly code: Code) {
-	}
+		private readonly code: Code
+	) {}
 
 	async openNotebook() {
 		await this.quickAccess.openFileQuickAccessAndWait('notebook.ipynb', 1);
@@ -59,9 +58,13 @@ export class Notebook {
 		return this._waitForActiveCellEditorContents(str => str === contents);
 	}
 
-	private async _waitForActiveCellEditorContents(accept: (contents: string) => boolean): Promise<any> {
+	private async _waitForActiveCellEditorContents(
+		accept: (contents: string) => boolean
+	): Promise<any> {
 		const selector = `${activeRowSelector} .monaco-editor .view-lines`;
-		return this.code.waitForTextContent(selector, undefined, c => accept(c.replace(/\u00a0/g, ' ')));
+		return this.code.waitForTextContent(selector, undefined, c =>
+			accept(c.replace(/\u00a0/g, ' '))
+		);
 	}
 
 	async waitForMarkdownContents(markdownSelector: string, text: string): Promise<void> {

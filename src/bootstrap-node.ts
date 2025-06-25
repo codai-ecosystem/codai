@@ -36,7 +36,6 @@ if (!process.env['VSCODE_HANDLES_SIGPIPE']) {
 // -  all OS: store the `process.cwd()` inside `VSCODE_CWD` for consistent lookups
 function setupCurrentWorkingDirectory(): void {
 	try {
-
 		// Store the `process.cwd()` inside `VSCODE_CWD`
 		// for consistent lookups, but make sure to only
 		// do this once unless defined already from e.g.
@@ -89,7 +88,11 @@ export function removeGlobalNodeJsModuleLookupPaths(): void {
 		const paths = originalResolveLookupPaths(moduleName, parent);
 		if (Array.isArray(paths)) {
 			let commonSuffixLength = 0;
-			while (commonSuffixLength < paths.length && paths[paths.length - 1 - commonSuffixLength] === globalPaths[globalPaths.length - 1 - commonSuffixLength]) {
+			while (
+				commonSuffixLength < paths.length &&
+				paths[paths.length - 1 - commonSuffixLength] ===
+					globalPaths[globalPaths.length - 1 - commonSuffixLength]
+			) {
 				commonSuffixLength++;
 			}
 
@@ -132,7 +135,10 @@ export function removeGlobalNodeJsModuleLookupPaths(): void {
 /**
  * Helper to enable portable mode.
  */
-export function configurePortable(product: Partial<IProductConfiguration>): { portableDataPath: string; isPortable: boolean } {
+export function configurePortable(product: Partial<IProductConfiguration>): {
+	portableDataPath: string;
+	isPortable: boolean;
+} {
 	const appRoot = path.dirname(__dirname);
 
 	function getApplicationPath(): string {
@@ -182,6 +188,6 @@ export function configurePortable(product: Partial<IProductConfiguration>): { po
 
 	return {
 		portableDataPath,
-		isPortable
+		isPortable,
 	};
 }

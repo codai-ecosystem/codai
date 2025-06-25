@@ -33,7 +33,7 @@ async function GET(request: NextRequest) {
 		if (serviceType) {
 			return NextResponse.json({
 				serviceType,
-				configs: serviceConfigs[serviceType] || []
+				configs: serviceConfigs[serviceType] || [],
 			});
 		}
 
@@ -42,15 +42,12 @@ async function GET(request: NextRequest) {
 			serviceConfigs,
 			availableProviders: {
 				llm: serviceManager.getAvailableProviders('llm'),
-				embedding: serviceManager.getAvailableProviders('embedding')
-			}
+				embedding: serviceManager.getAvailableProviders('embedding'),
+			},
 		});
 	} catch (error) {
 		console.error('Error fetching service configurations:', error);
-		return NextResponse.json(
-			{ error: 'Failed to fetch service configurations' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to fetch service configurations' }, { status: 500 });
 	}
 }
 
@@ -82,10 +79,7 @@ async function POST(request: NextRequest) {
 		const requiredFields = ['providerId', 'isManaged'];
 		for (const field of requiredFields) {
 			if (!(field in config)) {
-				return NextResponse.json(
-					{ error: `Missing required field: ${field}` },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
 			}
 		}
 
@@ -105,7 +99,9 @@ async function POST(request: NextRequest) {
 		const availableProviders = serviceManager.getAvailableProviders(serviceType);
 		if (!availableProviders.includes(config.providerId)) {
 			return NextResponse.json(
-				{ error: `Unsupported provider: ${config.providerId}. Available: ${availableProviders.join(', ')}` },
+				{
+					error: `Unsupported provider: ${config.providerId}. Available: ${availableProviders.join(', ')}`,
+				},
 				{ status: 400 }
 			);
 		}
@@ -114,7 +110,7 @@ async function POST(request: NextRequest) {
 		const serviceConfig: ServiceConfig = {
 			...config,
 			createdAt: new Date(),
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		};
 
 		// Update service configuration
@@ -127,26 +123,23 @@ async function POST(request: NextRequest) {
 			details: {
 				serviceType,
 				providerId: config.providerId,
-				isManaged: config.isManaged
+				isManaged: config.isManaged,
 			},
 			timestamp: new Date(),
 			metadata: {
 				userAgent: request.headers.get('user-agent'),
-				ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-			}
+				ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+			},
 		});
 
 		return NextResponse.json({
 			message: 'Service configuration updated successfully',
 			serviceType,
-			providerId: config.providerId
+			providerId: config.providerId,
 		});
 	} catch (error) {
 		console.error('Error updating service configuration:', error);
-		return NextResponse.json(
-			{ error: 'Failed to update service configuration' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to update service configuration' }, { status: 500 });
 	}
 }
 

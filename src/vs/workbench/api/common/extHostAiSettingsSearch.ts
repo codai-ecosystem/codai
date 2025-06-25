@@ -7,7 +7,12 @@ import type { SettingsSearchProvider, SettingsSearchResult } from 'vscode';
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
 import { AiSettingsSearchProviderOptions } from '../../services/aiSettingsSearch/common/aiSettingsSearch.js';
-import { ExtHostAiSettingsSearchShape, IMainContext, MainContext, MainThreadAiSettingsSearchShape } from './extHost.protocol.js';
+import {
+	ExtHostAiSettingsSearchShape,
+	IMainContext,
+	MainContext,
+	MainThreadAiSettingsSearchShape,
+} from './extHost.protocol.js';
 import { Disposable } from './extHostTypes.js';
 import { Progress } from '../../../platform/progress/common/progress.js';
 import { AiSettingsSearch } from './extHostTypeConverters.js';
@@ -22,7 +27,12 @@ export class ExtHostAiSettingsSearch implements ExtHostAiSettingsSearchShape {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadAiSettingsSearch);
 	}
 
-	async $startSearch(handle: number, query: string, option: AiSettingsSearchProviderOptions, token: CancellationToken): Promise<void> {
+	async $startSearch(
+		handle: number,
+		query: string,
+		option: AiSettingsSearchProviderOptions,
+		token: CancellationToken
+	): Promise<void> {
 		if (this._settingsSearchProviders.size === 0) {
 			throw new Error('No related information providers registered');
 		}
@@ -32,14 +42,17 @@ export class ExtHostAiSettingsSearch implements ExtHostAiSettingsSearchShape {
 			throw new Error('Settings search provider not found');
 		}
 
-		const progressReporter = new Progress<SettingsSearchResult>((data) => {
+		const progressReporter = new Progress<SettingsSearchResult>(data => {
 			this._proxy.$handleSearchResult(handle, AiSettingsSearch.fromSettingsSearchResult(data));
 		});
 
 		return provider.provideSettingsSearchResults(query, option, progressReporter, token);
 	}
 
-	registerSettingsSearchProvider(extension: IExtensionDescription, provider: SettingsSearchProvider): Disposable {
+	registerSettingsSearchProvider(
+		extension: IExtensionDescription,
+		provider: SettingsSearchProvider
+	): Disposable {
 		const handle = this._nextHandle;
 		this._nextHandle++;
 		this._settingsSearchProviders.set(handle, provider);

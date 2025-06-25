@@ -2,7 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { $, isHTMLInputElement, isHTMLTextAreaElement, reset, windowOpenNoOpener } from '../../../../base/browser/dom.js';
+import {
+	$,
+	isHTMLInputElement,
+	isHTMLTextAreaElement,
+	reset,
+	windowOpenNoOpener,
+} from '../../../../base/browser/dom.js';
 import { createStyleSheet } from '../../../../base/browser/domStylesheets.js';
 import { Button, unthemedButtonStyles } from '../../../../base/browser/ui/button/button.js';
 import { renderIcon } from '../../../../base/browser/ui/iconLabel/iconLabels.js';
@@ -26,9 +32,17 @@ import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.
 import { IFileService } from '../../../../platform/files/common/files.js';
 import { getIconsStyleSheet } from '../../../../platform/theme/browser/iconsStyleSheet.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
-import { IIssueFormService, IssueReporterData, IssueReporterExtensionData, IssueType } from '../common/issue.js';
+import {
+	IIssueFormService,
+	IssueReporterData,
+	IssueReporterExtensionData,
+	IssueType,
+} from '../common/issue.js';
 import { normalizeGitHubUrl } from '../common/issueReporterUtil.js';
-import { IssueReporterModel, IssueReporterData as IssueReporterModelData } from './issueReporterModel.js';
+import {
+	IssueReporterModel,
+	IssueReporterData as IssueReporterModelData,
+} from './issueReporterModel.js';
 
 const MAX_URL_LENGTH = 7500;
 
@@ -48,9 +62,8 @@ enum IssueSource {
 	VSCode = 'vscode',
 	Extension = 'extension',
 	Marketplace = 'marketplace',
-	Unknown = 'unknown'
+	Unknown = 'unknown',
 }
-
 
 export class BaseIssueReporterService extends Disposable {
 	public issueReporterModel: IssueReporterModel;
@@ -82,20 +95,24 @@ export class BaseIssueReporterService extends Disposable {
 		@IIssueFormService public readonly issueFormService: IIssueFormService,
 		@IThemeService public readonly themeService: IThemeService,
 		@IFileService public readonly fileService: IFileService,
-		@IFileDialogService public readonly fileDialogService: IFileDialogService,
+		@IFileDialogService public readonly fileDialogService: IFileDialogService
 	) {
 		super();
-		const targetExtension = data.extensionId ? data.enabledExtensions.find(extension => extension.id.toLocaleLowerCase() === data.extensionId?.toLocaleLowerCase()) : undefined;
+		const targetExtension = data.extensionId
+			? data.enabledExtensions.find(
+					extension => extension.id.toLocaleLowerCase() === data.extensionId?.toLocaleLowerCase()
+				)
+			: undefined;
 		this.issueReporterModel = new IssueReporterModel({
 			...data,
 			issueType: data.issueType || IssueType.Bug,
 			versionInfo: {
 				vscodeVersion: `${product.nameShort} ${!!product.darwinUniversalAssetId ? `${product.version} (Universal)` : product.version} (${product.commit || 'Commit unknown'}, ${product.date || 'Date unknown'})`,
-				os: `${this.os.type} ${this.os.arch} ${this.os.release}${isLinuxSnap ? ' snap' : ''}`
+				os: `${this.os.type} ${this.os.arch} ${this.os.release}${isLinuxSnap ? ' snap' : ''}`,
 			},
 			extensionsDisabled: !!this.disableExtensions,
 			fileOnExtension: data.extensionId ? !targetExtension?.isBuiltin : undefined,
-			selectedExtension: targetExtension
+			selectedExtension: targetExtension,
 		});
 
 		const fileOnMarketplace = data.issueSource === IssueSource.Marketplace;
@@ -188,7 +205,11 @@ export class BaseIssueReporterService extends Disposable {
 		});
 
 		const numberOfThemeExtesions = themes && themes.length;
-		this.issueReporterModel.update({ numberOfThemeExtesions, enabledNonThemeExtesions: nonThemes, allExtensions: installedExtensions });
+		this.issueReporterModel.update({
+			numberOfThemeExtesions,
+			enabledNonThemeExtesions: nonThemes,
+			allExtensions: installedExtensions,
+		});
 		this.updateExtensionTable(nonThemes, numberOfThemeExtesions);
 		if (this.disableExtensions || installedExtensions.length === 0) {
 			(<HTMLButtonElement>this.getElementById('disableExtensions')).disabled = true;
@@ -206,7 +227,7 @@ export class BaseIssueReporterService extends Disposable {
 		const extensionOptions: IOption[] = extensions.map(extension => {
 			return {
 				name: extension.displayName || extension.name || '',
-				id: extension.id
+				id: extension.id,
 			};
 		});
 
@@ -225,18 +246,29 @@ export class BaseIssueReporterService extends Disposable {
 			return 0;
 		});
 
-		const makeOption = (extension: IOption, selectedExtension?: IssueReporterExtensionData): HTMLOptionElement => {
+		const makeOption = (
+			extension: IOption,
+			selectedExtension?: IssueReporterExtensionData
+		): HTMLOptionElement => {
 			const selected = selectedExtension && extension.id === selectedExtension.id;
-			return $<HTMLOptionElement>('option', {
-				'value': extension.id,
-				'selected': selected || ''
-			}, extension.name);
+			return $<HTMLOptionElement>(
+				'option',
+				{
+					value: extension.id,
+					selected: selected || '',
+				},
+				extension.name
+			);
 		};
 
 		const extensionsSelector = this.getElementById<HTMLSelectElement>('extension-selector');
 		if (extensionsSelector) {
 			const { selectedExtension } = this.issueReporterModel.getData();
-			reset(extensionsSelector, this.makeOption('', localize('selectExtension', "Select extension"), true), ...extensionOptions.map(extension => makeOption(extension, selectedExtension)));
+			reset(
+				extensionsSelector,
+				this.makeOption('', localize('selectExtension', 'Select extension'), true),
+				...extensionOptions.map(extension => makeOption(extension, selectedExtension))
+			);
 
 			if (!selectedExtension) {
 				extensionsSelector.selectedIndex = 0;
@@ -253,7 +285,10 @@ export class BaseIssueReporterService extends Disposable {
 					const selectedExtension = this.issueReporterModel.getData().selectedExtension;
 					if (selectedExtension) {
 						const iconElement = document.createElement('span');
-						iconElement.classList.add(...ThemeIcon.asClassNameArray(Codicon.loading), 'codicon-modifier-spin');
+						iconElement.classList.add(
+							...ThemeIcon.asClassNameArray(Codicon.loading),
+							'codicon-modifier-spin'
+						);
 						this.setLoading(iconElement);
 						const openReporterData = await this.sendReporterMenu(selectedExtension);
 						if (openReporterData) {
@@ -264,10 +299,12 @@ export class BaseIssueReporterService extends Disposable {
 							}
 							// else if (this.selectedExtension !== selectedExtensionId) {
 							// }
-						}
-						else {
+						} else {
 							if (!this.loadingExtensionData) {
-								iconElement.classList.remove(...ThemeIcon.asClassNameArray(Codicon.loading), 'codicon-modifier-spin');
+								iconElement.classList.remove(
+									...ThemeIcon.asClassNameArray(Codicon.loading),
+									'codicon-modifier-spin'
+								);
 							}
 							this.removeLoading(iconElement);
 							// if not using command, should have no configuration data in fields we care about and check later.
@@ -293,13 +330,15 @@ export class BaseIssueReporterService extends Disposable {
 			});
 		}
 
-		this.addEventListener('problem-source', 'change', (_) => {
+		this.addEventListener('problem-source', 'change', _ => {
 			this.clearExtensionData();
 			this.validateSelectedExtension();
 		});
 	}
 
-	private async sendReporterMenu(extension: IssueReporterExtensionData): Promise<IssueReporterData | undefined> {
+	private async sendReporterMenu(
+		extension: IssueReporterExtensionData
+	): Promise<IssueReporterData | undefined> {
 		try {
 			const data = await this.issueFormService.sendReporterMenu(extension.id);
 			return data;
@@ -318,10 +357,21 @@ export class BaseIssueReporterService extends Disposable {
 	}
 
 	public setEventHandlers(): void {
-		(['includeSystemInfo', 'includeProcessInfo', 'includeWorkspaceInfo', 'includeExtensions', 'includeExperiments', 'includeExtensionData'] as const).forEach(elementId => {
+		(
+			[
+				'includeSystemInfo',
+				'includeProcessInfo',
+				'includeWorkspaceInfo',
+				'includeExtensions',
+				'includeExperiments',
+				'includeExtensionData',
+			] as const
+		).forEach(elementId => {
 			this.addEventListener(elementId, 'click', (event: Event) => {
 				event.stopPropagation();
-				this.issueReporterModel.update({ [elementId]: !this.issueReporterModel.getData()[elementId] });
+				this.issueReporterModel.update({
+					[elementId]: !this.issueReporterModel.getData()[elementId],
+				});
 			});
 		});
 
@@ -335,16 +385,16 @@ export class BaseIssueReporterService extends Disposable {
 			const showInfo = showInfoElements.item(i)!;
 			(showInfo as HTMLAnchorElement).addEventListener('click', (e: MouseEvent) => {
 				e.preventDefault();
-				const label = (<HTMLDivElement>e.target);
+				const label = <HTMLDivElement>e.target;
 				if (label) {
 					const containingElement = label.parentElement && label.parentElement.parentElement;
 					const info = containingElement && containingElement.lastElementChild;
 					if (info && info.classList.contains('hidden')) {
 						show(info);
-						label.textContent = localize('hide', "hide");
+						label.textContent = localize('hide', 'hide');
 					} else {
 						hide(info);
-						label.textContent = localize('show', "show");
+						label.textContent = localize('show', 'show');
 					}
 				}
 			});
@@ -365,16 +415,27 @@ export class BaseIssueReporterService extends Disposable {
 
 			const descriptionTextArea = <HTMLInputElement>this.getElementById('issue-title');
 			if (value === IssueSource.VSCode) {
-				descriptionTextArea.placeholder = localize('vscodePlaceholder', "E.g Workbench is missing problems panel");
+				descriptionTextArea.placeholder = localize(
+					'vscodePlaceholder',
+					'E.g Workbench is missing problems panel'
+				);
 			} else if (value === IssueSource.Extension) {
-				descriptionTextArea.placeholder = localize('extensionPlaceholder', "E.g. Missing alt text on extension readme image");
+				descriptionTextArea.placeholder = localize(
+					'extensionPlaceholder',
+					'E.g. Missing alt text on extension readme image'
+				);
 			} else if (value === IssueSource.Marketplace) {
-				descriptionTextArea.placeholder = localize('marketplacePlaceholder', "E.g Cannot disable installed extension");
+				descriptionTextArea.placeholder = localize(
+					'marketplacePlaceholder',
+					'E.g Cannot disable installed extension'
+				);
 			} else {
-				descriptionTextArea.placeholder = localize('undefinedPlaceholder', "Please enter a title");
+				descriptionTextArea.placeholder = localize('undefinedPlaceholder', 'Please enter a title');
 			}
 
-			let fileOnExtension, fileOnMarketplace, fileOnProduct = false;
+			let fileOnExtension,
+				fileOnMarketplace,
+				fileOnProduct = false;
 			if (value === IssueSource.Extension) {
 				fileOnExtension = true;
 			} else if (value === IssueSource.Marketplace) {
@@ -427,11 +488,13 @@ export class BaseIssueReporterService extends Disposable {
 			this.searchIssues(title, fileOnExtension, fileOnMarketplace);
 		});
 
-		this._register(this.previewButton.onDidClick(async () => {
-			this.delayedSubmit.trigger(async () => {
-				this.createIssue();
-			});
-		}));
+		this._register(
+			this.previewButton.onDidClick(async () => {
+				this.delayedSubmit.trigger(async () => {
+					this.createIssue();
+				});
+			})
+		);
 
 		this.addEventListener('disableExtensions', 'click', () => {
 			this.issueFormService.reloadWithExtensionsDisabled();
@@ -498,20 +561,19 @@ export class BaseIssueReporterService extends Disposable {
 	}
 
 	public updatePreviewButtonState() {
-
 		if (!this.acknowledged && this.needsUpdate) {
-			this.previewButton.label = localize('acknowledge', "Confirm Version Acknowledgement");
+			this.previewButton.label = localize('acknowledge', 'Confirm Version Acknowledgement');
 			this.previewButton.enabled = false;
 		} else if (this.isPreviewEnabled()) {
 			if (this.data.githubAccessToken) {
-				this.previewButton.label = localize('createOnGitHub', "Create on GitHub");
+				this.previewButton.label = localize('createOnGitHub', 'Create on GitHub');
 			} else {
-				this.previewButton.label = localize('previewOnGitHub', "Preview on GitHub");
+				this.previewButton.label = localize('previewOnGitHub', 'Preview on GitHub');
 			}
 			this.previewButton.enabled = true;
 		} else {
 			this.previewButton.enabled = false;
-			this.previewButton.label = localize('loadingData', "Loading data...");
+			this.previewButton.label = localize('loadingData', 'Loading data...');
 		}
 
 		const issueRepoName = this.getElementById('show-repo-name')! as HTMLAnchorElement;
@@ -519,10 +581,12 @@ export class BaseIssueReporterService extends Disposable {
 		if (selectedExtension && selectedExtension.uri) {
 			const urlString = URI.revive(selectedExtension.uri).toString();
 			issueRepoName.href = urlString;
-			issueRepoName.addEventListener('click', (e) => this.openLink(e));
-			issueRepoName.addEventListener('auxclick', (e) => this.openLink(<MouseEvent>e));
+			issueRepoName.addEventListener('click', e => this.openLink(e));
+			issueRepoName.addEventListener('auxclick', e => this.openLink(<MouseEvent>e));
 			const gitHubInfo = this.parseGitHubUrl(urlString);
-			issueRepoName.textContent = gitHubInfo ? gitHubInfo.owner + '/' + gitHubInfo.repositoryName : urlString;
+			issueRepoName.textContent = gitHubInfo
+				? gitHubInfo.owner + '/' + gitHubInfo.repositoryName
+				: urlString;
 			Object.assign(issueRepoName.style, {
 				alignSelf: 'flex-end',
 				display: 'block',
@@ -530,7 +594,7 @@ export class BaseIssueReporterService extends Disposable {
 				marginBottom: '10px',
 				padding: '4px 0px',
 				textDecoration: 'none',
-				width: 'auto'
+				width: 'auto',
 			});
 			show(issueRepoName);
 		} else {
@@ -551,7 +615,11 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		if (this.isWeb) {
-			if (issueType === IssueType.FeatureRequest || issueType === IssueType.PerformanceIssue || issueType === IssueType.Bug) {
+			if (
+				issueType === IssueType.FeatureRequest ||
+				issueType === IssueType.PerformanceIssue ||
+				issueType === IssueType.Bug
+			) {
 				return true;
 			}
 		} else {
@@ -559,7 +627,11 @@ export class BaseIssueReporterService extends Disposable {
 				return true;
 			}
 
-			if (issueType === IssueType.PerformanceIssue && this.receivedSystemInfo && this.receivedPerformanceInfo) {
+			if (
+				issueType === IssueType.PerformanceIssue &&
+				this.receivedSystemInfo &&
+				this.receivedPerformanceInfo
+			) {
 				return true;
 			}
 
@@ -589,7 +661,11 @@ export class BaseIssueReporterService extends Disposable {
 		}
 	}
 
-	public searchIssues(title: string, fileOnExtension: boolean | undefined, fileOnMarketplace: boolean | undefined): void {
+	public searchIssues(
+		title: string,
+		fileOnExtension: boolean | undefined,
+		fileOnMarketplace: boolean | undefined
+	): void {
 		if (fileOnExtension) {
 			return this.searchExtensionIssues(title);
 		}
@@ -615,7 +691,6 @@ export class BaseIssueReporterService extends Disposable {
 			if (this.issueReporterModel.getData().selectedExtension) {
 				this.clearSearchResults();
 				return this.displaySearchResults([]);
-
 			}
 		}
 
@@ -646,18 +721,23 @@ export class BaseIssueReporterService extends Disposable {
 		const query = `is:issue+repo:${repo}+${title}`;
 		const similarIssues = this.getElementById('similar-issues')!;
 
-		fetch(`https://api.github.com/search/issues?q=${query}`).then((response) => {
-			response.json().then(result => {
-				similarIssues.innerText = '';
-				if (result && result.items) {
-					this.displaySearchResults(result.items);
-				}
-			}).catch(_ => {
-				console.warn('Timeout or query limit exceeded');
+		fetch(`https://api.github.com/search/issues?q=${query}`)
+			.then(response => {
+				response
+					.json()
+					.then(result => {
+						similarIssues.innerText = '';
+						if (result && result.items) {
+							this.displaySearchResults(result.items);
+						}
+					})
+					.catch(_ => {
+						console.warn('Timeout or query limit exceeded');
+					});
+			})
+			.catch(_ => {
+				console.warn('Error fetching GitHub issues');
 			});
-		}).catch(_ => {
-			console.warn('Error fetching GitHub issues');
-		});
 	}
 
 	@debounce(300)
@@ -667,28 +747,33 @@ export class BaseIssueReporterService extends Disposable {
 			method: 'POST',
 			body: JSON.stringify({
 				title,
-				body
+				body,
 			}),
 			headers: new Headers({
-				'Content-Type': 'application/json'
-			})
+				'Content-Type': 'application/json',
+			}),
 		};
 
-		fetch(url, init).then((response) => {
-			response.json().then(result => {
-				this.clearSearchResults();
+		fetch(url, init)
+			.then(response => {
+				response
+					.json()
+					.then(result => {
+						this.clearSearchResults();
 
-				if (result && result.candidates) {
-					this.displaySearchResults(result.candidates);
-				} else {
-					throw new Error('Unexpected response, no candidates property');
-				}
-			}).catch(_ => {
+						if (result && result.candidates) {
+							this.displaySearchResults(result.candidates);
+						} else {
+							throw new Error('Unexpected response, no candidates property');
+						}
+					})
+					.catch(_ => {
+						// Ignore
+					});
+			})
+			.catch(_ => {
 				// Ignore
 			});
-		}).catch(_ => {
-			// Ignore
-		});
 	}
 
 	private displaySearchResults(results: SearchResult[]) {
@@ -696,7 +781,7 @@ export class BaseIssueReporterService extends Disposable {
 		if (results.length) {
 			const issues = $('div.issues-container');
 			const issuesText = $('div.list-title');
-			issuesText.textContent = localize('similarIssues', "Similar issues");
+			issuesText.textContent = localize('similarIssues', 'Similar issues');
 
 			this.numberOfSearchResultsDisplayed = results.length < 5 ? results.length : 5;
 			for (let i = 0; i < this.numberOfSearchResultsDisplayed; i++) {
@@ -704,8 +789,8 @@ export class BaseIssueReporterService extends Disposable {
 				const link = $('a.issue-link', { href: issue.html_url });
 				link.textContent = issue.title;
 				link.title = issue.title;
-				link.addEventListener('click', (e) => this.openLink(e));
-				link.addEventListener('auxclick', (e) => this.openLink(<MouseEvent>e));
+				link.addEventListener('click', e => this.openLink(e));
+				link.addEventListener('auxclick', e => this.openLink(<MouseEvent>e));
 
 				let issueState: HTMLElement;
 				let item: HTMLElement;
@@ -713,12 +798,16 @@ export class BaseIssueReporterService extends Disposable {
 					issueState = $('span.issue-state');
 
 					const issueIcon = $('span.issue-icon');
-					issueIcon.appendChild(renderIcon(issue.state === 'open' ? Codicon.issueOpened : Codicon.issueClosed));
+					issueIcon.appendChild(
+						renderIcon(issue.state === 'open' ? Codicon.issueOpened : Codicon.issueClosed)
+					);
 
 					const issueStateLabel = $('span.issue-state.label');
-					issueStateLabel.textContent = issue.state === 'open' ? localize('open', "Open") : localize('closed', "Closed");
+					issueStateLabel.textContent =
+						issue.state === 'open' ? localize('open', 'Open') : localize('closed', 'Closed');
 
-					issueState.title = issue.state === 'open' ? localize('open', "Open") : localize('closed', "Closed");
+					issueState.title =
+						issue.state === 'open' ? localize('open', 'Open') : localize('closed', 'Closed');
 					issueState.appendChild(issueIcon);
 					issueState.appendChild(issueStateLabel);
 
@@ -736,14 +825,19 @@ export class BaseIssueReporterService extends Disposable {
 	}
 
 	private setUpTypes(): void {
-		const makeOption = (issueType: IssueType, description: string) => $('option', { 'value': issueType.valueOf() }, escape(description));
+		const makeOption = (issueType: IssueType, description: string) =>
+			$('option', { value: issueType.valueOf() }, escape(description));
 
 		const typeSelect = this.getElementById('issue-type')! as HTMLSelectElement;
 		const { issueType } = this.issueReporterModel.getData();
-		reset(typeSelect,
-			makeOption(IssueType.Bug, localize('bugReporter', "Bug Report")),
-			makeOption(IssueType.FeatureRequest, localize('featureRequest', "Feature Request")),
-			makeOption(IssueType.PerformanceIssue, localize('performanceIssue', "Performance Issue (freeze, slow, crash)"))
+		reset(
+			typeSelect,
+			makeOption(IssueType.Bug, localize('bugReporter', 'Bug Report')),
+			makeOption(IssueType.FeatureRequest, localize('featureRequest', 'Feature Request')),
+			makeOption(
+				IssueType.PerformanceIssue,
+				localize('performanceIssue', 'Performance Issue (freeze, slow, crash)')
+			)
 		);
 
 		typeSelect.value = issueType.toString();
@@ -762,7 +856,8 @@ export class BaseIssueReporterService extends Disposable {
 
 	public setSourceOptions(): void {
 		const sourceSelect = this.getElementById('issue-source')! as HTMLSelectElement;
-		const { issueType, fileOnExtension, selectedExtension, fileOnMarketplace, fileOnProduct } = this.issueReporterModel.getData();
+		const { issueType, fileOnExtension, selectedExtension, fileOnMarketplace, fileOnProduct } =
+			this.issueReporterModel.getData();
 		let selected = sourceSelect.selectedIndex;
 		if (selected === -1) {
 			if (fileOnExtension !== undefined) {
@@ -777,15 +872,27 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		sourceSelect.innerText = '';
-		sourceSelect.append(this.makeOption('', localize('selectSource', "Select source"), true));
-		sourceSelect.append(this.makeOption(IssueSource.VSCode, localize('vscode', "Visual Studio Code"), false));
-		sourceSelect.append(this.makeOption(IssueSource.Extension, localize('extension', "A VS Code extension"), false));
+		sourceSelect.append(this.makeOption('', localize('selectSource', 'Select source'), true));
+		sourceSelect.append(
+			this.makeOption(IssueSource.VSCode, localize('vscode', 'Visual Studio Code'), false)
+		);
+		sourceSelect.append(
+			this.makeOption(IssueSource.Extension, localize('extension', 'A VS Code extension'), false)
+		);
 		if (this.product.reportMarketplaceIssueUrl) {
-			sourceSelect.append(this.makeOption(IssueSource.Marketplace, localize('marketplace', "Extensions Marketplace"), false));
+			sourceSelect.append(
+				this.makeOption(
+					IssueSource.Marketplace,
+					localize('marketplace', 'Extensions Marketplace'),
+					false
+				)
+			);
 		}
 
 		if (issueType !== IssueType.FeatureRequest) {
-			sourceSelect.append(this.makeOption(IssueSource.Unknown, localize('unknown', "Don't know"), false));
+			sourceSelect.append(
+				this.makeOption(IssueSource.Unknown, localize('unknown', "Don't know"), false)
+			);
 		}
 
 		if (selected !== -1 && selected < sourceSelect.options.length) {
@@ -798,7 +905,8 @@ export class BaseIssueReporterService extends Disposable {
 
 	public async renderBlocks(): Promise<void> {
 		// Depending on Issue Type, we render different blocks and text
-		const { issueType, fileOnExtension, fileOnMarketplace, selectedExtension } = this.issueReporterModel.getData();
+		const { issueType, fileOnExtension, fileOnMarketplace, selectedExtension } =
+			this.issueReporterModel.getData();
 		const blockContainer = this.getElementById('block-container');
 		const systemBlock = this.window.document.querySelector('.block-system');
 		const processBlock = this.window.document.querySelector('.block-process');
@@ -811,7 +919,9 @@ export class BaseIssueReporterService extends Disposable {
 		const descriptionTitle = this.getElementById('issue-description-label')!;
 		const descriptionSubtitle = this.getElementById('issue-description-subtitle')!;
 		const extensionSelector = this.getElementById('extension-selection')!;
-		const downloadExtensionDataLink = <HTMLAnchorElement>this.getElementById('extension-data-download')!;
+		const downloadExtensionDataLink = <HTMLAnchorElement>(
+			this.getElementById('extension-data-download')!
+		);
 
 		const titleTextArea = this.getElementById('issue-title-container')!;
 		const descriptionTextArea = this.getElementById('description')!;
@@ -846,9 +956,12 @@ export class BaseIssueReporterService extends Disposable {
 			const fileName = `extensionData_${formattedDate}_${formattedTime}.md`;
 			const handleLinkClick = async () => {
 				const downloadPath = await this.fileDialogService.showSaveDialog({
-					title: localize('saveExtensionData', "Save Extension Data"),
+					title: localize('saveExtensionData', 'Save Extension Data'),
 					availableFileSystems: [Schemas.file],
-					defaultUri: joinPath(await this.fileDialogService.defaultFilePath(Schemas.file), fileName),
+					defaultUri: joinPath(
+						await this.fileDialogService.defaultFilePath(Schemas.file),
+						fileName
+					),
 				});
 
 				if (downloadPath) {
@@ -859,16 +972,26 @@ export class BaseIssueReporterService extends Disposable {
 			downloadExtensionDataLink.addEventListener('click', handleLinkClick);
 
 			this._register({
-				dispose: () => downloadExtensionDataLink.removeEventListener('click', handleLinkClick)
+				dispose: () => downloadExtensionDataLink.removeEventListener('click', handleLinkClick),
 			});
 		}
 
 		if (selectedExtension && this.nonGitHubIssueUrl) {
 			hide(titleTextArea);
 			hide(descriptionTextArea);
-			reset(descriptionTitle, localize('handlesIssuesElsewhere', "This extension handles issues outside of VS Code"));
-			reset(descriptionSubtitle, localize('elsewhereDescription', "The '{0}' extension prefers to use an external issue reporter. To be taken to that issue reporting experience, click the button below.", selectedExtension.displayName));
-			this.previewButton.label = localize('openIssueReporter', "Open External Issue Reporter");
+			reset(
+				descriptionTitle,
+				localize('handlesIssuesElsewhere', 'This extension handles issues outside of VS Code')
+			);
+			reset(
+				descriptionSubtitle,
+				localize(
+					'elsewhereDescription',
+					"The '{0}' extension prefers to use an external issue reporter. To be taken to that issue reporting experience, click the button below.",
+					selectedExtension.displayName
+				)
+			);
+			this.previewButton.label = localize('openIssueReporter', 'Open External Issue Reporter');
 			return;
 		}
 
@@ -901,8 +1024,18 @@ export class BaseIssueReporterService extends Disposable {
 				}
 			}
 
-			reset(descriptionTitle, localize('stepsToReproduce', "Steps to Reproduce") + ' ', $('span.required-input', undefined, '*'));
-			reset(descriptionSubtitle, localize('bugDescription', "Share the steps needed to reliably reproduce the problem. Please include actual and expected results. We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub."));
+			reset(
+				descriptionTitle,
+				localize('stepsToReproduce', 'Steps to Reproduce') + ' ',
+				$('span.required-input', undefined, '*')
+			);
+			reset(
+				descriptionSubtitle,
+				localize(
+					'bugDescription',
+					'Share the steps needed to reliably reproduce the problem. Please include actual and expected results. We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub.'
+				)
+			);
 		} else if (issueType === IssueType.PerformanceIssue) {
 			if (!fileOnMarketplace) {
 				show(blockContainer);
@@ -918,16 +1051,36 @@ export class BaseIssueReporterService extends Disposable {
 				show(extensionsBlock);
 			}
 
-			reset(descriptionTitle, localize('stepsToReproduce', "Steps to Reproduce") + ' ', $('span.required-input', undefined, '*'));
-			reset(descriptionSubtitle, localize('performanceIssueDesciption', "When did this performance issue happen? Does it occur on startup or after a specific series of actions? We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub."));
+			reset(
+				descriptionTitle,
+				localize('stepsToReproduce', 'Steps to Reproduce') + ' ',
+				$('span.required-input', undefined, '*')
+			);
+			reset(
+				descriptionSubtitle,
+				localize(
+					'performanceIssueDesciption',
+					'When did this performance issue happen? Does it occur on startup or after a specific series of actions? We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub.'
+				)
+			);
 		} else if (issueType === IssueType.FeatureRequest) {
-			reset(descriptionTitle, localize('description', "Description") + ' ', $('span.required-input', undefined, '*'));
-			reset(descriptionSubtitle, localize('featureRequestDescription', "Please describe the feature you would like to see. We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub."));
+			reset(
+				descriptionTitle,
+				localize('description', 'Description') + ' ',
+				$('span.required-input', undefined, '*')
+			);
+			reset(
+				descriptionSubtitle,
+				localize(
+					'featureRequestDescription',
+					'Please describe the feature you would like to see. We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub.'
+				)
+			);
 		}
 	}
 
 	public validateInput(inputId: string): boolean {
-		const inputElement = (<HTMLInputElement>this.getElementById(inputId));
+		const inputElement = <HTMLInputElement>this.getElementById(inputId);
 		const inputValidationMessage = this.getElementById(`${inputId}-empty-error`);
 		const descriptionShortMessage = this.getElementById(`description-short-error`);
 		if (inputId === 'description' && this.nonGitHubIssueUrl && this.data.extensionId) {
@@ -965,19 +1118,23 @@ export class BaseIssueReporterService extends Disposable {
 		return isValid;
 	}
 
-	public async submitToGitHub(issueTitle: string, issueBody: string, gitHubDetails: { owner: string; repositoryName: string }): Promise<boolean> {
+	public async submitToGitHub(
+		issueTitle: string,
+		issueBody: string,
+		gitHubDetails: { owner: string; repositoryName: string }
+	): Promise<boolean> {
 		const url = `https://api.github.com/repos/${gitHubDetails.owner}/${gitHubDetails.repositoryName}/issues`;
 		const init = {
 			method: 'POST',
 			body: JSON.stringify({
 				title: issueTitle,
-				body: issueBody
+				body: issueBody,
 			}),
 			headers: new Headers({
 				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${this.data.githubAccessToken}`,
-				'User-Agent': 'request'
-			})
+				Authorization: `Bearer ${this.data.githubAccessToken}`,
+				'User-Agent': 'request',
+			}),
 		};
 
 		const response = await fetch(url, init);
@@ -1053,14 +1210,19 @@ export class BaseIssueReporterService extends Disposable {
 			return this.submitToGitHub(issueTitle, issueBody, gitHubDetails);
 		}
 
-		const baseUrl = this.getIssueUrlWithTitle((<HTMLInputElement>this.getElementById('issue-title')).value, issueUrl);
+		const baseUrl = this.getIssueUrlWithTitle(
+			(<HTMLInputElement>this.getElementById('issue-title')).value,
+			issueUrl
+		);
 		let url = baseUrl + `&body=${encodeURIComponent(issueBody)}`;
 
 		url += this.addTemplateToUrl(gitHubDetails?.owner, gitHubDetails?.repositoryName);
 
 		if (url.length > MAX_URL_LENGTH) {
 			try {
-				url = await this.writeToClipboard(baseUrl, issueBody) + this.addTemplateToUrl(gitHubDetails?.owner, gitHubDetails?.repositoryName);
+				url =
+					(await this.writeToClipboard(baseUrl, issueBody)) +
+					this.addTemplateToUrl(gitHubDetails?.owner, gitHubDetails?.repositoryName);
 			} catch (_) {
 				console.error('Writing to clipboard failed');
 				return false;
@@ -1078,12 +1240,16 @@ export class BaseIssueReporterService extends Disposable {
 			throw new CancellationError();
 		}
 
-		return baseUrl + `&body=${encodeURIComponent(localize('pasteData', "We have written the needed data into your clipboard because it was too large to send. Please paste."))}`;
+		return (
+			baseUrl +
+			`&body=${encodeURIComponent(localize('pasteData', 'We have written the needed data into your clipboard because it was too large to send. Please paste.'))}`
+		);
 	}
 
 	public addTemplateToUrl(owner?: string, repositoryName?: string): string {
 		const isVscode = this.issueReporterModel.getData().fileOnProduct;
-		const isCopilot = owner?.toLowerCase() === 'microsoft' && repositoryName === 'vscode-copilot-release';
+		const isCopilot =
+			owner?.toLowerCase() === 'microsoft' && repositoryName === 'vscode-copilot-release';
 		const isPython = owner?.toLowerCase() === 'microsoft' && repositoryName === 'vscode-python';
 
 		if (isVscode) {
@@ -1116,7 +1282,7 @@ export class BaseIssueReporterService extends Disposable {
 		if (match && match.length) {
 			return {
 				owner: match[1],
-				repositoryName: match[2]
+				repositoryName: match[2],
 			};
 		} else {
 			console.error('No GitHub issues match');
@@ -1170,7 +1336,8 @@ export class BaseIssueReporterService extends Disposable {
 			const descriptionTextArea = this.getElementById('description')!;
 			const descriptionText = (descriptionTextArea as HTMLTextAreaElement).value;
 			if (descriptionText === '' || !descriptionText.includes(template.toString())) {
-				const fullTextArea = descriptionText + (descriptionText === '' ? '' : '\n') + template.toString();
+				const fullTextArea =
+					descriptionText + (descriptionText === '' ? '' : '\n') + template.toString();
 				(descriptionTextArea as HTMLTextAreaElement).value = fullTextArea;
 				this.issueReporterModel.update({ issueDescription: fullTextArea });
 			}
@@ -1201,7 +1368,9 @@ export class BaseIssueReporterService extends Disposable {
 
 	public validateSelectedExtension(): void {
 		const extensionValidationMessage = this.getElementById('extension-selection-validation-error')!;
-		const extensionValidationNoUrlsMessage = this.getElementById('extension-selection-validation-error-no-url')!;
+		const extensionValidationNoUrlsMessage = this.getElementById(
+			'extension-selection-validation-error-no-url'
+		)!;
 		hide(extensionValidationMessage);
 		hide(extensionValidationNoUrlsMessage);
 
@@ -1267,7 +1436,9 @@ export class BaseIssueReporterService extends Disposable {
 
 	private setExtensionValidationMessage(): void {
 		const extensionValidationMessage = this.getElementById('extension-selection-validation-error')!;
-		const extensionValidationNoUrlsMessage = this.getElementById('extension-selection-validation-error-no-url')!;
+		const extensionValidationNoUrlsMessage = this.getElementById(
+			'extension-selection-validation-error-no-url'
+		)!;
 		const bugsUrl = this.getExtensionBugsUrl();
 		if (bugsUrl) {
 			show(extensionValidationMessage);
@@ -1295,18 +1466,24 @@ export class BaseIssueReporterService extends Disposable {
 	}
 
 	private updateWorkspaceInfo(state: IssueReporterModelData) {
-		this.window.document.querySelector('.block-workspace .block-info code')!.textContent = '\n' + state.workspaceInfo;
+		this.window.document.querySelector('.block-workspace .block-info code')!.textContent =
+			'\n' + state.workspaceInfo;
 	}
 
-	public updateExtensionTable(extensions: IssueReporterExtensionData[], numThemeExtensions: number): void {
+	public updateExtensionTable(
+		extensions: IssueReporterExtensionData[],
+		numThemeExtensions: number
+	): void {
 		const target = this.window.document.querySelector<HTMLElement>('.block-extensions .block-info');
 		if (target) {
 			if (this.disableExtensions) {
-				reset(target, localize('disabledExtensions', "Extensions are disabled"));
+				reset(target, localize('disabledExtensions', 'Extensions are disabled'));
 				return;
 			}
 
-			const themeExclusionStr = numThemeExtensions ? `\n(${numThemeExtensions} theme extensions excluded)` : '';
+			const themeExclusionStr = numThemeExtensions
+				? `\n(${numThemeExtensions} theme extensions excluded)`
+				: '';
 			extensions = extensions || [];
 
 			if (!extensions.length) {
@@ -1314,22 +1491,34 @@ export class BaseIssueReporterService extends Disposable {
 				return;
 			}
 
-			reset(target, this.getExtensionTableHtml(extensions), document.createTextNode(themeExclusionStr));
+			reset(
+				target,
+				this.getExtensionTableHtml(extensions),
+				document.createTextNode(themeExclusionStr)
+			);
 		}
 	}
 
 	private getExtensionTableHtml(extensions: IssueReporterExtensionData[]): HTMLTableElement {
-		return $('table', undefined,
-			$('tr', undefined,
+		return $(
+			'table',
+			undefined,
+			$(
+				'tr',
+				undefined,
 				$('th', undefined, 'Extension'),
 				$('th', undefined, 'Author (truncated)' as string),
 				$('th', undefined, 'Version')
 			),
-			...extensions.map(extension => $('tr', undefined,
-				$('td', undefined, extension.name),
-				$('td', undefined, extension.publisher?.substr(0, 3) ?? 'N/A'),
-				$('td', undefined, extension.version)
-			))
+			...extensions.map(extension =>
+				$(
+					'tr',
+					undefined,
+					$('td', undefined, extension.name),
+					$('td', undefined, extension.publisher?.substr(0, 3) ?? 'N/A'),
+					$('td', undefined, extension.version)
+				)
+			)
 		);
 	}
 
@@ -1351,7 +1540,11 @@ export class BaseIssueReporterService extends Disposable {
 		}
 	}
 
-	public addEventListener(elementId: string, eventType: string, handler: (event: Event) => void): void {
+	public addEventListener(
+		elementId: string,
+		eventType: string,
+		handler: (event: Event) => void
+	): void {
 		const element = this.getElementById(elementId);
 		element?.addEventListener(eventType, handler);
 	}

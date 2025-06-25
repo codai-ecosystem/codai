@@ -6,7 +6,12 @@
 import { $, append } from '../../dom.js';
 import { format } from '../../../common/strings.js';
 import './countBadge.css';
-import { Disposable, IDisposable, MutableDisposable, toDisposable } from '../../../common/lifecycle.js';
+import {
+	Disposable,
+	IDisposable,
+	MutableDisposable,
+	toDisposable,
+} from '../../../common/lifecycle.js';
 import { getBaseLayerHoverDelegate } from '../hover/hoverDelegate2.js';
 
 export interface ICountBadgeOptions {
@@ -24,19 +29,21 @@ export interface ICountBadgeStyles {
 export const unthemedCountStyles: ICountBadgeStyles = {
 	badgeBackground: '#4D4D4D',
 	badgeForeground: '#FFFFFF',
-	badgeBorder: undefined
+	badgeBorder: undefined,
 };
 
 export class CountBadge extends Disposable {
-
 	private element: HTMLElement;
 	private count: number = 0;
 	private countFormat: string;
 	private titleFormat: string;
 	private readonly hover = this._register(new MutableDisposable<IDisposable>());
 
-	constructor(container: HTMLElement, private readonly options: ICountBadgeOptions, private readonly styles: ICountBadgeStyles) {
-
+	constructor(
+		container: HTMLElement,
+		private readonly options: ICountBadgeOptions,
+		private readonly styles: ICountBadgeStyles
+	) {
 		super();
 		this.element = append(container, $('.monaco-count-badge'));
 		this._register(toDisposable(() => container.removeChild(this.element)));
@@ -64,7 +71,10 @@ export class CountBadge extends Disposable {
 
 	private updateHover(): void {
 		if (this.titleFormat !== '' && !this.hover.value) {
-			this.hover.value = getBaseLayerHoverDelegate().setupDelayedHoverAtMouse(this.element, () => ({ content: format(this.titleFormat, this.count), appearance: { compact: true } }));
+			this.hover.value = getBaseLayerHoverDelegate().setupDelayedHoverAtMouse(this.element, () => ({
+				content: format(this.titleFormat, this.count),
+				appearance: { compact: true },
+			}));
 		} else if (this.titleFormat === '' && this.hover.value) {
 			this.hover.value = undefined;
 		}

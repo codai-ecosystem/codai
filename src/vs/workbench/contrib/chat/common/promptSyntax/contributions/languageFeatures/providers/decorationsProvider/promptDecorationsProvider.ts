@@ -12,7 +12,12 @@ import { Position } from '../../../../../../../../../editor/common/core/position
 import { BaseToken } from '../../../../../../../../../editor/common/codecs/baseToken.js';
 import { ProviderInstanceManagerBase, TProviderClass } from '../providerInstanceManagerBase.js';
 import { registerThemingParticipant } from '../../../../../../../../../platform/theme/common/themeService.js';
-import { DecorationBase, ReactiveDecorationBase, type TDecorationClass, type TChangedDecorator } from './decorations/utils/index.js';
+import {
+	DecorationBase,
+	ReactiveDecorationBase,
+	type TDecorationClass,
+	type TChangedDecorator,
+} from './decorations/utils/index.js';
 import { FrontMatterHeader } from '../../../../../../../../../editor/common/codecs/markdownExtensionsCodec/tokens/frontMatterHeader.js';
 
 /**
@@ -36,18 +41,13 @@ export class PromptDecorator extends ProviderInstanceBase {
 	 */
 	private readonly decorations: DecorationBase<BaseToken>[] = [];
 
-	constructor(
-		model: ITextModel,
-		@IPromptsService promptsService: IPromptsService,
-	) {
+	constructor(model: ITextModel, @IPromptsService promptsService: IPromptsService) {
 		super(model, promptsService);
 
 		this.watchCursorPosition();
 	}
 
-	protected override onPromptSettled(
-		_error?: Error,
-	): this {
+	protected override onPromptSettled(_error?: Error): this {
 		// by the time the promise above completes, either this object
 		// or the text model might be already has been disposed
 		if (this.isDisposed || this.model.isDisposed()) {
@@ -81,7 +81,7 @@ export class PromptDecorator extends ProviderInstanceBase {
 
 			const changedDecorations: TChangedDecorator[] = [];
 			for (const decoration of this.decorations) {
-				if ((decoration instanceof ReactiveDecorationBase) === false) {
+				if (decoration instanceof ReactiveDecorationBase === false) {
 					continue;
 				}
 
@@ -97,9 +97,11 @@ export class PromptDecorator extends ProviderInstanceBase {
 			this.changeModelDecorations(changedDecorations);
 		}, 25);
 
-		this._register(toDisposable(() => {
-			clearInterval(interval);
-		}));
+		this._register(
+			toDisposable(() => {
+				clearInterval(interval);
+			})
+		);
 
 		return this;
 	}
@@ -107,10 +109,8 @@ export class PromptDecorator extends ProviderInstanceBase {
 	/**
 	 * Update existing decorations.
 	 */
-	private changeModelDecorations(
-		decorations: readonly TChangedDecorator[],
-	): this {
-		this.model.changeDecorations((accessor) => {
+	private changeModelDecorations(decorations: readonly TChangedDecorator[]): this {
+		this.model.changeDecorations(accessor => {
 			for (const decoration of decorations) {
 				decoration.change(accessor);
 			}
@@ -123,7 +123,7 @@ export class PromptDecorator extends ProviderInstanceBase {
 	 * Add decorations for all prompt tokens.
 	 */
 	private addDecorations(): this {
-		this.model.changeDecorations((accessor) => {
+		this.model.changeDecorations(accessor => {
 			const { tokens } = this.parser;
 
 			// remove all existing decorations
@@ -138,9 +138,7 @@ export class PromptDecorator extends ProviderInstanceBase {
 						continue;
 					}
 
-					this.decorations.push(
-						new Decoration(accessor, token),
-					);
+					this.decorations.push(new Decoration(accessor, token));
 					break;
 				}
 			}
@@ -157,7 +155,7 @@ export class PromptDecorator extends ProviderInstanceBase {
 			return this;
 		}
 
-		this.model.changeDecorations((accessor) => {
+		this.model.changeDecorations(accessor => {
 			for (const decoration of this.decorations.splice(0)) {
 				decoration.remove(accessor);
 			}

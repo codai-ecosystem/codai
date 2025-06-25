@@ -28,7 +28,6 @@ export async function provideSignatureHelp(
 	context: languages.SignatureHelpContext,
 	token: CancellationToken
 ): Promise<languages.SignatureHelpResult | undefined> {
-
 	const supports = registry.ordered(model);
 
 	for (const support of supports) {
@@ -44,31 +43,38 @@ export async function provideSignatureHelp(
 	return undefined;
 }
 
-CommandsRegistry.registerCommand('_executeSignatureHelpProvider', async (accessor, ...args: [URI, IPosition, string?]) => {
-	const [uri, position, triggerCharacter] = args;
-	assertType(URI.isUri(uri));
-	assertType(Position.isIPosition(position));
-	assertType(typeof triggerCharacter === 'string' || !triggerCharacter);
+CommandsRegistry.registerCommand(
+	'_executeSignatureHelpProvider',
+	async (accessor, ...args: [URI, IPosition, string?]) => {
+		const [uri, position, triggerCharacter] = args;
+		assertType(URI.isUri(uri));
+		assertType(Position.isIPosition(position));
+		assertType(typeof triggerCharacter === 'string' || !triggerCharacter);
 
-	const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+		const languageFeaturesService = accessor.get(ILanguageFeaturesService);
 
-	const ref = await accessor.get(ITextModelService).createModelReference(uri);
-	try {
+		const ref = await accessor.get(ITextModelService).createModelReference(uri);
+		try {
+			const result = await provideSignatureHelp(
+				languageFeaturesService.signatureHelpProvider,
+				ref.object.textEditorModel,
+				Position.lift(position),
+				{
+					triggerKind: languages.SignatureHelpTriggerKind.Invoke,
+					isRetrigger: false,
+					triggerCharacter,
+				},
+				CancellationToken.None
+			);
 
-		const result = await provideSignatureHelp(languageFeaturesService.signatureHelpProvider, ref.object.textEditorModel, Position.lift(position), {
-			triggerKind: languages.SignatureHelpTriggerKind.Invoke,
-			isRetrigger: false,
-			triggerCharacter,
-		}, CancellationToken.None);
+			if (!result) {
+				return undefined;
+			}
 
-		if (!result) {
-			return undefined;
+			setTimeout(() => result.dispose(), 0);
+			return result.value;
+		} finally {
+			ref.dispose();
 		}
-
-		setTimeout(() => result.dispose(), 0);
-		return result.value;
-
-	} finally {
-		ref.dispose();
 	}
-});
+);

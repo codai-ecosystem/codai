@@ -35,7 +35,7 @@ export enum LogLevel {
 	Debug,
 	Info,
 	Warning,
-	Error
+	Error,
 }
 
 export const DEFAULT_LOG_LEVEL: LogLevel = LogLevel.Info;
@@ -63,13 +63,25 @@ export function canLog(loggerLevel: LogLevel, messageLevel: LogLevel): boolean {
 
 export function log(logger: ILogger, level: LogLevel, message: string): void {
 	switch (level) {
-		case LogLevel.Trace: logger.trace(message); break;
-		case LogLevel.Debug: logger.debug(message); break;
-		case LogLevel.Info: logger.info(message); break;
-		case LogLevel.Warning: logger.warn(message); break;
-		case LogLevel.Error: logger.error(message); break;
-		case LogLevel.Off: /* do nothing */ break;
-		default: throw new Error(`Invalid log level ${level}`);
+		case LogLevel.Trace:
+			logger.trace(message);
+			break;
+		case LogLevel.Debug:
+			logger.debug(message);
+			break;
+		case LogLevel.Info:
+			logger.info(message);
+			break;
+		case LogLevel.Warning:
+			logger.warn(message);
+			break;
+		case LogLevel.Error:
+			logger.error(message);
+			break;
+		case LogLevel.Off:
+			/* do nothing */ break;
+		default:
+			throw new Error(`Invalid log level ${level}`);
 	}
 }
 
@@ -86,7 +98,7 @@ function format(args: any, verbose: boolean = false): string {
 		if (typeof a === 'object') {
 			try {
 				a = JSON.stringify(a);
-			} catch (e) { }
+			} catch (e) {}
 		}
 
 		result += (i > 0 ? ' ' : '') + a;
@@ -105,7 +117,6 @@ export interface ILogService extends ILogger {
 }
 
 export interface ILoggerOptions {
-
 	/**
 	 * Id of the logger.
 	 */
@@ -169,7 +180,6 @@ export type DidChangeLoggersEvent = {
 };
 
 export interface ILoggerService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -254,9 +264,10 @@ export interface ILoggerService {
 }
 
 export abstract class AbstractLogger extends Disposable implements ILogger {
-
 	private level: LogLevel = DEFAULT_LOG_LEVEL;
-	private readonly _onDidChangeLogLevel: Emitter<LogLevel> = this._register(new Emitter<LogLevel>());
+	private readonly _onDidChangeLogLevel: Emitter<LogLevel> = this._register(
+		new Emitter<LogLevel>()
+	);
 	readonly onDidChangeLogLevel: Event<LogLevel> = this._onDidChangeLogLevel.event;
 
 	setLevel(level: LogLevel): void {
@@ -290,7 +301,6 @@ export abstract class AbstractLogger extends Disposable implements ILogger {
 }
 
 export abstract class AbstractMessageLogger extends AbstractLogger implements ILogger {
-
 	constructor(private readonly logAlways?: boolean) {
 		super();
 	}
@@ -335,14 +345,12 @@ export abstract class AbstractMessageLogger extends AbstractLogger implements IL
 		}
 	}
 
-	flush(): void { }
+	flush(): void {}
 
 	protected abstract log(level: LogLevel, message: string): void;
 }
 
-
 export class ConsoleMainLogger extends AbstractLogger implements ILogger {
-
 	private useColors: boolean;
 
 	constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
@@ -404,12 +412,13 @@ export class ConsoleMainLogger extends AbstractLogger implements ILogger {
 	flush(): void {
 		// noop
 	}
-
 }
 
 export class ConsoleLogger extends AbstractLogger implements ILogger {
-
-	constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL, private readonly useColors: boolean = true) {
+	constructor(
+		logLevel: LogLevel = DEFAULT_LOG_LEVEL,
+		private readonly useColors: boolean = true
+	) {
 		super();
 		this.setLevel(logLevel);
 	}
@@ -464,15 +473,16 @@ export class ConsoleLogger extends AbstractLogger implements ILogger {
 		}
 	}
 
-
 	flush(): void {
 		// noop
 	}
 }
 
 export class AdapterLogger extends AbstractLogger implements ILogger {
-
-	constructor(private readonly adapter: { log: (logLevel: LogLevel, args: any[]) => void }, logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
+	constructor(
+		private readonly adapter: { log: (logLevel: LogLevel, args: any[]) => void },
+		logLevel: LogLevel = DEFAULT_LOG_LEVEL
+	) {
 		super();
 		this.setLevel(logLevel);
 	}
@@ -521,7 +531,6 @@ export class AdapterLogger extends AbstractLogger implements ILogger {
 }
 
 export class MultiplexLogger extends AbstractLogger implements ILogger {
-
 	constructor(private readonly loggers: ReadonlyArray<ILogger>) {
 		super();
 		if (loggers.length) {
@@ -583,24 +592,25 @@ export class MultiplexLogger extends AbstractLogger implements ILogger {
 type LoggerEntry = { logger: ILogger | undefined; info: Mutable<ILoggerResource> };
 
 export abstract class AbstractLoggerService extends Disposable implements ILoggerService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _loggers = new ResourceMap<LoggerEntry>();
 
-	private _onDidChangeLoggers = this._register(new Emitter<{ added: ILoggerResource[]; removed: ILoggerResource[] }>);
+	private _onDidChangeLoggers = this._register(
+		new Emitter<{ added: ILoggerResource[]; removed: ILoggerResource[] }>()
+	);
 	readonly onDidChangeLoggers = this._onDidChangeLoggers.event;
 
-	private _onDidChangeLogLevel = this._register(new Emitter<LogLevel | [URI, LogLevel]>);
+	private _onDidChangeLogLevel = this._register(new Emitter<LogLevel | [URI, LogLevel]>());
 	readonly onDidChangeLogLevel = this._onDidChangeLogLevel.event;
 
-	private _onDidChangeVisibility = this._register(new Emitter<[URI, boolean]>);
+	private _onDidChangeVisibility = this._register(new Emitter<[URI, boolean]>());
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
 	constructor(
 		protected logLevel: LogLevel,
 		private readonly logsHome: URI,
-		loggerResources?: Iterable<ILoggerResource>,
+		loggerResources?: Iterable<ILoggerResource>
 	) {
 		super();
 		if (loggerResources) {
@@ -623,11 +633,17 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 
 	createLogger(idOrResource: URI | string, options?: ILoggerOptions): ILogger {
 		const resource = this.toResource(idOrResource);
-		const id = isString(idOrResource) ? idOrResource : (options?.id ?? hash(resource.toString()).toString(16));
+		const id = isString(idOrResource)
+			? idOrResource
+			: (options?.id ?? hash(resource.toString()).toString(16));
 		let logger = this._loggers.get(resource)?.logger;
 		const logLevel = options?.logLevel === 'always' ? LogLevel.Trace : options?.logLevel;
 		if (!logger) {
-			logger = this.doCreateLogger(resource, logLevel ?? this.getLogLevel(resource) ?? this.logLevel, { ...options, id });
+			logger = this.doCreateLogger(
+				resource,
+				logLevel ?? this.getLogLevel(resource) ?? this.logLevel,
+				{ ...options, id }
+			);
 		}
 		const loggerEntry: LoggerEntry = {
 			logger,
@@ -639,8 +655,8 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 				hidden: options?.hidden,
 				group: options?.group,
 				extensionId: options?.extensionId,
-				when: options?.when
-			}
+				when: options?.when,
+			},
 		};
 		this.registerLogger(loggerEntry.info);
 		// TODO: @sandy081 Remove this once registerLogger can take ILogger
@@ -733,21 +749,27 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 		super.dispose();
 	}
 
-	protected abstract doCreateLogger(resource: URI, logLevel: LogLevel, options?: ILoggerOptions): ILogger;
+	protected abstract doCreateLogger(
+		resource: URI,
+		logLevel: LogLevel,
+		options?: ILoggerOptions
+	): ILogger;
 }
 
 export class NullLogger implements ILogger {
 	readonly onDidChangeLogLevel: Event<LogLevel> = new Emitter<LogLevel>().event;
-	setLevel(level: LogLevel): void { }
-	getLevel(): LogLevel { return LogLevel.Info; }
-	trace(message: string, ...args: any[]): void { }
-	debug(message: string, ...args: any[]): void { }
-	info(message: string, ...args: any[]): void { }
-	warn(message: string, ...args: any[]): void { }
-	error(message: string | Error, ...args: any[]): void { }
-	critical(message: string | Error, ...args: any[]): void { }
-	dispose(): void { }
-	flush(): void { }
+	setLevel(level: LogLevel): void {}
+	getLevel(): LogLevel {
+		return LogLevel.Info;
+	}
+	trace(message: string, ...args: any[]): void {}
+	debug(message: string, ...args: any[]): void {}
+	info(message: string, ...args: any[]): void {}
+	warn(message: string, ...args: any[]): void {}
+	error(message: string | Error, ...args: any[]): void {}
+	critical(message: string | Error, ...args: any[]): void {}
+	dispose(): void {}
+	flush(): void {}
 }
 
 export class NullLogService extends NullLogger implements ILogService {
@@ -769,23 +791,35 @@ export function getLogLevel(environmentService: IEnvironmentService): LogLevel {
 
 export function LogLevelToString(logLevel: LogLevel): string {
 	switch (logLevel) {
-		case LogLevel.Trace: return 'trace';
-		case LogLevel.Debug: return 'debug';
-		case LogLevel.Info: return 'info';
-		case LogLevel.Warning: return 'warn';
-		case LogLevel.Error: return 'error';
-		case LogLevel.Off: return 'off';
+		case LogLevel.Trace:
+			return 'trace';
+		case LogLevel.Debug:
+			return 'debug';
+		case LogLevel.Info:
+			return 'info';
+		case LogLevel.Warning:
+			return 'warn';
+		case LogLevel.Error:
+			return 'error';
+		case LogLevel.Off:
+			return 'off';
 	}
 }
 
 export function LogLevelToLocalizedString(logLevel: LogLevel): ILocalizedString {
 	switch (logLevel) {
-		case LogLevel.Trace: return { original: 'Trace', value: nls.localize('trace', "Trace") };
-		case LogLevel.Debug: return { original: 'Debug', value: nls.localize('debug', "Debug") };
-		case LogLevel.Info: return { original: 'Info', value: nls.localize('info', "Info") };
-		case LogLevel.Warning: return { original: 'Warning', value: nls.localize('warn', "Warning") };
-		case LogLevel.Error: return { original: 'Error', value: nls.localize('error', "Error") };
-		case LogLevel.Off: return { original: 'Off', value: nls.localize('off', "Off") };
+		case LogLevel.Trace:
+			return { original: 'Trace', value: nls.localize('trace', 'Trace') };
+		case LogLevel.Debug:
+			return { original: 'Debug', value: nls.localize('debug', 'Debug') };
+		case LogLevel.Info:
+			return { original: 'Info', value: nls.localize('info', 'Info') };
+		case LogLevel.Warning:
+			return { original: 'Warning', value: nls.localize('warn', 'Warning') };
+		case LogLevel.Error:
+			return { original: 'Error', value: nls.localize('error', 'Error') };
+		case LogLevel.Off:
+			return { original: 'Off', value: nls.localize('off', 'Off') };
 	}
 }
 
@@ -810,4 +844,7 @@ export function parseLogLevel(logLevel: string): LogLevel | undefined {
 }
 
 // Contexts
-export const CONTEXT_LOG_LEVEL = new RawContextKey<string>('logLevel', LogLevelToString(LogLevel.Info));
+export const CONTEXT_LOG_LEVEL = new RawContextKey<string>(
+	'logLevel',
+	LogLevelToString(LogLevel.Info)
+);

@@ -2,7 +2,16 @@
  * Test utilities for creating test data for memory graph components
  */
 import { vi } from 'vitest';
-import type { AnyNode, FeatureNode, ScreenNode, LogicNode, DataModel, ApiNode, TestNode, Relationship } from '../../src/schemas';
+import type {
+	AnyNode,
+	FeatureNode,
+	ScreenNode,
+	LogicNode,
+	DataModel,
+	ApiNode,
+	TestNode,
+	Relationship,
+} from '../../src/schemas';
 
 const createBaseNodeData = () => ({
 	createdAt: new Date('2024-01-01'),

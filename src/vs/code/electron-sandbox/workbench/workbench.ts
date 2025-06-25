@@ -6,15 +6,21 @@
 /* eslint-disable no-restricted-globals */
 
 (async function () {
-
 	// Add a perf entry right from the top
 	performance.mark('code/didStartRenderer');
 
-	type ISandboxConfiguration = import('../../../base/parts/sandbox/common/sandboxTypes.js').ISandboxConfiguration;
-	type ILoadResult<M, T extends ISandboxConfiguration> = import('../../../platform/window/electron-sandbox/window.js').ILoadResult<M, T>;
-	type ILoadOptions<T extends ISandboxConfiguration> = import('../../../platform/window/electron-sandbox/window.js').ILoadOptions<T>;
-	type INativeWindowConfiguration = import('../../../platform/window/common/window.ts').INativeWindowConfiguration;
-	type IMainWindowSandboxGlobals = import('../../../base/parts/sandbox/electron-sandbox/globals.js').IMainWindowSandboxGlobals;
+	type ISandboxConfiguration =
+		import('../../../base/parts/sandbox/common/sandboxTypes.js').ISandboxConfiguration;
+	type ILoadResult<
+		M,
+		T extends ISandboxConfiguration,
+	> = import('../../../platform/window/electron-sandbox/window.js').ILoadResult<M, T>;
+	type ILoadOptions<T extends ISandboxConfiguration> =
+		import('../../../platform/window/electron-sandbox/window.js').ILoadOptions<T>;
+	type INativeWindowConfiguration =
+		import('../../../platform/window/common/window.ts').INativeWindowConfiguration;
+	type IMainWindowSandboxGlobals =
+		import('../../../base/parts/sandbox/electron-sandbox/globals.js').IMainWindowSandboxGlobals;
 	type IDesktopMain = import('../../../workbench/electron-sandbox/desktop.main.js').IDesktopMain;
 
 	const preloadGlobals: IMainWindowSandboxGlobals = (window as any).vscode; // defined by preload.ts
@@ -28,11 +34,17 @@
 		let data = configuration.partsSplash;
 		if (data) {
 			if (configuration.autoDetectHighContrast && configuration.colorScheme.highContrast) {
-				if ((configuration.colorScheme.dark && data.baseTheme !== 'hc-black') || (!configuration.colorScheme.dark && data.baseTheme !== 'hc-light')) {
+				if (
+					(configuration.colorScheme.dark && data.baseTheme !== 'hc-black') ||
+					(!configuration.colorScheme.dark && data.baseTheme !== 'hc-light')
+				) {
 					data = undefined; // high contrast mode has been turned by the OS -> ignore stored colors and layouts
 				}
 			} else if (configuration.autoDetectColorScheme) {
-				if ((configuration.colorScheme.dark && data.baseTheme !== 'vs-dark') || (!configuration.colorScheme.dark && data.baseTheme !== 'vs')) {
+				if (
+					(configuration.colorScheme.dark && data.baseTheme !== 'vs-dark') ||
+					(!configuration.colorScheme.dark && data.baseTheme !== 'vs')
+				) {
 					data = undefined; // OS color scheme is tracked and has changed
 				}
 			}
@@ -79,7 +91,10 @@
 		style.textContent = `body {	background-color: ${shellBackground}; color: ${shellForeground}; margin: 0; padding: 0; }`;
 
 		// set zoom level as soon as possible
-		if (typeof data?.zoomLevel === 'number' && typeof preloadGlobals?.webFrame?.setZoomLevel === 'function') {
+		if (
+			typeof data?.zoomLevel === 'number' &&
+			typeof preloadGlobals?.webFrame?.setZoomLevel === 'function'
+		) {
 			preloadGlobals.webFrame.setZoomLevel(data.zoomLevel);
 		}
 
@@ -108,8 +123,18 @@
 			}
 
 			// ensure there is enough space
-			layoutInfo.auxiliarySideBarWidth = Math.min(layoutInfo.auxiliarySideBarWidth, window.innerWidth - (layoutInfo.activityBarWidth + layoutInfo.editorPartMinWidth + layoutInfo.sideBarWidth));
-			layoutInfo.sideBarWidth = Math.min(layoutInfo.sideBarWidth, window.innerWidth - (layoutInfo.activityBarWidth + layoutInfo.editorPartMinWidth + layoutInfo.auxiliarySideBarWidth));
+			layoutInfo.auxiliarySideBarWidth = Math.min(
+				layoutInfo.auxiliarySideBarWidth,
+				window.innerWidth -
+					(layoutInfo.activityBarWidth + layoutInfo.editorPartMinWidth + layoutInfo.sideBarWidth)
+			);
+			layoutInfo.sideBarWidth = Math.min(
+				layoutInfo.sideBarWidth,
+				window.innerWidth -
+					(layoutInfo.activityBarWidth +
+						layoutInfo.editorPartMinWidth +
+						layoutInfo.auxiliarySideBarWidth)
+			);
 
 			// part: title
 			if (layoutInfo.titleBarHeight > 0) {
@@ -267,8 +292,10 @@
 
 	//#region Window Helpers
 
-	async function load<M, T extends ISandboxConfiguration>(esModule: string, options: ILoadOptions<T>): Promise<ILoadResult<M, T>> {
-
+	async function load<M, T extends ISandboxConfiguration>(
+		esModule: string,
+		options: ILoadOptions<T>
+	): Promise<ILoadResult<M, T>> {
 		// Window Configuration from Preload Script
 		const configuration = await resolveWindowConfiguration<T>();
 
@@ -276,13 +303,20 @@
 		options?.beforeImport?.(configuration);
 
 		// Developer settings
-		const { enableDeveloperKeybindings, removeDeveloperKeybindingsAfterLoad, developerDeveloperKeybindingsDisposable, forceDisableShowDevtoolsOnError } = setupDeveloperKeybindings(configuration, options);
+		const {
+			enableDeveloperKeybindings,
+			removeDeveloperKeybindingsAfterLoad,
+			developerDeveloperKeybindingsDisposable,
+			forceDisableShowDevtoolsOnError,
+		} = setupDeveloperKeybindings(configuration, options);
 
 		// NLS
 		setupNLS<T>(configuration);
 
 		// Compute base URL and set as global
-		const baseUrl = new URL(`${fileUriFromPath(configuration.appRoot, { isWindows: safeProcess.platform === 'win32', scheme: 'vscode-file', fallbackAuthority: 'vscode-app' })}/out/`);
+		const baseUrl = new URL(
+			`${fileUriFromPath(configuration.appRoot, { isWindows: safeProcess.platform === 'win32', scheme: 'vscode-file', fallbackAuthority: 'vscode-app' })}/out/`
+		);
 		globalThis._VSCODE_FILE_ROOT = baseUrl.toString();
 
 		// Dev only: CSS import map tricks
@@ -305,10 +339,14 @@
 	}
 
 	async function resolveWindowConfiguration<T extends ISandboxConfiguration>() {
-		const timeout = setTimeout(() => { console.error(`[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...`); }, 10000);
+		const timeout = setTimeout(() => {
+			console.error(
+				`[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...`
+			);
+		}, 10000);
 		performance.mark('code/willWaitForWindowConfig');
 
-		const configuration = await preloadGlobals.context.resolveConfiguration() as T;
+		const configuration = (await preloadGlobals.context.resolveConfiguration()) as T;
 		performance.mark('code/didWaitForWindowConfig');
 
 		clearTimeout(timeout);
@@ -316,52 +354,58 @@
 		return configuration;
 	}
 
-	function setupDeveloperKeybindings<T extends ISandboxConfiguration>(configuration: T, options: ILoadOptions<T>) {
+	function setupDeveloperKeybindings<T extends ISandboxConfiguration>(
+		configuration: T,
+		options: ILoadOptions<T>
+	) {
 		const {
 			forceEnableDeveloperKeybindings,
 			disallowReloadKeybinding,
 			removeDeveloperKeybindingsAfterLoad,
-			forceDisableShowDevtoolsOnError
-		} = typeof options?.configureDeveloperSettings === 'function' ? options.configureDeveloperSettings(configuration) : {
-			forceEnableDeveloperKeybindings: false,
-			disallowReloadKeybinding: false,
-			removeDeveloperKeybindingsAfterLoad: false,
-			forceDisableShowDevtoolsOnError: false
-		};
+			forceDisableShowDevtoolsOnError,
+		} =
+			typeof options?.configureDeveloperSettings === 'function'
+				? options.configureDeveloperSettings(configuration)
+				: {
+						forceEnableDeveloperKeybindings: false,
+						disallowReloadKeybinding: false,
+						removeDeveloperKeybindingsAfterLoad: false,
+						forceDisableShowDevtoolsOnError: false,
+					};
 
 		const isDev = !!safeProcess.env['VSCODE_DEV'];
 		const enableDeveloperKeybindings = Boolean(isDev || forceEnableDeveloperKeybindings);
 		let developerDeveloperKeybindingsDisposable: Function | undefined = undefined;
 		if (enableDeveloperKeybindings) {
-			developerDeveloperKeybindingsDisposable = registerDeveloperKeybindings(disallowReloadKeybinding);
+			developerDeveloperKeybindingsDisposable =
+				registerDeveloperKeybindings(disallowReloadKeybinding);
 		}
 
 		return {
 			enableDeveloperKeybindings,
 			removeDeveloperKeybindingsAfterLoad,
 			developerDeveloperKeybindingsDisposable,
-			forceDisableShowDevtoolsOnError
+			forceDisableShowDevtoolsOnError,
 		};
 	}
 
 	function registerDeveloperKeybindings(disallowReloadKeybinding: boolean | undefined): Function {
 		const ipcRenderer = preloadGlobals.ipcRenderer;
 
-		const extractKey =
-			function (e: KeyboardEvent) {
-				return [
-					e.ctrlKey ? 'ctrl-' : '',
-					e.metaKey ? 'meta-' : '',
-					e.altKey ? 'alt-' : '',
-					e.shiftKey ? 'shift-' : '',
-					e.keyCode
-				].join('');
-			};
+		const extractKey = function (e: KeyboardEvent) {
+			return [
+				e.ctrlKey ? 'ctrl-' : '',
+				e.metaKey ? 'meta-' : '',
+				e.altKey ? 'alt-' : '',
+				e.shiftKey ? 'shift-' : '',
+				e.keyCode,
+			].join('');
+		};
 
 		// Devtools & reload support
-		const TOGGLE_DEV_TOOLS_KB = (safeProcess.platform === 'darwin' ? 'meta-alt-73' : 'ctrl-shift-73'); // mac: Cmd-Alt-I, rest: Ctrl-Shift-I
+		const TOGGLE_DEV_TOOLS_KB = safeProcess.platform === 'darwin' ? 'meta-alt-73' : 'ctrl-shift-73'; // mac: Cmd-Alt-I, rest: Ctrl-Shift-I
 		const TOGGLE_DEV_TOOLS_KB_ALT = '123'; // F12
-		const RELOAD_KB = (safeProcess.platform === 'darwin' ? 'meta-82' : 'ctrl-82'); // mac: Cmd-R, rest: Ctrl-R
+		const RELOAD_KB = safeProcess.platform === 'darwin' ? 'meta-82' : 'ctrl-82'; // mac: Cmd-R, rest: Ctrl-R
 
 		let listener: ((e: KeyboardEvent) => void) | undefined = function (e) {
 			const key = extractKey(e);
@@ -409,8 +453,10 @@
 		}
 	}
 
-	function fileUriFromPath(path: string, config: { isWindows?: boolean; scheme?: string; fallbackAuthority?: string }): string {
-
+	function fileUriFromPath(
+		path: string,
+		config: { isWindows?: boolean; scheme?: string; fallbackAuthority?: string }
+	): string {
 		// Since we are building a URI, we normalize any backslash
 		// to slashes and we ensure that the path begins with a '/'.
 		let pathName = path.replace(/\\/g, '/');
@@ -436,7 +482,6 @@
 	}
 
 	function setupCSSImportMaps<T extends ISandboxConfiguration>(configuration: T, baseUrl: URL) {
-
 		// DEV ---------------------------------------------------------------------------------------
 		// DEV: This is for development and enables loading CSS via import-statements via import-maps.
 		// DEV: For each CSS modules that we have we defined an entry in the import map that maps to
@@ -464,7 +509,11 @@
 				importMap.imports[cssUrl] = URL.createObjectURL(blob);
 			}
 
-			const ttp = window.trustedTypes?.createPolicy('vscode-bootstrapImportMap', { createScript(value) { return value; }, });
+			const ttp = window.trustedTypes?.createPolicy('vscode-bootstrapImportMap', {
+				createScript(value) {
+					return value;
+				},
+			});
 			const importMapSrc = JSON.stringify(importMap, undefined, 2);
 			const importMapScript = document.createElement('script');
 			importMapScript.type = 'importmap';
@@ -479,26 +528,30 @@
 
 	//#endregion
 
-	const { result, configuration } = await load<IDesktopMain, INativeWindowConfiguration>('vs/workbench/workbench.desktop.main',
+	const { result, configuration } = await load<IDesktopMain, INativeWindowConfiguration>(
+		'vs/workbench/workbench.desktop.main',
 		{
 			configureDeveloperSettings: function (windowConfig) {
 				return {
 					// disable automated devtools opening on error when running extension tests
 					// as this can lead to nondeterministic test execution (devtools steals focus)
-					forceDisableShowDevtoolsOnError: typeof windowConfig.extensionTestsPath === 'string' || windowConfig['enable-smoke-test-driver'] === true,
+					forceDisableShowDevtoolsOnError:
+						typeof windowConfig.extensionTestsPath === 'string' ||
+						windowConfig['enable-smoke-test-driver'] === true,
 					// enable devtools keybindings in extension development window
-					forceEnableDeveloperKeybindings: Array.isArray(windowConfig.extensionDevelopmentPath) && windowConfig.extensionDevelopmentPath.length > 0,
-					removeDeveloperKeybindingsAfterLoad: true
+					forceEnableDeveloperKeybindings:
+						Array.isArray(windowConfig.extensionDevelopmentPath) &&
+						windowConfig.extensionDevelopmentPath.length > 0,
+					removeDeveloperKeybindingsAfterLoad: true,
 				};
 			},
 			beforeImport: function (windowConfig) {
-
 				// Show our splash as early as possible
 				showSplash(windowConfig);
 
 				// Code windows have a `vscodeWindowId` property to identify them
 				Object.defineProperty(window, 'vscodeWindowId', {
-					get: () => windowConfig.windowId
+					get: () => windowConfig.windowId,
 				});
 
 				// It looks like browsers only lazily enable
@@ -507,16 +560,19 @@
 				// locations, we try to help the browser to
 				// initialize canvas when it is idle, right
 				// before we wait for the scripts to be loaded.
-				window.requestIdleCallback(() => {
-					const canvas = document.createElement('canvas');
-					const context = canvas.getContext('2d');
-					context?.clearRect(0, 0, canvas.width, canvas.height);
-					canvas.remove();
-				}, { timeout: 50 });
+				window.requestIdleCallback(
+					() => {
+						const canvas = document.createElement('canvas');
+						const context = canvas.getContext('2d');
+						context?.clearRect(0, 0, canvas.width, canvas.height);
+						canvas.remove();
+					},
+					{ timeout: 50 }
+				);
 
 				// Track import() perf
 				performance.mark('code/willLoadWorkbenchMain');
-			}
+			},
 		}
 	);
 
@@ -525,4 +581,4 @@
 
 	// Load workbench
 	result.main(configuration);
-}());
+})();

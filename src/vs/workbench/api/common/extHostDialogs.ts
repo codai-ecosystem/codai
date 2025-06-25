@@ -8,7 +8,6 @@ import { URI } from '../../../base/common/uri.js';
 import { MainContext, MainThreadDiaglogsShape, IMainContext } from './extHost.protocol.js';
 
 export class ExtHostDialogs {
-
 	private readonly _proxy: MainThreadDiaglogsShape;
 
 	constructor(mainContext: IMainContext) {

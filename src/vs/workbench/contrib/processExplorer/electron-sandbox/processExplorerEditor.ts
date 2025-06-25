@@ -12,7 +12,6 @@ import { ProcessExplorerEditor } from '../browser/processExplorerEditor.js';
 import { NativeProcessExplorerControl } from './processExplorerControl.js';
 
 export class NativeProcessExplorerEditor extends ProcessExplorerEditor {
-
 	constructor(
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -24,6 +23,8 @@ export class NativeProcessExplorerEditor extends ProcessExplorerEditor {
 	}
 
 	protected override createEditor(parent: HTMLElement): void {
-		this.processExplorerControl = this._register(this.instantiationService.createInstance(NativeProcessExplorerControl, parent));
+		this.processExplorerControl = this._register(
+			this.instantiationService.createInstance(NativeProcessExplorerControl, parent)
+		);
 	}
 }

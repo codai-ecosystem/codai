@@ -25,10 +25,7 @@ async function getServiceConfig(request: NextRequest, { params }: ServiceParams)
 		const serviceType = searchParams.get('serviceType') as ServiceType;
 
 		if (!serviceType) {
-			return NextResponse.json(
-				{ error: 'Service type parameter is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Service type parameter is required' }, { status: 400 });
 		}
 
 		// Get user from auth middleware
@@ -53,20 +50,17 @@ async function getServiceConfig(request: NextRequest, { params }: ServiceParams)
 		// Remove sensitive information from response
 		const sanitizedConfig = {
 			...config,
-			apiKey: config.apiKey ? '[REDACTED]' : undefined
+			apiKey: config.apiKey ? '[REDACTED]' : undefined,
 		};
 
 		return NextResponse.json({
 			serviceType,
 			providerId,
-			config: sanitizedConfig
+			config: sanitizedConfig,
 		});
 	} catch (error) {
 		console.error('Error fetching service configuration:', error);
-		return NextResponse.json(
-			{ error: 'Failed to fetch service configuration' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to fetch service configuration' }, { status: 500 });
 	}
 }
 
@@ -82,17 +76,11 @@ async function updateServiceConfig(request: NextRequest, { params }: ServicePara
 
 		// Validate input
 		if (!serviceType) {
-			return NextResponse.json(
-				{ error: 'Service type is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Service type is required' }, { status: 400 });
 		}
 
 		if (!config) {
-			return NextResponse.json(
-				{ error: 'Configuration object is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Configuration object is required' }, { status: 400 });
 		}
 
 		if (!['llm', 'embedding'].includes(serviceType)) {
@@ -118,7 +106,9 @@ async function updateServiceConfig(request: NextRequest, { params }: ServicePara
 		const availableProviders = serviceManager.getAvailableProviders(serviceType);
 		if (!availableProviders.includes(providerId)) {
 			return NextResponse.json(
-				{ error: `Unsupported provider: ${providerId}. Available: ${availableProviders.join(', ')}` },
+				{
+					error: `Unsupported provider: ${providerId}. Available: ${availableProviders.join(', ')}`,
+				},
 				{ status: 400 }
 			);
 		}
@@ -127,10 +117,7 @@ async function updateServiceConfig(request: NextRequest, { params }: ServicePara
 		const requiredFields = ['isManaged'];
 		for (const field of requiredFields) {
 			if (!(field in config)) {
-				return NextResponse.json(
-					{ error: `Missing required field: ${field}` },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
 			}
 		}
 
@@ -146,7 +133,7 @@ async function updateServiceConfig(request: NextRequest, { params }: ServicePara
 		const serviceConfig: ServiceConfig = {
 			...config,
 			providerId, // Ensure correct provider ID
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		};
 
 		// Update service configuration
@@ -160,26 +147,23 @@ async function updateServiceConfig(request: NextRequest, { params }: ServicePara
 				serviceType,
 				providerId,
 				isManaged: config.isManaged,
-				updated: true
+				updated: true,
 			},
 			timestamp: new Date(),
 			metadata: {
 				userAgent: request.headers.get('user-agent'),
-				ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-			}
+				ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+			},
 		});
 
 		return NextResponse.json({
 			message: 'Service configuration updated successfully',
 			serviceType,
-			providerId
+			providerId,
 		});
 	} catch (error) {
 		console.error('Error updating service configuration:', error);
-		return NextResponse.json(
-			{ error: 'Failed to update service configuration' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to update service configuration' }, { status: 500 });
 	}
 }
 
@@ -194,10 +178,7 @@ async function deleteServiceConfig(request: NextRequest, { params }: ServicePara
 		const serviceType = searchParams.get('serviceType') as ServiceType;
 
 		if (!serviceType) {
-			return NextResponse.json(
-				{ error: 'Service type parameter is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Service type parameter is required' }, { status: 400 });
 		}
 
 		if (!['llm', 'embedding'].includes(serviceType)) {
@@ -220,26 +201,23 @@ async function deleteServiceConfig(request: NextRequest, { params }: ServicePara
 			action: 'service_config_deleted',
 			details: {
 				serviceType,
-				providerId
+				providerId,
 			},
 			timestamp: new Date(),
 			metadata: {
 				userAgent: request.headers.get('user-agent'),
-				ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-			}
+				ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+			},
 		});
 
 		return NextResponse.json({
 			message: 'Service configuration removed successfully',
 			serviceType,
-			providerId
+			providerId,
 		});
 	} catch (error) {
 		console.error('Error removing service configuration:', error);
-		return NextResponse.json(
-			{ error: 'Failed to remove service configuration' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to remove service configuration' }, { status: 500 });
 	}
 }
 
@@ -248,10 +226,7 @@ export const GET = withAuth(async (request: NextRequest) => {
 	// Extract providerId from URL pathname
 	const providerId = request.url.split('/services/')[1]?.split('?')[0];
 	if (!providerId) {
-		return NextResponse.json(
-			{ error: 'Provider ID is required' },
-			{ status: 400 }
-		);
+		return NextResponse.json({ error: 'Provider ID is required' }, { status: 400 });
 	}
 
 	return getServiceConfig(request, { params: { providerId } });
@@ -261,10 +236,7 @@ export const PUT = withAuth(async (request: NextRequest) => {
 	// Extract providerId from URL pathname
 	const providerId = request.url.split('/services/')[1]?.split('?')[0];
 	if (!providerId) {
-		return NextResponse.json(
-			{ error: 'Provider ID is required' },
-			{ status: 400 }
-		);
+		return NextResponse.json({ error: 'Provider ID is required' }, { status: 400 });
 	}
 
 	return updateServiceConfig(request, { params: { providerId } });
@@ -274,10 +246,7 @@ export const DELETE = withAuth(async (request: NextRequest) => {
 	// Extract providerId from URL pathname
 	const providerId = request.url.split('/services/')[1]?.split('?')[0];
 	if (!providerId) {
-		return NextResponse.json(
-			{ error: 'Provider ID is required' },
-			{ status: 400 }
-		);
+		return NextResponse.json({ error: 'Provider ID is required' }, { status: 400 });
 	}
 
 	return deleteServiceConfig(request, { params: { providerId } });

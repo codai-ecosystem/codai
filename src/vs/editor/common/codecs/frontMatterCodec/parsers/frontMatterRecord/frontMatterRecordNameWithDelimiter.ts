@@ -8,7 +8,11 @@ import { PartialFrontMatterRecord } from './frontMatterRecord.js';
 import { Colon, SpacingToken } from '../../../simpleCodec/tokens/index.js';
 import { type TSimpleDecoderToken } from '../../../simpleCodec/simpleDecoder.js';
 import { FrontMatterRecordName, FrontMatterRecordDelimiter } from '../../tokens/index.js';
-import { assertNotConsumed, ParserBase, type TAcceptTokenResult } from '../../../simpleCodec/parserBase.js';
+import {
+	assertNotConsumed,
+	ParserBase,
+	type TAcceptTokenResult,
+} from '../../../simpleCodec/parserBase.js';
 
 /**
  * Type for tokens that stop a front matter record name sequence.
@@ -33,39 +37,32 @@ export class PartialFrontMatterRecordNameWithDelimiter extends ParserBase<
 	FrontMatterRecordName | TNameStopToken,
 	TNextParser
 > {
-	constructor(
-		tokens: readonly [FrontMatterRecordName, TNameStopToken],
-	) {
+	constructor(tokens: readonly [FrontMatterRecordName, TNameStopToken]) {
 		super([...tokens]);
 	}
 
 	@assertNotConsumed
 	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<TNextParser> {
 		const previousToken = this.currentTokens[this.currentTokens.length - 1];
-		const isSpacingToken = (token instanceof SpacingToken);
+		const isSpacingToken = token instanceof SpacingToken;
 
 		// delimiter must always be a `:` followed by a "space" character
 		// once we encounter that sequence, we can transition to the next parser
-		if (isSpacingToken && (previousToken instanceof Colon)) {
-			const recordDelimiter = new FrontMatterRecordDelimiter([
-				previousToken,
-				token,
-			]);
+		if (isSpacingToken && previousToken instanceof Colon) {
+			const recordDelimiter = new FrontMatterRecordDelimiter([previousToken, token]);
 
 			const recordName = this.currentTokens[0];
 
 			// sanity check
 			assert(
 				recordName instanceof FrontMatterRecordName,
-				`Expected a front matter record name, got '${recordName}'.`,
+				`Expected a front matter record name, got '${recordName}'.`
 			);
 
 			this.isConsumed = true;
 			return {
 				result: 'success',
-				nextParser: new PartialFrontMatterRecord(
-					[recordName, recordDelimiter],
-				),
+				nextParser: new PartialFrontMatterRecord([recordName, recordDelimiter]),
 				wasTokenConsumed: true,
 			};
 		}

@@ -18,7 +18,7 @@ const colors = {
 	yellow: '\x1b[33m',
 	blue: '\x1b[34m',
 	reset: '\x1b[0m',
-	bold: '\x1b[1m'
+	bold: '\x1b[1m',
 };
 
 function log(message, color = colors.reset) {
@@ -59,11 +59,11 @@ async function setupTestEnvironment() {
 		scripts: {
 			build: 'echo "Building project..."',
 			test: 'echo "Running tests..."',
-			start: 'echo "Starting application..."'
+			start: 'echo "Starting application..."',
 		},
 		dependencies: {
-			express: '^4.18.0'
-		}
+			express: '^4.18.0',
+		},
 	};
 	fs.writeFileSync(
 		path.join(TEST_PROJECT_DIR, 'package.json'),
@@ -71,7 +71,9 @@ async function setupTestEnvironment() {
 	);
 
 	// Create basic project files
-	fs.writeFileSync(path.join(TEST_PROJECT_DIR, 'index.js'), `
+	fs.writeFileSync(
+		path.join(TEST_PROJECT_DIR, 'index.js'),
+		`
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -83,13 +85,17 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
 	console.log(\`Server running on port \${port}\`);
 });
-`);
+`
+	);
 
-	fs.writeFileSync(path.join(TEST_PROJECT_DIR, 'README.md'), `
+	fs.writeFileSync(
+		path.join(TEST_PROJECT_DIR, 'README.md'),
+		`
 # Test Deployment Project
 
 This is a test project for AIDE's deployment system.
-`);
+`
+	);
 
 	logSuccess('Test environment setup complete');
 }
@@ -107,20 +113,20 @@ async function testCIPipelineGeneration() {
 			name: 'Production Vercel',
 			type: 'vercel',
 			buildCommand: 'npm run build',
-			outputDirectory: 'dist'
+			outputDirectory: 'dist',
 		},
 		{
 			name: 'Staging Netlify',
 			type: 'netlify',
 			buildCommand: 'npm run build:staging',
-			outputDirectory: 'build'
+			outputDirectory: 'build',
 		},
 		{
 			name: 'GitHub Pages',
 			type: 'github-pages',
 			buildCommand: 'npm run build:static',
-			outputDirectory: 'public'
-		}
+			outputDirectory: 'public',
+		},
 	];
 
 	for (const target of targets) {
@@ -341,10 +347,10 @@ async function testDeploymentHistory(deploymentService) {
 				'Starting Vercel deployment...',
 				'Running build command: npm run build',
 				'Deploying to Vercel...',
-				'Deployment successful!'
+				'Deployment successful!',
 			],
 			commitHash: 'abc123def456',
-			version: '1.0.0'
+			version: '1.0.0',
 		},
 		{
 			id: 'deploy_1234567891_def456',
@@ -356,11 +362,11 @@ async function testDeploymentHistory(deploymentService) {
 				'Starting Netlify deployment...',
 				'Running build command: npm run build:staging',
 				'Error: Build failed',
-				'Deployment failed!'
+				'Deployment failed!',
 			],
 			commitHash: 'def456ghi789',
-			version: '0.9.1'
-		}
+			version: '0.9.1',
+		},
 	];
 
 	// Manually add to deployment history (simulating the actual deployment process)
@@ -412,14 +418,26 @@ async function testDeploymentRecommendations() {
 	const webappRecs = deploymentService.getDeploymentRecommendations('webapp');
 	assert(Array.isArray(webappRecs), 'Should return array of recommendations');
 	assert(webappRecs.length > 0, 'Should have webapp recommendations');
-	assert(webappRecs.some(rec => rec.type === 'vercel'), 'Should recommend Vercel for webapp');
-	assert(webappRecs.some(rec => rec.type === 'netlify'), 'Should recommend Netlify for webapp');
+	assert(
+		webappRecs.some(rec => rec.type === 'vercel'),
+		'Should recommend Vercel for webapp'
+	);
+	assert(
+		webappRecs.some(rec => rec.type === 'netlify'),
+		'Should recommend Netlify for webapp'
+	);
 
 	const apiRecs = deploymentService.getDeploymentRecommendations('api');
 	assert(Array.isArray(apiRecs), 'Should return array of recommendations');
 	assert(apiRecs.length > 0, 'Should have API recommendations');
-	assert(apiRecs.some(rec => rec.type === 'vercel'), 'Should recommend Vercel for API');
-	assert(apiRecs.some(rec => rec.type === 'aws'), 'Should recommend AWS for API');
+	assert(
+		apiRecs.some(rec => rec.type === 'vercel'),
+		'Should recommend Vercel for API'
+	);
+	assert(
+		apiRecs.some(rec => rec.type === 'aws'),
+		'Should recommend AWS for API'
+	);
 
 	logSuccess('Deployment recommendations work correctly');
 }
@@ -438,7 +456,9 @@ async function cleanup() {
 // Main test runner
 async function runTests() {
 	log(`${colors.bold}${colors.blue}🚀 AIDE Enhanced Deployment Service Test Suite${colors.reset}`);
-	log(`${colors.blue}Testing CI/CD pipeline functionality and deployment features${colors.reset}\n`);
+	log(
+		`${colors.blue}Testing CI/CD pipeline functionality and deployment features${colors.reset}\n`
+	);
 
 	let passed = 0;
 	let failed = 0;
@@ -447,29 +467,32 @@ async function runTests() {
 		{ name: 'Setup Test Environment', fn: setupTestEnvironment },
 		{ name: 'CI/CD Pipeline Generation', fn: testCIPipelineGeneration },
 		{
-			name: 'GitHub Actions Pipeline', fn: async () => {
+			name: 'GitHub Actions Pipeline',
+			fn: async () => {
 				const deploymentService = await testCIPipelineGeneration();
 				await testGitHubActionsPipeline(deploymentService);
 				return deploymentService;
-			}
+			},
 		},
 		{ name: 'GitLab CI Pipeline', fn: testGitLabCIPipeline },
 		{ name: 'Dockerfile Generation', fn: testDockerfileGeneration },
 		{
-			name: 'Deployment History', fn: async () => {
+			name: 'Deployment History',
+			fn: async () => {
 				const deploymentService = await testCIPipelineGeneration();
 				await testDeploymentHistory(deploymentService);
 				return deploymentService;
-			}
+			},
 		},
 		{
-			name: 'Deployment Persistence', fn: async () => {
+			name: 'Deployment Persistence',
+			fn: async () => {
 				const deploymentService = await testCIPipelineGeneration();
 				await testDeploymentPersistence(deploymentService);
-			}
+			},
 		},
 		{ name: 'Deployment Recommendations', fn: testDeploymentRecommendations },
-		{ name: 'Cleanup', fn: cleanup }
+		{ name: 'Cleanup', fn: cleanup },
 	];
 
 	for (const test of tests) {
@@ -488,12 +511,18 @@ async function runTests() {
 	log(`\n${colors.bold}${colors.blue}📊 Test Results Summary${colors.reset}`);
 	log(`${colors.green}✅ Passed: ${passed}${colors.reset}`);
 	log(`${colors.red}❌ Failed: ${failed}${colors.reset}`);
-	log(`${colors.blue}📈 Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%${colors.reset}`);
+	log(
+		`${colors.blue}📈 Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%${colors.reset}`
+	);
 
 	if (failed === 0) {
-		log(`\n${colors.bold}${colors.green}🎉 All tests passed! Enhanced deployment system is working correctly.${colors.reset}`);
+		log(
+			`\n${colors.bold}${colors.green}🎉 All tests passed! Enhanced deployment system is working correctly.${colors.reset}`
+		);
 	} else {
-		log(`\n${colors.bold}${colors.red}⚠️ Some tests failed. Please review the errors above.${colors.reset}`);
+		log(
+			`\n${colors.bold}${colors.red}⚠️ Some tests failed. Please review the errors above.${colors.reset}`
+		);
 		process.exit(1);
 	}
 }

@@ -15,7 +15,7 @@ import {
 	Users,
 	Bot,
 	Layers,
-	Target
+	Target,
 } from 'lucide-react';
 
 export function FeaturesSection() {
@@ -49,55 +49,64 @@ export function FeaturesSection() {
 		{
 			icon: Brain,
 			title: 'Autonomous AI Agent',
-			description: 'AI that understands context, writes code, fixes bugs, and makes architectural decisions independently.',
+			description:
+				'AI that understands context, writes code, fixes bugs, and makes architectural decisions independently.',
 			category: 'AI-Powered',
 		},
 		{
 			icon: Code2,
 			title: 'VS Code Integration',
-			description: 'Seamless integration with your favorite editor. Work in familiar environment with AI superpowers.',
+			description:
+				'Seamless integration with your favorite editor. Work in familiar environment with AI superpowers.',
 			category: 'Development',
 		},
 		{
 			icon: Rocket,
 			title: 'One-Click Deployment',
-			description: 'Deploy to production with a single command. Automatic scaling, monitoring, and rollbacks included.',
+			description:
+				'Deploy to production with a single command. Automatic scaling, monitoring, and rollbacks included.',
 			category: 'DevOps',
 		},
 		{
 			icon: Database,
 			title: 'Smart Database Management',
-			description: 'AI-optimized database schemas, migrations, and queries. Supports PostgreSQL, MongoDB, and more.',
+			description:
+				'AI-optimized database schemas, migrations, and queries. Supports PostgreSQL, MongoDB, and more.',
 			category: 'Data',
 		},
 		{
 			icon: GitBranch,
 			title: 'Intelligent Version Control',
-			description: 'AI-powered git workflows with automatic branch management, conflict resolution, and code reviews.',
+			description:
+				'AI-powered git workflows with automatic branch management, conflict resolution, and code reviews.',
 			category: 'Collaboration',
 		},
 		{
 			icon: Shield,
 			title: 'Built-in Security',
-			description: 'Automated security scanning, vulnerability detection, and compliance checks in your development workflow.',
+			description:
+				'Automated security scanning, vulnerability detection, and compliance checks in your development workflow.',
 			category: 'Security',
 		},
 		{
 			icon: Cloud,
 			title: 'Multi-Cloud Support',
-			description: 'Deploy to AWS, Google Cloud, Azure, or any cloud provider with optimized configurations.',
+			description:
+				'Deploy to AWS, Google Cloud, Azure, or any cloud provider with optimized configurations.',
 			category: 'Infrastructure',
 		},
 		{
 			icon: Users,
 			title: 'Team Collaboration',
-			description: 'Real-time collaboration with shared AI context, live coding sessions, and team knowledge bases.',
+			description:
+				'Real-time collaboration with shared AI context, live coding sessions, and team knowledge bases.',
 			category: 'Collaboration',
 		},
 		{
 			icon: Zap,
 			title: 'Lightning Fast',
-			description: 'Optimized development workflows that are 10x faster than traditional development processes.',
+			description:
+				'Optimized development workflows that are 10x faster than traditional development processes.',
 			category: 'Performance',
 		},
 	];
@@ -109,7 +118,7 @@ export function FeaturesSection() {
 					ref={ref}
 					variants={containerVariants}
 					initial="hidden"
-					animate={inView ? "visible" : "hidden"}
+					animate={inView ? 'visible' : 'hidden'}
 					className="text-center mb-16"
 				>
 					<motion.div
@@ -126,7 +135,8 @@ export function FeaturesSection() {
 					>
 						Everything you need to
 						<span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-							{' '}build faster
+							{' '}
+							build faster
 						</span>
 					</motion.h2>
 
@@ -134,15 +144,15 @@ export function FeaturesSection() {
 						variants={itemVariants}
 						className="text-xl text-muted-foreground max-w-3xl mx-auto"
 					>
-						AIDE combines the power of AI with modern development tools to create
-						the most advanced development environment ever built.
+						AIDE combines the power of AI with modern development tools to create the most advanced
+						development environment ever built.
 					</motion.p>
 				</motion.div>
 
 				<motion.div
 					variants={containerVariants}
 					initial="hidden"
-					animate={inView ? "visible" : "hidden"}
+					animate={inView ? 'visible' : 'hidden'}
 					className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
 				>
 					{features.map((feature, index) => (
@@ -169,9 +179,7 @@ export function FeaturesSection() {
 							<h3 className="text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors duration-300">
 								{feature.title}
 							</h3>
-							<p className="text-muted-foreground leading-relaxed">
-								{feature.description}
-							</p>
+							<p className="text-muted-foreground leading-relaxed">{feature.description}</p>
 
 							{/* Hover Effect */}
 							<div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
@@ -183,7 +191,7 @@ export function FeaturesSection() {
 				<motion.div
 					variants={itemVariants}
 					initial="hidden"
-					animate={inView ? "visible" : "hidden"}
+					animate={inView ? 'visible' : 'hidden'}
 					className="text-center mt-16"
 				>
 					<div className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10 border border-primary/20 rounded-2xl p-8">
@@ -192,8 +200,8 @@ export function FeaturesSection() {
 							Ready to experience the future?
 						</h3>
 						<p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-							Join thousands of developers who are already building with AI.
-							Start your free trial today and see the difference.
+							Join thousands of developers who are already building with AI. Start your free trial
+							today and see the difference.
 						</p>
 						<div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
 							<Layers className="h-4 w-4" />

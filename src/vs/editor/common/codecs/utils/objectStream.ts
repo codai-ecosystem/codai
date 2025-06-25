@@ -6,12 +6,19 @@
 import { assertNever } from '../../../../base/common/assert.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { ObservableDisposable } from '../../../../base/common/observableDisposable.js';
-import { newWriteableStream, WriteableStream, ReadableStream } from '../../../../base/common/stream.js';
+import {
+	newWriteableStream,
+	WriteableStream,
+	ReadableStream,
+} from '../../../../base/common/stream.js';
 
 /**
  * A readable stream of provided objects.
  */
-export class ObjectStream<T extends object> extends ObservableDisposable implements ReadableStream<T> {
+export class ObjectStream<T extends object>
+	extends ObservableDisposable
+	implements ReadableStream<T>
+{
 	/**
 	 * Flag that indicates whether the stream has ended.
 	 */
@@ -30,7 +37,7 @@ export class ObjectStream<T extends object> extends ObservableDisposable impleme
 
 	constructor(
 		private readonly data: Generator<T, undefined>,
-		private readonly cancellationToken?: CancellationToken,
+		private readonly cancellationToken?: CancellationToken
 	) {
 		super();
 
@@ -51,9 +58,7 @@ export class ObjectStream<T extends object> extends ObservableDisposable impleme
 	 * @param stopAfterFirstSend whether to continue sending data to the stream
 	 *             or stop sending after the first batch of data is sent instead
 	 */
-	public send(
-		stopAfterFirstSend: boolean = false,
-	): void {
+	public send(stopAfterFirstSend: boolean = false): void {
 		// this method can be called asynchronously by the `setTimeout` utility below, hence
 		// the state of the cancellation token or the stream itself might have changed by that time
 		if (this.cancellationToken?.isCancellationRequested || this.ended) {
@@ -77,7 +82,7 @@ export class ObjectStream<T extends object> extends ObservableDisposable impleme
 
 				this.timeoutHandle = setTimeout(this.send.bind(this));
 			})
-			.catch((error) => {
+			.catch(error => {
 				this.stream.error(error);
 				this.dispose();
 			});
@@ -100,9 +105,7 @@ export class ObjectStream<T extends object> extends ObservableDisposable impleme
 	/**
 	 * Sends a provided number of objects to the stream.
 	 */
-	private async sendData(
-		objectsCount: number = 25,
-	): Promise<void> {
+	private async sendData(objectsCount: number = 25): Promise<void> {
 		// send up to 'objectsCount' objects at a time
 		while (objectsCount > 0) {
 			try {
@@ -184,10 +187,7 @@ export class ObjectStream<T extends object> extends ObservableDisposable impleme
 			return;
 		}
 
-		assertNever(
-			event,
-			`Unexpected event name '${event}'.`,
-		);
+		assertNever(event, `Unexpected event name '${event}'.`);
 	}
 
 	/**
@@ -205,7 +205,7 @@ export class ObjectStream<T extends object> extends ObservableDisposable impleme
 	 */
 	public static fromArray<T extends object>(
 		array: T[],
-		cancellationToken?: CancellationToken,
+		cancellationToken?: CancellationToken
 	): ObjectStream<T> {
 		return new ObjectStream(arrayToGenerator(array), cancellationToken);
 	}
@@ -214,7 +214,9 @@ export class ObjectStream<T extends object> extends ObservableDisposable impleme
 /**
  * Create a generator out of a provided array.
  */
-export const arrayToGenerator = <T extends NonNullable<unknown>>(array: T[]): Generator<T, undefined> => {
+export const arrayToGenerator = <T extends NonNullable<unknown>>(
+	array: T[]
+): Generator<T, undefined> => {
 	return (function* (): Generator<T, undefined> {
 		for (const item of array) {
 			yield item;

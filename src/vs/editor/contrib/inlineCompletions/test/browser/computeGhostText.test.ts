@@ -18,11 +18,18 @@ suite('computeGhostText', () => {
 		const rangeEndOffset = text.indexOf(']') - 1;
 		const cleanedText = text.replace('[', '').replace(']', '');
 		const tempModel = createTextModel(cleanedText);
-		const range = Range.fromPositions(tempModel.getPositionAt(rangeStartOffset), tempModel.getPositionAt(rangeEndOffset));
+		const range = Range.fromPositions(
+			tempModel.getPositionAt(rangeStartOffset),
+			tempModel.getPositionAt(rangeEndOffset)
+		);
 		const options = ['prefix', 'subword'] as const;
 		const result = {} as any;
 		for (const option of options) {
-			result[option] = computeGhostText(new TextReplacement(range, suggestion), tempModel, option)?.render(cleanedText, true);
+			result[option] = computeGhostText(
+				new TextReplacement(range, suggestion),
+				tempModel,
+				option
+			)?.render(cleanedText, true);
 		}
 
 		tempModel.dispose();
@@ -50,7 +57,10 @@ suite('computeGhostText', () => {
 		assert.deepStrictEqual(getOutput('[ foo]', 'foobar'), ' foo[bar]');
 		assert.deepStrictEqual(getOutput('[\tfoo]', 'foobar'), '\tfoo[bar]');
 		assert.deepStrictEqual(getOutput('[\t foo]', '\tfoobar'), '	 foo[bar]');
-		assert.deepStrictEqual(getOutput('[\tfoo]', '\t\tfoobar'), { prefix: undefined, subword: '\t[\t]foo[bar]' });
+		assert.deepStrictEqual(getOutput('[\tfoo]', '\t\tfoobar'), {
+			prefix: undefined,
+			subword: '\t[\t]foo[bar]',
+		});
 		assert.deepStrictEqual(getOutput('[\t]', '\t\tfoobar'), '\t[\tfoobar]');
 		assert.deepStrictEqual(getOutput('\t[]', '\t'), '\t[\t]');
 		assert.deepStrictEqual(getOutput('\t[\t]', ''), '\t\t');
@@ -72,27 +82,45 @@ suite('computeGhostText', () => {
 	});
 
 	test('Multi Part Diffing', () => {
-		assert.deepStrictEqual(getOutput('foo[()]', '(x);'), { prefix: undefined, subword: 'foo([x])[;]' });
-		assert.deepStrictEqual(getOutput('[\tfoo]', '\t\tfoobar'), { prefix: undefined, subword: '\t[\t]foo[bar]' });
-		assert.deepStrictEqual(getOutput('[(y ===)]', '(y === 1) { f(); }'), { prefix: undefined, subword: '(y ===[ 1])[ { f(); }]' });
-		assert.deepStrictEqual(getOutput('[(y ==)]', '(y === 1) { f(); }'), { prefix: undefined, subword: '(y ==[= 1])[ { f(); }]' });
+		assert.deepStrictEqual(getOutput('foo[()]', '(x);'), {
+			prefix: undefined,
+			subword: 'foo([x])[;]',
+		});
+		assert.deepStrictEqual(getOutput('[\tfoo]', '\t\tfoobar'), {
+			prefix: undefined,
+			subword: '\t[\t]foo[bar]',
+		});
+		assert.deepStrictEqual(getOutput('[(y ===)]', '(y === 1) { f(); }'), {
+			prefix: undefined,
+			subword: '(y ===[ 1])[ { f(); }]',
+		});
+		assert.deepStrictEqual(getOutput('[(y ==)]', '(y === 1) { f(); }'), {
+			prefix: undefined,
+			subword: '(y ==[= 1])[ { f(); }]',
+		});
 
-		assert.deepStrictEqual(getOutput('[(y ==)]', '(y === 1) { f(); }'), { prefix: undefined, subword: '(y ==[= 1])[ { f(); }]' });
+		assert.deepStrictEqual(getOutput('[(y ==)]', '(y === 1) { f(); }'), {
+			prefix: undefined,
+			subword: '(y ==[= 1])[ { f(); }]',
+		});
 	});
 
 	test('Multi Part Diffing 1', () => {
-		assert.deepStrictEqual(getOutput('[if () ()]', 'if (1 == f()) ()'), { prefix: undefined, subword: 'if ([1 == f()]) ()' });
+		assert.deepStrictEqual(getOutput('[if () ()]', 'if (1 == f()) ()'), {
+			prefix: undefined,
+			subword: 'if ([1 == f()]) ()',
+		});
 	});
 
 	test('Multi Part Diffing 2', () => {
-		assert.deepStrictEqual(getOutput('[)]', '())'), ({ prefix: undefined, subword: "[(])[)]" }));
-		assert.deepStrictEqual(getOutput('[))]', '(())'), ({ prefix: undefined, subword: "[((]))" }));
+		assert.deepStrictEqual(getOutput('[)]', '())'), { prefix: undefined, subword: '[(])[)]' });
+		assert.deepStrictEqual(getOutput('[))]', '(())'), { prefix: undefined, subword: '[((]))' });
 	});
 
 	test('Parenthesis Matching', () => {
 		assert.deepStrictEqual(getOutput('[console.log()]', 'console.log({ label: "(" })'), {
 			prefix: undefined,
-			subword: 'console.log([{ label: "(" }])'
+			subword: 'console.log([{ label: "(" }])',
 		});
 	});
 });

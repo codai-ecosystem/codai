@@ -21,9 +21,14 @@ suite('RequestStore', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('should resolve requests', async () => {
-		const requestStore: RequestStore<{ data: string }, { arg: string }> = store.add(instantiationService.createInstance(RequestStore<{ data: string }, { arg: string }>, undefined));
+		const requestStore: RequestStore<{ data: string }, { arg: string }> = store.add(
+			instantiationService.createInstance(
+				RequestStore<{ data: string }, { arg: string }>,
+				undefined
+			)
+		);
 		let eventArgs: { requestId: number; arg: string } | undefined;
-		store.add(requestStore.onCreateRequest(e => eventArgs = e));
+		store.add(requestStore.onCreateRequest(e => (eventArgs = e)));
 		const request = requestStore.createRequest({ arg: 'foo' });
 		strictEqual(typeof eventArgs?.requestId, 'number');
 		strictEqual(eventArgs?.arg, 'foo');
@@ -33,7 +38,9 @@ suite('RequestStore', () => {
 	});
 
 	test('should reject the promise when the request times out', async () => {
-		const requestStore: RequestStore<{ data: string }, { arg: string }> = store.add(instantiationService.createInstance(RequestStore<{ data: string }, { arg: string }>, 1));
+		const requestStore: RequestStore<{ data: string }, { arg: string }> = store.add(
+			instantiationService.createInstance(RequestStore<{ data: string }, { arg: string }>, 1)
+		);
 		const request = requestStore.createRequest({ arg: 'foo' });
 		let threw = false;
 		try {

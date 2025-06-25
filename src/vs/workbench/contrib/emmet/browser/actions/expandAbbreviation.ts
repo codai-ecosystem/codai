@@ -12,11 +12,10 @@ import { KeybindingWeight } from '../../../../../platform/keybinding/common/keyb
 import { MenuId } from '../../../../../platform/actions/common/actions.js';
 
 class ExpandAbbreviationAction extends EmmetEditorAction {
-
 	constructor() {
 		super({
 			id: 'editor.emmet.action.expandAbbreviation',
-			label: nls.localize2('expandAbbreviationAction', "Emmet: Expand Abbreviation"),
+			label: nls.localize2('expandAbbreviationAction', 'Emmet: Expand Abbreviation'),
 			precondition: EditorContextKeys.writable,
 			actionName: 'expand_abbreviation',
 			kbOpts: {
@@ -26,16 +25,18 @@ class ExpandAbbreviationAction extends EmmetEditorAction {
 					EditorContextKeys.tabDoesNotMoveFocus,
 					ContextKeyExpr.has('config.emmet.triggerExpansionOnTab')
 				),
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menuOpts: {
 				menuId: MenuId.MenubarEditMenu,
 				group: '5_insert',
-				title: nls.localize({ key: 'miEmmetExpandAbbreviation', comment: ['&& denotes a mnemonic'] }, "Emmet: E&&xpand Abbreviation"),
-				order: 3
-			}
+				title: nls.localize(
+					{ key: 'miEmmetExpandAbbreviation', comment: ['&& denotes a mnemonic'] },
+					'Emmet: E&&xpand Abbreviation'
+				),
+				order: 3,
+			},
 		});
-
 	}
 }
 

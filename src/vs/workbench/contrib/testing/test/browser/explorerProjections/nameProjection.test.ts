@@ -37,20 +37,29 @@ suite('Workbench - Testing Explorer Hierarchal by Name Projection', () => {
 
 	test('renders initial tree', () => {
 		harness.flush();
-		assert.deepStrictEqual(harness.tree.getRendered(), [
-			{ e: 'aa' }, { e: 'ab' }, { e: 'b' }
-		]);
+		assert.deepStrictEqual(harness.tree.getRendered(), [{ e: 'aa' }, { e: 'ab' }, { e: 'b' }]);
 	});
 
 	test('updates render if second test provider appears', async () => {
 		harness.flush();
-		harness.pushDiff({
-			op: TestDiffOpType.Add,
-			item: { controllerId: 'ctrl2', expand: TestItemExpandState.Expanded, item: new TestTestItem(new TestId(['ctrl2']), 'root2').toTestItem() },
-		}, {
-			op: TestDiffOpType.Add,
-			item: { controllerId: 'ctrl2', expand: TestItemExpandState.NotExpandable, item: new TestTestItem(new TestId(['ctrl2', 'id-c']), 'c', undefined).toTestItem() },
-		});
+		harness.pushDiff(
+			{
+				op: TestDiffOpType.Add,
+				item: {
+					controllerId: 'ctrl2',
+					expand: TestItemExpandState.Expanded,
+					item: new TestTestItem(new TestId(['ctrl2']), 'root2').toTestItem(),
+				},
+			},
+			{
+				op: TestDiffOpType.Add,
+				item: {
+					controllerId: 'ctrl2',
+					expand: TestItemExpandState.NotExpandable,
+					item: new TestTestItem(new TestId(['ctrl2', 'id-c']), 'c', undefined).toTestItem(),
+				},
+			}
+		);
 
 		assert.deepStrictEqual(harness.flush(), [
 			{ e: 'root', children: [{ e: 'aa' }, { e: 'ab' }, { e: 'b' }] },
@@ -61,34 +70,26 @@ suite('Workbench - Testing Explorer Hierarchal by Name Projection', () => {
 	test('updates nodes if they add children', async () => {
 		harness.flush();
 
-		harness.c.root.children.get('id-a')!.children.add(new TestTestItem(new TestId(['ctrlId', 'id-a', 'id-ac']), 'ac'));
+		harness.c.root.children
+			.get('id-a')!
+			.children.add(new TestTestItem(new TestId(['ctrlId', 'id-a', 'id-ac']), 'ac'));
 
-		assert.deepStrictEqual(harness.flush(), [
-			{ e: 'aa' },
-			{ e: 'ab' },
-			{ e: 'ac' },
-			{ e: 'b' }
-		]);
+		assert.deepStrictEqual(harness.flush(), [{ e: 'aa' }, { e: 'ab' }, { e: 'ac' }, { e: 'b' }]);
 	});
 
 	test('updates nodes if they remove children', async () => {
 		harness.flush();
 		harness.c.root.children.get('id-a')!.children.delete('id-ab');
 
-		assert.deepStrictEqual(harness.flush(), [
-			{ e: 'aa' },
-			{ e: 'b' }
-		]);
+		assert.deepStrictEqual(harness.flush(), [{ e: 'aa' }, { e: 'b' }]);
 	});
 
 	test('swaps when node is no longer leaf', async () => {
 		harness.flush();
-		harness.c.root.children.get('id-b')!.children.add(new TestTestItem(new TestId(['ctrlId', 'id-b', 'id-ba']), 'ba'));
+		harness.c.root.children
+			.get('id-b')!
+			.children.add(new TestTestItem(new TestId(['ctrlId', 'id-b', 'id-ba']), 'ba'));
 
-		assert.deepStrictEqual(harness.flush(), [
-			{ e: 'aa' },
-			{ e: 'ab' },
-			{ e: 'ba' },
-		]);
+		assert.deepStrictEqual(harness.flush(), [{ e: 'aa' }, { e: 'ab' }, { e: 'ba' }]);
 	});
 });

@@ -3,7 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITunnel, ITunnelOptions, IWorkbench, IWorkbenchConstructionOptions, Menu } from './web.api.js';
+import {
+	ITunnel,
+	ITunnelOptions,
+	IWorkbench,
+	IWorkbenchConstructionOptions,
+	Menu,
+} from './web.api.js';
 import { BrowserMain } from './web.main.js';
 import { URI, UriComponents } from '../../base/common/uri.js';
 import { IDisposable, toDisposable } from '../../base/common/lifecycle.js';
@@ -12,7 +18,15 @@ import { mark, PerformanceMark } from '../../base/common/performance.js';
 import { MenuId, MenuRegistry } from '../../platform/actions/common/actions.js';
 import { DeferredPromise } from '../../base/common/async.js';
 import { asArray } from '../../base/common/arrays.js';
-import { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressStep, IProgressWindowOptions } from '../../platform/progress/common/progress.js';
+import {
+	IProgress,
+	IProgressCompositeOptions,
+	IProgressDialogOptions,
+	IProgressNotificationOptions,
+	IProgressOptions,
+	IProgressStep,
+	IProgressWindowOptions,
+} from '../../platform/progress/common/progress.js';
 import { LogLevel } from '../../platform/log/common/log.js';
 import { IEmbedderTerminalOptions } from '../services/terminal/common/embedderTerminalService.js';
 
@@ -25,8 +39,10 @@ const workbenchPromise = new DeferredPromise<IWorkbench>();
  * @param domElement the container to create the workbench in
  * @param options for setting up the workbench
  */
-export function create(domElement: HTMLElement, options: IWorkbenchConstructionOptions): IDisposable {
-
+export function create(
+	domElement: HTMLElement,
+	options: IWorkbenchConstructionOptions
+): IDisposable {
 	// Mark start of workbench
 	mark('code/didLoadWorkbenchMain');
 
@@ -41,7 +57,6 @@ export function create(domElement: HTMLElement, options: IWorkbenchConstructionO
 	// Register commands if any
 	if (Array.isArray(options.commands)) {
 		for (const command of options.commands) {
-
 			CommandsRegistry.registerCommand(command.id, (accessor, ...args) => {
 				// we currently only pass on the arguments but not the accessor
 				// to the command to reduce our exposure of internal API.
@@ -51,7 +66,9 @@ export function create(domElement: HTMLElement, options: IWorkbenchConstructionO
 			// Commands with labels appear in the command palette
 			if (command.label) {
 				for (const menu of asArray(command.menu ?? Menu.CommandPalette)) {
-					MenuRegistry.appendMenuItem(asMenuId(menu), { command: { id: command.id, title: command.label } });
+					MenuRegistry.appendMenuItem(asMenuId(menu), {
+						command: { id: command.id, title: command.label },
+					});
 				}
 			}
 		}
@@ -75,13 +92,14 @@ export function create(domElement: HTMLElement, options: IWorkbenchConstructionO
 
 function asMenuId(menu: Menu): MenuId {
 	switch (menu) {
-		case Menu.CommandPalette: return MenuId.CommandPalette;
-		case Menu.StatusBarWindowIndicatorMenu: return MenuId.StatusBarWindowIndicatorMenu;
+		case Menu.CommandPalette:
+			return MenuId.CommandPalette;
+		case Menu.StatusBarWindowIndicatorMenu:
+			return MenuId.StatusBarWindowIndicatorMenu;
 	}
 }
 
 export namespace commands {
-
 	/**
 	 * {@linkcode IWorkbench.commands IWorkbench.commands.executeCommand}
 	 */
@@ -93,7 +111,6 @@ export namespace commands {
 }
 
 export namespace logger {
-
 	/**
 	 * {@linkcode IWorkbench.logger IWorkbench.logger.log}
 	 */
@@ -103,11 +120,12 @@ export namespace logger {
 }
 
 export namespace env {
-
 	/**
 	 * {@linkcode IWorkbench.env IWorkbench.env.retrievePerformanceMarks}
 	 */
-	export async function retrievePerformanceMarks(): Promise<[string, readonly PerformanceMark[]][]> {
+	export async function retrievePerformanceMarks(): Promise<
+		[string, readonly PerformanceMark[]][]
+	> {
 		const workbench = await workbenchPromise.p;
 
 		return workbench.env.retrievePerformanceMarks();
@@ -133,12 +151,16 @@ export namespace env {
 }
 
 export namespace window {
-
 	/**
 	 * {@linkcode IWorkbench.window IWorkbench.window.withProgress}
 	 */
 	export async function withProgress<R>(
-		options: IProgressOptions | IProgressDialogOptions | IProgressNotificationOptions | IProgressWindowOptions | IProgressCompositeOptions,
+		options:
+			| IProgressOptions
+			| IProgressDialogOptions
+			| IProgressNotificationOptions
+			| IProgressWindowOptions
+			| IProgressCompositeOptions,
 		task: (progress: IProgress<IProgressStep>) => Promise<R>
 	): Promise<R> {
 		const workbench = await workbenchPromise.p;
@@ -151,14 +173,16 @@ export namespace window {
 		workbench.window.createTerminal(options);
 	}
 
-	export async function showInformationMessage<T extends string>(message: string, ...items: T[]): Promise<T | undefined> {
+	export async function showInformationMessage<T extends string>(
+		message: string,
+		...items: T[]
+	): Promise<T | undefined> {
 		const workbench = await workbenchPromise.p;
 		return await workbench.window.showInformationMessage(message, ...items);
 	}
 }
 
 export namespace workspace {
-
 	/**
 	 * {@linkcode IWorkbench.workspace IWorkbench.workspace.didResolveRemoteAuthority}
 	 */

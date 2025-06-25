@@ -8,7 +8,6 @@ import { formatError } from '../utils/runner';
 import { RuntimeEnvironment, startServer } from '../htmlServer';
 import { getNodeFileFS } from './nodeFs';
 
-
 // Create a connection for the server.
 const connection: Connection = createConnection();
 
@@ -28,9 +27,9 @@ const runtime: RuntimeEnvironment = {
 		setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable {
 			const handle = setTimeout(callback, ms, ...args);
 			return { dispose: () => clearTimeout(handle) };
-		}
+		},
 	},
-	fileFs: getNodeFileFS()
+	fileFs: getNodeFileFS(),
 };
 
 startServer(connection, runtime);

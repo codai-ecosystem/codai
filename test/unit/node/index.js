@@ -26,12 +26,12 @@ const args = minimist(process.argv.slice(2), {
 	boolean: ['build', 'coverage', 'help'],
 	string: ['run', 'coveragePath', 'coverageFormats'],
 	alias: {
-		h: 'help'
+		h: 'help',
 	},
 	default: {
 		build: false,
 		coverage: false,
-		help: false
+		help: false,
 	},
 	description: {
 		build: 'Run from out-build',
@@ -39,8 +39,8 @@ const args = minimist(process.argv.slice(2), {
 		coverage: 'Generate a coverage report',
 		coveragePath: 'Path to coverage report to generate',
 		coverageFormats: 'Coverage formats to generate',
-		help: 'Show help'
-	}
+		help: 'Show help',
+	},
 });
 
 if (args.help) {
@@ -60,7 +60,7 @@ const excludeGlobs = [
 	'**/{browser,electron-sandbox,electron-main,electron-utility}/**/*.test.js',
 	'**/vs/platform/environment/test/node/nativeModules.test.js', // native modules are compiled against Electron and this test would fail with node.js
 	'**/vs/base/parts/storage/test/node/storage.test.js', // same as above, due to direct dependency to sqlite native module
-	'**/vs/workbench/contrib/testing/test/**' // flaky (https://github.com/microsoft/vscode/issues/137853)
+	'**/vs/workbench/contrib/testing/test/**', // flaky (https://github.com/microsoft/vscode/issues/137853)
 ];
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -69,16 +69,19 @@ const src = path.join(REPO_ROOT, out);
 const baseUrl = pathToFileURL(src);
 
 //@ts-ignore
-const requiredNodeVersion = semver.parse(/^target="(.*)"$/m.exec(fs.readFileSync(path.join(REPO_ROOT, 'remote', '.npmrc'), 'utf8'))[1]);
+const requiredNodeVersion = semver.parse(
+	/^target="(.*)"$/m.exec(fs.readFileSync(path.join(REPO_ROOT, 'remote', '.npmrc'), 'utf8'))[1]
+);
 const currentNodeVersion = semver.parse(process.version);
 //@ts-ignore
 if (currentNodeVersion?.major < requiredNodeVersion?.major) {
-	console.error(`node.js unit tests require a major node.js version of ${requiredNodeVersion?.major} (your version is: ${currentNodeVersion?.major})`);
+	console.error(
+		`node.js unit tests require a major node.js version of ${requiredNodeVersion?.major} (your version is: ${currentNodeVersion?.major})`
+	);
 	process.exit(1);
 }
 
 function main() {
-
 	// VSCODE_GLOBALS: package/product.json
 	const _require = module.createRequire(import.meta.url);
 	globalThis._VSCODE_PRODUCT_JSON = _require(`${REPO_ROOT}/product.json`);
@@ -98,7 +101,8 @@ function main() {
 	Object.assign(globalThis, {
 		// __analyzeSnapshotInTests: takeSnapshotAndCountClasses,
 		__readFileInTests: (/** @type {string} */ path) => fs.promises.readFile(path, 'utf-8'),
-		__writeFileInTests: (/** @type {string} */ path, /** @type {BufferEncoding} */ contents) => fs.promises.writeFile(path, contents),
+		__writeFileInTests: (/** @type {string} */ path, /** @type {BufferEncoding} */ contents) =>
+			fs.promises.writeFile(path, contents),
 		__readDirInTests: (/** @type {string} */ path) => fs.promises.readdir(path),
 		__unlinkInTests: (/** @type {string} */ path) => fs.promises.unlink(path),
 		__mkdirPInTests: (/** @type {string} */ path) => fs.promises.mkdir(path, { recursive: true }),
@@ -114,13 +118,14 @@ function main() {
 	 * @param onError
 	 */
 	const loader = function (modules, onLoad, onError) {
-		const loads = modules.map(mod => import(`${baseUrl}/${mod}.js`).catch(err => {
-			console.error(`FAILED to load ${mod} as ${baseUrl}/${mod}.js`);
-			throw err;
-		}));
+		const loads = modules.map(mod =>
+			import(`${baseUrl}/${mod}.js`).catch(err => {
+				console.error(`FAILED to load ${mod} as ${baseUrl}/${mod}.js`);
+				throw err;
+			})
+		);
 		Promise.all(loads).then(onLoad, onError);
 	};
-
 
 	let didErr = false;
 	const write = process.stderr.write;
@@ -129,9 +134,8 @@ function main() {
 		return write.apply(process.stderr, args);
 	};
 
-
 	const runner = new Mocha({
-		ui: 'tdd'
+		ui: 'tdd',
 	});
 
 	/**
@@ -150,8 +154,8 @@ function main() {
 	let loadFunc = null;
 
 	if (args.runGlob) {
-		loadFunc = (cb) => {
-			const doRun = /** @param tests */(tests) => {
+		loadFunc = cb => {
+			const doRun = /** @param tests */ tests => {
 				const modulesToLoad = tests.map(test => {
 					if (path.isAbsolute(test)) {
 						test = path.relative(src, path.resolve(test));
@@ -162,20 +166,25 @@ function main() {
 				loadModules(modulesToLoad).then(() => cb(null), cb);
 			};
 
-			glob(args.runGlob, { cwd: src }, function (err, files) { doRun(files); });
+			glob(args.runGlob, { cwd: src }, function (err, files) {
+				doRun(files);
+			});
 		};
 	} else if (args.run) {
-		const tests = (typeof args.run === 'string') ? [args.run] : args.run;
+		const tests = typeof args.run === 'string' ? [args.run] : args.run;
 		const modulesToLoad = tests.map(function (test) {
 			test = test.replace(/^src/, 'out');
 			test = test.replace(/\.ts$/, '.js');
-			return path.relative(src, path.resolve(test)).replace(/(\.js)|(\.js\.map)$/, '').replace(/\\/g, '/');
+			return path
+				.relative(src, path.resolve(test))
+				.replace(/(\.js)|(\.js\.map)$/, '')
+				.replace(/\\/g, '/');
 		});
-		loadFunc = (cb) => {
+		loadFunc = cb => {
 			loadModules(modulesToLoad).then(() => cb(null), cb);
 		};
 	} else {
-		loadFunc = (cb) => {
+		loadFunc = cb => {
 			glob(TEST_GLOB, { cwd: src }, function (err, files) {
 				/** @type {string[]} */
 				const modules = [];
@@ -224,7 +233,7 @@ function main() {
 		// replace the default unexpected error handler to be useful during tests
 		import(`${baseUrl}/vs/base/common/errors.js`).then(errors => {
 			errors.setUnexpectedErrorHandler(function (err) {
-				const stack = (err && err.stack) || (new Error().stack);
+				const stack = (err && err.stack) || new Error().stack;
 				unexpectedErrors.push((err && err.message ? err.message : err) + '\n' + stack);
 			});
 

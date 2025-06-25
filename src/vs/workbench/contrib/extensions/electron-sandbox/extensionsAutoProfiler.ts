@@ -15,11 +15,19 @@ import { URI } from '../../../../base/common/uri.js';
 import { generateUuid } from '../../../../base/common/uuid.js';
 import { localize } from '../../../../nls.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { ExtensionIdentifier, ExtensionIdentifierSet, IExtensionDescription } from '../../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionIdentifier,
+	ExtensionIdentifierSet,
+	IExtensionDescription,
+} from '../../../../platform/extensions/common/extensions.js';
 import { IFileService } from '../../../../platform/files/common/files.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
-import { INotificationService, NotificationPriority, Severity } from '../../../../platform/notification/common/notification.js';
+import {
+	INotificationService,
+	NotificationPriority,
+	Severity,
+} from '../../../../platform/notification/common/notification.js';
 import { IProfileAnalysisWorkerService } from '../../../../platform/profiling/electron-sandbox/profileAnalysisWorkerService.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
@@ -29,12 +37,16 @@ import { IExtensionHostProfileService } from './runtimeExtensionsEditor.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 import { INativeWorkbenchEnvironmentService } from '../../../services/environment/electron-sandbox/environmentService.js';
 import { ExtensionHostKind } from '../../../services/extensions/common/extensionHostKind.js';
-import { IExtensionHostProfile, IExtensionService, IResponsiveStateChangeEvent, ProfileSession } from '../../../services/extensions/common/extensions.js';
+import {
+	IExtensionHostProfile,
+	IExtensionService,
+	IResponsiveStateChangeEvent,
+	ProfileSession,
+} from '../../../services/extensions/common/extensions.js';
 import { ExtensionHostProfiler } from '../../../services/extensions/electron-sandbox/extensionHostProfiler.js';
 import { ITimerService } from '../../../services/timer/browser/timerService.js';
 
 export class ExtensionsAutoProfiler implements IWorkbenchContribution {
-
 	private readonly _blame = new ExtensionIdentifierSet();
 
 	private _session: CancellationTokenSource | undefined;
@@ -43,25 +55,30 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 
 	constructor(
 		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IExtensionHostProfileService private readonly _extensionProfileService: IExtensionHostProfileService,
+		@IExtensionHostProfileService
+		private readonly _extensionProfileService: IExtensionHostProfileService,
 		@ITelemetryService private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
 		@INotificationService private readonly _notificationService: INotificationService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentServie: INativeWorkbenchEnvironmentService,
-		@IProfileAnalysisWorkerService private readonly _profileAnalysisService: IProfileAnalysisWorkerService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentServie: INativeWorkbenchEnvironmentService,
+		@IProfileAnalysisWorkerService
+		private readonly _profileAnalysisService: IProfileAnalysisWorkerService,
 		@IConfigurationService private readonly _configService: IConfigurationService,
 		@IFileService private readonly _fileService: IFileService,
 		@ITimerService timerService: ITimerService
 	) {
-
 		timerService.perfBaseline.then(value => {
 			if (value < 0) {
 				return; // too slow for profiling
 			}
 			this._perfBaseline = value;
-			this._unresponsiveListener = _extensionService.onDidChangeResponsiveChange(this._onDidChangeResponsiveChange, this);
+			this._unresponsiveListener = _extensionService.onDidChangeResponsiveChange(
+				this._onDidChangeResponsiveChange,
+				this
+			);
 		});
 	}
 
@@ -84,19 +101,19 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		if (event.isResponsive && this._session) {
 			// stop profiling when responsive again
 			this._session.cancel();
-			this._logService.info('UNRESPONSIVE extension host: received responsive event and cancelling profiling session');
-
-
+			this._logService.info(
+				'UNRESPONSIVE extension host: received responsive event and cancelling profiling session'
+			);
 		} else if (!event.isResponsive && !this._session) {
 			// start profiling if not yet profiling
 			const cts = new CancellationTokenSource();
 			this._session = cts;
 
-
 			let session: ProfileSession;
 			try {
-				session = await this._instantiationService.createInstance(ExtensionHostProfiler, listener.host, listener.port).start();
-
+				session = await this._instantiationService
+					.createInstance(ExtensionHostProfiler, listener.host, listener.port)
+					.start();
 			} catch (err) {
 				this._session = undefined;
 				// fail silent as this is often
@@ -127,13 +144,11 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 	}
 
 	private async _processCpuProfile(profile: IExtensionHostProfile) {
-
 		// get all extensions
 		await this._extensionService.whenInstalledExtensionsRegistered();
 
 		// send heavy samples iff enabled
 		if (this._configService.getValue('application.experimental.rendererProfiling')) {
-
 			const searchTree = TernarySearchTree.forUris<IExtensionDescription>();
 			searchTree.fill(this._extensionService.extensions.map(e => [e.extensionLocation, e]));
 
@@ -172,13 +187,17 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			return;
 		}
 
-
 		const profilingSessionId = generateUuid();
 
 		// print message to log
-		const path = joinPath(this._environmentServie.tmpDir, `exthost-${Math.random().toString(16).slice(2, 8)}.cpuprofile`);
+		const path = joinPath(
+			this._environmentServie.tmpDir,
+			`exthost-${Math.random().toString(16).slice(2, 8)}.cpuprofile`
+		);
 		await this._fileService.writeFile(path, VSBuffer.fromString(JSON.stringify(profile.data)));
-		this._logService.warn(`UNRESPONSIVE extension host: '${top}' took ${topPercentage}% of ${topAggregated / 1e3}ms, saved PROFILE here: '${path}'`);
+		this._logService.warn(
+			`UNRESPONSIVE extension host: '${top}' took ${topPercentage}% of ${topAggregated / 1e3}ms, saved PROFILE here: '${path}'`
+		);
 
 		type UnresponsiveData = {
 			duration: number;
@@ -189,18 +208,36 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		type UnresponsiveDataClassification = {
 			owner: 'jrieken';
 			comment: 'Profiling data that was collected while the extension host was unresponsive';
-			profilingSessionId: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Identifier of a profiling session' };
-			duration: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Duration for which the extension host was unresponsive' };
-			data: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Extensions ids and core parts that were active while the extension host was frozen' };
-			id: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Top extensions id that took most of the duration' };
+			profilingSessionId: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Identifier of a profiling session';
+			};
+			duration: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Duration for which the extension host was unresponsive';
+			};
+			data: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Extensions ids and core parts that were active while the extension host was frozen';
+			};
+			id: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Top extensions id that took most of the duration';
+			};
 		};
-		this._telemetryService.publicLog2<UnresponsiveData, UnresponsiveDataClassification>('exthostunresponsive', {
-			profilingSessionId,
-			duration: overall,
-			data: data.map(tuple => tuple[0]).flat(),
-			id: ExtensionIdentifier.toKey(extension.identifier),
-		});
-
+		this._telemetryService.publicLog2<UnresponsiveData, UnresponsiveDataClassification>(
+			'exthostunresponsive',
+			{
+				profilingSessionId,
+				duration: overall,
+				data: data.map(tuple => tuple[0]).flat(),
+				id: ExtensionIdentifier.toKey(extension.identifier),
+			}
+		);
 
 		// add to running extensions view
 		this._extensionProfileService.setUnresponsiveProfile(extension.identifier, profile);
@@ -210,7 +247,11 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			return;
 		}
 
-		const action = await this._instantiationService.invokeFunction(createSlowExtensionAction, extension, profile);
+		const action = await this._instantiationService.invokeFunction(
+			createSlowExtensionAction,
+			extension,
+			profile
+		);
 
 		if (!action) {
 			// cannot report issues against this extension...
@@ -231,11 +272,13 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 				"The extension '{0}' took a very long time to complete its last operation and it has prevented other extensions from running.",
 				extension.displayName || extension.name
 			),
-			[{
-				label: localize('show', 'Show Extensions'),
-				run: () => this._editorService.openEditor(RuntimeExtensionsInput.instance, { pinned: true })
-			},
-				action
+			[
+				{
+					label: localize('show', 'Show Extensions'),
+					run: () =>
+						this._editorService.openEditor(RuntimeExtensionsInput.instance, { pinned: true }),
+				},
+				action,
 			],
 			{ priority: NotificationPriority.SILENT }
 		);

@@ -12,11 +12,12 @@ import { TextLength } from '../text/textLength.js';
  * Represents a list of mappings of ranges from one document to another.
  */
 export class RangeMapping {
-	constructor(public readonly mappings: readonly SingleRangeMapping[]) {
-	}
+	constructor(public readonly mappings: readonly SingleRangeMapping[]) {}
 
 	mapPosition(position: Position): PositionOrRange {
-		const mapping = findLastMonotonous(this.mappings, m => m.original.getStartPosition().isBeforeOrEqual(position));
+		const mapping = findLastMonotonous(this.mappings, m =>
+			m.original.getStartPosition().isBeforeOrEqual(position)
+		);
 		if (!mapping) {
 			return PositionOrRange.position(position);
 		}
@@ -32,7 +33,7 @@ export class RangeMapping {
 		const end = this.mapPosition(range.getEndPosition());
 		return Range.fromPositions(
 			start.range?.getStartPosition() ?? start.position!,
-			end.range?.getEndPosition() ?? end.position!,
+			end.range?.getEndPosition() ?? end.position!
 		);
 	}
 
@@ -44,9 +45,8 @@ export class RangeMapping {
 export class SingleRangeMapping {
 	constructor(
 		public readonly original: Range,
-		public readonly modified: Range,
-	) {
-	}
+		public readonly modified: Range
+	) {}
 
 	reverse(): SingleRangeMapping {
 		return new SingleRangeMapping(this.modified, this.original);
@@ -68,6 +68,6 @@ export class PositionOrRange {
 
 	private constructor(
 		public readonly position: Position | undefined,
-		public readonly range: Range | undefined,
-	) { }
+		public readonly range: Range | undefined
+	) {}
 }

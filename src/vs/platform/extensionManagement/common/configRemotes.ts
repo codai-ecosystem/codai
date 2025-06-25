@@ -9,7 +9,7 @@ const SshProtocolMatcher = /^([^@:]+@)?([^:]+):/;
 const SshUrlMatcher = /^([^@:]+@)?([^:]+):(.+)$/;
 const AuthorityMatcher = /^([^@]+@)?([^:]+)(:\d+)?$/;
 const SecondLevelDomainMatcher = /([^@:.]+\.[^@:.]+)(:\d+)?$/;
-const RemoteMatcher = /^\s*url\s*=\s*(.+\S)\s*$/mg;
+const RemoteMatcher = /^\s*url\s*=\s*(.+\S)\s*$/gm;
 const AnyButDot = /[^.]/g;
 
 export const AllowedSecondLevelDomains = [
@@ -25,7 +25,7 @@ export const AllowedSecondLevelDomains = [
 	'cloudapp.net',
 	'rhcloud.com',
 	'google.com',
-	'azure.com'
+	'azure.com',
 ];
 
 function stripLowLevelDomains(domain: string): string | null {
@@ -56,7 +56,7 @@ function extractDomain(url: string): string | null {
 export function getDomainsOfRemotes(text: string, allowedDomains: readonly string[]): string[] {
 	const domains = new Set<string>();
 	let match: RegExpExecArray | null;
-	while (match = RemoteMatcher.exec(text)) {
+	while ((match = RemoteMatcher.exec(text))) {
 		const domain = extractDomain(match[1]);
 		if (domain) {
 			domains.add(domain);
@@ -64,8 +64,9 @@ export function getDomainsOfRemotes(text: string, allowedDomains: readonly strin
 	}
 
 	const allowedDomainsSet = new Set(allowedDomains);
-	return Array.from(domains)
-		.map(key => allowedDomainsSet.has(key) ? key : key.replace(AnyButDot, 'a'));
+	return Array.from(domains).map(key =>
+		allowedDomainsSet.has(key) ? key : key.replace(AnyButDot, 'a')
+	);
 }
 
 function stripPort(authority: string): string | null {
@@ -73,12 +74,16 @@ function stripPort(authority: string): string | null {
 	return match ? match[2] : null;
 }
 
-function normalizeRemote(host: string | null, path: string, stripEndingDotGit: boolean): string | null {
+function normalizeRemote(
+	host: string | null,
+	path: string,
+	stripEndingDotGit: boolean
+): string | null {
 	if (host && path) {
 		if (stripEndingDotGit && path.endsWith('.git')) {
 			path = path.substr(0, path.length - 4);
 		}
-		return (path.indexOf('/') === 0) ? `${host}${path}` : `${host}/${path}`;
+		return path.indexOf('/') === 0 ? `${host}${path}` : `${host}/${path}`;
 	}
 	return null;
 }
@@ -104,7 +109,7 @@ function extractRemote(url: string, stripEndingDotGit: boolean): string | null {
 export function getRemotes(text: string, stripEndingDotGit: boolean = false): string[] {
 	const remotes: string[] = [];
 	let match: RegExpExecArray | null;
-	while (match = RemoteMatcher.exec(text)) {
+	while ((match = RemoteMatcher.exec(text))) {
 		const remote = extractRemote(match[1], stripEndingDotGit);
 		if (remote) {
 			remotes.push(remote);

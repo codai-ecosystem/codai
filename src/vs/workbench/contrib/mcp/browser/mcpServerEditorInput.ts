@@ -14,10 +14,13 @@ import { Codicon } from '../../../../base/common/codicons.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 import { IWorkbenchMcpServer } from '../common/mcpTypes.js';
 
-const ExtensionEditorIcon = registerIcon('extensions-editor-label-icon', Codicon.extensions, localize('extensionsEditorLabelIcon', 'Icon of the extensions editor label.'));
+const ExtensionEditorIcon = registerIcon(
+	'extensions-editor-label-icon',
+	Codicon.extensions,
+	localize('extensionsEditorLabelIcon', 'Icon of the extensions editor label.')
+);
 
 export class McpServerEditorInput extends EditorInput {
-
 	static readonly ID = 'workbench.mcpServer.input2';
 
 	override get typeId(): string {
@@ -31,7 +34,7 @@ export class McpServerEditorInput extends EditorInput {
 	override get resource() {
 		return URI.from({
 			scheme: Schemas.extension,
-			path: join(this.mcpServer.id, 'mcpServer')
+			path: join(this.mcpServer.id, 'mcpServer'),
 		});
 	}
 
@@ -39,10 +42,12 @@ export class McpServerEditorInput extends EditorInput {
 		super();
 	}
 
-	get mcpServer(): IWorkbenchMcpServer { return this._mcpServer; }
+	get mcpServer(): IWorkbenchMcpServer {
+		return this._mcpServer;
+	}
 
 	override getName(): string {
-		return localize('extensionsInputName', "Extension: {0}", this._mcpServer.label);
+		return localize('extensionsInputName', 'Extension: {0}', this._mcpServer.label);
 	}
 
 	override getIcon(): ThemeIcon | undefined {

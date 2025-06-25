@@ -7,15 +7,26 @@ import { ok } from 'assert';
 import { Emitter, Event } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { AccessibilitySignal, IAccessibilitySignalService } from '../../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
+import {
+	AccessibilitySignal,
+	IAccessibilitySignalService,
+} from '../../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
-import { ACTIVE_TASK_STATUS, FAILED_TASK_STATUS, SUCCEEDED_TASK_STATUS, TaskTerminalStatus } from '../../browser/taskTerminalStatus.js';
+import {
+	ACTIVE_TASK_STATUS,
+	FAILED_TASK_STATUS,
+	SUCCEEDED_TASK_STATUS,
+	TaskTerminalStatus,
+} from '../../browser/taskTerminalStatus.js';
 import { AbstractProblemCollector } from '../../common/problemCollectors.js';
 import { CommonTask, ITaskEvent, TaskEventKind, TaskRunType } from '../../common/tasks.js';
 import { ITaskService, Task } from '../../common/taskService.js';
 import { ITerminalInstance } from '../../../terminal/browser/terminal.js';
-import { ITerminalStatusList, TerminalStatusList } from '../../../terminal/browser/terminalStatusList.js';
+import {
+	ITerminalStatusList,
+	TerminalStatusList,
+} from '../../../terminal/browser/terminalStatusList.js';
 import { ITerminalStatus } from '../../../terminal/common/terminal.js';
 
 class TestTaskService implements Partial<ITaskService> {
@@ -35,7 +46,9 @@ class TestaccessibilitySignalService implements Partial<IAccessibilitySignalServ
 }
 
 class TestTerminal extends Disposable implements Partial<ITerminalInstance> {
-	statusList: TerminalStatusList = this._register(new TerminalStatusList(new TestConfigurationService()));
+	statusList: TerminalStatusList = this._register(
+		new TerminalStatusList(new TestConfigurationService())
+	);
 	constructor() {
 		super();
 	}
@@ -45,7 +58,6 @@ class TestTerminal extends Disposable implements Partial<ITerminalInstance> {
 }
 
 class TestTask extends CommonTask {
-
 	constructor() {
 		super('test', undefined, undefined, {}, {}, { kind: '', label: '' });
 	}
@@ -80,7 +92,9 @@ suite('Task Terminal Status', () => {
 		instantiationService = store.add(new TestInstantiationService());
 		taskService = new TestTaskService();
 		accessibilitySignalService = new TestaccessibilitySignalService();
-		taskTerminalStatus = store.add(new TaskTerminalStatus(taskService as any, accessibilitySignalService as any));
+		taskTerminalStatus = store.add(
+			new TaskTerminalStatus(taskService as any, accessibilitySignalService as any)
+		);
 		testTerminal = store.add(instantiationService.createInstance(TestTerminal) as any);
 		testTask = instantiationService.createInstance(TestTask) as unknown as Task;
 		problemCollector = store.add(instantiationService.createInstance(TestProblemCollector) as any);
@@ -92,7 +106,11 @@ suite('Task Terminal Status', () => {
 		taskService.triggerStateChange({ kind: TaskEventKind.Inactive });
 		assertStatus(testTerminal.statusList, SUCCEEDED_TASK_STATUS);
 		taskService.triggerStateChange({ kind: TaskEventKind.End });
-		await poll<void>(async () => Promise.resolve(), () => testTerminal?.statusList.primary?.id === FAILED_TASK_STATUS.id, 'terminal status should be updated');
+		await poll<void>(
+			async () => Promise.resolve(),
+			() => testTerminal?.statusList.primary?.id === FAILED_TASK_STATUS.id,
+			'terminal status should be updated'
+		);
 	});
 	test('Should add active status when a non-background task is run for a second time in the same terminal', () => {
 		taskTerminalStatus.addTerminal(testTask, testTerminal, problemCollector);
@@ -100,23 +118,36 @@ suite('Task Terminal Status', () => {
 		assertStatus(testTerminal.statusList, ACTIVE_TASK_STATUS);
 		taskService.triggerStateChange({ kind: TaskEventKind.Inactive });
 		assertStatus(testTerminal.statusList, SUCCEEDED_TASK_STATUS);
-		taskService.triggerStateChange({ kind: TaskEventKind.ProcessStarted, runType: TaskRunType.SingleRun });
+		taskService.triggerStateChange({
+			kind: TaskEventKind.ProcessStarted,
+			runType: TaskRunType.SingleRun,
+		});
 		assertStatus(testTerminal.statusList, ACTIVE_TASK_STATUS);
 		taskService.triggerStateChange({ kind: TaskEventKind.Inactive });
 		assertStatus(testTerminal.statusList, SUCCEEDED_TASK_STATUS);
 	});
 	test('Should drop status when a background task exits', async () => {
 		taskTerminalStatus.addTerminal(testTask, testTerminal, problemCollector);
-		taskService.triggerStateChange({ kind: TaskEventKind.ProcessStarted, runType: TaskRunType.Background });
+		taskService.triggerStateChange({
+			kind: TaskEventKind.ProcessStarted,
+			runType: TaskRunType.Background,
+		});
 		assertStatus(testTerminal.statusList, ACTIVE_TASK_STATUS);
 		taskService.triggerStateChange({ kind: TaskEventKind.Inactive });
 		assertStatus(testTerminal.statusList, SUCCEEDED_TASK_STATUS);
 		taskService.triggerStateChange({ kind: TaskEventKind.ProcessEnded, exitCode: 0 });
-		await poll<void>(async () => Promise.resolve(), () => testTerminal?.statusList.statuses?.includes(SUCCEEDED_TASK_STATUS) === false, 'terminal should have dropped status');
+		await poll<void>(
+			async () => Promise.resolve(),
+			() => testTerminal?.statusList.statuses?.includes(SUCCEEDED_TASK_STATUS) === false,
+			'terminal should have dropped status'
+		);
 	});
 	test('Should add succeeded status when a non-background task exits', () => {
 		taskTerminalStatus.addTerminal(testTask, testTerminal, problemCollector);
-		taskService.triggerStateChange({ kind: TaskEventKind.ProcessStarted, runType: TaskRunType.SingleRun });
+		taskService.triggerStateChange({
+			kind: TaskEventKind.ProcessStarted,
+			runType: TaskRunType.SingleRun,
+		});
 		assertStatus(testTerminal.statusList, ACTIVE_TASK_STATUS);
 		taskService.triggerStateChange({ kind: TaskEventKind.Inactive });
 		assertStatus(testTerminal.statusList, SUCCEEDED_TASK_STATUS);
@@ -143,7 +174,9 @@ async function poll<T>(
 
 	while (true) {
 		if (trial > retryCount) {
-			throw new Error(`Timeout: ${timeoutMessage} after ${(retryCount * retryInterval) / 1000} seconds.\r${lastError}`);
+			throw new Error(
+				`Timeout: ${timeoutMessage} after ${(retryCount * retryInterval) / 1000} seconds.\r${lastError}`
+			);
 		}
 
 		let result;

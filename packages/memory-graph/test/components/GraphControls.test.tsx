@@ -8,7 +8,7 @@ describe('GraphControls Component', () => {
 	const defaultProps = {
 		onFilterChange: vi.fn(),
 		currentFilter: null,
-		nodeTypes: ['data', 'api', 'processing']
+		nodeTypes: ['data', 'api', 'processing'],
 	};
 
 	beforeEach(() => {
@@ -37,11 +37,11 @@ describe('GraphControls Component', () => {
 			expect(screen.getByText('1')).toBeDefined();
 		});
 		it('applies custom className', () => {
-			const { container } = render(
-				<GraphControls {...defaultProps} className="custom-controls" />
-			);
+			const { container } = render(<GraphControls {...defaultProps} className="custom-controls" />);
 
-			expect((container.firstChild as HTMLElement)?.classList.contains('custom-controls')).toBe(true);
+			expect((container.firstChild as HTMLElement)?.classList.contains('custom-controls')).toBe(
+				true
+			);
 		});
 	});
 
@@ -63,7 +63,8 @@ describe('GraphControls Component', () => {
 			await fireEvent.click(dataButton);
 
 			expect(onFilterChange).toHaveBeenCalledWith('data');
-		}); it('shows active state for current filter', () => {
+		});
+		it('shows active state for current filter', () => {
 			render(<GraphControls {...defaultProps} currentFilter="data" />);
 
 			const dataButton = screen.getByTitle('Show only data nodes');
@@ -105,15 +106,10 @@ describe('GraphControls Component', () => {
 			const nodeTypeIcons = {
 				data: '📊',
 				api: '🔌',
-				processing: '⚙️'
+				processing: '⚙️',
 			};
 
-			render(
-				<GraphControls
-					{...defaultProps}
-					nodeTypeIcons={nodeTypeIcons}
-				/>
-			);
+			render(<GraphControls {...defaultProps} nodeTypeIcons={nodeTypeIcons} />);
 
 			expect(screen.getByText('📊')).toBeDefined();
 			expect(screen.getByText('🔌')).toBeDefined();
@@ -138,7 +134,8 @@ describe('GraphControls Component', () => {
 			expect(screen.getByTitle('Show only data nodes')).toBeDefined();
 			expect(screen.getByTitle('Show only api nodes')).toBeDefined();
 			expect(screen.getByTitle('Show only processing nodes')).toBeDefined();
-		}); it('includes data attributes for node type buttons', () => {
+		});
+		it('includes data attributes for node type buttons', () => {
 			render(<GraphControls {...defaultProps} />);
 
 			const dataButton = screen.getByTitle('Show only data nodes');

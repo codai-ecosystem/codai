@@ -25,13 +25,13 @@ flakySuite('Extpath', () => {
 	});
 
 	test('realcase', async () => {
-
 		// assume case insensitive file system
 		if (process.platform === 'win32' || process.platform === 'darwin') {
 			const upper = testDir.toUpperCase();
 			const real = await realcase(upper);
 
-			if (real) { // can be null in case of permission errors
+			if (real) {
+				// can be null in case of permission errors
 				assert.notStrictEqual(real, upper);
 				assert.strictEqual(real.toUpperCase(), upper);
 				assert.strictEqual(real, testDir);

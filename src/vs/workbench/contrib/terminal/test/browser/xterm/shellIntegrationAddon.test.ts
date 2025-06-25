@@ -9,8 +9,16 @@ import * as sinon from 'sinon';
 import { importAMDNodeModule } from '../../../../../../amdX.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { NullLogService } from '../../../../../../platform/log/common/log.js';
-import { ITerminalCapabilityStore, TerminalCapability } from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
-import { deserializeMessage, parseKeyValueAssignment, parseMarkSequence, ShellIntegrationAddon } from '../../../../../../platform/terminal/common/xterm/shellIntegrationAddon.js';
+import {
+	ITerminalCapabilityStore,
+	TerminalCapability,
+} from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	deserializeMessage,
+	parseKeyValueAssignment,
+	parseMarkSequence,
+	ShellIntegrationAddon,
+} from '../../../../../../platform/terminal/common/xterm/shellIntegrationAddon.js';
 import { writeP } from '../../../browser/terminalTestHelpers.js';
 
 class TestShellIntegrationAddon extends ShellIntegrationAddon {
@@ -34,9 +42,13 @@ suite('ShellIntegrationAddon', () => {
 	let capabilities: ITerminalCapabilityStore;
 
 	setup(async () => {
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (
+			await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')
+		).Terminal;
 		xterm = store.add(new TerminalCtor({ allowProposedApi: true, cols: 80, rows: 30 }));
-		shellIntegrationAddon = store.add(new TestShellIntegrationAddon('', true, undefined, new NullLogService()));
+		shellIntegrationAddon = store.add(
+			new TestShellIntegrationAddon('', true, undefined, new NullLogService())
+		);
 		xterm.loadAddon(shellIntegrationAddon);
 		capabilities = shellIntegrationAddon.capabilities;
 	});
@@ -207,7 +219,7 @@ suite('ShellIntegrationAddon', () => {
 			await writeP(xterm, '\x1b]633;P;Cwd=/foo\x07');
 			strictEqual(capabilities.has(TerminalCapability.CommandDetection), false);
 		});
-		test('should pass cwd sequence to the capability if it\'s initialized', async () => {
+		test("should pass cwd sequence to the capability if it's initialized", async () => {
 			const mock = shellIntegrationAddon.getCommandDetectionMock(xterm);
 			mock.expects('setCwd').once().withExactArgs('/foo');
 			await writeP(xterm, '\x1b]633;P;Cwd=/foo\x07');
@@ -248,13 +260,13 @@ suite('ShellIntegrationAddon', () => {
 				deepEqual(parseMarkSequence(['', '']), { id: undefined, hidden: false });
 			});
 			test('ID', async () => {
-				deepEqual(parseMarkSequence(['Id=3', '']), { id: "3", hidden: false });
+				deepEqual(parseMarkSequence(['Id=3', '']), { id: '3', hidden: false });
 			});
 			test('hidden', async () => {
 				deepEqual(parseMarkSequence(['', 'Hidden']), { id: undefined, hidden: true });
 			});
 			test('ID + hidden', async () => {
-				deepEqual(parseMarkSequence(['Id=4555', 'Hidden']), { id: "4555", hidden: true });
+				deepEqual(parseMarkSequence(['Id=4555', 'Hidden']), { id: '4555', hidden: true });
 			});
 		});
 	});
@@ -272,23 +284,59 @@ suite('ShellIntegrationAddon', () => {
 			['space', 'some thing', 'some thing'],
 			['escaped backslash', `${Backslash}${Backslash}`, Backslash],
 			['non-initial escaped backslash', `foo${Backslash}${Backslash}`, `foo${Backslash}`],
-			['two escaped backslashes', `${Backslash}${Backslash}${Backslash}${Backslash}`, `${Backslash}${Backslash}`],
-			['escaped backslash amidst text', `Hello${Backslash}${Backslash}there`, `Hello${Backslash}there`],
-			['backslash escaped literally and as hex', `${Backslash}${Backslash} is same as ${Backslash}x5c`, `${Backslash} is same as ${Backslash}`],
+			[
+				'two escaped backslashes',
+				`${Backslash}${Backslash}${Backslash}${Backslash}`,
+				`${Backslash}${Backslash}`,
+			],
+			[
+				'escaped backslash amidst text',
+				`Hello${Backslash}${Backslash}there`,
+				`Hello${Backslash}there`,
+			],
+			[
+				'backslash escaped literally and as hex',
+				`${Backslash}${Backslash} is same as ${Backslash}x5c`,
+				`${Backslash} is same as ${Backslash}`,
+			],
 			['escaped semicolon', `${Backslash}x3b`, Semicolon],
 			['non-initial escaped semicolon', `foo${Backslash}x3b`, `foo${Semicolon}`],
 			['escaped semicolon (upper hex)', `${Backslash}x3B`, Semicolon],
-			['escaped backslash followed by literal "x3b" is not a semicolon', `${Backslash}${Backslash}x3b`, `${Backslash}x3b`],
-			['non-initial escaped backslash followed by literal "x3b" is not a semicolon', `foo${Backslash}${Backslash}x3b`, `foo${Backslash}x3b`],
-			['escaped backslash followed by escaped semicolon', `${Backslash}${Backslash}${Backslash}x3b`, `${Backslash}${Semicolon}`],
+			[
+				'escaped backslash followed by literal "x3b" is not a semicolon',
+				`${Backslash}${Backslash}x3b`,
+				`${Backslash}x3b`,
+			],
+			[
+				'non-initial escaped backslash followed by literal "x3b" is not a semicolon',
+				`foo${Backslash}${Backslash}x3b`,
+				`foo${Backslash}x3b`,
+			],
+			[
+				'escaped backslash followed by escaped semicolon',
+				`${Backslash}${Backslash}${Backslash}x3b`,
+				`${Backslash}${Semicolon}`,
+			],
 			['escaped semicolon amidst text', `some${Backslash}x3bthing`, `some${Semicolon}thing`],
 			['escaped newline', `${Backslash}x0a`, Newline],
 			['non-initial escaped newline', `foo${Backslash}x0a`, `foo${Newline}`],
 			['escaped newline (upper hex)', `${Backslash}x0A`, Newline],
-			['escaped backslash followed by literal "x0a" is not a newline', `${Backslash}${Backslash}x0a`, `${Backslash}x0a`],
-			['non-initial escaped backslash followed by literal "x0a" is not a newline', `foo${Backslash}${Backslash}x0a`, `foo${Backslash}x0a`],
+			[
+				'escaped backslash followed by literal "x0a" is not a newline',
+				`${Backslash}${Backslash}x0a`,
+				`${Backslash}x0a`,
+			],
+			[
+				'non-initial escaped backslash followed by literal "x0a" is not a newline',
+				`foo${Backslash}${Backslash}x0a`,
+				`foo${Backslash}x0a`,
+			],
 			['PS1 simple', '[\\u@\\h \\W]\\$', '[\\u@\\h \\W]\\$'],
-			['PS1 VSC SI', `${Backslash}x1b]633;A${Backslash}x07\\[${Backslash}x1b]0;\\u@\\h:\\w\\a\\]${Backslash}x1b]633;B${Backslash}x07`, '\x1b]633;A\x07\\[\x1b]0;\\u@\\h:\\w\\a\\]\x1b]633;B\x07']
+			[
+				'PS1 VSC SI',
+				`${Backslash}x1b]633;A${Backslash}x07\\[${Backslash}x1b]0;\\u@\\h:\\w\\a\\]${Backslash}x1b]633;B${Backslash}x07`,
+				'\x1b]633;A\x07\\[\x1b]0;\\u@\\h:\\w\\a\\]\x1b]633;B\x07',
+			],
 		];
 
 		cases.forEach(([title, input, expected]) => {
@@ -297,7 +345,11 @@ suite('ShellIntegrationAddon', () => {
 	});
 
 	test('parseKeyValueAssignment', () => {
-		type TestCase = [title: string, input: string, expected: [key: string, value: string | undefined]];
+		type TestCase = [
+			title: string,
+			input: string,
+			expected: [key: string, value: string | undefined],
+		];
 		const cases: TestCase[] = [
 			['empty', '', ['', undefined]],
 			['no "=" sign', 'some-text', ['some-text', undefined]],

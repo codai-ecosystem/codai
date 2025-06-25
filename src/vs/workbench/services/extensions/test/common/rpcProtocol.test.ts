@@ -5,7 +5,10 @@
 
 import assert from 'assert';
 import { VSBuffer } from '../../../../../base/common/buffer.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../../base/common/cancellation.js';
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from '../../../../../base/common/cancellation.js';
 import { Emitter, Event } from '../../../../../base/common/event.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { IMessagePassingProtocol } from '../../../../../base/parts/ipc/common/ipc.js';
@@ -14,7 +17,6 @@ import { ProxyIdentifier, SerializableObjectWithBuffers } from '../../common/pro
 import { RPCProtocol } from '../../common/rpcProtocol.js';
 
 suite('RPCProtocol', () => {
-
 	let disposables: DisposableStore;
 
 	class MessagePassingProtocol implements IMessagePassingProtocol {
@@ -74,7 +76,7 @@ suite('RPCProtocol', () => {
 	});
 
 	test('simple call without result', function (done) {
-		delegate = (a1: number, a2: number) => { };
+		delegate = (a1: number, a2: number) => {};
 		bProxy.$m(4, 1).then((res: number) => {
 			assert.strictEqual(res, undefined);
 			done(null);
@@ -119,12 +121,15 @@ suite('RPCProtocol', () => {
 	test('cancelling a call via CancellationToken before', function (done) {
 		delegate = (a1: number, a2: number) => a1 + a2;
 		const p = bProxy.$m(4, CancellationToken.Cancelled);
-		p.then((res: number) => {
-			assert.fail('should not receive result');
-		}, (err) => {
-			assert.ok(true);
-			done(null);
-		});
+		p.then(
+			(res: number) => {
+				assert.fail('should not receive result');
+			},
+			err => {
+				assert.ok(true);
+				done(null);
+			}
+		);
 	});
 
 	test('passing CancellationToken.None', function (done) {
@@ -142,7 +147,7 @@ suite('RPCProtocol', () => {
 		// this is an implementation which, when cancellation is triggered, will return 7
 		delegate = (a1: number, token: CancellationToken) => {
 			return new Promise((resolve, reject) => {
-				const disposable = token.onCancellationRequested((e) => {
+				const disposable = token.onCancellationRequested(e => {
 					disposable.dispose();
 					resolve(7);
 				});
@@ -150,11 +155,14 @@ suite('RPCProtocol', () => {
 		};
 		const tokenSource = new CancellationTokenSource();
 		const p = bProxy.$m(4, tokenSource.token);
-		p.then((res: number) => {
-			assert.strictEqual(res, 7);
-		}, (err) => {
-			assert.fail('should not receive error');
-		}).finally(done);
+		p.then(
+			(res: number) => {
+				assert.strictEqual(res, 7);
+			},
+			err => {
+				assert.fail('should not receive error');
+			}
+		).finally(done);
 		tokenSource.cancel();
 	});
 
@@ -162,22 +170,34 @@ suite('RPCProtocol', () => {
 		delegate = (a1: number, a2: number) => {
 			throw new Error(`nope`);
 		};
-		bProxy.$m(4, 1).then((res) => {
-			assert.fail('unexpected');
-		}, (err) => {
-			assert.strictEqual(err.message, 'nope');
-		}).finally(done);
+		bProxy
+			.$m(4, 1)
+			.then(
+				res => {
+					assert.fail('unexpected');
+				},
+				err => {
+					assert.strictEqual(err.message, 'nope');
+				}
+			)
+			.finally(done);
 	});
 
 	test('error promise', function (done) {
 		delegate = (a1: number, a2: number) => {
 			return Promise.reject(undefined);
 		};
-		bProxy.$m(4, 1).then((res) => {
-			assert.fail('unexpected');
-		}, (err) => {
-			assert.strictEqual(err, undefined);
-		}).finally(done);
+		bProxy
+			.$m(4, 1)
+			.then(
+				res => {
+					assert.fail('unexpected');
+				},
+				err => {
+					assert.strictEqual(err, undefined);
+				}
+			)
+			.finally(done);
 	});
 
 	test('issue #60450: Converting circular structure to JSON', function (done) {
@@ -186,23 +206,35 @@ suite('RPCProtocol', () => {
 			circular.self = circular;
 			return circular;
 		};
-		bProxy.$m(4, 1).then((res) => {
-			assert.strictEqual(res, null);
-		}, (err) => {
-			assert.fail('unexpected');
-		}).finally(done);
+		bProxy
+			.$m(4, 1)
+			.then(
+				res => {
+					assert.strictEqual(res, null);
+				},
+				err => {
+					assert.fail('unexpected');
+				}
+			)
+			.finally(done);
 	});
 
 	test('issue #72798: null errors are hard to digest', function (done) {
 		delegate = (a1: number, a2: number) => {
 			// eslint-disable-next-line no-throw-literal
-			throw { 'what': 'what' };
+			throw { what: 'what' };
 		};
-		bProxy.$m(4, 1).then((res) => {
-			assert.fail('unexpected');
-		}, (err) => {
-			assert.strictEqual(err.what, 'what');
-		}).finally(done);
+		bProxy
+			.$m(4, 1)
+			.then(
+				res => {
+					assert.fail('unexpected');
+				},
+				err => {
+					assert.strictEqual(err.what, 'what');
+				}
+			)
+			.finally(done);
 	});
 
 	test('undefined arguments arrive as null', function () {
@@ -211,7 +243,7 @@ suite('RPCProtocol', () => {
 			assert.strictEqual(a2, null);
 			return 7;
 		};
-		return bProxy.$m(undefined, null).then((res) => {
+		return bProxy.$m(undefined, null).then(res => {
 			assert.strictEqual(res, 7);
 		});
 	});
@@ -226,8 +258,14 @@ suite('RPCProtocol', () => {
 	});
 
 	test('SerializableObjectWithBuffers is correctly transfered', function (done) {
-		delegate = (a1: SerializableObjectWithBuffers<{ string: string; buff: VSBuffer }>, a2: number) => {
-			return new SerializableObjectWithBuffers({ string: a1.value.string + ' world', buff: a1.value.buff });
+		delegate = (
+			a1: SerializableObjectWithBuffers<{ string: string; buff: VSBuffer }>,
+			a2: number
+		) => {
+			return new SerializableObjectWithBuffers({
+				string: a1.value.string + ' world',
+				buff: a1.value.buff,
+			});
 		};
 
 		const b = VSBuffer.alloc(4);
@@ -236,19 +274,21 @@ suite('RPCProtocol', () => {
 		b.buffer[2] = 3;
 		b.buffer[3] = 4;
 
-		bProxy.$m(new SerializableObjectWithBuffers({ string: 'hello', buff: b }), undefined).then((res: SerializableObjectWithBuffers<any>) => {
-			assert.ok(res instanceof SerializableObjectWithBuffers);
-			assert.strictEqual(res.value.string, 'hello world');
+		bProxy
+			.$m(new SerializableObjectWithBuffers({ string: 'hello', buff: b }), undefined)
+			.then((res: SerializableObjectWithBuffers<any>) => {
+				assert.ok(res instanceof SerializableObjectWithBuffers);
+				assert.strictEqual(res.value.string, 'hello world');
 
-			assert.ok(res.value.buff instanceof VSBuffer);
+				assert.ok(res.value.buff instanceof VSBuffer);
 
-			const bufferValues = Array.from(res.value.buff.buffer);
+				const bufferValues = Array.from(res.value.buff.buffer);
 
-			assert.strictEqual(bufferValues[0], 1);
-			assert.strictEqual(bufferValues[1], 2);
-			assert.strictEqual(bufferValues[2], 3);
-			assert.strictEqual(bufferValues[3], 4);
-			done(null);
-		}, done);
+				assert.strictEqual(bufferValues[0], 1);
+				assert.strictEqual(bufferValues[1], 2);
+				assert.strictEqual(bufferValues[2], 3);
+				assert.strictEqual(bufferValues[3], 4);
+				done(null);
+			}, done);
 	});
 });

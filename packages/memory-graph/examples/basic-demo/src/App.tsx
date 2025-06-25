@@ -22,15 +22,11 @@ const createSampleGraph = (): MemoryGraph => ({
 			updatedAt: new Date('2024-03-10'),
 			status: 'implemented',
 			priority: 'critical',
-			requirements: [
-				'Support OAuth 2.0',
-				'Multi-factor authentication',
-				'Session management'
-			],
+			requirements: ['Support OAuth 2.0', 'Multi-factor authentication', 'Session management'],
 			metadata: {
 				team: 'security',
-				complexity: 'high'
-			}
+				complexity: 'high',
+			},
 		},
 		{
 			id: 'ui-components',
@@ -42,15 +38,11 @@ const createSampleGraph = (): MemoryGraph => ({
 			updatedAt: new Date('2024-03-15'),
 			status: 'implemented',
 			priority: 'high',
-			requirements: [
-				'TypeScript support',
-				'Accessibility compliance',
-				'Responsive design'
-			],
+			requirements: ['TypeScript support', 'Accessibility compliance', 'Responsive design'],
 			metadata: {
 				team: 'frontend',
-				complexity: 'medium'
-			}
+				complexity: 'medium',
+			},
 		},
 		{
 			id: 'api-gateway',
@@ -66,8 +58,8 @@ const createSampleGraph = (): MemoryGraph => ({
 			rateLimit: 1000,
 			metadata: {
 				team: 'backend',
-				complexity: 'high'
-			}
+				complexity: 'high',
+			},
 		},
 		{
 			id: 'memory-graph',
@@ -79,15 +71,11 @@ const createSampleGraph = (): MemoryGraph => ({
 			updatedAt: new Date('2024-03-20'),
 			status: 'in_progress',
 			priority: 'medium',
-			requirements: [
-				'React components',
-				'Graph visualization',
-				'Interactive controls'
-			],
+			requirements: ['React components', 'Graph visualization', 'Interactive controls'],
 			metadata: {
 				team: 'frontend',
-				complexity: 'high'
-			}
+				complexity: 'high',
+			},
 		},
 		{
 			id: 'database-layer',
@@ -101,8 +89,8 @@ const createSampleGraph = (): MemoryGraph => ({
 			implementation: 'Database service with connection pooling',
 			metadata: {
 				team: 'backend',
-				complexity: 'medium'
-			}
+				complexity: 'medium',
+			},
 		},
 		{
 			id: 'notification-system',
@@ -116,9 +104,9 @@ const createSampleGraph = (): MemoryGraph => ({
 			implementation: 'WebSocket-based notification system',
 			metadata: {
 				team: 'backend',
-				complexity: 'medium'
-			}
-		}
+				complexity: 'medium',
+			},
+		},
 	],
 	relationships: [
 		{
@@ -127,8 +115,8 @@ const createSampleGraph = (): MemoryGraph => ({
 			toNodeId: 'api-gateway',
 			type: 'uses',
 			metadata: {
-				description: 'Authentication system integrates with API gateway for request validation'
-			}
+				description: 'Authentication system integrates with API gateway for request validation',
+			},
 		},
 		{
 			id: 'ui-memory-rel',
@@ -136,8 +124,8 @@ const createSampleGraph = (): MemoryGraph => ({
 			toNodeId: 'ui-components',
 			type: 'uses',
 			metadata: {
-				description: 'Memory graph uses UI components for visualization'
-			}
+				description: 'Memory graph uses UI components for visualization',
+			},
 		},
 		{
 			id: 'api-db-rel',
@@ -145,8 +133,8 @@ const createSampleGraph = (): MemoryGraph => ({
 			toNodeId: 'database-layer',
 			type: 'depends_on',
 			metadata: {
-				description: 'API gateway depends on database layer for data operations'
-			}
+				description: 'API gateway depends on database layer for data operations',
+			},
 		},
 		{
 			id: 'api-notif-rel',
@@ -154,8 +142,8 @@ const createSampleGraph = (): MemoryGraph => ({
 			toNodeId: 'notification-system',
 			type: 'uses',
 			metadata: {
-				description: 'API gateway uses notification system for events'
-			}
+				description: 'API gateway uses notification system for events',
+			},
 		},
 		{
 			id: 'auth-db-rel',
@@ -163,8 +151,8 @@ const createSampleGraph = (): MemoryGraph => ({
 			toNodeId: 'database-layer',
 			type: 'depends_on',
 			metadata: {
-				description: 'Authentication system stores user data in database'
-			}
+				description: 'Authentication system stores user data in database',
+			},
 		},
 		{
 			id: 'memory-notif-rel',
@@ -172,10 +160,10 @@ const createSampleGraph = (): MemoryGraph => ({
 			toNodeId: 'notification-system',
 			type: 'uses',
 			metadata: {
-				description: 'Memory graph can send notifications for updates'
-			}
-		}
-	]
+				description: 'Memory graph can send notifications for updates',
+			},
+		},
+	],
 });
 
 const App: React.FC = () => {
@@ -199,18 +187,18 @@ const App: React.FC = () => {
 		{
 			value: 'force',
 			label: 'Force Layout',
-			description: 'Physics-based layout with node attraction and repulsion'
+			description: 'Physics-based layout with node attraction and repulsion',
 		},
 		{
 			value: 'hierarchical',
 			label: 'Hierarchical',
-			description: 'Top-down tree structure showing dependencies'
+			description: 'Top-down tree structure showing dependencies',
 		},
 		{
 			value: 'circular',
 			label: 'Circular',
-			description: 'Nodes arranged in a circular pattern'
-		}
+			description: 'Nodes arranged in a circular pattern',
+		},
 	];
 
 	return (
@@ -225,7 +213,8 @@ const App: React.FC = () => {
 			<div className="demo-content">
 				<aside className="demo-sidebar">
 					<div className="control-section">
-						<h3>Layout Options</h3>						{layouts.map((layoutOption) => (
+						<h3>Layout Options</h3>{' '}
+						{layouts.map(layoutOption => (
 							<div key={layoutOption.value} className="control-group">
 								<button
 									className={`control-button ${layout === layoutOption.value ? 'active' : ''}`}
@@ -233,13 +222,10 @@ const App: React.FC = () => {
 								>
 									{layoutOption.label}
 								</button>
-								<p className="layout-description">
-									{layoutOption.description}
-								</p>
+								<p className="layout-description">{layoutOption.description}</p>
 							</div>
 						))}
 					</div>
-
 					<div className="control-section">
 						<h3>Display Options</h3>
 						<div className="control-group">
@@ -247,7 +233,7 @@ const App: React.FC = () => {
 								<input
 									type="checkbox"
 									checked={isEditable}
-									onChange={(e) => setIsEditable(e.target.checked)}
+									onChange={e => setIsEditable(e.target.checked)}
 								/>
 								Enable editing mode
 							</label>
@@ -257,70 +243,102 @@ const App: React.FC = () => {
 								<input
 									type="checkbox"
 									checked={showRelationships}
-									onChange={(e) => setShowRelationships(e.target.checked)}
+									onChange={e => setShowRelationships(e.target.checked)}
 								/>
 								Show relationships
 							</label>
 						</div>
-					</div>							{selectedNode && (
+					</div>{' '}
+					{selectedNode && (
 						<div className="control-section">
 							<h3>Selected Node</h3>
 							<div className="info-panel">
 								<h4>{selectedNode.name}</h4>
-								<p><strong>Type:</strong> {selectedNode.type}</p>
+								<p>
+									<strong>Type:</strong> {selectedNode.type}
+								</p>
 								{selectedNode.type === 'feature' && (
 									<>
-										<p><strong>Status:</strong> {selectedNode.status}</p>
-										<p><strong>Priority:</strong> {selectedNode.priority}</p>
+										<p>
+											<strong>Status:</strong> {selectedNode.status}
+										</p>
+										<p>
+											<strong>Priority:</strong> {selectedNode.priority}
+										</p>
 									</>
 								)}
 								{selectedNode.type === 'api' && (
 									<>
-										<p><strong>Method:</strong> {selectedNode.method}</p>
-										<p><strong>Path:</strong> {selectedNode.path}</p>
+										<p>
+											<strong>Method:</strong> {selectedNode.method}
+										</p>
+										<p>
+											<strong>Path:</strong> {selectedNode.path}
+										</p>
 									</>
 								)}
 								{selectedNode.type === 'logic' && (
-									<p><strong>Logic Type:</strong> {selectedNode.logicType}</p>
+									<p>
+										<strong>Logic Type:</strong> {selectedNode.logicType}
+									</p>
 								)}
-								<p><strong>Version:</strong> {selectedNode.version}</p>
+								<p>
+									<strong>Version:</strong> {selectedNode.version}
+								</p>
 								{selectedNode.description && (
-									<p><strong>Description:</strong> {selectedNode.description}</p>
+									<p>
+										<strong>Description:</strong> {selectedNode.description}
+									</p>
 								)}
-								{selectedNode.type === 'feature' && selectedNode.requirements && selectedNode.requirements.length > 0 && (
-									<div>
-										<strong>Requirements:</strong>
-										<ul className="requirements-list">
-											{selectedNode.requirements.map((req: string, index: number) => (
-												<li key={index} className="requirement-item">{req}</li>
-											))}
-										</ul>
-									</div>
-								)}
+								{selectedNode.type === 'feature' &&
+									selectedNode.requirements &&
+									selectedNode.requirements.length > 0 && (
+										<div>
+											<strong>Requirements:</strong>
+											<ul className="requirements-list">
+												{selectedNode.requirements.map((req: string, index: number) => (
+													<li key={index} className="requirement-item">
+														{req}
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
 							</div>
 						</div>
 					)}
-
 					<div className="control-section">
 						<h3>Demo Features</h3>
 						<div className="info-panel">
-							<p>🔍 <strong>Click</strong> nodes to select and view details</p>
-							<p>🔄 <strong>Mouse wheel</strong> to zoom in/out</p>
-							<p>✋ <strong>Drag</strong> to pan around the graph</p>
-							<p>⚙️ <strong>Change layouts</strong> to see different arrangements</p>
-							<p>✏️ <strong>Enable editing</strong> to interact with relationships</p>
+							<p>
+								🔍 <strong>Click</strong> nodes to select and view details
+							</p>
+							<p>
+								🔄 <strong>Mouse wheel</strong> to zoom in/out
+							</p>
+							<p>
+								✋ <strong>Drag</strong> to pan around the graph
+							</p>
+							<p>
+								⚙️ <strong>Change layouts</strong> to see different arrangements
+							</p>
+							<p>
+								✏️ <strong>Enable editing</strong> to interact with relationships
+							</p>
 						</div>
 					</div>
 				</aside>
 
 				<main className="demo-main">
-					<div className="graph-container">						<MemoryGraphVisualization
-						graph={graph}
-						layout={layout}
-						onNodeSelect={handleNodeSelect}
-						onRelationshipDelete={isEditable ? handleRelationshipDelete : undefined}
-						isEditable={isEditable}
-					/>
+					<div className="graph-container">
+						{' '}
+						<MemoryGraphVisualization
+							graph={graph}
+							layout={layout}
+							onNodeSelect={handleNodeSelect}
+							onRelationshipDelete={isEditable ? handleRelationshipDelete : undefined}
+							isEditable={isEditable}
+						/>
 					</div>
 				</main>
 			</div>

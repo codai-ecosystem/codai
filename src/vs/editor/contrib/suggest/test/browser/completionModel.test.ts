@@ -8,33 +8,49 @@ import { EditorOptions, InternalSuggestOptions } from '../../../../common/config
 import { IPosition } from '../../../../common/core/position.js';
 import * as languages from '../../../../common/languages.js';
 import { CompletionModel } from '../../browser/completionModel.js';
-import { CompletionItem, getSuggestionComparator, SnippetSortOrder } from '../../browser/suggest.js';
+import {
+	CompletionItem,
+	getSuggestionComparator,
+	SnippetSortOrder,
+} from '../../browser/suggest.js';
 import { WordDistance } from '../../browser/wordDistance.js';
 
-export function createSuggestItem(label: string | languages.CompletionItemLabel, overwriteBefore: number, kind = languages.CompletionItemKind.Property, incomplete: boolean = false, position: IPosition = { lineNumber: 1, column: 1 }, sortText?: string, filterText?: string): CompletionItem {
+export function createSuggestItem(
+	label: string | languages.CompletionItemLabel,
+	overwriteBefore: number,
+	kind = languages.CompletionItemKind.Property,
+	incomplete: boolean = false,
+	position: IPosition = { lineNumber: 1, column: 1 },
+	sortText?: string,
+	filterText?: string
+): CompletionItem {
 	const suggestion: languages.CompletionItem = {
 		label,
 		sortText,
 		filterText,
-		range: { startLineNumber: position.lineNumber, startColumn: position.column - overwriteBefore, endLineNumber: position.lineNumber, endColumn: position.column },
+		range: {
+			startLineNumber: position.lineNumber,
+			startColumn: position.column - overwriteBefore,
+			endLineNumber: position.lineNumber,
+			endColumn: position.column,
+		},
 		insertText: typeof label === 'string' ? label : label.label,
-		kind
+		kind,
 	};
 	const container: languages.CompletionList = {
 		incomplete,
-		suggestions: [suggestion]
+		suggestions: [suggestion],
 	};
 	const provider: languages.CompletionItemProvider = {
 		_debugDisplayName: 'test',
 		provideCompletionItems(): any {
 			return;
-		}
+		},
 	};
 
 	return new CompletionItem(position, suggestion, container, provider);
 }
 suite('CompletionModel', function () {
-
 	const defaultOptions = <InternalSuggestOptions>{
 		insertMode: 'insert',
 		snippetsPreventQuickSuggestions: true,
@@ -73,21 +89,23 @@ suite('CompletionModel', function () {
 	let model: CompletionModel;
 
 	setup(function () {
-
-		model = new CompletionModel([
-			createSuggestItem('foo', 3),
-			createSuggestItem('Foo', 3),
-			createSuggestItem('foo', 2),
-		], 1, {
-			leadingLineContent: 'foo',
-			characterCountDelta: 0
-		}, WordDistance.None, EditorOptions.suggest.defaultValue, EditorOptions.snippetSuggestions.defaultValue, undefined);
+		model = new CompletionModel(
+			[createSuggestItem('foo', 3), createSuggestItem('Foo', 3), createSuggestItem('foo', 2)],
+			1,
+			{
+				leadingLineContent: 'foo',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			EditorOptions.suggest.defaultValue,
+			EditorOptions.snippetSuggestions.defaultValue,
+			undefined
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('filtering - cached', function () {
-
 		const itemsNow = model.items;
 		let itemsThen = model.items;
 		assert.ok(itemsNow === itemsThen);
@@ -103,55 +121,82 @@ suite('CompletionModel', function () {
 		assert.ok(itemsNow !== itemsThen);
 	});
 
-
 	test('complete/incomplete', () => {
-
 		assert.strictEqual(model.getIncompleteProvider().size, 0);
 
-		const incompleteModel = new CompletionModel([
-			createSuggestItem('foo', 3, undefined, true),
-			createSuggestItem('foo', 2),
-		], 1, {
-			leadingLineContent: 'foo',
-			characterCountDelta: 0
-		}, WordDistance.None, EditorOptions.suggest.defaultValue, EditorOptions.snippetSuggestions.defaultValue, undefined);
+		const incompleteModel = new CompletionModel(
+			[createSuggestItem('foo', 3, undefined, true), createSuggestItem('foo', 2)],
+			1,
+			{
+				leadingLineContent: 'foo',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			EditorOptions.suggest.defaultValue,
+			EditorOptions.snippetSuggestions.defaultValue,
+			undefined
+		);
 		assert.strictEqual(incompleteModel.getIncompleteProvider().size, 1);
 	});
 
 	test('Fuzzy matching of snippets stopped working with inline snippet suggestions #49895', function () {
-		const completeItem1 = createSuggestItem('foobar1', 1, undefined, false, { lineNumber: 1, column: 2 });
-		const completeItem2 = createSuggestItem('foobar2', 1, undefined, false, { lineNumber: 1, column: 2 });
-		const completeItem3 = createSuggestItem('foobar3', 1, undefined, false, { lineNumber: 1, column: 2 });
-		const completeItem4 = createSuggestItem('foobar4', 1, undefined, false, { lineNumber: 1, column: 2 });
-		const completeItem5 = createSuggestItem('foobar5', 1, undefined, false, { lineNumber: 1, column: 2 });
-		const incompleteItem1 = createSuggestItem('foofoo1', 1, undefined, true, { lineNumber: 1, column: 2 });
+		const completeItem1 = createSuggestItem('foobar1', 1, undefined, false, {
+			lineNumber: 1,
+			column: 2,
+		});
+		const completeItem2 = createSuggestItem('foobar2', 1, undefined, false, {
+			lineNumber: 1,
+			column: 2,
+		});
+		const completeItem3 = createSuggestItem('foobar3', 1, undefined, false, {
+			lineNumber: 1,
+			column: 2,
+		});
+		const completeItem4 = createSuggestItem('foobar4', 1, undefined, false, {
+			lineNumber: 1,
+			column: 2,
+		});
+		const completeItem5 = createSuggestItem('foobar5', 1, undefined, false, {
+			lineNumber: 1,
+			column: 2,
+		});
+		const incompleteItem1 = createSuggestItem('foofoo1', 1, undefined, true, {
+			lineNumber: 1,
+			column: 2,
+		});
 
 		const model = new CompletionModel(
-			[
-				completeItem1,
-				completeItem2,
-				completeItem3,
-				completeItem4,
-				completeItem5,
-				incompleteItem1,
-			], 2, { leadingLineContent: 'f', characterCountDelta: 0 }, WordDistance.None, EditorOptions.suggest.defaultValue, EditorOptions.snippetSuggestions.defaultValue, undefined
+			[completeItem1, completeItem2, completeItem3, completeItem4, completeItem5, incompleteItem1],
+			2,
+			{ leadingLineContent: 'f', characterCountDelta: 0 },
+			WordDistance.None,
+			EditorOptions.suggest.defaultValue,
+			EditorOptions.snippetSuggestions.defaultValue,
+			undefined
 		);
 		assert.strictEqual(model.getIncompleteProvider().size, 1);
 		assert.strictEqual(model.items.length, 6);
 	});
 
 	test('proper current word when length=0, #16380', function () {
-
-		model = new CompletionModel([
-			createSuggestItem('    </div', 4),
-			createSuggestItem('a', 0),
-			createSuggestItem('p', 0),
-			createSuggestItem('    </tag', 4),
-			createSuggestItem('    XYZ', 4),
-		], 1, {
-			leadingLineContent: '   <',
-			characterCountDelta: 0
-		}, WordDistance.None, EditorOptions.suggest.defaultValue, EditorOptions.snippetSuggestions.defaultValue, undefined);
+		model = new CompletionModel(
+			[
+				createSuggestItem('    </div', 4),
+				createSuggestItem('a', 0),
+				createSuggestItem('p', 0),
+				createSuggestItem('    </tag', 4),
+				createSuggestItem('    XYZ', 4),
+			],
+			1,
+			{
+				leadingLineContent: '   <',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			EditorOptions.suggest.defaultValue,
+			EditorOptions.snippetSuggestions.defaultValue,
+			undefined
+		);
 
 		assert.strictEqual(model.items.length, 4);
 
@@ -163,34 +208,47 @@ suite('CompletionModel', function () {
 	});
 
 	test('keep snippet sorting with prefix: top, #25495', function () {
-
-		model = new CompletionModel([
-			createSuggestItem('Snippet1', 1, languages.CompletionItemKind.Snippet),
-			createSuggestItem('tnippet2', 1, languages.CompletionItemKind.Snippet),
-			createSuggestItem('semver', 1, languages.CompletionItemKind.Property),
-		], 1, {
-			leadingLineContent: 's',
-			characterCountDelta: 0
-		}, WordDistance.None, defaultOptions, 'top', undefined);
+		model = new CompletionModel(
+			[
+				createSuggestItem('Snippet1', 1, languages.CompletionItemKind.Snippet),
+				createSuggestItem('tnippet2', 1, languages.CompletionItemKind.Snippet),
+				createSuggestItem('semver', 1, languages.CompletionItemKind.Property),
+			],
+			1,
+			{
+				leadingLineContent: 's',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			defaultOptions,
+			'top',
+			undefined
+		);
 
 		assert.strictEqual(model.items.length, 2);
 		const [a, b] = model.items;
 		assert.strictEqual(a.completion.label, 'Snippet1');
 		assert.strictEqual(b.completion.label, 'semver');
 		assert.ok(a.score < b.score); // snippet really promoted
-
 	});
 
 	test('keep snippet sorting with prefix: bottom, #25495', function () {
-
-		model = new CompletionModel([
-			createSuggestItem('snippet1', 1, languages.CompletionItemKind.Snippet),
-			createSuggestItem('tnippet2', 1, languages.CompletionItemKind.Snippet),
-			createSuggestItem('Semver', 1, languages.CompletionItemKind.Property),
-		], 1, {
-			leadingLineContent: 's',
-			characterCountDelta: 0
-		}, WordDistance.None, defaultOptions, 'bottom', undefined);
+		model = new CompletionModel(
+			[
+				createSuggestItem('snippet1', 1, languages.CompletionItemKind.Snippet),
+				createSuggestItem('tnippet2', 1, languages.CompletionItemKind.Snippet),
+				createSuggestItem('Semver', 1, languages.CompletionItemKind.Property),
+			],
+			1,
+			{
+				leadingLineContent: 's',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			defaultOptions,
+			'bottom',
+			undefined
+		);
 
 		assert.strictEqual(model.items.length, 2);
 		const [a, b] = model.items;
@@ -200,15 +258,22 @@ suite('CompletionModel', function () {
 	});
 
 	test('keep snippet sorting with prefix: inline, #25495', function () {
-
-		model = new CompletionModel([
-			createSuggestItem('snippet1', 1, languages.CompletionItemKind.Snippet),
-			createSuggestItem('tnippet2', 1, languages.CompletionItemKind.Snippet),
-			createSuggestItem('Semver', 1),
-		], 1, {
-			leadingLineContent: 's',
-			characterCountDelta: 0
-		}, WordDistance.None, defaultOptions, 'inline', undefined);
+		model = new CompletionModel(
+			[
+				createSuggestItem('snippet1', 1, languages.CompletionItemKind.Snippet),
+				createSuggestItem('tnippet2', 1, languages.CompletionItemKind.Snippet),
+				createSuggestItem('Semver', 1),
+			],
+			1,
+			{
+				leadingLineContent: 's',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			defaultOptions,
+			'inline',
+			undefined
+		);
 
 		assert.strictEqual(model.items.length, 2);
 		const [a, b] = model.items;
@@ -218,34 +283,72 @@ suite('CompletionModel', function () {
 	});
 
 	test('filterText seems ignored in autocompletion, #26874', function () {
-
-		const item1 = createSuggestItem('Map - java.util', 1, undefined, undefined, undefined, undefined, 'Map');
+		const item1 = createSuggestItem(
+			'Map - java.util',
+			1,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			'Map'
+		);
 		const item2 = createSuggestItem('Map - java.util', 1);
 
-		model = new CompletionModel([item1, item2], 1, {
-			leadingLineContent: 'M',
-			characterCountDelta: 0
-		}, WordDistance.None, EditorOptions.suggest.defaultValue, EditorOptions.snippetSuggestions.defaultValue, undefined);
+		model = new CompletionModel(
+			[item1, item2],
+			1,
+			{
+				leadingLineContent: 'M',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			EditorOptions.suggest.defaultValue,
+			EditorOptions.snippetSuggestions.defaultValue,
+			undefined
+		);
 
 		assert.strictEqual(model.items.length, 2);
 
 		model.lineContext = {
 			leadingLineContent: 'Map ',
-			characterCountDelta: 3
+			characterCountDelta: 3,
 		};
 		assert.strictEqual(model.items.length, 1);
 	});
 
-	test('Vscode 1.12 no longer obeys \'sortText\' in completion items (from language server), #26096', function () {
-
-		const item1 = createSuggestItem('<- groups', 2, languages.CompletionItemKind.Property, false, { lineNumber: 1, column: 3 }, '00002', '  groups');
-		const item2 = createSuggestItem('source', 0, languages.CompletionItemKind.Property, false, { lineNumber: 1, column: 3 }, '00001', 'source');
+	test("Vscode 1.12 no longer obeys 'sortText' in completion items (from language server), #26096", function () {
+		const item1 = createSuggestItem(
+			'<- groups',
+			2,
+			languages.CompletionItemKind.Property,
+			false,
+			{ lineNumber: 1, column: 3 },
+			'00002',
+			'  groups'
+		);
+		const item2 = createSuggestItem(
+			'source',
+			0,
+			languages.CompletionItemKind.Property,
+			false,
+			{ lineNumber: 1, column: 3 },
+			'00001',
+			'source'
+		);
 		const items = [item1, item2].sort(getSuggestionComparator(SnippetSortOrder.Inline));
 
-		model = new CompletionModel(items, 3, {
-			leadingLineContent: '  ',
-			characterCountDelta: 0
-		}, WordDistance.None, EditorOptions.suggest.defaultValue, EditorOptions.snippetSuggestions.defaultValue, undefined);
+		model = new CompletionModel(
+			items,
+			3,
+			{
+				leadingLineContent: '  ',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			EditorOptions.suggest.defaultValue,
+			EditorOptions.snippetSuggestions.defaultValue,
+			undefined
+		);
 
 		assert.strictEqual(model.items.length, 2);
 
@@ -255,8 +358,18 @@ suite('CompletionModel', function () {
 	});
 
 	test('Completion item sorting broken when using label details #153026', function () {
-		const itemZZZ = createSuggestItem({ label: 'ZZZ' }, 0, languages.CompletionItemKind.Operator, false);
-		const itemAAA = createSuggestItem({ label: 'AAA' }, 0, languages.CompletionItemKind.Operator, false);
+		const itemZZZ = createSuggestItem(
+			{ label: 'ZZZ' },
+			0,
+			languages.CompletionItemKind.Operator,
+			false
+		);
+		const itemAAA = createSuggestItem(
+			{ label: 'AAA' },
+			0,
+			languages.CompletionItemKind.Operator,
+			false
+		);
 		const itemIII = createSuggestItem('III', 0, languages.CompletionItemKind.Operator, false);
 
 		const cmp = getSuggestionComparator(SnippetSortOrder.Inline);
@@ -266,16 +379,24 @@ suite('CompletionModel', function () {
 	});
 
 	test('Score only filtered items when typing more, score all when typing less', function () {
-		model = new CompletionModel([
-			createSuggestItem('console', 0),
-			createSuggestItem('co_new', 0),
-			createSuggestItem('bar', 0),
-			createSuggestItem('car', 0),
-			createSuggestItem('foo', 0),
-		], 1, {
-			leadingLineContent: '',
-			characterCountDelta: 0
-		}, WordDistance.None, EditorOptions.suggest.defaultValue, EditorOptions.snippetSuggestions.defaultValue, undefined);
+		model = new CompletionModel(
+			[
+				createSuggestItem('console', 0),
+				createSuggestItem('co_new', 0),
+				createSuggestItem('bar', 0),
+				createSuggestItem('car', 0),
+				createSuggestItem('foo', 0),
+			],
+			1,
+			{
+				leadingLineContent: '',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			EditorOptions.suggest.defaultValue,
+			EditorOptions.snippetSuggestions.defaultValue,
+			undefined
+		);
 
 		assert.strictEqual(model.items.length, 5);
 
@@ -293,16 +414,24 @@ suite('CompletionModel', function () {
 	});
 
 	test('Have more relaxed suggest matching algorithm #15419', function () {
-		model = new CompletionModel([
-			createSuggestItem('result', 0),
-			createSuggestItem('replyToUser', 0),
-			createSuggestItem('randomLolut', 0),
-			createSuggestItem('car', 0),
-			createSuggestItem('foo', 0),
-		], 1, {
-			leadingLineContent: '',
-			characterCountDelta: 0
-		}, WordDistance.None, EditorOptions.suggest.defaultValue, EditorOptions.snippetSuggestions.defaultValue, undefined);
+		model = new CompletionModel(
+			[
+				createSuggestItem('result', 0),
+				createSuggestItem('replyToUser', 0),
+				createSuggestItem('randomLolut', 0),
+				createSuggestItem('car', 0),
+				createSuggestItem('foo', 0),
+			],
+			1,
+			{
+				leadingLineContent: '',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			EditorOptions.suggest.defaultValue,
+			EditorOptions.snippetSuggestions.defaultValue,
+			undefined
+		);
 
 		// query gets longer, narrow down the narrow-down'ed-set from before
 		model.lineContext = { leadingLineContent: 'rlut', characterCountDelta: 4 };
@@ -310,27 +439,35 @@ suite('CompletionModel', function () {
 
 		const [first, second, third] = model.items;
 		assert.strictEqual(first.completion.label, 'result'); // best with `rult`
-		assert.strictEqual(second.completion.label, 'replyToUser');  // best with `rltu`
-		assert.strictEqual(third.completion.label, 'randomLolut');  // best with `rlut`
+		assert.strictEqual(second.completion.label, 'replyToUser'); // best with `rltu`
+		assert.strictEqual(third.completion.label, 'randomLolut'); // best with `rlut`
 	});
 
 	test('Emmet suggestion not appearing at the top of the list in jsx files, #39518', function () {
-		model = new CompletionModel([
-			createSuggestItem('from', 0),
-			createSuggestItem('form', 0),
-			createSuggestItem('form:get', 0),
-			createSuggestItem('testForeignMeasure', 0),
-			createSuggestItem('fooRoom', 0),
-		], 1, {
-			leadingLineContent: '',
-			characterCountDelta: 0
-		}, WordDistance.None, EditorOptions.suggest.defaultValue, EditorOptions.snippetSuggestions.defaultValue, undefined);
+		model = new CompletionModel(
+			[
+				createSuggestItem('from', 0),
+				createSuggestItem('form', 0),
+				createSuggestItem('form:get', 0),
+				createSuggestItem('testForeignMeasure', 0),
+				createSuggestItem('fooRoom', 0),
+			],
+			1,
+			{
+				leadingLineContent: '',
+				characterCountDelta: 0,
+			},
+			WordDistance.None,
+			EditorOptions.suggest.defaultValue,
+			EditorOptions.snippetSuggestions.defaultValue,
+			undefined
+		);
 
 		model.lineContext = { leadingLineContent: 'form', characterCountDelta: 4 };
 		assert.strictEqual(model.items.length, 5);
 		const [first, second, third] = model.items;
 		assert.strictEqual(first.completion.label, 'form'); // best with `form`
-		assert.strictEqual(second.completion.label, 'form:get');  // best with `form`
-		assert.strictEqual(third.completion.label, 'from');  // best with `from`
+		assert.strictEqual(second.completion.label, 'form:get'); // best with `form`
+		assert.strictEqual(third.completion.label, 'from'); // best with `from`
 	});
 });

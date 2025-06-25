@@ -101,7 +101,8 @@ export function activate(context: vscode.ExtensionContext) {
 			const projectName = await vscode.window.showInputBox({
 				prompt: 'Enter project name',
 				placeHolder: 'my-awesome-app',
-			}); if (projectName && agentRuntime) {
+			});
+			if (projectName && agentRuntime) {
 				try {
 					await agentRuntime.executeTask({
 						id: generateId(),
@@ -118,7 +119,9 @@ export function activate(context: vscode.ExtensionContext) {
 					vscode.window.showErrorMessage(`Failed to create project: ${error.message}`);
 				}
 			} else if (!agentRuntime) {
-				vscode.window.showErrorMessage('Agent runtime not available. Please check AIDE installation.');
+				vscode.window.showErrorMessage(
+					'Agent runtime not available. Please check AIDE installation.'
+				);
 			}
 		}),
 

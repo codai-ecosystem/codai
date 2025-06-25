@@ -11,7 +11,6 @@ import { windowLogGroup } from '../../../services/log/common/logConstants.js';
 import { IEditSessionsLogService, editSessionsLogId } from './editSessions.js';
 
 export class EditSessionsLogService extends AbstractLogger implements IEditSessionsLogService {
-
 	declare readonly _serviceBrand: undefined;
 	private readonly logger: ILogger;
 
@@ -20,7 +19,16 @@ export class EditSessionsLogService extends AbstractLogger implements IEditSessi
 		@IEnvironmentService environmentService: IEnvironmentService
 	) {
 		super();
-		this.logger = this._register(loggerService.createLogger(joinPath(environmentService.logsHome, `${editSessionsLogId}.log`), { id: editSessionsLogId, name: localize('cloudChangesLog', "Cloud Changes"), group: windowLogGroup }));
+		this.logger = this._register(
+			loggerService.createLogger(
+				joinPath(environmentService.logsHome, `${editSessionsLogId}.log`),
+				{
+					id: editSessionsLogId,
+					name: localize('cloudChangesLog', 'Cloud Changes'),
+					group: windowLogGroup,
+				}
+			)
+		);
 	}
 
 	trace(message: string, ...args: any[]): void {

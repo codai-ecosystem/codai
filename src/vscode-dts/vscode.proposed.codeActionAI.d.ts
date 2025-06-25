@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	export interface CodeAction {
 		/**
 		 * Marks this as an AI action.

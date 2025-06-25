@@ -6,11 +6,17 @@
 import assert from 'assert';
 import { URI } from '../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { ExtensionIdentifier, IExtensionDescription, TargetPlatform } from '../../../../../platform/extensions/common/extensions.js';
-import { ExtensionDescriptionRegistry, IActivationEventsReader } from '../../common/extensionDescriptionRegistry.js';
+import {
+	ExtensionIdentifier,
+	IExtensionDescription,
+	TargetPlatform,
+} from '../../../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionDescriptionRegistry,
+	IActivationEventsReader,
+} from '../../common/extensionDescriptionRegistry.js';
 
 suite('ExtensionDescriptionRegistry', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('allow removing and adding the same extension at a different version', () => {
@@ -21,7 +27,7 @@ suite('ExtensionDescriptionRegistry', () => {
 		const basicActivationEventsReader: IActivationEventsReader = {
 			readActivationEvents: (extensionDescription: IExtensionDescription): string[] => {
 				return extensionDescription.activationEvents ?? [];
-			}
+			},
 		};
 
 		const registry = new ExtensionDescriptionRegistry(basicActivationEventsReader, [extensionA1]);
@@ -32,7 +38,11 @@ suite('ExtensionDescriptionRegistry', () => {
 		registry.dispose();
 	});
 
-	function desc(id: ExtensionIdentifier, version: string, activationEvents: string[] = ['*']): IExtensionDescription {
+	function desc(
+		id: ExtensionIdentifier,
+		version: string,
+		activationEvents: string[] = ['*']
+	): IExtensionDescription {
 		return {
 			name: id.value,
 			publisher: 'test',

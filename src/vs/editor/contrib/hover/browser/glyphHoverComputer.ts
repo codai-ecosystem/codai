@@ -20,18 +20,15 @@ export interface GlyphHoverComputerOptions {
 	laneOrLine: LaneOrLineNumber;
 }
 
-export class GlyphHoverComputer implements IHoverComputer<GlyphHoverComputerOptions, IHoverMessage> {
-
-	constructor(
-		private readonly _editor: ICodeEditor
-	) {
-	}
+export class GlyphHoverComputer
+	implements IHoverComputer<GlyphHoverComputerOptions, IHoverMessage>
+{
+	constructor(private readonly _editor: ICodeEditor) {}
 
 	public computeSync(opts: GlyphHoverComputerOptions): IHoverMessage[] {
-
 		const toHoverMessage = (contents: IMarkdownString): IHoverMessage => {
 			return {
-				value: contents
+				value: contents,
 			};
 		};
 
@@ -49,7 +46,9 @@ export class GlyphHoverComputer implements IHoverComputer<GlyphHoverComputerOpti
 				continue;
 			}
 
-			const hoverMessage = isLineHover ? d.options.lineNumberHoverMessage : d.options.glyphMarginHoverMessage;
+			const hoverMessage = isLineHover
+				? d.options.lineNumberHoverMessage
+				: d.options.glyphMarginHoverMessage;
 			if (!hoverMessage || isEmptyMarkdownString(hoverMessage)) {
 				continue;
 			}

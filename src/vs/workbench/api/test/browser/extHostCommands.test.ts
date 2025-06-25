@@ -17,56 +17,53 @@ suite('ExtHostCommands', function () {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('dispose calls unregister', function () {
-
 		let lastUnregister: string;
 
-		const shape = new class extends mock<MainThreadCommandsShape>() {
+		const shape = new (class extends mock<MainThreadCommandsShape>() {
 			override $registerCommand(id: string): void {
 				//
 			}
 			override $unregisterCommand(id: string): void {
 				lastUnregister = id;
 			}
-		};
+		})();
 
 		const commands = new ExtHostCommands(
 			SingleProxyRPCProtocol(shape),
 			new NullLogService(),
-			new class extends mock<IExtHostTelemetry>() {
+			new (class extends mock<IExtHostTelemetry>() {
 				override onExtensionError(): boolean {
 					return true;
 				}
-			}
+			})()
 		);
-		commands.registerCommand(true, 'foo', (): any => { }).dispose();
+		commands.registerCommand(true, 'foo', (): any => {}).dispose();
 		assert.strictEqual(lastUnregister!, 'foo');
 		assert.strictEqual(CommandsRegistry.getCommand('foo'), undefined);
-
 	});
 
 	test('dispose bubbles only once', function () {
-
 		let unregisterCounter = 0;
 
-		const shape = new class extends mock<MainThreadCommandsShape>() {
+		const shape = new (class extends mock<MainThreadCommandsShape>() {
 			override $registerCommand(id: string): void {
 				//
 			}
 			override $unregisterCommand(id: string): void {
 				unregisterCounter += 1;
 			}
-		};
+		})();
 
 		const commands = new ExtHostCommands(
 			SingleProxyRPCProtocol(shape),
 			new NullLogService(),
-			new class extends mock<IExtHostTelemetry>() {
+			new (class extends mock<IExtHostTelemetry>() {
 				override onExtensionError(): boolean {
 					return true;
 				}
-			}
+			})()
 		);
-		const reg = commands.registerCommand(true, 'foo', (): any => { });
+		const reg = commands.registerCommand(true, 'foo', (): any => {});
 		reg.dispose();
 		reg.dispose();
 		reg.dispose();
@@ -74,14 +71,17 @@ suite('ExtHostCommands', function () {
 	});
 
 	test('execute with retry', async function () {
-
 		let count = 0;
 
-		const shape = new class extends mock<MainThreadCommandsShape>() {
+		const shape = new (class extends mock<MainThreadCommandsShape>() {
 			override $registerCommand(id: string): void {
 				//
 			}
-			override async $executeCommand<T>(id: string, args: any[], retry: boolean): Promise<T | undefined> {
+			override async $executeCommand<T>(
+				id: string,
+				args: any[],
+				retry: boolean
+			): Promise<T | undefined> {
 				count++;
 				assert.strictEqual(retry, count === 1);
 				if (count === 1) {
@@ -92,16 +92,16 @@ suite('ExtHostCommands', function () {
 					return <any>17;
 				}
 			}
-		};
+		})();
 
 		const commands = new ExtHostCommands(
 			SingleProxyRPCProtocol(shape),
 			new NullLogService(),
-			new class extends mock<IExtHostTelemetry>() {
+			new (class extends mock<IExtHostTelemetry>() {
 				override onExtensionError(): boolean {
 					return true;
 				}
-			}
+			})()
 		);
 
 		const result: number = await commands.executeCommand('fooo', [this, true]);
@@ -110,25 +110,24 @@ suite('ExtHostCommands', function () {
 	});
 
 	test('onCommand:abc activates extensions when executed from command palette, but not when executed programmatically with vscode.commands.executeCommand #150293', async function () {
-
 		const activationEvents: string[] = [];
 
-		const shape = new class extends mock<MainThreadCommandsShape>() {
+		const shape = new (class extends mock<MainThreadCommandsShape>() {
 			override $registerCommand(id: string): void {
 				//
 			}
 			override $fireCommandActivationEvent(id: string): void {
 				activationEvents.push(id);
 			}
-		};
+		})();
 		const commands = new ExtHostCommands(
 			SingleProxyRPCProtocol(shape),
 			new NullLogService(),
-			new class extends mock<IExtHostTelemetry>() {
+			new (class extends mock<IExtHostTelemetry>() {
 				override onExtensionError(): boolean {
 					return true;
 				}
-			}
+			})()
 		);
 
 		commands.registerCommand(true, 'extCmd', (args: any): any => args);

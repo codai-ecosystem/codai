@@ -431,5 +431,4 @@ suite('SnippetsMerge', () => {
 		assert.deepStrictEqual(actual.remote.updated, {});
 		assert.deepStrictEqual(actual.remote.removed, []);
 	});
-
 });

@@ -9,7 +9,10 @@ import { BaseDecoder } from './baseDecoder.js';
 /**
  * Asynchronous iterator wrapper for a decoder.
  */
-export class AsyncDecoder<T extends NonNullable<unknown>, K extends NonNullable<unknown> = NonNullable<unknown>> extends Disposable {
+export class AsyncDecoder<
+	T extends NonNullable<unknown>,
+	K extends NonNullable<unknown> = NonNullable<unknown>,
+> extends Disposable {
 	// Buffer of messages that have been decoded but not yet consumed.
 	private readonly messages: T[] = [];
 
@@ -27,9 +30,7 @@ export class AsyncDecoder<T extends NonNullable<unknown>, K extends NonNullable<
 	 * Note! Assumes ownership of the `decoder` object, hence will `dispose`
 	 * 		 it when the decoder stream is ended.
 	 */
-	constructor(
-		private readonly decoder: BaseDecoder<T, K>,
-	) {
+	constructor(private readonly decoder: BaseDecoder<T, K>) {
 		super();
 
 		this._register(decoder);
@@ -77,7 +78,7 @@ export class AsyncDecoder<T extends NonNullable<unknown>, K extends NonNullable<
 
 			// stream isn't ended so wait for the new
 			// `data` or `end` event to be received
-			await new Promise((resolve) => {
+			await new Promise(resolve => {
 				this.resolveOnNewEvent = resolve;
 			});
 		}

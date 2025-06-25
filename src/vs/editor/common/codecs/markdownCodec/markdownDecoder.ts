@@ -14,7 +14,11 @@ import { ExclamationMark } from '../simpleCodec/tokens/exclamationMark.js';
 import { BaseDecoder } from '../../../../base/common/codecs/baseDecoder.js';
 import { MarkdownCommentStart, PartialMarkdownCommentStart } from './parsers/markdownComment.js';
 import { MarkdownExtensionsDecoder } from '../markdownExtensionsCodec/markdownExtensionsDecoder.js';
-import { MarkdownLinkCaption, PartialMarkdownLink, PartialMarkdownLinkCaption } from './parsers/markdownLink.js';
+import {
+	MarkdownLinkCaption,
+	PartialMarkdownLink,
+	PartialMarkdownLinkCaption,
+} from './parsers/markdownLink.js';
 
 /**
  * Tokens produced by this decoder.
@@ -30,13 +34,14 @@ export class MarkdownDecoder extends BaseDecoder<TMarkdownToken, TSimpleDecoderT
 	 * some markdown entity. Set to `undefined` when no parsing is in progress at the moment.
 	 */
 	private current?:
-		PartialMarkdownLinkCaption | MarkdownLinkCaption | PartialMarkdownLink |
-		PartialMarkdownCommentStart | MarkdownCommentStart |
-		PartialMarkdownImage;
+		| PartialMarkdownLinkCaption
+		| MarkdownLinkCaption
+		| PartialMarkdownLink
+		| PartialMarkdownCommentStart
+		| MarkdownCommentStart
+		| PartialMarkdownImage;
 
-	constructor(
-		stream: ReadableStream<VSBuffer>,
-	) {
+	constructor(stream: ReadableStream<VSBuffer>) {
 		super(new MarkdownExtensionsDecoder(stream));
 	}
 

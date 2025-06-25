@@ -12,24 +12,29 @@ import { EditorWorkerHost } from './common/services/editorWorkerHost.js';
  * @skipMangle
  * @internal
  */
-export function start<THost extends object, TClient extends object>(client: TClient): IWorkerContext<THost> {
+export function start<THost extends object, TClient extends object>(
+	client: TClient
+): IWorkerContext<THost> {
 	const webWorkerServer = initialize(() => new EditorWorker(client));
 	const editorWorkerHost = EditorWorkerHost.getChannel(webWorkerServer);
-	const host = new Proxy({}, {
-		get(target, prop, receiver) {
-			if (typeof prop !== 'string') {
-				throw new Error(`Not supported`);
-			}
-			return (...args: any[]) => {
-				return editorWorkerHost.$fhr(prop, args);
-			};
+	const host = new Proxy(
+		{},
+		{
+			get(target, prop, receiver) {
+				if (typeof prop !== 'string') {
+					throw new Error(`Not supported`);
+				}
+				return (...args: any[]) => {
+					return editorWorkerHost.$fhr(prop, args);
+				};
+			},
 		}
-	});
+	);
 
 	return {
 		host: host as THost,
 		getMirrorModels: () => {
 			return webWorkerServer.requestHandler.getModels();
-		}
+		},
 	};
 }

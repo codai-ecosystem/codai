@@ -5,18 +5,56 @@
 
 import { localize, localize2 } from '../../../../../../nls.js';
 import { Disposable } from '../../../../../../base/common/lifecycle.js';
-import { WorkbenchPhase, registerWorkbenchContribution2 } from '../../../../../common/contributions.js';
+import {
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from '../../../../../common/contributions.js';
 import { IEditorService } from '../../../../../services/editor/common/editorService.js';
-import { NOTEBOOK_CELL_EDITABLE, NOTEBOOK_EDITOR_EDITABLE, NOTEBOOK_EDITOR_FOCUSED, NOTEBOOK_OUTPUT_FOCUSED } from '../../../common/notebookContextKeys.js';
-import { cellRangeToViewCells, expandCellRangesWithHiddenCells, getNotebookEditorFromEditorPane, ICellViewModel, INotebookEditor } from '../../notebookBrowser.js';
-import { CopyAction, CutAction, PasteAction } from '../../../../../../editor/contrib/clipboard/browser/clipboard.js';
+import {
+	NOTEBOOK_CELL_EDITABLE,
+	NOTEBOOK_EDITOR_EDITABLE,
+	NOTEBOOK_EDITOR_FOCUSED,
+	NOTEBOOK_OUTPUT_FOCUSED,
+} from '../../../common/notebookContextKeys.js';
+import {
+	cellRangeToViewCells,
+	expandCellRangesWithHiddenCells,
+	getNotebookEditorFromEditorPane,
+	ICellViewModel,
+	INotebookEditor,
+} from '../../notebookBrowser.js';
+import {
+	CopyAction,
+	CutAction,
+	PasteAction,
+} from '../../../../../../editor/contrib/clipboard/browser/clipboard.js';
 import { IClipboardService } from '../../../../../../platform/clipboard/common/clipboardService.js';
-import { cloneNotebookCellTextModel, NotebookCellTextModel } from '../../../common/model/notebookCellTextModel.js';
-import { CellEditType, ICellEditOperation, ISelectionState, SelectionStateType } from '../../../common/notebookCommon.js';
+import {
+	cloneNotebookCellTextModel,
+	NotebookCellTextModel,
+} from '../../../common/model/notebookCellTextModel.js';
+import {
+	CellEditType,
+	ICellEditOperation,
+	ISelectionState,
+	SelectionStateType,
+} from '../../../common/notebookCommon.js';
 import { INotebookService } from '../../../common/notebookService.js';
 import * as platform from '../../../../../../base/common/platform.js';
-import { Action2, MenuId, registerAction2 } from '../../../../../../platform/actions/common/actions.js';
-import { CellOverflowToolbarGroups, INotebookActionContext, INotebookCellActionContext, NotebookAction, NotebookCellAction, NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT, NOTEBOOK_OUTPUT_WEBVIEW_ACTION_WEIGHT } from '../../controller/coreActions.js';
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from '../../../../../../platform/actions/common/actions.js';
+import {
+	CellOverflowToolbarGroups,
+	INotebookActionContext,
+	INotebookCellActionContext,
+	NotebookAction,
+	NotebookCellAction,
+	NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT,
+	NOTEBOOK_OUTPUT_WEBVIEW_ACTION_WEIGHT,
+} from '../../controller/coreActions.js';
 import { KeyCode, KeyMod } from '../../../../../../base/common/keyCodes.js';
 import { ContextKeyExpr } from '../../../../../../platform/contextkey/common/contextkey.js';
 import { InputFocusedContextKey } from '../../../../../../platform/contextkey/common/contextkeys.js';
@@ -28,7 +66,13 @@ import { Categories } from '../../../../../../platform/action/common/actionCommo
 import { ILogService } from '../../../../../../platform/log/common/log.js';
 import { ICommandService } from '../../../../../../platform/commands/common/commands.js';
 import { showWindowLogActionId } from '../../../../../services/log/common/logConstants.js';
-import { getActiveElement, getWindow, isAncestor, isEditableElement, isHTMLElement } from '../../../../../../base/browser/dom.js';
+import {
+	getActiveElement,
+	getWindow,
+	isAncestor,
+	isEditableElement,
+	isHTMLElement,
+} from '../../../../../../base/browser/dom.js';
 
 let _logging: boolean = false;
 function toggleLogging() {
@@ -56,7 +100,10 @@ function getFocusedEditor(accessor: ServicesAccessor) {
 	}
 
 	if (!editor.hasWebviewFocus()) {
-		_log(loggerService, '[Revive Webview] Notebook editor backlayer webview is not focused, bypass');
+		_log(
+			loggerService,
+			'[Revive Webview] Notebook editor backlayer webview is not focused, bypass'
+		);
 		return;
 	}
 	// If none of the outputs have focus, then webview is not focused
@@ -113,10 +160,14 @@ CutAction?.addImplementation(PRIORITY, 'notebook-webview', accessor => {
 	return withWebview(accessor, webview => webview.cut());
 });
 
-export function runPasteCells(editor: INotebookEditor, activeCell: ICellViewModel | undefined, pasteCells: {
-	items: NotebookCellTextModel[];
-	isCopy: boolean;
-}): boolean {
+export function runPasteCells(
+	editor: INotebookEditor,
+	activeCell: ICellViewModel | undefined,
+	pasteCells: {
+		items: NotebookCellTextModel[];
+		isCopy: boolean;
+	}
+): boolean {
 	if (!editor.hasModel()) {
 		return false;
 	}
@@ -129,47 +180,65 @@ export function runPasteCells(editor: INotebookEditor, activeCell: ICellViewMode
 	const originalState: ISelectionState = {
 		kind: SelectionStateType.Index,
 		focus: editor.getFocus(),
-		selections: editor.getSelections()
+		selections: editor.getSelections(),
 	};
 
 	if (activeCell) {
 		const currCellIndex = editor.getCellIndex(activeCell);
 		const newFocusIndex = typeof currCellIndex === 'number' ? currCellIndex + 1 : 0;
-		textModel.applyEdits([
-			{
-				editType: CellEditType.Replace,
-				index: newFocusIndex,
-				count: 0,
-				cells: pasteCells.items.map(cell => cloneNotebookCellTextModel(cell))
-			}
-		], true, originalState, () => ({
-			kind: SelectionStateType.Index,
-			focus: { start: newFocusIndex, end: newFocusIndex + 1 },
-			selections: [{ start: newFocusIndex, end: newFocusIndex + pasteCells.items.length }]
-		}), undefined, true);
+		textModel.applyEdits(
+			[
+				{
+					editType: CellEditType.Replace,
+					index: newFocusIndex,
+					count: 0,
+					cells: pasteCells.items.map(cell => cloneNotebookCellTextModel(cell)),
+				},
+			],
+			true,
+			originalState,
+			() => ({
+				kind: SelectionStateType.Index,
+				focus: { start: newFocusIndex, end: newFocusIndex + 1 },
+				selections: [{ start: newFocusIndex, end: newFocusIndex + pasteCells.items.length }],
+			}),
+			undefined,
+			true
+		);
 	} else {
 		if (editor.getLength() !== 0) {
 			return false;
 		}
 
-		textModel.applyEdits([
-			{
-				editType: CellEditType.Replace,
-				index: 0,
-				count: 0,
-				cells: pasteCells.items.map(cell => cloneNotebookCellTextModel(cell))
-			}
-		], true, originalState, () => ({
-			kind: SelectionStateType.Index,
-			focus: { start: 0, end: 1 },
-			selections: [{ start: 1, end: pasteCells.items.length + 1 }]
-		}), undefined, true);
+		textModel.applyEdits(
+			[
+				{
+					editType: CellEditType.Replace,
+					index: 0,
+					count: 0,
+					cells: pasteCells.items.map(cell => cloneNotebookCellTextModel(cell)),
+				},
+			],
+			true,
+			originalState,
+			() => ({
+				kind: SelectionStateType.Index,
+				focus: { start: 0, end: 1 },
+				selections: [{ start: 1, end: pasteCells.items.length + 1 }],
+			}),
+			undefined,
+			true
+		);
 	}
 
 	return true;
 }
 
-export function runCopyCells(accessor: ServicesAccessor, editor: INotebookEditor, targetCell: ICellViewModel | undefined): boolean {
+export function runCopyCells(
+	accessor: ServicesAccessor,
+	editor: INotebookEditor,
+	targetCell: ICellViewModel | undefined
+): boolean {
 	if (!editor.hasModel()) {
 		return false;
 	}
@@ -185,7 +254,9 @@ export function runCopyCells(accessor: ServicesAccessor, editor: INotebookEditor
 
 	if (targetCell) {
 		const targetCellIndex = editor.getCellIndex(targetCell);
-		const containingSelection = selections.find(selection => selection.start <= targetCellIndex && targetCellIndex < selection.end);
+		const containingSelection = selections.find(
+			selection => selection.start <= targetCellIndex && targetCellIndex < selection.end
+		);
 
 		if (!containingSelection) {
 			clipboardService.writeText(targetCell.getText());
@@ -202,11 +273,18 @@ export function runCopyCells(accessor: ServicesAccessor, editor: INotebookEditor
 	}
 
 	clipboardService.writeText(selectedCells.map(cell => cell.getText()).join('\n'));
-	notebookService.setToCopy(selectedCells.map(cell => cell.model), true);
+	notebookService.setToCopy(
+		selectedCells.map(cell => cell.model),
+		true
+	);
 
 	return true;
 }
-export function runCutCells(accessor: ServicesAccessor, editor: INotebookEditor, targetCell: ICellViewModel | undefined): boolean {
+export function runCutCells(
+	accessor: ServicesAccessor,
+	editor: INotebookEditor,
+	targetCell: ICellViewModel | undefined
+): boolean {
 	if (!editor.hasModel() || editor.isReadOnly) {
 		return false;
 	}
@@ -219,18 +297,30 @@ export function runCutCells(accessor: ServicesAccessor, editor: INotebookEditor,
 	if (targetCell) {
 		// from ui
 		const targetCellIndex = editor.getCellIndex(targetCell);
-		const containingSelection = selections.find(selection => selection.start <= targetCellIndex && targetCellIndex < selection.end);
+		const containingSelection = selections.find(
+			selection => selection.start <= targetCellIndex && targetCellIndex < selection.end
+		);
 
 		if (!containingSelection) {
 			clipboardService.writeText(targetCell.getText());
 			// delete cell
 			const focus = editor.getFocus();
-			const newFocus = focus.end <= targetCellIndex ? focus : { start: focus.start - 1, end: focus.end - 1 };
-			const newSelections = selections.map(selection => (selection.end <= targetCellIndex ? selection : { start: selection.start - 1, end: selection.end - 1 }));
+			const newFocus =
+				focus.end <= targetCellIndex ? focus : { start: focus.start - 1, end: focus.end - 1 };
+			const newSelections = selections.map(selection =>
+				selection.end <= targetCellIndex
+					? selection
+					: { start: selection.start - 1, end: selection.end - 1 }
+			);
 
-			textModel.applyEdits([
-				{ editType: CellEditType.Replace, index: targetCellIndex, count: 1, cells: [] }
-			], true, { kind: SelectionStateType.Index, focus: editor.getFocus(), selections: selections }, () => ({ kind: SelectionStateType.Index, focus: newFocus, selections: newSelections }), undefined, true);
+			textModel.applyEdits(
+				[{ editType: CellEditType.Replace, index: targetCellIndex, count: 1, cells: [] }],
+				true,
+				{ kind: SelectionStateType.Index, focus: editor.getFocus(), selections: selections },
+				() => ({ kind: SelectionStateType.Index, focus: newFocus, selections: newSelections }),
+				undefined,
+				true
+			);
 
 			notebookService.setToCopy([targetCell.model], false);
 			return true;
@@ -238,17 +328,29 @@ export function runCutCells(accessor: ServicesAccessor, editor: INotebookEditor,
 	}
 
 	const focus = editor.getFocus();
-	const containingSelection = selections.find(selection => selection.start <= focus.start && focus.end <= selection.end);
+	const containingSelection = selections.find(
+		selection => selection.start <= focus.start && focus.end <= selection.end
+	);
 
 	if (!containingSelection) {
 		// focus is out of any selection, we should only cut this cell
 		const targetCell = editor.cellAt(focus.start);
 		clipboardService.writeText(targetCell.getText());
-		const newFocus = focus.end === editor.getLength() ? { start: focus.start - 1, end: focus.end - 1 } : focus;
-		const newSelections = selections.map(selection => (selection.end <= focus.start ? selection : { start: selection.start - 1, end: selection.end - 1 }));
-		textModel.applyEdits([
-			{ editType: CellEditType.Replace, index: focus.start, count: 1, cells: [] }
-		], true, { kind: SelectionStateType.Index, focus: editor.getFocus(), selections: selections }, () => ({ kind: SelectionStateType.Index, focus: newFocus, selections: newSelections }), undefined, true);
+		const newFocus =
+			focus.end === editor.getLength() ? { start: focus.start - 1, end: focus.end - 1 } : focus;
+		const newSelections = selections.map(selection =>
+			selection.end <= focus.start
+				? selection
+				: { start: selection.start - 1, end: selection.end - 1 }
+		);
+		textModel.applyEdits(
+			[{ editType: CellEditType.Replace, index: focus.start, count: 1, cells: [] }],
+			true,
+			{ kind: SelectionStateType.Index, focus: editor.getFocus(), selections: selections },
+			() => ({ kind: SelectionStateType.Index, focus: newFocus, selections: newSelections }),
+			undefined,
+			true
+		);
 
 		notebookService.setToCopy([targetCell.model], false);
 		return true;
@@ -262,7 +364,12 @@ export function runCutCells(accessor: ServicesAccessor, editor: INotebookEditor,
 	}
 
 	clipboardService.writeText(selectedCells.map(cell => cell.getText()).join('\n'));
-	const edits: ICellEditOperation[] = selectionRanges.map(range => ({ editType: CellEditType.Replace, index: range.start, count: range.end - range.start, cells: [] }));
+	const edits: ICellEditOperation[] = selectionRanges.map(range => ({
+		editType: CellEditType.Replace,
+		index: range.start,
+		count: range.end - range.start,
+		cells: [],
+	}));
 	const firstSelectIndex = selectionRanges[0].start;
 
 	/**
@@ -270,24 +377,34 @@ export function runCutCells(accessor: ServicesAccessor, editor: INotebookEditor,
 	 * and cells 1, 2 are selected, and then we delete cells 1 and 2
 	 * the new focused cell should still be at index 1
 	 */
-	const newFocusedCellIndex = firstSelectIndex < textModel.cells.length - 1
-		? firstSelectIndex
-		: Math.max(textModel.cells.length - 2, 0);
+	const newFocusedCellIndex =
+		firstSelectIndex < textModel.cells.length - 1
+			? firstSelectIndex
+			: Math.max(textModel.cells.length - 2, 0);
 
-	textModel.applyEdits(edits, true, { kind: SelectionStateType.Index, focus: editor.getFocus(), selections: selectionRanges }, () => {
-		return {
-			kind: SelectionStateType.Index,
-			focus: { start: newFocusedCellIndex, end: newFocusedCellIndex + 1 },
-			selections: [{ start: newFocusedCellIndex, end: newFocusedCellIndex + 1 }]
-		};
-	}, undefined, true);
-	notebookService.setToCopy(selectedCells.map(cell => cell.model), false);
+	textModel.applyEdits(
+		edits,
+		true,
+		{ kind: SelectionStateType.Index, focus: editor.getFocus(), selections: selectionRanges },
+		() => {
+			return {
+				kind: SelectionStateType.Index,
+				focus: { start: newFocusedCellIndex, end: newFocusedCellIndex + 1 },
+				selections: [{ start: newFocusedCellIndex, end: newFocusedCellIndex + 1 }],
+			};
+		},
+		undefined,
+		true
+	);
+	notebookService.setToCopy(
+		selectedCells.map(cell => cell.model),
+		false
+	);
 
 	return true;
 }
 
 export class NotebookClipboardContribution extends Disposable {
-
 	static readonly ID = 'workbench.contrib.notebookClipboard';
 
 	constructor(@IEditorService private readonly _editorService: IEditorService) {
@@ -296,21 +413,27 @@ export class NotebookClipboardContribution extends Disposable {
 		const PRIORITY = 105;
 
 		if (CopyAction) {
-			this._register(CopyAction.addImplementation(PRIORITY, 'notebook-clipboard', accessor => {
-				return this.runCopyAction(accessor);
-			}));
+			this._register(
+				CopyAction.addImplementation(PRIORITY, 'notebook-clipboard', accessor => {
+					return this.runCopyAction(accessor);
+				})
+			);
 		}
 
 		if (PasteAction) {
-			this._register(PasteAction.addImplementation(PRIORITY, 'notebook-clipboard', accessor => {
-				return this.runPasteAction(accessor);
-			}));
+			this._register(
+				PasteAction.addImplementation(PRIORITY, 'notebook-clipboard', accessor => {
+					return this.runPasteAction(accessor);
+				})
+			);
 		}
 
 		if (CutAction) {
-			this._register(CutAction.addImplementation(PRIORITY, 'notebook-clipboard', accessor => {
-				return this.runCutAction(accessor);
-			}));
+			this._register(
+				CutAction.addImplementation(PRIORITY, 'notebook-clipboard', accessor => {
+					return this.runCutAction(accessor);
+				})
+			);
 		}
 	}
 
@@ -320,7 +443,7 @@ export class NotebookClipboardContribution extends Disposable {
 
 		return {
 			editor,
-			activeCell
+			activeCell,
 		};
 	}
 
@@ -332,7 +455,10 @@ export class NotebookClipboardContribution extends Disposable {
 		}
 
 		const activeSelection = windowSelection.getRangeAt(0);
-		if (activeSelection.startContainer === activeSelection.endContainer && activeSelection.endOffset - activeSelection.startOffset === 0) {
+		if (
+			activeSelection.startContainer === activeSelection.endContainer &&
+			activeSelection.endOffset - activeSelection.startOffset === 0
+		) {
 			return false;
 		}
 
@@ -343,10 +469,11 @@ export class NotebookClipboardContribution extends Disposable {
 			return false;
 		}
 
-		while (container
-			&&
-			container !== body) {
-			if ((container as HTMLElement).classList && (container as HTMLElement).classList.contains('monaco-editor')) {
+		while (container && container !== body) {
+			if (
+				(container as HTMLElement).classList &&
+				(container as HTMLElement).classList.contains('monaco-editor')
+			) {
 				return true;
 			}
 
@@ -421,207 +548,257 @@ export class NotebookClipboardContribution extends Disposable {
 	}
 }
 
-registerWorkbenchContribution2(NotebookClipboardContribution.ID, NotebookClipboardContribution, WorkbenchPhase.BlockRestore);
+registerWorkbenchContribution2(
+	NotebookClipboardContribution.ID,
+	NotebookClipboardContribution,
+	WorkbenchPhase.BlockRestore
+);
 
 const COPY_CELL_COMMAND_ID = 'notebook.cell.copy';
 const CUT_CELL_COMMAND_ID = 'notebook.cell.cut';
 const PASTE_CELL_COMMAND_ID = 'notebook.cell.paste';
 const PASTE_CELL_ABOVE_COMMAND_ID = 'notebook.cell.pasteAbove';
 
-registerAction2(class extends NotebookCellAction {
-	constructor() {
-		super(
-			{
+registerAction2(
+	class extends NotebookCellAction {
+		constructor() {
+			super({
 				id: COPY_CELL_COMMAND_ID,
-				title: localize('notebookActions.copy', "Copy Cell"),
+				title: localize('notebookActions.copy', 'Copy Cell'),
 				menu: {
 					id: MenuId.NotebookCellTitle,
 					when: NOTEBOOK_EDITOR_FOCUSED,
 					group: CellOverflowToolbarGroups.Copy,
 					order: 2,
 				},
-				keybinding: platform.isNative ? undefined : {
-					primary: KeyMod.CtrlCmd | KeyCode.KeyC,
-					win: { primary: KeyMod.CtrlCmd | KeyCode.KeyC, secondary: [KeyMod.CtrlCmd | KeyCode.Insert] },
-					when: ContextKeyExpr.and(NOTEBOOK_EDITOR_FOCUSED, ContextKeyExpr.not(InputFocusedContextKey)),
-					weight: KeybindingWeight.WorkbenchContrib
-				}
+				keybinding: platform.isNative
+					? undefined
+					: {
+							primary: KeyMod.CtrlCmd | KeyCode.KeyC,
+							win: {
+								primary: KeyMod.CtrlCmd | KeyCode.KeyC,
+								secondary: [KeyMod.CtrlCmd | KeyCode.Insert],
+							},
+							when: ContextKeyExpr.and(
+								NOTEBOOK_EDITOR_FOCUSED,
+								ContextKeyExpr.not(InputFocusedContextKey)
+							),
+							weight: KeybindingWeight.WorkbenchContrib,
+						},
 			});
-	}
+		}
 
-	async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
-		runCopyCells(accessor, context.notebookEditor, context.cell);
+		async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
+			runCopyCells(accessor, context.notebookEditor, context.cell);
+		}
 	}
-});
+);
 
-registerAction2(class extends NotebookCellAction {
-	constructor() {
-		super(
-			{
+registerAction2(
+	class extends NotebookCellAction {
+		constructor() {
+			super({
 				id: CUT_CELL_COMMAND_ID,
-				title: localize('notebookActions.cut', "Cut Cell"),
+				title: localize('notebookActions.cut', 'Cut Cell'),
 				menu: {
 					id: MenuId.NotebookCellTitle,
-					when: ContextKeyExpr.and(NOTEBOOK_EDITOR_FOCUSED, NOTEBOOK_EDITOR_EDITABLE, NOTEBOOK_CELL_EDITABLE),
+					when: ContextKeyExpr.and(
+						NOTEBOOK_EDITOR_FOCUSED,
+						NOTEBOOK_EDITOR_EDITABLE,
+						NOTEBOOK_CELL_EDITABLE
+					),
 					group: CellOverflowToolbarGroups.Copy,
 					order: 1,
 				},
-				keybinding: platform.isNative ? undefined : {
-					when: ContextKeyExpr.and(NOTEBOOK_EDITOR_FOCUSED, ContextKeyExpr.not(InputFocusedContextKey)),
-					primary: KeyMod.CtrlCmd | KeyCode.KeyX,
-					win: { primary: KeyMod.CtrlCmd | KeyCode.KeyX, secondary: [KeyMod.Shift | KeyCode.Delete] },
-					weight: KeybindingWeight.WorkbenchContrib
-				}
+				keybinding: platform.isNative
+					? undefined
+					: {
+							when: ContextKeyExpr.and(
+								NOTEBOOK_EDITOR_FOCUSED,
+								ContextKeyExpr.not(InputFocusedContextKey)
+							),
+							primary: KeyMod.CtrlCmd | KeyCode.KeyX,
+							win: {
+								primary: KeyMod.CtrlCmd | KeyCode.KeyX,
+								secondary: [KeyMod.Shift | KeyCode.Delete],
+							},
+							weight: KeybindingWeight.WorkbenchContrib,
+						},
 			});
-	}
+		}
 
-	async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
-		runCutCells(accessor, context.notebookEditor, context.cell);
+		async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
+			runCutCells(accessor, context.notebookEditor, context.cell);
+		}
 	}
-});
+);
 
-registerAction2(class extends NotebookAction {
-	constructor() {
-		super(
-			{
+registerAction2(
+	class extends NotebookAction {
+		constructor() {
+			super({
 				id: PASTE_CELL_COMMAND_ID,
-				title: localize('notebookActions.paste', "Paste Cell"),
+				title: localize('notebookActions.paste', 'Paste Cell'),
 				menu: {
 					id: MenuId.NotebookCellTitle,
 					when: ContextKeyExpr.and(NOTEBOOK_EDITOR_FOCUSED, NOTEBOOK_EDITOR_EDITABLE),
 					group: CellOverflowToolbarGroups.Copy,
 					order: 3,
 				},
-				keybinding: platform.isNative ? undefined : {
-					when: ContextKeyExpr.and(NOTEBOOK_EDITOR_FOCUSED, ContextKeyExpr.not(InputFocusedContextKey)),
-					primary: KeyMod.CtrlCmd | KeyCode.KeyV,
-					win: { primary: KeyMod.CtrlCmd | KeyCode.KeyV, secondary: [KeyMod.Shift | KeyCode.Insert] },
-					linux: { primary: KeyMod.CtrlCmd | KeyCode.KeyV, secondary: [KeyMod.Shift | KeyCode.Insert] },
-					weight: KeybindingWeight.EditorContrib
-				}
+				keybinding: platform.isNative
+					? undefined
+					: {
+							when: ContextKeyExpr.and(
+								NOTEBOOK_EDITOR_FOCUSED,
+								ContextKeyExpr.not(InputFocusedContextKey)
+							),
+							primary: KeyMod.CtrlCmd | KeyCode.KeyV,
+							win: {
+								primary: KeyMod.CtrlCmd | KeyCode.KeyV,
+								secondary: [KeyMod.Shift | KeyCode.Insert],
+							},
+							linux: {
+								primary: KeyMod.CtrlCmd | KeyCode.KeyV,
+								secondary: [KeyMod.Shift | KeyCode.Insert],
+							},
+							weight: KeybindingWeight.EditorContrib,
+						},
 			});
-	}
-
-	async runWithContext(accessor: ServicesAccessor, context: INotebookActionContext) {
-		const notebookService = accessor.get<INotebookService>(INotebookService);
-		const pasteCells = notebookService.getToCopy();
-
-		if (!context.notebookEditor.hasModel() || context.notebookEditor.isReadOnly) {
-			return;
 		}
 
-		if (!pasteCells) {
-			return;
+		async runWithContext(accessor: ServicesAccessor, context: INotebookActionContext) {
+			const notebookService = accessor.get<INotebookService>(INotebookService);
+			const pasteCells = notebookService.getToCopy();
+
+			if (!context.notebookEditor.hasModel() || context.notebookEditor.isReadOnly) {
+				return;
+			}
+
+			if (!pasteCells) {
+				return;
+			}
+
+			runPasteCells(context.notebookEditor, context.cell, pasteCells);
 		}
-
-		runPasteCells(context.notebookEditor, context.cell, pasteCells);
 	}
-});
+);
 
-registerAction2(class extends NotebookCellAction {
-	constructor() {
-		super(
-			{
+registerAction2(
+	class extends NotebookCellAction {
+		constructor() {
+			super({
 				id: PASTE_CELL_ABOVE_COMMAND_ID,
-				title: localize('notebookActions.pasteAbove', "Paste Cell Above"),
+				title: localize('notebookActions.pasteAbove', 'Paste Cell Above'),
 				keybinding: {
-					when: ContextKeyExpr.and(NOTEBOOK_EDITOR_FOCUSED, ContextKeyExpr.not(InputFocusedContextKey)),
+					when: ContextKeyExpr.and(
+						NOTEBOOK_EDITOR_FOCUSED,
+						ContextKeyExpr.not(InputFocusedContextKey)
+					),
 					primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyV,
-					weight: NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT
+					weight: NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT,
 				},
 			});
-	}
-
-	async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
-		const notebookService = accessor.get<INotebookService>(INotebookService);
-		const pasteCells = notebookService.getToCopy();
-		const editor = context.notebookEditor;
-		const textModel = editor.textModel;
-
-		if (editor.isReadOnly) {
-			return;
 		}
 
-		if (!pasteCells) {
-			return;
-		}
+		async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
+			const notebookService = accessor.get<INotebookService>(INotebookService);
+			const pasteCells = notebookService.getToCopy();
+			const editor = context.notebookEditor;
+			const textModel = editor.textModel;
 
-		const originalState: ISelectionState = {
-			kind: SelectionStateType.Index,
-			focus: editor.getFocus(),
-			selections: editor.getSelections()
-		};
-
-		const currCellIndex = context.notebookEditor.getCellIndex(context.cell);
-		const newFocusIndex = currCellIndex;
-		textModel.applyEdits([
-			{
-				editType: CellEditType.Replace,
-				index: currCellIndex,
-				count: 0,
-				cells: pasteCells.items.map(cell => cloneNotebookCellTextModel(cell))
+			if (editor.isReadOnly) {
+				return;
 			}
-		], true, originalState, () => ({
-			kind: SelectionStateType.Index,
-			focus: { start: newFocusIndex, end: newFocusIndex + 1 },
-			selections: [{ start: newFocusIndex, end: newFocusIndex + pasteCells.items.length }]
-		}), undefined, true);
-	}
-});
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'workbench.action.toggleNotebookClipboardLog',
-			title: localize2('toggleNotebookClipboardLog', 'Toggle Notebook Clipboard Troubleshooting'),
-			category: Categories.Developer,
-			f1: true
-		});
-	}
+			if (!pasteCells) {
+				return;
+			}
 
-	run(accessor: ServicesAccessor): void {
-		toggleLogging();
-		if (_logging) {
-			const commandService = accessor.get(ICommandService);
-			commandService.executeCommand(showWindowLogActionId);
+			const originalState: ISelectionState = {
+				kind: SelectionStateType.Index,
+				focus: editor.getFocus(),
+				selections: editor.getSelections(),
+			};
+
+			const currCellIndex = context.notebookEditor.getCellIndex(context.cell);
+			const newFocusIndex = currCellIndex;
+			textModel.applyEdits(
+				[
+					{
+						editType: CellEditType.Replace,
+						index: currCellIndex,
+						count: 0,
+						cells: pasteCells.items.map(cell => cloneNotebookCellTextModel(cell)),
+					},
+				],
+				true,
+				originalState,
+				() => ({
+					kind: SelectionStateType.Index,
+					focus: { start: newFocusIndex, end: newFocusIndex + 1 },
+					selections: [{ start: newFocusIndex, end: newFocusIndex + pasteCells.items.length }],
+				}),
+				undefined,
+				true
+			);
 		}
 	}
-});
+);
 
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'workbench.action.toggleNotebookClipboardLog',
+				title: localize2('toggleNotebookClipboardLog', 'Toggle Notebook Clipboard Troubleshooting'),
+				category: Categories.Developer,
+				f1: true,
+			});
+		}
 
-registerAction2(class extends NotebookCellAction {
-	constructor() {
-		super(
-			{
+		run(accessor: ServicesAccessor): void {
+			toggleLogging();
+			if (_logging) {
+				const commandService = accessor.get(ICommandService);
+				commandService.executeCommand(showWindowLogActionId);
+			}
+		}
+	}
+);
+
+registerAction2(
+	class extends NotebookCellAction {
+		constructor() {
+			super({
 				id: 'notebook.cell.output.selectAll',
-				title: localize('notebook.cell.output.selectAll', "Select All"),
+				title: localize('notebook.cell.output.selectAll', 'Select All'),
 				keybinding: {
 					primary: KeyMod.CtrlCmd | KeyCode.KeyA,
 					when: ContextKeyExpr.and(NOTEBOOK_EDITOR_FOCUSED, NOTEBOOK_OUTPUT_FOCUSED),
-					weight: NOTEBOOK_OUTPUT_WEBVIEW_ACTION_WEIGHT
-				}
+					weight: NOTEBOOK_OUTPUT_WEBVIEW_ACTION_WEIGHT,
+				},
 			});
-	}
+		}
 
-	async runWithContext(accessor: ServicesAccessor, _context: INotebookCellActionContext) {
-		withEditor(accessor, editor => {
-			if (!editor.hasEditorFocus()) {
-				return false;
-			}
-			if (editor.hasEditorFocus() && !editor.hasWebviewFocus()) {
+		async runWithContext(accessor: ServicesAccessor, _context: INotebookCellActionContext) {
+			withEditor(accessor, editor => {
+				if (!editor.hasEditorFocus()) {
+					return false;
+				}
+				if (editor.hasEditorFocus() && !editor.hasWebviewFocus()) {
+					return true;
+				}
+				const cell = editor.getActiveCell();
+				if (!cell || !cell.outputIsFocused || !editor.hasWebviewFocus()) {
+					return true;
+				}
+				if (cell.inputInOutputIsFocused) {
+					editor.selectInputContents(cell);
+				} else {
+					editor.selectOutputContent(cell);
+				}
 				return true;
-			}
-			const cell = editor.getActiveCell();
-			if (!cell || !cell.outputIsFocused || !editor.hasWebviewFocus()) {
-				return true;
-			}
-			if (cell.inputInOutputIsFocused) {
-				editor.selectInputContents(cell);
-			} else {
-				editor.selectOutputContent(cell);
-			}
-			return true;
-		});
-
+			});
+		}
 	}
-});
+);

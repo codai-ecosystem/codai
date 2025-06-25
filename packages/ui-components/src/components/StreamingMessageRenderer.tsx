@@ -41,12 +41,12 @@ export const StreamingMessageRenderer: React.FC<StreamingMessageRendererProps> =
 
 	const getAgentName = (agentId: string) => {
 		const agentNames: Record<string, string> = {
-			'planner': 'Planner',
-			'builder': 'Builder',
-			'designer': 'Designer',
-			'tester': 'Tester',
-			'deployer': 'Deployer',
-			'history': 'History'
+			planner: 'Planner',
+			builder: 'Builder',
+			designer: 'Designer',
+			tester: 'Tester',
+			deployer: 'Deployer',
+			history: 'History',
 		};
 		return agentNames[agentId] || agentId;
 	};
@@ -54,12 +54,12 @@ export const StreamingMessageRenderer: React.FC<StreamingMessageRendererProps> =
 	const getAgentIcon = (agentId: string) => {
 		// Different icons for different agent types
 		const icons: Record<string, React.ReactNode> = {
-			'planner': <Bot className="w-4 h-4 text-blue-500" />,
-			'builder': <Bot className="w-4 h-4 text-green-500" />,
-			'designer': <Bot className="w-4 h-4 text-purple-500" />,
-			'tester': <Bot className="w-4 h-4 text-orange-500" />,
-			'deployer': <Bot className="w-4 h-4 text-red-500" />,
-			'history': <Bot className="w-4 h-4 text-gray-500" />
+			planner: <Bot className="w-4 h-4 text-blue-500" />,
+			builder: <Bot className="w-4 h-4 text-green-500" />,
+			designer: <Bot className="w-4 h-4 text-purple-500" />,
+			tester: <Bot className="w-4 h-4 text-orange-500" />,
+			deployer: <Bot className="w-4 h-4 text-red-500" />,
+			history: <Bot className="w-4 h-4 text-gray-500" />,
 		};
 		return icons[agentId] || <Bot className="w-4 h-4" />;
 	};
@@ -82,22 +82,27 @@ export const StreamingMessageRenderer: React.FC<StreamingMessageRendererProps> =
 						{complete ? 'Complete' : 'Thinking...'}
 					</Badge>
 				</div>
-
 				{/* Streaming Content */}
 				<div className="text-sm whitespace-pre-wrap break-words">
 					{displayContent}
 					{!complete && (
 						<span className="inline-block w-2 h-4 bg-current opacity-75 animate-pulse ml-1" />
 					)}
-				</div>				{/* Progress indicator for incomplete messages */}
+				</div>{' '}
+				{/* Progress indicator for incomplete messages */}
 				{!complete && (
 					<div className="mt-2">
 						<div className="w-full bg-gray-200 rounded-full h-1 dark:bg-gray-700">
 							<div
 								className="bg-blue-600 h-1 rounded-full transition-all duration-300"
-								style={{
-									'--progress-value': Math.min((displayContent.length / Math.max(content.length, 1)) * 100, 90)
-								} as React.CSSProperties}
+								style={
+									{
+										'--progress-value': Math.min(
+											(displayContent.length / Math.max(content.length, 1)) * 100,
+											90
+										),
+									} as React.CSSProperties
+								}
 							/>
 						</div>
 					</div>

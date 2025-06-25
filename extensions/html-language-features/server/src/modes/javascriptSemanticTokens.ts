@@ -16,10 +16,18 @@ export function getSemanticTokenLegend() {
 	return { types: tokenTypes, modifiers: tokenModifiers };
 }
 
-export function* getSemanticTokens(jsLanguageService: ts.LanguageService, document: TextDocument, fileName: string): Iterable<SemanticTokenData> {
-	const { spans } = jsLanguageService.getEncodedSemanticClassifications(fileName, { start: 0, length: document.getText().length }, '2020' as ts.SemanticClassificationFormat);
+export function* getSemanticTokens(
+	jsLanguageService: ts.LanguageService,
+	document: TextDocument,
+	fileName: string
+): Iterable<SemanticTokenData> {
+	const { spans } = jsLanguageService.getEncodedSemanticClassifications(
+		fileName,
+		{ start: 0, length: document.getText().length },
+		'2020' as ts.SemanticClassificationFormat
+	);
 
-	for (let i = 0; i < spans.length;) {
+	for (let i = 0; i < spans.length; ) {
 		const offset = spans[i++];
 		const length = spans[i++];
 		const tsClassification = spans[i++];
@@ -35,11 +43,10 @@ export function* getSemanticTokens(jsLanguageService: ts.LanguageService, docume
 			start: startPos,
 			length: length,
 			typeIdx: tokenType,
-			modifierSet: tokenModifiers
+			modifierSet: tokenModifiers,
 		};
 	}
 }
-
 
 // typescript encodes type and modifiers in the classification:
 // TSClassification = (TokenType + 1) << 8 + TokenModifier
@@ -57,7 +64,7 @@ const enum TokenType {
 	property = 9,
 	function = 10,
 	method = 11,
-	_ = 12
+	_ = 12,
 }
 
 const enum TokenModifier {
@@ -67,12 +74,12 @@ const enum TokenModifier {
 	readonly = 3,
 	defaultLibrary = 4,
 	local = 5,
-	_ = 6
+	_ = 6,
 }
 
 const enum TokenEncodingConsts {
 	typeOffset = 8,
-	modifierMask = 255
+	modifierMask = 255,
 }
 
 function getTokenTypeFromClassification(tsClassification: number): number | undefined {

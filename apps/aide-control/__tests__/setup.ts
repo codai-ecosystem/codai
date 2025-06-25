@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 // Create storage mocks with actual internal storage
 const createStorageMock = () => {
 	const storage = new Map<string, string>();
-	
+
 	return {
 		getItem: vi.fn((key: string) => storage.get(key) || null),
 		setItem: vi.fn((key: string, value: string) => {
@@ -80,11 +80,11 @@ Object.defineProperty(window, 'scrollTo', {
 });
 
 Object.defineProperty(window, 'requestAnimationFrame', {
-	value: vi.fn((cb) => setTimeout(cb, 16)),
+	value: vi.fn(cb => setTimeout(cb, 16)),
 });
 
 Object.defineProperty(window, 'cancelAnimationFrame', {
-	value: vi.fn((id) => clearTimeout(id)),
+	value: vi.fn(id => clearTimeout(id)),
 });
 
 // Mock Next.js router
@@ -120,8 +120,8 @@ let mockUserPreferencesStorage: any = {
 	accessibilityPreferences: {
 		reducedMotion: false,
 		highContrast: false,
-		largeText: false
-	}
+		largeText: false,
+	},
 };
 
 const DEFAULT_PREFERENCES = {
@@ -132,8 +132,8 @@ const DEFAULT_PREFERENCES = {
 	accessibilityPreferences: {
 		reducedMotion: false,
 		highContrast: false,
-		largeText: false
-	}
+		largeText: false,
+	},
 };
 
 // Function to reset mock storage
@@ -149,7 +149,10 @@ vi.mock('../lib/user-preferences', () => ({
 			mockUserPreferencesStorage = { ...mockUserPreferencesStorage, [key]: value };
 			// Mock localStorage storage
 			if (typeof window !== 'undefined' && window.localStorage) {
-				window.localStorage.setItem('codai_user_preferences', JSON.stringify(mockUserPreferencesStorage));
+				window.localStorage.setItem(
+					'codai_user_preferences',
+					JSON.stringify(mockUserPreferencesStorage)
+				);
 			}
 			return mockUserPreferencesStorage;
 		}),
@@ -157,7 +160,10 @@ vi.mock('../lib/user-preferences', () => ({
 			mockUserPreferencesStorage = { ...mockUserPreferencesStorage, ...updates };
 			// Mock localStorage storage
 			if (typeof window !== 'undefined' && window.localStorage) {
-				window.localStorage.setItem('codai_user_preferences', JSON.stringify(mockUserPreferencesStorage));
+				window.localStorage.setItem(
+					'codai_user_preferences',
+					JSON.stringify(mockUserPreferencesStorage)
+				);
 			}
 			return mockUserPreferencesStorage;
 		}),
@@ -172,7 +178,7 @@ vi.mock('../lib/user-preferences', () => ({
 		addRecentCommand: vi.fn((command: any) => {
 			const commandEntry = {
 				id: command.id || command,
-				timestamp: Date.now()
+				timestamp: Date.now(),
 			};
 			const currentCommands = mockUserPreferencesStorage.recentCommands || [];
 			// Remove existing command with same ID
@@ -181,7 +187,10 @@ vi.mock('../lib/user-preferences', () => ({
 			mockUserPreferencesStorage.recentCommands = [commandEntry, ...filtered].slice(0, 10);
 			// Mock localStorage storage
 			if (typeof window !== 'undefined' && window.localStorage) {
-				window.localStorage.setItem('codai_user_preferences', JSON.stringify(mockUserPreferencesStorage));
+				window.localStorage.setItem(
+					'codai_user_preferences',
+					JSON.stringify(mockUserPreferencesStorage)
+				);
 			}
 			return mockUserPreferencesStorage.recentCommands;
 		}),
@@ -191,7 +200,10 @@ vi.mock('../lib/user-preferences', () => ({
 				mockUserPreferencesStorage.dismissedNotifications = [...current, notificationId];
 				// Mock localStorage storage
 				if (typeof window !== 'undefined' && window.localStorage) {
-					window.localStorage.setItem('codai_user_preferences', JSON.stringify(mockUserPreferencesStorage));
+					window.localStorage.setItem(
+						'codai_user_preferences',
+						JSON.stringify(mockUserPreferencesStorage)
+					);
 				}
 			}
 			return mockUserPreferencesStorage.dismissedNotifications;
@@ -203,25 +215,28 @@ vi.mock('../lib/user-preferences', () => ({
 		updateAccessibility: vi.fn((updates: any) => {
 			mockUserPreferencesStorage.accessibilityPreferences = {
 				...mockUserPreferencesStorage.accessibilityPreferences,
-				...updates
+				...updates,
 			};
 			// Mock localStorage storage
 			if (typeof window !== 'undefined' && window.localStorage) {
-				window.localStorage.setItem('codai_user_preferences', JSON.stringify(mockUserPreferencesStorage));
+				window.localStorage.setItem(
+					'codai_user_preferences',
+					JSON.stringify(mockUserPreferencesStorage)
+				);
 			}
 			return mockUserPreferencesStorage.accessibilityPreferences;
-		})
-	}
+		}),
+	},
 }));
 
 // Reset all mocks before each test
 beforeEach(() => {
 	vi.clearAllMocks();
-	
+
 	// Clear localStorage and sessionStorage completely
 	localStorageMock._storage.clear();
 	sessionStorageMock._storage.clear();
-	
+
 	// Reset the mock functions
 	localStorageMock.clear.mockClear();
 	localStorageMock.getItem.mockClear();
@@ -229,7 +244,8 @@ beforeEach(() => {
 	localStorageMock.removeItem.mockClear();
 	sessionStorageMock.clear.mockClear();
 	sessionStorageMock.getItem.mockClear();
-	sessionStorageMock.setItem.mockClear();	sessionStorageMock.removeItem.mockClear();
-		// Reset localStorage (which userPreferences uses internally)
+	sessionStorageMock.setItem.mockClear();
+	sessionStorageMock.removeItem.mockClear();
+	// Reset localStorage (which userPreferences uses internally)
 	localStorage.clear();
 });

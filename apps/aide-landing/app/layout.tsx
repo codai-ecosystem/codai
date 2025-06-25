@@ -7,7 +7,8 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
 	metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://aide.dev'),
 	title: 'AIDE - AI-Native Development Environment',
-	description: 'The complete AI-powered development platform for modern software teams. Build, deploy, and scale with autonomous AI assistance.',
+	description:
+		'The complete AI-powered development platform for modern software teams. Build, deploy, and scale with autonomous AI assistance.',
 	keywords: 'AI development, autonomous coding, software development, VS Code, cloud IDE',
 	authors: [{ name: 'AIDE Team' }],
 	openGraph: {
@@ -24,16 +25,10 @@ export const metadata: Metadata = {
 	},
 };
 
-export default function RootLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<body className={inter.className}>
-				{children}
-			</body>
+			<body className={inter.className}>{children}</body>
 		</html>
 	);
 }

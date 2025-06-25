@@ -12,10 +12,11 @@ import { BaseObservable } from './baseObservable.js';
 
 /**
  * Holds off updating observers until the value is actually read.
-*/
+ */
 export class LazyObservableValue<T, TChange = void>
 	extends BaseObservable<T, TChange>
-	implements ISettableObservable<T, TChange> {
+	implements ISettableObservable<T, TChange>
+{
 	protected _value: T;
 	private _isUpToDate = true;
 	private readonly _deltas: TChange[] = [];
@@ -27,7 +28,7 @@ export class LazyObservableValue<T, TChange = void>
 	constructor(
 		private readonly _debugNameData: DebugNameData,
 		initialValue: T,
-		private readonly _equalityComparator: EqualityComparer<T>,
+		private readonly _equalityComparator: EqualityComparer<T>
 	) {
 		super();
 		this._value = initialValue;
@@ -46,14 +47,26 @@ export class LazyObservableValue<T, TChange = void>
 
 		if (this._deltas.length > 0) {
 			for (const change of this._deltas) {
-				getLogger()?.handleObservableUpdated(this, { change, didChange: true, oldValue: '(unknown)', newValue: this._value, hadValue: true });
+				getLogger()?.handleObservableUpdated(this, {
+					change,
+					didChange: true,
+					oldValue: '(unknown)',
+					newValue: this._value,
+					hadValue: true,
+				});
 				for (const observer of this._observers) {
 					observer.handleChange(this, change);
 				}
 			}
 			this._deltas.length = 0;
 		} else {
-			getLogger()?.handleObservableUpdated(this, { change: undefined, didChange: true, oldValue: '(unknown)', newValue: this._value, hadValue: true });
+			getLogger()?.handleObservableUpdated(this, {
+				change: undefined,
+				didChange: true,
+				oldValue: '(unknown)',
+				newValue: this._value,
+				hadValue: true,
+			});
 			for (const observer of this._observers) {
 				observer.handleChange(this, undefined);
 			}
@@ -110,7 +123,10 @@ export class LazyObservableValue<T, TChange = void>
 
 		let _tx: TransactionImpl | undefined;
 		if (!tx) {
-			tx = _tx = new TransactionImpl(() => { }, () => `Setting ${this.debugName}`);
+			tx = _tx = new TransactionImpl(
+				() => {},
+				() => `Setting ${this.debugName}`
+			);
 		}
 		try {
 			this._isUpToDate = false;
@@ -119,12 +135,15 @@ export class LazyObservableValue<T, TChange = void>
 				this._deltas.push(change);
 			}
 
-			tx.updateObserver({
-				beginUpdate: () => this._beginUpdate(),
-				endUpdate: () => this._endUpdate(),
-				handleChange: (observable, change) => { },
-				handlePossibleChange: (observable) => { },
-			}, this);
+			tx.updateObserver(
+				{
+					beginUpdate: () => this._beginUpdate(),
+					endUpdate: () => this._endUpdate(),
+					handleChange: (observable, change) => {},
+					handlePossibleChange: observable => {},
+				},
+				this
+			);
 
 			if (this._updateCounter > 1) {
 				// We already started begin/end update, so we need to manually call handlePossibleChange
@@ -132,7 +151,6 @@ export class LazyObservableValue<T, TChange = void>
 					observer.handlePossibleChange(this);
 				}
 			}
-
 		} finally {
 			if (_tx) {
 				_tx.finish();

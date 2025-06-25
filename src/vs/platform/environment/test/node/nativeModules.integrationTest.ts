@@ -12,8 +12,8 @@ function testErrorMessage(module: string): string {
 }
 
 flakySuite('Native Modules (all platforms)', () => {
-
-	(isMacintosh ? test.skip : test)('kerberos', async () => { // Somehow fails on macOS ARM?
+	(isMacintosh ? test.skip : test)('kerberos', async () => {
+		// Somehow fails on macOS ARM?
 		const { default: kerberos } = await import('kerberos');
 		assert.ok(typeof kerberos.initializeClient === 'function', testErrorMessage('kerberos'));
 	});
@@ -30,7 +30,10 @@ flakySuite('Native Modules (all platforms)', () => {
 
 	test('v8-inspect-profiler', async () => {
 		const { default: profiler } = await import('v8-inspect-profiler');
-		assert.ok(typeof profiler.startProfiling === 'function', testErrorMessage('v8-inspect-profiler'));
+		assert.ok(
+			typeof profiler.startProfiling === 'function',
+			testErrorMessage('v8-inspect-profiler')
+		);
 	});
 
 	test('native-is-elevated', async () => {
@@ -43,8 +46,14 @@ flakySuite('Native Modules (all platforms)', () => {
 
 	test('native-keymap', async () => {
 		const keyMap = await import('native-keymap');
-		assert.ok(typeof keyMap.onDidChangeKeyboardLayout === 'function', testErrorMessage('native-keymap'));
-		assert.ok(typeof keyMap.getCurrentKeyboardLayout === 'function', testErrorMessage('native-keymap'));
+		assert.ok(
+			typeof keyMap.onDidChangeKeyboardLayout === 'function',
+			testErrorMessage('native-keymap')
+		);
+		assert.ok(
+			typeof keyMap.getCurrentKeyboardLayout === 'function',
+			testErrorMessage('native-keymap')
+		);
 
 		const result = keyMap.getCurrentKeyboardLayout();
 		assert.ok(result, testErrorMessage('native-keymap'));
@@ -62,7 +71,10 @@ flakySuite('Native Modules (all platforms)', () => {
 
 	test('@vscode/policy-watcher', async () => {
 		const watcher = await import('@vscode/policy-watcher');
-		assert.ok(typeof watcher.createWatcher === 'function', testErrorMessage('@vscode/policy-watcher'));
+		assert.ok(
+			typeof watcher.createWatcher === 'function',
+			testErrorMessage('@vscode/policy-watcher')
+		);
 	});
 
 	test('node-pty', async () => {
@@ -77,7 +89,10 @@ flakySuite('Native Modules (all platforms)', () => {
 
 	test('@vscode/spdlog', async () => {
 		const spdlog = await import('@vscode/spdlog');
-		assert.ok(typeof spdlog.createRotatingLogger === 'function', testErrorMessage('@vscode/spdlog'));
+		assert.ok(
+			typeof spdlog.createRotatingLogger === 'function',
+			testErrorMessage('@vscode/spdlog')
+		);
 		assert.ok(typeof spdlog.version === 'number', testErrorMessage('@vscode/spdlog'));
 	});
 
@@ -88,7 +103,10 @@ flakySuite('Native Modules (all platforms)', () => {
 
 	test('@vscode/deviceid', async () => {
 		const deviceIdPackage = await import('@vscode/deviceid');
-		assert.ok(typeof deviceIdPackage.getDeviceId === 'function', testErrorMessage('@vscode/deviceid'));
+		assert.ok(
+			typeof deviceIdPackage.getDeviceId === 'function',
+			testErrorMessage('@vscode/deviceid')
+		);
 	});
 
 	test('@vscode/ripgrep', async () => {
@@ -121,29 +139,34 @@ flakySuite('Native Modules (all platforms)', () => {
 		// This call will load `@vscode/proxy-agent` which is a native module that we want to test on Windows
 		const windowsCerts = await proxyAgent.loadSystemCertificates({
 			log: {
-				trace: () => { },
-				debug: () => { },
-				info: () => { },
-				warn: () => { },
-				error: () => { }
-			}
+				trace: () => {},
+				debug: () => {},
+				info: () => {},
+				warn: () => {},
+				error: () => {},
+			},
 		});
 		assert.ok(windowsCerts.length > 0, testErrorMessage('@vscode/proxy-agent'));
 	});
 });
 
 (!isWindows ? suite.skip : suite)('Native Modules (Windows)', () => {
-
 	test('@vscode/windows-mutex', async () => {
 		const mutex = await import('@vscode/windows-mutex');
-		assert.ok(mutex && typeof mutex.isActive === 'function', testErrorMessage('@vscode/windows-mutex'));
+		assert.ok(
+			mutex && typeof mutex.isActive === 'function',
+			testErrorMessage('@vscode/windows-mutex')
+		);
 		assert.ok(typeof mutex.isActive === 'function', testErrorMessage('@vscode/windows-mutex'));
 		assert.ok(typeof mutex.Mutex === 'function', testErrorMessage('@vscode/windows-mutex'));
 	});
 
 	test('windows-foreground-love', async () => {
 		const foregroundLove = await import('windows-foreground-love');
-		assert.ok(typeof foregroundLove.allowSetForegroundWindow === 'function', testErrorMessage('windows-foreground-love'));
+		assert.ok(
+			typeof foregroundLove.allowSetForegroundWindow === 'function',
+			testErrorMessage('windows-foreground-love')
+		);
 
 		const result = foregroundLove.allowSetForegroundWindow(process.pid);
 		assert.ok(typeof result === 'boolean', testErrorMessage('windows-foreground-love'));
@@ -151,7 +174,10 @@ flakySuite('Native Modules (all platforms)', () => {
 
 	test('@vscode/windows-process-tree', async () => {
 		const processTree = await import('@vscode/windows-process-tree');
-		assert.ok(typeof processTree.getProcessTree === 'function', testErrorMessage('@vscode/windows-process-tree'));
+		assert.ok(
+			typeof processTree.getProcessTree === 'function',
+			testErrorMessage('@vscode/windows-process-tree')
+		);
 
 		return new Promise((resolve, reject) => {
 			processTree.getProcessTree(process.pid, tree => {
@@ -166,9 +192,19 @@ flakySuite('Native Modules (all platforms)', () => {
 
 	test('@vscode/windows-registry', async () => {
 		const windowsRegistry = await import('@vscode/windows-registry');
-		assert.ok(typeof windowsRegistry.GetStringRegKey === 'function', testErrorMessage('@vscode/windows-registry'));
+		assert.ok(
+			typeof windowsRegistry.GetStringRegKey === 'function',
+			testErrorMessage('@vscode/windows-registry')
+		);
 
-		const result = windowsRegistry.GetStringRegKey('HKEY_LOCAL_MACHINE', 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion', 'EditionID');
-		assert.ok(typeof result === 'string' || typeof result === 'undefined', testErrorMessage('@vscode/windows-registry'));
+		const result = windowsRegistry.GetStringRegKey(
+			'HKEY_LOCAL_MACHINE',
+			'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion',
+			'EditionID'
+		);
+		assert.ok(
+			typeof result === 'string' || typeof result === 'undefined',
+			testErrorMessage('@vscode/windows-registry')
+		);
 	});
 });

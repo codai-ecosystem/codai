@@ -7,7 +7,12 @@ import { createConnection, Connection, Disposable } from 'vscode-languageserver/
 import { formatError } from '../utils/runner';
 import { RequestService, RuntimeEnvironment, startServer } from '../jsonServer';
 
-import { xhr, XHRResponse, configure as configureHttpRequests, getErrorStatusDescription } from 'request-light';
+import {
+	xhr,
+	XHRResponse,
+	configure as configureHttpRequests,
+	getErrorStatusDescription,
+} from 'request-light';
 import { URI as Uri } from 'vscode-uri';
 import { promises as fs } from 'fs';
 import * as l10n from '@vscode/l10n';
@@ -26,12 +31,17 @@ function getHTTPRequestService(): RequestService {
 	return {
 		getContent(uri: string, _encoding?: string) {
 			const headers = { 'Accept-Encoding': 'gzip, deflate' };
-			return xhr({ url: uri, followRedirects: 5, headers }).then(response => {
-				return response.responseText;
-			}, (error: XHRResponse) => {
-				return Promise.reject(error.responseText || getErrorStatusDescription(error.status) || error.toString());
-			});
-		}
+			return xhr({ url: uri, followRedirects: 5, headers }).then(
+				response => {
+					return response.responseText;
+				},
+				(error: XHRResponse) => {
+					return Promise.reject(
+						error.responseText || getErrorStatusDescription(error.status) || error.toString()
+					);
+				}
+			);
+		},
 	};
 }
 
@@ -49,7 +59,7 @@ function getFileRequestService(): RequestService {
 				}
 				throw e;
 			}
-		}
+		},
 	};
 }
 
@@ -62,13 +72,11 @@ const runtime: RuntimeEnvironment = {
 		setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable {
 			const handle = setTimeout(callback, ms, ...args);
 			return { dispose: () => clearTimeout(handle) };
-		}
+		},
 	},
 	file: getFileRequestService(),
 	http: getHTTPRequestService(),
-	configureHttpRequests
+	configureHttpRequests,
 };
-
-
 
 startServer(connection, runtime);

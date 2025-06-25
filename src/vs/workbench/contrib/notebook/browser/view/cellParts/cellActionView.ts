@@ -12,8 +12,15 @@ import { getDefaultHoverDelegate } from '../../../../../../base/browser/ui/hover
 import { renderLabelWithIcons } from '../../../../../../base/browser/ui/iconLabel/iconLabels.js';
 import { IAction } from '../../../../../../base/common/actions.js';
 import { ThemeIcon } from '../../../../../../base/common/themables.js';
-import { IMenuEntryActionViewItemOptions, MenuEntryActionViewItem, SubmenuEntryActionViewItem } from '../../../../../../platform/actions/browser/menuEntryActionViewItem.js';
-import { MenuItemAction, SubmenuItemAction } from '../../../../../../platform/actions/common/actions.js';
+import {
+	IMenuEntryActionViewItemOptions,
+	MenuEntryActionViewItem,
+	SubmenuEntryActionViewItem,
+} from '../../../../../../platform/actions/browser/menuEntryActionViewItem.js';
+import {
+	MenuItemAction,
+	SubmenuItemAction,
+} from '../../../../../../platform/actions/common/actions.js';
 import { IContextMenuService } from '../../../../../../platform/contextview/browser/contextView.js';
 import { IKeybindingService } from '../../../../../../platform/keybinding/common/keybinding.js';
 import { IThemeService } from '../../../../../../platform/theme/common/themeService.js';
@@ -21,7 +28,6 @@ import type { IManagedHover } from '../../../../../../base/browser/ui/hover/hove
 import { IHoverService } from '../../../../../../platform/hover/browser/hover.js';
 
 export class CodiconActionViewItem extends MenuEntryActionViewItem {
-
 	protected override updateLabel(): void {
 		if (this.options.label && this.label) {
 			DOM.reset(this.label, ...renderLabelWithIcons(this._commandAction.label ?? ''));
@@ -63,7 +69,13 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 		@IThemeService _themeService: IThemeService,
 		@IHoverService private readonly _hoverService: IHoverService
 	) {
-		super(action, { ...options, hoverDelegate: options?.hoverDelegate ?? getDefaultHoverDelegate('element') }, _keybindingService, _contextMenuService, _themeService);
+		super(
+			action,
+			{ ...options, hoverDelegate: options?.hoverDelegate ?? getDefaultHoverDelegate('element') },
+			_keybindingService,
+			_contextMenuService,
+			_themeService
+		);
 	}
 
 	override render(container: HTMLElement): void {
@@ -73,7 +85,13 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 		this._actionLabel = document.createElement('a');
 		container.appendChild(this._actionLabel);
 
-		this._hover = this._register(this._hoverService.setupManagedHover(this.options.hoverDelegate ?? getDefaultHoverDelegate('element'), this._actionLabel, ''));
+		this._hover = this._register(
+			this._hoverService.setupManagedHover(
+				this.options.hoverDelegate ?? getDefaultHoverDelegate('element'),
+				this._actionLabel,
+				''
+			)
+		);
 
 		this.updateLabel();
 
@@ -84,7 +102,11 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 
 	override onClick(event: DOM.EventLike, preserveFocus = false): void {
 		DOM.EventHelper.stop(event, true);
-		const context = types.isUndefinedOrNull(this._context) ? this.options?.useEventAsContext ? event : { preserveFocus } : this._context;
+		const context = types.isUndefinedOrNull(this._context)
+			? this.options?.useEventAsContext
+				? event
+				: { preserveFocus }
+			: this._context;
 		this.actionRunner.run(this._primaryAction ?? this._action, context);
 	}
 
@@ -100,7 +122,7 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 				if (element && primaryAction.item.icon && ThemeIcon.isThemeIcon(primaryAction.item.icon)) {
 					const iconClasses = ThemeIcon.asClassNameArray(primaryAction.item.icon);
 					// remove all classes started with 'codicon-'
-					element.classList.forEach((cl) => {
+					element.classList.forEach(cl => {
 						if (cl.startsWith('codicon-')) {
 							element.classList.remove(cl);
 						}
@@ -111,13 +133,17 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 				if (this._renderLabel) {
 					this._actionLabel.classList.add('notebook-label');
 					this._actionLabel.innerText = this._action.label;
-					this._hover?.update(primaryAction.tooltip.length ? primaryAction.tooltip : primaryAction.label);
+					this._hover?.update(
+						primaryAction.tooltip.length ? primaryAction.tooltip : primaryAction.label
+					);
 				}
 			} else {
 				if (this._renderLabel) {
 					this._actionLabel.classList.add('notebook-label');
 					this._actionLabel.innerText = this._action.label;
-					this._hover?.update(this._action.tooltip.length ? this._action.tooltip : this._action.label);
+					this._hover?.update(
+						this._action.tooltip.length ? this._action.tooltip : this._action.label
+					);
 				}
 			}
 		}

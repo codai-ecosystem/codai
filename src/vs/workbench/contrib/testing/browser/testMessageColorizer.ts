@@ -6,7 +6,11 @@
 import { renderStringAsPlaintext } from '../../../../base/browser/markdownRenderer.js';
 import { IMarkdownString } from '../../../../base/common/htmlContent.js';
 import { IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { GraphemeIterator, forAnsiStringParts, removeAnsiEscapeCodes } from '../../../../base/common/strings.js';
+import {
+	GraphemeIterator,
+	forAnsiStringParts,
+	removeAnsiEscapeCodes,
+} from '../../../../base/common/strings.js';
 import './media/testMessageColorizer.css';
 import { CodeEditorWidget } from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
 import { Position } from '../../../../editor/common/core/position.js';
@@ -27,7 +31,6 @@ const enum Classes {
 export const renderTestMessageAsText = (tm: string | IMarkdownString) =>
 	typeof tm === 'string' ? removeAnsiEscapeCodes(tm) : renderStringAsPlaintext(tm);
 
-
 /**
  * Applies decorations based on ANSI styles from the test message in the editor.
  * ANSI sequences are stripped from the text displayed in editor, and this
@@ -39,7 +42,10 @@ export const renderTestMessageAsText = (tm: string | IMarkdownString) =>
  *
  * Note: does not support TrueColor.
  */
-export const colorizeTestMessageInEditor = (message: string, editor: CodeEditorWidget): IDisposable => {
+export const colorizeTestMessageInEditor = (
+	message: string,
+	editor: CodeEditorWidget
+): IDisposable => {
 	const decos: string[] = [];
 
 	editor.changeDecorations(changeAccessor => {
@@ -86,10 +92,12 @@ export const colorizeTestMessageInEditor = (message: string, editor: CodeEditorW
 
 				const end = new Position(line, col);
 				if (cls.length) {
-					decos.push(changeAccessor.addDecoration(Range.fromPositions(start, end), {
-						inlineClassName: cls.join(' '),
-						description: 'test-message-colorized',
-					}));
+					decos.push(
+						changeAccessor.addDecoration(Range.fromPositions(start, end), {
+							inlineClassName: cls.join(' '),
+							description: 'test-message-colorized',
+						})
+					);
 				}
 				start = end;
 			}

@@ -175,7 +175,7 @@ describe('RelationshipEdge Component', () => {
 			const toPos = { x: 200, y: 0 };
 			const { container } = renderEdge({
 				fromPosition: fromPos,
-				toPosition: toPos
+				toPosition: toPos,
 			});
 
 			const line = container.querySelector('line');
@@ -192,7 +192,7 @@ describe('RelationshipEdge Component', () => {
 			const toPos = { x: 100, y: 250 };
 			const { container } = renderEdge({
 				fromPosition: fromPos,
-				toPosition: toPos
+				toPosition: toPos,
 			});
 
 			const line = container.querySelector('line');
@@ -244,7 +244,7 @@ describe('RelationshipEdge Component', () => {
 			const toPos = { x: 300, y: 400 };
 			const { container } = renderEdge({
 				fromPosition: fromPos,
-				toPosition: toPos
+				toPosition: toPos,
 			});
 
 			const line = container.querySelector('line');
@@ -270,7 +270,7 @@ describe('RelationshipEdge Component', () => {
 			const toPos = { x: 120, y: 110 };
 			const { container } = renderEdge({
 				fromPosition: fromPos,
-				toPosition: toPos
+				toPosition: toPos,
 			});
 
 			const line = container.querySelector('line');
@@ -285,7 +285,7 @@ describe('RelationshipEdge Component', () => {
 			const toPos = { x: 300, y: 200 };
 			const { container } = renderEdge({
 				fromPosition: fromPos,
-				toPosition: toPos
+				toPosition: toPos,
 			});
 
 			const text = container.querySelector('text');
@@ -325,7 +325,7 @@ describe('RelationshipEdge Component', () => {
 			expect(() => {
 				renderEdge({
 					fromPosition: { x: NaN, y: 0 },
-					toPosition: { x: 100, y: NaN }
+					toPosition: { x: 100, y: NaN },
 				});
 			}).not.toThrow();
 		});

@@ -21,7 +21,6 @@ import { INativeEnvironmentService } from '../../../platform/environment/common/
 import { IProgressService, ProgressLocation } from '../../../platform/progress/common/progress.js';
 
 export class ToggleDevToolsAction extends Action2 {
-
 	constructor() {
 		super({
 			id: 'workbench.action.toggleDevTools',
@@ -32,13 +31,13 @@ export class ToggleDevToolsAction extends Action2 {
 				weight: KeybindingWeight.WorkbenchContrib + 50,
 				when: IsDevelopmentContext,
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyI,
-				mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyI }
+				mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyI },
 			},
 			menu: {
 				id: MenuId.MenubarHelpMenu,
 				group: '5_tools',
-				order: 1
-			}
+				order: 1,
+			},
 		});
 	}
 
@@ -50,13 +49,12 @@ export class ToggleDevToolsAction extends Action2 {
 }
 
 export class ConfigureRuntimeArgumentsAction extends Action2 {
-
 	constructor() {
 		super({
 			id: 'workbench.action.configureRuntimeArguments',
 			title: localize2('configureRuntimeArguments', 'Configure Runtime Arguments'),
 			category: Categories.Preferences,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -66,19 +64,18 @@ export class ConfigureRuntimeArgumentsAction extends Action2 {
 
 		await editorService.openEditor({
 			resource: environmentService.argvResource,
-			options: { pinned: true }
+			options: { pinned: true },
 		});
 	}
 }
 
 export class ReloadWindowWithExtensionsDisabledAction extends Action2 {
-
 	constructor() {
 		super({
 			id: 'workbench.action.reloadWindowWithExtensionsDisabled',
 			title: localize2('reloadWindowWithExtensionsDisabled', 'Reload with Extensions Disabled'),
 			category: Categories.Developer,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -88,13 +85,12 @@ export class ReloadWindowWithExtensionsDisabledAction extends Action2 {
 }
 
 export class OpenUserDataFolderAction extends Action2 {
-
 	constructor() {
 		super({
 			id: 'workbench.action.revealUserDataFolder',
 			title: localize2('revealUserDataFolder', 'Reveal User Data Folder'),
 			category: Categories.Developer,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -107,13 +103,12 @@ export class OpenUserDataFolderAction extends Action2 {
 }
 
 export class ShowGPUInfoAction extends Action2 {
-
 	constructor() {
 		super({
 			id: 'workbench.action.showGPUInfo',
 			title: localize2('showGPUInfo', 'Show GPU Info'),
 			category: Categories.Developer,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -124,7 +119,6 @@ export class ShowGPUInfoAction extends Action2 {
 }
 
 export class StopTracing extends Action2 {
-
 	static readonly ID = 'workbench.action.stopTracing';
 
 	constructor() {
@@ -132,7 +126,7 @@ export class StopTracing extends Action2 {
 			id: StopTracing.ID,
 			title: localize2('stopTracing', 'Stop Tracing'),
 			category: Categories.Developer,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -144,8 +138,14 @@ export class StopTracing extends Action2 {
 
 		if (!environmentService.args.trace) {
 			const { confirmed } = await dialogService.confirm({
-				message: localize('stopTracing.message', "Tracing requires to launch with a '--trace' argument"),
-				primaryButton: localize({ key: 'stopTracing.button', comment: ['&& denotes a mnemonic'] }, "&&Relaunch and Enable Tracing"),
+				message: localize(
+					'stopTracing.message',
+					"Tracing requires to launch with a '--trace' argument"
+				),
+				primaryButton: localize(
+					{ key: 'stopTracing.button', comment: ['&& denotes a mnemonic'] },
+					'&&Relaunch and Enable Tracing'
+				),
 			});
 
 			if (confirmed) {
@@ -153,11 +153,14 @@ export class StopTracing extends Action2 {
 			}
 		}
 
-		await progressService.withProgress({
-			location: ProgressLocation.Dialog,
-			title: localize('stopTracing.title', "Creating trace file..."),
-			cancellable: false,
-			detail: localize('stopTracing.detail', "This can take up to one minute to complete.")
-		}, () => nativeHostService.stopTracing());
+		await progressService.withProgress(
+			{
+				location: ProgressLocation.Dialog,
+				title: localize('stopTracing.title', 'Creating trace file...'),
+				cancellable: false,
+				detail: localize('stopTracing.detail', 'This can take up to one minute to complete.'),
+			},
+			() => nativeHostService.stopTracing()
+		);
 	}
 }

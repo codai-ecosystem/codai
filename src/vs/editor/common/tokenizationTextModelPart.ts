@@ -10,7 +10,7 @@ import { SparseMultilineTokens } from './tokens/sparseMultilineTokens.js';
 
 /**
  * Provides tokenization related functionality of the text model.
-*/
+ */
 export interface ITokenizationTextModelPart {
 	readonly hasTokens: boolean;
 
@@ -76,16 +76,20 @@ export interface ITokenizationTextModelPart {
 	getLineTokens(lineNumber: number): LineTokens;
 
 	/**
-	* Returns the standard token type for a character if the character were to be inserted at
-	* the given position. If the result cannot be accurate, it returns null.
-	* @internal
-	*/
-	getTokenTypeIfInsertingCharacter(lineNumber: number, column: number, character: string): StandardTokenType;
+	 * Returns the standard token type for a character if the character were to be inserted at
+	 * the given position. If the result cannot be accurate, it returns null.
+	 * @internal
+	 */
+	getTokenTypeIfInsertingCharacter(
+		lineNumber: number,
+		column: number,
+		character: string
+	): StandardTokenType;
 
 	/**
 	 * Tokens the lines as if they were inserted at [lineNumber, lineNumber).
 	 * @internal
-	*/
+	 */
 	tokenizeLinesAt(lineNumber: number, lines: string[]): LineTokens[] | null;
 
 	getLanguageId(): string;

@@ -40,15 +40,10 @@ suite('ObjectStream', () => {
 			];
 
 			// both line endings should yield the same results
-			const lineEnding = (randomBoolean()) ? '\r\n' : '\n';
+			const lineEnding = randomBoolean() ? '\r\n' : '\n';
 
 			const model = disposables.add(
-				createTextModel(
-					initialContents.join(lineEnding),
-					'unknown',
-					undefined,
-					URI.file('/foo.js'),
-				),
+				createTextModel(initialContents.join(lineEnding), 'unknown', undefined, URI.file('/foo.js'))
 			);
 			const stream = disposables.add(objectStreamFromTextModel(model));
 
@@ -57,7 +52,7 @@ suite('ObjectStream', () => {
 			assert.strictEqual(
 				receivedData.join(''),
 				initialContents.join(lineEnding),
-				'Received data must be equal to the initial contents.',
+				'Received data must be equal to the initial contents.'
 			);
 		});
 	});
@@ -76,15 +71,10 @@ suite('ObjectStream', () => {
 			];
 
 			// both line endings should yield the same results
-			const lineEnding = (randomBoolean()) ? '\r\n' : '\n';
+			const lineEnding = randomBoolean() ? '\r\n' : '\n';
 
 			const model = disposables.add(
-				createTextModel(
-					initialContents.join(lineEnding),
-					'unknown',
-					undefined,
-					URI.file('/foo.js'),
-				),
+				createTextModel(initialContents.join(lineEnding), 'unknown', undefined, URI.file('/foo.js'))
 			);
 
 			const stopAtLine = randomInt(5, 2);
@@ -102,21 +92,17 @@ suite('ObjectStream', () => {
 				return originalGetLineContent(lineNumber);
 			};
 
-			const stream = disposables.add(
-				objectStreamFromTextModel(model, cancellation.token),
-			);
+			const stream = disposables.add(objectStreamFromTextModel(model, cancellation.token));
 
 			const receivedData = await consume(stream);
-			const expectedData = initialContents
-				.slice(0, stopAtLine - 1)
-				.join(lineEnding);
+			const expectedData = initialContents.slice(0, stopAtLine - 1).join(lineEnding);
 
 			assert.strictEqual(
 				receivedData.join(''),
 				// because the stream is cancelled before the last line,
 				// the last message always ends with the line ending
 				expectedData + lineEnding,
-				'Received data must be equal to the contents before cancel.',
+				'Received data must be equal to the contents before cancel.'
 			);
 		});
 	});
@@ -141,21 +127,18 @@ suite('ObjectStream', () => {
 /**
  * Asserts that two tokens lists are equal.
  */
-const assertTokensEqual = (
-	receivedTokens: BaseToken[],
-	expectedTokens: BaseToken[],
-): void => {
+const assertTokensEqual = (receivedTokens: BaseToken[], expectedTokens: BaseToken[]): void => {
 	for (let i = 0; i < expectedTokens.length; i++) {
 		const receivedToken = receivedTokens[i];
 
 		assertDefined(
 			receivedToken,
-			`Expected token #${i} to be '${expectedTokens[i]}', got 'undefined'.`,
+			`Expected token #${i} to be '${expectedTokens[i]}', got 'undefined'.`
 		);
 
 		assert.ok(
 			expectedTokens[i].equals(receivedTokens[i]),
-			`Expected token #${i} to be '${expectedTokens[i]}', got '${receivedToken}'.`,
+			`Expected token #${i} to be '${expectedTokens[i]}', got '${receivedToken}'.`
 		);
 	}
 };
@@ -166,14 +149,14 @@ const assertTokensEqual = (
 const consume = <T extends object>(stream: ObjectStream<T>): Promise<T[]> => {
 	return new Promise((resolve, reject) => {
 		const receivedData: T[] = [];
-		stream.on('data', (token) => {
+		stream.on('data', token => {
 			receivedData.push(token);
 		});
 
 		stream.on('end', () => {
 			resolve(receivedData);
 		});
-		stream.on('error', (error) => {
+		stream.on('error', error => {
 			reject(error);
 		});
 	});

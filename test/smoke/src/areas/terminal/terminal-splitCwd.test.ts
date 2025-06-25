@@ -15,9 +15,7 @@ export function setup(options?: { skipSuite: boolean }) {
 			const app = this.app as Application;
 			terminal = app.workbench.terminal;
 			settingsEditor = app.workbench.settingsEditor;
-			await setTerminalTestSettings(app, [
-				['terminal.integrated.splitCwd', '"inherited"']
-			]);
+			await setTerminalTestSettings(app, [['terminal.integrated.splitCwd', '"inherited"']]);
 		});
 
 		after(async function () {

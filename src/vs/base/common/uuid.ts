@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 const _UUIDPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function isUUID(value: string): boolean {
@@ -11,7 +10,6 @@ export function isUUID(value: string): boolean {
 }
 
 export const generateUuid = (function (): () => string {
-
 	// use `randomUUID` if possible
 	if (typeof crypto.randomUUID === 'function') {
 		// see https://developer.mozilla.org/en-US/docs/Web/API/Window/crypto

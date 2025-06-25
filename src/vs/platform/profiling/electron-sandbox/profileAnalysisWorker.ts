@@ -8,15 +8,25 @@ import { TernarySearchTree } from '../../../base/common/ternarySearchTree.js';
 import { URI } from '../../../base/common/uri.js';
 import { IWebWorkerServerRequestHandler } from '../../../base/common/worker/webWorker.js';
 import { IV8Profile, Utils } from '../common/profiling.js';
-import { IProfileModel, BottomUpSample, buildModel, BottomUpNode, processNode, CdpCallFrame } from '../common/profilingModel.js';
-import { BottomUpAnalysis, IProfileAnalysisWorker, ProfilingOutput } from './profileAnalysisWorkerService.js';
+import {
+	IProfileModel,
+	BottomUpSample,
+	buildModel,
+	BottomUpNode,
+	processNode,
+	CdpCallFrame,
+} from '../common/profilingModel.js';
+import {
+	BottomUpAnalysis,
+	IProfileAnalysisWorker,
+	ProfilingOutput,
+} from './profileAnalysisWorkerService.js';
 
 export function create(): IWebWorkerServerRequestHandler {
 	return new ProfileAnalysisWorker();
 }
 
 class ProfileAnalysisWorker implements IWebWorkerServerRequestHandler, IProfileAnalysisWorker {
-
 	_requestHandlerBrand: any;
 
 	$analyseBottomUp(profile: IV8Profile): BottomUpAnalysis {
@@ -25,8 +35,7 @@ class ProfileAnalysisWorker implements IWebWorkerServerRequestHandler, IProfileA
 		}
 
 		const model = buildModel(profile);
-		const samples = bottomUp(model, 5)
-			.filter(s => !s.isSpecial);
+		const samples = bottomUp(model, 5).filter(s => !s.isSpecial);
 
 		if (samples.length === 0 || samples[0].percentage < 10) {
 			// ignore this profile because 90% of the time is spent inside "special" frames
@@ -37,8 +46,10 @@ class ProfileAnalysisWorker implements IWebWorkerServerRequestHandler, IProfileA
 		return { kind: ProfilingOutput.Interesting, samples };
 	}
 
-	$analyseByUrlCategory(profile: IV8Profile, categories: [url: URI, category: string][]): [category: string, aggregated: number][] {
-
+	$analyseByUrlCategory(
+		profile: IV8Profile,
+		categories: [url: URI, category: string][]
+	): [category: string, aggregated: number][] {
 		// build search tree
 		const searchTree = TernarySearchTree.forUris<string>();
 		searchTree.fill(categories);
@@ -142,7 +153,6 @@ function bottomUp(model: IProfileModel, topN: number) {
 	const samples: BottomUpSample[] = [];
 
 	for (const node of result) {
-
 		const sample: BottomUpSample = {
 			selfTime: Math.round(node.selfTime / 1000),
 			totalTime: Math.round(node.aggregateTime / 1000),
@@ -151,7 +161,7 @@ function bottomUp(model: IProfileModel, topN: number) {
 			url: node.callFrame.url,
 			caller: [],
 			percentage: Math.round(node.selfTime / (model.duration / 100)),
-			isSpecial: isSpecial(node.callFrame)
+			isSpecial: isSpecial(node.callFrame),
 		};
 
 		// follow the heaviest caller paths

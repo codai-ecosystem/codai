@@ -46,7 +46,6 @@ suite('Strings', () => {
 	});
 
 	test('compareIgnoreCase', () => {
-
 		function assertCompareIgnoreCase(a: string, b: string, recurse = true): void {
 			let actual = strings.compareIgnoreCase(a, b);
 			actual = actual > 0 ? 1 : actual < 0 ? -1 : actual;
@@ -83,12 +82,22 @@ suite('Strings', () => {
 	});
 
 	test('compareIgnoreCase (substring)', () => {
-
-		function assertCompareIgnoreCase(a: string, b: string, aStart: number, aEnd: number, bStart: number, bEnd: number, recurse = true): void {
+		function assertCompareIgnoreCase(
+			a: string,
+			b: string,
+			aStart: number,
+			aEnd: number,
+			bStart: number,
+			bEnd: number,
+			recurse = true
+		): void {
 			let actual = strings.compareSubstringIgnoreCase(a, b, aStart, aEnd, bStart, bEnd);
 			actual = actual > 0 ? 1 : actual < 0 ? -1 : actual;
 
-			let expected = strings.compare(a.toLowerCase().substring(aStart, aEnd), b.toLowerCase().substring(bStart, bEnd));
+			let expected = strings.compare(
+				a.toLowerCase().substring(aStart, aEnd),
+				b.toLowerCase().substring(bStart, bEnd)
+			);
 			expected = expected > 0 ? 1 : expected < 0 ? -1 : expected;
 			assert.strictEqual(actual, expected, `${a} <> ${b}`);
 
@@ -109,9 +118,15 @@ suite('Strings', () => {
 		assert.strictEqual(strings.format('Foo {0} Bar', 'yes'), 'Foo yes Bar');
 		assert.strictEqual(strings.format('Foo {0} Bar {0}', 'yes'), 'Foo yes Bar yes');
 		assert.strictEqual(strings.format('Foo {0} Bar {1}{2}', 'yes'), 'Foo yes Bar {1}{2}');
-		assert.strictEqual(strings.format('Foo {0} Bar {1}{2}', 'yes', undefined), 'Foo yes Bar undefined{2}');
+		assert.strictEqual(
+			strings.format('Foo {0} Bar {1}{2}', 'yes', undefined),
+			'Foo yes Bar undefined{2}'
+		);
 		assert.strictEqual(strings.format('Foo {0} Bar {1}{2}', 'yes', 5, false), 'Foo yes Bar 5false');
-		assert.strictEqual(strings.format('Foo {0} Bar. {1}', '(foo)', '.test'), 'Foo (foo) Bar. .test');
+		assert.strictEqual(
+			strings.format('Foo {0} Bar. {1}', '(foo)', '.test'),
+			'Foo (foo) Bar. .test'
+		);
 	});
 
 	test('format2', () => {
@@ -119,10 +134,22 @@ suite('Strings', () => {
 		assert.strictEqual(strings.format2('Foo {oops} Bar', {}), 'Foo {oops} Bar');
 		assert.strictEqual(strings.format2('Foo {foo} Bar', { foo: 'bar' }), 'Foo bar Bar');
 		assert.strictEqual(strings.format2('Foo {foo} Bar {foo}', { foo: 'bar' }), 'Foo bar Bar bar');
-		assert.strictEqual(strings.format2('Foo {foo} Bar {bar}{boo}', { foo: 'bar' }), 'Foo bar Bar {bar}{boo}');
-		assert.strictEqual(strings.format2('Foo {foo} Bar {bar}{boo}', { foo: 'bar', bar: 'undefined' }), 'Foo bar Bar undefined{boo}');
-		assert.strictEqual(strings.format2('Foo {foo} Bar {bar}{boo}', { foo: 'bar', bar: '5', boo: false }), 'Foo bar Bar 5false');
-		assert.strictEqual(strings.format2('Foo {foo} Bar. {bar}', { foo: '(foo)', bar: '.test' }), 'Foo (foo) Bar. .test');
+		assert.strictEqual(
+			strings.format2('Foo {foo} Bar {bar}{boo}', { foo: 'bar' }),
+			'Foo bar Bar {bar}{boo}'
+		);
+		assert.strictEqual(
+			strings.format2('Foo {foo} Bar {bar}{boo}', { foo: 'bar', bar: 'undefined' }),
+			'Foo bar Bar undefined{boo}'
+		);
+		assert.strictEqual(
+			strings.format2('Foo {foo} Bar {bar}{boo}', { foo: 'bar', bar: '5', boo: false }),
+			'Foo bar Bar 5false'
+		);
+		assert.strictEqual(
+			strings.format2('Foo {foo} Bar. {bar}', { foo: '(foo)', bar: '.test' }),
+			'Foo (foo) Bar. .test'
+		);
 	});
 
 	test('lcut', () => {
@@ -296,7 +323,11 @@ suite('Strings', () => {
 		assert(regExpWithoutFlags.ignoreCase);
 		assert(!regExpWithoutFlags.multiline);
 
-		const regExpWithFlags = strings.createRegExp('abc', true, { global: true, matchCase: true, multiline: true });
+		const regExpWithFlags = strings.createRegExp('abc', true, {
+			global: true,
+			matchCase: true,
+			multiline: true,
+		});
 		assert(regExpWithFlags.global);
 		assert(!regExpWithFlags.ignoreCase);
 		assert(regExpWithFlags.multiline);
@@ -315,7 +346,7 @@ suite('Strings', () => {
 	});
 
 	test('fuzzyContains', () => {
-		assert.ok(!strings.fuzzyContains((undefined)!, null!));
+		assert.ok(!strings.fuzzyContains(undefined!, null!));
 		assert.ok(strings.fuzzyContains('hello world', 'h'));
 		assert.ok(!strings.fuzzyContains('hello world', 'q'));
 		assert.ok(strings.fuzzyContains('hello world', 'hw'));
@@ -337,7 +368,10 @@ suite('Strings', () => {
 	test('stripUTF8BOM', () => {
 		assert.strictEqual(strings.stripUTF8BOM(strings.UTF8_BOM_CHARACTER), '');
 		assert.strictEqual(strings.stripUTF8BOM(strings.UTF8_BOM_CHARACTER + 'foobar'), 'foobar');
-		assert.strictEqual(strings.stripUTF8BOM('foobar' + strings.UTF8_BOM_CHARACTER), 'foobar' + strings.UTF8_BOM_CHARACTER);
+		assert.strictEqual(
+			strings.stripUTF8BOM('foobar' + strings.UTF8_BOM_CHARACTER),
+			'foobar' + strings.UTF8_BOM_CHARACTER
+		);
 		assert.strictEqual(strings.stripUTF8BOM('abc'), 'abc');
 		assert.strictEqual(strings.stripUTF8BOM(''), '');
 	});
@@ -359,7 +393,11 @@ suite('Strings', () => {
 			['FöÖ', true],
 			['\\Foo', true],
 		].forEach(([str, result]) => {
-			assert.strictEqual(strings.containsUppercaseCharacter(<string>str), result, `Wrong result for ${str}`);
+			assert.strictEqual(
+				strings.containsUppercaseCharacter(<string>str),
+				result,
+				`Wrong result for ${str}`
+			);
 		});
 	});
 
@@ -371,7 +409,11 @@ suite('Strings', () => {
 
 			['Foo', true],
 		].forEach(([str, result]) => {
-			assert.strictEqual(strings.containsUppercaseCharacter(<string>str, true), result, `Wrong result for ${str}`);
+			assert.strictEqual(
+				strings.containsUppercaseCharacter(<string>str, true),
+				result,
+				`Wrong result for ${str}`
+			);
 		});
 	});
 
@@ -400,7 +442,7 @@ suite('Strings', () => {
 	});
 
 	test('getGraphemeBreakType', () => {
-		assert.strictEqual(strings.getGraphemeBreakType(0xBC1), strings.GraphemeBreakType.SpacingMark);
+		assert.strictEqual(strings.getGraphemeBreakType(0xbc1), strings.GraphemeBreakType.SpacingMark);
 	});
 
 	test('truncate', () => {
@@ -415,19 +457,30 @@ suite('Strings', () => {
 
 	test('replaceAsync', async () => {
 		let i = 0;
-		assert.strictEqual(await strings.replaceAsync('abcabcabcabc', /b(.)/g, async (match, after) => {
-			assert.strictEqual(match, 'bc');
-			assert.strictEqual(after, 'c');
-			return `${i++}${after}`;
-		}), 'a0ca1ca2ca3c');
+		assert.strictEqual(
+			await strings.replaceAsync('abcabcabcabc', /b(.)/g, async (match, after) => {
+				assert.strictEqual(match, 'bc');
+				assert.strictEqual(after, 'c');
+				return `${i++}${after}`;
+			}),
+			'a0ca1ca2ca3c'
+		);
 	});
 
 	suite('removeAnsiEscapeCodes', () => {
 		function testSequence(sequence: string) {
-			assert.strictEqual(strings.removeAnsiEscapeCodes(`hello${sequence}world`), 'helloworld', `expect to remove ${JSON.stringify(sequence)}`);
+			assert.strictEqual(
+				strings.removeAnsiEscapeCodes(`hello${sequence}world`),
+				'helloworld',
+				`expect to remove ${JSON.stringify(sequence)}`
+			);
 			assert.deepStrictEqual(
 				[...strings.forAnsiStringParts(`hello${sequence}world`)],
-				[{ isCode: false, str: 'hello' }, { isCode: true, str: sequence }, { isCode: false, str: 'world' }],
+				[
+					{ isCode: false, str: 'hello' },
+					{ isCode: true, str: sequence },
+					{ isCode: false, str: 'world' },
+				],
 				`expect to forAnsiStringParts ${JSON.stringify(sequence)}`
 			);
 		}
@@ -559,7 +612,7 @@ suite('Strings', () => {
 				const sequenceContent = [
 					`633;SetMark;`,
 					`633;P;Cwd=/foo`,
-					`7;file://local/Users/me/foo/bar`
+					`7;file://local/Users/me/foo/bar`,
 				];
 
 				const sequences = [];
@@ -610,7 +663,7 @@ suite('Strings', () => {
 				`+C`,
 				`-C`,
 				`.C`,
-				`/C`
+				`/C`,
 			];
 			const sequences = [];
 			for (const content of sequenceContent) {
@@ -633,7 +686,12 @@ suite('Strings', () => {
 
 	test('removeAnsiEscapeCodesFromPrompt', () => {
 		assert.strictEqual(strings.removeAnsiEscapeCodesFromPrompt('\u001b[31m$ \u001b[0m'), '$ ');
-		assert.strictEqual(strings.removeAnsiEscapeCodesFromPrompt('\n\\[\u001b[01;34m\\]\\w\\[\u001b[00m\\]\n\\[\u001b[1;32m\\]> \\[\u001b[0m\\]'), '\n\\w\n> ');
+		assert.strictEqual(
+			strings.removeAnsiEscapeCodesFromPrompt(
+				'\n\\[\u001b[01;34m\\]\\w\\[\u001b[00m\\]\n\\[\u001b[1;32m\\]> \\[\u001b[0m\\]'
+			),
+			'\n\\w\n> '
+		);
 	});
 
 	test('count', () => {
@@ -647,19 +705,37 @@ suite('Strings', () => {
 	});
 
 	test('containsAmbiguousCharacter', () => {
-		assert.strictEqual(strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('abcd'), false);
-		assert.strictEqual(strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('üå'), false);
-		assert.strictEqual(strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('(*&^)'), false);
+		assert.strictEqual(
+			strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('abcd'),
+			false
+		);
+		assert.strictEqual(
+			strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('üå'),
+			false
+		);
+		assert.strictEqual(
+			strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('(*&^)'),
+			false
+		);
 
-		assert.strictEqual(strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('ο'), true);
-		assert.strictEqual(strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('abɡc'), true);
+		assert.strictEqual(
+			strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('ο'),
+			true
+		);
+		assert.strictEqual(
+			strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter('abɡc'),
+			true
+		);
 	});
 
 	test('containsInvisibleCharacter', () => {
 		assert.strictEqual(strings.InvisibleCharacters.containsInvisibleCharacter('abcd'), false);
 		assert.strictEqual(strings.InvisibleCharacters.containsInvisibleCharacter(' '), true);
 		assert.strictEqual(strings.InvisibleCharacters.containsInvisibleCharacter('a\u{e004e}b'), true);
-		assert.strictEqual(strings.InvisibleCharacters.containsInvisibleCharacter('a\u{e015a}\u000bb'), true);
+		assert.strictEqual(
+			strings.InvisibleCharacters.containsInvisibleCharacter('a\u{e015a}\u000bb'),
+			true
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -668,9 +744,12 @@ suite('Strings', () => {
 test('htmlAttributeEncodeValue', () => {
 	assert.strictEqual(strings.htmlAttributeEncodeValue(''), '');
 	assert.strictEqual(strings.htmlAttributeEncodeValue('abc'), 'abc');
-	assert.strictEqual(strings.htmlAttributeEncodeValue('<script>alert("Hello")</script>'), '&lt;script&gt;alert(&quot;Hello&quot;)&lt;/script&gt;');
+	assert.strictEqual(
+		strings.htmlAttributeEncodeValue('<script>alert("Hello")</script>'),
+		'&lt;script&gt;alert(&quot;Hello&quot;)&lt;/script&gt;'
+	);
 	assert.strictEqual(strings.htmlAttributeEncodeValue('Hello & World'), 'Hello &amp; World');
 	assert.strictEqual(strings.htmlAttributeEncodeValue('"Hello"'), '&quot;Hello&quot;');
-	assert.strictEqual(strings.htmlAttributeEncodeValue('\'Hello\''), '&apos;Hello&apos;');
+	assert.strictEqual(strings.htmlAttributeEncodeValue("'Hello'"), '&apos;Hello&apos;');
 	assert.strictEqual(strings.htmlAttributeEncodeValue('<>&\'"'), '&lt;&gt;&amp;&apos;&quot;');
 });

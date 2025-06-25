@@ -10,9 +10,7 @@ import { MarkdownPreviewManager } from '../preview/previewManager';
 export class ShowSourceCommand implements Command {
 	public readonly id = 'markdown.showSource';
 
-	public constructor(
-		private readonly _previewManager: MarkdownPreviewManager
-	) { }
+	public constructor(private readonly _previewManager: MarkdownPreviewManager) {}
 
 	public execute() {
 		const { activePreviewResource, activePreviewResourceColumn } = this._previewManager;

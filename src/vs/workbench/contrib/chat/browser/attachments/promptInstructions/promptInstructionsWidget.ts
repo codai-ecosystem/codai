@@ -59,11 +59,13 @@ export class InstructionsAttachmentWidget extends ObservableDisposable {
 		@IMenuService private readonly menuService: IMenuService,
 		@IFileService private readonly fileService: IFileService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IModelService private readonly modelService: IModelService,
+		@IModelService private readonly modelService: IModelService
 	) {
 		super();
 
-		this.domNode = dom.$('.chat-prompt-attachment.chat-attached-context-attachment.show-file-icons.implicit');
+		this.domNode = dom.$(
+			'.chat-prompt-attachment.chat-attached-context-attachment.show-file-icons.implicit'
+		);
 
 		this._register(this.model.onUpdate(this.render.bind(this)));
 		this._register(this.model.onDispose(this.dispose.bind(this)));
@@ -89,12 +91,11 @@ export class InstructionsAttachmentWidget extends ObservableDisposable {
 		const friendlyName = `${fileBasename} ${fileDirname}`;
 		const isPrompt = this.languageService.guessLanguageIdByFilepathOrFirstLine(file) === 'prompt';
 		const ariaLabel = isPrompt
-			? localize('chat.promptAttachment', "Prompt file, {0}", friendlyName)
-			: localize('chat.instructionsAttachment', "Instructions attachment, {0}", friendlyName);
+			? localize('chat.promptAttachment', 'Prompt file, {0}', friendlyName)
+			: localize('chat.instructionsAttachment', 'Instructions attachment, {0}', friendlyName);
 		const typeLabel = isPrompt
-			? localize('prompt', "Prompt")
-			: localize('instructions', "Instructions");
-
+			? localize('prompt', 'Prompt')
+			: localize('instructions', 'Instructions');
 
 		const uriLabel = this.labelService.getUriLabel(file, { relative: true });
 
@@ -106,15 +107,11 @@ export class InstructionsAttachmentWidget extends ObservableDisposable {
 		// error/warning at a time because there is a limited space available
 		if (topError) {
 			const { errorSubject: subject } = topError;
-			const isError = (subject === 'root');
+			const isError = subject === 'root';
 
-			this.domNode.classList.add(
-				(isError) ? 'error' : 'warning',
-			);
+			this.domNode.classList.add(isError ? 'error' : 'warning');
 
-			const severity = (isError)
-				? localize('error', "Error")
-				: localize('warning', "Warning");
+			const severity = isError ? localize('error', 'Error') : localize('warning', 'Warning');
 
 			title += `\n[${severity}]: ${topError.localizedMessage}`;
 		}
@@ -131,46 +128,63 @@ export class InstructionsAttachmentWidget extends ObservableDisposable {
 		this.domNode.ariaLabel = ariaLabel;
 		this.domNode.tabIndex = 0;
 
-		const hintElement = dom.append(this.domNode, dom.$('span.chat-implicit-hint', undefined, typeLabel));
-		this._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), hintElement, title));
+		const hintElement = dom.append(
+			this.domNode,
+			dom.$('span.chat-implicit-hint', undefined, typeLabel)
+		);
+		this._register(
+			this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), hintElement, title)
+		);
 
 		// create the `remove` button
 		const removeButton = this.renderDisposables.add(
-			new Button(
-				this.domNode,
-				{
-					supportIcons: true,
-					title: localize('remove', "Remove"),
-				},
-			),
+			new Button(this.domNode, {
+				supportIcons: true,
+				title: localize('remove', 'Remove'),
+			})
 		);
 
 		removeButton.icon = Codicon.close;
-		this.renderDisposables.add(removeButton.onDidClick((e) => {
-			e.stopPropagation();
-			this.model.dispose();
-		}));
+		this.renderDisposables.add(
+			removeButton.onDidClick(e => {
+				e.stopPropagation();
+				this.model.dispose();
+			})
+		);
 
 		// context menu
-		const scopedContextKeyService = this.renderDisposables.add(this.contextKeyService.createScoped(this.domNode));
+		const scopedContextKeyService = this.renderDisposables.add(
+			this.contextKeyService.createScoped(this.domNode)
+		);
 
 		const resourceContextKey = this.renderDisposables.add(
-			new ResourceContextKey(scopedContextKeyService, this.fileService, this.languageService, this.modelService),
+			new ResourceContextKey(
+				scopedContextKeyService,
+				this.fileService,
+				this.languageService,
+				this.modelService
+			)
 		);
 		resourceContextKey.set(file);
 
-		this.renderDisposables.add(dom.addDisposableListener(this.domNode, dom.EventType.CONTEXT_MENU, async domEvent => {
-			const event = new StandardMouseEvent(dom.getWindow(domEvent), domEvent);
-			dom.EventHelper.stop(domEvent, true);
+		this.renderDisposables.add(
+			dom.addDisposableListener(this.domNode, dom.EventType.CONTEXT_MENU, async domEvent => {
+				const event = new StandardMouseEvent(dom.getWindow(domEvent), domEvent);
+				dom.EventHelper.stop(domEvent, true);
 
-			this.contextMenuService.showContextMenu({
-				contextKeyService: scopedContextKeyService,
-				getAnchor: () => event,
-				getActions: () => {
-					const menu = this.menuService.getMenuActions(MenuId.ChatInputResourceAttachmentContext, scopedContextKeyService, { arg: file });
-					return getFlatContextMenuActions(menu);
-				},
-			});
-		}));
+				this.contextMenuService.showContextMenu({
+					contextKeyService: scopedContextKeyService,
+					getAnchor: () => event,
+					getActions: () => {
+						const menu = this.menuService.getMenuActions(
+							MenuId.ChatInputResourceAttachmentContext,
+							scopedContextKeyService,
+							{ arg: file }
+						);
+						return getFlatContextMenuActions(menu);
+					},
+				});
+			})
+		);
 	}
 }

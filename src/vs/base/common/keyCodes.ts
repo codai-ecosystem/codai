@@ -181,12 +181,12 @@ export const enum KeyCode {
 	Numpad8, // VK_NUMPAD8, 0x68, Numeric keypad 8 key
 	Numpad9, // VK_NUMPAD9, 0x69, Numeric keypad 9 key
 
-	NumpadMultiply,	// VK_MULTIPLY, 0x6A, Multiply key
-	NumpadAdd,		// VK_ADD, 0x6B, Add key
-	NUMPAD_SEPARATOR,	// VK_SEPARATOR, 0x6C, Separator key
-	NumpadSubtract,	// VK_SUBTRACT, 0x6D, Subtract key
-	NumpadDecimal,	// VK_DECIMAL, 0x6E, Decimal key
-	NumpadDivide,	// VK_DIVIDE, 0x6F,
+	NumpadMultiply, // VK_MULTIPLY, 0x6A, Multiply key
+	NumpadAdd, // VK_ADD, 0x6B, Add key
+	NUMPAD_SEPARATOR, // VK_SEPARATOR, 0x6C, Separator key
+	NumpadSubtract, // VK_SUBTRACT, 0x6D, Subtract key
+	NumpadDecimal, // VK_DECIMAL, 0x6E, Decimal key
+	NumpadDivide, // VK_DIVIDE, 0x6F,
 
 	/**
 	 * Cover all key codes when IME is processing input.
@@ -222,7 +222,7 @@ export const enum KeyCode {
 	 * Placed last to cover the length of the enum.
 	 * Please do not depend on this value!
 	 */
-	MAX_VALUE
+	MAX_VALUE,
 }
 
 /**
@@ -424,11 +424,10 @@ export const enum ScanCode {
 	MailForward,
 	MailSend,
 
-	MAX_VALUE
+	MAX_VALUE,
 }
 
 class KeyCodeStrMap {
-
 	public _keyCodeToStr: string[];
 	public _strToKeyCode: { [str: string]: KeyCode };
 
@@ -463,7 +462,7 @@ const scanCodeLowerCaseStrToInt: { [code: string]: number } = Object.create(null
 export const ScanCodeUtils = {
 	lowerCaseToEnum: (scanCode: string) => scanCodeLowerCaseStrToInt[scanCode] || ScanCode.None,
 	toEnum: (scanCode: string) => scanCodeStrToInt[scanCode] || ScanCode.None,
-	toString: (scanCode: ScanCode) => scanCodeIntToStr[scanCode] || 'None'
+	toString: (scanCode: ScanCode) => scanCodeIntToStr[scanCode] || 'None',
 };
 
 /**
@@ -485,7 +484,6 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 }
 
 (function () {
-
 	// See https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 	// See https://github.com/microsoft/node-native-keymap/blob/88c0b0e5/deps/chromium/keyboard_codes_win.h
 
@@ -541,22 +539,62 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 		[0, ScanCode.Digit0, 'Digit0', KeyCode.Digit0, '0', 48, 'VK_0', empty, empty],
 		[1, ScanCode.Enter, 'Enter', KeyCode.Enter, 'Enter', 13, 'VK_RETURN', empty, empty],
 		[1, ScanCode.Escape, 'Escape', KeyCode.Escape, 'Escape', 27, 'VK_ESCAPE', empty, empty],
-		[1, ScanCode.Backspace, 'Backspace', KeyCode.Backspace, 'Backspace', 8, 'VK_BACK', empty, empty],
+		[
+			1,
+			ScanCode.Backspace,
+			'Backspace',
+			KeyCode.Backspace,
+			'Backspace',
+			8,
+			'VK_BACK',
+			empty,
+			empty,
+		],
 		[1, ScanCode.Tab, 'Tab', KeyCode.Tab, 'Tab', 9, 'VK_TAB', empty, empty],
 		[1, ScanCode.Space, 'Space', KeyCode.Space, 'Space', 32, 'VK_SPACE', empty, empty],
 		[0, ScanCode.Minus, 'Minus', KeyCode.Minus, '-', 189, 'VK_OEM_MINUS', '-', 'OEM_MINUS'],
 		[0, ScanCode.Equal, 'Equal', KeyCode.Equal, '=', 187, 'VK_OEM_PLUS', '=', 'OEM_PLUS'],
-		[0, ScanCode.BracketLeft, 'BracketLeft', KeyCode.BracketLeft, '[', 219, 'VK_OEM_4', '[', 'OEM_4'],
-		[0, ScanCode.BracketRight, 'BracketRight', KeyCode.BracketRight, ']', 221, 'VK_OEM_6', ']', 'OEM_6'],
+		[
+			0,
+			ScanCode.BracketLeft,
+			'BracketLeft',
+			KeyCode.BracketLeft,
+			'[',
+			219,
+			'VK_OEM_4',
+			'[',
+			'OEM_4',
+		],
+		[
+			0,
+			ScanCode.BracketRight,
+			'BracketRight',
+			KeyCode.BracketRight,
+			']',
+			221,
+			'VK_OEM_6',
+			']',
+			'OEM_6',
+		],
 		[0, ScanCode.Backslash, 'Backslash', KeyCode.Backslash, '\\', 220, 'VK_OEM_5', '\\', 'OEM_5'],
 		[0, ScanCode.IntlHash, 'IntlHash', KeyCode.Unknown, empty, 0, empty, empty, empty], // has been dropped from the w3c spec
 		[0, ScanCode.Semicolon, 'Semicolon', KeyCode.Semicolon, ';', 186, 'VK_OEM_1', ';', 'OEM_1'],
-		[0, ScanCode.Quote, 'Quote', KeyCode.Quote, '\'', 222, 'VK_OEM_7', '\'', 'OEM_7'],
+		[0, ScanCode.Quote, 'Quote', KeyCode.Quote, "'", 222, 'VK_OEM_7', "'", 'OEM_7'],
 		[0, ScanCode.Backquote, 'Backquote', KeyCode.Backquote, '`', 192, 'VK_OEM_3', '`', 'OEM_3'],
 		[0, ScanCode.Comma, 'Comma', KeyCode.Comma, ',', 188, 'VK_OEM_COMMA', ',', 'OEM_COMMA'],
 		[0, ScanCode.Period, 'Period', KeyCode.Period, '.', 190, 'VK_OEM_PERIOD', '.', 'OEM_PERIOD'],
 		[0, ScanCode.Slash, 'Slash', KeyCode.Slash, '/', 191, 'VK_OEM_2', '/', 'OEM_2'],
-		[1, ScanCode.CapsLock, 'CapsLock', KeyCode.CapsLock, 'CapsLock', 20, 'VK_CAPITAL', empty, empty],
+		[
+			1,
+			ScanCode.CapsLock,
+			'CapsLock',
+			KeyCode.CapsLock,
+			'CapsLock',
+			20,
+			'VK_CAPITAL',
+			empty,
+			empty,
+		],
 		[1, ScanCode.F1, 'F1', KeyCode.F1, 'F1', 112, 'VK_F1', empty, empty],
 		[1, ScanCode.F2, 'F2', KeyCode.F2, 'F2', 113, 'VK_F2', empty, empty],
 		[1, ScanCode.F3, 'F3', KeyCode.F3, 'F3', 114, 'VK_F3', empty, empty],
@@ -570,7 +608,17 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 		[1, ScanCode.F11, 'F11', KeyCode.F11, 'F11', 122, 'VK_F11', empty, empty],
 		[1, ScanCode.F12, 'F12', KeyCode.F12, 'F12', 123, 'VK_F12', empty, empty],
 		[1, ScanCode.PrintScreen, 'PrintScreen', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.ScrollLock, 'ScrollLock', KeyCode.ScrollLock, 'ScrollLock', 145, 'VK_SCROLL', empty, empty],
+		[
+			1,
+			ScanCode.ScrollLock,
+			'ScrollLock',
+			KeyCode.ScrollLock,
+			'ScrollLock',
+			145,
+			'VK_SCROLL',
+			empty,
+			empty,
+		],
 		[1, ScanCode.Pause, 'Pause', KeyCode.PauseBreak, 'PauseBreak', 19, 'VK_PAUSE', empty, empty],
 		[1, ScanCode.Insert, 'Insert', KeyCode.Insert, 'Insert', 45, 'VK_INSERT', empty, empty],
 		[1, ScanCode.Home, 'Home', KeyCode.Home, 'Home', 36, 'VK_HOME', empty, empty],
@@ -578,15 +626,85 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 		[1, ScanCode.Delete, 'Delete', KeyCode.Delete, 'Delete', 46, 'VK_DELETE', empty, empty],
 		[1, ScanCode.End, 'End', KeyCode.End, 'End', 35, 'VK_END', empty, empty],
 		[1, ScanCode.PageDown, 'PageDown', KeyCode.PageDown, 'PageDown', 34, 'VK_NEXT', empty, empty],
-		[1, ScanCode.ArrowRight, 'ArrowRight', KeyCode.RightArrow, 'RightArrow', 39, 'VK_RIGHT', 'Right', empty],
-		[1, ScanCode.ArrowLeft, 'ArrowLeft', KeyCode.LeftArrow, 'LeftArrow', 37, 'VK_LEFT', 'Left', empty],
-		[1, ScanCode.ArrowDown, 'ArrowDown', KeyCode.DownArrow, 'DownArrow', 40, 'VK_DOWN', 'Down', empty],
+		[
+			1,
+			ScanCode.ArrowRight,
+			'ArrowRight',
+			KeyCode.RightArrow,
+			'RightArrow',
+			39,
+			'VK_RIGHT',
+			'Right',
+			empty,
+		],
+		[
+			1,
+			ScanCode.ArrowLeft,
+			'ArrowLeft',
+			KeyCode.LeftArrow,
+			'LeftArrow',
+			37,
+			'VK_LEFT',
+			'Left',
+			empty,
+		],
+		[
+			1,
+			ScanCode.ArrowDown,
+			'ArrowDown',
+			KeyCode.DownArrow,
+			'DownArrow',
+			40,
+			'VK_DOWN',
+			'Down',
+			empty,
+		],
 		[1, ScanCode.ArrowUp, 'ArrowUp', KeyCode.UpArrow, 'UpArrow', 38, 'VK_UP', 'Up', empty],
 		[1, ScanCode.NumLock, 'NumLock', KeyCode.NumLock, 'NumLock', 144, 'VK_NUMLOCK', empty, empty],
-		[1, ScanCode.NumpadDivide, 'NumpadDivide', KeyCode.NumpadDivide, 'NumPad_Divide', 111, 'VK_DIVIDE', empty, empty],
-		[1, ScanCode.NumpadMultiply, 'NumpadMultiply', KeyCode.NumpadMultiply, 'NumPad_Multiply', 106, 'VK_MULTIPLY', empty, empty],
-		[1, ScanCode.NumpadSubtract, 'NumpadSubtract', KeyCode.NumpadSubtract, 'NumPad_Subtract', 109, 'VK_SUBTRACT', empty, empty],
-		[1, ScanCode.NumpadAdd, 'NumpadAdd', KeyCode.NumpadAdd, 'NumPad_Add', 107, 'VK_ADD', empty, empty],
+		[
+			1,
+			ScanCode.NumpadDivide,
+			'NumpadDivide',
+			KeyCode.NumpadDivide,
+			'NumPad_Divide',
+			111,
+			'VK_DIVIDE',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadMultiply,
+			'NumpadMultiply',
+			KeyCode.NumpadMultiply,
+			'NumPad_Multiply',
+			106,
+			'VK_MULTIPLY',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadSubtract,
+			'NumpadSubtract',
+			KeyCode.NumpadSubtract,
+			'NumPad_Subtract',
+			109,
+			'VK_SUBTRACT',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadAdd,
+			'NumpadAdd',
+			KeyCode.NumpadAdd,
+			'NumPad_Add',
+			107,
+			'VK_ADD',
+			empty,
+			empty,
+		],
 		[1, ScanCode.NumpadEnter, 'NumpadEnter', KeyCode.Enter, empty, 0, empty, empty, empty],
 		[1, ScanCode.Numpad1, 'Numpad1', KeyCode.Numpad1, 'NumPad1', 97, 'VK_NUMPAD1', empty, empty],
 		[1, ScanCode.Numpad2, 'Numpad2', KeyCode.Numpad2, 'NumPad2', 98, 'VK_NUMPAD2', empty, empty],
@@ -598,9 +716,39 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 		[1, ScanCode.Numpad8, 'Numpad8', KeyCode.Numpad8, 'NumPad8', 104, 'VK_NUMPAD8', empty, empty],
 		[1, ScanCode.Numpad9, 'Numpad9', KeyCode.Numpad9, 'NumPad9', 105, 'VK_NUMPAD9', empty, empty],
 		[1, ScanCode.Numpad0, 'Numpad0', KeyCode.Numpad0, 'NumPad0', 96, 'VK_NUMPAD0', empty, empty],
-		[1, ScanCode.NumpadDecimal, 'NumpadDecimal', KeyCode.NumpadDecimal, 'NumPad_Decimal', 110, 'VK_DECIMAL', empty, empty],
-		[0, ScanCode.IntlBackslash, 'IntlBackslash', KeyCode.IntlBackslash, 'OEM_102', 226, 'VK_OEM_102', empty, empty],
-		[1, ScanCode.ContextMenu, 'ContextMenu', KeyCode.ContextMenu, 'ContextMenu', 93, empty, empty, empty],
+		[
+			1,
+			ScanCode.NumpadDecimal,
+			'NumpadDecimal',
+			KeyCode.NumpadDecimal,
+			'NumPad_Decimal',
+			110,
+			'VK_DECIMAL',
+			empty,
+			empty,
+		],
+		[
+			0,
+			ScanCode.IntlBackslash,
+			'IntlBackslash',
+			KeyCode.IntlBackslash,
+			'OEM_102',
+			226,
+			'VK_OEM_102',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.ContextMenu,
+			'ContextMenu',
+			KeyCode.ContextMenu,
+			'ContextMenu',
+			93,
+			empty,
+			empty,
+			empty,
+		],
 		[1, ScanCode.Power, 'Power', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.NumpadEqual, 'NumpadEqual', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.F13, 'F13', KeyCode.F13, 'F13', 124, 'VK_F13', empty, empty],
@@ -624,10 +772,50 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 		[1, ScanCode.Copy, 'Copy', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.Paste, 'Paste', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.Find, 'Find', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.AudioVolumeMute, 'AudioVolumeMute', KeyCode.AudioVolumeMute, 'AudioVolumeMute', 173, 'VK_VOLUME_MUTE', empty, empty],
-		[1, ScanCode.AudioVolumeUp, 'AudioVolumeUp', KeyCode.AudioVolumeUp, 'AudioVolumeUp', 175, 'VK_VOLUME_UP', empty, empty],
-		[1, ScanCode.AudioVolumeDown, 'AudioVolumeDown', KeyCode.AudioVolumeDown, 'AudioVolumeDown', 174, 'VK_VOLUME_DOWN', empty, empty],
-		[1, ScanCode.NumpadComma, 'NumpadComma', KeyCode.NUMPAD_SEPARATOR, 'NumPad_Separator', 108, 'VK_SEPARATOR', empty, empty],
+		[
+			1,
+			ScanCode.AudioVolumeMute,
+			'AudioVolumeMute',
+			KeyCode.AudioVolumeMute,
+			'AudioVolumeMute',
+			173,
+			'VK_VOLUME_MUTE',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.AudioVolumeUp,
+			'AudioVolumeUp',
+			KeyCode.AudioVolumeUp,
+			'AudioVolumeUp',
+			175,
+			'VK_VOLUME_UP',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.AudioVolumeDown,
+			'AudioVolumeDown',
+			KeyCode.AudioVolumeDown,
+			'AudioVolumeDown',
+			174,
+			'VK_VOLUME_DOWN',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadComma,
+			'NumpadComma',
+			KeyCode.NUMPAD_SEPARATOR,
+			'NumPad_Separator',
+			108,
+			'VK_SEPARATOR',
+			empty,
+			empty,
+		],
 		[0, ScanCode.IntlRo, 'IntlRo', KeyCode.ABNT_C1, 'ABNT_C1', 193, 'VK_ABNT_C1', empty, empty],
 		[1, ScanCode.KanaMode, 'KanaMode', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[0, ScanCode.IntlYen, 'IntlYen', KeyCode.Unknown, empty, 0, empty, empty, empty],
@@ -640,16 +828,106 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 		[1, ScanCode.Lang5, 'Lang5', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.Abort, 'Abort', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.Props, 'Props', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.NumpadParenLeft, 'NumpadParenLeft', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.NumpadParenRight, 'NumpadParenRight', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.NumpadBackspace, 'NumpadBackspace', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.NumpadMemoryStore, 'NumpadMemoryStore', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.NumpadMemoryRecall, 'NumpadMemoryRecall', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.NumpadMemoryClear, 'NumpadMemoryClear', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.NumpadMemoryAdd, 'NumpadMemoryAdd', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.NumpadMemorySubtract, 'NumpadMemorySubtract', KeyCode.Unknown, empty, 0, empty, empty, empty],
+		[
+			1,
+			ScanCode.NumpadParenLeft,
+			'NumpadParenLeft',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadParenRight,
+			'NumpadParenRight',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadBackspace,
+			'NumpadBackspace',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadMemoryStore,
+			'NumpadMemoryStore',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadMemoryRecall,
+			'NumpadMemoryRecall',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadMemoryClear,
+			'NumpadMemoryClear',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadMemoryAdd,
+			'NumpadMemoryAdd',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.NumpadMemorySubtract,
+			'NumpadMemorySubtract',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
 		[1, ScanCode.NumpadClear, 'NumpadClear', KeyCode.Clear, 'Clear', 12, 'VK_CLEAR', empty, empty],
-		[1, ScanCode.NumpadClearEntry, 'NumpadClearEntry', KeyCode.Unknown, empty, 0, empty, empty, empty],
+		[
+			1,
+			ScanCode.NumpadClearEntry,
+			'NumpadClearEntry',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
 		[1, ScanCode.None, empty, KeyCode.Ctrl, 'Ctrl', 17, 'VK_CONTROL', empty, empty],
 		[1, ScanCode.None, empty, KeyCode.Shift, 'Shift', 16, 'VK_SHIFT', empty, empty],
 		[1, ScanCode.None, empty, KeyCode.Alt, 'Alt', 18, 'VK_MENU', empty, empty],
@@ -666,26 +944,196 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 		[1, ScanCode.BrightnessDown, 'BrightnessDown', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.MediaPlay, 'MediaPlay', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.MediaRecord, 'MediaRecord', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.MediaFastForward, 'MediaFastForward', KeyCode.Unknown, empty, 0, empty, empty, empty],
+		[
+			1,
+			ScanCode.MediaFastForward,
+			'MediaFastForward',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
 		[1, ScanCode.MediaRewind, 'MediaRewind', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.MediaTrackNext, 'MediaTrackNext', KeyCode.MediaTrackNext, 'MediaTrackNext', 176, 'VK_MEDIA_NEXT_TRACK', empty, empty],
-		[1, ScanCode.MediaTrackPrevious, 'MediaTrackPrevious', KeyCode.MediaTrackPrevious, 'MediaTrackPrevious', 177, 'VK_MEDIA_PREV_TRACK', empty, empty],
-		[1, ScanCode.MediaStop, 'MediaStop', KeyCode.MediaStop, 'MediaStop', 178, 'VK_MEDIA_STOP', empty, empty],
+		[
+			1,
+			ScanCode.MediaTrackNext,
+			'MediaTrackNext',
+			KeyCode.MediaTrackNext,
+			'MediaTrackNext',
+			176,
+			'VK_MEDIA_NEXT_TRACK',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.MediaTrackPrevious,
+			'MediaTrackPrevious',
+			KeyCode.MediaTrackPrevious,
+			'MediaTrackPrevious',
+			177,
+			'VK_MEDIA_PREV_TRACK',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.MediaStop,
+			'MediaStop',
+			KeyCode.MediaStop,
+			'MediaStop',
+			178,
+			'VK_MEDIA_STOP',
+			empty,
+			empty,
+		],
 		[1, ScanCode.Eject, 'Eject', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.MediaPlayPause, 'MediaPlayPause', KeyCode.MediaPlayPause, 'MediaPlayPause', 179, 'VK_MEDIA_PLAY_PAUSE', empty, empty],
-		[1, ScanCode.MediaSelect, 'MediaSelect', KeyCode.LaunchMediaPlayer, 'LaunchMediaPlayer', 181, 'VK_MEDIA_LAUNCH_MEDIA_SELECT', empty, empty],
-		[1, ScanCode.LaunchMail, 'LaunchMail', KeyCode.LaunchMail, 'LaunchMail', 180, 'VK_MEDIA_LAUNCH_MAIL', empty, empty],
-		[1, ScanCode.LaunchApp2, 'LaunchApp2', KeyCode.LaunchApp2, 'LaunchApp2', 183, 'VK_MEDIA_LAUNCH_APP2', empty, empty],
-		[1, ScanCode.LaunchApp1, 'LaunchApp1', KeyCode.Unknown, empty, 0, 'VK_MEDIA_LAUNCH_APP1', empty, empty],
+		[
+			1,
+			ScanCode.MediaPlayPause,
+			'MediaPlayPause',
+			KeyCode.MediaPlayPause,
+			'MediaPlayPause',
+			179,
+			'VK_MEDIA_PLAY_PAUSE',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.MediaSelect,
+			'MediaSelect',
+			KeyCode.LaunchMediaPlayer,
+			'LaunchMediaPlayer',
+			181,
+			'VK_MEDIA_LAUNCH_MEDIA_SELECT',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.LaunchMail,
+			'LaunchMail',
+			KeyCode.LaunchMail,
+			'LaunchMail',
+			180,
+			'VK_MEDIA_LAUNCH_MAIL',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.LaunchApp2,
+			'LaunchApp2',
+			KeyCode.LaunchApp2,
+			'LaunchApp2',
+			183,
+			'VK_MEDIA_LAUNCH_APP2',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.LaunchApp1,
+			'LaunchApp1',
+			KeyCode.Unknown,
+			empty,
+			0,
+			'VK_MEDIA_LAUNCH_APP1',
+			empty,
+			empty,
+		],
 		[1, ScanCode.SelectTask, 'SelectTask', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.LaunchScreenSaver, 'LaunchScreenSaver', KeyCode.Unknown, empty, 0, empty, empty, empty],
-		[1, ScanCode.BrowserSearch, 'BrowserSearch', KeyCode.BrowserSearch, 'BrowserSearch', 170, 'VK_BROWSER_SEARCH', empty, empty],
-		[1, ScanCode.BrowserHome, 'BrowserHome', KeyCode.BrowserHome, 'BrowserHome', 172, 'VK_BROWSER_HOME', empty, empty],
-		[1, ScanCode.BrowserBack, 'BrowserBack', KeyCode.BrowserBack, 'BrowserBack', 166, 'VK_BROWSER_BACK', empty, empty],
-		[1, ScanCode.BrowserForward, 'BrowserForward', KeyCode.BrowserForward, 'BrowserForward', 167, 'VK_BROWSER_FORWARD', empty, empty],
-		[1, ScanCode.BrowserStop, 'BrowserStop', KeyCode.Unknown, empty, 0, 'VK_BROWSER_STOP', empty, empty],
-		[1, ScanCode.BrowserRefresh, 'BrowserRefresh', KeyCode.Unknown, empty, 0, 'VK_BROWSER_REFRESH', empty, empty],
-		[1, ScanCode.BrowserFavorites, 'BrowserFavorites', KeyCode.Unknown, empty, 0, 'VK_BROWSER_FAVORITES', empty, empty],
+		[
+			1,
+			ScanCode.LaunchScreenSaver,
+			'LaunchScreenSaver',
+			KeyCode.Unknown,
+			empty,
+			0,
+			empty,
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.BrowserSearch,
+			'BrowserSearch',
+			KeyCode.BrowserSearch,
+			'BrowserSearch',
+			170,
+			'VK_BROWSER_SEARCH',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.BrowserHome,
+			'BrowserHome',
+			KeyCode.BrowserHome,
+			'BrowserHome',
+			172,
+			'VK_BROWSER_HOME',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.BrowserBack,
+			'BrowserBack',
+			KeyCode.BrowserBack,
+			'BrowserBack',
+			166,
+			'VK_BROWSER_BACK',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.BrowserForward,
+			'BrowserForward',
+			KeyCode.BrowserForward,
+			'BrowserForward',
+			167,
+			'VK_BROWSER_FORWARD',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.BrowserStop,
+			'BrowserStop',
+			KeyCode.Unknown,
+			empty,
+			0,
+			'VK_BROWSER_STOP',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.BrowserRefresh,
+			'BrowserRefresh',
+			KeyCode.Unknown,
+			empty,
+			0,
+			'VK_BROWSER_REFRESH',
+			empty,
+			empty,
+		],
+		[
+			1,
+			ScanCode.BrowserFavorites,
+			'BrowserFavorites',
+			KeyCode.Unknown,
+			empty,
+			0,
+			'VK_BROWSER_FAVORITES',
+			empty,
+			empty,
+		],
 		[1, ScanCode.ZoomToggle, 'ZoomToggle', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.MailReply, 'MailReply', KeyCode.Unknown, empty, 0, empty, empty, empty],
 		[1, ScanCode.MailForward, 'MailForward', KeyCode.Unknown, empty, 0, empty, empty, empty],
@@ -693,7 +1141,17 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 
 		// See https://lists.w3.org/Archives/Public/www-dom/2010JulSep/att-0182/keyCode-spec.html
 		// If an Input Method Editor is processing key input and the event is keydown, return 229.
-		[1, ScanCode.None, empty, KeyCode.KEY_IN_COMPOSITION, 'KeyInComposition', 229, empty, empty, empty],
+		[
+			1,
+			ScanCode.None,
+			empty,
+			KeyCode.KEY_IN_COMPOSITION,
+			'KeyInComposition',
+			229,
+			empty,
+			empty,
+			empty,
+		],
 		[1, ScanCode.None, empty, KeyCode.ABNT_C2, 'ABNT_C2', 194, 'VK_ABNT_C2', empty, empty],
 		[1, ScanCode.None, empty, KeyCode.OEM_8, 'OEM_8', 223, 'VK_OEM_8', empty, empty],
 		[1, ScanCode.None, empty, KeyCode.Unknown, empty, 0, 'VK_KANA', empty, empty],
@@ -730,7 +1188,17 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 	const seenKeyCode: boolean[] = [];
 	const seenScanCode: boolean[] = [];
 	for (const mapping of mappings) {
-		const [immutable, scanCode, scanCodeStr, keyCode, keyCodeStr, eventKeyCode, vkey, usUserSettingsLabel, generalUserSettingsLabel] = mapping;
+		const [
+			immutable,
+			scanCode,
+			scanCodeStr,
+			keyCode,
+			keyCodeStr,
+			eventKeyCode,
+			vkey,
+			usUserSettingsLabel,
+			generalUserSettingsLabel,
+		] = mapping;
 		if (!seenScanCode[scanCode]) {
 			seenScanCode[scanCode] = true;
 			scanCodeIntToStr[scanCode] = scanCodeStr;
@@ -739,12 +1207,12 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 			if (immutable) {
 				IMMUTABLE_CODE_TO_KEY_CODE[scanCode] = keyCode;
 				if (
-					(keyCode !== KeyCode.Unknown)
-					&& (keyCode !== KeyCode.Enter)
-					&& (keyCode !== KeyCode.Ctrl)
-					&& (keyCode !== KeyCode.Shift)
-					&& (keyCode !== KeyCode.Alt)
-					&& (keyCode !== KeyCode.Meta)
+					keyCode !== KeyCode.Unknown &&
+					keyCode !== KeyCode.Enter &&
+					keyCode !== KeyCode.Ctrl &&
+					keyCode !== KeyCode.Shift &&
+					keyCode !== KeyCode.Alt &&
+					keyCode !== KeyCode.Meta
 				) {
 					IMMUTABLE_KEY_CODE_TO_CODE[keyCode] = scanCode;
 				}
@@ -753,11 +1221,16 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 		if (!seenKeyCode[keyCode]) {
 			seenKeyCode[keyCode] = true;
 			if (!keyCodeStr) {
-				throw new Error(`String representation missing for key code ${keyCode} around scan code ${scanCodeStr}`);
+				throw new Error(
+					`String representation missing for key code ${keyCode} around scan code ${scanCodeStr}`
+				);
 			}
 			uiMap.define(keyCode, keyCodeStr);
 			userSettingsUSMap.define(keyCode, usUserSettingsLabel || keyCodeStr);
-			userSettingsGeneralMap.define(keyCode, generalUserSettingsLabel || usUserSettingsLabel || keyCodeStr);
+			userSettingsGeneralMap.define(
+				keyCode,
+				generalUserSettingsLabel || usUserSettingsLabel || keyCodeStr
+			);
 		}
 		if (eventKeyCode) {
 			EVENT_KEY_CODE_MAP[eventKeyCode] = keyCode;
@@ -768,7 +1241,6 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 	}
 	// Manually added due to the exclusion above (due to duplication with NumpadEnter)
 	IMMUTABLE_KEY_CODE_TO_CODE[KeyCode.Enter] = ScanCode.Enter;
-
 })();
 
 export namespace KeyCodeUtils {
@@ -825,6 +1297,6 @@ export const enum KeyMod {
 }
 
 export function KeyChord(firstPart: number, secondPart: number): number {
-	const chordPart = ((secondPart & 0x0000FFFF) << 16) >>> 0;
+	const chordPart = ((secondPart & 0x0000ffff) << 16) >>> 0;
 	return (firstPart | chordPart) >>> 0;
 }

@@ -56,7 +56,10 @@ export class Position {
 	 * @param deltaColumn column delta
 	 */
 	delta(deltaLineNumber: number = 0, deltaColumn: number = 0): Position {
-		return this.with(Math.max(1, this.lineNumber + deltaLineNumber), Math.max(1, this.column + deltaColumn));
+		return this.with(
+			Math.max(1, this.lineNumber + deltaLineNumber),
+			Math.max(1, this.column + deltaColumn)
+		);
 	}
 
 	/**
@@ -73,12 +76,7 @@ export class Position {
 		if (!a && !b) {
 			return true;
 		}
-		return (
-			!!a &&
-			!!b &&
-			a.lineNumber === b.lineNumber &&
-			a.column === b.column
-		);
+		return !!a && !!b && a.lineNumber === b.lineNumber && a.column === b.column;
 	}
 
 	/**
@@ -168,17 +166,13 @@ export class Position {
 	 * Test if `obj` is an `IPosition`.
 	 */
 	public static isIPosition(obj: any): obj is IPosition {
-		return (
-			obj
-			&& (typeof obj.lineNumber === 'number')
-			&& (typeof obj.column === 'number')
-		);
+		return obj && typeof obj.lineNumber === 'number' && typeof obj.column === 'number';
 	}
 
 	public toJSON(): IPosition {
 		return {
 			lineNumber: this.lineNumber,
-			column: this.column
+			column: this.column,
 		};
 	}
 }

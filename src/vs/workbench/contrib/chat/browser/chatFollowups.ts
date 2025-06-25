@@ -31,30 +31,35 @@ export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 	}
 
 	private renderFollowup(container: HTMLElement, followup: T): void {
-
 		if (!this.chatAgentService.getDefaultAgent(this.location)) {
 			// No default agent yet, which affects how followups are rendered, so can't render this yet
 			return;
 		}
 
-		const tooltipPrefix = formatChatQuestion(this.chatAgentService, this.location, '', followup.agentId, followup.subCommand);
+		const tooltipPrefix = formatChatQuestion(
+			this.chatAgentService,
+			this.location,
+			'',
+			followup.agentId,
+			followup.subCommand
+		);
 		if (tooltipPrefix === undefined) {
 			return;
 		}
 
-		const baseTitle = followup.kind === 'reply' ?
-			(followup.title || followup.message)
-			: followup.title;
+		const baseTitle =
+			followup.kind === 'reply' ? followup.title || followup.message : followup.title;
 		const message = followup.kind === 'reply' ? followup.message : followup.title;
-		const tooltip = (tooltipPrefix +
-			('tooltip' in followup && followup.tooltip || message)).trim();
+		const tooltip = (
+			tooltipPrefix + (('tooltip' in followup && followup.tooltip) || message)
+		).trim();
 		const button = this._register(new Button(container, { ...this.options, title: tooltip }));
 		if (followup.kind === 'reply') {
 			button.element.classList.add('interactive-followup-reply');
 		} else if (followup.kind === 'command') {
 			button.element.classList.add('interactive-followup-command');
 		}
-		button.element.ariaLabel = localize('followUpAriaLabel', "Follow up question: {0}", baseTitle);
+		button.element.ariaLabel = localize('followUpAriaLabel', 'Follow up question: {0}', baseTitle);
 		button.label = new MarkdownString(baseTitle);
 
 		this._register(button.onDidClick(() => this.clickHandler(followup)));

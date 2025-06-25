@@ -27,14 +27,14 @@ export class PromptVariable extends PromptToken {
 		/**
 		 * The name of a prompt variable, excluding the `#` character at the start.
 		 */
-		public readonly name: string,
+		public readonly name: string
 	) {
 		// sanity check of characters used in the provided variable name
 		for (const character of name) {
 			assert(
-				(INVALID_NAME_CHARACTERS.includes(character) === false) &&
-				(STOP_CHARACTERS.includes(character) === false),
-				`Variable 'name' cannot contain character '${character}', got '${name}'.`,
+				INVALID_NAME_CHARACTERS.includes(character) === false &&
+					STOP_CHARACTERS.includes(character) === false,
+				`Variable 'name' cannot contain character '${character}', got '${name}'.`
 			);
 		}
 
@@ -71,15 +71,15 @@ export class PromptVariableWithData extends PromptVariable {
 		/**
 		 * The data of the variable, excluding the starting {@link DATA_SEPARATOR} character.
 		 */
-		public readonly data: string,
+		public readonly data: string
 	) {
 		super(fullRange, name);
 
 		// sanity check of characters used in the provided variable data
 		for (const character of data) {
 			assert(
-				(STOP_CHARACTERS.includes(character) === false),
-				`Variable 'data' cannot contain character '${character}', got '${data}'.`,
+				STOP_CHARACTERS.includes(character) === false,
+				`Variable 'data' cannot contain character '${character}', got '${data}'.`
 			);
 		}
 	}
@@ -98,16 +98,15 @@ export class PromptVariableWithData extends PromptVariable {
 		const { range } = this;
 
 		// calculate the start column number of the `data` part of the variable
-		const dataStartColumn = range.startColumn +
-			START_CHARACTER.length + this.name.length +
-			DATA_SEPARATOR.length;
+		const dataStartColumn =
+			range.startColumn + START_CHARACTER.length + this.name.length + DATA_SEPARATOR.length;
 
 		// create `range` of the `data` part of the variable
 		const result = new Range(
 			range.startLineNumber,
 			dataStartColumn,
 			range.endLineNumber,
-			range.endColumn,
+			range.endColumn
 		);
 
 		// if the resulting range is empty, return `undefined`

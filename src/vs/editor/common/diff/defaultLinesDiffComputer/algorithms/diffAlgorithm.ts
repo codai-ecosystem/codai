@@ -9,18 +9,24 @@ import { OffsetRange } from '../../../core/ranges/offsetRange.js';
 
 /**
  * Represents a synchronous diff algorithm. Should be executed in a worker.
-*/
+ */
 export interface IDiffAlgorithm {
 	compute(sequence1: ISequence, sequence2: ISequence, timeout?: ITimeout): DiffAlgorithmResult;
 }
 
 export class DiffAlgorithmResult {
 	static trivial(seq1: ISequence, seq2: ISequence): DiffAlgorithmResult {
-		return new DiffAlgorithmResult([new SequenceDiff(OffsetRange.ofLength(seq1.length), OffsetRange.ofLength(seq2.length))], false);
+		return new DiffAlgorithmResult(
+			[new SequenceDiff(OffsetRange.ofLength(seq1.length), OffsetRange.ofLength(seq2.length))],
+			false
+		);
 	}
 
 	static trivialTimedOut(seq1: ISequence, seq2: ISequence): DiffAlgorithmResult {
-		return new DiffAlgorithmResult([new SequenceDiff(OffsetRange.ofLength(seq1.length), OffsetRange.ofLength(seq2.length))], true);
+		return new DiffAlgorithmResult(
+			[new SequenceDiff(OffsetRange.ofLength(seq1.length), OffsetRange.ofLength(seq2.length))],
+			true
+		);
 	}
 
 	constructor(
@@ -29,18 +35,25 @@ export class DiffAlgorithmResult {
 		 * Indicates if the time out was reached.
 		 * In that case, the diffs might be an approximation and the user should be asked to rerun the diff with more time.
 		 */
-		public readonly hitTimeout: boolean,
-	) { }
+		public readonly hitTimeout: boolean
+	) {}
 }
 
 export class SequenceDiff {
 	public static invert(sequenceDiffs: SequenceDiff[], doc1Length: number): SequenceDiff[] {
 		const result: SequenceDiff[] = [];
 		forEachAdjacent(sequenceDiffs, (a, b) => {
-			result.push(SequenceDiff.fromOffsetPairs(
-				a ? a.getEndExclusives() : OffsetPair.zero,
-				b ? b.getStarts() : new OffsetPair(doc1Length, (a ? a.seq2Range.endExclusive - a.seq1Range.endExclusive : 0) + doc1Length)
-			));
+			result.push(
+				SequenceDiff.fromOffsetPairs(
+					a ? a.getEndExclusives() : OffsetPair.zero,
+					b
+						? b.getStarts()
+						: new OffsetPair(
+								doc1Length,
+								(a ? a.seq2Range.endExclusive - a.seq1Range.endExclusive : 0) + doc1Length
+							)
+				)
+			);
 		});
 		return result;
 	}
@@ -48,7 +61,7 @@ export class SequenceDiff {
 	public static fromOffsetPairs(start: OffsetPair, endExclusive: OffsetPair): SequenceDiff {
 		return new SequenceDiff(
 			new OffsetRange(start.offset1, endExclusive.offset1),
-			new OffsetRange(start.offset2, endExclusive.offset2),
+			new OffsetRange(start.offset2, endExclusive.offset2)
 		);
 	}
 
@@ -56,7 +69,12 @@ export class SequenceDiff {
 		let last: SequenceDiff | undefined = undefined;
 		for (const cur of sequenceDiffs) {
 			if (last) {
-				if (!(last.seq1Range.endExclusive <= cur.seq1Range.start && last.seq2Range.endExclusive <= cur.seq2Range.start)) {
+				if (
+					!(
+						last.seq1Range.endExclusive <= cur.seq1Range.start &&
+						last.seq2Range.endExclusive <= cur.seq2Range.start
+					)
+				) {
 					throw new BugIndicatingError('Sequence diffs must be sorted');
 				}
 			}
@@ -66,8 +84,8 @@ export class SequenceDiff {
 
 	constructor(
 		public readonly seq1Range: OffsetRange,
-		public readonly seq2Range: OffsetRange,
-	) { }
+		public readonly seq2Range: OffsetRange
+	) {}
 
 	public swap(): SequenceDiff {
 		return new SequenceDiff(this.seq2Range, this.seq1Range);
@@ -78,7 +96,10 @@ export class SequenceDiff {
 	}
 
 	public join(other: SequenceDiff): SequenceDiff {
-		return new SequenceDiff(this.seq1Range.join(other.seq1Range), this.seq2Range.join(other.seq2Range));
+		return new SequenceDiff(
+			this.seq1Range.join(other.seq1Range),
+			this.seq2Range.join(other.seq2Range)
+		);
 	}
 
 	public delta(offset: number): SequenceDiff {
@@ -103,7 +124,10 @@ export class SequenceDiff {
 	}
 
 	public intersectsOrTouches(other: SequenceDiff): boolean {
-		return this.seq1Range.intersectsOrTouches(other.seq1Range) || this.seq2Range.intersectsOrTouches(other.seq2Range);
+		return (
+			this.seq1Range.intersectsOrTouches(other.seq1Range) ||
+			this.seq2Range.intersectsOrTouches(other.seq2Range)
+		);
 	}
 
 	public intersect(other: SequenceDiff): SequenceDiff | undefined {
@@ -130,9 +154,8 @@ export class OffsetPair {
 
 	constructor(
 		public readonly offset1: number,
-		public readonly offset2: number,
-	) {
-	}
+		public readonly offset2: number
+	) {}
 
 	public toString(): string {
 		return `${this.offset1} <-> ${this.offset2}`;
@@ -158,7 +181,7 @@ export interface ISequence {
 	 * The higher the score, the better that offset can be used to split the sequence.
 	 * Is used to optimize insertions.
 	 * Must not be negative.
-	*/
+	 */
 	getBoundaryScore?(length: number): number;
 
 	/**

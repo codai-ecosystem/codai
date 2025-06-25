@@ -15,12 +15,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"target": "es2022",
 		"useDefineForClassFields": false,
-		"lib": [
-			"ES2022",
-			"DOM",
-			"DOM.Iterable",
-			"WebWorker.ImportScripts"
-		],
+		"lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker.ImportScripts"],
 		"allowSyntheticDefaultImports": true
 	}
 }

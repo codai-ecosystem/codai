@@ -6,7 +6,14 @@
 import './media/part.css';
 import { Component } from '../common/component.js';
 import { IThemeService, IColorTheme } from '../../platform/theme/common/themeService.js';
-import { Dimension, size, IDimension, getActiveDocument, prepend, IDomPosition } from '../../base/browser/dom.js';
+import {
+	Dimension,
+	size,
+	IDimension,
+	getActiveDocument,
+	prepend,
+	IDomPosition,
+} from '../../base/browser/dom.js';
 import { IStorageService } from '../../platform/storage/common/storage.js';
 import { ISerializableView, IViewSize } from '../../base/browser/ui/grid/grid.js';
 import { Event, Emitter } from '../../base/common/event.js';
@@ -31,12 +38,15 @@ export interface ILayoutContentResult {
  * arranges an optional title and mandatory content area to show content.
  */
 export abstract class Part extends Component implements ISerializableView {
-
 	private _dimension: Dimension | undefined;
-	get dimension(): Dimension | undefined { return this._dimension; }
+	get dimension(): Dimension | undefined {
+		return this._dimension;
+	}
 
 	private _contentPosition: IDomPosition | undefined;
-	get contentPosition(): IDomPosition | undefined { return this._contentPosition; }
+	get contentPosition(): IDomPosition | undefined {
+		return this._contentPosition;
+	}
 
 	protected _onDidVisibilityChange = this._register(new Emitter<boolean>());
 	readonly onDidVisibilityChange = this._onDidVisibilityChange.event;
@@ -61,7 +71,6 @@ export abstract class Part extends Component implements ISerializableView {
 	}
 
 	protected override onThemeChange(theme: IColorTheme): void {
-
 		// only call if our create() method has been called
 		if (this.parent) {
 			super.onThemeChange(theme);
@@ -187,7 +196,12 @@ export abstract class Part extends Component implements ISerializableView {
 
 	private relayout() {
 		if (this.dimension && this.contentPosition) {
-			this.layout(this.dimension.width, this.dimension.height, this.contentPosition.top, this.contentPosition.left);
+			this.layout(
+				this.dimension.width,
+				this.dimension.height,
+				this.contentPosition.top,
+				this.contentPosition.left
+			);
 		}
 	}
 	/**
@@ -202,7 +216,9 @@ export abstract class Part extends Component implements ISerializableView {
 	//#region ISerializableView
 
 	protected _onDidChange = this._register(new Emitter<IViewSize | undefined>());
-	get onDidChange(): Event<IViewSize | undefined> { return this._onDidChange.event; }
+	get onDidChange(): Event<IViewSize | undefined> {
+		return this._onDidChange.event;
+	}
 
 	element!: HTMLElement;
 
@@ -226,7 +242,6 @@ export abstract class Part extends Component implements ISerializableView {
 }
 
 class PartLayout {
-
 	private static readonly HEADER_HEIGHT = 35;
 	private static readonly TITLE_HEIGHT = 35;
 	private static readonly Footer_HEIGHT = 35;
@@ -234,10 +249,12 @@ class PartLayout {
 	private headerVisible: boolean = false;
 	private footerVisible: boolean = false;
 
-	constructor(private options: IPartOptions, private contentArea: HTMLElement | undefined) { }
+	constructor(
+		private options: IPartOptions,
+		private contentArea: HTMLElement | undefined
+	) {}
 
 	layout(width: number, height: number): ILayoutContentResult {
-
 		// Title Size: Width (Fill), Height (Variable)
 		let titleSize: Dimension;
 		if (this.options.hasTitle) {
@@ -268,7 +285,10 @@ class PartLayout {
 		}
 
 		// Content Size: Width (Fill), Height (Variable)
-		const contentSize = new Dimension(contentWidth, height - titleSize.height - headerSize.height - footerSize.height);
+		const contentSize = new Dimension(
+			contentWidth,
+			height - titleSize.height - headerSize.height - footerSize.height
+		);
 
 		// Content
 		if (this.contentArea) {
@@ -292,9 +312,10 @@ export interface IMultiWindowPart {
 }
 
 export abstract class MultiWindowParts<T extends IMultiWindowPart> extends Component {
-
 	protected readonly _parts = new Set<T>();
-	get parts() { return Array.from(this._parts); }
+	get parts() {
+		return Array.from(this._parts);
+	}
 
 	abstract readonly mainPart: T;
 

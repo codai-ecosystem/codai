@@ -29,18 +29,25 @@ declare module 'vscode' {
 		/**
 		 * Provide kernel source actions
 		 */
-		provideNotebookKernelSourceActions(token: CancellationToken): ProviderResult<NotebookKernelSourceAction[]>;
+		provideNotebookKernelSourceActions(
+			token: CancellationToken
+		): ProviderResult<NotebookKernelSourceAction[]>;
 	}
 
 	export namespace notebooks {
 		/**
 		 * Create notebook controller detection task
 		 */
-		export function createNotebookControllerDetectionTask(notebookType: string): NotebookControllerDetectionTask;
+		export function createNotebookControllerDetectionTask(
+			notebookType: string
+		): NotebookControllerDetectionTask;
 
 		/**
 		 * Register a notebook kernel source action provider
 		 */
-		export function registerKernelSourceActionProvider(notebookType: string, provider: NotebookKernelSourceActionProvider): Disposable;
+		export function registerKernelSourceActionProvider(
+			notebookType: string,
+			provider: NotebookKernelSourceActionProvider
+		): Disposable;
 	}
 }

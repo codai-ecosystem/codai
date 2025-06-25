@@ -9,7 +9,6 @@ import { INativeHostService } from './native.js';
 
 // @ts-ignore: interface is implemented via proxy
 export class NativeHostService implements INativeHostService {
-
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
@@ -23,7 +22,7 @@ export class NativeHostService implements INativeHostService {
 				properties.set('windowId', windowId);
 
 				return properties;
-			})()
+			})(),
 		});
 	}
 }

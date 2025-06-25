@@ -12,14 +12,25 @@ import { Barrier, timeout } from '../../../../common/async.js';
 import { VSBuffer } from '../../../../common/buffer.js';
 import { Emitter, Event } from '../../../../common/event.js';
 import { Disposable, DisposableStore, toDisposable } from '../../../../common/lifecycle.js';
-import { ILoadEstimator, PersistentProtocol, Protocol, ProtocolConstants, SocketCloseEvent, SocketDiagnosticsEventType } from '../../common/ipc.net.js';
-import { createRandomIPCHandle, createStaticIPCHandle, NodeSocket, WebSocketNodeSocket } from '../../node/ipc.net.js';
+import {
+	ILoadEstimator,
+	PersistentProtocol,
+	Protocol,
+	ProtocolConstants,
+	SocketCloseEvent,
+	SocketDiagnosticsEventType,
+} from '../../common/ipc.net.js';
+import {
+	createRandomIPCHandle,
+	createStaticIPCHandle,
+	NodeSocket,
+	WebSocketNodeSocket,
+} from '../../node/ipc.net.js';
 import { flakySuite } from '../../../../test/common/testUtils.js';
 import { runWithFakedTimers } from '../../../../test/common/timeTravelScheduler.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../test/common/utils.js';
 
 class MessageStream extends Disposable {
-
 	private _currentComplete: ((data: VSBuffer) => void) | null;
 	private _messages: VSBuffer[];
 
@@ -27,10 +38,12 @@ class MessageStream extends Disposable {
 		super();
 		this._currentComplete = null;
 		this._messages = [];
-		this._register(x.onMessage(data => {
-			this._messages.push(data);
-			this._trigger();
-		}));
+		this._register(
+			x.onMessage(data => {
+				this._messages.push(data);
+				this._trigger();
+			})
+		);
 	}
 
 	private _trigger(): void {
@@ -48,7 +61,7 @@ class MessageStream extends Disposable {
 	}
 
 	public waitForOne(): Promise<VSBuffer> {
-		return new Promise<VSBuffer>((complete) => {
+		return new Promise<VSBuffer>(complete => {
 			this._currentComplete = complete;
 			this._trigger();
 		});
@@ -71,12 +84,10 @@ class EtherStream extends EventEmitter {
 		return true;
 	}
 
-	destroy(): void {
-	}
+	destroy(): void {}
 }
 
 class Ether {
-
 	private readonly _a: EtherStream;
 	private readonly _b: EtherStream;
 
@@ -91,9 +102,7 @@ class Ether {
 		return <any>this._b;
 	}
 
-	constructor(
-		private readonly _wireLatency = 0
-	) {
+	constructor(private readonly _wireLatency = 0) {
 		this._a = new EtherStream(this, 'a');
 		this._b = new EtherStream(this, 'b');
 		this._ab = [];
@@ -113,7 +122,6 @@ class Ether {
 	}
 
 	private _deliver(): void {
-
 		if (this._ab.length > 0) {
 			const data = Buffer.concat(this._ab);
 			this._ab.length = 0;
@@ -129,12 +137,10 @@ class Ether {
 			setTimeout(() => this._deliver(), 0);
 			return;
 		}
-
 	}
 }
 
 suite('IPC, Socket Protocol', () => {
-
 	const ds = ensureNoDisposablesAreLeakedInTestSuite();
 
 	let ether: Ether;
@@ -144,7 +150,6 @@ suite('IPC, Socket Protocol', () => {
 	});
 
 	test('read/write', async () => {
-
 		const a = new Protocol(new NodeSocket(ether.a));
 		const b = new Protocol(new NodeSocket(ether.b));
 		const bMessages = new MessageStream(b);
@@ -164,9 +169,7 @@ suite('IPC, Socket Protocol', () => {
 		b.dispose();
 	});
 
-
 	test('read/write, object data', async () => {
-
 		const a = new Protocol(new NodeSocket(ether.a));
 		const b = new Protocol(new NodeSocket(ether.b));
 		const bMessages = new MessageStream(b);
@@ -175,7 +178,7 @@ suite('IPC, Socket Protocol', () => {
 			pi: Math.PI,
 			foo: 'bar',
 			more: true,
-			data: 'Hello World'.split('')
+			data: 'Hello World'.split(''),
 		};
 
 		a.send(VSBuffer.fromString(JSON.stringify(data)));
@@ -186,8 +189,6 @@ suite('IPC, Socket Protocol', () => {
 		a.dispose();
 		b.dispose();
 	});
-
-
 
 	test('issue #211462: destroy socket after end timeout', async () => {
 		const socket = new EventEmitter();
@@ -210,7 +211,6 @@ suite('IPC, Socket Protocol', () => {
 });
 
 suite('PersistentProtocol reconnection', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('acks get piggybacked with messages', async () => {
@@ -274,7 +274,7 @@ suite('PersistentProtocol reconnection', () => {
 	test('ack gets sent after a while', async () => {
 		await runWithFakedTimers({ useFakeTimers: true, maxTaskCount: 100 }, async () => {
 			const loadEstimator: ILoadEstimator = {
-				hasHighLoad: () => false
+				hasHighLoad: () => false,
 			};
 			const ether = new Ether();
 			const aSocket = new NodeSocket(ether.a);
@@ -310,7 +310,7 @@ suite('PersistentProtocol reconnection', () => {
 			{
 				useFakeTimers: true,
 				useSetImmediate: true,
-				maxTaskCount: 1000
+				maxTaskCount: 1000,
 			},
 			async () => {
 				// Date.now() in fake timers starts at 0, which is very inconvenient
@@ -319,7 +319,7 @@ suite('PersistentProtocol reconnection', () => {
 				await timeout(60 * 60 * 1000);
 
 				const loadEstimator: ILoadEstimator = {
-					hasHighLoad: () => false
+					hasHighLoad: () => false,
 				};
 				const ether = new Ether();
 				const aSocket = new NodeSocket(ether.a);
@@ -395,12 +395,11 @@ suite('PersistentProtocol reconnection', () => {
 			{
 				useFakeTimers: true,
 				useSetImmediate: true,
-				maxTaskCount: 1000
+				maxTaskCount: 1000,
 			},
 			async () => {
-
 				const loadEstimator: ILoadEstimator = {
-					hasHighLoad: () => false
+					hasHighLoad: () => false,
 				};
 				const wireLatency = 1000;
 				const ether = new Ether(wireLatency);
@@ -457,12 +456,11 @@ suite('PersistentProtocol reconnection', () => {
 			{
 				useFakeTimers: true,
 				useSetImmediate: true,
-				maxTaskCount: 1000
+				maxTaskCount: 1000,
 			},
 			async () => {
-
 				const loadEstimator: ILoadEstimator = {
-					hasHighLoad: () => false
+					hasHighLoad: () => false,
 				};
 				const ether = new Ether();
 				const aSocket = new NodeSocket(ether.a);
@@ -507,7 +505,7 @@ suite('PersistentProtocol reconnection', () => {
 	test('writing can be paused', async () => {
 		await runWithFakedTimers({ useFakeTimers: true, maxTaskCount: 100 }, async () => {
 			const loadEstimator: ILoadEstimator = {
-				hasHighLoad: () => false
+				hasHighLoad: () => false,
 			};
 			const ether = new Ether();
 			const aSocket = new NodeSocket(ether.a);
@@ -559,7 +557,6 @@ suite('PersistentProtocol reconnection', () => {
 });
 
 flakySuite('IPC, create handle', () => {
-
 	test('createRandomIPCHandle', async () => {
 		return testIPCHandle(createRandomIPCHandle());
 	});
@@ -587,11 +584,9 @@ flakySuite('IPC, create handle', () => {
 			});
 		});
 	}
-
 });
 
 suite('WebSocketNodeSocket', () => {
-
 	const ds = ensureNoDisposablesAreLeakedInTestSuite();
 
 	function toUint8Array(data: number[]): Uint8Array {
@@ -619,7 +614,6 @@ suite('WebSocketNodeSocket', () => {
 	}
 
 	class FakeNodeSocket extends Disposable {
-
 		private readonly _onData = new Emitter<VSBuffer>();
 		public readonly onData = this._onData.event;
 
@@ -628,8 +622,10 @@ suite('WebSocketNodeSocket', () => {
 
 		public writtenData: VSBuffer[] = [];
 
-		public traceSocketEvent(type: SocketDiagnosticsEventType, data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any): void {
-		}
+		public traceSocketEvent(
+			type: SocketDiagnosticsEventType,
+			data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any
+		): void {}
 
 		constructor() {
 			super();
@@ -647,19 +643,23 @@ suite('WebSocketNodeSocket', () => {
 	async function testReading(frames: number[][], permessageDeflate: boolean): Promise<string> {
 		const disposables = new DisposableStore();
 		const socket = new FakeNodeSocket();
-		const webSocket = disposables.add(new WebSocketNodeSocket(<any>socket, permessageDeflate, null, false));
+		const webSocket = disposables.add(
+			new WebSocketNodeSocket(<any>socket, permessageDeflate, null, false)
+		);
 
 		const barrier = new Barrier();
 		let remainingFrameCount = frames.length;
 
 		let receivedData: string = '';
-		disposables.add(webSocket.onData((buff) => {
-			receivedData += fromCharCodeArray(fromUint8Array(buff.buffer));
-			remainingFrameCount--;
-			if (remainingFrameCount === 0) {
-				barrier.open();
-			}
-		}));
+		disposables.add(
+			webSocket.onData(buff => {
+				receivedData += fromCharCodeArray(fromUint8Array(buff.buffer));
+				remainingFrameCount--;
+				if (remainingFrameCount === 0) {
+					barrier.open();
+				}
+			})
+		);
 
 		for (let i = 0; i < frames.length; i++) {
 			socket.fireData(frames[i]);
@@ -674,7 +674,7 @@ suite('WebSocketNodeSocket', () => {
 
 	test('A single-frame unmasked text message', async () => {
 		const frames = [
-			[0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f] // contains "Hello"
+			[0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f], // contains "Hello"
 		];
 		const actual = await testReading(frames, false);
 		assert.deepStrictEqual(actual, 'Hello');
@@ -682,7 +682,7 @@ suite('WebSocketNodeSocket', () => {
 
 	test('A single-frame masked text message', async () => {
 		const frames = [
-			[0x81, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58] // contains "Hello"
+			[0x81, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58], // contains "Hello"
 		];
 		const actual = await testReading(frames, false);
 		assert.deepStrictEqual(actual, 'Hello');
@@ -710,9 +710,10 @@ suite('WebSocketNodeSocket', () => {
 
 		test('A fragmented compressed text message', async () => {
 			// contains "Hello"
-			const frames = [  // contains "Hello"
+			const frames = [
+				// contains "Hello"
 				[0x41, 0x03, 0xf2, 0x48, 0xcd],
-				[0x80, 0x04, 0xc9, 0xc9, 0x07, 0x00]
+				[0x80, 0x04, 0xc9, 0xc9, 0x07, 0x00],
 			];
 			const actual = await testReading(frames, true);
 			assert.deepStrictEqual(actual, 'Hello');
@@ -720,7 +721,7 @@ suite('WebSocketNodeSocket', () => {
 
 		test('A single-frame non-compressed text message', async () => {
 			const frames = [
-				[0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f] // contains "Hello"
+				[0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f], // contains "Hello"
 			];
 			const actual = await testReading(frames, true);
 			assert.deepStrictEqual(actual, 'Hello');
@@ -729,7 +730,7 @@ suite('WebSocketNodeSocket', () => {
 		test('A single-frame compressed text message followed by a single-frame non-compressed text message', async () => {
 			const frames = [
 				[0xc1, 0x07, 0xf2, 0x48, 0xcd, 0xc9, 0xc9, 0x07, 0x00], // contains "Hello"
-				[0x81, 0x05, 0x77, 0x6f, 0x72, 0x6c, 0x64] // contains "world"
+				[0x81, 0x05, 0x77, 0x6f, 0x72, 0x6c, 0x64], // contains "world"
 			];
 			const actual = await testReading(frames, true);
 			assert.deepStrictEqual(actual, 'Helloworld');
@@ -737,30 +738,38 @@ suite('WebSocketNodeSocket', () => {
 	});
 
 	test('Large buffers are split and sent in chunks', async () => {
-
 		let receivingSideOnDataCallCount = 0;
 		let receivingSideTotalBytes = 0;
 		const receivingSideSocketClosedBarrier = new Barrier();
 
-		const server = await listenOnRandomPort((socket) => {
+		const server = await listenOnRandomPort(socket => {
 			// stop the server when the first connection is received
 			server.close();
 
-			const webSocketNodeSocket = new WebSocketNodeSocket(new NodeSocket(socket), true, null, false);
-			ds.add(webSocketNodeSocket.onData((data) => {
-				receivingSideOnDataCallCount++;
-				receivingSideTotalBytes += data.byteLength;
-			}));
+			const webSocketNodeSocket = new WebSocketNodeSocket(
+				new NodeSocket(socket),
+				true,
+				null,
+				false
+			);
+			ds.add(
+				webSocketNodeSocket.onData(data => {
+					receivingSideOnDataCallCount++;
+					receivingSideTotalBytes += data.byteLength;
+				})
+			);
 
-			ds.add(webSocketNodeSocket.onClose(() => {
-				webSocketNodeSocket.dispose();
-				receivingSideSocketClosedBarrier.open();
-			}));
+			ds.add(
+				webSocketNodeSocket.onClose(() => {
+					webSocketNodeSocket.dispose();
+					receivingSideSocketClosedBarrier.open();
+				})
+			);
 		});
 
 		const socket = connect({
 			host: '127.0.0.1',
-			port: (<AddressInfo>server.address()).port
+			port: (<AddressInfo>server.address()).port,
 		});
 
 		const buff = generateRandomBuffer(1 * 1024 * 1024);
@@ -776,15 +785,16 @@ suite('WebSocketNodeSocket', () => {
 	});
 
 	test('issue #194284: ping/pong opcodes are supported', async () => {
-
 		const disposables = new DisposableStore();
 		const socket = new FakeNodeSocket();
 		const webSocket = disposables.add(new WebSocketNodeSocket(<any>socket, false, null, false));
 
 		let receivedData: string = '';
-		disposables.add(webSocket.onData((buff) => {
-			receivedData += fromCharCodeArray(fromUint8Array(buff.buffer));
-		}));
+		disposables.add(
+			webSocket.onData(buff => {
+				receivedData += fromCharCodeArray(fromUint8Array(buff.buffer));
+			})
+		);
 
 		// A single-frame non-compressed text message that contains "Hello"
 		socket.fireData([0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]);
@@ -800,7 +810,7 @@ suite('WebSocketNodeSocket', () => {
 			socket.writtenData.map(x => fromUint8Array(x.buffer)),
 			[
 				// A pong message that contains "data"
-				[0x8A, 0x04, 0x64, 0x61, 0x74, 0x61]
+				[0x8a, 0x04, 0x64, 0x61, 0x74, 0x61],
 			]
 		);
 
@@ -823,7 +833,7 @@ suite('WebSocketNodeSocket', () => {
 			server.on('listening', () => {
 				resolve(server);
 			});
-			server.on('error', (err) => {
+			server.on('error', err => {
 				reject(err);
 			});
 		});

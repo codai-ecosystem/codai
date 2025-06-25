@@ -46,18 +46,30 @@ const minimist = require('minimist');
  * }}
  */
 const args = minimist(process.argv.slice(2), {
-	string: ['grep', 'run', 'runGlob', 'reporter', 'reporter-options', 'waitServer', 'timeout', 'crash-reporter-directory', 'tfs', 'coveragePath', 'coverageFormats'],
+	string: [
+		'grep',
+		'run',
+		'runGlob',
+		'reporter',
+		'reporter-options',
+		'waitServer',
+		'timeout',
+		'crash-reporter-directory',
+		'tfs',
+		'coveragePath',
+		'coverageFormats',
+	],
 	boolean: ['build', 'coverage', 'help', 'dev', 'per-test-coverage'],
 	alias: {
-		'grep': ['g', 'f'],
-		'runGlob': ['glob', 'runGrep'],
-		'dev': ['dev-tools', 'devTools'],
-		'help': 'h'
+		grep: ['g', 'f'],
+		runGlob: ['glob', 'runGrep'],
+		dev: ['dev-tools', 'devTools'],
+		help: 'h',
 	},
 	default: {
-		'reporter': 'spec',
-		'reporter-options': ''
-	}
+		reporter: 'spec',
+		'reporter-options': '',
+	},
 });
 
 if (args.help) {
@@ -86,7 +98,9 @@ if (crashReporterDirectory) {
 	crashReporterDirectory = path.normalize(crashReporterDirectory);
 
 	if (!path.isAbsolute(crashReporterDirectory)) {
-		console.error(`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`);
+		console.error(
+			`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`
+		);
 		app.exit(1);
 	}
 
@@ -94,21 +108,25 @@ if (crashReporterDirectory) {
 		try {
 			mkdirSync(crashReporterDirectory);
 		} catch (error) {
-			console.error(`The path '${crashReporterDirectory}' specified for --crash-reporter-directory does not seem to exist or cannot be created.`);
+			console.error(
+				`The path '${crashReporterDirectory}' specified for --crash-reporter-directory does not seem to exist or cannot be created.`
+			);
 			app.exit(1);
 		}
 	}
 
 	// Crashes are stored in the crashDumps directory by default, so we
 	// need to change that directory to the provided one
-	console.log(`Found --crash-reporter-directory argument. Setting crashDumps directory to be '${crashReporterDirectory}'`);
+	console.log(
+		`Found --crash-reporter-directory argument. Setting crashDumps directory to be '${crashReporterDirectory}'`
+	);
 	app.setPath('crashDumps', crashReporterDirectory);
 
 	crashReporter.start({
 		companyName: 'Microsoft',
 		productName: process.env['VSCODE_DEV'] ? `${product.nameShort} Dev` : product.nameShort,
 		uploadToServer: false,
-		compress: true
+		compress: true,
 	});
 }
 
@@ -127,7 +145,7 @@ function deserializeSuite(suite) {
 		timeout: () => suite.timeout,
 		retries: () => suite.retries,
 		slow: () => suite.slow,
-		bail: () => suite.bail
+		bail: () => suite.bail,
 	};
 }
 
@@ -140,7 +158,7 @@ function deserializeRunnable(runnable) {
 		slow: () => runnable.slow,
 		speed: runnable.speed,
 		duration: runnable.duration,
-		currentRetry: () => runnable.currentRetry
+		currentRetry: () => runnable.currentRetry,
 	};
 }
 
@@ -161,7 +179,6 @@ function deserializeError(err) {
 }
 
 class IPCRunner extends events.EventEmitter {
-
 	constructor(win) {
 		super();
 
@@ -199,13 +216,17 @@ class IPCRunner extends events.EventEmitter {
 		const coverageScriptsReported = new Set();
 		ipcMain.handle('snapshotCoverage', async (_, test) => {
 			const coverage = await win.webContents.debugger.sendCommand('Profiler.takePreciseCoverage');
-			await Promise.all(coverage.result.map(async (r) => {
-				if (!coverageScriptsReported.has(r.scriptId)) {
-					coverageScriptsReported.add(r.scriptId);
-					const src = await win.webContents.debugger.sendCommand('Debugger.getScriptSource', { scriptId: r.scriptId });
-					r.source = src.scriptSource;
-				}
-			}));
+			await Promise.all(
+				coverage.result.map(async r => {
+					if (!coverageScriptsReported.has(r.scriptId)) {
+						coverageScriptsReported.add(r.scriptId);
+						const src = await win.webContents.debugger.sendCommand('Debugger.getScriptSource', {
+							scriptId: r.scriptId,
+						});
+						r.source = src.scriptSource;
+					}
+				})
+			);
 
 			if (!test) {
 				this.emit('coverage init', coverage);
@@ -217,7 +238,6 @@ class IPCRunner extends events.EventEmitter {
 }
 
 app.on('ready', () => {
-
 	// needed when loading resources from the renderer, e.g xterm.js or the encoding lib
 	session.defaultSession.protocol.registerFileProtocol('vscode-file', (request, callback) => {
 		const path = new URL(request.url).pathname;
@@ -243,12 +263,12 @@ app.on('ready', () => {
 				applicationName: 'code-oss',
 				dataFolderName: '.vscode-oss',
 				urlProtocol: 'code-oss',
-			}
+			},
 		};
 	});
 
 	// No-op since invoke the IPC as part of IIFE in the preload.
-	ipcMain.handle('vscode:fetchShellEnv', event => { });
+	ipcMain.handle('vscode:fetchShellEnv', event => {});
 
 	const win = new BrowserWindow({
 		height: 600,
@@ -260,8 +280,8 @@ app.on('ready', () => {
 			nodeIntegration: true,
 			contextIsolation: false,
 			enableWebSQL: false,
-			spellcheck: false
-		}
+			spellcheck: false,
+		},
 	});
 
 	win.webContents.on('did-finish-load', () => {
@@ -331,9 +351,14 @@ app.on('ready', () => {
 			new MochaJUnitReporter(runner, {
 				reporterOptions: {
 					testsuitesTitle: `${args.tfs} ${process.platform}`,
-					mochaFile: process.env.BUILD_ARTIFACTSTAGINGDIRECTORY ? path.join(process.env.BUILD_ARTIFACTSTAGINGDIRECTORY, `test-results/${process.platform}-${process.arch}-${args.tfs.toLowerCase().replace(/[^\w]/g, '-')}-results.xml`) : undefined
-				}
-			}),
+					mochaFile: process.env.BUILD_ARTIFACTSTAGINGDIRECTORY
+						? path.join(
+								process.env.BUILD_ARTIFACTSTAGINGDIRECTORY,
+								`test-results/${process.platform}-${process.arch}-${args.tfs.toLowerCase().replace(/[^\w]/g, '-')}-results.xml`
+							)
+						: undefined,
+				},
+			})
 		);
 	} else {
 		// mocha patches symbols to use windows escape codes, but it seems like

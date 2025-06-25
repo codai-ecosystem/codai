@@ -11,7 +11,6 @@ import { TextEdit } from '../../../common/languages.js';
 import { StableEditorScrollState } from '../../../browser/stableEditorScroll.js';
 
 export class FormattingEdit {
-
 	private static _handleEolEdits(editor: ICodeEditor, edits: TextEdit[]): ISingleEditOperation[] {
 		let newEol: EndOfLineSequence | undefined = undefined;
 		const singleEdits: ISingleEditOperation[] = [];
@@ -52,9 +51,15 @@ export class FormattingEdit {
 		const edits = FormattingEdit._handleEolEdits(editor, _edits);
 		if (edits.length === 1 && FormattingEdit._isFullModelReplaceEdit(editor, edits[0])) {
 			// We use replace semantics and hope that markers stay put...
-			editor.executeEdits('formatEditsCommand', edits.map(edit => EditOperation.replace(Range.lift(edit.range), edit.text)));
+			editor.executeEdits(
+				'formatEditsCommand',
+				edits.map(edit => EditOperation.replace(Range.lift(edit.range), edit.text))
+			);
 		} else {
-			editor.executeEdits('formatEditsCommand', edits.map(edit => EditOperation.replaceMove(Range.lift(edit.range), edit.text)));
+			editor.executeEdits(
+				'formatEditsCommand',
+				edits.map(edit => EditOperation.replaceMove(Range.lift(edit.range), edit.text))
+			);
 		}
 		if (addUndoStops) {
 			editor.pushUndoStop();

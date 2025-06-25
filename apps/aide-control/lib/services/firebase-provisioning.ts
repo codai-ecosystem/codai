@@ -88,7 +88,7 @@ export class FirebaseProvisioningService {
 				...config,
 				projectId: finalProjectId,
 			});
-			console.log(`Firebase project created with number: ${project.projectNumber}`);			// Enable required APIs
+			console.log(`Firebase project created with number: ${project.projectNumber}`); // Enable required APIs
 			await this.enableApis(authClient, finalProjectId);
 			console.log(`Enabled required APIs for project: ${finalProjectId}`);
 
@@ -229,7 +229,9 @@ export class FirebaseProvisioningService {
 
 			// Check if error indicates the database already exists
 			if (error.status === 409 || (errorMessage && errorMessage.includes('already exists'))) {
-				console.log(`Firestore database already exists for project: ${projectId}, continuing with setup`);
+				console.log(
+					`Firestore database already exists for project: ${projectId}, continuing with setup`
+				);
 			} else {
 				// Log but don't throw to allow provisioning to continue
 				console.warn(`Proceeding with provisioning despite Firestore setup issue: ${errorMessage}`);
@@ -378,7 +380,7 @@ service cloud.firestore {
 		}
 		try {
 			// Get admin app and Firestore instance
-			const { adminDb } = getAdminApp();			// Create user document with default data
+			const { adminDb } = getAdminApp(); // Create user document with default data
 			await adminDb.collection('users').doc(userId).set({
 				uid: userId,
 				role: 'user',
@@ -401,7 +403,10 @@ service cloud.firestore {
 			console.log(`User permissions setup completed for userId ${userId} in project ${projectId}`);
 		} catch (error) {
 			const errorMessage = error?.message || 'Unknown error';
-			console.error(`Failed to setup user permissions for ${userId} in project ${projectId}:`, errorMessage);
+			console.error(
+				`Failed to setup user permissions for ${userId} in project ${projectId}:`,
+				errorMessage
+			);
 			throw new Error(`User permissions setup failed: ${errorMessage}`);
 		}
 	}
@@ -422,11 +427,12 @@ service cloud.firestore {
 		// - Only lowercase letters, numbers, and hyphens
 		// - Must start with a letter
 		// - Must not end with a hyphen
-		const sanitized = projectName.toLowerCase()
+		const sanitized = projectName
+			.toLowerCase()
 			.replace(/[^a-z0-9-]/g, '-') // Replace non-conforming chars with hyphens
-			.replace(/-+/g, '-')        // Replace multiple consecutive hyphens with a single one
-			.replace(/^[^a-z]+/, '')     // Remove non-letter chars from the beginning
-			.replace(/-+$/, '')          // Remove trailing hyphens
+			.replace(/-+/g, '-') // Replace multiple consecutive hyphens with a single one
+			.replace(/^[^a-z]+/, '') // Remove non-letter chars from the beginning
+			.replace(/-+$/, '') // Remove trailing hyphens
 			.trim();
 
 		// Ensure we have a valid starting string after sanitization
@@ -514,7 +520,9 @@ service cloud.firestore {
 				method: 'POST',
 			});
 
-			console.log(`Project deletion initiated for project: ${projectId}. This may take several minutes to complete.`);
+			console.log(
+				`Project deletion initiated for project: ${projectId}. This may take several minutes to complete.`
+			);
 		} catch (error: any) {
 			// Check if project doesn't exist - this is not an error since our goal is to ensure it's deleted
 			if (error.status === 404 || (error.message && error.message.includes('not found'))) {
@@ -554,9 +562,11 @@ export function createFirebaseService(): FirebaseProvisioningService {
 	const config: FirebaseServiceConfig = {
 		serviceAccountPath,
 		parentProject,
-		billing: billingAccountId ? {
-			accountId: billingAccountId,
-		} : undefined,
+		billing: billingAccountId
+			? {
+					accountId: billingAccountId,
+				}
+			: undefined,
 	};
 
 	return new FirebaseProvisioningService(config);

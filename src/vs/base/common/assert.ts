@@ -39,13 +39,14 @@ export function assertNever(value: never, message = 'Unreachable'): never {
  */
 export function assert(
 	condition: boolean,
-	messageOrError: string | Error = 'unexpected state',
+	messageOrError: string | Error = 'unexpected state'
 ): asserts condition {
 	if (!condition) {
 		// if error instance is provided, use it, otherwise create a new one
-		const errorToThrow = typeof messageOrError === 'string'
-			? new BugIndicatingError(`Assertion Failed: ${messageOrError}`)
-			: messageOrError;
+		const errorToThrow =
+			typeof messageOrError === 'string'
+				? new BugIndicatingError(`Assertion Failed: ${messageOrError}`)
+				: messageOrError;
 
 		throw errorToThrow;
 	}
@@ -73,7 +74,10 @@ export function assertFn(condition: () => boolean): void {
 	}
 }
 
-export function checkAdjacentItems<T>(items: readonly T[], predicate: (item1: T, item2: T) => boolean): boolean {
+export function checkAdjacentItems<T>(
+	items: readonly T[],
+	predicate: (item1: T, item2: T) => boolean
+): boolean {
 	let i = 0;
 	while (i < items.length - 1) {
 		const a = items[i];

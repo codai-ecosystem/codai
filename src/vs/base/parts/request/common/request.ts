@@ -30,7 +30,7 @@ export interface IHeaders {
 	'retry-after'?: string;
 	etag?: string;
 	'Content-Length'?: string;
-	'activityid'?: string;
+	activityid?: string;
 	'X-Market-User-Id'?: string;
 	[header: string]: string | string[] | undefined;
 }

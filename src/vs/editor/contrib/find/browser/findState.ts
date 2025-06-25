@@ -32,10 +32,12 @@ export interface FindReplaceStateChangedEvent {
 export const enum FindOptionOverride {
 	NotSet = 0,
 	True = 1,
-	False = 2
+	False = 2,
 }
 
-export interface INewFindReplaceState<T extends { update: (value: T) => void } = { update: () => {} }> {
+export interface INewFindReplaceState<
+	T extends { update: (value: T) => void } = { update: () => {} },
+> {
 	searchString?: string;
 	replaceString?: string;
 	isRevealed?: boolean;
@@ -64,7 +66,9 @@ function effectiveOptionValue(override: FindOptionOverride, value: boolean): boo
 	return value;
 }
 
-export class FindReplaceState<T extends { update: (value: T) => void } = { update: () => {} }> extends Disposable {
+export class FindReplaceState<
+	T extends { update: (value: T) => void } = { update: () => {} },
+> extends Disposable {
 	private _searchString: string;
 	private _replaceString: string;
 	private _isRevealed: boolean;
@@ -84,29 +88,68 @@ export class FindReplaceState<T extends { update: (value: T) => void } = { updat
 	private _loop: boolean;
 	private _isSearching: boolean;
 	private _filters: T | null;
-	private readonly _onFindReplaceStateChange = this._register(new Emitter<FindReplaceStateChangedEvent>());
+	private readonly _onFindReplaceStateChange = this._register(
+		new Emitter<FindReplaceStateChangedEvent>()
+	);
 
-	public get searchString(): string { return this._searchString; }
-	public get replaceString(): string { return this._replaceString; }
-	public get isRevealed(): boolean { return this._isRevealed; }
-	public get isReplaceRevealed(): boolean { return this._isReplaceRevealed; }
-	public get isRegex(): boolean { return effectiveOptionValue(this._isRegexOverride, this._isRegex); }
-	public get wholeWord(): boolean { return effectiveOptionValue(this._wholeWordOverride, this._wholeWord); }
-	public get matchCase(): boolean { return effectiveOptionValue(this._matchCaseOverride, this._matchCase); }
-	public get preserveCase(): boolean { return effectiveOptionValue(this._preserveCaseOverride, this._preserveCase); }
+	public get searchString(): string {
+		return this._searchString;
+	}
+	public get replaceString(): string {
+		return this._replaceString;
+	}
+	public get isRevealed(): boolean {
+		return this._isRevealed;
+	}
+	public get isReplaceRevealed(): boolean {
+		return this._isReplaceRevealed;
+	}
+	public get isRegex(): boolean {
+		return effectiveOptionValue(this._isRegexOverride, this._isRegex);
+	}
+	public get wholeWord(): boolean {
+		return effectiveOptionValue(this._wholeWordOverride, this._wholeWord);
+	}
+	public get matchCase(): boolean {
+		return effectiveOptionValue(this._matchCaseOverride, this._matchCase);
+	}
+	public get preserveCase(): boolean {
+		return effectiveOptionValue(this._preserveCaseOverride, this._preserveCase);
+	}
 
-	public get actualIsRegex(): boolean { return this._isRegex; }
-	public get actualWholeWord(): boolean { return this._wholeWord; }
-	public get actualMatchCase(): boolean { return this._matchCase; }
-	public get actualPreserveCase(): boolean { return this._preserveCase; }
+	public get actualIsRegex(): boolean {
+		return this._isRegex;
+	}
+	public get actualWholeWord(): boolean {
+		return this._wholeWord;
+	}
+	public get actualMatchCase(): boolean {
+		return this._matchCase;
+	}
+	public get actualPreserveCase(): boolean {
+		return this._preserveCase;
+	}
 
-	public get searchScope(): Range[] | null { return this._searchScope; }
-	public get matchesPosition(): number { return this._matchesPosition; }
-	public get matchesCount(): number { return this._matchesCount; }
-	public get currentMatch(): Range | null { return this._currentMatch; }
-	public get isSearching(): boolean { return this._isSearching; }
-	public get filters(): T | null { return this._filters; }
-	public readonly onFindReplaceStateChange: Event<FindReplaceStateChangedEvent> = this._onFindReplaceStateChange.event;
+	public get searchScope(): Range[] | null {
+		return this._searchScope;
+	}
+	public get matchesPosition(): number {
+		return this._matchesPosition;
+	}
+	public get matchesCount(): number {
+		return this._matchesCount;
+	}
+	public get currentMatch(): Range | null {
+		return this._currentMatch;
+	}
+	public get isSearching(): boolean {
+		return this._isSearching;
+	}
+	public get filters(): T | null {
+		return this._filters;
+	}
+	public readonly onFindReplaceStateChange: Event<FindReplaceStateChangedEvent> =
+		this._onFindReplaceStateChange.event;
 
 	constructor() {
 		super();
@@ -131,7 +174,11 @@ export class FindReplaceState<T extends { update: (value: T) => void } = { updat
 		this._filters = null;
 	}
 
-	public changeMatchInfo(matchesPosition: number, matchesCount: number, currentMatch: Range | undefined): void {
+	public changeMatchInfo(
+		matchesPosition: number,
+		matchesCount: number,
+		currentMatch: Range | undefined
+	): void {
 		const changeEvent: FindReplaceStateChangedEvent = {
 			moveCursor: false,
 			updateHistory: false,
@@ -149,7 +196,7 @@ export class FindReplaceState<T extends { update: (value: T) => void } = { updat
 			currentMatch: false,
 			loop: false,
 			isSearching: false,
-			filters: false
+			filters: false,
 		};
 		let somethingChanged = false;
 
@@ -184,7 +231,11 @@ export class FindReplaceState<T extends { update: (value: T) => void } = { updat
 		}
 	}
 
-	public change(newState: INewFindReplaceState<T>, moveCursor: boolean, updateHistory: boolean = true): void {
+	public change(
+		newState: INewFindReplaceState<T>,
+		moveCursor: boolean,
+		updateHistory: boolean = true
+	): void {
 		const changeEvent: FindReplaceStateChangedEvent = {
 			moveCursor: moveCursor,
 			updateHistory: updateHistory,
@@ -202,7 +253,7 @@ export class FindReplaceState<T extends { update: (value: T) => void } = { updat
 			currentMatch: false,
 			loop: false,
 			isSearching: false,
-			filters: false
+			filters: false,
 		};
 		let somethingChanged = false;
 
@@ -252,11 +303,13 @@ export class FindReplaceState<T extends { update: (value: T) => void } = { updat
 			this._preserveCase = newState.preserveCase;
 		}
 		if (typeof newState.searchScope !== 'undefined') {
-			if (!newState.searchScope?.every((newSearchScope) => {
-				return this._searchScope?.some(existingSearchScope => {
-					return !Range.equalsRange(existingSearchScope, newSearchScope);
-				});
-			})) {
+			if (
+				!newState.searchScope?.every(newSearchScope => {
+					return this._searchScope?.some(existingSearchScope => {
+						return !Range.equalsRange(existingSearchScope, newSearchScope);
+					});
+				})
+			) {
 				this._searchScope = newState.searchScope;
 				changeEvent.searchScope = true;
 				somethingChanged = true;
@@ -290,10 +343,22 @@ export class FindReplaceState<T extends { update: (value: T) => void } = { updat
 		}
 
 		// Overrides get set when they explicitly come in and get reset anytime something else changes
-		this._isRegexOverride = (typeof newState.isRegexOverride !== 'undefined' ? newState.isRegexOverride : FindOptionOverride.NotSet);
-		this._wholeWordOverride = (typeof newState.wholeWordOverride !== 'undefined' ? newState.wholeWordOverride : FindOptionOverride.NotSet);
-		this._matchCaseOverride = (typeof newState.matchCaseOverride !== 'undefined' ? newState.matchCaseOverride : FindOptionOverride.NotSet);
-		this._preserveCaseOverride = (typeof newState.preserveCaseOverride !== 'undefined' ? newState.preserveCaseOverride : FindOptionOverride.NotSet);
+		this._isRegexOverride =
+			typeof newState.isRegexOverride !== 'undefined'
+				? newState.isRegexOverride
+				: FindOptionOverride.NotSet;
+		this._wholeWordOverride =
+			typeof newState.wholeWordOverride !== 'undefined'
+				? newState.wholeWordOverride
+				: FindOptionOverride.NotSet;
+		this._matchCaseOverride =
+			typeof newState.matchCaseOverride !== 'undefined'
+				? newState.matchCaseOverride
+				: FindOptionOverride.NotSet;
+		this._preserveCaseOverride =
+			typeof newState.preserveCaseOverride !== 'undefined'
+				? newState.preserveCaseOverride
+				: FindOptionOverride.NotSet;
 
 		if (oldEffectiveIsRegex !== this.isRegex) {
 			somethingChanged = true;
@@ -319,15 +384,14 @@ export class FindReplaceState<T extends { update: (value: T) => void } = { updat
 	}
 
 	public canNavigateBack(): boolean {
-		return this.canNavigateInLoop() || (this.matchesPosition !== 1);
+		return this.canNavigateInLoop() || this.matchesPosition !== 1;
 	}
 
 	public canNavigateForward(): boolean {
-		return this.canNavigateInLoop() || (this.matchesPosition < this.matchesCount);
+		return this.canNavigateInLoop() || this.matchesPosition < this.matchesCount;
 	}
 
 	private canNavigateInLoop(): boolean {
-		return this._loop || (this.matchesCount >= MATCHES_LIMIT);
+		return this._loop || this.matchesCount >= MATCHES_LIMIT;
 	}
-
 }

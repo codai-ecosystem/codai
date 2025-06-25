@@ -5,7 +5,11 @@
 
 import { h } from '../../../../../base/browser/dom.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { ICodeEditor, IOverlayWidget, IViewZoneChangeAccessor } from '../../../../../editor/browser/editorBrowser.js';
+import {
+	ICodeEditor,
+	IOverlayWidget,
+	IViewZoneChangeAccessor,
+} from '../../../../../editor/browser/editorBrowser.js';
 import { Event } from '../../../../../base/common/event.js';
 
 export abstract class FixedZoneWidget extends Disposable {
@@ -17,7 +21,7 @@ export abstract class FixedZoneWidget extends Disposable {
 	private readonly overlayWidget: IOverlayWidget = {
 		getId: () => this.overlayWidgetId,
 		getDomNode: () => this.widgetDomNode,
-		getPosition: () => null
+		getPosition: () => null,
 	};
 
 	constructor(
@@ -25,7 +29,7 @@ export abstract class FixedZoneWidget extends Disposable {
 		viewZoneAccessor: IViewZoneChangeAccessor,
 		afterLineNumber: number,
 		height: number,
-		viewZoneIdsToCleanUp: string[],
+		viewZoneIdsToCleanUp: string[]
 	) {
 		super();
 
@@ -34,18 +38,20 @@ export abstract class FixedZoneWidget extends Disposable {
 			afterLineNumber: afterLineNumber,
 			heightInPx: height,
 			ordinal: 50000 + 1,
-			onComputedHeight: (height) => {
+			onComputedHeight: height => {
 				this.widgetDomNode.style.height = `${height}px`;
 			},
-			onDomNodeTop: (top) => {
+			onDomNodeTop: top => {
 				this.widgetDomNode.style.top = `${top}px`;
-			}
+			},
 		});
 		viewZoneIdsToCleanUp.push(this.viewZoneId);
 
-		this._register(Event.runAndSubscribe(this.editor.onDidLayoutChange, () => {
-			this.widgetDomNode.style.left = this.editor.getLayoutInfo().contentLeft + 'px';
-		}));
+		this._register(
+			Event.runAndSubscribe(this.editor.onDidLayoutChange, () => {
+				this.widgetDomNode.style.left = this.editor.getLayoutInfo().contentLeft + 'px';
+			})
+		);
 
 		this.editor.addOverlayWidget(this.overlayWidget);
 

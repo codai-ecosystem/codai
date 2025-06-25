@@ -13,7 +13,10 @@ import { ILanguageFeaturesService } from '../../../common/services/languageFeatu
 import { IAccessibilityService } from '../../../../platform/accessibility/common/accessibility.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../../../platform/instantiation/common/instantiation.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 
@@ -36,7 +39,23 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
 		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
 		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService
 	) {
-		super(domElement, { ...parentEditor.getRawOptions(), overflowWidgetsDomNode: parentEditor.getOverflowWidgetsDomNode() }, codeEditorWidgetOptions, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService);
+		super(
+			domElement,
+			{
+				...parentEditor.getRawOptions(),
+				overflowWidgetsDomNode: parentEditor.getOverflowWidgetsDomNode(),
+			},
+			codeEditorWidgetOptions,
+			instantiationService,
+			codeEditorService,
+			commandService,
+			contextKeyService,
+			themeService,
+			notificationService,
+			accessibilityService,
+			languageConfigurationService,
+			languageFeaturesService
+		);
 
 		this._parentEditor = parentEditor;
 		this._overwriteOptions = options;
@@ -44,7 +63,11 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
 		// Overwrite parent's options
 		super.updateOptions(this._overwriteOptions);
 
-		this._register(parentEditor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => this._onParentConfigurationChanged(e)));
+		this._register(
+			parentEditor.onDidChangeConfiguration((e: ConfigurationChangedEvent) =>
+				this._onParentConfigurationChanged(e)
+			)
+		);
 	}
 
 	getParentEditor(): ICodeEditor {

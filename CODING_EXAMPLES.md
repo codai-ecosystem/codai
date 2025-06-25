@@ -36,7 +36,7 @@ interface UserPreferences {
 enum Theme {
 	Light = 'light',
 	Dark = 'dark',
-	System = 'system'
+	System = 'system',
 }
 
 /**
@@ -106,7 +106,7 @@ async function createUser(userData: Omit<User, 'id' | 'createdAt'>): Promise<Use
 	const user: User = {
 		...userData,
 		id,
-		createdAt
+		createdAt,
 	};
 
 	await db.collection('users').doc(id).set(user);
@@ -163,9 +163,7 @@ function UserProfileCard({ user, className, onUpdateClick }: UserProfileCardProp
 		<div className={`user-profile-card ${className || ''}`}>
 			<h3 className="user-profile-name">{user.name}</h3>
 			<p className="user-profile-email">{user.email}</p>
-			<p className="user-profile-status">
-				Status: {user.isActive ? 'Active' : 'Inactive'}
-			</p>
+			<p className="user-profile-status">Status: {user.isActive ? 'Active' : 'Inactive'}</p>
 			<button onClick={handleClick} className="update-button">
 				Update Profile
 			</button>
@@ -191,7 +189,7 @@ function useAuth() {
 
 	useEffect(() => {
 		const unsubscribe = auth.onAuthStateChanged(
-			(authUser) => {
+			authUser => {
 				if (authUser) {
 					// Transform auth user to our user model
 					setUser({
@@ -199,14 +197,14 @@ function useAuth() {
 						name: authUser.displayName || 'Anonymous',
 						email: authUser.email || '',
 						isActive: true,
-						createdAt: new Date(authUser.metadata.creationTime || Date.now())
+						createdAt: new Date(authUser.metadata.creationTime || Date.now()),
 					});
 				} else {
 					setUser(null);
 				}
 				setIsLoading(false);
 			},
-			(err) => {
+			err => {
 				setError(err);
 				setIsLoading(false);
 			}
@@ -228,7 +226,7 @@ function useAuth() {
 				name: credential.user.displayName || 'Anonymous',
 				email: credential.user.email || '',
 				isActive: true,
-				createdAt: new Date(credential.user.metadata.creationTime || Date.now())
+				createdAt: new Date(credential.user.metadata.creationTime || Date.now()),
 			};
 
 			return user;
@@ -254,7 +252,7 @@ function useAuth() {
 		isLoading,
 		error,
 		signIn,
-		signOut
+		signOut,
 	};
 }
 ```
@@ -287,7 +285,7 @@ class UserApiClient {
 	async getUser(userId: string): Promise<User> {
 		try {
 			const response = await fetch(`${this.baseUrl}/users/${userId}`, {
-				headers: this.getHeaders()
+				headers: this.getHeaders(),
 			});
 
 			if (!response.ok) {
@@ -302,12 +300,7 @@ class UserApiClient {
 			}
 
 			// Wrap other errors
-			throw new ApiError(
-				500,
-				'client_error',
-				'Failed to fetch user',
-				{ cause: error }
-			);
+			throw new ApiError(500, 'client_error', 'Failed to fetch user', { cause: error });
 		}
 	}
 
@@ -323,7 +316,7 @@ class UserApiClient {
 			const response = await fetch(`${this.baseUrl}/users`, {
 				method: 'POST',
 				headers: this.getHeaders(),
-				body: JSON.stringify(userData)
+				body: JSON.stringify(userData),
 			});
 
 			if (!response.ok) {
@@ -336,12 +329,7 @@ class UserApiClient {
 				throw error;
 			}
 
-			throw new ApiError(
-				500,
-				'client_error',
-				'Failed to create user',
-				{ cause: error }
-			);
+			throw new ApiError(500, 'client_error', 'Failed to create user', { cause: error });
 		}
 	}
 
@@ -353,7 +341,7 @@ class UserApiClient {
 	 */
 	private getHeaders(): HeadersInit {
 		const headers: HeadersInit = {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
 		};
 
 		if (this.apiKey) {
@@ -460,7 +448,10 @@ class FileNotFoundError extends Error {
 }
 
 class ProcessingError extends Error {
-	constructor(message: string, public readonly options?: { cause: unknown }) {
+	constructor(
+		message: string,
+		public readonly options?: { cause: unknown }
+	) {
 		super(message, options);
 		this.name = 'ProcessingError';
 	}

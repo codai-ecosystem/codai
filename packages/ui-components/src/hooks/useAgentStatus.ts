@@ -22,9 +22,12 @@ export interface UseAgentStatusReturn {
 export function useAgentStatus(): UseAgentStatusReturn {
 	const [agents, setAgents] = useState<Map<string, AgentStatus>>(new Map());
 
-	const getAgent = useCallback((id: string) => {
-		return agents.get(id);
-	}, [agents]);
+	const getAgent = useCallback(
+		(id: string) => {
+			return agents.get(id);
+		},
+		[agents]
+	);
 
 	const updateAgentStatus = useCallback((id: string, updates: Partial<AgentStatus>) => {
 		setAgents(prev => {

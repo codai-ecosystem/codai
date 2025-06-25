@@ -9,7 +9,6 @@ import { installAllHandlers } from '../../utils';
 
 export function setup(logger: Logger) {
 	describe('Launch', () => {
-
 		// Shared before/after handling
 		installAllHandlers(logger, opts => ({ ...opts, userDataDir: join(opts.userDataDir, 'ø') }));
 

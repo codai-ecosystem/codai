@@ -10,9 +10,17 @@ import { Event } from '../../../../../base/common/event.js';
 import { IDisposable } from '../../../../../base/common/lifecycle.js';
 import { ActionWidgetDropdownActionViewItem } from '../../../../../platform/actions/browser/actionWidgetDropdownActionViewItem.js';
 import { getFlatActionBarActions } from '../../../../../platform/actions/browser/menuEntryActionViewItem.js';
-import { IMenuService, MenuId, MenuItemAction } from '../../../../../platform/actions/common/actions.js';
+import {
+	IMenuService,
+	MenuId,
+	MenuItemAction,
+} from '../../../../../platform/actions/common/actions.js';
 import { IActionWidgetService } from '../../../../../platform/actionWidget/browser/actionWidget.js';
-import { IActionWidgetDropdownAction, IActionWidgetDropdownActionProvider, IActionWidgetDropdownOptions } from '../../../../../platform/actionWidget/browser/actionWidgetDropdown.js';
+import {
+	IActionWidgetDropdownAction,
+	IActionWidgetDropdownActionProvider,
+	IActionWidgetDropdownOptions,
+} from '../../../../../platform/actionWidget/browser/actionWidgetDropdown.js';
 import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
 import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
 import { IChatAgentService } from '../../common/chatAgents.js';
@@ -46,13 +54,15 @@ export class ModePickerActionItem extends ActionWidgetDropdownActionViewItem {
 			class: undefined,
 			enabled: true,
 			checked: delegate.getMode().id === mode,
-			tooltip: chatAgentService.getDefaultAgent(ChatAgentLocation.Panel, mode)?.description ?? action.tooltip,
+			tooltip:
+				chatAgentService.getDefaultAgent(ChatAgentLocation.Panel, mode)?.description ??
+				action.tooltip,
 			run: async () => {
 				const result = await action.run({ mode } satisfies IToggleChatModeArgs);
 				this.renderLabel(this.element!);
 				return result;
 			},
-			category: includeCategory ? { label: 'Standard', order: 0 } : undefined
+			category: includeCategory ? { label: 'Standard', order: 0 } : undefined,
 		});
 
 		const makeActionFromCustomMode = (mode: IChatMode): IActionWidgetDropdownAction => ({
@@ -62,44 +72,60 @@ export class ModePickerActionItem extends ActionWidgetDropdownActionViewItem {
 			class: undefined,
 			enabled: true,
 			checked: delegate.getMode().id === mode.id,
-			tooltip: mode.description ?? chatAgentService.getDefaultAgent(ChatAgentLocation.Panel, mode.kind)?.description ?? action.tooltip,
+			tooltip:
+				mode.description ??
+				chatAgentService.getDefaultAgent(ChatAgentLocation.Panel, mode.kind)?.description ??
+				action.tooltip,
 			run: async () => {
 				const result = await action.run({ mode } satisfies IToggleChatModeArgs);
 				this.renderLabel(this.element!);
 				return result;
 			},
-			category: { label: 'Custom', order: 1 }
+			category: { label: 'Custom', order: 1 },
 		});
 
 		const actionProvider: IActionWidgetDropdownActionProvider = {
 			getActions: () => {
 				const modes = chatModeService.getModes();
 				const hasCustomModes = modes.custom && modes.custom.length > 0;
-				const agentStateActions: IActionWidgetDropdownAction[] = modes.builtin.map(mode => makeAction(mode.kind, !!hasCustomModes));
+				const agentStateActions: IActionWidgetDropdownAction[] = modes.builtin.map(mode =>
+					makeAction(mode.kind, !!hasCustomModes)
+				);
 				if (modes.custom) {
 					agentStateActions.push(...modes.custom.map(mode => makeActionFromCustomMode(mode)));
 				}
 
 				return agentStateActions;
-			}
+			},
 		};
 
-		const modePickerActionWidgetOptions: Omit<IActionWidgetDropdownOptions, 'label' | 'labelRenderer'> = {
+		const modePickerActionWidgetOptions: Omit<
+			IActionWidgetDropdownOptions,
+			'label' | 'labelRenderer'
+		> = {
 			actionProvider,
 			actionBarActionProvider: {
-				getActions: () => this.getModePickerActionBarActions()
+				getActions: () => this.getModePickerActionBarActions(),
 			},
-			showItemKeybindings: true
+			showItemKeybindings: true,
 		};
 
-		super(action, modePickerActionWidgetOptions, actionWidgetService, keybindingService, contextKeyService);
+		super(
+			action,
+			modePickerActionWidgetOptions,
+			actionWidgetService,
+			keybindingService,
+			contextKeyService
+		);
 
 		this._register(delegate.onDidChangeMode(() => this.renderLabel(this.element!)));
 	}
 
 	private getModePickerActionBarActions(): IAction[] {
 		const menuActions = this.menuService.createMenu(MenuId.ChatModePicker, this.contextKeyService);
-		const menuContributions = getFlatActionBarActions(menuActions.getActions({ renderShortTitle: true }));
+		const menuContributions = getFlatActionBarActions(
+			menuActions.getActions({ renderShortTitle: true })
+		);
 		menuActions.dispose();
 
 		return menuContributions;
@@ -111,7 +137,11 @@ export class ModePickerActionItem extends ActionWidgetDropdownActionViewItem {
 		}
 		this.setAriaLabelAttributes(element);
 		const state = this.delegate.getMode().name;
-		dom.reset(element, dom.$('span.chat-model-label', undefined, state), ...renderLabelWithIcons(`$(chevron-down)`));
+		dom.reset(
+			element,
+			dom.$('span.chat-model-label', undefined, state),
+			...renderLabelWithIcons(`$(chevron-down)`)
+		);
 		return null;
 	}
 

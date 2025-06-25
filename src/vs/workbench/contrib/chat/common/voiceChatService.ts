@@ -8,12 +8,20 @@ import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
 import { rtrim } from '../../../../base/common/strings.js';
-import { IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { IChatAgentService } from './chatAgents.js';
 import { IChatModel } from './chatModel.js';
 import { chatAgentLeader, chatSubcommandLeader } from './chatParserTypes.js';
-import { ISpeechService, ISpeechToTextEvent, SpeechToTextStatus } from '../../speech/common/speechService.js';
+import {
+	ISpeechService,
+	ISpeechToTextEvent,
+	SpeechToTextStatus,
+} from '../../speech/common/speechService.js';
 
 export const IVoiceChatService = createDecorator<IVoiceChatService>('voiceChatService');
 
@@ -23,7 +31,6 @@ export interface IVoiceChatSessionOptions {
 }
 
 export interface IVoiceChatService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -32,11 +39,13 @@ export interface IVoiceChatService {
 	 * if the user says "at workspace slash fix this problem", the result
 	 * will be "@workspace /fix this problem".
 	 */
-	createVoiceChatSession(token: CancellationToken, options: IVoiceChatSessionOptions): Promise<IVoiceChatSession>;
+	createVoiceChatSession(
+		token: CancellationToken,
+		options: IVoiceChatSessionOptions
+	): Promise<IVoiceChatSession>;
 }
 
 export interface IVoiceChatTextEvent extends ISpeechToTextEvent {
-
 	/**
 	 * This property will be `true` when the text recognized
 	 * so far only consists of agent prefixes (`@workspace`)
@@ -57,13 +66,15 @@ interface IPhraseValue {
 enum PhraseTextType {
 	AGENT = 1,
 	COMMAND = 2,
-	AGENT_AND_COMMAND = 3
+	AGENT_AND_COMMAND = 3,
 }
 
-export const VoiceChatInProgress = new RawContextKey<boolean>('voiceChatInProgress', false, { type: 'boolean', description: localize('voiceChatInProgress', "A speech-to-text session is in progress for chat.") });
+export const VoiceChatInProgress = new RawContextKey<boolean>('voiceChatInProgress', false, {
+	type: 'boolean',
+	description: localize('voiceChatInProgress', 'A speech-to-text session is in progress for chat.'),
+});
 
 export class VoiceChatService extends Disposable implements IVoiceChatService {
-
 	readonly _serviceBrand: undefined;
 
 	private static readonly AGENT_PREFIX = chatAgentLeader;
@@ -71,12 +82,12 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 
 	private static readonly PHRASES_LOWER = {
 		[this.AGENT_PREFIX]: 'at',
-		[this.COMMAND_PREFIX]: 'slash'
+		[this.COMMAND_PREFIX]: 'slash',
 	};
 
 	private static readonly PHRASES_UPPER = {
 		[this.AGENT_PREFIX]: 'At',
-		[this.COMMAND_PREFIX]: 'Slash'
+		[this.COMMAND_PREFIX]: 'Slash',
 	};
 
 	private static readonly CHAT_AGENT_ALIAS = new Map<string, string>([['vscode', 'code']]);
@@ -98,11 +109,13 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 		const phrases = new Map<string, IPhraseValue>();
 
 		for (const agent of this.chatAgentService.getActivatedAgents()) {
-			const agentPhrase = `${VoiceChatService.PHRASES_LOWER[VoiceChatService.AGENT_PREFIX]} ${VoiceChatService.CHAT_AGENT_ALIAS.get(agent.name) ?? agent.name}`.toLowerCase();
+			const agentPhrase =
+				`${VoiceChatService.PHRASES_LOWER[VoiceChatService.AGENT_PREFIX]} ${VoiceChatService.CHAT_AGENT_ALIAS.get(agent.name) ?? agent.name}`.toLowerCase();
 			phrases.set(agentPhrase, { agent: agent.name });
 
 			for (const slashCommand of agent.slashCommands) {
-				const slashCommandPhrase = `${VoiceChatService.PHRASES_LOWER[VoiceChatService.COMMAND_PREFIX]} ${slashCommand.name}`.toLowerCase();
+				const slashCommandPhrase =
+					`${VoiceChatService.PHRASES_LOWER[VoiceChatService.COMMAND_PREFIX]} ${slashCommand.name}`.toLowerCase();
 				phrases.set(slashCommandPhrase, { agent: agent.name, command: slashCommand.name });
 
 				const agentSlashCommandPhrase = `${agentPhrase} ${slashCommandPhrase}`.toLowerCase();
@@ -124,7 +137,10 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 		}
 	}
 
-	async createVoiceChatSession(token: CancellationToken, options: IVoiceChatSessionOptions): Promise<IVoiceChatSession> {
+	async createVoiceChatSession(
+		token: CancellationToken,
+		options: IVoiceChatSessionOptions
+	): Promise<IVoiceChatSession> {
 		const disposables = new DisposableStore();
 
 		const onSessionStoppedOrCanceled = (dispose: boolean) => {
@@ -151,93 +167,144 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 		}
 
 		const phrases = this.createPhrases(options.model);
-		disposables.add(session.onDidChange(e => {
-			switch (e.status) {
-				case SpeechToTextStatus.Recognizing:
-				case SpeechToTextStatus.Recognized: {
-					let massagedEvent: IVoiceChatTextEvent = e;
-					if (e.text) {
-						const startsWithAgent = e.text.startsWith(VoiceChatService.PHRASES_UPPER[VoiceChatService.AGENT_PREFIX]) || e.text.startsWith(VoiceChatService.PHRASES_LOWER[VoiceChatService.AGENT_PREFIX]);
-						const startsWithSlashCommand = e.text.startsWith(VoiceChatService.PHRASES_UPPER[VoiceChatService.COMMAND_PREFIX]) || e.text.startsWith(VoiceChatService.PHRASES_LOWER[VoiceChatService.COMMAND_PREFIX]);
-						if (startsWithAgent || startsWithSlashCommand) {
-							const originalWords = e.text.split(' ');
-							let transformedWords: string[] | undefined;
+		disposables.add(
+			session.onDidChange(e => {
+				switch (e.status) {
+					case SpeechToTextStatus.Recognizing:
+					case SpeechToTextStatus.Recognized: {
+						let massagedEvent: IVoiceChatTextEvent = e;
+						if (e.text) {
+							const startsWithAgent =
+								e.text.startsWith(VoiceChatService.PHRASES_UPPER[VoiceChatService.AGENT_PREFIX]) ||
+								e.text.startsWith(VoiceChatService.PHRASES_LOWER[VoiceChatService.AGENT_PREFIX]);
+							const startsWithSlashCommand =
+								e.text.startsWith(
+									VoiceChatService.PHRASES_UPPER[VoiceChatService.COMMAND_PREFIX]
+								) ||
+								e.text.startsWith(VoiceChatService.PHRASES_LOWER[VoiceChatService.COMMAND_PREFIX]);
+							if (startsWithAgent || startsWithSlashCommand) {
+								const originalWords = e.text.split(' ');
+								let transformedWords: string[] | undefined;
 
-							let waitingForInput = false;
+								let waitingForInput = false;
 
-							// Check for agent + slash command
-							if (options.usesAgents && startsWithAgent && !detectedAgent && !detectedSlashCommand && originalWords.length >= 4) {
-								const phrase = phrases.get(originalWords.slice(0, 4).map(word => this.normalizeWord(word)).join(' '));
-								if (phrase) {
-									transformedWords = [this.toText(phrase, PhraseTextType.AGENT_AND_COMMAND), ...originalWords.slice(4)];
+								// Check for agent + slash command
+								if (
+									options.usesAgents &&
+									startsWithAgent &&
+									!detectedAgent &&
+									!detectedSlashCommand &&
+									originalWords.length >= 4
+								) {
+									const phrase = phrases.get(
+										originalWords
+											.slice(0, 4)
+											.map(word => this.normalizeWord(word))
+											.join(' ')
+									);
+									if (phrase) {
+										transformedWords = [
+											this.toText(phrase, PhraseTextType.AGENT_AND_COMMAND),
+											...originalWords.slice(4),
+										];
 
-									waitingForInput = originalWords.length === 4;
+										waitingForInput = originalWords.length === 4;
 
-									if (e.status === SpeechToTextStatus.Recognized) {
-										detectedAgent = true;
-										detectedSlashCommand = true;
+										if (e.status === SpeechToTextStatus.Recognized) {
+											detectedAgent = true;
+											detectedSlashCommand = true;
+										}
 									}
 								}
-							}
 
-							// Check for agent (if not done already)
-							if (options.usesAgents && startsWithAgent && !detectedAgent && !transformedWords && originalWords.length >= 2) {
-								const phrase = phrases.get(originalWords.slice(0, 2).map(word => this.normalizeWord(word)).join(' '));
-								if (phrase) {
-									transformedWords = [this.toText(phrase, PhraseTextType.AGENT), ...originalWords.slice(2)];
+								// Check for agent (if not done already)
+								if (
+									options.usesAgents &&
+									startsWithAgent &&
+									!detectedAgent &&
+									!transformedWords &&
+									originalWords.length >= 2
+								) {
+									const phrase = phrases.get(
+										originalWords
+											.slice(0, 2)
+											.map(word => this.normalizeWord(word))
+											.join(' ')
+									);
+									if (phrase) {
+										transformedWords = [
+											this.toText(phrase, PhraseTextType.AGENT),
+											...originalWords.slice(2),
+										];
 
-									waitingForInput = originalWords.length === 2;
+										waitingForInput = originalWords.length === 2;
 
-									if (e.status === SpeechToTextStatus.Recognized) {
-										detectedAgent = true;
+										if (e.status === SpeechToTextStatus.Recognized) {
+											detectedAgent = true;
+										}
 									}
 								}
-							}
 
-							// Check for slash command (if not done already)
-							if (startsWithSlashCommand && !detectedSlashCommand && !transformedWords && originalWords.length >= 2) {
-								const phrase = phrases.get(originalWords.slice(0, 2).map(word => this.normalizeWord(word)).join(' '));
-								if (phrase) {
-									transformedWords = [this.toText(phrase, options.usesAgents && !detectedAgent ?
-										PhraseTextType.AGENT_AND_COMMAND : 	// rewrite `/fix` to `@workspace /foo` in this case
-										PhraseTextType.COMMAND				// when we have not yet detected an agent before
-									), ...originalWords.slice(2)];
+								// Check for slash command (if not done already)
+								if (
+									startsWithSlashCommand &&
+									!detectedSlashCommand &&
+									!transformedWords &&
+									originalWords.length >= 2
+								) {
+									const phrase = phrases.get(
+										originalWords
+											.slice(0, 2)
+											.map(word => this.normalizeWord(word))
+											.join(' ')
+									);
+									if (phrase) {
+										transformedWords = [
+											this.toText(
+												phrase,
+												options.usesAgents && !detectedAgent
+													? PhraseTextType.AGENT_AND_COMMAND // rewrite `/fix` to `@workspace /foo` in this case
+													: PhraseTextType.COMMAND // when we have not yet detected an agent before
+											),
+											...originalWords.slice(2),
+										];
 
-									waitingForInput = originalWords.length === 2;
+										waitingForInput = originalWords.length === 2;
 
-									if (e.status === SpeechToTextStatus.Recognized) {
-										detectedSlashCommand = true;
+										if (e.status === SpeechToTextStatus.Recognized) {
+											detectedSlashCommand = true;
+										}
 									}
 								}
-							}
 
-							massagedEvent = {
-								status: e.status,
-								text: (transformedWords ?? originalWords).join(' '),
-								waitingForInput
-							};
+								massagedEvent = {
+									status: e.status,
+									text: (transformedWords ?? originalWords).join(' '),
+									waitingForInput,
+								};
+							}
 						}
+						emitter.fire(massagedEvent);
+						break;
 					}
-					emitter.fire(massagedEvent);
-					break;
+					case SpeechToTextStatus.Started:
+						this.activeVoiceChatSessions++;
+						this.voiceChatInProgress.set(true);
+						emitter.fire(e);
+						break;
+					case SpeechToTextStatus.Stopped:
+						onSessionStoppedOrCanceled(false);
+						emitter.fire(e);
+						break;
+					case SpeechToTextStatus.Error:
+						emitter.fire(e);
+						break;
 				}
-				case SpeechToTextStatus.Started:
-					this.activeVoiceChatSessions++;
-					this.voiceChatInProgress.set(true);
-					emitter.fire(e);
-					break;
-				case SpeechToTextStatus.Stopped:
-					onSessionStoppedOrCanceled(false);
-					emitter.fire(e);
-					break;
-				case SpeechToTextStatus.Error:
-					emitter.fire(e);
-					break;
-			}
-		}));
+			})
+		);
 
 		return {
-			onDidChange: emitter.event
+			onDidChange: emitter.event,
 		};
 	}
 

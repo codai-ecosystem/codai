@@ -8,7 +8,10 @@ import { IChatEditorOptions } from '../chatEditor.js';
 import { ChatEditorInput } from '../chatEditorInput.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 
-export async function clearChatEditor(accessor: ServicesAccessor, chatEditorInput?: ChatEditorInput): Promise<void> {
+export async function clearChatEditor(
+	accessor: ServicesAccessor,
+	chatEditorInput?: ChatEditorInput
+): Promise<void> {
 	const editorService = accessor.get(IEditorService);
 
 	if (!chatEditorInput) {
@@ -19,9 +22,17 @@ export async function clearChatEditor(accessor: ServicesAccessor, chatEditorInpu
 	if (chatEditorInput instanceof ChatEditorInput) {
 		// A chat editor can only be open in one group
 		const identifier = editorService.findEditors(chatEditorInput.resource)[0];
-		await editorService.replaceEditors([{
-			editor: chatEditorInput,
-			replacement: { resource: ChatEditorInput.getNewEditorUri(), options: { pinned: true } satisfies IChatEditorOptions }
-		}], identifier.groupId);
+		await editorService.replaceEditors(
+			[
+				{
+					editor: chatEditorInput,
+					replacement: {
+						resource: ChatEditorInput.getNewEditorUri(),
+						options: { pinned: true } satisfies IChatEditorOptions,
+					},
+				},
+			],
+			identifier.groupId
+		);
 	}
 }

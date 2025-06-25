@@ -8,7 +8,11 @@ import { basename } from '../../../../../base/common/resources.js';
 import { URI, UriComponents } from '../../../../../base/common/uri.js';
 import { localize, localize2 } from '../../../../../nls.js';
 import { ILocalizedString } from '../../../../../platform/action/common/action.js';
-import { Action2, IAction2Options, MenuId } from '../../../../../platform/actions/common/actions.js';
+import {
+	Action2,
+	IAction2Options,
+	MenuId,
+} from '../../../../../platform/actions/common/actions.js';
 import { ContextKeyExpr } from '../../../../../platform/contextkey/common/contextkey.js';
 import { IDialogService } from '../../../../../platform/dialogs/common/dialogs.js';
 import { ITextEditorOptions } from '../../../../../platform/editor/common/editor.js';
@@ -20,7 +24,14 @@ import { MergeEditorInput, MergeEditorInputData } from '../mergeEditorInput.js';
 import { IMergeEditorInputModel } from '../mergeEditorInputModel.js';
 import { MergeEditor } from '../view/mergeEditor.js';
 import { MergeEditorViewModel } from '../view/viewModel.js';
-import { ctxIsMergeEditor, ctxMergeEditorLayout, ctxMergeEditorShowBase, ctxMergeEditorShowBaseAtTop, ctxMergeEditorShowNonConflictingChanges, StorageCloseWithConflicts } from '../../common/mergeEditor.js';
+import {
+	ctxIsMergeEditor,
+	ctxMergeEditorLayout,
+	ctxMergeEditorShowBase,
+	ctxMergeEditorShowBaseAtTop,
+	ctxMergeEditorShowNonConflictingChanges,
+	StorageCloseWithConflicts,
+} from '../../common/mergeEditor.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 import { transaction } from '../../../../../base/common/observable.js';
 import { ModifiedBaseRangeStateKind } from '../model/modifiedBaseRange.js';
@@ -66,19 +77,27 @@ abstract class MergeEditorAction2 extends Action2 {
 				return;
 			}
 
-			return this.runWithMergeEditor({
-				viewModel: vm,
-				inputModel: activeEditorPane.inputModel.get()!,
-				input: activeEditorPane.input as MergeEditorInput,
-				editorIdentifier: {
-					editor: activeEditorPane.input,
-					groupId: activeEditorPane.group.id,
-				}
-			}, accessor, ...args) as any;
+			return this.runWithMergeEditor(
+				{
+					viewModel: vm,
+					inputModel: activeEditorPane.inputModel.get()!,
+					input: activeEditorPane.input as MergeEditorInput,
+					editorIdentifier: {
+						editor: activeEditorPane.input,
+						groupId: activeEditorPane.group.id,
+					},
+				},
+				accessor,
+				...args
+			) as any;
 		}
 	}
 
-	abstract runWithMergeEditor(context: MergeEditorAction2Args, accessor: ServicesAccessor, ...args: any[]): unknown;
+	abstract runWithMergeEditor(
+		context: MergeEditorAction2Args,
+		accessor: ServicesAccessor,
+		...args: any[]
+	): unknown;
 }
 
 export class OpenMergeEditor extends Action2 {
@@ -93,10 +112,20 @@ export class OpenMergeEditor extends Action2 {
 
 		const input: IResourceMergeEditorInput = {
 			base: { resource: validatedArgs.base },
-			input1: { resource: validatedArgs.input1.uri, label: validatedArgs.input1.title, description: validatedArgs.input1.description, detail: validatedArgs.input1.detail },
-			input2: { resource: validatedArgs.input2.uri, label: validatedArgs.input2.title, description: validatedArgs.input2.description, detail: validatedArgs.input2.detail },
+			input1: {
+				resource: validatedArgs.input1.uri,
+				label: validatedArgs.input1.title,
+				description: validatedArgs.input1.description,
+				detail: validatedArgs.input1.detail,
+			},
+			input2: {
+				resource: validatedArgs.input2.uri,
+				label: validatedArgs.input2.title,
+				description: validatedArgs.input2.description,
+				detail: validatedArgs.input2.detail,
+			},
 			result: { resource: validatedArgs.output },
-			options: { preserveFocus: true }
+			options: { preserveFocus: true },
 		};
 		accessor.get(IEditorService).openEditor(input);
 	}
@@ -155,15 +184,22 @@ namespace IRelaxedOpenArgs {
 			return false;
 		}
 		const o = obj as UriComponents;
-		return typeof o.scheme === 'string'
-			&& typeof o.authority === 'string'
-			&& typeof o.path === 'string'
-			&& typeof o.query === 'string'
-			&& typeof o.fragment === 'string';
+		return (
+			typeof o.scheme === 'string' &&
+			typeof o.authority === 'string' &&
+			typeof o.path === 'string' &&
+			typeof o.query === 'string' &&
+			typeof o.fragment === 'string'
+		);
 	}
 }
 
-type IRelaxedInputData = { uri: UriComponents; title?: string; detail?: string; description?: string };
+type IRelaxedInputData = {
+	uri: UriComponents;
+	title?: string;
+	detail?: string;
+	description?: string;
+};
 
 type IRelaxedOpenArgs = {
 	base: UriComponents | string;
@@ -176,7 +212,7 @@ export class SetMixedLayout extends Action2 {
 	constructor() {
 		super({
 			id: 'merge.mixedLayout',
-			title: localize2('layout.mixed', "Mixed Layout"),
+			title: localize2('layout.mixed', 'Mixed Layout'),
 			toggled: ctxMergeEditorLayout.isEqualTo('mixed'),
 			menu: [
 				{
@@ -204,12 +240,14 @@ export class SetColumnLayout extends Action2 {
 			id: 'merge.columnLayout',
 			title: localize2('layout.column', 'Column Layout'),
 			toggled: ctxMergeEditorLayout.isEqualTo('columns'),
-			menu: [{
-				id: MenuId.EditorTitle,
-				when: ctxIsMergeEditor,
-				group: '1_merge',
-				order: 10,
-			}],
+			menu: [
+				{
+					id: MenuId.EditorTitle,
+					when: ctxIsMergeEditor,
+					group: '1_merge',
+					order: 10,
+				},
+			],
 			precondition: ctxIsMergeEditor,
 		});
 	}
@@ -226,7 +264,7 @@ export class ShowNonConflictingChanges extends Action2 {
 	constructor() {
 		super({
 			id: 'merge.showNonConflictingChanges',
-			title: localize2('showNonConflictingChanges', "Show Non-Conflicting Changes"),
+			title: localize2('showNonConflictingChanges', 'Show Non-Conflicting Changes'),
 			toggled: ctxMergeEditorShowNonConflictingChanges.isEqualTo(true),
 			menu: [
 				{
@@ -252,7 +290,7 @@ export class ShowHideBase extends Action2 {
 	constructor() {
 		super({
 			id: 'merge.showBase',
-			title: localize2('layout.showBase', "Show Base"),
+			title: localize2('layout.showBase', 'Show Base'),
 			toggled: ctxMergeEditorShowBase.isEqualTo(true),
 			menu: [
 				{
@@ -261,7 +299,7 @@ export class ShowHideBase extends Action2 {
 					group: '2_merge',
 					order: 9,
 				},
-			]
+			],
 		});
 	}
 
@@ -277,7 +315,7 @@ export class ShowHideTopBase extends Action2 {
 	constructor() {
 		super({
 			id: 'merge.showBaseTop',
-			title: localize2('layout.showBaseTop', "Show Base Top"),
+			title: localize2('layout.showBaseTop', 'Show Base Top'),
 			toggled: ContextKeyExpr.and(ctxMergeEditorShowBase, ctxMergeEditorShowBaseAtTop),
 			menu: [
 				{
@@ -302,7 +340,7 @@ export class ShowHideCenterBase extends Action2 {
 	constructor() {
 		super({
 			id: 'merge.showBaseCenter',
-			title: localize2('layout.showBaseCenter', "Show Base Center"),
+			title: localize2('layout.showBaseCenter', 'Show Base Center'),
 			toggled: ContextKeyExpr.and(ctxMergeEditorShowBase, ctxMergeEditorShowBaseAtTop.negate()),
 			menu: [
 				{
@@ -323,21 +361,23 @@ export class ShowHideCenterBase extends Action2 {
 	}
 }
 
-const mergeEditorCategory: ILocalizedString = localize2('mergeEditor', "Merge Editor");
+const mergeEditorCategory: ILocalizedString = localize2('mergeEditor', 'Merge Editor');
 
 export class OpenResultResource extends MergeEditorAction {
 	constructor() {
 		super({
 			id: 'merge.openResult',
 			icon: Codicon.goToFile,
-			title: localize2('openfile', "Open File"),
+			title: localize2('openfile', 'Open File'),
 			category: mergeEditorCategory,
-			menu: [{
-				id: MenuId.EditorTitle,
-				when: ctxIsMergeEditor,
-				group: 'navigation',
-				order: 1,
-			}],
+			menu: [
+				{
+					id: MenuId.EditorTitle,
+					when: ctxIsMergeEditor,
+					group: 'navigation',
+					order: 1,
+				},
+			],
 			precondition: ctxIsMergeEditor,
 		});
 	}
@@ -353,14 +393,14 @@ export class GoToNextUnhandledConflict extends MergeEditorAction {
 		super({
 			id: 'merge.goToNextUnhandledConflict',
 			category: mergeEditorCategory,
-			title: localize2('merge.goToNextUnhandledConflict', "Go to Next Unhandled Conflict"),
+			title: localize2('merge.goToNextUnhandledConflict', 'Go to Next Unhandled Conflict'),
 			icon: Codicon.arrowDown,
 			menu: [
 				{
 					id: MenuId.EditorTitle,
 					when: ctxIsMergeEditor,
 					group: 'navigation',
-					order: 3
+					order: 3,
 				},
 			],
 			f1: true,
@@ -379,14 +419,14 @@ export class GoToPreviousUnhandledConflict extends MergeEditorAction {
 		super({
 			id: 'merge.goToPreviousUnhandledConflict',
 			category: mergeEditorCategory,
-			title: localize2('merge.goToPreviousUnhandledConflict', "Go to Previous Unhandled Conflict"),
+			title: localize2('merge.goToPreviousUnhandledConflict', 'Go to Previous Unhandled Conflict'),
 			icon: Codicon.arrowUp,
 			menu: [
 				{
 					id: MenuId.EditorTitle,
 					when: ctxIsMergeEditor,
 					group: 'navigation',
-					order: 2
+					order: 2,
 				},
 			],
 			f1: true,
@@ -405,7 +445,7 @@ export class ToggleActiveConflictInput1 extends MergeEditorAction {
 		super({
 			id: 'merge.toggleActiveConflictInput1',
 			category: mergeEditorCategory,
-			title: localize2('merge.toggleCurrentConflictFromLeft', "Toggle Current Conflict from Left"),
+			title: localize2('merge.toggleCurrentConflictFromLeft', 'Toggle Current Conflict from Left'),
 			f1: true,
 			precondition: ctxIsMergeEditor,
 		});
@@ -421,7 +461,10 @@ export class ToggleActiveConflictInput2 extends MergeEditorAction {
 		super({
 			id: 'merge.toggleActiveConflictInput2',
 			category: mergeEditorCategory,
-			title: localize2('merge.toggleCurrentConflictFromRight', "Toggle Current Conflict from Right"),
+			title: localize2(
+				'merge.toggleCurrentConflictFromRight',
+				'Toggle Current Conflict from Right'
+			),
 			f1: true,
 			precondition: ctxIsMergeEditor,
 		});
@@ -437,7 +480,7 @@ export class CompareInput1WithBaseCommand extends MergeEditorAction {
 		super({
 			id: 'mergeEditor.compareInput1WithBase',
 			category: mergeEditorCategory,
-			title: localize2('mergeEditor.compareInput1WithBase', "Compare Input 1 With Base"),
+			title: localize2('mergeEditor.compareInput1WithBase', 'Compare Input 1 With Base'),
 			shortTitle: localize('mergeEditor.compareWithBase', 'Compare With Base'),
 			f1: true,
 			precondition: ctxIsMergeEditor,
@@ -457,7 +500,7 @@ export class CompareInput2WithBaseCommand extends MergeEditorAction {
 		super({
 			id: 'mergeEditor.compareInput2WithBase',
 			category: mergeEditorCategory,
-			title: localize2('mergeEditor.compareInput2WithBase', "Compare Input 2 With Base"),
+			title: localize2('mergeEditor.compareInput2WithBase', 'Compare Input 2 With Base'),
 			shortTitle: localize('mergeEditor.compareWithBase', 'Compare With Base'),
 			f1: true,
 			precondition: ctxIsMergeEditor,
@@ -472,13 +515,19 @@ export class CompareInput2WithBaseCommand extends MergeEditorAction {
 	}
 }
 
-async function mergeEditorCompare(viewModel: MergeEditorViewModel, editorService: IEditorService, inputNumber: 1 | 2) {
-
+async function mergeEditorCompare(
+	viewModel: MergeEditorViewModel,
+	editorService: IEditorService,
+	inputNumber: 1 | 2
+) {
 	editorService.openEditor(editorService.activeEditor!, { pinned: true });
 
 	const model = viewModel.model;
 	const base = model.base;
-	const input = inputNumber === 1 ? viewModel.inputCodeEditorView1.editor : viewModel.inputCodeEditorView2.editor;
+	const input =
+		inputNumber === 1
+			? viewModel.inputCodeEditorView1.editor
+			: viewModel.inputCodeEditorView2.editor;
 
 	const lineNumber = input.getPosition()!.lineNumber;
 	await editorService.openEditor({
@@ -491,7 +540,7 @@ async function mergeEditorCompare(viewModel: MergeEditorViewModel, editorService
 			},
 			revealIfOpened: true,
 			revealIfVisible: true,
-		} satisfies ITextEditorOptions
+		} satisfies ITextEditorOptions,
 	});
 }
 
@@ -500,7 +549,7 @@ export class OpenBaseFile extends MergeEditorAction {
 		super({
 			id: 'merge.openBaseEditor',
 			category: mergeEditorCategory,
-			title: localize2('merge.openBaseEditor', "Open Base File"),
+			title: localize2('merge.openBaseEditor', 'Open Base File'),
 			f1: true,
 			precondition: ctxIsMergeEditor,
 		});
@@ -517,7 +566,7 @@ export class AcceptAllInput1 extends MergeEditorAction {
 		super({
 			id: 'merge.acceptAllInput1',
 			category: mergeEditorCategory,
-			title: localize2('merge.acceptAllInput1', "Accept All Incoming Changes from Left"),
+			title: localize2('merge.acceptAllInput1', 'Accept All Incoming Changes from Left'),
 			f1: true,
 			precondition: ctxIsMergeEditor,
 			menu: { id: MenuId.MergeInput1Toolbar, group: 'primary' },
@@ -535,7 +584,7 @@ export class AcceptAllInput2 extends MergeEditorAction {
 		super({
 			id: 'merge.acceptAllInput2',
 			category: mergeEditorCategory,
-			title: localize2('merge.acceptAllInput2', "Accept All Current Changes from Right"),
+			title: localize2('merge.acceptAllInput2', 'Accept All Current Changes from Right'),
 			f1: true,
 			precondition: ctxIsMergeEditor,
 			menu: { id: MenuId.MergeInput2Toolbar, group: 'primary' },
@@ -553,7 +602,7 @@ export class ResetToBaseAndAutoMergeCommand extends MergeEditorAction {
 		super({
 			id: 'mergeEditor.resetResultToBaseAndAutoMerge',
 			category: mergeEditorCategory,
-			title: localize2('mergeEditor.resetResultToBaseAndAutoMerge', "Reset Result"),
+			title: localize2('mergeEditor.resetResultToBaseAndAutoMerge', 'Reset Result'),
 			shortTitle: localize('mergeEditor.resetResultToBaseAndAutoMerge.short', 'Reset'),
 			f1: true,
 			precondition: ctxIsMergeEditor,
@@ -586,33 +635,34 @@ export class AcceptAllCombination extends MergeEditorAction2 {
 		super({
 			id: 'mergeEditor.acceptAllCombination',
 			category: mergeEditorCategory,
-			title: localize2('mergeEditor.acceptAllCombination', "Accept All Combination"),
+			title: localize2('mergeEditor.acceptAllCombination', 'Accept All Combination'),
 			f1: true,
 		});
 	}
 
-	override runWithMergeEditor(context: MergeEditorAction2Args, accessor: ServicesAccessor, ...args: any[]) {
+	override runWithMergeEditor(
+		context: MergeEditorAction2Args,
+		accessor: ServicesAccessor,
+		...args: any[]
+	) {
 		const { viewModel } = context;
 		const modifiedBaseRanges = viewModel.model.modifiedBaseRanges.get();
 		const model = viewModel.model;
-		transaction((tx) => {
+		transaction(tx => {
 			for (const m of modifiedBaseRanges) {
 				const state = model.getState(m).get();
-				if (state.kind !== ModifiedBaseRangeStateKind.unrecognized && !state.isInputIncluded(1) && (!state.isInputIncluded(2) || !viewModel.shouldUseAppendInsteadOfAccept.get()) && m.canBeCombined) {
-					model.setState(
-						m,
-						state
-							.withInputValue(1, true)
-							.withInputValue(2, true, true),
-						true,
-						tx
-					);
+				if (
+					state.kind !== ModifiedBaseRangeStateKind.unrecognized &&
+					!state.isInputIncluded(1) &&
+					(!state.isInputIncluded(2) || !viewModel.shouldUseAppendInsteadOfAccept.get()) &&
+					m.canBeCombined
+				) {
+					model.setState(m, state.withInputValue(1, true).withInputValue(2, true, true), true, tx);
 					model.telemetry.reportSmartCombinationInvoked(state.includesInput(2));
 				}
 			}
 		});
 		return { success: true };
-
 	}
 }
 
@@ -622,7 +672,7 @@ export class AcceptMerge extends MergeEditorAction2 {
 		super({
 			id: 'mergeEditor.acceptMerge',
 			category: mergeEditorCategory,
-			title: localize2('mergeEditor.acceptMerge', "Complete Merge"),
+			title: localize2('mergeEditor.acceptMerge', 'Complete Merge'),
 			f1: true,
 			precondition: ctxIsMergeEditor,
 			keybinding: [
@@ -630,25 +680,41 @@ export class AcceptMerge extends MergeEditorAction2 {
 					primary: KeyMod.CtrlCmd | KeyCode.Enter,
 					weight: KeybindingWeight.EditorContrib,
 					when: ctxIsMergeEditor,
-				}
-			]
+				},
+			],
 		});
 	}
 
-	override async runWithMergeEditor({ inputModel, editorIdentifier, viewModel }: MergeEditorAction2Args, accessor: ServicesAccessor) {
+	override async runWithMergeEditor(
+		{ inputModel, editorIdentifier, viewModel }: MergeEditorAction2Args,
+		accessor: ServicesAccessor
+	) {
 		const dialogService = accessor.get(IDialogService);
 		const editorService = accessor.get(IEditorService);
 
 		if (viewModel.model.unhandledConflictsCount.get() > 0) {
 			const { confirmed } = await dialogService.confirm({
-				message: localize('mergeEditor.acceptMerge.unhandledConflicts.message', "Do you want to complete the merge of {0}?", basename(inputModel.resultUri)),
-				detail: localize('mergeEditor.acceptMerge.unhandledConflicts.detail', "The file contains unhandled conflicts."),
-				primaryButton: localize({ key: 'mergeEditor.acceptMerge.unhandledConflicts.accept', comment: ['&& denotes a mnemonic'] }, "&&Complete with Conflicts")
+				message: localize(
+					'mergeEditor.acceptMerge.unhandledConflicts.message',
+					'Do you want to complete the merge of {0}?',
+					basename(inputModel.resultUri)
+				),
+				detail: localize(
+					'mergeEditor.acceptMerge.unhandledConflicts.detail',
+					'The file contains unhandled conflicts.'
+				),
+				primaryButton: localize(
+					{
+						key: 'mergeEditor.acceptMerge.unhandledConflicts.accept',
+						comment: ['&& denotes a mnemonic'],
+					},
+					'&&Complete with Conflicts'
+				),
 			});
 
 			if (!confirmed) {
 				return {
-					successful: false
+					successful: false,
 				};
 			}
 		}
@@ -657,7 +723,7 @@ export class AcceptMerge extends MergeEditorAction2 {
 		await editorService.closeEditor(editorIdentifier);
 
 		return {
-			successful: true
+			successful: true,
 		};
 	}
 }
@@ -667,7 +733,7 @@ export class ToggleBetweenInputs extends MergeEditorAction2 {
 		super({
 			id: 'mergeEditor.toggleBetweenInputs',
 			category: mergeEditorCategory,
-			title: localize2('mergeEditor.toggleBetweenInputs', "Toggle Between Merge Editor Inputs"),
+			title: localize2('mergeEditor.toggleBetweenInputs', 'Toggle Between Merge Editor Inputs'),
 			f1: true,
 			precondition: ctxIsMergeEditor,
 			keybinding: [
@@ -676,8 +742,8 @@ export class ToggleBetweenInputs extends MergeEditorAction2 {
 					// Override reopen closed editor
 					weight: KeybindingWeight.WorkbenchContrib + 10,
 					when: ctxIsMergeEditor,
-				}
-			]
+				},
+			],
 		});
 	}
 

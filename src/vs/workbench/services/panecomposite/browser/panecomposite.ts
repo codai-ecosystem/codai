@@ -10,19 +10,30 @@ import { IProgressIndicator } from '../../../../platform/progress/common/progres
 import { IPaneComposite } from '../../../common/panecomposite.js';
 import { ViewContainerLocation } from '../../../common/views.js';
 
-export const IPaneCompositePartService = createDecorator<IPaneCompositePartService>('paneCompositePartService');
+export const IPaneCompositePartService = createDecorator<IPaneCompositePartService>(
+	'paneCompositePartService'
+);
 
 export interface IPaneCompositePartService {
-
 	readonly _serviceBrand: undefined;
 
-	readonly onDidPaneCompositeOpen: Event<{ composite: IPaneComposite; viewContainerLocation: ViewContainerLocation }>;
-	readonly onDidPaneCompositeClose: Event<{ composite: IPaneComposite; viewContainerLocation: ViewContainerLocation }>;
+	readonly onDidPaneCompositeOpen: Event<{
+		composite: IPaneComposite;
+		viewContainerLocation: ViewContainerLocation;
+	}>;
+	readonly onDidPaneCompositeClose: Event<{
+		composite: IPaneComposite;
+		viewContainerLocation: ViewContainerLocation;
+	}>;
 
 	/**
 	 * Opens a viewlet with the given identifier and pass keyboard focus to it if specified.
 	 */
-	openPaneComposite(id: string | undefined, viewContainerLocation: ViewContainerLocation, focus?: boolean): Promise<IPaneComposite | undefined>;
+	openPaneComposite(
+		id: string | undefined,
+		viewContainerLocation: ViewContainerLocation,
+		focus?: boolean
+	): Promise<IPaneComposite | undefined>;
 
 	/**
 	 * Returns the current active viewlet if any.
@@ -32,7 +43,10 @@ export interface IPaneCompositePartService {
 	/**
 	 * Returns the viewlet by id.
 	 */
-	getPaneComposite(id: string, viewContainerLocation: ViewContainerLocation): PaneCompositeDescriptor | undefined;
+	getPaneComposite(
+		id: string,
+		viewContainerLocation: ViewContainerLocation
+	): PaneCompositeDescriptor | undefined;
 
 	/**
 	 * Returns all enabled viewlets
@@ -57,7 +71,10 @@ export interface IPaneCompositePartService {
 	/**
 	 * Returns the progress indicator for the side bar.
 	 */
-	getProgressIndicator(id: string, viewContainerLocation: ViewContainerLocation): IProgressIndicator | undefined;
+	getProgressIndicator(
+		id: string,
+		viewContainerLocation: ViewContainerLocation
+	): IProgressIndicator | undefined;
 
 	/**
 	 * Hide the active viewlet.

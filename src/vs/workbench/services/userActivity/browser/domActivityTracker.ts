@@ -25,8 +25,8 @@ const CHECK_INTERVAL = 30_000;
 const MIN_INTERVALS_WITHOUT_ACTIVITY = 2;
 
 const eventListenerOptions: AddEventListenerOptions = {
-	passive: true, /** does not preventDefault() */
-	capture: true, /** should dispatch first (before anyone stopPropagation()) */
+	passive: true /** does not preventDefault() */,
+	capture: true /** should dispatch first (before anyone stopPropagation()) */,
 };
 
 export class DomActivityTracker extends Disposable {
@@ -55,11 +55,38 @@ export class DomActivityTracker extends Disposable {
 			intervalsWithoutActivity = 0;
 		};
 
-		this._register(Event.runAndSubscribe(dom.onDidRegisterWindow, ({ window, disposables }) => {
-			disposables.add(dom.addDisposableListener(window.document, 'touchstart', () => onActivity(window), eventListenerOptions));
-			disposables.add(dom.addDisposableListener(window.document, 'mousedown', () => onActivity(window), eventListenerOptions));
-			disposables.add(dom.addDisposableListener(window.document, 'keydown', () => onActivity(window), eventListenerOptions));
-		}, { window: mainWindow, disposables: this._store }));
+		this._register(
+			Event.runAndSubscribe(
+				dom.onDidRegisterWindow,
+				({ window, disposables }) => {
+					disposables.add(
+						dom.addDisposableListener(
+							window.document,
+							'touchstart',
+							() => onActivity(window),
+							eventListenerOptions
+						)
+					);
+					disposables.add(
+						dom.addDisposableListener(
+							window.document,
+							'mousedown',
+							() => onActivity(window),
+							eventListenerOptions
+						)
+					);
+					disposables.add(
+						dom.addDisposableListener(
+							window.document,
+							'keydown',
+							() => onActivity(window),
+							eventListenerOptions
+						)
+					);
+				},
+				{ window: mainWindow, disposables: this._store }
+			)
+		);
 
 		onActivity(mainWindow);
 	}

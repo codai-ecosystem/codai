@@ -18,13 +18,19 @@ export async function activate(context: ExtensionContext) {
 		const worker = new Worker(serverMain.toString());
 		worker.postMessage({ i10lLocation: l10n.uri?.toString(false) ?? '' });
 
-		const newLanguageClient: LanguageClientConstructor = (id: string, name: string, clientOptions: LanguageClientOptions) => {
+		const newLanguageClient: LanguageClientConstructor = (
+			id: string,
+			name: string,
+			clientOptions: LanguageClientOptions
+		) => {
 			return new LanguageClient(id, name, worker, clientOptions);
 		};
 
 		client = await startClient(context, newLanguageClient, { TextDecoder });
 
-		context.subscriptions.push(registerDropOrPasteResourceSupport({ language: 'css', scheme: '*' }));
+		context.subscriptions.push(
+			registerDropOrPasteResourceSupport({ language: 'css', scheme: '*' })
+		);
 	} catch (e) {
 		console.log(e);
 	}
@@ -36,4 +42,3 @@ export async function deactivate(): Promise<void> {
 		client = undefined;
 	}
 }
-

@@ -19,7 +19,7 @@ const enum ShellIntegrationOscPs {
 	/**
 	 * Sequences pioneered by iTerm.
 	 */
-	ITerm = 1337
+	ITerm = 1337,
 }
 
 /**
@@ -85,12 +85,12 @@ export const enum VSCodeOscPt {
 	 * Set an arbitrary property: `OSC 633 ; P ; <Property>=<Value> ST`, only known properties will
 	 * be handled.
 	 */
-	Property = 'P'
+	Property = 'P',
 }
 
 export const enum VSCodeOscProperty {
 	Task = 'Task',
-	Cwd = 'Cwd'
+	Cwd = 'Cwd',
 }
 
 /**
@@ -100,7 +100,7 @@ export const enum ITermOscPt {
 	/**
 	 * Based on ITerm's `OSC 1337 ; SetMark` sets a mark on the scrollbar
 	 */
-	SetMark = 'SetMark'
+	SetMark = 'SetMark',
 }
 
 export function VSCodeSequence(osc: VSCodeOscPt, data?: string | VSCodeOscProperty): string {
@@ -118,5 +118,4 @@ function oscSequence(ps: number, pt: string, data?: string): string {
 	}
 	result += `\x07`;
 	return result;
-
 }

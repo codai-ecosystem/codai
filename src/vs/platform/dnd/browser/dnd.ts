@@ -20,11 +20,13 @@ import { IBaseTextResourceEditorInput, ITextEditorSelection } from '../../editor
 import { HTMLFileSystemProvider } from '../../files/browser/htmlFileSystemProvider.js';
 import { WebFileSystemAccess } from '../../files/browser/webFileSystemAccess.js';
 import { ByteSize, IFileService } from '../../files/common/files.js';
-import { IInstantiationService, ServicesAccessor } from '../../instantiation/common/instantiation.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../instantiation/common/instantiation.js';
 import { extractSelection } from '../../opener/common/opener.js';
 import { Registry } from '../../registry/common/platform.js';
 import { IMarker } from '../../markers/common/markers.js';
-
 
 //#region Editor / Resources DND
 
@@ -56,7 +58,6 @@ export interface IDraggedResourceEditorInput extends IBaseTextResourceEditorInpu
 export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEditorInput> {
 	const editors: IDraggedResourceEditorInput[] = [];
 	if (e.dataTransfer && e.dataTransfer.types.length > 0) {
-
 		// Data Transfer: Code Editors
 		const rawEditorsData = e.dataTransfer.getData(CodeDataTransfers.EDITORS);
 		if (rawEditorsData) {
@@ -83,7 +84,11 @@ export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEdit
 				const file = e.dataTransfer.files[i];
 				if (file && getPathForFile(file)) {
 					try {
-						editors.push({ resource: URI.file(getPathForFile(file)!), isExternal: true, allowWorkspaceOpen: true });
+						editors.push({
+							resource: URI.file(getPathForFile(file)!),
+							isExternal: true,
+							allowWorkspaceOpen: true,
+						});
 					} catch (error) {
 						// Invalid URI
 					}
@@ -97,7 +102,11 @@ export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEdit
 			try {
 				const codeFiles: string[] = JSON.parse(rawCodeFiles);
 				for (const codeFile of codeFiles) {
-					editors.push({ resource: URI.file(codeFile), isExternal: true, allowWorkspaceOpen: true });
+					editors.push({
+						resource: URI.file(codeFile),
+						isExternal: true,
+						allowWorkspaceOpen: true,
+					});
 				}
 			} catch (error) {
 				// Invalid transfer
@@ -105,7 +114,9 @@ export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEdit
 		}
 
 		// Workbench contributions
-		const contributions = Registry.as<IDragAndDropContributionRegistry>(Extensions.DragAndDropContribution).getAll();
+		const contributions = Registry.as<IDragAndDropContributionRegistry>(
+			Extensions.DragAndDropContribution
+		).getAll();
 		for (const contribution of contributions) {
 			const data = e.dataTransfer.getData(contribution.dataFormatKey);
 			if (data) {
@@ -136,7 +147,10 @@ export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEdit
 	return coalescedEditors;
 }
 
-export async function extractEditorsAndFilesDropData(accessor: ServicesAccessor, e: DragEvent): Promise<Array<IDraggedResourceEditorInput>> {
+export async function extractEditorsAndFilesDropData(
+	accessor: ServicesAccessor,
+	e: DragEvent
+): Promise<Array<IDraggedResourceEditorInput>> {
 	const editors = extractEditorsDropData(e);
 
 	// Web: Check for file transfer
@@ -144,9 +158,16 @@ export async function extractEditorsAndFilesDropData(accessor: ServicesAccessor,
 		const files = e.dataTransfer.items;
 		if (files) {
 			const instantiationService = accessor.get(IInstantiationService);
-			const filesData = await instantiationService.invokeFunction(accessor => extractFilesDropData(accessor, e));
+			const filesData = await instantiationService.invokeFunction(accessor =>
+				extractFilesDropData(accessor, e)
+			);
 			for (const fileData of filesData) {
-				editors.push({ resource: fileData.resource, contents: fileData.contents?.toString(), isExternal: true, allowWorkspaceOpen: fileData.isDirectory });
+				editors.push({
+					resource: fileData.resource,
+					contents: fileData.contents?.toString(),
+					isExternal: true,
+					allowWorkspaceOpen: fileData.isDirectory,
+				});
 			}
 		}
 	}
@@ -154,13 +175,16 @@ export async function extractEditorsAndFilesDropData(accessor: ServicesAccessor,
 	return editors;
 }
 
-export function createDraggedEditorInputFromRawResourcesData(rawResourcesData: string | undefined): IDraggedResourceEditorInput[] {
+export function createDraggedEditorInputFromRawResourcesData(
+	rawResourcesData: string | undefined
+): IDraggedResourceEditorInput[] {
 	const editors: IDraggedResourceEditorInput[] = [];
 
 	if (rawResourcesData) {
 		const resourcesRaw: string[] = JSON.parse(rawResourcesData);
 		for (const resourceRaw of resourcesRaw) {
-			if (resourceRaw.indexOf(':') > 0) { // mitigate https://github.com/microsoft/vscode/issues/124946
+			if (resourceRaw.indexOf(':') > 0) {
+				// mitigate https://github.com/microsoft/vscode/issues/124946
 				const { selection, uri } = extractSelection(URI.parse(resourceRaw));
 				editors.push({ resource: uri, options: { selection } });
 			}
@@ -170,15 +194,16 @@ export function createDraggedEditorInputFromRawResourcesData(rawResourcesData: s
 	return editors;
 }
 
-
 interface IFileTransferData {
 	resource: URI;
 	isDirectory?: boolean;
 	contents?: VSBuffer;
 }
 
-async function extractFilesDropData(accessor: ServicesAccessor, event: DragEvent): Promise<IFileTransferData[]> {
-
+async function extractFilesDropData(
+	accessor: ServicesAccessor,
+	event: DragEvent
+): Promise<IFileTransferData[]> {
 	// Try to extract via `FileSystemHandle`
 	if (WebFileSystemAccess.supported(mainWindow)) {
 		const items = event.dataTransfer?.items;
@@ -196,7 +221,10 @@ async function extractFilesDropData(accessor: ServicesAccessor, event: DragEvent
 	return extractFileListData(accessor, files);
 }
 
-async function extractFileTransferData(accessor: ServicesAccessor, items: DataTransferItemList): Promise<IFileTransferData[]> {
+async function extractFileTransferData(
+	accessor: ServicesAccessor,
+	items: DataTransferItemList
+): Promise<IFileTransferData[]> {
 	const fileSystemProvider = accessor.get(IFileService).getProvider(Schemas.file);
 	// eslint-disable-next-line no-restricted-syntax
 	if (!(fileSystemProvider instanceof HTMLFileSystemProvider)) {
@@ -222,12 +250,12 @@ async function extractFileTransferData(accessor: ServicesAccessor, items: DataTr
 					if (WebFileSystemAccess.isFileSystemFileHandle(handle)) {
 						result.complete({
 							resource: await fileSystemProvider.registerFileHandle(handle),
-							isDirectory: false
+							isDirectory: false,
 						});
 					} else if (WebFileSystemAccess.isFileSystemDirectoryHandle(handle)) {
 						result.complete({
 							resource: await fileSystemProvider.registerDirectoryHandle(handle),
-							isDirectory: true
+							isDirectory: true,
 						});
 					} else {
 						result.complete(undefined);
@@ -242,7 +270,10 @@ async function extractFileTransferData(accessor: ServicesAccessor, items: DataTr
 	return coalesce(await Promise.all(results.map(result => result.p)));
 }
 
-export async function extractFileListData(accessor: ServicesAccessor, files: FileList): Promise<IFileTransferData[]> {
+export async function extractFileListData(
+	accessor: ServicesAccessor,
+	files: FileList
+): Promise<IFileTransferData[]> {
 	const dialogService = accessor.get(IDialogService);
 
 	const results: DeferredPromise<IFileTransferData | undefined>[] = [];
@@ -250,10 +281,14 @@ export async function extractFileListData(accessor: ServicesAccessor, files: Fil
 	for (let i = 0; i < files.length; i++) {
 		const file = files.item(i);
 		if (file) {
-
 			// Skip for very large files because this operation is unbuffered
 			if (file.size > 100 * ByteSize.MB) {
-				dialogService.warn(localize('fileTooLarge', "File is too large to open as untitled editor. Please upload it first into the file explorer and then try again."));
+				dialogService.warn(
+					localize(
+						'fileTooLarge',
+						'File is too large to open as untitled editor. Please upload it first into the file explorer and then try again.'
+					)
+				);
 				continue;
 			}
 
@@ -275,7 +310,10 @@ export async function extractFileListData(accessor: ServicesAccessor, files: Fil
 
 				result.complete({
 					resource: URI.from({ scheme: Schemas.untitled, path: name }),
-					contents: typeof loadResult === 'string' ? VSBuffer.fromString(loadResult) : VSBuffer.wrap(new Uint8Array(loadResult))
+					contents:
+						typeof loadResult === 'string'
+							? VSBuffer.fromString(loadResult)
+							: VSBuffer.wrap(new Uint8Array(loadResult)),
 				});
 			};
 
@@ -340,7 +378,9 @@ class DragAndDropContributionRegistry implements IDragAndDropContributionRegistr
 
 	register(contribution: IDragAndDropContribution): void {
 		if (this._contributions.has(contribution.dataFormatKey)) {
-			throw new Error(`A drag and drop contributiont with key '${contribution.dataFormatKey}' was already registered.`);
+			throw new Error(
+				`A drag and drop contributiont with key '${contribution.dataFormatKey}' was already registered.`
+			);
 		}
 		this._contributions.set(contribution.dataFormatKey, contribution);
 	}
@@ -351,7 +391,7 @@ class DragAndDropContributionRegistry implements IDragAndDropContributionRegistr
 }
 
 export const Extensions = {
-	DragAndDropContribution: 'workbench.contributions.dragAndDrop'
+	DragAndDropContribution: 'workbench.contributions.dragAndDrop',
 };
 
 Registry.add(Extensions.DragAndDropContribution, new DragAndDropContributionRegistry());
@@ -364,7 +404,6 @@ Registry.add(Extensions.DragAndDropContribution, new DragAndDropContributionRegi
  * A singleton to store transfer data during drag & drop operations that are only valid within the application.
  */
 export class LocalSelectionTransfer<T> {
-
 	private static readonly INSTANCE = new LocalSelectionTransfer();
 
 	private data?: T[];
@@ -442,7 +481,10 @@ export function extractSymbolDropData(e: DragEvent): DocumentSymbolTransferData[
 	return getDataAsJSON(e, CodeDataTransfers.SYMBOLS, []);
 }
 
-export function fillInSymbolsDragData(symbolsData: readonly DocumentSymbolTransferData[], e: DragEvent): void {
+export function fillInSymbolsDragData(
+	symbolsData: readonly DocumentSymbolTransferData[],
+	e: DragEvent
+): void {
 	setDataAsJSON(e, CodeDataTransfers.SYMBOLS, symbolsData);
 }
 
@@ -456,7 +498,9 @@ export function fillInMarkersDragData(markerData: MarkerTransferData[], e: DragE
 	setDataAsJSON(e, CodeDataTransfers.MARKERS, markerData);
 }
 
-export function extractNotebookCellOutputDropData(e: DragEvent): NotebookCellOutputTransferData | undefined {
+export function extractNotebookCellOutputDropData(
+	e: DragEvent
+): NotebookCellOutputTransferData | undefined {
 	return getDataAsJSON(e, CodeDataTransfers.NOTEBOOK_CELL_OUTPUT, undefined);
 }
 

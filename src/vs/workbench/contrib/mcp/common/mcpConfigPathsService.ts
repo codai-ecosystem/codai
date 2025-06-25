@@ -5,7 +5,11 @@
 
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { Schemas } from '../../../../base/common/network.js';
-import { IObservable, ISettableObservable, observableValue } from '../../../../base/common/observable.js';
+import {
+	IObservable,
+	ISettableObservable,
+	observableValue,
+} from '../../../../base/common/observable.js';
 import { basename } from '../../../../base/common/resources.js';
 import { isDefined } from '../../../../base/common/types.js';
 import { URI } from '../../../../base/common/uri.js';
@@ -15,9 +19,15 @@ import { createDecorator } from '../../../../platform/instantiation/common/insta
 import { ILabelService } from '../../../../platform/label/common/label.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { StorageScope } from '../../../../platform/storage/common/storage.js';
-import { IWorkspaceContextService, IWorkspaceFolder } from '../../../../platform/workspace/common/workspace.js';
+import {
+	IWorkspaceContextService,
+	IWorkspaceFolder,
+} from '../../../../platform/workspace/common/workspace.js';
 import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
-import { FOLDER_SETTINGS_PATH, IPreferencesService } from '../../../services/preferences/common/preferences.js';
+import {
+	FOLDER_SETTINGS_PATH,
+	IPreferencesService,
+} from '../../../services/preferences/common/preferences.js';
 import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
 import { mcpConfigurationSection } from './mcpConfiguration.js';
 import { McpCollectionSortOrder } from './mcpTypes.js';
@@ -51,7 +61,8 @@ export interface IMcpConfigPathsService {
 	readonly paths: IObservable<readonly IMcpConfigPath[]>;
 }
 
-export const IMcpConfigPathsService = createDecorator<IMcpConfigPathsService>('IMcpConfigPathsService');
+export const IMcpConfigPathsService =
+	createDecorator<IMcpConfigPathsService>('IMcpConfigPathsService');
 
 export class McpConfigPathsService extends Disposable implements IMcpConfigPathsService {
 	_serviceBrand: undefined;
@@ -66,9 +77,10 @@ export class McpConfigPathsService extends Disposable implements IMcpConfigPaths
 		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
 		@IProductService productService: IProductService,
 		@ILabelService labelService: ILabelService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IPreferencesService preferencesService: IPreferencesService,
+		@IPreferencesService preferencesService: IPreferencesService
 	) {
 		super();
 
@@ -78,7 +90,11 @@ export class McpConfigPathsService extends Disposable implements IMcpConfigPaths
 				id: 'usrlocal',
 				key: 'userLocalValue',
 				target: ConfigurationTarget.USER_LOCAL,
-				label: localize('mcp.configuration.userLocalValue', 'Global in {0}', productService.nameShort),
+				label: localize(
+					'mcp.configuration.userLocalValue',
+					'Global in {0}',
+					productService.nameShort
+				),
 				scope: StorageScope.PROFILE,
 				order: McpCollectionSortOrder.User,
 				uri: preferencesService.userSettingsResource,
@@ -95,45 +111,50 @@ export class McpConfigPathsService extends Disposable implements IMcpConfigPaths
 				uri: workspaceConfig,
 				section: ['settings', mcpConfigurationSection],
 			},
-			...workspaceContextService.getWorkspace()
-				.folders
-				.map(wf => this._fromWorkspaceFolder(wf))
+			...workspaceContextService.getWorkspace().folders.map(wf => this._fromWorkspaceFolder(wf)),
 		];
 
 		this._paths = observableValue('mcpConfigPaths', initialPaths.filter(isDefined));
 
-		remoteAgentService.getEnvironment().then((env) => {
-			const label = _environmentService.remoteAuthority ? labelService.getHostLabel(Schemas.vscodeRemote, _environmentService.remoteAuthority) : 'Remote';
+		remoteAgentService.getEnvironment().then(env => {
+			const label = _environmentService.remoteAuthority
+				? labelService.getHostLabel(Schemas.vscodeRemote, _environmentService.remoteAuthority)
+				: 'Remote';
 
-			this._paths.set([
-				...this.paths.get(),
-				{
-					id: 'usrremote',
-					key: 'userRemoteValue',
-					target: ConfigurationTarget.USER_REMOTE,
-					label,
-					scope: StorageScope.PROFILE,
-					order: McpCollectionSortOrder.User + McpCollectionSortOrder.RemoteBoost,
-					uri: env?.settingsPath,
-					remoteAuthority: _environmentService.remoteAuthority,
-					section: [mcpConfigurationSection],
-				}
-			], undefined);
+			this._paths.set(
+				[
+					...this.paths.get(),
+					{
+						id: 'usrremote',
+						key: 'userRemoteValue',
+						target: ConfigurationTarget.USER_REMOTE,
+						label,
+						scope: StorageScope.PROFILE,
+						order: McpCollectionSortOrder.User + McpCollectionSortOrder.RemoteBoost,
+						uri: env?.settingsPath,
+						remoteAuthority: _environmentService.remoteAuthority,
+						section: [mcpConfigurationSection],
+					},
+				],
+				undefined
+			);
 		});
 
-		this._register(workspaceContextService.onDidChangeWorkspaceFolders(e => {
-			const next = this._paths.get().slice();
-			for (const folder of e.added) {
-				next.push(this._fromWorkspaceFolder(folder));
-			}
-			for (const folder of e.removed) {
-				const idx = next.findIndex(c => c.workspaceFolder === folder);
-				if (idx !== -1) {
-					next.splice(idx, 1);
+		this._register(
+			workspaceContextService.onDidChangeWorkspaceFolders(e => {
+				const next = this._paths.get().slice();
+				for (const folder of e.added) {
+					next.push(this._fromWorkspaceFolder(folder));
 				}
-			}
-			this._paths.set(next, undefined);
-		}));
+				for (const folder of e.removed) {
+					const idx = next.findIndex(c => c.workspaceFolder === folder);
+					if (idx !== -1) {
+						next.splice(idx, 1);
+					}
+				}
+				this._paths.set(next, undefined);
+			})
+		);
 	}
 
 	private _fromWorkspaceFolder(workspaceFolder: IWorkspaceFolder): IMcpConfigPath {

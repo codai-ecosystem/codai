@@ -9,15 +9,36 @@ import { Range } from '../../../../common/core/range.js';
 import { BracketsUtils } from '../../../../common/languages/supports/richEditBrackets.js';
 
 suite('richEditBrackets', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function findPrevBracketInRange(reversedBracketRegex: RegExp, lineText: string, currentTokenStart: number, currentTokenEnd: number): Range | null {
-		return BracketsUtils.findPrevBracketInRange(reversedBracketRegex, 1, lineText, currentTokenStart, currentTokenEnd);
+	function findPrevBracketInRange(
+		reversedBracketRegex: RegExp,
+		lineText: string,
+		currentTokenStart: number,
+		currentTokenEnd: number
+	): Range | null {
+		return BracketsUtils.findPrevBracketInRange(
+			reversedBracketRegex,
+			1,
+			lineText,
+			currentTokenStart,
+			currentTokenEnd
+		);
 	}
 
-	function findNextBracketInRange(forwardBracketRegex: RegExp, lineText: string, currentTokenStart: number, currentTokenEnd: number): Range | null {
-		return BracketsUtils.findNextBracketInRange(forwardBracketRegex, 1, lineText, currentTokenStart, currentTokenEnd);
+	function findNextBracketInRange(
+		forwardBracketRegex: RegExp,
+		lineText: string,
+		currentTokenStart: number,
+		currentTokenEnd: number
+	): Range | null {
+		return BracketsUtils.findNextBracketInRange(
+			forwardBracketRegex,
+			1,
+			lineText,
+			currentTokenStart,
+			currentTokenEnd
+		);
 	}
 
 	test('findPrevBracketInToken one char 1', () => {
@@ -78,5 +99,4 @@ suite('richEditBrackets', () => {
 		assert.strictEqual(result!.startColumn, 1);
 		assert.strictEqual(result!.endColumn, 3);
 	});
-
 });

@@ -6,7 +6,6 @@
 import { Emitter } from './event.js';
 
 export class IMEImpl {
-
 	private readonly _onDidChange = new Emitter<void>();
 	public readonly onDidChange = this._onDidChange.event;
 

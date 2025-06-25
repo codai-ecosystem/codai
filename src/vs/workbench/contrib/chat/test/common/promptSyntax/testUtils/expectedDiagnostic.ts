@@ -5,7 +5,12 @@
 
 import assert from 'assert';
 import { assertNever } from '../../../../../../../base/common/assert.js';
-import { PromptMetadataDiagnostic, PromptMetadataError, PromptMetadataWarning, TDiagnostic } from '../../../../common/promptSyntax/parsers/promptHeader/diagnostics.js';
+import {
+	PromptMetadataDiagnostic,
+	PromptMetadataError,
+	PromptMetadataWarning,
+	TDiagnostic,
+} from '../../../../common/promptSyntax/parsers/promptHeader/diagnostics.js';
 
 /**
  * Base class for all expected diagnostics used in the unit tests.
@@ -20,13 +25,12 @@ abstract class ExpectedDiagnostic extends PromptMetadataDiagnostic {
 		assert.strictEqual(
 			this.message,
 			other.message,
-			`Expected message '${this.message}', got '${other.message}'.`,
+			`Expected message '${this.message}', got '${other.message}'.`
 		);
 
 		assert(
-			this.range
-				.equalsRange(other.range),
-			`Expected range '${this.range}', got '${other.range}'.`,
+			this.range.equalsRange(other.range),
+			`Expected range '${this.range}', got '${other.range}'.`
 		);
 	}
 
@@ -38,7 +42,7 @@ abstract class ExpectedDiagnostic extends PromptMetadataDiagnostic {
 		if (other instanceof PromptMetadataWarning) {
 			assert(
 				this instanceof ExpectedDiagnosticWarning,
-				`Expected a warning diagnostic object, got '${other}'.`,
+				`Expected a warning diagnostic object, got '${other}'.`
 			);
 
 			return;
@@ -47,16 +51,13 @@ abstract class ExpectedDiagnostic extends PromptMetadataDiagnostic {
 		if (other instanceof PromptMetadataError) {
 			assert(
 				this instanceof ExpectedDiagnosticError,
-				`Expected a error diagnostic object, got '${other}'.`,
+				`Expected a error diagnostic object, got '${other}'.`
 			);
 
 			return;
 		}
 
-		assertNever(
-			other,
-			`Unknown diagnostic type '${other}'.`,
-		);
+		assertNever(other, `Unknown diagnostic type '${other}'.`);
 	}
 }
 

@@ -5,7 +5,11 @@
 
 import { createFastDomNode, FastDomNode } from '../../../../../base/browser/fastDomNode.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { INotebookCellOverlay, INotebookCellOverlayChangeAccessor, INotebookViewCellsUpdateEvent } from '../notebookBrowser.js';
+import {
+	INotebookCellOverlay,
+	INotebookCellOverlayChangeAccessor,
+	INotebookViewCellsUpdateEvent,
+} from '../notebookBrowser.js';
 import { NotebookCellListView } from '../view/notebookCellListView.js';
 import { CellViewModel } from '../viewModel/notebookViewModelImpl.js';
 
@@ -20,9 +24,7 @@ export class NotebookCellOverlays extends Disposable {
 	public domNode: FastDomNode<HTMLElement>;
 	private _overlays: { [key: string]: INotebookCellOverlayWidget } = Object.create(null);
 
-	constructor(
-		private readonly listView: NotebookCellListView<CellViewModel>
-	) {
+	constructor(private readonly listView: NotebookCellListView<CellViewModel>) {
 		super();
 		this.domNode = createFastDomNode(document.createElement('div'));
 		this.domNode.setClassName('cell-overlays');
@@ -34,7 +36,9 @@ export class NotebookCellOverlays extends Disposable {
 		this.listView.containerDomNode.appendChild(this.domNode.domNode);
 	}
 
-	changeCellOverlays(callback: (changeAccessor: INotebookCellOverlayChangeAccessor) => void): boolean {
+	changeCellOverlays(
+		callback: (changeAccessor: INotebookCellOverlayChangeAccessor) => void
+	): boolean {
 		let overlaysHaveChanged = false;
 		const changeAccessor: INotebookCellOverlayChangeAccessor = {
 			addOverlay: (overlay: INotebookCellOverlay): string => {
@@ -48,7 +52,7 @@ export class NotebookCellOverlays extends Disposable {
 			layoutOverlay: (id: string): void => {
 				overlaysHaveChanged = true;
 				this._layoutOverlay(id);
-			}
+			},
 		};
 
 		callback(changeAccessor);
@@ -76,7 +80,7 @@ export class NotebookCellOverlays extends Disposable {
 		const overlayWidget = {
 			overlayId,
 			overlay,
-			domNode: createFastDomNode(overlay.domNode)
+			domNode: createFastDomNode(overlay.domNode),
 		};
 
 		this._overlays[overlayId] = overlayWidget;
@@ -133,5 +137,3 @@ export class NotebookCellOverlays extends Disposable {
 		return false;
 	}
 }
-
-

@@ -115,9 +115,7 @@ export function EcosystemIntegrationDashboard() {
 	return (
 		<div className="p-6 bg-white rounded-lg shadow-sm border">
 			<div className="flex items-center justify-between mb-6">
-				<h2 className="text-xl font-semibold text-gray-900">
-					Ecosystem Integration Status
-				</h2>
+				<h2 className="text-xl font-semibold text-gray-900">Ecosystem Integration Status</h2>
 				<button
 					onClick={checkServiceStatus}
 					className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
@@ -128,10 +126,7 @@ export function EcosystemIntegrationDashboard() {
 
 			<div className="space-y-4">
 				{services.map((service, index) => (
-					<div
-						key={index}
-						className="flex items-center justify-between p-4 border rounded-lg"
-					>
+					<div key={index} className="flex items-center justify-between p-4 border rounded-lg">
 						<div className="flex items-center space-x-3">
 							<span className="text-lg">{getStatusIcon(service.status)}</span>
 							<div>
@@ -140,9 +135,7 @@ export function EcosystemIntegrationDashboard() {
 									Last checked: {service.lastCheck.toLocaleTimeString()}
 								</p>
 								{service.error && (
-									<p className="text-sm text-red-600 mt-1">
-										Error: {service.error}
-									</p>
+									<p className="text-sm text-red-600 mt-1">Error: {service.error}</p>
 								)}
 							</div>
 						</div>
@@ -160,9 +153,7 @@ export function EcosystemIntegrationDashboard() {
 			{session && (
 				<div className="mt-6 p-4 bg-green-50 rounded-lg">
 					<h3 className="font-medium text-green-900 mb-2">User Session Active</h3>
-					<p className="text-sm text-green-700">
-						Authenticated as: {session.user?.email}
-					</p>
+					<p className="text-sm text-green-700">Authenticated as: {session.user?.email}</p>
 				</div>
 			)}
 		</div>

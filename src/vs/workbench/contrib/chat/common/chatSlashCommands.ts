@@ -41,9 +41,18 @@ export interface IChatSlashData {
 export interface IChatSlashFragment {
 	content: string | { treeData: IChatResponseProgressFileTreeData };
 }
-export type IChatSlashCallback = { (prompt: string, progress: IProgress<IChatProgress>, history: IChatMessage[], location: ChatAgentLocation, token: CancellationToken): Promise<{ followUp: IChatFollowup[] } | void> };
+export type IChatSlashCallback = {
+	(
+		prompt: string,
+		progress: IProgress<IChatProgress>,
+		history: IChatMessage[],
+		location: ChatAgentLocation,
+		token: CancellationToken
+	): Promise<{ followUp: IChatFollowup[] } | void>;
+};
 
-export const IChatSlashCommandService = createDecorator<IChatSlashCommandService>('chatSlashCommandService');
+export const IChatSlashCommandService =
+	createDecorator<IChatSlashCommandService>('chatSlashCommandService');
 
 /**
  * This currently only exists to drive /clear and /help
@@ -52,7 +61,14 @@ export interface IChatSlashCommandService {
 	_serviceBrand: undefined;
 	readonly onDidChangeCommands: Event<void>;
 	registerSlashCommand(data: IChatSlashData, command: IChatSlashCallback): IDisposable;
-	executeCommand(id: string, prompt: string, progress: IProgress<IChatProgress>, history: IChatMessage[], location: ChatAgentLocation, token: CancellationToken): Promise<{ followUp: IChatFollowup[] } | void>;
+	executeCommand(
+		id: string,
+		prompt: string,
+		progress: IProgress<IChatProgress>,
+		history: IChatMessage[],
+		location: ChatAgentLocation,
+		token: CancellationToken
+	): Promise<{ followUp: IChatFollowup[] } | void>;
 	getCommands(location: ChatAgentLocation, mode: ChatMode): Array<IChatSlashData>;
 	hasCommand(id: string): boolean;
 }
@@ -60,7 +76,6 @@ export interface IChatSlashCommandService {
 type Tuple = { data: IChatSlashData; command?: IChatSlashCallback };
 
 export class ChatSlashCommandService extends Disposable implements IChatSlashCommandService {
-
 	declare _serviceBrand: undefined;
 
 	private readonly _commands = new Map<string, Tuple>();
@@ -93,16 +108,23 @@ export class ChatSlashCommandService extends Disposable implements IChatSlashCom
 	}
 
 	getCommands(location: ChatAgentLocation, mode: ChatMode): Array<IChatSlashData> {
-		return Array
-			.from(this._commands.values(), v => v.data)
-			.filter(c => c.locations.includes(location) && (!c.modes || c.modes.includes(mode)));
+		return Array.from(this._commands.values(), v => v.data).filter(
+			c => c.locations.includes(location) && (!c.modes || c.modes.includes(mode))
+		);
 	}
 
 	hasCommand(id: string): boolean {
 		return this._commands.has(id);
 	}
 
-	async executeCommand(id: string, prompt: string, progress: IProgress<IChatProgress>, history: IChatMessage[], location: ChatAgentLocation, token: CancellationToken): Promise<{ followUp: IChatFollowup[] } | void> {
+	async executeCommand(
+		id: string,
+		prompt: string,
+		progress: IProgress<IChatProgress>,
+		history: IChatMessage[],
+		location: ChatAgentLocation,
+		token: CancellationToken
+	): Promise<{ followUp: IChatFollowup[] } | void> {
 		const data = this._commands.get(id);
 		if (!data) {
 			throw new Error('No command with id ${id} NOT registered');

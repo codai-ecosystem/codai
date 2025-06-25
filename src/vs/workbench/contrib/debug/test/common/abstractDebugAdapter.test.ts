@@ -33,14 +33,24 @@ suite('Debug - AbstractDebugAdapter', () => {
 			await evaluate('before.foo');
 			await timeout(0);
 
-			assert.deepStrictEqual(output, ['before.foo', '--end microtask--', '=before.foo', '--end microtask--']);
+			assert.deepStrictEqual(output, [
+				'before.foo',
+				'--end microtask--',
+				'=before.foo',
+				'--end microtask--',
+			]);
 		});
 
 		test('inserts task boundary after response', async () => {
 			await evaluate('after.foo');
 			await timeout(0);
 
-			assert.deepStrictEqual(output, ['=after.foo', '--end microtask--', 'after.foo', '--end microtask--']);
+			assert.deepStrictEqual(output, [
+				'=after.foo',
+				'--end microtask--',
+				'after.foo',
+				'--end microtask--',
+			]);
 		});
 
 		test('does not insert boundaries between events', async () => {
@@ -49,7 +59,14 @@ suite('Debug - AbstractDebugAdapter', () => {
 			adapter.sendEventBody('output', { output: 'c' });
 			await timeout(0);
 
-			assert.deepStrictEqual(output, ['a', 'b', 'c', '--end microtask--', '--end microtask--', '--end microtask--']);
+			assert.deepStrictEqual(output, [
+				'a',
+				'b',
+				'c',
+				'--end microtask--',
+				'--end microtask--',
+				'--end microtask--',
+			]);
 		});
 	});
 });

@@ -56,9 +56,7 @@ export function useConversation(): UseConversationReturn {
 	const updateMessage = useCallback((id: string, updates: Partial<Message>) => {
 		setState(prev => ({
 			...prev,
-			messages: prev.messages.map(msg =>
-				msg.id === id ? { ...msg, ...updates } : msg
-			),
+			messages: prev.messages.map(msg => (msg.id === id ? { ...msg, ...updates } : msg)),
 		}));
 	}, []);
 
@@ -94,9 +92,12 @@ export function useConversation(): UseConversationReturn {
 		return state.messages[state.messages.length - 1];
 	}, [state.messages]);
 
-	const getMessagesByRole = useCallback((role: Message['role']) => {
-		return state.messages.filter(msg => msg.role === role);
-	}, [state.messages]);
+	const getMessagesByRole = useCallback(
+		(role: Message['role']) => {
+			return state.messages.filter(msg => msg.role === role);
+		},
+		[state.messages]
+	);
 
 	return {
 		state,

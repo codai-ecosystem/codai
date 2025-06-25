@@ -5,7 +5,10 @@
 
 import * as DOM from '../../../base/browser/dom.js';
 import { StandardKeyboardEvent } from '../../../base/browser/keyboardEvent.js';
-import { ActionViewItem, BaseActionViewItem } from '../../../base/browser/ui/actionbar/actionViewItems.js';
+import {
+	ActionViewItem,
+	BaseActionViewItem,
+} from '../../../base/browser/ui/actionbar/actionViewItems.js';
 import { DropdownMenuActionViewItem } from '../../../base/browser/ui/dropdown/dropdownActionViewItem.js';
 import { IAction, IActionRunner } from '../../../base/common/actions.js';
 import { Event } from '../../../base/common/event.js';
@@ -53,19 +56,37 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		@IAccessibilityService _accessibilityService: IAccessibilityService
 	) {
 		super(null, primaryAction, { hoverDelegate: _options?.hoverDelegate });
-		this._primaryAction = new MenuEntryActionViewItem(primaryAction, { hoverDelegate: _options?.hoverDelegate }, _keybindingService, _notificationService, _contextKeyService, _themeService, _contextMenuProvider, _accessibilityService);
+		this._primaryAction = new MenuEntryActionViewItem(
+			primaryAction,
+			{ hoverDelegate: _options?.hoverDelegate },
+			_keybindingService,
+			_notificationService,
+			_contextKeyService,
+			_themeService,
+			_contextMenuProvider,
+			_accessibilityService
+		);
 		if (_options?.actionRunner) {
 			this._primaryAction.actionRunner = _options.actionRunner;
 		}
 
-		this._dropdown = new DropdownMenuActionViewItem(dropdownAction, dropdownMenuActions, this._contextMenuProvider, {
-			menuAsChild: _options?.menuAsChild ?? true,
-			classNames: className ? ['codicon', 'codicon-chevron-down', className] : ['codicon', 'codicon-chevron-down'],
-			actionRunner: this._options?.actionRunner,
-			keybindingProvider: this._options?.getKeyBinding ?? (action => _keybindingService.lookupKeybinding(action.id)),
-			hoverDelegate: _options?.hoverDelegate,
-			skipTelemetry: _options?.skipTelemetry,
-		});
+		this._dropdown = new DropdownMenuActionViewItem(
+			dropdownAction,
+			dropdownMenuActions,
+			this._contextMenuProvider,
+			{
+				menuAsChild: _options?.menuAsChild ?? true,
+				classNames: className
+					? ['codicon', 'codicon-chevron-down', className]
+					: ['codicon', 'codicon-chevron-down'],
+				actionRunner: this._options?.actionRunner,
+				keybindingProvider:
+					this._options?.getKeyBinding ??
+					(action => _keybindingService.lookupKeybinding(action.id)),
+				hoverDelegate: _options?.hoverDelegate,
+				skipTelemetry: _options?.skipTelemetry,
+			}
+		);
 	}
 
 	override set actionRunner(actionRunner: IActionRunner) {
@@ -91,29 +112,37 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		this._primaryAction.render(DOM.append(this._container, primaryContainer));
 		this._dropdownContainer = DOM.$('.dropdown-action-container');
 		this._dropdown.render(DOM.append(this._container, this._dropdownContainer));
-		this._register(DOM.addDisposableListener(primaryContainer, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			if (!this.action.enabled) {
-				return;
-			}
-			const event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.RightArrow)) {
-				this._primaryAction.element!.tabIndex = -1;
-				this._dropdown.focus();
-				event.stopPropagation();
-			}
-		}));
-		this._register(DOM.addDisposableListener(this._dropdownContainer, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			if (!this.action.enabled) {
-				return;
-			}
-			const event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.LeftArrow)) {
-				this._primaryAction.element!.tabIndex = 0;
-				this._dropdown.setFocusable(false);
-				this._primaryAction.element?.focus();
-				event.stopPropagation();
-			}
-		}));
+		this._register(
+			DOM.addDisposableListener(primaryContainer, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+				if (!this.action.enabled) {
+					return;
+				}
+				const event = new StandardKeyboardEvent(e);
+				if (event.equals(KeyCode.RightArrow)) {
+					this._primaryAction.element!.tabIndex = -1;
+					this._dropdown.focus();
+					event.stopPropagation();
+				}
+			})
+		);
+		this._register(
+			DOM.addDisposableListener(
+				this._dropdownContainer,
+				DOM.EventType.KEY_DOWN,
+				(e: KeyboardEvent) => {
+					if (!this.action.enabled) {
+						return;
+					}
+					const event = new StandardKeyboardEvent(e);
+					if (event.equals(KeyCode.LeftArrow)) {
+						this._primaryAction.element!.tabIndex = 0;
+						this._dropdown.setFocusable(false);
+						this._primaryAction.element?.focus();
+						event.stopPropagation();
+					}
+				}
+			)
+		);
 
 		this.updateEnabled();
 	}
@@ -149,13 +178,18 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 
 	update(dropdownAction: IAction, dropdownMenuActions: IAction[], dropdownIcon?: string): void {
 		this._dropdown.dispose();
-		this._dropdown = new DropdownMenuActionViewItem(dropdownAction, dropdownMenuActions, this._contextMenuProvider, {
-			menuAsChild: this._options?.menuAsChild ?? true,
-			classNames: ['codicon', dropdownIcon || 'codicon-chevron-down'],
-			actionRunner: this._options?.actionRunner,
-			hoverDelegate: this._options?.hoverDelegate,
-			keybindingProvider: this._options?.getKeyBinding
-		});
+		this._dropdown = new DropdownMenuActionViewItem(
+			dropdownAction,
+			dropdownMenuActions,
+			this._contextMenuProvider,
+			{
+				menuAsChild: this._options?.menuAsChild ?? true,
+				classNames: ['codicon', dropdownIcon || 'codicon-chevron-down'],
+				actionRunner: this._options?.actionRunner,
+				hoverDelegate: this._options?.hoverDelegate,
+				keybindingProvider: this._options?.getKeyBinding,
+			}
+		);
 		if (this._dropdownContainer) {
 			this._dropdown.render(this._dropdownContainer);
 		}

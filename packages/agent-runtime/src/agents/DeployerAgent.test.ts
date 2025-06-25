@@ -237,7 +237,9 @@ describe('DeployerAgent', () => {
 
 			// Mock the private methods to throw an error
 			const originalMethod = (deployerAgent as any).generateGeneralDeploymentConfig;
-			vi.spyOn(deployerAgent as any, 'generateGeneralDeploymentConfig').mockRejectedValue(new Error('Deployment failed'));
+			vi.spyOn(deployerAgent as any, 'generateGeneralDeploymentConfig').mockRejectedValue(
+				new Error('Deployment failed')
+			);
 
 			const result = await deployerAgent.executeTask(task);
 

@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	export interface ChatRequestDraft {
 		readonly prompt: string;
 		readonly files: readonly Uri[];
@@ -20,10 +19,16 @@ declare module 'vscode' {
 	}
 
 	export interface ChatRelatedFilesProvider {
-		provideRelatedFiles(chatRequest: ChatRequestDraft, token: CancellationToken): ProviderResult<ChatRelatedFile[]>;
+		provideRelatedFiles(
+			chatRequest: ChatRequestDraft,
+			token: CancellationToken
+		): ProviderResult<ChatRelatedFile[]>;
 	}
 
 	export namespace chat {
-		export function registerRelatedFilesProvider(provider: ChatRelatedFilesProvider, metadata: ChatRelatedFilesProviderMetadata): Disposable;
+		export function registerRelatedFilesProvider(
+			provider: ChatRelatedFilesProvider,
+			metadata: ChatRelatedFilesProviderMetadata
+		): Disposable;
 	}
 }

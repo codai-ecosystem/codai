@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// TODO - @lramos15 - Issue link
 
 	export interface LanguageModelChat {

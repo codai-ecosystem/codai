@@ -25,7 +25,9 @@ export async function testAgentIntegration(): Promise<void> {
 
 		// List available agents
 		for (const [agentId, status] of agentStatuses.entries()) {
-			console.log(`  - ${agentId}: ${status.isHealthy ? 'healthy' : 'unhealthy'}, ${status.isEnabled ? 'enabled' : 'disabled'}`);
+			console.log(
+				`  - ${agentId}: ${status.isHealthy ? 'healthy' : 'unhealthy'}, ${status.isEnabled ? 'enabled' : 'disabled'}`
+			);
 		}
 
 		// Test task execution with PlannerAgent
@@ -37,10 +39,10 @@ export async function testAgentIntegration(): Promise<void> {
 			status: 'pending' as const,
 			priority: 'medium' as const,
 			inputs: {
-				requirements: 'Create a simple todo list web application using React and TypeScript'
+				requirements: 'Create a simple todo list web application using React and TypeScript',
 			},
 			createdAt: new Date(),
-			progress: 0
+			progress: 0,
 		};
 
 		console.log('🚀 Executing test planning task...');
@@ -49,7 +51,7 @@ export async function testAgentIntegration(): Promise<void> {
 			success: result.success,
 			duration: result.duration,
 			outputsCount: Object.keys(result.outputs || {}).length,
-			memoryChangesCount: result.memoryChanges?.length || 0
+			memoryChangesCount: result.memoryChanges?.length || 0,
 		});
 
 		return;
@@ -60,7 +62,11 @@ export async function testAgentIntegration(): Promise<void> {
 }
 
 // Test function that can be called from the extension
-export async function runAgentIntegrationTest(): Promise<{ success: boolean; message: string; details?: any }> {
+export async function runAgentIntegrationTest(): Promise<{
+	success: boolean;
+	message: string;
+	details?: any;
+}> {
 	try {
 		await testAgentIntegration();
 		return {
@@ -73,8 +79,8 @@ export async function runAgentIntegrationTest(): Promise<{ success: boolean; mes
 			message: 'Agent integration test failed',
 			details: {
 				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined
-			}
+				stack: error instanceof Error ? error.stack : undefined,
+			},
 		};
 	}
 }

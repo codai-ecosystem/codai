@@ -10,7 +10,9 @@ import { URI } from '../../../../base/common/uri.js';
 import { ContextKeyValue } from '../../../../platform/contextkey/common/contextkey.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 
-export const IMultiDiffSourceResolverService = createDecorator<IMultiDiffSourceResolverService>('multiDiffSourceResolverService');
+export const IMultiDiffSourceResolverService = createDecorator<IMultiDiffSourceResolverService>(
+	'multiDiffSourceResolverService'
+);
 
 export interface IMultiDiffSourceResolverService {
 	readonly _serviceBrand: undefined;

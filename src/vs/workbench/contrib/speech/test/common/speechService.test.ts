@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { speechLanguageConfigToLanguage } from '../../common/speechService.js';
 
 suite('SpeechService', () => {
-
 	test('resolve language', async () => {
 		assert.strictEqual(speechLanguageConfigToLanguage(undefined), 'en-US');
 		assert.strictEqual(speechLanguageConfigToLanguage(3), 'en-US');

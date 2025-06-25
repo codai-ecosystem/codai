@@ -11,7 +11,15 @@ import { IDimension } from '../../../common/core/2d/dimension.js';
 import { IPosition, Position } from '../../../common/core/position.js';
 import { IRange, Range } from '../../../common/core/range.js';
 import { ISelection, Selection } from '../../../common/core/selection.js';
-import { IDiffEditorViewModel, IEditor, IEditorAction, IEditorDecorationsCollection, IEditorModel, IEditorViewState, ScrollType } from '../../../common/editorCommon.js';
+import {
+	IDiffEditorViewModel,
+	IEditor,
+	IEditorAction,
+	IEditorDecorationsCollection,
+	IEditorModel,
+	IEditorViewState,
+	ScrollType,
+} from '../../../common/editorCommon.js';
 import { IModelDecorationsChangeAccessor, IModelDeltaDecoration } from '../../../common/model.js';
 
 export abstract class DelegatingEditor extends Disposable implements IEditor {
@@ -23,7 +31,9 @@ export abstract class DelegatingEditor extends Disposable implements IEditor {
 
 	protected abstract get _targetEditor(): CodeEditorWidget;
 
-	getId(): string { return this.getEditorType() + ':v2:' + this._id; }
+	getId(): string {
+		return this.getEditorType() + ':v2:' + this._id;
+	}
 
 	abstract getEditorType(): string;
 	abstract updateOptions(newOptions: IEditorOptions): void;
@@ -62,7 +72,10 @@ export abstract class DelegatingEditor extends Disposable implements IEditor {
 		this._targetEditor.revealLineInCenter(lineNumber, scrollType);
 	}
 
-	public revealLineInCenterIfOutsideViewport(lineNumber: number, scrollType: ScrollType = ScrollType.Smooth): void {
+	public revealLineInCenterIfOutsideViewport(
+		lineNumber: number,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
 		this._targetEditor.revealLineInCenterIfOutsideViewport(lineNumber, scrollType);
 	}
 
@@ -74,15 +87,24 @@ export abstract class DelegatingEditor extends Disposable implements IEditor {
 		this._targetEditor.revealPosition(position, scrollType);
 	}
 
-	public revealPositionInCenter(position: IPosition, scrollType: ScrollType = ScrollType.Smooth): void {
+	public revealPositionInCenter(
+		position: IPosition,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
 		this._targetEditor.revealPositionInCenter(position, scrollType);
 	}
 
-	public revealPositionInCenterIfOutsideViewport(position: IPosition, scrollType: ScrollType = ScrollType.Smooth): void {
+	public revealPositionInCenterIfOutsideViewport(
+		position: IPosition,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
 		this._targetEditor.revealPositionInCenterIfOutsideViewport(position, scrollType);
 	}
 
-	public revealPositionNearTop(position: IPosition, scrollType: ScrollType = ScrollType.Smooth): void {
+	public revealPositionNearTop(
+		position: IPosition,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
 		this._targetEditor.revealPositionNearTop(position, scrollType);
 	}
 
@@ -106,23 +128,48 @@ export abstract class DelegatingEditor extends Disposable implements IEditor {
 		this._targetEditor.setSelections(ranges, source);
 	}
 
-	public revealLines(startLineNumber: number, endLineNumber: number, scrollType: ScrollType = ScrollType.Smooth): void {
+	public revealLines(
+		startLineNumber: number,
+		endLineNumber: number,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
 		this._targetEditor.revealLines(startLineNumber, endLineNumber, scrollType);
 	}
 
-	public revealLinesInCenter(startLineNumber: number, endLineNumber: number, scrollType: ScrollType = ScrollType.Smooth): void {
+	public revealLinesInCenter(
+		startLineNumber: number,
+		endLineNumber: number,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
 		this._targetEditor.revealLinesInCenter(startLineNumber, endLineNumber, scrollType);
 	}
 
-	public revealLinesInCenterIfOutsideViewport(startLineNumber: number, endLineNumber: number, scrollType: ScrollType = ScrollType.Smooth): void {
-		this._targetEditor.revealLinesInCenterIfOutsideViewport(startLineNumber, endLineNumber, scrollType);
+	public revealLinesInCenterIfOutsideViewport(
+		startLineNumber: number,
+		endLineNumber: number,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
+		this._targetEditor.revealLinesInCenterIfOutsideViewport(
+			startLineNumber,
+			endLineNumber,
+			scrollType
+		);
 	}
 
-	public revealLinesNearTop(startLineNumber: number, endLineNumber: number, scrollType: ScrollType = ScrollType.Smooth): void {
+	public revealLinesNearTop(
+		startLineNumber: number,
+		endLineNumber: number,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
 		this._targetEditor.revealLinesNearTop(startLineNumber, endLineNumber, scrollType);
 	}
 
-	public revealRange(range: IRange, scrollType: ScrollType = ScrollType.Smooth, revealVerticalInCenter: boolean = false, revealHorizontal: boolean = true): void {
+	public revealRange(
+		range: IRange,
+		scrollType: ScrollType = ScrollType.Smooth,
+		revealVerticalInCenter: boolean = false,
+		revealHorizontal: boolean = true
+	): void {
 		this._targetEditor.revealRange(range, scrollType, revealVerticalInCenter, revealHorizontal);
 	}
 
@@ -130,7 +177,10 @@ export abstract class DelegatingEditor extends Disposable implements IEditor {
 		this._targetEditor.revealRangeInCenter(range, scrollType);
 	}
 
-	public revealRangeInCenterIfOutsideViewport(range: IRange, scrollType: ScrollType = ScrollType.Smooth): void {
+	public revealRangeInCenterIfOutsideViewport(
+		range: IRange,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
 		this._targetEditor.revealRangeInCenterIfOutsideViewport(range, scrollType);
 	}
 
@@ -138,7 +188,10 @@ export abstract class DelegatingEditor extends Disposable implements IEditor {
 		this._targetEditor.revealRangeNearTop(range, scrollType);
 	}
 
-	public revealRangeNearTopIfOutsideViewport(range: IRange, scrollType: ScrollType = ScrollType.Smooth): void {
+	public revealRangeNearTopIfOutsideViewport(
+		range: IRange,
+		scrollType: ScrollType = ScrollType.Smooth
+	): void {
 		this._targetEditor.revealRangeNearTopIfOutsideViewport(range, scrollType);
 	}
 
@@ -158,11 +211,15 @@ export abstract class DelegatingEditor extends Disposable implements IEditor {
 		this._targetEditor.trigger(source, handlerId, payload);
 	}
 
-	public createDecorationsCollection(decorations?: IModelDeltaDecoration[]): IEditorDecorationsCollection {
+	public createDecorationsCollection(
+		decorations?: IModelDeltaDecoration[]
+	): IEditorDecorationsCollection {
 		return this._targetEditor.createDecorationsCollection(decorations);
 	}
 
-	public changeDecorations(callback: (changeAccessor: IModelDecorationsChangeAccessor) => any): any {
+	public changeDecorations(
+		callback: (changeAccessor: IModelDecorationsChangeAccessor) => any
+	): any {
 		return this._targetEditor.changeDecorations(callback);
 	}
 

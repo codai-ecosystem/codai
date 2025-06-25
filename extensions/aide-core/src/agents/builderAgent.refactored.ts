@@ -67,7 +67,7 @@ export class BuilderAgent extends BaseAgent {
 				agent: 'builder',
 				buildType,
 				timestamp: new Date().toISOString(),
-				actions: actions.length
+				actions: actions.length,
 			});
 		} catch (error) {
 			this.logger.error(`Error processing builder request: ${message}`, error);
@@ -81,8 +81,8 @@ export class BuilderAgent extends BaseAgent {
 			metadata: {
 				buildType,
 				actionsGenerated: actions.length,
-				contextItems: context.length
-			}
+				contextItems: context.length,
+			},
 		};
 	}
 
@@ -90,7 +90,8 @@ export class BuilderAgent extends BaseAgent {
 	 * Get builder agent status
 	 */
 	async getStatus(): Promise<Record<string, any>> {
-		const logicNodes = this.memoryGraph.getNodesByType('logic')
+		const logicNodes = this.memoryGraph
+			.getNodesByType('logic')
 			.filter(node => node.metadata.agent === 'builder');
 
 		const recentBuilds = logicNodes.slice(-10);
@@ -100,16 +101,21 @@ export class BuilderAgent extends BaseAgent {
 			recentBuilds: recentBuilds.map(node => ({
 				content: node.content,
 				type: node.metadata.buildType,
-				timestamp: node.timestamp
+				timestamp: node.timestamp,
 			})),
-			buildTypes: this.getBuildTypeStats(logicNodes)
+			buildTypes: this.getBuildTypeStats(logicNodes),
 		};
 	}
 
 	/**
 	 * Build a component
 	 */
-	private async buildComponent(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async buildComponent(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const prompt = `Build a component based on: "${message}". Generate the necessary code, styles, and tests.`;
 		const aiResponse = await this.simulateAIResponse(prompt, context);
 
@@ -158,7 +164,12 @@ Please try again or provide more details about the component you want to build.`
 	/**
 	 * Build a feature
 	 */
-	private async buildFeature(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async buildFeature(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const prompt = `Implement a feature based on: "${message}". Generate all necessary files, components, and logic.`;
 		const aiResponse = await this.simulateAIResponse(prompt, context);
 
@@ -204,7 +215,12 @@ Please try again or provide more details about the feature you want to build.`;
 	/**
 	 * Build a function
 	 */
-	private async buildFunction(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async buildFunction(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		// Extract function name
 		const functionName = this.extractFunctionName(message);
 
@@ -241,13 +257,20 @@ Please try again or provide more details about the function you want to build.`;
 	/**
 	 * Build a project
 	 */
-	private async buildProject(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async buildProject(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const projectName = this.extractProjectName(message);
 		const projectType = this.determineProjectType(message);
 
 		// Default project path - in real implementation, we might ask the user
 		const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-		const projectPath = workspaceFolder ? path.join(workspaceFolder, projectName.toLowerCase().replace(/\s+/g, '-')) : '';
+		const projectPath = workspaceFolder
+			? path.join(workspaceFolder, projectName.toLowerCase().replace(/\s+/g, '-'))
+			: '';
 
 		try {
 			// For this refactored implementation, we'll delegate to the appropriate service
@@ -271,7 +294,7 @@ Please try again or provide more details about the function you want to build.`;
 				actions.push({
 					type: 'createFile',
 					target: `${projectPath}/README.md`,
-					description: `Created README for ${projectName}`
+					description: `Created README for ${projectName}`,
 				});
 			}
 
@@ -280,7 +303,7 @@ Please try again or provide more details about the function you want to build.`;
 				type: projectType,
 				path: projectPath,
 				createdAt: new Date().toISOString(),
-				status: 'created'
+				status: 'created',
 			});
 
 			return `🚀 **Project Created Successfully!**
@@ -290,7 +313,10 @@ Please try again or provide more details about the function you want to build.`;
 **Location:** ${projectPath}
 
 **Generated Files:**
-${actions.filter(a => a.type === 'createFile').map(a => `- \`${a.target}\``).join('\n')}
+${actions
+	.filter(a => a.type === 'createFile')
+	.map(a => `- \`${a.target}\``)
+	.join('\n')}
 
 **Next Steps:**
 1. Open the project folder
@@ -311,7 +337,12 @@ Please try again or provide more details about the project you want to create.`;
 	/**
 	 * Generic build handler when a specific build type isn't determined
 	 */
-	private async generalBuild(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async generalBuild(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		this.logger.info(`Processing general build request: ${message}`);
 
 		return `I'll help you build that! Let me know what specific type of build you need:
@@ -333,7 +364,7 @@ Just provide more details about what you want to build.`;
 			feature: 0,
 			project: 0,
 			function: 0,
-			general: 0
+			general: 0,
 		};
 
 		logicNodes.forEach(node => {
@@ -376,13 +407,25 @@ Just provide more details about what you want to build.`;
 	private determineProjectType(message: string): string {
 		const lowercaseMessage = message.toLowerCase();
 
-		if (lowercaseMessage.includes('react') || lowercaseMessage.includes('frontend') || lowercaseMessage.includes('ui')) {
+		if (
+			lowercaseMessage.includes('react') ||
+			lowercaseMessage.includes('frontend') ||
+			lowercaseMessage.includes('ui')
+		) {
 			return 'react';
 		}
-		if (lowercaseMessage.includes('node') || lowercaseMessage.includes('express') || lowercaseMessage.includes('api')) {
+		if (
+			lowercaseMessage.includes('node') ||
+			lowercaseMessage.includes('express') ||
+			lowercaseMessage.includes('api')
+		) {
 			return 'api';
 		}
-		if (lowercaseMessage.includes('mobile') || lowercaseMessage.includes('react native') || lowercaseMessage.includes('app')) {
+		if (
+			lowercaseMessage.includes('mobile') ||
+			lowercaseMessage.includes('react native') ||
+			lowercaseMessage.includes('app')
+		) {
 			return 'mobile';
 		}
 		if (lowercaseMessage.includes('electron') || lowercaseMessage.includes('desktop')) {
@@ -397,11 +440,11 @@ Just provide more details about what you want to build.`;
 	 */
 	private getProjectTypeName(projectType: string): string {
 		const typeNames: Record<string, string> = {
-			'react': 'React Frontend',
-			'api': 'Node.js API',
-			'mobile': 'React Native Mobile App',
-			'desktop': 'Electron Desktop App',
-			'basic': 'JavaScript/TypeScript'
+			react: 'React Frontend',
+			api: 'Node.js API',
+			mobile: 'React Native Mobile App',
+			desktop: 'Electron Desktop App',
+			basic: 'JavaScript/TypeScript',
 		};
 
 		return typeNames[projectType] || 'Basic Project';
@@ -435,7 +478,9 @@ Just provide more details about what you want to build.`;
 	 * Extract project name from message
 	 */
 	private extractProjectName(message: string): string {
-		const match = message.match(/project\s+(?:called\s+)?([a-zA-Z][a-zA-Z0-9\s]+?)(?:\s+with|\s+using|\s+for|\s+that|\s+to|\s*$)/i);
+		const match = message.match(
+			/project\s+(?:called\s+)?([a-zA-Z][a-zA-Z0-9\s]+?)(?:\s+with|\s+using|\s+for|\s+that|\s+to|\s*$)/i
+		);
 		return match ? this.capitalize(match[1].trim()) : 'NewProject';
 	}
 
@@ -476,5 +521,4 @@ Just provide more details about what you want to build.`;
 		const nodes = this.memoryGraph.searchNodes(query);
 		return nodes.map(node => `${node.type}: ${node.content}`);
 	}
-
 }

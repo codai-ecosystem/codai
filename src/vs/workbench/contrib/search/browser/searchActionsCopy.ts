@@ -14,126 +14,150 @@ import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
 import { category, getSearchView } from './searchActionsBase.js';
 import { isWindows } from '../../../../base/common/platform.js';
 import { searchMatchComparer } from './searchCompare.js';
-import { RenderableMatch, ISearchTreeMatch, isSearchTreeMatch, ISearchTreeFileMatch, ISearchTreeFolderMatch, ISearchTreeFolderMatchWithResource, isSearchTreeFileMatch, isSearchTreeFolderMatch, isSearchTreeFolderMatchWithResource } from './searchTreeModel/searchTreeCommon.js';
+import {
+	RenderableMatch,
+	ISearchTreeMatch,
+	isSearchTreeMatch,
+	ISearchTreeFileMatch,
+	ISearchTreeFolderMatch,
+	ISearchTreeFolderMatchWithResource,
+	isSearchTreeFileMatch,
+	isSearchTreeFolderMatch,
+	isSearchTreeFolderMatchWithResource,
+} from './searchTreeModel/searchTreeCommon.js';
 
 //#region Actions
-registerAction2(class CopyMatchCommandAction extends Action2 {
-
-	constructor(
-	) {
-		super({
-			id: Constants.SearchCommandIds.CopyMatchCommandId,
-			title: nls.localize2('copyMatchLabel', "Copy"),
-			category,
-			keybinding: {
-				weight: KeybindingWeight.WorkbenchContrib,
-				when: Constants.SearchContext.FileMatchOrMatchFocusKey,
-				primary: KeyMod.CtrlCmd | KeyCode.KeyC,
-			},
-			menu: [{
-				id: MenuId.SearchContext,
-				when: Constants.SearchContext.FileMatchOrMatchFocusKey,
-				group: 'search_2',
-				order: 1
-			}]
-		});
-
-	}
-
-	override async run(accessor: ServicesAccessor, match: RenderableMatch | undefined): Promise<any> {
-		await copyMatchCommand(accessor, match);
-	}
-});
-
-registerAction2(class CopyPathCommandAction extends Action2 {
-
-	constructor(
-	) {
-		super({
-			id: Constants.SearchCommandIds.CopyPathCommandId,
-			title: nls.localize2('copyPathLabel', "Copy Path"),
-			category,
-			keybinding: {
-				weight: KeybindingWeight.WorkbenchContrib,
-				when: Constants.SearchContext.FileMatchOrFolderMatchWithResourceFocusKey,
-				primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyC,
-				win: {
-					primary: KeyMod.Shift | KeyMod.Alt | KeyCode.KeyC
+registerAction2(
+	class CopyMatchCommandAction extends Action2 {
+		constructor() {
+			super({
+				id: Constants.SearchCommandIds.CopyMatchCommandId,
+				title: nls.localize2('copyMatchLabel', 'Copy'),
+				category,
+				keybinding: {
+					weight: KeybindingWeight.WorkbenchContrib,
+					when: Constants.SearchContext.FileMatchOrMatchFocusKey,
+					primary: KeyMod.CtrlCmd | KeyCode.KeyC,
 				},
-			},
-			menu: [{
-				id: MenuId.SearchContext,
-				when: Constants.SearchContext.FileMatchOrFolderMatchWithResourceFocusKey,
-				group: 'search_2',
-				order: 2
-			}]
-		});
-
-	}
-
-	override async run(accessor: ServicesAccessor, fileMatch: ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource | undefined): Promise<any> {
-		await copyPathCommand(accessor, fileMatch);
-	}
-});
-
-registerAction2(class CopyAllCommandAction extends Action2 {
-
-	constructor(
-	) {
-		super({
-			id: Constants.SearchCommandIds.CopyAllCommandId,
-			title: nls.localize2('copyAllLabel', "Copy All"),
-			category,
-			menu: [{
-				id: MenuId.SearchContext,
-				when: Constants.SearchContext.HasSearchResults,
-				group: 'search_2',
-				order: 3
-			}]
-		});
-
-	}
-
-	override async run(accessor: ServicesAccessor): Promise<any> {
-		await copyAllCommand(accessor);
-	}
-});
-
-registerAction2(class GetSearchResultsAction extends Action2 {
-	constructor() {
-		super({
-			id: Constants.SearchCommandIds.GetSearchResultsActionId,
-			title: nls.localize2('getSearchResultsLabel', "Get Search Results"),
-			category,
-			f1: false
-		});
-	}
-
-	override async run(accessor: ServicesAccessor): Promise<any> {
-		const viewsService = accessor.get(IViewsService);
-		const labelService = accessor.get(ILabelService);
-
-		const searchView = getSearchView(viewsService);
-		if (searchView) {
-			const root = searchView.searchResult;
-			const textSearchResult = allFolderMatchesToString(root.folderMatches(), labelService);
-			const aiSearchResult = allFolderMatchesToString(root.folderMatches(true), labelService);
-
-			const text = `${textSearchResult}${lineDelimiter}${lineDelimiter}${aiSearchResult}`;
-
-			return text;
+				menu: [
+					{
+						id: MenuId.SearchContext,
+						when: Constants.SearchContext.FileMatchOrMatchFocusKey,
+						group: 'search_2',
+						order: 1,
+					},
+				],
+			});
 		}
 
-		return undefined;
+		override async run(
+			accessor: ServicesAccessor,
+			match: RenderableMatch | undefined
+		): Promise<any> {
+			await copyMatchCommand(accessor, match);
+		}
 	}
-});
+);
+
+registerAction2(
+	class CopyPathCommandAction extends Action2 {
+		constructor() {
+			super({
+				id: Constants.SearchCommandIds.CopyPathCommandId,
+				title: nls.localize2('copyPathLabel', 'Copy Path'),
+				category,
+				keybinding: {
+					weight: KeybindingWeight.WorkbenchContrib,
+					when: Constants.SearchContext.FileMatchOrFolderMatchWithResourceFocusKey,
+					primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyC,
+					win: {
+						primary: KeyMod.Shift | KeyMod.Alt | KeyCode.KeyC,
+					},
+				},
+				menu: [
+					{
+						id: MenuId.SearchContext,
+						when: Constants.SearchContext.FileMatchOrFolderMatchWithResourceFocusKey,
+						group: 'search_2',
+						order: 2,
+					},
+				],
+			});
+		}
+
+		override async run(
+			accessor: ServicesAccessor,
+			fileMatch: ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource | undefined
+		): Promise<any> {
+			await copyPathCommand(accessor, fileMatch);
+		}
+	}
+);
+
+registerAction2(
+	class CopyAllCommandAction extends Action2 {
+		constructor() {
+			super({
+				id: Constants.SearchCommandIds.CopyAllCommandId,
+				title: nls.localize2('copyAllLabel', 'Copy All'),
+				category,
+				menu: [
+					{
+						id: MenuId.SearchContext,
+						when: Constants.SearchContext.HasSearchResults,
+						group: 'search_2',
+						order: 3,
+					},
+				],
+			});
+		}
+
+		override async run(accessor: ServicesAccessor): Promise<any> {
+			await copyAllCommand(accessor);
+		}
+	}
+);
+
+registerAction2(
+	class GetSearchResultsAction extends Action2 {
+		constructor() {
+			super({
+				id: Constants.SearchCommandIds.GetSearchResultsActionId,
+				title: nls.localize2('getSearchResultsLabel', 'Get Search Results'),
+				category,
+				f1: false,
+			});
+		}
+
+		override async run(accessor: ServicesAccessor): Promise<any> {
+			const viewsService = accessor.get(IViewsService);
+			const labelService = accessor.get(ILabelService);
+
+			const searchView = getSearchView(viewsService);
+			if (searchView) {
+				const root = searchView.searchResult;
+				const textSearchResult = allFolderMatchesToString(root.folderMatches(), labelService);
+				const aiSearchResult = allFolderMatchesToString(root.folderMatches(true), labelService);
+
+				const text = `${textSearchResult}${lineDelimiter}${lineDelimiter}${aiSearchResult}`;
+
+				return text;
+			}
+
+			return undefined;
+		}
+	}
+);
 
 //#endregion
 
 //#region Helpers
 export const lineDelimiter = isWindows ? '\r\n' : '\n';
 
-async function copyPathCommand(accessor: ServicesAccessor, fileMatch: ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource | undefined) {
+async function copyPathCommand(
+	accessor: ServicesAccessor,
+	fileMatch: ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource | undefined
+) {
 	if (!fileMatch) {
 		const selection = getSelectedRow(accessor);
 		if (!isSearchTreeFileMatch(selection) || isSearchTreeFolderMatchWithResource(selection)) {
@@ -197,28 +221,26 @@ function matchToString(match: ISearchTreeMatch, indent = 0): string {
 
 	const fullMatchLines = match.fullPreviewLines();
 	const largestPrefixSize = fullMatchLines.reduce((largest, _, i) => {
-		const thisSize = i === 0 ?
-			getFirstLinePrefix().length :
-			getOtherLinePrefix(i).length;
+		const thisSize = i === 0 ? getFirstLinePrefix().length : getOtherLinePrefix(i).length;
 
 		return Math.max(thisSize, largest);
 	}, 0);
 
-	const formattedLines = fullMatchLines
-		.map((line, i) => {
-			const prefix = i === 0 ?
-				getFirstLinePrefix() :
-				getOtherLinePrefix(i);
+	const formattedLines = fullMatchLines.map((line, i) => {
+		const prefix = i === 0 ? getFirstLinePrefix() : getOtherLinePrefix(i);
 
-			const paddingStr = ' '.repeat(largestPrefixSize - prefix.length);
-			const indentStr = ' '.repeat(indent);
-			return `${indentStr}${prefix}: ${paddingStr}${line}`;
-		});
+		const paddingStr = ' '.repeat(largestPrefixSize - prefix.length);
+		const indentStr = ' '.repeat(indent);
+		return `${indentStr}${prefix}: ${paddingStr}${line}`;
+	});
 
 	return formattedLines.join('\n');
 }
 
-function fileFolderMatchToString(match: ISearchTreeFileMatch | ISearchTreeFolderMatch | ISearchTreeFolderMatchWithResource, labelService: ILabelService): { text: string; count: number } {
+function fileFolderMatchToString(
+	match: ISearchTreeFileMatch | ISearchTreeFolderMatch | ISearchTreeFolderMatchWithResource,
+	labelService: ILabelService
+): { text: string; count: number } {
 	if (isSearchTreeFileMatch(match)) {
 		return fileMatchToString(match, labelService);
 	} else {
@@ -226,18 +248,25 @@ function fileFolderMatchToString(match: ISearchTreeFileMatch | ISearchTreeFolder
 	}
 }
 
-function fileMatchToString(fileMatch: ISearchTreeFileMatch, labelService: ILabelService): { text: string; count: number } {
-	const matchTextRows = fileMatch.matches()
+function fileMatchToString(
+	fileMatch: ISearchTreeFileMatch,
+	labelService: ILabelService
+): { text: string; count: number } {
+	const matchTextRows = fileMatch
+		.matches()
 		.sort(searchMatchComparer)
 		.map(match => matchToString(match, 2));
 	const uriString = labelService.getUriLabel(fileMatch.resource, { noPrefix: true });
 	return {
 		text: `${uriString}${lineDelimiter}${matchTextRows.join(lineDelimiter)}`,
-		count: matchTextRows.length
+		count: matchTextRows.length,
 	};
 }
 
-function folderMatchToString(folderMatch: ISearchTreeFolderMatchWithResource | ISearchTreeFolderMatch, labelService: ILabelService): { text: string; count: number } {
+function folderMatchToString(
+	folderMatch: ISearchTreeFolderMatchWithResource | ISearchTreeFolderMatch,
+	labelService: ILabelService
+): { text: string; count: number } {
 	const results: string[] = [];
 	let numMatches = 0;
 
@@ -251,11 +280,14 @@ function folderMatchToString(folderMatch: ISearchTreeFolderMatchWithResource | I
 
 	return {
 		text: results.join(lineDelimiter + lineDelimiter),
-		count: numMatches
+		count: numMatches,
 	};
 }
 
-function allFolderMatchesToString(folderMatches: Array<ISearchTreeFolderMatchWithResource | ISearchTreeFolderMatch>, labelService: ILabelService): string {
+function allFolderMatchesToString(
+	folderMatches: Array<ISearchTreeFolderMatchWithResource | ISearchTreeFolderMatch>,
+	labelService: ILabelService
+): string {
 	const folderResults: string[] = [];
 	folderMatches = folderMatches.sort(searchMatchComparer);
 	for (let i = 0; i < folderMatches.length; i++) {

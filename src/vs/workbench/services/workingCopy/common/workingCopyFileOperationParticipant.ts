@@ -6,13 +6,16 @@
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { IDisposable, Disposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { IWorkingCopyFileOperationParticipant, SourceTargetPair, IFileOperationUndoRedoInfo } from './workingCopyFileService.js';
+import {
+	IWorkingCopyFileOperationParticipant,
+	SourceTargetPair,
+	IFileOperationUndoRedoInfo,
+} from './workingCopyFileService.js';
 import { FileOperation } from '../../../../platform/files/common/files.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { LinkedList } from '../../../../base/common/linkedList.js';
 
 export class WorkingCopyFileOperationParticipant extends Disposable {
-
 	private readonly participants = new LinkedList<IWorkingCopyFileOperationParticipant>();
 
 	constructor(
@@ -28,7 +31,12 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 		return toDisposable(() => remove());
 	}
 
-	async participate(files: SourceTargetPair[], operation: FileOperation, undoInfo: IFileOperationUndoRedoInfo | undefined, token: CancellationToken): Promise<void> {
+	async participate(
+		files: SourceTargetPair[],
+		operation: FileOperation,
+		undoInfo: IFileOperationUndoRedoInfo | undefined,
+		token: CancellationToken
+	): Promise<void> {
 		const timeout = this.configurationService.getValue<number>('files.participants.timeout');
 		if (typeof timeout !== 'number' || timeout <= 0) {
 			return; // disabled

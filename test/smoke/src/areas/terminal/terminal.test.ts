@@ -16,7 +16,6 @@ import { setup as setupTerminalShellIntegrationTests } from './terminal-shellInt
 
 export function setup(logger: Logger) {
 	describe('Terminal', function () {
-
 		// Retry tests 3 times to minimize build failures due to any flakiness
 		this.retries(3);
 
@@ -48,6 +47,8 @@ export function setup(logger: Logger) {
 		setupTerminalStickyScrollTests({ skipSuite: process.platform === 'linux' });
 		// https://github.com/microsoft/vscode/pull/141974
 		// Windows is skipped here as well as it was never enabled from the start
-		setupTerminalSplitCwdTests({ skipSuite: process.platform === 'linux' || process.platform === 'win32' });
+		setupTerminalSplitCwdTests({
+			skipSuite: process.platform === 'linux' || process.platform === 'win32',
+		});
 	});
 }

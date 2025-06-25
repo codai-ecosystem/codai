@@ -308,7 +308,9 @@ describe('HistoryAgent', () => {
 			});
 
 			// Mock the private methods to throw an error
-			vi.spyOn(historyAgent as any, 'analyzeProjectHistory').mockRejectedValue(new Error('History analysis failed'));
+			vi.spyOn(historyAgent as any, 'analyzeProjectHistory').mockRejectedValue(
+				new Error('History analysis failed')
+			);
 
 			const result = await historyAgent.executeTask(task);
 

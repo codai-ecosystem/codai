@@ -5,7 +5,11 @@
 import assert from 'assert';
 import * as fs from 'fs';
 import * as platform from '../../common/platform.js';
-import { enumeratePowerShellInstallations, getFirstAvailablePowerShellInstallation, IPowerShellExeDetails } from '../../node/powershell.js';
+import {
+	enumeratePowerShellInstallations,
+	getFirstAvailablePowerShellInstallation,
+	IPowerShellExeDetails,
+} from '../../node/powershell.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../common/utils.js';
 
 function checkPath(exePath: string) {
@@ -19,9 +23,7 @@ function checkPath(exePath: string) {
 		// also use lstat to try and see if the file exists.
 		try {
 			pathCheckResult = fs.statSync(fs.readlinkSync(exePath)).isFile();
-		} catch {
-
-		}
+		} catch {}
 	}
 
 	assert.strictEqual(pathCheckResult, true);
@@ -45,7 +47,8 @@ if (platform.isWindows) {
 				pwshs.push(p);
 			}
 
-			const powershellLog = 'Found these PowerShells:\n' + pwshs.map(p => `${p.displayName}: ${p.exePath}`).join('\n');
+			const powershellLog =
+				'Found these PowerShells:\n' + pwshs.map(p => `${p.displayName}: ${p.exePath}`).join('\n');
 			assert.strictEqual(pwshs.length >= 1, true, powershellLog);
 
 			for (const pwsh of pwshs) {

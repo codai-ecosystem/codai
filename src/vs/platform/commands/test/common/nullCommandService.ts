@@ -12,5 +12,5 @@ export const NullCommandService: ICommandService = {
 	onDidExecuteCommand: () => Disposable.None,
 	executeCommand() {
 		return Promise.resolve(undefined);
-	}
+	},
 };

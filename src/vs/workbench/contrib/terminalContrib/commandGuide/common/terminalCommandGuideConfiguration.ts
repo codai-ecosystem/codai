@@ -20,7 +20,10 @@ export interface ITerminalCommandGuideConfiguration {
 export const terminalCommandGuideConfiguration: IStringDictionary<IConfigurationPropertySchema> = {
 	[TerminalCommandGuideSettingId.ShowCommandGuide]: {
 		restricted: true,
-		markdownDescription: localize('showCommandGuide', "Whether to show the command guide when hovering over a command in the terminal."),
+		markdownDescription: localize(
+			'showCommandGuide',
+			'Whether to show the command guide when hovering over a command in the terminal.'
+		),
 		type: 'boolean',
 		default: true,
 	},

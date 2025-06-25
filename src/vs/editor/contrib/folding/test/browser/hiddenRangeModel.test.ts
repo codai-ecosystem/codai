@@ -11,7 +11,6 @@ import { createTextModel } from '../../../../test/common/testTextModel.js';
 import { TestDecorationProvider } from './foldingModel.test.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
-
 interface ExpectedRange {
 	startLineNumber: number;
 	endLineNumber: number;
@@ -25,21 +24,26 @@ suite('Hidden Range Model', () => {
 	}
 
 	function assertRanges(actual: IRange[], expectedRegions: ExpectedRange[], message?: string) {
-		assert.deepStrictEqual(actual.map(r => ({ startLineNumber: r.startLineNumber, endLineNumber: r.endLineNumber })), expectedRegions, message);
+		assert.deepStrictEqual(
+			actual.map(r => ({ startLineNumber: r.startLineNumber, endLineNumber: r.endLineNumber })),
+			expectedRegions,
+			message
+		);
 	}
 
 	test('hasRanges', () => {
 		const lines = [
-		/* 1*/	'/**',
-		/* 2*/	' * Comment',
-		/* 3*/	' */',
-		/* 4*/	'class A {',
-		/* 5*/	'  void foo() {',
-		/* 6*/	'    if (true) {',
-		/* 7*/	'      //hello',
-		/* 8*/	'    }',
-		/* 9*/	'  }',
-		/* 10*/	'}'];
+			/* 1*/ '/**',
+			/* 2*/ ' * Comment',
+			/* 3*/ ' */',
+			/* 4*/ 'class A {',
+			/* 5*/ '  void foo() {',
+			/* 6*/ '    if (true) {',
+			/* 7*/ '      //hello',
+			/* 8*/ '    }',
+			/* 9*/ '  }',
+			/* 10*/ '}',
+		];
 
 		const textModel = createTextModel(lines.join('\n'));
 		const foldingModel = new FoldingModel(textModel, new TestDecorationProvider(textModel));
@@ -50,7 +54,10 @@ suite('Hidden Range Model', () => {
 			const ranges = computeRanges(textModel, false, undefined);
 			foldingModel.update(ranges);
 
-			foldingModel.toggleCollapseState([foldingModel.getRegionAtLine(1)!, foldingModel.getRegionAtLine(6)!]);
+			foldingModel.toggleCollapseState([
+				foldingModel.getRegionAtLine(1)!,
+				foldingModel.getRegionAtLine(6)!,
+			]);
 			assertRanges(hiddenRangeModel.hiddenRanges, [r(2, 3), r(7, 7)]);
 
 			assert.strictEqual(hiddenRangeModel.hasRanges(), true);
@@ -80,7 +87,11 @@ suite('Hidden Range Model', () => {
 			assert.strictEqual(hiddenRangeModel.isHidden(9), true);
 			assert.strictEqual(hiddenRangeModel.isHidden(10), false);
 
-			foldingModel.toggleCollapseState([foldingModel.getRegionAtLine(1)!, foldingModel.getRegionAtLine(6)!, foldingModel.getRegionAtLine(4)!]);
+			foldingModel.toggleCollapseState([
+				foldingModel.getRegionAtLine(1)!,
+				foldingModel.getRegionAtLine(6)!,
+				foldingModel.getRegionAtLine(4)!,
+			]);
 			assertRanges(hiddenRangeModel.hiddenRanges, []);
 			assert.strictEqual(hiddenRangeModel.hasRanges(), false);
 			assert.strictEqual(hiddenRangeModel.isHidden(1), false);

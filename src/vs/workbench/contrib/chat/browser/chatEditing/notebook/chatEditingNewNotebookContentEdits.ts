@@ -9,7 +9,6 @@ import { NotebookTextModel } from '../../../../notebook/common/model/notebookTex
 import { CellEditType, ICellEditOperation } from '../../../../notebook/common/notebookCommon.js';
 import { INotebookService } from '../../../../notebook/common/notebookService.js';
 
-
 /**
  * When asking LLM to generate a new notebook, LLM might end up generating the notebook
  * using the raw file format.
@@ -25,9 +24,8 @@ export class ChatEditingNewNotebookContentEdits {
 	private readonly textEdits: TextEdit[] = [];
 	constructor(
 		private readonly notebook: NotebookTextModel,
-		@INotebookService private readonly _notebookService: INotebookService,
-	) {
-	}
+		@INotebookService private readonly _notebookService: INotebookService
+	) {}
 
 	acceptTextEdits(edits: TextEdit[]): void {
 		if (edits.length) {
@@ -47,14 +45,16 @@ export class ChatEditingNewNotebookContentEdits {
 
 		const notebookEdits: ICellEditOperation[] = [];
 		try {
-			const { serializer } = await this._notebookService.withNotebookDataProvider(this.notebook.viewType);
+			const { serializer } = await this._notebookService.withNotebookDataProvider(
+				this.notebook.viewType
+			);
 			const data = await serializer.dataToNotebook(VSBuffer.fromString(content));
 			for (let i = 0; i < data.cells.length; i++) {
 				notebookEdits.push({
 					editType: CellEditType.Replace,
 					index: i,
 					count: 0,
-					cells: [data.cells[i]]
+					cells: [data.cells[i]],
 				});
 			}
 		} catch (ex) {
@@ -78,9 +78,8 @@ export class ChatEditingNewNotebookContentEdits {
 function applyTextEdits(edits: TextEdit[]): string {
 	let output = '';
 	for (const edit of edits) {
-		output = output.slice(0, edit.range.startColumn)
-			+ edit.text
-			+ output.slice(edit.range.endColumn);
+		output =
+			output.slice(0, edit.range.startColumn) + edit.text + output.slice(edit.range.endColumn);
 	}
 	return output;
 }

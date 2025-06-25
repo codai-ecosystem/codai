@@ -37,7 +37,6 @@ export interface IRadioOptions {
 }
 
 export class Radio extends Widget {
-
 	private readonly _onDidSelect = this._register(new Emitter<number>());
 	readonly onDidSelect = this._onDidSelect.event;
 
@@ -48,7 +47,9 @@ export class Radio extends Widget {
 	private items: ReadonlyArray<IRadioOptionItem> = [];
 	private activeItem: IRadioOptionItem | undefined;
 
-	private readonly buttons = this._register(new DisposableMap<Button, { item: IRadioOptionItem; dispose(): void }>());
+	private readonly buttons = this._register(
+		new DisposableMap<Button, { item: IRadioOptionItem; dispose(): void }>()
+	);
 
 	constructor(opts: IRadioOptions) {
 		super();
@@ -68,19 +69,23 @@ export class Radio extends Widget {
 		for (let index = 0; index < this.items.length; index++) {
 			const item = this.items[index];
 			const disposables = new DisposableStore();
-			const button = disposables.add(new Button(this.domNode, {
-				hoverDelegate: this.hoverDelegate,
-				title: item.tooltip,
-				supportIcons: true,
-			}));
+			const button = disposables.add(
+				new Button(this.domNode, {
+					hoverDelegate: this.hoverDelegate,
+					title: item.tooltip,
+					supportIcons: true,
+				})
+			);
 			button.enabled = !item.disabled;
-			disposables.add(button.onDidClick(() => {
-				if (this.activeItem !== item) {
-					this.activeItem = item;
-					this.updateButtons();
-					this._onDidSelect.fire(index);
-				}
-			}));
+			disposables.add(
+				button.onDidClick(() => {
+					if (this.activeItem !== item) {
+						this.activeItem = item;
+						this.updateButtons();
+						this._onDidSelect.fire(index);
+					}
+				})
+			);
 			this.buttons.set(button, { item, dispose: () => disposables.dispose() });
 		}
 		this.updateButtons();
@@ -110,5 +115,4 @@ export class Radio extends Widget {
 			button.label = item.text;
 		}
 	}
-
 }

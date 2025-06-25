@@ -77,7 +77,8 @@ export interface IExpandedMonarchLanguageRule {
 	include?: string;
 }
 
-export type IMonarchLanguageRule = IShortMonarchLanguageRule1
+export type IMonarchLanguageRule =
+	| IShortMonarchLanguageRule1
 	| IShortMonarchLanguageRule2
 	| IExpandedMonarchLanguageRule;
 
@@ -127,7 +128,10 @@ export interface IExpandedMonarchLanguageAction {
 	log?: string;
 }
 
-export type IMonarchLanguageAction = IShortMonarchLanguageAction | IExpandedMonarchLanguageAction | (IShortMonarchLanguageAction | IExpandedMonarchLanguageAction)[];
+export type IMonarchLanguageAction =
+	| IShortMonarchLanguageAction
+	| IExpandedMonarchLanguageAction
+	| (IShortMonarchLanguageAction | IExpandedMonarchLanguageAction)[];
 
 /**
  * This interface can be shortened as an array, ie. ['{','}','delimiter.curly']

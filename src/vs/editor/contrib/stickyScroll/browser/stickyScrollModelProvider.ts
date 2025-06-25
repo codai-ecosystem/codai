@@ -6,9 +6,17 @@
 import { Disposable, DisposableStore, IDisposable } from '../../../../base/common/lifecycle.js';
 import { IActiveCodeEditor } from '../../../browser/editorBrowser.js';
 import { ILanguageFeaturesService } from '../../../common/services/languageFeatures.js';
-import { OutlineElement, OutlineGroup, OutlineModel } from '../../documentSymbols/browser/outlineModel.js';
+import {
+	OutlineElement,
+	OutlineGroup,
+	OutlineModel,
+} from '../../documentSymbols/browser/outlineModel.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { CancelablePromise, createCancelablePromise, Delayer } from '../../../../base/common/async.js';
+import {
+	CancelablePromise,
+	createCancelablePromise,
+	Delayer,
+} from '../../../../base/common/async.js';
 import { FoldingController, RangesLimitReporter } from '../../folding/browser/folding.js';
 import { SyntaxRangeProvider } from '../../folding/browser/syntaxRangeProvider.js';
 import { IndentRangeProvider } from '../../folding/browser/indentRangeProvider.js';
@@ -23,17 +31,16 @@ import { EditorOption } from '../../../common/config/editorOptions.js';
 enum ModelProvider {
 	OUTLINE_MODEL = 'outlineModel',
 	FOLDING_PROVIDER_MODEL = 'foldingProviderModel',
-	INDENTATION_MODEL = 'indentationModel'
+	INDENTATION_MODEL = 'indentationModel',
 }
 
 enum Status {
 	VALID,
 	INVALID,
-	CANCELED
+	CANCELED,
 }
 
 export interface IStickyModelProvider extends IDisposable {
-
 	/**
 	 * Method which updates the sticky model
 	 * @param token cancellation token
@@ -43,29 +50,43 @@ export interface IStickyModelProvider extends IDisposable {
 }
 
 export class StickyModelProvider extends Disposable implements IStickyModelProvider {
-
 	private _modelProviders: IStickyModelCandidateProvider<any>[] = [];
 	private _modelPromise: CancelablePromise<any | null> | null = null;
-	private _updateScheduler: Delayer<StickyModel | null> = this._register(new Delayer<StickyModel | null>(300));
+	private _updateScheduler: Delayer<StickyModel | null> = this._register(
+		new Delayer<StickyModel | null>(300)
+	);
 	private readonly _updateOperation: DisposableStore = this._register(new DisposableStore());
 
 	constructor(
 		private readonly _editor: IActiveCodeEditor,
 		onProviderUpdate: () => void,
 		@IInstantiationService _languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService _languageFeaturesService: ILanguageFeaturesService
 	) {
 		super();
 
 		switch (this._editor.getOption(EditorOption.stickyScroll).defaultModel) {
 			case ModelProvider.OUTLINE_MODEL:
-				this._modelProviders.push(new StickyModelFromCandidateOutlineProvider(this._editor, _languageFeaturesService));
+				this._modelProviders.push(
+					new StickyModelFromCandidateOutlineProvider(this._editor, _languageFeaturesService)
+				);
 			// fall through
 			case ModelProvider.FOLDING_PROVIDER_MODEL:
-				this._modelProviders.push(new StickyModelFromCandidateSyntaxFoldingProvider(this._editor, onProviderUpdate, _languageFeaturesService));
+				this._modelProviders.push(
+					new StickyModelFromCandidateSyntaxFoldingProvider(
+						this._editor,
+						onProviderUpdate,
+						_languageFeaturesService
+					)
+				);
 			// fall through
 			case ModelProvider.INDENTATION_MODEL:
-				this._modelProviders.push(new StickyModelFromCandidateIndentationFoldingProvider(this._editor, _languageConfigurationService));
+				this._modelProviders.push(
+					new StickyModelFromCandidateIndentationFoldingProvider(
+						this._editor,
+						_languageConfigurationService
+					)
+				);
 				break;
 		}
 	}
@@ -85,38 +106,38 @@ export class StickyModelProvider extends Disposable implements IStickyModelProvi
 	}
 
 	public async update(token: CancellationToken): Promise<StickyModel | null> {
-
 		this._updateOperation.clear();
 		this._updateOperation.add({
 			dispose: () => {
 				this._cancelModelPromise();
 				this._updateScheduler.cancel();
-			}
+			},
 		});
 		this._cancelModelPromise();
 
-		return await this._updateScheduler.trigger(async () => {
-
-			for (const modelProvider of this._modelProviders) {
-				const { statusPromise, modelPromise } = modelProvider.computeStickyModel(token);
-				this._modelPromise = modelPromise;
-				const status = await statusPromise;
-				if (this._modelPromise !== modelPromise) {
-					return null;
-				}
-				switch (status) {
-					case Status.CANCELED:
-						this._updateOperation.clear();
+		return await this._updateScheduler
+			.trigger(async () => {
+				for (const modelProvider of this._modelProviders) {
+					const { statusPromise, modelPromise } = modelProvider.computeStickyModel(token);
+					this._modelPromise = modelPromise;
+					const status = await statusPromise;
+					if (this._modelPromise !== modelPromise) {
 						return null;
-					case Status.VALID:
-						return modelProvider.stickyModel;
+					}
+					switch (status) {
+						case Status.CANCELED:
+							this._updateOperation.clear();
+							return null;
+						case Status.VALID:
+							return modelProvider.stickyModel;
+					}
 				}
-			}
-			return null;
-		}).catch((error) => {
-			onUnexpectedError(error);
-			return null;
-		});
+				return null;
+			})
+			.catch(error => {
+				onUnexpectedError(error);
+				return null;
+			});
 	}
 }
 
@@ -128,11 +149,16 @@ interface IStickyModelCandidateProvider<T> extends IDisposable {
 	 * @param token cancellation token
 	 * @returns a promise of a status indicating whether the sticky model has been successfully found as well as the model promise
 	 */
-	computeStickyModel(token: CancellationToken): { statusPromise: Promise<Status> | Status; modelPromise: CancelablePromise<T | null> | null };
+	computeStickyModel(token: CancellationToken): {
+		statusPromise: Promise<Status> | Status;
+		modelPromise: CancelablePromise<T | null> | null;
+	};
 }
 
-abstract class StickyModelCandidateProvider<T> extends Disposable implements IStickyModelCandidateProvider<T> {
-
+abstract class StickyModelCandidateProvider<T>
+	extends Disposable
+	implements IStickyModelCandidateProvider<T>
+{
 	protected _stickyModel: StickyModel | null = null;
 
 	constructor(protected readonly _editor: IActiveCodeEditor) {
@@ -148,28 +174,34 @@ abstract class StickyModelCandidateProvider<T> extends Disposable implements ISt
 		return Status.INVALID;
 	}
 
-	public computeStickyModel(token: CancellationToken): { statusPromise: Promise<Status> | Status; modelPromise: CancelablePromise<T | null> | null } {
+	public computeStickyModel(token: CancellationToken): {
+		statusPromise: Promise<Status> | Status;
+		modelPromise: CancelablePromise<T | null> | null;
+	} {
 		if (token.isCancellationRequested || !this.isProviderValid()) {
 			return { statusPromise: this._invalid(), modelPromise: null };
 		}
-		const providerModelPromise = createCancelablePromise(token => this.createModelFromProvider(token));
+		const providerModelPromise = createCancelablePromise(token =>
+			this.createModelFromProvider(token)
+		);
 
 		return {
-			statusPromise: providerModelPromise.then(providerModel => {
-				if (!this.isModelValid(providerModel)) {
-					return this._invalid();
-
-				}
-				if (token.isCancellationRequested) {
+			statusPromise: providerModelPromise
+				.then(providerModel => {
+					if (!this.isModelValid(providerModel)) {
+						return this._invalid();
+					}
+					if (token.isCancellationRequested) {
+						return Status.CANCELED;
+					}
+					this._stickyModel = this.createStickyModel(token, providerModel);
+					return Status.VALID;
+				})
+				.then(undefined, err => {
+					onUnexpectedError(err);
 					return Status.CANCELED;
-				}
-				this._stickyModel = this.createStickyModel(token, providerModel);
-				return Status.VALID;
-			}).then(undefined, (err) => {
-				onUnexpectedError(err);
-				return Status.CANCELED;
-			}),
-			modelPromise: providerModelPromise
+				}),
+			modelPromise: providerModelPromise,
 		};
 	}
 
@@ -209,31 +241,50 @@ abstract class StickyModelCandidateProvider<T> extends Disposable implements ISt
 }
 
 class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvider<OutlineModel> {
-
-	constructor(_editor: IActiveCodeEditor, @ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService) {
+	constructor(
+		_editor: IActiveCodeEditor,
+		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService
+	) {
 		super(_editor);
 	}
 
 	protected createModelFromProvider(token: CancellationToken): Promise<OutlineModel> {
-		return OutlineModel.create(this._languageFeaturesService.documentSymbolProvider, this._editor.getModel(), token);
+		return OutlineModel.create(
+			this._languageFeaturesService.documentSymbolProvider,
+			this._editor.getModel(),
+			token
+		);
 	}
 
 	protected createStickyModel(token: CancellationToken, model: OutlineModel): StickyModel {
-		const { stickyOutlineElement, providerID } = this._stickyModelFromOutlineModel(model, this._stickyModel?.outlineProviderId);
+		const { stickyOutlineElement, providerID } = this._stickyModelFromOutlineModel(
+			model,
+			this._stickyModel?.outlineProviderId
+		);
 		const textModel = this._editor.getModel();
-		return new StickyModel(textModel.uri, textModel.getVersionId(), stickyOutlineElement, providerID);
+		return new StickyModel(
+			textModel.uri,
+			textModel.getVersionId(),
+			stickyOutlineElement,
+			providerID
+		);
 	}
 
 	protected override isModelValid(model: OutlineModel): boolean {
 		return model && model.children.size > 0;
 	}
 
-	private _stickyModelFromOutlineModel(outlineModel: OutlineModel, preferredProvider: string | undefined): { stickyOutlineElement: StickyElement; providerID: string | undefined } {
-
+	private _stickyModelFromOutlineModel(
+		outlineModel: OutlineModel,
+		preferredProvider: string | undefined
+	): { stickyOutlineElement: StickyElement; providerID: string | undefined } {
 		let outlineElements: Map<string, OutlineElement>;
 		// When several possible outline providers
 		if (Iterable.first(outlineModel.children.values()) instanceof OutlineGroup) {
-			const provider = Iterable.find(outlineModel.children.values(), outlineGroupOfModel => outlineGroupOfModel.id === preferredProvider);
+			const provider = Iterable.find(
+				outlineModel.children.values(),
+				outlineGroupOfModel => outlineGroupOfModel.id === preferredProvider
+			);
 			if (provider) {
 				outlineElements = provider.children;
 			} else {
@@ -256,36 +307,60 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 		}
 		const stickyChildren: StickyElement[] = [];
 		const outlineElementsArray = Array.from(outlineElements.values()).sort((element1, element2) => {
-			const range1: StickyRange = new StickyRange(element1.symbol.range.startLineNumber, element1.symbol.range.endLineNumber);
-			const range2: StickyRange = new StickyRange(element2.symbol.range.startLineNumber, element2.symbol.range.endLineNumber);
+			const range1: StickyRange = new StickyRange(
+				element1.symbol.range.startLineNumber,
+				element1.symbol.range.endLineNumber
+			);
+			const range2: StickyRange = new StickyRange(
+				element2.symbol.range.startLineNumber,
+				element2.symbol.range.endLineNumber
+			);
 			return this._comparator(range1, range2);
 		});
 		for (const outlineElement of outlineElementsArray) {
-			stickyChildren.push(this._stickyModelFromOutlineElement(outlineElement, outlineElement.symbol.selectionRange.startLineNumber));
+			stickyChildren.push(
+				this._stickyModelFromOutlineElement(
+					outlineElement,
+					outlineElement.symbol.selectionRange.startLineNumber
+				)
+			);
 		}
 		const stickyOutlineElement = new StickyElement(undefined, stickyChildren, undefined);
 
 		return {
 			stickyOutlineElement: stickyOutlineElement,
-			providerID: preferredProvider
+			providerID: preferredProvider,
 		};
 	}
 
-	private _stickyModelFromOutlineElement(outlineElement: OutlineElement, previousStartLine: number): StickyElement {
+	private _stickyModelFromOutlineElement(
+		outlineElement: OutlineElement,
+		previousStartLine: number
+	): StickyElement {
 		const children: StickyElement[] = [];
 		for (const child of outlineElement.children.values()) {
 			if (child.symbol.selectionRange.startLineNumber !== child.symbol.range.endLineNumber) {
 				if (child.symbol.selectionRange.startLineNumber !== previousStartLine) {
-					children.push(this._stickyModelFromOutlineElement(child, child.symbol.selectionRange.startLineNumber));
+					children.push(
+						this._stickyModelFromOutlineElement(child, child.symbol.selectionRange.startLineNumber)
+					);
 				} else {
 					for (const subchild of child.children.values()) {
-						children.push(this._stickyModelFromOutlineElement(subchild, child.symbol.selectionRange.startLineNumber));
+						children.push(
+							this._stickyModelFromOutlineElement(
+								subchild,
+								child.symbol.selectionRange.startLineNumber
+							)
+						);
 					}
 				}
 			}
 		}
 		children.sort((child1, child2) => this._comparator(child1.range!, child2.range!));
-		const range = new StickyRange(outlineElement.symbol.selectionRange.startLineNumber, outlineElement.symbol.range.endLineNumber);
+		const range = new StickyRange(
+			outlineElement.symbol.selectionRange.startLineNumber,
+			outlineElement.symbol.range.endLineNumber
+		);
 		return new StickyElement(range, children, undefined);
 	}
 
@@ -303,7 +378,9 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 			res += this._findSumOfRangesOfGroup(child);
 		}
 		if (outline instanceof OutlineElement) {
-			return res + outline.symbol.range.endLineNumber - outline.symbol.selectionRange.startLineNumber;
+			return (
+				res + outline.symbol.range.endLineNumber - outline.symbol.selectionRange.startLineNumber
+			);
 		} else {
 			return res;
 		}
@@ -311,7 +388,6 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 }
 
 abstract class StickyModelFromCandidateFoldingProvider extends StickyModelCandidateProvider<FoldingRegions | null> {
-
 	protected _foldingLimitReporter: RangesLimitReporter;
 
 	constructor(editor: IActiveCodeEditor) {
@@ -329,17 +405,12 @@ abstract class StickyModelFromCandidateFoldingProvider extends StickyModelCandid
 		return model !== null;
 	}
 
-
 	private _fromFoldingRegions(foldingRegions: FoldingRegions): StickyElement {
 		const length = foldingRegions.length;
 		const orderedStickyElements: StickyElement[] = [];
 
 		// The root sticky outline element
-		const stickyOutlineElement = new StickyElement(
-			undefined,
-			[],
-			undefined
-		);
+		const stickyOutlineElement = new StickyElement(undefined, [], undefined);
 
 		for (let i = 0; i < length; i++) {
 			// Finding the parent index of the current range
@@ -355,7 +426,10 @@ abstract class StickyModelFromCandidateFoldingProvider extends StickyModelCandid
 			}
 
 			const child = new StickyElement(
-				new StickyRange(foldingRegions.getStartLineNumber(i), foldingRegions.getEndLineNumber(i) + 1),
+				new StickyRange(
+					foldingRegions.getStartLineNumber(i),
+					foldingRegions.getEndLineNumber(i) + 1
+				),
 				[],
 				parentNode
 			);
@@ -367,34 +441,54 @@ abstract class StickyModelFromCandidateFoldingProvider extends StickyModelCandid
 }
 
 class StickyModelFromCandidateIndentationFoldingProvider extends StickyModelFromCandidateFoldingProvider {
-
 	private readonly provider: IndentRangeProvider;
 
 	constructor(
 		editor: IActiveCodeEditor,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService) {
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService
+	) {
 		super(editor);
 
-		this.provider = this._register(new IndentRangeProvider(editor.getModel(), this._languageConfigurationService, this._foldingLimitReporter));
+		this.provider = this._register(
+			new IndentRangeProvider(
+				editor.getModel(),
+				this._languageConfigurationService,
+				this._foldingLimitReporter
+			)
+		);
 	}
 
-	protected override async createModelFromProvider(token: CancellationToken): Promise<FoldingRegions> {
+	protected override async createModelFromProvider(
+		token: CancellationToken
+	): Promise<FoldingRegions> {
 		return this.provider.compute(token);
 	}
 }
 
 class StickyModelFromCandidateSyntaxFoldingProvider extends StickyModelFromCandidateFoldingProvider {
-
 	private readonly provider: SyntaxRangeProvider | undefined;
 
-	constructor(editor: IActiveCodeEditor,
+	constructor(
+		editor: IActiveCodeEditor,
 		onProviderUpdate: () => void,
 		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService
 	) {
 		super(editor);
-		const selectedProviders = FoldingController.getFoldingRangeProviders(this._languageFeaturesService, editor.getModel());
+		const selectedProviders = FoldingController.getFoldingRangeProviders(
+			this._languageFeaturesService,
+			editor.getModel()
+		);
 		if (selectedProviders.length > 0) {
-			this.provider = this._register(new SyntaxRangeProvider(editor.getModel(), selectedProviders, onProviderUpdate, this._foldingLimitReporter, undefined));
+			this.provider = this._register(
+				new SyntaxRangeProvider(
+					editor.getModel(),
+					selectedProviders,
+					onProviderUpdate,
+					this._foldingLimitReporter,
+					undefined
+				)
+			);
 		}
 	}
 
@@ -402,7 +496,9 @@ class StickyModelFromCandidateSyntaxFoldingProvider extends StickyModelFromCandi
 		return this.provider !== undefined;
 	}
 
-	protected override async createModelFromProvider(token: CancellationToken): Promise<FoldingRegions | null> {
+	protected override async createModelFromProvider(
+		token: CancellationToken
+	): Promise<FoldingRegions | null> {
 		return this.provider?.compute(token) ?? null;
 	}
 }

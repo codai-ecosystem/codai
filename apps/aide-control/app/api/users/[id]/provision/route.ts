@@ -9,22 +9,14 @@ import { BackendProvisioningService } from '../../../../../lib/services/backend-
 /**
  * POST /api/users/[id]/provision - Provision services for a user
  */
-export async function POST(
-	req: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	return withAdminAuth(async (request, adminUser) => {
 		try {
 			const { id: userId } = await params;
 			const body = await request.json();
 
 			// Validate request body
-			const {
-				services = [],
-				projectName,
-				projectId,
-				environmentType = 'development'
-			} = body;
+			const { services = [], projectName, projectId, environmentType = 'development' } = body;
 
 			if (!Array.isArray(services) || services.length === 0) {
 				return NextResponse.json(
@@ -36,10 +28,7 @@ export async function POST(
 			// Verify user exists
 			const userDoc = await FirestoreService.getUserDocument(userId);
 			if (!userDoc) {
-				return NextResponse.json(
-					{ error: 'User not found' },
-					{ status: 404 }
-				);
+				return NextResponse.json({ error: 'User not found' }, { status: 404 });
 			}
 
 			// Initialize provisioning service
@@ -54,7 +43,7 @@ export async function POST(
 				projectName: projectName || `${userDoc.displayName || 'User'}'s Project`,
 				projectId: projectId || `user-${userId}-${Date.now()}`,
 				projectType: 'nextjs', // Default project type
-				environmentType
+				environmentType,
 			});
 
 			// Log audit entry
@@ -68,8 +57,8 @@ export async function POST(
 					targetEmail: userDoc.email,
 					services,
 					success: result.success,
-					errors: result.errors
-				}
+					errors: result.errors,
+				},
 			});
 
 			if (result.success) {
@@ -77,7 +66,7 @@ export async function POST(
 					success: true,
 					message: 'User provisioned successfully',
 					services: result.services,
-					projectId: result.projectId
+					projectId: result.projectId,
 				});
 			} else {
 				return NextResponse.json(
@@ -85,18 +74,14 @@ export async function POST(
 						success: false,
 						message: 'Provisioning completed with errors',
 						services: result.services,
-						errors: result.errors
+						errors: result.errors,
 					},
 					{ status: 207 } // Multi-status
 				);
 			}
-
 		} catch (error) {
 			console.error('Error provisioning user:', error);
-			return NextResponse.json(
-				{ error: 'Internal server error' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 		}
 	})(req);
 }
@@ -104,10 +89,7 @@ export async function POST(
 /**
  * PATCH /api/users/[id]/provision - Upgrade user plan and provision additional resources
  */
-export async function PATCH(
-	req: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	return withAdminAuth(async (request, adminUser) => {
 		try {
 			const { id: userId } = await params;
@@ -125,10 +107,7 @@ export async function PATCH(
 			// Verify user exists
 			const userDoc = await FirestoreService.getUserDocument(userId);
 			if (!userDoc) {
-				return NextResponse.json(
-					{ error: 'User not found' },
-					{ status: 404 }
-				);
+				return NextResponse.json({ error: 'User not found' }, { status: 404 });
 			}
 
 			// Initialize provisioning service
@@ -149,15 +128,15 @@ export async function PATCH(
 					oldPlan: userDoc.plan,
 					newPlan,
 					success: result.success,
-					errors: result.errors
-				}
+					errors: result.errors,
+				},
 			});
 
 			if (result.success) {
 				return NextResponse.json({
 					success: true,
 					message: 'User plan upgraded successfully',
-					services: result.services
+					services: result.services,
 				});
 			} else {
 				return NextResponse.json(
@@ -165,18 +144,14 @@ export async function PATCH(
 						success: false,
 						message: 'Plan upgrade completed with errors',
 						services: result.services,
-						errors: result.errors
+						errors: result.errors,
 					},
 					{ status: 207 } // Multi-status
 				);
 			}
-
 		} catch (error) {
 			console.error('Error upgrading user plan:', error);
-			return NextResponse.json(
-				{ error: 'Internal server error' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 		}
 	})(req);
 }
@@ -184,10 +159,7 @@ export async function PATCH(
 /**
  * DELETE /api/users/[id]/provision - Deprovision user resources
  */
-export async function DELETE(
-	req: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	return withAdminAuth(async (request, adminUser) => {
 		try {
 			const { id: userId } = await params;
@@ -195,10 +167,7 @@ export async function DELETE(
 			// Verify user exists
 			const userDoc = await FirestoreService.getUserDocument(userId);
 			if (!userDoc) {
-				return NextResponse.json(
-					{ error: 'User not found' },
-					{ status: 404 }
-				);
+				return NextResponse.json({ error: 'User not found' }, { status: 404 });
 			}
 
 			// Initialize provisioning service
@@ -217,32 +186,28 @@ export async function DELETE(
 					action: 'Deprovisioned user resources',
 					targetEmail: userDoc.email,
 					success: result.success,
-					errors: result.errors
-				}
+					errors: result.errors,
+				},
 			});
 
 			if (result.success) {
 				return NextResponse.json({
 					success: true,
-					message: 'User deprovisioned successfully'
+					message: 'User deprovisioned successfully',
 				});
 			} else {
 				return NextResponse.json(
 					{
 						success: false,
 						message: 'Deprovisioning completed with errors',
-						errors: result.errors
+						errors: result.errors,
 					},
 					{ status: 207 } // Multi-status
 				);
 			}
-
 		} catch (error) {
 			console.error('Error deprovisioning user:', error);
-			return NextResponse.json(
-				{ error: 'Internal server error' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 		}
 	})(req);
 }

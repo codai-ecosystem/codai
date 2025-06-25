@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// https://github.com/microsoft/vscode/issues/123601
 
 	/**
@@ -12,7 +11,6 @@ declare module 'vscode' {
 	 * to provide and share functionality for notebook markup and notebook output renderers.
 	 */
 	export class NotebookRendererScript {
-
 		/**
 		 * APIs that the preload provides to the renderer. These are matched
 		 * against the `dependencies` and `optionalDependencies` arrays in the
@@ -35,7 +33,6 @@ declare module 'vscode' {
 	}
 
 	export interface NotebookController {
-
 		// todo@API allow add, not remove
 		readonly rendererScripts: NotebookRendererScript[];
 
@@ -62,7 +59,16 @@ declare module 'vscode' {
 	}
 
 	export namespace notebooks {
-
-		export function createNotebookController(id: string, viewType: string, label: string, handler?: (cells: NotebookCell[], notebook: NotebookDocument, controller: NotebookController) => void | Thenable<void>, rendererScripts?: NotebookRendererScript[]): NotebookController;
+		export function createNotebookController(
+			id: string,
+			viewType: string,
+			label: string,
+			handler?: (
+				cells: NotebookCell[],
+				notebook: NotebookDocument,
+				controller: NotebookController
+			) => void | Thenable<void>,
+			rendererScripts?: NotebookRendererScript[]
+		): NotebookController;
 	}
 }

@@ -9,7 +9,7 @@ import * as testRunner from '../../../../test/integration/electron/testrunner';
 const options: import('mocha').MochaOptions = {
 	ui: 'tdd',
 	color: true,
-	timeout: 60000
+	timeout: 60000,
 };
 
 // These integration tests is being run in multiple environments (electron, web, remote)
@@ -30,8 +30,11 @@ if (process.env.BUILD_ARTIFACTSTAGINGDIRECTORY) {
 		reporterEnabled: 'spec, mocha-junit-reporter',
 		mochaJunitReporterReporterOptions: {
 			testsuitesTitle: `${suite} ${process.platform}`,
-			mochaFile: path.join(process.env.BUILD_ARTIFACTSTAGINGDIRECTORY, `test-results/${process.platform}-${process.arch}-${suite.toLowerCase().replace(/[^\w]/g, '-')}-results.xml`)
-		}
+			mochaFile: path.join(
+				process.env.BUILD_ARTIFACTSTAGINGDIRECTORY,
+				`test-results/${process.platform}-${process.arch}-${suite.toLowerCase().replace(/[^\w]/g, '-')}-results.xml`
+			),
+		},
 	};
 }
 

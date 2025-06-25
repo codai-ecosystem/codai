@@ -23,7 +23,11 @@ export class FileManager {
 	 * @param content Content to write to the file
 	 * @param overwrite Whether to overwrite existing file
 	 */
-	public async createFile(filePath: string, content: string, overwrite: boolean = false): Promise<void> {
+	public async createFile(
+		filePath: string,
+		content: string,
+		overwrite: boolean = false
+	): Promise<void> {
 		try {
 			if (!this.workspaceRoot) {
 				throw new FileSystemError('No workspace opened');

@@ -7,7 +7,13 @@ import { Emitter } from '../../../../base/common/event.js';
 import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { WebviewThemeDataProvider } from './themeing.js';
-import { IOverlayWebview, IWebview, IWebviewElement, IWebviewService, WebviewInitInfo } from './webview.js';
+import {
+	IOverlayWebview,
+	IWebview,
+	IWebviewElement,
+	IWebviewService,
+	WebviewInitInfo,
+} from './webview.js';
 import { WebviewElement } from './webviewElement.js';
 import { OverlayWebview } from './overlayWebview.js';
 
@@ -17,15 +23,18 @@ export class WebviewService extends Disposable implements IWebviewService {
 	protected readonly _webviewThemeDataProvider: WebviewThemeDataProvider;
 
 	constructor(
-		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
+		@IInstantiationService protected readonly _instantiationService: IInstantiationService
 	) {
 		super();
-		this._webviewThemeDataProvider = this._instantiationService.createInstance(WebviewThemeDataProvider);
+		this._webviewThemeDataProvider =
+			this._instantiationService.createInstance(WebviewThemeDataProvider);
 	}
 
 	private _activeWebview?: IWebview;
 
-	public get activeWebview() { return this._activeWebview; }
+	public get activeWebview() {
+		return this._activeWebview;
+	}
 
 	private _updateActiveWebview(value: IWebview | undefined) {
 		if (value !== this._activeWebview) {
@@ -44,7 +53,11 @@ export class WebviewService extends Disposable implements IWebviewService {
 	public readonly onDidChangeActiveWebview = this._onDidChangeActiveWebview.event;
 
 	createWebviewElement(initInfo: WebviewInitInfo): IWebviewElement {
-		const webview = this._instantiationService.createInstance(WebviewElement, initInfo, this._webviewThemeDataProvider);
+		const webview = this._instantiationService.createInstance(
+			WebviewElement,
+			initInfo,
+			this._webviewThemeDataProvider
+		);
 		this.registerNewWebview(webview);
 		return webview;
 	}
@@ -60,9 +73,11 @@ export class WebviewService extends Disposable implements IWebviewService {
 
 		const store = new DisposableStore();
 
-		store.add(webview.onDidFocus(() => {
-			this._updateActiveWebview(webview);
-		}));
+		store.add(
+			webview.onDidFocus(() => {
+				this._updateActiveWebview(webview);
+			})
+		);
 
 		const onBlur = () => {
 			if (this._activeWebview === webview) {
@@ -71,10 +86,12 @@ export class WebviewService extends Disposable implements IWebviewService {
 		};
 
 		store.add(webview.onDidBlur(onBlur));
-		store.add(webview.onDidDispose(() => {
-			onBlur();
-			store.dispose();
-			this._webviews.delete(webview);
-		}));
+		store.add(
+			webview.onDidDispose(() => {
+				onBlur();
+				store.dispose();
+				this._webviews.delete(webview);
+			})
+		);
 	}
 }

@@ -12,7 +12,11 @@ import { IOpenerService } from '../../../../../../../../platform/opener/common/o
 import { PROMPT_DOCUMENTATION_URL } from '../../../../../common/promptSyntax/constants.js';
 import { IWorkspaceContextService } from '../../../../../../../../platform/workspace/common/workspace.js';
 import { IPromptPath, IPromptsService } from '../../../../../common/promptSyntax/service/types.js';
-import { IPickOptions, IQuickInputService, IQuickPickItem } from '../../../../../../../../platform/quickinput/common/quickInput.js';
+import {
+	IPickOptions,
+	IQuickInputService,
+	IQuickPickItem,
+} from '../../../../../../../../platform/quickinput/common/quickInput.js';
 import { ServicesAccessor } from '../../../../../../../../platform/instantiation/common/instantiation.js';
 import { PromptsType } from '../../../../../../../../platform/prompts/common/prompts.js';
 
@@ -62,18 +66,15 @@ export async function askForPromptSourceFolder(
 		if (folder.storage === 'user') {
 			return {
 				type: 'item',
-				label: localize(
-					'commands.prompts.create.source-folder.user',
-					"User Data Folder",
-				),
+				label: localize('commands.prompts.create.source-folder.user', 'User Data Folder'),
 				description: labelService.getUriLabel(uri),
 				tooltip: uri.fsPath,
-				folder
+				folder,
 			};
 		}
 
 		const { folders } = workspaceService.getWorkspace();
-		const isMultirootWorkspace = (folders.length > 1);
+		const isMultirootWorkspace = folders.length > 1;
 
 		const firstFolder = folders[0];
 
@@ -95,7 +96,7 @@ export async function askForPromptSourceFolder(
 			type: 'item',
 			label: localize(
 				'commands.prompts.create.source-folder.current-workspace',
-				"Current Workspace",
+				'Current Workspace'
 			),
 			// use absolute path as the description
 			description: labelService.getUriLabel(uri, { relative: false }),
@@ -115,11 +116,20 @@ export async function askForPromptSourceFolder(
 function getPlaceholderString(type: PromptsType): string {
 	switch (type) {
 		case PromptsType.instructions:
-			return localize('workbench.command.instructions.create.location.placeholder', "Select a location to create the instructions file in...");
+			return localize(
+				'workbench.command.instructions.create.location.placeholder',
+				'Select a location to create the instructions file in...'
+			);
 		case PromptsType.prompt:
-			return localize('workbench.command.prompt.create.location.placeholder', "Select a location to create the prompt file in...");
+			return localize(
+				'workbench.command.prompt.create.location.placeholder',
+				'Select a location to create the prompt file in...'
+			);
 		case PromptsType.mode:
-			return localize('workbench.command.mode.create.location.placeholder', "Select a location to create the mode file in...");
+			return localize(
+				'workbench.command.mode.create.location.placeholder',
+				'Select a location to create the mode file in...'
+			);
 		default:
 			throw new Error('Unknown prompt type');
 	}
@@ -143,12 +153,10 @@ async function showNoFoldersDialog(accessor: ServicesAccessor, type: PromptsType
 		value: URI.parse(PROMPT_DOCUMENTATION_URL),
 	};
 
-	const result = await quickInputService.pick(
-		[docsQuickPick],
-		{
-			placeHolder: getMissingSourceFolderString(type),
-			canPickMany: false,
-		});
+	const result = await quickInputService.pick([docsQuickPick], {
+		placeHolder: getMissingSourceFolderString(type),
+		canPickMany: false,
+	});
 
 	if (result) {
 		await openerService.open(result.value);
@@ -158,11 +166,20 @@ async function showNoFoldersDialog(accessor: ServicesAccessor, type: PromptsType
 function getLearnLabel(type: PromptsType): string {
 	switch (type) {
 		case PromptsType.prompt:
-			return localize('commands.prompts.create.ask-folder.empty.docs-label', 'Learn how to configure reusable prompts');
+			return localize(
+				'commands.prompts.create.ask-folder.empty.docs-label',
+				'Learn how to configure reusable prompts'
+			);
 		case PromptsType.instructions:
-			return localize('commands.instructions.create.ask-folder.empty.docs-label', 'Learn how to configure reusable instructions');
+			return localize(
+				'commands.instructions.create.ask-folder.empty.docs-label',
+				'Learn how to configure reusable instructions'
+			);
 		case PromptsType.mode:
-			return localize('commands.mode.create.ask-folder.empty.docs-label', 'Learn how to configure custom chat modes');
+			return localize(
+				'commands.mode.create.ask-folder.empty.docs-label',
+				'Learn how to configure custom chat modes'
+			);
 		default:
 			throw new Error('Unknown prompt type');
 	}
@@ -171,11 +188,20 @@ function getLearnLabel(type: PromptsType): string {
 function getMissingSourceFolderString(type: PromptsType): string {
 	switch (type) {
 		case PromptsType.instructions:
-			return localize('commands.instructions.create.ask-folder.empty.placeholder', 'No instruction source folders found.');
+			return localize(
+				'commands.instructions.create.ask-folder.empty.placeholder',
+				'No instruction source folders found.'
+			);
 		case PromptsType.prompt:
-			return localize('commands.prompts.create.ask-folder.empty.placeholder', 'No prompt source folders found.');
+			return localize(
+				'commands.prompts.create.ask-folder.empty.placeholder',
+				'No prompt source folders found.'
+			);
 		case PromptsType.mode:
-			return localize('commands.mode.create.ask-folder.empty.placeholder', 'No custom chat mode source folders found.');
+			return localize(
+				'commands.mode.create.ask-folder.empty.placeholder',
+				'No custom chat mode source folders found.'
+			);
 		default:
 			throw new Error('Unknown prompt type');
 	}

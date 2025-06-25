@@ -88,10 +88,10 @@ export const VALIDATION = {
 	MIN_TITLE_LENGTH: 3,
 } as const;
 
-export type AgentType = typeof AGENT_TYPES[keyof typeof AGENT_TYPES];
-export type TaskPriority = typeof TASK_PRIORITIES[keyof typeof TASK_PRIORITIES];
-export type TaskStatus = typeof TASK_STATUSES[keyof typeof TASK_STATUSES];
-export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
-export type PlanInterval = typeof PLAN_INTERVALS[keyof typeof PLAN_INTERVALS];
-export type ProjectType = typeof PROJECT_TYPES[keyof typeof PROJECT_TYPES];
-export type DeploymentProvider = typeof DEPLOYMENT_PROVIDERS[keyof typeof DEPLOYMENT_PROVIDERS];
+export type AgentType = (typeof AGENT_TYPES)[keyof typeof AGENT_TYPES];
+export type TaskPriority = (typeof TASK_PRIORITIES)[keyof typeof TASK_PRIORITIES];
+export type TaskStatus = (typeof TASK_STATUSES)[keyof typeof TASK_STATUSES];
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+export type PlanInterval = (typeof PLAN_INTERVALS)[keyof typeof PLAN_INTERVALS];
+export type ProjectType = (typeof PROJECT_TYPES)[keyof typeof PROJECT_TYPES];
+export type DeploymentProvider = (typeof DEPLOYMENT_PROVIDERS)[keyof typeof DEPLOYMENT_PROVIDERS];

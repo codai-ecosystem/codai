@@ -13,12 +13,15 @@ import { RemoteAgentConnectionContext } from '../../platform/remote/common/remot
 import { DiskFileSystemProvider } from '../../platform/files/node/diskFileSystemProvider.js';
 import { posix, delimiter } from '../../base/common/path.js';
 import { IServerEnvironmentService } from './serverEnvironmentService.js';
-import { AbstractDiskFileSystemProviderChannel, AbstractSessionFileWatcher, ISessionFileWatcher } from '../../platform/files/node/diskFileSystemProviderServer.js';
+import {
+	AbstractDiskFileSystemProviderChannel,
+	AbstractSessionFileWatcher,
+	ISessionFileWatcher,
+} from '../../platform/files/node/diskFileSystemProviderServer.js';
 import { IRecursiveWatcherOptions } from '../../platform/files/common/watcher.js';
 import { IConfigurationService } from '../../platform/configuration/common/configuration.js';
 
 export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystemProviderChannel<RemoteAgentConnectionContext> {
-
 	private readonly uriTransformerCache = new Map<string, IURITransformer>();
 
 	constructor(
@@ -41,7 +44,11 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 		return transformer;
 	}
 
-	protected override transformIncoming(uriTransformer: IURITransformer, _resource: UriComponents, supportVSCodeResource = false): URI {
+	protected override transformIncoming(
+		uriTransformer: IURITransformer,
+		_resource: UriComponents,
+		supportVSCodeResource = false
+	): URI {
 		if (supportVSCodeResource && _resource.path === '/vscode-resource' && _resource.query) {
 			const requestResourcePath = JSON.parse(_resource.query).requestResourcePath;
 
@@ -53,15 +60,23 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 
 	//#region File Watching
 
-	protected createSessionFileWatcher(uriTransformer: IURITransformer, emitter: Emitter<IFileChange[] | string>): ISessionFileWatcher {
-		return new SessionFileWatcher(uriTransformer, emitter, this.logService, this.environmentService, this.configurationService);
+	protected createSessionFileWatcher(
+		uriTransformer: IURITransformer,
+		emitter: Emitter<IFileChange[] | string>
+	): ISessionFileWatcher {
+		return new SessionFileWatcher(
+			uriTransformer,
+			emitter,
+			this.logService,
+			this.environmentService,
+			this.configurationService
+		);
 	}
 
 	//#endregion
 }
 
 class SessionFileWatcher extends AbstractSessionFileWatcher {
-
 	constructor(
 		uriTransformer: IURITransformer,
 		sessionEmitter: Emitter<IFileChange[] | string>,
@@ -72,7 +87,9 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
 		super(uriTransformer, sessionEmitter, logService, environmentService);
 	}
 
-	protected override getRecursiveWatcherOptions(environmentService: IServerEnvironmentService): IRecursiveWatcherOptions | undefined {
+	protected override getRecursiveWatcherOptions(
+		environmentService: IServerEnvironmentService
+	): IRecursiveWatcherOptions | undefined {
 		const fileWatcherPolling = environmentService.args['file-watcher-polling'];
 		if (fileWatcherPolling) {
 			const segments = fileWatcherPolling.split(delimiter);
@@ -86,7 +103,9 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
 		return undefined;
 	}
 
-	protected override getExtraExcludes(environmentService: IServerEnvironmentService): string[] | undefined {
+	protected override getExtraExcludes(
+		environmentService: IServerEnvironmentService
+	): string[] | undefined {
 		if (environmentService.extensionsPath) {
 			// when opening the $HOME folder, we end up watching the extension folder
 			// so simply exclude watching the extensions folder

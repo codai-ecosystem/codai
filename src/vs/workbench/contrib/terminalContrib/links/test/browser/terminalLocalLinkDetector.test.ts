@@ -127,16 +127,16 @@ const supportedLinkFormats: LinkFormatInfo[] = [
 	{ urlFormat: '{0}[{1}:{2}]', line: '5', column: '3' },
 	{ urlFormat: '{0} [{1}:{2}]', line: '5', column: '3' },
 	{ urlFormat: '{0}",{1}', line: '5' },
-	{ urlFormat: '{0}\',{1}', line: '5' },
+	{ urlFormat: "{0}',{1}", line: '5' },
 	{ urlFormat: '{0}#{1}', line: '5' },
-	{ urlFormat: '{0}#{1}:{2}', line: '5', column: '5' }
+	{ urlFormat: '{0}#{1}:{2}', line: '5', column: '5' },
 ];
 
 const windowsFallbackLinks: (string | { link: string; resource: URI })[] = [
 	'C:\\foo bar',
 	'C:\\foo bar\\baz',
 	'C:\\foo\\bar baz',
-	'C:\\foo/bar baz'
+	'C:\\foo/bar baz',
 ];
 
 const supportedFallbackLinkFormats: LinkFormatInfo[] = [
@@ -177,12 +177,12 @@ suite('Workbench - TerminalLocalLinkDetector', () => {
 	async function assertLinks(
 		type: TerminalBuiltinLinkType,
 		text: string,
-		expected: ({ uri: URI; range: [number, number][] })[]
+		expected: { uri: URI; range: [number, number][] }[]
 	) {
 		let to;
 		const race = await Promise.race([
 			assertLinkHelper(text, expected, detector, type).then(() => 'success'),
-			(to = timeout(2)).then(() => 'timeout')
+			(to = timeout(2)).then(() => 'timeout'),
 		]);
 		strictEqual(race, 'success', `Awaiting link assertion for "${text}" timed out`);
 		to.cancel();
@@ -190,10 +190,42 @@ suite('Workbench - TerminalLocalLinkDetector', () => {
 
 	async function assertLinksWithWrapped(link: string, resource?: URI) {
 		const uri = resource ?? URI.file(link);
-		await assertLinks(TerminalBuiltinLinkType.LocalFile, link, [{ uri, range: [[1, 1], [link.length, 1]] }]);
-		await assertLinks(TerminalBuiltinLinkType.LocalFile, ` ${link} `, [{ uri, range: [[2, 1], [link.length + 1, 1]] }]);
-		await assertLinks(TerminalBuiltinLinkType.LocalFile, `(${link})`, [{ uri, range: [[2, 1], [link.length + 1, 1]] }]);
-		await assertLinks(TerminalBuiltinLinkType.LocalFile, `[${link}]`, [{ uri, range: [[2, 1], [link.length + 1, 1]] }]);
+		await assertLinks(TerminalBuiltinLinkType.LocalFile, link, [
+			{
+				uri,
+				range: [
+					[1, 1],
+					[link.length, 1],
+				],
+			},
+		]);
+		await assertLinks(TerminalBuiltinLinkType.LocalFile, ` ${link} `, [
+			{
+				uri,
+				range: [
+					[2, 1],
+					[link.length + 1, 1],
+				],
+			},
+		]);
+		await assertLinks(TerminalBuiltinLinkType.LocalFile, `(${link})`, [
+			{
+				uri,
+				range: [
+					[2, 1],
+					[link.length + 1, 1],
+				],
+			},
+		]);
+		await assertLinks(TerminalBuiltinLinkType.LocalFile, `[${link}]`, [
+			{
+				uri,
+				range: [
+					[2, 1],
+					[link.length + 1, 1],
+				],
+			},
+		]);
 	}
 
 	setup(async () => {
@@ -203,72 +235,113 @@ suite('Workbench - TerminalLocalLinkDetector', () => {
 		instantiationService.stub(IFileService, {
 			async stat(resource) {
 				if (!validResources.map(e => e.path).includes(resource.path)) {
-					throw new Error('Doesn\'t exist');
+					throw new Error("Doesn't exist");
 				}
 				return createFileStat(resource);
-			}
+			},
 		});
 		instantiationService.stub(ITerminalLogService, new NullLogService());
 		resolver = instantiationService.createInstance(TerminalLinkResolver);
 		validResources = [];
 
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (
+			await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')
+		).Terminal;
 		xterm = new TerminalCtor({ allowProposedApi: true, cols: 80, rows: 30 });
 	});
 
 	suite('platform independent', () => {
 		setup(() => {
-			detector = instantiationService.createInstance(TerminalLocalLinkDetector, xterm, store.add(new TerminalCapabilityStore()), {
-				initialCwd: '/parent/cwd',
-				os: OperatingSystem.Linux,
-				remoteAuthority: undefined,
-				userHome: '/home',
-				backend: undefined
-			}, resolver);
+			detector = instantiationService.createInstance(
+				TerminalLocalLinkDetector,
+				xterm,
+				store.add(new TerminalCapabilityStore()),
+				{
+					initialCwd: '/parent/cwd',
+					os: OperatingSystem.Linux,
+					remoteAuthority: undefined,
+					userHome: '/home',
+					backend: undefined,
+				},
+				resolver
+			);
 		});
 
 		test('should support multiple link results', async () => {
-			validResources = [
-				URI.file('/parent/cwd/foo'),
-				URI.file('/parent/cwd/bar')
-			];
+			validResources = [URI.file('/parent/cwd/foo'), URI.file('/parent/cwd/bar')];
 			await assertLinks(TerminalBuiltinLinkType.LocalFile, './foo ./bar', [
-				{ range: [[1, 1], [5, 1]], uri: URI.file('/parent/cwd/foo') },
-				{ range: [[7, 1], [11, 1]], uri: URI.file('/parent/cwd/bar') }
+				{
+					range: [
+						[1, 1],
+						[5, 1],
+					],
+					uri: URI.file('/parent/cwd/foo'),
+				},
+				{
+					range: [
+						[7, 1],
+						[11, 1],
+					],
+					uri: URI.file('/parent/cwd/bar'),
+				},
 			]);
 		});
 
 		test('should support trimming extra quotes', async () => {
 			validResources = [URI.file('/parent/cwd/foo')];
 			await assertLinks(TerminalBuiltinLinkType.LocalFile, '"foo"" on line 5', [
-				{ range: [[1, 1], [16, 1]], uri: URI.file('/parent/cwd/foo') }
+				{
+					range: [
+						[1, 1],
+						[16, 1],
+					],
+					uri: URI.file('/parent/cwd/foo'),
+				},
 			]);
 		});
 
 		test('should support trimming extra square brackets', async () => {
 			validResources = [URI.file('/parent/cwd/foo')];
 			await assertLinks(TerminalBuiltinLinkType.LocalFile, '"foo]" on line 5', [
-				{ range: [[1, 1], [16, 1]], uri: URI.file('/parent/cwd/foo') }
+				{
+					range: [
+						[1, 1],
+						[16, 1],
+					],
+					uri: URI.file('/parent/cwd/foo'),
+				},
 			]);
 		});
 
 		test('should support finding links after brackets', async () => {
 			validResources = [URI.file('/parent/cwd/foo')];
 			await assertLinks(TerminalBuiltinLinkType.LocalFile, 'bar[foo:5', [
-				{ range: [[5, 1], [9, 1]], uri: URI.file('/parent/cwd/foo') }
+				{
+					range: [
+						[5, 1],
+						[9, 1],
+					],
+					uri: URI.file('/parent/cwd/foo'),
+				},
 			]);
 		});
 	});
 
 	suite('macOS/Linux', () => {
 		setup(() => {
-			detector = instantiationService.createInstance(TerminalLocalLinkDetector, xterm, store.add(new TerminalCapabilityStore()), {
-				initialCwd: '/parent/cwd',
-				os: OperatingSystem.Linux,
-				remoteAuthority: undefined,
-				userHome: '/home',
-				backend: undefined
-			}, resolver);
+			detector = instantiationService.createInstance(
+				TerminalLocalLinkDetector,
+				xterm,
+				store.add(new TerminalCapabilityStore()),
+				{
+					initialCwd: '/parent/cwd',
+					os: OperatingSystem.Linux,
+					remoteAuthority: undefined,
+					userHome: '/home',
+					backend: undefined,
+				},
+				resolver
+			);
 		});
 
 		for (const l of unixLinks) {
@@ -277,7 +350,12 @@ suite('Workbench - TerminalLocalLinkDetector', () => {
 			suite(`Link: ${baseLink}`, () => {
 				for (let i = 0; i < supportedLinkFormats.length; i++) {
 					const linkFormat = supportedLinkFormats[i];
-					const formattedLink = format(linkFormat.urlFormat, baseLink, linkFormat.line, linkFormat.column);
+					const formattedLink = format(
+						linkFormat.urlFormat,
+						baseLink,
+						linkFormat.line,
+						linkFormat.column
+					);
 					test(`should detect in "${formattedLink}"`, async () => {
 						validResources = [resource];
 						await assertLinksWithWrapped(formattedLink, resource);
@@ -289,11 +367,39 @@ suite('Workbench - TerminalLocalLinkDetector', () => {
 		test('Git diff links', async () => {
 			validResources = [URI.file('/parent/cwd/foo/bar')];
 			await assertLinks(TerminalBuiltinLinkType.LocalFile, `diff --git a/foo/bar b/foo/bar`, [
-				{ uri: validResources[0], range: [[14, 1], [20, 1]] },
-				{ uri: validResources[0], range: [[24, 1], [30, 1]] }
+				{
+					uri: validResources[0],
+					range: [
+						[14, 1],
+						[20, 1],
+					],
+				},
+				{
+					uri: validResources[0],
+					range: [
+						[24, 1],
+						[30, 1],
+					],
+				},
 			]);
-			await assertLinks(TerminalBuiltinLinkType.LocalFile, `--- a/foo/bar`, [{ uri: validResources[0], range: [[7, 1], [13, 1]] }]);
-			await assertLinks(TerminalBuiltinLinkType.LocalFile, `+++ b/foo/bar`, [{ uri: validResources[0], range: [[7, 1], [13, 1]] }]);
+			await assertLinks(TerminalBuiltinLinkType.LocalFile, `--- a/foo/bar`, [
+				{
+					uri: validResources[0],
+					range: [
+						[7, 1],
+						[13, 1],
+					],
+				},
+			]);
+			await assertLinks(TerminalBuiltinLinkType.LocalFile, `+++ b/foo/bar`, [
+				{
+					uri: validResources[0],
+					range: [
+						[7, 1],
+						[13, 1],
+					],
+				},
+			]);
 		});
 	});
 
@@ -304,20 +410,26 @@ suite('Workbench - TerminalLocalLinkDetector', () => {
 			const wslUnixToWindowsPathMap: Map<string, string> = new Map();
 
 			setup(() => {
-				detector = instantiationService.createInstance(TerminalLocalLinkDetector, xterm, store.add(new TerminalCapabilityStore()), {
-					initialCwd: 'C:\\Parent\\Cwd',
-					os: OperatingSystem.Windows,
-					remoteAuthority: undefined,
-					userHome: 'C:\\Home',
-					backend: {
-						async getWslPath(original: string, direction: 'unix-to-win' | 'win-to-unix') {
-							if (direction === 'unix-to-win') {
-								return wslUnixToWindowsPathMap.get(original) ?? original;
-							}
-							return original;
+				detector = instantiationService.createInstance(
+					TerminalLocalLinkDetector,
+					xterm,
+					store.add(new TerminalCapabilityStore()),
+					{
+						initialCwd: 'C:\\Parent\\Cwd',
+						os: OperatingSystem.Windows,
+						remoteAuthority: undefined,
+						userHome: 'C:\\Home',
+						backend: {
+							async getWslPath(original: string, direction: 'unix-to-win' | 'win-to-unix') {
+								if (direction === 'unix-to-win') {
+									return wslUnixToWindowsPathMap.get(original) ?? original;
+								}
+								return original;
+							},
 						},
-					}
-				}, resolver);
+					},
+					resolver
+				);
 				wslUnixToWindowsPathMap.clear();
 			});
 
@@ -327,7 +439,12 @@ suite('Workbench - TerminalLocalLinkDetector', () => {
 				suite(`Link "${baseLink}"`, () => {
 					for (let i = 0; i < supportedLinkFormats.length; i++) {
 						const linkFormat = supportedLinkFormats[i];
-						const formattedLink = format(linkFormat.urlFormat, baseLink, linkFormat.line, linkFormat.column);
+						const formattedLink = format(
+							linkFormat.urlFormat,
+							baseLink,
+							linkFormat.line,
+							linkFormat.column
+						);
 						test(`should detect in "${formattedLink}"`, async () => {
 							validResources = [resource];
 							await assertLinksWithWrapped(formattedLink, resource);
@@ -342,12 +459,25 @@ suite('Workbench - TerminalLocalLinkDetector', () => {
 				suite(`Fallback link "${baseLink}"`, () => {
 					for (let i = 0; i < supportedFallbackLinkFormats.length; i++) {
 						const linkFormat = supportedFallbackLinkFormats[i];
-						const formattedLink = format(linkFormat.urlFormat, baseLink, linkFormat.line, linkFormat.column);
+						const formattedLink = format(
+							linkFormat.urlFormat,
+							baseLink,
+							linkFormat.line,
+							linkFormat.column
+						);
 						const linkCellStartOffset = linkFormat.linkCellStartOffset ?? 0;
 						const linkCellEndOffset = linkFormat.linkCellEndOffset ?? 0;
 						test(`should detect in "${formattedLink}"`, async () => {
 							validResources = [resource];
-							await assertLinks(TerminalBuiltinLinkType.LocalFile, formattedLink, [{ uri: resource, range: [[1 + linkCellStartOffset, 1], [formattedLink.length + linkCellEndOffset, 1]] }]);
+							await assertLinks(TerminalBuiltinLinkType.LocalFile, formattedLink, [
+								{
+									uri: resource,
+									range: [
+										[1 + linkCellStartOffset, 1],
+										[formattedLink.length + linkCellEndOffset, 1],
+									],
+								},
+							]);
 						});
 					}
 				});
@@ -357,11 +487,39 @@ suite('Workbench - TerminalLocalLinkDetector', () => {
 				const resource = URI.file('C:\\Parent\\Cwd\\foo\\bar');
 				validResources = [resource];
 				await assertLinks(TerminalBuiltinLinkType.LocalFile, `diff --git a/foo/bar b/foo/bar`, [
-					{ uri: resource, range: [[14, 1], [20, 1]] },
-					{ uri: resource, range: [[24, 1], [30, 1]] }
+					{
+						uri: resource,
+						range: [
+							[14, 1],
+							[20, 1],
+						],
+					},
+					{
+						uri: resource,
+						range: [
+							[24, 1],
+							[30, 1],
+						],
+					},
 				]);
-				await assertLinks(TerminalBuiltinLinkType.LocalFile, `--- a/foo/bar`, [{ uri: resource, range: [[7, 1], [13, 1]] }]);
-				await assertLinks(TerminalBuiltinLinkType.LocalFile, `+++ b/foo/bar`, [{ uri: resource, range: [[7, 1], [13, 1]] }]);
+				await assertLinks(TerminalBuiltinLinkType.LocalFile, `--- a/foo/bar`, [
+					{
+						uri: resource,
+						range: [
+							[7, 1],
+							[13, 1],
+						],
+					},
+				]);
+				await assertLinks(TerminalBuiltinLinkType.LocalFile, `+++ b/foo/bar`, [
+					{
+						uri: resource,
+						range: [
+							[7, 1],
+							[13, 1],
+						],
+					},
+				]);
 			});
 
 			suite('WSL', () => {

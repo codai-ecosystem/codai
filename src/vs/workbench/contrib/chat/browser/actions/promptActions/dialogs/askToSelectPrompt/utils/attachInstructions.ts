@@ -34,7 +34,7 @@ export interface IAttachOptions {
  */
 export const attachInstructionsFiles = async (
 	files: URI[],
-	options: IAttachOptions,
+	options: IAttachOptions
 ): Promise<IChatWidget> => {
 	const widget = await getChatWidgetObject(options);
 
@@ -51,15 +51,13 @@ export const attachInstructionsFiles = async (
  *
  * @throws if failed to reveal a chat widget.
  */
-export const getChatWidgetObject = async (
-	options: IAttachOptions,
-): Promise<IChatWidget> => {
+export const getChatWidgetObject = async (options: IAttachOptions): Promise<IChatWidget> => {
 	const { widget, inNewChat } = options;
 
 	// if a new chat sessions needs to be created, or there is no
 	// chat widget reference provided, show a chat view, otherwise
 	// re-use the existing chat widget
-	if ((inNewChat === true) || (widget === undefined)) {
+	if (inNewChat === true || widget === undefined) {
 		return await showChat(options, inNewChat);
 	}
 
@@ -72,7 +70,7 @@ export const getChatWidgetObject = async (
  */
 const showChat = async (
 	options: IAttachOptions,
-	createNew: boolean = false,
+	createNew: boolean = false
 ): Promise<IChatWidget> => {
 	const { commandService, viewsService } = options;
 
@@ -82,10 +80,7 @@ const showChat = async (
 
 	const widget = await showChatView(viewsService);
 
-	assertDefined(
-		widget,
-		'Chat widget must be defined.',
-	);
+	assertDefined(widget, 'Chat widget must be defined.');
 
 	return widget;
 };

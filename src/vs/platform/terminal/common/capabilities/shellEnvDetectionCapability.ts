@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { IShellEnvDetectionCapability, TerminalCapability, TerminalShellIntegrationEnvironment } from './capabilities.js';
+import {
+	IShellEnvDetectionCapability,
+	TerminalCapability,
+	TerminalShellIntegrationEnvironment,
+} from './capabilities.js';
 import { Emitter } from '../../../../base/common/event.js';
 import { equals } from '../../../../base/common/objects.js';
 import { mapsStrictEqualIgnoreOrder } from '../../../../base/common/map.js';
@@ -14,7 +18,10 @@ export interface IShellEnv {
 	isTrusted: boolean;
 }
 
-export class ShellEnvDetectionCapability extends Disposable implements IShellEnvDetectionCapability {
+export class ShellEnvDetectionCapability
+	extends Disposable
+	implements IShellEnvDetectionCapability
+{
 	readonly type = TerminalCapability.ShellEnvDetection;
 
 	private _pendingEnv: IShellEnv | undefined;
@@ -24,7 +31,9 @@ export class ShellEnvDetectionCapability extends Disposable implements IShellEnv
 		return this._createStateObject();
 	}
 
-	private readonly _onDidChangeEnv = this._register(new Emitter<TerminalShellIntegrationEnvironment>());
+	private readonly _onDidChangeEnv = this._register(
+		new Emitter<TerminalShellIntegrationEnvironment>()
+	);
 	readonly onDidChangeEnv = this._onDidChangeEnv.event;
 
 	setEnvironment(env: { [key: string]: string | undefined }, isTrusted: boolean): void {
@@ -47,15 +56,14 @@ export class ShellEnvDetectionCapability extends Disposable implements IShellEnv
 		if (clear) {
 			this._pendingEnv = {
 				value: new Map(),
-				isTrusted
+				isTrusted,
 			};
 		} else {
 			this._pendingEnv = {
 				value: new Map(this._env.value),
-				isTrusted: this._env.isTrusted && isTrusted
+				isTrusted: this._env.isTrusted && isTrusted,
 			};
 		}
-
 	}
 
 	setEnvironmentSingleVar(key: string, value: string | undefined, isTrusted: boolean): void {
@@ -98,7 +106,7 @@ export class ShellEnvDetectionCapability extends Disposable implements IShellEnv
 	private _createStateObject(): TerminalShellIntegrationEnvironment {
 		return {
 			value: Object.fromEntries(this._env.value),
-			isTrusted: this._env.isTrusted
+			isTrusted: this._env.isTrusted,
 		};
 	}
 }

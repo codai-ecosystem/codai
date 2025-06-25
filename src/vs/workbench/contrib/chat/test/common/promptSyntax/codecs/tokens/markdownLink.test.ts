@@ -21,18 +21,10 @@ suite('FileReference', () => {
 		const caption = `[link-caption-${randomInt(Number.MAX_SAFE_INTEGER)}]`;
 		const link = `(/temp/test/file-${randomInt(Number.MAX_SAFE_INTEGER)}.md)`;
 
-		const markdownLink = new MarkdownLink(
-			lineNumber,
-			columnStartNumber,
-			caption,
-			link,
-		);
+		const markdownLink = new MarkdownLink(lineNumber, columnStartNumber, caption, link);
 		const { linkRange } = markdownLink;
 
-		assertDefined(
-			linkRange,
-			'The link range must be defined.',
-		);
+		assertDefined(linkRange, 'The link range must be defined.');
 
 		const expectedLinkRange = new Range(
 			lineNumber,
@@ -41,11 +33,11 @@ suite('FileReference', () => {
 			lineNumber,
 			// `+1` for the openning `(` character of the link, and
 			// `-2` for the enclosing `()` part of the link
-			columnStartNumber + caption.length + 1 + link.length - 2,
+			columnStartNumber + caption.length + 1 + link.length - 2
 		);
 		assert(
 			expectedLinkRange.equalsRange(linkRange),
-			`Expected link range to be ${expectedLinkRange}, got ${linkRange}.`,
+			`Expected link range to be ${expectedLinkRange}, got ${linkRange}.`
 		);
 	});
 
@@ -56,19 +48,10 @@ suite('FileReference', () => {
 		const rawLink = `/temp/test/file-${randomInt(Number.MAX_SAFE_INTEGER)}.md`;
 		const link = `(${rawLink})`;
 
-		const markdownLink = new MarkdownLink(
-			lineNumber,
-			columnStartNumber,
-			caption,
-			link,
-		);
+		const markdownLink = new MarkdownLink(lineNumber, columnStartNumber, caption, link);
 		const { path } = markdownLink;
 
-		assert.strictEqual(
-			path,
-			rawLink,
-			'Must return the correct link value.',
-		);
+		assert.strictEqual(path, rawLink, 'Must return the correct link value.');
 	});
 
 	test('extends `MarkdownToken`', () => {
@@ -78,21 +61,10 @@ suite('FileReference', () => {
 		const rawLink = `/temp/test/file-${randomInt(Number.MAX_SAFE_INTEGER)}.md`;
 		const link = `(${rawLink})`;
 
-		const markdownLink = new MarkdownLink(
-			lineNumber,
-			columnStartNumber,
-			caption,
-			link,
-		);
+		const markdownLink = new MarkdownLink(lineNumber, columnStartNumber, caption, link);
 
-		assert(
-			markdownLink instanceof MarkdownToken,
-			'Must extend `MarkdownToken`.',
-		);
+		assert(markdownLink instanceof MarkdownToken, 'Must extend `MarkdownToken`.');
 
-		assert(
-			markdownLink instanceof BaseToken,
-			'Must extend `BaseToken`.',
-		);
+		assert(markdownLink instanceof BaseToken, 'Must extend `BaseToken`.');
 	});
 });

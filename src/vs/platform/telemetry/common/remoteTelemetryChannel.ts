@@ -18,7 +18,6 @@ export class ServerTelemetryChannel extends Disposable implements IServerChannel
 		super();
 	}
 
-
 	async call(_: any, command: string, arg?: any): Promise<any> {
 		switch (command) {
 			case 'updateTelemetryLevel': {

@@ -40,7 +40,7 @@ export interface Edit {
 
 /**
  * A text range in the document
-*/
+ */
 export interface Range {
 	/**
 	 * The start offset of the range.
@@ -52,8 +52,11 @@ export interface Range {
 	length: number;
 }
 
-
-export function format(documentText: string, range: Range | undefined, options: FormattingOptions): Edit[] {
+export function format(
+	documentText: string,
+	range: Range | undefined,
+	options: FormattingOptions
+): Edit[] {
 	let initialIndentLevel: number;
 	let formatText: string;
 	let formatTextStart: number;
@@ -101,7 +104,7 @@ export function format(documentText: string, range: Range | undefined, options: 
 		let token = scanner.scan();
 		lineBreak = false;
 		while (token === SyntaxKind.Trivia || token === SyntaxKind.LineBreakTrivia) {
-			lineBreak = lineBreak || (token === SyntaxKind.LineBreakTrivia);
+			lineBreak = lineBreak || token === SyntaxKind.LineBreakTrivia;
 			token = scanner.scan();
 		}
 		hasError = token === SyntaxKind.Unknown || scanner.getTokenError() !== ScanError.None;
@@ -109,7 +112,12 @@ export function format(documentText: string, range: Range | undefined, options: 
 	}
 	const editOperations: Edit[] = [];
 	function addEdit(text: string, startOffset: number, endOffset: number) {
-		if (!hasError && startOffset < rangeEnd && endOffset > rangeStart && documentText.substring(startOffset, endOffset) !== text) {
+		if (
+			!hasError &&
+			startOffset < rangeEnd &&
+			endOffset > rangeStart &&
+			documentText.substring(startOffset, endOffset) !== text
+		) {
 			editOperations.push({ offset: startOffset, length: endOffset - startOffset, content: text });
 		}
 	}
@@ -127,7 +135,11 @@ export function format(documentText: string, range: Range | undefined, options: 
 		let secondToken = scanNext();
 
 		let replaceContent = '';
-		while (!lineBreak && (secondToken === SyntaxKind.LineCommentTrivia || secondToken === SyntaxKind.BlockCommentTrivia)) {
+		while (
+			!lineBreak &&
+			(secondToken === SyntaxKind.LineCommentTrivia ||
+				secondToken === SyntaxKind.BlockCommentTrivia)
+		) {
 			// comments on the same line: keep them on the same line, but ignore them otherwise
 			const commentTokenStart = scanner.getTokenOffset() + formatTextStart;
 			addEdit(' ', firstTokenEnd, commentTokenStart);
@@ -180,7 +192,10 @@ export function format(documentText: string, range: Range | undefined, options: 
 				case SyntaxKind.NumericLiteral:
 				case SyntaxKind.CloseBraceToken:
 				case SyntaxKind.CloseBracketToken:
-					if (secondToken === SyntaxKind.LineCommentTrivia || secondToken === SyntaxKind.BlockCommentTrivia) {
+					if (
+						secondToken === SyntaxKind.LineCommentTrivia ||
+						secondToken === SyntaxKind.BlockCommentTrivia
+					) {
 						replaceContent = ' ';
 					} else if (secondToken !== SyntaxKind.CommaToken && secondToken !== SyntaxKind.EOF) {
 						hasError = true;
@@ -190,10 +205,13 @@ export function format(documentText: string, range: Range | undefined, options: 
 					hasError = true;
 					break;
 			}
-			if (lineBreak && (secondToken === SyntaxKind.LineCommentTrivia || secondToken === SyntaxKind.BlockCommentTrivia)) {
+			if (
+				lineBreak &&
+				(secondToken === SyntaxKind.LineCommentTrivia ||
+					secondToken === SyntaxKind.BlockCommentTrivia)
+			) {
 				replaceContent = newLineAndIndent();
 			}
-
 		}
 		const secondTokenStart = scanner.getTokenOffset() + formatTextStart;
 		addEdit(replaceContent, firstTokenEnd, secondTokenStart);
@@ -208,7 +226,11 @@ export function format(documentText: string, range: Range | undefined, options: 
  * @param options The formatting options to use
  */
 export function toFormattedString(obj: unknown, options: FormattingOptions) {
-	const content = JSON.stringify(obj, undefined, options.insertSpaces ? options.tabSize || 4 : '\t');
+	const content = JSON.stringify(
+		obj,
+		undefined,
+		options.insertSpaces ? options.tabSize || 4 : '\t'
+	);
 	if (options.eol !== undefined) {
 		return content.replace(/\r\n|\r|\n/g, options.eol);
 	}

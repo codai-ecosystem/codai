@@ -27,8 +27,8 @@ interface ITracingData {
 		readonly usedHeapSizeAfter?: number;
 		readonly usedHeapSizeBefore?: number;
 	};
-	readonly dur: number; 	// in microseconds
-	readonly name: string;	// e.g. MinorGC or MajorGC
+	readonly dur: number; // in microseconds
+	readonly name: string; // e.g. MinorGC or MajorGC
 	readonly pid: number;
 }
 
@@ -41,7 +41,6 @@ interface IHeapStatistics {
 }
 
 export class NativeStartupTimings extends StartupTimings implements IWorkbenchContribution {
-
 	constructor(
 		@IFileService private readonly _fileService: IFileService,
 		@ITimerService private readonly _timerService: ITimerService,
@@ -51,11 +50,18 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
 		@ITelemetryService private readonly _telemetryService: ITelemetryService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IUpdateService updateService: IUpdateService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
 		@IProductService private readonly _productService: IProductService,
 		@IWorkspaceTrustManagementService workspaceTrustService: IWorkspaceTrustManagementService
 	) {
-		super(editorService, paneCompositeService, lifecycleService, updateService, workspaceTrustService);
+		super(
+			editorService,
+			paneCompositeService,
+			lifecycleService,
+			updateService,
+			workspaceTrustService
+		);
 
 		this._report().catch(onUnexpectedError);
 	}
@@ -87,15 +93,18 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
 			}
 
 			if (appendTo) {
-				const content = coalesce([
-					this._timerService.startupMetrics.ellapsed,
-					this._productService.nameShort,
-					(this._productService.commit || '').slice(0, 10) || '0000000000',
-					this._telemetryService.sessionId,
-					standardStartupError === undefined ? 'standard_start' : `NO_standard_start : ${standardStartupError}`,
-					`${String(perfBaseline).padStart(4, '0')}ms`,
-					heapStatistics ? this._printStartupHeapStatistics(heapStatistics) : undefined
-				]).join('\t') + '\n';
+				const content =
+					coalesce([
+						this._timerService.startupMetrics.ellapsed,
+						this._productService.nameShort,
+						(this._productService.commit || '').slice(0, 10) || '0000000000',
+						this._telemetryService.sessionId,
+						standardStartupError === undefined
+							? 'standard_start'
+							: `NO_standard_start : ${standardStartupError}`,
+						`${String(perfBaseline).padStart(4, '0')}ms`,
+						heapStatistics ? this._printStartupHeapStatistics(heapStatistics) : undefined,
+					]).join('\t') + '\n';
 				await this._appendContent(URI.file(appendTo), content);
 			}
 
@@ -124,7 +133,6 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
 					console.log(durationsContent);
 				}
 			}
-
 		} catch (err) {
 			console.error(err);
 		} finally {
@@ -160,7 +168,9 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
 		}
 
 		const windowProcessId = await this._nativeHostService.getProcessId();
-		const used = (performance as unknown as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize ?? 0; // https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
+		const used =
+			(performance as unknown as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize ??
+			0; // https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
 
 		let minorGCs = 0;
 		let majorGCs = 0;
@@ -168,14 +178,19 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
 		let duration = 0;
 
 		try {
-			const traceContents: { traceEvents: ITracingData[] } = JSON.parse((await this._fileService.readFile(URI.file(this._environmentService.args['trace-startup-file']))).value.toString());
+			const traceContents: { traceEvents: ITracingData[] } = JSON.parse(
+				(
+					await this._fileService.readFile(
+						URI.file(this._environmentService.args['trace-startup-file'])
+					)
+				).value.toString()
+			);
 			for (const event of traceContents.traceEvents) {
 				if (event.pid !== windowProcessId) {
 					continue;
 				}
 
 				switch (event.name) {
-
 					// Major/Minor GC Events
 					case 'MinorGC':
 						minorGCs++;
@@ -193,8 +208,11 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
 				}
 
 				if (event.name === 'MajorGC' || event.name === 'MinorGC') {
-					if (typeof event.args?.usedHeapSizeAfter === 'number' && typeof event.args.usedHeapSizeBefore === 'number') {
-						garbage += (event.args.usedHeapSizeBefore - event.args.usedHeapSizeAfter);
+					if (
+						typeof event.args?.usedHeapSizeAfter === 'number' &&
+						typeof event.args.usedHeapSizeBefore === 'number'
+					) {
+						garbage += event.args.usedHeapSizeBefore - event.args.usedHeapSizeAfter;
 					}
 				}
 			}
@@ -207,15 +225,41 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
 		return undefined;
 	}
 
-	private _telemetryLogHeapStatistics({ used, garbage, majorGCs, minorGCs, duration }: IHeapStatistics): void {
+	private _telemetryLogHeapStatistics({
+		used,
+		garbage,
+		majorGCs,
+		minorGCs,
+		duration,
+	}: IHeapStatistics): void {
 		type StartupHeapStatisticsClassification = {
 			owner: 'bpasero';
 			comment: 'An event that reports startup heap statistics for performance analysis.';
-			heapUsed: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Used heap' };
-			heapGarbage: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Garbage heap' };
-			majorGCs: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Major GCs count' };
-			minorGCs: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Minor GCs count' };
-			gcsDuration: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'GCs duration' };
+			heapUsed: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Used heap';
+			};
+			heapGarbage: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Garbage heap';
+			};
+			majorGCs: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Major GCs count';
+			};
+			minorGCs: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Minor GCs count';
+			};
+			gcsDuration: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'GCs duration';
+			};
 		};
 		type StartupHeapStatisticsEvent = {
 			heapUsed: number;
@@ -224,16 +268,25 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
 			minorGCs: number;
 			gcsDuration: number;
 		};
-		this._telemetryService.publicLog2<StartupHeapStatisticsEvent, StartupHeapStatisticsClassification>('startupHeapStatistics', {
+		this._telemetryService.publicLog2<
+			StartupHeapStatisticsEvent,
+			StartupHeapStatisticsClassification
+		>('startupHeapStatistics', {
 			heapUsed: used,
 			heapGarbage: garbage,
 			majorGCs,
 			minorGCs,
-			gcsDuration: duration
+			gcsDuration: duration,
 		});
 	}
 
-	private _printStartupHeapStatistics({ used, garbage, majorGCs, minorGCs, duration }: IHeapStatistics) {
+	private _printStartupHeapStatistics({
+		used,
+		garbage,
+		majorGCs,
+		minorGCs,
+		duration,
+	}: IHeapStatistics) {
 		const MB = 1024 * 1024;
 		return `Heap: ${Math.round(used / MB)}MB (used) ${Math.round(garbage / MB)}MB (garbage) ${majorGCs} (MajorGC) ${minorGCs} (MinorGC) ${duration}ms (GC duration)`;
 	}

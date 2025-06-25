@@ -101,15 +101,15 @@ describe('FirebaseProvisioningService', () => {
 
 		it('should handle errors during project creation', async () => {
 			// Mock the client to throw an error
-			vi.spyOn(MockGoogleAuth.prototype, 'getClient').mockRejectedValue(
-				new Error('Test error')
-			);
+			vi.spyOn(MockGoogleAuth.prototype, 'getClient').mockRejectedValue(new Error('Test error'));
 
-			await expect(service.createUserProject({
-				projectId: 'test-project',
-				displayName: 'Test Project',
-				userId: 'test-user',
-			})).rejects.toThrow('Firebase project provisioning failed');
+			await expect(
+				service.createUserProject({
+					projectId: 'test-project',
+					displayName: 'Test Project',
+					userId: 'test-user',
+				})
+			).rejects.toThrow('Firebase project provisioning failed');
 		});
 	});
 
@@ -226,7 +226,7 @@ describe('FirebaseProvisioningService', () => {
 
 			vi.spyOn(authClient, 'request').mockRejectedValueOnce({
 				status: 409,
-				message: 'Database already exists'
+				message: 'Database already exists',
 			});
 
 			// Should not throw even with 409 error
@@ -264,9 +264,7 @@ describe('FirebaseProvisioningService', () => {
 			const setupAuth = (service as any).setupAuth.bind(service);
 			const authClient = await (service as any).auth.getClient();
 
-			vi.spyOn(authClient, 'request').mockRejectedValueOnce(
-				new Error('Auth setup failed')
-			);
+			vi.spyOn(authClient, 'request').mockRejectedValueOnce(new Error('Auth setup failed'));
 
 			// Should not throw error
 			await expect(setupAuth(authClient, 'test-project-id')).resolves.not.toThrow();
@@ -307,13 +305,11 @@ describe('FirebaseProvisioningService', () => {
 			const createWebApiKey = (service as any).createWebApiKey.bind(service);
 			const authClient = await (service as any).auth.getClient();
 
-			vi.spyOn(authClient, 'request').mockRejectedValueOnce(
-				new Error('API key creation failed')
-			);
+			vi.spyOn(authClient, 'request').mockRejectedValueOnce(new Error('API key creation failed'));
 
-			await expect(createWebApiKey(authClient, 'test-project-id'))
-				.rejects
-				.toThrow('API key creation failed');
+			await expect(createWebApiKey(authClient, 'test-project-id')).rejects.toThrow(
+				'API key creation failed'
+			);
 		});
 	});
 
@@ -324,7 +320,8 @@ describe('FirebaseProvisioningService', () => {
 
 			const spy = vi.spyOn(authClient, 'request');
 			// First call returns not done, second call returns done
-			spy.mockResolvedValueOnce({ data: { done: false, metadata: { progress: 50 } } })
+			spy
+				.mockResolvedValueOnce({ data: { done: false, metadata: { progress: 50 } } })
 				.mockResolvedValueOnce({ data: { done: true } });
 
 			await waitForOperation(authClient, 'operations/test-operation');
@@ -396,7 +393,9 @@ describe('FirebaseProvisioningService', () => {
 			const { createFirebaseService } = require('../firebase-provisioning');
 
 			// Should throw error when creating service
-			expect(() => createFirebaseService()).toThrow('Firebase provisioning configuration is incomplete');
+			expect(() => createFirebaseService()).toThrow(
+				'Firebase provisioning configuration is incomplete'
+			);
 
 			// Restore original env vars
 			process.env.GOOGLE_APPLICATION_CREDENTIALS = originalCreds;
@@ -423,30 +422,35 @@ describe('FirebaseProvisioningService', () => {
 
 			await setupUserPermissions('test-project-id', 'test-user-id');
 
-			expect(initializeApp).toHaveBeenCalledWith({
-				projectId: 'test-project-id',
-			}, expect.stringContaining('aide-test-project-id'));
+			expect(initializeApp).toHaveBeenCalledWith(
+				{
+					projectId: 'test-project-id',
+				},
+				expect.stringContaining('aide-test-project-id')
+			);
 
 			expect(mockCollection).toHaveBeenCalledWith('users');
 			expect(mockDoc).toHaveBeenCalledWith('test-user-id');
-			expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
-				uid: 'test-user-id',
-				role: 'user',
-				plan: 'free',
-				projectId: 'test-project-id',
-			}));
+			expect(mockSet).toHaveBeenCalledWith(
+				expect.objectContaining({
+					uid: 'test-user-id',
+					role: 'user',
+					plan: 'free',
+					projectId: 'test-project-id',
+				})
+			);
 		});
 
 		it('should throw error if projectId or userId is missing', async () => {
 			const setupUserPermissions = (service as any).setupUserPermissions.bind(service);
 
-			await expect(setupUserPermissions('', 'test-user-id'))
-				.rejects
-				.toThrow('Invalid parameters for user permission setup');
+			await expect(setupUserPermissions('', 'test-user-id')).rejects.toThrow(
+				'Invalid parameters for user permission setup'
+			);
 
-			await expect(setupUserPermissions('test-project-id', ''))
-				.rejects
-				.toThrow('Invalid parameters for user permission setup');
+			await expect(setupUserPermissions('test-project-id', '')).rejects.toThrow(
+				'Invalid parameters for user permission setup'
+			);
 		});
 	});
 
@@ -476,9 +480,7 @@ describe('FirebaseProvisioningService', () => {
 
 			// Should call request for each required API
 			expect(spy).toHaveBeenCalledTimes(5); // Number of required APIs
-			expect(consoleSpy).toHaveBeenCalledWith(
-				expect.stringContaining('Successfully enabled APIs')
-			);
+			expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Successfully enabled APIs'));
 		});
 
 		it('should continue even if some APIs fail to enable', async () => {

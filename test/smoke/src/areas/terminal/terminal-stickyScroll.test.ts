@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Application, Terminal, SettingsEditor, TerminalCommandIdWithValue } from '../../../../automation';
+import {
+	Application,
+	Terminal,
+	SettingsEditor,
+	TerminalCommandIdWithValue,
+} from '../../../../automation';
 import { setTerminalTestSettings } from './terminal-helpers';
 
 export function setup(options?: { skipSuite: boolean }) {
@@ -16,9 +21,7 @@ export function setup(options?: { skipSuite: boolean }) {
 			app = this.app as Application;
 			terminal = app.workbench.terminal;
 			settingsEditor = app.workbench.settingsEditor;
-			await setTerminalTestSettings(app, [
-				['terminal.integrated.stickyScroll.enabled', 'true']
-			]);
+			await setTerminalTestSettings(app, [['terminal.integrated.stickyScroll.enabled', 'true']]);
 		});
 
 		after(async function () {
@@ -37,7 +40,11 @@ export function setup(options?: { skipSuite: boolean }) {
 			const data = generateCommandAndOutput(prompt, command, exitCode);
 			await terminal.runCommandWithValue(TerminalCommandIdWithValue.WriteDataToTerminal, data);
 			// Verify line count
-			await app.code.waitForElements('.terminal-sticky-scroll .xterm-rows > *', true, e => e.length === expectedLineCount);
+			await app.code.waitForElements(
+				'.terminal-sticky-scroll .xterm-rows > *',
+				true,
+				e => e.length === expectedLineCount
+			);
 			// Verify content
 			const element = await app.code.getElement('.terminal-sticky-scroll .xterm-rows');
 			if (
@@ -47,7 +54,9 @@ export function setup(options?: { skipSuite: boolean }) {
 			) {
 				return;
 			}
-			throw new Error(`Failed for command ${command}, exitcode ${exitCode}, text content ${element?.textContent}`);
+			throw new Error(
+				`Failed for command ${command}, exitcode ${exitCode}, text content ${element?.textContent}`
+			);
 		}
 
 		beforeEach(async () => {
@@ -65,13 +74,13 @@ export function setup(options?: { skipSuite: boolean }) {
 
 		it('should support multi-line prompt', async () => {
 			// Standard multi-line prompt
-			await checkCommandAndOutput('sticky scroll 1', 0, "Multi-line\\r\\nPrompt> ", 2);
+			await checkCommandAndOutput('sticky scroll 1', 0, 'Multi-line\\r\\nPrompt> ', 2);
 
 			// New line before prompt
-			await checkCommandAndOutput('sticky scroll 2', 0, "\\r\\nMulti-line Prompt> ", 1);
+			await checkCommandAndOutput('sticky scroll 2', 0, '\\r\\nMulti-line Prompt> ', 1);
 
 			// New line before multi-line prompt
-			await checkCommandAndOutput('sticky scroll 3', 0, "\\r\\nMulti-line\\r\\nPrompt> ", 2);
+			await checkCommandAndOutput('sticky scroll 3', 0, '\\r\\nMulti-line\\r\\nPrompt> ', 2);
 		});
 	});
 }

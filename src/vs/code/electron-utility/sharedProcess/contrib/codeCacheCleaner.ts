@@ -13,7 +13,6 @@ import { ILogService } from '../../../../platform/log/common/log.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 
 export class CodeCacheCleaner extends Disposable {
-
 	private readonly dataMaxAge: number;
 
 	constructor(
@@ -23,17 +22,20 @@ export class CodeCacheCleaner extends Disposable {
 	) {
 		super();
 
-		this.dataMaxAge = productService.quality !== 'stable'
-			? 1000 * 60 * 60 * 24 * 7 		// roughly 1 week (insiders)
-			: 1000 * 60 * 60 * 24 * 30 * 3; // roughly 3 months (stable)
+		this.dataMaxAge =
+			productService.quality !== 'stable'
+				? 1000 * 60 * 60 * 24 * 7 // roughly 1 week (insiders)
+				: 1000 * 60 * 60 * 24 * 30 * 3; // roughly 3 months (stable)
 
 		// Cached data is stored as user data and we run a cleanup task every time
 		// the editor starts. The strategy is to delete all files that are older than
 		// 3 months (1 week respectively)
 		if (currentCodeCachePath) {
-			const scheduler = this._register(new RunOnceScheduler(() => {
-				this.cleanUpCodeCaches(currentCodeCachePath);
-			}, 30 * 1000 /* after 30s */));
+			const scheduler = this._register(
+				new RunOnceScheduler(() => {
+					this.cleanUpCodeCaches(currentCodeCachePath);
+				}, 30 * 1000 /* after 30s */)
+			);
 			scheduler.schedule();
 		}
 	}
@@ -50,20 +52,25 @@ export class CodeCacheCleaner extends Disposable {
 			const currentCodeCache = basename(currentCodeCachePath);
 
 			const codeCaches = await Promises.readdir(codeCacheRootPath);
-			await Promise.all(codeCaches.map(async codeCache => {
-				if (codeCache === currentCodeCache) {
-					return; // not the current cache folder
-				}
+			await Promise.all(
+				codeCaches.map(async codeCache => {
+					if (codeCache === currentCodeCache) {
+						return; // not the current cache folder
+					}
 
-				// Delete cache folder if old enough
-				const codeCacheEntryPath = join(codeCacheRootPath, codeCache);
-				const codeCacheEntryStat = await promises.stat(codeCacheEntryPath);
-				if (codeCacheEntryStat.isDirectory() && (now - codeCacheEntryStat.mtime.getTime()) > this.dataMaxAge) {
-					this.logService.trace(`[code cache cleanup]: Removing code cache folder ${codeCache}.`);
+					// Delete cache folder if old enough
+					const codeCacheEntryPath = join(codeCacheRootPath, codeCache);
+					const codeCacheEntryStat = await promises.stat(codeCacheEntryPath);
+					if (
+						codeCacheEntryStat.isDirectory() &&
+						now - codeCacheEntryStat.mtime.getTime() > this.dataMaxAge
+					) {
+						this.logService.trace(`[code cache cleanup]: Removing code cache folder ${codeCache}.`);
 
-					return Promises.rm(codeCacheEntryPath);
-				}
-			}));
+						return Promises.rm(codeCacheEntryPath);
+					}
+				})
+			);
 		} catch (error) {
 			onUnexpectedError(error);
 		}

@@ -1,16 +1,16 @@
 {
-  "name": "my-api",
-  "version": "1.0.0",
-  "description": "A api project created by AIDE",
-  "main": "src/index.ts",
-  "scripts": {
-    "start": "node src/index.js",
-    "build": "tsc",
-    "dev": "tsx watch src/index.ts"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
-  }
+	"name": "my-api",
+	"version": "1.0.0",
+	"description": "A api project created by AIDE",
+	"main": "src/index.ts",
+	"scripts": {
+		"start": "node src/index.js",
+		"build": "tsc",
+		"dev": "tsx watch src/index.ts"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"typescript": "^5.0.0",
+		"@types/node": "^20.0.0"
+	}
 }

@@ -1,16 +1,16 @@
 {
-  "name": "my-mobile-app",
-  "version": "1.0.0",
-  "description": "A mobile project created by AIDE",
-  "main": "src/index.ts",
-  "scripts": {
-    "start": "node src/index.js",
-    "build": "tsc",
-    "dev": "tsx watch src/index.ts"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
-  }
+	"name": "my-mobile-app",
+	"version": "1.0.0",
+	"description": "A mobile project created by AIDE",
+	"main": "src/index.ts",
+	"scripts": {
+		"start": "node src/index.js",
+		"build": "tsc",
+		"dev": "tsx watch src/index.ts"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"typescript": "^5.0.0",
+		"@types/node": "^20.0.0"
+	}
 }

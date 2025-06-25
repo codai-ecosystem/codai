@@ -11,15 +11,18 @@ import { IFileService } from '../../files/common/files.js';
 import { asTextOrError, IRequestService } from '../../request/common/request.js';
 
 export class DownloadService implements IDownloadService {
-
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
 		@IRequestService private readonly requestService: IRequestService,
 		@IFileService private readonly fileService: IFileService
-	) { }
+	) {}
 
-	async download(resource: URI, target: URI, cancellationToken: CancellationToken = CancellationToken.None): Promise<void> {
+	async download(
+		resource: URI,
+		target: URI,
+		cancellationToken: CancellationToken = CancellationToken.None
+	): Promise<void> {
 		if (resource.scheme === Schemas.file || resource.scheme === Schemas.vscodeRemote) {
 			// Intentionally only support this for file|remote<->file|remote scenarios
 			await this.fileService.copy(resource, target);

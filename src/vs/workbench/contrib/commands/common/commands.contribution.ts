@@ -19,14 +19,13 @@ type CommandArgs = {
 
 /** Runs several commands passed to it as an argument */
 class RunCommands extends Action2 {
-
 	constructor() {
 		super({
 			id: 'runCommands',
-			title: nls.localize2('runCommands', "Run Commands"),
+			title: nls.localize2('runCommands', 'Run Commands'),
 			f1: false,
 			metadata: {
-				description: nls.localize('runCommands.description', "Run several commands"),
+				description: nls.localize('runCommands.description', 'Run several commands'),
 				args: [
 					{
 						name: 'args',
@@ -36,11 +35,11 @@ class RunCommands extends Action2 {
 							properties: {
 								commands: {
 									type: 'array',
-									description: nls.localize('runCommands.commands', "Commands to run"),
+									description: nls.localize('runCommands.commands', 'Commands to run'),
 									items: {
 										anyOf: [
 											{
-												$ref: 'vscode://schemas/keybindings#/definitions/commandNames'
+												$ref: 'vscode://schemas/keybindings#/definitions/commandNames',
 											},
 											{
 												type: 'string',
@@ -50,26 +49,26 @@ class RunCommands extends Action2 {
 												required: ['command'],
 												properties: {
 													command: {
-														'anyOf': [
+														anyOf: [
 															{
-																$ref: 'vscode://schemas/keybindings#/definitions/commandNames'
+																$ref: 'vscode://schemas/keybindings#/definitions/commandNames',
 															},
 															{
-																type: 'string'
+																type: 'string',
 															},
-														]
-													}
+														],
+													},
 												},
-												$ref: 'vscode://schemas/keybindings#/definitions/commandsSchemas'
-											}
-										]
-									}
-								}
-							}
-						}
-					}
-				]
-			}
+												$ref: 'vscode://schemas/keybindings#/definitions/commandsSchemas',
+											},
+										],
+									},
+								},
+							},
+						},
+					},
+				],
+			},
 		});
 	}
 
@@ -78,16 +77,25 @@ class RunCommands extends Action2 {
 	//	- keybinding definitions don't allow running commands with several arguments
 	//  - and we want to be able to take on different other arguments in future, e.g., `runMode : 'serial' | 'concurrent'`
 	async run(accessor: ServicesAccessor, args: unknown) {
-
 		const notificationService = accessor.get(INotificationService);
 
 		if (!this._isCommandArgs(args)) {
-			notificationService.error(nls.localize('runCommands.invalidArgs', "'runCommands' has received an argument with incorrect type. Please, review the argument passed to the command."));
+			notificationService.error(
+				nls.localize(
+					'runCommands.invalidArgs',
+					"'runCommands' has received an argument with incorrect type. Please, review the argument passed to the command."
+				)
+			);
 			return;
 		}
 
 		if (args.commands.length === 0) {
-			notificationService.warn(nls.localize('runCommands.noCommandsToRun', "'runCommands' has not received commands to run. Did you forget to pass commands in the 'runCommands' argument?"));
+			notificationService.warn(
+				nls.localize(
+					'runCommands.noCommandsToRun',
+					"'runCommands' has not received commands to run. Did you forget to pass commands in the 'runCommands' argument?"
+				)
+			);
 			return;
 		}
 
@@ -97,7 +105,6 @@ class RunCommands extends Action2 {
 		let i = 0;
 		try {
 			for (; i < args.commands.length; ++i) {
-
 				const cmd = args.commands[i];
 
 				logService.debug(`runCommands: executing ${i}-th command: ${safeStringify(cmd)}`);
@@ -107,7 +114,9 @@ class RunCommands extends Action2 {
 				logService.debug(`runCommands: executed ${i}-th command`);
 			}
 		} catch (err) {
-			logService.debug(`runCommands: executing ${i}-th command resulted in an error: ${err instanceof Error ? err.message : safeStringify(err)}`);
+			logService.debug(
+				`runCommands: executing ${i}-th command resulted in an error: ${err instanceof Error ? err.message : safeStringify(err)}`
+			);
 
 			notificationService.error(err);
 		}

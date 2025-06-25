@@ -16,13 +16,14 @@ export default defineConfig({
 				'**/*.d.ts',
 				'**/*.test.{ts,tsx}',
 				'**/*.spec.{ts,tsx}',
-				'**/test/**'
-			]
+				'**/test/**',
+			],
 		},
 		setupFiles: ['./src/renderer/__tests__/setupTests.ts'],
-		alias: {			'@codai/memory-graph': resolve(__dirname, '../../packages/memory-graph/dist'),
+		alias: {
+			'@codai/memory-graph': resolve(__dirname, '../../packages/memory-graph/dist'),
 			'@codai/agent-runtime': resolve(__dirname, '../../packages/agent-runtime/dist'),
-			'@aide/ui-components': resolve(__dirname, '../../packages/ui-components/dist')
-		}
-	}
+			'@aide/ui-components': resolve(__dirname, '../../packages/ui-components/dist'),
+		},
+	},
 });

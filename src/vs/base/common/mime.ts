@@ -28,7 +28,7 @@ const mapExtToTextMimes: MapExtToMediaMimes = {
 	'.js': 'text/javascript',
 	'.mjs': 'text/javascript',
 	'.txt': 'text/plain',
-	'.xml': 'text/xml'
+	'.xml': 'text/xml',
 };
 
 // Known media mimes that we can handle
@@ -114,12 +114,9 @@ const _simplePattern = /^(.+)\/(.+?)(;.+)?$/;
 export function normalizeMimeType(mimeType: string): string;
 export function normalizeMimeType(mimeType: string, strict: true): string | undefined;
 export function normalizeMimeType(mimeType: string, strict?: true): string | undefined {
-
 	const match = _simplePattern.exec(mimeType);
 	if (!match) {
-		return strict
-			? undefined
-			: mimeType;
+		return strict ? undefined : mimeType;
 	}
 	// https://datatracker.ietf.org/doc/html/rfc2045#section-5.1
 	// media and subtype must ALWAYS be lowercase, parameter not

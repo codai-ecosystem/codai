@@ -12,9 +12,7 @@ import { arrayInsert } from '../../../base/common/arrays.js';
 export class FixedArray<T> {
 	private _store: T[] = [];
 
-	constructor(
-		private readonly _default: T
-	) { }
+	constructor(private readonly _default: T) {}
 
 	public get(index: number): T {
 		if (index < this._store.length) {

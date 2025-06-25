@@ -5,7 +5,11 @@
 
 import { CancellationTokenSource } from '../../../../../base/common/cancellation.js';
 import { Emitter, Event } from '../../../../../base/common/event.js';
-import { Disposable, DisposableStore, MutableDisposable } from '../../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	MutableDisposable,
+} from '../../../../../base/common/lifecycle.js';
 import { Schemas } from '../../../../../base/common/network.js';
 import { autorun } from '../../../../../base/common/observable.js';
 import { basename } from '../../../../../base/common/resources.js';
@@ -19,9 +23,15 @@ import { ILogService } from '../../../../../platform/log/common/log.js';
 import { IWorkbenchContribution } from '../../../../common/contributions.js';
 import { EditorsOrder } from '../../../../common/editor.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
-import { getNotebookEditorFromEditorPane, INotebookEditor } from '../../../notebook/browser/notebookBrowser.js';
+import {
+	getNotebookEditorFromEditorPane,
+	INotebookEditor,
+} from '../../../notebook/browser/notebookBrowser.js';
 import { IChatEditingService } from '../../common/chatEditingService.js';
-import { IChatRequestFileEntry, IChatRequestImplicitVariableEntry } from '../../common/chatModel.js';
+import {
+	IChatRequestFileEntry,
+	IChatRequestImplicitVariableEntry,
+} from '../../common/chatModel.js';
 import { IChatService } from '../../common/chatService.js';
 import { ChatAgentLocation } from '../../common/constants.js';
 import { ILanguageModelIgnoredFilesService } from '../../common/ignoredFiles.js';
@@ -44,80 +54,108 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 		@IChatService private readonly chatService: IChatService,
 		@IChatEditingService private readonly chatEditingService: IChatEditingService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ILanguageModelIgnoredFilesService private readonly ignoredFilesService: ILanguageModelIgnoredFilesService,
+		@ILanguageModelIgnoredFilesService
+		private readonly ignoredFilesService: ILanguageModelIgnoredFilesService
 	) {
 		super();
-		this._currentCancelTokenSource = this._register(new MutableDisposable<CancellationTokenSource>());
-		this._implicitContextEnablement = this.configurationService.getValue<{ [mode: string]: string }>('chat.implicitContext.enabled');
+		this._currentCancelTokenSource = this._register(
+			new MutableDisposable<CancellationTokenSource>()
+		);
+		this._implicitContextEnablement = this.configurationService.getValue<{
+			[mode: string]: string;
+		}>('chat.implicitContext.enabled');
 
 		const activeEditorDisposables = this._register(new DisposableStore());
 
-		this._register(Event.runAndSubscribe(
-			editorService.onDidActiveEditorChange,
-			(() => {
+		this._register(
+			Event.runAndSubscribe(editorService.onDidActiveEditorChange, () => {
 				activeEditorDisposables.clear();
 				const codeEditor = this.findActiveCodeEditor();
 				if (codeEditor) {
-					activeEditorDisposables.add(Event.debounce(
-						Event.any(
-							codeEditor.onDidChangeModel,
-							codeEditor.onDidChangeCursorSelection,
-							codeEditor.onDidScrollChange,
-							codeEditor.onDidChangeModelLanguage),
-						() => undefined,
-						500)(() => this.updateImplicitContext()));
+					activeEditorDisposables.add(
+						Event.debounce(
+							Event.any(
+								codeEditor.onDidChangeModel,
+								codeEditor.onDidChangeCursorSelection,
+								codeEditor.onDidScrollChange,
+								codeEditor.onDidChangeModelLanguage
+							),
+							() => undefined,
+							500
+						)(() => this.updateImplicitContext())
+					);
 				}
 
 				const notebookEditor = this.findActiveNotebookEditor();
 				if (notebookEditor) {
 					const activeCellDisposables = activeEditorDisposables.add(new DisposableStore());
-					activeEditorDisposables.add(notebookEditor.onDidChangeActiveCell(() => {
-						activeCellDisposables.clear();
-						const codeEditor = this.codeEditorService.getActiveCodeEditor();
-						if (codeEditor && codeEditor.getModel()?.uri.scheme === Schemas.vscodeNotebookCell) {
-							activeCellDisposables.add(Event.debounce(
-								Event.any(
-									codeEditor.onDidChangeModel,
-									codeEditor.onDidChangeCursorSelection,
-									codeEditor.onDidScrollChange),
-								() => undefined,
-								500)(() => this.updateImplicitContext()));
-						}
-					}));
+					activeEditorDisposables.add(
+						notebookEditor.onDidChangeActiveCell(() => {
+							activeCellDisposables.clear();
+							const codeEditor = this.codeEditorService.getActiveCodeEditor();
+							if (codeEditor && codeEditor.getModel()?.uri.scheme === Schemas.vscodeNotebookCell) {
+								activeCellDisposables.add(
+									Event.debounce(
+										Event.any(
+											codeEditor.onDidChangeModel,
+											codeEditor.onDidChangeCursorSelection,
+											codeEditor.onDidScrollChange
+										),
+										() => undefined,
+										500
+									)(() => this.updateImplicitContext())
+								);
+							}
+						})
+					);
 
-					activeEditorDisposables.add(Event.debounce(
-						Event.any(
-							notebookEditor.onDidChangeModel,
-							notebookEditor.onDidChangeActiveCell
-						),
-						() => undefined,
-						500)(() => this.updateImplicitContext()));
+					activeEditorDisposables.add(
+						Event.debounce(
+							Event.any(notebookEditor.onDidChangeModel, notebookEditor.onDidChangeActiveCell),
+							() => undefined,
+							500
+						)(() => this.updateImplicitContext())
+					);
 				}
 
 				this.updateImplicitContext();
-			})));
-		this._register(autorun((reader) => {
-			this.chatEditingService.editingSessionsObs.read(reader);
-			this.updateImplicitContext();
-		}));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('chat.implicitContext.enabled')) {
-				this._implicitContextEnablement = this.configurationService.getValue<{ [mode: string]: string }>('chat.implicitContext.enabled');
+			})
+		);
+		this._register(
+			autorun(reader => {
+				this.chatEditingService.editingSessionsObs.read(reader);
 				this.updateImplicitContext();
-			}
-		}));
-		this._register(this.chatService.onDidSubmitRequest(({ chatSessionId }) => {
-			const widget = this.chatWidgetService.getWidgetBySessionId(chatSessionId);
-			if (!widget?.input.implicitContext) {
-				return;
-			}
-			if (this._implicitContextEnablement[widget.location] === 'first' && widget.viewModel?.getItems().length !== 0) {
-				widget.input.implicitContext.setValue(undefined, false, undefined);
-			}
-		}));
-		this._register(this.chatWidgetService.onDidAddWidget(async (widget) => {
-			await this.updateImplicitContext(widget);
-		}));
+			})
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('chat.implicitContext.enabled')) {
+					this._implicitContextEnablement = this.configurationService.getValue<{
+						[mode: string]: string;
+					}>('chat.implicitContext.enabled');
+					this.updateImplicitContext();
+				}
+			})
+		);
+		this._register(
+			this.chatService.onDidSubmitRequest(({ chatSessionId }) => {
+				const widget = this.chatWidgetService.getWidgetBySessionId(chatSessionId);
+				if (!widget?.input.implicitContext) {
+					return;
+				}
+				if (
+					this._implicitContextEnablement[widget.location] === 'first' &&
+					widget.viewModel?.getItems().length !== 0
+				) {
+					widget.input.implicitContext.setValue(undefined, false, undefined);
+				}
+			})
+		);
+		this._register(
+			this.chatWidgetService.onDidAddWidget(async widget => {
+				await this.updateImplicitContext(widget);
+			})
+		);
 	}
 
 	private findActiveCodeEditor(): ICodeEditor | undefined {
@@ -132,7 +170,9 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 				return codeEditor;
 			}
 		}
-		for (const codeOrDiffEditor of this.editorService.getVisibleTextEditorControls(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
+		for (const codeOrDiffEditor of this.editorService.getVisibleTextEditorControls(
+			EditorsOrder.MOST_RECENTLY_ACTIVE
+		)) {
 			const codeEditor = getCodeEditor(codeOrDiffEditor);
 			if (!codeEditor) {
 				continue;
@@ -151,7 +191,8 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 	}
 
 	private async updateImplicitContext(updateWidget?: IChatWidget): Promise<void> {
-		const cancelTokenSource = this._currentCancelTokenSource.value = new CancellationTokenSource();
+		const cancelTokenSource = (this._currentCancelTokenSource.value =
+			new CancellationTokenSource());
 		const codeEditor = this.findActiveCodeEditor();
 		const model = codeEditor?.getModel();
 		let newValue: Location | URI | undefined;
@@ -168,9 +209,10 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 		}
 
 		const uri = newValue instanceof URI ? newValue : newValue?.uri;
-		if (uri && (
-			await this.ignoredFilesService.fileIsIgnored(uri, cancelTokenSource.token) ||
-			uri.path.endsWith('.copilotmd'))
+		if (
+			uri &&
+			((await this.ignoredFilesService.fileIsIgnored(uri, cancelTokenSource.token)) ||
+				uri.path.endsWith('.copilotmd'))
 		) {
 			newValue = undefined;
 		}
@@ -179,7 +221,12 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 			return;
 		}
 
-		const widgets = updateWidget ? [updateWidget] : [...this.chatWidgetService.getWidgetsByLocations(ChatAgentLocation.Panel), ...this.chatWidgetService.getWidgetsByLocations(ChatAgentLocation.Editor)];
+		const widgets = updateWidget
+			? [updateWidget]
+			: [
+					...this.chatWidgetService.getWidgetsByLocations(ChatAgentLocation.Panel),
+					...this.chatWidgetService.getWidgetsByLocations(ChatAgentLocation.Editor),
+				];
 		for (const widget of widgets) {
 			if (!widget.input.implicitContext) {
 				continue;
@@ -188,7 +235,7 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 			const isFirstInteraction = widget.viewModel?.getItems().length === 0;
 			if (setting === 'first' && !isFirstInteraction) {
 				widget.input.implicitContext.setValue(undefined, false, undefined);
-			} else if (setting === 'always' || setting === 'first' && isFirstInteraction) {
+			} else if (setting === 'always' || (setting === 'first' && isFirstInteraction)) {
 				widget.input.implicitContext.setValue(newValue, isSelection, languageId);
 			} else if (setting === 'never') {
 				widget.input.implicitContext.setValue(undefined, false, undefined);
@@ -286,7 +333,7 @@ export class ChatImplicitContext extends Disposable implements IChatRequestImpli
 	constructor(
 		@IPromptsService private readonly promptsService: IPromptsService,
 		@IModelService private readonly modelService: IModelService,
-		@ILogService private readonly logService: ILogService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
 	}
@@ -298,7 +345,7 @@ export class ChatImplicitContext extends Disposable implements IChatRequestImpli
 		// remove and dispose existent prompt parser instance
 		this.removePrompt();
 		// if language ID is a 'prompt' language, create a prompt parser instance
-		if (value && (languageId === PROMPT_LANGUAGE_ID)) {
+		if (value && languageId === PROMPT_LANGUAGE_ID) {
 			this.addPrompt(value);
 		}
 
@@ -308,14 +355,15 @@ export class ChatImplicitContext extends Disposable implements IChatRequestImpli
 	public async toBaseEntries(): Promise<readonly IChatRequestFileEntry[]> {
 		// chat variable for non-prompt file attachment
 		if (this.prompt === undefined) {
-			return [{
-				kind: 'file',
-				id: this.id,
-				name: this.name,
-				value: this.value,
-				modelDescription: this.modelDescription,
-			}];
-
+			return [
+				{
+					kind: 'file',
+					id: this.id,
+					name: this.name,
+					value: this.value,
+					modelDescription: this.modelDescription,
+				},
+			];
 		}
 
 		// prompt can have any number of nested references, hence
@@ -323,17 +371,20 @@ export class ChatImplicitContext extends Disposable implements IChatRequestImpli
 		await this.prompt.allSettled();
 		return [
 			// add all valid child references in the prompt
-			...this.prompt.allValidReferences.map((link) => {
+			...this.prompt.allValidReferences.map(link => {
 				return toChatVariable(link, false);
 			}),
 			// and then the root prompt reference itself
-			toChatVariable({
-				uri: this.prompt.uri,
-				// the attached file must have been a prompt file therefore
-				// we force that assumption here; this makes sure that prompts
-				// in untitled documents can be also attached to the chat input
-				isPromptFile: true,
-			}, true),
+			toChatVariable(
+				{
+					uri: this.prompt.uri,
+					// the attached file must have been a prompt file therefore
+					// we force that assumption here; this makes sure that prompts
+					// in untitled documents can be also attached to the chat input
+					isPromptFile: true,
+				},
+				true
+			),
 		];
 	}
 
@@ -341,24 +392,20 @@ export class ChatImplicitContext extends Disposable implements IChatRequestImpli
 	 * Whether the implicit context references a prompt file.
 	 */
 	public get isPromptFile() {
-		return (this.prompt !== undefined);
+		return this.prompt !== undefined;
 	}
 
 	/**
 	 * Add prompt parser instance for the provided value.
 	 */
-	private addPrompt(
-		value: URI | Location,
-	): void {
-		const uri = URI.isUri(value)
-			? value
-			: value.uri;
+	private addPrompt(value: URI | Location): void {
+		const uri = URI.isUri(value) ? value : value.uri;
 
 		const model = this.modelService.getModel(uri);
-		const modelExists = (model !== null);
-		if ((modelExists === false) || model.isDisposed()) {
+		const modelExists = model !== null;
+		if (modelExists === false || model.isDisposed()) {
 			return this.logService.warn(
-				`cannot create prompt parser instance for ${uri.path} (model exists: ${modelExists})`,
+				`cannot create prompt parser instance for ${uri.path} (model exists: ${modelExists})`
 			);
 		}
 

@@ -20,7 +20,7 @@ interface InitializationResult {
 class AideInitializer {
 	private results: InitializationResult = {
 		success: true,
-		steps: []
+		steps: [],
 	};
 
 	async initialize(): Promise<InitializationResult> {
@@ -86,11 +86,17 @@ class AideInitializer {
 			const planConfig = config.plans[planName];
 
 			try {
-				await adminDb.collection('plans').doc(planName).set({
-					...planConfig,
-					createdAt: new Date(),
-					updatedAt: new Date()
-				}, { merge: true });
+				await adminDb
+					.collection('plans')
+					.doc(planName)
+					.set(
+						{
+							...planConfig,
+							createdAt: new Date(),
+							updatedAt: new Date(),
+						},
+						{ merge: true }
+					);
 			} catch (error) {
 				console.log(`   ⚠️  Plan ${planName} already exists or failed to create`);
 			}
@@ -102,11 +108,20 @@ class AideInitializer {
 	private async setupCollectionsAndIndexes(): Promise<void> {
 		// Define required collections with their basic structure
 		const collections = [
-			{ name: 'users', sampleDoc: { uid: 'sample', email: 'sample@example.com', role: 'user', plan: 'free' } },
-			{ name: 'usage', sampleDoc: { userId: 'sample', type: 'api-calls', amount: 1, timestamp: new Date() } },
-			{ name: 'audit', sampleDoc: { userId: 'sample', action: 'INIT', resource: 'system', timestamp: new Date() } },
+			{
+				name: 'users',
+				sampleDoc: { uid: 'sample', email: 'sample@example.com', role: 'user', plan: 'free' },
+			},
+			{
+				name: 'usage',
+				sampleDoc: { userId: 'sample', type: 'api-calls', amount: 1, timestamp: new Date() },
+			},
+			{
+				name: 'audit',
+				sampleDoc: { userId: 'sample', action: 'INIT', resource: 'system', timestamp: new Date() },
+			},
 			{ name: 'plans', sampleDoc: { name: 'free', displayName: 'Free Plan' } },
-			{ name: 'configuration', sampleDoc: { type: 'app-config' } }
+			{ name: 'configuration', sampleDoc: { type: 'app-config' } },
 		];
 
 		for (const collection of collections) {
@@ -116,11 +131,14 @@ class AideInitializer {
 
 				if (snapshot.empty) {
 					// Create a sample document to initialize the collection
-					await adminDb.collection(collection.name).doc('_init').set({
-						...collection.sampleDoc,
-						_isInitDoc: true,
-						createdAt: new Date()
-					});
+					await adminDb
+						.collection(collection.name)
+						.doc('_init')
+						.set({
+							...collection.sampleDoc,
+							_isInitDoc: true,
+							createdAt: new Date(),
+						});
 
 					// Delete the init document
 					await adminDb.collection(collection.name).doc('_init').delete();
@@ -159,13 +177,13 @@ class AideInitializer {
 					preferences: {
 						theme: 'system' as const,
 						notifications: true,
-						language: 'en'
+						language: 'en',
 					},
 					limits: {
 						tokensPerMonth: 1000000,
 						projectsMax: 100,
-						deploymentsPerMonth: 1000
-					}
+						deploymentsPerMonth: 1000,
+					},
 				};
 
 				await adminDb.collection('users').doc(adminUserDoc.uid).set(adminUserDoc);
@@ -187,7 +205,7 @@ class AideInitializer {
 					const configService = ConfigurationService.getInstance();
 					const config = await configService.getConfig();
 					return config.features.githubProvisioning !== undefined;
-				}
+				},
 			},
 			{
 				name: 'Usage Tracking Service',
@@ -195,19 +213,19 @@ class AideInitializer {
 					const usageService = new UsageTrackingService();
 					const stats = await usageService.getSystemStats();
 					return stats.totalUsers !== undefined;
-				}
+				},
 			},
 			{
 				name: 'Firestore Connection',
 				test: async () => {
 					const testDoc = await adminDb.collection('_test').doc('connection').set({
 						timestamp: new Date(),
-						test: true
+						test: true,
 					});
 					await adminDb.collection('_test').doc('connection').delete();
 					return true;
-				}
-			}
+				},
+			},
 		];
 
 		let passedTests = 0;
@@ -236,7 +254,7 @@ class AideInitializer {
 // Run initialization if this script is executed directly
 if (require.main === module) {
 	const initializer = new AideInitializer();
-	initializer.initialize().catch((error) => {
+	initializer.initialize().catch(error => {
 		console.error('Initialization failed:', error);
 		process.exit(1);
 	});

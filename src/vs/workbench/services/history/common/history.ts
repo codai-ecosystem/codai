@@ -15,7 +15,6 @@ export const IHistoryService = createDecorator<IHistoryService>('historyService'
  * Limit editor navigation to certain kinds.
  */
 export const enum GoFilter {
-
 	/**
 	 * Navigate between editor navigation history
 	 * entries from any kind of navigation source.
@@ -33,14 +32,13 @@ export const enum GoFilter {
 	 * entries that were resulting from navigations, such
 	 * as "Go to definition".
 	 */
-	NAVIGATION
+	NAVIGATION,
 }
 
 /**
  * Limit editor navigation to certain scopes.
  */
 export const enum GoScope {
-
 	/**
 	 * Navigate across all editors and editor groups.
 	 */
@@ -54,11 +52,10 @@ export const enum GoScope {
 	/**
 	 * Navigate only in the active editor.
 	 */
-	EDITOR
+	EDITOR,
 }
 
 export interface IHistoryService {
-
 	readonly _serviceBrand: undefined;
 
 	/**

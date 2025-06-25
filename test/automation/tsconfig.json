@@ -14,9 +14,5 @@
 			"dom"
 		]
 	},
-	"exclude": [
-		"node_modules",
-		"out",
-		"tools"
-	]
+	"exclude": ["node_modules", "out", "tools"]
 }

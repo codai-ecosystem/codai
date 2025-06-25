@@ -12,8 +12,17 @@ import { PartialFrontMatterSequence } from '../frontMatterSequence.js';
 import { CarriageReturn } from '../../../linesCodec/tokens/carriageReturn.js';
 import { type TSimpleDecoderToken } from '../../../simpleCodec/simpleDecoder.js';
 import { Word, FormFeed, SpacingToken } from '../../../simpleCodec/tokens/index.js';
-import { assertNotConsumed, ParserBase, type TAcceptTokenResult } from '../../../simpleCodec/parserBase.js';
-import { FrontMatterValueToken, FrontMatterRecordName, FrontMatterRecordDelimiter, FrontMatterRecord } from '../../tokens/index.js';
+import {
+	assertNotConsumed,
+	ParserBase,
+	type TAcceptTokenResult,
+} from '../../../simpleCodec/parserBase.js';
+import {
+	FrontMatterValueToken,
+	FrontMatterRecordName,
+	FrontMatterRecordDelimiter,
+	FrontMatterRecord,
+} from '../../tokens/index.js';
 
 /**
  * Type of a next parser that can be returned by {@link PartialFrontMatterRecord}.
@@ -43,9 +52,7 @@ export class PartialFrontMatterRecord extends ParserBase<TSimpleDecoderToken, TN
 	 */
 	private readonly recordDelimiterToken: FrontMatterRecordDelimiter;
 
-	constructor(
-		tokens: [FrontMatterRecordName, FrontMatterRecordDelimiter],
-	) {
+	constructor(tokens: [FrontMatterRecordName, FrontMatterRecordDelimiter]) {
 		super(tokens);
 		this.recordNameToken = tokens[0];
 		this.recordDelimiterToken = tokens[1];
@@ -124,28 +131,19 @@ export class PartialFrontMatterRecord extends ParserBase<TSimpleDecoderToken, TN
 
 		// in all other cases, collect all the subsequent tokens into
 		// a "sequence of tokens" until a new line is found
-		this.valueParser = new PartialFrontMatterSequence(
-			shouldEndTokenSequence,
-		);
+		this.valueParser = new PartialFrontMatterSequence(shouldEndTokenSequence);
 
 		// if we reached this "generic sequence" parser point, but the current token is
 		// already of a type that stops such sequence, we must have accumulated some
 		// spacing tokens, hence pass those to the parser and end the sequence immediately
 		if (shouldEndTokenSequence(token)) {
-			const spaceTokens = this.currentTokens
-				.slice(this.startTokensCount);
+			const spaceTokens = this.currentTokens.slice(this.startTokensCount);
 
 			// if no space tokens accumulated at all, create an "empty" one this is needed
 			// to ensure that the parser always has at least one token hence it can have
 			// a valid range and can be interpreted as a real "value" token of the record
 			if (spaceTokens.length === 0) {
-				spaceTokens.push(
-					Word.newOnLine(
-						'',
-						token.range.startLineNumber,
-						token.range.startColumn,
-					),
-				);
+				spaceTokens.push(Word.newOnLine('', token.range.startLineNumber, token.range.startColumn));
 			}
 
 			this.valueParser.addTokens(spaceTokens);
@@ -168,30 +166,20 @@ export class PartialFrontMatterRecord extends ParserBase<TSimpleDecoderToken, TN
 	 *         or {@link PartialFrontMatterSequence} types
 	 */
 	public asRecordToken(): FrontMatterRecord {
-		assertDefined(
-			this.valueParser,
-			'Current value parser must be defined.'
-		);
+		assertDefined(this.valueParser, 'Current value parser must be defined.');
 
 		if (
-			(this.valueParser instanceof PartialFrontMatterValue)
-			|| (this.valueParser instanceof PartialFrontMatterSequence)
+			this.valueParser instanceof PartialFrontMatterValue ||
+			this.valueParser instanceof PartialFrontMatterSequence
 		) {
 			const valueToken = this.valueParser.asSequenceToken();
 			this.currentTokens.push(valueToken);
 
 			this.isConsumed = true;
-			return new FrontMatterRecord([
-				this.recordNameToken,
-				this.recordDelimiterToken,
-				valueToken,
-			]);
+			return new FrontMatterRecord([this.recordNameToken, this.recordDelimiterToken, valueToken]);
 		}
 
-		assertNever(
-			this.valueParser,
-			`Unexpected value parser '${this.valueParser}'.`,
-		);
+		assertNever(this.valueParser, `Unexpected value parser '${this.valueParser}'.`);
 	}
 }
 
@@ -199,12 +187,6 @@ export class PartialFrontMatterRecord extends ParserBase<TSimpleDecoderToken, TN
  * Callback to check if a current token should end a
  * record value that is a generic sequence of tokens.
  */
-const shouldEndTokenSequence = (
-	token: BaseToken,
-): token is (NewLine | CarriageReturn | FormFeed) => {
-	return (
-		(token instanceof NewLine)
-		|| (token instanceof CarriageReturn)
-		|| (token instanceof FormFeed)
-	);
+const shouldEndTokenSequence = (token: BaseToken): token is NewLine | CarriageReturn | FormFeed => {
+	return token instanceof NewLine || token instanceof CarriageReturn || token instanceof FormFeed;
 };

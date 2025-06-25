@@ -11,11 +11,17 @@ import { ISerializableCommandAction } from '../../action/common/action.js';
 import { NativeParsedArgs } from '../../environment/common/argv.js';
 import { FocusMode } from '../../native/common/native.js';
 import { IUserDataProfile } from '../../userDataProfile/common/userDataProfile.js';
-import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from '../../workspace/common/workspace.js';
-import { DEFAULT_AUX_WINDOW_SIZE, DEFAULT_WINDOW_SIZE, INativeWindowConfiguration } from '../common/window.js';
+import {
+	ISingleFolderWorkspaceIdentifier,
+	IWorkspaceIdentifier,
+} from '../../workspace/common/workspace.js';
+import {
+	DEFAULT_AUX_WINDOW_SIZE,
+	DEFAULT_WINDOW_SIZE,
+	INativeWindowConfiguration,
+} from '../common/window.js';
 
 export interface IBaseWindow extends IDisposable {
-
 	readonly onDidMaximize: Event<void>;
 	readonly onDidUnmaximize: Event<void>;
 	readonly onDidTriggerSystemContextMenu: Event<{ readonly x: number; readonly y: number }>;
@@ -38,13 +44,16 @@ export interface IBaseWindow extends IDisposable {
 	readonly isFullScreen: boolean;
 	toggleFullScreen(): void;
 
-	updateWindowControls(options: { height?: number; backgroundColor?: string; foregroundColor?: string }): void;
+	updateWindowControls(options: {
+		height?: number;
+		backgroundColor?: string;
+		foregroundColor?: string;
+	}): void;
 
 	matches(webContents: electron.WebContents): boolean;
 }
 
 export interface ICodeWindow extends IBaseWindow {
-
 	readonly onWillLoad: Event<ILoadEvent>;
 	readonly onDidSignalReady: Event<void>;
 	readonly onDidDestroy: Event<void>;
@@ -88,7 +97,6 @@ export interface ICodeWindow extends IBaseWindow {
 }
 
 export const enum LoadReason {
-
 	/**
 	 * The window is loaded for the first time.
 	 */
@@ -102,11 +110,10 @@ export const enum LoadReason {
 	/**
 	 * The window is reloaded.
 	 */
-	RELOAD
+	RELOAD,
 }
 
 export const enum UnloadReason {
-
 	/**
 	 * The window is closed.
 	 */
@@ -125,7 +132,7 @@ export const enum UnloadReason {
 	/**
 	 * The window is loaded into a different workspace context.
 	 */
-	LOAD
+	LOAD,
 }
 
 export interface IWindowState {
@@ -142,12 +149,11 @@ export const defaultWindowState = function (mode = WindowMode.Normal): IWindowSt
 	return {
 		width: DEFAULT_WINDOW_SIZE.width,
 		height: DEFAULT_WINDOW_SIZE.height,
-		mode
+		mode,
 	};
 };
 
 export const defaultAuxWindowState = function (): IWindowState {
-
 	// Auxiliary windows are being created from a `window.open` call
 	// that sets `windowFeatures` that encode the desired size and
 	// position of the new window (`top`, `left`).
@@ -158,15 +164,15 @@ export const defaultAuxWindowState = function (): IWindowState {
 	const width = DEFAULT_AUX_WINDOW_SIZE.width;
 	const height = DEFAULT_AUX_WINDOW_SIZE.height;
 	const workArea = electron.screen.getPrimaryDisplay().workArea;
-	const x = Math.max(workArea.x + (workArea.width / 2) - (width / 2), 0);
-	const y = Math.max(workArea.y + (workArea.height / 2) - (height / 2), 0);
+	const x = Math.max(workArea.x + workArea.width / 2 - width / 2, 0);
+	const y = Math.max(workArea.y + workArea.height / 2 - height / 2, 0);
 
 	return {
 		x,
 		y,
 		width,
 		height,
-		mode: WindowMode.Normal
+		mode: WindowMode.Normal,
 	};
 };
 
@@ -174,7 +180,7 @@ export const enum WindowMode {
 	Maximized,
 	Normal,
 	Minimized, // not used anymore, but also cannot remove due to existing stored UI state (needs migration)
-	Fullscreen
+	Fullscreen,
 }
 
 export interface ILoadEvent {
@@ -183,7 +189,6 @@ export interface ILoadEvent {
 }
 
 export const enum WindowError {
-
 	/**
 	 * Maps to the `unresponsive` event on a `BrowserWindow`.
 	 */

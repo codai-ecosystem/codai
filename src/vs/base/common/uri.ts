@@ -13,10 +13,11 @@ const _singleSlashStart = /^\//;
 const _doubleSlashStart = /^\/\//;
 
 function _validateUri(ret: URI, _strict?: boolean): void {
-
 	// scheme, must be set
 	if (!ret.scheme && _strict) {
-		throw new Error(`[UriError]: Scheme is missing: {scheme: "", authority: "${ret.authority}", path: "${ret.path}", query: "${ret.query}", fragment: "${ret.fragment}"}`);
+		throw new Error(
+			`[UriError]: Scheme is missing: {scheme: "", authority: "${ret.authority}", path: "${ret.path}", query: "${ret.query}", fragment: "${ret.fragment}"}`
+		);
 	}
 
 	// scheme, https://tools.ietf.org/html/rfc3986#section-3.1
@@ -33,11 +34,15 @@ function _validateUri(ret: URI, _strict?: boolean): void {
 	if (ret.path) {
 		if (ret.authority) {
 			if (!_singleSlashStart.test(ret.path)) {
-				throw new Error('[UriError]: If a URI contains an authority component, then the path component must either be empty or begin with a slash ("/") character');
+				throw new Error(
+					'[UriError]: If a URI contains an authority component, then the path component must either be empty or begin with a slash ("/") character'
+				);
 			}
 		} else {
 			if (_doubleSlashStart.test(ret.path)) {
-				throw new Error('[UriError]: If a URI does not contain an authority component, then the path cannot begin with two slash characters ("//")');
+				throw new Error(
+					'[UriError]: If a URI does not contain an authority component, then the path cannot begin with two slash characters ("//")'
+				);
 			}
 		}
 	}
@@ -56,7 +61,6 @@ function _schemeFix(scheme: string, _strict: boolean): string {
 
 // implements a bit of https://tools.ietf.org/html/rfc3986#section-5
 function _referenceResolution(scheme: string, path: string): string {
-
 	// the slash-character is our 'default base' as we don't
 	// support constructing URIs relative to other URIs. This
 	// also means that we alter and potentially break paths.
@@ -96,7 +100,6 @@ const _regexp = /^(([^:/?#]+?):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
  * ```
  */
 export class URI implements UriComponents {
-
 	static isUri(thing: unknown): thing is URI {
 		if (thing instanceof URI) {
 			return true;
@@ -104,14 +107,16 @@ export class URI implements UriComponents {
 		if (!thing || typeof thing !== 'object') {
 			return false;
 		}
-		return typeof (<URI>thing).authority === 'string'
-			&& typeof (<URI>thing).fragment === 'string'
-			&& typeof (<URI>thing).path === 'string'
-			&& typeof (<URI>thing).query === 'string'
-			&& typeof (<URI>thing).scheme === 'string'
-			&& typeof (<URI>thing).fsPath === 'string'
-			&& typeof (<URI>thing).with === 'function'
-			&& typeof (<URI>thing).toString === 'function';
+		return (
+			typeof (<URI>thing).authority === 'string' &&
+			typeof (<URI>thing).fragment === 'string' &&
+			typeof (<URI>thing).path === 'string' &&
+			typeof (<URI>thing).query === 'string' &&
+			typeof (<URI>thing).scheme === 'string' &&
+			typeof (<URI>thing).fsPath === 'string' &&
+			typeof (<URI>thing).with === 'function' &&
+			typeof (<URI>thing).toString === 'function'
+		);
 	}
 
 	/**
@@ -144,7 +149,14 @@ export class URI implements UriComponents {
 	/**
 	 * @internal
 	 */
-	protected constructor(scheme: string, authority?: string, path?: string, query?: string, fragment?: string, _strict?: boolean);
+	protected constructor(
+		scheme: string,
+		authority?: string,
+		path?: string,
+		query?: string,
+		fragment?: string,
+		_strict?: boolean
+	);
 
 	/**
 	 * @internal
@@ -154,8 +166,14 @@ export class URI implements UriComponents {
 	/**
 	 * @internal
 	 */
-	protected constructor(schemeOrData: string | UriComponents, authority?: string, path?: string, query?: string, fragment?: string, _strict: boolean = false) {
-
+	protected constructor(
+		schemeOrData: string | UriComponents,
+		authority?: string,
+		path?: string,
+		query?: string,
+		fragment?: string,
+		_strict: boolean = false
+	) {
 		if (typeof schemeOrData === 'object') {
 			this.scheme = schemeOrData.scheme || _empty;
 			this.authority = schemeOrData.authority || _empty;
@@ -211,8 +229,13 @@ export class URI implements UriComponents {
 
 	// ---- modify to new -------------------------
 
-	with(change: { scheme?: string; authority?: string | null; path?: string | null; query?: string | null; fragment?: string | null }): URI {
-
+	with(change: {
+		scheme?: string;
+		authority?: string | null;
+		path?: string | null;
+		query?: string | null;
+		fragment?: string | null;
+	}): URI {
 		if (!change) {
 			return this;
 		}
@@ -244,12 +267,13 @@ export class URI implements UriComponents {
 			fragment = _empty;
 		}
 
-		if (scheme === this.scheme
-			&& authority === this.authority
-			&& path === this.path
-			&& query === this.query
-			&& fragment === this.fragment) {
-
+		if (
+			scheme === this.scheme &&
+			authority === this.authority &&
+			path === this.path &&
+			query === this.query &&
+			fragment === this.fragment
+		) {
 			return this;
 		}
 
@@ -301,7 +325,6 @@ export class URI implements UriComponents {
 	 * @param path A file system path (see `URI#fsPath`)
 	 */
 	static file(path: string): URI {
-
 		let authority = _empty;
 
 		// normalize to fwd-slashes on windows,
@@ -409,7 +432,8 @@ export class URI implements UriComponents {
 		} else {
 			const result = new Uri(data);
 			result._formatted = (<UriState>data).external ?? null;
-			result._fsPath = (<UriState>data)._sep === _pathSepMarker ? (<UriState>data).fsPath ?? null : null;
+			result._fsPath =
+				(<UriState>data)._sep === _pathSepMarker ? ((<UriState>data).fsPath ?? null) : null;
 			return result;
 		}
 	}
@@ -431,11 +455,17 @@ export function isUriComponents(thing: unknown): thing is UriComponents {
 	if (!thing || typeof thing !== 'object') {
 		return false;
 	}
-	return typeof (<UriComponents>thing).scheme === 'string'
-		&& (typeof (<UriComponents>thing).authority === 'string' || typeof (<UriComponents>thing).authority === 'undefined')
-		&& (typeof (<UriComponents>thing).path === 'string' || typeof (<UriComponents>thing).path === 'undefined')
-		&& (typeof (<UriComponents>thing).query === 'string' || typeof (<UriComponents>thing).query === 'undefined')
-		&& (typeof (<UriComponents>thing).fragment === 'string' || typeof (<UriComponents>thing).fragment === 'undefined');
+	return (
+		typeof (<UriComponents>thing).scheme === 'string' &&
+		(typeof (<UriComponents>thing).authority === 'string' ||
+			typeof (<UriComponents>thing).authority === 'undefined') &&
+		(typeof (<UriComponents>thing).path === 'string' ||
+			typeof (<UriComponents>thing).path === 'undefined') &&
+		(typeof (<UriComponents>thing).query === 'string' ||
+			typeof (<UriComponents>thing).query === 'undefined') &&
+		(typeof (<UriComponents>thing).fragment === 'string' ||
+			typeof (<UriComponents>thing).fragment === 'undefined')
+	);
 }
 
 interface UriState extends UriComponents {
@@ -449,7 +479,6 @@ const _pathSepMarker = isWindows ? 1 : undefined;
 
 // This class exists so that URI is compatible with vscode.Uri (API).
 class Uri extends URI {
-
 	_formatted: string | null = null;
 	_fsPath: string | null = null;
 
@@ -475,7 +504,7 @@ class Uri extends URI {
 	override toJSON(): UriComponents {
 		// eslint-disable-next-line local/code-no-dangerous-type-assertions
 		const res = <UriState>{
-			$mid: MarshalledId.Uri
+			$mid: MarshalledId.Uri,
 		};
 		// cached state
 		if (this._fsPath) {
@@ -534,7 +563,11 @@ const encodeTable: { [ch: number]: string } = {
 	[CharCode.Space]: '%20',
 };
 
-function encodeURIComponentFast(uriComponent: string, isPath: boolean, isAuthority: boolean): string {
+function encodeURIComponentFast(
+	uriComponent: string,
+	isPath: boolean,
+	isAuthority: boolean
+): string {
 	let res: string | undefined = undefined;
 	let nativeEncodePos = -1;
 
@@ -543,17 +576,17 @@ function encodeURIComponentFast(uriComponent: string, isPath: boolean, isAuthori
 
 		// unreserved characters: https://tools.ietf.org/html/rfc3986#section-2.3
 		if (
-			(code >= CharCode.a && code <= CharCode.z)
-			|| (code >= CharCode.A && code <= CharCode.Z)
-			|| (code >= CharCode.Digit0 && code <= CharCode.Digit9)
-			|| code === CharCode.Dash
-			|| code === CharCode.Period
-			|| code === CharCode.Underline
-			|| code === CharCode.Tilde
-			|| (isPath && code === CharCode.Slash)
-			|| (isAuthority && code === CharCode.OpenSquareBracket)
-			|| (isAuthority && code === CharCode.CloseSquareBracket)
-			|| (isAuthority && code === CharCode.Colon)
+			(code >= CharCode.a && code <= CharCode.z) ||
+			(code >= CharCode.A && code <= CharCode.Z) ||
+			(code >= CharCode.Digit0 && code <= CharCode.Digit9) ||
+			code === CharCode.Dash ||
+			code === CharCode.Period ||
+			code === CharCode.Underline ||
+			code === CharCode.Tilde ||
+			(isPath && code === CharCode.Slash) ||
+			(isAuthority && code === CharCode.OpenSquareBracket) ||
+			(isAuthority && code === CharCode.CloseSquareBracket) ||
+			(isAuthority && code === CharCode.Colon)
 		) {
 			// check if we are delaying native encode
 			if (nativeEncodePos !== -1) {
@@ -564,7 +597,6 @@ function encodeURIComponentFast(uriComponent: string, isPath: boolean, isAuthori
 			if (res !== undefined) {
 				res += uriComponent.charAt(pos);
 			}
-
 		} else {
 			// encoding needed, we need to allocate a new string
 			if (res === undefined) {
@@ -574,7 +606,6 @@ function encodeURIComponentFast(uriComponent: string, isPath: boolean, isAuthori
 			// check with default table first
 			const escaped = encodeTable[code];
 			if (escaped !== undefined) {
-
 				// check if we are delaying native encode
 				if (nativeEncodePos !== -1) {
 					res += encodeURIComponent(uriComponent.substring(nativeEncodePos, pos));
@@ -583,7 +614,6 @@ function encodeURIComponentFast(uriComponent: string, isPath: boolean, isAuthori
 
 				// append escaped variant to result
 				res += escaped;
-
 			} else if (nativeEncodePos === -1) {
 				// use native encode only when needed
 				nativeEncodePos = pos;
@@ -620,15 +650,15 @@ function encodeURIComponentMinimal(path: string): string {
  * Compute `fsPath` for the given uri
  */
 export function uriToFsPath(uri: URI, keepDriveLetterCasing: boolean): string {
-
 	let value: string;
 	if (uri.authority && uri.path.length > 1 && uri.scheme === 'file') {
 		// unc path: file://shares/c$/far/boo
 		value = `//${uri.authority}${uri.path}`;
 	} else if (
-		uri.path.charCodeAt(0) === CharCode.Slash
-		&& (uri.path.charCodeAt(1) >= CharCode.A && uri.path.charCodeAt(1) <= CharCode.Z || uri.path.charCodeAt(1) >= CharCode.a && uri.path.charCodeAt(1) <= CharCode.z)
-		&& uri.path.charCodeAt(2) === CharCode.Colon
+		uri.path.charCodeAt(0) === CharCode.Slash &&
+		((uri.path.charCodeAt(1) >= CharCode.A && uri.path.charCodeAt(1) <= CharCode.Z) ||
+			(uri.path.charCodeAt(1) >= CharCode.a && uri.path.charCodeAt(1) <= CharCode.z)) &&
+		uri.path.charCodeAt(2) === CharCode.Colon
 	) {
 		if (!keepDriveLetterCasing) {
 			// windows drive letter: file:///c:/far/boo
@@ -650,10 +680,7 @@ export function uriToFsPath(uri: URI, keepDriveLetterCasing: boolean): string {
  * Create the external version of a uri
  */
 function _asFormatted(uri: URI, skipEncoding: boolean): string {
-
-	const encoder = !skipEncoding
-		? encodeURIComponentFast
-		: encodeURIComponentMinimal;
+	const encoder = !skipEncoding ? encodeURIComponentFast : encodeURIComponentMinimal;
 
 	let res = '';
 	let { scheme, authority, path, query, fragment } = uri;
@@ -694,7 +721,11 @@ function _asFormatted(uri: URI, skipEncoding: boolean): string {
 	}
 	if (path) {
 		// lower-case windows drive letters in /C:/fff or C:/fff
-		if (path.length >= 3 && path.charCodeAt(0) === CharCode.Slash && path.charCodeAt(2) === CharCode.Colon) {
+		if (
+			path.length >= 3 &&
+			path.charCodeAt(0) === CharCode.Slash &&
+			path.charCodeAt(2) === CharCode.Colon
+		) {
 			const code = path.charCodeAt(1);
 			if (code >= CharCode.A && code <= CharCode.Z) {
 				path = `/${String.fromCharCode(code + 32)}:${path.substr(3)}`; // "/c:".length === 3
@@ -739,12 +770,10 @@ function percentDecode(str: string): string {
 	if (!str.match(_rEncodedAsHex)) {
 		return str;
 	}
-	return str.replace(_rEncodedAsHex, (match) => decodeURIComponentGraceful(match));
+	return str.replace(_rEncodedAsHex, match => decodeURIComponentGraceful(match));
 }
 
 /**
  * Mapped-type that replaces all occurrences of URI with UriComponents
  */
-export type UriDto<T> = { [K in keyof T]: T[K] extends URI
-	? UriComponents
-	: UriDto<T[K]> };
+export type UriDto<T> = { [K in keyof T]: T[K] extends URI ? UriComponents : UriDto<T[K]> };

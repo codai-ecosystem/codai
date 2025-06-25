@@ -6,7 +6,11 @@
 import { Schemas } from '../../../../base/common/network.js';
 import { joinPath } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
-import { ExtensionKind, IEnvironmentService, IExtensionHostDebugParams } from '../../../../platform/environment/common/environment.js';
+import {
+	ExtensionKind,
+	IEnvironmentService,
+	IExtensionHostDebugParams,
+} from '../../../../platform/environment/common/environment.js';
 import { IPath } from '../../../../platform/window/common/window.js';
 import { IWorkbenchEnvironmentService } from '../common/environmentService.js';
 import { IWorkbenchConstructionOptions } from '../../../browser/web.api.js';
@@ -20,14 +24,16 @@ import { refineServiceDecorator } from '../../../../platform/instantiation/commo
 import { ITextEditorOptions } from '../../../../platform/editor/common/editor.js';
 import { EXTENSION_IDENTIFIER_WITH_LOG_REGEX } from '../../../../platform/environment/common/environmentService.js';
 
-export const IBrowserWorkbenchEnvironmentService = refineServiceDecorator<IEnvironmentService, IBrowserWorkbenchEnvironmentService>(IEnvironmentService);
+export const IBrowserWorkbenchEnvironmentService = refineServiceDecorator<
+	IEnvironmentService,
+	IBrowserWorkbenchEnvironmentService
+>(IEnvironmentService);
 
 /**
  * A subclass of the `IWorkbenchEnvironmentService` to be used only environments
  * where the web API is available (browsers, Electron).
  */
 export interface IBrowserWorkbenchEnvironmentService extends IWorkbenchEnvironmentService {
-
 	/**
 	 * Options used to configure the workbench.
 	 */
@@ -40,11 +46,12 @@ export interface IBrowserWorkbenchEnvironmentService extends IWorkbenchEnvironme
 }
 
 export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
-
 	declare readonly _serviceBrand: undefined;
 
 	@memoize
-	get remoteAuthority(): string | undefined { return this.options.remoteAuthority; }
+	get remoteAuthority(): string | undefined {
+		return this.options.remoteAuthority;
+	}
 
 	@memoize
 	get expectsResolverExtension(): boolean {
@@ -52,16 +59,22 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 	}
 
 	@memoize
-	get isBuilt(): boolean { return !!this.productService.commit; }
+	get isBuilt(): boolean {
+		return !!this.productService.commit;
+	}
 
 	@memoize
 	get logLevel(): string | undefined {
 		const logLevelFromPayload = this.payload?.get('logLevel');
 		if (logLevelFromPayload) {
-			return logLevelFromPayload.split(',').find(entry => !EXTENSION_IDENTIFIER_WITH_LOG_REGEX.test(entry));
+			return logLevelFromPayload
+				.split(',')
+				.find(entry => !EXTENSION_IDENTIFIER_WITH_LOG_REGEX.test(entry));
 		}
 
-		return this.options.developmentOptions?.logLevel !== undefined ? LogLevelToString(this.options.developmentOptions?.logLevel) : undefined;
+		return this.options.developmentOptions?.logLevel !== undefined
+			? LogLevelToString(this.options.developmentOptions?.logLevel)
+			: undefined;
 	}
 
 	get extensionLogLevel(): [string, string][] | undefined {
@@ -78,7 +91,12 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 			return result.length ? result : undefined;
 		}
 
-		return this.options.developmentOptions?.extensionLogLevel !== undefined ? this.options.developmentOptions?.extensionLogLevel.map(([extension, logLevel]) => ([extension, LogLevelToString(logLevel)])) : undefined;
+		return this.options.developmentOptions?.extensionLogLevel !== undefined
+			? this.options.developmentOptions?.extensionLogLevel.map(([extension, logLevel]) => [
+					extension,
+					LogLevelToString(logLevel),
+				])
+			: undefined;
 	}
 
 	get profDurationMarkers(): string[] | undefined {
@@ -96,28 +114,44 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 	}
 
 	@memoize
-	get windowLogsPath(): URI { return this.logsHome; }
+	get windowLogsPath(): URI {
+		return this.logsHome;
+	}
 
 	@memoize
-	get logFile(): URI { return joinPath(this.windowLogsPath, 'window.log'); }
+	get logFile(): URI {
+		return joinPath(this.windowLogsPath, 'window.log');
+	}
 
 	@memoize
-	get userRoamingDataHome(): URI { return URI.file('/User').with({ scheme: Schemas.vscodeUserData }); }
+	get userRoamingDataHome(): URI {
+		return URI.file('/User').with({ scheme: Schemas.vscodeUserData });
+	}
 
 	@memoize
-	get argvResource(): URI { return joinPath(this.userRoamingDataHome, 'argv.json'); }
+	get argvResource(): URI {
+		return joinPath(this.userRoamingDataHome, 'argv.json');
+	}
 
 	@memoize
-	get cacheHome(): URI { return joinPath(this.userRoamingDataHome, 'caches'); }
+	get cacheHome(): URI {
+		return joinPath(this.userRoamingDataHome, 'caches');
+	}
 
 	@memoize
-	get workspaceStorageHome(): URI { return joinPath(this.userRoamingDataHome, 'workspaceStorage'); }
+	get workspaceStorageHome(): URI {
+		return joinPath(this.userRoamingDataHome, 'workspaceStorage');
+	}
 
 	@memoize
-	get localHistoryHome(): URI { return joinPath(this.userRoamingDataHome, 'History'); }
+	get localHistoryHome(): URI {
+		return joinPath(this.userRoamingDataHome, 'History');
+	}
 
 	@memoize
-	get stateResource(): URI { return joinPath(this.userRoamingDataHome, 'State', 'storage.json'); }
+	get stateResource(): URI {
+		return joinPath(this.userRoamingDataHome, 'State', 'storage.json');
+	}
 
 	/**
 	 * In Web every workspace can potentially have scoped user-data
@@ -127,22 +161,34 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 	 * is capable of handling opening same workspace in multiple windows.
 	 */
 	@memoize
-	get userDataSyncHome(): URI { return joinPath(this.userRoamingDataHome, 'sync', this.workspaceId); }
+	get userDataSyncHome(): URI {
+		return joinPath(this.userRoamingDataHome, 'sync', this.workspaceId);
+	}
 
 	@memoize
-	get sync(): 'on' | 'off' | undefined { return undefined; }
+	get sync(): 'on' | 'off' | undefined {
+		return undefined;
+	}
 
 	@memoize
-	get keyboardLayoutResource(): URI { return joinPath(this.userRoamingDataHome, 'keyboardLayout.json'); }
+	get keyboardLayoutResource(): URI {
+		return joinPath(this.userRoamingDataHome, 'keyboardLayout.json');
+	}
 
 	@memoize
-	get untitledWorkspacesHome(): URI { return joinPath(this.userRoamingDataHome, 'Workspaces'); }
+	get untitledWorkspacesHome(): URI {
+		return joinPath(this.userRoamingDataHome, 'Workspaces');
+	}
 
 	@memoize
-	get serviceMachineIdResource(): URI { return joinPath(this.userRoamingDataHome, 'machineid'); }
+	get serviceMachineIdResource(): URI {
+		return joinPath(this.userRoamingDataHome, 'machineid');
+	}
 
 	@memoize
-	get extHostLogsPath(): URI { return joinPath(this.logsHome, 'exthost'); }
+	get extHostLogsPath(): URI {
+		return joinPath(this.logsHome, 'exthost');
+	}
 
 	private extensionHostDebugEnvironment: IExtensionHostDebugEnvironment | undefined = undefined;
 
@@ -210,52 +256,85 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 	}
 
 	@memoize
-	get enableSmokeTestDriver() { return this.options.developmentOptions?.enableSmokeTestDriver; }
-
-	@memoize
-	get disableExtensions() { return this.payload?.get('disableExtensions') === 'true'; }
-
-	@memoize
-	get enableExtensions() { return this.options.enabledExtensions; }
-
-	@memoize
-	get webviewExternalEndpoint(): string {
-		const endpoint = this.options.webviewEndpoint
-			|| this.productService.webviewContentExternalBaseUrlTemplate
-			|| 'https://{{uuid}}.vscode-cdn.net/{{quality}}/{{commit}}/out/vs/workbench/contrib/webview/browser/pre/';
-
-		const webviewExternalEndpointCommit = this.payload?.get('webviewExternalEndpointCommit');
-		return endpoint
-			.replace('{{commit}}', webviewExternalEndpointCommit ?? this.productService.commit ?? 'ef65ac1ba57f57f2a3961bfe94aa20481caca4c6')
-			.replace('{{quality}}', (webviewExternalEndpointCommit ? 'insider' : this.productService.quality) ?? 'insider');
+	get enableSmokeTestDriver() {
+		return this.options.developmentOptions?.enableSmokeTestDriver;
 	}
 
 	@memoize
-	get extensionTelemetryLogResource(): URI { return joinPath(this.logsHome, 'extensionTelemetry.log'); }
+	get disableExtensions() {
+		return this.payload?.get('disableExtensions') === 'true';
+	}
 
 	@memoize
-	get disableTelemetry(): boolean { return false; }
+	get enableExtensions() {
+		return this.options.enabledExtensions;
+	}
 
 	@memoize
-	get verbose(): boolean { return this.payload?.get('verbose') === 'true'; }
+	get webviewExternalEndpoint(): string {
+		const endpoint =
+			this.options.webviewEndpoint ||
+			this.productService.webviewContentExternalBaseUrlTemplate ||
+			'https://{{uuid}}.vscode-cdn.net/{{quality}}/{{commit}}/out/vs/workbench/contrib/webview/browser/pre/';
+
+		const webviewExternalEndpointCommit = this.payload?.get('webviewExternalEndpointCommit');
+		return endpoint
+			.replace(
+				'{{commit}}',
+				webviewExternalEndpointCommit ??
+					this.productService.commit ??
+					'ef65ac1ba57f57f2a3961bfe94aa20481caca4c6'
+			)
+			.replace(
+				'{{quality}}',
+				(webviewExternalEndpointCommit ? 'insider' : this.productService.quality) ?? 'insider'
+			);
+	}
 
 	@memoize
-	get logExtensionHostCommunication(): boolean { return this.payload?.get('logExtensionHostCommunication') === 'true'; }
+	get extensionTelemetryLogResource(): URI {
+		return joinPath(this.logsHome, 'extensionTelemetry.log');
+	}
 
 	@memoize
-	get skipReleaseNotes(): boolean { return this.payload?.get('skipReleaseNotes') === 'true'; }
+	get disableTelemetry(): boolean {
+		return false;
+	}
 
 	@memoize
-	get skipWelcome(): boolean { return this.payload?.get('skipWelcome') === 'true'; }
+	get verbose(): boolean {
+		return this.payload?.get('verbose') === 'true';
+	}
 
 	@memoize
-	get disableWorkspaceTrust(): boolean { return !this.options.enableWorkspaceTrust; }
+	get logExtensionHostCommunication(): boolean {
+		return this.payload?.get('logExtensionHostCommunication') === 'true';
+	}
 
 	@memoize
-	get profile(): string | undefined { return this.payload?.get('profile'); }
+	get skipReleaseNotes(): boolean {
+		return this.payload?.get('skipReleaseNotes') === 'true';
+	}
 
 	@memoize
-	get editSessionId(): string | undefined { return this.options.editSessionId; }
+	get skipWelcome(): boolean {
+		return this.payload?.get('skipWelcome') === 'true';
+	}
+
+	@memoize
+	get disableWorkspaceTrust(): boolean {
+		return !this.options.enableWorkspaceTrust;
+	}
+
+	@memoize
+	get profile(): string | undefined {
+		return this.payload?.get('profile');
+	}
+
+	@memoize
+	get editSessionId(): string | undefined {
+		return this.options.editSessionId;
+	}
 
 	private payload: Map<string, string> | undefined;
 
@@ -278,12 +357,12 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 		const extensionHostDebugEnvironment: IExtensionHostDebugEnvironment = {
 			params: {
 				port: null,
-				break: false
+				break: false,
 			},
 			debugRenderer: false,
 			isExtensionDevelopment: false,
 			extensionDevelopmentLocationURI: undefined,
-			extensionDevelopmentKind: undefined
+			extensionDevelopmentKind: undefined,
 		};
 
 		// Fill in selected extra environmental properties
@@ -326,12 +405,15 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 		const developmentOptions = this.options.developmentOptions;
 		if (developmentOptions && !extensionHostDebugEnvironment.isExtensionDevelopment) {
 			if (developmentOptions.extensions?.length) {
-				extensionHostDebugEnvironment.extensionDevelopmentLocationURI = developmentOptions.extensions.map(e => URI.revive(e));
+				extensionHostDebugEnvironment.extensionDevelopmentLocationURI =
+					developmentOptions.extensions.map(e => URI.revive(e));
 				extensionHostDebugEnvironment.isExtensionDevelopment = true;
 			}
 
 			if (developmentOptions.extensionTestsPath) {
-				extensionHostDebugEnvironment.extensionTestsLocationURI = URI.revive(developmentOptions.extensionTestsPath);
+				extensionHostDebugEnvironment.extensionTestsLocationURI = URI.revive(
+					developmentOptions.extensionTestsPath
+				);
 			}
 		}
 
@@ -349,12 +431,19 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 				if (this.payload.has('gotoLineMode')) {
 					const pathColumnAware = parseLineAndColumnAware(fileUri.path);
 
-					return [{
-						fileUri: fileUri.with({ path: pathColumnAware.path }),
-						options: {
-							selection: !isUndefined(pathColumnAware.line) ? { startLineNumber: pathColumnAware.line, startColumn: pathColumnAware.column || 1 } : undefined
-						}
-					}];
+					return [
+						{
+							fileUri: fileUri.with({ path: pathColumnAware.path }),
+							options: {
+								selection: !isUndefined(pathColumnAware.line)
+									? {
+											startLineNumber: pathColumnAware.line,
+											startColumn: pathColumnAware.column || 1,
+										}
+									: undefined,
+							},
+						},
+					];
 				}
 
 				return [{ fileUri }];
@@ -372,7 +461,7 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 			if (fileToDiffPrimary && fileToDiffSecondary) {
 				return [
 					{ fileUri: URI.parse(fileToDiffSecondary) },
-					{ fileUri: URI.parse(fileToDiffPrimary) }
+					{ fileUri: URI.parse(fileToDiffPrimary) },
 				];
 			}
 		}
@@ -392,7 +481,7 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 					{ fileUri: URI.parse(fileToMerge1) },
 					{ fileUri: URI.parse(fileToMerge2) },
 					{ fileUri: URI.parse(fileToMergeBase) },
-					{ fileUri: URI.parse(fileToMergeResult) }
+					{ fileUri: URI.parse(fileToMergeResult) },
 				];
 			}
 		}

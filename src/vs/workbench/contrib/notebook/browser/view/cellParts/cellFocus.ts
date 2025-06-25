@@ -16,18 +16,30 @@ export class CellFocusPart extends CellContentPart {
 	) {
 		super();
 
-		this._register(DOM.addDisposableListener(containerElement, DOM.EventType.FOCUS, () => {
-			if (this.currentCell) {
-				notebookEditor.focusElement(this.currentCell);
-			}
-		}, true));
+		this._register(
+			DOM.addDisposableListener(
+				containerElement,
+				DOM.EventType.FOCUS,
+				() => {
+					if (this.currentCell) {
+						notebookEditor.focusElement(this.currentCell);
+					}
+				},
+				true
+			)
+		);
 
 		if (focusSinkElement) {
-			this._register(DOM.addDisposableListener(focusSinkElement, DOM.EventType.FOCUS, () => {
-				if (this.currentCell && (this.currentCell as CodeCellViewModel).outputsViewModels.length) {
-					notebookEditor.focusNotebookCell(this.currentCell, 'output');
-				}
-			}));
+			this._register(
+				DOM.addDisposableListener(focusSinkElement, DOM.EventType.FOCUS, () => {
+					if (
+						this.currentCell &&
+						(this.currentCell as CodeCellViewModel).outputsViewModels.length
+					) {
+						notebookEditor.focusNotebookCell(this.currentCell, 'output');
+					}
+				})
+			);
 		}
 	}
 }

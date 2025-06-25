@@ -18,15 +18,18 @@ export interface ContentHoverComputerOptions {
 	insistOnKeepingHoverVisible: boolean;
 }
 
-export class ContentHoverComputer implements IHoverComputer<ContentHoverComputerOptions, IHoverPart> {
-
+export class ContentHoverComputer
+	implements IHoverComputer<ContentHoverComputerOptions, IHoverPart>
+{
 	constructor(
 		private readonly _editor: ICodeEditor,
 		private readonly _participants: readonly IEditorHoverParticipant[]
-	) {
-	}
+	) {}
 
-	private static _getLineDecorations(editor: IActiveCodeEditor, anchor: HoverAnchor): IModelDecoration[] {
+	private static _getLineDecorations(
+		editor: IActiveCodeEditor,
+		anchor: HoverAnchor
+	): IModelDecoration[] {
 		if (anchor.type !== HoverAnchorType.Range && !anchor.supportsMarkerHover) {
 			return [];
 		}
@@ -41,13 +44,13 @@ export class ContentHoverComputer implements IHoverComputer<ContentHoverComputer
 
 		const maxColumn = model.getLineMaxColumn(lineNumber);
 
-		return editor.getLineDecorations(lineNumber).filter((d) => {
+		return editor.getLineDecorations(lineNumber).filter(d => {
 			if (d.options.isWholeLine) {
 				return true;
 			}
 
-			const startColumn = (d.range.startLineNumber === lineNumber) ? d.range.startColumn : 1;
-			const endColumn = (d.range.endLineNumber === lineNumber) ? d.range.endColumn : maxColumn;
+			const startColumn = d.range.startLineNumber === lineNumber ? d.range.startColumn : 1;
+			const endColumn = d.range.endLineNumber === lineNumber ? d.range.endColumn : maxColumn;
 
 			if (d.options.showIfCollapsed) {
 				// Relax check around `showIfCollapsed` decorations to also include +/- 1 character
@@ -64,7 +67,10 @@ export class ContentHoverComputer implements IHoverComputer<ContentHoverComputer
 		});
 	}
 
-	public computeAsync(options: ContentHoverComputerOptions, token: CancellationToken): AsyncIterableObject<IHoverPart> {
+	public computeAsync(
+		options: ContentHoverComputerOptions,
+		token: CancellationToken
+	): AsyncIterableObject<IHoverPart> {
 		const anchor = options.anchor;
 
 		if (!this._editor.hasModel() || !anchor) {
@@ -74,7 +80,7 @@ export class ContentHoverComputer implements IHoverComputer<ContentHoverComputer
 		const lineDecorations = ContentHoverComputer._getLineDecorations(this._editor, anchor);
 
 		return AsyncIterableObject.merge(
-			this._participants.map((participant) => {
+			this._participants.map(participant => {
 				if (!participant.computeAsync) {
 					return AsyncIterableObject.EMPTY;
 				}
@@ -99,4 +105,3 @@ export class ContentHoverComputer implements IHoverComputer<ContentHoverComputer
 		return coalesce(result);
 	}
 }
-

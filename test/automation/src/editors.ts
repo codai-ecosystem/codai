@@ -7,8 +7,7 @@ import { Quality } from './application';
 import { Code } from './code';
 
 export class Editors {
-
-	constructor(private code: Code) { }
+	constructor(private code: Code) {}
 
 	async saveOpenedFile(): Promise<any> {
 		if (process.platform === 'darwin') {
@@ -19,7 +18,6 @@ export class Editors {
 	}
 
 	async selectTab(fileName: string): Promise<void> {
-
 		// Selecting a tab and making an editor have keyboard focus
 		// is critical to almost every test. As such, we try our
 		// best to retry this task in case some other component steals
@@ -48,8 +46,16 @@ export class Editors {
 		await this.waitForActiveEditor(fileName, retryCount);
 	}
 
-	async waitForActiveTab(fileName: string, isDirty: boolean = false, retryCount?: number): Promise<void> {
-		await this.code.waitForElement(`.tabs-container div.tab.active${isDirty ? '.dirty' : ''}[aria-selected="true"][data-resource-name$="${fileName}"]`, undefined, retryCount);
+	async waitForActiveTab(
+		fileName: string,
+		isDirty: boolean = false,
+		retryCount?: number
+	): Promise<void> {
+		await this.code.waitForElement(
+			`.tabs-container div.tab.active${isDirty ? '.dirty' : ''}[aria-selected="true"][data-resource-name$="${fileName}"]`,
+			undefined,
+			retryCount
+		);
 	}
 
 	async waitForActiveEditor(fileName: string, retryCount?: number): Promise<any> {
@@ -58,7 +64,9 @@ export class Editors {
 	}
 
 	async waitForTab(fileName: string, isDirty: boolean = false): Promise<void> {
-		await this.code.waitForElement(`.tabs-container div.tab${isDirty ? '.dirty' : ''}[data-resource-name$="${fileName}"]`);
+		await this.code.waitForElement(
+			`.tabs-container div.tab${isDirty ? '.dirty' : ''}[data-resource-name$="${fileName}"]`
+		);
 	}
 
 	async newUntitledFile(): Promise<void> {

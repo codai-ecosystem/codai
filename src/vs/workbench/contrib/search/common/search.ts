@@ -5,8 +5,16 @@
 
 import { onUnexpectedExternalError } from '../../../../base/common/errors.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { ISearchConfiguration, ISearchConfigurationProperties } from '../../../services/search/common/search.js';
-import { SymbolKind, Location, ProviderResult, SymbolTag } from '../../../../editor/common/languages.js';
+import {
+	ISearchConfiguration,
+	ISearchConfigurationProperties,
+} from '../../../services/search/common/search.js';
+import {
+	SymbolKind,
+	Location,
+	ProviderResult,
+	SymbolTag,
+} from '../../../../editor/common/languages.js';
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { URI } from '../../../../base/common/uri.js';
 import { EditorResourceAccessor, SideBySideEditor } from '../../../common/editor.js';
@@ -29,12 +37,17 @@ export interface IWorkspaceSymbol {
 }
 
 export interface IWorkspaceSymbolProvider {
-	provideWorkspaceSymbols(search: string, token: CancellationToken): ProviderResult<IWorkspaceSymbol[]>;
-	resolveWorkspaceSymbol?(item: IWorkspaceSymbol, token: CancellationToken): ProviderResult<IWorkspaceSymbol>;
+	provideWorkspaceSymbols(
+		search: string,
+		token: CancellationToken
+	): ProviderResult<IWorkspaceSymbol[]>;
+	resolveWorkspaceSymbol?(
+		item: IWorkspaceSymbol,
+		token: CancellationToken
+	): ProviderResult<IWorkspaceSymbol>;
 }
 
 export namespace WorkspaceSymbolProviderRegistry {
-
 	const _supports: IWorkspaceSymbolProvider[] = [];
 
 	export function register(provider: IWorkspaceSymbolProvider): IDisposable {
@@ -52,7 +65,7 @@ export namespace WorkspaceSymbolProviderRegistry {
 						support = undefined;
 					}
 				}
-			}
+			},
 		};
 	}
 
@@ -62,11 +75,16 @@ export namespace WorkspaceSymbolProviderRegistry {
 }
 
 export class WorkspaceSymbolItem {
-	constructor(readonly symbol: IWorkspaceSymbol, readonly provider: IWorkspaceSymbolProvider) { }
+	constructor(
+		readonly symbol: IWorkspaceSymbol,
+		readonly provider: IWorkspaceSymbolProvider
+	) {}
 }
 
-export async function getWorkspaceSymbols(query: string, token: CancellationToken = CancellationToken.None): Promise<WorkspaceSymbolItem[]> {
-
+export async function getWorkspaceSymbols(
+	query: string,
+	token: CancellationToken = CancellationToken.None
+): Promise<WorkspaceSymbolItem[]> {
 	const all: WorkspaceSymbolItem[] = [];
 
 	const promises = WorkspaceSymbolProviderRegistry.all().map(async provider => {
@@ -116,7 +134,9 @@ export async function getWorkspaceSymbols(query: string, token: CancellationToke
 		return res;
 	}
 
-	return groupBy(all, compareItems).map(group => group[0]).flat();
+	return groupBy(all, compareItems)
+		.map(group => group[0])
+		.flat();
 }
 
 export interface IWorkbenchSearchConfigurationProperties extends ISearchConfigurationProperties {
@@ -142,8 +162,15 @@ export function getOutOfWorkspaceEditorResources(accessor: ServicesAccessor): UR
 	const fileService = accessor.get(IFileService);
 
 	const resources = editorService.editors
-		.map(editor => EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY }))
-		.filter(resource => !!resource && !contextService.isInsideWorkspace(resource) && fileService.hasProvider(resource));
+		.map(editor =>
+			EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY })
+		)
+		.filter(
+			resource =>
+				!!resource &&
+				!contextService.isInsideWorkspace(resource) &&
+				fileService.hasProvider(resource)
+		);
 
 	return resources as URI[];
 }
@@ -156,12 +183,21 @@ export interface IFilterAndRange {
 	range: IRange;
 }
 
-export function extractRangeFromFilter(filter: string, unless?: string[]): IFilterAndRange | undefined {
+export function extractRangeFromFilter(
+	filter: string,
+	unless?: string[]
+): IFilterAndRange | undefined {
 	// Ignore when the unless character not the first character or is before the line colon pattern
-	if (!filter || unless?.some(value => {
-		const unlessCharPos = filter.indexOf(value);
-		return unlessCharPos === 0 || unlessCharPos > 0 && !LINE_COLON_PATTERN.test(filter.substring(unlessCharPos + 1));
-	})) {
+	if (
+		!filter ||
+		unless?.some(value => {
+			const unlessCharPos = filter.indexOf(value);
+			return (
+				unlessCharPos === 0 ||
+				(unlessCharPos > 0 && !LINE_COLON_PATTERN.test(filter.substring(unlessCharPos + 1)))
+			);
+		})
+	) {
 		return undefined;
 	}
 
@@ -179,7 +215,7 @@ export function extractRangeFromFilter(filter: string, unless?: string[]): IFilt
 				startLineNumber: startLineNumber,
 				startColumn: 1,
 				endLineNumber: startLineNumber,
-				endColumn: 1
+				endColumn: 1,
 			};
 
 			// Column Number
@@ -189,7 +225,7 @@ export function extractRangeFromFilter(filter: string, unless?: string[]): IFilt
 					startLineNumber: range.startLineNumber,
 					startColumn: startColumn,
 					endLineNumber: range.endLineNumber,
-					endColumn: startColumn
+					endColumn: startColumn,
 				};
 			}
 		}
@@ -200,7 +236,7 @@ export function extractRangeFromFilter(filter: string, unless?: string[]): IFilt
 				startLineNumber: 1,
 				startColumn: 1,
 				endLineNumber: 1,
-				endColumn: 1
+				endColumn: 1,
 			};
 		}
 	}
@@ -208,7 +244,7 @@ export function extractRangeFromFilter(filter: string, unless?: string[]): IFilt
 	if (patternMatch && range) {
 		return {
 			filter: filter.substr(0, patternMatch.index), // clear range suffix from search value
-			range
+			range,
 		};
 	}
 
@@ -218,7 +254,7 @@ export function extractRangeFromFilter(filter: string, unless?: string[]): IFilt
 export enum SearchUIState {
 	Idle,
 	Searching,
-	SlowSearch
+	SlowSearch,
 }
 
 export const SearchStateKey = new RawContextKey<SearchUIState>('searchState', SearchUIState.Idle);

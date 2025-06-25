@@ -20,7 +20,9 @@ export interface ISessionKeyComputer {
 	getComparisonKey(editor: ICodeEditor, uri: URI): string;
 }
 
-export const IInlineChatSessionService = createDecorator<IInlineChatSessionService>('IInlineChatSessionService');
+export const IInlineChatSessionService = createDecorator<IInlineChatSessionService>(
+	'IInlineChatSessionService'
+);
 
 export interface IInlineChatSessionEvent {
 	readonly editor: ICodeEditor;
@@ -47,7 +49,11 @@ export interface IInlineChatSessionService {
 	onDidStashSession: Event<IInlineChatSessionEvent>;
 	onDidEndSession: Event<IInlineChatSessionEndEvent>;
 
-	createSession(editor: IActiveCodeEditor, options: { wholeRange?: IRange; session?: Session; headless?: boolean }, token: CancellationToken): Promise<Session | undefined>;
+	createSession(
+		editor: IActiveCodeEditor,
+		options: { wholeRange?: IRange; session?: Session; headless?: boolean },
+		token: CancellationToken
+	): Promise<Session | undefined>;
 
 	moveSession(session: Session, newEditor: ICodeEditor): void;
 
@@ -57,16 +63,23 @@ export interface IInlineChatSessionService {
 
 	releaseSession(session: Session): void;
 
-	stashSession(session: Session, editor: ICodeEditor, undoCancelEdits: IValidEditOperation[]): StashedSession;
+	stashSession(
+		session: Session,
+		editor: ICodeEditor,
+		undoCancelEdits: IValidEditOperation[]
+	): StashedSession;
 
 	registerSessionKeyComputer(scheme: string, value: ISessionKeyComputer): IDisposable;
 
 	dispose(): void;
 
-
 	hideOnRequest: IObservable<boolean>;
 
-	createSession2(editor: ICodeEditor, uri: URI, token: CancellationToken): Promise<IInlineChatSession2>;
+	createSession2(
+		editor: ICodeEditor,
+		uri: URI,
+		token: CancellationToken
+	): Promise<IInlineChatSession2>;
 	getSession2(uri: URI): IInlineChatSession2 | undefined;
 	onDidChangeSessions: Event<this>;
 }

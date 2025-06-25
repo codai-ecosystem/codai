@@ -9,7 +9,6 @@ import { randomInt } from '../../common/numbers.js';
 import { mockObject, randomBoolean } from './testUtils.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
-
 suite('mockObject', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
@@ -32,27 +31,13 @@ suite('mockObject', () => {
 
 		typeCheck<ITestObject>(mock);
 
-		assert.strictEqual(
-			mock.bar,
-			'oh hi!',
-			'bar should be overridden',
-		);
+		assert.strictEqual(mock.bar, 'oh hi!', 'bar should be overridden');
 
-		assert.strictEqual(
-			mock.baz,
-			42,
-			'baz should be overridden',
-		);
+		assert.strictEqual(mock.baz, 42, 'baz should be overridden');
 
-		assert(
-			!(mock.anotherMethod(randomInt(100))),
-			'Must execute overridden method correctly 1.',
-		);
+		assert(!mock.anotherMethod(randomInt(100)), 'Must execute overridden method correctly 1.');
 
-		assert(
-			mock.anotherMethod(NaN),
-			'Must execute overridden method correctly 2.',
-		);
+		assert(mock.anotherMethod(NaN), 'Must execute overridden method correctly 2.');
 
 		assert.throws(() => {
 			// property is not overridden so must throw
@@ -81,11 +66,7 @@ suite('mockObject', () => {
 		const mock = mockObject<ITestObject>(overrides);
 		typeCheck<ITestObject>(mock);
 
-		assert.strictEqual(
-			mock.baz,
-			4,
-			'baz should be overridden',
-		);
+		assert.strictEqual(mock.baz, 4, 'baz should be overridden');
 
 		// overrides object must be immutable
 		assert.throws(() => {

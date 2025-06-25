@@ -18,7 +18,7 @@ const config = withDefaults({
 	output: {
 		filename: 'jsonServerMain.js',
 		path: path.join(__dirname, 'dist', 'node'),
-	}
+	},
 });
 
 module.exports = config;

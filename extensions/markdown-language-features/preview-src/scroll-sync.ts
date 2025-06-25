@@ -7,16 +7,17 @@ import { SettingsManager } from './settings';
 
 const codeLineClass = 'code-line';
 
-
 export class CodeLineElement {
 	private readonly _detailParentElements: readonly HTMLDetailsElement[];
 
 	constructor(
 		readonly element: HTMLElement,
 		readonly line: number,
-		readonly codeElement?: HTMLElement,
+		readonly codeElement?: HTMLElement
 	) {
-		this._detailParentElements = Array.from(getParentsWithTagName<HTMLDetailsElement>(element, 'DETAILS'));
+		this._detailParentElements = Array.from(
+			getParentsWithTagName<HTMLDetailsElement>(element, 'DETAILS')
+		);
 	}
 
 	get isVisible(): boolean {
@@ -41,8 +42,11 @@ const getCodeLineElements = (() => {
 					continue;
 				}
 
-
-				if (element.tagName === 'CODE' && element.parentElement && element.parentElement.tagName === 'PRE') {
+				if (
+					element.tagName === 'CODE' &&
+					element.parentElement &&
+					element.parentElement.tagName === 'PRE'
+				) {
 					// Fenced code blocks are a special case since the `code-line` can only be marked on
 					// the `<code>` element and not the parent `<pre>` element.
 					cachedElements.push(new CodeLineElement(element.parentElement, line, element));
@@ -63,7 +67,10 @@ const getCodeLineElements = (() => {
  * If an exact match, returns a single element. If the line is between elements,
  * returns the element prior to and the element after the given line.
  */
-export function getElementsForSourceLine(targetLine: number, documentVersion: number): { previous: CodeLineElement; next?: CodeLineElement } {
+export function getElementsForSourceLine(
+	targetLine: number,
+	documentVersion: number
+): { previous: CodeLineElement; next?: CodeLineElement } {
 	const lineNumber = Math.floor(targetLine);
 	const lines = getCodeLineElements(documentVersion);
 	let previous = lines[0] || null;
@@ -81,7 +88,10 @@ export function getElementsForSourceLine(targetLine: number, documentVersion: nu
 /**
  * Find the html elements that are at a specific pixel offset on the page.
  */
-export function getLineElementsAtPageOffset(offset: number, documentVersion: number): { previous: CodeLineElement; next?: CodeLineElement } {
+export function getLineElementsAtPageOffset(
+	offset: number,
+	documentVersion: number
+): { previous: CodeLineElement; next?: CodeLineElement } {
 	const lines = getCodeLineElements(documentVersion).filter(x => x.isVisible);
 	const position = offset - window.scrollY;
 	let lo = -1;
@@ -91,8 +101,7 @@ export function getLineElementsAtPageOffset(offset: number, documentVersion: num
 		const bounds = getElementBounds(lines[mid]);
 		if (bounds.top + bounds.height >= position) {
 			hi = mid;
-		}
-		else {
+		} else {
 			lo = mid;
 		}
 	}
@@ -116,10 +125,10 @@ function getElementBounds({ element }: CodeLineElement): { top: number; height: 
 	const codeLineChild = element.querySelector(`.${codeLineClass}`);
 	if (codeLineChild) {
 		const childBounds = codeLineChild.getBoundingClientRect();
-		const height = Math.max(1, (childBounds.top - myBounds.top));
+		const height = Math.max(1, childBounds.top - myBounds.top);
 		return {
 			top: myBounds.top,
-			height: height
+			height: height,
 		};
 	}
 
@@ -129,7 +138,11 @@ function getElementBounds({ element }: CodeLineElement): { top: number; height: 
 /**
  * Attempt to reveal the element for a source line in the editor.
  */
-export function scrollToRevealSourceLine(line: number, documentVersion: number, settingsManager: SettingsManager) {
+export function scrollToRevealSourceLine(
+	line: number,
+	documentVersion: number,
+	settingsManager: SettingsManager
+) {
 	if (!settingsManager.settings?.scrollPreviewWithEditor) {
 		return;
 	}
@@ -154,25 +167,29 @@ export function scrollToRevealSourceLine(line: number, documentVersion: number, 
 		scrollTo = previousEnd + betweenProgress * betweenHeight;
 	} else {
 		const progressInElement = line - Math.floor(line);
-		scrollTo = previousTop + (rect.height * progressInElement);
+		scrollTo = previousTop + rect.height * progressInElement;
 	}
 	scrollTo = Math.abs(scrollTo) < 1 ? Math.sign(scrollTo) : scrollTo;
 	window.scroll(window.scrollX, Math.max(1, window.scrollY + scrollTo));
 }
 
-export function getEditorLineNumberForPageOffset(offset: number, documentVersion: number): number | null {
+export function getEditorLineNumberForPageOffset(
+	offset: number,
+	documentVersion: number
+): number | null {
 	const { previous, next } = getLineElementsAtPageOffset(offset, documentVersion);
 	if (previous) {
 		if (previous.line < 0) {
 			return 0;
 		}
 		const previousBounds = getElementBounds(previous);
-		const offsetFromPrevious = (offset - window.scrollY - previousBounds.top);
+		const offsetFromPrevious = offset - window.scrollY - previousBounds.top;
 		if (next) {
-			const progressBetweenElements = offsetFromPrevious / (getElementBounds(next).top - previousBounds.top);
+			const progressBetweenElements =
+				offsetFromPrevious / (getElementBounds(next).top - previousBounds.top);
 			return previous.line + progressBetweenElements * (next.line - previous.line);
 		} else {
-			const progressWithinElement = offsetFromPrevious / (previousBounds.height);
+			const progressWithinElement = offsetFromPrevious / previousBounds.height;
 			return previous.line + progressWithinElement;
 		}
 	}
@@ -182,13 +199,19 @@ export function getEditorLineNumberForPageOffset(offset: number, documentVersion
 /**
  * Try to find the html element by using a fragment id
  */
-export function getLineElementForFragment(fragment: string, documentVersion: number): CodeLineElement | undefined {
-	return getCodeLineElements(documentVersion).find((element) => {
+export function getLineElementForFragment(
+	fragment: string,
+	documentVersion: number
+): CodeLineElement | undefined {
+	return getCodeLineElements(documentVersion).find(element => {
 		return element.element.id === fragment;
 	});
 }
 
-function* getParentsWithTagName<T extends HTMLElement>(element: HTMLElement, tagName: string): Iterable<T> {
+function* getParentsWithTagName<T extends HTMLElement>(
+	element: HTMLElement,
+	tagName: string
+): Iterable<T> {
 	for (let parent = element.parentElement; parent; parent = parent.parentElement) {
 		if (parent.tagName === tagName) {
 			yield parent as T;

@@ -25,21 +25,23 @@ export class InputLatencyContrib extends Disposable implements IWorkbenchContrib
 		// report the results after 60 seconds. It's done this way as we don't want to sample
 		// everything, just somewhat randomly, and using an interval would utilize CPU when the
 		// application is inactive.
-		this._scheduler = this._register(new RunOnceScheduler(() => {
-			this._logSamples();
-			this._setupListener();
-		}, 60000));
-
+		this._scheduler = this._register(
+			new RunOnceScheduler(() => {
+				this._logSamples();
+				this._setupListener();
+			}, 60000)
+		);
 
 		// Only log 1% of users selected randomly to reduce the volume of data
 		if (Math.random() <= 0.01) {
 			this._setupListener();
 		}
-
 	}
 
 	private _setupListener(): void {
-		this._listener.value = Event.once(this._editorService.onDidActiveEditorChange)(() => this._scheduler.schedule());
+		this._listener.value = Event.once(this._editorService.onDidActiveEditorChange)(() =>
+			this._scheduler.schedule()
+		);
 	}
 
 	private _logSamples(): void {
@@ -51,9 +53,21 @@ export class InputLatencyContrib extends Disposable implements IWorkbenchContrib
 		type InputLatencyStatisticFragment = {
 			owner: 'tyriar';
 			comment: 'Represents a set of statistics collected about input latencies';
-			average: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The average time it took to execute.' };
-			max: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The maximum time it took to execute.' };
-			min: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The minimum time it took to execute.' };
+			average: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'The average time it took to execute.';
+			};
+			max: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'The maximum time it took to execute.';
+			};
+			min: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'The minimum time it took to execute.';
+			};
 		};
 
 		type PerformanceInputLatencyClassification = {
@@ -63,17 +77,24 @@ export class InputLatencyContrib extends Disposable implements IWorkbenchContrib
 			input: InputLatencyStatisticFragment;
 			render: InputLatencyStatisticFragment;
 			total: InputLatencyStatisticFragment;
-			sampleCount: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The number of samples measured.' };
+			sampleCount: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'The number of samples measured.';
+			};
 		};
 
 		type PerformanceInputLatencyEvent = inputLatency.IInputLatencyMeasurements;
 
-		this._telemetryService.publicLog2<PerformanceInputLatencyEvent, PerformanceInputLatencyClassification>('performance.inputLatency', {
+		this._telemetryService.publicLog2<
+			PerformanceInputLatencyEvent,
+			PerformanceInputLatencyClassification
+		>('performance.inputLatency', {
 			keydown: measurements.keydown,
 			input: measurements.input,
 			render: measurements.render,
 			total: measurements.total,
-			sampleCount: measurements.sampleCount
+			sampleCount: measurements.sampleCount,
 		});
 	}
 }

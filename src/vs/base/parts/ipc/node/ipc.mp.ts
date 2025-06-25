@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { MessagePortMain, isUtilityProcess, MessageEvent } from '../../sandbox/node/electronTypes.js';
+import {
+	MessagePortMain,
+	isUtilityProcess,
+	MessageEvent,
+} from '../../sandbox/node/electronTypes.js';
 import { VSBuffer } from '../../../common/buffer.js';
 import { ClientConnectionEvent, IMessagePassingProtocol, IPCServer } from '../common/ipc.js';
 import { Emitter, Event } from '../../../common/event.js';
@@ -14,16 +18,19 @@ import { assertType } from '../../../common/types.js';
  * for the implementation of the `IMessagePassingProtocol`.
  */
 class Protocol implements IMessagePassingProtocol {
-
 	readonly onMessage;
 
 	constructor(private port: MessagePortMain) {
-		this.onMessage = Event.fromNodeEventEmitter<VSBuffer>(this.port, 'message', (e: MessageEvent) => {
-			if (e.data) {
-				return VSBuffer.wrap(e.data);
+		this.onMessage = Event.fromNodeEventEmitter<VSBuffer>(
+			this.port,
+			'message',
+			(e: MessageEvent) => {
+				if (e.data) {
+					return VSBuffer.wrap(e.data);
+				}
+				return VSBuffer.alloc(0);
 			}
-			return VSBuffer.alloc(0);
-		});
+		);
 		// we must call start() to ensure messages are flowing
 		port.start();
 	}
@@ -38,7 +45,6 @@ class Protocol implements IMessagePassingProtocol {
 }
 
 export interface IClientConnectionFilter {
-
 	/**
 	 * Allows to filter incoming messages to the
 	 * server to handle them differently.
@@ -55,8 +61,9 @@ export interface IClientConnectionFilter {
  * The clients register themselves via Electron Utility Process IPC transfer.
  */
 export class Server extends IPCServer {
-
-	private static getOnDidClientConnect(filter?: IClientConnectionFilter): Event<ClientConnectionEvent> {
+	private static getOnDidClientConnect(
+		filter?: IClientConnectionFilter
+	): Event<ClientConnectionEvent> {
 		assertType(isUtilityProcess(process), 'Electron Utility Process');
 
 		const onCreateMessageChannel = new Emitter<MessagePortMain>();
@@ -80,7 +87,7 @@ export class Server extends IPCServer {
 				// Not part of the standard spec, but in Electron we get a `close` event
 				// when the other side closes. We can use this to detect disconnects
 				// (https://github.com/electron/electron/blob/11-x-y/docs/api/message-port-main.md#event-close)
-				onDidClientDisconnect: Event.fromNodeEventEmitter(port, 'close')
+				onDidClientDisconnect: Event.fromNodeEventEmitter(port, 'close'),
 			};
 
 			return result;

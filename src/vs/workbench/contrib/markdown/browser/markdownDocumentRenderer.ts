@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { basicMarkupHtmlTags, hookDomPurifyHrefAndSrcSanitizer } from '../../../../base/browser/dom.js';
+import {
+	basicMarkupHtmlTags,
+	hookDomPurifyHrefAndSrcSanitizer,
+} from '../../../../base/browser/dom.js';
 import dompurify from '../../../../base/browser/dompurify/dompurify.js';
 import { allowedMarkdownAttr } from '../../../../base/browser/markdownRenderer.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
@@ -159,22 +162,25 @@ pre code {
 
 const allowedProtocols = [Schemas.http, Schemas.https, Schemas.command];
 function sanitize(documentContent: string, allowUnknownProtocols: boolean): string {
-
 	const hook = hookDomPurifyHrefAndSrcSanitizer(allowedProtocols, true);
 
 	try {
 		return dompurify.sanitize(documentContent, {
 			...{
-				ALLOWED_TAGS: [
-					...basicMarkupHtmlTags,
-					'checkbox',
-					'checklist',
-				],
+				ALLOWED_TAGS: [...basicMarkupHtmlTags, 'checkbox', 'checklist'],
 				ALLOWED_ATTR: [
 					...allowedMarkdownAttr,
-					'data-command', 'name', 'id', 'role', 'tabindex',
+					'data-command',
+					'name',
+					'id',
+					'role',
+					'tabindex',
 					'x-dispatch',
-					'required', 'checked', 'placeholder', 'when-checked', 'checked-on',
+					'required',
+					'checked',
+					'placeholder',
+					'when-checked',
+					'checked-on',
 				],
 			},
 			...(allowUnknownProtocols ? { ALLOW_UNKNOWN_PROTOCOLS: true } : {}),
@@ -215,12 +221,14 @@ export async function renderMarkdownDocument(
 					return '';
 				}
 
-				const languageId = languageService.getLanguageIdByLanguageName(lang) ?? languageService.getLanguageIdByLanguageName(lang.split(/\s+|:|,|(?!^)\{|\?]/, 1)[0]);
+				const languageId =
+					languageService.getLanguageIdByLanguageName(lang) ??
+					languageService.getLanguageIdByLanguageName(lang.split(/\s+|:|,|(?!^)\{|\?]/, 1)[0]);
 				return tokenizeToString(languageService, code, languageId);
-			}
+			},
 		}),
 		markedGfmHeadingIdPlugin(),
-		...(options?.markedExtensions ?? []),
+		...(options?.markedExtensions ?? [])
 	);
 
 	const raw = await m.parse(text, { async: true });
@@ -234,7 +242,11 @@ export async function renderMarkdownDocument(
 namespace MarkedHighlight {
 	// Copied from https://github.com/markedjs/marked-highlight/blob/main/src/index.js
 
-	export function markedHighlight(options: marked.MarkedOptions & { highlight: (code: string, lang: string) => string | Promise<string> }): marked.MarkedExtension {
+	export function markedHighlight(
+		options: marked.MarkedOptions & {
+			highlight: (code: string, lang: string) => string | Promise<string>;
+		}
+	): marked.MarkedExtension {
 		if (typeof options === 'function') {
 			options = {
 				highlight: options,
@@ -253,20 +265,22 @@ namespace MarkedHighlight {
 				}
 
 				if (options.async) {
-					return Promise.resolve(options.highlight(token.text, token.lang)).then(updateToken(token));
+					return Promise.resolve(options.highlight(token.text, token.lang)).then(
+						updateToken(token)
+					);
 				}
 
 				const code = options.highlight(token.text, token.lang);
 				if (code instanceof Promise) {
-					throw new Error('markedHighlight is not set to async but the highlight function is async. Set the async option to true on markedHighlight to await the async highlight function.');
+					throw new Error(
+						'markedHighlight is not set to async but the highlight function is async. Set the async option to true on markedHighlight to await the async highlight function.'
+					);
 				}
 				updateToken(token)(code);
 			},
 			renderer: {
 				code({ text, lang, escaped }: marked.Tokens.Code) {
-					const classAttr = lang
-						? ` class="language-${escape(lang)}"`
-						: '';
+					const classAttr = lang ? ` class="language-${escape(lang)}"` : '';
 					text = text.replace(/\n$/, '');
 					return `<pre><code${classAttr}>${escaped ? text : escape(text, true)}\n</code></pre>`;
 				},

@@ -6,7 +6,13 @@
 import { $, IDomNodePagePosition } from '../../dom.js';
 import { IView, IViewSize } from '../grid/grid.js';
 import { IBoundarySashes } from '../sash/sash.js';
-import { DistributeSizing, ISplitViewStyles, IView as ISplitViewView, Orientation, SplitView } from '../splitview/splitview.js';
+import {
+	DistributeSizing,
+	ISplitViewStyles,
+	IView as ISplitViewView,
+	Orientation,
+	SplitView,
+} from '../splitview/splitview.js';
 import { Color } from '../../../common/color.js';
 import { Event } from '../../../common/event.js';
 import { DisposableStore, IDisposable } from '../../../common/lifecycle.js';
@@ -28,7 +34,9 @@ const defaultState: CenteredViewState = {
 
 const distributeSizing: DistributeSizing = { type: 'distribute' };
 
-function createEmptyView(background: Color | undefined): ISplitViewView<{ top: number; left: number }> {
+function createEmptyView(
+	background: Color | undefined
+): ISplitViewView<{ top: number; left: number }> {
 	const element = $('.centered-layout-margin');
 	element.style.height = '100%';
 	if (background) {
@@ -40,17 +48,25 @@ function createEmptyView(background: Color | undefined): ISplitViewView<{ top: n
 		layout: () => undefined,
 		minimumSize: 60,
 		maximumSize: Number.POSITIVE_INFINITY,
-		onDidChange: Event.None
+		onDidChange: Event.None,
 	};
 }
 
-function toSplitViewView(view: IView, getHeight: () => number): ISplitViewView<{ top: number; left: number }> {
+function toSplitViewView(
+	view: IView,
+	getHeight: () => number
+): ISplitViewView<{ top: number; left: number }> {
 	return {
 		element: view.element,
-		get maximumSize() { return view.maximumWidth; },
-		get minimumSize() { return view.minimumWidth; },
+		get maximumSize() {
+			return view.maximumWidth;
+		},
+		get minimumSize() {
+			return view.minimumWidth;
+		},
 		onDidChange: Event.map(view.onDidChange, e => e && e.width),
-		layout: (size, offset, ctx) => view.layout(size, getHeight(), ctx?.top ?? 0, (ctx?.left ?? 0) + offset)
+		layout: (size, offset, ctx) =>
+			view.layout(size, getHeight(), ctx?.top ?? 0, (ctx?.left ?? 0) + offset),
 	};
 }
 
@@ -59,7 +75,6 @@ export interface ICenteredViewStyles extends ISplitViewStyles {
 }
 
 export class CenteredViewLayout implements IDisposable {
-
 	private splitView?: SplitView<{ top: number; left: number }>;
 	private lastLayoutPosition: IDomNodePagePosition = { width: 0, height: 0, left: 0, top: 0 };
 	private style!: ICenteredViewStyles;
@@ -78,14 +93,26 @@ export class CenteredViewLayout implements IDisposable {
 		this.container.style.overflow = 'hidden';
 	}
 
-	get minimumWidth(): number { return this.splitView ? this.splitView.minimumSize : this.view.minimumWidth; }
-	get maximumWidth(): number { return this.splitView ? this.splitView.maximumSize : this.view.maximumWidth; }
-	get minimumHeight(): number { return this.view.minimumHeight; }
-	get maximumHeight(): number { return this.view.maximumHeight; }
-	get onDidChange(): Event<IViewSize | undefined> { return this.view.onDidChange; }
+	get minimumWidth(): number {
+		return this.splitView ? this.splitView.minimumSize : this.view.minimumWidth;
+	}
+	get maximumWidth(): number {
+		return this.splitView ? this.splitView.maximumSize : this.view.maximumWidth;
+	}
+	get minimumHeight(): number {
+		return this.view.minimumHeight;
+	}
+	get maximumHeight(): number {
+		return this.view.maximumHeight;
+	}
+	get onDidChange(): Event<IViewSize | undefined> {
+		return this.view.onDidChange;
+	}
 
 	private _boundarySashes: IBoundarySashes = {};
-	get boundarySashes(): IBoundarySashes { return this._boundarySashes; }
+	get boundarySashes(): IBoundarySashes {
+		return this._boundarySashes;
+	}
 	set boundarySashes(boundarySashes: IBoundarySashes) {
 		this._boundarySashes = boundarySashes;
 
@@ -170,27 +197,35 @@ export class CenteredViewLayout implements IDisposable {
 			this.splitView = new SplitView(this.container, {
 				inverseAltBehavior: true,
 				orientation: Orientation.HORIZONTAL,
-				styles: this.style
+				styles: this.style,
 			});
 			this.splitView.orthogonalStartSash = this.boundarySashes.top;
 			this.splitView.orthogonalEndSash = this.boundarySashes.bottom;
 
-			this.splitViewDisposables.add(this.splitView.onDidSashChange(() => {
-				if (!!this.splitView) {
-					this.updateState();
-				}
-			}));
-			this.splitViewDisposables.add(this.splitView.onDidSashReset(() => {
-				this.state = { ...defaultState };
-				this.resizeSplitViews();
-			}));
+			this.splitViewDisposables.add(
+				this.splitView.onDidSashChange(() => {
+					if (!!this.splitView) {
+						this.updateState();
+					}
+				})
+			);
+			this.splitViewDisposables.add(
+				this.splitView.onDidSashReset(() => {
+					this.state = { ...defaultState };
+					this.resizeSplitViews();
+				})
+			);
 
 			this.splitView.layout(this.lastLayoutPosition.width, this.lastLayoutPosition);
 			const backgroundColor = this.style ? this.style.background : undefined;
 			this.emptyViews = [createEmptyView(backgroundColor), createEmptyView(backgroundColor)];
 
 			this.splitView.addView(this.emptyViews[0], distributeSizing, 0);
-			this.splitView.addView(toSplitViewView(this.view, () => this.lastLayoutPosition.height), distributeSizing, 1);
+			this.splitView.addView(
+				toSplitViewView(this.view, () => this.lastLayoutPosition.height),
+				distributeSizing,
+				1
+			);
 			this.splitView.addView(this.emptyViews[1], distributeSizing, 2);
 
 			this.resizeSplitViews();
@@ -201,7 +236,12 @@ export class CenteredViewLayout implements IDisposable {
 			this.splitView = undefined;
 			this.emptyViews = undefined;
 			this.container.appendChild(this.view.element);
-			this.view.layout(this.lastLayoutPosition.width, this.lastLayoutPosition.height, this.lastLayoutPosition.top, this.lastLayoutPosition.left);
+			this.view.layout(
+				this.lastLayoutPosition.width,
+				this.lastLayoutPosition.height,
+				this.lastLayoutPosition.top,
+				this.lastLayoutPosition.left
+			);
 		}
 	}
 
@@ -209,8 +249,10 @@ export class CenteredViewLayout implements IDisposable {
 		if (this.centeredLayoutFixedWidth) {
 			return state.targetWidth === defaultState.targetWidth;
 		} else {
-			return state.leftMarginRatio === defaultState.leftMarginRatio
-				&& state.rightMarginRatio === defaultState.rightMarginRatio;
+			return (
+				state.leftMarginRatio === defaultState.leftMarginRatio &&
+				state.rightMarginRatio === defaultState.rightMarginRatio
+			);
 		}
 	}
 

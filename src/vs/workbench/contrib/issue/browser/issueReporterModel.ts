@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { mainWindow } from '../../../../base/browser/window.js';
-import { isRemoteDiagnosticError, SystemInfo } from '../../../../platform/diagnostics/common/diagnostics.js';
+import {
+	isRemoteDiagnosticError,
+	SystemInfo,
+} from '../../../../platform/diagnostics/common/diagnostics.js';
 import { ISettingSearchResult, IssueReporterExtensionData, IssueType } from '../common/issue.js';
 
 export interface IssueReporterData {
@@ -54,17 +57,20 @@ export class IssueReporterModel {
 			includeExtensions: true,
 			includeExperiments: true,
 			includeExtensionData: true,
-			allExtensions: []
+			allExtensions: [],
 		};
 
 		this._data = initialData ? Object.assign(defaultData, initialData) : defaultData;
 
-		mainWindow.addEventListener('message', async (event) => {
+		mainWindow.addEventListener('message', async event => {
 			if (event.data && event.data.sendChannel === 'vscode:triggerIssueData') {
-				mainWindow.postMessage({
-					data: { issueBody: this._data.issueDescription, issueTitle: this._data.issueTitle },
-					replyChannel: 'vscode:triggerIssueDataResponse'
-				}, '*');
+				mainWindow.postMessage(
+					{
+						data: { issueBody: this._data.issueDescription, issueTitle: this._data.issueTitle },
+						replyChannel: 'vscode:triggerIssueDataResponse',
+					},
+					'*'
+				);
 			}
 		});
 	}
@@ -100,17 +106,25 @@ ${this.getInfos()}
 
 	private getRemoteOSes(): string {
 		if (this._data.systemInfo && this._data.systemInfo.remoteData.length) {
-			return this._data.systemInfo.remoteData
-				.map(remote => isRemoteDiagnosticError(remote) ? remote.errorMessage : `Remote OS version: ${remote.machineInfo.os}`).join('\n') + '\n';
+			return (
+				this._data.systemInfo.remoteData
+					.map(remote =>
+						isRemoteDiagnosticError(remote)
+							? remote.errorMessage
+							: `Remote OS version: ${remote.machineInfo.os}`
+					)
+					.join('\n') + '\n'
+			);
 		}
 
 		return '';
 	}
 
 	fileOnExtension(): boolean | undefined {
-		const fileOnExtensionSupported = this._data.issueType === IssueType.Bug
-			|| this._data.issueType === IssueType.PerformanceIssue
-			|| this._data.issueType === IssueType.FeatureRequest;
+		const fileOnExtensionSupported =
+			this._data.issueType === IssueType.Bug ||
+			this._data.issueType === IssueType.PerformanceIssue ||
+			this._data.issueType === IssueType.FeatureRequest;
 
 		return fileOnExtensionSupported && this._data.fileOnExtension;
 	}
@@ -140,7 +154,8 @@ ${this.getInfos()}
 			return info;
 		}
 
-		const isBugOrPerformanceIssue = this._data.issueType === IssueType.Bug || this._data.issueType === IssueType.PerformanceIssue;
+		const isBugOrPerformanceIssue =
+			this._data.issueType === IssueType.Bug || this._data.issueType === IssueType.PerformanceIssue;
 
 		if (isBugOrPerformanceIssue) {
 			if (this._data.includeExtensionData && this._data.extensionData) {
@@ -192,9 +207,10 @@ ${this.getInfos()}
 `;
 
 		if (this._data.systemInfo) {
-
 			md += `|CPUs|${this._data.systemInfo.cpus}|
-|GPU Status|${Object.keys(this._data.systemInfo.gpuStatus).map(key => `${key}: ${this._data.systemInfo!.gpuStatus[key]}`).join('<br>')}|
+|GPU Status|${Object.keys(this._data.systemInfo.gpuStatus)
+				.map(key => `${key}: ${this._data.systemInfo!.gpuStatus[key]}`)
+				.join('<br>')}|
 |Load (avg)|${this._data.systemInfo.load}|
 |Memory (System)|${this._data.systemInfo.memory}|
 |Process Argv|${this._data.systemInfo.processArgs.replace(/\\/g, '\\\\')}|
@@ -271,7 +287,9 @@ ${this._data.experimentInfo}
 			return 'Extensions disabled';
 		}
 
-		const themeExclusionStr = this._data.numberOfThemeExtesions ? `\n(${this._data.numberOfThemeExtesions} theme extensions excluded)` : '';
+		const themeExclusionStr = this._data.numberOfThemeExtesions
+			? `\n(${this._data.numberOfThemeExtesions} theme extensions excluded)`
+			: '';
 
 		if (!this._data.enabledNonThemeExtesions) {
 			return 'Extensions: none' + themeExclusionStr;
@@ -279,9 +297,11 @@ ${this._data.experimentInfo}
 
 		const tableHeader = `Extension|Author (truncated)|Version
 ---|---|---`;
-		const table = this._data.enabledNonThemeExtesions.map(e => {
-			return `${e.name}|${e.publisher?.substr(0, 3) ?? 'N/A'}|${e.version}`;
-		}).join('\n');
+		const table = this._data.enabledNonThemeExtesions
+			.map(e => {
+				return `${e.name}|${e.publisher?.substr(0, 3) ?? 'N/A'}|${e.version}`;
+			})
+			.join('\n');
 
 		return `<details><summary>Extensions (${this._data.enabledNonThemeExtesions.length})</summary>
 

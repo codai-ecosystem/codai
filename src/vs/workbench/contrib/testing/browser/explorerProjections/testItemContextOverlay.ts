@@ -8,7 +8,10 @@ import { capabilityContextKeys } from '../../common/testProfileService.js';
 import { TestId } from '../../common/testId.js';
 import { TestingContextKeys } from '../../common/testingContextKeys.js';
 
-export const getTestItemContextOverlay = (test: InternalTestItem | undefined, capabilities: number): [string, unknown][] => {
+export const getTestItemContextOverlay = (
+	test: InternalTestItem | undefined,
+	capabilities: number
+): [string, unknown][] => {
 	if (!test) {
 		return [];
 	}

@@ -23,26 +23,38 @@ export class MergeMarkersController extends Disposable {
 
 	public constructor(
 		public readonly editor: ICodeEditor,
-		public readonly mergeEditorViewModel: IObservable<MergeEditorViewModel | undefined>,
+		public readonly mergeEditorViewModel: IObservable<MergeEditorViewModel | undefined>
 	) {
 		super();
 
-		this._register(editor.onDidChangeModelContent(e => {
-			this.updateDecorations();
-		}));
+		this._register(
+			editor.onDidChangeModelContent(e => {
+				this.updateDecorations();
+			})
+		);
 
-		this._register(editor.onDidChangeModel(e => {
-			this.updateDecorations();
-		}));
+		this._register(
+			editor.onDidChangeModel(e => {
+				this.updateDecorations();
+			})
+		);
 
 		this.updateDecorations();
 	}
 
 	private updateDecorations() {
 		const model = this.editor.getModel();
-		const blocks = model ? getBlocks(model, { blockToRemoveStartLinePrefix: conflictMarkers.start, blockToRemoveEndLinePrefix: conflictMarkers.end }) : { blocks: [] };
+		const blocks = model
+			? getBlocks(model, {
+					blockToRemoveStartLinePrefix: conflictMarkers.start,
+					blockToRemoveEndLinePrefix: conflictMarkers.end,
+				})
+			: { blocks: [] };
 
-		this.editor.setHiddenAreas(blocks.blocks.map(b => b.lineRange.deltaEnd(-1).toExclusiveRange()), this);
+		this.editor.setHiddenAreas(
+			blocks.blocks.map(b => b.lineRange.deltaEnd(-1).toExclusiveRange()),
+			this
+		);
 		this.editor.changeViewZones(c => {
 			this.disposableStore.clear();
 			for (const id of this.viewZoneIds) {
@@ -50,9 +62,10 @@ export class MergeMarkersController extends Disposable {
 			}
 			this.viewZoneIds.length = 0;
 			for (const b of blocks.blocks) {
-
 				const startLine = model!.getLineContent(b.lineRange.startLineNumber).substring(0, 20);
-				const endLine = model!.getLineContent(b.lineRange.endLineNumberExclusive - 1).substring(0, 20);
+				const endLine = model!
+					.getLineContent(b.lineRange.endLineNumberExclusive - 1)
+					.substring(0, 20);
 
 				const conflictingLinesCount = b.lineRange.length - 2;
 
@@ -63,16 +76,18 @@ export class MergeMarkersController extends Disposable {
 						h('pre', [endLine]),
 						h('span.text', [
 							conflictingLinesCount === 1
-								? nls.localize('conflictingLine', "1 Conflicting Line")
-								: nls.localize('conflictingLines', "{0} Conflicting Lines", conflictingLinesCount)
+								? nls.localize('conflictingLine', '1 Conflicting Line')
+								: nls.localize('conflictingLines', '{0} Conflicting Lines', conflictingLinesCount),
 						]),
 					]),
 				]).root;
-				this.viewZoneIds.push(c.addZone({
-					afterLineNumber: b.lineRange.endLineNumberExclusive - 1,
-					domNode,
-					heightInLines: 1.5,
-				}));
+				this.viewZoneIds.push(
+					c.addZone({
+						afterLineNumber: b.lineRange.endLineNumberExclusive - 1,
+						domNode,
+						heightInLines: 1.5,
+					})
+				);
 
 				const updateWidth = () => {
 					const layoutInfo = this.editor.getLayoutInfo();
@@ -86,34 +101,40 @@ export class MergeMarkersController extends Disposable {
 				);
 				updateWidth();
 
-
-				this.disposableStore.add(autorun(reader => {
-					/** @description update classname */
-					const vm = this.mergeEditorViewModel.read(reader);
-					if (!vm) {
-						return;
-					}
-					const activeRange = vm.activeModifiedBaseRange.read(reader);
-
-					const classNames: string[] = [];
-					classNames.push('conflict-zone');
-
-					if (activeRange) {
-						const activeRangeInResult = vm.model.getLineRangeInResult(activeRange.baseRange, reader);
-						if (activeRangeInResult.intersectsOrTouches(b.lineRange)) {
-							classNames.push('focused');
+				this.disposableStore.add(
+					autorun(reader => {
+						/** @description update classname */
+						const vm = this.mergeEditorViewModel.read(reader);
+						if (!vm) {
+							return;
 						}
-					}
+						const activeRange = vm.activeModifiedBaseRange.read(reader);
 
-					domNode.className = classNames.join(' ');
-				}));
+						const classNames: string[] = [];
+						classNames.push('conflict-zone');
+
+						if (activeRange) {
+							const activeRangeInResult = vm.model.getLineRangeInResult(
+								activeRange.baseRange,
+								reader
+							);
+							if (activeRangeInResult.intersectsOrTouches(b.lineRange)) {
+								classNames.push('focused');
+							}
+						}
+
+						domNode.className = classNames.join(' ');
+					})
+				);
 			}
 		});
 	}
 }
 
-
-function getBlocks(document: ITextModel, configuration: ProjectionConfiguration): { blocks: Block[]; transformedContent: string } {
+function getBlocks(
+	document: ITextModel,
+	configuration: ProjectionConfiguration
+): { blocks: Block[]; transformedContent: string } {
 	const blocks: Block[] = [];
 	const transformedContent: string[] = [];
 
@@ -133,7 +154,9 @@ function getBlocks(document: ITextModel, configuration: ProjectionConfiguration)
 		} else {
 			if (line.startsWith(configuration.blockToRemoveEndLinePrefix)) {
 				inBlock = false;
-				blocks.push(new Block(MergeEditorLineRange.fromLength(startLineNumber, curLine - startLineNumber + 1)));
+				blocks.push(
+					new Block(MergeEditorLineRange.fromLength(startLineNumber, curLine - startLineNumber + 1))
+				);
 				transformedContent.push('');
 			}
 		}
@@ -141,12 +164,12 @@ function getBlocks(document: ITextModel, configuration: ProjectionConfiguration)
 
 	return {
 		blocks,
-		transformedContent: transformedContent.join('\n')
+		transformedContent: transformedContent.join('\n'),
 	};
 }
 
 class Block {
-	constructor(public readonly lineRange: MergeEditorLineRange) { }
+	constructor(public readonly lineRange: MergeEditorLineRange) {}
 }
 
 interface ProjectionConfiguration {

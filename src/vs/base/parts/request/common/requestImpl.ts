@@ -8,24 +8,27 @@ import { CancellationToken } from '../../../common/cancellation.js';
 import { canceled } from '../../../common/errors.js';
 import { IHeaders, IRequestContext, IRequestOptions, OfflineError } from './request.js';
 
-export async function request(options: IRequestOptions, token: CancellationToken, isOnline?: () => boolean): Promise<IRequestContext> {
+export async function request(
+	options: IRequestOptions,
+	token: CancellationToken,
+	isOnline?: () => boolean
+): Promise<IRequestContext> {
 	if (token.isCancellationRequested) {
 		throw canceled();
 	}
 
 	const cancellation = new AbortController();
 	const disposable = token.onCancellationRequested(() => cancellation.abort());
-	const signal = options.timeout ? AbortSignal.any([
-		cancellation.signal,
-		AbortSignal.timeout(options.timeout),
-	]) : cancellation.signal;
+	const signal = options.timeout
+		? AbortSignal.any([cancellation.signal, AbortSignal.timeout(options.timeout)])
+		: cancellation.signal;
 
 	try {
 		const fetchInit: RequestInit = {
 			method: options.type || 'GET',
 			headers: getRequestHeaders(options),
 			body: options.data,
-			signal
+			signal,
 		};
 		if (options.disableCache) {
 			fetchInit.cache = 'no-store';
@@ -75,7 +78,10 @@ function getRequestHeaders(options: IRequestOptions) {
 			}
 		}
 		if (options.user || options.password) {
-			headers.set('Authorization', 'Basic ' + btoa(`${options.user || ''}:${options.password || ''}`));
+			headers.set(
+				'Authorization',
+				'Basic ' + btoa(`${options.user || ''}:${options.password || ''}`)
+			);
 		}
 		if (options.proxyAuthorization) {
 			headers.set('Proxy-Authorization', options.proxyAuthorization);

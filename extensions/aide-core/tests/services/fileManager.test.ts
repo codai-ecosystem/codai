@@ -16,7 +16,8 @@ describe('FileManager Functionality', () => {
 	let fsExistsSyncStub: sinon.SinonStub;
 	let fsMkdirSyncStub: sinon.SinonStub;
 	let fsWriteFileSyncStub: sinon.SinonStub;
-	let fsReadFileSyncStub: sinon.SinonStub; beforeEach(() => {
+	let fsReadFileSyncStub: sinon.SinonStub;
+	beforeEach(() => {
 		sandbox = sinon.createSandbox();
 
 		// Mock fs functions
@@ -28,7 +29,8 @@ describe('FileManager Functionality', () => {
 
 	afterEach(() => {
 		sandbox.restore();
-	}); describe('File Creation', () => {
+	});
+	describe('File Creation', () => {
 		it('should handle file creation properly', async () => {
 			const testPath = path.join('test', 'file.txt');
 			const testContent = 'Test content';

@@ -9,7 +9,11 @@ import { TestInstantiationService } from '../../../../../platform/instantiation/
 import { FoldingModel, updateFoldingStateAtIndex } from '../../browser/viewModel/foldingModel.js';
 import { expandCellRangesWithHiddenCells, INotebookEditor } from '../../browser/notebookBrowser.js';
 import { CellKind } from '../../common/notebookCommon.js';
-import { createNotebookCellList, setupInstantiationService, withTestNotebook } from './testNotebookEditor.js';
+import {
+	createNotebookCellList,
+	setupInstantiationService,
+	withTestNotebook,
+} from './testNotebookEditor.js';
 import { ListViewInfoAccessor } from '../../browser/view/notebookCellList.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
@@ -36,7 +40,7 @@ suite('ListViewInfoAccessor', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['var c = 3;', 'javascript', CellKind.Code, [], {}]
+				['var c = 3;', 'javascript', CellKind.Code, [], {}],
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
@@ -51,8 +55,14 @@ suite('ListViewInfoAccessor', () => {
 				assert.strictEqual(listViewInfoAccessor.getViewIndex(viewModel.cellAt(2)!), 2);
 				assert.strictEqual(listViewInfoAccessor.getViewIndex(viewModel.cellAt(3)!), 3);
 				assert.strictEqual(listViewInfoAccessor.getViewIndex(viewModel.cellAt(4)!), 4);
-				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(0, 1), { start: 0, end: 1 });
-				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(1, 2), { start: 1, end: 2 });
+				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(0, 1), {
+					start: 0,
+					end: 1,
+				});
+				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(1, 2), {
+					start: 1,
+					end: 2,
+				});
 
 				updateFoldingStateAtIndex(foldingModel, 0, true);
 				updateFoldingStateAtIndex(foldingModel, 2, true);
@@ -65,20 +75,51 @@ suite('ListViewInfoAccessor', () => {
 				assert.strictEqual(listViewInfoAccessor.getViewIndex(viewModel.cellAt(3)!), -1);
 				assert.strictEqual(listViewInfoAccessor.getViewIndex(viewModel.cellAt(4)!), -1);
 
-				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(0, 1), { start: 0, end: 2 });
-				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(1, 2), { start: 2, end: 5 });
-				assert.deepStrictEqual(listViewInfoAccessor.getCellsFromViewRange(0, 1), viewModel.getCellsInRange({ start: 0, end: 2 }));
-				assert.deepStrictEqual(listViewInfoAccessor.getCellsFromViewRange(1, 2), viewModel.getCellsInRange({ start: 2, end: 5 }));
+				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(0, 1), {
+					start: 0,
+					end: 2,
+				});
+				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(1, 2), {
+					start: 2,
+					end: 5,
+				});
+				assert.deepStrictEqual(
+					listViewInfoAccessor.getCellsFromViewRange(0, 1),
+					viewModel.getCellsInRange({ start: 0, end: 2 })
+				);
+				assert.deepStrictEqual(
+					listViewInfoAccessor.getCellsFromViewRange(1, 2),
+					viewModel.getCellsInRange({ start: 2, end: 5 })
+				);
 
-				const notebookEditor = new class extends mock<INotebookEditor>() {
-					override getViewIndexByModelIndex(index: number) { return listViewInfoAccessor.getViewIndex(viewModel.viewCells[index]!); }
-					override getCellRangeFromViewRange(startIndex: number, endIndex: number) { return listViewInfoAccessor.getCellRangeFromViewRange(startIndex, endIndex); }
-					override cellAt(index: number) { return viewModel.cellAt(index); }
-				};
+				const notebookEditor = new (class extends mock<INotebookEditor>() {
+					override getViewIndexByModelIndex(index: number) {
+						return listViewInfoAccessor.getViewIndex(viewModel.viewCells[index]!);
+					}
+					override getCellRangeFromViewRange(startIndex: number, endIndex: number) {
+						return listViewInfoAccessor.getCellRangeFromViewRange(startIndex, endIndex);
+					}
+					override cellAt(index: number) {
+						return viewModel.cellAt(index);
+					}
+				})();
 
-				assert.deepStrictEqual(expandCellRangesWithHiddenCells(notebookEditor, [{ start: 0, end: 1 }]), [{ start: 0, end: 2 }]);
-				assert.deepStrictEqual(expandCellRangesWithHiddenCells(notebookEditor, [{ start: 2, end: 3 }]), [{ start: 2, end: 5 }]);
-				assert.deepStrictEqual(expandCellRangesWithHiddenCells(notebookEditor, [{ start: 0, end: 1 }, { start: 2, end: 3 }]), [{ start: 0, end: 5 }]);
-			});
+				assert.deepStrictEqual(
+					expandCellRangesWithHiddenCells(notebookEditor, [{ start: 0, end: 1 }]),
+					[{ start: 0, end: 2 }]
+				);
+				assert.deepStrictEqual(
+					expandCellRangesWithHiddenCells(notebookEditor, [{ start: 2, end: 3 }]),
+					[{ start: 2, end: 5 }]
+				);
+				assert.deepStrictEqual(
+					expandCellRangesWithHiddenCells(notebookEditor, [
+						{ start: 0, end: 1 },
+						{ start: 2, end: 3 },
+					]),
+					[{ start: 0, end: 5 }]
+				);
+			}
+		);
 	});
 });

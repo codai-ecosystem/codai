@@ -4,13 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { IQuickAccessRegistry, Extensions } from '../../../../platform/quickinput/common/quickAccess.js';
+import {
+	IQuickAccessRegistry,
+	Extensions,
+} from '../../../../platform/quickinput/common/quickAccess.js';
 import { QuickCommandNLS } from '../../../common/standaloneStrings.js';
 import { ICommandQuickPick } from '../../../../platform/quickinput/browser/commandsQuickAccess.js';
 import { ICodeEditorService } from '../../../browser/services/codeEditorService.js';
 import { AbstractEditorCommandsQuickAccessProvider } from '../../../contrib/quickAccess/browser/commandsQuickAccess.js';
 import { IEditor } from '../../../common/editorCommon.js';
-import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../../../platform/instantiation/common/instantiation.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
@@ -22,8 +28,9 @@ import { KeybindingWeight } from '../../../../platform/keybinding/common/keybind
 import { IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
 
 export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommandsQuickAccessProvider {
-
-	protected get activeTextEditorControl(): IEditor | undefined { return this.codeEditorService.getFocusedCodeEditor() ?? undefined; }
+	protected get activeTextEditorControl(): IEditor | undefined {
+		return this.codeEditorService.getFocusedCodeEditor() ?? undefined;
+	}
 
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
@@ -33,7 +40,14 @@ export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommand
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IDialogService dialogService: IDialogService
 	) {
-		super({ showAlias: false }, instantiationService, keybindingService, commandService, telemetryService, dialogService);
+		super(
+			{ showAlias: false },
+			instantiationService,
+			keybindingService,
+			commandService,
+			telemetryService,
+			dialogService
+		);
 	}
 
 	protected async getCommandPicks(): Promise<Array<ICommandQuickPick>> {
@@ -50,7 +64,6 @@ export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommand
 }
 
 export class GotoLineAction extends EditorAction {
-
 	static readonly ID = 'editor.action.quickCommand';
 
 	constructor() {
@@ -62,12 +75,12 @@ export class GotoLineAction extends EditorAction {
 			kbOpts: {
 				kbExpr: EditorContextKeys.focus,
 				primary: KeyCode.F1,
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			contextMenuOpts: {
 				group: 'z_commands',
-				order: 1
-			}
+				order: 1,
+			},
 		});
 	}
 
@@ -81,5 +94,5 @@ registerEditorAction(GotoLineAction);
 Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess).registerQuickAccessProvider({
 	ctor: StandaloneCommandsQuickAccessProvider,
 	prefix: StandaloneCommandsQuickAccessProvider.PREFIX,
-	helpEntries: [{ description: QuickCommandNLS.quickCommandHelp, commandId: GotoLineAction.ID }]
+	helpEntries: [{ description: QuickCommandNLS.quickCommandHelp, commandId: GotoLineAction.ID }],
 });

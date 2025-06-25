@@ -117,11 +117,13 @@ export const SettingsSchema = z.object({
 	deploymentConfigs: z.array(DeploymentConfigSchema).default([]),
 	gitConfigs: z.array(GitConfigSchema).default([]),
 	userPreferences: UserPreferencesSchema.default({}),
-	metadata: z.object({
-		createdAt: z.date().default(() => new Date()),
-		updatedAt: z.date().default(() => new Date()),
-		lastBackup: z.date().optional(),
-	}).default({}),
+	metadata: z
+		.object({
+			createdAt: z.date().default(() => new Date()),
+			updatedAt: z.date().default(() => new Date()),
+			lastBackup: z.date().optional(),
+		})
+		.default({}),
 });
 
 export type Settings = z.infer<typeof SettingsSchema>;
@@ -138,10 +140,7 @@ export class SettingsManager {
 	private encryptionKey: string;
 	private isEncrypted: boolean;
 
-	constructor(
-		initialSettings?: Partial<Settings>,
-		encryptionKey?: string
-	) {
+	constructor(initialSettings?: Partial<Settings>, encryptionKey?: string) {
 		this.settings = SettingsSchema.parse(initialSettings || {});
 		this.encryptionKey = encryptionKey || SecureStorage.generateKey();
 		this.isEncrypted = this.settings.encryption.enabled;
@@ -165,7 +164,9 @@ export class SettingsManager {
 		return {
 			...this.settings,
 			aiProviders: this.settings.aiProviders.map(({ apiKey, ...rest }) => rest),
-			deploymentConfigs: this.settings.deploymentConfigs.map(({ apiKey, accessToken, ...rest }) => rest),
+			deploymentConfigs: this.settings.deploymentConfigs.map(
+				({ apiKey, accessToken, ...rest }) => rest
+			),
 			gitConfigs: this.settings.gitConfigs.map(({ accessToken, ...rest }) => rest),
 		};
 	}
@@ -218,9 +219,7 @@ export class SettingsManager {
 	 * Get decrypted API key for a provider
 	 */
 	getAPIKey(provider: string, name: string): string | null {
-		const config = this.settings.aiProviders.find(
-			p => p.provider === provider && p.name === name
-		);
+		const config = this.settings.aiProviders.find(p => p.provider === provider && p.name === name);
 
 		if (!config) {
 			return null;
@@ -270,8 +269,12 @@ export class SettingsManager {
 				})),
 				deploymentConfigs: this.settings.deploymentConfigs.map(config => ({
 					...config,
-					apiKey: config.apiKey ? SecureStorage.encrypt(config.apiKey, this.encryptionKey) : undefined,
-					accessToken: config.accessToken ? SecureStorage.encrypt(config.accessToken, this.encryptionKey) : undefined,
+					apiKey: config.apiKey
+						? SecureStorage.encrypt(config.apiKey, this.encryptionKey)
+						: undefined,
+					accessToken: config.accessToken
+						? SecureStorage.encrypt(config.accessToken, this.encryptionKey)
+						: undefined,
 				})),
 				gitConfigs: this.settings.gitConfigs.map(config => ({
 					...config,

@@ -52,7 +52,7 @@ export interface ForkOptions extends CommandOptions {
 
 export const enum Source {
 	stdout,
-	stderr
+	stderr,
 }
 
 /**

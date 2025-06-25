@@ -14,11 +14,11 @@ import { assert } from '../../../../../base/common/assert.js';
 export class MarkdownComment extends MarkdownToken {
 	constructor(
 		range: Range,
-		public readonly text: string,
+		public readonly text: string
 	) {
 		assert(
 			text.startsWith('<!--'),
-			`The comment must start with '<!--', got '${text.substring(0, 10)}'.`,
+			`The comment must start with '<!--', got '${text.substring(0, 10)}'.`
 		);
 
 		super(range);

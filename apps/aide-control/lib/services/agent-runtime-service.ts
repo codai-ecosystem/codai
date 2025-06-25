@@ -2,7 +2,13 @@
  * Agent Runtime Service
  * Manages the AIDE agent runtime and provides integration with the backend
  */
-import { AgentRuntime, Task, TaskResult, AgentMessage, ConversationContext } from '../mock-agent-runtime';
+import {
+	AgentRuntime,
+	Task,
+	TaskResult,
+	AgentMessage,
+	ConversationContext,
+} from '../mock-agent-runtime';
 import { MemoryGraphEngine } from '../mock-memory-graph';
 import { getAdminApp } from '../firebase-admin';
 
@@ -44,9 +50,7 @@ export class AgentRuntimeService {
 	private activeTasks = new Map<string, AgentTaskInfo>();
 	private conversations = new Map<string, ActiveConversation>();
 	private memoryGraphs = new Map<string, MemoryGraphEngine>();
-	private constructor(
-		private firestoreService: MockFirestoreService
-	) { }
+	private constructor(private firestoreService: MockFirestoreService) {}
 
 	static getInstance(firestoreService?: MockFirestoreService): AgentRuntimeService {
 		if (!AgentRuntimeService.instance) {
@@ -135,12 +139,15 @@ export class AgentRuntimeService {
 		// Save to Firestore
 		try {
 			const db = getFirestore();
-			await db.collection('agent_tasks').doc(task.id).set({
-				...task,
-				createdAt: task.createdAt.toISOString(),
-				startedAt: task.startedAt?.toISOString(),
-				completedAt: task.completedAt?.toISOString(),
-			});
+			await db
+				.collection('agent_tasks')
+				.doc(task.id)
+				.set({
+					...task,
+					createdAt: task.createdAt.toISOString(),
+					startedAt: task.startedAt?.toISOString(),
+					completedAt: task.completedAt?.toISOString(),
+				});
 		} catch (error) {
 			console.error('Failed to save task to Firestore:', error);
 		}
@@ -158,7 +165,8 @@ export class AgentRuntimeService {
 	 * Get task status and details
 	 */
 	async getTask(taskId: string, userId: string): Promise<AgentTaskInfo | null> {
-		const task = this.activeTasks.get(taskId); if (!task || task.userId !== userId) {
+		const task = this.activeTasks.get(taskId);
+		if (!task || task.userId !== userId) {
 			// Try to load from Firestore
 			try {
 				const db = getFirestore();
@@ -232,7 +240,7 @@ export class AgentRuntimeService {
 			},
 			onAgentComplete: (agentId: string) => {
 				console.log(`Agent ${agentId} completed`);
-			}
+			},
 		});
 
 		return conversation;
@@ -252,13 +260,15 @@ export class AgentRuntimeService {
 	/**
 	 * Get available agents for a user
 	 */
-	async getAvailableAgents(userId: string): Promise<Array<{
-		id: string;
-		name: string;
-		description: string;
-		status: string;
-		capabilities: string[];
-	}>> {
+	async getAvailableAgents(userId: string): Promise<
+		Array<{
+			id: string;
+			name: string;
+			description: string;
+			status: string;
+			capabilities: string[];
+		}>
+	> {
 		const runtime = await this.getOrCreateRuntime(userId);
 		const statuses = runtime.getAgentStatuses();
 
@@ -267,36 +277,36 @@ export class AgentRuntimeService {
 				id: 'planner',
 				name: 'Planner Agent',
 				description: 'Analyzes requirements and creates project plans',
-				capabilities: ['analysis', 'planning', 'architecture']
+				capabilities: ['analysis', 'planning', 'architecture'],
 			},
 			{
 				id: 'builder',
 				name: 'Builder Agent',
 				description: 'Generates code and implements features',
-				capabilities: ['coding', 'implementation', 'refactoring']
+				capabilities: ['coding', 'implementation', 'refactoring'],
 			},
 			{
 				id: 'designer',
 				name: 'Designer Agent',
 				description: 'Creates UI/UX designs and layouts',
-				capabilities: ['design', 'ui', 'ux', 'styling']
+				capabilities: ['design', 'ui', 'ux', 'styling'],
 			},
 			{
 				id: 'tester',
 				name: 'Tester Agent',
 				description: 'Writes and executes tests',
-				capabilities: ['testing', 'qa', 'debugging']
+				capabilities: ['testing', 'qa', 'debugging'],
 			},
 			{
 				id: 'deployer',
 				name: 'Deployer Agent',
 				description: 'Handles deployment and infrastructure',
-				capabilities: ['deployment', 'ci-cd', 'infrastructure']
-			}
+				capabilities: ['deployment', 'ci-cd', 'infrastructure'],
+			},
 		];
 		return agents.map(agent => ({
 			...agent,
-			status: statuses.get(agent.id)?.isHealthy ? 'available' : 'offline'
+			status: statuses.get(agent.id)?.isHealthy ? 'available' : 'offline',
 		}));
 	}
 
@@ -305,21 +315,26 @@ export class AgentRuntimeService {
 	 */
 	private async handleTaskEvent(
 		userId: string,
-		event: { type: 'started' | 'completed' | 'failed'; task: Task; result?: TaskResult; error?: string }
+		event: {
+			type: 'started' | 'completed' | 'failed';
+			task: Task;
+			result?: TaskResult;
+			error?: string;
+		}
 	) {
 		const { type, task, result, error } = event;
 
 		// Update task status
-		await this.updateTaskStatus(task.id,
-			type === 'started' ? 'in_progress' :
-				type === 'completed' ? 'completed' : 'failed',
+		await this.updateTaskStatus(
+			task.id,
+			type === 'started' ? 'in_progress' : type === 'completed' ? 'completed' : 'failed',
 			{
 				outputs: result?.outputs,
 				error,
 				startedAt: type === 'started' ? new Date() : undefined,
 				completedAt: type !== 'started' ? new Date() : undefined,
 			}
-		);		// Log audit event
+		); // Log audit event
 		await FirestoreService.logAudit({
 			userId,
 			action: `agent_task_${type}`,
@@ -363,16 +378,19 @@ export class AgentRuntimeService {
 		const task = this.activeTasks.get(taskId);
 		if (task) {
 			const updatedTask = { ...task, status, ...updates };
-			this.activeTasks.set(taskId, updatedTask);			// Save to Firestore
+			this.activeTasks.set(taskId, updatedTask); // Save to Firestore
 			try {
 				const db = getFirestore();
-				await db.collection('agent_tasks').doc(taskId).update({
-					status,
-					...updates,
-					startedAt: updates.startedAt?.toISOString(),
-					completedAt: updates.completedAt?.toISOString(),
-					updatedAt: new Date().toISOString(),
-				});
+				await db
+					.collection('agent_tasks')
+					.doc(taskId)
+					.update({
+						status,
+						...updates,
+						startedAt: updates.startedAt?.toISOString(),
+						completedAt: updates.completedAt?.toISOString(),
+						updatedAt: new Date().toISOString(),
+					});
 			} catch (error) {
 				console.error('Failed to update task in Firestore:', error);
 			}

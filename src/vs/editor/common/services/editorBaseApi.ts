@@ -39,6 +39,6 @@ export function createMonacoBaseAPI(): typeof monaco {
 		MarkerSeverity: standaloneEnums.MarkerSeverity,
 		MarkerTag: standaloneEnums.MarkerTag,
 		Uri: <any>URI,
-		Token: Token
+		Token: Token,
 	};
 }

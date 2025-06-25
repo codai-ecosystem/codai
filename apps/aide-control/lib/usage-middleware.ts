@@ -34,7 +34,7 @@ export async function trackUsage(
 			amount,
 			unit,
 			cost: config.cost,
-			metadata: config.metadata || {}
+			metadata: config.metadata || {},
 		});
 	} catch (error) {
 		console.error('Failed to track usage:', error);
@@ -118,8 +118,8 @@ export function withUsageTracking(
 							details: {
 								type: config.type,
 								limit: quotaCheck.limit,
-								remaining: quotaCheck.remaining
-							}
+								remaining: quotaCheck.remaining,
+							},
 						},
 						{ status: 429 }
 					);
@@ -132,8 +132,9 @@ export function withUsageTracking(
 			// Track usage after successful operation (only for 2xx responses)
 			if (response.status >= 200 && response.status < 300) {
 				// Fire and forget usage tracking
-				trackUsage(user.uid, projectId, config, amount, unit)
-					.catch(error => console.error('Usage tracking failed:', error));
+				trackUsage(user.uid, projectId, config, amount, unit).catch(error =>
+					console.error('Usage tracking failed:', error)
+				);
 			}
 
 			return response;
@@ -153,7 +154,7 @@ export function withTokenTracking(tokensUsed: number, service: string = 'aide-ap
 		{
 			checkQuota: true,
 			amount: tokensUsed,
-			unit: 'tokens'
+			unit: 'tokens',
 		}
 	);
 }
@@ -171,7 +172,7 @@ export function withDeploymentTracking(projectId?: string) {
 			checkQuota: true,
 			amount: 1,
 			unit: 'deployments',
-			getProjectId: () => projectId || null
+			getProjectId: () => projectId || null,
 		}
 	);
 }
@@ -188,7 +189,7 @@ export function withApiCallTracking(service: string = 'aide-api') {
 		{
 			checkQuota: false, // Don't enforce quota on general API calls
 			amount: 1,
-			unit: 'requests'
+			unit: 'requests',
 		}
 	);
 }
@@ -215,7 +216,7 @@ export async function getUserUsageStats(
 			apiCalls: 0,
 			deployments: 0,
 			storageUsed: 0,
-			costs: 0
+			costs: 0,
 		};
 	} catch (error) {
 		console.error('Failed to get usage stats:', error);
@@ -224,7 +225,7 @@ export async function getUserUsageStats(
 			apiCalls: 0,
 			deployments: 0,
 			storageUsed: 0,
-			costs: 0
+			costs: 0,
 		};
 	}
 }
@@ -251,7 +252,7 @@ export async function getProjectUsageStats(
 			storageUsed: 0,
 			bandwidthUsed: 0,
 			buildMinutesUsed: 0,
-			costs: 0
+			costs: 0,
 		};
 	} catch (error) {
 		console.error('Failed to get project usage stats:', error);
@@ -260,7 +261,7 @@ export async function getProjectUsageStats(
 			storageUsed: 0,
 			bandwidthUsed: 0,
 			buildMinutesUsed: 0,
-			costs: 0
+			costs: 0,
 		};
 	}
 }

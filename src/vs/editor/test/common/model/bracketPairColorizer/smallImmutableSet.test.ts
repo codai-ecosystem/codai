@@ -5,10 +5,12 @@
 
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { DenseKeyProvider, SmallImmutableSet } from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/smallImmutableSet.js';
+import {
+	DenseKeyProvider,
+	SmallImmutableSet,
+} from '../../../../common/model/bracketPairsTextModelPart/bracketPairsTree/smallImmutableSet.js';
 
 suite('Bracket Pair Colorizer - ImmutableSet', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('Basic', () => {

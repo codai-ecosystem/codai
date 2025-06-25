@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { JSONScanner, createScanner as createJSONScanner, SyntaxKind as JSONSyntaxKind } from '../../../../base/common/json.js';
+import {
+	JSONScanner,
+	createScanner as createJSONScanner,
+	SyntaxKind as JSONSyntaxKind,
+} from '../../../../base/common/json.js';
 import { Position } from '../../../../editor/common/core/position.js';
 import { Range } from '../../../../editor/common/core/range.js';
 import { ITextModel } from '../../../../editor/common/model.js';
@@ -15,9 +19,7 @@ export interface InsertSnippetResult {
 }
 
 export class SmartSnippetInserter {
-
 	private static hasOpenBrace(scanner: JSONScanner): boolean {
-
 		while (scanner.scan() !== JSONSyntaxKind.EOF) {
 			const kind = scanner.getToken();
 
@@ -38,22 +40,17 @@ export class SmartSnippetInserter {
 			const offsetAfterLine = offsetBeforeLine + lineTotalLength;
 
 			if (offsetAfterLine > offset) {
-				return new Position(
-					lineNumber,
-					offset - offsetBeforeLine + 1
-				);
+				return new Position(lineNumber, offset - offsetBeforeLine + 1);
 			}
 			offsetBeforeLine = offsetAfterLine;
 		}
-		return new Position(
-			lineCount,
-			model.getLineMaxColumn(lineCount)
-		);
+		return new Position(lineCount, model.getLineMaxColumn(lineCount));
 	}
 
 	static insertSnippet(model: ITextModel, _position: Position): InsertSnippetResult {
-
-		const desiredPosition = model.getValueLengthInRange(new Range(1, 1, _position.lineNumber, _position.column));
+		const desiredPosition = model.getValueLengthInRange(
+			new Range(1, 1, _position.lineNumber, _position.column)
+		);
 
 		// <INVALID> [ <BEFORE_OBJECT> { <INVALID> } <AFTER_OBJECT>, <BEFORE_OBJECT> { <INVALID> } <AFTER_OBJECT> ] <INVALID>
 		enum State {
@@ -117,30 +114,33 @@ export class SmartSnippetInserter {
 					goodKind = true;
 			}
 
-			if (currentPos >= desiredPosition && (currentState !== State.INVALID || lastValidPos !== -1)) {
+			if (
+				currentPos >= desiredPosition &&
+				(currentState !== State.INVALID || lastValidPos !== -1)
+			) {
 				let acceptPosition: number;
 				let acceptState: State;
 
 				if (currentState !== State.INVALID) {
-					acceptPosition = (goodKind ? currentPos : scanner.getTokenOffset());
+					acceptPosition = goodKind ? currentPos : scanner.getTokenOffset();
 					acceptState = currentState;
 				} else {
 					acceptPosition = lastValidPos;
 					acceptState = lastValidState;
 				}
 
-				if (acceptState as State === State.AFTER_OBJECT) {
+				if ((acceptState as State) === State.AFTER_OBJECT) {
 					return {
 						position: this.offsetToPosition(model, acceptPosition),
 						prepend: ',',
-						append: ''
+						append: '',
 					};
 				} else {
 					scanner.setPosition(acceptPosition);
 					return {
 						position: this.offsetToPosition(model, acceptPosition),
 						prepend: '',
-						append: this.hasOpenBrace(scanner) ? ',' : ''
+						append: this.hasOpenBrace(scanner) ? ',' : '',
 					};
 				}
 			}
@@ -151,7 +151,7 @@ export class SmartSnippetInserter {
 		return {
 			position: new Position(modelLineCount, model.getLineMaxColumn(modelLineCount)),
 			prepend: '\n[',
-			append: ']'
+			append: ']',
 		};
 	}
 }

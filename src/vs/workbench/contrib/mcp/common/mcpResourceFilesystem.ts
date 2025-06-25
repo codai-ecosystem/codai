@@ -5,15 +5,40 @@
 
 import { sumBy } from '../../../../base/common/arrays.js';
 import { decodeBase64, VSBuffer } from '../../../../base/common/buffer.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../base/common/cancellation.js';
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from '../../../../base/common/cancellation.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { Lazy } from '../../../../base/common/lazy.js';
-import { Disposable, DisposableStore, IDisposable, MutableDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	MutableDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { autorun } from '../../../../base/common/observable.js';
 import { newWriteableStream, ReadableStreamEvents } from '../../../../base/common/stream.js';
 import { equalsIgnoreCase } from '../../../../base/common/strings.js';
 import { URI } from '../../../../base/common/uri.js';
-import { createFileSystemProviderError, FileChangeType, FileSystemProviderCapabilities, FileSystemProviderErrorCode, FileType, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileReadStreamOptions, IFileService, IFileSystemProviderWithFileAtomicReadCapability, IFileSystemProviderWithFileReadStreamCapability, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from '../../../../platform/files/common/files.js';
+import {
+	createFileSystemProviderError,
+	FileChangeType,
+	FileSystemProviderCapabilities,
+	FileSystemProviderErrorCode,
+	FileType,
+	IFileChange,
+	IFileDeleteOptions,
+	IFileOverwriteOptions,
+	IFileReadStreamOptions,
+	IFileService,
+	IFileSystemProviderWithFileAtomicReadCapability,
+	IFileSystemProviderWithFileReadStreamCapability,
+	IFileSystemProviderWithFileReadWriteCapability,
+	IFileWriteOptions,
+	IStat,
+	IWatchOptions,
+} from '../../../../platform/files/common/files.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { McpServer } from './mcpServer.js';
@@ -21,12 +46,18 @@ import { McpServerRequestHandler } from './mcpServerRequestHandler.js';
 import { IMcpService, McpCapability, McpResourceURI } from './mcpTypes.js';
 import { MCP } from './modelContextProtocol.js';
 
-export class McpResourceFilesystem extends Disposable implements IWorkbenchContribution,
-	IFileSystemProviderWithFileReadWriteCapability,
-	IFileSystemProviderWithFileAtomicReadCapability,
-	IFileSystemProviderWithFileReadStreamCapability {
+export class McpResourceFilesystem
+	extends Disposable
+	implements
+		IWorkbenchContribution,
+		IFileSystemProviderWithFileReadWriteCapability,
+		IFileSystemProviderWithFileAtomicReadCapability,
+		IFileSystemProviderWithFileReadStreamCapability
+{
 	/** Defer getting the MCP service since this is a BlockRestore and no need to make it unnecessarily. */
-	private readonly _mcpServiceLazy = new Lazy(() => this._instantiationService.invokeFunction(a => a.get(IMcpService)));
+	private readonly _mcpServiceLazy = new Lazy(() =>
+		this._instantiationService.invokeFunction(a => a.get(IMcpService))
+	);
 
 	private get _mcpService() {
 		return this._mcpServiceLazy.value;
@@ -37,15 +68,16 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 	private readonly _onDidChangeFile = this._register(new Emitter<readonly IFileChange[]>());
 	public readonly onDidChangeFile = this._onDidChangeFile.event;
 
-	public readonly capabilities: FileSystemProviderCapabilities = FileSystemProviderCapabilities.None
-		| FileSystemProviderCapabilities.Readonly
-		| FileSystemProviderCapabilities.PathCaseSensitive
-		| FileSystemProviderCapabilities.FileReadStream
-		| FileSystemProviderCapabilities.FileAtomicRead;
+	public readonly capabilities: FileSystemProviderCapabilities =
+		FileSystemProviderCapabilities.None |
+		FileSystemProviderCapabilities.Readonly |
+		FileSystemProviderCapabilities.PathCaseSensitive |
+		FileSystemProviderCapabilities.FileReadStream |
+		FileSystemProviderCapabilities.FileAtomicRead;
 
 	constructor(
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IFileService private readonly _fileService: IFileService,
+		@IFileService private readonly _fileService: IFileService
 	) {
 		super();
 		this._register(this._fileService.registerProvider(McpResourceURI.scheme, this));
@@ -57,8 +89,14 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 		return this._readFile(resource);
 	}
 
-	public readFileStream(resource: URI, opts: IFileReadStreamOptions, token: CancellationToken): ReadableStreamEvents<Uint8Array> {
-		const stream = newWriteableStream<Uint8Array>(data => VSBuffer.concat(data.map(data => VSBuffer.wrap(data))).buffer);
+	public readFileStream(
+		resource: URI,
+		opts: IFileReadStreamOptions,
+		token: CancellationToken
+	): ReadableStreamEvents<Uint8Array> {
+		const stream = newWriteableStream<Uint8Array>(
+			data => VSBuffer.concat(data.map(data => VSBuffer.wrap(data))).buffer
+		);
 
 		this._readFile(resource, token).then(
 			data => {
@@ -72,7 +110,7 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 
 				stream.end(data);
 			},
-			err => stream.error(err),
+			err => stream.error(err)
 		);
 
 		return stream;
@@ -91,37 +129,42 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 		let watchedOnHandler: McpServerRequestHandler | undefined;
 		const watchListener = store.add(new MutableDisposable());
 		const callCts = store.add(new MutableDisposable<CancellationTokenSource>());
-		store.add(autorun(reader => {
-			const connection = server.connection.read(reader);
-			if (!connection) {
-				return;
-			}
+		store.add(
+			autorun(reader => {
+				const connection = server.connection.read(reader);
+				if (!connection) {
+					return;
+				}
 
-			const handler = connection.handler.read(reader);
-			if (!handler || watchedOnHandler === handler) {
-				return;
-			}
+				const handler = connection.handler.read(reader);
+				if (!handler || watchedOnHandler === handler) {
+					return;
+				}
 
-			callCts.value?.dispose(true);
-			callCts.value = new CancellationTokenSource();
-			watchedOnHandler = handler;
+				callCts.value?.dispose(true);
+				callCts.value = new CancellationTokenSource();
+				watchedOnHandler = handler;
 
-			const token = callCts.value.token;
-			handler.subscribe({ uri: resourceURI.toString(true) }, token).then(
-				() => {
-					if (!token.isCancellationRequested) {
-						watchListener.value = handler.onDidUpdateResource(e => {
-							if (equalsUriPath(e.params.uri, resourceURI)) {
-								this._onDidChangeFile.fire([{ resource: uri, type: FileChangeType.UPDATED }]);
-							}
-						});
+				const token = callCts.value.token;
+				handler.subscribe({ uri: resourceURI.toString(true) }, token).then(
+					() => {
+						if (!token.isCancellationRequested) {
+							watchListener.value = handler.onDidUpdateResource(e => {
+								if (equalsUriPath(e.params.uri, resourceURI)) {
+									this._onDidChangeFile.fire([{ resource: uri, type: FileChangeType.UPDATED }]);
+								}
+							});
+						}
+					},
+					err => {
+						handler.logger.warn(
+							`Failed to subscribe to resource changes for ${resourceURI}: ${err}`
+						);
+						watchedOnHandler = undefined;
 					}
-				}, err => {
-					handler.logger.warn(`Failed to subscribe to resource changes for ${resourceURI}: ${err}`);
-					watchedOnHandler = undefined;
-				},
-			);
-		}));
+				);
+			})
+		);
 
 		return store;
 	}
@@ -129,7 +172,10 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 	public async stat(resource: URI): Promise<IStat> {
 		const { forSameURI, contents } = await this._readURI(resource);
 		if (!contents.length) {
-			throw createFileSystemProviderError(`File not found`, FileSystemProviderErrorCode.FileNotFound);
+			throw createFileSystemProviderError(
+				`File not found`,
+				FileSystemProviderErrorCode.FileNotFound
+			);
 		}
 
 		return {
@@ -143,7 +189,10 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 	public async readdir(resource: URI): Promise<[string, FileType][]> {
 		const { forSameURI, contents, resourceURI } = await this._readURI(resource);
 		if (forSameURI.length > 0) {
-			throw createFileSystemProviderError(`File is not a directory`, FileSystemProviderErrorCode.FileNotADirectory);
+			throw createFileSystemProviderError(
+				`File is not a directory`,
+				FileSystemProviderErrorCode.FileNotADirectory
+			);
 		}
 
 		const resourcePathParts = resourceURI.path.split('/');
@@ -154,19 +203,23 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 			const contentPathParts = contentURI.path.split('/');
 
 			// Skip contents that are not in the same directory
-			if (contentPathParts.length <= resourcePathParts.length || !resourcePathParts.every((part, index) => equalsIgnoreCase(part, contentPathParts[index]))) {
+			if (
+				contentPathParts.length <= resourcePathParts.length ||
+				!resourcePathParts.every((part, index) => equalsIgnoreCase(part, contentPathParts[index]))
+			) {
 				continue;
 			}
 
 			// nested resource in a directory, just emit a directory to output
 			else if (contentPathParts.length > resourcePathParts.length + 1) {
 				output.set(contentPathParts[resourcePathParts.length], FileType.Directory);
-			}
-
-			else {
+			} else {
 				// resource in the same directory, emit the file
 				const name = contentPathParts[contentPathParts.length - 1];
-				output.set(name, contentToBuffer(content).byteLength > 0 ? FileType.File : FileType.Directory);
+				output.set(
+					name,
+					contentToBuffer(content).byteLength > 0 ? FileType.File : FileType.Directory
+				);
 			}
 		}
 
@@ -174,16 +227,28 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 	}
 
 	public mkdir(resource: URI): Promise<void> {
-		throw createFileSystemProviderError('write is not supported', FileSystemProviderErrorCode.NoPermissions);
+		throw createFileSystemProviderError(
+			'write is not supported',
+			FileSystemProviderErrorCode.NoPermissions
+		);
 	}
 	public writeFile(resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
-		throw createFileSystemProviderError('write is not supported', FileSystemProviderErrorCode.NoPermissions);
+		throw createFileSystemProviderError(
+			'write is not supported',
+			FileSystemProviderErrorCode.NoPermissions
+		);
 	}
 	public delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
-		throw createFileSystemProviderError('delete is not supported', FileSystemProviderErrorCode.NoPermissions);
+		throw createFileSystemProviderError(
+			'delete is not supported',
+			FileSystemProviderErrorCode.NoPermissions
+		);
 	}
 	public rename(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {
-		throw createFileSystemProviderError('rename is not supported', FileSystemProviderErrorCode.NoPermissions);
+		throw createFileSystemProviderError(
+			'rename is not supported',
+			FileSystemProviderErrorCode.NoPermissions
+		);
 	}
 
 	//#endregion
@@ -195,9 +260,15 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 		// servers should just return multiple when 'reading' a directory.
 		if (!forSameURI.length) {
 			if (!contents.length) {
-				throw createFileSystemProviderError(`File not found`, FileSystemProviderErrorCode.FileNotFound);
+				throw createFileSystemProviderError(
+					`File not found`,
+					FileSystemProviderErrorCode.FileNotFound
+				);
 			} else {
-				throw createFileSystemProviderError(`File is a directory`, FileSystemProviderErrorCode.FileIsADirectory);
+				throw createFileSystemProviderError(
+					`File is a directory`,
+					FileSystemProviderErrorCode.FileIsADirectory
+				);
 			}
 		}
 
@@ -219,12 +290,18 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 
 		const server = this._mcpService.servers.get().find(s => s.definition.id === definitionId);
 		if (!server) {
-			throw createFileSystemProviderError(`MCP server ${definitionId} not found`, FileSystemProviderErrorCode.FileNotFound);
+			throw createFileSystemProviderError(
+				`MCP server ${definitionId} not found`,
+				FileSystemProviderErrorCode.FileNotFound
+			);
 		}
 
 		const cap = server.capabilities.get();
 		if (cap !== undefined && !(cap & McpCapability.Resources)) {
-			throw createFileSystemProviderError(`MCP server ${definitionId} does not support resources`, FileSystemProviderErrorCode.FileNotFound);
+			throw createFileSystemProviderError(
+				`MCP server ${definitionId} does not support resources`,
+				FileSystemProviderErrorCode.FileNotFound
+			);
 		}
 
 		return { definitionId, resourceURI, server };
@@ -232,7 +309,11 @@ export class McpResourceFilesystem extends Disposable implements IWorkbenchContr
 
 	private async _readURI(uri: URI, token?: CancellationToken) {
 		const { resourceURI, server } = this._decodeURI(uri);
-		const res = await McpServer.callOn(server, r => r.readResource({ uri: resourceURI.toString(true) }, token), token);
+		const res = await McpServer.callOn(
+			server,
+			r => r.readResource({ uri: resourceURI.toString(true) }, token),
+			token
+		);
 
 		return {
 			contents: res.contents,
@@ -254,6 +335,9 @@ function contentToBuffer(content: MCP.TextResourceContents | MCP.BlobResourceCon
 	} else if ('blob' in content) {
 		return decodeBase64(content.blob).buffer;
 	} else {
-		throw createFileSystemProviderError('Unknown content type', FileSystemProviderErrorCode.Unknown);
+		throw createFileSystemProviderError(
+			'Unknown content type',
+			FileSystemProviderErrorCode.Unknown
+		);
 	}
 }

@@ -79,35 +79,38 @@ const firebaseService = createFirebaseService();
 
 ```typescript
 describe('FirebaseProvisioningService', () => {
-  // Happy path tests
-  describe('createUserProject', () => {
-    it('successfully creates a Firebase project');
-    it('enables all required APIs');
-    it('sets up Firestore with proper rules');
-  });
+	// Happy path tests
+	describe('createUserProject', () => {
+		it('successfully creates a Firebase project');
+		it('enables all required APIs');
+		it('sets up Firestore with proper rules');
+	});
 
-  // Error path tests
-  describe('error handling', () => {
-    it('handles API enabling failures gracefully');
-    it('cleans up resources on partial failures');
-    it('provides useful error messages');
-  });
+	// Error path tests
+	describe('error handling', () => {
+		it('handles API enabling failures gracefully');
+		it('cleans up resources on partial failures');
+		it('provides useful error messages');
+	});
 
-  // Individual method tests
-  describe('setupFirestore', () => {
-    it('creates a Firestore database with correct settings');
-    it('applies appropriate security rules');
-  });
+	// Individual method tests
+	describe('setupFirestore', () => {
+		it('creates a Firestore database with correct settings');
+		it('applies appropriate security rules');
+	});
 });
 ```
 
 ## Next Steps for Improvement
 
 1. Replace mock Google Auth with actual library
+
    ```bash
    npm install google-auth-library
    ```
+
    Then update imports in firebase-provisioning.ts:
+
    ```typescript
    import { GoogleAuth } from 'google-auth-library';
    // Remove the mock import
@@ -143,10 +146,10 @@ const firebaseService = createFirebaseService();
 
 // Create a new Firebase project
 const projectDetails = await firebaseService.createUserProject({
-  projectId: 'my-project',
-  displayName: 'My Firebase Project',
-  userId: 'user123',
-  locationId: 'us-central', // Optional, defaults to us-central
+	projectId: 'my-project',
+	displayName: 'My Firebase Project',
+	userId: 'user123',
+	locationId: 'us-central', // Optional, defaults to us-central
 });
 
 console.log(`Project created: ${projectDetails.projectId}`);

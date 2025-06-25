@@ -5,13 +5,21 @@
 
 import assert from 'assert';
 import { URI } from '../../../../../base/common/uri.js';
-import { IMarker, MarkerSeverity, IRelatedInformation } from '../../../../../platform/markers/common/markers.js';
-import { MarkersModel, Marker, ResourceMarkers, RelatedInformation } from '../../browser/markersModel.js';
+import {
+	IMarker,
+	MarkerSeverity,
+	IRelatedInformation,
+} from '../../../../../platform/markers/common/markers.js';
+import {
+	MarkersModel,
+	Marker,
+	ResourceMarkers,
+	RelatedInformation,
+} from '../../browser/markersModel.js';
 import { groupBy } from '../../../../../base/common/collections.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 class TestMarkersModel extends MarkersModel {
-
 	constructor(markers: IMarker[]) {
 		super();
 
@@ -27,7 +35,6 @@ class TestMarkersModel extends MarkersModel {
 }
 
 suite('MarkersModel Test', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('marker ids are unique', function () {
@@ -101,7 +108,23 @@ suite('MarkersModel Test', () => {
 		const marker13 = aWarningWithRange(5);
 		const marker14 = anErrorWithRange(4);
 		const marker15 = anErrorWithRange(8, 2, 8, 4);
-		const testObject = new TestMarkersModel([marker1, marker2, marker3, marker4, marker5, marker6, marker7, marker8, marker9, marker10, marker11, marker12, marker13, marker14, marker15]);
+		const testObject = new TestMarkersModel([
+			marker1,
+			marker2,
+			marker3,
+			marker4,
+			marker5,
+			marker6,
+			marker7,
+			marker8,
+			marker9,
+			marker10,
+			marker11,
+			marker12,
+			marker13,
+			marker14,
+			marker15,
+		]);
 
 		const actuals = testObject.resourceMarkers[0].markers;
 
@@ -125,23 +148,60 @@ suite('MarkersModel Test', () => {
 	test('toString()', () => {
 		let marker = aMarker('a/res1');
 		marker.code = '1234';
-		assert.strictEqual(JSON.stringify({ ...marker, resource: marker.resource.path }, null, '\t'), new Marker('1', marker).toString());
+		assert.strictEqual(
+			JSON.stringify({ ...marker, resource: marker.resource.path }, null, '\t'),
+			new Marker('1', marker).toString()
+		);
 
 		marker = aMarker('a/res2', MarkerSeverity.Warning);
-		assert.strictEqual(JSON.stringify({ ...marker, resource: marker.resource.path }, null, '\t'), new Marker('2', marker).toString());
+		assert.strictEqual(
+			JSON.stringify({ ...marker, resource: marker.resource.path }, null, '\t'),
+			new Marker('2', marker).toString()
+		);
 
 		marker = aMarker('a/res2', MarkerSeverity.Info, 1, 2, 1, 8, 'Info', '');
-		assert.strictEqual(JSON.stringify({ ...marker, resource: marker.resource.path }, null, '\t'), new Marker('3', marker).toString());
+		assert.strictEqual(
+			JSON.stringify({ ...marker, resource: marker.resource.path }, null, '\t'),
+			new Marker('3', marker).toString()
+		);
 
 		marker = aMarker('a/res2', MarkerSeverity.Hint, 1, 2, 1, 8, 'Ignore message', 'Ignore');
-		assert.strictEqual(JSON.stringify({ ...marker, resource: marker.resource.path }, null, '\t'), new Marker('4', marker).toString());
+		assert.strictEqual(
+			JSON.stringify({ ...marker, resource: marker.resource.path }, null, '\t'),
+			new Marker('4', marker).toString()
+		);
 
-		marker = aMarker('a/res2', MarkerSeverity.Warning, 1, 2, 1, 8, 'Warning message', '', [{ startLineNumber: 2, startColumn: 5, endLineNumber: 2, endColumn: 10, message: 'some info', resource: URI.file('a/res3') }]);
+		marker = aMarker('a/res2', MarkerSeverity.Warning, 1, 2, 1, 8, 'Warning message', '', [
+			{
+				startLineNumber: 2,
+				startColumn: 5,
+				endLineNumber: 2,
+				endColumn: 10,
+				message: 'some info',
+				resource: URI.file('a/res3'),
+			},
+		]);
 		const testObject = new Marker('5', marker, null!);
 
 		// hack
-		(testObject as any).relatedInformation = marker.relatedInformation!.map(r => new RelatedInformation('6', marker, r));
-		assert.strictEqual(JSON.stringify({ ...marker, resource: marker.resource.path, relatedInformation: marker.relatedInformation!.map(r => ({ ...r, resource: r.resource.path })) }, null, '\t'), testObject.toString());
+		(testObject as any).relatedInformation = marker.relatedInformation!.map(
+			r => new RelatedInformation('6', marker, r)
+		);
+		assert.strictEqual(
+			JSON.stringify(
+				{
+					...marker,
+					resource: marker.resource.path,
+					relatedInformation: marker.relatedInformation!.map(r => ({
+						...r,
+						resource: r.resource.path,
+					})),
+				},
+				null,
+				'\t'
+			),
+			testObject.toString()
+		);
 	});
 
 	test('Markers for same-document but different fragment', function () {
@@ -153,7 +213,15 @@ suite('MarkersModel Test', () => {
 		const frag1 = URI.parse('foo://test/path/file#1');
 		const frag2 = URI.parse('foo://test/path/file#two');
 
-		model.setResourceMarkers([[document, [{ ...aMarker(), resource: frag1 }, { ...aMarker(), resource: frag2 }]]]);
+		model.setResourceMarkers([
+			[
+				document,
+				[
+					{ ...aMarker(), resource: frag1 },
+					{ ...aMarker(), resource: frag2 },
+				],
+			],
+		]);
 
 		assert.strictEqual(model.total, 3);
 		const a = model.getResourceMarkers(document);
@@ -174,62 +242,108 @@ suite('MarkersModel Test', () => {
 		const frag1 = URI.parse('foo://test/path/file#1');
 		const frag2 = URI.parse('foo://test/path/file#2');
 
-		model.setResourceMarkers([[frag1, [
-			{ ...aMarker(), resource: frag1 },
-			{ ...aMarker(undefined, MarkerSeverity.Warning), resource: frag1 },
-		]]]);
+		model.setResourceMarkers([
+			[
+				frag1,
+				[
+					{ ...aMarker(), resource: frag1 },
+					{ ...aMarker(undefined, MarkerSeverity.Warning), resource: frag1 },
+				],
+			],
+		]);
 
-		model.setResourceMarkers([[frag2, [
-			{ ...aMarker(), resource: frag2 }
-		]]]);
+		model.setResourceMarkers([[frag2, [{ ...aMarker(), resource: frag2 }]]]);
 
 		assert.strictEqual(model.total, 3);
 		const markers = model.getResourceMarkers(document)?.markers;
-		assert.deepStrictEqual(markers?.map(m => m.marker.severity), [MarkerSeverity.Error, MarkerSeverity.Error, MarkerSeverity.Warning]);
-		assert.deepStrictEqual(markers?.map(m => m.marker.resource.toString()), [frag1.toString(), frag2.toString(), frag1.toString()]);
+		assert.deepStrictEqual(
+			markers?.map(m => m.marker.severity),
+			[MarkerSeverity.Error, MarkerSeverity.Error, MarkerSeverity.Warning]
+		);
+		assert.deepStrictEqual(
+			markers?.map(m => m.marker.resource.toString()),
+			[frag1.toString(), frag2.toString(), frag1.toString()]
+		);
 	});
 
 	function compareResource(a: ResourceMarkers, b: string): boolean {
 		return a.resource.toString() === URI.file(b).toString();
 	}
 
-	function anErrorWithRange(startLineNumber: number = 10,
+	function anErrorWithRange(
+		startLineNumber: number = 10,
 		startColumn: number = 5,
 		endLineNumber: number = startLineNumber + 1,
 		endColumn: number = startColumn + 5,
-		message: string = 'some message',
+		message: string = 'some message'
 	): IMarker {
-		return aMarker('some resource', MarkerSeverity.Error, startLineNumber, startColumn, endLineNumber, endColumn, message);
+		return aMarker(
+			'some resource',
+			MarkerSeverity.Error,
+			startLineNumber,
+			startColumn,
+			endLineNumber,
+			endColumn,
+			message
+		);
 	}
 
-	function aWarningWithRange(startLineNumber: number = 10,
+	function aWarningWithRange(
+		startLineNumber: number = 10,
 		startColumn: number = 5,
 		endLineNumber: number = startLineNumber + 1,
 		endColumn: number = startColumn + 5,
-		message: string = 'some message',
+		message: string = 'some message'
 	): IMarker {
-		return aMarker('some resource', MarkerSeverity.Warning, startLineNumber, startColumn, endLineNumber, endColumn, message);
+		return aMarker(
+			'some resource',
+			MarkerSeverity.Warning,
+			startLineNumber,
+			startColumn,
+			endLineNumber,
+			endColumn,
+			message
+		);
 	}
 
-	function anInfoWithRange(startLineNumber: number = 10,
+	function anInfoWithRange(
+		startLineNumber: number = 10,
 		startColumn: number = 5,
 		endLineNumber: number = startLineNumber + 1,
 		endColumn: number = startColumn + 5,
-		message: string = 'some message',
+		message: string = 'some message'
 	): IMarker {
-		return aMarker('some resource', MarkerSeverity.Info, startLineNumber, startColumn, endLineNumber, endColumn, message);
+		return aMarker(
+			'some resource',
+			MarkerSeverity.Info,
+			startLineNumber,
+			startColumn,
+			endLineNumber,
+			endColumn,
+			message
+		);
 	}
 
-	function anIgnoreWithRange(startLineNumber: number = 10,
+	function anIgnoreWithRange(
+		startLineNumber: number = 10,
 		startColumn: number = 5,
 		endLineNumber: number = startLineNumber + 1,
 		endColumn: number = startColumn + 5,
-		message: string = 'some message',
+		message: string = 'some message'
 	): IMarker {
-		return aMarker('some resource', MarkerSeverity.Hint, startLineNumber, startColumn, endLineNumber, endColumn, message);
+		return aMarker(
+			'some resource',
+			MarkerSeverity.Hint,
+			startLineNumber,
+			startColumn,
+			endLineNumber,
+			endColumn,
+			message
+		);
 	}
 
-	function aMarker(resource: string = 'some resource',
+	function aMarker(
+		resource: string = 'some resource',
 		severity: MarkerSeverity = MarkerSeverity.Error,
 		startLineNumber: number = 10,
 		startColumn: number = 5,
@@ -249,7 +363,7 @@ suite('MarkersModel Test', () => {
 			endLineNumber,
 			endColumn,
 			source,
-			relatedInformation
+			relatedInformation,
 		};
 	}
 });

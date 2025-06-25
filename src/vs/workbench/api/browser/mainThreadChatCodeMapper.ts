@@ -6,14 +6,28 @@ import { CancellationToken } from '../../../base/common/cancellation.js';
 import { Disposable, DisposableMap, IDisposable } from '../../../base/common/lifecycle.js';
 import { URI } from '../../../base/common/uri.js';
 import { TextEdit } from '../../../editor/common/languages.js';
-import { ICodeMapperProvider, ICodeMapperRequest, ICodeMapperResponse, ICodeMapperService } from '../../contrib/chat/common/chatCodeMapperService.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
-import { ExtHostCodeMapperShape, ExtHostContext, ICodeMapperProgressDto, ICodeMapperRequestDto, MainContext, MainThreadCodeMapperShape } from '../common/extHost.protocol.js';
+import {
+	ICodeMapperProvider,
+	ICodeMapperRequest,
+	ICodeMapperResponse,
+	ICodeMapperService,
+} from '../../contrib/chat/common/chatCodeMapperService.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
+import {
+	ExtHostCodeMapperShape,
+	ExtHostContext,
+	ICodeMapperProgressDto,
+	ICodeMapperRequestDto,
+	MainContext,
+	MainThreadCodeMapperShape,
+} from '../common/extHost.protocol.js';
 import { NotebookDto } from './mainThreadNotebookDto.js';
 
 @extHostNamedCustomer(MainContext.MainThreadCodeMapper)
 export class MainThreadChatCodemapper extends Disposable implements MainThreadCodeMapperShape {
-
 	private providers = this._register(new DisposableMap<number, IDisposable>());
 	private readonly _proxy: ExtHostCodeMapperShape;
 	private static _requestHandlePool: number = 0;
@@ -30,7 +44,11 @@ export class MainThreadChatCodemapper extends Disposable implements MainThreadCo
 	$registerCodeMapperProvider(handle: number, displayName: string): void {
 		const impl: ICodeMapperProvider = {
 			displayName,
-			mapCode: async (uiRequest: ICodeMapperRequest, response: ICodeMapperResponse, token: CancellationToken) => {
+			mapCode: async (
+				uiRequest: ICodeMapperRequest,
+				response: ICodeMapperResponse,
+				token: CancellationToken
+			) => {
 				const requestId = String(MainThreadChatCodemapper._requestHandlePool++);
 				this._responseMap.set(requestId, response);
 				const extHostRequest: ICodeMapperRequestDto = {
@@ -39,14 +57,16 @@ export class MainThreadChatCodemapper extends Disposable implements MainThreadCo
 					chatRequestId: uiRequest.chatRequestId,
 					chatRequestModel: uiRequest.chatRequestModel,
 					chatSessionId: uiRequest.chatSessionId,
-					location: uiRequest.location
+					location: uiRequest.location,
 				};
 				try {
-					return await this._proxy.$mapCode(handle, extHostRequest, token).then((result) => result ?? undefined);
+					return await this._proxy
+						.$mapCode(handle, extHostRequest, token)
+						.then(result => result ?? undefined);
 				} finally {
 					this._responseMap.delete(requestId);
 				}
-			}
+			},
 		};
 
 		const disposable = this.codeMapperService.registerCodeMapperProvider(handle, impl);

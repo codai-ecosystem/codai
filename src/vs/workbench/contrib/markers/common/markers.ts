@@ -7,7 +7,7 @@ import { RawContextKey } from '../../../../platform/contextkey/common/contextkey
 
 export const enum MarkersViewMode {
 	Table = 'table',
-	Tree = 'tree'
+	Tree = 'tree',
 }
 
 export namespace Markers {
@@ -16,7 +16,8 @@ export namespace Markers {
 	export const MARKERS_VIEW_STORAGE_ID = 'workbench.panel.markers';
 	export const MARKER_COPY_ACTION_ID = 'problems.action.copy';
 	export const MARKER_COPY_MESSAGE_ACTION_ID = 'problems.action.copyMessage';
-	export const RELATED_INFORMATION_COPY_MESSAGE_ACTION_ID = 'problems.action.copyRelatedInformationMessage';
+	export const RELATED_INFORMATION_COPY_MESSAGE_ACTION_ID =
+		'problems.action.copyRelatedInformationMessage';
 	export const FOCUS_PROBLEMS_FROM_FILTER = 'problems.action.focusProblemsFromFilter';
 	export const MARKERS_VIEW_FOCUS_FILTER = 'problems.action.focusFilter';
 	export const MARKERS_VIEW_CLEAR_FILTER_TEXT = 'problems.action.clearFilterText';
@@ -30,14 +31,38 @@ export namespace Markers {
 }
 
 export namespace MarkersContextKeys {
-	export const MarkersViewModeContextKey = new RawContextKey<MarkersViewMode>('problemsViewMode', MarkersViewMode.Tree);
-	export const MarkersTreeVisibilityContextKey = new RawContextKey<boolean>('problemsVisibility', false);
+	export const MarkersViewModeContextKey = new RawContextKey<MarkersViewMode>(
+		'problemsViewMode',
+		MarkersViewMode.Tree
+	);
+	export const MarkersTreeVisibilityContextKey = new RawContextKey<boolean>(
+		'problemsVisibility',
+		false
+	);
 	export const MarkerFocusContextKey = new RawContextKey<boolean>('problemFocus', false);
-	export const MarkerViewFilterFocusContextKey = new RawContextKey<boolean>('problemsFilterFocus', false);
-	export const RelatedInformationFocusContextKey = new RawContextKey<boolean>('relatedInformationFocus', false);
-	export const ShowErrorsFilterContextKey = new RawContextKey<boolean>('problems.filter.errors', true);
-	export const ShowWarningsFilterContextKey = new RawContextKey<boolean>('problems.filter.warnings', true);
+	export const MarkerViewFilterFocusContextKey = new RawContextKey<boolean>(
+		'problemsFilterFocus',
+		false
+	);
+	export const RelatedInformationFocusContextKey = new RawContextKey<boolean>(
+		'relatedInformationFocus',
+		false
+	);
+	export const ShowErrorsFilterContextKey = new RawContextKey<boolean>(
+		'problems.filter.errors',
+		true
+	);
+	export const ShowWarningsFilterContextKey = new RawContextKey<boolean>(
+		'problems.filter.warnings',
+		true
+	);
 	export const ShowInfoFilterContextKey = new RawContextKey<boolean>('problems.filter.info', true);
-	export const ShowActiveFileFilterContextKey = new RawContextKey<boolean>('problems.filter.activeFile', false);
-	export const ShowExcludedFilesFilterContextKey = new RawContextKey<boolean>('problems.filter.excludedFiles', true);
+	export const ShowActiveFileFilterContextKey = new RawContextKey<boolean>(
+		'problems.filter.activeFile',
+		false
+	);
+	export const ShowExcludedFilesFilterContextKey = new RawContextKey<boolean>(
+		'problems.filter.excludedFiles',
+		true
+	);
 }

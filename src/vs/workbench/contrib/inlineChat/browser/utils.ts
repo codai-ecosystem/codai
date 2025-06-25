@@ -5,15 +5,18 @@
 
 import { EditOperation } from '../../../../editor/common/core/editOperation.js';
 import { IRange } from '../../../../editor/common/core/range.js';
-import { IIdentifiedSingleEditOperation, ITextModel, IValidEditOperation, TrackedRangeStickiness } from '../../../../editor/common/model.js';
+import {
+	IIdentifiedSingleEditOperation,
+	ITextModel,
+	IValidEditOperation,
+	TrackedRangeStickiness,
+} from '../../../../editor/common/model.js';
 import { IEditObserver } from './inlineChatStrategies.js';
 import { IProgress } from '../../../../platform/progress/common/progress.js';
 import { IntervalTimer, AsyncIterableSource } from '../../../../base/common/async.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { getNWords } from '../../chat/common/chatWordCounter.js';
 import { TextModelEditReason } from '../../../../editor/common/textModelEditReason.js';
-
-
 
 // --- async edit
 
@@ -22,45 +25,62 @@ export interface AsyncTextEdit {
 	readonly newText: AsyncIterable<string>;
 }
 
-export async function performAsyncTextEdit(model: ITextModel, edit: AsyncTextEdit, progress?: IProgress<IValidEditOperation[]>, obs?: IEditObserver) {
-
-	const [id] = model.deltaDecorations([], [{
-		range: edit.range,
-		options: {
-			description: 'asyncTextEdit',
-			stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
-		}
-	}]);
+export async function performAsyncTextEdit(
+	model: ITextModel,
+	edit: AsyncTextEdit,
+	progress?: IProgress<IValidEditOperation[]>,
+	obs?: IEditObserver
+) {
+	const [id] = model.deltaDecorations(
+		[],
+		[
+			{
+				range: edit.range,
+				options: {
+					description: 'asyncTextEdit',
+					stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
+				},
+			},
+		]
+	);
 
 	let first = true;
 	for await (const part of edit.newText) {
-
 		if (model.isDisposed()) {
 			break;
 		}
 
 		const range = model.getDecorationRange(id);
 		if (!range) {
-			throw new Error('FAILED to perform async replace edit because the anchor decoration was removed');
+			throw new Error(
+				'FAILED to perform async replace edit because the anchor decoration was removed'
+			);
 		}
 
 		const edit = first
 			? EditOperation.replace(range, part) // first edit needs to override the "anchor"
 			: EditOperation.insert(range.getEndPosition(), part);
 		obs?.start();
-		TextModelEditReason.editWithReason(new TextModelEditReason({ source: 'inlineChat.applyEdit' }), () => {
-			model.pushEditOperations(null, [edit], (undoEdits) => {
-				progress?.report(undoEdits);
-				return null;
-			});
-		});
+		TextModelEditReason.editWithReason(
+			new TextModelEditReason({ source: 'inlineChat.applyEdit' }),
+			() => {
+				model.pushEditOperations(null, [edit], undoEdits => {
+					progress?.report(undoEdits);
+					return null;
+				});
+			}
+		);
 		obs?.stop();
 		first = false;
 	}
 }
 
-export function asProgressiveEdit(interval: IntervalTimer, edit: IIdentifiedSingleEditOperation, wordsPerSec: number, token: CancellationToken): AsyncTextEdit {
-
+export function asProgressiveEdit(
+	interval: IntervalTimer,
+	edit: IIdentifiedSingleEditOperation,
+	wordsPerSec: number,
+	token: CancellationToken
+): AsyncTextEdit {
 	wordsPerSec = Math.max(30, wordsPerSec);
 
 	const stream = new AsyncIterableSource<string>();
@@ -78,7 +98,6 @@ export function asProgressiveEdit(interval: IntervalTimer, edit: IIdentifiedSing
 			stream.resolve();
 			d.dispose();
 		}
-
 	}, 1000 / wordsPerSec);
 
 	// cancel ASAP
@@ -90,6 +109,6 @@ export function asProgressiveEdit(interval: IntervalTimer, edit: IIdentifiedSing
 
 	return {
 		range: edit.range,
-		newText: stream.asyncIterable
+		newText: stream.asyncIterable,
 	};
 }

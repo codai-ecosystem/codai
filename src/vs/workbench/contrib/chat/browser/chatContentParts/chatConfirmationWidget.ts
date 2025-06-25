@@ -4,12 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from '../../../../../base/browser/dom.js';
-import { Button, ButtonWithDropdown, IButton, IButtonOptions } from '../../../../../base/browser/ui/button/button.js';
+import {
+	Button,
+	ButtonWithDropdown,
+	IButton,
+	IButtonOptions,
+} from '../../../../../base/browser/ui/button/button.js';
 import { Action } from '../../../../../base/common/actions.js';
 import { Emitter, Event } from '../../../../../base/common/event.js';
 import { IMarkdownString, MarkdownString } from '../../../../../base/common/htmlContent.js';
 import { Disposable, MutableDisposable } from '../../../../../base/common/lifecycle.js';
-import { IMarkdownRenderResult, MarkdownRenderer, openLinkFromMarkdown } from '../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
+import {
+	IMarkdownRenderResult,
+	MarkdownRenderer,
+	openLinkFromMarkdown,
+} from '../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
@@ -58,7 +67,7 @@ export class ChatQueryTitlePart extends Disposable {
 		private _title: IMarkdownString | string,
 		subtitle: string | IMarkdownString | undefined,
 		private readonly _renderer: MarkdownRenderer,
-		@IOpenerService private readonly _openerService: IOpenerService,
+		@IOpenerService private readonly _openerService: IOpenerService
 	) {
 		super();
 
@@ -70,10 +79,15 @@ export class ChatQueryTitlePart extends Disposable {
 		element.append(this._renderedTitle.value.element);
 		if (subtitle) {
 			const str = this.toMdString(subtitle);
-			const renderedTitle = this._register(_renderer.render(str, {
-				asyncRenderCallback: () => this._onDidChangeHeight.fire(),
-				actionHandler: { callback: link => openLinkFromMarkdown(this._openerService, link, str.isTrusted), disposables: this._store },
-			}));
+			const renderedTitle = this._register(
+				_renderer.render(str, {
+					asyncRenderCallback: () => this._onDidChangeHeight.fire(),
+					actionHandler: {
+						callback: link => openLinkFromMarkdown(this._openerService, link, str.isTrusted),
+						disposables: this._store,
+					},
+				})
+			);
 			const wrapper = document.createElement('small');
 			wrapper.appendChild(renderedTitle.element);
 			element.append(wrapper);
@@ -84,17 +98,24 @@ export class ChatQueryTitlePart extends Disposable {
 		if (typeof value === 'string') {
 			return new MarkdownString('', { supportThemeIcons: true }).appendText(value);
 		} else {
-			return new MarkdownString(value.value, { supportThemeIcons: true, isTrusted: value.isTrusted });
+			return new MarkdownString(value.value, {
+				supportThemeIcons: true,
+				isTrusted: value.isTrusted,
+			});
 		}
 	}
 }
 
 abstract class BaseChatConfirmationWidget extends Disposable {
 	private _onDidClick = this._register(new Emitter<IChatConfirmationButton>());
-	get onDidClick(): Event<IChatConfirmationButton> { return this._onDidClick.event; }
+	get onDidClick(): Event<IChatConfirmationButton> {
+		return this._onDidClick.event;
+	}
 
 	protected _onDidChangeHeight = this._register(new Emitter<void>());
-	get onDidChangeHeight(): Event<void> { return this._onDidChangeHeight.event; }
+	get onDidChangeHeight(): Event<void> {
+		return this._onDidChangeHeight.event;
+	}
 
 	private _domNode: HTMLElement;
 	get domNode(): HTMLElement {
@@ -115,7 +136,7 @@ abstract class BaseChatConfirmationWidget extends Disposable {
 		@IInstantiationService protected readonly instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IHostService private readonly _hostService: IHostService,
+		@IHostService private readonly _hostService: IHostService
 	) {
 		super();
 
@@ -127,19 +148,25 @@ abstract class BaseChatConfirmationWidget extends Disposable {
 		this._domNode = elements.root;
 		this.markdownRenderer = this.instantiationService.createInstance(MarkdownRenderer, {});
 
-		const titlePart = this._register(instantiationService.createInstance(
-			ChatQueryTitlePart,
-			elements.title,
-			title,
-			subtitle,
-			this.markdownRenderer,
-		));
+		const titlePart = this._register(
+			instantiationService.createInstance(
+				ChatQueryTitlePart,
+				elements.title,
+				title,
+				subtitle,
+				this.markdownRenderer
+			)
+		);
 
 		this._register(titlePart.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
 
 		this.messageElement = elements.message;
 		buttons.forEach(buttonData => {
-			const buttonOptions: IButtonOptions = { ...defaultButtonStyles, secondary: buttonData.isSecondary, title: buttonData.tooltip };
+			const buttonOptions: IButtonOptions = {
+				...defaultButtonStyles,
+				secondary: buttonData.isSecondary,
+				title: buttonData.tooltip,
+			};
 
 			let button: IButton;
 			if (buttonData.moreActions) {
@@ -147,16 +174,14 @@ abstract class BaseChatConfirmationWidget extends Disposable {
 					...buttonOptions,
 					contextMenuProvider: contextMenuService,
 					addPrimaryActionToDropdown: false,
-					actions: buttonData.moreActions.map(action => this._register(new Action(
-						action.label,
-						action.label,
-						undefined,
-						true,
-						() => {
-							this._onDidClick.fire(action);
-							return Promise.resolve();
-						},
-					))),
+					actions: buttonData.moreActions.map(action =>
+						this._register(
+							new Action(action.label, action.label, undefined, true, () => {
+								this._onDidClick.fire(action);
+								return Promise.resolve();
+							})
+						)
+					),
 				});
 			} else {
 				button = new Button(elements.buttonsContainer, buttonOptions);
@@ -190,14 +215,24 @@ export class ChatConfirmationWidget extends BaseChatConfirmationWidget {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IHostService hostService: IHostService,
+		@IHostService hostService: IHostService
 	) {
-		super(title, subtitle, buttons, instantiationService, contextMenuService, configurationService, hostService);
+		super(
+			title,
+			subtitle,
+			buttons,
+			instantiationService,
+			contextMenuService,
+			configurationService,
+			hostService
+		);
 
-		const renderedMessage = this._register(this.markdownRenderer.render(
-			typeof this.message === 'string' ? new MarkdownString(this.message) : this.message,
-			{ asyncRenderCallback: () => this._onDidChangeHeight.fire() }
-		));
+		const renderedMessage = this._register(
+			this.markdownRenderer.render(
+				typeof this.message === 'string' ? new MarkdownString(this.message) : this.message,
+				{ asyncRenderCallback: () => this._onDidChangeHeight.fire() }
+			)
+		);
 		this.renderMessage(renderedMessage.element, container);
 	}
 }
@@ -212,9 +247,17 @@ export class ChatCustomConfirmationWidget extends BaseChatConfirmationWidget {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IHostService hostService: IHostService,
+		@IHostService hostService: IHostService
 	) {
-		super(title, subtitle, buttons, instantiationService, contextMenuService, configurationService, hostService);
+		super(
+			title,
+			subtitle,
+			buttons,
+			instantiationService,
+			contextMenuService,
+			configurationService,
+			hostService
+		);
 		this.renderMessage(messageElement, container);
 	}
 }

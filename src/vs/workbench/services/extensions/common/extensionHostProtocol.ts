@@ -5,7 +5,10 @@
 
 import { VSBuffer } from '../../../../base/common/buffer.js';
 import { URI, UriComponents, UriDto } from '../../../../base/common/uri.js';
-import { ExtensionIdentifier, IExtensionDescription } from '../../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionIdentifier,
+	IExtensionDescription,
+} from '../../../../platform/extensions/common/extensions.js';
 import { ILoggerResource, LogLevel } from '../../../../platform/log/common/log.js';
 import { IRemoteConnectionData } from '../../../../platform/remote/common/remoteAuthorityResolver.js';
 
@@ -49,7 +52,11 @@ export interface IExtensionHostInitData {
 	loggers: UriDto<ILoggerResource>[];
 	logsLocation: URI;
 	autoStart: boolean;
-	remote: { isRemote: boolean; authority: string | undefined; connectionData: IRemoteConnectionData | null };
+	remote: {
+		isRemote: boolean;
+		authority: string | undefined;
+		connectionData: IRemoteConnectionData | null;
+	};
 	consoleForward: { includeStack: boolean; logNative: boolean };
 	uiKind: UIKind;
 	messagePorts?: ReadonlyMap<string, MessagePortLike>;
@@ -90,7 +97,7 @@ export interface MessagePortLike {
 
 export enum UIKind {
 	Desktop = 1,
-	Web = 2
+	Web = 2,
 }
 
 export const enum ExtensionHostExitCode {
@@ -118,16 +125,22 @@ export interface IExtHostReduceGraceTimeMessage {
 export const enum MessageType {
 	Initialized,
 	Ready,
-	Terminate
+	Terminate,
 }
 
 export function createMessageOfType(type: MessageType): VSBuffer {
 	const result = VSBuffer.alloc(1);
 
 	switch (type) {
-		case MessageType.Initialized: result.writeUInt8(1, 0); break;
-		case MessageType.Ready: result.writeUInt8(2, 0); break;
-		case MessageType.Terminate: result.writeUInt8(3, 0); break;
+		case MessageType.Initialized:
+			result.writeUInt8(1, 0);
+			break;
+		case MessageType.Ready:
+			result.writeUInt8(2, 0);
+			break;
+		case MessageType.Terminate:
+			result.writeUInt8(3, 0);
+			break;
 	}
 
 	return result;
@@ -139,10 +152,14 @@ export function isMessageOfType(message: VSBuffer, type: MessageType): boolean {
 	}
 
 	switch (message.readUInt8(0)) {
-		case 1: return type === MessageType.Initialized;
-		case 2: return type === MessageType.Ready;
-		case 3: return type === MessageType.Terminate;
-		default: return false;
+		case 1:
+			return type === MessageType.Initialized;
+		case 2:
+			return type === MessageType.Ready;
+		case 3:
+			return type === MessageType.Terminate;
+		default:
+			return false;
 	}
 }
 

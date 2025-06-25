@@ -4,16 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter } from '../../../../base/common/event.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { IOutlineViewState, OutlineSortOrder } from './outline.js';
 
 export class OutlineViewState implements IOutlineViewState {
-
 	private _followCursor = false;
 	private _filterOnType = true;
 	private _sortBy = OutlineSortOrder.ByPosition;
 
-	private readonly _onDidChange = new Emitter<{ followCursor?: boolean; sortBy?: boolean; filterOnType?: boolean }>();
+	private readonly _onDidChange = new Emitter<{
+		followCursor?: boolean;
+		sortBy?: boolean;
+		filterOnType?: boolean;
+	}>();
 	readonly onDidChange = this._onDidChange.event;
 
 	dispose(): void {
@@ -54,11 +61,16 @@ export class OutlineViewState implements IOutlineViewState {
 	}
 
 	persist(storageService: IStorageService): void {
-		storageService.store('outline/state', JSON.stringify({
-			followCursor: this.followCursor,
-			sortBy: this.sortBy,
-			filterOnType: this.filterOnType,
-		}), StorageScope.WORKSPACE, StorageTarget.MACHINE);
+		storageService.store(
+			'outline/state',
+			JSON.stringify({
+				followCursor: this.followCursor,
+				sortBy: this.sortBy,
+				filterOnType: this.filterOnType,
+			}),
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE
+		);
 	}
 
 	restore(storageService: IStorageService): void {

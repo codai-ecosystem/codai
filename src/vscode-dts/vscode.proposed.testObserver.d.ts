@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// https://github.com/microsoft/vscode/issues/107467
 
 	export namespace tests {
@@ -37,7 +36,13 @@ declare module 'vscode' {
 	}
 
 	export interface TestFollowupProvider {
-		provideFollowup(result: TestRunResult, test: TestResultSnapshot, taskIndex: number, messageIndex: number, token: CancellationToken): ProviderResult<Command[]>;
+		provideFollowup(
+			result: TestRunResult,
+			test: TestResultSnapshot,
+			taskIndex: number,
+			messageIndex: number,
+			token: CancellationToken
+		): ProviderResult<Command[]>;
 	}
 
 	export interface TestObserver {
@@ -194,6 +199,6 @@ declare module 'vscode' {
 		// Test run has been skipped
 		Skipped = 5,
 		// Test run failed for some other reason (compilation error, timeout, etc)
-		Errored = 6
+		Errored = 6,
 	}
 }

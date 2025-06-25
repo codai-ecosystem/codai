@@ -16,7 +16,11 @@ import { ThemeIcon } from '../../../../base/common/themables.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 
-const ExtensionEditorIcon = registerIcon('extensions-editor-label-icon', Codicon.extensions, localize('extensionsEditorLabelIcon', 'Icon of the extensions editor label.'));
+const ExtensionEditorIcon = registerIcon(
+	'extensions-editor-label-icon',
+	Codicon.extensions,
+	localize('extensionsEditorLabelIcon', 'Icon of the extensions editor label.')
+);
 
 export interface IExtensionEditorOptions extends IEditorOptions {
 	showPreReleaseVersion?: boolean;
@@ -26,7 +30,6 @@ export interface IExtensionEditorOptions extends IEditorOptions {
 }
 
 export class ExtensionsInput extends EditorInput {
-
 	static readonly ID = 'workbench.extensions.input2';
 
 	override get typeId(): string {
@@ -40,7 +43,7 @@ export class ExtensionsInput extends EditorInput {
 	override get resource() {
 		return URI.from({
 			scheme: Schemas.extension,
-			path: join(this._extension.identifier.id, 'extension')
+			path: join(this._extension.identifier.id, 'extension'),
 		});
 	}
 
@@ -48,10 +51,12 @@ export class ExtensionsInput extends EditorInput {
 		super();
 	}
 
-	get extension(): IExtension { return this._extension; }
+	get extension(): IExtension {
+		return this._extension;
+	}
 
 	override getName(): string {
-		return localize('extensionsInputName', "Extension: {0}", this._extension.displayName);
+		return localize('extensionsInputName', 'Extension: {0}', this._extension.displayName);
 	}
 
 	override getIcon(): ThemeIcon | undefined {
@@ -63,6 +68,9 @@ export class ExtensionsInput extends EditorInput {
 			return true;
 		}
 
-		return other instanceof ExtensionsInput && areSameExtensions(this._extension.identifier, other._extension.identifier);
+		return (
+			other instanceof ExtensionsInput &&
+			areSameExtensions(this._extension.identifier, other._extension.identifier)
+		);
 	}
 }

@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 export interface MessagePortMain extends NodeJS.EventEmitter {
-
 	// Docs: https://electronjs.org/docs/api/message-port-main
 
 	/**
@@ -45,7 +44,6 @@ export interface MessageEvent {
 }
 
 export interface ParentPort extends NodeJS.EventEmitter {
-
 	// Docs: https://electronjs.org/docs/api/parent-port
 
 	/**
@@ -64,7 +62,6 @@ export interface ParentPort extends NodeJS.EventEmitter {
 }
 
 export interface UtilityNodeJSProcess extends NodeJS.Process {
-
 	/**
 	 * A `Electron.ParentPort` property if this is a `UtilityProcess` (or `null`
 	 * otherwise) allowing communication with the parent process.

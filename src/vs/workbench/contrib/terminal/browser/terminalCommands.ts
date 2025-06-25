@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
+import {
+	KeybindingsRegistry,
+	KeybindingWeight,
+} from '../../../../platform/keybinding/common/keybindingsRegistry.js';
 import { ITerminalGroupService } from './terminal.js';
 
 export function setupTerminalCommands(): void {
@@ -23,7 +26,7 @@ function registerOpenTerminalAtIndexCommands(): void {
 			handler: accessor => {
 				accessor.get(ITerminalGroupService).setActiveInstanceByIndex(terminalIndex);
 				return accessor.get(ITerminalGroupService).showPanel(true);
-			}
+			},
 		});
 	}
 }

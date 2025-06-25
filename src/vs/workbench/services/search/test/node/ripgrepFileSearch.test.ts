@@ -12,7 +12,11 @@ suite('RipgrepFileSearch - etc', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 	function testGetAbsGlob(params: string[]): void {
 		const [folder, glob, expectedResult] = params;
-		assert.strictEqual(fixDriveC(getAbsoluteGlob(folder, glob)), expectedResult, JSON.stringify(params));
+		assert.strictEqual(
+			fixDriveC(getAbsoluteGlob(folder, glob)),
+			expectedResult,
+			JSON.stringify(params)
+		);
 	}
 
 	(!platform.isWindows ? test.skip : test)('getAbsoluteGlob_win', () => {
@@ -26,7 +30,7 @@ suite('RipgrepFileSearch - etc', () => {
 
 			// absolute paths are not resolved further
 			['c:/foo/bar', '/path/something', '/path/something'],
-			['c:/foo/bar', 'c:\\project\\folder', '/project\\folder']
+			['c:/foo/bar', 'c:\\project\\folder', '/project\\folder'],
 		].forEach(testGetAbsGlob);
 	});
 

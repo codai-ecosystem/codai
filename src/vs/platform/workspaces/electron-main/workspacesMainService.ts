@@ -7,21 +7,35 @@ import { AddFirstParameterToFunctions } from '../../../base/common/types.js';
 import { URI } from '../../../base/common/uri.js';
 import { IBackupMainService } from '../../backup/electron-main/backup.js';
 import { IWindowsMainService } from '../../windows/electron-main/windows.js';
-import { IEnterWorkspaceResult, IRecent, IRecentlyOpened, IWorkspaceFolderCreationData, IWorkspacesService } from '../common/workspaces.js';
+import {
+	IEnterWorkspaceResult,
+	IRecent,
+	IRecentlyOpened,
+	IWorkspaceFolderCreationData,
+	IWorkspacesService,
+} from '../common/workspaces.js';
 import { IWorkspaceIdentifier } from '../../workspace/common/workspace.js';
 import { IWorkspacesHistoryMainService } from './workspacesHistoryMainService.js';
 import { IWorkspacesManagementMainService } from './workspacesManagementMainService.js';
 import { IWorkspaceBackupInfo, IFolderBackupInfo } from '../../backup/common/backup.js';
 import { Event } from '../../../base/common/event.js';
 
-export class WorkspacesMainService implements AddFirstParameterToFunctions<IWorkspacesService, Promise<unknown> /* only methods, not events */, number /* window ID */> {
-
+export class WorkspacesMainService
+	implements
+		AddFirstParameterToFunctions<
+			IWorkspacesService,
+			Promise<unknown> /* only methods, not events */,
+			number /* window ID */
+		>
+{
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IWorkspacesManagementMainService private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
+		@IWorkspacesManagementMainService
+		private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
 		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-		@IWorkspacesHistoryMainService private readonly workspacesHistoryMainService: IWorkspacesHistoryMainService,
+		@IWorkspacesHistoryMainService
+		private readonly workspacesHistoryMainService: IWorkspacesHistoryMainService,
 		@IBackupMainService private readonly backupMainService: IBackupMainService
 	) {
 		this.onDidChangeRecentlyOpened = this.workspacesHistoryMainService.onDidChangeRecentlyOpened;
@@ -32,13 +46,21 @@ export class WorkspacesMainService implements AddFirstParameterToFunctions<IWork
 	async enterWorkspace(windowId: number, path: URI): Promise<IEnterWorkspaceResult | undefined> {
 		const window = this.windowsMainService.getWindowById(windowId);
 		if (window) {
-			return this.workspacesManagementMainService.enterWorkspace(window, this.windowsMainService.getWindows(), path);
+			return this.workspacesManagementMainService.enterWorkspace(
+				window,
+				this.windowsMainService.getWindows(),
+				path
+			);
 		}
 
 		return undefined;
 	}
 
-	createUntitledWorkspace(windowId: number, folders?: IWorkspaceFolderCreationData[], remoteAuthority?: string): Promise<IWorkspaceIdentifier> {
+	createUntitledWorkspace(
+		windowId: number,
+		folders?: IWorkspaceFolderCreationData[],
+		remoteAuthority?: string
+	): Promise<IWorkspaceIdentifier> {
 		return this.workspacesManagementMainService.createUntitledWorkspace(folders, remoteAuthority);
 	}
 
@@ -73,7 +95,6 @@ export class WorkspacesMainService implements AddFirstParameterToFunctions<IWork
 	}
 
 	//#endregion
-
 
 	//#region Dirty Workspaces
 

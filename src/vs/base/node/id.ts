@@ -19,8 +19,7 @@ import { isWindows } from '../common/platform.js';
 // XenSource	00-16-3E
 // Novell Xen	00-16-3E
 // Sun xVM VirtualBox	08-00-27
-export const virtualMachineHint: { value(): number } = new class {
-
+export const virtualMachineHint: { value(): number } = new (class {
 	private _virtualMachineOUIs?: TernarySearchTree<string, boolean>;
 	private _value?: number;
 
@@ -68,14 +67,12 @@ export const virtualMachineHint: { value(): number } = new class {
 					}
 				}
 			}
-			this._value = interfaceCount > 0
-				? vmOui / interfaceCount
-				: 0;
+			this._value = interfaceCount > 0 ? vmOui / interfaceCount : 0;
 		}
 
 		return this._value;
 	}
-};
+})();
 
 let machineId: Promise<string>;
 export async function getMachineId(errorLogger: (error: any) => void): Promise<string> {

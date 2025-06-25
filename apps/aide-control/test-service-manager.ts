@@ -35,8 +35,8 @@ async function testServiceManager() {
 			apiKey: 'test-key',
 			additionalConfig: {
 				model: 'gpt-4',
-				maxTokens: 4096
-			}
+				maxTokens: 4096,
+			},
 		};
 		try {
 			await serviceManager.updateServiceConfig(testUserId, 'llm', testLLMConfig);
@@ -56,7 +56,6 @@ async function testServiceManager() {
 		console.log('1. Set up FIREBASE_ADMIN_CREDENTIALS environment variable');
 		console.log('2. Install firebase-admin: npm install firebase-admin');
 		console.log('3. Set up proper Firebase project configuration');
-
 	} catch (error) {
 		console.error('❌ Test failed:', error);
 	}

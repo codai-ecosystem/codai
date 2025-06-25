@@ -13,7 +13,10 @@ import * as processes from './processes.js';
  * shell that the terminal uses by default.
  * @param os The platform to detect the shell of.
  */
-export async function getSystemShell(os: platform.OperatingSystem, env: platform.IProcessEnvironment): Promise<string> {
+export async function getSystemShell(
+	os: platform.OperatingSystem,
+	env: platform.IProcessEnvironment
+): Promise<string> {
 	if (os === platform.OperatingSystem.Windows) {
 		if (platform.isWindows) {
 			return getSystemShellWindows();
@@ -26,9 +29,15 @@ export async function getSystemShell(os: platform.OperatingSystem, env: platform
 }
 
 let _TERMINAL_DEFAULT_SHELL_UNIX_LIKE: string | null = null;
-function getSystemShellUnixLike(os: platform.OperatingSystem, env: platform.IProcessEnvironment): string {
+function getSystemShellUnixLike(
+	os: platform.OperatingSystem,
+	env: platform.IProcessEnvironment
+): string {
 	// Only use $SHELL for the current OS
-	if (platform.isLinux && os === platform.OperatingSystem.Macintosh || platform.isMacintosh && os === platform.OperatingSystem.Linux) {
+	if (
+		(platform.isLinux && os === platform.OperatingSystem.Macintosh) ||
+		(platform.isMacintosh && os === platform.OperatingSystem.Linux)
+	) {
 		return '/bin/bash';
 	}
 
@@ -44,7 +53,7 @@ function getSystemShellUnixLike(os: platform.OperatingSystem, env: platform.IPro
 					// It's possible for $SHELL to be unset, this API reads /etc/passwd. See https://github.com/github/codespaces/issues/1639
 					// Node docs: "Throws a SystemError if a user has no username or homedir."
 					unixLikeTerminal = userInfo().shell;
-				} catch (err) { }
+				} catch (err) {}
 			}
 
 			if (!unixLikeTerminal) {

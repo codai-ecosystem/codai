@@ -49,7 +49,11 @@ suite('Korean', () => {
 				['ᄒ', 'g'],
 			]);
 			for (const [hangul, alt] of cases.entries()) {
-				strictEqual(getKoreanAltCharsForString(hangul), alt, `"${hangul}" should result in "${alt}"`);
+				strictEqual(
+					getKoreanAltCharsForString(hangul),
+					alt,
+					`"${hangul}" should result in "${alt}"`
+				);
 			}
 		});
 
@@ -84,7 +88,11 @@ suite('Korean', () => {
 				['ᇂ', 'g'],
 			]);
 			for (const [hangul, alt] of cases.entries()) {
-				strictEqual(getKoreanAltCharsForString(hangul), alt, `"${hangul}" (0x${hangul.charCodeAt(0).toString(16)}) should result in "${alt}"`);
+				strictEqual(
+					getKoreanAltCharsForString(hangul),
+					alt,
+					`"${hangul}" (0x${hangul.charCodeAt(0).toString(16)}) should result in "${alt}"`
+				);
 			}
 		});
 
@@ -113,7 +121,11 @@ suite('Korean', () => {
 				['ᅵ', 'l'],
 			]);
 			for (const [hangul, alt] of cases.entries()) {
-				strictEqual(getKoreanAltCharsForString(hangul), alt, `"${hangul}" (0x${hangul.charCodeAt(0).toString(16)}) should result in "${alt}"`);
+				strictEqual(
+					getKoreanAltCharsForString(hangul),
+					alt,
+					`"${hangul}" (0x${hangul.charCodeAt(0).toString(16)}) should result in "${alt}"`
+				);
 			}
 		});
 
@@ -173,7 +185,11 @@ suite('Korean', () => {
 				// HF: Hangul Filler (everything after this is archaic)
 			]);
 			for (const [hangul, alt] of cases.entries()) {
-				strictEqual(getKoreanAltCharsForString(hangul), alt, `"${hangul}" (0x${hangul.charCodeAt(0).toString(16)}) should result in "${alt}"`);
+				strictEqual(
+					getKoreanAltCharsForString(hangul),
+					alt,
+					`"${hangul}" (0x${hangul.charCodeAt(0).toString(16)}) should result in "${alt}"`
+				);
 			}
 		});
 

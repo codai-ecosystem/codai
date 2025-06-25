@@ -8,12 +8,42 @@ import { CancellationToken } from '../../../base/common/cancellation.js';
 import { toErrorMessage } from '../../../base/common/errorMessage.js';
 import { canceled } from '../../../base/common/errors.js';
 import { Emitter, Event } from '../../../base/common/event.js';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
-import { newWriteableStream, ReadableStreamEventPayload, ReadableStreamEvents } from '../../../base/common/stream.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from '../../../base/common/lifecycle.js';
+import {
+	newWriteableStream,
+	ReadableStreamEventPayload,
+	ReadableStreamEvents,
+} from '../../../base/common/stream.js';
 import { URI } from '../../../base/common/uri.js';
 import { generateUuid } from '../../../base/common/uuid.js';
 import { IChannel } from '../../../base/parts/ipc/common/ipc.js';
-import { createFileSystemProviderError, IFileAtomicReadOptions, IFileDeleteOptions, IFileOpenOptions, IFileOverwriteOptions, IFileReadStreamOptions, FileSystemProviderCapabilities, FileSystemProviderErrorCode, FileType, IFileWriteOptions, IFileChange, IFileSystemProviderWithFileAtomicReadCapability, IFileSystemProviderWithFileCloneCapability, IFileSystemProviderWithFileFolderCopyCapability, IFileSystemProviderWithFileReadStreamCapability, IFileSystemProviderWithFileReadWriteCapability, IFileSystemProviderWithOpenReadWriteCloseCapability, IStat, IWatchOptions, IFileSystemProviderError } from './files.js';
+import {
+	createFileSystemProviderError,
+	IFileAtomicReadOptions,
+	IFileDeleteOptions,
+	IFileOpenOptions,
+	IFileOverwriteOptions,
+	IFileReadStreamOptions,
+	FileSystemProviderCapabilities,
+	FileSystemProviderErrorCode,
+	FileType,
+	IFileWriteOptions,
+	IFileChange,
+	IFileSystemProviderWithFileAtomicReadCapability,
+	IFileSystemProviderWithFileCloneCapability,
+	IFileSystemProviderWithFileFolderCopyCapability,
+	IFileSystemProviderWithFileReadStreamCapability,
+	IFileSystemProviderWithFileReadWriteCapability,
+	IFileSystemProviderWithOpenReadWriteCloseCapability,
+	IStat,
+	IWatchOptions,
+	IFileSystemProviderError,
+} from './files.js';
 import { reviveFileChanges } from './watcher.js';
 
 export const LOCAL_FILE_SYSTEM_CHANNEL_NAME = 'localFilesystem';
@@ -23,14 +53,16 @@ export const LOCAL_FILE_SYSTEM_CHANNEL_NAME = 'localFilesystem';
  * that is backed by a `IChannel` and thus implemented via
  * IPC on a different process.
  */
-export class DiskFileSystemProviderClient extends Disposable implements
-	IFileSystemProviderWithFileReadWriteCapability,
-	IFileSystemProviderWithOpenReadWriteCloseCapability,
-	IFileSystemProviderWithFileReadStreamCapability,
-	IFileSystemProviderWithFileFolderCopyCapability,
-	IFileSystemProviderWithFileAtomicReadCapability,
-	IFileSystemProviderWithFileCloneCapability {
-
+export class DiskFileSystemProviderClient
+	extends Disposable
+	implements
+		IFileSystemProviderWithFileReadWriteCapability,
+		IFileSystemProviderWithOpenReadWriteCloseCapability,
+		IFileSystemProviderWithFileReadStreamCapability,
+		IFileSystemProviderWithFileFolderCopyCapability,
+		IFileSystemProviderWithFileAtomicReadCapability,
+		IFileSystemProviderWithFileCloneCapability
+{
 	constructor(
 		private readonly channel: IChannel,
 		private readonly extraCapabilities: { trash?: boolean; pathCaseSensitive?: boolean }
@@ -87,66 +119,79 @@ export class DiskFileSystemProviderClient extends Disposable implements
 	//#region File Reading/Writing
 
 	async readFile(resource: URI, opts?: IFileAtomicReadOptions): Promise<Uint8Array> {
-		const { buffer } = await this.channel.call('readFile', [resource, opts]) as VSBuffer;
+		const { buffer } = (await this.channel.call('readFile', [resource, opts])) as VSBuffer;
 
 		return buffer;
 	}
 
-	readFileStream(resource: URI, opts: IFileReadStreamOptions, token: CancellationToken): ReadableStreamEvents<Uint8Array> {
-		const stream = newWriteableStream<Uint8Array>(data => VSBuffer.concat(data.map(data => VSBuffer.wrap(data))).buffer);
+	readFileStream(
+		resource: URI,
+		opts: IFileReadStreamOptions,
+		token: CancellationToken
+	): ReadableStreamEvents<Uint8Array> {
+		const stream = newWriteableStream<Uint8Array>(
+			data => VSBuffer.concat(data.map(data => VSBuffer.wrap(data))).buffer
+		);
 		const disposables = new DisposableStore();
 
 		// Reading as file stream goes through an event to the remote side
-		disposables.add(this.channel.listen<ReadableStreamEventPayload<VSBuffer>>('readFileStream', [resource, opts])(dataOrErrorOrEnd => {
-
-			// data
-			if (dataOrErrorOrEnd instanceof VSBuffer) {
-				stream.write(dataOrErrorOrEnd.buffer);
-			}
-
-			// end or error
-			else {
-				if (dataOrErrorOrEnd === 'end') {
-					stream.end();
-				} else {
-					let error: Error;
-
-					// Take Error as is if type matches
-					if (dataOrErrorOrEnd instanceof Error) {
-						error = dataOrErrorOrEnd;
+		disposables.add(
+			this.channel.listen<ReadableStreamEventPayload<VSBuffer>>('readFileStream', [resource, opts])(
+				dataOrErrorOrEnd => {
+					// data
+					if (dataOrErrorOrEnd instanceof VSBuffer) {
+						stream.write(dataOrErrorOrEnd.buffer);
 					}
 
-					// Otherwise, try to deserialize into an error.
-					// Since we communicate via IPC, we cannot be sure
-					// that Error objects are properly serialized.
+					// end or error
 					else {
-						const errorCandidate = dataOrErrorOrEnd as IFileSystemProviderError;
+						if (dataOrErrorOrEnd === 'end') {
+							stream.end();
+						} else {
+							let error: Error;
 
-						error = createFileSystemProviderError(errorCandidate.message ?? toErrorMessage(errorCandidate), errorCandidate.code ?? FileSystemProviderErrorCode.Unknown);
+							// Take Error as is if type matches
+							if (dataOrErrorOrEnd instanceof Error) {
+								error = dataOrErrorOrEnd;
+							}
+
+							// Otherwise, try to deserialize into an error.
+							// Since we communicate via IPC, we cannot be sure
+							// that Error objects are properly serialized.
+							else {
+								const errorCandidate = dataOrErrorOrEnd as IFileSystemProviderError;
+
+								error = createFileSystemProviderError(
+									errorCandidate.message ?? toErrorMessage(errorCandidate),
+									errorCandidate.code ?? FileSystemProviderErrorCode.Unknown
+								);
+							}
+
+							stream.error(error);
+							stream.end();
+						}
+
+						// Signal to the remote side that we no longer listen
+						disposables.dispose();
 					}
-
-					stream.error(error);
-					stream.end();
 				}
-
-				// Signal to the remote side that we no longer listen
-				disposables.dispose();
-			}
-		}));
+			)
+		);
 
 		// Support cancellation
-		disposables.add(token.onCancellationRequested(() => {
+		disposables.add(
+			token.onCancellationRequested(() => {
+				// Ensure to end the stream properly with an error
+				// to indicate the cancellation.
+				stream.error(canceled());
+				stream.end();
 
-			// Ensure to end the stream properly with an error
-			// to indicate the cancellation.
-			stream.error(canceled());
-			stream.end();
-
-			// Ensure to dispose the listener upon cancellation. This will
-			// bubble through the remote side as event and allows to stop
-			// reading the file.
-			disposables.dispose();
-		}));
+				// Ensure to dispose the listener upon cancellation. This will
+				// bubble through the remote side as event and allows to stop
+				// reading the file.
+				disposables.dispose();
+			})
+		);
 
 		return stream;
 	}
@@ -163,8 +208,18 @@ export class DiskFileSystemProviderClient extends Disposable implements
 		return this.channel.call('close', [fd]);
 	}
 
-	async read(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
-		const [bytes, bytesRead]: [VSBuffer, number] = await this.channel.call('read', [fd, pos, length]);
+	async read(
+		fd: number,
+		pos: number,
+		data: Uint8Array,
+		offset: number,
+		length: number
+	): Promise<number> {
+		const [bytes, bytesRead]: [VSBuffer, number] = await this.channel.call('read', [
+			fd,
+			pos,
+			length,
+		]);
 
 		// copy back the data that was written into the buffer on the remote
 		// side. we need to do this because buffers are not referenced by
@@ -175,7 +230,13 @@ export class DiskFileSystemProviderClient extends Disposable implements
 		return bytesRead;
 	}
 
-	write(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
+	write(
+		fd: number,
+		pos: number,
+		data: Uint8Array,
+		offset: number,
+		length: number
+	): Promise<number> {
 		return this.channel.call('write', [fd, pos, VSBuffer.wrap(data), offset, length]);
 	}
 
@@ -225,24 +286,24 @@ export class DiskFileSystemProviderClient extends Disposable implements
 	private readonly sessionId = generateUuid();
 
 	private registerFileChangeListeners(): void {
-
 		// The contract for file changes is that there is one listener
 		// for both events and errors from the watcher. So we need to
 		// unwrap the event from the remote and emit through the proper
 		// emitter.
-		this._register(this.channel.listen<IFileChange[] | string>('fileChange', [this.sessionId])(eventsOrError => {
-			if (Array.isArray(eventsOrError)) {
-				const events = eventsOrError;
-				this._onDidChange.fire(reviveFileChanges(events));
-			} else {
-				const error = eventsOrError;
-				this._onDidWatchError.fire(error);
-			}
-		}));
+		this._register(
+			this.channel.listen<IFileChange[] | string>('fileChange', [this.sessionId])(eventsOrError => {
+				if (Array.isArray(eventsOrError)) {
+					const events = eventsOrError;
+					this._onDidChange.fire(reviveFileChanges(events));
+				} else {
+					const error = eventsOrError;
+					this._onDidWatchError.fire(error);
+				}
+			})
+		);
 	}
 
 	watch(resource: URI, opts: IWatchOptions): IDisposable {
-
 		// Generate a request UUID to correlate the watcher
 		// back to us when we ask to dispose the watcher later.
 		const req = generateUuid();

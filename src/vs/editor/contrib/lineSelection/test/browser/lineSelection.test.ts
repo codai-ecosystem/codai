@@ -17,7 +17,6 @@ function executeAction(action: EditorAction, editor: ICodeEditor): void {
 }
 
 suite('LineSelection', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('', () => {
@@ -27,12 +26,7 @@ suite('LineSelection', () => {
 		const LINE4 = '';
 		const LINE5 = '1';
 
-		const TEXT =
-			LINE1 + '\r\n' +
-			LINE2 + '\n' +
-			LINE3 + '\n' +
-			LINE4 + '\r\n' +
-			LINE5;
+		const TEXT = LINE1 + '\r\n' + LINE2 + '\n' + LINE3 + '\n' + LINE4 + '\r\n' + LINE5;
 
 		withTestCodeEditor(TEXT, {}, (editor, viewModel) => {
 			const action = new ExpandLineSelectionAction();

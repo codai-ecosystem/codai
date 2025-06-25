@@ -8,9 +8,12 @@ import { CancellationToken } from '../../../base/common/cancellation.js';
 import { URI } from '../../../base/common/uri.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 
-export const IWebContentExtractorService = createDecorator<IWebContentExtractorService>('IWebContentExtractorService');
-export const ISharedWebContentExtractorService = createDecorator<ISharedWebContentExtractorService>('ISharedWebContentExtractorService');
-
+export const IWebContentExtractorService = createDecorator<IWebContentExtractorService>(
+	'IWebContentExtractorService'
+);
+export const ISharedWebContentExtractorService = createDecorator<ISharedWebContentExtractorService>(
+	'ISharedWebContentExtractorService'
+);
 
 export interface IWebContentExtractorService {
 	_serviceBrand: undefined;

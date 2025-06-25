@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getClientArea, getTopLeftOffset, isHTMLDivElement, isHTMLTextAreaElement } from '../../../../base/browser/dom.js';
+import {
+	getClientArea,
+	getTopLeftOffset,
+	isHTMLDivElement,
+	isHTMLTextAreaElement,
+} from '../../../../base/browser/dom.js';
 import { mainWindow } from '../../../../base/browser/window.js';
 import { coalesce } from '../../../../base/common/arrays.js';
 import { language, locale } from '../../../../base/common/platform.js';
@@ -14,20 +19,21 @@ import localizedStrings from '../../../../platform/languagePacks/common/localize
 import { ILogFile, getLogs } from '../../../../platform/log/browser/log.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../../common/contributions.js';
+import {
+	IWorkbenchContributionsRegistry,
+	Extensions as WorkbenchExtensions,
+} from '../../../common/contributions.js';
 import { IWindowDriver, IElement, ILocaleInfo, ILocalizedStrings } from '../common/driver.js';
 import { ILifecycleService, LifecyclePhase } from '../../lifecycle/common/lifecycle.js';
 import type { Terminal as XtermTerminal } from '@xterm/xterm';
 
 export class BrowserWindowDriver implements IWindowDriver {
-
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@IEnvironmentService private readonly environmentService: IEnvironmentService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@ILogService private readonly logService: ILogService
-	) {
-	}
+	) {}
 
 	async getLogs(): Promise<ILogFile[]> {
 		return getLogs(this.fileService, this.environmentService);
@@ -65,13 +71,17 @@ export class BrowserWindowDriver implements IWindowDriver {
 			while (el) {
 				const tagName = el.tagName;
 				const id = el.id ? `#${el.id}` : '';
-				const classes = coalesce(el.className.split(/\s+/g).map(c => c.trim())).map(c => `.${c}`).join('');
+				const classes = coalesce(el.className.split(/\s+/g).map(c => c.trim()))
+					.map(c => `.${c}`)
+					.join('');
 				chain.unshift(`${tagName}${id}${classes}`);
 
 				el = el.parentElement;
 			}
 
-			throw new Error(`Active element not found. Current active element is '${chain.join(' > ')}'. Looking for ${selector}`);
+			throw new Error(
+				`Active element not found. Current active element is '${chain.join(' > ')}'. Looking for ${selector}`
+			);
 		}
 
 		return true;
@@ -118,12 +128,19 @@ export class BrowserWindowDriver implements IWindowDriver {
 			attributes,
 			children,
 			left,
-			top
+			top,
 		};
 	}
 
-	async getElementXY(selector: string, xoffset?: number, yoffset?: number): Promise<{ x: number; y: number }> {
-		const offset = typeof xoffset === 'number' && typeof yoffset === 'number' ? { x: xoffset, y: yoffset } : undefined;
+	async getElementXY(
+		selector: string,
+		xoffset?: number,
+		yoffset?: number
+	): Promise<{ x: number; y: number }> {
+		const offset =
+			typeof xoffset === 'number' && typeof yoffset === 'number'
+				? { x: xoffset, y: yoffset }
+				: undefined;
 		return this._getElementXY(selector, offset);
 	}
 
@@ -148,7 +165,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 				selectionStart: selectionStart + text.length,
 				selectionEnd: selectionStart + text.length,
 				compositionStart: 0,
-				compositionEnd: 0
+				compositionEnd: 0,
 			});
 			editContext.dispatchEvent(event);
 		} else if (isHTMLTextAreaElement(element)) {
@@ -160,12 +177,14 @@ export class BrowserWindowDriver implements IWindowDriver {
 			element.value = newValue;
 			element.setSelectionRange(newStart, newStart);
 
-			const event = new Event('input', { 'bubbles': true, 'cancelable': true });
+			const event = new Event('input', { bubbles: true, cancelable: true });
 			element.dispatchEvent(event);
 		}
 	}
 
-	async getEditorSelection(selector: string): Promise<{ selectionStart: number; selectionEnd: number }> {
+	async getEditorSelection(
+		selector: string
+	): Promise<{ selectionStart: number; selectionEnd: number }> {
 		const element = mainWindow.document.querySelector(selector);
 		if (!element) {
 			throw new Error(`Editor not found: ${selector}`);
@@ -211,7 +230,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 			throw new Error(`Element not found: ${selector}`);
 		}
 
-		const xterm = (element as any).xterm as (XtermTerminal | undefined);
+		const xterm = (element as any).xterm as XtermTerminal | undefined;
 
 		if (!xterm) {
 			throw new Error(`Xterm not found: ${selector}`);
@@ -223,7 +242,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 	getLocaleInfo(): Promise<ILocaleInfo> {
 		return Promise.resolve({
 			language: language,
-			locale: locale
+			locale: locale,
 		});
 	}
 
@@ -231,11 +250,14 @@ export class BrowserWindowDriver implements IWindowDriver {
 		return Promise.resolve({
 			open: localizedStrings.open,
 			close: localizedStrings.close,
-			find: localizedStrings.find
+			find: localizedStrings.find,
 		});
 	}
 
-	protected async _getElementXY(selector: string, offset?: { x: number; y: number }): Promise<{ x: number; y: number }> {
+	protected async _getElementXY(
+		selector: string,
+		offset?: { x: number; y: number }
+	): Promise<{ x: number; y: number }> {
 		const element = mainWindow.document.querySelector(selector);
 
 		if (!element) {
@@ -250,8 +272,8 @@ export class BrowserWindowDriver implements IWindowDriver {
 			x = left + offset.x;
 			y = top + offset.y;
 		} else {
-			x = left + (width / 2);
-			y = top + (height / 2);
+			x = left + width / 2;
+			y = top + height / 2;
 		}
 
 		x = Math.round(x);

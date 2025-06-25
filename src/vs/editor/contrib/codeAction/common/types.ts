@@ -10,7 +10,7 @@ import { Position } from '../../../common/core/position.js';
 import * as languages from '../../../common/languages.js';
 import { ActionSet } from '../../../../platform/actionWidget/common/actionWidget.js';
 
-export const CodeActionKind = new class {
+export const CodeActionKind = new (class {
 	public readonly QuickFix = new HierarchicalKind('quickfix');
 
 	public readonly Refactor = new HierarchicalKind('refactor');
@@ -25,7 +25,7 @@ export const CodeActionKind = new class {
 	public readonly SourceOrganizeImports = this.Source.append('organizeImports');
 	public readonly SourceFixAll = this.Source.append('fixAll');
 	public readonly SurroundWith = this.Refactor.append('surround');
-};
+})();
 
 export const enum CodeActionAutoApply {
 	IfSingle = 'ifSingle',
@@ -45,7 +45,7 @@ export enum CodeActionTriggerSource {
 	AutoFix = 'auto fix',
 	QuickFixHover = 'quick fix hover window',
 	OnSave = 'save participants',
-	ProblemsView = 'problems view'
+	ProblemsView = 'problems view',
 }
 
 export interface CodeActionFilter {
@@ -55,7 +55,10 @@ export interface CodeActionFilter {
 	readonly onlyIncludePreferredActions?: boolean;
 }
 
-export function mayIncludeActionsOfKind(filter: CodeActionFilter, providedKind: HierarchicalKind): boolean {
+export function mayIncludeActionsOfKind(
+	filter: CodeActionFilter,
+	providedKind: HierarchicalKind
+): boolean {
 	// A provided kind may be a subset or superset of our filtered kind.
 	if (filter.include && !filter.include.intersects(providedKind)) {
 		return false;
@@ -86,7 +89,10 @@ export function filtersAction(filter: CodeActionFilter, action: languages.CodeAc
 	}
 
 	if (filter.excludes) {
-		if (actionKind && filter.excludes.some(exclude => excludesAction(actionKind, exclude, filter.include))) {
+		if (
+			actionKind &&
+			filter.excludes.some(exclude => excludesAction(actionKind, exclude, filter.include))
+		) {
 			return false;
 		}
 	}
@@ -107,7 +113,11 @@ export function filtersAction(filter: CodeActionFilter, action: languages.CodeAc
 	return true;
 }
 
-function excludesAction(providedKind: HierarchicalKind, exclude: HierarchicalKind, include: HierarchicalKind | undefined): boolean {
+function excludesAction(
+	providedKind: HierarchicalKind,
+	exclude: HierarchicalKind,
+	include: HierarchicalKind | undefined
+): boolean {
 	if (!exclude.contains(providedKind)) {
 		return false;
 	}
@@ -130,51 +140,54 @@ export interface CodeActionTrigger {
 }
 
 export class CodeActionCommandArgs {
-	public static fromUser(arg: any, defaults: { kind: HierarchicalKind; apply: CodeActionAutoApply }): CodeActionCommandArgs {
+	public static fromUser(
+		arg: any,
+		defaults: { kind: HierarchicalKind; apply: CodeActionAutoApply }
+	): CodeActionCommandArgs {
 		if (!arg || typeof arg !== 'object') {
 			return new CodeActionCommandArgs(defaults.kind, defaults.apply, false);
 		}
 		return new CodeActionCommandArgs(
 			CodeActionCommandArgs.getKindFromUser(arg, defaults.kind),
 			CodeActionCommandArgs.getApplyFromUser(arg, defaults.apply),
-			CodeActionCommandArgs.getPreferredUser(arg));
+			CodeActionCommandArgs.getPreferredUser(arg)
+		);
 	}
 
 	private static getApplyFromUser(arg: any, defaultAutoApply: CodeActionAutoApply) {
 		switch (typeof arg.apply === 'string' ? arg.apply.toLowerCase() : '') {
-			case 'first': return CodeActionAutoApply.First;
-			case 'never': return CodeActionAutoApply.Never;
-			case 'ifsingle': return CodeActionAutoApply.IfSingle;
-			default: return defaultAutoApply;
+			case 'first':
+				return CodeActionAutoApply.First;
+			case 'never':
+				return CodeActionAutoApply.Never;
+			case 'ifsingle':
+				return CodeActionAutoApply.IfSingle;
+			default:
+				return defaultAutoApply;
 		}
 	}
 
 	private static getKindFromUser(arg: any, defaultKind: HierarchicalKind) {
-		return typeof arg.kind === 'string'
-			? new HierarchicalKind(arg.kind)
-			: defaultKind;
+		return typeof arg.kind === 'string' ? new HierarchicalKind(arg.kind) : defaultKind;
 	}
 
 	private static getPreferredUser(arg: any): boolean {
-		return typeof arg.preferred === 'boolean'
-			? arg.preferred
-			: false;
+		return typeof arg.preferred === 'boolean' ? arg.preferred : false;
 	}
 
 	private constructor(
 		public readonly kind: HierarchicalKind,
 		public readonly apply: CodeActionAutoApply,
-		public readonly preferred: boolean,
-	) { }
+		public readonly preferred: boolean
+	) {}
 }
 
 export class CodeActionItem {
-
 	constructor(
 		public readonly action: languages.CodeAction,
 		public readonly provider: languages.CodeActionProvider | undefined,
-		public highlightRange?: boolean,
-	) { }
+		public highlightRange?: boolean
+	) {}
 
 	async resolve(token: CancellationToken): Promise<this> {
 		if (this.provider?.resolveCodeAction && !this.action.edit) {

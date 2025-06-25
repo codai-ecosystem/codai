@@ -25,7 +25,8 @@ export class CellExecutionPart extends CellContentPart {
 	constructor(
 		private readonly _notebookEditor: INotebookEditorDelegate,
 		private readonly _executionOrderLabel: HTMLElement,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService
 	) {
 		super();
 
@@ -36,54 +37,77 @@ export class CellExecutionPart extends CellContentPart {
 		this._executionOrderContent = DOM.append(this._executionOrderLabel, DOM.$('div'));
 
 		// Add a method to watch for cell execution state changes
-		this._register(this._notebookExecutionStateService.onDidChangeExecution(e => {
-			if (this.currentCell && 'affectsCell' in e && e.affectsCell(this.currentCell.uri)) {
-				this._updatePosition();
-			}
-		}));
-
-		this._register(this._notebookEditor.onDidChangeActiveKernel(() => {
-			if (this.currentCell) {
-				this.kernelDisposables.clear();
-
-				if (this._notebookEditor.activeKernel) {
-					this.kernelDisposables.add(this._notebookEditor.activeKernel.onDidChange(() => {
-						if (this.currentCell) {
-							this.updateExecutionOrder(this.currentCell.internalMetadata);
-						}
-					}));
+		this._register(
+			this._notebookExecutionStateService.onDidChangeExecution(e => {
+				if (this.currentCell && 'affectsCell' in e && e.affectsCell(this.currentCell.uri)) {
+					this._updatePosition();
 				}
+			})
+		);
 
-				this.updateExecutionOrder(this.currentCell.internalMetadata);
-			}
-		}));
+		this._register(
+			this._notebookEditor.onDidChangeActiveKernel(() => {
+				if (this.currentCell) {
+					this.kernelDisposables.clear();
 
-		this._register(this._notebookEditor.onDidScroll(() => {
-			this._updatePosition();
-		}));
+					if (this._notebookEditor.activeKernel) {
+						this.kernelDisposables.add(
+							this._notebookEditor.activeKernel.onDidChange(() => {
+								if (this.currentCell) {
+									this.updateExecutionOrder(this.currentCell.internalMetadata);
+								}
+							})
+						);
+					}
+
+					this.updateExecutionOrder(this.currentCell.internalMetadata);
+				}
+			})
+		);
+
+		this._register(
+			this._notebookEditor.onDidScroll(() => {
+				this._updatePosition();
+			})
+		);
 	}
 
 	override didRenderCell(element: ICellViewModel): void {
 		this.updateExecutionOrder(element.internalMetadata, true);
 	}
 
-	private updateExecutionOrder(internalMetadata: NotebookCellInternalMetadata, forceClear = false): void {
-		if (this._notebookEditor.activeKernel?.implementsExecutionOrder || (!this._notebookEditor.activeKernel && typeof internalMetadata.executionOrder === 'number')) {
+	private updateExecutionOrder(
+		internalMetadata: NotebookCellInternalMetadata,
+		forceClear = false
+	): void {
+		if (
+			this._notebookEditor.activeKernel?.implementsExecutionOrder ||
+			(!this._notebookEditor.activeKernel && typeof internalMetadata.executionOrder === 'number')
+		) {
 			// If the executionOrder was just cleared, and the cell is executing, wait just a bit before clearing the view to avoid flashing
-			if (typeof internalMetadata.executionOrder !== 'number' && !forceClear && !!this._notebookExecutionStateService.getCellExecution(this.currentCell!.uri)) {
+			if (
+				typeof internalMetadata.executionOrder !== 'number' &&
+				!forceClear &&
+				!!this._notebookExecutionStateService.getCellExecution(this.currentCell!.uri)
+			) {
 				const renderingCell = this.currentCell;
-				disposableTimeout(() => {
-					if (this.currentCell === renderingCell) {
-						this.updateExecutionOrder(this.currentCell!.internalMetadata, true);
-						this._updatePosition();
-					}
-				}, UPDATE_EXECUTION_ORDER_GRACE_PERIOD, this.cellDisposables);
+				disposableTimeout(
+					() => {
+						if (this.currentCell === renderingCell) {
+							this.updateExecutionOrder(this.currentCell!.internalMetadata, true);
+							this._updatePosition();
+						}
+					},
+					UPDATE_EXECUTION_ORDER_GRACE_PERIOD,
+					this.cellDisposables
+				);
 				return;
 			}
 
-			const executionOrderLabel = typeof internalMetadata.executionOrder === 'number' ?
-				`[${internalMetadata.executionOrder}]` :
-				'[ ]';
+			const executionOrderLabel =
+				typeof internalMetadata.executionOrder === 'number'
+					? `[${internalMetadata.executionOrder}]`
+					: '[ ]';
 			this._executionOrderContent.innerText = executionOrderLabel;
 
 			// Call _updatePosition to refresh sticky status
@@ -108,7 +132,9 @@ export class CellExecutionPart extends CellContentPart {
 		}
 
 		// Only show the execution order label when the cell is running
-		const cellIsRunning = !!this._notebookExecutionStateService.getCellExecution(this.currentCell.uri);
+		const cellIsRunning = !!this._notebookExecutionStateService.getCellExecution(
+			this.currentCell.uri
+		);
 
 		if (!cellIsRunning) {
 			// Keep showing the execution order label but remove sticky class
@@ -116,7 +142,8 @@ export class CellExecutionPart extends CellContentPart {
 		}
 
 		DOM.show(this._executionOrderLabel);
-		let top = this.currentCell.layoutInfo.editorHeight - 22 + this.currentCell.layoutInfo.statusBarHeight;
+		let top =
+			this.currentCell.layoutInfo.editorHeight - 22 + this.currentCell.layoutInfo.statusBarHeight;
 
 		if (this.currentCell instanceof CodeCellViewModel) {
 			const elementTop = this._notebookEditor.getAbsoluteTopOfElement(this.currentCell);
@@ -133,7 +160,9 @@ export class CellExecutionPart extends CellContentPart {
 				top = clamp(
 					top,
 					lineHeight + 12, // line height + padding for single line
-					this.currentCell.layoutInfo.editorHeight - lineHeight + this.currentCell.layoutInfo.statusBarHeight
+					this.currentCell.layoutInfo.editorHeight -
+						lineHeight +
+						this.currentCell.layoutInfo.statusBarHeight
 				);
 
 				const isAlreadySticky = this._executionOrderLabel.classList.contains('sticky');
@@ -155,9 +184,8 @@ export class CellExecutionPart extends CellContentPart {
 				const iconIsPresent = this._executionOrderContent.querySelector('.codicon') !== null;
 				if (wasSticky || iconIsPresent) {
 					const executionOrder = this.currentCell.internalMetadata.executionOrder;
-					const executionOrderLabel = typeof executionOrder === 'number' ?
-						`[${executionOrder}]` :
-						'[ ]';
+					const executionOrderLabel =
+						typeof executionOrder === 'number' ? `[${executionOrder}]` : '[ ]';
 					this._executionOrderContent.innerText = executionOrderLabel;
 				}
 			} else {
@@ -168,9 +196,8 @@ export class CellExecutionPart extends CellContentPart {
 				// When transitioning from sticky to non-sticky, restore the proper content
 				if (wasSticky) {
 					const executionOrder = this.currentCell.internalMetadata.executionOrder;
-					const executionOrderLabel = typeof executionOrder === 'number' ?
-						`[${executionOrder}]` :
-						'[ ]';
+					const executionOrderLabel =
+						typeof executionOrder === 'number' ? `[${executionOrder}]` : '[ ]';
 					this._executionOrderContent.innerText = executionOrderLabel;
 				}
 			}

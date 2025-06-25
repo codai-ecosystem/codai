@@ -7,10 +7,10 @@ export const workspace = {
 	workspaceFolders: [
 		{
 			uri: {
-				fsPath: '/mock/workspace'
-			}
-		}
-	]
+				fsPath: '/mock/workspace',
+			},
+		},
+	],
 };
 
 export const window = {
@@ -23,13 +23,13 @@ export const window = {
 		clear: sinon.stub(),
 		show: sinon.stub(),
 		hide: sinon.stub(),
-		dispose: sinon.stub()
-	})
+		dispose: sinon.stub(),
+	}),
 };
 
 export const commands = {
 	registerCommand: sinon.stub(),
-	executeCommand: sinon.stub()
+	executeCommand: sinon.stub(),
 };
 
 export const ExtensionContext = class {
@@ -37,13 +37,15 @@ export const ExtensionContext = class {
 	workspaceState = {
 		get: sinon.stub(),
 		update: sinon.stub(),
-		keys: sinon.stub().returns([])
+		keys: sinon.stub().returns([]),
 	};
 	globalState = {
 		get: sinon.stub(),
 		update: sinon.stub(),
-		keys: sinon.stub().returns([])
+		keys: sinon.stub().returns([]),
 	};
 	extensionPath = '/mock/extension';
-	asAbsolutePath = sinon.stub().callsFake((relativePath: string) => `/mock/extension/${relativePath}`);
+	asAbsolutePath = sinon
+		.stub()
+		.callsFake((relativePath: string) => `/mock/extension/${relativePath}`);
 };

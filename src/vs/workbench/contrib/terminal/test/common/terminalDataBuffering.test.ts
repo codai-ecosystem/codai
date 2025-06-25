@@ -20,16 +20,18 @@ suite('Workbench - TerminalDataBufferer', () => {
 	setup(async () => {
 		counter = {};
 		data = {};
-		bufferer = store.add(new TerminalDataBufferer((id, e) => {
-			if (!(id in counter)) {
-				counter[id] = 0;
-			}
-			counter[id]++;
-			if (!(id in data)) {
-				data[id] = '';
-			}
-			data[id] = e;
-		}));
+		bufferer = store.add(
+			new TerminalDataBufferer((id, e) => {
+				if (!(id in counter)) {
+					counter[id] = 0;
+				}
+				counter[id]++;
+				if (!(id in data)) {
+					data[id] = '';
+				}
+				data[id] = e;
+			})
+		);
 	});
 
 	test('start', async () => {

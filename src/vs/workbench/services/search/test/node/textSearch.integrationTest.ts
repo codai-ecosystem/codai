@@ -8,47 +8,65 @@ import * as path from '../../../../../base/common/path.js';
 import { CancellationTokenSource } from '../../../../../base/common/cancellation.js';
 import * as glob from '../../../../../base/common/glob.js';
 import { URI } from '../../../../../base/common/uri.js';
-import { deserializeSearchError, IFolderQuery, ISearchRange, ITextQuery, ITextSearchContext, ITextSearchMatch, QueryType, SearchErrorCode, ISerializedFileMatch } from '../../common/search.js';
+import {
+	deserializeSearchError,
+	IFolderQuery,
+	ISearchRange,
+	ITextQuery,
+	ITextSearchContext,
+	ITextSearchMatch,
+	QueryType,
+	SearchErrorCode,
+	ISerializedFileMatch,
+} from '../../common/search.js';
 import { TextSearchEngineAdapter } from '../../node/textSearchAdapter.js';
 import { flakySuite } from '../../../../../base/test/node/testUtils.js';
 import { FileAccess } from '../../../../../base/common/network.js';
 
-const TEST_FIXTURES = path.normalize(FileAccess.asFileUri('vs/workbench/services/search/test/node/fixtures').fsPath);
+const TEST_FIXTURES = path.normalize(
+	FileAccess.asFileUri('vs/workbench/services/search/test/node/fixtures').fsPath
+);
 const EXAMPLES_FIXTURES = path.join(TEST_FIXTURES, 'examples');
 const MORE_FIXTURES = path.join(TEST_FIXTURES, 'more');
 const TEST_ROOT_FOLDER: IFolderQuery = { folder: URI.file(TEST_FIXTURES) };
-const ROOT_FOLDER_QUERY: IFolderQuery[] = [
-	TEST_ROOT_FOLDER
-];
+const ROOT_FOLDER_QUERY: IFolderQuery[] = [TEST_ROOT_FOLDER];
 
 const MULTIROOT_QUERIES: IFolderQuery[] = [
 	{ folder: URI.file(EXAMPLES_FIXTURES) },
-	{ folder: URI.file(MORE_FIXTURES) }
+	{ folder: URI.file(MORE_FIXTURES) },
 ];
 
-function doSearchTest(query: ITextQuery, expectedResultCount: number | Function): Promise<ISerializedFileMatch[]> {
+function doSearchTest(
+	query: ITextQuery,
+	expectedResultCount: number | Function
+): Promise<ISerializedFileMatch[]> {
 	const engine = new TextSearchEngineAdapter(query);
 
 	let c = 0;
 	const results: ISerializedFileMatch[] = [];
-	return engine.search(new CancellationTokenSource().token, _results => {
-		if (_results) {
-			c += _results.reduce((acc, cur) => acc + cur.numMatches!, 0);
-			results.push(..._results);
-		}
-	}, () => { }).then(() => {
-		if (typeof expectedResultCount === 'function') {
-			assert(expectedResultCount(c));
-		} else {
-			assert.strictEqual(c, expectedResultCount, `rg ${c} !== ${expectedResultCount}`);
-		}
+	return engine
+		.search(
+			new CancellationTokenSource().token,
+			_results => {
+				if (_results) {
+					c += _results.reduce((acc, cur) => acc + cur.numMatches!, 0);
+					results.push(..._results);
+				}
+			},
+			() => {}
+		)
+		.then(() => {
+			if (typeof expectedResultCount === 'function') {
+				assert(expectedResultCount(c));
+			} else {
+				assert.strictEqual(c, expectedResultCount, `rg ${c} !== ${expectedResultCount}`);
+			}
 
-		return results;
-	});
+			return results;
+		});
 }
 
 flakySuite('TextSearch-integration', function () {
-
 	test('Text: GameOfLife', () => {
 		const config: ITextQuery = {
 			type: QueryType.Text,
@@ -63,7 +81,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: 'Game.?fL\\w?fe', isRegExp: true }
+			contentPattern: { pattern: 'Game.?fL\\w?fe', isRegExp: true },
 		};
 
 		return doSearchTest(config, 4);
@@ -73,7 +91,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: 'G\\u{0061}m\\u0065OfLife', isRegExp: true }
+			contentPattern: { pattern: 'G\\u{0061}m\\u0065OfLife', isRegExp: true },
 		};
 
 		return doSearchTest(config, 4);
@@ -83,7 +101,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: '(?<!a)G\\u{0061}m\\u0065OfLife', isRegExp: true }
+			contentPattern: { pattern: '(?<!a)G\\u{0061}m\\u0065OfLife', isRegExp: true },
 		};
 
 		return doSearchTest(config, 4);
@@ -94,7 +112,7 @@ flakySuite('TextSearch-integration', function () {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
 			usePCRE2: true,
-			contentPattern: { pattern: 'Life(?!P)', isRegExp: true }
+			contentPattern: { pattern: 'Life(?!P)', isRegExp: true },
 		};
 
 		return doSearchTest(config, 8);
@@ -104,7 +122,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: 'GameOfLife.*', isRegExp: true }
+			contentPattern: { pattern: 'GameOfLife.*', isRegExp: true },
 		};
 
 		return doSearchTest(config, 4);
@@ -114,7 +132,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: 'GameOfLife', isWordMatch: true, isCaseSensitive: true }
+			contentPattern: { pattern: 'GameOfLife', isWordMatch: true, isCaseSensitive: true },
 		};
 
 		return doSearchTest(config, 4);
@@ -124,7 +142,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: ' GameOfLife ', isWordMatch: true }
+			contentPattern: { pattern: ' GameOfLife ', isWordMatch: true },
 		};
 
 		return doSearchTest(config, 1);
@@ -134,7 +152,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: ', as =', isWordMatch: true }
+			contentPattern: { pattern: ', as =', isWordMatch: true },
 		};
 
 		return doSearchTest(config, 1);
@@ -144,7 +162,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: 'Helvetica' }
+			contentPattern: { pattern: 'Helvetica' },
 		};
 
 		return doSearchTest(config, 3);
@@ -154,7 +172,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: 'e' }
+			contentPattern: { pattern: 'e' },
 		};
 
 		return doSearchTest(config, 785);
@@ -164,7 +182,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: any = {
 			folderQueries: ROOT_FOLDER_QUERY,
 			contentPattern: { pattern: 'e' },
-			excludePattern: { '**/examples': true }
+			excludePattern: { '**/examples': true },
 		};
 
 		return doSearchTest(config, 391);
@@ -174,7 +192,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: any = {
 			folderQueries: ROOT_FOLDER_QUERY,
 			contentPattern: { pattern: 'e' },
-			includePattern: { '**/examples/**': true }
+			includePattern: { '**/examples/**': true },
 		};
 
 		return doSearchTest(config, 394);
@@ -206,7 +224,7 @@ flakySuite('TextSearch-integration', function () {
 			folderQueries: ROOT_FOLDER_QUERY,
 			contentPattern: { pattern: 'm' },
 			includePattern: makeExpression('**/site*'),
-			excludePattern: { '*.css': { when: '$(basename).less' } }
+			excludePattern: { '*.css': { when: '$(basename).less' } },
 		};
 
 		return doSearchTest(config, 1);
@@ -217,7 +235,7 @@ flakySuite('TextSearch-integration', function () {
 			folderQueries: ROOT_FOLDER_QUERY,
 			contentPattern: { pattern: 'e' },
 			includePattern: { '**/examples/**': true },
-			excludePattern: { '**/examples/small.js': true }
+			excludePattern: { '**/examples/small.js': true },
 		};
 
 		return doSearchTest(config, 371);
@@ -229,7 +247,7 @@ flakySuite('TextSearch-integration', function () {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
 			contentPattern: { pattern: 'a' },
-			maxResults
+			maxResults,
 		};
 
 		return doSearchTest(config, maxResults);
@@ -239,7 +257,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: 'ahsogehtdas' }
+			contentPattern: { pattern: 'ahsogehtdas' },
 		};
 
 		return doSearchTest(config, 0);
@@ -249,7 +267,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: '-size' }
+			contentPattern: { pattern: '-size' },
 		};
 
 		return doSearchTest(config, 9);
@@ -259,7 +277,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: MULTIROOT_QUERIES,
-			contentPattern: { pattern: 'conway' }
+			contentPattern: { pattern: 'conway' },
 		};
 
 		return doSearchTest(config, 8);
@@ -270,7 +288,7 @@ flakySuite('TextSearch-integration', function () {
 			type: QueryType.Text,
 			folderQueries: MULTIROOT_QUERIES,
 			contentPattern: { pattern: 'e' },
-			excludePattern: makeExpression('**/*.txt')
+			excludePattern: makeExpression('**/*.txt'),
 		};
 
 		return doSearchTest(config, 394);
@@ -281,7 +299,7 @@ flakySuite('TextSearch-integration', function () {
 			type: QueryType.Text,
 			folderQueries: MULTIROOT_QUERIES,
 			contentPattern: { pattern: 'e' },
-			excludePattern: makeExpression('**/*.txt', '**/*.js')
+			excludePattern: makeExpression('**/*.txt', '**/*.js'),
 		};
 
 		return doSearchTest(config, 0);
@@ -292,13 +310,16 @@ flakySuite('TextSearch-integration', function () {
 			type: QueryType.Text,
 			folderQueries: [
 				{
-					folder: URI.file(EXAMPLES_FIXTURES), excludePattern: [{
-						pattern: makeExpression('**/e*.js')
-					}]
+					folder: URI.file(EXAMPLES_FIXTURES),
+					excludePattern: [
+						{
+							pattern: makeExpression('**/e*.js'),
+						},
+					],
 				},
-				{ folder: URI.file(MORE_FIXTURES) }
+				{ folder: URI.file(MORE_FIXTURES) },
 			],
-			contentPattern: { pattern: 'e' }
+			contentPattern: { pattern: 'e' },
 		};
 
 		return doSearchTest(config, 298);
@@ -308,17 +329,21 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: '语' }
+			contentPattern: { pattern: '语' },
 		};
 
 		return doSearchTest(config, 1).then(results => {
-			const matchRange = (<ITextSearchMatch>results[0].results![0]).rangeLocations.map(e => e.source);
-			assert.deepStrictEqual(matchRange, [{
-				startLineNumber: 0,
-				startColumn: 1,
-				endLineNumber: 0,
-				endColumn: 2
-			}]);
+			const matchRange = (<ITextSearchMatch>results[0].results![0]).rangeLocations.map(
+				e => e.source
+			);
+			assert.deepStrictEqual(matchRange, [
+				{
+					startLineNumber: 0,
+					startColumn: 1,
+					endLineNumber: 0,
+					endColumn: 2,
+				},
+			]);
 		});
 	});
 
@@ -326,7 +351,7 @@ flakySuite('TextSearch-integration', function () {
 		const config: ITextQuery = {
 			type: QueryType.Text,
 			folderQueries: ROOT_FOLDER_QUERY,
-			contentPattern: { pattern: 'h\\d,', isRegExp: true }
+			contentPattern: { pattern: 'h\\d,', isRegExp: true },
 		};
 
 		return doSearchTest(config, 15).then(results => {
@@ -348,10 +373,16 @@ flakySuite('TextSearch-integration', function () {
 		return doSearchTest(config, 3).then(results => {
 			assert.strictEqual(results.length, 3);
 			assert.strictEqual((<ITextSearchContext>results[0].results![0]).lineNumber, 24);
-			assert.strictEqual((<ITextSearchContext>results[0].results![0]).text, '        compiler.addUnit(prog,"input.ts");');
+			assert.strictEqual(
+				(<ITextSearchContext>results[0].results![0]).text,
+				'        compiler.addUnit(prog,"input.ts");'
+			);
 			// assert.strictEqual((<ITextSearchMatch>results[1].results[0]).preview.text, '        compiler.typeCheck();\n'); // See https://github.com/BurntSushi/ripgrep/issues/1095
 			assert.strictEqual((<ITextSearchContext>results[2].results![0]).lineNumber, 26);
-			assert.strictEqual((<ITextSearchContext>results[2].results![0]).text, '        compiler.emit();');
+			assert.strictEqual(
+				(<ITextSearchContext>results[2].results![0]).text,
+				'        compiler.emit();'
+			);
 		});
 	});
 
@@ -362,19 +393,22 @@ flakySuite('TextSearch-integration', function () {
 				folderQueries: [
 					{
 						...TEST_ROOT_FOLDER,
-						fileEncoding: 'invalidEncoding'
-					}
+						fileEncoding: 'invalidEncoding',
+					},
 				],
 				contentPattern: { pattern: 'test' },
 			};
 
-			return doSearchTest(config, 0).then(() => {
-				throw new Error('expected fail');
-			}, err => {
-				const searchError = deserializeSearchError(err);
-				assert.strictEqual(searchError.message, 'Unknown encoding: invalidEncoding');
-				assert.strictEqual(searchError.code, SearchErrorCode.unknownEncoding);
-			});
+			return doSearchTest(config, 0).then(
+				() => {
+					throw new Error('expected fail');
+				},
+				err => {
+					const searchError = deserializeSearchError(err);
+					assert.strictEqual(searchError.message, 'Unknown encoding: invalidEncoding');
+					assert.strictEqual(searchError.code, SearchErrorCode.unknownEncoding);
+				}
+			);
 		});
 
 		test('invalid regex case 1', () => {
@@ -384,14 +418,18 @@ flakySuite('TextSearch-integration', function () {
 				contentPattern: { pattern: ')', isRegExp: true },
 			};
 
-			return doSearchTest(config, 0).then(() => {
-				throw new Error('expected fail');
-			}, err => {
-				const searchError = deserializeSearchError(err);
-				const regexParseErrorForUnclosedParenthesis = 'Regex parse error: unmatched closing parenthesis';
-				assert.strictEqual(searchError.message, regexParseErrorForUnclosedParenthesis);
-				assert.strictEqual(searchError.code, SearchErrorCode.regexParseError);
-			});
+			return doSearchTest(config, 0).then(
+				() => {
+					throw new Error('expected fail');
+				},
+				err => {
+					const searchError = deserializeSearchError(err);
+					const regexParseErrorForUnclosedParenthesis =
+						'Regex parse error: unmatched closing parenthesis';
+					assert.strictEqual(searchError.message, regexParseErrorForUnclosedParenthesis);
+					assert.strictEqual(searchError.code, SearchErrorCode.regexParseError);
+				}
+			);
 		});
 
 		test('invalid regex case 2', () => {
@@ -401,16 +439,19 @@ flakySuite('TextSearch-integration', function () {
 				contentPattern: { pattern: '(?<!a.*)', isRegExp: true },
 			};
 
-			return doSearchTest(config, 0).then(() => {
-				throw new Error('expected fail');
-			}, err => {
-				const searchError = deserializeSearchError(err);
-				const regexParseErrorForLookAround = 'Regex parse error: lookbehind assertion is not fixed length';
-				assert.strictEqual(searchError.message, regexParseErrorForLookAround);
-				assert.strictEqual(searchError.code, SearchErrorCode.regexParseError);
-			});
+			return doSearchTest(config, 0).then(
+				() => {
+					throw new Error('expected fail');
+				},
+				err => {
+					const searchError = deserializeSearchError(err);
+					const regexParseErrorForLookAround =
+						'Regex parse error: lookbehind assertion is not fixed length';
+					assert.strictEqual(searchError.message, regexParseErrorForLookAround);
+					assert.strictEqual(searchError.code, SearchErrorCode.regexParseError);
+				}
+			);
 		});
-
 
 		test('invalid glob', () => {
 			const config: ITextQuery = {
@@ -418,17 +459,23 @@ flakySuite('TextSearch-integration', function () {
 				folderQueries: ROOT_FOLDER_QUERY,
 				contentPattern: { pattern: 'foo' },
 				includePattern: {
-					'{{}': true
-				}
+					'{{}': true,
+				},
 			};
 
-			return doSearchTest(config, 0).then(() => {
-				throw new Error('expected fail');
-			}, err => {
-				const searchError = deserializeSearchError(err);
-				assert.strictEqual(searchError.message, 'Error parsing glob \'/{{}\': nested alternate groups are not allowed');
-				assert.strictEqual(searchError.code, SearchErrorCode.globParseError);
-			});
+			return doSearchTest(config, 0).then(
+				() => {
+					throw new Error('expected fail');
+				},
+				err => {
+					const searchError = deserializeSearchError(err);
+					assert.strictEqual(
+						searchError.message,
+						"Error parsing glob '/{{}': nested alternate groups are not allowed"
+					);
+					assert.strictEqual(searchError.code, SearchErrorCode.globParseError);
+				}
+			);
 		});
 	});
 });

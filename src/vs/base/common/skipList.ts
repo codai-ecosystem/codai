@@ -3,10 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 class Node<K, V> {
 	readonly forward: Node<K, V>[];
-	constructor(readonly level: number, readonly key: K, public value: V) {
+	constructor(
+		readonly level: number,
+		readonly key: K,
+		public value: V
+	) {
 		this.forward = [];
 	}
 }
@@ -18,7 +21,6 @@ interface Comparator<K> {
 }
 
 export class SkipList<K, V> implements Map<K, V> {
-
 	readonly [Symbol.toStringTag] = 'SkipList';
 
 	private _maxLevel: number;
@@ -135,7 +137,12 @@ export class SkipList<K, V> implements Map<K, V> {
 		return undefined;
 	}
 
-	private static _insert<K, V>(list: SkipList<K, V>, searchKey: K, value: V, comparator: Comparator<K>) {
+	private static _insert<K, V>(
+		list: SkipList<K, V>,
+		searchKey: K,
+		value: V,
+		comparator: Comparator<K>
+	) {
 		const update: Node<K, V>[] = [];
 		let x = list._header;
 		for (let i = list._level - 1; i >= 0; i--) {
@@ -200,5 +207,4 @@ export class SkipList<K, V> implements Map<K, V> {
 		}
 		return true;
 	}
-
 }

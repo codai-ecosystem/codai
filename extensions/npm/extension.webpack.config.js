@@ -19,6 +19,6 @@ module.exports = withDefaults({
 	},
 	resolve: {
 		mainFields: ['module', 'main'],
-		extensions: ['.ts', '.js'] // support ts-files and js-files
-	}
+		extensions: ['.ts', '.js'], // support ts-files and js-files
+	},
 });

@@ -28,21 +28,24 @@ import { DisposableStore, toDisposable } from '../../../base/common/lifecycle.js
 const require = nodeModule.createRequire(import.meta.url);
 
 class NodeModuleRequireInterceptor extends RequireInterceptor {
-
 	protected _installInterceptor(): void {
 		const that = this;
 		const node_module = require('module');
 		const originalLoad = node_module._load;
-		node_module._load = function load(request: string, parent: { filename: string }, isMain: boolean) {
+		node_module._load = function load(
+			request: string,
+			parent: { filename: string },
+			isMain: boolean
+		) {
 			request = applyAlternatives(request);
 			if (!that._factories.has(request)) {
 				return originalLoad.apply(this, arguments);
 			}
-			return that._factories.get(request)!.load(
-				request,
-				URI.file(realpathSync(parent.filename)),
-				request => originalLoad.apply(this, [request, parent, isMain])
-			);
+			return that._factories
+				.get(request)!
+				.load(request, URI.file(realpathSync(parent.filename)), request =>
+					originalLoad.apply(this, [request, parent, isMain])
+				);
 		};
 
 		const originalLookup = node_module._resolveLookupPaths;
@@ -51,7 +54,12 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 		};
 
 		const originalResolveFilename = node_module._resolveFilename;
-		node_module._resolveFilename = function resolveFilename(request: string, parent: unknown, isMain: boolean, options?: { paths?: string[] }) {
+		node_module._resolveFilename = function resolveFilename(
+			request: string,
+			parent: unknown,
+			isMain: boolean,
+			options?: { paths?: string[] }
+		) {
 			if (request === 'vsda' && Array.isArray(options?.paths) && options.paths.length === 0) {
 				// ESM: ever since we moved to ESM, `require.main` will be `undefined` for extensions
 				// Some extensions have been using `require.resolve('vsda', { paths: require.main.paths })`
@@ -76,7 +84,6 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 }
 
 class NodeModuleESMInterceptor extends RequireInterceptor {
-
 	private static _createDataUri(scriptContent: string): string {
 		return `data:text/javascript;base64,${Buffer.from(scriptContent).toString('base64')}`;
 	}
@@ -121,7 +128,6 @@ class NodeModuleESMInterceptor extends RequireInterceptor {
 	}
 
 	protected override _installInterceptor(): void {
-
 		type Message = { id: string; url: string };
 
 		const apiInstances = new BidirectionalMap<typeof vscode, string>();
@@ -134,7 +140,7 @@ class NodeModuleESMInterceptor extends RequireInterceptor {
 			writable: false,
 			value: (key: string) => {
 				return apiInstances.getKey(key);
-			}
+			},
 		});
 
 		const { port1, port2 } = new MessageChannel();
@@ -146,7 +152,6 @@ class NodeModuleESMInterceptor extends RequireInterceptor {
 		const port1LayerCheckerWorkaround: any = port1;
 
 		port1LayerCheckerWorkaround.onmessage = (e: { data: Message }) => {
-
 			// Get the vscode-module factory - which is the same logic that's also used by
 			// the CommonJS require interceptor
 			if (!apiModuleFactory) {
@@ -159,7 +164,9 @@ class NodeModuleESMInterceptor extends RequireInterceptor {
 
 			// Get or create the API instance. The interface is per extension and extensions are
 			// looked up by the uri (e.data.url) and path containment.
-			const apiInstance = apiModuleFactory.load('_not_used', uri, () => { throw new Error('CANNOT LOAD MODULE from here.'); });
+			const apiInstance = apiModuleFactory.load('_not_used', uri, () => {
+				throw new Error('CANNOT LOAD MODULE from here.');
+			});
 			let key = apiInstances.get(apiInstance);
 			if (!key) {
 				key = generateUuid();
@@ -169,32 +176,40 @@ class NodeModuleESMInterceptor extends RequireInterceptor {
 			// Create and cache a data-url which is the import script for the API instance
 			let scriptDataUrlSrc = apiImportDataUrl.get(key);
 			if (!scriptDataUrlSrc) {
-				const jsCode = `const _vscodeInstance = globalThis.${NodeModuleESMInterceptor._vscodeImportFnName}('${key}');\n\n${Object.keys(apiInstance).map((name => `export const ${name} = _vscodeInstance['${name}'];`)).join('\n')}`;
+				const jsCode = `const _vscodeInstance = globalThis.${NodeModuleESMInterceptor._vscodeImportFnName}('${key}');\n\n${Object.keys(
+					apiInstance
+				)
+					.map(name => `export const ${name} = _vscodeInstance['${name}'];`)
+					.join('\n')}`;
 				scriptDataUrlSrc = NodeModuleESMInterceptor._createDataUri(jsCode);
 				apiImportDataUrl.set(key, scriptDataUrlSrc);
 			}
 
 			port1.postMessage({
 				id,
-				url: scriptDataUrlSrc
+				url: scriptDataUrlSrc,
 			});
 		};
 
-		nodeModule.register(NodeModuleESMInterceptor._createDataUri(NodeModuleESMInterceptor._loaderScript), {
-			parentURL: import.meta.url,
-			data: { port: port2 },
-			transferList: [port2],
-		});
+		nodeModule.register(
+			NodeModuleESMInterceptor._createDataUri(NodeModuleESMInterceptor._loaderScript),
+			{
+				parentURL: import.meta.url,
+				data: { port: port2 },
+				transferList: [port2],
+			}
+		);
 
-		this._store.add(toDisposable(() => {
-			port1.close();
-			port2.close();
-		}));
+		this._store.add(
+			toDisposable(() => {
+				port1.close();
+				port2.close();
+			})
+		);
 	}
 }
 
 export class ExtHostExtensionService extends AbstractExtHostExtensionService {
-
 	readonly extensionRuntime = ExtensionRuntime.Node;
 
 	protected async _beforeAlmostReadyToRunExtensions(): Promise<void> {
@@ -202,7 +217,9 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		this._instaService.createInstance(ExtHostConsoleForwarder);
 
 		// initialize API and register actors
-		const extensionApiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);
+		const extensionApiFactory = this._instaService.invokeFunction(
+			createApiFactoryAndRegisterActors
+		);
 
 		// Register Download command
 		this._instaService.createInstance(ExtHostDownloadService);
@@ -217,18 +234,36 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		this._instaService.createInstance(ExtHostDiskFileSystemProvider);
 
 		// Module loading tricks
-		await this._instaService.createInstance(NodeModuleRequireInterceptor, extensionApiFactory, { mine: this._myRegistry, all: this._globalRegistry })
+		await this._instaService
+			.createInstance(NodeModuleRequireInterceptor, extensionApiFactory, {
+				mine: this._myRegistry,
+				all: this._globalRegistry,
+			})
 			.install();
 
 		// ESM loading tricks
-		await this._store.add(this._instaService.createInstance(NodeModuleESMInterceptor, extensionApiFactory, { mine: this._myRegistry, all: this._globalRegistry }))
+		await this._store
+			.add(
+				this._instaService.createInstance(NodeModuleESMInterceptor, extensionApiFactory, {
+					mine: this._myRegistry,
+					all: this._globalRegistry,
+				})
+			)
 			.install();
 
 		performance.mark('code/extHost/didInitAPI');
 
 		// Do this when extension service exists, but extensions are not being activated yet.
 		const configProvider = await this._extHostConfiguration.getConfigProvider();
-		await connectProxyResolver(this._extHostWorkspace, configProvider, this, this._logService, this._mainThreadTelemetryProxy, this._initData, this._store);
+		await connectProxyResolver(
+			this._extHostWorkspace,
+			configProvider,
+			this,
+			this._logService,
+			this._mainThreadTelemetryProxy,
+			this._initData,
+			this._store
+		);
 		performance.mark('code/extHost/didInitProxyResolver');
 	}
 
@@ -236,7 +271,12 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		return extensionDescription.main;
 	}
 
-	private async _doLoadModule<T>(extension: IExtensionDescription | null, module: URI, activationTimesBuilder: ExtensionActivationTimesBuilder, mode: 'esm' | 'cjs'): Promise<T> {
+	private async _doLoadModule<T>(
+		extension: IExtensionDescription | null,
+		module: URI,
+		activationTimesBuilder: ExtensionActivationTimesBuilder,
+		mode: 'esm' | 'cjs'
+	): Promise<T> {
 		if (module.scheme !== Schemas.file) {
 			throw new Error(`Cannot load URI: '${module}', must be of file-scheme`);
 		}
@@ -266,11 +306,19 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		return r;
 	}
 
-	protected async _loadCommonJSModule<T>(extension: IExtensionDescription | null, module: URI, activationTimesBuilder: ExtensionActivationTimesBuilder): Promise<T> {
+	protected async _loadCommonJSModule<T>(
+		extension: IExtensionDescription | null,
+		module: URI,
+		activationTimesBuilder: ExtensionActivationTimesBuilder
+	): Promise<T> {
 		return this._doLoadModule<T>(extension, module, activationTimesBuilder, 'cjs');
 	}
 
-	protected async _loadESMModule<T>(extension: IExtensionDescription | null, module: URI, activationTimesBuilder: ExtensionActivationTimesBuilder): Promise<T> {
+	protected async _loadESMModule<T>(
+		extension: IExtensionDescription | null,
+		module: URI,
+		activationTimesBuilder: ExtensionActivationTimesBuilder
+	): Promise<T> {
 		return this._doLoadModule<T>(extension, module, activationTimesBuilder, 'esm');
 	}
 

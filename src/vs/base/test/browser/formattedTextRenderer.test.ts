@@ -29,7 +29,7 @@ suite('FormattedTextRenderer', () => {
 
 	test('render element with class', () => {
 		const result: HTMLElement = renderText('testing', {
-			className: 'testClass'
+			className: 'testClass',
 		});
 		assert.strictEqual(result.nodeType, document.ELEMENT_NODE);
 		assert.strictEqual(result.className, 'testClass');
@@ -51,8 +51,13 @@ suite('FormattedTextRenderer', () => {
 		result = renderFormattedText('``code``', { renderCodeSegments: true });
 		assert.strictEqual(result.innerHTML, '<code>code</code>');
 
-		result = renderFormattedText('this string has **bold**, __italics__, and ``code``!!', { renderCodeSegments: true });
-		assert.strictEqual(result.innerHTML, 'this string has <b>bold</b>, <i>italics</i>, and <code>code</code>!!');
+		result = renderFormattedText('this string has **bold**, __italics__, and ``code``!!', {
+			renderCodeSegments: true,
+		});
+		assert.strictEqual(
+			result.innerHTML,
+			'this string has <b>bold</b>, <i>italics</i>, and <code>code</code>!!'
+		);
 	});
 
 	test('no formatting', () => {
@@ -73,8 +78,8 @@ suite('FormattedTextRenderer', () => {
 					assert.strictEqual(content, '0');
 					callbackCalled = true;
 				},
-				disposables: store
-			}
+				disposables: store,
+			},
 		});
 		assert.strictEqual(result.innerHTML, '<a>action</a>');
 
@@ -92,8 +97,8 @@ suite('FormattedTextRenderer', () => {
 					assert.strictEqual(content, '0');
 					callbackCalled = true;
 				},
-				disposables: store
-			}
+				disposables: store,
+			},
 		});
 		assert.strictEqual(result.innerHTML, '<i><b><a>action</a></b></i>');
 
@@ -112,8 +117,8 @@ suite('FormattedTextRenderer', () => {
 					assert.strictEqual(content, '0');
 					callbackCalled = true;
 				},
-				disposables: store
-			}
+				disposables: store,
+			},
 		});
 		assert.strictEqual(result.innerHTML, '<code><i><b><a>action</a></b></i></code>');
 

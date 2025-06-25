@@ -3,9 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, ExtensionContext, LogOutputChannel, window, l10n, env, LogLevel } from 'vscode';
-import { startClient, LanguageClientConstructor, SchemaRequestService, languageServerDescription, AsyncDisposable } from '../jsonClient';
-import { ServerOptions, TransportKind, LanguageClientOptions, LanguageClient } from 'vscode-languageclient/node';
+import {
+	Disposable,
+	ExtensionContext,
+	LogOutputChannel,
+	window,
+	l10n,
+	env,
+	LogLevel,
+} from 'vscode';
+import {
+	startClient,
+	LanguageClientConstructor,
+	SchemaRequestService,
+	languageServerDescription,
+	AsyncDisposable,
+} from '../jsonClient';
+import {
+	ServerOptions,
+	TransportKind,
+	LanguageClientOptions,
+	LanguageClient,
+} from 'vscode-languageclient/node';
 
 import { promises as fs } from 'fs';
 import * as path from 'path';
@@ -29,16 +48,22 @@ export async function activate(context: ExtensionContext) {
 	const serverModule = context.asAbsolutePath(serverMain);
 
 	// The debug options for the server
-	const debugOptions = { execArgv: ['--nolazy', '--inspect=' + (6000 + Math.round(Math.random() * 999))] };
+	const debugOptions = {
+		execArgv: ['--nolazy', '--inspect=' + (6000 + Math.round(Math.random() * 999))],
+	};
 
 	// If the extension is launch in debug mode the debug server options are use
 	// Otherwise the run options are used
 	const serverOptions: ServerOptions = {
 		run: { module: serverModule, transport: TransportKind.ipc },
-		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
+		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions },
 	};
 
-	const newLanguageClient: LanguageClientConstructor = (id: string, name: string, clientOptions: LanguageClientOptions) => {
+	const newLanguageClient: LanguageClientConstructor = (
+		id: string,
+		name: string,
+		clientOptions: LanguageClientOptions
+	) => {
 		return new LanguageClient(id, name, serverOptions, clientOptions);
 	};
 
@@ -46,7 +71,7 @@ export async function activate(context: ExtensionContext) {
 		setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable {
 			const handle = setTimeout(callback, ms, ...args);
 			return { dispose: () => clearTimeout(handle) };
-		}
+		},
 	};
 
 	// pass the location of the localization bundle to the server
@@ -54,7 +79,12 @@ export async function activate(context: ExtensionContext) {
 
 	const schemaRequests = await getSchemaRequestService(context, logOutputChannel);
 
-	client = await startClient(context, newLanguageClient, { schemaRequests, telemetry, timer, logOutputChannel });
+	client = await startClient(context, newLanguageClient, {
+		schemaRequests,
+		telemetry,
+		timer,
+		logOutputChannel,
+	});
 }
 
 export async function deactivate(): Promise<any> {
@@ -83,7 +113,10 @@ async function getPackageInfo(context: ExtensionContext): Promise<IPackageInfo> 
 
 const retryTimeoutInHours = 2 * 24; // 2 days
 
-async function getSchemaRequestService(context: ExtensionContext, log: LogOutputChannel): Promise<SchemaRequestService> {
+async function getSchemaRequestService(
+	context: ExtensionContext,
+	log: LogOutputChannel
+): Promise<SchemaRequestService> {
 	let cache: JSONSchemaCache | undefined = undefined;
 	const globalStorage = context.globalStorageUri;
 
@@ -93,22 +126,25 @@ async function getSchemaRequestService(context: ExtensionContext, log: LogOutput
 		await fs.mkdir(schemaCacheLocation, { recursive: true });
 
 		const schemaCache = new JSONSchemaCache(schemaCacheLocation, context.globalState);
-		log.trace(`[json schema cache] initial state: ${JSON.stringify(schemaCache.getCacheInfo(), null, ' ')}`);
+		log.trace(
+			`[json schema cache] initial state: ${JSON.stringify(schemaCache.getCacheInfo(), null, ' ')}`
+		);
 		cache = schemaCache;
 		clearCache = async () => {
 			const cachedSchemas = await schemaCache.clearCache();
-			log.trace(`[json schema cache] cache cleared. Previously cached schemas: ${cachedSchemas.join(', ')}`);
+			log.trace(
+				`[json schema cache] cache cleared. Previously cached schemas: ${cachedSchemas.join(', ')}`
+			);
 			return cachedSchemas;
 		};
 	}
-
 
 	const isXHRResponse = (error: any): error is XHRResponse => typeof error?.status === 'number';
 
 	const request = async (uri: string, etag?: string): Promise<string> => {
 		const headers: Headers = {
 			'Accept-Encoding': 'gzip, deflate',
-			'User-Agent': `${env.appName} (${env.appHost})`
+			'User-Agent': `${env.appName} (${env.appHost})`,
 		};
 		if (etag) {
 			headers['If-None-Match'] = etag;
@@ -130,7 +166,6 @@ async function getSchemaRequestService(context: ExtensionContext, log: LogOutput
 		} catch (error: unknown) {
 			if (isXHRResponse(error)) {
 				if (error.status === 304 && etag && cache) {
-
 					log.trace(`[json schema cache] Response: schema ${uri} unchanged etag ${etag}`);
 
 					const content = await cache.getSchema(uri, etag, true);
@@ -162,7 +197,9 @@ async function getSchemaRequestService(context: ExtensionContext, log: LogOutput
 				const content = await cache.getSchemaIfUpdatedSince(uri, retryTimeoutInHours);
 				if (content) {
 					if (log.logLevel === LogLevel.Trace) {
-						log.trace(`[json schema cache] Schema ${uri} from cache without request (last accessed ${cache.getLastUpdatedInHours(uri)} hours ago)`);
+						log.trace(
+							`[json schema cache] Schema ${uri} from cache without request (last accessed ${cache.getLastUpdatedInHours(uri)} hours ago)`
+						);
 					}
 
 					return content;
@@ -170,6 +207,6 @@ async function getSchemaRequestService(context: ExtensionContext, log: LogOutput
 			}
 			return request(uri, cache?.getETag(uri));
 		},
-		clearCache
+		clearCache,
 	};
 }

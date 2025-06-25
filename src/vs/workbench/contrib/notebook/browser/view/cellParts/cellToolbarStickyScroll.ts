@@ -7,7 +7,12 @@ import { combinedDisposable, IDisposable } from '../../../../../../base/common/l
 import { clamp } from '../../../../../../base/common/numbers.js';
 import { ICellViewModel, INotebookEditor } from '../../notebookBrowser.js';
 
-export function registerCellToolbarStickyScroll(notebookEditor: INotebookEditor, cell: ICellViewModel, element: HTMLElement, opts?: { extraOffset?: number; min?: number }): IDisposable {
+export function registerCellToolbarStickyScroll(
+	notebookEditor: INotebookEditor,
+	cell: ICellViewModel,
+	element: HTMLElement,
+	opts?: { extraOffset?: number; min?: number }
+): IDisposable {
 	const extraOffset = opts?.extraOffset ?? 0;
 	const min = opts?.min ?? 0;
 
@@ -19,9 +24,10 @@ export function registerCellToolbarStickyScroll(notebookEditor: INotebookEditor,
 			const elementTop = notebookEditor.getAbsoluteTopOfElement(cell);
 			const diff = scrollTop - elementTop + extraOffset;
 			const maxTop = cell.layoutInfo.editorHeight + cell.layoutInfo.statusBarHeight - 45; // subtract roughly the height of the execution order label plus padding
-			const top = maxTop > 20 ? // Don't move the run button if it can only move a very short distance
-				clamp(min, diff, maxTop) :
-				min;
+			const top =
+				maxTop > 20 // Don't move the run button if it can only move a very short distance
+					? clamp(min, diff, maxTop)
+					: min;
 			element.style.top = `${top}px`;
 		}
 	};

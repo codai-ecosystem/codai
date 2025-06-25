@@ -14,10 +14,12 @@ import { IWorkspaceFolder } from '../../workspace/common/workspace.js';
 export const IConfigurationService = createDecorator<IConfigurationService>('configurationService');
 
 export function isConfigurationOverrides(thing: any): thing is IConfigurationOverrides {
-	return thing
-		&& typeof thing === 'object'
-		&& (!thing.overrideIdentifier || typeof thing.overrideIdentifier === 'string')
-		&& (!thing.resource || thing.resource instanceof URI);
+	return (
+		thing &&
+		typeof thing === 'object' &&
+		(!thing.overrideIdentifier || typeof thing.overrideIdentifier === 'string') &&
+		(!thing.resource || thing.resource instanceof URI)
+	);
 }
 
 export interface IConfigurationOverrides {
@@ -26,14 +28,18 @@ export interface IConfigurationOverrides {
 }
 
 export function isConfigurationUpdateOverrides(thing: any): thing is IConfigurationUpdateOverrides {
-	return thing
-		&& typeof thing === 'object'
-		&& (!thing.overrideIdentifiers || Array.isArray(thing.overrideIdentifiers))
-		&& !thing.overrideIdentifier
-		&& (!thing.resource || thing.resource instanceof URI);
+	return (
+		thing &&
+		typeof thing === 'object' &&
+		(!thing.overrideIdentifiers || Array.isArray(thing.overrideIdentifiers)) &&
+		!thing.overrideIdentifier &&
+		(!thing.resource || thing.resource instanceof URI)
+	);
 }
 
-export type IConfigurationUpdateOverrides = Omit<IConfigurationOverrides, 'overrideIdentifier'> & { overrideIdentifiers?: string[] | null };
+export type IConfigurationUpdateOverrides = Omit<IConfigurationOverrides, 'overrideIdentifier'> & {
+	overrideIdentifiers?: string[] | null;
+};
 
 export const enum ConfigurationTarget {
 	APPLICATION = 1,
@@ -43,18 +49,26 @@ export const enum ConfigurationTarget {
 	WORKSPACE,
 	WORKSPACE_FOLDER,
 	DEFAULT,
-	MEMORY
+	MEMORY,
 }
 export function ConfigurationTargetToString(configurationTarget: ConfigurationTarget) {
 	switch (configurationTarget) {
-		case ConfigurationTarget.APPLICATION: return 'APPLICATION';
-		case ConfigurationTarget.USER: return 'USER';
-		case ConfigurationTarget.USER_LOCAL: return 'USER_LOCAL';
-		case ConfigurationTarget.USER_REMOTE: return 'USER_REMOTE';
-		case ConfigurationTarget.WORKSPACE: return 'WORKSPACE';
-		case ConfigurationTarget.WORKSPACE_FOLDER: return 'WORKSPACE_FOLDER';
-		case ConfigurationTarget.DEFAULT: return 'DEFAULT';
-		case ConfigurationTarget.MEMORY: return 'MEMORY';
+		case ConfigurationTarget.APPLICATION:
+			return 'APPLICATION';
+		case ConfigurationTarget.USER:
+			return 'USER';
+		case ConfigurationTarget.USER_LOCAL:
+			return 'USER_LOCAL';
+		case ConfigurationTarget.USER_REMOTE:
+			return 'USER_REMOTE';
+		case ConfigurationTarget.WORKSPACE:
+			return 'WORKSPACE';
+		case ConfigurationTarget.WORKSPACE_FOLDER:
+			return 'WORKSPACE_FOLDER';
+		case ConfigurationTarget.DEFAULT:
+			return 'DEFAULT';
+		case ConfigurationTarget.MEMORY:
+			return 'MEMORY';
 	}
 }
 
@@ -64,7 +78,6 @@ export interface IConfigurationChange {
 }
 
 export interface IConfigurationChangeEvent {
-
 	readonly source: ConfigurationTarget;
 	readonly affectedKeys: ReadonlySet<string>;
 	readonly change: IConfigurationChange;
@@ -79,7 +92,6 @@ export interface IInspectValue<T> {
 }
 
 export interface IConfigurationValue<T> {
-
 	readonly defaultValue?: T;
 	readonly applicationValue?: T;
 	readonly userValue?: T;
@@ -104,7 +116,10 @@ export interface IConfigurationValue<T> {
 	readonly overrideIdentifiers?: string[];
 }
 
-export function getConfigValueInTarget<T>(configValue: IConfigurationValue<T>, scope: ConfigurationTarget): T | undefined {
+export function getConfigValueInTarget<T>(
+	configValue: IConfigurationValue<T>,
+	scope: ConfigurationTarget
+): T | undefined {
 	switch (scope) {
 		case ConfigurationTarget.APPLICATION:
 			return configValue.applicationValue;
@@ -127,13 +142,17 @@ export function getConfigValueInTarget<T>(configValue: IConfigurationValue<T>, s
 	}
 }
 
-export function isConfigured<T>(configValue: IConfigurationValue<T>): configValue is IConfigurationValue<T> & { value: T } {
-	return configValue.applicationValue !== undefined ||
+export function isConfigured<T>(
+	configValue: IConfigurationValue<T>
+): configValue is IConfigurationValue<T> & { value: T } {
+	return (
+		configValue.applicationValue !== undefined ||
 		configValue.userValue !== undefined ||
 		configValue.userLocalValue !== undefined ||
 		configValue.userRemoteValue !== undefined ||
 		configValue.workspaceValue !== undefined ||
-		configValue.workspaceFolderValue !== undefined;
+		configValue.workspaceFolderValue !== undefined
+	);
 }
 
 export interface IConfigurationUpdateOptions {
@@ -187,8 +206,18 @@ export interface IConfigurationService {
 	 */
 	updateValue(key: string, value: any): Promise<void>;
 	updateValue(key: string, value: any, target: ConfigurationTarget): Promise<void>;
-	updateValue(key: string, value: any, overrides: IConfigurationOverrides | IConfigurationUpdateOverrides): Promise<void>;
-	updateValue(key: string, value: any, overrides: IConfigurationOverrides | IConfigurationUpdateOverrides, target: ConfigurationTarget, options?: IConfigurationUpdateOptions): Promise<void>;
+	updateValue(
+		key: string,
+		value: any,
+		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides
+	): Promise<void>;
+	updateValue(
+		key: string,
+		value: any,
+		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides,
+		target: ConfigurationTarget,
+		options?: IConfigurationUpdateOptions
+	): Promise<void>;
 
 	inspect<T>(key: string, overrides?: IConfigurationOverrides): IConfigurationValue<Readonly<T>>;
 
@@ -233,7 +262,10 @@ export interface IConfigurationCompareResult {
 	overrides: [string, string[]][];
 }
 
-export function toValuesTree(properties: { [qualifiedKey: string]: any }, conflictReporter: (message: string) => void): any {
+export function toValuesTree(
+	properties: { [qualifiedKey: string]: any },
+	conflictReporter: (message: string) => void
+): any {
 	const root = Object.create(null);
 
 	for (const key in properties) {
@@ -243,7 +275,12 @@ export function toValuesTree(properties: { [qualifiedKey: string]: any }, confli
 	return root;
 }
 
-export function addToValueTree(settingsTreeRoot: any, key: string, value: any, conflictReporter: (message: string) => void): void {
+export function addToValueTree(
+	settingsTreeRoot: any,
+	key: string,
+	value: any,
+	conflictReporter: (message: string) => void
+): void {
 	const segments = key.split('.');
 	const last = segments.pop()!;
 
@@ -262,7 +299,9 @@ export function addToValueTree(settingsTreeRoot: any, key: string, value: any, c
 				}
 				break;
 			default:
-				conflictReporter(`Ignoring ${key} as ${segments.slice(0, i + 1).join('.')} is ${JSON.stringify(obj)}`);
+				conflictReporter(
+					`Ignoring ${key} as ${segments.slice(0, i + 1).join('.')} is ${JSON.stringify(obj)}`
+				);
 				return;
 		}
 		curr = obj;
@@ -312,7 +351,11 @@ function doRemoveFromValueTree(valueTree: any, segments: string[]): void {
  */
 export function getConfigurationValue<T>(config: any, settingPath: string): T | undefined;
 export function getConfigurationValue<T>(config: any, settingPath: string, defaultValue: T): T;
-export function getConfigurationValue<T>(config: any, settingPath: string, defaultValue?: T): T | undefined {
+export function getConfigurationValue<T>(
+	config: any,
+	settingPath: string,
+	defaultValue?: T
+): T | undefined {
 	function accessSetting(config: any, path: string[]): any {
 		let current = config;
 		for (const component of path) {

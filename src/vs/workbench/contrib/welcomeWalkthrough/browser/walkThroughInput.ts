@@ -9,7 +9,10 @@ import * as marked from '../../../../base/common/marked/marked.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { isEqual } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
-import { ITextEditorModel, ITextModelService } from '../../../../editor/common/services/resolverService.js';
+import {
+	ITextEditorModel,
+	ITextModelService,
+} from '../../../../editor/common/services/resolverService.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { EditorInputCapabilities, IUntypedEditorInput } from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
@@ -18,7 +21,6 @@ import { markedGfmHeadingIdPlugin } from '../../markdown/browser/markedGfmHeadin
 import { moduleToContent } from '../common/walkThroughContentProvider.js';
 
 class WalkThroughModel extends EditorModel {
-
 	constructor(
 		private mainRef: string,
 		private snippetRefs: IReference<ITextEditorModel>[]
@@ -51,7 +53,6 @@ export interface WalkThroughInputOptions {
 }
 
 export class WalkThroughInput extends EditorInput {
-
 	override get capabilities(): EditorInputCapabilities {
 		return EditorInputCapabilities.Singleton | super.capabilities;
 	}
@@ -61,7 +62,9 @@ export class WalkThroughInput extends EditorInput {
 	private maxTopScroll = 0;
 	private maxBottomScroll = 0;
 
-	get resource() { return this.options.resource; }
+	get resource() {
+		return this.options.resource;
+	}
 
 	constructor(
 		private readonly options: WalkThroughInputOptions,
@@ -108,8 +111,8 @@ export class WalkThroughInput extends EditorInput {
 
 	override resolve(): Promise<WalkThroughModel> {
 		if (!this.promise) {
-			this.promise = moduleToContent(this.instantiationService, this.options.resource)
-				.then(content => {
+			this.promise = moduleToContent(this.instantiationService, this.options.resource).then(
+				content => {
 					if (this.resource.path.endsWith('.html')) {
 						return new WalkThroughModel(content, []);
 					}
@@ -119,16 +122,19 @@ export class WalkThroughInput extends EditorInput {
 					const renderer = new marked.marked.Renderer();
 					renderer.code = ({ lang }: marked.Tokens.Code) => {
 						i++;
-						const resource = this.options.resource.with({ scheme: Schemas.walkThroughSnippet, fragment: `${i}.${lang}` });
+						const resource = this.options.resource.with({
+							scheme: Schemas.walkThroughSnippet,
+							fragment: `${i}.${lang}`,
+						});
 						snippets.push(this.textModelResolverService.createModelReference(resource));
 						return `<div id="snippet-${resource.fragment}" class="walkThroughEditorContainer" ></div>`;
 					};
 
 					const m = new marked.Marked({ renderer }, markedGfmHeadingIdPlugin());
 					content = m.parse(content, { async: false });
-					return Promise.all(snippets)
-						.then(refs => new WalkThroughModel(content, refs));
-				});
+					return Promise.all(snippets).then(refs => new WalkThroughModel(content, refs));
+				}
+			);
 		}
 
 		return this.promise;

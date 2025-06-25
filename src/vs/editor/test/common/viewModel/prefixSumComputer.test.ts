@@ -6,7 +6,10 @@
 import assert from 'assert';
 import { toUint32 } from '../../../../base/common/uint.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { PrefixSumComputer, PrefixSumIndexOfResult } from '../../../common/model/prefixSumComputer.js';
+import {
+	PrefixSumComputer,
+	PrefixSumIndexOfResult,
+} from '../../../common/model/prefixSumComputer.js';
 
 function toUint32Array(arr: number[]): Uint32Array {
 	const len = arr.length;
@@ -18,7 +21,6 @@ function toUint32Array(arr: number[]): Uint32Array {
 }
 
 suite('Editor ViewModel - PrefixSumComputer', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('PrefixSumComputer', () => {

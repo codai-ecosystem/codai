@@ -10,7 +10,7 @@ import {
 	DecisionNode,
 	IntentNode,
 	ConversationNode,
-	Relationship
+	Relationship,
 } from './schemas.js';
 import { MemoryGraphEngine } from './engine.js';
 
@@ -30,7 +30,7 @@ export abstract class NodeBuilder<T extends AnyNode> {
 			id: uuidv4(),
 			createdAt: new Date(),
 			updatedAt: new Date(),
-			version: '1.0.0'
+			version: '1.0.0',
 		} as Partial<T>;
 	}
 
@@ -390,8 +390,8 @@ export class ConversationBuilder extends NodeBuilder<ConversationNode> {
 			{
 				role,
 				content,
-				timestamp: new Date()
-			}
+				timestamp: new Date(),
+			},
 		];
 		return this;
 	}
@@ -412,7 +412,7 @@ export class ConversationBuilder extends NodeBuilder<ConversationNode> {
  */
 export class RelationshipBuilder {
 	private relationship: Partial<Relationship> = {
-		id: uuidv4()
+		id: uuidv4(),
 	};
 
 	constructor(fromNodeId: string, toNodeId: string, type: Relationship['type']) {

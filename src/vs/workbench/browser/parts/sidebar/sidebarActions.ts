@@ -15,25 +15,25 @@ import { IPaneCompositePartService } from '../../../services/panecomposite/brows
 import { ViewContainerLocation } from '../../../common/views.js';
 import { SideBarVisibleContext } from '../../../common/contextkeys.js';
 
-registerAction2(class extends Action2 {
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'workbench.action.closeSidebar',
+				title: localize2('closeSidebar', 'Close Primary Side Bar'),
+				category: Categories.View,
+				f1: true,
+				precondition: SideBarVisibleContext,
+			});
+		}
 
-	constructor() {
-		super({
-			id: 'workbench.action.closeSidebar',
-			title: localize2('closeSidebar', 'Close Primary Side Bar'),
-			category: Categories.View,
-			f1: true,
-			precondition: SideBarVisibleContext
-		});
+		run(accessor: ServicesAccessor): void {
+			accessor.get(IWorkbenchLayoutService).setPartHidden(true, Parts.SIDEBAR_PART);
+		}
 	}
-
-	run(accessor: ServicesAccessor): void {
-		accessor.get(IWorkbenchLayoutService).setPartHidden(true, Parts.SIDEBAR_PART);
-	}
-});
+);
 
 export class FocusSideBarAction extends Action2 {
-
 	constructor() {
 		super({
 			id: 'workbench.action.focusSideBar',
@@ -43,8 +43,8 @@ export class FocusSideBarAction extends Action2 {
 			keybinding: {
 				weight: KeybindingWeight.WorkbenchContrib,
 				when: null,
-				primary: KeyMod.CtrlCmd | KeyCode.Digit0
-			}
+				primary: KeyMod.CtrlCmd | KeyCode.Digit0,
+			},
 		});
 	}
 

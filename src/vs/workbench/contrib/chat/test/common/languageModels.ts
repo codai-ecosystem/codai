@@ -7,7 +7,14 @@ import { CancellationToken } from '../../../../../base/common/cancellation.js';
 import { Event } from '../../../../../base/common/event.js';
 import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
 import { ExtensionIdentifier } from '../../../../../platform/extensions/common/extensions.js';
-import { IChatMessage, ILanguageModelChat, ILanguageModelChatMetadata, ILanguageModelChatResponse, ILanguageModelChatSelector, ILanguageModelsService } from '../../common/languageModels.js';
+import {
+	IChatMessage,
+	ILanguageModelChat,
+	ILanguageModelChatMetadata,
+	ILanguageModelChatResponse,
+	ILanguageModelChatSelector,
+	ILanguageModelsService,
+} from '../../common/languageModels.js';
 
 export class NullLanguageModelsService implements ILanguageModelsService {
 	_serviceBrand: undefined;
@@ -30,11 +37,21 @@ export class NullLanguageModelsService implements ILanguageModelsService {
 		return Disposable.None;
 	}
 
-	sendChatRequest(identifier: string, from: ExtensionIdentifier, messages: IChatMessage[], options: { [name: string]: any }, token: CancellationToken): Promise<ILanguageModelChatResponse> {
+	sendChatRequest(
+		identifier: string,
+		from: ExtensionIdentifier,
+		messages: IChatMessage[],
+		options: { [name: string]: any },
+		token: CancellationToken
+	): Promise<ILanguageModelChatResponse> {
 		throw new Error('Method not implemented.');
 	}
 
-	computeTokenLength(identifier: string, message: string | IChatMessage, token: CancellationToken): Promise<number> {
+	computeTokenLength(
+		identifier: string,
+		message: string | IChatMessage,
+		token: CancellationToken
+	): Promise<number> {
 		throw new Error('Method not implemented.');
 	}
 }

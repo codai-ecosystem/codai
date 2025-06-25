@@ -78,7 +78,7 @@ export class VersionManager {
 			const data = {
 				history: this.versionHistory,
 				upstream: this.upstreamInfo,
-				lastUpdated: new Date()
+				lastUpdated: new Date(),
 			};
 
 			await fs.writeFile(this.configPath, JSON.stringify(data, null, 2));
@@ -122,7 +122,7 @@ export class VersionManager {
 				scope,
 				description: `Modified ${path.basename(file)}`,
 				files: [file],
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 		}
 
@@ -242,7 +242,7 @@ export class VersionManager {
 				changeType: this.getChangeType(previousVersion, newVersion),
 				changes,
 				timestamp: new Date(),
-				buildNumber: this.generateBuildNumber()
+				buildNumber: this.generateBuildNumber(),
 			};
 
 			this.versionHistory.push(versionInfo);
@@ -311,14 +311,17 @@ export class VersionManager {
 	 * Group changes by type
 	 */
 	private groupChangesByType(changes: ChangeInfo[]): Record<string, ChangeInfo[]> {
-		return changes.reduce((groups, change) => {
-			const type = change.type;
-			if (!groups[type]) {
-				groups[type] = [];
-			}
-			groups[type].push(change);
-			return groups;
-		}, {} as Record<string, ChangeInfo[]>);
+		return changes.reduce(
+			(groups, change) => {
+				const type = change.type;
+				if (!groups[type]) {
+					groups[type] = [];
+				}
+				groups[type].push(change);
+				return groups;
+			},
+			{} as Record<string, ChangeInfo[]>
+		);
 	}
 	/**
 	 * Format change type for display
@@ -332,7 +335,7 @@ export class VersionManager {
 			style: 'Style Changes',
 			refactor: 'Code Refactoring',
 			test: 'Tests',
-			chore: 'Maintenance'
+			chore: 'Maintenance',
 		};
 
 		return headers[type] || 'Changed';
@@ -351,7 +354,7 @@ export class VersionManager {
 				vscodeVersion: currentVSCodeVersion,
 				lastSync: new Date(),
 				compatibilityStatus: 'compatible',
-				pendingUpdates: []
+				pendingUpdates: [],
 			};
 
 			await this.saveVersionHistory();
@@ -362,7 +365,7 @@ export class VersionManager {
 				vscodeVersion: vscode.version,
 				lastSync: new Date(),
 				compatibilityStatus: 'needs-review',
-				pendingUpdates: []
+				pendingUpdates: [],
 			};
 		}
 	}

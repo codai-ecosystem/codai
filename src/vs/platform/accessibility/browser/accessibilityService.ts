@@ -8,7 +8,11 @@ import { alert, status } from '../../../base/browser/ui/aria/aria.js';
 import { mainWindow } from '../../../base/browser/window.js';
 import { Emitter, Event } from '../../../base/common/event.js';
 import { Disposable } from '../../../base/common/lifecycle.js';
-import { AccessibilitySupport, CONTEXT_ACCESSIBILITY_MODE_ENABLED, IAccessibilityService } from '../common/accessibility.js';
+import {
+	AccessibilitySupport,
+	CONTEXT_ACCESSIBILITY_MODE_ENABLED,
+	IAccessibilityService,
+} from '../common/accessibility.js';
 import { IConfigurationService } from '../../configuration/common/configuration.js';
 import { IContextKey, IContextKeyService } from '../../contextkey/common/contextkey.js';
 import { ILayoutService } from '../../layout/browser/layoutService.js';
@@ -33,40 +37,50 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
 		@IConfigurationService protected readonly _configurationService: IConfigurationService
 	) {
 		super();
-		this._accessibilityModeEnabledContext = CONTEXT_ACCESSIBILITY_MODE_ENABLED.bindTo(this._contextKeyService);
+		this._accessibilityModeEnabledContext = CONTEXT_ACCESSIBILITY_MODE_ENABLED.bindTo(
+			this._contextKeyService
+		);
 
-		const updateContextKey = () => this._accessibilityModeEnabledContext.set(this.isScreenReaderOptimized());
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('editor.accessibilitySupport')) {
-				updateContextKey();
-				this._onDidChangeScreenReaderOptimized.fire();
-			}
-			if (e.affectsConfiguration('workbench.reduceMotion')) {
-				this._configMotionReduced = this._configurationService.getValue('workbench.reduceMotion');
-				this._onDidChangeReducedMotion.fire();
-			}
-		}));
+		const updateContextKey = () =>
+			this._accessibilityModeEnabledContext.set(this.isScreenReaderOptimized());
+		this._register(
+			this._configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('editor.accessibilitySupport')) {
+					updateContextKey();
+					this._onDidChangeScreenReaderOptimized.fire();
+				}
+				if (e.affectsConfiguration('workbench.reduceMotion')) {
+					this._configMotionReduced = this._configurationService.getValue('workbench.reduceMotion');
+					this._onDidChangeReducedMotion.fire();
+				}
+			})
+		);
 		updateContextKey();
 		this._register(this.onDidChangeScreenReaderOptimized(() => updateContextKey()));
 
 		const reduceMotionMatcher = mainWindow.matchMedia(`(prefers-reduced-motion: reduce)`);
 		this._systemMotionReduced = reduceMotionMatcher.matches;
-		this._configMotionReduced = this._configurationService.getValue<'auto' | 'on' | 'off'>('workbench.reduceMotion');
+		this._configMotionReduced = this._configurationService.getValue<'auto' | 'on' | 'off'>(
+			'workbench.reduceMotion'
+		);
 
-		this._linkUnderlinesEnabled = this._configurationService.getValue('accessibility.underlineLinks');
+		this._linkUnderlinesEnabled = this._configurationService.getValue(
+			'accessibility.underlineLinks'
+		);
 
 		this.initReducedMotionListeners(reduceMotionMatcher);
 		this.initLinkUnderlineListeners();
 	}
 
 	private initReducedMotionListeners(reduceMotionMatcher: MediaQueryList) {
-
-		this._register(addDisposableListener(reduceMotionMatcher, 'change', () => {
-			this._systemMotionReduced = reduceMotionMatcher.matches;
-			if (this._configMotionReduced === 'auto') {
-				this._onDidChangeReducedMotion.fire();
-			}
-		}));
+		this._register(
+			addDisposableListener(reduceMotionMatcher, 'change', () => {
+				this._systemMotionReduced = reduceMotionMatcher.matches;
+				if (this._configMotionReduced === 'auto') {
+					this._onDidChangeReducedMotion.fire();
+				}
+			})
+		);
 
 		const updateRootClasses = () => {
 			const reduce = this.isMotionReduced();
@@ -79,13 +93,17 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
 	}
 
 	private initLinkUnderlineListeners() {
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('accessibility.underlineLinks')) {
-				const linkUnderlinesEnabled = this._configurationService.getValue<boolean>('accessibility.underlineLinks');
-				this._linkUnderlinesEnabled = linkUnderlinesEnabled;
-				this._onDidChangeLinkUnderline.fire();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('accessibility.underlineLinks')) {
+					const linkUnderlinesEnabled = this._configurationService.getValue<boolean>(
+						'accessibility.underlineLinks'
+					);
+					this._linkUnderlinesEnabled = linkUnderlinesEnabled;
+					this._onDidChangeLinkUnderline.fire();
+				}
+			})
+		);
 
 		const updateLinkUnderlineClasses = () => {
 			const underlineLinks = this._linkUnderlinesEnabled;
@@ -107,7 +125,10 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
 
 	isScreenReaderOptimized(): boolean {
 		const config = this._configurationService.getValue('editor.accessibilitySupport');
-		return config === 'on' || (config === 'auto' && this._accessibilitySupport === AccessibilitySupport.Enabled);
+		return (
+			config === 'on' ||
+			(config === 'auto' && this._accessibilitySupport === AccessibilitySupport.Enabled)
+		);
 	}
 
 	get onDidChangeReducedMotion(): Event<void> {

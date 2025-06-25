@@ -9,11 +9,27 @@ import { Task, TaskResult, AgentConfig } from '../types.js';
 export class PlannerAgent extends BaseAgentImpl {
 	constructor(config: AgentConfig, memoryGraph: MemoryGraphEngine) {
 		super(config, memoryGraph);
-	} canExecuteTask(task: Task): boolean {
+	}
+	canExecuteTask(task: Task): boolean {
 		const planningKeywords = [
-			'plan', 'planning', 'architecture', 'design', 'requirement', 'requirements',
-			'analyze', 'analysis', 'feature', 'project', 'structure', 'organize',
-			'breakdown', 'strategy', 'roadmap', 'scope', 'specification', 'development'
+			'plan',
+			'planning',
+			'architecture',
+			'design',
+			'requirement',
+			'requirements',
+			'analyze',
+			'analysis',
+			'feature',
+			'project',
+			'structure',
+			'organize',
+			'breakdown',
+			'strategy',
+			'roadmap',
+			'scope',
+			'specification',
+			'development',
 		];
 
 		// Check if task has a type property and it matches our capabilities
@@ -27,7 +43,8 @@ export class PlannerAgent extends BaseAgentImpl {
 		// Check title and description for planning keywords
 		const taskText = `${task.title} ${task.description}`.toLowerCase();
 		return planningKeywords.some(keyword => taskText.includes(keyword));
-	} async executeTask(task: Task): Promise<TaskResult> {
+	}
+	async executeTask(task: Task): Promise<TaskResult> {
 		const startTime = Date.now();
 
 		// Ensure minimum execution time for test reliability
@@ -44,7 +61,7 @@ export class PlannerAgent extends BaseAgentImpl {
 			await this.sendMessage({
 				type: 'notification',
 				content: `Starting project planning for: ${task.title}`,
-				metadata: { taskId: task.id }
+				metadata: { taskId: task.id },
 			});
 
 			const constraints = (task.inputs?.constraints as Record<string, unknown>) || {};
@@ -59,14 +76,15 @@ export class PlannerAgent extends BaseAgentImpl {
 			const generatedTasks = await this.generateTasks(analysis);
 
 			// Update task progress
-			task.progress = 100; const result: TaskResult = {
+			task.progress = 100;
+			const result: TaskResult = {
 				success: true,
 				outputs: {
 					analysis: {
 						type: 'analysis',
 						name: 'Project Analysis',
 						content: JSON.stringify(analysis, null, 2),
-						metadata: { taskId: task.id }
+						metadata: { taskId: task.id },
 					},
 					plan: {
 						type: 'plan',
@@ -75,9 +93,9 @@ export class PlannerAgent extends BaseAgentImpl {
 						metadata: {
 							taskId: task.id,
 							tasksCount: generatedTasks.length,
-							memoryChangesCount: memoryChanges.length
-						}
-					}
+							memoryChangesCount: memoryChanges.length,
+						},
+					},
 				},
 				duration: Date.now() - startTime,
 				memoryChanges,
@@ -86,7 +104,7 @@ export class PlannerAgent extends BaseAgentImpl {
 			await this.sendMessage({
 				type: 'response',
 				content: `Project planning completed. Created ${memoryChanges.length} memory nodes and ${generatedTasks.length} tasks.`,
-				metadata: { taskId: task.id, result }
+				metadata: { taskId: task.id, result },
 			});
 
 			return result;
@@ -94,7 +112,7 @@ export class PlannerAgent extends BaseAgentImpl {
 			await this.sendMessage({
 				type: 'error',
 				content: `Project planning failed: ${error instanceof Error ? error.message : String(error)}`,
-				metadata: { taskId: task.id }
+				metadata: { taskId: task.id },
 			});
 
 			return {
@@ -140,11 +158,11 @@ export class PlannerAgent extends BaseAgentImpl {
 				requirements: feature.user_stories || [],
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				version: '1.0.0'
+				version: '1.0.0',
 			};
 
 			await this.memoryGraph.addNode(featureNode);
-			nodeIds.push(featureNode.id);			// Create screen nodes for UI features
+			nodeIds.push(featureNode.id); // Create screen nodes for UI features
 			if (feature.screens) {
 				for (const screen of feature.screens) {
 					const screenNode: ScreenNode = {
@@ -156,13 +174,13 @@ export class PlannerAgent extends BaseAgentImpl {
 						route: screen.route || '',
 						createdAt: new Date(),
 						updatedAt: new Date(),
-						version: '1.0.0'
+						version: '1.0.0',
 					};
 
 					await this.memoryGraph.addNode(screenNode);
 					nodeIds.push(screenNode.id);
 				}
-			}			// Create logic nodes for business logic
+			} // Create logic nodes for business logic
 			if (feature.logic) {
 				for (const logic of feature.logic) {
 					const logicNode: LogicNode = {
@@ -173,7 +191,7 @@ export class PlannerAgent extends BaseAgentImpl {
 						logicType: 'function',
 						createdAt: new Date(),
 						updatedAt: new Date(),
-						version: '1.0.0'
+						version: '1.0.0',
 					};
 
 					await this.memoryGraph.addNode(logicNode);
@@ -308,11 +326,14 @@ export class PlannerAgent extends BaseAgentImpl {
 				priority: 'high',
 				acceptance_criteria: [],
 				user_stories: [],
-			}
+			},
 		];
 	}
 
-	private suggestTechnicalStack(requirements: string, constraints: Record<string, unknown>): string[] {
+	private suggestTechnicalStack(
+		requirements: string,
+		constraints: Record<string, unknown>
+	): string[] {
 		// This would use AI to suggest appropriate tech stack
 		return ['React', 'TypeScript', 'Tailwind CSS', 'Vite'];
 	}

@@ -7,16 +7,26 @@ import * as nls from '../../../../nls.js';
 import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
-import { IExtensionPoint, IExtensionPointUser } from '../../../services/extensions/common/extensionsRegistry.js';
-import { ViewsWelcomeExtensionPoint, ViewWelcome, ViewIdentifierMap } from './viewsWelcomeExtensionPoint.js';
+import {
+	IExtensionPoint,
+	IExtensionPointUser,
+} from '../../../services/extensions/common/extensionsRegistry.js';
+import {
+	ViewsWelcomeExtensionPoint,
+	ViewWelcome,
+	ViewIdentifierMap,
+} from './viewsWelcomeExtensionPoint.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { Extensions as ViewContainerExtensions, IViewContentDescriptor, IViewsRegistry } from '../../../common/views.js';
+import {
+	Extensions as ViewContainerExtensions,
+	IViewContentDescriptor,
+	IViewsRegistry,
+} from '../../../common/views.js';
 import { isProposedApiEnabled } from '../../../services/extensions/common/extensions.js';
 
 const viewsRegistry = Registry.as<IViewsRegistry>(ViewContainerExtensions.ViewsRegistry);
 
 export class ViewsWelcomeContribution extends Disposable implements IWorkbenchContribution {
-
 	private viewWelcomeContents = new Map<ViewWelcome, IDisposable>();
 
 	constructor(extensionPoint: IExtensionPoint<ViewsWelcomeExtensionPoint>) {
@@ -50,7 +60,7 @@ export class ViewsWelcomeContribution extends Disposable implements IWorkbenchCo
 						when: ContextKeyExpr.deserialize(welcome.when),
 						precondition,
 						group,
-						order
+						order,
 					});
 				}
 			}
@@ -66,13 +76,21 @@ export class ViewsWelcomeContribution extends Disposable implements IWorkbenchCo
 	}
 }
 
-function parseGroupAndOrder(welcome: ViewWelcome, contribution: IExtensionPointUser<ViewsWelcomeExtensionPoint>): { group: string | undefined; order: number | undefined } {
-
+function parseGroupAndOrder(
+	welcome: ViewWelcome,
+	contribution: IExtensionPointUser<ViewsWelcomeExtensionPoint>
+): { group: string | undefined; order: number | undefined } {
 	let group: string | undefined;
 	let order: number | undefined;
 	if (welcome.group) {
 		if (!isProposedApiEnabled(contribution.description, 'contribViewsWelcome')) {
-			contribution.collector.warn(nls.localize('ViewsWelcomeExtensionPoint.proposedAPI', "The viewsWelcome contribution in '{0}' requires 'enabledApiProposals: [\"contribViewsWelcome\"]' in order to use the 'group' proposed property.", contribution.description.identifier.value));
+			contribution.collector.warn(
+				nls.localize(
+					'ViewsWelcomeExtensionPoint.proposedAPI',
+					"The viewsWelcome contribution in '{0}' requires 'enabledApiProposals: [\"contribViewsWelcome\"]' in order to use the 'group' proposed property.",
+					contribution.description.identifier.value
+				)
+			);
 			return { group, order };
 		}
 

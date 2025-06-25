@@ -32,8 +32,9 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
 	// Filter nodes based on search and type filter
-	const filteredNodes = nodes.filter((node) => {
-		const matchesSearch = searchTerm === '' ||
+	const filteredNodes = nodes.filter(node => {
+		const matchesSearch =
+			searchTerm === '' ||
 			node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
 			node.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -79,11 +80,11 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 			});
 
 			let ringIndex = 0;
-			typeGroups.forEach((typeNodes) => {
+			typeGroups.forEach(typeNodes => {
 				const angleStep = (2 * Math.PI) / typeNodes.length;
 				typeNodes.forEach((node, index) => {
 					const angle = index * angleStep;
-					const currentRadius = radius + (ringIndex * 120);
+					const currentRadius = radius + ringIndex * 120;
 					positions.set(node.id, {
 						x: 400 + currentRadius * Math.cos(angle),
 						y: 300 + currentRadius * Math.sin(angle),
@@ -200,7 +201,7 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 		);
 
 		return {
-			relationshipCount: nodeRelationships.length
+			relationshipCount: nodeRelationships.length,
 		};
 	};
 
@@ -231,7 +232,7 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 					<Input
 						placeholder="Search nodes..."
 						value={searchTerm}
-						onChange={(e) => setSearchTerm(e.target.value)}
+						onChange={e => setSearchTerm(e.target.value)}
 						className="flex-1"
 						aria-label="Search nodes"
 					/>
@@ -241,7 +242,7 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 					<Filter className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
 					<select
 						value={filterType}
-						onChange={(e) => setFilterType(e.target.value)}
+						onChange={e => setFilterType(e.target.value)}
 						className="bg-background border border-input rounded-md px-2 py-1 text-sm"
 						aria-label="Filter by node type"
 					>
@@ -263,7 +264,8 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 					</Button>
 					<Button size="sm" variant="outline" onClick={handleResetView} aria-label="Reset view">
 						<Maximize2 className="w-4 h-4" aria-hidden="true" />
-					</Button>				</div>
+					</Button>{' '}
+				</div>
 			</div>
 
 			{/* Graph Canvas */}
@@ -319,29 +321,29 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 						if (!fromPos || !toPos) return null;
 
 						// Determine line style based on relationship type
-						let strokeStyle = "1";
-						let strokeColor = "hsl(var(--border))";
-						let markerEnd = "";
+						let strokeStyle = '1';
+						let strokeColor = 'hsl(var(--border))';
+						let markerEnd = '';
 
 						switch (relationship.type) {
 							case 'depends_on':
-								strokeStyle = "4,2";
-								markerEnd = "url(#arrow-depends)";
+								strokeStyle = '4,2';
+								markerEnd = 'url(#arrow-depends)';
 								break;
 							case 'implements':
-								strokeStyle = "1,0";
-								strokeColor = "hsl(var(--primary))";
-								markerEnd = "url(#arrow-implements)";
+								strokeStyle = '1,0';
+								strokeColor = 'hsl(var(--primary))';
+								markerEnd = 'url(#arrow-implements)';
 								break;
 							case 'extends':
-								strokeStyle = "1,0";
-								strokeColor = "hsl(var(--primary))";
+								strokeStyle = '1,0';
+								strokeColor = 'hsl(var(--primary))';
 								break;
 							case 'contains':
-								strokeStyle = "0";
+								strokeStyle = '0';
 								break;
 							default:
-								strokeStyle = "4,4";
+								strokeStyle = '4,4';
 						}
 
 						// Offset the connection points to connect to the edge of the cards
@@ -387,7 +389,7 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 								isSelected={selectedNodeId === node.id}
 								isEditable={!!onNodeEdit}
 								onSelect={() => onNodeSelect?.(node.id)}
-								onEdit={(updates) => onNodeEdit?.(node.id, updates)}
+								onEdit={updates => onNodeEdit?.(node.id, updates)}
 								className="cursor-pointer hover:scale-105 transition-transform"
 							/>
 						</PositionedNode>
@@ -402,8 +404,7 @@ export const MemoryGraphVisualization: React.FC<MemoryGraphVisualizationProps> =
 							<p>
 								{searchTerm || filterType !== 'all'
 									? 'Try adjusting your search or filter criteria'
-									: 'Start a conversation to build your project'
-								}
+									: 'Start a conversation to build your project'}
 							</p>
 						</div>
 					</div>

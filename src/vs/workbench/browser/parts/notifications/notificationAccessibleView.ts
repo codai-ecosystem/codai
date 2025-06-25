@@ -7,9 +7,17 @@ import { IAction } from '../../../../base/common/actions.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { localize } from '../../../../nls.js';
-import { IAccessibleViewService, AccessibleViewProviderId, AccessibleViewType, AccessibleContentProvider } from '../../../../platform/accessibility/browser/accessibleView.js';
+import {
+	IAccessibleViewService,
+	AccessibleViewProviderId,
+	AccessibleViewType,
+	AccessibleContentProvider,
+} from '../../../../platform/accessibility/browser/accessibleView.js';
 import { IAccessibleViewImplementation } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
-import { IAccessibilitySignalService, AccessibilitySignal } from '../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
+import {
+	IAccessibilitySignalService,
+	AccessibilitySignal,
+} from '../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { IListService, WorkbenchList } from '../../../../platform/list/browser/listService.js';
@@ -49,7 +57,7 @@ export class NotificationAccessibleView implements IAccessibleViewImplementation
 					list.domFocus();
 					try {
 						list.setFocus([notificationIndex]);
-					} catch { }
+					} catch {}
 				}
 			}
 
@@ -59,7 +67,14 @@ export class NotificationAccessibleView implements IAccessibleViewImplementation
 				if (!notification) {
 					return;
 				}
-				return notification.source ? localize('notification.accessibleViewSrc', '{0} Source: {1}', message, notification.source) : localize('notification.accessibleView', '{0}', message);
+				return notification.source
+					? localize(
+							'notification.accessibleViewSrc',
+							'{0} Source: {1}',
+							message,
+							notification.source
+						)
+					: localize('notification.accessibleView', '{0}', message);
 			}
 			const content = getContentForNotification();
 			if (!content) {
@@ -89,15 +104,17 @@ export class NotificationAccessibleView implements IAccessibleViewImplementation
 					focusList();
 					list.focusPrevious();
 					return getContentForNotification();
-				},
+				}
 			);
 		}
 		return getProvider();
 	}
 }
 
-
-function getActionsFromNotification(notification: INotificationViewItem, accessibilitySignalService: IAccessibilitySignalService): IAction[] | undefined {
+function getActionsFromNotification(
+	notification: INotificationViewItem,
+	accessibilitySignalService: IAccessibilitySignalService
+): IAction[] | undefined {
 	let actions = undefined;
 	if (notification.actions) {
 		actions = [];
@@ -124,12 +141,16 @@ function getActionsFromNotification(notification: INotificationViewItem, accessi
 	}
 	if (actions) {
 		actions.push({
-			id: 'clearNotification', label: localize('clearNotification', "Clear Notification"), tooltip: localize('clearNotification', "Clear Notification"), run: () => {
+			id: 'clearNotification',
+			label: localize('clearNotification', 'Clear Notification'),
+			tooltip: localize('clearNotification', 'Clear Notification'),
+			run: () => {
 				notification.close();
 				accessibilitySignalService.playSignal(AccessibilitySignal.clear);
-			}, enabled: true, class: ThemeIcon.asClassName(Codicon.clearAll)
+			},
+			enabled: true,
+			class: ThemeIcon.asClassName(Codicon.clearAll),
 		});
 	}
 	return actions;
 }
-

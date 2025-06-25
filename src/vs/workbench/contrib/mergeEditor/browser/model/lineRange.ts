@@ -12,8 +12,14 @@ import { ITextModel } from '../../../../../editor/common/model.js';
  * TODO: Deprecate in favor of LineRange!
  */
 export class MergeEditorLineRange extends LineRange {
-	static fromLineNumbers(startLineNumber: number, endExclusiveLineNumber: number): MergeEditorLineRange {
-		return MergeEditorLineRange.fromLength(startLineNumber, endExclusiveLineNumber - startLineNumber);
+	static fromLineNumbers(
+		startLineNumber: number,
+		endExclusiveLineNumber: number
+	): MergeEditorLineRange {
+		return MergeEditorLineRange.fromLength(
+			startLineNumber,
+			endExclusiveLineNumber - startLineNumber
+		);
 	}
 
 	static fromLength(startLineNumber: number, length: number): MergeEditorLineRange {
@@ -21,7 +27,10 @@ export class MergeEditorLineRange extends LineRange {
 	}
 
 	public override join(other: MergeEditorLineRange): MergeEditorLineRange {
-		return MergeEditorLineRange.fromLineNumbers(Math.min(this.startLineNumber, other.startLineNumber), Math.max(this.endLineNumberExclusive, other.endLineNumberExclusive));
+		return MergeEditorLineRange.fromLineNumbers(
+			Math.min(this.startLineNumber, other.startLineNumber),
+			Math.max(this.endLineNumberExclusive, other.endLineNumberExclusive)
+		);
 	}
 
 	public isAfter(range: MergeEditorLineRange): boolean {
@@ -41,7 +50,10 @@ export class MergeEditorLineRange extends LineRange {
 	}
 
 	public deltaStart(lineDelta: number): MergeEditorLineRange {
-		return MergeEditorLineRange.fromLength(this.startLineNumber + lineDelta, this.length - lineDelta);
+		return MergeEditorLineRange.fromLength(
+			this.startLineNumber + lineDelta,
+			this.length - lineDelta
+		);
 	}
 
 	public getLines(model: ITextModel): string[] {
@@ -56,6 +68,11 @@ export class MergeEditorLineRange extends LineRange {
 		if (this.isEmpty) {
 			return new Range(this.startLineNumber, 1, this.startLineNumber, 1);
 		}
-		return new Range(this.startLineNumber, 1, this.endLineNumberExclusive - 1, Constants.MAX_SAFE_SMALL_INTEGER);
+		return new Range(
+			this.startLineNumber,
+			1,
+			this.endLineNumberExclusive - 1,
+			Constants.MAX_SAFE_SMALL_INTEGER
+		);
 	}
 }

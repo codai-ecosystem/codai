@@ -8,7 +8,6 @@ import { flakySuite } from '../common/testUtils.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../common/utils.js';
 
 flakySuite('IndexedDB', () => {
-
 	let indexedDB: IndexedDB;
 
 	setup(async () => {
@@ -21,8 +20,12 @@ flakySuite('IndexedDB', () => {
 	});
 
 	test('runInTransaction', async () => {
-		await indexedDB.runInTransaction('test-store', 'readwrite', store => store.add('hello1', 'key1'));
-		const value = await indexedDB.runInTransaction('test-store', 'readonly', store => store.get('key1'));
+		await indexedDB.runInTransaction('test-store', 'readwrite', store =>
+			store.add('hello1', 'key1')
+		);
+		const value = await indexedDB.runInTransaction('test-store', 'readonly', store =>
+			store.get('key1')
+		);
 		assert.deepStrictEqual(value, 'hello1');
 	});
 
@@ -45,20 +48,24 @@ flakySuite('IndexedDB', () => {
 	});
 
 	test('hasPendingTransactions', async () => {
-		const promise = indexedDB.runInTransaction('test-store', 'readwrite', store => store.add('hello2', 'key2'));
+		const promise = indexedDB.runInTransaction('test-store', 'readwrite', store =>
+			store.add('hello2', 'key2')
+		);
 		assert.deepStrictEqual(indexedDB.hasPendingTransactions(), true);
 		await promise;
 		assert.deepStrictEqual(indexedDB.hasPendingTransactions(), false);
 	});
 
 	test('close', async () => {
-		const promise = indexedDB.runInTransaction('test-store', 'readwrite', store => store.add('hello3', 'key3'));
+		const promise = indexedDB.runInTransaction('test-store', 'readwrite', store =>
+			store.add('hello3', 'key3')
+		);
 		indexedDB.close();
 		assert.deepStrictEqual(indexedDB.hasPendingTransactions(), false);
 		try {
 			await promise;
 			assert.fail('Transaction should be aborted');
-		} catch (error) { }
+		} catch (error) {}
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();

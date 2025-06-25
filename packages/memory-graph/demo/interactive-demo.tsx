@@ -12,7 +12,7 @@ import {
 	type ScreenNode,
 	type LogicNode,
 	type DataNode,
-	type Relationship
+	type Relationship,
 } from '@dragoscatalin/memory-graph';
 import { MemoryGraphVisualization } from '@dragoscatalin/ui-components';
 
@@ -114,16 +114,20 @@ class AIDEMemoryDemo {
 
 	/**
 	 * Create an initial graph demonstrating AIDE's approach to software development
-	 */	private setupInitialGraph(): void {
+	 */ private setupInitialGraph(): void {
 		// User intent: Build a task management app
-		const mainIntent = this.engine.addNode(GraphBuilders.intent('Task Management App')
-			.withDescription('Build a modern, collaborative task management application')
-			.withMetadata({
-				category: 'goal',
-				priority: 'high',
-				status: 'active',
-				context: 'User wants to replace current inefficient task tracking with AI-enhanced solution',
-			}).build());
+		const mainIntent = this.engine.addNode(
+			GraphBuilders.intent('Task Management App')
+				.withDescription('Build a modern, collaborative task management application')
+				.withMetadata({
+					category: 'goal',
+					priority: 'high',
+					status: 'active',
+					context:
+						'User wants to replace current inefficient task tracking with AI-enhanced solution',
+				})
+				.build()
+		);
 
 		// Break down into features
 		const authFeature = this.builder.addFeature({
@@ -135,13 +139,13 @@ class AIDEMemoryDemo {
 				'Email/password registration',
 				'Social login (Google, GitHub)',
 				'Password reset functionality',
-				'Email verification'
+				'Email verification',
 			],
 			acceptanceCriteria: [
 				'Users can register with email',
 				'Users can login securely',
 				'Password reset works via email',
-				'Social login integrates properly'
+				'Social login integrates properly',
 			],
 			estimatedComplexity: 7,
 		});
@@ -155,13 +159,13 @@ class AIDEMemoryDemo {
 				'Create/edit/delete tasks',
 				'Task priorities and due dates',
 				'Task categorization',
-				'Subtasks and dependencies'
+				'Subtasks and dependencies',
 			],
 			acceptanceCriteria: [
 				'Users can CRUD tasks',
 				'Tasks have priorities and dates',
 				'Tasks can be categorized',
-				'Complex task hierarchies supported'
+				'Complex task hierarchies supported',
 			],
 			estimatedComplexity: 8,
 		});
@@ -175,7 +179,7 @@ class AIDEMemoryDemo {
 				'Smart task suggestions',
 				'Priority recommendations',
 				'Deadline predictions',
-				'Context-aware reminders'
+				'Context-aware reminders',
 			],
 			estimatedComplexity: 9,
 		});
@@ -210,12 +214,22 @@ class AIDEMemoryDemo {
 			description: 'Handles user authentication and session management',
 			logicType: 'service',
 			inputs: [
-				{ name: 'credentials', type: 'UserCredentials', required: true, description: 'User login credentials' },
-				{ name: 'provider', type: 'AuthProvider', required: false, description: 'Social auth provider' }
+				{
+					name: 'credentials',
+					type: 'UserCredentials',
+					required: true,
+					description: 'User login credentials',
+				},
+				{
+					name: 'provider',
+					type: 'AuthProvider',
+					required: false,
+					description: 'Social auth provider',
+				},
 			],
 			outputs: [
 				{ name: 'user', type: 'User', description: 'Authenticated user object' },
-				{ name: 'token', type: 'string', description: 'JWT authentication token' }
+				{ name: 'token', type: 'string', description: 'JWT authentication token' },
 			],
 			complexity: 6,
 			testCoverage: 85,
@@ -227,11 +241,9 @@ class AIDEMemoryDemo {
 			logicType: 'service',
 			inputs: [
 				{ name: 'taskData', type: 'TaskInput', required: true },
-				{ name: 'userId', type: 'string', required: true }
+				{ name: 'userId', type: 'string', required: true },
 			],
-			outputs: [
-				{ name: 'task', type: 'Task', description: 'Created or updated task' }
-			],
+			outputs: [{ name: 'task', type: 'Task', description: 'Created or updated task' }],
 			complexity: 7,
 			testCoverage: 92,
 		});
@@ -242,11 +254,19 @@ class AIDEMemoryDemo {
 			logicType: 'service',
 			inputs: [
 				{ name: 'userHistory', type: 'TaskHistory[]', required: true },
-				{ name: 'context', type: 'UserContext', required: true }
+				{ name: 'context', type: 'UserContext', required: true },
 			],
 			outputs: [
-				{ name: 'suggestions', type: 'TaskSuggestion[]', description: 'AI-generated task suggestions' },
-				{ name: 'priorities', type: 'PriorityRecommendation[]', description: 'Priority recommendations' }
+				{
+					name: 'suggestions',
+					type: 'TaskSuggestion[]',
+					description: 'AI-generated task suggestions',
+				},
+				{
+					name: 'priorities',
+					type: 'PriorityRecommendation[]',
+					description: 'Priority recommendations',
+				},
 			],
 			complexity: 9,
 			testCoverage: 78,
@@ -264,7 +284,7 @@ class AIDEMemoryDemo {
 				avatar: 'string?',
 				preferences: 'UserPreferences',
 				createdAt: 'Date',
-				lastLoginAt: 'Date?'
+				lastLoginAt: 'Date?',
 			},
 			validation: ['email format', 'unique email', 'display name length'],
 			persistence: true,
@@ -285,7 +305,7 @@ class AIDEMemoryDemo {
 				tags: 'string[]',
 				subtasks: 'Task[]',
 				dependencies: 'string[]',
-				aiMetadata: 'AIMetadata?'
+				aiMetadata: 'AIMetadata?',
 			},
 			validation: ['title required', 'priority enum', 'valid assignee'],
 			persistence: true,
@@ -333,7 +353,7 @@ class AIDEMemoryDemo {
 				'Real-time task updates',
 				'User presence indicators',
 				'Collaborative editing',
-				'Comment system'
+				'Comment system',
 			],
 			estimatedComplexity: 8,
 		});
@@ -355,7 +375,9 @@ class AIDEMemoryDemo {
 
 		// Connect to existing graph
 		const mainIntent = this.builder.getNodesByType('intent')[0];
-		const taskFeature = this.builder.getNodesByType('feature').find(f => f.name === 'Task Management');
+		const taskFeature = this.builder
+			.getNodesByType('feature')
+			.find(f => f.name === 'Task Management');
 
 		if (mainIntent) {
 			this.builder.addRelationship(mainIntent.id, collabFeature.id, 'contains');
@@ -433,40 +455,32 @@ class AIDEMemoryDemo {
 				</div>
 				<div className="demo-content">
 					<div className="demo-controls">
-						<button
-							className="demo-button"
-							onClick={() => this.addCollaborationFeature()}
-						>
+						<button className="demo-button" onClick={() => this.addCollaborationFeature()}>
 							Add Collaboration
 						</button>
-						<button
-							className="demo-button"
-							onClick={() => this.addAIInsights()}
-						>
+						<button className="demo-button" onClick={() => this.addAIInsights()}>
 							AI Insights
 						</button>
-						<button
-							className="demo-button"
-							onClick={() => window.location.reload()}
-						>
+						<button className="demo-button" onClick={() => window.location.reload()}>
 							Reset Demo
 						</button>
 					</div>
 					<div className="demo-info">
 						<h4>Live Memory Graph</h4>
 						<p>
-							<strong>{nodes.length}</strong> nodes, <strong>{relationships.length}</strong> relationships
+							<strong>{nodes.length}</strong> nodes, <strong>{relationships.length}</strong>{' '}
+							relationships
 						</p>
 						<p>
-							This graph represents the project's entire intent and implementation structure.
-							Try adding features or AI insights to see real-time updates!
+							This graph represents the project's entire intent and implementation structure. Try
+							adding features or AI insights to see real-time updates!
 						</p>
 					</div>
 					<MemoryGraphVisualization
 						nodes={nodes}
 						relationships={relationships}
-						onNodeSelect={(nodeId) => console.log('Selected node:', nodeId)}
-						onNodeEdit={(nodeId) => console.log('Edit node:', nodeId)}
+						onNodeSelect={nodeId => console.log('Selected node:', nodeId)}
+						onNodeEdit={nodeId => console.log('Edit node:', nodeId)}
 						layout="force"
 						className="demo-graph"
 					/>

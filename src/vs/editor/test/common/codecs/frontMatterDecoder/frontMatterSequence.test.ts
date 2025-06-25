@@ -7,24 +7,21 @@ import assert from 'assert';
 import { Range } from '../../../../common/core/range.js';
 import { FrontMatterValueToken } from '../../../../common/codecs/frontMatterCodec/tokens/index.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { Space, Tab, VerticalTab, Word } from '../../../../common/codecs/simpleCodec/tokens/index.js';
+import {
+	Space,
+	Tab,
+	VerticalTab,
+	Word,
+} from '../../../../common/codecs/simpleCodec/tokens/index.js';
 import { FrontMatterSequence } from '../../../../common/codecs/frontMatterCodec/tokens/frontMatterSequence.js';
 
 suite('FrontMatterSequence', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('• extends \'FrontMatterValueToken\'', () => {
-		const sequence = new FrontMatterSequence([
-			new Word(
-				new Range(1, 1, 1, 5),
-				'test',
-			),
-		]);
+	test("• extends 'FrontMatterValueToken'", () => {
+		const sequence = new FrontMatterSequence([new Word(new Range(1, 1, 1, 5), 'test')]);
 
-		assert(
-			sequence instanceof FrontMatterValueToken,
-			'Must extend FrontMatterValueToken class.',
-		);
+		assert(sequence instanceof FrontMatterValueToken, 'Must extend FrontMatterValueToken class.');
 	});
 
 	suite('• trimEnd()', () => {
@@ -48,14 +45,12 @@ suite('FrontMatterSequence', () => {
 					new Tab(new Range(4, 31, 4, 32)),
 					new Space(new Range(4, 32, 4, 33)),
 				],
-				'Must return correct trimmed list of spacing tokens.',
+				'Must return correct trimmed list of spacing tokens.'
 			);
 
 			assert(
-				sequence.range.equalsRange(
-					new Range(4, 18, 4, 28),
-				),
-				'Must correctly update token range.',
+				sequence.range.equalsRange(new Range(4, 18, 4, 28)),
+				'Must correctly update token range.'
 			);
 		});
 
@@ -78,22 +73,18 @@ suite('FrontMatterSequence', () => {
 					new Tab(new Range(4, 31, 4, 32)),
 					new Space(new Range(4, 32, 4, 33)),
 				],
-				'Must return correct trimmed list of spacing tokens.',
+				'Must return correct trimmed list of spacing tokens.'
 			);
 
 			assert(
-				sequence.range.equalsRange(
-					new Range(4, 28, 4, 28),
-				),
-				'Must correctly update token range.',
+				sequence.range.equalsRange(new Range(4, 28, 4, 28)),
+				'Must correctly update token range.'
 			);
 
 			assert.deepStrictEqual(
 				sequence.children,
-				[
-					new Word(new Range(4, 28, 4, 28), ''),
-				],
-				'Must contain a single empty token.',
+				[new Word(new Range(4, 28, 4, 28), '')],
+				'Must contain a single empty token.'
 			);
 		});
 	});

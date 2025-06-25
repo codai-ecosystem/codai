@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import {
-	MemoryGraphVisualization,
-	MemoryGraphEngine,
-	createMemoryGraph
-} from '../src';
+import { MemoryGraphVisualization, MemoryGraphEngine, createMemoryGraph } from '../src';
 
 // Sample data for demonstration
 const sampleGraph = createMemoryGraph({
@@ -12,38 +8,38 @@ const sampleGraph = createMemoryGraph({
 			id: 'user-auth',
 			type: 'feature',
 			name: 'User Authentication',
-			description: 'Login and registration functionality'
+			description: 'Login and registration functionality',
 		},
 		{
 			id: 'login-screen',
 			type: 'screen',
 			name: 'Login Screen',
-			description: 'UI for user login'
+			description: 'UI for user login',
 		},
 		{
 			id: 'auth-service',
 			type: 'api',
 			name: 'Auth Service',
-			description: 'Backend authentication service'
+			description: 'Backend authentication service',
 		},
 		{
 			id: 'user-model',
 			type: 'data_model',
 			name: 'User Model',
-			description: 'User data structure'
+			description: 'User data structure',
 		},
 		{
 			id: 'auth-logic',
 			type: 'logic',
 			name: 'Auth Logic',
-			description: 'Authentication business logic'
+			description: 'Authentication business logic',
 		},
 		{
 			id: 'auth-tests',
 			type: 'test',
 			name: 'Auth Tests',
-			description: 'Unit tests for authentication'
-		}
+			description: 'Unit tests for authentication',
+		},
 	],
 	relationships: [
 		{
@@ -51,37 +47,37 @@ const sampleGraph = createMemoryGraph({
 			fromNodeId: 'user-auth',
 			toNodeId: 'login-screen',
 			type: 'contains',
-			strength: 0.8
+			strength: 0.8,
 		},
 		{
 			id: 'rel-2',
 			fromNodeId: 'login-screen',
 			toNodeId: 'auth-service',
 			type: 'uses',
-			strength: 0.9
+			strength: 0.9,
 		},
 		{
 			id: 'rel-3',
 			fromNodeId: 'auth-service',
 			toNodeId: 'user-model',
 			type: 'depends_on',
-			strength: 0.7
+			strength: 0.7,
 		},
 		{
 			id: 'rel-4',
 			fromNodeId: 'auth-service',
 			toNodeId: 'auth-logic',
 			type: 'implements',
-			strength: 0.8
+			strength: 0.8,
 		},
 		{
 			id: 'rel-5',
 			fromNodeId: 'auth-tests',
 			toNodeId: 'auth-logic',
 			type: 'tests',
-			strength: 0.6
-		}
-	]
+			strength: 0.6,
+		},
+	],
 });
 
 export const MemoryGraphDemo: React.FC = () => {
@@ -114,7 +110,7 @@ export const MemoryGraphDemo: React.FC = () => {
 		const newNode = engine.addNode({
 			type: randomType as any,
 			name: `New ${randomType} ${Date.now()}`,
-			description: `A new ${randomType} node added dynamically`
+			description: `A new ${randomType} node added dynamically`,
 		});
 
 		// Add a random relationship to an existing node
@@ -125,7 +121,7 @@ export const MemoryGraphDemo: React.FC = () => {
 				fromNodeId: newNode.id,
 				toNodeId: randomNode.id,
 				type: 'uses',
-				strength: Math.random()
+				strength: Math.random(),
 			});
 		}
 
@@ -135,15 +131,11 @@ export const MemoryGraphDemo: React.FC = () => {
 	return (
 		<div className="p-6 bg-gray-50 min-h-screen">
 			<div className="max-w-7xl mx-auto">
-				<h1 className="text-3xl font-bold text-gray-900 mb-6">
-					Memory Graph Visualization Demo
-				</h1>
+				<h1 className="text-3xl font-bold text-gray-900 mb-6">Memory Graph Visualization Demo</h1>
 
 				<div className="bg-white rounded-lg shadow-lg p-6 mb-6">
 					<div className="flex items-center justify-between mb-4">
-						<h2 className="text-xl font-semibold text-gray-800">
-							Interactive Graph
-						</h2>
+						<h2 className="text-xl font-semibold text-gray-800">Interactive Graph</h2>
 						<div className="flex gap-3">
 							<button
 								onClick={addRandomNode}
@@ -155,7 +147,7 @@ export const MemoryGraphDemo: React.FC = () => {
 								<input
 									type="checkbox"
 									checked={isEditable}
-									onChange={(e) => setIsEditable(e.target.checked)}
+									onChange={e => setIsEditable(e.target.checked)}
 									className="rounded"
 								/>
 								<span className="text-sm text-gray-600">Editable</span>
@@ -178,9 +170,7 @@ export const MemoryGraphDemo: React.FC = () => {
 
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div className="bg-white rounded-lg shadow p-6">
-						<h3 className="text-lg font-semibold text-gray-800 mb-4">
-							Graph Statistics
-						</h3>
+						<h3 className="text-lg font-semibold text-gray-800 mb-4">Graph Statistics</h3>
 						<div className="space-y-2 text-sm text-gray-600">
 							<div>Nodes: {graph.nodes.length}</div>
 							<div>Relationships: {graph.relationships.length}</div>
@@ -189,9 +179,7 @@ export const MemoryGraphDemo: React.FC = () => {
 					</div>
 
 					<div className="bg-white rounded-lg shadow p-6">
-						<h3 className="text-lg font-semibold text-gray-800 mb-4">
-							Instructions
-						</h3>
+						<h3 className="text-lg font-semibold text-gray-800 mb-4">Instructions</h3>
 						<ul className="space-y-2 text-sm text-gray-600">
 							<li>• Click nodes to select them</li>
 							<li>• Drag to pan the view</li>

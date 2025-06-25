@@ -13,12 +13,31 @@ import { IModelService } from '../../../../../editor/common/services/model.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { ILabelService } from '../../../../../platform/label/common/label.js';
 import { IUriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentity.js';
-import { IAITextQuery, IFileMatch, ITextSearchPreviewOptions, resultIsMatch } from '../../../../services/search/common/search.js';
+import {
+	IAITextQuery,
+	IFileMatch,
+	ITextSearchPreviewOptions,
+	resultIsMatch,
+} from '../../../../services/search/common/search.js';
 import { NotebookEditorWidget } from '../../../notebook/browser/notebookEditorWidget.js';
 import { IReplaceService } from '../replace.js';
 
 import { FileMatchImpl } from '../searchTreeModel/fileMatch.js';
-import { ISearchResult, TEXT_SEARCH_HEADING_PREFIX, AI_TEXT_SEARCH_RESULT_ID, ISearchTreeFolderMatchWorkspaceRoot, ISearchTreeFolderMatch, ISearchTreeFolderMatchWithResource, ITextSearchHeading, IChangeEvent, ISearchModel, ISearchTreeFileMatch, FOLDER_MATCH_PREFIX, getFileMatches, FILE_MATCH_PREFIX } from '../searchTreeModel/searchTreeCommon.js';
+import {
+	ISearchResult,
+	TEXT_SEARCH_HEADING_PREFIX,
+	AI_TEXT_SEARCH_RESULT_ID,
+	ISearchTreeFolderMatchWorkspaceRoot,
+	ISearchTreeFolderMatch,
+	ISearchTreeFolderMatchWithResource,
+	ITextSearchHeading,
+	IChangeEvent,
+	ISearchModel,
+	ISearchTreeFileMatch,
+	FOLDER_MATCH_PREFIX,
+	getFileMatches,
+	FILE_MATCH_PREFIX,
+} from '../searchTreeModel/searchTreeCommon.js';
 import { TextSearchHeadingImpl } from '../searchTreeModel/textSearchHeading.js';
 import { Range } from '../../../../../editor/common/core/range.js';
 import { textSearchResultToMatches } from '../searchTreeModel/match.js';
@@ -59,9 +78,14 @@ export class AITextSearchHeadingImpl extends TextSearchHeadingImpl<IAITextQuery>
 			return;
 		}
 
-		this._folderMatches = (query && query.folderQueries || [])
+		this._folderMatches = ((query && query.folderQueries) || [])
 			.map(fq => fq.folder)
-			.map((resource, index) => <ISearchTreeFolderMatchWorkspaceRoot>this._createBaseFolderMatch(resource, resource.toString(), index, query));
+			.map(
+				(resource, index) =>
+					<ISearchTreeFolderMatchWorkspaceRoot>(
+						this._createBaseFolderMatch(resource, resource.toString(), index, query)
+					)
+			);
 
 		this._folderMatches.forEach(fm => this._folderMatchesMap.set(fm.resource, fm));
 
@@ -82,19 +106,41 @@ export class AITextSearchHeadingImpl extends TextSearchHeadingImpl<IAITextQuery>
 		return uniqueFileUris.size;
 	}
 
-	private _createBaseFolderMatch(resource: URI, id: string, index: number, query: IAITextQuery): ISearchTreeFolderMatch {
-		const folderMatch: ISearchTreeFolderMatch = this._register(this.createWorkspaceRootWithResourceImpl(resource, id, index, query));
-		const disposable = folderMatch.onChange((event) => this._onChange.fire(event));
+	private _createBaseFolderMatch(
+		resource: URI,
+		id: string,
+		index: number,
+		query: IAITextQuery
+	): ISearchTreeFolderMatch {
+		const folderMatch: ISearchTreeFolderMatch = this._register(
+			this.createWorkspaceRootWithResourceImpl(resource, id, index, query)
+		);
+		const disposable = folderMatch.onChange(event => this._onChange.fire(event));
 		this._register(folderMatch.onDispose(() => disposable.dispose()));
 		return folderMatch;
 	}
 
-	private createWorkspaceRootWithResourceImpl(resource: URI, id: string, index: number, query: IAITextQuery): ISearchTreeFolderMatchWorkspaceRoot {
-		return this.instantiationService.createInstance(AIFolderMatchWorkspaceRootImpl, resource, id, index, query, this);
+	private createWorkspaceRootWithResourceImpl(
+		resource: URI,
+		id: string,
+		index: number,
+		query: IAITextQuery
+	): ISearchTreeFolderMatchWorkspaceRoot {
+		return this.instantiationService.createInstance(
+			AIFolderMatchWorkspaceRootImpl,
+			resource,
+			id,
+			index,
+			query,
+			this
+		);
 	}
 }
 
-export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearchTreeFolderMatchWorkspaceRoot {
+export class AIFolderMatchWorkspaceRootImpl
+	extends Disposable
+	implements ISearchTreeFolderMatchWorkspaceRoot
+{
 	protected _onChange = this._register(new Emitter<IChangeEvent>());
 	readonly onChange: Event<IChangeEvent> = this._onChange.event;
 
@@ -106,19 +152,22 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
 
 	protected _fileMatches: Map<string, ISearchTreeFileMatch>; // id to fileMatch
 
-	constructor(private _resource: URI,
+	constructor(
+		private _resource: URI,
 		_id: string,
 		private _index: number,
 		private _query: IAITextQuery,
 		private _parent: ITextSearchHeading,
 		@IInstantiationService private instantiationService: IInstantiationService,
-		@ILabelService labelService: ILabelService,
+		@ILabelService labelService: ILabelService
 	) {
 		super();
 		this._fileMatches = new Map<string, ISearchTreeFileMatch>();
 
 		this._id = FOLDER_MATCH_PREFIX + _id;
-		this._name = new Lazy(() => this.resource ? labelService.getUriBasenameLabel(this.resource) : '');
+		this._name = new Lazy(() =>
+			this.resource ? labelService.getUriBasenameLabel(this.resource) : ''
+		);
 		this._unDisposedFileMatches = new Map<string, ISearchTreeFileMatch>();
 	}
 	get resource(): URI {
@@ -143,23 +192,26 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
 	}
 
 	private latestRank = 0;
-	createAndConfigureFileMatch(rawFileMatch: IFileMatch<URI>, searchInstanceID: string): FileMatchImpl {
-
-		const fileMatch =
-			this.instantiationService.createInstance(
-				AIFileMatch,
-				this._query.contentPattern,
-				this._query.previewOptions,
-				this._query.maxResults,
-				this,
-				rawFileMatch,
-				this,
-				rawFileMatch.resource.toString() + '_' + Date.now().toString(),
-				this.latestRank++,
-			);
+	createAndConfigureFileMatch(
+		rawFileMatch: IFileMatch<URI>,
+		searchInstanceID: string
+	): FileMatchImpl {
+		const fileMatch = this.instantiationService.createInstance(
+			AIFileMatch,
+			this._query.contentPattern,
+			this._query.previewOptions,
+			this._query.maxResults,
+			this,
+			rawFileMatch,
+			this,
+			rawFileMatch.resource.toString() + '_' + Date.now().toString(),
+			this.latestRank++
+		);
 		fileMatch.createMatches();
 		this.doAddFile(fileMatch);
-		const disposable = fileMatch.onChange(({ didRemove }) => this.onFileChange(fileMatch, didRemove));
+		const disposable = fileMatch.onChange(({ didRemove }) =>
+			this.onFileChange(fileMatch, didRemove)
+		);
 		this._register(fileMatch.onDispose(() => disposable.dispose()));
 		return fileMatch;
 	}
@@ -180,7 +232,6 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
 			removed = true;
 		}
 		this._onChange.fire({ elements: [fileMatch], added: added, removed: removed });
-
 	}
 
 	get hasChildren(): boolean {
@@ -197,7 +248,12 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
 		return [...this._fileMatches.values()];
 	}
 
-	remove(matches: ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource | (ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource)[]): void {
+	remove(
+		matches:
+			| ISearchTreeFileMatch
+			| ISearchTreeFolderMatchWithResource
+			| (ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource)[]
+	): void {
 		if (!Array.isArray(matches)) {
 			matches = [matches];
 		}
@@ -258,8 +314,12 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
 		return this._fileMatches.size;
 	}
 
-	doRemoveFile(fileMatches: ISearchTreeFileMatch[], dispose: boolean = true, trigger: boolean = true, keepReadonly = false): void {
-
+	doRemoveFile(
+		fileMatches: ISearchTreeFileMatch[],
+		dispose: boolean = true,
+		trigger: boolean = true,
+		keepReadonly = false
+	): void {
 		const removed = [];
 		for (const match of fileMatches as ISearchTreeFileMatch[]) {
 			if (this._fileMatches.get(match.id())) {
@@ -311,8 +371,12 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
 	}
 
 	private disposeMatches(): void {
-		[...this._fileMatches.values()].forEach((fileMatch: ISearchTreeFileMatch) => fileMatch.dispose());
-		[...this._unDisposedFileMatches.values()].forEach((fileMatch: ISearchTreeFileMatch) => fileMatch.dispose());
+		[...this._fileMatches.values()].forEach((fileMatch: ISearchTreeFileMatch) =>
+			fileMatch.dispose()
+		);
+		[...this._unDisposedFileMatches.values()].forEach((fileMatch: ISearchTreeFileMatch) =>
+			fileMatch.dispose()
+		);
 		this._fileMatches.clear();
 	}
 
@@ -335,16 +399,25 @@ class AIFileMatch extends FileMatchImpl implements ISearchTreeAIFileMatch {
 		public readonly rank: number,
 		@IModelService modelService: IModelService,
 		@IReplaceService replaceService: IReplaceService,
-		@ILabelService labelService: ILabelService,
+		@ILabelService labelService: ILabelService
 	) {
-		super({ pattern: _query }, _previewOptions, _maxResults, _parent, rawMatch, _closestRoot, modelService, replaceService, labelService);
+		super(
+			{ pattern: _query },
+			_previewOptions,
+			_maxResults,
+			_parent,
+			rawMatch,
+			_closestRoot,
+			modelService,
+			replaceService,
+			labelService
+		);
 	}
 
 	override id() {
 		return FILE_MATCH_PREFIX + this._id;
 	}
 	getFullRange(): Range | undefined {
-
 		let earliestStart: IPosition | undefined = undefined;
 		let latestEnd: IPosition | undefined = undefined;
 
@@ -367,8 +440,12 @@ class AIFileMatch extends FileMatchImpl implements ISearchTreeAIFileMatch {
 		if (earliestStart === undefined || latestEnd === undefined) {
 			return undefined;
 		}
-		return new Range(earliestStart.lineNumber, earliestStart.column, latestEnd.lineNumber, latestEnd.column);
-
+		return new Range(
+			earliestStart.lineNumber,
+			earliestStart.column,
+			latestEnd.lineNumber,
+			latestEnd.column
+		);
 	}
 
 	private rangeAsString(): undefined | string {
@@ -376,7 +453,15 @@ class AIFileMatch extends FileMatchImpl implements ISearchTreeAIFileMatch {
 		if (!range) {
 			return undefined;
 		}
-		return range.startLineNumber + ':' + range.startColumn + '-' + range.endLineNumber + ':' + range.endColumn;
+		return (
+			range.startLineNumber +
+			':' +
+			range.startColumn +
+			'-' +
+			range.endLineNumber +
+			':' +
+			range.endColumn
+		);
 	}
 
 	override name(): string {
@@ -386,12 +471,9 @@ class AIFileMatch extends FileMatchImpl implements ISearchTreeAIFileMatch {
 
 	override createMatches(): void {
 		if (this.rawMatch.results) {
-			this.rawMatch.results
-				.filter(resultIsMatch)
-				.forEach(rawMatch => {
-					textSearchResultToMatches(rawMatch, this, true)
-						.forEach(m => this.add(m));
-				});
+			this.rawMatch.results.filter(resultIsMatch).forEach(rawMatch => {
+				textSearchResultToMatches(rawMatch, this, true).forEach(m => this.add(m));
+			});
 		}
 	}
 }

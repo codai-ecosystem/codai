@@ -6,13 +6,8 @@
 const { constants } = require('mocha/lib/runner');
 const BaseRunner = require('mocha/lib/reporters/base');
 
-const {
-	EVENT_TEST_BEGIN,
-	EVENT_TEST_PASS,
-	EVENT_TEST_FAIL,
-	EVENT_RUN_BEGIN,
-	EVENT_RUN_END,
-} = constants;
+const { EVENT_TEST_BEGIN, EVENT_TEST_PASS, EVENT_TEST_FAIL, EVENT_RUN_BEGIN, EVENT_RUN_END } =
+	constants;
 
 /**
  * Similar to the mocha JSON stream, but includes additional information
@@ -30,8 +25,10 @@ module.exports = class FullJsonStreamReporter extends BaseRunner {
 		runner.once(EVENT_RUN_END, () => this.writeEvent(['end', this.stats]));
 
 		// custom coverage events:
-		runner.on('coverage init', (c) => this.writeEvent(['coverageInit', c]));
-		runner.on('coverage increment', (context, coverage) => this.writeEvent(['coverageIncrement', { ...context, coverage }]));
+		runner.on('coverage init', c => this.writeEvent(['coverageInit', c]));
+		runner.on('coverage increment', (context, coverage) =>
+			this.writeEvent(['coverageIncrement', { ...context, coverage }])
+		);
 
 		runner.on(EVENT_TEST_BEGIN, test => this.writeEvent(['testStart', clean(test)]));
 		runner.on(EVENT_TEST_PASS, test => this.writeEvent(['pass', clean(test)]));
@@ -61,5 +58,5 @@ const clean = test => ({
 	title: test.title,
 	fullTitle: test.fullTitle(),
 	duration: test.duration,
-	currentRetry: test.currentRetry()
+	currentRetry: test.currentRetry(),
 });

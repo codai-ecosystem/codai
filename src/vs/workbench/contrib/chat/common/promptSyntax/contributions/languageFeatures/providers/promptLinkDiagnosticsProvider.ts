@@ -11,7 +11,11 @@ import { NotPromptFile } from '../../../../promptFileReferenceErrors.js';
 import { ITextModel } from '../../../../../../../../editor/common/model.js';
 import { assertDefined } from '../../../../../../../../base/common/types.js';
 import { ProviderInstanceManagerBase, TProviderClass } from './providerInstanceManagerBase.js';
-import { IMarkerData, IMarkerService, MarkerSeverity } from '../../../../../../../../platform/markers/common/markers.js';
+import {
+	IMarkerData,
+	IMarkerService,
+	MarkerSeverity,
+} from '../../../../../../../../platform/markers/common/markers.js';
 
 /**
  * Unique ID of the markers provider class.
@@ -25,7 +29,7 @@ class PromptLinkDiagnosticsProvider extends ProviderInstanceBase {
 	constructor(
 		model: ITextModel,
 		@IPromptsService promptsService: IPromptsService,
-		@IMarkerService private readonly markerService: IMarkerService,
+		@IMarkerService private readonly markerService: IMarkerService
 	) {
 		super(model, promptsService);
 	}
@@ -57,11 +61,7 @@ class PromptLinkDiagnosticsProvider extends ProviderInstanceBase {
 			markers.push(toMarker(link));
 		}
 
-		this.markerService.changeOne(
-			MARKERS_OWNER_ID,
-			this.model.uri,
-			markers,
-		);
+		this.markerService.changeOne(MARKERS_OWNER_ID, this.model.uri, markers);
 
 		return this;
 	}
@@ -83,32 +83,19 @@ class PromptLinkDiagnosticsProvider extends ProviderInstanceBase {
  *  - if the original error is of `NotPromptFile` type - we don't want to
  *    show diagnostic markers for non-prompt file links in the prompts
  */
-const toMarker = (
-	link: IPromptFileReference,
-): IMarkerData => {
+const toMarker = (link: IPromptFileReference): IMarkerData => {
 	const { topError, linkRange } = link;
 
 	// a sanity check because this function must be
 	// used only if these link attributes are present
-	assertDefined(
-		topError,
-		'Top error must to be defined.',
-	);
-	assertDefined(
-		linkRange,
-		'Link range must to be defined.',
-	);
+	assertDefined(topError, 'Top error must to be defined.');
+	assertDefined(linkRange, 'Link range must to be defined.');
 
 	const { originalError } = topError;
-	assert(
-		!(originalError instanceof NotPromptFile),
-		'Error must not be of "not prompt file" type.',
-	);
+	assert(!(originalError instanceof NotPromptFile), 'Error must not be of "not prompt file" type.');
 
 	// `error` severity for the link itself, `warning` for any of its children
-	const severity = (topError.errorSubject === 'root')
-		? MarkerSeverity.Error
-		: MarkerSeverity.Warning;
+	const severity = topError.errorSubject === 'root' ? MarkerSeverity.Error : MarkerSeverity.Warning;
 
 	return {
 		message: topError.localizedMessage,

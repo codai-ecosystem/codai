@@ -10,19 +10,64 @@ import { createDecorator } from '../../../../platform/instantiation/common/insta
 import { IDisposable } from '../../../../base/common/lifecycle.js';
 
 import { IWorkspaceFolder, IWorkspace } from '../../../../platform/workspace/common/workspace.js';
-import { Task, ContributedTask, CustomTask, ITaskSet, TaskSorter, ITaskEvent, ITaskIdentifier, ConfiguringTask, TaskRunSource } from './tasks.js';
+import {
+	Task,
+	ContributedTask,
+	CustomTask,
+	ITaskSet,
+	TaskSorter,
+	ITaskEvent,
+	ITaskIdentifier,
+	ConfiguringTask,
+	TaskRunSource,
+} from './tasks.js';
 import { ITaskSummary, ITaskTerminateResponse, ITaskSystemInfo } from './taskSystem.js';
 import { IStringDictionary } from '../../../../base/common/collections.js';
-import { RawContextKey, ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	RawContextKey,
+	ContextKeyExpr,
+} from '../../../../platform/contextkey/common/contextkey.js';
 
 export type { ITaskSummary, Task, ITaskTerminateResponse as TaskTerminateResponse };
 
-export const CustomExecutionSupportedContext = new RawContextKey<boolean>('customExecutionSupported', false, nls.localize('tasks.customExecutionSupported', "Whether CustomExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."));
-export const ShellExecutionSupportedContext = new RawContextKey<boolean>('shellExecutionSupported', false, nls.localize('tasks.shellExecutionSupported', "Whether ShellExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."));
-export const TaskCommandsRegistered = new RawContextKey<boolean>('taskCommandsRegistered', false, nls.localize('tasks.taskCommandsRegistered', "Whether the task commands have been registered yet"));
-export const ProcessExecutionSupportedContext = new RawContextKey<boolean>('processExecutionSupported', false, nls.localize('tasks.processExecutionSupported', "Whether ProcessExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."));
-export const ServerlessWebContext = new RawContextKey<boolean>('serverlessWebContext', false, nls.localize('tasks.serverlessWebContext', "True when in the web with no remote authority."));
-export const TaskExecutionSupportedContext = ContextKeyExpr.or(ContextKeyExpr.and(ShellExecutionSupportedContext, ProcessExecutionSupportedContext), CustomExecutionSupportedContext);
+export const CustomExecutionSupportedContext = new RawContextKey<boolean>(
+	'customExecutionSupported',
+	false,
+	nls.localize(
+		'tasks.customExecutionSupported',
+		"Whether CustomExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."
+	)
+);
+export const ShellExecutionSupportedContext = new RawContextKey<boolean>(
+	'shellExecutionSupported',
+	false,
+	nls.localize(
+		'tasks.shellExecutionSupported',
+		"Whether ShellExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."
+	)
+);
+export const TaskCommandsRegistered = new RawContextKey<boolean>(
+	'taskCommandsRegistered',
+	false,
+	nls.localize('tasks.taskCommandsRegistered', 'Whether the task commands have been registered yet')
+);
+export const ProcessExecutionSupportedContext = new RawContextKey<boolean>(
+	'processExecutionSupported',
+	false,
+	nls.localize(
+		'tasks.processExecutionSupported',
+		"Whether ProcessExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."
+	)
+);
+export const ServerlessWebContext = new RawContextKey<boolean>(
+	'serverlessWebContext',
+	false,
+	nls.localize('tasks.serverlessWebContext', 'True when in the web with no remote authority.')
+);
+export const TaskExecutionSupportedContext = ContextKeyExpr.or(
+	ContextKeyExpr.and(ShellExecutionSupportedContext, ProcessExecutionSupportedContext),
+	CustomExecutionSupportedContext
+);
 
 export const ITaskService = createDecorator<ITaskService>('taskService');
 
@@ -51,9 +96,11 @@ export interface ITaskFilter {
 
 interface IWorkspaceTaskResult {
 	set: ITaskSet | undefined;
-	configurations: {
-		byIdentifier: IStringDictionary<ConfiguringTask>;
-	} | undefined;
+	configurations:
+		| {
+				byIdentifier: IStringDictionary<ConfiguringTask>;
+		  }
+		| undefined;
 	hasErrors: boolean;
 }
 
@@ -71,7 +118,10 @@ export interface ITaskService {
 	supportsMultipleTaskExecutions: boolean;
 
 	configureAction(): Action;
-	run(task: Task | undefined, options?: IProblemMatcherRunOptions): Promise<ITaskSummary | undefined>;
+	run(
+		task: Task | undefined,
+		options?: IProblemMatcherRunOptions
+	): Promise<ITaskSummary | undefined>;
 	inTerminal(): boolean;
 	getActiveTasks(): Promise<Task[]>;
 	getBusyTasks(): Promise<Task[]>;
@@ -90,12 +140,20 @@ export interface ITaskService {
 	/**
 	 * @param alias The task's name, label or defined identifier.
 	 */
-	getTask(workspaceFolder: IWorkspace | IWorkspaceFolder | string, alias: string | ITaskIdentifier, compareId?: boolean): Promise<Task | undefined>;
+	getTask(
+		workspaceFolder: IWorkspace | IWorkspaceFolder | string,
+		alias: string | ITaskIdentifier,
+		compareId?: boolean
+	): Promise<Task | undefined>;
 	tryResolveTask(configuringTask: ConfiguringTask): Promise<Task | undefined>;
 	createSorter(): TaskSorter;
 
 	getTaskDescription(task: Task | ConfiguringTask): string | undefined;
-	customize(task: ContributedTask | CustomTask | ConfiguringTask, properties?: {}, openConfig?: boolean): Promise<void>;
+	customize(
+		task: ContributedTask | CustomTask | ConfiguringTask,
+		properties?: {},
+		openConfig?: boolean
+	): Promise<void>;
 	openConfig(task: CustomTask | ConfiguringTask | undefined): Promise<boolean>;
 
 	registerTaskProvider(taskProvider: ITaskProvider, type: string): IDisposable;

@@ -10,7 +10,11 @@ import { ITextModelContentProvider } from '../../../../../editor/common/services
 import { chatEditingSnapshotScheme, IChatEditingService } from '../../common/chatEditingService.js';
 import { ChatEditingSession } from './chatEditingSession.js';
 
-type ChatEditingTextModelContentQueryData = { kind: 'doc'; documentId: string; chatSessionId: string };
+type ChatEditingTextModelContentQueryData = {
+	kind: 'doc';
+	documentId: string;
+	chatSessionId: string;
+};
 
 export class ChatEditingTextModelContentProvider implements ITextModelContentProvider {
 	public static readonly scheme = 'chat-editing-text-model';
@@ -19,14 +23,18 @@ export class ChatEditingTextModelContentProvider implements ITextModelContentPro
 		return URI.from({
 			scheme: ChatEditingTextModelContentProvider.scheme,
 			path,
-			query: JSON.stringify({ kind: 'doc', documentId, chatSessionId } satisfies ChatEditingTextModelContentQueryData),
+			query: JSON.stringify({
+				kind: 'doc',
+				documentId,
+				chatSessionId,
+			} satisfies ChatEditingTextModelContentQueryData),
 		});
 	}
 
 	constructor(
 		private readonly _chatEditingService: IChatEditingService,
-		@IModelService private readonly _modelService: IModelService,
-	) { }
+		@IModelService private readonly _modelService: IModelService
+	) {}
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
@@ -47,21 +55,34 @@ export class ChatEditingTextModelContentProvider implements ITextModelContentPro
 	}
 }
 
-type ChatEditingSnapshotTextModelContentQueryData = { sessionId: string; requestId: string | undefined; undoStop: string | undefined };
+type ChatEditingSnapshotTextModelContentQueryData = {
+	sessionId: string;
+	requestId: string | undefined;
+	undoStop: string | undefined;
+};
 
 export class ChatEditingSnapshotTextModelContentProvider implements ITextModelContentProvider {
-	public static getSnapshotFileURI(chatSessionId: string, requestId: string | undefined, undoStop: string | undefined, path: string): URI {
+	public static getSnapshotFileURI(
+		chatSessionId: string,
+		requestId: string | undefined,
+		undoStop: string | undefined,
+		path: string
+	): URI {
 		return URI.from({
 			scheme: chatEditingSnapshotScheme,
 			path,
-			query: JSON.stringify({ sessionId: chatSessionId, requestId: requestId ?? '', undoStop: undoStop ?? '' } satisfies ChatEditingSnapshotTextModelContentQueryData),
+			query: JSON.stringify({
+				sessionId: chatSessionId,
+				requestId: requestId ?? '',
+				undoStop: undoStop ?? '',
+			} satisfies ChatEditingSnapshotTextModelContentQueryData),
 		});
 	}
 
 	constructor(
 		private readonly _chatEditingService: IChatEditingService,
-		@IModelService private readonly _modelService: IModelService,
-	) { }
+		@IModelService private readonly _modelService: IModelService
+	) {}
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);

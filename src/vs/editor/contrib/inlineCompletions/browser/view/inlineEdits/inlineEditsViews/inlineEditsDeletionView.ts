@@ -6,11 +6,19 @@ import { n } from '../../../../../../../base/browser/dom.js';
 import { IMouseEvent } from '../../../../../../../base/browser/mouseEvent.js';
 import { Emitter } from '../../../../../../../base/common/event.js';
 import { Disposable } from '../../../../../../../base/common/lifecycle.js';
-import { constObservable, derived, derivedObservableWithCache, IObservable } from '../../../../../../../base/common/observable.js';
+import {
+	constObservable,
+	derived,
+	derivedObservableWithCache,
+	IObservable,
+} from '../../../../../../../base/common/observable.js';
 import { editorBackground } from '../../../../../../../platform/theme/common/colorRegistry.js';
 import { asCssVariable } from '../../../../../../../platform/theme/common/colorUtils.js';
 import { ICodeEditor } from '../../../../../../browser/editorBrowser.js';
-import { ObservableCodeEditor, observableCodeEditor } from '../../../../../../browser/observableCodeEditor.js';
+import {
+	ObservableCodeEditor,
+	observableCodeEditor,
+} from '../../../../../../browser/observableCodeEditor.js';
 import { Rect } from '../../../../../../common/core/2d/rect.js';
 import { EditorOption } from '../../../../../../common/config/editorOptions.js';
 import { LineRange } from '../../../../../../common/core/ranges/lineRange.js';
@@ -29,7 +37,6 @@ const WIDGET_SEPARATOR_WIDTH = 1;
 const BORDER_RADIUS = 4;
 
 export class InlineEditsDeletionView extends Disposable implements IInlineEditsView {
-
 	private readonly _onDidClick = this._register(new Emitter<IMouseEvent>());
 	readonly onDidClick = this._onDidClick.event;
 
@@ -43,43 +50,58 @@ export class InlineEditsDeletionView extends Disposable implements IInlineEditsV
 	constructor(
 		private readonly _editor: ICodeEditor,
 		private readonly _edit: IObservable<InlineEditWithChanges | undefined>,
-		private readonly _uiState: IObservable<{
-			originalRange: LineRange;
-			deletions: Range[];
-		} | undefined>,
-		private readonly _tabAction: IObservable<InlineEditTabAction>,
+		private readonly _uiState: IObservable<
+			| {
+					originalRange: LineRange;
+					deletions: Range[];
+			  }
+			| undefined
+		>,
+		private readonly _tabAction: IObservable<InlineEditTabAction>
 	) {
 		super();
 
 		this._editorObs = observableCodeEditor(this._editor);
 
-		const originalStartPosition = derived(this, (reader) => {
+		const originalStartPosition = derived(this, reader => {
 			const inlineEdit = this._edit.read(reader);
 			return inlineEdit ? new Position(inlineEdit.originalLineRange.startLineNumber, 1) : null;
 		});
 
-		const originalEndPosition = derived(this, (reader) => {
+		const originalEndPosition = derived(this, reader => {
 			const inlineEdit = this._edit.read(reader);
-			return inlineEdit ? new Position(inlineEdit.originalLineRange.endLineNumberExclusive, 1) : null;
+			return inlineEdit
+				? new Position(inlineEdit.originalLineRange.endLineNumberExclusive, 1)
+				: null;
 		});
 
 		this._originalDisplayRange = this._uiState.map(s => s?.originalRange);
-		this._originalVerticalStartPosition = this._editorObs.observePosition(originalStartPosition, this._store).map(p => p?.y);
-		this._originalVerticalEndPosition = this._editorObs.observePosition(originalEndPosition, this._store).map(p => p?.y);
+		this._originalVerticalStartPosition = this._editorObs
+			.observePosition(originalStartPosition, this._store)
+			.map(p => p?.y);
+		this._originalVerticalEndPosition = this._editorObs
+			.observePosition(originalEndPosition, this._store)
+			.map(p => p?.y);
 
-		this._register(this._editorObs.createOverlayWidget({
-			domNode: this._nonOverflowView.element,
-			position: constObservable(null),
-			allowEditorOverflow: false,
-			minContentWidthInPx: derived(reader => {
-				const info = this._editorLayoutInfo.read(reader);
-				if (info === null) { return 0; }
-				return info.codeRect.width;
-			}),
-		}));
+		this._register(
+			this._editorObs.createOverlayWidget({
+				domNode: this._nonOverflowView.element,
+				position: constObservable(null),
+				allowEditorOverflow: false,
+				minContentWidthInPx: derived(reader => {
+					const info = this._editorLayoutInfo.read(reader);
+					if (info === null) {
+						return 0;
+					}
+					return info.codeRect.width;
+				}),
+			})
+		);
 	}
 
-	private readonly _display = derived(this, reader => !!this._uiState.read(reader) ? 'block' : 'none');
+	private readonly _display = derived(this, reader =>
+		!!this._uiState.read(reader) ? 'block' : 'none'
+	);
 
 	private readonly _editorMaxContentWidthInRange = derived(this, reader => {
 		const originalDisplayRange = this._originalDisplayRange.read(reader);
@@ -104,7 +126,7 @@ export class InlineEditsDeletionView extends Disposable implements IInlineEditsV
 		return getPrefixTrim(state.deletions, state.originalRange, [], this._editor);
 	});
 
-	private readonly _editorLayoutInfo = derived(this, (reader) => {
+	private readonly _editorLayoutInfo = derived(this, reader => {
 		const inlineEdit = this._edit.read(reader);
 		if (!inlineEdit) {
 			return null;
@@ -116,21 +138,41 @@ export class InlineEditsDeletionView extends Disposable implements IInlineEditsV
 
 		const editorLayout = this._editorObs.layoutInfo.read(reader);
 		const horizontalScrollOffset = this._editorObs.scrollLeft.read(reader);
-		const w = this._editorObs.getOption(EditorOption.fontInfo).map(f => f.typicalHalfwidthCharacterWidth).read(reader);
+		const w = this._editorObs
+			.getOption(EditorOption.fontInfo)
+			.map(f => f.typicalHalfwidthCharacterWidth)
+			.read(reader);
 
-		const right = editorLayout.contentLeft + Math.max(this._editorMaxContentWidthInRange.read(reader), w) - horizontalScrollOffset;
+		const right =
+			editorLayout.contentLeft +
+			Math.max(this._editorMaxContentWidthInRange.read(reader), w) -
+			horizontalScrollOffset;
 
 		const range = inlineEdit.originalLineRange;
-		const selectionTop = this._originalVerticalStartPosition.read(reader) ?? this._editor.getTopForLineNumber(range.startLineNumber) - this._editorObs.scrollTop.read(reader);
-		const selectionBottom = this._originalVerticalEndPosition.read(reader) ?? this._editor.getTopForLineNumber(range.endLineNumberExclusive) - this._editorObs.scrollTop.read(reader);
+		const selectionTop =
+			this._originalVerticalStartPosition.read(reader) ??
+			this._editor.getTopForLineNumber(range.startLineNumber) -
+				this._editorObs.scrollTop.read(reader);
+		const selectionBottom =
+			this._originalVerticalEndPosition.read(reader) ??
+			this._editor.getTopForLineNumber(range.endLineNumberExclusive) -
+				this._editorObs.scrollTop.read(reader);
 
-		const left = editorLayout.contentLeft + this._maxPrefixTrim.read(reader).prefixLeftOffset - horizontalScrollOffset;
+		const left =
+			editorLayout.contentLeft +
+			this._maxPrefixTrim.read(reader).prefixLeftOffset -
+			horizontalScrollOffset;
 
 		if (right <= left) {
 			return null;
 		}
 
-		const codeRect = Rect.fromLeftTopRightBottom(left, selectionTop, right, selectionBottom).withMargin(VERTICAL_PADDING, HORIZONTAL_PADDING);
+		const codeRect = Rect.fromLeftTopRightBottom(
+			left,
+			selectionTop,
+			right,
+			selectionBottom
+		).withMargin(VERTICAL_PADDING, HORIZONTAL_PADDING);
 
 		return {
 			codeRect,
@@ -138,71 +180,89 @@ export class InlineEditsDeletionView extends Disposable implements IInlineEditsV
 		};
 	}).recomputeInitiallyAndOnChange(this._store);
 
-	private readonly _originalOverlay = n.div({
-		style: { pointerEvents: 'none', }
-	}, derived(reader => {
-		const layoutInfoObs = mapOutFalsy(this._editorLayoutInfo).read(reader);
-		if (!layoutInfoObs) { return undefined; }
-
-		// Create an overlay which hides the left hand side of the original overlay when it overflows to the left
-		// such that there is a smooth transition at the edge of content left
-		const overlayhider = layoutInfoObs.map(layoutInfo => Rect.fromLeftTopRightBottom(
-			layoutInfo.contentLeft - BORDER_RADIUS - BORDER_WIDTH,
-			layoutInfo.codeRect.top,
-			layoutInfo.contentLeft,
-			layoutInfo.codeRect.bottom
-		));
-
-		const overlayRect = derived(reader => {
-			const rect = layoutInfoObs.read(reader).codeRect;
-			const overlayHider = overlayhider.read(reader);
-			return rect.intersectHorizontal(new OffsetRange(overlayHider.left, Number.MAX_SAFE_INTEGER));
-		});
-
-		const separatorRect = overlayRect.map(rect => rect.withMargin(WIDGET_SEPARATOR_WIDTH, WIDGET_SEPARATOR_WIDTH));
-
-		return [
-			n.div({
-				class: 'originalSeparatorDeletion',
-				style: {
-					...separatorRect.read(reader).toStyles(),
-					borderRadius: `${BORDER_RADIUS}px`,
-					border: `${BORDER_WIDTH + WIDGET_SEPARATOR_WIDTH}px solid ${asCssVariable(editorBackground)}`,
-					boxSizing: 'border-box',
+	private readonly _originalOverlay = n
+		.div(
+			{
+				style: { pointerEvents: 'none' },
+			},
+			derived(reader => {
+				const layoutInfoObs = mapOutFalsy(this._editorLayoutInfo).read(reader);
+				if (!layoutInfoObs) {
+					return undefined;
 				}
-			}),
-			n.div({
-				class: 'originalOverlayDeletion',
-				style: {
-					...overlayRect.read(reader).toStyles(),
-					borderRadius: `${BORDER_RADIUS}px`,
-					border: getOriginalBorderColor(this._tabAction).map(bc => `${BORDER_WIDTH}px solid ${asCssVariable(bc)}`),
-					boxSizing: 'border-box',
-					backgroundColor: asCssVariable(originalBackgroundColor),
-				}
-			}),
-			n.div({
-				class: 'originalOverlayHiderDeletion',
-				style: {
-					...overlayhider.read(reader).toStyles(),
-					backgroundColor: asCssVariable(editorBackground),
-				}
+
+				// Create an overlay which hides the left hand side of the original overlay when it overflows to the left
+				// such that there is a smooth transition at the edge of content left
+				const overlayhider = layoutInfoObs.map(layoutInfo =>
+					Rect.fromLeftTopRightBottom(
+						layoutInfo.contentLeft - BORDER_RADIUS - BORDER_WIDTH,
+						layoutInfo.codeRect.top,
+						layoutInfo.contentLeft,
+						layoutInfo.codeRect.bottom
+					)
+				);
+
+				const overlayRect = derived(reader => {
+					const rect = layoutInfoObs.read(reader).codeRect;
+					const overlayHider = overlayhider.read(reader);
+					return rect.intersectHorizontal(
+						new OffsetRange(overlayHider.left, Number.MAX_SAFE_INTEGER)
+					);
+				});
+
+				const separatorRect = overlayRect.map(rect =>
+					rect.withMargin(WIDGET_SEPARATOR_WIDTH, WIDGET_SEPARATOR_WIDTH)
+				);
+
+				return [
+					n.div({
+						class: 'originalSeparatorDeletion',
+						style: {
+							...separatorRect.read(reader).toStyles(),
+							borderRadius: `${BORDER_RADIUS}px`,
+							border: `${BORDER_WIDTH + WIDGET_SEPARATOR_WIDTH}px solid ${asCssVariable(editorBackground)}`,
+							boxSizing: 'border-box',
+						},
+					}),
+					n.div({
+						class: 'originalOverlayDeletion',
+						style: {
+							...overlayRect.read(reader).toStyles(),
+							borderRadius: `${BORDER_RADIUS}px`,
+							border: getOriginalBorderColor(this._tabAction).map(
+								bc => `${BORDER_WIDTH}px solid ${asCssVariable(bc)}`
+							),
+							boxSizing: 'border-box',
+							backgroundColor: asCssVariable(originalBackgroundColor),
+						},
+					}),
+					n.div({
+						class: 'originalOverlayHiderDeletion',
+						style: {
+							...overlayhider.read(reader).toStyles(),
+							backgroundColor: asCssVariable(editorBackground),
+						},
+					}),
+				];
 			})
-		];
-	})).keepUpdated(this._store);
+		)
+		.keepUpdated(this._store);
 
-	private readonly _nonOverflowView = n.div({
-		class: 'inline-edits-view',
-		style: {
-			position: 'absolute',
-			overflow: 'visible',
-			top: '0px',
-			left: '0px',
-			display: this._display,
-		},
-	}, [
-		[this._originalOverlay],
-	]).keepUpdated(this._store);
+	private readonly _nonOverflowView = n
+		.div(
+			{
+				class: 'inline-edits-view',
+				style: {
+					position: 'absolute',
+					overflow: 'visible',
+					top: '0px',
+					left: '0px',
+					display: this._display,
+				},
+			},
+			[[this._originalOverlay]]
+		)
+		.keepUpdated(this._store);
 
 	readonly isHovered = constObservable(false);
 }

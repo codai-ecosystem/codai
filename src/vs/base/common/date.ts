@@ -23,14 +23,23 @@ const year = day * 365;
  * @param disallowNow Whether to disallow the string "now" when the difference
  * is less than 30 seconds.
  */
-export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTimeWords?: boolean, disallowNow?: boolean): string {
+export function fromNow(
+	date: number | Date,
+	appendAgoLabel?: boolean,
+	useFullTimeWords?: boolean,
+	disallowNow?: boolean
+): string {
 	if (typeof date !== 'number') {
 		date = date.getTime();
 	}
 
 	const seconds = Math.round((new Date().getTime() - date) / 1000);
 	if (seconds < -30) {
-		return localize('date.fromNow.in', 'in {0}', fromNow(new Date().getTime() + seconds * 1000, false));
+		return localize(
+			'date.fromNow.in',
+			'in {0}',
+			fromNow(new Date().getTime() + seconds * 1000, false)
+		);
 	}
 
 	if (!disallowNow && seconds < 30) {
@@ -201,7 +210,11 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 	}
 }
 
-export function fromNowByDay(date: number | Date, appendAgoLabel?: boolean, useFullTimeWords?: boolean): string {
+export function fromNowByDay(
+	date: number | Date,
+	appendAgoLabel?: boolean,
+	useFullTimeWords?: boolean
+): string {
 	if (typeof date !== 'number') {
 		date = date.getTime();
 	}
@@ -254,18 +267,29 @@ export function getDurationString(ms: number, useFullTimeWords?: boolean) {
 }
 
 export function toLocalISOString(date: Date): string {
-	return date.getFullYear() +
-		'-' + String(date.getMonth() + 1).padStart(2, '0') +
-		'-' + String(date.getDate()).padStart(2, '0') +
-		'T' + String(date.getHours()).padStart(2, '0') +
-		':' + String(date.getMinutes()).padStart(2, '0') +
-		':' + String(date.getSeconds()).padStart(2, '0') +
-		'.' + (date.getMilliseconds() / 1000).toFixed(3).slice(2, 5) +
-		'Z';
+	return (
+		date.getFullYear() +
+		'-' +
+		String(date.getMonth() + 1).padStart(2, '0') +
+		'-' +
+		String(date.getDate()).padStart(2, '0') +
+		'T' +
+		String(date.getHours()).padStart(2, '0') +
+		':' +
+		String(date.getMinutes()).padStart(2, '0') +
+		':' +
+		String(date.getSeconds()).padStart(2, '0') +
+		'.' +
+		(date.getMilliseconds() / 1000).toFixed(3).slice(2, 5) +
+		'Z'
+	);
 }
 
 export const safeIntl = {
-	DateTimeFormat(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions): Lazy<Intl.DateTimeFormat> {
+	DateTimeFormat(
+		locales?: Intl.LocalesArgument,
+		options?: Intl.DateTimeFormatOptions
+	): Lazy<Intl.DateTimeFormat> {
 		return new Lazy(() => {
 			try {
 				return new Intl.DateTimeFormat(locales, options);
@@ -301,7 +325,10 @@ export const safeIntl = {
 			}
 		});
 	},
-	NumberFormat(locales?: Intl.LocalesArgument, options?: Intl.NumberFormatOptions): Lazy<Intl.NumberFormat> {
+	NumberFormat(
+		locales?: Intl.LocalesArgument,
+		options?: Intl.NumberFormatOptions
+	): Lazy<Intl.NumberFormat> {
 		return new Lazy(() => {
 			try {
 				return new Intl.NumberFormat(locales, options);
@@ -309,5 +336,5 @@ export const safeIntl = {
 				return new Intl.NumberFormat(undefined, options);
 			}
 		});
-	}
+	},
 };

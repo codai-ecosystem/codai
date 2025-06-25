@@ -15,14 +15,16 @@ import './gpuMark.css';
  * A mark on lines to make identification of GPU-rendered lines vs DOM easier.
  */
 export class GpuMarkOverlay extends DynamicViewOverlay {
-
 	public static readonly CLASS_NAME = 'gpu-mark';
 
 	private readonly _context: ViewContext;
 
 	private _renderResult: string[] | null;
 
-	constructor(context: ViewContext, private readonly _viewGpuContext: ViewGpuContext) {
+	constructor(
+		context: ViewContext,
+		private readonly _viewGpuContext: ViewGpuContext
+	) {
 		super();
 		this._context = context;
 		this._renderResult = null;
@@ -75,10 +77,20 @@ export class GpuMarkOverlay extends DynamicViewOverlay {
 		const options = new ViewLineOptions(this._context.configuration, this._context.theme.type);
 
 		const output: string[] = [];
-		for (let lineNumber = visibleStartLineNumber; lineNumber <= visibleEndLineNumber; lineNumber++) {
+		for (
+			let lineNumber = visibleStartLineNumber;
+			lineNumber <= visibleEndLineNumber;
+			lineNumber++
+		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
-			const cannotRenderReasons = this._viewGpuContext.canRenderDetailed(options, viewportData, lineNumber);
-			output[lineIndex] = cannotRenderReasons.length ? `<div class="${GpuMarkOverlay.CLASS_NAME}" title="Cannot render on GPU: ${cannotRenderReasons.join(', ')}"></div>` : '';
+			const cannotRenderReasons = this._viewGpuContext.canRenderDetailed(
+				options,
+				viewportData,
+				lineNumber
+			);
+			output[lineIndex] = cannotRenderReasons.length
+				? `<div class="${GpuMarkOverlay.CLASS_NAME}" title="Cannot render on GPU: ${cannotRenderReasons.join(', ')}"></div>`
+				: '';
 		}
 
 		this._renderResult = output;

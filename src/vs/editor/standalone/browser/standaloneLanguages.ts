@@ -56,7 +56,7 @@ export function getEncodedLanguageId(languageId: string): number {
 export function onLanguage(languageId: string, callback: () => void): IDisposable {
 	return StandaloneServices.withServices(() => {
 		const languageService = StandaloneServices.get(ILanguageService);
-		const disposable = languageService.onDidRequestRichLanguageFeatures((encounteredLanguageId) => {
+		const disposable = languageService.onDidRequestRichLanguageFeatures(encounteredLanguageId => {
 			if (encounteredLanguageId === languageId) {
 				// stop listening
 				disposable.dispose();
@@ -76,7 +76,7 @@ export function onLanguage(languageId: string, callback: () => void): IDisposabl
 export function onLanguageEncountered(languageId: string, callback: () => void): IDisposable {
 	return StandaloneServices.withServices(() => {
 		const languageService = StandaloneServices.get(ILanguageService);
-		const disposable = languageService.onDidRequestBasicLanguageFeatures((encounteredLanguageId) => {
+		const disposable = languageService.onDidRequestBasicLanguageFeatures(encounteredLanguageId => {
 			if (encounteredLanguageId === languageId) {
 				// stop listening
 				disposable.dispose();
@@ -91,7 +91,10 @@ export function onLanguageEncountered(languageId: string, callback: () => void):
 /**
  * Set the editing configuration for a language.
  */
-export function setLanguageConfiguration(languageId: string, configuration: LanguageConfiguration): IDisposable {
+export function setLanguageConfiguration(
+	languageId: string,
+	configuration: LanguageConfiguration
+): IDisposable {
 	const languageService = StandaloneServices.get(ILanguageService);
 	if (!languageService.isRegisteredLanguageId(languageId)) {
 		throw new Error(`Cannot set configuration for unknown language ${languageId}`);
@@ -103,8 +106,9 @@ export function setLanguageConfiguration(languageId: string, configuration: Lang
 /**
  * @internal
  */
-export class EncodedTokenizationSupportAdapter implements languages.ITokenizationSupport, IDisposable {
-
+export class EncodedTokenizationSupportAdapter
+	implements languages.ITokenizationSupport, IDisposable
+{
 	private readonly _languageId: string;
 	private readonly _actual: EncodedTokensProvider;
 
@@ -121,14 +125,27 @@ export class EncodedTokenizationSupportAdapter implements languages.ITokenizatio
 		return this._actual.getInitialState();
 	}
 
-	public tokenize(line: string, hasEOL: boolean, state: languages.IState): languages.TokenizationResult {
+	public tokenize(
+		line: string,
+		hasEOL: boolean,
+		state: languages.IState
+	): languages.TokenizationResult {
 		if (typeof this._actual.tokenize === 'function') {
-			return TokenizationSupportAdapter.adaptTokenize(this._languageId, <{ tokenize(line: string, state: languages.IState): ILineTokens }>this._actual, line, state);
+			return TokenizationSupportAdapter.adaptTokenize(
+				this._languageId,
+				<{ tokenize(line: string, state: languages.IState): ILineTokens }>this._actual,
+				line,
+				state
+			);
 		}
 		throw new Error('Not supported!');
 	}
 
-	public tokenizeEncoded(line: string, hasEOL: boolean, state: languages.IState): languages.EncodedTokenizationResult {
+	public tokenizeEncoded(
+		line: string,
+		hasEOL: boolean,
+		state: languages.IState
+	): languages.EncodedTokenizationResult {
 		const result = this._actual.tokenizeEncoded(line, state);
 		return new languages.EncodedTokenizationResult(result.tokens, result.endState);
 	}
@@ -138,14 +155,12 @@ export class EncodedTokenizationSupportAdapter implements languages.ITokenizatio
  * @internal
  */
 export class TokenizationSupportAdapter implements languages.ITokenizationSupport, IDisposable {
-
 	constructor(
 		private readonly _languageId: string,
 		private readonly _actual: TokensProvider,
 		private readonly _languageService: ILanguageService,
-		private readonly _standaloneThemeService: IStandaloneThemeService,
-	) {
-	}
+		private readonly _standaloneThemeService: IStandaloneThemeService
+	) {}
 
 	dispose(): void {
 		// NOOP
@@ -178,7 +193,12 @@ export class TokenizationSupportAdapter implements languages.ITokenizationSuppor
 		return result;
 	}
 
-	public static adaptTokenize(language: string, actual: { tokenize(line: string, state: languages.IState): ILineTokens }, line: string, state: languages.IState): languages.TokenizationResult {
+	public static adaptTokenize(
+		language: string,
+		actual: { tokenize(line: string, state: languages.IState): ILineTokens },
+		line: string,
+		state: languages.IState
+	): languages.TokenizationResult {
 		const actualResult = actual.tokenize(line, state);
 		const tokens = TokenizationSupportAdapter._toClassicTokens(actualResult.tokens, language);
 
@@ -193,11 +213,18 @@ export class TokenizationSupportAdapter implements languages.ITokenizationSuppor
 		return new languages.TokenizationResult(tokens, endState);
 	}
 
-	public tokenize(line: string, hasEOL: boolean, state: languages.IState): languages.TokenizationResult {
+	public tokenize(
+		line: string,
+		hasEOL: boolean,
+		state: languages.IState
+	): languages.TokenizationResult {
 		return TokenizationSupportAdapter.adaptTokenize(this._languageId, this._actual, line, state);
 	}
 
-	private _toBinaryTokens(languageIdCodec: languages.ILanguageIdCodec, tokens: IToken[]): Uint32Array {
+	private _toBinaryTokens(
+		languageIdCodec: languages.ILanguageIdCodec,
+		tokens: IToken[]
+	): Uint32Array {
 		const languageId = languageIdCodec.encodeLanguageId(this._languageId);
 		const tokenTheme = this._standaloneThemeService.getColorTheme().tokenTheme;
 
@@ -206,7 +233,8 @@ export class TokenizationSupportAdapter implements languages.ITokenizationSuppor
 		let previousStartIndex: number = 0;
 		for (let i = 0, len = tokens.length; i < len; i++) {
 			const t = tokens[i];
-			const metadata = tokenTheme.match(languageId, t.scopes) | MetadataConsts.BALANCED_BRACKETS_MASK;
+			const metadata =
+				tokenTheme.match(languageId, t.scopes) | MetadataConsts.BALANCED_BRACKETS_MASK;
 			if (resultLen > 0 && result[resultLen - 1] === metadata) {
 				// same metadata
 				continue;
@@ -236,7 +264,11 @@ export class TokenizationSupportAdapter implements languages.ITokenizationSuppor
 		return actualResult;
 	}
 
-	public tokenizeEncoded(line: string, hasEOL: boolean, state: languages.IState): languages.EncodedTokenizationResult {
+	public tokenizeEncoded(
+		line: string,
+		hasEOL: boolean,
+		state: languages.IState
+	): languages.EncodedTokenizationResult {
 		const actualResult = this._actual.tokenize(line, state);
 		const tokens = this._toBinaryTokens(this._languageService.languageIdCodec, actualResult.tokens);
 
@@ -346,11 +378,15 @@ export interface EncodedTokensProvider {
 	tokenize?(line: string, state: languages.IState): ILineTokens;
 }
 
-function isATokensProvider(provider: TokensProvider | EncodedTokensProvider | IMonarchLanguage): provider is TokensProvider | EncodedTokensProvider {
-	return (typeof provider.getInitialState === 'function');
+function isATokensProvider(
+	provider: TokensProvider | EncodedTokensProvider | IMonarchLanguage
+): provider is TokensProvider | EncodedTokensProvider {
+	return typeof provider.getInitialState === 'function';
 }
 
-function isEncodedTokensProvider(provider: TokensProvider | EncodedTokensProvider): provider is EncodedTokensProvider {
+function isEncodedTokensProvider(
+	provider: TokensProvider | EncodedTokensProvider
+): provider is EncodedTokensProvider {
 	return 'tokenizeEncoded' in provider;
 }
 
@@ -378,7 +414,10 @@ export function setColorMap(colorMap: string[] | null): void {
 /**
  * @internal
  */
-function createTokenizationSupportAdapter(languageId: string, provider: TokensProvider | EncodedTokensProvider) {
+function createTokenizationSupportAdapter(
+	languageId: string,
+	provider: TokensProvider | EncodedTokensProvider
+) {
 	if (isEncodedTokensProvider(provider)) {
 		return new EncodedTokenizationSupportAdapter(languageId, provider);
 	} else {
@@ -386,7 +425,7 @@ function createTokenizationSupportAdapter(languageId: string, provider: TokensPr
 			languageId,
 			provider,
 			StandaloneServices.get(ILanguageService),
-			StandaloneServices.get(IStandaloneThemeService),
+			StandaloneServices.get(IStandaloneThemeService)
 		);
 	}
 }
@@ -396,7 +435,10 @@ function createTokenizationSupportAdapter(languageId: string, provider: TokensPr
  * set using `setTokensProvider` or one created using `setMonarchTokensProvider`, but will work together
  * with a tokens provider set using `registerDocumentSemanticTokensProvider` or `registerDocumentRangeSemanticTokensProvider`.
  */
-export function registerTokensProviderFactory(languageId: string, factory: TokensProviderFactory): IDisposable {
+export function registerTokensProviderFactory(
+	languageId: string,
+	factory: TokensProviderFactory
+): IDisposable {
 	const adaptedFactory = new languages.LazyTokenizationSupport(async () => {
 		const result = await Promise.resolve(factory.create());
 		if (!result) {
@@ -405,7 +447,13 @@ export function registerTokensProviderFactory(languageId: string, factory: Token
 		if (isATokensProvider(result)) {
 			return createTokenizationSupportAdapter(languageId, result);
 		}
-		return new MonarchTokenizer(StandaloneServices.get(ILanguageService), StandaloneServices.get(IStandaloneThemeService), languageId, compile(languageId, result), StandaloneServices.get(IConfigurationService));
+		return new MonarchTokenizer(
+			StandaloneServices.get(ILanguageService),
+			StandaloneServices.get(IStandaloneThemeService),
+			languageId,
+			compile(languageId, result),
+			StandaloneServices.get(IConfigurationService)
+		);
 	});
 	return languages.TokenizationRegistry.registerFactory(languageId, adaptedFactory);
 }
@@ -416,7 +464,13 @@ export function registerTokensProviderFactory(languageId: string, factory: Token
  * but will work together with a tokens provider set using `registerDocumentSemanticTokensProvider`
  * or `registerDocumentRangeSemanticTokensProvider`.
  */
-export function setTokensProvider(languageId: string, provider: TokensProvider | EncodedTokensProvider | Thenable<TokensProvider | EncodedTokensProvider>): IDisposable {
+export function setTokensProvider(
+	languageId: string,
+	provider:
+		| TokensProvider
+		| EncodedTokensProvider
+		| Thenable<TokensProvider | EncodedTokensProvider>
+): IDisposable {
 	const languageService = StandaloneServices.get(ILanguageService);
 	if (!languageService.isRegisteredLanguageId(languageId)) {
 		throw new Error(`Cannot set tokens provider for unknown language ${languageId}`);
@@ -424,7 +478,10 @@ export function setTokensProvider(languageId: string, provider: TokensProvider |
 	if (isThenable<TokensProvider | EncodedTokensProvider>(provider)) {
 		return registerTokensProviderFactory(languageId, { create: () => provider });
 	}
-	return languages.TokenizationRegistry.register(languageId, createTokenizationSupportAdapter(languageId, provider));
+	return languages.TokenizationRegistry.register(
+		languageId,
+		createTokenizationSupportAdapter(languageId, provider)
+	);
 }
 
 /**
@@ -433,9 +490,18 @@ export function setTokensProvider(languageId: string, provider: TokensProvider |
  * work together with a tokens provider set using `registerDocumentSemanticTokensProvider` or
  * `registerDocumentRangeSemanticTokensProvider`.
  */
-export function setMonarchTokensProvider(languageId: string, languageDef: IMonarchLanguage | Thenable<IMonarchLanguage>): IDisposable {
+export function setMonarchTokensProvider(
+	languageId: string,
+	languageDef: IMonarchLanguage | Thenable<IMonarchLanguage>
+): IDisposable {
 	const create = (languageDef: IMonarchLanguage) => {
-		return new MonarchTokenizer(StandaloneServices.get(ILanguageService), StandaloneServices.get(IStandaloneThemeService), languageId, compile(languageId, languageDef), StandaloneServices.get(IConfigurationService));
+		return new MonarchTokenizer(
+			StandaloneServices.get(ILanguageService),
+			StandaloneServices.get(IStandaloneThemeService),
+			languageId,
+			compile(languageId, languageDef),
+			StandaloneServices.get(IConfigurationService)
+		);
 	};
 	if (isThenable<IMonarchLanguage>(languageDef)) {
 		return registerTokensProviderFactory(languageId, { create: () => languageDef });
@@ -446,7 +512,10 @@ export function setMonarchTokensProvider(languageId: string, languageDef: IMonar
 /**
  * Register a reference provider (used by e.g. reference search).
  */
-export function registerReferenceProvider(languageSelector: LanguageSelector, provider: languages.ReferenceProvider): IDisposable {
+export function registerReferenceProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.ReferenceProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.referenceProvider.register(languageSelector, provider);
 }
@@ -454,7 +523,10 @@ export function registerReferenceProvider(languageSelector: LanguageSelector, pr
 /**
  * Register a rename provider (used by e.g. rename symbol).
  */
-export function registerRenameProvider(languageSelector: LanguageSelector, provider: languages.RenameProvider): IDisposable {
+export function registerRenameProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.RenameProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.renameProvider.register(languageSelector, provider);
 }
@@ -462,7 +534,10 @@ export function registerRenameProvider(languageSelector: LanguageSelector, provi
 /**
  * Register a new symbol-name provider (e.g., when a symbol is being renamed, show new possible symbol-names)
  */
-export function registerNewSymbolNameProvider(languageSelector: LanguageSelector, provider: languages.NewSymbolNamesProvider): IDisposable {
+export function registerNewSymbolNameProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.NewSymbolNamesProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.newSymbolNamesProvider.register(languageSelector, provider);
 }
@@ -470,7 +545,10 @@ export function registerNewSymbolNameProvider(languageSelector: LanguageSelector
 /**
  * Register a signature help provider (used by e.g. parameter hints).
  */
-export function registerSignatureHelpProvider(languageSelector: LanguageSelector, provider: languages.SignatureHelpProvider): IDisposable {
+export function registerSignatureHelpProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.SignatureHelpProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.signatureHelpProvider.register(languageSelector, provider);
 }
@@ -478,32 +556,55 @@ export function registerSignatureHelpProvider(languageSelector: LanguageSelector
 /**
  * Register a hover provider (used by e.g. editor hover).
  */
-export function registerHoverProvider(languageSelector: LanguageSelector, provider: languages.HoverProvider): IDisposable {
+export function registerHoverProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.HoverProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.hoverProvider.register(languageSelector, {
-		provideHover: async (model: model.ITextModel, position: Position, token: CancellationToken, context?: languages.HoverContext<languages.Hover>): Promise<languages.Hover | undefined> => {
+		provideHover: async (
+			model: model.ITextModel,
+			position: Position,
+			token: CancellationToken,
+			context?: languages.HoverContext<languages.Hover>
+		): Promise<languages.Hover | undefined> => {
 			const word = model.getWordAtPosition(position);
 
-			return Promise.resolve<languages.Hover | null | undefined>(provider.provideHover(model, position, token, context)).then((value): languages.Hover | undefined => {
+			return Promise.resolve<languages.Hover | null | undefined>(
+				provider.provideHover(model, position, token, context)
+			).then((value): languages.Hover | undefined => {
 				if (!value) {
 					return undefined;
 				}
 				if (!value.range && word) {
-					value.range = new Range(position.lineNumber, word.startColumn, position.lineNumber, word.endColumn);
+					value.range = new Range(
+						position.lineNumber,
+						word.startColumn,
+						position.lineNumber,
+						word.endColumn
+					);
 				}
 				if (!value.range) {
-					value.range = new Range(position.lineNumber, position.column, position.lineNumber, position.column);
+					value.range = new Range(
+						position.lineNumber,
+						position.column,
+						position.lineNumber,
+						position.column
+					);
 				}
 				return value;
 			});
-		}
+		},
 	});
 }
 
 /**
  * Register a document symbol provider (used by e.g. outline).
  */
-export function registerDocumentSymbolProvider(languageSelector: LanguageSelector, provider: languages.DocumentSymbolProvider): IDisposable {
+export function registerDocumentSymbolProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.DocumentSymbolProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.documentSymbolProvider.register(languageSelector, provider);
 }
@@ -511,7 +612,10 @@ export function registerDocumentSymbolProvider(languageSelector: LanguageSelecto
 /**
  * Register a document highlight provider (used by e.g. highlight occurrences).
  */
-export function registerDocumentHighlightProvider(languageSelector: LanguageSelector, provider: languages.DocumentHighlightProvider): IDisposable {
+export function registerDocumentHighlightProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.DocumentHighlightProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.documentHighlightProvider.register(languageSelector, provider);
 }
@@ -519,7 +623,10 @@ export function registerDocumentHighlightProvider(languageSelector: LanguageSele
 /**
  * Register an linked editing range provider.
  */
-export function registerLinkedEditingRangeProvider(languageSelector: LanguageSelector, provider: languages.LinkedEditingRangeProvider): IDisposable {
+export function registerLinkedEditingRangeProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.LinkedEditingRangeProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.linkedEditingRangeProvider.register(languageSelector, provider);
 }
@@ -527,7 +634,10 @@ export function registerLinkedEditingRangeProvider(languageSelector: LanguageSel
 /**
  * Register a definition provider (used by e.g. go to definition).
  */
-export function registerDefinitionProvider(languageSelector: LanguageSelector, provider: languages.DefinitionProvider): IDisposable {
+export function registerDefinitionProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.DefinitionProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.definitionProvider.register(languageSelector, provider);
 }
@@ -535,7 +645,10 @@ export function registerDefinitionProvider(languageSelector: LanguageSelector, p
 /**
  * Register a implementation provider (used by e.g. go to implementation).
  */
-export function registerImplementationProvider(languageSelector: LanguageSelector, provider: languages.ImplementationProvider): IDisposable {
+export function registerImplementationProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.ImplementationProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.implementationProvider.register(languageSelector, provider);
 }
@@ -543,7 +656,10 @@ export function registerImplementationProvider(languageSelector: LanguageSelecto
 /**
  * Register a type definition provider (used by e.g. go to type definition).
  */
-export function registerTypeDefinitionProvider(languageSelector: LanguageSelector, provider: languages.TypeDefinitionProvider): IDisposable {
+export function registerTypeDefinitionProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.TypeDefinitionProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.typeDefinitionProvider.register(languageSelector, provider);
 }
@@ -551,7 +667,10 @@ export function registerTypeDefinitionProvider(languageSelector: LanguageSelecto
 /**
  * Register a code lens provider (used by e.g. inline code lenses).
  */
-export function registerCodeLensProvider(languageSelector: LanguageSelector, provider: languages.CodeLensProvider): IDisposable {
+export function registerCodeLensProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.CodeLensProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.codeLensProvider.register(languageSelector, provider);
 }
@@ -559,42 +678,71 @@ export function registerCodeLensProvider(languageSelector: LanguageSelector, pro
 /**
  * Register a code action provider (used by e.g. quick fix).
  */
-export function registerCodeActionProvider(languageSelector: LanguageSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): IDisposable {
+export function registerCodeActionProvider(
+	languageSelector: LanguageSelector,
+	provider: CodeActionProvider,
+	metadata?: CodeActionProviderMetadata
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.codeActionProvider.register(languageSelector, {
 		providedCodeActionKinds: metadata?.providedCodeActionKinds,
 		documentation: metadata?.documentation,
-		provideCodeActions: (model: model.ITextModel, range: Range, context: languages.CodeActionContext, token: CancellationToken): languages.ProviderResult<languages.CodeActionList> => {
+		provideCodeActions: (
+			model: model.ITextModel,
+			range: Range,
+			context: languages.CodeActionContext,
+			token: CancellationToken
+		): languages.ProviderResult<languages.CodeActionList> => {
 			const markerService = StandaloneServices.get(IMarkerService);
 			const markers = markerService.read({ resource: model.uri }).filter(m => {
 				return Range.areIntersectingOrTouching(m, range);
 			});
-			return provider.provideCodeActions(model, range, { markers, only: context.only, trigger: context.trigger }, token);
+			return provider.provideCodeActions(
+				model,
+				range,
+				{ markers, only: context.only, trigger: context.trigger },
+				token
+			);
 		},
-		resolveCodeAction: provider.resolveCodeAction
+		resolveCodeAction: provider.resolveCodeAction,
 	});
 }
 
 /**
  * Register a formatter that can handle only entire models.
  */
-export function registerDocumentFormattingEditProvider(languageSelector: LanguageSelector, provider: languages.DocumentFormattingEditProvider): IDisposable {
+export function registerDocumentFormattingEditProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.DocumentFormattingEditProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
-	return languageFeaturesService.documentFormattingEditProvider.register(languageSelector, provider);
+	return languageFeaturesService.documentFormattingEditProvider.register(
+		languageSelector,
+		provider
+	);
 }
 
 /**
  * Register a formatter that can handle a range inside a model.
  */
-export function registerDocumentRangeFormattingEditProvider(languageSelector: LanguageSelector, provider: languages.DocumentRangeFormattingEditProvider): IDisposable {
+export function registerDocumentRangeFormattingEditProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.DocumentRangeFormattingEditProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
-	return languageFeaturesService.documentRangeFormattingEditProvider.register(languageSelector, provider);
+	return languageFeaturesService.documentRangeFormattingEditProvider.register(
+		languageSelector,
+		provider
+	);
 }
 
 /**
  * Register a formatter than can do formatting as the user types.
  */
-export function registerOnTypeFormattingEditProvider(languageSelector: LanguageSelector, provider: languages.OnTypeFormattingEditProvider): IDisposable {
+export function registerOnTypeFormattingEditProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.OnTypeFormattingEditProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.onTypeFormattingEditProvider.register(languageSelector, provider);
 }
@@ -602,7 +750,10 @@ export function registerOnTypeFormattingEditProvider(languageSelector: LanguageS
 /**
  * Register a link provider that can find links in text.
  */
-export function registerLinkProvider(languageSelector: LanguageSelector, provider: languages.LinkProvider): IDisposable {
+export function registerLinkProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.LinkProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.linkProvider.register(languageSelector, provider);
 }
@@ -610,7 +761,10 @@ export function registerLinkProvider(languageSelector: LanguageSelector, provide
 /**
  * Register a completion item provider (use by e.g. suggestions).
  */
-export function registerCompletionItemProvider(languageSelector: LanguageSelector, provider: languages.CompletionItemProvider): IDisposable {
+export function registerCompletionItemProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.CompletionItemProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.completionProvider.register(languageSelector, provider);
 }
@@ -618,7 +772,10 @@ export function registerCompletionItemProvider(languageSelector: LanguageSelecto
 /**
  * Register a document color provider (used by Color Picker, Color Decorator).
  */
-export function registerColorProvider(languageSelector: LanguageSelector, provider: languages.DocumentColorProvider): IDisposable {
+export function registerColorProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.DocumentColorProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.colorProvider.register(languageSelector, provider);
 }
@@ -626,7 +783,10 @@ export function registerColorProvider(languageSelector: LanguageSelector, provid
 /**
  * Register a folding range provider
  */
-export function registerFoldingRangeProvider(languageSelector: LanguageSelector, provider: languages.FoldingRangeProvider): IDisposable {
+export function registerFoldingRangeProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.FoldingRangeProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.foldingRangeProvider.register(languageSelector, provider);
 }
@@ -634,7 +794,10 @@ export function registerFoldingRangeProvider(languageSelector: LanguageSelector,
 /**
  * Register a declaration provider
  */
-export function registerDeclarationProvider(languageSelector: LanguageSelector, provider: languages.DeclarationProvider): IDisposable {
+export function registerDeclarationProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.DeclarationProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.declarationProvider.register(languageSelector, provider);
 }
@@ -642,7 +805,10 @@ export function registerDeclarationProvider(languageSelector: LanguageSelector, 
 /**
  * Register a selection range provider
  */
-export function registerSelectionRangeProvider(languageSelector: LanguageSelector, provider: languages.SelectionRangeProvider): IDisposable {
+export function registerSelectionRangeProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.SelectionRangeProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.selectionRangeProvider.register(languageSelector, provider);
 }
@@ -654,9 +820,15 @@ export function registerSelectionRangeProvider(languageSelector: LanguageSelecto
  *
  * For the best user experience, register both a semantic tokens provider and a top-down tokenizer.
  */
-export function registerDocumentSemanticTokensProvider(languageSelector: LanguageSelector, provider: languages.DocumentSemanticTokensProvider): IDisposable {
+export function registerDocumentSemanticTokensProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.DocumentSemanticTokensProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
-	return languageFeaturesService.documentSemanticTokensProvider.register(languageSelector, provider);
+	return languageFeaturesService.documentSemanticTokensProvider.register(
+		languageSelector,
+		provider
+	);
 }
 
 /**
@@ -666,20 +838,32 @@ export function registerDocumentSemanticTokensProvider(languageSelector: Languag
  *
  * For the best user experience, register both a semantic tokens provider and a top-down tokenizer.
  */
-export function registerDocumentRangeSemanticTokensProvider(languageSelector: LanguageSelector, provider: languages.DocumentRangeSemanticTokensProvider): IDisposable {
+export function registerDocumentRangeSemanticTokensProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.DocumentRangeSemanticTokensProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
-	return languageFeaturesService.documentRangeSemanticTokensProvider.register(languageSelector, provider);
+	return languageFeaturesService.documentRangeSemanticTokensProvider.register(
+		languageSelector,
+		provider
+	);
 }
 
 /**
  * Register an inline completions provider.
  */
-export function registerInlineCompletionsProvider(languageSelector: LanguageSelector, provider: languages.InlineCompletionsProvider): IDisposable {
+export function registerInlineCompletionsProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.InlineCompletionsProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.inlineCompletionsProvider.register(languageSelector, provider);
 }
 
-export function registerInlineEditProvider(languageSelector: LanguageSelector, provider: languages.InlineEditProvider): IDisposable {
+export function registerInlineEditProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.InlineEditProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.inlineEditProvider.register(languageSelector, provider);
 }
@@ -687,7 +871,10 @@ export function registerInlineEditProvider(languageSelector: LanguageSelector, p
 /**
  * Register an inlay hints provider.
  */
-export function registerInlayHintsProvider(languageSelector: LanguageSelector, provider: languages.InlayHintsProvider): IDisposable {
+export function registerInlayHintsProvider(
+	languageSelector: LanguageSelector,
+	provider: languages.InlayHintsProvider
+): IDisposable {
 	const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
 	return languageFeaturesService.inlayHintsProvider.register(languageSelector, provider);
 }
@@ -697,7 +884,6 @@ export function registerInlayHintsProvider(languageSelector: LanguageSelector, p
  * a [code action](#CodeActionProvider.provideCodeActions) is run.
  */
 export interface CodeActionContext {
-
 	/**
 	 * An array of diagnostics.
 	 */
@@ -722,15 +908,21 @@ export interface CodeActionProvider {
 	/**
 	 * Provide commands for the given document and range.
 	 */
-	provideCodeActions(model: model.ITextModel, range: Range, context: CodeActionContext, token: CancellationToken): languages.ProviderResult<languages.CodeActionList>;
+	provideCodeActions(
+		model: model.ITextModel,
+		range: Range,
+		context: CodeActionContext,
+		token: CancellationToken
+	): languages.ProviderResult<languages.CodeActionList>;
 
 	/**
 	 * Given a code action fill in the edit. Will only invoked when missing.
 	 */
-	resolveCodeAction?(codeAction: languages.CodeAction, token: CancellationToken): languages.ProviderResult<languages.CodeAction>;
+	resolveCodeAction?(
+		codeAction: languages.CodeAction,
+		token: CancellationToken
+	): languages.ProviderResult<languages.CodeAction>;
 }
-
-
 
 /**
  * Metadata about the type of code actions that a {@link CodeActionProvider} provides.
@@ -746,7 +938,10 @@ export interface CodeActionProviderMetadata {
 	 */
 	readonly providedCodeActionKinds?: readonly string[];
 
-	readonly documentation?: ReadonlyArray<{ readonly kind: string; readonly command: languages.Command }>;
+	readonly documentation?: ReadonlyArray<{
+		readonly kind: string;
+		readonly command: languages.Command;
+	}>;
 }
 
 /**

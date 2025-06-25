@@ -30,13 +30,14 @@ export class FrontMatterMarker extends MarkdownExtensionsToken {
 	 * List of {@link Dash} tokens in the marker.
 	 */
 	public get dashTokens(): readonly Dash[] {
-		return this.tokens
-			.filter((token) => { return token instanceof Dash; });
+		return this.tokens.filter(token => {
+			return token instanceof Dash;
+		});
 	}
 
 	constructor(
 		range: Range,
-		public readonly tokens: readonly TMarkerToken[],
+		public readonly tokens: readonly TMarkerToken[]
 	) {
 		super(range);
 	}
@@ -45,9 +46,7 @@ export class FrontMatterMarker extends MarkdownExtensionsToken {
 	 * Create new instance of the token from a provided
 	 * list of tokens.
 	 */
-	public static fromTokens(
-		tokens: readonly TMarkerToken[],
-	): FrontMatterMarker {
+	public static fromTokens(tokens: readonly TMarkerToken[]): FrontMatterMarker {
 		const range = BaseToken.fullRange(tokens);
 
 		return new FrontMatterMarker(range, tokens);

@@ -6,7 +6,7 @@ export enum LogLevel {
 	DEBUG = 0,
 	INFO = 1,
 	WARN = 2,
-	ERROR = 3
+	ERROR = 3,
 }
 
 export interface LogEntry {
@@ -45,11 +45,20 @@ export class LoggerService {
 		const logLevelStr = config.get<string>('logging.level', 'info').toLowerCase();
 
 		switch (logLevelStr) {
-			case 'debug': this.logLevel = LogLevel.DEBUG; break;
-			case 'info': this.logLevel = LogLevel.INFO; break;
-			case 'warn': this.logLevel = LogLevel.WARN; break;
-			case 'error': this.logLevel = LogLevel.ERROR; break;
-			default: this.logLevel = LogLevel.INFO;
+			case 'debug':
+				this.logLevel = LogLevel.DEBUG;
+				break;
+			case 'info':
+				this.logLevel = LogLevel.INFO;
+				break;
+			case 'warn':
+				this.logLevel = LogLevel.WARN;
+				break;
+			case 'error':
+				this.logLevel = LogLevel.ERROR;
+				break;
+			default:
+				this.logLevel = LogLevel.INFO;
 		}
 
 		this.enableFileLogging = config.get<boolean>('logging.enableFileOutput', false);
@@ -86,7 +95,7 @@ export class LoggerService {
 			level,
 			category,
 			message,
-			data
+			data,
 		};
 
 		// Output to VS Code Output Channel
@@ -135,11 +144,16 @@ export class LoggerService {
 
 	private getLevelString(level: LogLevel): string {
 		switch (level) {
-			case LogLevel.DEBUG: return 'DEBUG';
-			case LogLevel.INFO: return 'INFO';
-			case LogLevel.WARN: return 'WARN';
-			case LogLevel.ERROR: return 'ERROR';
-			default: return 'UNKNOWN';
+			case LogLevel.DEBUG:
+				return 'DEBUG';
+			case LogLevel.INFO:
+				return 'INFO';
+			case LogLevel.WARN:
+				return 'WARN';
+			case LogLevel.ERROR:
+				return 'ERROR';
+			default:
+				return 'UNKNOWN';
 		}
 	}
 
@@ -159,6 +173,6 @@ export function createLogger(category: string) {
 		debug: (message: string, data?: any) => logger.debug(category, message, data),
 		info: (message: string, data?: any) => logger.info(category, message, data),
 		warn: (message: string, data?: any) => logger.warn(category, message, data),
-		error: (message: string, data?: any) => logger.error(category, message, data)
+		error: (message: string, data?: any) => logger.error(category, message, data),
 	};
 }

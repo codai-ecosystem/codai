@@ -25,10 +25,7 @@ async function updateTask(
 		const { action, message, agentId } = body;
 
 		if (!action) {
-			return NextResponse.json(
-				{ error: 'Action is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Action is required' }, { status: 400 });
 		}
 		const runtimeService = AgentRuntimeService.getInstance();
 		let result;
@@ -55,13 +52,13 @@ async function updateTask(
 						messageId: `msg_${Date.now()}`,
 						status: 'sent',
 						conversationId: conversation.id,
-						message: 'Message sent to agents. Check back for responses.'
+						message: 'Message sent to agents. Check back for responses.',
 					};
 				} catch (error) {
 					console.error('Error sending message:', error);
 					result = {
 						status: 'error',
-						message: 'Failed to send message to agents'
+						message: 'Failed to send message to agents',
 					};
 				}
 				break;
@@ -70,7 +67,7 @@ async function updateTask(
 				// TODO: Implement task pausing in agent runtime
 				result = {
 					status: 'paused',
-					message: 'Task paused successfully'
+					message: 'Task paused successfully',
 				};
 				break;
 
@@ -78,7 +75,7 @@ async function updateTask(
 				// TODO: Implement task resuming in agent runtime
 				result = {
 					status: 'in_progress',
-					message: 'Task resumed successfully'
+					message: 'Task resumed successfully',
 				};
 				break;
 
@@ -86,15 +83,12 @@ async function updateTask(
 				// TODO: Implement task cancellation in agent runtime
 				result = {
 					status: 'cancelled',
-					message: 'Task cancelled successfully'
+					message: 'Task cancelled successfully',
 				};
 				break;
 
 			default:
-				return NextResponse.json(
-					{ error: `Unknown action: ${action}` },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
 		}
 
 		// Log task action for audit
@@ -106,27 +100,21 @@ async function updateTask(
 			details: {
 				action: `Performed task action: ${action}`,
 				taskId,
-				message: message || null
-			}
+				message: message || null,
+			},
 		});
 
 		return NextResponse.json({
 			success: true,
-			data: result
+			data: result,
 		});
 	} catch (error) {
 		console.error('Error updating task:', error);
-		return NextResponse.json(
-			{ error: 'Failed to update task' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
 	}
 }
 
-export const GET = (
-	request: NextRequest,
-	{ params }: { params: Promise<{ taskId: string }> }
-) => {
+export const GET = (request: NextRequest, { params }: { params: Promise<{ taskId: string }> }) => {
 	return withAuth(async (req, user) => {
 		try {
 			const { taskId } = await params;
@@ -134,10 +122,7 @@ export const GET = (
 
 			const task = await runtimeService.getTask(taskId, user.uid);
 			if (!task) {
-				return NextResponse.json(
-					{ error: 'Task not found' },
-					{ status: 404 }
-				);
+				return NextResponse.json({ error: 'Task not found' }, { status: 404 });
 			}
 
 			// Get conversation if available
@@ -150,7 +135,7 @@ export const GET = (
 				resourceId: taskId,
 				details: {
 					taskId,
-					status: task.status
+					status: task.status,
 				},
 				ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
 			});
@@ -164,34 +149,30 @@ export const GET = (
 						startedAt: task.startedAt?.toISOString(),
 						completedAt: task.completedAt?.toISOString(),
 					},
-					conversation: conversation ? {
-						id: conversation.id,
-						messages: conversation.context.messages.map(msg => ({
-							id: msg.id,
-							agentId: msg.agentId,
-							type: msg.type,
-							content: msg.content,
-							timestamp: msg.timestamp.toISOString(),
-							metadata: msg.metadata
-						})),
-						lastActivity: conversation.lastActivity.toISOString()
-					} : null
-				}
+					conversation: conversation
+						? {
+								id: conversation.id,
+								messages: conversation.context.messages.map(msg => ({
+									id: msg.id,
+									agentId: msg.agentId,
+									type: msg.type,
+									content: msg.content,
+									timestamp: msg.timestamp.toISOString(),
+									metadata: msg.metadata,
+								})),
+								lastActivity: conversation.lastActivity.toISOString(),
+							}
+						: null,
+				},
 			});
 		} catch (error) {
 			console.error('Error getting task:', error);
-			return NextResponse.json(
-				{ error: 'Failed to get task details' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to get task details' }, { status: 500 });
 		}
 	})(request);
 };
 
-export const POST = (
-	request: NextRequest,
-	{ params }: { params: Promise<{ taskId: string }> }
-) => {
+export const POST = (request: NextRequest, { params }: { params: Promise<{ taskId: string }> }) => {
 	return withAuth(async (req, user) => {
 		try {
 			const { taskId } = await params;
@@ -199,10 +180,7 @@ export const POST = (
 			const { action, message, agentId } = body;
 
 			if (!action) {
-				return NextResponse.json(
-					{ error: 'Action is required' },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: 'Action is required' }, { status: 400 });
 			}
 
 			const runtimeService = AgentRuntimeService.getInstance();
@@ -211,10 +189,7 @@ export const POST = (
 			// Get the task to confirm it exists and belongs to this user
 			const task = await runtimeService.getTask(taskId, user.uid);
 			if (!task) {
-				return NextResponse.json(
-					{ error: 'Task not found' },
-					{ status: 404 }
-				);
+				return NextResponse.json({ error: 'Task not found' }, { status: 404 });
 			}
 
 			switch (action) {
@@ -228,15 +203,12 @@ export const POST = (
 					// Start or continue a conversation
 					if (runtimeService.getConversation(taskId, user.uid)) {
 						// TODO: Add appropriate method to continue conversation once implemented
-						result = { message: "Message received" };
+						result = { message: 'Message received' };
 					} else {
 						// Start a new conversation
-						result = await runtimeService.startConversation(
-							taskId,
-							user.uid,
-							message,
-							[agentId || task.agentId]
-						);
+						result = await runtimeService.startConversation(taskId, user.uid, message, [
+							agentId || task.agentId,
+						]);
 					}
 					break;
 				case 'cancel':
@@ -252,11 +224,11 @@ export const POST = (
 						agentId: task.agentId,
 						inputs: task.inputs,
 						priority: task.priority as 'low' | 'medium' | 'high' | 'critical',
-						projectId: task.projectId
+						projectId: task.projectId,
 					});
 					result = {
 						originalTaskId: taskId,
-						newTaskId: newTask.id
+						newTaskId: newTask.id,
 					};
 					break;
 				case 'change_agent':
@@ -273,19 +245,16 @@ export const POST = (
 						agentId: agentId,
 						inputs: task.inputs,
 						priority: task.priority as 'low' | 'medium' | 'high' | 'critical',
-						projectId: task.projectId
+						projectId: task.projectId,
 					});
 					result = {
 						originalTaskId: taskId,
 						newTaskId: newAgentTask.id,
-						newAgent: agentId
+						newAgent: agentId,
 					};
 					break;
 				default:
-					return NextResponse.json(
-						{ error: `Unknown action: ${action}` },
-						{ status: 400 }
-					);
+					return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
 			}
 
 			// Log the action for analytics and monitoring
@@ -297,20 +266,17 @@ export const POST = (
 				details: {
 					action: `Performed task action: ${action}`,
 					taskId,
-					message: message || null
-				}
+					message: message || null,
+				},
 			});
 
 			return NextResponse.json({
 				success: true,
-				data: result
+				data: result,
 			});
 		} catch (error) {
 			console.error('Error updating task:', error);
-			return NextResponse.json(
-				{ error: 'Failed to update task' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
 		}
 	})(request);
 };

@@ -7,7 +7,6 @@ import * as Assert from '../../../base/common/assert.js';
 import * as Types from '../../../base/common/types.js';
 
 export interface IRegistry {
-
 	/**
 	 * Adds the extension functions and properties defined by data to the
 	 * platform. The provided id must be unique.
@@ -30,7 +29,6 @@ export interface IRegistry {
 }
 
 class RegistryImpl implements IRegistry {
-
 	private readonly data = new Map<string, any>();
 
 	public add(id: string, data: any): void {
@@ -50,14 +48,13 @@ class RegistryImpl implements IRegistry {
 	}
 
 	public dispose() {
-		this.data.forEach((value) => {
+		this.data.forEach(value => {
 			if (Types.isFunction(value.dispose)) {
 				value.dispose();
 			}
 		});
 		this.data.clear();
 	}
-
 }
 
 export const Registry: IRegistry = new RegistryImpl();

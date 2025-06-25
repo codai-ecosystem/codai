@@ -5,9 +5,21 @@
 
 import { ArrayQueue } from '../../../../../base/common/arrays.js';
 import { TextEditInfo } from './beforeEditPositionMapper.js';
-import { Length, lengthAdd, lengthDiffNonNegative, lengthEquals, lengthIsZero, lengthToObj, lengthZero, sumLengths } from './length.js';
+import {
+	Length,
+	lengthAdd,
+	lengthDiffNonNegative,
+	lengthEquals,
+	lengthIsZero,
+	lengthToObj,
+	lengthZero,
+	sumLengths,
+} from './length.js';
 
-export function combineTextEditInfos(textEditInfoFirst: TextEditInfo[], textEditInfoSecond: TextEditInfo[]): TextEditInfo[] {
+export function combineTextEditInfos(
+	textEditInfoFirst: TextEditInfo[],
+	textEditInfoSecond: TextEditInfo[]
+): TextEditInfo[] {
 	if (textEditInfoFirst.length === 0) {
 		return textEditInfoSecond;
 	}
@@ -18,7 +30,10 @@ export function combineTextEditInfos(textEditInfoFirst: TextEditInfo[], textEdit
 	// s0: State before any edits
 	const s0ToS1Map = new ArrayQueue(toLengthMapping(textEditInfoFirst));
 	// s1: State after first edit, but before second edit
-	const s1ToS2Map = toLengthMapping(textEditInfoSecond) as (LengthMapping | { lengthBefore: undefined; lengthAfter: undefined; modified: false })[];
+	const s1ToS2Map = toLengthMapping(textEditInfoSecond) as (
+		| LengthMapping
+		| { lengthBefore: undefined; lengthAfter: undefined; modified: false }
+	)[];
 	s1ToS2Map.push({ modified: false, lengthBefore: undefined, lengthAfter: undefined }); // Copy everything from old to new
 	// s2: State after both edits
 
@@ -54,7 +69,11 @@ export function combineTextEditInfos(textEditInfoFirst: TextEditInfo[], textEdit
 	function pushEdit(startOffset: Length, endOffset: Length, newLength: Length): void {
 		if (result.length > 0 && lengthEquals(result[result.length - 1].endOffset, startOffset)) {
 			const lastResult = result[result.length - 1];
-			result[result.length - 1] = new TextEditInfo(lastResult.startOffset, endOffset, lengthAdd(lastResult.newLength, newLength));
+			result[result.length - 1] = new TextEditInfo(
+				lastResult.startOffset,
+				endOffset,
+				lengthAdd(lastResult.newLength, newLength)
+			);
 		} else {
 			result.push({ startOffset, endOffset, newLength });
 		}
@@ -89,9 +108,8 @@ class LengthMapping {
 		 */
 		public readonly modified: boolean,
 		public readonly lengthBefore: Length,
-		public readonly lengthAfter: Length,
-	) {
-	}
+		public readonly lengthAfter: Length
+	) {}
 
 	splitAt(lengthAfter: Length): [LengthMapping, LengthMapping | undefined] {
 		const remainingLengthAfter = lengthDiffNonNegative(lengthAfter, this.lengthAfter);
@@ -100,12 +118,12 @@ class LengthMapping {
 		} else if (this.modified) {
 			return [
 				new LengthMapping(this.modified, this.lengthBefore, lengthAfter),
-				new LengthMapping(this.modified, lengthZero, remainingLengthAfter)
+				new LengthMapping(this.modified, lengthZero, remainingLengthAfter),
 			];
 		} else {
 			return [
 				new LengthMapping(this.modified, lengthAfter, lengthAfter),
-				new LengthMapping(this.modified, remainingLengthAfter, remainingLengthAfter)
+				new LengthMapping(this.modified, remainingLengthAfter, remainingLengthAfter),
 			];
 		}
 	}

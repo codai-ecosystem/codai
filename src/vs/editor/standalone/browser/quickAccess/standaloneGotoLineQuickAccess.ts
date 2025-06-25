@@ -5,18 +5,24 @@
 
 import { AbstractGotoLineQuickAccessProvider } from '../../../contrib/quickAccess/browser/gotoLineQuickAccess.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { IQuickAccessRegistry, Extensions } from '../../../../platform/quickinput/common/quickAccess.js';
+import {
+	IQuickAccessRegistry,
+	Extensions,
+} from '../../../../platform/quickinput/common/quickAccess.js';
 import { ICodeEditorService } from '../../../browser/services/codeEditorService.js';
 import { GoToLineNLS } from '../../../common/standaloneStrings.js';
 import { Event } from '../../../../base/common/event.js';
-import { EditorAction, registerEditorAction, ServicesAccessor } from '../../../browser/editorExtensions.js';
+import {
+	EditorAction,
+	registerEditorAction,
+	ServicesAccessor,
+} from '../../../browser/editorExtensions.js';
 import { EditorContextKeys } from '../../../common/editorContextKeys.js';
 import { KeyMod, KeyCode } from '../../../../base/common/keyCodes.js';
 import { KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
 import { IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
 
 export class StandaloneGotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProvider {
-
 	protected readonly onDidActiveTextEditorControlChange = Event.None;
 
 	constructor(@ICodeEditorService private readonly editorService: ICodeEditorService) {
@@ -29,7 +35,6 @@ export class StandaloneGotoLineQuickAccessProvider extends AbstractGotoLineQuick
 }
 
 export class GotoLineAction extends EditorAction {
-
 	static readonly ID = 'editor.action.gotoLine';
 
 	constructor() {
@@ -42,8 +47,8 @@ export class GotoLineAction extends EditorAction {
 				kbExpr: EditorContextKeys.focus,
 				primary: KeyMod.CtrlCmd | KeyCode.KeyG,
 				mac: { primary: KeyMod.WinCtrl | KeyCode.KeyG },
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -57,5 +62,5 @@ registerEditorAction(GotoLineAction);
 Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess).registerQuickAccessProvider({
 	ctor: StandaloneGotoLineQuickAccessProvider,
 	prefix: StandaloneGotoLineQuickAccessProvider.PREFIX,
-	helpEntries: [{ description: GoToLineNLS.gotoLineActionLabel, commandId: GotoLineAction.ID }]
+	helpEntries: [{ description: GoToLineNLS.gotoLineActionLabel, commandId: GotoLineAction.ID }],
 });

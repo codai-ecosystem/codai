@@ -12,32 +12,50 @@ import { TestInstantiationService } from '../../../../../platform/instantiation/
 import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
 import { USLayoutResolvedKeybinding } from '../../../../../platform/keybinding/common/usLayoutResolvedKeybinding.js';
 import { IFileMatch, QueryType } from '../../../../services/search/common/search.js';
-import { getElementToFocusAfterRemoved, getLastNodeFromSameType } from '../../browser/searchActionsRemoveReplace.js';
+import {
+	getElementToFocusAfterRemoved,
+	getLastNodeFromSameType,
+} from '../../browser/searchActionsRemoveReplace.js';
 import { SearchModelImpl } from '../../browser/searchTreeModel/searchModel.js';
 import { MockObjectTree } from './mockSearchTree.js';
 import { ILabelService } from '../../../../../platform/label/common/label.js';
 import { INotebookEditorService } from '../../../notebook/browser/services/notebookEditorService.js';
-import { createFileUriFromPathFromRoot, stubModelService, stubNotebookEditorService } from './searchTestCommon.js';
+import {
+	createFileUriFromPathFromRoot,
+	stubModelService,
+	stubNotebookEditorService,
+} from './searchTestCommon.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { FolderMatchImpl } from '../../browser/searchTreeModel/folderMatch.js';
-import { ISearchTreeFileMatch, ISearchTreeMatch, FileMatchOrMatch } from '../../browser/searchTreeModel/searchTreeCommon.js';
+import {
+	ISearchTreeFileMatch,
+	ISearchTreeMatch,
+	FileMatchOrMatch,
+} from '../../browser/searchTreeModel/searchTreeCommon.js';
 import { NotebookCompatibleFileMatch } from '../../browser/notebookSearch/notebookSearchModel.js';
 import { INotebookFileInstanceMatch } from '../../browser/notebookSearch/notebookSearchModelBase.js';
 import { MatchImpl } from '../../browser/searchTreeModel/match.js';
 
 suite('Search Actions', () => {
-
 	let instantiationService: TestInstantiationService;
 	let counter: number;
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	setup(() => {
 		instantiationService = new TestInstantiationService();
-		instantiationService.stub(IModelService, stubModelService(instantiationService, (e) => store.add(e)));
-		instantiationService.stub(INotebookEditorService, stubNotebookEditorService(instantiationService, (e) => store.add(e)));
+		instantiationService.stub(
+			IModelService,
+			stubModelService(instantiationService, e => store.add(e))
+		);
+		instantiationService.stub(
+			INotebookEditorService,
+			stubNotebookEditorService(instantiationService, e => store.add(e))
+		);
 		instantiationService.stub(IKeybindingService, {});
 		instantiationService.stub(ILabelService, { getUriBasenameLabel: (uri: URI) => '' });
-		instantiationService.stub(IKeybindingService, 'resolveKeybinding', (keybinding: Keybinding) => USLayoutResolvedKeybinding.resolveKeybinding(keybinding, OS));
+		instantiationService.stub(IKeybindingService, 'resolveKeybinding', (keybinding: Keybinding) =>
+			USLayoutResolvedKeybinding.resolveKeybinding(keybinding, OS)
+		);
 		instantiationService.stub(IKeybindingService, 'lookupKeybinding', (id: string) => null);
 		instantiationService.stub(IKeybindingService, 'lookupKeybinding', (id: string) => null);
 		counter = 0;
@@ -50,7 +68,14 @@ suite('Search Actions', () => {
 	test('get next element to focus after removing a match when it has next sibling file', async function () {
 		const fileMatch1 = aFileMatch();
 		const fileMatch2 = aFileMatch();
-		const data = [fileMatch1, aMatch(fileMatch1), aMatch(fileMatch1), fileMatch2, aMatch(fileMatch2), aMatch(fileMatch2)];
+		const data = [
+			fileMatch1,
+			aMatch(fileMatch1),
+			aMatch(fileMatch1),
+			fileMatch2,
+			aMatch(fileMatch2),
+			aMatch(fileMatch2),
+		];
 		const tree = aTree(data);
 		const target = data[2];
 
@@ -72,7 +97,14 @@ suite('Search Actions', () => {
 		const fileMatch1 = aFileMatch();
 		const fileMatch2 = aFileMatch();
 		const fileMatch3 = aFileMatch();
-		const data = [fileMatch1, aMatch(fileMatch1), fileMatch2, aMatch(fileMatch2), fileMatch3, aMatch(fileMatch3)];
+		const data = [
+			fileMatch1,
+			aMatch(fileMatch1),
+			fileMatch2,
+			aMatch(fileMatch2),
+			fileMatch3,
+			aMatch(fileMatch3),
+		];
 		const tree = aTree(data);
 		const target = data[2];
 
@@ -84,7 +116,14 @@ suite('Search Actions', () => {
 		const fileMatch1 = aFileMatch();
 		const fileMatch2 = aFileMatch();
 		const fileMatch3 = aFileMatch();
-		const data = [fileMatch1, aMatch(fileMatch1), fileMatch2, aMatch(fileMatch2), fileMatch3, aMatch(fileMatch3)];
+		const data = [
+			fileMatch1,
+			aMatch(fileMatch1),
+			fileMatch2,
+			aMatch(fileMatch2),
+			fileMatch3,
+			aMatch(fileMatch3),
+		];
 		const tree = aTree(data);
 
 		const actual = await getLastNodeFromSameType(tree, fileMatch1);
@@ -95,7 +134,14 @@ suite('Search Actions', () => {
 		const fileMatch1 = aFileMatch();
 		const fileMatch2 = aFileMatch();
 		const fileMatch3 = aFileMatch();
-		const data = [fileMatch1, aMatch(fileMatch1), fileMatch2, aMatch(fileMatch2), fileMatch3, aMatch(fileMatch3)];
+		const data = [
+			fileMatch1,
+			aMatch(fileMatch1),
+			fileMatch2,
+			aMatch(fileMatch2),
+			fileMatch3,
+			aMatch(fileMatch3),
+		];
 		const tree = aTree(data);
 
 		const actual = await getLastNodeFromSameType(tree, aMatch(fileMatch1));
@@ -117,20 +163,40 @@ suite('Search Actions', () => {
 		const uri = URI.file('somepath' + ++counter);
 		const rawMatch: IFileMatch = {
 			resource: uri,
-			results: []
+			results: [],
 		};
 
 		const searchModel = instantiationService.createInstance(SearchModelImpl);
 		store.add(searchModel);
-		const folderMatch = instantiationService.createInstance(FolderMatchImpl, URI.file('somepath'), '', 0, {
-			type: QueryType.Text, folderQueries: [{ folder: createFileUriFromPathFromRoot() }], contentPattern: {
-				pattern: ''
-			}
-		}, searchModel.searchResult.plainTextSearchResult, searchModel.searchResult, null);
+		const folderMatch = instantiationService.createInstance(
+			FolderMatchImpl,
+			URI.file('somepath'),
+			'',
+			0,
+			{
+				type: QueryType.Text,
+				folderQueries: [{ folder: createFileUriFromPathFromRoot() }],
+				contentPattern: {
+					pattern: '',
+				},
+			},
+			searchModel.searchResult.plainTextSearchResult,
+			searchModel.searchResult,
+			null
+		);
 		store.add(folderMatch);
-		const fileMatch = instantiationService.createInstance(NotebookCompatibleFileMatch, {
-			pattern: ''
-		}, undefined, undefined, folderMatch, rawMatch, null, '');
+		const fileMatch = instantiationService.createInstance(
+			NotebookCompatibleFileMatch,
+			{
+				pattern: '',
+			},
+			undefined,
+			undefined,
+			folderMatch,
+			rawMatch,
+			null,
+			''
+		);
 		fileMatch.createMatches();
 		store.add(fileMatch);
 		return fileMatch;
@@ -145,13 +211,13 @@ suite('Search Actions', () => {
 				startLineNumber: 0,
 				startColumn: 0,
 				endLineNumber: 0,
-				endColumn: 2
+				endColumn: 2,
 			},
 			{
 				startLineNumber: line,
 				startColumn: 0,
 				endLineNumber: line,
-				endColumn: 2
+				endColumn: 2,
 			},
 			false
 		);

@@ -16,7 +16,6 @@ import { ILogService } from '../../log/common/log.js';
 import { IUserDataProfilesService } from '../../userDataProfile/common/userDataProfile.js';
 
 export class ExtensionsLifecycle extends Disposable {
-
 	private processesLimiter: Limiter<void> = new Limiter(5); // Run max 5 processes in parallel
 
 	constructor(
@@ -29,13 +28,25 @@ export class ExtensionsLifecycle extends Disposable {
 	async postUninstall(extension: ILocalExtension): Promise<void> {
 		const script = this.parseScript(extension, 'uninstall');
 		if (script) {
-			this.logService.info(extension.identifier.id, extension.manifest.version, `Running post uninstall script`);
+			this.logService.info(
+				extension.identifier.id,
+				extension.manifest.version,
+				`Running post uninstall script`
+			);
 			await this.processesLimiter.queue(async () => {
 				try {
 					await this.runLifecycleHook(script.script, 'uninstall', script.args, true, extension);
-					this.logService.info(`Finished running post uninstall script`, extension.identifier.id, extension.manifest.version);
+					this.logService.info(
+						`Finished running post uninstall script`,
+						extension.identifier.id,
+						extension.manifest.version
+					);
 				} catch (error) {
-					this.logService.error('Failed to run post uninstall script', extension.identifier.id, extension.manifest.version);
+					this.logService.error(
+						'Failed to run post uninstall script',
+						extension.identifier.id,
+						extension.manifest.version
+					);
 					this.logService.error(error);
 				}
 			});
@@ -48,12 +59,24 @@ export class ExtensionsLifecycle extends Disposable {
 		}
 	}
 
-	private parseScript(extension: ILocalExtension, type: string): { script: string; args: string[] } | null {
+	private parseScript(
+		extension: ILocalExtension,
+		type: string
+	): { script: string; args: string[] } | null {
 		const scriptKey = `vscode:${type}`;
-		if (extension.location.scheme === Schemas.file && extension.manifest && extension.manifest['scripts'] && typeof extension.manifest['scripts'][scriptKey] === 'string') {
+		if (
+			extension.location.scheme === Schemas.file &&
+			extension.manifest &&
+			extension.manifest['scripts'] &&
+			typeof extension.manifest['scripts'][scriptKey] === 'string'
+		) {
 			const script = (<string>extension.manifest['scripts'][scriptKey]).split(' ');
 			if (script.length < 2 || script[0] !== 'node' || !script[1]) {
-				this.logService.warn(extension.identifier.id, extension.manifest.version, `${scriptKey} should be a node script`);
+				this.logService.warn(
+					extension.identifier.id,
+					extension.manifest.version,
+					`${scriptKey} should be a node script`
+				);
 				return null;
 			}
 			return { script: join(extension.location.fsPath, script[1]), args: script.slice(2) || [] };
@@ -61,9 +84,14 @@ export class ExtensionsLifecycle extends Disposable {
 		return null;
 	}
 
-	private runLifecycleHook(lifecycleHook: string, lifecycleType: string, args: string[], timeout: boolean, extension: ILocalExtension): Promise<void> {
+	private runLifecycleHook(
+		lifecycleHook: string,
+		lifecycleType: string,
+		args: string[],
+		timeout: boolean,
+		extension: ILocalExtension
+	): Promise<void> {
 		return new Promise<void>((c, e) => {
-
 			const extensionLifecycleProcess = this.start(lifecycleHook, lifecycleType, args, extension);
 			let timeoutHandler: Timeout | null;
 
@@ -80,7 +108,7 @@ export class ExtensionsLifecycle extends Disposable {
 			};
 
 			// on error
-			extensionLifecycleProcess.on('error', (err) => {
+			extensionLifecycleProcess.on('error', err => {
 				onexit(toErrorMessage(err) || 'Unknown');
 			});
 
@@ -100,12 +128,21 @@ export class ExtensionsLifecycle extends Disposable {
 		});
 	}
 
-	private start(uninstallHook: string, lifecycleType: string, args: string[], extension: ILocalExtension): ChildProcess {
+	private start(
+		uninstallHook: string,
+		lifecycleType: string,
+		args: string[],
+		extension: ILocalExtension
+	): ChildProcess {
 		const opts = {
 			silent: true,
-			execArgv: undefined
+			execArgv: undefined,
 		};
-		const extensionUninstallProcess = fork(uninstallHook, [`--type=extension-post-${lifecycleType}`, ...args], opts);
+		const extensionUninstallProcess = fork(
+			uninstallHook,
+			[`--type=extension-post-${lifecycleType}`, ...args],
+			opts
+		);
 
 		// Catch all output coming from the process
 		type Output = { data: string; format: string[] };
@@ -116,19 +153,45 @@ export class ExtensionsLifecycle extends Disposable {
 		const onStderr = Event.fromNodeEventEmitter<string>(extensionUninstallProcess.stderr!, 'data');
 
 		// Log output
-		this._register(onStdout(data => this.logService.info(extension.identifier.id, extension.manifest.version, `post-${lifecycleType}`, data)));
-		this._register(onStderr(data => this.logService.error(extension.identifier.id, extension.manifest.version, `post-${lifecycleType}`, data)));
+		this._register(
+			onStdout(data =>
+				this.logService.info(
+					extension.identifier.id,
+					extension.manifest.version,
+					`post-${lifecycleType}`,
+					data
+				)
+			)
+		);
+		this._register(
+			onStderr(data =>
+				this.logService.error(
+					extension.identifier.id,
+					extension.manifest.version,
+					`post-${lifecycleType}`,
+					data
+				)
+			)
+		);
 
 		const onOutput = Event.any(
 			Event.map(onStdout, o => ({ data: `%c${o}`, format: [''] }), this._store),
 			Event.map(onStderr, o => ({ data: `%c${o}`, format: ['color: red'] }), this._store)
 		);
 		// Debounce all output, so we can render it in the Chrome console as a group
-		const onDebouncedOutput = Event.debounce<Output>(onOutput, (r, o) => {
-			return r
-				? { data: r.data + o.data, format: [...r.format, ...o.format] }
-				: { data: o.data, format: o.format };
-		}, 100, undefined, undefined, undefined, this._store);
+		const onDebouncedOutput = Event.debounce<Output>(
+			onOutput,
+			(r, o) => {
+				return r
+					? { data: r.data + o.data, format: [...r.format, ...o.format] }
+					: { data: o.data, format: o.format };
+			},
+			100,
+			undefined,
+			undefined,
+			undefined,
+			this._store
+		);
 
 		// Print out output
 		onDebouncedOutput(data => {
@@ -141,6 +204,9 @@ export class ExtensionsLifecycle extends Disposable {
 	}
 
 	private getExtensionStoragePath(extension: ILocalExtension): string {
-		return join(this.userDataProfilesService.defaultProfile.globalStorageHome.fsPath, extension.identifier.id.toLowerCase());
+		return join(
+			this.userDataProfilesService.defaultProfile.globalStorageHome.fsPath,
+			extension.identifier.id.toLowerCase()
+		);
 	}
 }

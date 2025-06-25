@@ -3,12 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import * as Platform from '../../../../base/common/platform.js';
 import * as uuid from '../../../../base/common/uuid.js';
 import { cleanRemoteAuthority } from '../../../../platform/telemetry/common/telemetryUtils.js';
 import { mixin } from '../../../../base/common/objects.js';
-import { ICommonProperties, firstSessionDateStorageKey, lastSessionDateStorageKey, machineIdKey } from '../../../../platform/telemetry/common/telemetry.js';
+import {
+	ICommonProperties,
+	firstSessionDateStorageKey,
+	lastSessionDateStorageKey,
+	machineIdKey,
+} from '../../../../platform/telemetry/common/telemetry.js';
 import { Gesture } from '../../../../base/browser/touch.js';
 
 /**
@@ -31,7 +40,10 @@ export function resolveWorkbenchCommonProperties(
 	resolveAdditionalProperties?: () => { [key: string]: any }
 ): ICommonProperties {
 	const result: ICommonProperties = Object.create(null);
-	const firstSessionDate = storageService.get(firstSessionDateStorageKey, StorageScope.APPLICATION)!;
+	const firstSessionDate = storageService.get(
+		firstSessionDateStorageKey,
+		StorageScope.APPLICATION
+	)!;
 	const lastSessionDate = storageService.get(lastSessionDateStorageKey, StorageScope.APPLICATION)!;
 
 	let machineId: string | undefined;
@@ -39,12 +51,16 @@ export function resolveWorkbenchCommonProperties(
 		machineId = storageService.get(machineIdKey, StorageScope.APPLICATION);
 		if (!machineId) {
 			machineId = uuid.generateUuid();
-			storageService.store(machineIdKey, machineId, StorageScope.APPLICATION, StorageTarget.MACHINE);
+			storageService.store(
+				machineIdKey,
+				machineId,
+				StorageScope.APPLICATION,
+				StorageTarget.MACHINE
+			);
 		}
 	} else {
 		machineId = `Redacted-${productIdentifier ?? 'web'}`;
 	}
-
 
 	/**
 	 * Note: In the web, session date information is fetched from browser storage, so these dates are tied to a specific
@@ -86,20 +102,20 @@ export function resolveWorkbenchCommonProperties(
 	const startTime = Date.now();
 	Object.defineProperties(result, {
 		// __GDPR__COMMON__ "timestamp" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-		'timestamp': {
+		timestamp: {
 			get: () => new Date(),
-			enumerable: true
+			enumerable: true,
 		},
 		// __GDPR__COMMON__ "common.timesincesessionstart" : { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
 		'common.timesincesessionstart': {
 			get: () => Date.now() - startTime,
-			enumerable: true
+			enumerable: true,
 		},
 		// __GDPR__COMMON__ "common.sequence" : { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
 		'common.sequence': {
 			get: () => seq++,
-			enumerable: true
-		}
+			enumerable: true,
+		},
 	});
 
 	if (resolveAdditionalProperties) {
@@ -108,4 +124,3 @@ export function resolveWorkbenchCommonProperties(
 
 	return result;
 }
-

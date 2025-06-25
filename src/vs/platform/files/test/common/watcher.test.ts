@@ -10,8 +10,18 @@ import { isLinux, isWindows } from '../../../../base/common/platform.js';
 import { isEqual } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { FileChangeFilter, FileChangesEvent, FileChangeType, IFileChange } from '../../common/files.js';
-import { coalesceEvents, reviveFileChanges, parseWatcherPatterns, isFiltered } from '../../common/watcher.js';
+import {
+	FileChangeFilter,
+	FileChangesEvent,
+	FileChangeType,
+	IFileChange,
+} from '../../common/files.js';
+import {
+	coalesceEvents,
+	reviveFileChanges,
+	parseWatcherPatterns,
+	isFiltered,
+} from '../../common/watcher.js';
 
 class TestFileWatcher extends Disposable {
 	private readonly _onDidFilesChange: Emitter<{ raw: IFileChange[]; event: FileChangesEvent }>;
@@ -19,7 +29,9 @@ class TestFileWatcher extends Disposable {
 	constructor() {
 		super();
 
-		this._onDidFilesChange = this._register(new Emitter<{ raw: IFileChange[]; event: FileChangesEvent }>());
+		this._onDidFilesChange = this._register(
+			new Emitter<{ raw: IFileChange[]; event: FileChangesEvent }>()
+		);
 	}
 
 	get onDidFilesChange(): Event<{ raw: IFileChange[]; event: FileChangesEvent }> {
@@ -31,13 +43,15 @@ class TestFileWatcher extends Disposable {
 	}
 
 	private onRawFileEvents(events: IFileChange[]): void {
-
 		// Coalesce
 		const coalescedEvents = coalesceEvents(events);
 
 		// Emit through event emitter
 		if (coalescedEvents.length > 0) {
-			this._onDidFilesChange.fire({ raw: reviveFileChanges(coalescedEvents), event: this.toFileChangesEvent(coalescedEvents) });
+			this._onDidFilesChange.fire({
+				raw: reviveFileChanges(coalescedEvents),
+				event: this.toFileChangesEvent(coalescedEvents),
+			});
 		}
 	}
 
@@ -49,11 +63,10 @@ class TestFileWatcher extends Disposable {
 enum Path {
 	UNIX,
 	WINDOWS,
-	UNC
+	UNC,
 }
 
 suite('Watcher', () => {
-
 	(isWindows ? test.skip : test)('parseWatcherPatterns - posix', () => {
 		const path = '/users/data/src';
 		let parsedPattern = parseWatcherPatterns(path, ['*.js'])[0];
@@ -112,7 +125,6 @@ suite('Watcher', () => {
 });
 
 suite('Watcher Events Normalizer', () => {
-
 	const disposables = new DisposableStore();
 
 	teardown(() => {
@@ -132,15 +144,17 @@ suite('Watcher Events Normalizer', () => {
 			{ resource: deleted, type: FileChangeType.DELETED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 3);
-			assert.ok(event.contains(added, FileChangeType.ADDED));
-			assert.ok(event.contains(updated, FileChangeType.UPDATED));
-			assert.ok(event.contains(deleted, FileChangeType.DELETED));
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 3);
+				assert.ok(event.contains(added, FileChangeType.ADDED));
+				assert.ok(event.contains(updated, FileChangeType.UPDATED));
+				assert.ok(event.contains(deleted, FileChangeType.DELETED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
@@ -149,15 +163,63 @@ suite('Watcher Events Normalizer', () => {
 		test(`delete only reported for top level folder (${path})`, done => {
 			const watch = disposables.add(new TestFileWatcher());
 
-			const deletedFolderA = URI.file(path === Path.UNIX ? '/users/data/src/todelete1' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete1' : '\\\\localhost\\users\\data\\src\\todelete1');
-			const deletedFolderB = URI.file(path === Path.UNIX ? '/users/data/src/todelete2' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete2' : '\\\\localhost\\users\\data\\src\\todelete2');
-			const deletedFolderBF1 = URI.file(path === Path.UNIX ? '/users/data/src/todelete2/file.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete2\\file.txt' : '\\\\localhost\\users\\data\\src\\todelete2\\file.txt');
-			const deletedFolderBF2 = URI.file(path === Path.UNIX ? '/users/data/src/todelete2/more/test.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete2\\more\\test.txt' : '\\\\localhost\\users\\data\\src\\todelete2\\more\\test.txt');
-			const deletedFolderBF3 = URI.file(path === Path.UNIX ? '/users/data/src/todelete2/super/bar/foo.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete2\\super\\bar\\foo.txt' : '\\\\localhost\\users\\data\\src\\todelete2\\super\\bar\\foo.txt');
-			const deletedFileA = URI.file(path === Path.UNIX ? '/users/data/src/deleteme.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\deleteme.txt' : '\\\\localhost\\users\\data\\src\\deleteme.txt');
+			const deletedFolderA = URI.file(
+				path === Path.UNIX
+					? '/users/data/src/todelete1'
+					: path === Path.WINDOWS
+						? 'C:\\users\\data\\src\\todelete1'
+						: '\\\\localhost\\users\\data\\src\\todelete1'
+			);
+			const deletedFolderB = URI.file(
+				path === Path.UNIX
+					? '/users/data/src/todelete2'
+					: path === Path.WINDOWS
+						? 'C:\\users\\data\\src\\todelete2'
+						: '\\\\localhost\\users\\data\\src\\todelete2'
+			);
+			const deletedFolderBF1 = URI.file(
+				path === Path.UNIX
+					? '/users/data/src/todelete2/file.txt'
+					: path === Path.WINDOWS
+						? 'C:\\users\\data\\src\\todelete2\\file.txt'
+						: '\\\\localhost\\users\\data\\src\\todelete2\\file.txt'
+			);
+			const deletedFolderBF2 = URI.file(
+				path === Path.UNIX
+					? '/users/data/src/todelete2/more/test.txt'
+					: path === Path.WINDOWS
+						? 'C:\\users\\data\\src\\todelete2\\more\\test.txt'
+						: '\\\\localhost\\users\\data\\src\\todelete2\\more\\test.txt'
+			);
+			const deletedFolderBF3 = URI.file(
+				path === Path.UNIX
+					? '/users/data/src/todelete2/super/bar/foo.txt'
+					: path === Path.WINDOWS
+						? 'C:\\users\\data\\src\\todelete2\\super\\bar\\foo.txt'
+						: '\\\\localhost\\users\\data\\src\\todelete2\\super\\bar\\foo.txt'
+			);
+			const deletedFileA = URI.file(
+				path === Path.UNIX
+					? '/users/data/src/deleteme.txt'
+					: path === Path.WINDOWS
+						? 'C:\\users\\data\\src\\deleteme.txt'
+						: '\\\\localhost\\users\\data\\src\\deleteme.txt'
+			);
 
-			const addedFile = URI.file(path === Path.UNIX ? '/users/data/src/added.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\added.txt' : '\\\\localhost\\users\\data\\src\\added.txt');
-			const updatedFile = URI.file(path === Path.UNIX ? '/users/data/src/updated.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\updated.txt' : '\\\\localhost\\users\\data\\src\\updated.txt');
+			const addedFile = URI.file(
+				path === Path.UNIX
+					? '/users/data/src/added.txt'
+					: path === Path.WINDOWS
+						? 'C:\\users\\data\\src\\added.txt'
+						: '\\\\localhost\\users\\data\\src\\added.txt'
+			);
+			const updatedFile = URI.file(
+				path === Path.UNIX
+					? '/users/data/src/updated.txt'
+					: path === Path.WINDOWS
+						? 'C:\\users\\data\\src\\updated.txt'
+						: '\\\\localhost\\users\\data\\src\\updated.txt'
+			);
 
 			const raw: IFileChange[] = [
 				{ resource: deletedFolderA, type: FileChangeType.DELETED },
@@ -167,21 +229,23 @@ suite('Watcher Events Normalizer', () => {
 				{ resource: deletedFolderBF3, type: FileChangeType.DELETED },
 				{ resource: deletedFileA, type: FileChangeType.DELETED },
 				{ resource: addedFile, type: FileChangeType.ADDED },
-				{ resource: updatedFile, type: FileChangeType.UPDATED }
+				{ resource: updatedFile, type: FileChangeType.UPDATED },
 			];
 
-			disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-				assert.ok(event);
-				assert.strictEqual(raw.length, 5);
+			disposables.add(
+				watch.onDidFilesChange(({ event, raw }) => {
+					assert.ok(event);
+					assert.strictEqual(raw.length, 5);
 
-				assert.ok(event.contains(deletedFolderA, FileChangeType.DELETED));
-				assert.ok(event.contains(deletedFolderB, FileChangeType.DELETED));
-				assert.ok(event.contains(deletedFileA, FileChangeType.DELETED));
-				assert.ok(event.contains(addedFile, FileChangeType.ADDED));
-				assert.ok(event.contains(updatedFile, FileChangeType.UPDATED));
+					assert.ok(event.contains(deletedFolderA, FileChangeType.DELETED));
+					assert.ok(event.contains(deletedFolderB, FileChangeType.DELETED));
+					assert.ok(event.contains(deletedFileA, FileChangeType.DELETED));
+					assert.ok(event.contains(addedFile, FileChangeType.ADDED));
+					assert.ok(event.contains(updatedFile, FileChangeType.UPDATED));
 
-				done();
-			}));
+					done();
+				})
+			);
 
 			watch.report(raw);
 		});
@@ -200,14 +264,16 @@ suite('Watcher Events Normalizer', () => {
 			{ resource: unrelated, type: FileChangeType.UPDATED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 1);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 1);
 
-			assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
+				assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
@@ -225,15 +291,17 @@ suite('Watcher Events Normalizer', () => {
 			{ resource: unrelated, type: FileChangeType.UPDATED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 2);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 2);
 
-			assert.ok(event.contains(deleted, FileChangeType.UPDATED));
-			assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
+				assert.ok(event.contains(deleted, FileChangeType.UPDATED));
+				assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
@@ -251,16 +319,18 @@ suite('Watcher Events Normalizer', () => {
 			{ resource: unrelated, type: FileChangeType.UPDATED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 2);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 2);
 
-			assert.ok(event.contains(created, FileChangeType.ADDED));
-			assert.ok(!event.contains(created, FileChangeType.UPDATED));
-			assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
+				assert.ok(event.contains(created, FileChangeType.ADDED));
+				assert.ok(!event.contains(created, FileChangeType.UPDATED));
+				assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
@@ -277,19 +347,21 @@ suite('Watcher Events Normalizer', () => {
 			{ resource: updated, type: FileChangeType.UPDATED },
 			{ resource: updated2, type: FileChangeType.UPDATED },
 			{ resource: unrelated, type: FileChangeType.UPDATED },
-			{ resource: updated, type: FileChangeType.DELETED }
+			{ resource: updated, type: FileChangeType.DELETED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 2);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 2);
 
-			assert.ok(event.contains(deleted, FileChangeType.DELETED));
-			assert.ok(!event.contains(updated, FileChangeType.UPDATED));
-			assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
+				assert.ok(event.contains(deleted, FileChangeType.DELETED));
+				assert.ok(!event.contains(updated, FileChangeType.UPDATED));
+				assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
@@ -302,25 +374,27 @@ suite('Watcher Events Normalizer', () => {
 
 		const raw: IFileChange[] = [
 			{ resource: newPath, type: FileChangeType.ADDED },
-			{ resource: oldPath, type: FileChangeType.DELETED }
+			{ resource: oldPath, type: FileChangeType.DELETED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 2);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 2);
 
-			for (const r of raw) {
-				if (isEqual(r.resource, oldPath)) {
-					assert.strictEqual(r.type, FileChangeType.DELETED);
-				} else if (isEqual(r.resource, newPath)) {
-					assert.strictEqual(r.type, FileChangeType.ADDED);
-				} else {
-					assert.fail();
+				for (const r of raw) {
+					if (isEqual(r.resource, oldPath)) {
+						assert.strictEqual(r.type, FileChangeType.DELETED);
+					} else if (isEqual(r.resource, newPath)) {
+						assert.strictEqual(r.type, FileChangeType.ADDED);
+					} else {
+						assert.fail();
+					}
 				}
-			}
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
@@ -332,26 +406,98 @@ suite('Watcher Events Normalizer', () => {
 		assert.strictEqual(isFiltered({ resource, type: FileChangeType.UPDATED }, undefined), false);
 		assert.strictEqual(isFiltered({ resource, type: FileChangeType.DELETED }, undefined), false);
 
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.ADDED }, FileChangeFilter.UPDATED), true);
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.ADDED }, FileChangeFilter.UPDATED | FileChangeFilter.DELETED), true);
+		assert.strictEqual(
+			isFiltered({ resource, type: FileChangeType.ADDED }, FileChangeFilter.UPDATED),
+			true
+		);
+		assert.strictEqual(
+			isFiltered(
+				{ resource, type: FileChangeType.ADDED },
+				FileChangeFilter.UPDATED | FileChangeFilter.DELETED
+			),
+			true
+		);
 
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.ADDED }, FileChangeFilter.ADDED), false);
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.ADDED }, FileChangeFilter.ADDED | FileChangeFilter.UPDATED), false);
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.ADDED }, FileChangeFilter.ADDED | FileChangeFilter.UPDATED | FileChangeFilter.DELETED), false);
+		assert.strictEqual(
+			isFiltered({ resource, type: FileChangeType.ADDED }, FileChangeFilter.ADDED),
+			false
+		);
+		assert.strictEqual(
+			isFiltered(
+				{ resource, type: FileChangeType.ADDED },
+				FileChangeFilter.ADDED | FileChangeFilter.UPDATED
+			),
+			false
+		);
+		assert.strictEqual(
+			isFiltered(
+				{ resource, type: FileChangeType.ADDED },
+				FileChangeFilter.ADDED | FileChangeFilter.UPDATED | FileChangeFilter.DELETED
+			),
+			false
+		);
 
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.DELETED }, FileChangeFilter.UPDATED), true);
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.DELETED }, FileChangeFilter.UPDATED | FileChangeFilter.ADDED), true);
+		assert.strictEqual(
+			isFiltered({ resource, type: FileChangeType.DELETED }, FileChangeFilter.UPDATED),
+			true
+		);
+		assert.strictEqual(
+			isFiltered(
+				{ resource, type: FileChangeType.DELETED },
+				FileChangeFilter.UPDATED | FileChangeFilter.ADDED
+			),
+			true
+		);
 
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.DELETED }, FileChangeFilter.DELETED), false);
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.DELETED }, FileChangeFilter.DELETED | FileChangeFilter.UPDATED), false);
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.DELETED }, FileChangeFilter.ADDED | FileChangeFilter.DELETED | FileChangeFilter.UPDATED), false);
+		assert.strictEqual(
+			isFiltered({ resource, type: FileChangeType.DELETED }, FileChangeFilter.DELETED),
+			false
+		);
+		assert.strictEqual(
+			isFiltered(
+				{ resource, type: FileChangeType.DELETED },
+				FileChangeFilter.DELETED | FileChangeFilter.UPDATED
+			),
+			false
+		);
+		assert.strictEqual(
+			isFiltered(
+				{ resource, type: FileChangeType.DELETED },
+				FileChangeFilter.ADDED | FileChangeFilter.DELETED | FileChangeFilter.UPDATED
+			),
+			false
+		);
 
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.UPDATED }, FileChangeFilter.ADDED), true);
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.UPDATED }, FileChangeFilter.DELETED | FileChangeFilter.ADDED), true);
+		assert.strictEqual(
+			isFiltered({ resource, type: FileChangeType.UPDATED }, FileChangeFilter.ADDED),
+			true
+		);
+		assert.strictEqual(
+			isFiltered(
+				{ resource, type: FileChangeType.UPDATED },
+				FileChangeFilter.DELETED | FileChangeFilter.ADDED
+			),
+			true
+		);
 
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.UPDATED }, FileChangeFilter.UPDATED), false);
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.UPDATED }, FileChangeFilter.DELETED | FileChangeFilter.UPDATED), false);
-		assert.strictEqual(isFiltered({ resource, type: FileChangeType.UPDATED }, FileChangeFilter.ADDED | FileChangeFilter.DELETED | FileChangeFilter.UPDATED), false);
+		assert.strictEqual(
+			isFiltered({ resource, type: FileChangeType.UPDATED }, FileChangeFilter.UPDATED),
+			false
+		);
+		assert.strictEqual(
+			isFiltered(
+				{ resource, type: FileChangeType.UPDATED },
+				FileChangeFilter.DELETED | FileChangeFilter.UPDATED
+			),
+			false
+		);
+		assert.strictEqual(
+			isFiltered(
+				{ resource, type: FileChangeType.UPDATED },
+				FileChangeFilter.ADDED | FileChangeFilter.DELETED | FileChangeFilter.UPDATED
+			),
+			false
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();

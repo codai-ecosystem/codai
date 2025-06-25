@@ -29,13 +29,16 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 		super({
 			id: 'merge.dev.openContentsJson',
 			category: MERGE_EDITOR_CATEGORY,
-			title: localize2('merge.dev.openState', "Open Merge Editor State from JSON"),
+			title: localize2('merge.dev.openState', 'Open Merge Editor State from JSON'),
 			icon: Codicon.layoutCentered,
 			f1: true,
 		});
 	}
 
-	async run(accessor: ServicesAccessor, args?: { data?: MergeEditorContents; resultState?: 'initial' | 'current' }): Promise<void> {
+	async run(
+		accessor: ServicesAccessor,
+		args?: { data?: MergeEditorContents; resultState?: 'initial' | 'current' }
+	): Promise<void> {
 		const quickInputService = accessor.get(IQuickInputService);
 		const clipboardService = accessor.get(IClipboardService);
 		const editorService = accessor.get(IEditorService);
@@ -84,25 +87,44 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 			writeFile(baseUri, content.base),
 			writeFile(input1Uri, content.input1),
 			writeFile(input2Uri, content.input2),
-			writeFile(resultUri, shouldOpenInitial ? (content.initialResult || '') : content.result),
+			writeFile(resultUri, shouldOpenInitial ? content.initialResult || '' : content.result),
 			writeFile(initialResultUri, content.initialResult || ''),
 		]);
 
 		const input: IResourceMergeEditorInput = {
 			base: { resource: baseUri },
-			input1: { resource: input1Uri, label: 'Input 1', description: 'Input 1', detail: '(from JSON)' },
-			input2: { resource: input2Uri, label: 'Input 2', description: 'Input 2', detail: '(from JSON)' },
+			input1: {
+				resource: input1Uri,
+				label: 'Input 1',
+				description: 'Input 1',
+				detail: '(from JSON)',
+			},
+			input2: {
+				resource: input2Uri,
+				label: 'Input 2',
+				description: 'Input 2',
+				detail: '(from JSON)',
+			},
 			result: { resource: resultUri },
 		};
 		editorService.openEditor(input);
 	}
 }
 
-async function promptOpenInitial(quickInputService: IQuickInputService, resultStateOverride?: 'initial' | 'current') {
+async function promptOpenInitial(
+	quickInputService: IQuickInputService,
+	resultStateOverride?: 'initial' | 'current'
+) {
 	if (resultStateOverride) {
 		return resultStateOverride === 'initial';
 	}
-	const result = await quickInputService.pick([{ label: 'result', result: false }, { label: 'initial result', result: true }], { canPickMany: false });
+	const result = await quickInputService.pick(
+		[
+			{ label: 'result', result: false },
+			{ label: 'initial result', result: true },
+		],
+		{ canPickMany: false }
+	);
 	return result?.result;
 }
 
@@ -130,7 +152,10 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 		super({
 			id: 'merge.dev.openSelectionInTemporaryMergeEditor',
 			category: MERGE_EDITOR_CATEGORY,
-			title: localize2('merge.dev.openSelectionInTemporaryMergeEditor', "Open Selection In Temporary Merge Editor"),
+			title: localize2(
+				'merge.dev.openSelectionInTemporaryMergeEditor',
+				'Open Selection In Temporary Merge Editor'
+			),
 			icon: Codicon.layoutCentered,
 			f1: true,
 		});
@@ -142,35 +167,29 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 			return;
 		}
 
-		const base = rangesInBase
-			.map((r) =>
-				viewModel.model.base.getValueInRange(
-					r
-				)
-			)
-			.join('\n');
+		const base = rangesInBase.map(r => viewModel.model.base.getValueInRange(r)).join('\n');
 
 		const input1 = rangesInBase
-			.map((r) =>
-				viewModel.inputCodeEditorView1.editor.getModel()!.getValueInRange(
-					viewModel.model.translateBaseRangeToInput(1, r)
-				)
+			.map(r =>
+				viewModel.inputCodeEditorView1.editor
+					.getModel()!
+					.getValueInRange(viewModel.model.translateBaseRangeToInput(1, r))
 			)
 			.join('\n');
 
 		const input2 = rangesInBase
-			.map((r) =>
-				viewModel.inputCodeEditorView2.editor.getModel()!.getValueInRange(
-					viewModel.model.translateBaseRangeToInput(2, r)
-				)
+			.map(r =>
+				viewModel.inputCodeEditorView2.editor
+					.getModel()!
+					.getValueInRange(viewModel.model.translateBaseRangeToInput(2, r))
 			)
 			.join('\n');
 
 		const result = rangesInBase
-			.map((r) =>
-				viewModel.resultCodeEditorView.editor.getModel()!.getValueInRange(
-					viewModel.model.translateBaseRangeToResult(r)
-				)
+			.map(r =>
+				viewModel.resultCodeEditorView.editor
+					.getModel()!
+					.getValueInRange(viewModel.model.translateBaseRangeToResult(r))
 			)
 			.join('\n');
 
@@ -180,8 +199,8 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 				input1,
 				input2,
 				result,
-				languageId: viewModel.resultCodeEditorView.editor.getModel()!.getLanguageId()
-			}
+				languageId: viewModel.resultCodeEditorView.editor.getModel()!.getLanguageId(),
+			},
 		});
 	}
 }

@@ -12,11 +12,11 @@ import { IEditorOptions } from '../../../../../editor/common/config/editorOption
  */
 const fixedEditorPaddingSingleLineCells = {
 	top: 24,
-	bottom: 24
+	bottom: 24,
 };
 const fixedEditorPadding = {
 	top: 12,
-	bottom: 12
+	bottom: 12,
 };
 
 export function getEditorPadding(lineCount: number) {
@@ -46,7 +46,7 @@ export const fixedEditorOptions: IEditorOptions = {
 	minimap: { enabled: false },
 	renderValidationDecorations: 'on',
 	renderLineHighlight: 'none',
-	readOnly: true
+	readOnly: true,
 };
 
 export const fixedDiffEditorOptions: IDiffEditorConstructionOptions = {
@@ -62,5 +62,5 @@ export const fixedDiffEditorOptions: IDiffEditorConstructionOptions = {
 	diffWordWrap: 'off',
 	diffAlgorithm: 'advanced',
 	renderSideBySide: true,
-	useInlineViewWhenSpaceIsLimited: false
+	useInlineViewWhenSpaceIsLimited: false,
 };

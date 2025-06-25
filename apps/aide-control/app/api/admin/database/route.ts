@@ -4,7 +4,11 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth } from '../../../../lib/auth-middleware';
-import { initializeDatabase, validateDatabaseSetup, createDatabaseIndexes } from '../../../../lib/database-init';
+import {
+	initializeDatabase,
+	validateDatabaseSetup,
+	createDatabaseIndexes,
+} from '../../../../lib/database-init';
 import { adminDb, COLLECTIONS } from '../../../../lib/firebase-admin';
 
 /**
@@ -18,14 +22,11 @@ async function validateDatabase(request: NextRequest) {
 		return NextResponse.json({
 			message: 'Database validation completed',
 			validations,
-			timestamp: new Date().toISOString()
+			timestamp: new Date().toISOString(),
 		});
 	} catch (error) {
 		console.error('Error validating database:', error);
-		return NextResponse.json(
-			{ error: 'Failed to validate database setup' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to validate database setup' }, { status: 500 });
 	}
 }
 
@@ -51,13 +52,13 @@ async function initDatabase(request: NextRequest) {
 					action: 'database_initialized',
 					details: {
 						success: result.success,
-						message: result.message
+						message: result.message,
 					},
 					timestamp: new Date(),
 					metadata: {
 						userAgent: request.headers.get('user-agent'),
-						ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-					}
+						ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+					},
 				});
 
 				return NextResponse.json(result);
@@ -69,7 +70,7 @@ async function initDatabase(request: NextRequest) {
 				return NextResponse.json({
 					message: 'Database validation completed',
 					validations,
-					timestamp: new Date().toISOString()
+					timestamp: new Date().toISOString(),
 				});
 			}
 
@@ -81,18 +82,18 @@ async function initDatabase(request: NextRequest) {
 					userId: user.uid,
 					action: 'database_indexes_documented',
 					details: {
-						message: 'Database index recommendations documented'
+						message: 'Database index recommendations documented',
 					},
 					timestamp: new Date(),
 					metadata: {
 						userAgent: request.headers.get('user-agent'),
-						ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-					}
+						ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+					},
 				});
 
 				return NextResponse.json({
 					message: 'Database index recommendations documented',
-					note: 'Create these indexes in the Firebase console for optimal performance'
+					note: 'Create these indexes in the Firebase console for optimal performance',
 				});
 			}
 
@@ -104,10 +105,7 @@ async function initDatabase(request: NextRequest) {
 		}
 	} catch (error) {
 		console.error('Error managing database:', error);
-		return NextResponse.json(
-			{ error: 'Failed to manage database' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to manage database' }, { status: 500 });
 	}
 }
 

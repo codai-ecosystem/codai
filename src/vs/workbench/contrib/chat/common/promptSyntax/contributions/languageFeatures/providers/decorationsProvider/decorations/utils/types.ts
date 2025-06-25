@@ -47,10 +47,12 @@ export type TAddAccessor = Pick<IModelDecorationsChangeAccessor, 'addDecoration'
 /**
  * A model decorations accessor that can be used to `change` a decoration.
  */
-export type TChangeAccessor = Pick<IModelDecorationsChangeAccessor, 'changeDecoration' | 'changeDecorationOptions'>;
+export type TChangeAccessor = Pick<
+	IModelDecorationsChangeAccessor,
+	'changeDecoration' | 'changeDecorationOptions'
+>;
 
 /**
  * A model decorations accessor that can be used to `remove` a decoration.
  */
 export type TRemoveAccessor = Pick<IModelDecorationsChangeAccessor, 'removeDecoration'>;
-

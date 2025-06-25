@@ -45,13 +45,85 @@ export interface AXProperty {
 	value: AXValue;
 }
 
-export type AXValueType = 'boolean' | 'tristate' | 'booleanOrUndefined' | 'idref' | 'idrefList' | 'integer' | 'node' | 'nodeList' | 'number' | 'string' | 'computedString' | 'token' | 'tokenList' | 'domRelation' | 'role' | 'internalRole' | 'valueUndefined';
+export type AXValueType =
+	| 'boolean'
+	| 'tristate'
+	| 'booleanOrUndefined'
+	| 'idref'
+	| 'idrefList'
+	| 'integer'
+	| 'node'
+	| 'nodeList'
+	| 'number'
+	| 'string'
+	| 'computedString'
+	| 'token'
+	| 'tokenList'
+	| 'domRelation'
+	| 'role'
+	| 'internalRole'
+	| 'valueUndefined';
 
-export type AXValueSourceType = 'attribute' | 'implicit' | 'style' | 'contents' | 'placeholder' | 'relatedElement';
+export type AXValueSourceType =
+	| 'attribute'
+	| 'implicit'
+	| 'style'
+	| 'contents'
+	| 'placeholder'
+	| 'relatedElement';
 
-export type AXValueNativeSourceType = 'description' | 'figcaption' | 'label' | 'labelfor' | 'labelwrapped' | 'legend' | 'rubyannotation' | 'tablecaption' | 'title' | 'other';
+export type AXValueNativeSourceType =
+	| 'description'
+	| 'figcaption'
+	| 'label'
+	| 'labelfor'
+	| 'labelwrapped'
+	| 'legend'
+	| 'rubyannotation'
+	| 'tablecaption'
+	| 'title'
+	| 'other';
 
-export type AXPropertyName = 'url' | 'busy' | 'disabled' | 'editable' | 'focusable' | 'focused' | 'hidden' | 'hiddenRoot' | 'invalid' | 'keyshortcuts' | 'settable' | 'roledescription' | 'live' | 'atomic' | 'relevant' | 'root' | 'autocomplete' | 'hasPopup' | 'level' | 'multiselectable' | 'orientation' | 'multiline' | 'readonly' | 'required' | 'valuemin' | 'valuemax' | 'valuetext' | 'checked' | 'expanded' | 'pressed' | 'selected' | 'activedescendant' | 'controls' | 'describedby' | 'details' | 'errormessage' | 'flowto' | 'labelledby' | 'owns';
+export type AXPropertyName =
+	| 'url'
+	| 'busy'
+	| 'disabled'
+	| 'editable'
+	| 'focusable'
+	| 'focused'
+	| 'hidden'
+	| 'hiddenRoot'
+	| 'invalid'
+	| 'keyshortcuts'
+	| 'settable'
+	| 'roledescription'
+	| 'live'
+	| 'atomic'
+	| 'relevant'
+	| 'root'
+	| 'autocomplete'
+	| 'hasPopup'
+	| 'level'
+	| 'multiselectable'
+	| 'orientation'
+	| 'multiline'
+	| 'readonly'
+	| 'required'
+	| 'valuemin'
+	| 'valuemax'
+	| 'valuetext'
+	| 'checked'
+	| 'expanded'
+	| 'pressed'
+	| 'selected'
+	| 'activedescendant'
+	| 'controls'
+	| 'describedby'
+	| 'details'
+	| 'errormessage'
+	| 'flowto'
+	| 'labelledby'
+	| 'owns';
 
 //#endregion
 
@@ -175,7 +247,9 @@ export function convertAXTreeToMarkdown(uri: URI, axNodes: AXNode[]): string {
 	const navLinks = collectNavigationLinks(tree);
 
 	// Combine main content and navigation links
-	return mainContent + (navLinks.length > 0 ? '\n\n## Additional Links\n' + navLinks.join('\n') : '');
+	return (
+		mainContent + (navLinks.length > 0 ? '\n\n## Additional Links\n' + navLinks.join('\n') : '')
+	);
 }
 
 function extractMainContent(uri: URI, tree: AXNodeTree): string {
@@ -184,7 +258,13 @@ function extractMainContent(uri: URI, tree: AXNodeTree): string {
 	return contentBuffer.join('');
 }
 
-function processNode(uri: URI, node: AXNodeTree, buffer: string[], depth: number, allowWrap: boolean): void {
+function processNode(
+	uri: URI,
+	node: AXNodeTree,
+	buffer: string[],
+	depth: number,
+	allowWrap: boolean
+): void {
 	const role = getNodeRole(node.node);
 
 	switch (role) {
@@ -286,11 +366,11 @@ function processNode(uri: URI, node: AXNodeTree, buffer: string[], depth: number
 }
 
 function getNodeRole(node: AXNode): string {
-	return node.role?.value as string || '';
+	return (node.role?.value as string) || '';
 }
 
 function getNodeText(node: AXNode, allowWrap: boolean): string {
-	const text = node.name?.value as string || node.value?.value as string || '';
+	const text = (node.name?.value as string) || (node.value?.value as string) || '';
 	if (!allowWrap) {
 		return text;
 	}
@@ -324,13 +404,13 @@ function getLevel(node: AXNode): number {
 function getLinkUrl(node: AXNode): string {
 	// Find URL in properties
 	const urlProp = node.properties?.find(p => p.name === 'url');
-	return urlProp?.value.value as string || '#';
+	return (urlProp?.value.value as string) || '#';
 }
 
 function getImageUrl(node: AXNode): string | null {
 	// Find URL in properties
 	const urlProp = node.properties?.find(p => p.name === 'url');
-	return urlProp?.value.value as string || null;
+	return (urlProp?.value.value as string) || null;
 }
 
 function isNavigationLink(node: AXNodeTree): boolean {
@@ -351,13 +431,21 @@ function isSameUriIgnoringQueryAndFragment(uri: URI, node: AXNode): boolean {
 	const link = getLinkUrl(node);
 	try {
 		const parsed = URI.parse(link);
-		return parsed.scheme === uri.scheme && parsed.authority === uri.authority && parsed.path === uri.path;
+		return (
+			parsed.scheme === uri.scheme && parsed.authority === uri.authority && parsed.path === uri.path
+		);
 	} catch (e) {
 		return false;
 	}
 }
 
-function processParagraphNode(uri: URI, node: AXNodeTree, buffer: string[], depth: number, allowWrap: boolean): void {
+function processParagraphNode(
+	uri: URI,
+	node: AXNodeTree,
+	buffer: string[],
+	depth: number,
+	allowWrap: boolean
+): void {
 	buffer.push('\n');
 	// Process the children of the paragraph
 	for (const child of node.children) {
@@ -381,7 +469,12 @@ function processHeadingNode(uri: URI, node: AXNodeTree, buffer: string[], depth:
 	buffer.push('\n\n');
 }
 
-function processDescriptionListNode(uri: URI, node: AXNodeTree, buffer: string[], depth: number): void {
+function processDescriptionListNode(
+	uri: URI,
+	node: AXNodeTree,
+	buffer: string[],
+	depth: number
+): void {
 	buffer.push('\n');
 
 	// Process each child of the description list
@@ -473,7 +566,7 @@ function collectLinks(node: AXNodeTree, links: string[]): void {
 	if (role === 'link' && isNavigationLink(node)) {
 		const linkText = getNodeText(node.node, true);
 		const url = getLinkUrl(node.node);
-		const description = node.node.description?.value as string || '';
+		const description = (node.node.description?.value as string) || '';
 
 		links.push(`- [${linkText}](${url})${description ? ' - ' + description : ''}`);
 	}

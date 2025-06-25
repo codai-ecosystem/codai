@@ -6,7 +6,10 @@
 import * as nls from '../../../../../nls.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ServicesAccessor } from '../../../../../editor/browser/editorExtensions.js';
-import { IBulkEditService, ResourceTextEdit } from '../../../../../editor/browser/services/bulkEditService.js';
+import {
+	IBulkEditService,
+	ResourceTextEdit,
+} from '../../../../../editor/browser/services/bulkEditService.js';
 import { Range } from '../../../../../editor/common/core/range.js';
 import { ITextModel } from '../../../../../editor/common/model.js';
 import { ITextModelService } from '../../../../../editor/common/services/resolverService.js';
@@ -25,7 +28,7 @@ export class NotebookIndentUsingTabs extends Action2 {
 	constructor() {
 		super({
 			id: NotebookIndentUsingTabs.ID,
-			title: nls.localize('indentUsingTabs', "Indent Using Tabs"),
+			title: nls.localize('indentUsingTabs', 'Indent Using Tabs'),
 			precondition: undefined,
 		});
 	}
@@ -41,7 +44,7 @@ export class NotebookIndentUsingSpaces extends Action2 {
 	constructor() {
 		super({
 			id: NotebookIndentUsingSpaces.ID,
-			title: nls.localize('indentUsingSpaces', "Indent Using Spaces"),
+			title: nls.localize('indentUsingSpaces', 'Indent Using Spaces'),
 			precondition: undefined,
 		});
 	}
@@ -57,7 +60,7 @@ export class NotebookChangeTabDisplaySize extends Action2 {
 	constructor() {
 		super({
 			id: NotebookChangeTabDisplaySize.ID,
-			title: nls.localize('changeTabDisplaySize', "Change Tab Display Size"),
+			title: nls.localize('changeTabDisplaySize', 'Change Tab Display Size'),
 			precondition: undefined,
 		});
 	}
@@ -73,7 +76,7 @@ export class NotebookIndentationToSpacesAction extends Action2 {
 	constructor() {
 		super({
 			id: NotebookIndentationToSpacesAction.ID,
-			title: nls.localize('convertIndentationToSpaces', "Convert Indentation to Spaces"),
+			title: nls.localize('convertIndentationToSpaces', 'Convert Indentation to Spaces'),
 			precondition: undefined,
 		});
 	}
@@ -89,7 +92,7 @@ export class NotebookIndentationToTabsAction extends Action2 {
 	constructor() {
 		super({
 			id: NotebookIndentationToTabsAction.ID,
-			title: nls.localize('convertIndentationToTabs', "Convert Indentation to Tabs"),
+			title: nls.localize('convertIndentationToTabs', 'Convert Indentation to Tabs'),
 			precondition: undefined,
 		});
 	}
@@ -99,7 +102,11 @@ export class NotebookIndentationToTabsAction extends Action2 {
 	}
 }
 
-function changeNotebookIndentation(accessor: ServicesAccessor, insertSpaces: boolean, displaySizeOnly: boolean) {
+function changeNotebookIndentation(
+	accessor: ServicesAccessor,
+	insertSpaces: boolean,
+	displaySizeOnly: boolean
+) {
 	const editorService = accessor.get(IEditorService);
 	const configurationService = accessor.get(IConfigurationService);
 	const notebookEditorService = accessor.get(INotebookEditorService);
@@ -113,7 +120,9 @@ function changeNotebookIndentation(accessor: ServicesAccessor, insertSpaces: boo
 	}
 
 	// get notebook editor to access all codeEditors
-	const notebookEditor = notebookEditorService.retrieveExistingWidgetFromURI(activeInput.resource)?.value;
+	const notebookEditor = notebookEditorService.retrieveExistingWidgetFromURI(
+		activeInput.resource
+	)?.value;
 	if (!notebookEditor) {
 		return;
 	}
@@ -124,7 +133,9 @@ function changeNotebookIndentation(accessor: ServicesAccessor, insertSpaces: boo
 	}));
 
 	// store the initial values of the configuration
-	const initialConfig = configurationService.getValue(NotebookSetting.cellEditorOptionsCustomizations) as any;
+	const initialConfig = configurationService.getValue(
+		NotebookSetting.cellEditorOptionsCustomizations
+	) as any;
 	const initialInsertSpaces = initialConfig['editor.insertSpaces'];
 	// remove the initial values from the configuration
 	delete initialConfig['editor.indentSize'];
@@ -132,28 +143,34 @@ function changeNotebookIndentation(accessor: ServicesAccessor, insertSpaces: boo
 	delete initialConfig['editor.insertSpaces'];
 
 	setTimeout(() => {
-		quickInputService.pick(picks, { placeHolder: nls.localize({ key: 'selectTabWidth', comment: ['Tab corresponds to the tab key'] }, "Select Tab Size for Current File") }).then(pick => {
-			if (pick) {
-				const pickedVal = parseInt(pick.label, 10);
-				if (displaySizeOnly) {
-					configurationService.updateValue(NotebookSetting.cellEditorOptionsCustomizations, {
-						...initialConfig,
-						'editor.tabSize': pickedVal,
-						'editor.indentSize': pickedVal,
-						'editor.insertSpaces': initialInsertSpaces
-					});
-				} else {
-					configurationService.updateValue(NotebookSetting.cellEditorOptionsCustomizations, {
-						...initialConfig,
-						'editor.tabSize': pickedVal,
-						'editor.indentSize': pickedVal,
-						'editor.insertSpaces': insertSpaces
-					});
+		quickInputService
+			.pick(picks, {
+				placeHolder: nls.localize(
+					{ key: 'selectTabWidth', comment: ['Tab corresponds to the tab key'] },
+					'Select Tab Size for Current File'
+				),
+			})
+			.then(pick => {
+				if (pick) {
+					const pickedVal = parseInt(pick.label, 10);
+					if (displaySizeOnly) {
+						configurationService.updateValue(NotebookSetting.cellEditorOptionsCustomizations, {
+							...initialConfig,
+							'editor.tabSize': pickedVal,
+							'editor.indentSize': pickedVal,
+							'editor.insertSpaces': initialInsertSpaces,
+						});
+					} else {
+						configurationService.updateValue(NotebookSetting.cellEditorOptionsCustomizations, {
+							...initialConfig,
+							'editor.tabSize': pickedVal,
+							'editor.indentSize': pickedVal,
+							'editor.insertSpaces': insertSpaces,
+						});
+					}
 				}
-
-			}
-		});
-	}, 50/* quick input is sensitive to being opened so soon after another */);
+			});
+	}, 50 /* quick input is sensitive to being opened so soon after another */);
 }
 
 function convertNotebookIndentation(accessor: ServicesAccessor, tabsToSpaces: boolean): void {
@@ -172,30 +189,42 @@ function convertNotebookIndentation(accessor: ServicesAccessor, tabsToSpaces: bo
 	}
 
 	// get notebook editor to access all codeEditors
-	const notebookTextModel = notebookEditorService.retrieveExistingWidgetFromURI(activeInput.resource)?.value?.textModel;
+	const notebookTextModel = notebookEditorService.retrieveExistingWidgetFromURI(
+		activeInput.resource
+	)?.value?.textModel;
 	if (!notebookTextModel) {
 		return;
 	}
 
 	const disposable = new DisposableStore();
 	try {
-		Promise.all(notebookTextModel.cells.map(async cell => {
-			const ref = await textModelService.createModelReference(cell.uri);
-			disposable.add(ref);
-			const textEditorModel = ref.object.textEditorModel;
+		Promise.all(
+			notebookTextModel.cells.map(async cell => {
+				const ref = await textModelService.createModelReference(cell.uri);
+				disposable.add(ref);
+				const textEditorModel = ref.object.textEditorModel;
 
-			const modelOpts = cell.textModel?.getOptions();
-			if (!modelOpts) {
-				return;
-			}
+				const modelOpts = cell.textModel?.getOptions();
+				if (!modelOpts) {
+					return;
+				}
 
-			const edits = getIndentationEditOperations(textEditorModel, modelOpts.tabSize, tabsToSpaces);
+				const edits = getIndentationEditOperations(
+					textEditorModel,
+					modelOpts.tabSize,
+					tabsToSpaces
+				);
 
-			bulkEditService.apply(edits, { label: nls.localize('convertIndentation', "Convert Indentation"), code: 'undoredo.convertIndentation', });
-
-		})).then(() => {
+				bulkEditService.apply(edits, {
+					label: nls.localize('convertIndentation', 'Convert Indentation'),
+					code: 'undoredo.convertIndentation',
+				});
+			})
+		).then(() => {
 			// store the initial values of the configuration
-			const initialConfig = configurationService.getValue(NotebookSetting.cellEditorOptionsCustomizations) as any;
+			const initialConfig = configurationService.getValue(
+				NotebookSetting.cellEditorOptionsCustomizations
+			) as any;
 			const initialIndentSize = initialConfig['editor.indentSize'];
 			const initialTabSize = initialConfig['editor.tabSize'];
 			// remove the initial values from the configuration
@@ -207,7 +236,7 @@ function convertNotebookIndentation(accessor: ServicesAccessor, tabsToSpaces: bo
 				...initialConfig,
 				'editor.tabSize': initialTabSize,
 				'editor.indentSize': initialIndentSize,
-				'editor.insertSpaces': tabsToSpaces
+				'editor.insertSpaces': tabsToSpaces,
 			});
 			disposable.dispose();
 		});
@@ -216,7 +245,11 @@ function convertNotebookIndentation(accessor: ServicesAccessor, tabsToSpaces: bo
 	}
 }
 
-function getIndentationEditOperations(model: ITextModel, tabSize: number, tabsToSpaces: boolean): ResourceTextEdit[] {
+function getIndentationEditOperations(
+	model: ITextModel,
+	tabSize: number,
+	tabsToSpaces: boolean
+): ResourceTextEdit[] {
 	if (model.getLineCount() === 1 && model.getLineMaxColumn(1) === 1) {
 		// Model is empty
 		return [];
@@ -230,7 +263,11 @@ function getIndentationEditOperations(model: ITextModel, tabSize: number, tabsTo
 	const spacesRegExp = new RegExp(spaces, 'gi');
 
 	const edits: ResourceTextEdit[] = [];
-	for (let lineNumber = 1, lineCount = model.getLineCount(); lineNumber <= lineCount; lineNumber++) {
+	for (
+		let lineNumber = 1, lineCount = model.getLineCount();
+		lineNumber <= lineCount;
+		lineNumber++
+	) {
 		let lastIndentationColumn = model.getLineFirstNonWhitespaceColumn(lineNumber);
 		if (lastIndentationColumn === 0) {
 			lastIndentationColumn = model.getLineMaxColumn(lineNumber);
@@ -242,12 +279,12 @@ function getIndentationEditOperations(model: ITextModel, tabSize: number, tabsTo
 
 		const originalIndentationRange = new Range(lineNumber, 1, lineNumber, lastIndentationColumn);
 		const originalIndentation = model.getValueInRange(originalIndentationRange);
-		const newIndentation = (
-			tabsToSpaces
-				? originalIndentation.replace(/\t/ig, spaces)
-				: originalIndentation.replace(spacesRegExp, '\t')
+		const newIndentation = tabsToSpaces
+			? originalIndentation.replace(/\t/gi, spaces)
+			: originalIndentation.replace(spacesRegExp, '\t');
+		edits.push(
+			new ResourceTextEdit(model.uri, { range: originalIndentationRange, text: newIndentation })
 		);
-		edits.push(new ResourceTextEdit(model.uri, { range: originalIndentationRange, text: newIndentation }));
 	}
 	return edits;
 }

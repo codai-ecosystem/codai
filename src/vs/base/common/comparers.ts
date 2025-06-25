@@ -12,11 +12,14 @@ import { sep } from './path.js';
 // than it is to use String.prototype.localeCompare()
 
 // A collator with numeric sorting enabled, and no sensitivity to case, accents or diacritics.
-const intlFileNameCollatorBaseNumeric: Lazy<{ collator: Intl.Collator; collatorIsNumeric: boolean }> = new Lazy(() => {
+const intlFileNameCollatorBaseNumeric: Lazy<{
+	collator: Intl.Collator;
+	collatorIsNumeric: boolean;
+}> = new Lazy(() => {
 	const collator = safeIntl.Collator(undefined, { numeric: true, sensitivity: 'base' }).value;
 	return {
 		collator,
-		collatorIsNumeric: collator.resolvedOptions().numeric
+		collatorIsNumeric: collator.resolvedOptions().numeric,
 	};
 });
 
@@ -24,20 +27,26 @@ const intlFileNameCollatorBaseNumeric: Lazy<{ collator: Intl.Collator; collatorI
 const intlFileNameCollatorNumeric: Lazy<{ collator: Intl.Collator }> = new Lazy(() => {
 	const collator = safeIntl.Collator(undefined, { numeric: true }).value;
 	return {
-		collator
+		collator,
 	};
 });
 
 // A collator with numeric sorting enabled, and sensitivity to accents and diacritics but not case.
-const intlFileNameCollatorNumericCaseInsensitive: Lazy<{ collator: Intl.Collator }> = new Lazy(() => {
-	const collator = safeIntl.Collator(undefined, { numeric: true, sensitivity: 'accent' }).value;
-	return {
-		collator
-	};
-});
+const intlFileNameCollatorNumericCaseInsensitive: Lazy<{ collator: Intl.Collator }> = new Lazy(
+	() => {
+		const collator = safeIntl.Collator(undefined, { numeric: true, sensitivity: 'accent' }).value;
+		return {
+			collator,
+		};
+	}
+);
 
 /** Compares filenames without distinguishing the name from the extension. Disambiguates by unicode comparison. */
-export function compareFileNames(one: string | null, other: string | null, caseSensitive = false): number {
+export function compareFileNames(
+	one: string | null,
+	other: string | null,
+	caseSensitive = false
+): number {
 	const a = one || '';
 	const b = other || '';
 	const result = intlFileNameCollatorBaseNumeric.value.collator.compare(a, b);
@@ -65,7 +74,9 @@ export function compareFileNamesUpper(one: string | null, other: string | null) 
 	one = one || '';
 	other = other || '';
 
-	return compareCaseUpperFirst(one, other) || compareAndDisambiguateByLength(collatorNumeric, one, other);
+	return (
+		compareCaseUpperFirst(one, other) || compareAndDisambiguateByLength(collatorNumeric, one, other)
+	);
 }
 
 /** Compares full filenames grouping lowercase names before uppercase. */
@@ -74,7 +85,9 @@ export function compareFileNamesLower(one: string | null, other: string | null) 
 	one = one || '';
 	other = other || '';
 
-	return compareCaseLowerFirst(one, other) || compareAndDisambiguateByLength(collatorNumeric, one, other);
+	return (
+		compareCaseLowerFirst(one, other) || compareAndDisambiguateByLength(collatorNumeric, one, other)
+	);
 }
 
 /** Compares full filenames by unicode value. */
@@ -98,14 +111,21 @@ export function compareFileExtensions(one: string | null, other: string | null):
 
 	if (result === 0) {
 		// Using the numeric option will  make compare(`foo1`, `foo01`) === 0. Disambiguate.
-		if (intlFileNameCollatorBaseNumeric.value.collatorIsNumeric && oneExtension !== otherExtension) {
+		if (
+			intlFileNameCollatorBaseNumeric.value.collatorIsNumeric &&
+			oneExtension !== otherExtension
+		) {
 			return oneExtension < otherExtension ? -1 : 1;
 		}
 
 		// Extensions are equal, compare filenames
 		result = intlFileNameCollatorBaseNumeric.value.collator.compare(oneName, otherName);
 
-		if (intlFileNameCollatorBaseNumeric.value.collatorIsNumeric && result === 0 && oneName !== otherName) {
+		if (
+			intlFileNameCollatorBaseNumeric.value.collatorIsNumeric &&
+			result === 0 &&
+			oneName !== otherName
+		) {
 			return oneName < otherName ? -1 : 1;
 		}
 	}
@@ -122,8 +142,10 @@ export function compareFileExtensionsDefault(one: string | null, other: string |
 	const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
 	const collatorNumericCaseInsensitive = intlFileNameCollatorNumericCaseInsensitive.value.collator;
 
-	return compareAndDisambiguateByLength(collatorNumericCaseInsensitive, oneExtension, otherExtension) ||
-		compareAndDisambiguateByLength(collatorNumeric, one, other);
+	return (
+		compareAndDisambiguateByLength(collatorNumericCaseInsensitive, oneExtension, otherExtension) ||
+		compareAndDisambiguateByLength(collatorNumeric, one, other)
+	);
 }
 
 /** Compares filenames by extension, then case, then full filename. Groups uppercase names before lowercase. */
@@ -135,9 +157,11 @@ export function compareFileExtensionsUpper(one: string | null, other: string | n
 	const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
 	const collatorNumericCaseInsensitive = intlFileNameCollatorNumericCaseInsensitive.value.collator;
 
-	return compareAndDisambiguateByLength(collatorNumericCaseInsensitive, oneExtension, otherExtension) ||
+	return (
+		compareAndDisambiguateByLength(collatorNumericCaseInsensitive, oneExtension, otherExtension) ||
 		compareCaseUpperFirst(one, other) ||
-		compareAndDisambiguateByLength(collatorNumeric, one, other);
+		compareAndDisambiguateByLength(collatorNumeric, one, other)
+	);
 }
 
 /** Compares filenames by extension, then case, then full filename. Groups lowercase names before uppercase. */
@@ -149,9 +173,11 @@ export function compareFileExtensionsLower(one: string | null, other: string | n
 	const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
 	const collatorNumericCaseInsensitive = intlFileNameCollatorNumericCaseInsensitive.value.collator;
 
-	return compareAndDisambiguateByLength(collatorNumericCaseInsensitive, oneExtension, otherExtension) ||
+	return (
+		compareAndDisambiguateByLength(collatorNumericCaseInsensitive, oneExtension, otherExtension) ||
 		compareCaseLowerFirst(one, other) ||
-		compareAndDisambiguateByLength(collatorNumeric, one, other);
+		compareAndDisambiguateByLength(collatorNumeric, one, other)
+	);
 }
 
 /** Compares filenames by case-insensitive extension unicode value, then by full filename unicode value. */
@@ -178,13 +204,16 @@ const FileNameMatch = /^(.*?)(\.([^.]*))?$/;
 
 /** Extracts the name and extension from a full filename, with optional special handling for dotfiles */
 function extractNameAndExtension(str?: string | null, dotfilesAsNames = false): [string, string] {
-	const match = str ? FileNameMatch.exec(str) as Array<string> : ([] as Array<string>);
+	const match = str ? (FileNameMatch.exec(str) as Array<string>) : ([] as Array<string>);
 
 	let result: [string, string] = [(match && match[1]) || '', (match && match[3]) || ''];
 
 	// if the dotfilesAsNames option is selected, treat an empty filename with an extension
 	// or a filename that starts with a dot, as a dotfile name
-	if (dotfilesAsNames && (!result[0] && result[1] || result[0] && result[0].charAt(0) === '.')) {
+	if (
+		dotfilesAsNames &&
+		((!result[0] && result[1]) || (result[0] && result[0].charAt(0) === '.'))
+	) {
 		result = [result[0] + '.' + result[1], ''];
 	}
 
@@ -193,7 +222,7 @@ function extractNameAndExtension(str?: string | null, dotfilesAsNames = false): 
 
 /** Extracts the extension from a full filename. Treats dotfiles as names, not extensions. */
 function extractExtension(str?: string | null): string {
-	const match = str ? FileNameMatch.exec(str) as Array<string> : ([] as Array<string>);
+	const match = str ? (FileNameMatch.exec(str) as Array<string>) : ([] as Array<string>);
 
 	return (match && match[1] && match[1].charAt(0) !== '.' && match[3]) || '';
 }
@@ -218,14 +247,14 @@ function compareAndDisambiguateByLength(collator: Intl.Collator, one: string, ot
 function startsWithLower(string: string) {
 	const character = string.charAt(0);
 
-	return (character.toLocaleUpperCase() !== character) ? true : false;
+	return character.toLocaleUpperCase() !== character ? true : false;
 }
 
 /** @returns `true` if the string starts with an uppercase letter. Otherwise, `false`. */
 function startsWithUpper(string: string) {
 	const character = string.charAt(0);
 
-	return (character.toLocaleLowerCase() !== character) ? true : false;
+	return character.toLocaleLowerCase() !== character ? true : false;
 }
 
 /**
@@ -242,7 +271,7 @@ function compareCaseLowerFirst(one: string, other: string): number {
 	if (startsWithLower(one) && startsWithUpper(other)) {
 		return -1;
 	}
-	return (startsWithUpper(one) && startsWithLower(other)) ? 1 : 0;
+	return startsWithUpper(one) && startsWithLower(other) ? 1 : 0;
 }
 
 /**
@@ -259,7 +288,7 @@ function compareCaseUpperFirst(one: string, other: string): number {
 	if (startsWithUpper(one) && startsWithLower(other)) {
 		return -1;
 	}
-	return (startsWithLower(one) && startsWithUpper(other)) ? 1 : 0;
+	return startsWithLower(one) && startsWithUpper(other) ? 1 : 0;
 }
 
 function comparePathComponents(one: string, other: string, caseSensitive = false): number {

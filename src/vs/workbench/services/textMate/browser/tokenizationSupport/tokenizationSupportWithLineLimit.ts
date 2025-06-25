@@ -4,7 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { LanguageId } from '../../../../../editor/common/encodedTokenAttributes.js';
-import { EncodedTokenizationResult, IBackgroundTokenizationStore, IBackgroundTokenizer, IState, ITokenizationSupport, TokenizationResult } from '../../../../../editor/common/languages.js';
+import {
+	EncodedTokenizationResult,
+	IBackgroundTokenizationStore,
+	IBackgroundTokenizer,
+	IState,
+	ITokenizationSupport,
+	TokenizationResult,
+} from '../../../../../editor/common/languages.js';
 import { nullTokenizeEncoded } from '../../../../../editor/common/languages/nullTokenize.js';
 import { ITextModel } from '../../../../../editor/common/model.js';
 import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
@@ -19,7 +26,7 @@ export class TokenizationSupportWithLineLimit extends Disposable implements ITok
 		private readonly _encodedLanguageId: LanguageId,
 		private readonly _actual: ITokenizationSupport,
 		disposable: IDisposable,
-		private readonly _maxTokenizationLineLength: IObservable<number>,
+		private readonly _maxTokenizationLineLength: IObservable<number>
 	) {
 		super();
 
@@ -44,7 +51,10 @@ export class TokenizationSupportWithLineLimit extends Disposable implements ITok
 		return this._actual.tokenizeEncoded(line, hasEOL, state);
 	}
 
-	createBackgroundTokenizer(textModel: ITextModel, store: IBackgroundTokenizationStore): IBackgroundTokenizer | undefined {
+	createBackgroundTokenizer(
+		textModel: ITextModel,
+		store: IBackgroundTokenizationStore
+	): IBackgroundTokenizer | undefined {
 		if (this._actual.createBackgroundTokenizer) {
 			return this._actual.createBackgroundTokenizer(textModel, store);
 		} else {

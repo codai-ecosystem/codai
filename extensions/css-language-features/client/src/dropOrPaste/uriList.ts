@@ -16,21 +16,24 @@ function parseUriList(str: string): string[] {
 }
 
 export class UriList {
-
 	static from(str: string): UriList {
-		return new UriList(coalesce(parseUriList(str).map(line => {
-			try {
-				return { uri: vscode.Uri.parse(line), str: line };
-			} catch {
-				// Uri parse failure
-				return undefined;
-			}
-		})));
+		return new UriList(
+			coalesce(
+				parseUriList(str).map(line => {
+					try {
+						return { uri: vscode.Uri.parse(line), str: line };
+					} catch {
+						// Uri parse failure
+						return undefined;
+					}
+				})
+			)
+		);
 	}
 
 	constructor(
 		public readonly entries: ReadonlyArray<{ readonly uri: vscode.Uri; readonly str: string }>
-	) { }
+	) {}
 }
 
 function coalesce<T>(array: ReadonlyArray<T | undefined | null>): T[] {

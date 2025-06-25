@@ -4,13 +4,34 @@
  *--------------------------------------------------------------------------------------------*/
 
 import './media/singleeditortabscontrol.css';
-import { EditorResourceAccessor, Verbosity, IEditorPartOptions, SideBySideEditor, preventEditorClose, EditorCloseMethod, IToolbarActions } from '../../../common/editor.js';
+import {
+	EditorResourceAccessor,
+	Verbosity,
+	IEditorPartOptions,
+	SideBySideEditor,
+	preventEditorClose,
+	EditorCloseMethod,
+	IToolbarActions,
+} from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
 import { EditorTabsControl } from './editorTabsControl.js';
 import { ResourceLabel, IResourceLabel } from '../../labels.js';
 import { TAB_ACTIVE_FOREGROUND, TAB_UNFOCUSED_ACTIVE_FOREGROUND } from '../../../common/theme.js';
-import { EventType as TouchEventType, GestureEvent, Gesture } from '../../../../base/browser/touch.js';
-import { addDisposableListener, EventType, EventHelper, Dimension, isAncestor, DragAndDropObserver, isHTMLElement, $ } from '../../../../base/browser/dom.js';
+import {
+	EventType as TouchEventType,
+	GestureEvent,
+	Gesture,
+} from '../../../../base/browser/touch.js';
+import {
+	addDisposableListener,
+	EventType,
+	EventHelper,
+	Dimension,
+	isAncestor,
+	DragAndDropObserver,
+	isHTMLElement,
+	$,
+} from '../../../../base/browser/dom.js';
 import { CLOSE_EDITOR_COMMAND_ID, UNLOCK_GROUP_COMMAND_ID } from './editorCommands.js';
 import { Color } from '../../../../base/common/color.js';
 import { assertIsDefined, assertAllDefined } from '../../../../base/common/types.js';
@@ -26,18 +47,19 @@ interface IRenderedEditorLabel {
 }
 
 export class SingleEditorTabsControl extends EditorTabsControl {
-
 	private titleContainer: HTMLElement | undefined;
 	private editorLabel: IResourceLabel | undefined;
 	private activeLabel: IRenderedEditorLabel = Object.create(null);
 
 	private breadcrumbsControlFactory: BreadcrumbsControlFactory | undefined;
-	private get breadcrumbsControl() { return this.breadcrumbsControlFactory?.control; }
+	private get breadcrumbsControl() {
+		return this.breadcrumbsControlFactory?.control;
+	}
 
 	protected override create(parent: HTMLElement): HTMLElement {
 		super.create(parent);
 
-		const titleContainer = this.titleContainer = parent;
+		const titleContainer = (this.titleContainer = parent);
 		titleContainer.draggable = true;
 
 		// Container listeners
@@ -50,19 +72,39 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		titleContainer.appendChild(labelContainer);
 
 		// Editor Label
-		this.editorLabel = this._register(this.instantiationService.createInstance(ResourceLabel, labelContainer, {})).element;
-		this._register(addDisposableListener(this.editorLabel.element, EventType.CLICK, e => this.onTitleLabelClick(e)));
+		this.editorLabel = this._register(
+			this.instantiationService.createInstance(ResourceLabel, labelContainer, {})
+		).element;
+		this._register(
+			addDisposableListener(this.editorLabel.element, EventType.CLICK, e =>
+				this.onTitleLabelClick(e)
+			)
+		);
 
 		// Breadcrumbs
-		this.breadcrumbsControlFactory = this._register(this.instantiationService.createInstance(BreadcrumbsControlFactory, labelContainer, this.groupView, {
-			showFileIcons: false,
-			showSymbolIcons: true,
-			showDecorationColors: false,
-			widgetStyles: { ...defaultBreadcrumbsWidgetStyles, breadcrumbsBackground: Color.transparent.toString() },
-			showPlaceholder: false,
-			dragEditor: true,
-		}));
-		this._register(this.breadcrumbsControlFactory.onDidEnablementChange(() => this.handleBreadcrumbsEnablementChange()));
+		this.breadcrumbsControlFactory = this._register(
+			this.instantiationService.createInstance(
+				BreadcrumbsControlFactory,
+				labelContainer,
+				this.groupView,
+				{
+					showFileIcons: false,
+					showSymbolIcons: true,
+					showDecorationColors: false,
+					widgetStyles: {
+						...defaultBreadcrumbsWidgetStyles,
+						breadcrumbsBackground: Color.transparent.toString(),
+					},
+					showPlaceholder: false,
+					dragEditor: true,
+				}
+			)
+		);
+		this._register(
+			this.breadcrumbsControlFactory.onDidEnablementChange(() =>
+				this.handleBreadcrumbsEnablementChange()
+			)
+		);
 		titleContainer.classList.toggle('breadcrumbs', Boolean(this.breadcrumbsControl));
 		this._register(toDisposable(() => titleContainer.classList.remove('breadcrumbs'))); // important to remove because the container is a shared dom node
 
@@ -73,32 +115,49 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 	}
 
 	private registerContainerListeners(titleContainer: HTMLElement): void {
-
 		// Drag & Drop support
 		let lastDragEvent: DragEvent | undefined = undefined;
 		let isNewWindowOperation = false;
-		this._register(new DragAndDropObserver(titleContainer, {
-			onDragStart: e => { isNewWindowOperation = this.onGroupDragStart(e, titleContainer); },
-			onDrag: e => { lastDragEvent = e; },
-			onDragEnd: e => { this.onGroupDragEnd(e, lastDragEvent, titleContainer, isNewWindowOperation); },
-		}));
+		this._register(
+			new DragAndDropObserver(titleContainer, {
+				onDragStart: e => {
+					isNewWindowOperation = this.onGroupDragStart(e, titleContainer);
+				},
+				onDrag: e => {
+					lastDragEvent = e;
+				},
+				onDragEnd: e => {
+					this.onGroupDragEnd(e, lastDragEvent, titleContainer, isNewWindowOperation);
+				},
+			})
+		);
 
 		// Pin on double click
-		this._register(addDisposableListener(titleContainer, EventType.DBLCLICK, e => this.onTitleDoubleClick(e)));
+		this._register(
+			addDisposableListener(titleContainer, EventType.DBLCLICK, e => this.onTitleDoubleClick(e))
+		);
 
 		// Detect mouse click
-		this._register(addDisposableListener(titleContainer, EventType.AUXCLICK, e => this.onTitleAuxClick(e)));
+		this._register(
+			addDisposableListener(titleContainer, EventType.AUXCLICK, e => this.onTitleAuxClick(e))
+		);
 
 		// Detect touch
-		this._register(addDisposableListener(titleContainer, TouchEventType.Tap, (e: GestureEvent) => this.onTitleTap(e)));
+		this._register(
+			addDisposableListener(titleContainer, TouchEventType.Tap, (e: GestureEvent) =>
+				this.onTitleTap(e)
+			)
+		);
 
 		// Context Menu
 		for (const event of [EventType.CONTEXT_MENU, TouchEventType.Contextmenu]) {
-			this._register(addDisposableListener(titleContainer, event, e => {
-				if (this.tabsModel.activeEditor) {
-					this.onTabContextMenu(this.tabsModel.activeEditor, e, titleContainer);
-				}
-			}));
+			this._register(
+				addDisposableListener(titleContainer, event, e => {
+					if (this.tabsModel.activeEditor) {
+						this.onTabContextMenu(this.tabsModel.activeEditor, e, titleContainer);
+					}
+				})
+			);
 		}
 	}
 
@@ -119,20 +178,30 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		if (e.button === 1 /* Middle Button */ && this.tabsModel.activeEditor) {
 			EventHelper.stop(e, true /* for https://github.com/microsoft/vscode/issues/56715 */);
 
-			if (!preventEditorClose(this.tabsModel, this.tabsModel.activeEditor, EditorCloseMethod.MOUSE, this.groupsView.partOptions)) {
+			if (
+				!preventEditorClose(
+					this.tabsModel,
+					this.tabsModel.activeEditor,
+					EditorCloseMethod.MOUSE,
+					this.groupsView.partOptions
+				)
+			) {
 				this.groupView.closeEditor(this.tabsModel.activeEditor);
 			}
 		}
 	}
 
 	private onTitleTap(e: GestureEvent): void {
-
 		// We only want to open the quick access picker when
 		// the tap occurred over the editor label, so we need
 		// to check on the target
 		// (https://github.com/microsoft/vscode/issues/107543)
 		const target = e.initialTarget;
-		if (!(isHTMLElement(target)) || !this.editorLabel || !isAncestor(target, this.editorLabel.element)) {
+		if (
+			!isHTMLElement(target) ||
+			!this.editorLabel ||
+			!isAncestor(target, this.editorLabel.element)
+		) {
 			return;
 		}
 
@@ -181,15 +250,15 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		this.ifEditorIsActive(editor, () => this.redraw());
 	}
 
-	stickEditor(editor: EditorInput): void { }
+	stickEditor(editor: EditorInput): void {}
 
-	unstickEditor(editor: EditorInput): void { }
+	unstickEditor(editor: EditorInput): void {}
 
 	setActive(isActive: boolean): void {
 		this.redraw();
 	}
 
-	updateEditorSelections(): void { }
+	updateEditorSelections(): void {}
 
 	updateEditorLabel(editor: EditorInput): void {
 		this.ifEditorIsActive(editor, () => this.redraw());
@@ -214,7 +283,10 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 	override updateOptions(oldOptions: IEditorPartOptions, newOptions: IEditorPartOptions): void {
 		super.updateOptions(oldOptions, newOptions);
 
-		if (oldOptions.labelFormat !== newOptions.labelFormat || !equals(oldOptions.decorations, newOptions.decorations)) {
+		if (
+			oldOptions.labelFormat !== newOptions.labelFormat ||
+			!equals(oldOptions.decorations, newOptions.decorations)
+		) {
 			this.redraw();
 		}
 	}
@@ -232,9 +304,10 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 	private ifActiveEditorChanged(fn: () => void): boolean {
 		if (
-			!this.activeLabel.editor && this.tabsModel.activeEditor || 						// active editor changed from null => editor
-			this.activeLabel.editor && !this.tabsModel.activeEditor || 						// active editor changed from editor => null
-			(!this.activeLabel.editor || !this.tabsModel.isActive(this.activeLabel.editor))	// active editor changed from editorA => editorB
+			(!this.activeLabel.editor && this.tabsModel.activeEditor) || // active editor changed from null => editor
+			(this.activeLabel.editor && !this.tabsModel.activeEditor) || // active editor changed from editor => null
+			!this.activeLabel.editor ||
+			!this.tabsModel.isActive(this.activeLabel.editor) // active editor changed from editorA => editorB
 		) {
 			fn();
 
@@ -256,7 +329,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 	private ifEditorIsActive(editor: EditorInput, fn: () => void): void {
 		if (this.tabsModel.isActive(editor)) {
-			fn();  // only run if editor is current active
+			fn(); // only run if editor is current active
 		}
 	}
 
@@ -289,7 +362,6 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 		// Otherwise render it
 		else {
-
 			// Dirty state
 			this.updateEditorDirty(editor);
 
@@ -306,9 +378,11 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 			editorLabel.setResource(
 				{
-					resource: EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.BOTH }),
+					resource: EditorResourceAccessor.getOriginalUri(editor, {
+						supportSideBySide: SideBySideEditor.BOTH,
+					}),
 					name: editor.getName(),
-					description
+					description,
 				},
 				{
 					title: this.getHoverTitle(editor),
@@ -316,7 +390,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 					extraClasses: ['single-tab', 'title-label'].concat(editor.getLabelExtraClasses()),
 					fileDecorations: {
 						colors: Boolean(options.decorations?.colors),
-						badges: Boolean(options.decorations?.badges)
+						badges: Boolean(options.decorations?.badges),
 					},
 					icon: editor.getIcon(),
 					hideIcon: options.showIcons === false,
@@ -336,9 +410,12 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 	private getVerbosity(style: string | undefined): Verbosity {
 		switch (style) {
-			case 'short': return Verbosity.SHORT;
-			case 'long': return Verbosity.LONG;
-			default: return Verbosity.MEDIUM;
+			case 'short':
+				return Verbosity.SHORT;
+			case 'long':
+				return Verbosity.LONG;
+			default:
+				return Verbosity.MEDIUM;
 		}
 	}
 
@@ -353,8 +430,13 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		// Inactive: only show "Close, "Unlock" and secondary actions
 		else {
 			return {
-				primary: this.groupsView.partOptions.alwaysShowEditorActions ? editorActions.primary : editorActions.primary.filter(action => action.id === CLOSE_EDITOR_COMMAND_ID || action.id === UNLOCK_GROUP_COMMAND_ID),
-				secondary: editorActions.secondary
+				primary: this.groupsView.partOptions.alwaysShowEditorActions
+					? editorActions.primary
+					: editorActions.primary.filter(
+							action =>
+								action.id === CLOSE_EDITOR_COMMAND_ID || action.id === UNLOCK_GROUP_COMMAND_ID
+						),
+				secondary: editorActions.secondary,
 			};
 		}
 	}

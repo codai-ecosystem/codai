@@ -10,9 +10,7 @@ import { IChatTransferService } from '../../common/chatTransferService.js';
 export class ChatTransferContribution extends Disposable implements IWorkbenchContribution {
 	static readonly ID = 'workbench.contrib.chatTransfer';
 
-	constructor(
-		@IChatTransferService chatTransferService: IChatTransferService,
-	) {
+	constructor(@IChatTransferService chatTransferService: IChatTransferService) {
 		super();
 		chatTransferService.checkAndSetTransferredWorkspaceTrust();
 	}

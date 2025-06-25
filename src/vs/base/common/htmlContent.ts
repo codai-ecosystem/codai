@@ -29,7 +29,6 @@ export const enum MarkdownStringTextNewlineStyle {
 }
 
 export class MarkdownString implements IMarkdownString {
-
 	public value: string;
 	public isTrusted?: boolean | MarkdownStringTrustedOptions;
 	public supportThemeIcons?: boolean;
@@ -46,7 +45,13 @@ export class MarkdownString implements IMarkdownString {
 
 	constructor(
 		value: string = '',
-		isTrustedOrOptions: boolean | { isTrusted?: boolean | MarkdownStringTrustedOptions; supportThemeIcons?: boolean; supportHtml?: boolean } = false,
+		isTrustedOrOptions:
+			| boolean
+			| {
+					isTrusted?: boolean | MarkdownStringTrustedOptions;
+					supportThemeIcons?: boolean;
+					supportHtml?: boolean;
+			  } = false
 	) {
 		this.value = value;
 		if (typeof this.value !== 'string') {
@@ -57,15 +62,17 @@ export class MarkdownString implements IMarkdownString {
 			this.isTrusted = isTrustedOrOptions;
 			this.supportThemeIcons = false;
 			this.supportHtml = false;
-		}
-		else {
+		} else {
 			this.isTrusted = isTrustedOrOptions.isTrusted ?? undefined;
 			this.supportThemeIcons = isTrustedOrOptions.supportThemeIcons ?? false;
 			this.supportHtml = isTrustedOrOptions.supportHtml ?? false;
 		}
 	}
 
-	appendText(value: string, newlineStyle: MarkdownStringTextNewlineStyle = MarkdownStringTextNewlineStyle.Paragraph): MarkdownString {
+	appendText(
+		value: string,
+		newlineStyle: MarkdownStringTextNewlineStyle = MarkdownStringTextNewlineStyle.Paragraph
+	): MarkdownString {
 		this.value += escapeMarkdownSyntaxTokens(this.supportThemeIcons ? escapeIcons(value) : value) // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
 			.replace(/([ \t]+)/g, (_match, g1) => '&nbsp;'.repeat(g1.length)) // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
 			.replace(/\>/gm, '\\>') // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
@@ -108,7 +115,9 @@ export class MarkdownString implements IMarkdownString {
 	}
 }
 
-export function isEmptyMarkdownString(oneOrMany: IMarkdownString | IMarkdownString[] | null | undefined): boolean {
+export function isEmptyMarkdownString(
+	oneOrMany: IMarkdownString | IMarkdownString[] | null | undefined
+): boolean {
 	if (isMarkdownString(oneOrMany)) {
 		return !oneOrMany.value;
 	} else if (Array.isArray(oneOrMany)) {
@@ -122,9 +131,14 @@ export function isMarkdownString(thing: unknown): thing is IMarkdownString {
 	if (thing instanceof MarkdownString) {
 		return true;
 	} else if (thing && typeof thing === 'object') {
-		return typeof (<IMarkdownString>thing).value === 'string'
-			&& (typeof (<IMarkdownString>thing).isTrusted === 'boolean' || typeof (<IMarkdownString>thing).isTrusted === 'object' || (<IMarkdownString>thing).isTrusted === undefined)
-			&& (typeof (<IMarkdownString>thing).supportThemeIcons === 'boolean' || (<IMarkdownString>thing).supportThemeIcons === undefined);
+		return (
+			typeof (<IMarkdownString>thing).value === 'string' &&
+			(typeof (<IMarkdownString>thing).isTrusted === 'boolean' ||
+				typeof (<IMarkdownString>thing).isTrusted === 'object' ||
+				(<IMarkdownString>thing).isTrusted === undefined) &&
+			(typeof (<IMarkdownString>thing).supportThemeIcons === 'boolean' ||
+				(<IMarkdownString>thing).supportThemeIcons === undefined)
+		);
 	}
 	return false;
 }
@@ -135,11 +149,14 @@ export function markdownStringEqual(a: IMarkdownString, b: IMarkdownString): boo
 	} else if (!a || !b) {
 		return false;
 	} else {
-		return a.value === b.value
-			&& a.isTrusted === b.isTrusted
-			&& a.supportThemeIcons === b.supportThemeIcons
-			&& a.supportHtml === b.supportHtml
-			&& (a.baseUri === b.baseUri || !!a.baseUri && !!b.baseUri && isEqual(URI.from(a.baseUri), URI.from(b.baseUri)));
+		return (
+			a.value === b.value &&
+			a.isTrusted === b.isTrusted &&
+			a.supportThemeIcons === b.supportThemeIcons &&
+			a.supportHtml === b.supportHtml &&
+			(a.baseUri === b.baseUri ||
+				(!!a.baseUri && !!b.baseUri && isEqual(URI.from(a.baseUri), URI.from(b.baseUri))))
+		);
 	}
 }
 
@@ -153,10 +170,8 @@ export function escapeMarkdownSyntaxTokens(text: string): string {
  */
 export function appendEscapedMarkdownCodeBlockFence(code: string, langId: string) {
 	const longestFenceLength =
-		code.match(/^`+/gm)?.reduce((a, b) => (a.length > b.length ? a : b)).length ??
-		0;
-	const desiredFenceLength =
-		longestFenceLength >= 3 ? longestFenceLength + 1 : 3;
+		code.match(/^`+/gm)?.reduce((a, b) => (a.length > b.length ? a : b)).length ?? 0;
+	const desiredFenceLength = longestFenceLength >= 3 ? longestFenceLength + 1 : 3;
 
 	// the markdown result
 	return [
@@ -199,11 +214,17 @@ export function parseHrefAndDimensions(href: string): { href: string; dimensions
 	return { href, dimensions };
 }
 
-export function markdownCommandLink(command: { title: string; id: string; arguments?: unknown[] }): string {
+export function markdownCommandLink(command: {
+	title: string;
+	id: string;
+	arguments?: unknown[];
+}): string {
 	const uri = URI.from({
 		scheme: Schemas.command,
 		path: command.id,
-		query: command.arguments?.length ? encodeURIComponent(JSON.stringify(command.arguments)) : undefined,
+		query: command.arguments?.length
+			? encodeURIComponent(JSON.stringify(command.arguments))
+			: undefined,
 	}).toString();
 
 	return `[${escapeMarkdownSyntaxTokens(command.title)}](${uri})`;

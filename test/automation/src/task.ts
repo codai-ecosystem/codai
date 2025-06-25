@@ -24,32 +24,51 @@ interface ITaskConfigurationProperties {
 }
 
 export enum TaskCommandId {
-	TerminalRename = 'workbench.action.terminal.rename'
+	TerminalRename = 'workbench.action.terminal.rename',
 }
 
 export class Task {
+	constructor(
+		private code: Code,
+		private editor: Editor,
+		private editors: Editors,
+		private quickaccess: QuickAccess,
+		private quickinput: QuickInput,
+		private terminal: Terminal
+	) {}
 
-	constructor(private code: Code, private editor: Editor, private editors: Editors, private quickaccess: QuickAccess, private quickinput: QuickInput, private terminal: Terminal) {
-
-	}
-
-	async assertTasks(filter: string, expected: ITaskConfigurationProperties[], type: 'run' | 'configure') {
+	async assertTasks(
+		filter: string,
+		expected: ITaskConfigurationProperties[],
+		type: 'run' | 'configure'
+	) {
 		// TODO https://github.com/microsoft/vscode/issues/242535
 		// Artificial delay before running non hidden tasks
 		// so that entries from configureTask show up in the quick access.
 		await wait(1000);
-		type === 'run' ? await this.quickaccess.runCommand('workbench.action.tasks.runTask', { keepOpen: true }) : await this.quickaccess.runCommand('workbench.action.tasks.configureTask', { keepOpen: true });
+		type === 'run'
+			? await this.quickaccess.runCommand('workbench.action.tasks.runTask', { keepOpen: true })
+			: await this.quickaccess.runCommand('workbench.action.tasks.configureTask', {
+					keepOpen: true,
+				});
 		if (expected.length === 0) {
-			await this.quickinput.waitForQuickInputElements(e => e.length > 1 && e.every(label => label.trim() !== filter.trim()));
+			await this.quickinput.waitForQuickInputElements(
+				e => e.length > 1 && e.every(label => label.trim() !== filter.trim())
+			);
 		}
 		if (expected.length > 0 && !expected[0].hide) {
-			await this.quickinput.waitForQuickInputElements(e => e.length > 1 && e.some(label => label.trim() === filter.trim()));
+			await this.quickinput.waitForQuickInputElements(
+				e => e.length > 1 && e.some(label => label.trim() === filter.trim())
+			);
 			// select the expected task
 			await this.quickinput.selectQuickInputElement(0, true);
 			// Continue without scanning the output
 			await this.quickinput.selectQuickInputElement(0);
 			if (expected[0].icon) {
-				await this.terminal.assertSingleTab({ color: expected[0].icon.color, icon: expected[0].icon.id || 'tools' });
+				await this.terminal.assertSingleTab({
+					color: expected[0].icon.color,
+					icon: expected[0].icon.id || 'tools',
+				});
 			}
 		}
 		await this.quickinput.closeQuickInput();
@@ -65,7 +84,7 @@ export class Task {
 		const taskStringLines: string[] = [
 			'{', // Brackets auto close
 			'"version": "2.0.0",',
-			'"tasks": [{' // Brackets auto close
+			'"tasks": [{', // Brackets auto close
 		];
 		for (let [key, value] of Object.entries(properties)) {
 			if (typeof value === 'object') {

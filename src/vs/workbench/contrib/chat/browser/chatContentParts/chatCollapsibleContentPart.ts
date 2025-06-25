@@ -15,9 +15,7 @@ import { ChatTreeItem } from '../chat.js';
 import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
 import { $ } from './chatReferencesContentPart.js';
 
-
 export abstract class ChatCollapsibleContentPart extends Disposable implements IChatContentPart {
-
 	private _domNode?: HTMLElement;
 
 	protected readonly _onDidChangeHeight = this._register(new Emitter<void>());
@@ -28,7 +26,7 @@ export abstract class ChatCollapsibleContentPart extends Disposable implements I
 
 	constructor(
 		private readonly title: IMarkdownString | string,
-		protected readonly context: IChatContentPartRenderContext,
+		protected readonly context: IChatContentPartRenderContext
 	) {
 		super();
 		this.hasFollowingContent = this.context.contentIndex + 1 < this.context.content.length;
@@ -42,39 +40,48 @@ export abstract class ChatCollapsibleContentPart extends Disposable implements I
 	protected init(): HTMLElement {
 		const referencesLabel = this.title;
 
-
 		const buttonElement = $('.chat-used-context-label', undefined);
 
-		const collapseButton = this._register(new ButtonWithIcon(buttonElement, {
-			buttonBackground: undefined,
-			buttonBorder: undefined,
-			buttonForeground: undefined,
-			buttonHoverBackground: undefined,
-			buttonSecondaryBackground: undefined,
-			buttonSecondaryForeground: undefined,
-			buttonSecondaryHoverBackground: undefined,
-			buttonSeparator: undefined
-		}));
+		const collapseButton = this._register(
+			new ButtonWithIcon(buttonElement, {
+				buttonBackground: undefined,
+				buttonBorder: undefined,
+				buttonForeground: undefined,
+				buttonHoverBackground: undefined,
+				buttonSecondaryBackground: undefined,
+				buttonSecondaryForeground: undefined,
+				buttonSecondaryHoverBackground: undefined,
+				buttonSeparator: undefined,
+			})
+		);
 		this._domNode = $('.chat-used-context', undefined, buttonElement);
 		collapseButton.label = referencesLabel;
 
-		this._register(collapseButton.onDidClick(() => {
-			const value = this._isExpanded.get();
-			this._isExpanded.set(!value, undefined);
-		}));
+		this._register(
+			collapseButton.onDidClick(() => {
+				const value = this._isExpanded.get();
+				this._isExpanded.set(!value, undefined);
+			})
+		);
 
-		this._register(autorun(r => {
-			const value = this._isExpanded.read(r);
-			collapseButton.icon = value ? Codicon.chevronDown : Codicon.chevronRight;
-			this._domNode?.classList.toggle('chat-used-context-collapsed', !value);
-			this.updateAriaLabel(collapseButton.element, typeof referencesLabel === 'string' ? referencesLabel : referencesLabel.value, this.isExpanded());
+		this._register(
+			autorun(r => {
+				const value = this._isExpanded.read(r);
+				collapseButton.icon = value ? Codicon.chevronDown : Codicon.chevronRight;
+				this._domNode?.classList.toggle('chat-used-context-collapsed', !value);
+				this.updateAriaLabel(
+					collapseButton.element,
+					typeof referencesLabel === 'string' ? referencesLabel : referencesLabel.value,
+					this.isExpanded()
+				);
 
-			if (this._domNode?.isConnected) {
-				queueMicrotask(() => {
-					this._onDidChangeHeight.fire();
-				});
-			}
-		}));
+				if (this._domNode?.isConnected) {
+					queueMicrotask(() => {
+						this._onDidChangeHeight.fire();
+					});
+				}
+			})
+		);
 
 		const content = this.initContent();
 		this._domNode.appendChild(content);
@@ -83,10 +90,16 @@ export abstract class ChatCollapsibleContentPart extends Disposable implements I
 
 	protected abstract initContent(): HTMLElement;
 
-	abstract hasSameContent(other: IChatRendererContent, followingContent: IChatRendererContent[], element: ChatTreeItem): boolean;
+	abstract hasSameContent(
+		other: IChatRendererContent,
+		followingContent: IChatRendererContent[],
+		element: ChatTreeItem
+	): boolean;
 
 	private updateAriaLabel(element: HTMLElement, label: string, expanded?: boolean): void {
-		element.ariaLabel = expanded ? localize('usedReferencesExpanded', "{0}, expanded", label) : localize('usedReferencesCollapsed', "{0}, collapsed", label);
+		element.ariaLabel = expanded
+			? localize('usedReferencesExpanded', '{0}, expanded', label)
+			: localize('usedReferencesCollapsed', '{0}, collapsed', label);
 	}
 
 	addDisposable(disposable: IDisposable): void {

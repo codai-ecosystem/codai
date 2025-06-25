@@ -17,9 +17,18 @@ import { ChatContextKeys } from '../../chat/common/chatContextKeys.js';
 import { CommentAccessibilityHelpNLS } from '../../comments/browser/commentsAccessibility.js';
 import { CommentContextKeys } from '../../comments/common/commentContextKeys.js';
 import { NEW_UNTITLED_FILE_COMMAND_ID } from '../../files/browser/fileConstants.js';
-import { IAccessibleViewService, IAccessibleViewContentProvider, AccessibleViewProviderId, IAccessibleViewOptions, AccessibleViewType } from '../../../../platform/accessibility/browser/accessibleView.js';
+import {
+	IAccessibleViewService,
+	IAccessibleViewContentProvider,
+	AccessibleViewProviderId,
+	IAccessibleViewOptions,
+	AccessibleViewType,
+} from '../../../../platform/accessibility/browser/accessibleView.js';
 import { AccessibilityVerbositySettingId } from './accessibilityConfiguration.js';
-import { ctxHasEditorModification, ctxHasRequestInProgress } from '../../chat/browser/chatEditing/chatEditingEditorContextKeys.js';
+import {
+	ctxHasEditorModification,
+	ctxHasRequestInProgress,
+} from '../../chat/browser/chatEditing/chatEditingEditorContextKeys.js';
 import { IAccessibilityService } from '../../../../platform/accessibility/common/accessibility.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 
@@ -27,18 +36,23 @@ export class EditorAccessibilityHelpContribution extends Disposable {
 	static ID: 'editorAccessibilityHelpContribution';
 	constructor() {
 		super();
-		this._register(AccessibilityHelpAction.addImplementation(90, 'editor', async accessor => {
-			const codeEditorService = accessor.get(ICodeEditorService);
-			const accessibleViewService = accessor.get(IAccessibleViewService);
-			const instantiationService = accessor.get(IInstantiationService);
-			const commandService = accessor.get(ICommandService);
-			let codeEditor = codeEditorService.getActiveCodeEditor() || codeEditorService.getFocusedCodeEditor();
-			if (!codeEditor) {
-				await commandService.executeCommand(NEW_UNTITLED_FILE_COMMAND_ID);
-				codeEditor = codeEditorService.getActiveCodeEditor()!;
-			}
-			accessibleViewService.show(instantiationService.createInstance(EditorAccessibilityHelpProvider, codeEditor));
-		}));
+		this._register(
+			AccessibilityHelpAction.addImplementation(90, 'editor', async accessor => {
+				const codeEditorService = accessor.get(ICodeEditorService);
+				const accessibleViewService = accessor.get(IAccessibleViewService);
+				const instantiationService = accessor.get(IInstantiationService);
+				const commandService = accessor.get(ICommandService);
+				let codeEditor =
+					codeEditorService.getActiveCodeEditor() || codeEditorService.getFocusedCodeEditor();
+				if (!codeEditor) {
+					await commandService.executeCommand(NEW_UNTITLED_FILE_COMMAND_ID);
+					codeEditor = codeEditorService.getActiveCodeEditor()!;
+				}
+				accessibleViewService.show(
+					instantiationService.createInstance(EditorAccessibilityHelpProvider, codeEditor)
+				);
+			})
+		);
 	}
 }
 
@@ -47,14 +61,17 @@ class EditorAccessibilityHelpProvider extends Disposable implements IAccessibleV
 	onClose() {
 		this._editor.focus();
 	}
-	options: IAccessibleViewOptions = { type: AccessibleViewType.Help, readMoreUrl: 'https://go.microsoft.com/fwlink/?linkid=851010' };
+	options: IAccessibleViewOptions = {
+		type: AccessibleViewType.Help,
+		readMoreUrl: 'https://go.microsoft.com/fwlink/?linkid=851010',
+	};
 	verbositySettingKey = AccessibilityVerbositySettingId.Editor;
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@IKeybindingService private readonly _keybindingService: IKeybindingService,
 		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
 		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService private readonly _configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -76,14 +93,21 @@ class EditorAccessibilityHelpProvider extends Disposable implements IAccessibleV
 				content.push(AccessibilityHelpNLS.editableEditor);
 			}
 		}
-		if (this.accessibilityService.isScreenReaderOptimized() && this._configurationService.getValue('accessibility.windowTitleOptimized')) {
+		if (
+			this.accessibilityService.isScreenReaderOptimized() &&
+			this._configurationService.getValue('accessibility.windowTitleOptimized')
+		) {
 			content.push(AccessibilityHelpNLS.defaultWindowTitleIncludesEditorState);
 		} else {
 			content.push(AccessibilityHelpNLS.defaultWindowTitleExcludingEditorState);
 		}
 		content.push(AccessibilityHelpNLS.toolbar);
 
-		const chatEditInfo = getChatEditInfo(this._keybindingService, this._contextKeyService, this._editor);
+		const chatEditInfo = getChatEditInfo(
+			this._keybindingService,
+			this._contextKeyService,
+			this._editor
+		);
 		if (chatEditInfo) {
 			content.push(chatEditInfo);
 		}
@@ -91,13 +115,16 @@ class EditorAccessibilityHelpProvider extends Disposable implements IAccessibleV
 		content.push(AccessibilityHelpNLS.listSignalSounds);
 		content.push(AccessibilityHelpNLS.listAlerts);
 
-
 		const chatCommandInfo = getChatCommandInfo(this._keybindingService, this._contextKeyService);
 		if (chatCommandInfo) {
 			content.push(chatCommandInfo);
 		}
 
-		const commentCommandInfo = getCommentCommandInfo(this._keybindingService, this._contextKeyService, this._editor);
+		const commentCommandInfo = getCommentCommandInfo(
+			this._keybindingService,
+			this._contextKeyService,
+			this._editor
+		);
 		if (commentCommandInfo) {
 			content.push(commentCommandInfo);
 		}
@@ -127,25 +154,45 @@ class EditorAccessibilityHelpProvider extends Disposable implements IAccessibleV
 	}
 }
 
-export function getCommentCommandInfo(keybindingService: IKeybindingService, contextKeyService: IContextKeyService, editor: ICodeEditor): string | undefined {
+export function getCommentCommandInfo(
+	keybindingService: IKeybindingService,
+	contextKeyService: IContextKeyService,
+	editor: ICodeEditor
+): string | undefined {
 	const editorContext = contextKeyService.getContext(editor.getDomNode()!);
 	if (editorContext.getValue<boolean>(CommentContextKeys.activeEditorHasCommentingRange.key)) {
-		return [CommentAccessibilityHelpNLS.intro, CommentAccessibilityHelpNLS.addComment, CommentAccessibilityHelpNLS.nextCommentThread, CommentAccessibilityHelpNLS.previousCommentThread, CommentAccessibilityHelpNLS.nextRange, CommentAccessibilityHelpNLS.previousRange].join('\n');
+		return [
+			CommentAccessibilityHelpNLS.intro,
+			CommentAccessibilityHelpNLS.addComment,
+			CommentAccessibilityHelpNLS.nextCommentThread,
+			CommentAccessibilityHelpNLS.previousCommentThread,
+			CommentAccessibilityHelpNLS.nextRange,
+			CommentAccessibilityHelpNLS.previousRange,
+		].join('\n');
 	}
 	return;
 }
 
-export function getChatCommandInfo(keybindingService: IKeybindingService, contextKeyService: IContextKeyService): string | undefined {
+export function getChatCommandInfo(
+	keybindingService: IKeybindingService,
+	contextKeyService: IContextKeyService
+): string | undefined {
 	if (ChatContextKeys.enabled.getValue(contextKeyService)) {
 		return [AccessibilityHelpNLS.quickChat, AccessibilityHelpNLS.startInlineChat].join('\n');
 	}
 	return;
 }
 
-export function getChatEditInfo(keybindingService: IKeybindingService, contextKeyService: IContextKeyService, editor: ICodeEditor): string | undefined {
+export function getChatEditInfo(
+	keybindingService: IKeybindingService,
+	contextKeyService: IContextKeyService,
+	editor: ICodeEditor
+): string | undefined {
 	const editorContext = contextKeyService.getContext(editor.getDomNode()!);
 	if (editorContext.getValue<boolean>(ctxHasEditorModification.key)) {
-		return AccessibilityHelpNLS.chatEditorModification + '\n' + AccessibilityHelpNLS.chatEditActions;
+		return (
+			AccessibilityHelpNLS.chatEditorModification + '\n' + AccessibilityHelpNLS.chatEditActions
+		);
 	} else if (editorContext.getValue<boolean>(ctxHasRequestInProgress.key)) {
 		return AccessibilityHelpNLS.chatEditorRequestInProgress;
 	}

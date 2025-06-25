@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// https://github.com/microsoft/vscode/issues/226562
 
 	export interface TerminalCompletionProvider<T extends TerminalCompletionItem> {
@@ -16,9 +15,12 @@ declare module 'vscode' {
 		 * @param token A cancellation token.
 		 * @return A list of completions.
 		 */
-		provideTerminalCompletions(terminal: Terminal, context: TerminalCompletionContext, token: CancellationToken): ProviderResult<T[] | TerminalCompletionList<T>>;
+		provideTerminalCompletions(
+			terminal: Terminal,
+			context: TerminalCompletionContext,
+			token: CancellationToken
+		): ProviderResult<T[] | TerminalCompletionList<T>>;
 	}
-
 
 	export interface TerminalCompletionItem {
 		/**
@@ -41,7 +43,6 @@ declare module 'vscode' {
 		 */
 		detail?: string;
 
-
 		/**
 		 * A human-readable string that represents a doc-comment.
 		 */
@@ -52,7 +53,6 @@ declare module 'vscode' {
 		 */
 		kind?: TerminalCompletionItemKind;
 	}
-
 
 	/**
 	 * Terminal item kinds.
@@ -91,7 +91,10 @@ declare module 'vscode' {
 		 * @param provider The completion provider.
 		 * @returns A {@link Disposable} that unregisters this provider when being disposed.
 		 */
-		export function registerTerminalCompletionProvider<T extends TerminalCompletionItem>(provider: TerminalCompletionProvider<T>, ...triggerCharacters: string[]): Disposable;
+		export function registerTerminalCompletionProvider<T extends TerminalCompletionItem>(
+			provider: TerminalCompletionProvider<T>,
+			...triggerCharacters: string[]
+		): Disposable;
 	}
 
 	/**
@@ -99,7 +102,6 @@ declare module 'vscode' {
 	 * in the terminal.
 	 */
 	export class TerminalCompletionList<T extends TerminalCompletionItem = TerminalCompletionItem> {
-
 		/**
 		 * Resources that should be shown in the completions list for the cwd of the terminal.
 		 */

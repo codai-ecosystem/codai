@@ -9,10 +9,13 @@ import { ThemeIcon } from '../../../../base/common/themables.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 
-const DisassemblyEditorIcon = registerIcon('disassembly-editor-label-icon', Codicon.debug, localize('disassemblyEditorLabelIcon', 'Icon of the disassembly editor label.'));
+const DisassemblyEditorIcon = registerIcon(
+	'disassembly-editor-label-icon',
+	Codicon.debug,
+	localize('disassemblyEditorLabelIcon', 'Icon of the disassembly editor label.')
+);
 
 export class DisassemblyViewInput extends EditorInput {
-
 	static readonly ID = 'debug.disassemblyView.input';
 
 	override get typeId(): string {
@@ -31,7 +34,7 @@ export class DisassemblyViewInput extends EditorInput {
 	readonly resource = undefined;
 
 	override getName(): string {
-		return localize('disassemblyInputName', "Disassembly");
+		return localize('disassemblyInputName', 'Disassembly');
 	}
 
 	override getIcon(): ThemeIcon {
@@ -41,5 +44,4 @@ export class DisassemblyViewInput extends EditorInput {
 	override matches(other: unknown): boolean {
 		return other instanceof DisassemblyViewInput;
 	}
-
 }

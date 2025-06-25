@@ -6,8 +6,17 @@
 import { KeyChord, KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
 import { CoreEditingCommands } from '../../../browser/coreCommands.js';
 import { IActiveCodeEditor, ICodeEditor } from '../../../browser/editorBrowser.js';
-import { EditorAction, IActionOptions, registerEditorAction, ServicesAccessor } from '../../../browser/editorExtensions.js';
-import { ReplaceCommand, ReplaceCommandThatPreservesSelection, ReplaceCommandThatSelectsText } from '../../../common/commands/replaceCommand.js';
+import {
+	EditorAction,
+	IActionOptions,
+	registerEditorAction,
+	ServicesAccessor,
+} from '../../../browser/editorExtensions.js';
+import {
+	ReplaceCommand,
+	ReplaceCommandThatPreservesSelection,
+	ReplaceCommandThatSelectsText,
+} from '../../../common/commands/replaceCommand.js';
 import { TrimTrailingWhitespaceCommand } from '../../../common/commands/trimTrailingWhitespaceCommand.js';
 import { EditorOption } from '../../../common/config/editorOptions.js';
 import { TypeOperations } from '../../../common/cursor/cursorTypeOperations.js';
@@ -31,7 +40,6 @@ import { IConfigurationService } from '../../../../platform/configuration/common
 // copy lines
 
 abstract class AbstractCopyLinesAction extends EditorAction {
-
 	private readonly down: boolean;
 
 	constructor(down: boolean, opts: IActionOptions) {
@@ -44,7 +52,9 @@ abstract class AbstractCopyLinesAction extends EditorAction {
 			return;
 		}
 
-		const selections = editor.getSelections().map((selection, index) => ({ selection, index, ignore: false }));
+		const selections = editor
+			.getSelections()
+			.map((selection, index) => ({ selection, index, ignore: false }));
 		selections.sort((a, b) => Range.compareRangesUsingStarts(a.selection, b.selection));
 
 		// Remove selections that would result in copying the same line
@@ -79,20 +89,23 @@ class CopyLinesUpAction extends AbstractCopyLinesAction {
 	constructor() {
 		super(false, {
 			id: 'editor.action.copyLinesUpAction',
-			label: nls.localize2('lines.copyUp', "Copy Line Up"),
+			label: nls.localize2('lines.copyUp', 'Copy Line Up'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyMod.Alt | KeyMod.Shift | KeyCode.UpArrow,
 				linux: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.Shift | KeyCode.UpArrow },
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menuOpts: {
 				menuId: MenuId.MenubarSelectionMenu,
 				group: '2_line',
-				title: nls.localize({ key: 'miCopyLinesUp', comment: ['&& denotes a mnemonic'] }, "&&Copy Line Up"),
-				order: 1
-			}
+				title: nls.localize(
+					{ key: 'miCopyLinesUp', comment: ['&& denotes a mnemonic'] },
+					'&&Copy Line Up'
+				),
+				order: 1,
+			},
 		});
 	}
 }
@@ -101,37 +114,42 @@ class CopyLinesDownAction extends AbstractCopyLinesAction {
 	constructor() {
 		super(true, {
 			id: 'editor.action.copyLinesDownAction',
-			label: nls.localize2('lines.copyDown', "Copy Line Down"),
+			label: nls.localize2('lines.copyDown', 'Copy Line Down'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyMod.Alt | KeyMod.Shift | KeyCode.DownArrow,
 				linux: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.Shift | KeyCode.DownArrow },
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menuOpts: {
 				menuId: MenuId.MenubarSelectionMenu,
 				group: '2_line',
-				title: nls.localize({ key: 'miCopyLinesDown', comment: ['&& denotes a mnemonic'] }, "Co&&py Line Down"),
-				order: 2
-			}
+				title: nls.localize(
+					{ key: 'miCopyLinesDown', comment: ['&& denotes a mnemonic'] },
+					'Co&&py Line Down'
+				),
+				order: 2,
+			},
 		});
 	}
 }
 
 export class DuplicateSelectionAction extends EditorAction {
-
 	constructor() {
 		super({
 			id: 'editor.action.duplicateSelection',
-			label: nls.localize2('duplicateSelection', "Duplicate Selection"),
+			label: nls.localize2('duplicateSelection', 'Duplicate Selection'),
 			precondition: EditorContextKeys.writable,
 			menuOpts: {
 				menuId: MenuId.MenubarSelectionMenu,
 				group: '2_line',
-				title: nls.localize({ key: 'miDuplicateSelection', comment: ['&& denotes a mnemonic'] }, "&&Duplicate Selection"),
-				order: 5
-			}
+				title: nls.localize(
+					{ key: 'miDuplicateSelection', comment: ['&& denotes a mnemonic'] },
+					'&&Duplicate Selection'
+				),
+				order: 5,
+			},
 		});
 	}
 
@@ -148,8 +166,15 @@ export class DuplicateSelectionAction extends EditorAction {
 			if (selection.isEmpty()) {
 				commands.push(new CopyLinesCommand(selection, true));
 			} else {
-				const insertSelection = new Selection(selection.endLineNumber, selection.endColumn, selection.endLineNumber, selection.endColumn);
-				commands.push(new ReplaceCommandThatSelectsText(insertSelection, model.getValueInRange(selection)));
+				const insertSelection = new Selection(
+					selection.endLineNumber,
+					selection.endColumn,
+					selection.endLineNumber,
+					selection.endColumn
+				);
+				commands.push(
+					new ReplaceCommandThatSelectsText(insertSelection, model.getValueInRange(selection))
+				);
 			}
 		}
 
@@ -162,7 +187,6 @@ export class DuplicateSelectionAction extends EditorAction {
 // move lines
 
 abstract class AbstractMoveLinesAction extends EditorAction {
-
 	private readonly down: boolean;
 
 	constructor(down: boolean, opts: IActionOptions) {
@@ -178,7 +202,9 @@ abstract class AbstractMoveLinesAction extends EditorAction {
 		const autoIndent = editor.getOption(EditorOption.autoIndent);
 
 		for (const selection of selections) {
-			commands.push(new MoveLinesCommand(selection, this.down, autoIndent, languageConfigurationService));
+			commands.push(
+				new MoveLinesCommand(selection, this.down, autoIndent, languageConfigurationService)
+			);
 		}
 
 		editor.pushUndoStop();
@@ -191,20 +217,23 @@ class MoveLinesUpAction extends AbstractMoveLinesAction {
 	constructor() {
 		super(false, {
 			id: 'editor.action.moveLinesUpAction',
-			label: nls.localize2('lines.moveUp', "Move Line Up"),
+			label: nls.localize2('lines.moveUp', 'Move Line Up'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyMod.Alt | KeyCode.UpArrow,
 				linux: { primary: KeyMod.Alt | KeyCode.UpArrow },
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menuOpts: {
 				menuId: MenuId.MenubarSelectionMenu,
 				group: '2_line',
-				title: nls.localize({ key: 'miMoveLinesUp', comment: ['&& denotes a mnemonic'] }, "Mo&&ve Line Up"),
-				order: 3
-			}
+				title: nls.localize(
+					{ key: 'miMoveLinesUp', comment: ['&& denotes a mnemonic'] },
+					'Mo&&ve Line Up'
+				),
+				order: 3,
+			},
 		});
 	}
 }
@@ -213,20 +242,23 @@ class MoveLinesDownAction extends AbstractMoveLinesAction {
 	constructor() {
 		super(true, {
 			id: 'editor.action.moveLinesDownAction',
-			label: nls.localize2('lines.moveDown', "Move Line Down"),
+			label: nls.localize2('lines.moveDown', 'Move Line Down'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyMod.Alt | KeyCode.DownArrow,
 				linux: { primary: KeyMod.Alt | KeyCode.DownArrow },
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menuOpts: {
 				menuId: MenuId.MenubarSelectionMenu,
 				group: '2_line',
-				title: nls.localize({ key: 'miMoveLinesDown', comment: ['&& denotes a mnemonic'] }, "Move &&Line Down"),
-				order: 4
-			}
+				title: nls.localize(
+					{ key: 'miMoveLinesDown', comment: ['&& denotes a mnemonic'] },
+					'Move &&Line Down'
+				),
+				order: 4,
+			},
 		});
 	}
 }
@@ -248,7 +280,9 @@ export abstract class AbstractSortLinesAction extends EditorAction {
 		let selections = editor.getSelections();
 		if (selections.length === 1 && selections[0].isEmpty()) {
 			// Apply to whole document.
-			selections = [new Selection(1, 1, model.getLineCount(), model.getLineMaxColumn(model.getLineCount()))];
+			selections = [
+				new Selection(1, 1, model.getLineCount(), model.getLineMaxColumn(model.getLineCount())),
+			];
 		}
 
 		for (const selection of selections) {
@@ -272,8 +306,8 @@ export class SortLinesAscendingAction extends AbstractSortLinesAction {
 	constructor() {
 		super(false, {
 			id: 'editor.action.sortLinesAscending',
-			label: nls.localize2('lines.sortAscending', "Sort Lines Ascending"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('lines.sortAscending', 'Sort Lines Ascending'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 }
@@ -282,8 +316,8 @@ export class SortLinesDescendingAction extends AbstractSortLinesAction {
 	constructor() {
 		super(true, {
 			id: 'editor.action.sortLinesDescending',
-			label: nls.localize2('lines.sortDescending', "Sort Lines Descending"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('lines.sortDescending', 'Sort Lines Descending'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 }
@@ -292,8 +326,8 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 	constructor() {
 		super({
 			id: 'editor.action.removeDuplicateLines',
-			label: nls.localize2('lines.deleteDuplicates', "Delete Duplicate Lines"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('lines.deleteDuplicates', 'Delete Duplicate Lines'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 
@@ -316,7 +350,9 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 		let selections = editor.getSelections();
 		if (selections.length === 1 && selections[0].isEmpty()) {
 			// Apply to whole document.
-			selections = [new Selection(1, 1, model.getLineCount(), model.getLineMaxColumn(model.getLineCount()))];
+			selections = [
+				new Selection(1, 1, model.getLineCount(), model.getLineMaxColumn(model.getLineCount())),
+			];
 			updateSelection = false;
 		}
 
@@ -334,7 +370,6 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 				lines.push(line);
 				uniqueLines.add(line);
 			}
-
 
 			const selectionToReplace = new Selection(
 				selection.startLineNumber,
@@ -354,7 +389,7 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 			edits.push(EditOperation.replace(selectionToReplace, lines.join('\n')));
 			endCursorState.push(finalSelection);
 
-			linesDeleted += (selection.endLineNumber - selection.startLineNumber + 1) - lines.length;
+			linesDeleted += selection.endLineNumber - selection.startLineNumber + 1 - lines.length;
 		}
 
 		editor.pushUndoStop();
@@ -364,30 +399,30 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 }
 
 export class TrimTrailingWhitespaceAction extends EditorAction {
-
 	public static readonly ID = 'editor.action.trimTrailingWhitespace';
 
 	constructor() {
 		super({
 			id: TrimTrailingWhitespaceAction.ID,
-			label: nls.localize2('lines.trimTrailingWhitespace', "Trim Trailing Whitespace"),
+			label: nls.localize2('lines.trimTrailingWhitespace', 'Trim Trailing Whitespace'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyMod.CtrlCmd | KeyCode.KeyX),
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
 	public run(_accessor: ServicesAccessor, editor: ICodeEditor, args: any): void {
-
 		let cursors: Position[] = [];
 		if (args.reason === 'auto-save') {
 			// See https://github.com/editorconfig/editorconfig-vscode/issues/47
 			// It is very convenient for the editor config extension to invoke this action.
 			// So, if we get a reason:'auto-save' passed in, let's preserve cursor positions.
-			cursors = (editor.getSelections() || []).map(s => new Position(s.positionLineNumber, s.positionColumn));
+			cursors = (editor.getSelections() || []).map(
+				s => new Position(s.positionLineNumber, s.positionColumn)
+			);
 		}
 
 		const selection = editor.getSelection();
@@ -397,7 +432,10 @@ export class TrimTrailingWhitespaceAction extends EditorAction {
 
 		const config = _accessor.get(IConfigurationService);
 		const model = editor.getModel();
-		const trimInRegexAndStrings = config.getValue<boolean>('files.trimTrailingWhitespaceInRegexAndStrings', { overrideIdentifier: model?.getLanguageId(), resource: model?.uri });
+		const trimInRegexAndStrings = config.getValue<boolean>(
+			'files.trimTrailingWhitespaceInRegexAndStrings',
+			{ overrideIdentifier: model?.getLanguageId(), resource: model?.uri }
+		);
 
 		const command = new TrimTrailingWhitespaceCommand(selection, cursors, trimInRegexAndStrings);
 
@@ -417,17 +455,16 @@ interface IDeleteLinesOperation {
 }
 
 export class DeleteLinesAction extends EditorAction {
-
 	constructor() {
 		super({
 			id: 'editor.action.deleteLines',
-			label: nls.localize2('lines.delete', "Delete Line"),
+			label: nls.localize2('lines.delete', 'Delete Line'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.textInputFocus,
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyK,
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -463,9 +500,21 @@ export class DeleteLinesAction extends EditorAction {
 				startColumn = model.getLineMaxColumn(startLineNumber);
 			}
 
-			edits.push(EditOperation.replace(new Selection(startLineNumber, startColumn, endLineNumber, endColumn), ''));
-			cursorState.push(new Selection(startLineNumber - linesDeleted, op.positionColumn, startLineNumber - linesDeleted, op.positionColumn));
-			linesDeleted += (op.endLineNumber - op.startLineNumber + 1);
+			edits.push(
+				EditOperation.replace(
+					new Selection(startLineNumber, startColumn, endLineNumber, endColumn),
+					''
+				)
+			);
+			cursorState.push(
+				new Selection(
+					startLineNumber - linesDeleted,
+					op.positionColumn,
+					startLineNumber - linesDeleted,
+					op.positionColumn
+				)
+			);
+			linesDeleted += op.endLineNumber - op.startLineNumber + 1;
 		}
 
 		editor.pushUndoStop();
@@ -475,8 +524,7 @@ export class DeleteLinesAction extends EditorAction {
 
 	private _getLinesToRemove(editor: IActiveCodeEditor): IDeleteLinesOperation[] {
 		// Construct delete operations
-		const operations: IDeleteLinesOperation[] = editor.getSelections().map((s) => {
-
+		const operations: IDeleteLinesOperation[] = editor.getSelections().map(s => {
 			let endLineNumber = s.endLineNumber;
 			if (s.startLineNumber < s.endLineNumber && s.endColumn === 1) {
 				endLineNumber -= 1;
@@ -486,7 +534,7 @@ export class DeleteLinesAction extends EditorAction {
 				startLineNumber: s.startLineNumber,
 				selectionStartColumn: s.selectionStartColumn,
 				endLineNumber: endLineNumber,
-				positionColumn: s.positionColumn
+				positionColumn: s.positionColumn,
 			};
 		});
 
@@ -522,13 +570,13 @@ export class IndentLinesAction extends EditorAction {
 	constructor() {
 		super({
 			id: 'editor.action.indentLines',
-			label: nls.localize2('lines.indent', "Indent Line"),
+			label: nls.localize2('lines.indent', 'Indent Line'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyMod.CtrlCmd | KeyCode.BracketRight,
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -538,7 +586,10 @@ export class IndentLinesAction extends EditorAction {
 			return;
 		}
 		editor.pushUndoStop();
-		editor.executeCommands(this.id, TypeOperations.indent(viewModel.cursorConfig, editor.getModel(), editor.getSelections()));
+		editor.executeCommands(
+			this.id,
+			TypeOperations.indent(viewModel.cursorConfig, editor.getModel(), editor.getSelections())
+		);
 		editor.pushUndoStop();
 	}
 }
@@ -547,13 +598,13 @@ class OutdentLinesAction extends EditorAction {
 	constructor() {
 		super({
 			id: 'editor.action.outdentLines',
-			label: nls.localize2('lines.outdent', "Outdent Line"),
+			label: nls.localize2('lines.outdent', 'Outdent Line'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyMod.CtrlCmd | KeyCode.BracketLeft,
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -566,13 +617,13 @@ export class InsertLineBeforeAction extends EditorAction {
 	constructor() {
 		super({
 			id: 'editor.action.insertLineBefore',
-			label: nls.localize2('lines.insertBefore', "Insert Line Above"),
+			label: nls.localize2('lines.insertBefore', 'Insert Line Above'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter,
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -582,7 +633,14 @@ export class InsertLineBeforeAction extends EditorAction {
 			return;
 		}
 		editor.pushUndoStop();
-		editor.executeCommands(this.id, EnterOperation.lineInsertBefore(viewModel.cursorConfig, editor.getModel(), editor.getSelections()));
+		editor.executeCommands(
+			this.id,
+			EnterOperation.lineInsertBefore(
+				viewModel.cursorConfig,
+				editor.getModel(),
+				editor.getSelections()
+			)
+		);
 	}
 }
 
@@ -590,13 +648,13 @@ export class InsertLineAfterAction extends EditorAction {
 	constructor() {
 		super({
 			id: 'editor.action.insertLineAfter',
-			label: nls.localize2('lines.insertAfter', "Insert Line Below"),
+			label: nls.localize2('lines.insertAfter', 'Insert Line Below'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyMod.CtrlCmd | KeyCode.Enter,
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -606,7 +664,14 @@ export class InsertLineAfterAction extends EditorAction {
 			return;
 		}
 		editor.pushUndoStop();
-		editor.executeCommands(this.id, EnterOperation.lineInsertAfter(viewModel.cursorConfig, editor.getModel(), editor.getSelections()));
+		editor.executeCommands(
+			this.id,
+			EnterOperation.lineInsertAfter(
+				viewModel.cursorConfig,
+				editor.getModel(),
+				editor.getSelections()
+			)
+		);
 	}
 }
 
@@ -657,14 +722,14 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 	constructor() {
 		super({
 			id: 'deleteAllLeft',
-			label: nls.localize2('lines.deleteAllLeft', "Delete All Left"),
+			label: nls.localize2('lines.deleteAllLeft', 'Delete All Left'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.textInputFocus,
 				primary: 0,
 				mac: { primary: KeyMod.CtrlCmd | KeyCode.Backspace },
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -679,7 +744,12 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 				const newStartLine = range.startLineNumber - deletedLines;
 				endCursor = new Selection(newStartLine, range.startColumn, newStartLine, range.startColumn);
 			} else {
-				endCursor = new Selection(range.startLineNumber, range.startColumn, range.startLineNumber, range.startColumn);
+				endCursor = new Selection(
+					range.startLineNumber,
+					range.startColumn,
+					range.startLineNumber,
+					range.startColumn
+				);
 			}
 
 			deletedLines += range.endLineNumber - range.startLineNumber;
@@ -716,13 +786,24 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 			if (selection.isEmpty()) {
 				if (selection.startColumn === 1) {
 					const deleteFromLine = Math.max(1, selection.startLineNumber - 1);
-					const deleteFromColumn = selection.startLineNumber === 1 ? 1 : model.getLineLength(deleteFromLine) + 1;
+					const deleteFromColumn =
+						selection.startLineNumber === 1 ? 1 : model.getLineLength(deleteFromLine) + 1;
 					return new Range(deleteFromLine, deleteFromColumn, selection.startLineNumber, 1);
 				} else {
-					return new Range(selection.startLineNumber, 1, selection.startLineNumber, selection.startColumn);
+					return new Range(
+						selection.startLineNumber,
+						1,
+						selection.startLineNumber,
+						selection.startColumn
+					);
 				}
 			} else {
-				return new Range(selection.startLineNumber, 1, selection.endLineNumber, selection.endColumn);
+				return new Range(
+					selection.startLineNumber,
+					1,
+					selection.endLineNumber,
+					selection.endColumn
+				);
 			}
 		});
 
@@ -734,14 +815,17 @@ export class DeleteAllRightAction extends AbstractDeleteAllToBoundaryAction {
 	constructor() {
 		super({
 			id: 'deleteAllRight',
-			label: nls.localize2('lines.deleteAllRight', "Delete All Right"),
+			label: nls.localize2('lines.deleteAllRight', 'Delete All Right'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.textInputFocus,
 				primary: 0,
-				mac: { primary: KeyMod.WinCtrl | KeyCode.KeyK, secondary: [KeyMod.CtrlCmd | KeyCode.Delete] },
-				weight: KeybindingWeight.EditorContrib
-			}
+				mac: {
+					primary: KeyMod.WinCtrl | KeyCode.KeyK,
+					secondary: [KeyMod.CtrlCmd | KeyCode.Delete],
+				},
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -750,7 +834,12 @@ export class DeleteAllRightAction extends AbstractDeleteAllToBoundaryAction {
 		const endCursorState: Selection[] = [];
 		for (let i = 0, len = rangesToDelete.length, offset = 0; i < len; i++) {
 			const range = rangesToDelete[i];
-			const endCursor = new Selection(range.startLineNumber - offset, range.startColumn, range.startLineNumber - offset, range.startColumn);
+			const endCursor = new Selection(
+				range.startLineNumber - offset,
+				range.startColumn,
+				range.startLineNumber - offset,
+				range.startColumn
+			);
 
 			if (range.intersectRanges(primaryCursor)) {
 				endPrimaryCursor = endCursor;
@@ -778,7 +867,7 @@ export class DeleteAllRightAction extends AbstractDeleteAllToBoundaryAction {
 			return [];
 		}
 
-		const rangesToDelete: Range[] = selections.map((sel) => {
+		const rangesToDelete: Range[] = selections.map(sel => {
 			if (sel.isEmpty()) {
 				const maxColumn = model.getLineMaxColumn(sel.startLineNumber);
 
@@ -800,14 +889,14 @@ export class JoinLinesAction extends EditorAction {
 	constructor() {
 		super({
 			id: 'editor.action.joinLines',
-			label: nls.localize2('lines.joinLines', "Join Lines"),
+			label: nls.localize2('lines.joinLines', 'Join Lines'),
 			precondition: EditorContextKeys.writable,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: 0,
 				mac: { primary: KeyMod.WinCtrl | KeyCode.KeyJ },
-				weight: KeybindingWeight.EditorContrib
-			}
+				weight: KeybindingWeight.EditorContrib,
+			},
 		});
 	}
 
@@ -838,14 +927,24 @@ export class JoinLinesAction extends EditorAction {
 					reducedSelections.push(previousValue);
 					return currentValue;
 				} else {
-					return new Selection(previousValue.startLineNumber, previousValue.startColumn, currentValue.endLineNumber, currentValue.endColumn);
+					return new Selection(
+						previousValue.startLineNumber,
+						previousValue.startColumn,
+						currentValue.endLineNumber,
+						currentValue.endColumn
+					);
 				}
 			} else {
 				if (currentValue.startLineNumber > previousValue.endLineNumber) {
 					reducedSelections.push(previousValue);
 					return currentValue;
 				} else {
-					return new Selection(previousValue.startLineNumber, previousValue.startColumn, currentValue.endLineNumber, currentValue.endColumn);
+					return new Selection(
+						previousValue.startLineNumber,
+						previousValue.startColumn,
+						currentValue.endLineNumber,
+						currentValue.endColumn
+					);
 				}
 			}
 		});
@@ -867,10 +966,10 @@ export class JoinLinesAction extends EditorAction {
 			const startLineNumber = selection.startLineNumber;
 			const startColumn = 1;
 			let columnDeltaOffset = 0;
-			let endLineNumber: number,
-				endColumn: number;
+			let endLineNumber: number, endColumn: number;
 
-			const selectionEndPositionOffset = model.getLineLength(selection.endLineNumber) - selection.endColumn;
+			const selectionEndPositionOffset =
+				model.getLineLength(selection.endLineNumber) - selection.endColumn;
 
 			if (selection.isEmpty() || selection.startLineNumber === selection.endLineNumber) {
 				const position = selection.getStartPosition();
@@ -898,8 +997,11 @@ export class JoinLinesAction extends EditorAction {
 						insertSpace = false;
 					}
 
-					if (insertSpace && (trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
-						trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t')) {
+					if (
+						insertSpace &&
+						(trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
+							trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t')
+					) {
 						insertSpace = false;
 						trimmedLinesContent = trimmedLinesContent.replace(/[\s\uFEFF\xA0]+$/g, ' ');
 					}
@@ -925,16 +1027,29 @@ export class JoinLinesAction extends EditorAction {
 
 				if (selection.isEmpty()) {
 					edits.push(EditOperation.replace(deleteSelection, trimmedLinesContent));
-					resultSelection = new Selection(deleteSelection.startLineNumber - lineOffset, trimmedLinesContent.length - columnDeltaOffset + 1, startLineNumber - lineOffset, trimmedLinesContent.length - columnDeltaOffset + 1);
+					resultSelection = new Selection(
+						deleteSelection.startLineNumber - lineOffset,
+						trimmedLinesContent.length - columnDeltaOffset + 1,
+						startLineNumber - lineOffset,
+						trimmedLinesContent.length - columnDeltaOffset + 1
+					);
 				} else {
 					if (selection.startLineNumber === selection.endLineNumber) {
 						edits.push(EditOperation.replace(deleteSelection, trimmedLinesContent));
-						resultSelection = new Selection(selection.startLineNumber - lineOffset, selection.startColumn,
-							selection.endLineNumber - lineOffset, selection.endColumn);
+						resultSelection = new Selection(
+							selection.startLineNumber - lineOffset,
+							selection.startColumn,
+							selection.endLineNumber - lineOffset,
+							selection.endColumn
+						);
 					} else {
 						edits.push(EditOperation.replace(deleteSelection, trimmedLinesContent));
-						resultSelection = new Selection(selection.startLineNumber - lineOffset, selection.startColumn,
-							selection.startLineNumber - lineOffset, trimmedLinesContent.length - selectionEndPositionOffset);
+						resultSelection = new Selection(
+							selection.startLineNumber - lineOffset,
+							selection.startColumn,
+							selection.startLineNumber - lineOffset,
+							trimmedLinesContent.length - selectionEndPositionOffset
+						);
 					}
 				}
 
@@ -959,8 +1074,8 @@ export class TransposeAction extends EditorAction {
 	constructor() {
 		super({
 			id: 'editor.action.transpose',
-			label: nls.localize2('editor.transpose', "Transpose Characters around the Cursor"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('editor.transpose', 'Transpose Characters around the Cursor'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 
@@ -994,15 +1109,45 @@ export class TransposeAction extends EditorAction {
 
 				// The cursor is at the end of current line and current line is not empty
 				// then we transpose the character before the cursor and the line break if there is any following line.
-				const deleteSelection = new Range(cursor.lineNumber, Math.max(1, cursor.column - 1), cursor.lineNumber + 1, 1);
+				const deleteSelection = new Range(
+					cursor.lineNumber,
+					Math.max(1, cursor.column - 1),
+					cursor.lineNumber + 1,
+					1
+				);
 				const chars = model.getValueInRange(deleteSelection).split('').reverse().join('');
 
-				commands.push(new ReplaceCommand(new Selection(cursor.lineNumber, Math.max(1, cursor.column - 1), cursor.lineNumber + 1, 1), chars));
+				commands.push(
+					new ReplaceCommand(
+						new Selection(
+							cursor.lineNumber,
+							Math.max(1, cursor.column - 1),
+							cursor.lineNumber + 1,
+							1
+						),
+						chars
+					)
+				);
 			} else {
-				const deleteSelection = new Range(cursor.lineNumber, Math.max(1, cursor.column - 1), cursor.lineNumber, cursor.column + 1);
+				const deleteSelection = new Range(
+					cursor.lineNumber,
+					Math.max(1, cursor.column - 1),
+					cursor.lineNumber,
+					cursor.column + 1
+				);
 				const chars = model.getValueInRange(deleteSelection).split('').reverse().join('');
-				commands.push(new ReplaceCommandThatPreservesSelection(deleteSelection, chars,
-					new Selection(cursor.lineNumber, cursor.column + 1, cursor.lineNumber, cursor.column + 1)));
+				commands.push(
+					new ReplaceCommandThatPreservesSelection(
+						deleteSelection,
+						chars,
+						new Selection(
+							cursor.lineNumber,
+							cursor.column + 1,
+							cursor.lineNumber,
+							cursor.column + 1
+						)
+					)
+				);
 			}
 		}
 
@@ -1036,7 +1181,12 @@ export abstract class AbstractCaseAction extends EditorAction {
 					continue;
 				}
 
-				const wordRange = new Range(cursor.lineNumber, word.startColumn, cursor.lineNumber, word.endColumn);
+				const wordRange = new Range(
+					cursor.lineNumber,
+					word.startColumn,
+					cursor.lineNumber,
+					word.endColumn
+				);
 				const text = model.getValueInRange(wordRange);
 				textEdits.push(EditOperation.replace(wordRange, this._modifyText(text, wordSeparators)));
 			} else {
@@ -1057,8 +1207,8 @@ export class UpperCaseAction extends AbstractCaseAction {
 	constructor() {
 		super({
 			id: 'editor.action.transformToUppercase',
-			label: nls.localize2('editor.transformToUppercase', "Transform to Uppercase"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('editor.transformToUppercase', 'Transform to Uppercase'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 
@@ -1071,8 +1221,8 @@ export class LowerCaseAction extends AbstractCaseAction {
 	constructor() {
 		super({
 			id: 'editor.action.transformToLowercase',
-			label: nls.localize2('editor.transformToLowercase', "Transform to Lowercase"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('editor.transformToLowercase', 'Transform to Lowercase'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 
@@ -1082,7 +1232,6 @@ export class LowerCaseAction extends AbstractCaseAction {
 }
 
 class BackwardsCompatibleRegExp {
-
 	private _actual: RegExp | null;
 	private _evaluated: boolean;
 
@@ -1107,19 +1256,21 @@ class BackwardsCompatibleRegExp {
 	}
 
 	public isSupported(): boolean {
-		return (this.get() !== null);
+		return this.get() !== null;
 	}
 }
 
 export class TitleCaseAction extends AbstractCaseAction {
-
-	public static titleBoundary = new BackwardsCompatibleRegExp('(^|[^\\p{L}\\p{N}\']|((^|\\P{L})\'))\\p{L}', 'gmu');
+	public static titleBoundary = new BackwardsCompatibleRegExp(
+		"(^|[^\\p{L}\\p{N}']|((^|\\P{L})'))\\p{L}",
+		'gmu'
+	);
 
 	constructor() {
 		super({
 			id: 'editor.action.transformToTitlecase',
-			label: nls.localize2('editor.transformToTitlecase', "Transform to Title Case"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('editor.transformToTitlecase', 'Transform to Title Case'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 
@@ -1129,22 +1280,22 @@ export class TitleCaseAction extends AbstractCaseAction {
 			// cannot support this
 			return text;
 		}
-		return text
-			.toLocaleLowerCase()
-			.replace(titleBoundary, (b) => b.toLocaleUpperCase());
+		return text.toLocaleLowerCase().replace(titleBoundary, b => b.toLocaleUpperCase());
 	}
 }
 
 export class SnakeCaseAction extends AbstractCaseAction {
-
 	public static caseBoundary = new BackwardsCompatibleRegExp('(\\p{Ll})(\\p{Lu})', 'gmu');
-	public static singleLetters = new BackwardsCompatibleRegExp('(\\p{Lu}|\\p{N})(\\p{Lu})(\\p{Ll})', 'gmu');
+	public static singleLetters = new BackwardsCompatibleRegExp(
+		'(\\p{Lu}|\\p{N})(\\p{Lu})(\\p{Ll})',
+		'gmu'
+	);
 
 	constructor() {
 		super({
 			id: 'editor.action.transformToSnakecase',
-			label: nls.localize2('editor.transformToSnakecase', "Transform to Snake Case"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('editor.transformToSnakecase', 'Transform to Snake Case'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 
@@ -1155,11 +1306,10 @@ export class SnakeCaseAction extends AbstractCaseAction {
 			// cannot support this
 			return text;
 		}
-		return (text
+		return text
 			.replace(caseBoundary, '$1_$2')
 			.replace(singleLetters, '$1_$2$3')
-			.toLocaleLowerCase()
-		);
+			.toLocaleLowerCase();
 	}
 }
 
@@ -1169,8 +1319,8 @@ export class CamelCaseAction extends AbstractCaseAction {
 	constructor() {
 		super({
 			id: 'editor.action.transformToCamelcase',
-			label: nls.localize2('editor.transformToCamelcase', "Transform to Camel Case"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('editor.transformToCamelcase', 'Transform to Camel Case'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 
@@ -1182,8 +1332,12 @@ export class CamelCaseAction extends AbstractCaseAction {
 		}
 		const words = text.split(wordBoundary);
 		const firstWord = words.shift();
-		return firstWord + words.map((word: string) => word.substring(0, 1).toLocaleUpperCase() + word.substring(1))
-			.join('');
+		return (
+			firstWord +
+			words
+				.map((word: string) => word.substring(0, 1).toLocaleUpperCase() + word.substring(1))
+				.join('')
+		);
 	}
 }
 
@@ -1194,8 +1348,8 @@ export class PascalCaseAction extends AbstractCaseAction {
 	constructor() {
 		super({
 			id: 'editor.action.transformToPascalcase',
-			label: nls.localize2('editor.transformToPascalcase', "Transform to Pascal Case"),
-			precondition: EditorContextKeys.writable
+			label: nls.localize2('editor.transformToPascalcase', 'Transform to Pascal Case'),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 
@@ -1209,33 +1363,38 @@ export class PascalCaseAction extends AbstractCaseAction {
 		}
 
 		const wordsWithMaintainBoundaries = text.split(wordBoundaryToMaintain);
-		const words = wordsWithMaintainBoundaries.map((word: string) => word.split(wordBoundary)).flat();
-		return words.map((word: string) => word.substring(0, 1).toLocaleUpperCase() + word.substring(1))
+		const words = wordsWithMaintainBoundaries
+			.map((word: string) => word.split(wordBoundary))
+			.flat();
+		return words
+			.map((word: string) => word.substring(0, 1).toLocaleUpperCase() + word.substring(1))
 			.join('');
 	}
 }
 
 export class KebabCaseAction extends AbstractCaseAction {
-
 	public static isSupported(): boolean {
 		const areAllRegexpsSupported = [
 			this.caseBoundary,
 			this.singleLetters,
 			this.underscoreBoundary,
-		].every((regexp) => regexp.isSupported());
+		].every(regexp => regexp.isSupported());
 
 		return areAllRegexpsSupported;
 	}
 
 	private static caseBoundary = new BackwardsCompatibleRegExp('(\\p{Ll})(\\p{Lu})', 'gmu');
-	private static singleLetters = new BackwardsCompatibleRegExp('(\\p{Lu}|\\p{N})(\\p{Lu}\\p{Ll})', 'gmu');
+	private static singleLetters = new BackwardsCompatibleRegExp(
+		'(\\p{Lu}|\\p{N})(\\p{Lu}\\p{Ll})',
+		'gmu'
+	);
 	private static underscoreBoundary = new BackwardsCompatibleRegExp('(\\S)(_)(\\S)', 'gm');
 
 	constructor() {
 		super({
 			id: 'editor.action.transformToKebabcase',
 			label: nls.localize2('editor.transformToKebabcase', 'Transform to Kebab Case'),
-			precondition: EditorContextKeys.writable
+			precondition: EditorContextKeys.writable,
 		});
 	}
 

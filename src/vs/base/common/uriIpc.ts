@@ -30,11 +30,10 @@ export interface IRawURITransformer {
 }
 
 function toJSON(uri: URI): UriComponents {
-	return <UriComponents><any>uri.toJSON();
+	return <UriComponents>(<any>uri.toJSON());
 }
 
 export class URITransformer implements IURITransformer {
-
 	private readonly _uriTransformer: IRawURITransformer;
 
 	constructor(uriTransformer: IRawURITransformer) {
@@ -43,17 +42,17 @@ export class URITransformer implements IURITransformer {
 
 	public transformIncoming(uri: UriComponents): UriComponents {
 		const result = this._uriTransformer.transformIncoming(uri);
-		return (result === uri ? uri : toJSON(URI.from(result)));
+		return result === uri ? uri : toJSON(URI.from(result));
 	}
 
 	public transformOutgoing(uri: UriComponents): UriComponents {
 		const result = this._uriTransformer.transformOutgoing(uri);
-		return (result === uri ? uri : toJSON(URI.from(result)));
+		return result === uri ? uri : toJSON(URI.from(result));
 	}
 
 	public transformOutgoingURI(uri: URI): URI {
 		const result = this._uriTransformer.transformOutgoing(uri);
-		return (result === uri ? uri : URI.from(result));
+		return result === uri ? uri : URI.from(result);
 	}
 
 	public transformOutgoingScheme(scheme: string): string {
@@ -61,7 +60,7 @@ export class URITransformer implements IURITransformer {
 	}
 }
 
-export const DefaultURITransformer: IURITransformer = new class {
+export const DefaultURITransformer: IURITransformer = new (class {
 	transformIncoming(uri: UriComponents) {
 		return uri;
 	}
@@ -77,10 +76,9 @@ export const DefaultURITransformer: IURITransformer = new class {
 	transformOutgoingScheme(scheme: string): string {
 		return scheme;
 	}
-};
+})();
 
 function _transformOutgoingURIs(obj: any, transformer: IURITransformer, depth: number): any {
-
 	if (!obj || depth > 200) {
 		return null;
 	}
@@ -113,17 +111,21 @@ export function transformOutgoingURIs<T>(obj: T, transformer: IURITransformer): 
 	return result;
 }
 
-
-function _transformIncomingURIs(obj: any, transformer: IURITransformer, revive: boolean, depth: number): any {
-
+function _transformIncomingURIs(
+	obj: any,
+	transformer: IURITransformer,
+	revive: boolean,
+	depth: number
+): any {
 	if (!obj || depth > 200) {
 		return null;
 	}
 
 	if (typeof obj === 'object') {
-
 		if ((<MarshalledObject>obj).$mid === MarshalledId.Uri) {
-			return revive ? URI.revive(transformer.transformIncoming(obj)) : transformer.transformIncoming(obj);
+			return revive
+				? URI.revive(transformer.transformIncoming(obj))
+				: transformer.transformIncoming(obj);
 		}
 
 		if (obj instanceof VSBuffer) {

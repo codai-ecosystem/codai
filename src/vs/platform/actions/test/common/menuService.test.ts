@@ -10,27 +10,33 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { isIMenuItem, MenuId, MenuRegistry } from '../../common/actions.js';
 import { MenuService } from '../../common/menuService.js';
 import { NullCommandService } from '../../../commands/test/common/nullCommandService.js';
-import { MockContextKeyService, MockKeybindingService } from '../../../keybinding/test/common/mockKeybindingService.js';
+import {
+	MockContextKeyService,
+	MockKeybindingService,
+} from '../../../keybinding/test/common/mockKeybindingService.js';
 import { InMemoryStorageService } from '../../../storage/common/storage.js';
 
 // --- service instances
 
-const contextKeyService = new class extends MockContextKeyService {
+const contextKeyService = new (class extends MockContextKeyService {
 	override contextMatchesRules() {
 		return true;
 	}
-};
+})();
 
 // --- tests
 
 suite('MenuService', function () {
-
 	let menuService: MenuService;
 	const disposables = new DisposableStore();
 	let testMenuId: MenuId;
 
 	setup(function () {
-		menuService = new MenuService(NullCommandService, new MockKeybindingService(), new InMemoryStorageService());
+		menuService = new MenuService(
+			NullCommandService,
+			new MockKeybindingService(),
+			new InMemoryStorageService()
+		);
 		testMenuId = new MenuId(`testo/${generateUuid()}`);
 		disposables.clear();
 	});
@@ -42,33 +48,44 @@ suite('MenuService', function () {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('group sorting', function () {
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'one', title: 'FOO' },
+				group: '0_hello',
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'one', title: 'FOO' },
-			group: '0_hello'
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'two', title: 'FOO' },
+				group: 'hello',
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'two', title: 'FOO' },
-			group: 'hello'
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'three', title: 'FOO' },
+				group: 'Hello',
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'three', title: 'FOO' },
-			group: 'Hello'
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'four', title: 'FOO' },
+				group: '',
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'four', title: 'FOO' },
-			group: ''
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'five', title: 'FOO' },
+				group: 'navigation',
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'five', title: 'FOO' },
-			group: 'navigation'
-		}));
-
-		const groups = disposables.add(menuService.createMenu(testMenuId, contextKeyService)).getActions();
+		const groups = disposables
+			.add(menuService.createMenu(testMenuId, contextKeyService))
+			.getActions();
 
 		assert.strictEqual(groups.length, 5);
 		const [one, two, three, four, five] = groups;
@@ -81,23 +98,30 @@ suite('MenuService', function () {
 	});
 
 	test('in group sorting, by title', function () {
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'a', title: 'aaa' },
+				group: 'Hello',
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'a', title: 'aaa' },
-			group: 'Hello'
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'b', title: 'fff' },
+				group: 'Hello',
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'b', title: 'fff' },
-			group: 'Hello'
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'c', title: 'zzz' },
+				group: 'Hello',
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'c', title: 'zzz' },
-			group: 'Hello'
-		}));
-
-		const groups = disposables.add(menuService.createMenu(testMenuId, contextKeyService)).getActions();
+		const groups = disposables
+			.add(menuService.createMenu(testMenuId, contextKeyService))
+			.getActions();
 
 		assert.strictEqual(groups.length, 1);
 		const [, actions] = groups[0];
@@ -110,31 +134,40 @@ suite('MenuService', function () {
 	});
 
 	test('in group sorting, by title and order', function () {
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'a', title: 'aaa' },
+				group: 'Hello',
+				order: 10,
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'a', title: 'aaa' },
-			group: 'Hello',
-			order: 10
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'b', title: 'fff' },
+				group: 'Hello',
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'b', title: 'fff' },
-			group: 'Hello'
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'c', title: 'zzz' },
+				group: 'Hello',
+				order: -1,
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'c', title: 'zzz' },
-			group: 'Hello',
-			order: -1
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'd', title: 'yyy' },
+				group: 'Hello',
+				order: -1,
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'd', title: 'yyy' },
-			group: 'Hello',
-			order: -1
-		}));
-
-		const groups = disposables.add(menuService.createMenu(testMenuId, contextKeyService)).getActions();
+		const groups = disposables
+			.add(menuService.createMenu(testMenuId, contextKeyService))
+			.getActions();
 
 		assert.strictEqual(groups.length, 1);
 		const [, actions] = groups[0];
@@ -147,28 +180,34 @@ suite('MenuService', function () {
 		assert.strictEqual(four.id, 'a');
 	});
 
-
 	test('in group sorting, special: navigation', function () {
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'a', title: 'aaa' },
+				group: 'navigation',
+				order: 1.3,
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'a', title: 'aaa' },
-			group: 'navigation',
-			order: 1.3
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'b', title: 'fff' },
+				group: 'navigation',
+				order: 1.2,
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'b', title: 'fff' },
-			group: 'navigation',
-			order: 1.2
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(testMenuId, {
+				command: { id: 'c', title: 'zzz' },
+				group: 'navigation',
+				order: 1.1,
+			})
+		);
 
-		disposables.add(MenuRegistry.appendMenuItem(testMenuId, {
-			command: { id: 'c', title: 'zzz' },
-			group: 'navigation',
-			order: 1.1
-		}));
-
-		const groups = disposables.add(menuService.createMenu(testMenuId, contextKeyService)).getActions();
+		const groups = disposables
+			.add(menuService.createMenu(testMenuId, contextKeyService))
+			.getActions();
 
 		assert.strictEqual(groups.length, 1);
 		const [[, actions]] = groups;
@@ -181,10 +220,11 @@ suite('MenuService', function () {
 	});
 
 	test('special MenuId palette', function () {
-
-		disposables.add(MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
-			command: { id: 'a', title: 'Explicit' }
-		}));
+		disposables.add(
+			MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
+				command: { id: 'a', title: 'Explicit' },
+			})
+		);
 
 		disposables.add(MenuRegistry.addCommand({ id: 'b', title: 'Implicit' }));
 
@@ -207,7 +247,6 @@ suite('MenuService', function () {
 	});
 
 	test('Extension contributed submenus missing with errors in output #155030', function () {
-
 		const id = generateUuid();
 		const menu = new MenuId(id);
 

@@ -7,7 +7,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { Graph } from '../../common/graph.js';
 
 suite('Graph', () => {
-
 	let graph: Graph<string>;
 
 	setup(() => {
@@ -16,7 +15,7 @@ suite('Graph', () => {
 
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('is possible to lookup nodes that don\'t exist', function () {
+	test("is possible to lookup nodes that don't exist", function () {
 		assert.strictEqual(graph.lookup('ddd'), undefined);
 	});
 

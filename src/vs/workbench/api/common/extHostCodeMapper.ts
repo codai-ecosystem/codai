@@ -13,18 +13,19 @@ import { URI } from '../../../base/common/uri.js';
 import { asArray } from '../../../base/common/arrays.js';
 
 export class ExtHostCodeMapper implements extHostProtocol.ExtHostCodeMapperShape {
-
 	private static _providerHandlePool: number = 0;
 	private readonly _proxy: extHostProtocol.MainThreadCodeMapperShape;
 	private readonly providers = new Map<number, vscode.MappedEditsProvider2>();
 
-	constructor(
-		mainContext: extHostProtocol.IMainContext
-	) {
+	constructor(mainContext: extHostProtocol.IMainContext) {
 		this._proxy = mainContext.getProxy(extHostProtocol.MainContext.MainThreadCodeMapper);
 	}
 
-	async $mapCode(handle: number, internalRequest: extHostProtocol.ICodeMapperRequestDto, token: CancellationToken): Promise<ICodeMapperResult | null> {
+	async $mapCode(
+		handle: number,
+		internalRequest: extHostProtocol.ICodeMapperRequestDto,
+		token: CancellationToken
+	): Promise<ICodeMapperResult | null> {
 		// Received request to map code from the main thread
 		const provider = this.providers.get(handle);
 		if (!provider) {
@@ -37,16 +38,16 @@ export class ExtHostCodeMapper implements extHostProtocol.ExtHostCodeMapperShape
 				edits = asArray(edits);
 				this._proxy.$handleProgress(internalRequest.requestId, {
 					uri: target,
-					edits: edits.map(TextEdit.from)
+					edits: edits.map(TextEdit.from),
 				});
 			},
 			notebookEdit: (target: vscode.Uri, edits: vscode.NotebookEdit | vscode.NotebookEdit[]) => {
 				edits = asArray(edits);
 				this._proxy.$handleProgress(internalRequest.requestId, {
 					uri: target,
-					edits: edits.map(NotebookEdit.from)
+					edits: edits.map(NotebookEdit.from),
 				});
-			}
+			},
 		};
 
 		const request: vscode.MappedEditsRequest = {
@@ -58,23 +59,26 @@ export class ExtHostCodeMapper implements extHostProtocol.ExtHostCodeMapperShape
 				return {
 					code: block.code,
 					resource: URI.revive(block.resource),
-					markdownBeforeBlock: block.markdownBeforeBlock
+					markdownBeforeBlock: block.markdownBeforeBlock,
 				};
-			})
+			}),
 		};
 
 		const result = await provider.provideMappedEdits(request, stream, token);
 		return result ?? null;
 	}
 
-	registerMappedEditsProvider(extension: IExtensionDescription, provider: vscode.MappedEditsProvider2): vscode.Disposable {
+	registerMappedEditsProvider(
+		extension: IExtensionDescription,
+		provider: vscode.MappedEditsProvider2
+	): vscode.Disposable {
 		const handle = ExtHostCodeMapper._providerHandlePool++;
 		this._proxy.$registerCodeMapperProvider(handle, extension.displayName ?? extension.name);
 		this.providers.set(handle, provider);
 		return {
 			dispose: () => {
 				return this._proxy.$unregisterCodeMapperProvider(handle);
-			}
+			},
 		};
 	}
 }

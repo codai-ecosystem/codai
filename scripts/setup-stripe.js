@@ -25,9 +25,9 @@ async function setupStripeProducts() {
 					'Priority Support',
 					'Custom Integrations',
 					'Advanced Analytics',
-					'Team Collaboration'
-				])
-			}
+					'Team Collaboration',
+				]),
+			},
 		});
 
 		// Create Professional Monthly Price
@@ -36,9 +36,9 @@ async function setupStripeProducts() {
 			unit_amount: 2900, // $29.00
 			currency: 'usd',
 			recurring: {
-				interval: 'month'
+				interval: 'month',
 			},
-			nickname: 'Professional Monthly'
+			nickname: 'Professional Monthly',
 		});
 
 		// Create Enterprise Product
@@ -54,9 +54,9 @@ async function setupStripeProducts() {
 					'Custom AI Models',
 					'Dedicated Support',
 					'SLA Guarantees',
-					'On-premise Deployment'
-				])
-			}
+					'On-premise Deployment',
+				]),
+			},
 		});
 
 		// Create Enterprise Monthly Price
@@ -65,9 +65,9 @@ async function setupStripeProducts() {
 			unit_amount: 9900, // $99.00
 			currency: 'usd',
 			recurring: {
-				interval: 'month'
+				interval: 'month',
 			},
-			nickname: 'Enterprise Monthly'
+			nickname: 'Enterprise Monthly',
 		});
 
 		console.log('✅ Products and prices created successfully!\n');
@@ -82,9 +82,8 @@ async function setupStripeProducts() {
 
 		return {
 			professionalPriceId: professionalMonthlyPrice.id,
-			enterprisePriceId: enterpriseMonthlyPrice.id
+			enterprisePriceId: enterpriseMonthlyPrice.id,
 		};
-
 	} catch (error) {
 		console.error('❌ Error setting up Stripe products:', error.message);
 		process.exit(1);

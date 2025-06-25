@@ -6,10 +6,15 @@
 import { VSBuffer } from '../../../../../base/common/buffer.js';
 import { Emitter } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { ICellOutput, IOutputDto, IOutputItemDto, compressOutputItemStreams, isTextStreamMime } from '../notebookCommon.js';
+import {
+	ICellOutput,
+	IOutputDto,
+	IOutputItemDto,
+	compressOutputItemStreams,
+	isTextStreamMime,
+} from '../notebookCommon.js';
 
 export class NotebookCellOutputTextModel extends Disposable implements ICellOutput {
-
 	private _onDidChangeData = this._register(new Emitter<void>());
 	onDidChangeData = this._onDidChangeData.event;
 
@@ -40,9 +45,7 @@ export class NotebookCellOutputTextModel extends Disposable implements ICellOutp
 		return this._versionId;
 	}
 
-	constructor(
-		private _rawOutput: IOutputDto
-	) {
+	constructor(private _rawOutput: IOutputDto) {
 		super();
 
 		this._alternativeOutputId = this._rawOutput.outputId;
@@ -110,7 +113,7 @@ export class NotebookCellOutputTextModel extends Disposable implements ICellOutp
 				const compressionResult = compressOutputItemStreams(mimeOutputs.get(mime)!);
 				this.outputs.push({
 					mime,
-					data: compressionResult.data
+					data: compressionResult.data,
 				});
 				if (compressionResult.didCompression) {
 					// we can't rely on knowing buffer lengths if we've erased previous lines
@@ -125,12 +128,11 @@ export class NotebookCellOutputTextModel extends Disposable implements ICellOutp
 			// data: this._data,
 			metadata: this._rawOutput.metadata,
 			outputs: this._rawOutput.outputs,
-			outputId: this._rawOutput.outputId
+			outputId: this._rawOutput.outputId,
 		};
 	}
 
 	bumpVersion() {
 		this._versionId = this._versionId + 1;
 	}
-
 }

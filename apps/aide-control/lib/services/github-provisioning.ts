@@ -88,7 +88,6 @@ export class GitHubProvisioningService {
 				repoUrl: repo.html_url,
 				repoId: repo.id,
 			};
-
 		} catch (error) {
 			console.error('Error creating GitHub repository:', error);
 			throw new Error(`Failed to create repository: ${error.message}`);
@@ -98,11 +97,7 @@ export class GitHubProvisioningService {
 	/**
 	 * Set up repository with initial template files
 	 */
-	private async createInitialFiles(
-		owner: string,
-		repo: string,
-		template: string
-	): Promise<void> {
+	private async createInitialFiles(owner: string, repo: string, template: string): Promise<void> {
 		try {
 			const templates = this.getTemplateFiles(template);
 
@@ -126,33 +121,37 @@ export class GitHubProvisioningService {
 	 */
 	private getTemplateFiles(template: string): Array<{ path: string; content: string }> {
 		const templates: Record<string, Array<{ path: string; content: string }>> = {
-			'nextjs': [
+			nextjs: [
 				{
 					path: 'package.json',
-					content: JSON.stringify({
-						name: 'aide-nextjs-app',
-						version: '0.1.0',
-						private: true,
-						scripts: {
-							dev: 'next dev',
-							build: 'next build',
-							start: 'next start',
-							lint: 'next lint'
+					content: JSON.stringify(
+						{
+							name: 'aide-nextjs-app',
+							version: '0.1.0',
+							private: true,
+							scripts: {
+								dev: 'next dev',
+								build: 'next build',
+								start: 'next start',
+								lint: 'next lint',
+							},
+							dependencies: {
+								next: '^14.0.0',
+								react: '^18.0.0',
+								'react-dom': '^18.0.0',
+							},
+							devDependencies: {
+								'@types/node': '^20.0.0',
+								'@types/react': '^18.0.0',
+								'@types/react-dom': '^18.0.0',
+								eslint: '^8.0.0',
+								'eslint-config-next': '^14.0.0',
+								typescript: '^5.0.0',
+							},
 						},
-						dependencies: {
-							next: '^14.0.0',
-							react: '^18.0.0',
-							'react-dom': '^18.0.0'
-						},
-						devDependencies: {
-							'@types/node': '^20.0.0',
-							'@types/react': '^18.0.0',
-							'@types/react-dom': '^18.0.0',
-							eslint: '^8.0.0',
-							'eslint-config-next': '^14.0.0',
-							typescript: '^5.0.0'
-						}
-					}, null, 2)
+						null,
+						2
+					),
 				},
 				{
 					path: 'app/page.tsx',
@@ -163,22 +162,22 @@ export class GitHubProvisioningService {
       <p>Start building your application by editing this file.</p>
     </main>
   );
-}`
+}`,
 				},
 				{
 					path: 'next.config.js',
 					content: `/** @type {import('next').NextConfig} */
 const nextConfig = {};
 
-module.exports = nextConfig;`
-				}
+module.exports = nextConfig;`,
+				},
 			],
-			'python': [
+			python: [
 				{
 					path: 'requirements.txt',
 					content: `# Add your Python dependencies here
 flask>=2.0.0
-requests>=2.25.0`
+requests>=2.25.0`,
 				},
 				{
 					path: 'main.py',
@@ -192,7 +191,7 @@ def main():
     print("Start building your application by editing this file.")
 
 if __name__ == "__main__":
-    main()`
+    main()`,
 				},
 				{
 					path: '.gitignore',
@@ -219,9 +218,9 @@ wheels/
 MANIFEST
 .env
 venv/
-ENV/`
-				}
-			]
+ENV/`,
+				},
+			],
 		};
 
 		return templates[template] || [];
@@ -231,7 +230,8 @@ ENV/`
 	 * Generate a unique repository name
 	 */
 	private generateRepoName(userId: string, projectName: string): string {
-		const sanitized = projectName.toLowerCase()
+		const sanitized = projectName
+			.toLowerCase()
 			.replace(/[^a-z0-9-]/g, '-')
 			.replace(/-+/g, '-')
 			.trim();

@@ -8,7 +8,7 @@ import { IProcessEnvironment } from '../../../../base/common/platform.js';
 export const enum ExtHostConnectionType {
 	IPC = 1,
 	Socket = 2,
-	MessagePort = 3
+	MessagePort = 3,
 }
 
 /**
@@ -19,9 +19,7 @@ export class IPCExtHostConnection {
 
 	public readonly type = ExtHostConnectionType.IPC;
 
-	constructor(
-		public readonly pipeName: string
-	) { }
+	constructor(public readonly pipeName: string) {}
 
 	public serialize(env: IProcessEnvironment): void {
 		env[IPCExtHostConnection.ENV_KEY] = this.pipeName;
@@ -54,7 +52,10 @@ export class MessagePortExtHostConnection {
 	}
 }
 
-export type ExtHostConnection = IPCExtHostConnection | SocketExtHostConnection | MessagePortExtHostConnection;
+export type ExtHostConnection =
+	| IPCExtHostConnection
+	| SocketExtHostConnection
+	| MessagePortExtHostConnection;
 
 function clean(env: IProcessEnvironment): void {
 	delete env[IPCExtHostConnection.ENV_KEY];
@@ -65,7 +66,10 @@ function clean(env: IProcessEnvironment): void {
 /**
  * Write `connection` into `env` and clean up `env`.
  */
-export function writeExtHostConnection(connection: ExtHostConnection, env: IProcessEnvironment): void {
+export function writeExtHostConnection(
+	connection: ExtHostConnection,
+	env: IProcessEnvironment
+): void {
 	// Avoid having two different keys that might introduce amiguity or problems.
 	clean(env);
 	connection.serialize(env);

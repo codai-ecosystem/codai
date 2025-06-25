@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
+import {
+	IWorkbenchContribution,
+	registerWorkbenchContribution2,
+	WorkbenchPhase,
+} from '../../../common/contributions.js';
 import { IBannerService } from '../../../services/banner/browser/bannerService.js';
 import { asJson, IRequestService } from '../../../../platform/request/common/request.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
@@ -17,10 +21,12 @@ interface IEmergencyAlert {
 	readonly platform?: string;
 	readonly arch?: string;
 	readonly message: string;
-	readonly actions?: [{
-		readonly label: string;
-		readonly href: string;
-	}];
+	readonly actions?: [
+		{
+			readonly label: string;
+			readonly href: string;
+		},
+	];
 }
 
 interface IEmergencyAlerts {
@@ -28,7 +34,6 @@ interface IEmergencyAlerts {
 }
 
 export class EmergencyAlert implements IWorkbenchContribution {
-
 	static readonly ID = 'workbench.contrib.emergencyAlert';
 
 	constructor(
@@ -58,7 +63,10 @@ export class EmergencyAlert implements IWorkbenchContribution {
 	}
 
 	private async doFetchAlerts(url: string): Promise<void> {
-		const requestResult = await this.requestService.request({ type: 'GET', url, disableCache: true }, CancellationToken.None);
+		const requestResult = await this.requestService.request(
+			{ type: 'GET', url, disableCache: true },
+			CancellationToken.None
+		);
 
 		if (requestResult.res.statusCode !== 200) {
 			throw new Error(`Failed to fetch emergency alerts: HTTP ${requestResult.res.statusCode}`);
@@ -71,9 +79,9 @@ export class EmergencyAlert implements IWorkbenchContribution {
 
 		for (const emergencyAlert of emergencyAlerts.alerts) {
 			if (
-				(emergencyAlert.commit !== this.productService.commit) ||				// version mismatch
-				(emergencyAlert.platform && emergencyAlert.platform !== platform) ||	// platform mismatch
-				(emergencyAlert.arch && emergencyAlert.arch !== arch)					// arch mismatch
+				emergencyAlert.commit !== this.productService.commit || // version mismatch
+				(emergencyAlert.platform && emergencyAlert.platform !== platform) || // platform mismatch
+				(emergencyAlert.arch && emergencyAlert.arch !== arch) // arch mismatch
 			) {
 				return;
 			}
@@ -82,7 +90,7 @@ export class EmergencyAlert implements IWorkbenchContribution {
 				id: 'emergencyAlert.banner',
 				icon: Codicon.warning,
 				message: emergencyAlert.message,
-				actions: emergencyAlert.actions
+				actions: emergencyAlert.actions,
 			});
 
 			break;
@@ -90,4 +98,8 @@ export class EmergencyAlert implements IWorkbenchContribution {
 	}
 }
 
-registerWorkbenchContribution2('workbench.emergencyAlert', EmergencyAlert, WorkbenchPhase.Eventually);
+registerWorkbenchContribution2(
+	'workbench.emergencyAlert',
+	EmergencyAlert,
+	WorkbenchPhase.Eventually
+);

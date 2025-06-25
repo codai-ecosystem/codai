@@ -9,7 +9,28 @@ import { URI } from '../../../base/common/uri.js';
 import { localize } from '../../../nls.js';
 import { IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
 import { Registry } from '../../../platform/registry/common/platform.js';
-import { EditorInputCapabilities, GroupIdentifier, ISaveOptions, IRevertOptions, EditorExtensions, IEditorFactoryRegistry, IEditorSerializer, ISideBySideEditorInput, IUntypedEditorInput, isResourceSideBySideEditorInput, isDiffEditorInput, isResourceDiffEditorInput, IResourceSideBySideEditorInput, findViewStateForEditor, IMoveResult, isEditorInput, isResourceEditorInput, Verbosity, isResourceMergeEditorInput, isResourceMultiDiffEditorInput } from '../editor.js';
+import {
+	EditorInputCapabilities,
+	GroupIdentifier,
+	ISaveOptions,
+	IRevertOptions,
+	EditorExtensions,
+	IEditorFactoryRegistry,
+	IEditorSerializer,
+	ISideBySideEditorInput,
+	IUntypedEditorInput,
+	isResourceSideBySideEditorInput,
+	isDiffEditorInput,
+	isResourceDiffEditorInput,
+	IResourceSideBySideEditorInput,
+	findViewStateForEditor,
+	IMoveResult,
+	isEditorInput,
+	isResourceEditorInput,
+	Verbosity,
+	isResourceMergeEditorInput,
+	isResourceMultiDiffEditorInput,
+} from '../editor.js';
 import { EditorInput, IUntypedEditorOptions } from './editorInput.js';
 import { IEditorService } from '../../services/editor/common/editorService.js';
 
@@ -17,7 +38,6 @@ import { IEditorService } from '../../services/editor/common/editorService.js';
  * Side by side editor inputs that have a primary and secondary side.
  */
 export class SideBySideEditorInput extends EditorInput implements ISideBySideEditorInput {
-
 	static readonly ID: string = 'workbench.editorinputs.sidebysideEditorInput';
 
 	override get typeId(): string {
@@ -25,7 +45,6 @@ export class SideBySideEditorInput extends EditorInput implements ISideBySideEdi
 	}
 
 	override get capabilities(): EditorInputCapabilities {
-
 		// Use primary capabilities as main capabilities...
 		let capabilities = this.primary.capabilities;
 
@@ -77,20 +96,25 @@ export class SideBySideEditorInput extends EditorInput implements ISideBySideEdi
 	}
 
 	private registerListeners(): void {
-
 		// When the primary or secondary input gets disposed, dispose this diff editor input
-		this._register(Event.once(Event.any(this.primary.onWillDispose, this.secondary.onWillDispose))(() => {
-			if (!this.isDisposed()) {
-				this.dispose();
-			}
-		}));
+		this._register(
+			Event.once(Event.any(this.primary.onWillDispose, this.secondary.onWillDispose))(() => {
+				if (!this.isDisposed()) {
+					this.dispose();
+				}
+			})
+		);
 
 		// Re-emit some events from the primary side to the outside
 		this._register(this.primary.onDidChangeDirty(() => this._onDidChangeDirty.fire()));
 
 		// Re-emit some events from both sides to the outside
-		this._register(this.primary.onDidChangeCapabilities(() => this._onDidChangeCapabilities.fire()));
-		this._register(this.secondary.onDidChangeCapabilities(() => this._onDidChangeCapabilities.fire()));
+		this._register(
+			this.primary.onDidChangeCapabilities(() => this._onDidChangeCapabilities.fire())
+		);
+		this._register(
+			this.secondary.onDidChangeCapabilities(() => this._onDidChangeCapabilities.fire())
+		);
 		this._register(this.primary.onDidChangeLabel(() => this._onDidChangeLabel.fire()));
 		this._register(this.secondary.onDidChangeLabel(() => this._onDidChangeLabel.fire()));
 	}
@@ -105,7 +129,12 @@ export class SideBySideEditorInput extends EditorInput implements ISideBySideEdi
 			return this.primary.getName(); // keep name concise when same editor is opened side by side
 		}
 
-		return localize('sideBySideLabels', "{0} - {1}", this.secondary.getName(), this.primary.getName());
+		return localize(
+			'sideBySideLabels',
+			'{0} - {1}',
+			this.secondary.getName(),
+			this.primary.getName()
+		);
 	}
 
 	getPreferredName(): string | undefined {
@@ -187,19 +216,27 @@ export class SideBySideEditorInput extends EditorInput implements ISideBySideEdi
 		return this.primary.isSaving();
 	}
 
-	override async save(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	override async save(
+		group: GroupIdentifier,
+		options?: ISaveOptions
+	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		const primarySaveResult = await this.primary.save(group, options);
 
 		return this.saveResultToEditor(primarySaveResult);
 	}
 
-	override async saveAs(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	override async saveAs(
+		group: GroupIdentifier,
+		options?: ISaveOptions
+	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		const primarySaveResult = await this.primary.saveAs(group, options);
 
 		return this.saveResultToEditor(primarySaveResult);
 	}
 
-	private saveResultToEditor(primarySaveResult: EditorInput | IUntypedEditorInput | undefined): EditorInput | IUntypedEditorInput | undefined {
+	private saveResultToEditor(
+		primarySaveResult: EditorInput | IUntypedEditorInput | undefined
+	): EditorInput | IUntypedEditorInput | undefined {
 		if (!primarySaveResult || !this.hasIdenticalSides) {
 			return primarySaveResult;
 		}
@@ -209,15 +246,26 @@ export class SideBySideEditorInput extends EditorInput implements ISideBySideEdi
 		}
 
 		if (primarySaveResult instanceof EditorInput) {
-			return new SideBySideEditorInput(this.preferredName, this.preferredDescription, primarySaveResult, primarySaveResult, this.editorService);
+			return new SideBySideEditorInput(
+				this.preferredName,
+				this.preferredDescription,
+				primarySaveResult,
+				primarySaveResult,
+				this.editorService
+			);
 		}
 
-		if (!isResourceDiffEditorInput(primarySaveResult) && !isResourceMultiDiffEditorInput(primarySaveResult) && !isResourceSideBySideEditorInput(primarySaveResult) && !isResourceMergeEditorInput(primarySaveResult)) {
+		if (
+			!isResourceDiffEditorInput(primarySaveResult) &&
+			!isResourceMultiDiffEditorInput(primarySaveResult) &&
+			!isResourceSideBySideEditorInput(primarySaveResult) &&
+			!isResourceMergeEditorInput(primarySaveResult)
+		) {
 			return {
 				primary: primarySaveResult,
 				secondary: primarySaveResult,
 				label: this.preferredName,
-				description: this.preferredDescription
+				description: this.preferredDescription,
 			};
 		}
 
@@ -243,11 +291,17 @@ export class SideBySideEditorInput extends EditorInput implements ISideBySideEdi
 
 		if (isEditorInput(renameResult.editor)) {
 			return {
-				editor: new SideBySideEditorInput(this.preferredName, this.preferredDescription, renameResult.editor, renameResult.editor, this.editorService),
+				editor: new SideBySideEditorInput(
+					this.preferredName,
+					this.preferredDescription,
+					renameResult.editor,
+					renameResult.editor,
+					this.editorService
+				),
 				options: {
 					...renameResult.options,
-					viewState: findViewStateForEditor(this, group, this.editorService)
-				}
+					viewState: findViewStateForEditor(this, group, this.editorService),
+				},
 			};
 		}
 
@@ -260,9 +314,9 @@ export class SideBySideEditorInput extends EditorInput implements ISideBySideEdi
 					secondary: renameResult.editor,
 					options: {
 						...renameResult.options,
-						viewState: findViewStateForEditor(this, group, this.editorService)
-					}
-				}
+						viewState: findViewStateForEditor(this, group, this.editorService),
+					},
+				},
 			};
 		}
 
@@ -279,22 +333,27 @@ export class SideBySideEditorInput extends EditorInput implements ISideBySideEdi
 
 		// Prevent nested side by side editors which are unsupported
 		if (
-			primaryResourceEditorInput && secondaryResourceEditorInput &&
-			!isResourceDiffEditorInput(primaryResourceEditorInput) && !isResourceDiffEditorInput(secondaryResourceEditorInput) &&
-			!isResourceMultiDiffEditorInput(primaryResourceEditorInput) && !isResourceMultiDiffEditorInput(secondaryResourceEditorInput) &&
-			!isResourceSideBySideEditorInput(primaryResourceEditorInput) && !isResourceSideBySideEditorInput(secondaryResourceEditorInput) &&
-			!isResourceMergeEditorInput(primaryResourceEditorInput) && !isResourceMergeEditorInput(secondaryResourceEditorInput)
+			primaryResourceEditorInput &&
+			secondaryResourceEditorInput &&
+			!isResourceDiffEditorInput(primaryResourceEditorInput) &&
+			!isResourceDiffEditorInput(secondaryResourceEditorInput) &&
+			!isResourceMultiDiffEditorInput(primaryResourceEditorInput) &&
+			!isResourceMultiDiffEditorInput(secondaryResourceEditorInput) &&
+			!isResourceSideBySideEditorInput(primaryResourceEditorInput) &&
+			!isResourceSideBySideEditorInput(secondaryResourceEditorInput) &&
+			!isResourceMergeEditorInput(primaryResourceEditorInput) &&
+			!isResourceMergeEditorInput(secondaryResourceEditorInput)
 		) {
 			const untypedInput: IResourceSideBySideEditorInput = {
 				label: this.preferredName,
 				description: this.preferredDescription,
 				primary: primaryResourceEditorInput,
-				secondary: secondaryResourceEditorInput
+				secondary: secondaryResourceEditorInput,
 			};
 
 			if (typeof options?.preserveViewState === 'number') {
 				untypedInput.options = {
-					viewState: findViewStateForEditor(this, options.preserveViewState, this.editorService)
+					viewState: findViewStateForEditor(this, options.preserveViewState, this.editorService),
 				};
 			}
 
@@ -314,11 +373,15 @@ export class SideBySideEditorInput extends EditorInput implements ISideBySideEdi
 		}
 
 		if (otherInput instanceof SideBySideEditorInput) {
-			return this.primary.matches(otherInput.primary) && this.secondary.matches(otherInput.secondary);
+			return (
+				this.primary.matches(otherInput.primary) && this.secondary.matches(otherInput.secondary)
+			);
 		}
 
 		if (isResourceSideBySideEditorInput(otherInput)) {
-			return this.primary.matches(otherInput.primary) && this.secondary.matches(otherInput.secondary);
+			return (
+				this.primary.matches(otherInput.primary) && this.secondary.matches(otherInput.secondary)
+			);
 		}
 
 		return false;
@@ -338,14 +401,19 @@ interface ISerializedSideBySideEditorInput {
 }
 
 export abstract class AbstractSideBySideEditorInputSerializer implements IEditorSerializer {
-
 	canSerialize(editorInput: EditorInput): boolean {
 		const input = editorInput as SideBySideEditorInput;
 
 		if (input.primary && input.secondary) {
-			const [secondaryInputSerializer, primaryInputSerializer] = this.getSerializers(input.secondary.typeId, input.primary.typeId);
+			const [secondaryInputSerializer, primaryInputSerializer] = this.getSerializers(
+				input.secondary.typeId,
+				input.primary.typeId
+			);
 
-			return !!(secondaryInputSerializer?.canSerialize(input.secondary) && primaryInputSerializer?.canSerialize(input.primary));
+			return !!(
+				secondaryInputSerializer?.canSerialize(input.secondary) &&
+				primaryInputSerializer?.canSerialize(input.primary)
+			);
 		}
 
 		return false;
@@ -355,7 +423,10 @@ export abstract class AbstractSideBySideEditorInputSerializer implements IEditor
 		const input = editorInput as SideBySideEditorInput;
 
 		if (input.primary && input.secondary) {
-			const [secondaryInputSerializer, primaryInputSerializer] = this.getSerializers(input.secondary.typeId, input.primary.typeId);
+			const [secondaryInputSerializer, primaryInputSerializer] = this.getSerializers(
+				input.secondary.typeId,
+				input.primary.typeId
+			);
 			if (primaryInputSerializer && secondaryInputSerializer) {
 				const primarySerialized = primaryInputSerializer.serialize(input.primary);
 				const secondarySerialized = secondaryInputSerializer.serialize(input.secondary);
@@ -367,7 +438,7 @@ export abstract class AbstractSideBySideEditorInputSerializer implements IEditor
 						primarySerialized,
 						secondarySerialized,
 						primaryTypeId: input.primary.typeId,
-						secondaryTypeId: input.secondary.typeId
+						secondaryTypeId: input.secondary.typeId,
 					};
 
 					return JSON.stringify(serializedEditorInput);
@@ -378,34 +449,75 @@ export abstract class AbstractSideBySideEditorInputSerializer implements IEditor
 		return undefined;
 	}
 
-	deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): EditorInput | undefined {
+	deserialize(
+		instantiationService: IInstantiationService,
+		serializedEditorInput: string
+	): EditorInput | undefined {
 		const deserialized: ISerializedSideBySideEditorInput = JSON.parse(serializedEditorInput);
 
-		const [secondaryInputSerializer, primaryInputSerializer] = this.getSerializers(deserialized.secondaryTypeId, deserialized.primaryTypeId);
+		const [secondaryInputSerializer, primaryInputSerializer] = this.getSerializers(
+			deserialized.secondaryTypeId,
+			deserialized.primaryTypeId
+		);
 		if (primaryInputSerializer && secondaryInputSerializer) {
-			const primaryInput = primaryInputSerializer.deserialize(instantiationService, deserialized.primarySerialized);
-			const secondaryInput = secondaryInputSerializer.deserialize(instantiationService, deserialized.secondarySerialized);
+			const primaryInput = primaryInputSerializer.deserialize(
+				instantiationService,
+				deserialized.primarySerialized
+			);
+			const secondaryInput = secondaryInputSerializer.deserialize(
+				instantiationService,
+				deserialized.secondarySerialized
+			);
 
 			if (primaryInput instanceof EditorInput && secondaryInput instanceof EditorInput) {
-				return this.createEditorInput(instantiationService, deserialized.name, deserialized.description, secondaryInput, primaryInput);
+				return this.createEditorInput(
+					instantiationService,
+					deserialized.name,
+					deserialized.description,
+					secondaryInput,
+					primaryInput
+				);
 			}
 		}
 
 		return undefined;
 	}
 
-	private getSerializers(secondaryEditorInputTypeId: string, primaryEditorInputTypeId: string): [IEditorSerializer | undefined, IEditorSerializer | undefined] {
+	private getSerializers(
+		secondaryEditorInputTypeId: string,
+		primaryEditorInputTypeId: string
+	): [IEditorSerializer | undefined, IEditorSerializer | undefined] {
 		const registry = Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory);
 
-		return [registry.getEditorSerializer(secondaryEditorInputTypeId), registry.getEditorSerializer(primaryEditorInputTypeId)];
+		return [
+			registry.getEditorSerializer(secondaryEditorInputTypeId),
+			registry.getEditorSerializer(primaryEditorInputTypeId),
+		];
 	}
 
-	protected abstract createEditorInput(instantiationService: IInstantiationService, name: string | undefined, description: string | undefined, secondaryInput: EditorInput, primaryInput: EditorInput): EditorInput;
+	protected abstract createEditorInput(
+		instantiationService: IInstantiationService,
+		name: string | undefined,
+		description: string | undefined,
+		secondaryInput: EditorInput,
+		primaryInput: EditorInput
+	): EditorInput;
 }
 
 export class SideBySideEditorInputSerializer extends AbstractSideBySideEditorInputSerializer {
-
-	protected createEditorInput(instantiationService: IInstantiationService, name: string | undefined, description: string | undefined, secondaryInput: EditorInput, primaryInput: EditorInput): EditorInput {
-		return instantiationService.createInstance(SideBySideEditorInput, name, description, secondaryInput, primaryInput);
+	protected createEditorInput(
+		instantiationService: IInstantiationService,
+		name: string | undefined,
+		description: string | undefined,
+		secondaryInput: EditorInput,
+		primaryInput: EditorInput
+	): EditorInput {
+		return instantiationService.createInstance(
+			SideBySideEditorInput,
+			name,
+			description,
+			secondaryInput,
+			primaryInput
+		);
 	}
 }

@@ -17,12 +17,14 @@ export class UrlFinder extends Disposable {
 	 * http://:8080 - Beego Golang
 	 * http://0.0.0.0:4000 - Elixir Phoenix
 	 */
-	private static readonly localUrlRegex = /\b\w{0,20}(?::\/\/)?(?:localhost|127\.0\.0\.1|0\.0\.0\.0|:\d{2,5})[\w\-\.\~:\/\?\#[\]\@!\$&\(\)\*\+\,\;\=]*/gim;
+	private static readonly localUrlRegex =
+		/\b\w{0,20}(?::\/\/)?(?:localhost|127\.0\.0\.1|0\.0\.0\.0|:\d{2,5})[\w\-\.\~:\/\?\#[\]\@!\$&\(\)\*\+\,\;\=]*/gim;
 	private static readonly extractPortRegex = /(localhost|127\.0\.0\.1|0\.0\.0\.0):(\d{1,5})/;
 	/**
 	 * https://github.com/microsoft/vscode-remote-release/issues/3949
 	 */
-	private static readonly localPythonServerRegex = /HTTP\son\s(127\.0\.0\.1|0\.0\.0\.0)\sport\s(\d+)/;
+	private static readonly localPythonServerRegex =
+		/HTTP\son\s(127\.0\.0\.1|0\.0\.0\.0)\sport\s(\d+)/;
 
 	private static readonly excludeTerminals = ['Dev Containers'];
 
@@ -36,35 +38,49 @@ export class UrlFinder extends Disposable {
 		terminalService.instances.forEach(instance => {
 			this.registerTerminalInstance(instance);
 		});
-		this._register(terminalService.onDidCreateInstance(instance => {
-			this.registerTerminalInstance(instance);
-		}));
-		this._register(terminalService.onDidDisposeInstance(instance => {
-			this.listeners.get(instance)?.dispose();
-			this.listeners.delete(instance);
-		}));
+		this._register(
+			terminalService.onDidCreateInstance(instance => {
+				this.registerTerminalInstance(instance);
+			})
+		);
+		this._register(
+			terminalService.onDidDisposeInstance(instance => {
+				this.listeners.get(instance)?.dispose();
+				this.listeners.delete(instance);
+			})
+		);
 
 		// Debug
-		this._register(debugService.onDidNewSession(session => {
-			if (!session.parentSession || (session.parentSession && session.hasSeparateRepl())) {
-				this.listeners.set(session.getId(), session.onDidChangeReplElements(() => {
-					this.processNewReplElements(session);
-				}));
-			}
-		}));
-		this._register(debugService.onDidEndSession(({ session }) => {
-			if (this.listeners.has(session.getId())) {
-				this.listeners.get(session.getId())?.dispose();
-				this.listeners.delete(session.getId());
-			}
-		}));
+		this._register(
+			debugService.onDidNewSession(session => {
+				if (!session.parentSession || (session.parentSession && session.hasSeparateRepl())) {
+					this.listeners.set(
+						session.getId(),
+						session.onDidChangeReplElements(() => {
+							this.processNewReplElements(session);
+						})
+					);
+				}
+			})
+		);
+		this._register(
+			debugService.onDidEndSession(({ session }) => {
+				if (this.listeners.has(session.getId())) {
+					this.listeners.get(session.getId())?.dispose();
+					this.listeners.delete(session.getId());
+				}
+			})
+		);
 	}
 
 	private registerTerminalInstance(instance: ITerminalInstance) {
 		if (!UrlFinder.excludeTerminals.includes(instance.title)) {
-			this.listeners.set(instance, instance.onData(data => {
-				this.processData(data);
-			}));
+			this.listeners.set(
+				instance,
+				instance.onData(data => {
+					this.processData(data);
+				})
+			);
 		}
 	}
 
@@ -72,11 +88,14 @@ export class UrlFinder extends Disposable {
 	private processNewReplElements(session: IDebugSession) {
 		const oldReplPosition = this.replPositions.get(session.getId());
 		const replElements = session.getReplElements();
-		this.replPositions.set(session.getId(), { position: replElements.length - 1, tail: replElements[replElements.length - 1] });
+		this.replPositions.set(session.getId(), {
+			position: replElements.length - 1,
+			tail: replElements[replElements.length - 1],
+		});
 
 		if (!oldReplPosition && replElements.length > 0) {
 			replElements.forEach(element => this.processData(element.toString()));
-		} else if (oldReplPosition && (replElements.length - 1 !== oldReplPosition.position)) {
+		} else if (oldReplPosition && replElements.length - 1 !== oldReplPosition.position) {
 			// Process lines until we reach the old "tail"
 			for (let i = replElements.length - 1; i >= 0; i--) {
 				const element = replElements[i];
@@ -102,7 +121,7 @@ export class UrlFinder extends Disposable {
 		data = removeAnsiEscapeCodes(data);
 		const urlMatches = data.match(UrlFinder.localUrlRegex) || [];
 		if (urlMatches && urlMatches.length > 0) {
-			urlMatches.forEach((match) => {
+			urlMatches.forEach(match => {
 				// check if valid url
 				let serverUrl;
 				try {
@@ -113,7 +132,9 @@ export class UrlFinder extends Disposable {
 				if (serverUrl) {
 					// check if the port is a valid integer value
 					const portMatch = match.match(UrlFinder.extractPortRegex);
-					const port = parseFloat(serverUrl.port ? serverUrl.port : (portMatch ? portMatch[2] : 'NaN'));
+					const port = parseFloat(
+						serverUrl.port ? serverUrl.port : portMatch ? portMatch[2] : 'NaN'
+					);
 					if (!isNaN(port) && Number.isInteger(port) && port > 0 && port <= 65535) {
 						// normalize the host name
 						let host = serverUrl.hostname;

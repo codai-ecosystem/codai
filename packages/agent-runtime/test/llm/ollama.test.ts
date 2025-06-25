@@ -14,7 +14,7 @@ describe('OllamaService', () => {
 		model: 'llama3',
 		baseUrl: 'http://localhost:11434',
 		temperature: 0.7,
-		maxTokens: 2048
+		maxTokens: 2048,
 	};
 
 	beforeEach(() => {
@@ -30,7 +30,7 @@ describe('OllamaService', () => {
 		it('should initialize with default config', () => {
 			const defaultService = new OllamaService({
 				provider: 'ollama',
-				model: 'llama3'
+				model: 'llama3',
 			});
 			expect(defaultService).toBeInstanceOf(OllamaService);
 		});
@@ -41,7 +41,7 @@ describe('OllamaService', () => {
 				model: 'mistral',
 				baseUrl: 'http://custom:11434',
 				temperature: 0.8,
-				maxTokens: 4096
+				maxTokens: 4096,
 			};
 			const customService = new OllamaService(customConfig);
 			expect(customService).toBeInstanceOf(OllamaService);
@@ -54,7 +54,7 @@ describe('OllamaService', () => {
 				{ role: 'system', content: 'You are a helpful assistant.' },
 				{ role: 'user', content: 'Hello, how are you?' },
 				{ role: 'assistant', content: 'I am doing well, thank you!' },
-				{ role: 'user', content: 'What can you help me with?' }
+				{ role: 'user', content: 'What can you help me with?' },
 			];
 
 			// Test the private method through the public complete method
@@ -68,18 +68,19 @@ describe('OllamaService', () => {
 			// Mock the fetch to capture the prompt being sent
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve({
-					response: 'I can help with many things!',
-					done: true,
-					prompt_eval_count: 50,
-					eval_count: 20
-				})
+				json: () =>
+					Promise.resolve({
+						response: 'I can help with many things!',
+						done: true,
+						prompt_eval_count: 50,
+						eval_count: 20,
+					}),
 			});
 
 			const options: LLMRequestOptions = {
 				messages,
 				temperature: 0.7,
-				maxTokens: 100
+				maxTokens: 100,
 			};
 
 			service.complete(options);
@@ -90,7 +91,7 @@ describe('OllamaService', () => {
 				expect.objectContaining({
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: expect.stringContaining('"prompt"')
+					body: expect.stringContaining('"prompt"'),
 				})
 			);
 		});
@@ -102,18 +103,18 @@ describe('OllamaService', () => {
 				response: 'Hello! How can I help you today?',
 				done: true,
 				prompt_eval_count: 25,
-				eval_count: 15
+				eval_count: 15,
 			};
 
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve(mockResponse)
+				json: () => Promise.resolve(mockResponse),
 			});
 
 			const options: LLMRequestOptions = {
 				messages: [{ role: 'user', content: 'Hello' }],
 				temperature: 0.7,
-				maxTokens: 100
+				maxTokens: 100,
 			};
 
 			const result = await service.complete(options);
@@ -123,37 +124,34 @@ describe('OllamaService', () => {
 				usage: {
 					promptTokens: 25,
 					completionTokens: 15,
-					totalTokens: 40
-				}
+					totalTokens: 40,
+				},
 			});
 
-			expect(mockFetch).toHaveBeenCalledWith(
-				'http://localhost:11434/api/generate',
-				{
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						model: 'llama3',
-						prompt: 'Human: Hello\n\nAssistant:',
-						stream: false,
-						options: {
-							temperature: 0.7,
-							max_tokens: 100
-						}
-					})
-				}
-			);
+			expect(mockFetch).toHaveBeenCalledWith('http://localhost:11434/api/generate', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					model: 'llama3',
+					prompt: 'Human: Hello\n\nAssistant:',
+					stream: false,
+					options: {
+						temperature: 0.7,
+						max_tokens: 100,
+					},
+				}),
+			});
 		});
 
 		it('should handle API errors gracefully', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: false,
 				status: 500,
-				statusText: 'Internal Server Error'
+				statusText: 'Internal Server Error',
 			});
 
 			const options: LLMRequestOptions = {
-				messages: [{ role: 'user', content: 'Hello' }]
+				messages: [{ role: 'user', content: 'Hello' }],
 			};
 
 			await expect(service.complete(options)).rejects.toThrow(
@@ -165,7 +163,7 @@ describe('OllamaService', () => {
 			mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
 			const options: LLMRequestOptions = {
-				messages: [{ role: 'user', content: 'Hello' }]
+				messages: [{ role: 'user', content: 'Hello' }],
 			};
 
 			await expect(service.complete(options)).rejects.toThrow(
@@ -178,16 +176,16 @@ describe('OllamaService', () => {
 				response: 'Test response',
 				done: true,
 				prompt_eval_count: 10,
-				eval_count: 5
+				eval_count: 5,
 			};
 
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve(mockResponse)
+				json: () => Promise.resolve(mockResponse),
 			});
 
 			const options: LLMRequestOptions = {
-				messages: [{ role: 'user', content: 'Test' }]
+				messages: [{ role: 'user', content: 'Test' }],
 			};
 
 			await service.complete(options);
@@ -195,7 +193,7 @@ describe('OllamaService', () => {
 			expect(mockFetch).toHaveBeenCalledWith(
 				expect.any(String),
 				expect.objectContaining({
-					body: expect.stringContaining('"temperature":0.7')
+					body: expect.stringContaining('"temperature":0.7'),
 				})
 			);
 		});
@@ -206,40 +204,41 @@ describe('OllamaService', () => {
 			const streamChunks = [
 				'{"response":"Hello","done":false}\n',
 				'{"response":" there!","done":false}\n',
-				'{"response":"","done":true,"prompt_eval_count":10,"eval_count":5}\n'
+				'{"response":"","done":true,"prompt_eval_count":10,"eval_count":5}\n',
 			];
 
 			const mockResponse = {
 				ok: true,
 				body: {
 					getReader: () => ({
-						read: vi.fn()
+						read: vi
+							.fn()
 							.mockResolvedValueOnce({
 								done: false,
-								value: new TextEncoder().encode(streamChunks[0])
+								value: new TextEncoder().encode(streamChunks[0]),
 							})
 							.mockResolvedValueOnce({
 								done: false,
-								value: new TextEncoder().encode(streamChunks[1])
+								value: new TextEncoder().encode(streamChunks[1]),
 							})
 							.mockResolvedValueOnce({
 								done: false,
-								value: new TextEncoder().encode(streamChunks[2])
+								value: new TextEncoder().encode(streamChunks[2]),
 							})
 							.mockResolvedValueOnce({
 								done: true,
-								value: undefined
+								value: undefined,
 							}),
-						releaseLock: vi.fn()
-					})
-				}
+						releaseLock: vi.fn(),
+					}),
+				},
 			};
 
 			mockFetch.mockResolvedValueOnce(mockResponse);
 
 			const options: LLMRequestOptions = {
 				messages: [{ role: 'user', content: 'Hello' }],
-				stream: true
+				stream: true,
 			};
 
 			const chunks: any[] = [];
@@ -255,26 +254,27 @@ describe('OllamaService', () => {
 				usage: {
 					promptTokens: 10,
 					completionTokens: 5,
-					totalTokens: 15
-				}
+					totalTokens: 15,
+				},
 			});
 
 			expect(mockFetch).toHaveBeenCalledWith(
 				'http://localhost:11434/api/generate',
 				expect.objectContaining({
-					body: expect.stringContaining('"stream":true')
+					body: expect.stringContaining('"stream":true'),
 				})
 			);
-		}); it('should handle streaming errors', async () => {
+		});
+		it('should handle streaming errors', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: false,
 				status: 503,
-				statusText: 'Service Unavailable'
+				statusText: 'Service Unavailable',
 			});
 
 			const options: LLMRequestOptions = {
 				messages: [{ role: 'user', content: 'Hello' }],
-				stream: true
+				stream: true,
 			};
 
 			const streamGenerator = service.streamComplete(options);
@@ -284,18 +284,17 @@ describe('OllamaService', () => {
 					// This should never execute
 					expect(chunk).toBeUndefined();
 				}
-			}).rejects.toThrow(
-				'Failed to stream with Ollama: Ollama API error: 503 Service Unavailable'
-			);
-		}); it('should handle missing response body', async () => {
+			}).rejects.toThrow('Failed to stream with Ollama: Ollama API error: 503 Service Unavailable');
+		});
+		it('should handle missing response body', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				body: null
+				body: null,
 			});
 
 			const options: LLMRequestOptions = {
 				messages: [{ role: 'user', content: 'Hello' }],
-				stream: true
+				stream: true,
 			};
 
 			const streamGenerator = service.streamComplete(options);
@@ -305,51 +304,50 @@ describe('OllamaService', () => {
 					// This should never execute
 					expect(chunk).toBeUndefined();
 				}
-			}).rejects.toThrow(
-				'Failed to stream with Ollama: No response body received from Ollama'
-			);
+			}).rejects.toThrow('Failed to stream with Ollama: No response body received from Ollama');
 		});
 
 		it('should handle malformed JSON chunks gracefully', async () => {
 			const streamChunks = [
 				'{"response":"Good","done":false}\n',
 				'invalid json\n',
-				'{"response":" answer","done":true}\n'
+				'{"response":" answer","done":true}\n',
 			];
 
-			const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => { });
+			const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
 			const mockResponse = {
 				ok: true,
 				body: {
 					getReader: () => ({
-						read: vi.fn()
+						read: vi
+							.fn()
 							.mockResolvedValueOnce({
 								done: false,
-								value: new TextEncoder().encode(streamChunks[0])
+								value: new TextEncoder().encode(streamChunks[0]),
 							})
 							.mockResolvedValueOnce({
 								done: false,
-								value: new TextEncoder().encode(streamChunks[1])
+								value: new TextEncoder().encode(streamChunks[1]),
 							})
 							.mockResolvedValueOnce({
 								done: false,
-								value: new TextEncoder().encode(streamChunks[2])
+								value: new TextEncoder().encode(streamChunks[2]),
 							})
 							.mockResolvedValueOnce({
 								done: true,
-								value: undefined
+								value: undefined,
 							}),
-						releaseLock: vi.fn()
-					})
-				}
+						releaseLock: vi.fn(),
+					}),
+				},
 			};
 
 			mockFetch.mockResolvedValueOnce(mockResponse);
 
 			const options: LLMRequestOptions = {
 				messages: [{ role: 'user', content: 'Test' }],
-				stream: true
+				stream: true,
 			};
 
 			const chunks: any[] = [];
@@ -384,7 +382,7 @@ describe('OllamaService', () => {
 		it('should count tokens for messages array', async () => {
 			const messages: Message[] = [
 				{ role: 'user', content: 'Hello world' },
-				{ role: 'assistant', content: 'Hi there!' }
+				{ role: 'assistant', content: 'Hi there!' },
 			];
 
 			const totalLength = messages.reduce((acc, msg) => acc + msg.content.length, 0);
@@ -403,7 +401,7 @@ describe('OllamaService', () => {
 		it('should handle messages with undefined content', async () => {
 			const messages: Message[] = [
 				{ role: 'user', content: 'Hello' },
-				{ role: 'assistant', content: undefined } as any
+				{ role: 'assistant', content: undefined } as any,
 			];
 
 			const tokenCount = await service.countTokens(messages);
@@ -415,25 +413,22 @@ describe('OllamaService', () => {
 		it('should return true when Ollama service is available', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve({ models: [] })
+				json: () => Promise.resolve({ models: [] }),
 			});
 
 			const isAvailable = await service.isAvailable();
 			expect(isAvailable).toBe(true);
 
-			expect(mockFetch).toHaveBeenCalledWith(
-				'http://localhost:11434/api/tags',
-				{
-					method: 'GET',
-					headers: { 'Content-Type': 'application/json' }
-				}
-			);
+			expect(mockFetch).toHaveBeenCalledWith('http://localhost:11434/api/tags', {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json' },
+			});
 		});
 
 		it('should return false when Ollama service is not available', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: false,
-				status: 404
+				status: 404,
 			});
 
 			const isAvailable = await service.isAvailable();
@@ -451,16 +446,12 @@ describe('OllamaService', () => {
 	describe('listModels', () => {
 		it('should list available models', async () => {
 			const mockModels = {
-				models: [
-					{ name: 'llama3:8b' },
-					{ name: 'mistral:7b' },
-					{ name: 'codellama:13b' }
-				]
+				models: [{ name: 'llama3:8b' }, { name: 'mistral:7b' }, { name: 'codellama:13b' }],
 			};
 
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve(mockModels)
+				json: () => Promise.resolve(mockModels),
 			});
 
 			const models = await service.listModels();
@@ -470,7 +461,7 @@ describe('OllamaService', () => {
 		it('should return empty array when no models found', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve({ models: [] })
+				json: () => Promise.resolve({ models: [] }),
 			});
 
 			const models = await service.listModels();
@@ -480,7 +471,7 @@ describe('OllamaService', () => {
 		it('should return empty array on API error', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: false,
-				status: 500
+				status: 500,
 			});
 
 			const models = await service.listModels();
@@ -490,7 +481,7 @@ describe('OllamaService', () => {
 		it('should handle missing models field', async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
-				json: () => Promise.resolve({})
+				json: () => Promise.resolve({}),
 			});
 
 			const models = await service.listModels();

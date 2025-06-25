@@ -19,17 +19,25 @@ suite('ListWidget', function () {
 		element.style.width = '200px';
 
 		const delegate: IListVirtualDelegate<number> = {
-			getHeight() { return 20; },
-			getTemplateId() { return 'template'; }
+			getHeight() {
+				return 20;
+			},
+			getTemplateId() {
+				return 'template';
+			},
 		};
 
 		let templatesCount = 0;
 
 		const renderer: IListRenderer<number, void> = {
 			templateId: 'template',
-			renderTemplate() { templatesCount++; },
-			renderElement() { },
-			disposeTemplate() { templatesCount--; }
+			renderTemplate() {
+				templatesCount++;
+			},
+			renderElement() {},
+			disposeTemplate() {
+				templatesCount--;
+			},
 		};
 
 		const listWidget = store.add(new List<number>('test', element, delegate, [renderer]));
@@ -40,7 +48,11 @@ suite('ListWidget', function () {
 		listWidget.focusFirst();
 
 		listWidget.focusNextPage();
-		assert.strictEqual(listWidget.getFocus()[0], 9, 'first page down moves focus to element at bottom');
+		assert.strictEqual(
+			listWidget.getFocus()[0],
+			9,
+			'first page down moves focus to element at bottom'
+		);
 
 		// scroll to next page is async
 		listWidget.focusNextPage();
@@ -62,17 +74,25 @@ suite('ListWidget', function () {
 		element.style.width = '200px';
 
 		const delegate: IListVirtualDelegate<number> = {
-			getHeight() { return 200; },
-			getTemplateId() { return 'template'; }
+			getHeight() {
+				return 200;
+			},
+			getTemplateId() {
+				return 'template';
+			},
 		};
 
 		let templatesCount = 0;
 
 		const renderer: IListRenderer<number, void> = {
 			templateId: 'template',
-			renderTemplate() { templatesCount++; },
-			renderElement() { },
-			disposeTemplate() { templatesCount--; }
+			renderTemplate() {
+				templatesCount++;
+			},
+			renderElement() {},
+			disposeTemplate() {
+				templatesCount--;
+			},
 		};
 
 		const listWidget = store.add(new List<number>('test', element, delegate, [renderer]));

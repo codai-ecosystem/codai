@@ -33,7 +33,7 @@ export const getMcpServerMapping = (opts: {
 				startColumn: start.column,
 				endLineNumber: end.lineNumber,
 				endColumn: end.column,
-			}
+			},
 		});
 	}
 

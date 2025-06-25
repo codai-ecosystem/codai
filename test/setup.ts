@@ -36,5 +36,5 @@ declare global {
 globalThis.mockMemoryGraph = {
 	clear: vi.fn(),
 	addNode: vi.fn(),
-	getNode: vi.fn()
+	getNode: vi.fn(),
 };

@@ -4,13 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TextDecoder } from 'util';
-import { commands, env, ProgressLocation, Uri, window, workspace, QuickPickOptions, FileType, l10n, Disposable, TextDocumentContentProvider } from 'vscode';
+import {
+	commands,
+	env,
+	ProgressLocation,
+	Uri,
+	window,
+	workspace,
+	QuickPickOptions,
+	FileType,
+	l10n,
+	Disposable,
+	TextDocumentContentProvider,
+} from 'vscode';
 import { getOctokit } from './auth.js';
 import { GitErrorCodes, PushErrorHandler, Remote, Repository } from './typings/git.js';
 import * as path from 'path';
 import { TelemetryReporter } from '@vscode/extension-telemetry';
-
-
 
 type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
 
@@ -21,13 +31,13 @@ export function isInCodespaces(): boolean {
 const PR_TEMPLATE_FILES = [
 	{ dir: '.', files: ['pull_request_template.md', 'PULL_REQUEST_TEMPLATE.md'] },
 	{ dir: 'docs', files: ['pull_request_template.md', 'PULL_REQUEST_TEMPLATE.md'] },
-	{ dir: '.github', files: ['PULL_REQUEST_TEMPLATE.md', 'PULL_REQUEST_TEMPLATE.md'] }
+	{ dir: '.github', files: ['PULL_REQUEST_TEMPLATE.md', 'PULL_REQUEST_TEMPLATE.md'] },
 ];
 
 const PR_TEMPLATE_DIRECTORY_NAMES = [
 	'PULL_REQUEST_TEMPLATE',
 	'docs/PULL_REQUEST_TEMPLATE',
-	'.github/PULL_REQUEST_TEMPLATE'
+	'.github/PULL_REQUEST_TEMPLATE',
 ];
 
 async function assertMarkdownFiles(dir: Uri, files: string[]): Promise<Uri[]> {
@@ -55,33 +65,42 @@ async function findMarkdownFilesInDir(uri: Uri): Promise<Uri[]> {
  */
 export async function findPullRequestTemplates(repositoryRootUri: Uri): Promise<Uri[]> {
 	const results = await Promise.allSettled([
-		...PR_TEMPLATE_FILES.map(x => assertMarkdownFiles(Uri.joinPath(repositoryRootUri, x.dir), x.files)),
-		...PR_TEMPLATE_DIRECTORY_NAMES.map(x => findMarkdownFilesInDir(Uri.joinPath(repositoryRootUri, x)))
+		...PR_TEMPLATE_FILES.map(x =>
+			assertMarkdownFiles(Uri.joinPath(repositoryRootUri, x.dir), x.files)
+		),
+		...PR_TEMPLATE_DIRECTORY_NAMES.map(x =>
+			findMarkdownFilesInDir(Uri.joinPath(repositoryRootUri, x))
+		),
 	]);
 
-	return results.flatMap(x => x.status === 'fulfilled' && x.value || []);
+	return results.flatMap(x => (x.status === 'fulfilled' && x.value) || []);
 }
 
-export async function pickPullRequestTemplate(repositoryRootUri: Uri, templates: Uri[]): Promise<Uri | undefined> {
-	const quickPickItemFromUri = (x: Uri) => ({ label: path.relative(repositoryRootUri.path, x.path), template: x });
+export async function pickPullRequestTemplate(
+	repositoryRootUri: Uri,
+	templates: Uri[]
+): Promise<Uri | undefined> {
+	const quickPickItemFromUri = (x: Uri) => ({
+		label: path.relative(repositoryRootUri.path, x.path),
+		template: x,
+	});
 	const quickPickItems = [
 		{
 			label: l10n.t('No template'),
 			picked: true,
 			template: undefined,
 		},
-		...templates.map(quickPickItemFromUri)
+		...templates.map(quickPickItemFromUri),
 	];
 	const quickPickOptions: QuickPickOptions = {
 		placeHolder: l10n.t('Select the Pull Request template'),
-		ignoreFocusOut: true
+		ignoreFocusOut: true,
 	};
 	const pickedTemplate = await window.showQuickPick(quickPickItems, quickPickOptions);
 	return pickedTemplate?.template;
 }
 
 class CommandErrorOutputTextDocumentContentProvider implements TextDocumentContentProvider {
-
 	private items = new Map<string, string>();
 
 	set(uri: Uri, contents: string): void {
@@ -98,16 +117,25 @@ class CommandErrorOutputTextDocumentContentProvider implements TextDocumentConte
 }
 
 export class GithubPushErrorHandler implements PushErrorHandler {
-
 	private disposables: Disposable[] = [];
 	private commandErrors = new CommandErrorOutputTextDocumentContentProvider();
 
 	constructor(private readonly telemetryReporter: TelemetryReporter) {
-		this.disposables.push(workspace.registerTextDocumentContentProvider('github-output', this.commandErrors));
+		this.disposables.push(
+			workspace.registerTextDocumentContentProvider('github-output', this.commandErrors)
+		);
 	}
 
-	async handlePushError(repository: Repository, remote: Remote, refspec: string, error: Error & { stderr: string; gitErrorCode: GitErrorCodes }): Promise<boolean> {
-		if (error.gitErrorCode !== GitErrorCodes.PermissionDenied && error.gitErrorCode !== GitErrorCodes.PushRejected) {
+	async handlePushError(
+		repository: Repository,
+		remote: Remote,
+		refspec: string,
+		error: Error & { stderr: string; gitErrorCode: GitErrorCodes }
+	): Promise<boolean> {
+		if (
+			error.gitErrorCode !== GitErrorCodes.PermissionDenied &&
+			error.gitErrorCode !== GitErrorCodes.PushRejected
+		) {
 			return false;
 		}
 
@@ -116,7 +144,9 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 			return false;
 		}
 
-		const match = /^(?:https:\/\/github\.com\/|git@github\.com:)([^\/]+)\/([^\/.]+)/i.exec(remoteUrl);
+		const match = /^(?:https:\/\/github\.com\/|git@github\.com:)([^\/]+)\/([^\/.]+)/i.exec(
+			remoteUrl
+		);
 		if (!match) {
 			return false;
 		}
@@ -136,7 +166,9 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 					"handler": { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 				}
 			*/
-			this.telemetryReporter.sendTelemetryEvent('pushErrorHandler', { handler: 'PermissionDenied' });
+			this.telemetryReporter.sendTelemetryEvent('pushErrorHandler', {
+				handler: 'PermissionDenied',
+			});
 
 			return true;
 		}
@@ -151,7 +183,9 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 					"handler": { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 				}
 			*/
-			this.telemetryReporter.sendTelemetryEvent('pushErrorHandler', { handler: 'PushRejected.PushProtection' });
+			this.telemetryReporter.sendTelemetryEvent('pushErrorHandler', {
+				handler: 'PushRejected.PushProtection',
+			});
 
 			return true;
 		}
@@ -167,10 +201,20 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		return false;
 	}
 
-	private async handlePermissionDeniedError(repository: Repository, remote: Remote, refspec: string, owner: string, repo: string): Promise<void> {
+	private async handlePermissionDeniedError(
+		repository: Repository,
+		remote: Remote,
+		refspec: string,
+		owner: string,
+		repo: string
+	): Promise<void> {
 		const yes = l10n.t('Create Fork');
 		const no = l10n.t('No');
-		const askFork = l10n.t('You don\'t have permissions to push to "{0}/{1}" on GitHub. Would you like to create a fork and push to it instead?', owner, repo);
+		const askFork = l10n.t(
+			'You don\'t have permissions to push to "{0}/{1}" on GitHub. Would you like to create a fork and push to it instead?',
+			owner,
+			repo
+		);
 
 		const answer = await window.showWarningMessage(askFork, { modal: true }, yes, no);
 		if (answer !== yes) {
@@ -181,114 +225,146 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		const localName = match ? match[1] : refspec;
 		let remoteName = match ? match[2] : refspec;
 
-		const [octokit, ghRepository] = await window.withProgress({ location: ProgressLocation.Notification, cancellable: false, title: l10n.t('Create GitHub fork') }, async progress => {
-			progress.report({ message: l10n.t('Forking "{0}/{1}"...', owner, repo), increment: 33 });
+		const [octokit, ghRepository] = await window.withProgress(
+			{
+				location: ProgressLocation.Notification,
+				cancellable: false,
+				title: l10n.t('Create GitHub fork'),
+			},
+			async progress => {
+				progress.report({ message: l10n.t('Forking "{0}/{1}"...', owner, repo), increment: 33 });
 
-			const octokit = await getOctokit();
+				const octokit = await getOctokit();
 
-			type CreateForkResponseData = Awaited<ReturnType<typeof octokit.repos.createFork>>['data'];
+				type CreateForkResponseData = Awaited<ReturnType<typeof octokit.repos.createFork>>['data'];
 
-			// Issue: what if the repo already exists?
-			let ghRepository: CreateForkResponseData;
-			try {
-				if (isInCodespaces()) {
-					// Call into the codespaces extension to fork the repository
-					const resp = await commands.executeCommand<{ repository: CreateForkResponseData; ref: string }>('github.codespaces.forkRepository');
-					if (!resp) {
-						throw new Error('Unable to fork respository');
-					}
-
-					ghRepository = resp.repository;
-
-					if (resp.ref) {
-						let ref = resp.ref;
-						if (ref.startsWith('refs/heads/')) {
-							ref = ref.substr(11);
+				// Issue: what if the repo already exists?
+				let ghRepository: CreateForkResponseData;
+				try {
+					if (isInCodespaces()) {
+						// Call into the codespaces extension to fork the repository
+						const resp = await commands.executeCommand<{
+							repository: CreateForkResponseData;
+							ref: string;
+						}>('github.codespaces.forkRepository');
+						if (!resp) {
+							throw new Error('Unable to fork respository');
 						}
 
-						remoteName = ref;
+						ghRepository = resp.repository;
+
+						if (resp.ref) {
+							let ref = resp.ref;
+							if (ref.startsWith('refs/heads/')) {
+								ref = ref.substr(11);
+							}
+
+							remoteName = ref;
+						}
+					} else {
+						const resp = await octokit.repos.createFork({ owner, repo });
+						ghRepository = resp.data;
 					}
-				} else {
-					const resp = await octokit.repos.createFork({ owner, repo });
-					ghRepository = resp.data;
+				} catch (ex) {
+					console.error(ex);
+					throw ex;
 				}
-			} catch (ex) {
-				console.error(ex);
-				throw ex;
+
+				progress.report({ message: l10n.t('Pushing changes...'), increment: 33 });
+
+				// Issue: what if there's already an `upstream` repo?
+				await repository.renameRemote(remote.name, 'upstream');
+
+				// Issue: what if there's already another `origin` repo?
+				const protocol = workspace.getConfiguration('github').get<'https' | 'ssh'>('gitProtocol');
+				const remoteUrl = protocol === 'https' ? ghRepository.clone_url : ghRepository.ssh_url;
+				await repository.addRemote('origin', remoteUrl);
+
+				try {
+					await repository.fetch('origin', remoteName);
+					await repository.setBranchUpstream(localName, `origin/${remoteName}`);
+				} catch {
+					// noop
+				}
+
+				await repository.push('origin', localName, true);
+
+				return [octokit, ghRepository] as const;
 			}
-
-			progress.report({ message: l10n.t('Pushing changes...'), increment: 33 });
-
-			// Issue: what if there's already an `upstream` repo?
-			await repository.renameRemote(remote.name, 'upstream');
-
-			// Issue: what if there's already another `origin` repo?
-			const protocol = workspace.getConfiguration('github').get<'https' | 'ssh'>('gitProtocol');
-			const remoteUrl = protocol === 'https' ? ghRepository.clone_url : ghRepository.ssh_url;
-			await repository.addRemote('origin', remoteUrl);
-
-			try {
-				await repository.fetch('origin', remoteName);
-				await repository.setBranchUpstream(localName, `origin/${remoteName}`);
-			} catch {
-				// noop
-			}
-
-			await repository.push('origin', localName, true);
-
-			return [octokit, ghRepository] as const;
-		});
+		);
 
 		// yield
 		(async () => {
 			const openOnGitHub = l10n.t('Open on GitHub');
 			const createPR = l10n.t('Create PR');
-			const action = await window.showInformationMessage(l10n.t('The fork "{0}" was successfully created on GitHub.', ghRepository.full_name), openOnGitHub, createPR);
+			const action = await window.showInformationMessage(
+				l10n.t('The fork "{0}" was successfully created on GitHub.', ghRepository.full_name),
+				openOnGitHub,
+				createPR
+			);
 
 			if (action === openOnGitHub) {
 				await commands.executeCommand('vscode.open', Uri.parse(ghRepository.html_url));
 			} else if (action === createPR) {
-				const pr = await window.withProgress({ location: ProgressLocation.Notification, cancellable: false, title: l10n.t('Creating GitHub Pull Request...') }, async _ => {
-					let title = `Update ${remoteName}`;
-					const head = repository.state.HEAD?.name;
+				const pr = await window.withProgress(
+					{
+						location: ProgressLocation.Notification,
+						cancellable: false,
+						title: l10n.t('Creating GitHub Pull Request...'),
+					},
+					async _ => {
+						let title = `Update ${remoteName}`;
+						const head = repository.state.HEAD?.name;
 
-					let body: string | undefined;
+						let body: string | undefined;
 
-					if (head) {
-						const commit = await repository.getCommit(head);
-						title = commit.message.split('\n')[0];
-						body = commit.message.slice(title.length + 1).trim();
-					}
-
-					const templates = await findPullRequestTemplates(repository.rootUri);
-					if (templates.length > 0) {
-						templates.sort((a, b) => a.path.localeCompare(b.path));
-
-						const template = await pickPullRequestTemplate(repository.rootUri, templates);
-
-						if (template) {
-							body = new TextDecoder('utf-8').decode(await workspace.fs.readFile(template));
+						if (head) {
+							const commit = await repository.getCommit(head);
+							title = commit.message.split('\n')[0];
+							body = commit.message.slice(title.length + 1).trim();
 						}
+
+						const templates = await findPullRequestTemplates(repository.rootUri);
+						if (templates.length > 0) {
+							templates.sort((a, b) => a.path.localeCompare(b.path));
+
+							const template = await pickPullRequestTemplate(repository.rootUri, templates);
+
+							if (template) {
+								body = new TextDecoder('utf-8').decode(await workspace.fs.readFile(template));
+							}
+						}
+
+						const { data: pr } = await octokit.pulls.create({
+							owner,
+							repo,
+							title,
+							body,
+							head: `${ghRepository.owner.login}:${remoteName}`,
+							base: ghRepository.default_branch,
+						});
+
+						await repository.setConfig(`branch.${localName}.remote`, 'upstream');
+						await repository.setConfig(`branch.${localName}.merge`, `refs/heads/${remoteName}`);
+						await repository.setConfig(
+							`branch.${localName}.github-pr-owner-number`,
+							`${owner}#${repo}#${pr.number}`
+						);
+
+						return pr;
 					}
-
-					const { data: pr } = await octokit.pulls.create({
-						owner,
-						repo,
-						title,
-						body,
-						head: `${ghRepository.owner.login}:${remoteName}`,
-						base: ghRepository.default_branch
-					});
-
-					await repository.setConfig(`branch.${localName}.remote`, 'upstream');
-					await repository.setConfig(`branch.${localName}.merge`, `refs/heads/${remoteName}`);
-					await repository.setConfig(`branch.${localName}.github-pr-owner-number`, `${owner}#${repo}#${pr.number}`);
-
-					return pr;
-				});
+				);
 
 				const openPR = l10n.t('Open PR');
-				const action = await window.showInformationMessage(l10n.t('The PR "{0}/{1}#{2}" was successfully created on GitHub.', owner, repo, pr.number), openPR);
+				const action = await window.showInformationMessage(
+					l10n.t(
+						'The PR "{0}/{1}#{2}" was successfully created on GitHub.',
+						owner,
+						repo,
+						pr.number
+					),
+					openPR
+				);
 
 				if (action === openPR) {
 					await commands.executeCommand('vscode.open', Uri.parse(pr.html_url));
@@ -297,7 +373,11 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		})();
 	}
 
-	private async handlePushProtectionError(owner: string, repo: string, stderr: string): Promise<void> {
+	private async handlePushProtectionError(
+		owner: string,
+		repo: string,
+		stderr: string
+	): Promise<void> {
 		// Open command output in an editor
 		const timestamp = new Date().getTime();
 		const uri = Uri.parse(`github-output:/github-error-${timestamp}`);
@@ -306,14 +386,17 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		try {
 			const doc = await workspace.openTextDocument(uri);
 			await window.showTextDocument(doc);
-		}
-		finally {
+		} finally {
 			this.commandErrors.set(uri, stderr);
 		}
 
 		// Show dialog
 		const learnMore = l10n.t('Learn More');
-		const message = l10n.t('Your push to "{0}/{1}" was rejected by GitHub because push protection is enabled and one or more secrets were detected.', owner, repo);
+		const message = l10n.t(
+			'Your push to "{0}/{1}" was rejected by GitHub because push protection is enabled and one or more secrets were detected.',
+			owner,
+			repo
+		);
 		const answer = await window.showWarningMessage(message, { modal: true }, learnMore);
 		if (answer === learnMore) {
 			commands.executeCommand('vscode.open', 'https://aka.ms/vscode-github-push-protection');

@@ -15,14 +15,11 @@ export function GET(req: NextRequest) {
 
 			return NextResponse.json({
 				success: true,
-				data: quotaStatus
+				data: quotaStatus,
 			});
 		} catch (error) {
 			console.error('Error fetching quota status:', error);
-			return NextResponse.json(
-				{ error: 'Failed to fetch quota status' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Failed to fetch quota status' }, { status: 500 });
 		}
 	})(req);
 }

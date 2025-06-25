@@ -16,10 +16,20 @@ import { ContextKeyExpression } from '../../../../platform/contextkey/common/con
 import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { IProgress } from '../../../../platform/progress/common/progress.js';
-import { IChatExtensionsContent, IChatTerminalToolInvocationData, IChatToolInputInvocationData } from './chatService.js';
+import {
+	IChatExtensionsContent,
+	IChatTerminalToolInvocationData,
+	IChatToolInputInvocationData,
+} from './chatService.js';
 import { PromptElementJSON, stringifyPromptElementJSON } from './tools/promptTsxTypes.js';
 import { VSBuffer } from '../../../../base/common/buffer.js';
-import { derived, IObservable, IReader, ITransaction, ObservableSet } from '../../../../base/common/observable.js';
+import {
+	derived,
+	IObservable,
+	IReader,
+	ITransaction,
+	ObservableSet,
+} from '../../../../base/common/observable.js';
 import { Iterable } from '../../../../base/common/iterator.js';
 import { localize } from '../../../../nls.js';
 
@@ -53,36 +63,39 @@ export type ToolProgress = IProgress<IToolProgressStep>;
 
 export type ToolDataSource =
 	| {
-		type: 'extension';
-		label: string;
-		extensionId: ExtensionIdentifier;
-	}
+			type: 'extension';
+			label: string;
+			extensionId: ExtensionIdentifier;
+	  }
 	| {
-		type: 'mcp';
-		label: string;
-		collectionId: string;
-		definitionId: string;
-	}
+			type: 'mcp';
+			label: string;
+			collectionId: string;
+			definitionId: string;
+	  }
 	| {
-		type: 'user';
-		label: string;
-		file: URI;
-	}
+			type: 'user';
+			label: string;
+			file: URI;
+	  }
 	| {
-		type: 'internal';
-		label: string;
-	};
+			type: 'internal';
+			label: string;
+	  };
 
 export namespace ToolDataSource {
-
 	export const Internal: ToolDataSource = { type: 'internal', label: 'Built-In' };
 
 	export function toKey(source: ToolDataSource): string {
 		switch (source.type) {
-			case 'extension': return `extension:${source.extensionId.value}`;
-			case 'mcp': return `mcp:${source.collectionId}:${source.definitionId}`;
-			case 'user': return `user:${source.file.toString()}`;
-			case 'internal': return 'internal';
+			case 'extension':
+				return `extension:${source.extensionId.value}`;
+			case 'mcp':
+				return `mcp:${source.collectionId}:${source.definitionId}`;
+			case 'user':
+				return `user:${source.file.toString()}`;
+			case 'internal':
+				return 'internal';
 		}
 	}
 
@@ -90,7 +103,10 @@ export namespace ToolDataSource {
 		return toKey(a) === toKey(b);
 	}
 
-	export function classify(source: ToolDataSource): { readonly ordinal: number; readonly label: string } {
+	export function classify(source: ToolDataSource): {
+		readonly ordinal: number;
+		readonly label: string;
+	} {
 		if (source.type === 'internal') {
 			return { ordinal: 1, label: localize('builtin', 'Built-In') };
 		} else if (source.type === 'mcp') {
@@ -111,7 +127,10 @@ export interface IToolInvocation {
 	context: IToolInvocationContext | undefined;
 	chatRequestId?: string;
 	chatInteractionId?: string;
-	toolSpecificData?: IChatTerminalToolInvocationData | IChatToolInputInvocationData | IChatExtensionsContent;
+	toolSpecificData?:
+		| IChatTerminalToolInvocationData
+		| IChatToolInputInvocationData
+		| IChatExtensionsContent;
 	modelId?: string;
 }
 
@@ -125,12 +144,19 @@ export function isToolInvocationContext(obj: any): obj is IToolInvocationContext
 
 export interface IToolResultInputOutputDetails {
 	readonly input: string;
-	readonly output: ({ type: 'text'; value: string } | { type: 'data'; mimeType: string; value64: string })[];
+	readonly output: (
+		| { type: 'text'; value: string }
+		| { type: 'data'; mimeType: string; value64: string }
+	)[];
 	readonly isError?: boolean;
 }
 
 export function isToolResultInputOutputDetails(obj: any): obj is IToolResultInputOutputDetails {
-	return typeof obj === 'object' && typeof obj?.input === 'string' && (typeof obj?.output === 'string' || Array.isArray(obj?.output));
+	return (
+		typeof obj === 'object' &&
+		typeof obj?.input === 'string' &&
+		(typeof obj?.output === 'string' || Array.isArray(obj?.output))
+	);
 }
 
 export interface IToolResult {
@@ -179,16 +205,26 @@ export interface IPreparedToolInvocation {
 	confirmationMessages?: IToolConfirmationMessages;
 	presentation?: 'hidden' | undefined;
 	// When this gets extended, be sure to update `chatResponseAccessibleView.ts` to handle the new properties.
-	toolSpecificData?: IChatTerminalToolInvocationData | IChatToolInputInvocationData | IChatExtensionsContent;
+	toolSpecificData?:
+		| IChatTerminalToolInvocationData
+		| IChatToolInputInvocationData
+		| IChatExtensionsContent;
 }
 
 export interface IToolImpl {
-	invoke(invocation: IToolInvocation, countTokens: CountTokensCallback, progress: ToolProgress, token: CancellationToken): Promise<IToolResult>;
-	prepareToolInvocation?(parameters: any, token: CancellationToken): Promise<IPreparedToolInvocation | undefined>;
+	invoke(
+		invocation: IToolInvocation,
+		countTokens: CountTokensCallback,
+		progress: ToolProgress,
+		token: CancellationToken
+	): Promise<IToolResult>;
+	prepareToolInvocation?(
+		parameters: any,
+		token: CancellationToken
+	): Promise<IPreparedToolInvocation | undefined>;
 }
 
 export class ToolSet {
-
 	protected readonly _tools = new ObservableSet<IToolData>();
 
 	protected readonly _toolSets = new ObservableSet<ToolSet>();
@@ -204,12 +240,19 @@ export class ToolSet {
 		readonly icon: ThemeIcon,
 		readonly source: ToolDataSource,
 		readonly toolReferenceName: string,
-		readonly description?: string,
+		readonly description?: string
 	) {
-
 		this.isHomogenous = derived(r => {
-			return !Iterable.some(this._tools.observable.read(r), tool => !ToolDataSource.equals(tool.source, this.source))
-				&& !Iterable.some(this._toolSets.observable.read(r), toolSet => !ToolDataSource.equals(toolSet.source, this.source));
+			return (
+				!Iterable.some(
+					this._tools.observable.read(r),
+					tool => !ToolDataSource.equals(tool.source, this.source)
+				) &&
+				!Iterable.some(
+					this._toolSets.observable.read(r),
+					toolSet => !ToolDataSource.equals(toolSet.source, this.source)
+				)
+			);
 		});
 	}
 
@@ -238,8 +281,9 @@ export class ToolSet {
 	}
 }
 
-
-export const ILanguageModelToolsService = createDecorator<ILanguageModelToolsService>('ILanguageModelToolsService');
+export const ILanguageModelToolsService = createDecorator<ILanguageModelToolsService>(
+	'ILanguageModelToolsService'
+);
 
 export type CountTokensCallback = (input: string, token: CancellationToken) => Promise<number>;
 
@@ -251,15 +295,28 @@ export interface ILanguageModelToolsService {
 	getTools(): Iterable<Readonly<IToolData>>;
 	getTool(id: string): IToolData | undefined;
 	getToolByName(name: string): IToolData | undefined;
-	invokeTool(invocation: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult>;
-	setToolAutoConfirmation(toolId: string, scope: 'workspace' | 'profile' | 'memory', autoConfirm?: boolean): void;
+	invokeTool(
+		invocation: IToolInvocation,
+		countTokens: CountTokensCallback,
+		token: CancellationToken
+	): Promise<IToolResult>;
+	setToolAutoConfirmation(
+		toolId: string,
+		scope: 'workspace' | 'profile' | 'memory',
+		autoConfirm?: boolean
+	): void;
 	resetToolAutoConfirmation(): void;
 	cancelToolCallsForRequest(requestId: string): void;
 	toEnablementMap(toolOrToolSetNames: Iterable<string>): Record<string, boolean>;
 
 	readonly toolSets: IObservable<Iterable<ToolSet>>;
 	getToolSetByName(name: string): ToolSet | undefined;
-	createToolSet(source: ToolDataSource, id: string, displayName: string, options?: { icon?: ThemeIcon; toolReferenceName?: string; description?: string }): ToolSet & IDisposable;
+	createToolSet(
+		source: ToolDataSource,
+		id: string,
+		displayName: string,
+		options?: { icon?: ThemeIcon; toolReferenceName?: string; description?: string }
+	): ToolSet & IDisposable;
 }
 
 export function createToolInputUri(toolOrId: IToolData | string): URI {

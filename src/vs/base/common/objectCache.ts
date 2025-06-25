@@ -79,12 +79,9 @@ export class ObjectCache<
 	TValue extends ObservableDisposable,
 	TKey extends NonNullable<unknown> = string,
 > extends Disposable {
-	private readonly cache: DisposableMap<TKey, TValue> =
-		this._register(new DisposableMap());
+	private readonly cache: DisposableMap<TKey, TValue> = this._register(new DisposableMap());
 
-	constructor(
-		private readonly factory: (key: TKey) => TValue & { isDisposed: false },
-	) {
+	constructor(private readonly factory: (key: TKey) => TValue & { isDisposed: false }) {
 		super();
 	}
 
@@ -108,10 +105,7 @@ export class ObjectCache<
 		// if object exists and is not disposed, return it
 		if (object) {
 			// must always hold true due to the check above
-			assertNotDisposed(
-				object,
-				'Object must not be disposed.',
-			);
+			assertNotDisposed(object, 'Object must not be disposed.');
 
 			return object;
 		}
@@ -120,16 +114,14 @@ export class ObjectCache<
 		object = this.factory(key);
 
 		// newly created object must not be disposed
-		assertNotDisposed(
-			object,
-			'Newly created object must not be disposed.',
-		);
+		assertNotDisposed(object, 'Newly created object must not be disposed.');
 
 		// remove it from the cache automatically on dispose
 		object.addDisposables(
 			object.onDispose(() => {
 				this.cache.deleteAndLeak(key);
-			}));
+			})
+		);
 		this.cache.set(key, object);
 
 		return object;

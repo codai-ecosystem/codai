@@ -12,19 +12,26 @@ export function getCustomDataSource(toDispose: Disposable[]) {
 
 	const onChange = new EventEmitter<void>();
 
-	toDispose.push(extensions.onDidChange(_ => {
-		const newPathsInExtensions = getCustomDataPathsFromAllExtensions();
-		if (newPathsInExtensions.length !== pathsInExtensions.length || !newPathsInExtensions.every((val, idx) => val === pathsInExtensions[idx])) {
-			pathsInExtensions = newPathsInExtensions;
-			onChange.fire();
-		}
-	}));
-	toDispose.push(workspace.onDidChangeConfiguration(e => {
-		if (e.affectsConfiguration('css.customData')) {
-			pathsInWorkspace = getCustomDataPathsInAllWorkspaces();
-			onChange.fire();
-		}
-	}));
+	toDispose.push(
+		extensions.onDidChange(_ => {
+			const newPathsInExtensions = getCustomDataPathsFromAllExtensions();
+			if (
+				newPathsInExtensions.length !== pathsInExtensions.length ||
+				!newPathsInExtensions.every((val, idx) => val === pathsInExtensions[idx])
+			) {
+				pathsInExtensions = newPathsInExtensions;
+				onChange.fire();
+			}
+		})
+	);
+	toDispose.push(
+		workspace.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration('css.customData')) {
+				pathsInWorkspace = getCustomDataPathsInAllWorkspaces();
+				onChange.fire();
+			}
+		})
+	);
 
 	return {
 		get uris() {
@@ -32,10 +39,9 @@ export function getCustomDataSource(toDispose: Disposable[]) {
 		},
 		get onDidChange() {
 			return onChange.event;
-		}
+		},
 	};
 }
-
 
 function getCustomDataPathsInAllWorkspaces(): string[] {
 	const workspaceFolders = workspace.workspaceFolders;
@@ -69,7 +75,6 @@ function getCustomDataPathsInAllWorkspaces(): string[] {
 				collect(customDataInspect.globalValue, folderUri);
 			}
 		}
-
 	}
 	return dataPaths;
 }

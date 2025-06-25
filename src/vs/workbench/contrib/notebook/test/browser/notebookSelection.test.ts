@@ -10,7 +10,12 @@ import { FoldingModel, updateFoldingStateAtIndex } from '../../browser/viewModel
 import { runDeleteAction } from '../../browser/controller/cellOperations.js';
 import { NotebookCellSelectionCollection } from '../../browser/viewModel/cellSelectionCollection.js';
 import { CellEditType, CellKind, SelectionStateType } from '../../common/notebookCommon.js';
-import { createNotebookCellList, setupInstantiationService, TestCell, withTestNotebook } from './testNotebookEditor.js';
+import {
+	createNotebookCellList,
+	setupInstantiationService,
+	TestCell,
+	withTestNotebook,
+} from './testNotebookEditor.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 
@@ -44,12 +49,11 @@ suite('NotebookCellList focus/selection', () => {
 		languageService = instantiationService.get(ILanguageService);
 	});
 
-
 	test('notebook cell list setFocus', async function () {
 		await withTestNotebook(
 			[
 				['var a = 1;', 'javascript', CellKind.Code, [], {}],
-				['var b = 2;', 'javascript', CellKind.Code, [], {}]
+				['var b = 2;', 'javascript', CellKind.Code, [], {}],
 			],
 			(editor, viewModel, ds) => {
 				const cellList = createNotebookCellList(instantiationService, ds);
@@ -62,14 +66,15 @@ suite('NotebookCellList focus/selection', () => {
 				cellList.setFocus([1]);
 				assert.deepStrictEqual(viewModel.getFocus(), { start: 1, end: 2 });
 				cellList.detachViewModel();
-			});
+			}
+		);
 	});
 
 	test('notebook cell list setSelections', async function () {
 		await withTestNotebook(
 			[
 				['var a = 1;', 'javascript', CellKind.Code, [], {}],
-				['var b = 2;', 'javascript', CellKind.Code, [], {}]
+				['var b = 2;', 'javascript', CellKind.Code, [], {}],
 			],
 			(editor, viewModel, ds) => {
 				const cellList = createNotebookCellList(instantiationService, ds);
@@ -83,14 +88,15 @@ suite('NotebookCellList focus/selection', () => {
 				// set selection does not modify focus
 				cellList.setSelection([1]);
 				assert.deepStrictEqual(viewModel.getSelections(), [{ start: 1, end: 2 }]);
-			});
+			}
+		);
 	});
 
 	test('notebook cell list setFocus2', async function () {
 		await withTestNotebook(
 			[
 				['var a = 1;', 'javascript', CellKind.Code, [], {}],
-				['var b = 2;', 'javascript', CellKind.Code, [], {}]
+				['var b = 2;', 'javascript', CellKind.Code, [], {}],
 			],
 			(editor, viewModel, ds) => {
 				const cellList = createNotebookCellList(instantiationService, ds);
@@ -106,9 +112,9 @@ suite('NotebookCellList focus/selection', () => {
 				cellList.setSelection([1]);
 				assert.deepStrictEqual(viewModel.getSelections(), [{ start: 1, end: 2 }]);
 				cellList.detachViewModel();
-			});
+			}
+		);
 	});
-
 
 	test('notebook cell list focus/selection from UI', async function () {
 		await withTestNotebook(
@@ -117,7 +123,7 @@ suite('NotebookCellList focus/selection', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			(editor, viewModel, ds) => {
 				const cellList = createNotebookCellList(instantiationService, ds);
@@ -141,9 +147,9 @@ suite('NotebookCellList focus/selection', () => {
 				cellList.setFocus([3], new KeyboardEvent('keydown'), undefined);
 				assert.deepStrictEqual(viewModel.getFocus(), { start: 3, end: 4 });
 				assert.deepStrictEqual(viewModel.getSelections(), [{ start: 1, end: 3 }]);
-			});
+			}
+		);
 	});
-
 
 	test('notebook cell list focus/selection with folding regions', async function () {
 		await withTestNotebook(
@@ -152,7 +158,7 @@ suite('NotebookCellList focus/selection', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
@@ -186,7 +192,8 @@ suite('NotebookCellList focus/selection', () => {
 				cellList.setHiddenAreas(viewModel.getHiddenRanges(), true);
 				assert.strictEqual(cellList.length, 4);
 				assert.deepStrictEqual(viewModel.getFocus(), { start: 2, end: 3 });
-			});
+			}
+		);
 	});
 
 	test('notebook cell list focus/selection with folding regions and applyEdits', async function () {
@@ -216,9 +223,21 @@ suite('NotebookCellList focus/selection', () => {
 				assert.strictEqual(cellList.getModelIndex2(0), 0);
 				assert.strictEqual(cellList.getModelIndex2(1), 2);
 
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 0, count: 2, cells: []
-				}], true, undefined, () => undefined, undefined, false);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 0,
+							count: 2,
+							cells: [],
+						},
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					false
+				);
 				viewModel.updateFoldingRanges(foldingModel.regions);
 				cellList.setHiddenAreas(viewModel.getHiddenRanges(), true);
 
@@ -226,18 +245,51 @@ suite('NotebookCellList focus/selection', () => {
 				assert.strictEqual(cellList.getModelIndex2(1), 3);
 
 				// mimic undo
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 0, count: 0, cells: [
-						ds.add(new TestCell(viewModel.viewType, 7, '# header f', 'markdown', CellKind.Code, [], languageService)),
-						ds.add(new TestCell(viewModel.viewType, 8, 'var g = 5;', 'javascript', CellKind.Code, [], languageService))
-					]
-				}], true, undefined, () => undefined, undefined, false);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 0,
+							count: 0,
+							cells: [
+								ds.add(
+									new TestCell(
+										viewModel.viewType,
+										7,
+										'# header f',
+										'markdown',
+										CellKind.Code,
+										[],
+										languageService
+									)
+								),
+								ds.add(
+									new TestCell(
+										viewModel.viewType,
+										8,
+										'var g = 5;',
+										'javascript',
+										CellKind.Code,
+										[],
+										languageService
+									)
+								),
+							],
+						},
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					false
+				);
 				viewModel.updateFoldingRanges(foldingModel.regions);
 				cellList.setHiddenAreas(viewModel.getHiddenRanges(), true);
 				assert.strictEqual(cellList.getModelIndex2(0), 0);
 				assert.strictEqual(cellList.getModelIndex2(1), 1);
 				assert.strictEqual(cellList.getModelIndex2(2), 2);
-			});
+			}
+		);
 	});
 
 	test('notebook cell list getModelIndex', async function () {
@@ -247,7 +299,7 @@ suite('NotebookCellList focus/selection', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['var b = 2;', 'javascript', CellKind.Code, [], {}],
-				['# header c', 'markdown', CellKind.Markup, [], {}]
+				['# header c', 'markdown', CellKind.Markup, [], {}],
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
@@ -265,15 +317,15 @@ suite('NotebookCellList focus/selection', () => {
 				assert.deepStrictEqual(cellList.getModelIndex2(0), 0);
 				assert.deepStrictEqual(cellList.getModelIndex2(1), 2);
 				assert.deepStrictEqual(cellList.getModelIndex2(2), 4);
-			});
+			}
+		);
 	});
-
 
 	test('notebook validate range', async () => {
 		await withTestNotebook(
 			[
 				['# header a', 'markdown', CellKind.Markup, [], {}],
-				['var b = 1;', 'javascript', CellKind.Code, [], {}]
+				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 			],
 			(editor, viewModel) => {
 				assert.deepStrictEqual(viewModel.validateRange(null), null);
@@ -281,38 +333,61 @@ suite('NotebookCellList focus/selection', () => {
 				assert.deepStrictEqual(viewModel.validateRange({ start: 0, end: 0 }), { start: 0, end: 0 });
 				assert.deepStrictEqual(viewModel.validateRange({ start: 0, end: 2 }), { start: 0, end: 2 });
 				assert.deepStrictEqual(viewModel.validateRange({ start: 0, end: 3 }), { start: 0, end: 2 });
-				assert.deepStrictEqual(viewModel.validateRange({ start: -1, end: 3 }), { start: 0, end: 2 });
-				assert.deepStrictEqual(viewModel.validateRange({ start: -1, end: 1 }), { start: 0, end: 1 });
+				assert.deepStrictEqual(viewModel.validateRange({ start: -1, end: 3 }), {
+					start: 0,
+					end: 2,
+				});
+				assert.deepStrictEqual(viewModel.validateRange({ start: -1, end: 1 }), {
+					start: 0,
+					end: 1,
+				});
 				assert.deepStrictEqual(viewModel.validateRange({ start: 2, end: 1 }), { start: 1, end: 2 });
-				assert.deepStrictEqual(viewModel.validateRange({ start: 2, end: -1 }), { start: 0, end: 2 });
-			});
+				assert.deepStrictEqual(viewModel.validateRange({ start: 2, end: -1 }), {
+					start: 0,
+					end: 2,
+				});
+			}
+		);
 	});
 
 	test('notebook updateSelectionState', async function () {
 		await withTestNotebook(
 			[
 				['# header a', 'markdown', CellKind.Markup, [], {}],
-				['var b = 1;', 'javascript', CellKind.Code, [], {}]
+				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 			],
 			(editor, viewModel) => {
-				viewModel.updateSelectionsState({ kind: SelectionStateType.Index, focus: { start: 1, end: 2 }, selections: [{ start: 1, end: 2 }, { start: -1, end: 0 }] });
+				viewModel.updateSelectionsState({
+					kind: SelectionStateType.Index,
+					focus: { start: 1, end: 2 },
+					selections: [
+						{ start: 1, end: 2 },
+						{ start: -1, end: 0 },
+					],
+				});
 				assert.deepStrictEqual(viewModel.getSelections(), [{ start: 1, end: 2 }]);
-			});
+			}
+		);
 	});
 
 	test('notebook cell selection w/ cell deletion', async function () {
 		await withTestNotebook(
 			[
 				['# header a', 'markdown', CellKind.Markup, [], {}],
-				['var b = 1;', 'javascript', CellKind.Code, [], {}]
+				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 			],
 			(editor, viewModel) => {
-				viewModel.updateSelectionsState({ kind: SelectionStateType.Index, focus: { start: 1, end: 2 }, selections: [{ start: 1, end: 2 }] });
+				viewModel.updateSelectionsState({
+					kind: SelectionStateType.Index,
+					focus: { start: 1, end: 2 },
+					selections: [{ start: 1, end: 2 }],
+				});
 				runDeleteAction(editor, viewModel.cellAt(1)!);
 				// viewModel.deleteCell(1, true, false);
 				assert.deepStrictEqual(viewModel.getFocus(), { start: 0, end: 1 });
 				assert.deepStrictEqual(viewModel.getSelections(), [{ start: 0, end: 1 }]);
-			});
+			}
+		);
 	});
 
 	test('notebook cell selection w/ cell deletion from applyEdits', async function () {
@@ -320,18 +395,32 @@ suite('NotebookCellList focus/selection', () => {
 			[
 				['# header a', 'markdown', CellKind.Markup, [], {}],
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]
+				['var c = 2;', 'javascript', CellKind.Code, [], {}],
 			],
 			async (editor, viewModel) => {
-				viewModel.updateSelectionsState({ kind: SelectionStateType.Index, focus: { start: 1, end: 2 }, selections: [{ start: 1, end: 2 }] });
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace,
-					index: 1,
-					count: 1,
-					cells: []
-				}], true, undefined, () => undefined, undefined, true);
+				viewModel.updateSelectionsState({
+					kind: SelectionStateType.Index,
+					focus: { start: 1, end: 2 },
+					selections: [{ start: 1, end: 2 }],
+				});
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 1,
+							count: 1,
+							cells: [],
+						},
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					true
+				);
 				assert.deepStrictEqual(viewModel.getFocus(), { start: 1, end: 2 });
 				assert.deepStrictEqual(viewModel.getSelections(), [{ start: 1, end: 2 }]);
-			});
+			}
+		);
 	});
 });

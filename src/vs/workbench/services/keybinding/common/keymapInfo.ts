@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isWindows, isLinux } from '../../../../base/common/platform.js';
-import { getKeyboardLayoutId, IKeyboardLayoutInfo } from '../../../../platform/keyboardLayout/common/keyboardLayout.js';
+import {
+	getKeyboardLayoutId,
+	IKeyboardLayoutInfo,
+} from '../../../../platform/keyboardLayout/common/keyboardLayout.js';
 
 function deserializeMapping(serializedMapping: ISerializedMapping) {
 	const mapping = serializedMapping;
@@ -20,26 +23,26 @@ function deserializeMapping(serializedMapping: ISerializedMapping) {
 			const mask = Number(result[4]);
 			const vkey = result.length === 6 ? result[5] : undefined;
 			ret[key] = {
-				'value': value,
-				'vkey': vkey,
-				'withShift': withShift,
-				'withAltGr': withAltGr,
-				'withShiftAltGr': withShiftAltGr,
-				'valueIsDeadKey': (mask & 1) > 0,
-				'withShiftIsDeadKey': (mask & 2) > 0,
-				'withAltGrIsDeadKey': (mask & 4) > 0,
-				'withShiftAltGrIsDeadKey': (mask & 8) > 0
+				value: value,
+				vkey: vkey,
+				withShift: withShift,
+				withAltGr: withAltGr,
+				withShiftAltGr: withShiftAltGr,
+				valueIsDeadKey: (mask & 1) > 0,
+				withShiftIsDeadKey: (mask & 2) > 0,
+				withAltGrIsDeadKey: (mask & 4) > 0,
+				withShiftAltGrIsDeadKey: (mask & 8) > 0,
 			};
 		} else {
 			ret[key] = {
-				'value': '',
-				'valueIsDeadKey': false,
-				'withShift': '',
-				'withShiftIsDeadKey': false,
-				'withAltGr': '',
-				'withAltGrIsDeadKey': false,
-				'withShiftAltGr': '',
-				'withShiftAltGrIsDeadKey': false
+				value: '',
+				valueIsDeadKey: false,
+				withShift: '',
+				withShiftIsDeadKey: false,
+				withAltGr: '',
+				withAltGrIsDeadKey: false,
+				withShiftAltGr: '',
+				withShiftAltGrIsDeadKey: false,
 			};
 		}
 	}
@@ -57,7 +60,6 @@ export interface IRawMixedKeyboardMapping {
 		withShiftIsDeadKey?: boolean;
 		withAltGrIsDeadKey?: boolean;
 		withShiftAltGrIsDeadKey?: boolean;
-
 	};
 }
 
@@ -76,13 +78,22 @@ export class KeymapInfo {
 	mapping: IRawMixedKeyboardMapping;
 	isUserKeyboardLayout: boolean;
 
-	constructor(public layout: IKeyboardLayoutInfo, public secondaryLayouts: IKeyboardLayoutInfo[], keyboardMapping: ISerializedMapping, isUserKeyboardLayout?: boolean) {
+	constructor(
+		public layout: IKeyboardLayoutInfo,
+		public secondaryLayouts: IKeyboardLayoutInfo[],
+		keyboardMapping: ISerializedMapping,
+		isUserKeyboardLayout?: boolean
+	) {
 		this.mapping = deserializeMapping(keyboardMapping);
 		this.isUserKeyboardLayout = !!isUserKeyboardLayout;
 		this.layout.isUserKeyboardLayout = !!isUserKeyboardLayout;
 	}
 
-	static createKeyboardLayoutFromDebugInfo(layout: IKeyboardLayoutInfo, value: IRawMixedKeyboardMapping, isUserKeyboardLayout?: boolean): KeymapInfo {
+	static createKeyboardLayoutFromDebugInfo(
+		layout: IKeyboardLayoutInfo,
+		value: IRawMixedKeyboardMapping,
+		isUserKeyboardLayout?: boolean
+	): KeymapInfo {
 		const keyboardLayoutInfo = new KeymapInfo(layout, [], {}, true);
 		keyboardLayoutInfo.mapping = value;
 		return keyboardLayoutInfo;

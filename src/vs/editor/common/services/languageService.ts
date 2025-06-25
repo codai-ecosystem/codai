@@ -7,7 +7,13 @@ import { Emitter, Event } from '../../../base/common/event.js';
 import { Disposable, IDisposable } from '../../../base/common/lifecycle.js';
 import { URI } from '../../../base/common/uri.js';
 import { LanguagesRegistry } from './languagesRegistry.js';
-import { ILanguageNameIdPair, ILanguageSelection, ILanguageService, ILanguageIcon, ILanguageExtensionPoint } from '../languages/language.js';
+import {
+	ILanguageNameIdPair,
+	ILanguageSelection,
+	ILanguageService,
+	ILanguageIcon,
+	ILanguageExtensionPoint,
+} from '../languages/language.js';
 import { ILanguageIdCodec, TokenizationRegistry } from '../languages.js';
 import { PLAINTEXT_LANGUAGE_ID } from '../languages/modesRegistry.js';
 import { IObservable, observableFromEvent } from '../../../base/common/observable.js';
@@ -23,7 +29,11 @@ export class LanguageService extends Disposable implements ILanguageService {
 	private readonly _onDidRequestRichLanguageFeatures = this._register(new Emitter<string>());
 	public readonly onDidRequestRichLanguageFeatures = this._onDidRequestRichLanguageFeatures.event;
 
-	protected readonly _onDidChange = this._register(new Emitter<void>({ leakWarningThreshold: 200 /* https://github.com/microsoft/vscode/issues/119968 */ }));
+	protected readonly _onDidChange = this._register(
+		new Emitter<void>({
+			leakWarningThreshold: 200 /* https://github.com/microsoft/vscode/issues/119968 */,
+		})
+	);
 	public readonly onDidChange: Event<void> = this._onDidChange.event;
 
 	private readonly _requestedBasicLanguages = new Set<string>();
@@ -93,7 +103,10 @@ export class LanguageService extends Disposable implements ILanguageService {
 		return this._registry.getLanguageIdByMimeType(mimeType);
 	}
 
-	public guessLanguageIdByFilepathOrFirstLine(resource: URI | null, firstLine?: string): string | null {
+	public guessLanguageIdByFilepathOrFirstLine(
+		resource: URI | null,
+		firstLine?: string
+	): string | null {
 		const languageIds = this._registry.guessLanguageIdByFilepathOrFirstLine(resource, firstLine);
 		return languageIds.at(0) ?? null;
 	}

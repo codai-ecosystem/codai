@@ -11,7 +11,9 @@ export interface IChatViewTitleActionContext {
 }
 
 export function isChatViewTitleActionContext(obj: unknown): obj is IChatViewTitleActionContext {
-	return !!obj &&
-		typeof (obj as IChatViewTitleActionContext).sessionId === 'string'
-		&& (obj as IChatViewTitleActionContext).$mid === MarshalledId.ChatViewContext;
+	return (
+		!!obj &&
+		typeof (obj as IChatViewTitleActionContext).sessionId === 'string' &&
+		(obj as IChatViewTitleActionContext).$mid === MarshalledId.ChatViewContext
+	);
 }

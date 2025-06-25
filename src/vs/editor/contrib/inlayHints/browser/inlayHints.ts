@@ -9,21 +9,32 @@ import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { IPosition, Position } from '../../../common/core/position.js';
 import { Range } from '../../../common/core/range.js';
 import { LanguageFeatureRegistry } from '../../../common/languageFeatureRegistry.js';
-import { InlayHint, InlayHintList, InlayHintsProvider, Command } from '../../../common/languages.js';
+import {
+	InlayHint,
+	InlayHintList,
+	InlayHintsProvider,
+	Command,
+} from '../../../common/languages.js';
 import { ITextModel } from '../../../common/model.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { URI } from '../../../../base/common/uri.js';
 
 export class InlayHintAnchor {
-	constructor(readonly range: Range, readonly direction: 'before' | 'after') { }
+	constructor(
+		readonly range: Range,
+		readonly direction: 'before' | 'after'
+	) {}
 }
 
 export class InlayHintItem {
-
 	private _isResolved: boolean = false;
 	private _currentResolve?: Promise<void>;
 
-	constructor(readonly hint: InlayHint, readonly anchor: InlayHintAnchor, readonly provider: InlayHintsProvider) { }
+	constructor(
+		readonly hint: InlayHint,
+		readonly anchor: InlayHintAnchor,
+		readonly provider: InlayHintsProvider
+	) {}
 
 	with(delta: { anchor: InlayHintAnchor }): InlayHintItem {
 		const result = new InlayHintItem(this.hint, delta.anchor, this.provider);
@@ -46,8 +57,9 @@ export class InlayHintItem {
 			return this.resolve(token);
 		}
 		if (!this._isResolved) {
-			this._currentResolve = this._doResolve(token)
-				.finally(() => this._currentResolve = undefined);
+			this._currentResolve = this._doResolve(token).finally(
+				() => (this._currentResolve = undefined)
+			);
 		}
 		await this._currentResolve;
 	}
@@ -67,23 +79,31 @@ export class InlayHintItem {
 }
 
 export class InlayHintsFragments {
+	private static _emptyInlayHintList: InlayHintList = Object.freeze({ dispose() {}, hints: [] });
 
-	private static _emptyInlayHintList: InlayHintList = Object.freeze({ dispose() { }, hints: [] });
-
-	static async create(registry: LanguageFeatureRegistry<InlayHintsProvider>, model: ITextModel, ranges: Range[], token: CancellationToken): Promise<InlayHintsFragments> {
-
+	static async create(
+		registry: LanguageFeatureRegistry<InlayHintsProvider>,
+		model: ITextModel,
+		ranges: Range[],
+		token: CancellationToken
+	): Promise<InlayHintsFragments> {
 		const data: [InlayHintList, InlayHintsProvider][] = [];
 
-		const promises = registry.ordered(model).reverse().map(provider => ranges.map(async range => {
-			try {
-				const result = await provider.provideInlayHints(model, range, token);
-				if (result?.hints.length || provider.onDidChangeInlayHints) {
-					data.push([result ?? InlayHintsFragments._emptyInlayHintList, provider]);
-				}
-			} catch (err) {
-				onUnexpectedExternalError(err);
-			}
-		}));
+		const promises = registry
+			.ordered(model)
+			.reverse()
+			.map(provider =>
+				ranges.map(async range => {
+					try {
+						const result = await provider.provideInlayHints(model, range, token);
+						if (result?.hints.length || provider.onDidChangeInlayHints) {
+							data.push([result ?? InlayHintsFragments._emptyInlayHintList, provider]);
+						}
+					} catch (err) {
+						onUnexpectedExternalError(err);
+					}
+				})
+			);
 
 		await Promise.all(promises.flat());
 
@@ -100,7 +120,11 @@ export class InlayHintsFragments {
 	readonly ranges: readonly Range[];
 	readonly provider: Set<InlayHintsProvider>;
 
-	private constructor(ranges: Range[], data: [InlayHintList, InlayHintsProvider][], model: ITextModel) {
+	private constructor(
+		ranges: Range[],
+		data: [InlayHintList, InlayHintsProvider][],
+		model: ITextModel
+	) {
 		this.ranges = ranges;
 		this.provider = new Set();
 		const items: InlayHintItem[] = [];
@@ -171,6 +195,6 @@ export function asCommandLink(command: Command): string {
 	return URI.from({
 		scheme: Schemas.command,
 		path: command.id,
-		query: command.arguments && encodeURIComponent(JSON.stringify(command.arguments))
+		query: command.arguments && encodeURIComponent(JSON.stringify(command.arguments)),
 	}).toString();
 }

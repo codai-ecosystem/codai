@@ -14,11 +14,29 @@ import { CommandsRegistry } from '../../../platform/commands/common/commands.js'
 import { ILogService } from '../../../platform/log/common/log.js';
 import { NotebookDto } from './mainThreadNotebookDto.js';
 import { INotebookCellStatusBarService } from '../../contrib/notebook/common/notebookCellStatusBarService.js';
-import { INotebookCellStatusBarItemProvider, INotebookContributionData, INotebookExclusiveDocumentFilter, NotebookData, NotebookExtensionDescription, TransientOptions } from '../../contrib/notebook/common/notebookCommon.js';
-import { INotebookService, SimpleNotebookProviderInfo } from '../../contrib/notebook/common/notebookService.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
+import {
+	INotebookCellStatusBarItemProvider,
+	INotebookContributionData,
+	INotebookExclusiveDocumentFilter,
+	NotebookData,
+	NotebookExtensionDescription,
+	TransientOptions,
+} from '../../contrib/notebook/common/notebookCommon.js';
+import {
+	INotebookService,
+	SimpleNotebookProviderInfo,
+} from '../../contrib/notebook/common/notebookService.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
 import { SerializableObjectWithBuffers } from '../../services/extensions/common/proxyIdentifier.js';
-import { ExtHostContext, ExtHostNotebookShape, MainContext, MainThreadNotebookShape } from '../common/extHost.protocol.js';
+import {
+	ExtHostContext,
+	ExtHostNotebookShape,
+	MainContext,
+	MainThreadNotebookShape,
+} from '../common/extHost.protocol.js';
 import { IRelativePattern } from '../../../base/common/glob.js';
 import { revive } from '../../../base/common/marshalling.js';
 import { INotebookFileMatchNoModel } from '../../contrib/search/common/searchNotebookHelpers.js';
@@ -27,7 +45,6 @@ import { coalesce } from '../../../base/common/arrays.js';
 
 @extHostNamedCustomer(MainContext.MainThreadNotebook)
 export class MainThreadNotebooks implements MainThreadNotebookShape {
-
 	private readonly _disposables = new DisposableStore();
 
 	private readonly _proxy: ExtHostNotebookShape;
@@ -37,8 +54,9 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookCellStatusBarService private readonly _cellStatusBarService: INotebookCellStatusBarService,
-		@ILogService private readonly _logService: ILogService,
+		@INotebookCellStatusBarService
+		private readonly _cellStatusBarService: INotebookCellStatusBarService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebook);
 	}
@@ -48,82 +66,114 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 		dispose(this._notebookSerializer.values());
 	}
 
-	$registerNotebookSerializer(handle: number, extension: NotebookExtensionDescription, viewType: string, options: TransientOptions, data: INotebookContributionData | undefined): void {
+	$registerNotebookSerializer(
+		handle: number,
+		extension: NotebookExtensionDescription,
+		viewType: string,
+		options: TransientOptions,
+		data: INotebookContributionData | undefined
+	): void {
 		const disposables = new DisposableStore();
 
-		disposables.add(this._notebookService.registerNotebookSerializer(viewType, extension, {
-			options,
-			dataToNotebook: async (data: VSBuffer): Promise<NotebookData> => {
-				const sw = new StopWatch();
-				let result: NotebookData;
-				if (data.byteLength === 0 && viewType === 'interactive') {
-					// we don't want any starting cells for an empty interactive window.
-					result = NotebookDto.fromNotebookDataDto({ cells: [], metadata: {} });
-				} else {
-					const dto = await this._proxy.$dataToNotebook(handle, data, CancellationToken.None);
-					result = NotebookDto.fromNotebookDataDto(dto.value);
-				}
-				this._logService.trace(`[NotebookSerializer] dataToNotebook DONE after ${sw.elapsed()}ms`, {
-					viewType,
-					extensionId: extension.id.value,
-				});
-				return result;
-			},
-			notebookToData: (data: NotebookData): Promise<VSBuffer> => {
-				const sw = new StopWatch();
-				const result = this._proxy.$notebookToData(handle, new SerializableObjectWithBuffers(NotebookDto.toNotebookDataDto(data)), CancellationToken.None);
-				this._logService.trace(`[NotebookSerializer] notebookToData DONE after ${sw.elapsed()}`, {
-					viewType,
-					extensionId: extension.id.value,
-				});
-				return result;
-			},
-			save: async (uri, versionId, options, token) => {
-				const stat = await this._proxy.$saveNotebook(handle, uri, versionId, options, token);
-				return {
-					...stat,
-					children: undefined,
-					resource: uri
-				};
-			},
-			searchInNotebooks: async (textQuery, token, allPriorityInfo): Promise<{ results: INotebookFileMatchNoModel<URI>[]; limitHit: boolean }> => {
-				const contributedType = this._notebookService.getContributedNotebookType(viewType);
-				if (!contributedType) {
-					return { results: [], limitHit: false };
-				}
-				const fileNames = contributedType.selectors;
-
-				const includes = fileNames.map((selector) => {
-					const globPattern = (selector as INotebookExclusiveDocumentFilter).include || selector as IRelativePattern | string;
-					return globPattern.toString();
-				});
-
-				if (!includes.length) {
+		disposables.add(
+			this._notebookService.registerNotebookSerializer(viewType, extension, {
+				options,
+				dataToNotebook: async (data: VSBuffer): Promise<NotebookData> => {
+					const sw = new StopWatch();
+					let result: NotebookData;
+					if (data.byteLength === 0 && viewType === 'interactive') {
+						// we don't want any starting cells for an empty interactive window.
+						result = NotebookDto.fromNotebookDataDto({ cells: [], metadata: {} });
+					} else {
+						const dto = await this._proxy.$dataToNotebook(handle, data, CancellationToken.None);
+						result = NotebookDto.fromNotebookDataDto(dto.value);
+					}
+					this._logService.trace(
+						`[NotebookSerializer] dataToNotebook DONE after ${sw.elapsed()}ms`,
+						{
+							viewType,
+							extensionId: extension.id.value,
+						}
+					);
+					return result;
+				},
+				notebookToData: (data: NotebookData): Promise<VSBuffer> => {
+					const sw = new StopWatch();
+					const result = this._proxy.$notebookToData(
+						handle,
+						new SerializableObjectWithBuffers(NotebookDto.toNotebookDataDto(data)),
+						CancellationToken.None
+					);
+					this._logService.trace(`[NotebookSerializer] notebookToData DONE after ${sw.elapsed()}`, {
+						viewType,
+						extensionId: extension.id.value,
+					});
+					return result;
+				},
+				save: async (uri, versionId, options, token) => {
+					const stat = await this._proxy.$saveNotebook(handle, uri, versionId, options, token);
 					return {
-						results: [], limitHit: false
+						...stat,
+						children: undefined,
+						resource: uri,
 					};
-				}
+				},
+				searchInNotebooks: async (
+					textQuery,
+					token,
+					allPriorityInfo
+				): Promise<{ results: INotebookFileMatchNoModel<URI>[]; limitHit: boolean }> => {
+					const contributedType = this._notebookService.getContributedNotebookType(viewType);
+					if (!contributedType) {
+						return { results: [], limitHit: false };
+					}
+					const fileNames = contributedType.selectors;
 
-				const thisPriorityInfo = coalesce<NotebookPriorityInfo>([{ isFromSettings: false, filenamePatterns: includes }, ...allPriorityInfo.get(viewType) ?? []]);
-				const otherEditorsPriorityInfo = Array.from(allPriorityInfo.keys())
-					.flatMap(key => {
+					const includes = fileNames.map(selector => {
+						const globPattern =
+							(selector as INotebookExclusiveDocumentFilter).include ||
+							(selector as IRelativePattern | string);
+						return globPattern.toString();
+					});
+
+					if (!includes.length) {
+						return {
+							results: [],
+							limitHit: false,
+						};
+					}
+
+					const thisPriorityInfo = coalesce<NotebookPriorityInfo>([
+						{ isFromSettings: false, filenamePatterns: includes },
+						...(allPriorityInfo.get(viewType) ?? []),
+					]);
+					const otherEditorsPriorityInfo = Array.from(allPriorityInfo.keys()).flatMap(key => {
 						if (key !== viewType) {
 							return allPriorityInfo.get(key) ?? [];
 						}
 						return [];
 					});
 
-				const searchComplete = await this._proxy.$searchInNotebooks(handle, textQuery, thisPriorityInfo, otherEditorsPriorityInfo, token);
-				const revivedResults: INotebookFileMatchNoModel<URI>[] = searchComplete.results.map(result => {
-					const resource = URI.revive(result.resource);
-					return {
-						resource,
-						cellResults: result.cellResults.map(e => revive(e))
-					};
-				});
-				return { results: revivedResults, limitHit: searchComplete.limitHit };
-			}
-		}));
+					const searchComplete = await this._proxy.$searchInNotebooks(
+						handle,
+						textQuery,
+						thisPriorityInfo,
+						otherEditorsPriorityInfo,
+						token
+					);
+					const revivedResults: INotebookFileMatchNoModel<URI>[] = searchComplete.results.map(
+						result => {
+							const resource = URI.revive(result.resource);
+							return {
+								resource,
+								cellResults: result.cellResults.map(e => revive(e)),
+							};
+						}
+					);
+					return { results: revivedResults, limitHit: searchComplete.limitHit };
+				},
+			})
+		);
 
 		if (data) {
 			disposables.add(this._notebookService.registerContributedNotebookType(viewType, data));
@@ -148,21 +198,30 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 		}
 	}
 
-	async $registerNotebookCellStatusBarItemProvider(handle: number, eventHandle: number | undefined, viewType: string): Promise<void> {
+	async $registerNotebookCellStatusBarItemProvider(
+		handle: number,
+		eventHandle: number | undefined,
+		viewType: string
+	): Promise<void> {
 		const that = this;
 		const provider: INotebookCellStatusBarItemProvider = {
 			async provideCellStatusBarItems(uri: URI, index: number, token: CancellationToken) {
-				const result = await that._proxy.$provideNotebookCellStatusBarItems(handle, uri, index, token);
+				const result = await that._proxy.$provideNotebookCellStatusBarItems(
+					handle,
+					uri,
+					index,
+					token
+				);
 				return {
 					items: result?.items ?? [],
 					dispose() {
 						if (result) {
 							that._proxy.$releaseNotebookCellStatusBarItems(result.cacheId);
 						}
-					}
+					},
 				};
 			},
-			viewType
+			viewType,
 		};
 
 		if (typeof eventHandle === 'number') {
@@ -175,7 +234,10 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 		this._notebookCellStatusBarRegistrations.set(handle, disposable);
 	}
 
-	async $unregisterNotebookCellStatusBarItemProvider(handle: number, eventHandle: number | undefined): Promise<void> {
+	async $unregisterNotebookCellStatusBarItemProvider(
+		handle: number,
+		eventHandle: number | undefined
+	): Promise<void> {
 		const unregisterThing = (handle: number) => {
 			const entry = this._notebookCellStatusBarRegistrations.get(handle);
 			if (entry) {
@@ -191,7 +253,6 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 }
 
 CommandsRegistry.registerCommand('_executeDataToNotebook', async (accessor, ...args) => {
-
 	const [notebookType, bytes] = args;
 	assertType(typeof notebookType === 'string', 'string');
 	assertType(bytes instanceof VSBuffer, 'VSBuffer');
@@ -207,7 +268,6 @@ CommandsRegistry.registerCommand('_executeDataToNotebook', async (accessor, ...a
 });
 
 CommandsRegistry.registerCommand('_executeNotebookToData', async (accessor, ...args) => {
-
 	const [notebookType, dto] = args;
 	assertType(typeof notebookType === 'string', 'string');
 	assertType(typeof dto === 'object');

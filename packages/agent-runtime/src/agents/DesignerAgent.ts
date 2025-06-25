@@ -9,10 +9,21 @@ import { Task, TaskResult, AgentConfig } from '../types.js';
 export class DesignerAgent extends BaseAgentImpl {
 	constructor(config: AgentConfig, memoryGraph: MemoryGraphEngine) {
 		super(config, memoryGraph);
-	} canExecuteTask(task: Task): boolean {
+	}
+	canExecuteTask(task: Task): boolean {
 		const designTasks = [
-			'ui', 'design', 'wireframe', 'prototype', 'style', 'component',
-			'interface', 'visual', 'layout', 'ux', 'user experience', 'development'
+			'ui',
+			'design',
+			'wireframe',
+			'prototype',
+			'style',
+			'component',
+			'interface',
+			'visual',
+			'layout',
+			'ux',
+			'user experience',
+			'development',
 		];
 
 		// Check if task has a type property and it matches our capabilities
@@ -26,9 +37,11 @@ export class DesignerAgent extends BaseAgentImpl {
 		const titleLower = task.title.toLowerCase();
 		const descriptionLower = task.description.toLowerCase();
 
-		return designTasks.some(taskType =>
-			titleLower.includes(taskType) || descriptionLower.includes(taskType)
-		) || task.agentId === 'designer';
+		return (
+			designTasks.some(
+				taskType => titleLower.includes(taskType) || descriptionLower.includes(taskType)
+			) || task.agentId === 'designer'
+		);
 	}
 
 	async executeTask(task: Task): Promise<TaskResult> {
@@ -240,7 +253,7 @@ export class DesignerAgent extends BaseAgentImpl {
 				warning: '#F59E0B',
 				error: '#EF4444',
 				info: '#3B82F6',
-			}
+			},
 		};
 	}
 
@@ -277,7 +290,7 @@ export class DesignerAgent extends BaseAgentImpl {
 				tight: '1.25',
 				normal: '1.5',
 				relaxed: '1.75',
-			}
+			},
 		};
 	}
 
@@ -403,7 +416,7 @@ export class DesignerAgent extends BaseAgentImpl {
 				name: 'Home',
 				route: '/',
 				components: ['Header', 'Hero', 'Features', 'Footer'],
-			}
+			},
 		];
 	}
 
@@ -414,7 +427,7 @@ export class DesignerAgent extends BaseAgentImpl {
 				trigger: 'onClick',
 				action: 'navigate',
 				params: { to: '/next-page' },
-			}
+			},
 		];
 	}
 
@@ -424,7 +437,7 @@ export class DesignerAgent extends BaseAgentImpl {
 				name: 'fadeIn',
 				duration: '300ms',
 				easing: 'ease-out',
-			}
+			},
 		];
 	}
 
@@ -490,7 +503,7 @@ export class DesignerAgent extends BaseAgentImpl {
 				name: 'PrimaryButton',
 				styles: 'bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600',
 				variants: ['primary', 'secondary', 'outline'],
-			}
+			},
 		];
 	}
 
@@ -561,7 +574,7 @@ export class DesignerAgent extends BaseAgentImpl {
 					screen: screen.name,
 					action: 'Navigate',
 				})),
-			}
+			},
 		];
 	}
 

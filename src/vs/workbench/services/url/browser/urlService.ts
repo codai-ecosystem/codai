@@ -5,16 +5,23 @@
 
 import { IURLService } from '../../../../platform/url/common/url.js';
 import { URI, UriComponents } from '../../../../base/common/uri.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { AbstractURLService } from '../../../../platform/url/common/urlService.js';
 import { Event } from '../../../../base/common/event.js';
 import { IBrowserWorkbenchEnvironmentService } from '../../environment/browser/environmentService.js';
-import { IOpenerService, IOpener, OpenExternalOptions, OpenInternalOptions } from '../../../../platform/opener/common/opener.js';
+import {
+	IOpenerService,
+	IOpener,
+	OpenExternalOptions,
+	OpenInternalOptions,
+} from '../../../../platform/opener/common/opener.js';
 import { matchesScheme } from '../../../../base/common/network.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 
 export interface IURLCallbackProvider {
-
 	/**
 	 * Indicates that a Uri has been opened outside of VSCode. The Uri
 	 * will be forwarded to all installed Uri handlers in the system.
@@ -40,13 +47,15 @@ export interface IURLCallbackProvider {
 }
 
 class BrowserURLOpener implements IOpener {
-
 	constructor(
 		private urlService: IURLService,
 		private productService: IProductService
-	) { }
+	) {}
 
-	async open(resource: string | URI, options?: OpenInternalOptions | OpenExternalOptions): Promise<boolean> {
+	async open(
+		resource: string | URI,
+		options?: OpenInternalOptions | OpenExternalOptions
+	): Promise<boolean> {
 		if ((options as OpenExternalOptions | undefined)?.openExternal) {
 			return false;
 		}
@@ -64,7 +73,6 @@ class BrowserURLOpener implements IOpener {
 }
 
 export class BrowserURLService extends AbstractURLService {
-
 	private provider: IURLCallbackProvider | undefined;
 
 	constructor(

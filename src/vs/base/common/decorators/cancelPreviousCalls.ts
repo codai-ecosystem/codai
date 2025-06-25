@@ -14,7 +14,9 @@ import { CancellationTokenSource, CancellationToken } from '../cancellation.js';
  * @typeparam `TFunction` - Type of the function arguments list of which will be extended
  * 							with an optional {@linkcode CancellationToken} argument.
  */
-type TWithOptionalCancellationToken<TFunction extends Function> = TFunction extends (...args: infer TArgs) => infer TReturn
+type TWithOptionalCancellationToken<TFunction extends Function> = TFunction extends (
+	...args: infer TArgs
+) => infer TReturn
 	? (...args: [...TArgs, cancellatioNToken?: CancellationToken]) => TReturn
 	: never;
 
@@ -91,14 +93,11 @@ export function cancelPreviousCalls<
 >(
 	_proto: TObject,
 	methodName: string,
-	descriptor: TypedPropertyDescriptor<TWithOptionalCancellationToken<(...args: TArgs) => TReturn>>,
+	descriptor: TypedPropertyDescriptor<TWithOptionalCancellationToken<(...args: TArgs) => TReturn>>
 ) {
 	const originalMethod = descriptor.value;
 
-	assertDefined(
-		originalMethod,
-		`Method '${methodName}' is not defined.`,
-	);
+	assertDefined(originalMethod, `Method '${methodName}' is not defined.`);
 
 	// we create the global map that contains `TObjectRecord` for each object instance that
 	// uses this decorator, which itself contains a `{method name} -> TMethodRecord` mapping
@@ -108,10 +107,7 @@ export function cancelPreviousCalls<
 
 	// decorate the original method with the following logic that upon a new invocation
 	// of the method cancels the cancellation token that was passed to a previous call
-	descriptor.value = function (
-		this: TObject,
-		...args: Parameters<typeof originalMethod>
-	): TReturn {
+	descriptor.value = function (this: TObject, ...args: Parameters<typeof originalMethod>): TReturn {
 		// get or create a record for the current object instance
 		// the creation is done once per each object instance
 		let record = objectRecords.get(this);
@@ -142,12 +138,8 @@ export function cancelPreviousCalls<
 
 		// get the last argument of the arguments list and if it is present,
 		// reuse it as the token for the new cancellation token source
-		const lastArgument = (args.length > 0)
-			? args[args.length - 1]
-			: undefined;
-		const token = CancellationToken.isCancellationToken(lastArgument)
-			? lastArgument
-			: undefined;
+		const lastArgument = args.length > 0 ? args[args.length - 1] : undefined;
+		const token = CancellationToken.isCancellationToken(lastArgument) ? lastArgument : undefined;
 
 		const cancellationSource = new CancellationTokenSource(token);
 		record.set(methodName, cancellationSource);

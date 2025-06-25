@@ -31,7 +31,9 @@ export interface IWorkerFileSystemDirectoryHandle extends IWorkerFileSystemHandl
 	getDirectoryHandle(name: string): Promise<IWorkerFileSystemDirectoryHandle>;
 	getFileHandle(name: string): Promise<IWorkerFileSystemFileHandle>;
 	resolve(possibleDescendant: IWorkerFileSystemHandle): Promise<string[] | null>;
-	entries(): AsyncIterableIterator<[string, IWorkerFileSystemDirectoryHandle | IWorkerFileSystemFileHandle]>;
+	entries(): AsyncIterableIterator<
+		[string, IWorkerFileSystemDirectoryHandle | IWorkerFileSystemFileHandle]
+	>;
 }
 
 export interface IWorkerFileSystemFileHandle extends IWorkerFileSystemHandle {
@@ -44,16 +46,33 @@ export interface ILocalFileSearchWorker {
 
 	$cancelQuery(queryId: number): void;
 
-	$listDirectory(handle: IWorkerFileSystemDirectoryHandle, queryProps: IFileQueryProps<UriComponents>, folderQuery: IFolderQuery, ignorePathCasing: boolean, queryId: number): Promise<IWorkerFileSearchComplete>;
-	$searchDirectory(handle: IWorkerFileSystemDirectoryHandle, queryProps: ITextQueryProps<UriComponents>, folderQuery: IFolderQuery, ignorePathCasing: boolean, queryId: number): Promise<IWorkerTextSearchComplete>;
+	$listDirectory(
+		handle: IWorkerFileSystemDirectoryHandle,
+		queryProps: IFileQueryProps<UriComponents>,
+		folderQuery: IFolderQuery,
+		ignorePathCasing: boolean,
+		queryId: number
+	): Promise<IWorkerFileSearchComplete>;
+	$searchDirectory(
+		handle: IWorkerFileSystemDirectoryHandle,
+		queryProps: ITextQueryProps<UriComponents>,
+		folderQuery: IFolderQuery,
+		ignorePathCasing: boolean,
+		queryId: number
+	): Promise<IWorkerTextSearchComplete>;
 }
 
 export abstract class LocalFileSearchWorkerHost {
 	public static CHANNEL_NAME = 'localFileSearchWorkerHost';
 	public static getChannel(workerServer: IWebWorkerServer): LocalFileSearchWorkerHost {
-		return workerServer.getChannel<LocalFileSearchWorkerHost>(LocalFileSearchWorkerHost.CHANNEL_NAME);
+		return workerServer.getChannel<LocalFileSearchWorkerHost>(
+			LocalFileSearchWorkerHost.CHANNEL_NAME
+		);
 	}
-	public static setChannel(workerClient: IWebWorkerClient<any>, obj: LocalFileSearchWorkerHost): void {
+	public static setChannel(
+		workerClient: IWebWorkerClient<any>,
+		obj: LocalFileSearchWorkerHost
+	): void {
 		workerClient.setChannel<LocalFileSearchWorkerHost>(LocalFileSearchWorkerHost.CHANNEL_NAME, obj);
 	}
 

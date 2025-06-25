@@ -27,7 +27,7 @@ Module.prototype.require = function (id) {
 const TEST_CONFIG = {
 	testProject: 'test-e2e-project',
 	testPath: path.join(__dirname, 'test-projects', 'e2e-test'),
-	verbose: true
+	verbose: true,
 };
 
 // Colors for output
@@ -37,7 +37,7 @@ const colors = {
 	yellow: '\x1b[33m',
 	blue: '\x1b[34m',
 	reset: '\x1b[0m',
-	bold: '\x1b[1m'
+	bold: '\x1b[1m',
 };
 
 function log(message, color = colors.reset) {
@@ -90,7 +90,7 @@ class EndToEndTestSuite {
 		this.results = {
 			passed: 0,
 			failed: 0,
-			total: 0
+			total: 0,
 		};
 	}
 
@@ -135,8 +135,7 @@ class EndToEndTestSuite {
 		}
 
 		const successRate = ((this.results.passed / this.results.total) * 100).toFixed(1);
-		log(`\nSuccess Rate: ${successRate}%`,
-			successRate === '100.0' ? colors.green : colors.yellow);
+		log(`\nSuccess Rate: ${successRate}%`, successRate === '100.0' ? colors.green : colors.yellow);
 	}
 }
 
@@ -164,7 +163,7 @@ function setupTests() {
 			'aide.buildProject',
 			'aide.deployProject',
 			'aide.setupDeployment',
-			'aide.deployWithCI'
+			'aide.deployWithCI',
 		];
 
 		const definedCommands = pkg.contributes.commands.map(cmd => cmd.command);
@@ -177,7 +176,12 @@ function setupTests() {
 
 	// Test 2: Core Services Loading
 	suite.addTest('Core Services Loading', async () => {
-		const services = ['memoryService', 'conversationService', 'projectService', 'deploymentService'];
+		const services = [
+			'memoryService',
+			'conversationService',
+			'projectService',
+			'deploymentService',
+		];
 
 		for (const serviceName of services) {
 			const service = loadService(serviceName);
@@ -197,7 +201,8 @@ function setupTests() {
 		const pluginsDir = path.join(__dirname, 'out', 'plugins');
 		const pluginFiles = fs.readdirSync(pluginsDir).filter(f => f.endsWith('.js'));
 
-		if (pluginFiles.length < 4) { // Expected: manager + at least 3 plugin types
+		if (pluginFiles.length < 4) {
+			// Expected: manager + at least 3 plugin types
 			throw new Error(`Insufficient plugin files found: ${pluginFiles.length}`);
 		}
 	});
@@ -215,16 +220,12 @@ function setupTests() {
 			type: 'nextjs',
 			template: 'typescript',
 			features: ['tailwind', 'eslint'],
-			targetPath: TEST_CONFIG.testPath
+			targetPath: TEST_CONFIG.testPath,
 		};
 
 		// This would normally be called through VS Code command
 		// For now, validate the structure exists
-		const expectedFiles = [
-			'projectService.js',
-			'deploymentService.js',
-			'builderService.js'
-		];
+		const expectedFiles = ['projectService.js', 'deploymentService.js', 'builderService.js'];
 
 		const servicesDir = path.join(__dirname, 'out', 'services');
 		for (const file of expectedFiles) {
@@ -267,7 +268,7 @@ function setupTests() {
 			'deployWithCI',
 			'generateCIPipeline',
 			'generateDockerfile',
-			'setupMonitoring'
+			'setupMonitoring',
 		];
 
 		for (const method of requiredMethods) {
@@ -353,7 +354,7 @@ function setupTests() {
 			'aide.deployWithCI',
 			'aide.viewDeploymentHistory',
 			'aide.manageDeploymentTargets',
-			'aide.setupMonitoring'
+			'aide.setupMonitoring',
 		];
 
 		for (const command of enhancedCommands) {
@@ -391,7 +392,6 @@ async function main() {
 			log('Please review the errors above and fix before deployment');
 			process.exit(1);
 		}
-
 	} catch (error) {
 		logError(`Test suite failed: ${error.message}`);
 		process.exit(1);

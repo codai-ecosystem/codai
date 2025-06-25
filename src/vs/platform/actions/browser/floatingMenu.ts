@@ -12,10 +12,17 @@ import { getFlatActionBarActions } from './menuEntryActionViewItem.js';
 import { IMenu, IMenuService, MenuId } from '../common/actions.js';
 import { IContextKeyService } from '../../contextkey/common/contextkey.js';
 import { IInstantiationService } from '../../instantiation/common/instantiation.js';
-import { asCssVariable, asCssVariableWithDefault, buttonBackground, buttonForeground, contrastBorder, editorBackground, editorForeground } from '../../theme/common/colorRegistry.js';
+import {
+	asCssVariable,
+	asCssVariableWithDefault,
+	buttonBackground,
+	buttonForeground,
+	contrastBorder,
+	editorBackground,
+	editorForeground,
+} from '../../theme/common/colorRegistry.js';
 
 export class FloatingClickWidget extends Widget {
-
 	private readonly _onClick = this._register(new Emitter<void>());
 	readonly onClick = this._onClick.event;
 
@@ -37,8 +44,14 @@ export class FloatingClickWidget extends Widget {
 
 	render() {
 		clearNode(this._domNode);
-		this._domNode.style.backgroundColor = asCssVariableWithDefault(buttonBackground, asCssVariable(editorBackground));
-		this._domNode.style.color = asCssVariableWithDefault(buttonForeground, asCssVariable(editorForeground));
+		this._domNode.style.backgroundColor = asCssVariableWithDefault(
+			buttonBackground,
+			asCssVariable(editorBackground)
+		);
+		this._domNode.style.color = asCssVariableWithDefault(
+			buttonForeground,
+			asCssVariable(editorForeground)
+		);
 		this._domNode.style.border = `1px solid ${asCssVariable(contrastBorder)}`;
 
 		append(this._domNode, $('')).textContent = this.label;
@@ -69,7 +82,9 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 			if (!this.isVisible()) {
 				return;
 			}
-			const actions = getFlatActionBarActions(this.menu.getActions({ renderShortTitle: true, shouldForwardArgs: true }));
+			const actions = getFlatActionBarActions(
+				this.menu.getActions({ renderShortTitle: true, shouldForwardArgs: true })
+			);
 			if (actions.length === 0) {
 				return;
 			}
@@ -84,7 +99,10 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 		renderMenuAsFloatingClickBtn();
 	}
 
-	protected abstract createWidget(action: IAction, disposables: DisposableStore): FloatingClickWidget;
+	protected abstract createWidget(
+		action: IAction,
+		disposables: DisposableStore
+	): FloatingClickWidget;
 
 	protected getActionArg(): unknown {
 		return undefined;
@@ -96,7 +114,6 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 }
 
 export class FloatingClickMenu extends AbstractFloatingClickMenu {
-
 	constructor(
 		private readonly options: {
 			/** Element the menu should be rendered into. */
@@ -114,7 +131,10 @@ export class FloatingClickMenu extends AbstractFloatingClickMenu {
 		this.render();
 	}
 
-	protected override createWidget(action: IAction, disposable: DisposableStore): FloatingClickWidget {
+	protected override createWidget(
+		action: IAction,
+		disposable: DisposableStore
+	): FloatingClickWidget {
 		const w = this.instantiationService.createInstance(FloatingClickWidget, action.label);
 		const node = w.getDomNode();
 		this.options.container.appendChild(node);

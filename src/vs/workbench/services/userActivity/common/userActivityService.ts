@@ -3,11 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { disposableTimeout, RunOnceScheduler, runWhenGlobalIdle } from '../../../../base/common/async.js';
+import {
+	disposableTimeout,
+	RunOnceScheduler,
+	runWhenGlobalIdle,
+} from '../../../../base/common/async.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { IInstantiationService, createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
+import {
+	IInstantiationService,
+	createDecorator,
+} from '../../../../platform/instantiation/common/instantiation.js';
 import { userActivityRegistry } from './userActivityRegistry.js';
 
 export interface IMarkActiveOptions {
@@ -49,12 +64,14 @@ export const IUserActivityService = createDecorator<IUserActivityService>('IUser
 
 export class UserActivityService extends Disposable implements IUserActivityService {
 	declare readonly _serviceBrand: undefined;
-	private readonly markInactive = this._register(new RunOnceScheduler(() => {
-		this.isActive = false;
-		this.changeEmitter.fire(false);
-	}, MARK_INACTIVE_DEBOUNCE));
+	private readonly markInactive = this._register(
+		new RunOnceScheduler(() => {
+			this.isActive = false;
+			this.changeEmitter.fire(false);
+		}, MARK_INACTIVE_DEBOUNCE)
+	);
 
-	private readonly changeEmitter = this._register(new Emitter<boolean>);
+	private readonly changeEmitter = this._register(new Emitter<boolean>());
 	private active = 0;
 
 	/**

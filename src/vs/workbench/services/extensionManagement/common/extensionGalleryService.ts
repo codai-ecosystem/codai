@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IAllowedExtensionsService, IExtensionGalleryService } from '../../../../platform/extensionManagement/common/extensionManagement.js';
+import {
+	IAllowedExtensionsService,
+	IExtensionGalleryService,
+} from '../../../../platform/extensionManagement/common/extensionManagement.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { IFileService } from '../../../../platform/files/common/files.js';
@@ -14,7 +17,10 @@ import { IRequestService } from '../../../../platform/request/common/request.js'
 import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
 import { AbstractExtensionGalleryService } from '../../../../platform/extensionManagement/common/extensionGalleryService.js';
 import { IWorkbenchAssignmentService } from '../../assignment/common/assignmentService.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IExtensionGalleryManifestService } from '../../../../platform/extensionManagement/common/extensionGalleryManifest.js';
 
 export class WorkbenchExtensionGalleryService extends AbstractExtensionGalleryService {
@@ -29,10 +35,27 @@ export class WorkbenchExtensionGalleryService extends AbstractExtensionGallerySe
 		@IProductService productService: IProductService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IAllowedExtensionsService allowedExtensionsService: IAllowedExtensionsService,
-		@IExtensionGalleryManifestService extensionGalleryManifestService: IExtensionGalleryManifestService,
+		@IExtensionGalleryManifestService
+		extensionGalleryManifestService: IExtensionGalleryManifestService
 	) {
-		super(storageService, assignmentService, requestService, logService, environmentService, telemetryService, fileService, productService, configurationService, allowedExtensionsService, extensionGalleryManifestService);
+		super(
+			storageService,
+			assignmentService,
+			requestService,
+			logService,
+			environmentService,
+			telemetryService,
+			fileService,
+			productService,
+			configurationService,
+			allowedExtensionsService,
+			extensionGalleryManifestService
+		);
 	}
 }
 
-registerSingleton(IExtensionGalleryService, WorkbenchExtensionGalleryService, InstantiationType.Delayed);
+registerSingleton(
+	IExtensionGalleryService,
+	WorkbenchExtensionGalleryService,
+	InstantiationType.Delayed
+);

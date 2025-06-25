@@ -5,7 +5,13 @@
 
 import { Emitter } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { IReader, autorunHandleChanges, derived, derivedOpts, observableFromEvent } from '../../../../../base/common/observable.js';
+import {
+	IReader,
+	autorunHandleChanges,
+	derived,
+	derivedOpts,
+	observableFromEvent,
+} from '../../../../../base/common/observable.js';
 import { IEditorConstructionOptions } from '../../../config/editorConfiguration.js';
 import { IDiffEditorConstructionOptions } from '../../../editorBrowser.js';
 import { observableCodeEditor } from '../../../observableCodeEditor.js';
@@ -26,7 +32,9 @@ export class DiffEditorEditors extends Disposable {
 	public readonly modified;
 
 	private readonly _onDidContentSizeChange;
-	public get onDidContentSizeChange() { return this._onDidContentSizeChange.event; }
+	public get onDidContentSizeChange() {
+		return this._onDidContentSizeChange.event;
+	}
 
 	public readonly modifiedScrollTop;
 	public readonly modifiedScrollHeight;
@@ -51,90 +59,168 @@ export class DiffEditorEditors extends Disposable {
 		private readonly modifiedEditorElement: HTMLElement,
 		private readonly _options: DiffEditorOptions,
 		private _argCodeEditorWidgetOptions: IDiffCodeEditorWidgetOptions,
-		private readonly _createInnerEditor: (instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorOptions>, editorWidgetOptions: ICodeEditorWidgetOptions) => CodeEditorWidget,
+		private readonly _createInnerEditor: (
+			instantiationService: IInstantiationService,
+			container: HTMLElement,
+			options: Readonly<IEditorOptions>,
+			editorWidgetOptions: ICodeEditorWidgetOptions
+		) => CodeEditorWidget,
 		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
 		@IKeybindingService private readonly _keybindingService: IKeybindingService
 	) {
 		super();
-		this.original = this._register(this._createLeftHandSideEditor(this._options.editorOptions.get(), this._argCodeEditorWidgetOptions.originalEditor || {}));
-		this.modified = this._register(this._createRightHandSideEditor(this._options.editorOptions.get(), this._argCodeEditorWidgetOptions.modifiedEditor || {}));
+		this.original = this._register(
+			this._createLeftHandSideEditor(
+				this._options.editorOptions.get(),
+				this._argCodeEditorWidgetOptions.originalEditor || {}
+			)
+		);
+		this.modified = this._register(
+			this._createRightHandSideEditor(
+				this._options.editorOptions.get(),
+				this._argCodeEditorWidgetOptions.modifiedEditor || {}
+			)
+		);
 		this._onDidContentSizeChange = this._register(new Emitter<IContentSizeChangedEvent>());
-		this.modifiedScrollTop = observableFromEvent(this, this.modified.onDidScrollChange, () => /** @description modified.getScrollTop */ this.modified.getScrollTop());
-		this.modifiedScrollHeight = observableFromEvent(this, this.modified.onDidScrollChange, () => /** @description modified.getScrollHeight */ this.modified.getScrollHeight());
+		this.modifiedScrollTop = observableFromEvent(this, this.modified.onDidScrollChange, () =>
+			/** @description modified.getScrollTop */ this.modified.getScrollTop()
+		);
+		this.modifiedScrollHeight = observableFromEvent(this, this.modified.onDidScrollChange, () =>
+			/** @description modified.getScrollHeight */ this.modified.getScrollHeight()
+		);
 		this.modifiedObs = observableCodeEditor(this.modified);
 		this.originalObs = observableCodeEditor(this.original);
 		this.modifiedModel = this.modifiedObs.model;
-		this.modifiedSelections = observableFromEvent(this, this.modified.onDidChangeCursorSelection, () => this.modified.getSelections() ?? []);
-		this.modifiedCursor = derivedOpts({ owner: this, equalsFn: Position.equals }, reader => this.modifiedSelections.read(reader)[0]?.getPosition() ?? new Position(1, 1));
-		this.originalCursor = observableFromEvent(this, this.original.onDidChangeCursorPosition, () => this.original.getPosition() ?? new Position(1, 1));
+		this.modifiedSelections = observableFromEvent(
+			this,
+			this.modified.onDidChangeCursorSelection,
+			() => this.modified.getSelections() ?? []
+		);
+		this.modifiedCursor = derivedOpts(
+			{ owner: this, equalsFn: Position.equals },
+			reader => this.modifiedSelections.read(reader)[0]?.getPosition() ?? new Position(1, 1)
+		);
+		this.originalCursor = observableFromEvent(
+			this,
+			this.original.onDidChangeCursorPosition,
+			() => this.original.getPosition() ?? new Position(1, 1)
+		);
 		this.isOriginalFocused = observableCodeEditor(this.original).isFocused;
 		this.isModifiedFocused = observableCodeEditor(this.modified).isFocused;
-		this.isFocused = derived(this, reader => this.isOriginalFocused.read(reader) || this.isModifiedFocused.read(reader));
+		this.isFocused = derived(
+			this,
+			reader => this.isOriginalFocused.read(reader) || this.isModifiedFocused.read(reader)
+		);
 
 		this._argCodeEditorWidgetOptions = null as any;
 
-		this._register(autorunHandleChanges({
-			changeTracker: {
-				createChangeSummary: (): IDiffEditorConstructionOptions => ({}),
-				handleChange: (ctx, changeSummary) => {
-					if (ctx.didChange(_options.editorOptions)) {
-						Object.assign(changeSummary, ctx.change.changedOptions);
-					}
-					return true;
+		this._register(
+			autorunHandleChanges(
+				{
+					changeTracker: {
+						createChangeSummary: (): IDiffEditorConstructionOptions => ({}),
+						handleChange: (ctx, changeSummary) => {
+							if (ctx.didChange(_options.editorOptions)) {
+								Object.assign(changeSummary, ctx.change.changedOptions);
+							}
+							return true;
+						},
+					},
+				},
+				(reader, changeSummary) => {
+					/** @description update editor options */
+					_options.editorOptions.read(reader);
+
+					this._options.renderSideBySide.read(reader);
+
+					this.modified.updateOptions(this._adjustOptionsForRightHandSide(reader, changeSummary));
+					this.original.updateOptions(this._adjustOptionsForLeftHandSide(reader, changeSummary));
 				}
-			}
-		}, (reader, changeSummary) => {
-			/** @description update editor options */
-			_options.editorOptions.read(reader);
-
-			this._options.renderSideBySide.read(reader);
-
-			this.modified.updateOptions(this._adjustOptionsForRightHandSide(reader, changeSummary));
-			this.original.updateOptions(this._adjustOptionsForLeftHandSide(reader, changeSummary));
-		}));
+			)
+		);
 	}
 
-	private _createLeftHandSideEditor(options: Readonly<IDiffEditorConstructionOptions>, codeEditorWidgetOptions: ICodeEditorWidgetOptions): CodeEditorWidget {
+	private _createLeftHandSideEditor(
+		options: Readonly<IDiffEditorConstructionOptions>,
+		codeEditorWidgetOptions: ICodeEditorWidgetOptions
+	): CodeEditorWidget {
 		const leftHandSideOptions = this._adjustOptionsForLeftHandSide(undefined, options);
-		const editor = this._constructInnerEditor(this._instantiationService, this.originalEditorElement, leftHandSideOptions, codeEditorWidgetOptions);
+		const editor = this._constructInnerEditor(
+			this._instantiationService,
+			this.originalEditorElement,
+			leftHandSideOptions,
+			codeEditorWidgetOptions
+		);
 
-		const isInDiffLeftEditorKey = this._contextKeyService.createKey<boolean>('isInDiffLeftEditor', editor.hasWidgetFocus());
+		const isInDiffLeftEditorKey = this._contextKeyService.createKey<boolean>(
+			'isInDiffLeftEditor',
+			editor.hasWidgetFocus()
+		);
 		this._register(editor.onDidFocusEditorWidget(() => isInDiffLeftEditorKey.set(true)));
 		this._register(editor.onDidBlurEditorWidget(() => isInDiffLeftEditorKey.set(false)));
 
 		return editor;
 	}
 
-	private _createRightHandSideEditor(options: Readonly<IDiffEditorConstructionOptions>, codeEditorWidgetOptions: ICodeEditorWidgetOptions): CodeEditorWidget {
+	private _createRightHandSideEditor(
+		options: Readonly<IDiffEditorConstructionOptions>,
+		codeEditorWidgetOptions: ICodeEditorWidgetOptions
+	): CodeEditorWidget {
 		const rightHandSideOptions = this._adjustOptionsForRightHandSide(undefined, options);
-		const editor = this._constructInnerEditor(this._instantiationService, this.modifiedEditorElement, rightHandSideOptions, codeEditorWidgetOptions);
+		const editor = this._constructInnerEditor(
+			this._instantiationService,
+			this.modifiedEditorElement,
+			rightHandSideOptions,
+			codeEditorWidgetOptions
+		);
 
-		const isInDiffRightEditorKey = this._contextKeyService.createKey<boolean>('isInDiffRightEditor', editor.hasWidgetFocus());
+		const isInDiffRightEditorKey = this._contextKeyService.createKey<boolean>(
+			'isInDiffRightEditor',
+			editor.hasWidgetFocus()
+		);
 		this._register(editor.onDidFocusEditorWidget(() => isInDiffRightEditorKey.set(true)));
 		this._register(editor.onDidBlurEditorWidget(() => isInDiffRightEditorKey.set(false)));
 
 		return editor;
 	}
 
-	private _constructInnerEditor(instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorConstructionOptions>, editorWidgetOptions: ICodeEditorWidgetOptions): CodeEditorWidget {
-		const editor = this._createInnerEditor(instantiationService, container, options, editorWidgetOptions);
+	private _constructInnerEditor(
+		instantiationService: IInstantiationService,
+		container: HTMLElement,
+		options: Readonly<IEditorConstructionOptions>,
+		editorWidgetOptions: ICodeEditorWidgetOptions
+	): CodeEditorWidget {
+		const editor = this._createInnerEditor(
+			instantiationService,
+			container,
+			options,
+			editorWidgetOptions
+		);
 
-		this._register(editor.onDidContentSizeChange(e => {
-			const width = this.original.getContentWidth() + this.modified.getContentWidth() + OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH;
-			const height = Math.max(this.modified.getContentHeight(), this.original.getContentHeight());
+		this._register(
+			editor.onDidContentSizeChange(e => {
+				const width =
+					this.original.getContentWidth() +
+					this.modified.getContentWidth() +
+					OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH;
+				const height = Math.max(this.modified.getContentHeight(), this.original.getContentHeight());
 
-			this._onDidContentSizeChange.fire({
-				contentHeight: height,
-				contentWidth: width,
-				contentHeightChanged: e.contentHeightChanged,
-				contentWidthChanged: e.contentWidthChanged
-			});
-		}));
+				this._onDidContentSizeChange.fire({
+					contentHeight: height,
+					contentWidth: width,
+					contentHeightChanged: e.contentHeightChanged,
+					contentWidthChanged: e.contentWidthChanged,
+				});
+			})
+		);
 		return editor;
 	}
 
-	private _adjustOptionsForLeftHandSide(_reader: IReader | undefined, changedOptions: Readonly<IDiffEditorConstructionOptions>): IEditorConstructionOptions {
+	private _adjustOptionsForLeftHandSide(
+		_reader: IReader | undefined,
+		changedOptions: Readonly<IDiffEditorConstructionOptions>
+	): IEditorConstructionOptions {
 		const result = this._adjustOptionsForSubEditor(changedOptions);
 		if (!this._options.renderSideBySide.get()) {
 			// never wrap hidden editor
@@ -143,7 +229,11 @@ export class DiffEditorEditors extends Disposable {
 			result.stickyScroll = { enabled: false };
 
 			// Disable unicode highlighting for the original side in inline mode, as they are not shown anyway.
-			result.unicodeHighlight = { nonBasicASCII: false, ambiguousCharacters: false, invisibleCharacters: false };
+			result.unicodeHighlight = {
+				nonBasicASCII: false,
+				ambiguousCharacters: false,
+				invisibleCharacters: false,
+			};
 		} else {
 			result.unicodeHighlight = this._options.editorOptions.get().unicodeHighlight || {};
 			result.wordWrapOverride1 = this._options.diffWordWrap.get();
@@ -160,25 +250,32 @@ export class DiffEditorEditors extends Disposable {
 		return result;
 	}
 
-	private _adjustOptionsForRightHandSide(reader: IReader | undefined, changedOptions: Readonly<IDiffEditorConstructionOptions>): IEditorConstructionOptions {
+	private _adjustOptionsForRightHandSide(
+		reader: IReader | undefined,
+		changedOptions: Readonly<IDiffEditorConstructionOptions>
+	): IEditorConstructionOptions {
 		const result = this._adjustOptionsForSubEditor(changedOptions);
 		if (changedOptions.modifiedAriaLabel) {
 			result.ariaLabel = changedOptions.modifiedAriaLabel;
 		}
 		result.ariaLabel = this._updateAriaLabel(result.ariaLabel);
 		result.wordWrapOverride1 = this._options.diffWordWrap.get();
-		result.revealHorizontalRightPadding = EditorOptions.revealHorizontalRightPadding.defaultValue + OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH;
+		result.revealHorizontalRightPadding =
+			EditorOptions.revealHorizontalRightPadding.defaultValue +
+			OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH;
 		result.scrollbar!.verticalHasArrows = false;
 		result.extraEditorClassName = 'modified-in-monaco-diff-editor';
 		return result;
 	}
 
-	private _adjustOptionsForSubEditor(options: Readonly<IDiffEditorConstructionOptions>): IEditorConstructionOptions {
+	private _adjustOptionsForSubEditor(
+		options: Readonly<IDiffEditorConstructionOptions>
+	): IEditorConstructionOptions {
 		const clonedOptions = {
 			...options,
 			dimension: {
 				height: 0,
-				width: 0
+				width: 0,
 			},
 		};
 		clonedOptions.inDiffEditor = true;
@@ -207,7 +304,11 @@ export class DiffEditorEditors extends Disposable {
 		if (!ariaLabel) {
 			ariaLabel = '';
 		}
-		const ariaNavigationTip = localize('diff-aria-navigation-tip', ' use {0} to open the accessibility help.', this._keybindingService.lookupKeybinding('editor.action.accessibilityHelp')?.getAriaLabel());
+		const ariaNavigationTip = localize(
+			'diff-aria-navigation-tip',
+			' use {0} to open the accessibility help.',
+			this._keybindingService.lookupKeybinding('editor.action.accessibilityHelp')?.getAriaLabel()
+		);
 		if (this._options.accessibilityVerbose.get()) {
 			return ariaLabel + ariaNavigationTip;
 		} else if (ariaLabel) {

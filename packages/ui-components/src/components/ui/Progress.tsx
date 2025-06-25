@@ -13,7 +13,7 @@ export const Progress: React.FC<ProgressProps> = ({
 	max = 100,
 	className = '',
 	showValue = false,
-	variant = 'default'
+	variant = 'default',
 }) => {
 	const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
@@ -38,11 +38,7 @@ export const Progress: React.FC<ProgressProps> = ({
 					style={{ width: `${percentage}%` }}
 				/>
 			</div>
-			{showValue && (
-				<div className="text-xs text-gray-600 mt-1">
-					{Math.round(percentage)}%
-				</div>
-			)}
+			{showValue && <div className="text-xs text-gray-600 mt-1">{Math.round(percentage)}%</div>}
 		</div>
 	);
 };

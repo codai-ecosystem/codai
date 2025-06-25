@@ -21,7 +21,9 @@ const _specifierToUrl: Record<string, string> = {};
 export async function initialize(injectPath: string): Promise<void> {
 	// populate mappings
 
-	const injectPackageJSONPath = fileURLToPath(new URL('../package.json', pathToFileURL(injectPath)));
+	const injectPackageJSONPath = fileURLToPath(
+		new URL('../package.json', pathToFileURL(injectPath))
+	);
 	const packageJSON = JSON.parse(String(await promises.readFile(injectPackageJSONPath)));
 
 	for (const [name] of Object.entries(packageJSON.dependencies)) {
@@ -37,7 +39,6 @@ export async function initialize(injectPath: string): Promise<void> {
 			}
 			const mainPath = join(injectPackageJSONPath, `../node_modules/${name}/${main}`);
 			_specifierToUrl[name] = pathToFileURL(mainPath).href;
-
 		} catch (err) {
 			console.error(name);
 			console.error(err);
@@ -47,14 +48,17 @@ export async function initialize(injectPath: string): Promise<void> {
 	console.log(`[bootstrap-import] Initialized node_modules redirector for: ${injectPath}`);
 }
 
-export async function resolve(specifier: string | number, context: any, nextResolve: (arg0: any, arg1: any) => any) {
-
+export async function resolve(
+	specifier: string | number,
+	context: any,
+	nextResolve: (arg0: any, arg1: any) => any
+) {
 	const newSpecifier = _specifierToUrl[specifier];
 	if (newSpecifier !== undefined) {
 		return {
 			format: 'commonjs',
 			shortCircuit: true,
-			url: newSpecifier
+			url: newSpecifier,
 		};
 	}
 

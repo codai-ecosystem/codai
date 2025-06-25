@@ -20,7 +20,7 @@ export function computeIndentLevel(line: string, tabSize: number): number {
 		if (chCode === CharCode.Space) {
 			indent++;
 		} else if (chCode === CharCode.Tab) {
-			indent = indent - indent % tabSize + tabSize;
+			indent = indent - (indent % tabSize) + tabSize;
 		} else {
 			break;
 		}

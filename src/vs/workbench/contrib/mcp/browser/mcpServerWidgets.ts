@@ -9,7 +9,12 @@ import { IManagedHover } from '../../../../base/browser/ui/hover/hover.js';
 import { getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
 import { renderIcon } from '../../../../base/browser/ui/iconLabel/iconLabels.js';
 import { KeyCode } from '../../../../base/common/keyCodes.js';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import * as platform from '../../../../base/common/platform.js';
 import { URI } from '../../../../base/common/uri.js';
@@ -17,33 +22,48 @@ import { localize } from '../../../../nls.js';
 import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { verifiedPublisherIcon } from '../../../services/extensionManagement/common/extensionsIcons.js';
-import { installCountIcon, starEmptyIcon, starFullIcon, starHalfIcon } from '../../extensions/browser/extensionsIcons.js';
+import {
+	installCountIcon,
+	starEmptyIcon,
+	starFullIcon,
+	starHalfIcon,
+} from '../../extensions/browser/extensionsIcons.js';
 import { IMcpServerContainer, IWorkbenchMcpServer } from '../common/mcpTypes.js';
 
 export abstract class McpServerWidget extends Disposable implements IMcpServerContainer {
 	private _mcpServer: IWorkbenchMcpServer | null = null;
-	get mcpServer(): IWorkbenchMcpServer | null { return this._mcpServer; }
-	set mcpServer(mcpServer: IWorkbenchMcpServer | null) { this._mcpServer = mcpServer; this.update(); }
-	update(): void { this.render(); }
+	get mcpServer(): IWorkbenchMcpServer | null {
+		return this._mcpServer;
+	}
+	set mcpServer(mcpServer: IWorkbenchMcpServer | null) {
+		this._mcpServer = mcpServer;
+		this.update();
+	}
+	update(): void {
+		this.render();
+	}
 	abstract render(): void;
 }
 
 export function onClick(element: HTMLElement, callback: () => void): IDisposable {
 	const disposables: DisposableStore = new DisposableStore();
-	disposables.add(dom.addDisposableListener(element, dom.EventType.CLICK, dom.finalHandler(callback)));
-	disposables.add(dom.addDisposableListener(element, dom.EventType.KEY_UP, e => {
-		const keyboardEvent = new StandardKeyboardEvent(e);
-		if (keyboardEvent.equals(KeyCode.Space) || keyboardEvent.equals(KeyCode.Enter)) {
-			e.preventDefault();
-			e.stopPropagation();
-			callback();
-		}
-	}));
+	disposables.add(
+		dom.addDisposableListener(element, dom.EventType.CLICK, dom.finalHandler(callback))
+	);
+	disposables.add(
+		dom.addDisposableListener(element, dom.EventType.KEY_UP, e => {
+			const keyboardEvent = new StandardKeyboardEvent(e);
+			if (keyboardEvent.equals(KeyCode.Space) || keyboardEvent.equals(KeyCode.Enter)) {
+				e.preventDefault();
+				e.stopPropagation();
+				callback();
+			}
+		})
+	);
 	return disposables;
 }
 
 export class PublisherWidget extends McpServerWidget {
-
 	private element: HTMLElement | undefined;
 	private containerHover: IManagedHover | undefined;
 
@@ -53,7 +73,7 @@ export class PublisherWidget extends McpServerWidget {
 		readonly container: HTMLElement,
 		private small: boolean,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IOpenerService private readonly openerService: IOpenerService,
+		@IOpenerService private readonly openerService: IOpenerService
 	) {
 		super();
 
@@ -77,7 +97,11 @@ export class PublisherWidget extends McpServerWidget {
 		publisherDisplayName.textContent = this.mcpServer.publisherDisplayName;
 
 		const verifiedPublisher = dom.$('.verified-publisher');
-		dom.append(verifiedPublisher, dom.$('span.extension-verified-publisher.clickable'), renderIcon(verifiedPublisherIcon));
+		dom.append(
+			verifiedPublisher,
+			dom.$('span.extension-verified-publisher.clickable'),
+			renderIcon(verifiedPublisherIcon)
+		);
 
 		if (this.small) {
 			if (this.mcpServer.gallery?.publisherDomain?.verified) {
@@ -88,7 +112,13 @@ export class PublisherWidget extends McpServerWidget {
 			this.element.setAttribute('role', 'button');
 			this.element.tabIndex = 0;
 
-			this.containerHover = this.disposables.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this.element, localize('publisher', "Publisher ({0})", this.mcpServer.publisherDisplayName)));
+			this.containerHover = this.disposables.add(
+				this.hoverService.setupManagedHover(
+					getDefaultHoverDelegate('mouse'),
+					this.element,
+					localize('publisher', 'Publisher ({0})', this.mcpServer.publisherDisplayName)
+				)
+			);
 			dom.append(this.element, publisherDisplayName);
 
 			if (this.mcpServer.gallery?.publisherDomain?.verified) {
@@ -96,26 +126,40 @@ export class PublisherWidget extends McpServerWidget {
 				const publisherDomainLink = URI.parse(this.mcpServer.gallery?.publisherDomain.link);
 				verifiedPublisher.tabIndex = 0;
 				verifiedPublisher.setAttribute('role', 'button');
-				this.containerHover.update(localize('verified publisher', "This publisher has verified ownership of {0}", this.mcpServer.gallery?.publisherDomain.link));
+				this.containerHover.update(
+					localize(
+						'verified publisher',
+						'This publisher has verified ownership of {0}',
+						this.mcpServer.gallery?.publisherDomain.link
+					)
+				);
 				verifiedPublisher.setAttribute('role', 'link');
 
-				dom.append(verifiedPublisher, dom.$('span.extension-verified-publisher-domain', undefined, publisherDomainLink.authority.startsWith('www.') ? publisherDomainLink.authority.substring(4) : publisherDomainLink.authority));
-				this.disposables.add(onClick(verifiedPublisher, () => this.openerService.open(publisherDomainLink)));
+				dom.append(
+					verifiedPublisher,
+					dom.$(
+						'span.extension-verified-publisher-domain',
+						undefined,
+						publisherDomainLink.authority.startsWith('www.')
+							? publisherDomainLink.authority.substring(4)
+							: publisherDomainLink.authority
+					)
+				);
+				this.disposables.add(
+					onClick(verifiedPublisher, () => this.openerService.open(publisherDomainLink))
+				);
 			}
 		}
-
 	}
-
 }
 
 export class InstallCountWidget extends McpServerWidget {
-
 	private readonly disposables = this._register(new DisposableStore());
 
 	constructor(
 		readonly container: HTMLElement,
 		private small: boolean,
-		@IHoverService private readonly hoverService: IHoverService,
+		@IHoverService private readonly hoverService: IHoverService
 	) {
 		super();
 		this.render();
@@ -140,13 +184,21 @@ export class InstallCountWidget extends McpServerWidget {
 			return;
 		}
 
-		const parent = this.small ? this.container : dom.append(this.container, dom.$('span.install', { tabIndex: 0 }));
+		const parent = this.small
+			? this.container
+			: dom.append(this.container, dom.$('span.install', { tabIndex: 0 }));
 		dom.append(parent, dom.$('span' + ThemeIcon.asCSSSelector(installCountIcon)));
 		const count = dom.append(parent, dom.$('span.count'));
 		count.textContent = installLabel;
 
 		if (!this.small) {
-			this.disposables.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this.container, localize('install count', "Install count")));
+			this.disposables.add(
+				this.hoverService.setupManagedHover(
+					getDefaultHoverDelegate('mouse'),
+					this.container,
+					localize('install count', 'Install count')
+				)
+			);
 		}
 	}
 
@@ -167,8 +219,7 @@ export class InstallCountWidget extends McpServerWidget {
 			} else {
 				installLabel = String(installCount);
 			}
-		}
-		else {
+		} else {
 			installLabel = installCount.toLocaleString(platform.language);
 		}
 
@@ -177,14 +228,13 @@ export class InstallCountWidget extends McpServerWidget {
 }
 
 export class RatingsWidget extends McpServerWidget {
-
 	private containerHover: IManagedHover | undefined;
 	private readonly disposables = this._register(new DisposableStore());
 
 	constructor(
 		readonly container: HTMLElement,
 		private small: boolean,
-		@IHoverService private readonly hoverService: IHoverService,
+		@IHoverService private readonly hoverService: IHoverService
 	) {
 		super();
 		container.classList.add('extension-ratings');
@@ -239,14 +289,18 @@ export class RatingsWidget extends McpServerWidget {
 				}
 			}
 			if (this.mcpServer.ratingCount) {
-				const ratingCountElement = dom.append(element, dom.$('span', undefined, ` (${this.mcpServer.ratingCount})`));
+				const ratingCountElement = dom.append(
+					element,
+					dom.$('span', undefined, ` (${this.mcpServer.ratingCount})`)
+				);
 				ratingCountElement.style.paddingLeft = '1px';
 			}
 
-			this.containerHover = this._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), element, ''));
-			this.containerHover.update(localize('ratedLabel', "Average rating: {0} out of 5", rating));
+			this.containerHover = this._register(
+				this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), element, '')
+			);
+			this.containerHover.update(localize('ratedLabel', 'Average rating: {0} out of 5', rating));
 			element.setAttribute('role', 'link');
 		}
 	}
-
 }

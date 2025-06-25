@@ -12,7 +12,11 @@ import { Registry } from '../../../../../platform/registry/common/platform.js';
 import { IWorkbenchContribution } from '../../../../common/contributions.js';
 import { checkProposedApiEnabled } from '../../../../services/extensions/common/extensions.js';
 import * as extensionsRegistry from '../../../../services/extensions/common/extensionsRegistry.js';
-import { ChatViewsWelcomeExtensions, IChatViewsWelcomeContributionRegistry, IChatViewsWelcomeDescriptor } from './chatViewsWelcome.js';
+import {
+	ChatViewsWelcomeExtensions,
+	IChatViewsWelcomeContributionRegistry,
+	IChatViewsWelcomeDescriptor,
+} from './chatViewsWelcome.js';
 
 interface IRawChatViewsWelcomeContribution {
 	icon: string;
@@ -21,10 +25,15 @@ interface IRawChatViewsWelcomeContribution {
 	when: string;
 }
 
-const chatViewsWelcomeExtensionPoint = extensionsRegistry.ExtensionsRegistry.registerExtensionPoint<IRawChatViewsWelcomeContribution[]>({
+const chatViewsWelcomeExtensionPoint = extensionsRegistry.ExtensionsRegistry.registerExtensionPoint<
+	IRawChatViewsWelcomeContribution[]
+>({
 	extensionPoint: 'chatViewsWelcome',
 	jsonSchema: {
-		description: localize('vscode.extension.contributes.chatViewsWelcome', 'Contributes a welcome message to a chat view'),
+		description: localize(
+			'vscode.extension.contributes.chatViewsWelcome',
+			'Contributes a welcome message to a chat view'
+		),
 		type: 'array',
 		items: {
 			additionalProperties: false,
@@ -40,25 +49,28 @@ const chatViewsWelcomeExtensionPoint = extensionsRegistry.ExtensionsRegistry.reg
 				},
 				content: {
 					type: 'string',
-					description: localize('chatViewsWelcome.content', 'The content of the welcome message. The first command link will be rendered as a button.'),
+					description: localize(
+						'chatViewsWelcome.content',
+						'The content of the welcome message. The first command link will be rendered as a button.'
+					),
 				},
 				when: {
 					type: 'string',
-					description: localize('chatViewsWelcome.when', 'Condition when the welcome message is shown.'),
-				}
-			}
+					description: localize(
+						'chatViewsWelcome.when',
+						'Condition when the welcome message is shown.'
+					),
+				},
+			},
 		},
 		required: ['icon', 'title', 'contents', 'when'],
-	}
+	},
 });
 
 export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
-
 	static readonly ID = 'workbench.contrib.chatViewsWelcomeHandler';
 
-	constructor(
-		@ILogService private readonly logService: ILogService,
-	) {
+	constructor(@ILogService private readonly logService: ILogService) {
 		chatViewsWelcomeExtensionPoint.setHandler((extensions, delta) => {
 			for (const extension of delta.added) {
 				for (const providerDescriptor of extension.value) {
@@ -66,7 +78,9 @@ export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
 
 					const when = ContextKeyExpr.deserialize(providerDescriptor.when);
 					if (!when) {
-						this.logService.error(`Could not deserialize 'when' clause for chatViewsWelcome contribution: ${providerDescriptor.when}`);
+						this.logService.error(
+							`Could not deserialize 'when' clause for chatViewsWelcome contribution: ${providerDescriptor.when}`
+						);
 						continue;
 					}
 
@@ -76,7 +90,9 @@ export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
 						icon: ThemeIcon.fromString(providerDescriptor.icon),
 						content: new MarkdownString(providerDescriptor.content, { isTrusted: true }), // private API with command links
 					};
-					Registry.as<IChatViewsWelcomeContributionRegistry>(ChatViewsWelcomeExtensions.ChatViewsWelcomeRegistry).register(descriptor);
+					Registry.as<IChatViewsWelcomeContributionRegistry>(
+						ChatViewsWelcomeExtensions.ChatViewsWelcomeRegistry
+					).register(descriptor);
 				}
 			}
 		});

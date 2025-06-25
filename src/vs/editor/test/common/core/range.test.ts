@@ -8,7 +8,6 @@ import { Position } from '../../../common/core/position.js';
 import { Range } from '../../../common/core/range.js';
 
 suite('Editor Core - Range', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('empty range', () => {

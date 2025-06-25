@@ -7,14 +7,16 @@ import * as strings from '../../../../base/common/strings.js';
 import { EditOperation, ISingleEditOperation } from '../../../common/core/editOperation.js';
 import { Position } from '../../../common/core/position.js';
 import { Selection } from '../../../common/core/selection.js';
-import { ICommand, ICursorStateComputerData, IEditOperationBuilder } from '../../../common/editorCommon.js';
+import {
+	ICommand,
+	ICursorStateComputerData,
+	IEditOperationBuilder,
+} from '../../../common/editorCommon.js';
 import { ITextModel } from '../../../common/model.js';
 
 export class InsertFinalNewLineCommand implements ICommand {
-
 	private readonly _selection: Selection;
 	private _selectionId: string | null;
-
 
 	constructor(selection: Selection) {
 		this._selection = selection;

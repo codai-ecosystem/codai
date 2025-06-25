@@ -125,13 +125,21 @@ export class UriTemplate {
 		const isParam = op === ';';
 
 		let prefix = '';
-		if (op === '+') { prefix = ''; }
-		else if (op === '#') { prefix = '#'; }
-		else if (op === '.') { prefix = '.'; }
-		else if (op === '/') { prefix = ''; }
-		else if (op === ';') { prefix = ';'; }
-		else if (op === '?') { prefix = '?'; }
-		else if (op === '&') { prefix = '&'; }
+		if (op === '+') {
+			prefix = '';
+		} else if (op === '#') {
+			prefix = '#';
+		} else if (op === '.') {
+			prefix = '.';
+		} else if (op === '/') {
+			prefix = '';
+		} else if (op === ';') {
+			prefix = ';';
+		} else if (op === '?') {
+			prefix = '?';
+		} else if (op === '&') {
+			prefix = '&';
+		}
 
 		for (const v of varSpecs) {
 			const value = variables[v.name];
@@ -292,9 +300,14 @@ function pctEncode(str: string): string {
 		const chr = str.charCodeAt(i);
 		if (
 			// alphanum ranges:
-			(chr >= 0x30 && chr <= 0x39 || chr >= 0x41 && chr <= 0x5a || chr >= 0x61 && chr <= 0x7a) ||
+			(chr >= 0x30 && chr <= 0x39) ||
+			(chr >= 0x41 && chr <= 0x5a) ||
+			(chr >= 0x61 && chr <= 0x7a) ||
 			// unreserved characters:
-			(chr === 0x2d || chr === 0x2e || chr === 0x5f || chr === 0x7e)
+			chr === 0x2d ||
+			chr === 0x2e ||
+			chr === 0x5f ||
+			chr === 0x7e
 		) {
 			out += str[i];
 		} else {

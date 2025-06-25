@@ -12,10 +12,20 @@ import { PromptsConfig } from '../../../../../../platform/prompts/common/config.
 import { basename, dirname, joinPath } from '../../../../../../base/common/resources.js';
 import { IWorkspaceContextService } from '../../../../../../platform/workspace/common/workspace.js';
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
-import { getPromptFileExtension, getPromptFileType, PromptsType } from '../../../../../../platform/prompts/common/prompts.js';
+import {
+	getPromptFileExtension,
+	getPromptFileType,
+	PromptsType,
+} from '../../../../../../platform/prompts/common/prompts.js';
 import { IWorkbenchEnvironmentService } from '../../../../../services/environment/common/environmentService.js';
 import { Schemas } from '../../../../../../base/common/network.js';
-import { getExcludes, IFileQuery, ISearchConfiguration, ISearchService, QueryType } from '../../../../../services/search/common/search.js';
+import {
+	getExcludes,
+	IFileQuery,
+	ISearchConfiguration,
+	ISearchService,
+	QueryType,
+} from '../../../../../services/search/common/search.js';
 import { CancellationToken } from '../../../../../../base/common/cancellation.js';
 import { isCancellationError } from '../../../../../../base/common/errors.js';
 import { TPromptsStorage } from '../service/types.js';
@@ -25,22 +35,25 @@ import { IUserDataProfileService } from '../../../../../services/userDataProfile
  * Utility class to locate prompt files.
  */
 export class PromptFilesLocator {
-
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@IConfigurationService private readonly configService: IConfigurationService,
 		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
 		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
 		@ISearchService private readonly searchService: ISearchService,
-		@IUserDataProfileService private readonly userDataService: IUserDataProfileService,
-	) { }
+		@IUserDataProfileService private readonly userDataService: IUserDataProfileService
+	) {}
 
 	/**
 	 * List all prompt files from the filesystem.
 	 *
 	 * @returns List of prompt files found in the workspace.
 	 */
-	public async listFiles(type: PromptsType, storage: TPromptsStorage, token: CancellationToken): Promise<readonly URI[]> {
+	public async listFiles(
+		type: PromptsType,
+		storage: TPromptsStorage,
+		token: CancellationToken
+	): Promise<readonly URI[]> {
 		if (storage === 'local') {
 			const configuredLocations = PromptsConfig.promptSourceFolders(this.configService, type);
 			const absoluteLocations = this.toAbsoluteLocations(configuredLocations);
@@ -50,7 +63,10 @@ export class PromptFilesLocator {
 		}
 	}
 
-	private async listFilesInUserData(type: PromptsType, token: CancellationToken): Promise<readonly URI[]> {
+	private async listFilesInUserData(
+		type: PromptsType,
+		token: CancellationToken
+	): Promise<readonly URI[]> {
 		try {
 			const info = await this.fileService.resolve(this.userDataService.currentProfile.promptsHome);
 			if (info.isDirectory && info.children && !token.isCancellationRequested) {
@@ -138,11 +154,11 @@ export class PromptFilesLocator {
 		for (const absoluteLocation of absoluteLocations) {
 			assert(
 				isAbsolute(absoluteLocation.path),
-				`Provided location must be an absolute path, got '${absoluteLocation.path}'.`,
+				`Provided location must be an absolute path, got '${absoluteLocation.path}'.`
 			);
 
 			const { parent, filePattern } = firstNonGlobParentAndPattern(absoluteLocation);
-			if (filePattern === undefined && await this.isExistingFile(parent)) {
+			if (filePattern === undefined && (await this.isExistingFile(parent))) {
 				// if the provided location points to a file, add it
 				if (getPromptFileType(parent) === type) {
 					paths.add(parent);
@@ -178,7 +194,13 @@ export class PromptFilesLocator {
 				if (remoteAuthority) {
 					// if the location is absolute and we are in a remote environment,
 					// we need to convert it to a file URI with the remote authority
-					result.add(URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path: configuredLocation }));
+					result.add(
+						URI.from({
+							scheme: Schemas.vscodeRemote,
+							authority: remoteAuthority,
+							path: configuredLocation,
+						})
+					);
 				} else {
 					result.add(URI.file(configuredLocation));
 				}
@@ -188,7 +210,7 @@ export class PromptFilesLocator {
 					// a sanity check on the expected outcome of the `joinPath()` call
 					assert(
 						isAbsolute(absolutePath.path),
-						`Provided location must be an absolute path, got '${absolutePath.path}'.`,
+						`Provided location must be an absolute path, got '${absolutePath.path}'.`
 					);
 					result.add(absolutePath);
 				}
@@ -207,14 +229,15 @@ export class PromptFilesLocator {
 
 		const workspaceRoot = this.workspaceService.getWorkspaceFolder(folder);
 
-		const getExcludePattern = (folder: URI) => getExcludes(this.configService.getValue<ISearchConfiguration>({ resource: folder })) || {};
+		const getExcludePattern = (folder: URI) =>
+			getExcludes(this.configService.getValue<ISearchConfiguration>({ resource: folder })) || {};
 		const searchOptions: IFileQuery = {
 			folderQueries: [{ folder, disregardIgnoreFiles }],
 			type: QueryType.File,
 			shouldGlobMatchFilePattern: true,
 			excludePattern: workspaceRoot ? getExcludePattern(workspaceRoot.uri) : undefined,
 			sortByScore: true,
-			filePattern
+			filePattern,
 		};
 
 		try {
@@ -234,14 +257,10 @@ export class PromptFilesLocator {
 	private async isExistingFile(uri: URI): Promise<boolean> {
 		try {
 			return (await this.fileService.resolve(uri)).isFile;
-		} catch (e) {
-		}
+		} catch (e) {}
 		return false;
 	}
 }
-
-
-
 
 /**
  * Checks if the provided `pattern` could be a valid glob pattern.
@@ -301,12 +320,12 @@ export const isValidGlob = (pattern: string): boolean => {
 	}
 
 	// if square brackets exist and are in pairs, this is a `valid glob`
-	if (squareBrackets && (squareBracketsCount === 0)) {
+	if (squareBrackets && squareBracketsCount === 0) {
 		return true;
 	}
 
 	// if curly brackets exist and are in pairs, this is a `valid glob`
-	if (curlyBrackets && (curlyBracketsCount === 0)) {
+	if (curlyBrackets && curlyBracketsCount === 0) {
 		return true;
 	}
 
@@ -344,10 +363,6 @@ const firstNonGlobParentAndPattern = (
 	// the path contains a glob pattern, so we search in last folder that does not contain a glob pattern
 	return {
 		parent: location.with({ path: segments.slice(0, i).join('/') }),
-		filePattern: segments.slice(i).join('/')
+		filePattern: segments.slice(i).join('/'),
 	};
 };
-
-
-
-

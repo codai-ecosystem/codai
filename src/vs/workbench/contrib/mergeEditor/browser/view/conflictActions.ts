@@ -8,11 +8,26 @@ import { createStyleSheet } from '../../../../../base/browser/domStylesheets.js'
 import { renderLabelWithIcons } from '../../../../../base/browser/ui/iconLabel/iconLabels.js';
 import { hash } from '../../../../../base/common/hash.js';
 import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
-import { autorun, derived, IObservable, transaction } from '../../../../../base/common/observable.js';
-import { ICodeEditor, IViewZoneChangeAccessor } from '../../../../../editor/browser/editorBrowser.js';
-import { EditorOption, EDITOR_FONT_DEFAULTS } from '../../../../../editor/common/config/editorOptions.js';
+import {
+	autorun,
+	derived,
+	IObservable,
+	transaction,
+} from '../../../../../base/common/observable.js';
+import {
+	ICodeEditor,
+	IViewZoneChangeAccessor,
+} from '../../../../../editor/browser/editorBrowser.js';
+import {
+	EditorOption,
+	EDITOR_FONT_DEFAULTS,
+} from '../../../../../editor/common/config/editorOptions.js';
 import { localize } from '../../../../../nls.js';
-import { ModifiedBaseRange, ModifiedBaseRangeState, ModifiedBaseRangeStateKind } from '../model/modifiedBaseRange.js';
+import {
+	ModifiedBaseRange,
+	ModifiedBaseRangeState,
+	ModifiedBaseRangeStateKind,
+} from '../model/modifiedBaseRange.js';
 import { FixedZoneWidget } from './fixedZoneWidget.js';
 import { MergeEditorViewModel } from './viewModel.js';
 
@@ -23,17 +38,25 @@ export class ConflictActionsFactory extends Disposable {
 	constructor(private readonly _editor: ICodeEditor) {
 		super();
 
-		this._register(this._editor.onDidChangeConfiguration((e) => {
-			if (e.hasChanged(EditorOption.fontInfo) || e.hasChanged(EditorOption.codeLensFontSize) || e.hasChanged(EditorOption.codeLensFontFamily)) {
-				this._updateLensStyle();
-			}
-		}));
+		this._register(
+			this._editor.onDidChangeConfiguration(e => {
+				if (
+					e.hasChanged(EditorOption.fontInfo) ||
+					e.hasChanged(EditorOption.codeLensFontSize) ||
+					e.hasChanged(EditorOption.codeLensFontFamily)
+				) {
+					this._updateLensStyle();
+				}
+			})
+		);
 
 		this._styleClassName = '_conflictActionsFactory_' + hash(this._editor.getId()).toString(16);
 		this._styleElement = createStyleSheet(
 			isInShadowDOM(this._editor.getContainerDomNode())
 				? this._editor.getContainerDomNode()
-				: undefined, undefined, this._store
+				: undefined,
+			undefined,
+			this._store
 		);
 
 		this._updateLensStyle();
@@ -56,14 +79,20 @@ export class ConflictActionsFactory extends Disposable {
 		}
 		this._styleElement.textContent = newStyle;
 		this._editor.getContainerDomNode().style?.setProperty(fontFamilyVar, fontFamily ?? 'inherit');
-		this._editor.getContainerDomNode().style?.setProperty(fontFeaturesVar, editorFontInfo.fontFeatureSettings);
+		this._editor
+			.getContainerDomNode()
+			.style?.setProperty(fontFeaturesVar, editorFontInfo.fontFeatureSettings);
 	}
 
 	private _getLayoutInfo() {
-		const lineHeightFactor = Math.max(1.3, this._editor.getOption(EditorOption.lineHeight) / this._editor.getOption(EditorOption.fontSize));
+		const lineHeightFactor = Math.max(
+			1.3,
+			this._editor.getOption(EditorOption.lineHeight) /
+				this._editor.getOption(EditorOption.fontSize)
+		);
 		let fontSize = this._editor.getOption(EditorOption.codeLensFontSize);
 		if (!fontSize || fontSize < 5) {
-			fontSize = (this._editor.getOption(EditorOption.fontSize) * .9) | 0;
+			fontSize = (this._editor.getOption(EditorOption.fontSize) * 0.9) | 0;
 		}
 		return {
 			fontSize,
@@ -71,7 +100,12 @@ export class ConflictActionsFactory extends Disposable {
 		};
 	}
 
-	public createWidget(viewZoneChangeAccessor: IViewZoneChangeAccessor, lineNumber: number, items: IObservable<IContentWidgetAction[]>, viewZoneIdsToCleanUp: string[]): IDisposable {
+	public createWidget(
+		viewZoneChangeAccessor: IViewZoneChangeAccessor,
+		lineNumber: number,
+		items: IObservable<IContentWidgetAction[]>,
+		viewZoneIdsToCleanUp: string[]
+	): IDisposable {
 		const layoutInfo = this._getLayoutInfo();
 		return new ActionsContentWidget(
 			this._editor,
@@ -80,7 +114,7 @@ export class ConflictActionsFactory extends Disposable {
 			layoutInfo.codeLensHeight + 2,
 			this._styleClassName,
 			items,
-			viewZoneIdsToCleanUp,
+			viewZoneIdsToCleanUp
 		);
 	}
 }
@@ -88,9 +122,8 @@ export class ConflictActionsFactory extends Disposable {
 export class ActionsSource {
 	constructor(
 		private readonly viewModel: MergeEditorViewModel,
-		private readonly modifiedBaseRange: ModifiedBaseRange,
-	) {
-	}
+		private readonly modifiedBaseRange: ModifiedBaseRange
+	) {}
 
 	private getItemsInput(inputNumber: 1 | 2): IObservable<IContentWidgetAction[]> {
 		return derived(reader => {
@@ -117,71 +150,109 @@ export class ActionsSource {
 
 			const otherInputNumber = inputNumber === 1 ? 2 : 1;
 
-			if (state.kind !== ModifiedBaseRangeStateKind.unrecognized && !state.isInputIncluded(inputNumber)) {
-				if (!state.isInputIncluded(otherInputNumber) || !this.viewModel.shouldUseAppendInsteadOfAccept.read(reader)) {
+			if (
+				state.kind !== ModifiedBaseRangeStateKind.unrecognized &&
+				!state.isInputIncluded(inputNumber)
+			) {
+				if (
+					!state.isInputIncluded(otherInputNumber) ||
+					!this.viewModel.shouldUseAppendInsteadOfAccept.read(reader)
+				) {
 					result.push(
-						command(localize('accept', "Accept {0}", inputData.title), async () => {
-							transaction((tx) => {
-								model.setState(
-									modifiedBaseRange,
-									state.withInputValue(inputNumber, true, false),
-									inputNumber,
-									tx
-								);
-								model.telemetry.reportAcceptInvoked(inputNumber, state.includesInput(otherInputNumber));
-							});
-						}, localize('acceptTooltip', "Accept {0} in the result document.", inputData.title))
+						command(
+							localize('accept', 'Accept {0}', inputData.title),
+							async () => {
+								transaction(tx => {
+									model.setState(
+										modifiedBaseRange,
+										state.withInputValue(inputNumber, true, false),
+										inputNumber,
+										tx
+									);
+									model.telemetry.reportAcceptInvoked(
+										inputNumber,
+										state.includesInput(otherInputNumber)
+									);
+								});
+							},
+							localize('acceptTooltip', 'Accept {0} in the result document.', inputData.title)
+						)
 					);
 
 					if (modifiedBaseRange.canBeCombined) {
 						const commandName = modifiedBaseRange.isOrderRelevant
-							? localize('acceptBoth0First', "Accept Combination ({0} First)", inputData.title)
-							: localize('acceptBoth', "Accept Combination");
+							? localize('acceptBoth0First', 'Accept Combination ({0} First)', inputData.title)
+							: localize('acceptBoth', 'Accept Combination');
 
 						result.push(
-							command(commandName, async () => {
-								transaction((tx) => {
-									model.setState(
-										modifiedBaseRange,
-										ModifiedBaseRangeState.base
-											.withInputValue(inputNumber, true)
-											.withInputValue(otherInputNumber, true, true),
-										true,
-										tx
-									);
-									model.telemetry.reportSmartCombinationInvoked(state.includesInput(otherInputNumber));
-								});
-							}, localize('acceptBothTooltip', "Accept an automatic combination of both sides in the result document.")),
+							command(
+								commandName,
+								async () => {
+									transaction(tx => {
+										model.setState(
+											modifiedBaseRange,
+											ModifiedBaseRangeState.base
+												.withInputValue(inputNumber, true)
+												.withInputValue(otherInputNumber, true, true),
+											true,
+											tx
+										);
+										model.telemetry.reportSmartCombinationInvoked(
+											state.includesInput(otherInputNumber)
+										);
+									});
+								},
+								localize(
+									'acceptBothTooltip',
+									'Accept an automatic combination of both sides in the result document.'
+								)
+							)
 						);
 					}
 				} else {
 					result.push(
-						command(localize('append', "Append {0}", inputData.title), async () => {
-							transaction((tx) => {
-								model.setState(
-									modifiedBaseRange,
-									state.withInputValue(inputNumber, true, false),
-									inputNumber,
-									tx
-								);
-								model.telemetry.reportAcceptInvoked(inputNumber, state.includesInput(otherInputNumber));
-							});
-						}, localize('appendTooltip', "Append {0} to the result document.", inputData.title))
+						command(
+							localize('append', 'Append {0}', inputData.title),
+							async () => {
+								transaction(tx => {
+									model.setState(
+										modifiedBaseRange,
+										state.withInputValue(inputNumber, true, false),
+										inputNumber,
+										tx
+									);
+									model.telemetry.reportAcceptInvoked(
+										inputNumber,
+										state.includesInput(otherInputNumber)
+									);
+								});
+							},
+							localize('appendTooltip', 'Append {0} to the result document.', inputData.title)
+						)
 					);
 
 					if (modifiedBaseRange.canBeCombined) {
 						result.push(
-							command(localize('combine', "Accept Combination", inputData.title), async () => {
-								transaction((tx) => {
-									model.setState(
-										modifiedBaseRange,
-										state.withInputValue(inputNumber, true, true),
-										inputNumber,
-										tx
-									);
-									model.telemetry.reportSmartCombinationInvoked(state.includesInput(otherInputNumber));
-								});
-							}, localize('acceptBothTooltip', "Accept an automatic combination of both sides in the result document.")),
+							command(
+								localize('combine', 'Accept Combination', inputData.title),
+								async () => {
+									transaction(tx => {
+										model.setState(
+											modifiedBaseRange,
+											state.withInputValue(inputNumber, true, true),
+											inputNumber,
+											tx
+										);
+										model.telemetry.reportSmartCombinationInvoked(
+											state.includesInput(otherInputNumber)
+										);
+									});
+								},
+								localize(
+									'acceptBothTooltip',
+									'Accept an automatic combination of both sides in the result document.'
+								)
+							)
 						);
 					}
 				}
@@ -191,7 +262,7 @@ export class ActionsSource {
 						command(
 							localize('ignore', 'Ignore'),
 							async () => {
-								transaction((tx) => {
+								transaction(tx => {
 									model.setInputHandled(modifiedBaseRange, inputNumber, true, tx);
 								});
 							},
@@ -199,7 +270,6 @@ export class ActionsSource {
 						)
 					);
 				}
-
 			}
 			return result;
 		});
@@ -219,8 +289,8 @@ export class ActionsSource {
 
 		if (state.kind === ModifiedBaseRangeStateKind.unrecognized) {
 			result.push({
-				text: localize('manualResolution', "Manual Resolution"),
-				tooltip: localize('manualResolutionTooltip', "This conflict has been resolved manually."),
+				text: localize('manualResolution', 'Manual Resolution'),
+				tooltip: localize('manualResolutionTooltip', 'This conflict has been resolved manually.'),
 			});
 		} else if (state.kind === ModifiedBaseRangeStateKind.base) {
 			result.push({
@@ -230,7 +300,6 @@ export class ActionsSource {
 					'The current resolution of this conflict equals the common ancestor of both the right and left changes.'
 				),
 			});
-
 		} else {
 			const labels = [];
 			if (state.includesInput1) {
@@ -243,7 +312,7 @@ export class ActionsSource {
 				labels.reverse();
 			}
 			result.push({
-				text: `${labels.join(' + ')}`
+				text: `${labels.join(' + ')}`,
 			});
 		}
 
@@ -253,13 +322,8 @@ export class ActionsSource {
 				command(
 					localize('remove', 'Remove {0}', model.input1.title),
 					async () => {
-						transaction((tx) => {
-							model.setState(
-								modifiedBaseRange,
-								state.withInputValue(1, false),
-								true,
-								tx
-							);
+						transaction(tx => {
+							model.setState(modifiedBaseRange, state.withInputValue(1, false), true, tx);
 							model.telemetry.reportRemoveInvoked(1, state.includesInput(2));
 						});
 					},
@@ -272,13 +336,8 @@ export class ActionsSource {
 				command(
 					localize('remove', 'Remove {0}', model.input2.title),
 					async () => {
-						transaction((tx) => {
-							model.setState(
-								modifiedBaseRange,
-								state.withInputValue(2, false),
-								true,
-								tx
-							);
+						transaction(tx => {
+							model.setState(modifiedBaseRange, state.withInputValue(2, false), true, tx);
 							model.telemetry.reportRemoveInvoked(2, state.includesInput(1));
 						});
 					},
@@ -286,10 +345,7 @@ export class ActionsSource {
 				)
 			);
 		}
-		if (
-			state.kind === ModifiedBaseRangeStateKind.both &&
-			state.firstInput === 2
-		) {
+		if (state.kind === ModifiedBaseRangeStateKind.both && state.firstInput === 2) {
 			stateToggles.reverse();
 		}
 		result.push(...stateToggles);
@@ -299,17 +355,15 @@ export class ActionsSource {
 				command(
 					localize('resetToBase', 'Reset to base'),
 					async () => {
-						transaction((tx) => {
-							model.setState(
-								modifiedBaseRange,
-								ModifiedBaseRangeState.base,
-								true,
-								tx
-							);
+						transaction(tx => {
+							model.setState(modifiedBaseRange, ModifiedBaseRangeState.base, true, tx);
 							model.telemetry.reportResetToBaseInvoked();
 						});
 					},
-					localize('resetToBaseTooltip', 'Reset this conflict to the common ancestor of both the right and left changes.')
+					localize(
+						'resetToBaseTooltip',
+						'Reset this conflict to the common ancestor of both the right and left changes.'
+					)
 				)
 			);
 		}
@@ -318,7 +372,12 @@ export class ActionsSource {
 	});
 
 	public readonly isEmpty = derived(this, reader => {
-		return this.itemsInput1.read(reader).length + this.itemsInput2.read(reader).length + this.resultItems.read(reader).length === 0;
+		return (
+			this.itemsInput1.read(reader).length +
+				this.itemsInput2.read(reader).length +
+				this.resultItems.read(reader).length ===
+			0
+		);
 	});
 
 	public readonly inputIsEmpty = derived(this, reader => {
@@ -326,7 +385,11 @@ export class ActionsSource {
 	});
 }
 
-function command(title: string, action: () => Promise<void>, tooltip?: string): IContentWidgetAction {
+function command(
+	title: string,
+	action: () => Promise<void>,
+	tooltip?: string
+): IContentWidgetAction {
 	return {
 		text: title,
 		action,
@@ -351,7 +414,7 @@ class ActionsContentWidget extends FixedZoneWidget {
 
 		className: string,
 		items: IObservable<IContentWidgetAction[]>,
-		viewZoneIdsToCleanUp: string[],
+		viewZoneIdsToCleanUp: string[]
 	) {
 		super(editor, viewZoneAccessor, afterLineNumber, height, viewZoneIdsToCleanUp);
 
@@ -359,11 +422,13 @@ class ActionsContentWidget extends FixedZoneWidget {
 
 		this._domNode.classList.add(className);
 
-		this._register(autorun(reader => {
-			/** @description update commands */
-			const i = items.read(reader);
-			this.setState(i);
-		}));
+		this._register(
+			autorun(reader => {
+				/** @description update commands */
+				const i = items.read(reader);
+				this.setState(i);
+			})
+		);
 	}
 
 	private setState(items: IContentWidgetAction[]) {
@@ -378,7 +443,9 @@ class ActionsContentWidget extends FixedZoneWidget {
 			const title = renderLabelWithIcons(item.text);
 
 			if (item.action) {
-				children.push($('a', { title: item.tooltip, role: 'button', onclick: () => item.action!() }, ...title));
+				children.push(
+					$('a', { title: item.tooltip, role: 'button', onclick: () => item.action!() }, ...title)
+				);
 			} else {
 				children.push($('span', { title: item.tooltip }, ...title));
 			}

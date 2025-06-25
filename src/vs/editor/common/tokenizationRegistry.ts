@@ -6,11 +6,14 @@
 import { Color } from '../../base/common/color.js';
 import { Emitter, Event } from '../../base/common/event.js';
 import { Disposable, IDisposable, toDisposable } from '../../base/common/lifecycle.js';
-import { ITokenizationRegistry, ITokenizationSupportChangedEvent, ILazyTokenizationSupport } from './languages.js';
+import {
+	ITokenizationRegistry,
+	ITokenizationSupportChangedEvent,
+	ILazyTokenizationSupport,
+} from './languages.js';
 import { ColorId } from './encodedTokenAttributes.js';
 
 export class TokenizationRegistry<TSupport> implements ITokenizationRegistry<TSupport> {
-
 	private readonly _tokenizationSupports = new Map<string, TSupport>();
 	private readonly _factories = new Map<string, TokenizationSupportFactoryData<TSupport>>();
 
@@ -26,7 +29,7 @@ export class TokenizationRegistry<TSupport> implements ITokenizationRegistry<TSu
 	public handleChange(languageIds: string[]): void {
 		this._onDidChange.fire({
 			changedLanguages: languageIds,
-			changedColorMap: false
+			changedColorMap: false,
 		});
 	}
 
@@ -46,7 +49,10 @@ export class TokenizationRegistry<TSupport> implements ITokenizationRegistry<TSu
 		return this._tokenizationSupports.get(languageId) || null;
 	}
 
-	public registerFactory(languageId: string, factory: ILazyTokenizationSupport<TSupport>): IDisposable {
+	public registerFactory(
+		languageId: string,
+		factory: ILazyTokenizationSupport<TSupport>
+	): IDisposable {
 		this._factories.get(languageId)?.dispose();
 		const myData = new TokenizationSupportFactoryData(this, languageId, factory);
 		this._factories.set(languageId, myData);
@@ -96,7 +102,7 @@ export class TokenizationRegistry<TSupport> implements ITokenizationRegistry<TSu
 		this._colorMap = colorMap;
 		this._onDidChange.fire({
 			changedLanguages: Array.from(this._tokenizationSupports.keys()),
-			changedColorMap: true
+			changedColorMap: true,
 		});
 	}
 
@@ -113,7 +119,6 @@ export class TokenizationRegistry<TSupport> implements ITokenizationRegistry<TSu
 }
 
 class TokenizationSupportFactoryData<TSupport> extends Disposable {
-
 	private _isDisposed: boolean = false;
 	private _resolvePromise: Promise<void> | null = null;
 	private _isResolved: boolean = false;
@@ -125,7 +130,7 @@ class TokenizationSupportFactoryData<TSupport> extends Disposable {
 	constructor(
 		private readonly _registry: TokenizationRegistry<TSupport>,
 		private readonly _languageId: string,
-		private readonly _factory: ILazyTokenizationSupport<TSupport>,
+		private readonly _factory: ILazyTokenizationSupport<TSupport>
 	) {
 		super();
 	}

@@ -17,12 +17,10 @@ export async function GET(req: NextRequest) {
 			const provisioningService = new BackendProvisioningService();
 
 			// Get system-wide statistics
-			const [
-				systemStats,
-				recentActivity] = await Promise.all([
-					usageService.getSystemStats(),
-					FirestoreService.getRecentAuditLogs(20)
-				]);
+			const [systemStats, recentActivity] = await Promise.all([
+				usageService.getSystemStats(),
+				FirestoreService.getRecentAuditLogs(20),
+			]);
 
 			// Log admin dashboard access
 			await FirestoreService.logAudit({
@@ -32,22 +30,24 @@ export async function GET(req: NextRequest) {
 				resourceId: 'dashboard',
 				details: {
 					action: 'Accessed admin dashboard',
-					timestamp: new Date().toISOString()
-				}
+					timestamp: new Date().toISOString(),
+				},
 			});
 
 			return NextResponse.json({
 				success: true,
 				data: {
 					system: systemStats,
-					activity: recentActivity
-				}
+					activity: recentActivity,
+				},
 			});
-
 		} catch (error) {
 			console.error('Error getting dashboard data:', error);
 			return NextResponse.json(
-				{ error: 'Failed to retrieve dashboard data', details: error instanceof Error ? error.message : 'Unknown error' },
+				{
+					error: 'Failed to retrieve dashboard data',
+					details: error instanceof Error ? error.message : 'Unknown error',
+				},
 				{ status: 500 }
 			);
 		}
@@ -94,10 +94,7 @@ export async function POST(req: NextRequest) {
 			const payload = body.payload;
 
 			if (!action) {
-				return NextResponse.json(
-					{ error: 'Action is required' },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: 'Action is required' }, { status: 400 });
 			}
 
 			const usageService = new UsageTrackingService();
@@ -111,7 +108,10 @@ export async function POST(req: NextRequest) {
 					break;
 
 				case 'bulk_provision_users':
-					result = await handleBulkProvisionUsers(provisioningService, payload as BulkProvisionUsersPayload);
+					result = await handleBulkProvisionUsers(
+						provisioningService,
+						payload as BulkProvisionUsersPayload
+					);
 					break;
 
 				case 'cleanup_inactive_resources':
@@ -119,10 +119,7 @@ export async function POST(req: NextRequest) {
 					break;
 
 				default:
-					return NextResponse.json(
-						{ error: `Unknown action: ${action}` },
-						{ status: 400 }
-					);
+					return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
 			}
 
 			// Log admin action
@@ -134,19 +131,21 @@ export async function POST(req: NextRequest) {
 				details: {
 					action: `Performed admin action: ${action}`,
 					payload,
-					result
-				}
+					result,
+				},
 			});
 
 			return NextResponse.json({
 				success: true,
-				...result
+				...result,
 			});
-
 		} catch (error) {
 			console.error('Error performing admin action:', error);
 			return NextResponse.json(
-				{ error: 'Failed to perform admin action', details: error instanceof Error ? error.message : 'Unknown error' },
+				{
+					error: 'Failed to perform admin action',
+					details: error instanceof Error ? error.message : 'Unknown error',
+				},
 				{ status: 500 }
 			);
 		}
@@ -156,7 +155,10 @@ export async function POST(req: NextRequest) {
 /**
  * Handle resetting user quotas
  */
-async function handleResetUserQuotas(usageService: UsageTrackingService, payload: ResetUserQuotasPayload): Promise<AdminActionResult> {
+async function handleResetUserQuotas(
+	usageService: UsageTrackingService,
+	payload: ResetUserQuotasPayload
+): Promise<AdminActionResult> {
 	if (!payload?.userId) {
 		throw new Error('User ID is required for quota reset');
 	}
@@ -193,7 +195,7 @@ async function handleBulkProvisionUsers(
 					projectName: `${userDoc.displayName || 'User'}'s Project`,
 					projectId: `user-${userId}-${Date.now()}`,
 					projectType: 'nextjs', // Default project type
-					environmentType: 'development'
+					environmentType: 'development',
 				});
 
 				return { userId, success: result.success, errors: result.errors };
@@ -205,7 +207,7 @@ async function handleBulkProvisionUsers(
 
 	return {
 		message: 'Bulk provisioning completed',
-		results: provisioningResults
+		results: provisioningResults,
 	};
 }
 
@@ -217,6 +219,6 @@ function handleCleanupResources(payload: CleanupResourcesPayload): AdminActionRe
 	// TODO: Implement resource cleanup logic
 	return {
 		message: 'Resource cleanup initiated (not implemented yet)',
-		details: 'This feature will be implemented in a future update'
+		details: 'This feature will be implemented in a future update',
 	};
 }

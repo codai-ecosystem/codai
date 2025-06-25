@@ -41,7 +41,7 @@ export class TerminalWidgetManager implements IDisposable {
 					this._attached.delete(widget.id);
 					widget.dispose();
 				}
-			}
+			},
 		};
 	}
 }

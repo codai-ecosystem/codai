@@ -7,22 +7,40 @@ import { VSBuffer } from '../../../base/common/buffer.js';
 import { Emitter } from '../../../base/common/event.js';
 import { Disposable, IDisposable } from '../../../base/common/lifecycle.js';
 import { ISocket, SocketCloseEventType } from '../../../base/parts/ipc/common/ipc.net.js';
-import { ManagedSocket, RemoteSocketHalf, connectManagedSocket } from '../../../platform/remote/common/managedSocket.js';
-import { ManagedRemoteConnection, RemoteConnectionType } from '../../../platform/remote/common/remoteAuthorityResolver.js';
-import { IRemoteSocketFactoryService, ISocketFactory } from '../../../platform/remote/common/remoteSocketFactoryService.js';
-import { ExtHostContext, ExtHostManagedSocketsShape, MainContext, MainThreadManagedSocketsShape } from '../common/extHost.protocol.js';
-import { IExtHostContext, extHostNamedCustomer } from '../../services/extensions/common/extHostCustomers.js';
+import {
+	ManagedSocket,
+	RemoteSocketHalf,
+	connectManagedSocket,
+} from '../../../platform/remote/common/managedSocket.js';
+import {
+	ManagedRemoteConnection,
+	RemoteConnectionType,
+} from '../../../platform/remote/common/remoteAuthorityResolver.js';
+import {
+	IRemoteSocketFactoryService,
+	ISocketFactory,
+} from '../../../platform/remote/common/remoteSocketFactoryService.js';
+import {
+	ExtHostContext,
+	ExtHostManagedSocketsShape,
+	MainContext,
+	MainThreadManagedSocketsShape,
+} from '../common/extHost.protocol.js';
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from '../../services/extensions/common/extHostCustomers.js';
 
 @extHostNamedCustomer(MainContext.MainThreadManagedSockets)
 export class MainThreadManagedSockets extends Disposable implements MainThreadManagedSocketsShape {
-
 	private readonly _proxy: ExtHostManagedSocketsShape;
 	private readonly _registrations = new Map<number, IDisposable>();
 	private readonly _remoteSockets = new Map<number, RemoteSocketHalf>();
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IRemoteSocketFactoryService private readonly _remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IRemoteSocketFactoryService
+		private readonly _remoteSocketFactoryService: IRemoteSocketFactoryService
 	) {
 		super();
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostManagedSockets);
@@ -30,29 +48,41 @@ export class MainThreadManagedSockets extends Disposable implements MainThreadMa
 
 	async $registerSocketFactory(socketFactoryId: number): Promise<void> {
 		const that = this;
-		const socketFactory = new class implements ISocketFactory<RemoteConnectionType.Managed> {
-
+		const socketFactory = new (class implements ISocketFactory<RemoteConnectionType.Managed> {
 			supports(connectTo: ManagedRemoteConnection): boolean {
-				return (connectTo.id === socketFactoryId);
+				return connectTo.id === socketFactoryId;
 			}
 
-			connect(connectTo: ManagedRemoteConnection, path: string, query: string, debugLabel: string): Promise<ISocket> {
+			connect(
+				connectTo: ManagedRemoteConnection,
+				path: string,
+				query: string,
+				debugLabel: string
+			): Promise<ISocket> {
 				return new Promise<ISocket>((resolve, reject) => {
 					if (connectTo.id !== socketFactoryId) {
 						return reject(new Error('Invalid connectTo'));
 					}
 
 					const factoryId = connectTo.id;
-					that._proxy.$openRemoteSocket(factoryId).then(socketId => {
-						const half: RemoteSocketHalf = {
-							onClose: new Emitter(),
-							onData: new Emitter(),
-							onEnd: new Emitter(),
-						};
-						that._remoteSockets.set(socketId, half);
+					that._proxy
+						.$openRemoteSocket(factoryId)
+						.then(socketId => {
+							const half: RemoteSocketHalf = {
+								onClose: new Emitter(),
+								onData: new Emitter(),
+								onEnd: new Emitter(),
+							};
+							that._remoteSockets.set(socketId, half);
 
-						MainThreadManagedSocket.connect(socketId, that._proxy, path, query, debugLabel, half)
-							.then(
+							MainThreadManagedSocket.connect(
+								socketId,
+								that._proxy,
+								path,
+								query,
+								debugLabel,
+								half
+							).then(
 								socket => {
 									socket.onDidDispose(() => that._remoteSockets.delete(socketId));
 									resolve(socket);
@@ -60,13 +90,17 @@ export class MainThreadManagedSockets extends Disposable implements MainThreadMa
 								err => {
 									that._remoteSockets.delete(socketId);
 									reject(err);
-								});
-					}).catch(reject);
+								}
+							);
+						})
+						.catch(reject);
 				});
 			}
-		};
-		this._registrations.set(socketFactoryId, this._remoteSocketFactoryService.register(RemoteConnectionType.Managed, socketFactory));
-
+		})();
+		this._registrations.set(
+			socketFactoryId,
+			this._remoteSocketFactoryService.register(RemoteConnectionType.Managed, socketFactory)
+		);
 	}
 
 	async $unregisterSocketFactory(socketFactoryId: number): Promise<void> {
@@ -81,7 +115,7 @@ export class MainThreadManagedSockets extends Disposable implements MainThreadMa
 		this._remoteSockets.get(socketId)?.onClose.fire({
 			type: SocketCloseEventType.NodeSocketCloseEvent,
 			error: error ? new Error(error) : undefined,
-			hadError: !!error
+			hadError: !!error,
 		});
 		this._remoteSockets.delete(socketId);
 	}
@@ -95,7 +129,9 @@ export class MainThreadManagedSocket extends ManagedSocket {
 	public static connect(
 		socketId: number,
 		proxy: ExtHostManagedSocketsShape,
-		path: string, query: string, debugLabel: string,
+		path: string,
+		query: string,
+		debugLabel: string,
 		half: RemoteSocketHalf
 	): Promise<MainThreadManagedSocket> {
 		const socket = new MainThreadManagedSocket(socketId, proxy, debugLabel, half);
@@ -106,7 +142,7 @@ export class MainThreadManagedSocket extends ManagedSocket {
 		private readonly socketId: number,
 		private readonly proxy: ExtHostManagedSocketsShape,
 		debugLabel: string,
-		half: RemoteSocketHalf,
+		half: RemoteSocketHalf
 	) {
 		super(debugLabel, half);
 	}
@@ -115,7 +151,7 @@ export class MainThreadManagedSocket extends ManagedSocket {
 		this.proxy.$remoteSocketWrite(this.socketId, buffer);
 	}
 
-	protected override  closeRemote(): void {
+	protected override closeRemote(): void {
 		this.proxy.$remoteSocketEnd(this.socketId);
 	}
 

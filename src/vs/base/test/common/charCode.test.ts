@@ -11,7 +11,6 @@ suite('CharCode', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('has good values', () => {
-
 		function assertValue(actual: CharCode, expected: string): void {
 			assert.strictEqual(actual, expected.charCodeAt(0), 'char code ok for <<' + expected + '>>');
 		}
@@ -26,7 +25,7 @@ suite('CharCode', () => {
 		assertValue(CharCode.DollarSign, '$');
 		assertValue(CharCode.PercentSign, '%');
 		assertValue(CharCode.Ampersand, '&');
-		assertValue(CharCode.SingleQuote, '\'');
+		assertValue(CharCode.SingleQuote, "'");
 		assertValue(CharCode.OpenParen, '(');
 		assertValue(CharCode.CloseParen, ')');
 		assertValue(CharCode.Asterisk, '*');

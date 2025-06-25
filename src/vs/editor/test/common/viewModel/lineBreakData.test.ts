@@ -10,7 +10,6 @@ import { ModelDecorationInjectedTextOptions } from '../../../common/model/textMo
 import { ModelLineProjectionData } from '../../../common/modelLineProjectionData.js';
 
 suite('Editor ViewModel - LineBreakData', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('Basic', () => {
@@ -31,7 +30,10 @@ suite('Editor ViewModel - LineBreakData', () => {
 	function testInverse(data: ModelLineProjectionData) {
 		for (let i = 0; i < 100; i++) {
 			const output = data.translateToOutputPosition(i);
-			assert.deepStrictEqual(data.translateToInputOffset(output.outputLineIndex, output.outputOffset), i);
+			assert.deepStrictEqual(
+				data.translateToInputOffset(output.outputLineIndex, output.outputOffset),
+				i
+			);
 		}
 	}
 
@@ -48,12 +50,24 @@ suite('Editor ViewModel - LineBreakData', () => {
 	}
 
 	suite('Injected Text 1', () => {
-		const data = new ModelLineProjectionData([2, 3, 10], mapTextToInjectedTextOptions(['1', '22', '333']), [10, 100], [], 10);
+		const data = new ModelLineProjectionData(
+			[2, 3, 10],
+			mapTextToInjectedTextOptions(['1', '22', '333']),
+			[10, 100],
+			[],
+			10
+		);
 
 		test('getInputOffsetOfOutputPosition', () => {
 			// For every view model position, what is the model position?
-			assert.deepStrictEqual(getInputOffsets(data, 0), ([0, 1, 2, 2, 3, 3, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 12, 13]));
-			assert.deepStrictEqual(getInputOffsets(data, 1), ([7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 9, 10, 10, 10, 10, 11, 12, 13]));
+			assert.deepStrictEqual(
+				getInputOffsets(data, 0),
+				[0, 1, 2, 2, 3, 3, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11, 12, 13]
+			);
+			assert.deepStrictEqual(
+				getInputOffsets(data, 1),
+				[7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 9, 10, 10, 10, 10, 11, 12, 13]
+			);
 		});
 
 		test('getOutputPositionOfInputOffset', () => {
@@ -147,14 +161,11 @@ suite('Editor ViewModel - LineBreakData', () => {
 			testInverse(data);
 		});
 
-
 		test('normalization', () => {
 			assert.deepStrictEqual(
 				sequence(25)
-					.map((v) =>
-						data.normalizeOutputPosition(1, v, PositionAffinity.Right)
-					)
-					.map((s) => s.toString()),
+					.map(v => data.normalizeOutputPosition(1, v, PositionAffinity.Right))
+					.map(s => s.toString()),
 				[
 					'1:0',
 					'1:1',
@@ -187,7 +198,13 @@ suite('Editor ViewModel - LineBreakData', () => {
 	});
 
 	suite('Injected Text 2', () => {
-		const data = new ModelLineProjectionData([2, 2, 6], mapTextToInjectedTextOptions(['1', '22', '333']), [10, 100], [], 0);
+		const data = new ModelLineProjectionData(
+			[2, 2, 6],
+			mapTextToInjectedTextOptions(['1', '22', '333']),
+			[10, 100],
+			[],
+			0
+		);
 
 		test('getInputOffsetOfOutputPosition', () => {
 			assert.deepStrictEqual(
@@ -196,10 +213,7 @@ suite('Editor ViewModel - LineBreakData', () => {
 			);
 			assert.deepStrictEqual(
 				getInputOffsets(data, 1),
-				[
-					6, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-					23,
-				]
+				[6, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
 			);
 		});
 
@@ -209,7 +223,13 @@ suite('Editor ViewModel - LineBreakData', () => {
 	});
 
 	suite('Injected Text 3', () => {
-		const data = new ModelLineProjectionData([2, 2, 7], mapTextToInjectedTextOptions(['1', '22', '333']), [10, 100], [], 0);
+		const data = new ModelLineProjectionData(
+			[2, 2, 7],
+			mapTextToInjectedTextOptions(['1', '22', '333']),
+			[10, 100],
+			[],
+			0
+		);
 
 		test('getInputOffsetOfOutputPosition', () => {
 			assert.deepStrictEqual(
@@ -218,10 +238,7 @@ suite('Editor ViewModel - LineBreakData', () => {
 			);
 			assert.deepStrictEqual(
 				getInputOffsets(data, 1),
-				[
-					7, 7, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-					23,
-				]
+				[7, 7, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
 			);
 		});
 

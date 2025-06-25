@@ -8,15 +8,22 @@ import * as platform from '../../../base/common/platform.js';
 import { Emitter } from '../../../base/common/event.js';
 import { Disposable } from '../../../base/common/lifecycle.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
-import { IKeyboardLayoutData, INativeKeyboardLayoutService } from '../common/keyboardLayoutService.js';
-import { ILifecycleMainService, LifecycleMainPhase } from '../../lifecycle/electron-main/lifecycleMainService.js';
+import {
+	IKeyboardLayoutData,
+	INativeKeyboardLayoutService,
+} from '../common/keyboardLayoutService.js';
+import {
+	ILifecycleMainService,
+	LifecycleMainPhase,
+} from '../../lifecycle/electron-main/lifecycleMainService.js';
 
-export const IKeyboardLayoutMainService = createDecorator<IKeyboardLayoutMainService>('keyboardLayoutMainService');
+export const IKeyboardLayoutMainService = createDecorator<IKeyboardLayoutMainService>(
+	'keyboardLayoutMainService'
+);
 
-export interface IKeyboardLayoutMainService extends INativeKeyboardLayoutService { }
+export interface IKeyboardLayoutMainService extends INativeKeyboardLayoutService {}
 
 export class KeyboardLayoutMainService extends Disposable implements INativeKeyboardLayoutService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeKeyboardLayout = this._register(new Emitter<IKeyboardLayoutData>());
@@ -25,9 +32,7 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
 	private _initPromise: Promise<void> | null;
 	private _keyboardLayoutData: IKeyboardLayoutData | null;
 
-	constructor(
-		@ILifecycleMainService lifecycleMainService: ILifecycleMainService
-	) {
+	constructor(@ILifecycleMainService lifecycleMainService: ILifecycleMainService) {
 		super();
 		this._initPromise = null;
 		this._keyboardLayoutData = null;

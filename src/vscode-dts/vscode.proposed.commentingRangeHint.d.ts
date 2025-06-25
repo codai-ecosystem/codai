@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// @alexr00 https://github.com/microsoft/vscode/issues/185551
 
 	/**

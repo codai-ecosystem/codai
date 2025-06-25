@@ -9,7 +9,6 @@ import { Emitter } from '../common/event.js';
 import { Disposable, toDisposable } from '../common/lifecycle.js';
 
 export class BroadcastDataChannel<T> extends Disposable {
-
 	private broadcastChannel: BroadcastChannel | undefined;
 
 	private readonly _onDidReceiveData = this._register(new Emitter<T>());
@@ -26,14 +25,19 @@ export class BroadcastDataChannel<T> extends Disposable {
 					this._onDidReceiveData.fire(event.data);
 				};
 				this.broadcastChannel.addEventListener('message', listener);
-				this._register(toDisposable(() => {
-					if (this.broadcastChannel) {
-						this.broadcastChannel.removeEventListener('message', listener);
-						this.broadcastChannel.close();
-					}
-				}));
+				this._register(
+					toDisposable(() => {
+						if (this.broadcastChannel) {
+							this.broadcastChannel.removeEventListener('message', listener);
+							this.broadcastChannel.close();
+						}
+					})
+				);
 			} catch (error) {
-				console.warn('Error while creating broadcast channel. Falling back to localStorage.', getErrorMessage(error));
+				console.warn(
+					'Error while creating broadcast channel. Falling back to localStorage.',
+					getErrorMessage(error)
+				);
 			}
 		}
 

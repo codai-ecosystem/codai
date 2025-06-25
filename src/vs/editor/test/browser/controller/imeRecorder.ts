@@ -4,14 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DisposableStore, toDisposable } from '../../../../base/common/lifecycle.js';
-import { IRecorded, IRecordedCompositionEvent, IRecordedEvent, IRecordedInputEvent, IRecordedKeyboardEvent, IRecordedTextareaState } from './imeRecordedTypes.js';
+import {
+	IRecorded,
+	IRecordedCompositionEvent,
+	IRecordedEvent,
+	IRecordedInputEvent,
+	IRecordedKeyboardEvent,
+	IRecordedTextareaState,
+} from './imeRecordedTypes.js';
 import * as browser from '../../../../base/browser/browser.js';
 import * as platform from '../../../../base/common/platform.js';
 import { mainWindow } from '../../../../base/browser/window.js';
 import { TextAreaWrapper } from '../../../browser/controller/editContext/textArea/textAreaEditContextInput.js';
 
 (() => {
-
 	const startButton = <HTMLButtonElement>mainWindow.document.getElementById('startRecording')!;
 	const endButton = <HTMLButtonElement>mainWindow.document.getElementById('endRecording')!;
 
@@ -22,7 +28,7 @@ import { TextAreaWrapper } from '../../../browser/controller/editContext/textAre
 		env: null!,
 		initial: null!,
 		events: [],
-		final: null!
+		final: null!,
 	};
 
 	const readTextareaState = (): IRecordedTextareaState => {
@@ -45,12 +51,12 @@ import { TextAreaWrapper } from '../../../browser/controller/editContext/textAre
 					isAndroid: browser.isAndroid,
 					isFirefox: browser.isFirefox,
 					isChrome: browser.isChrome,
-					isSafari: browser.isSafari
-				}
+					isSafari: browser.isSafari,
+				},
 			},
 			initial: readTextareaState(),
 			events: [],
-			final: null!
+			final: null!,
 		};
 	};
 	endButton.onclick = () => {
@@ -63,14 +69,16 @@ import { TextAreaWrapper } from '../../../browser/controller/editContext/textAre
 		lines.push(`const recorded: IRecorded = {`);
 		lines.push(`\tenv: ${JSON.stringify(recorded.env)}, `);
 		lines.push(`\tinitial: ${printState(recorded.initial)}, `);
-		lines.push(`\tevents: [\n\t\t${recorded.events.map(ev => printEvent(ev)).join(',\n\t\t')}\n\t],`);
+		lines.push(
+			`\tevents: [\n\t\t${recorded.events.map(ev => printEvent(ev)).join(',\n\t\t')}\n\t],`
+		);
 		lines.push(`\tfinal: ${printState(recorded.final)},`);
 		lines.push(`}`);
 
 		return lines.join('\n');
 
 		function printString(str: string) {
-			return str.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+			return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 		}
 		function printState(state: IRecordedTextareaState) {
 			return `{ value: '${printString(state.value)}', selectionStart: ${state.selectionStart}, selectionEnd: ${state.selectionEnd}, selectionDirection: '${state.selectionDirection}' }`;
@@ -79,7 +87,11 @@ import { TextAreaWrapper } from '../../../browser/controller/editContext/textAre
 			if (ev.type === 'keydown' || ev.type === 'keypress' || ev.type === 'keyup') {
 				return `{ timeStamp: ${ev.timeStamp.toFixed(2)}, state: ${printState(ev.state)}, type: '${ev.type}', altKey: ${ev.altKey}, charCode: ${ev.charCode}, code: '${ev.code}', ctrlKey: ${ev.ctrlKey}, isComposing: ${ev.isComposing}, key: '${ev.key}', keyCode: ${ev.keyCode}, location: ${ev.location}, metaKey: ${ev.metaKey}, repeat: ${ev.repeat}, shiftKey: ${ev.shiftKey} }`;
 			}
-			if (ev.type === 'compositionstart' || ev.type === 'compositionupdate' || ev.type === 'compositionend') {
+			if (
+				ev.type === 'compositionstart' ||
+				ev.type === 'compositionupdate' ||
+				ev.type === 'compositionend'
+			) {
 				return `{ timeStamp: ${ev.timeStamp.toFixed(2)}, state: ${printState(ev.state)}, type: '${ev.type}', data: '${printString(ev.data)}' }`;
 			}
 			if (ev.type === 'beforeinput' || ev.type === 'input') {
@@ -93,9 +105,11 @@ import { TextAreaWrapper } from '../../../browser/controller/editContext/textAre
 		inputarea = document.createElement('textarea');
 		mainWindow.document.body.appendChild(inputarea);
 		inputarea.focus();
-		disposables.add(toDisposable(() => {
-			inputarea.remove();
-		}));
+		disposables.add(
+			toDisposable(() => {
+				inputarea.remove();
+			})
+		);
 		const wrapper = disposables.add(new TextAreaWrapper(inputarea));
 
 		wrapper.setValue('', `aaaa`);
@@ -126,13 +140,17 @@ import { TextAreaWrapper } from '../../../browser/controller/editContext/textAre
 				location: e.location,
 				metaKey: e.metaKey,
 				repeat: e.repeat,
-				shiftKey: e.shiftKey
+				shiftKey: e.shiftKey,
 			};
 			recordEvent(ev);
 		};
 
 		const recordCompositionEvent = (e: CompositionEvent): void => {
-			if (e.type !== 'compositionstart' && e.type !== 'compositionupdate' && e.type !== 'compositionend') {
+			if (
+				e.type !== 'compositionstart' &&
+				e.type !== 'compositionupdate' &&
+				e.type !== 'compositionend'
+			) {
 				throw new Error(`Not supported!`);
 			}
 			if (originTimeStamp === 0) {
@@ -174,5 +192,4 @@ import { TextAreaWrapper } from '../../../browser/controller/editContext/textAre
 		wrapper.onBeforeInput(recordInputEvent);
 		wrapper.onInput(recordInputEvent);
 	}
-
 })();

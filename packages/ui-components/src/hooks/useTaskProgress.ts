@@ -28,9 +28,12 @@ export interface UseTaskProgressReturn {
 export function useTaskProgress(): UseTaskProgressReturn {
 	const [tasks, setTasks] = useState<Map<string, Task>>(new Map());
 
-	const getTask = useCallback((id: string) => {
-		return tasks.get(id);
-	}, [tasks]);
+	const getTask = useCallback(
+		(id: string) => {
+			return tasks.get(id);
+		},
+		[tasks]
+	);
 
 	const addTask = useCallback((taskData: Omit<Task, 'id'>) => {
 		const id = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -59,7 +62,12 @@ export function useTaskProgress(): UseTaskProgressReturn {
 				if (updates.status === 'running' && !existingTask.startTime) {
 					updatedTask.startTime = new Date();
 				}
-				if ((updates.status === 'completed' || updates.status === 'failed' || updates.status === 'cancelled') && !existingTask.endTime) {
+				if (
+					(updates.status === 'completed' ||
+						updates.status === 'failed' ||
+						updates.status === 'cancelled') &&
+					!existingTask.endTime
+				) {
 					updatedTask.endTime = new Date();
 				}
 
@@ -78,8 +86,8 @@ export function useTaskProgress(): UseTaskProgressReturn {
 	}, []);
 
 	const getActiveTasks = useCallback(() => {
-		return Array.from(tasks.values()).filter(task =>
-			task.status === 'pending' || task.status === 'running'
+		return Array.from(tasks.values()).filter(
+			task => task.status === 'pending' || task.status === 'running'
 		);
 	}, [tasks]);
 

@@ -12,7 +12,7 @@ import { basename } from '../../../base/common/path.js';
 export enum PromptsType {
 	instructions = 'instructions',
 	prompt = 'prompt',
-	mode = 'mode'
+	mode = 'mode',
 }
 
 export function isValidPromptType(type: string): type is PromptsType {
@@ -85,7 +85,10 @@ export function getPromptFileType(fileUri: URI): PromptsType | undefined {
 		return PromptsType.prompt;
 	}
 
-	if (filename.endsWith(INSTRUCTION_FILE_EXTENSION) || (filename === COPILOT_CUSTOM_INSTRUCTIONS_FILENAME)) {
+	if (
+		filename.endsWith(INSTRUCTION_FILE_EXTENSION) ||
+		filename === COPILOT_CUSTOM_INSTRUCTIONS_FILENAME
+	) {
 		return PromptsType.instructions;
 	}
 
@@ -102,7 +105,6 @@ export function getPromptFileType(fileUri: URI): PromptsType | undefined {
 export function isPromptOrInstructionsFile(fileUri: URI): boolean {
 	return getPromptFileType(fileUri) !== undefined;
 }
-
 
 export function getPromptFileExtension(type: PromptsType): string {
 	switch (type) {
@@ -143,29 +145,20 @@ export function getPromptFileLocationsConfigKey(type: PromptsType): string {
 	}
 }
 
-
 /**
  * Check whether provided URI belongs to an `untitled` document.
  */
-export const isUntitled = (
-	fileUri: URI,
-): boolean => {
+export const isUntitled = (fileUri: URI): boolean => {
 	return fileUri.scheme === 'untitled';
 };
 
 /**
  * Gets clean prompt name without file extension.
  */
-export const getCleanPromptName = (
-	fileUri: URI,
-): string => {
+export const getCleanPromptName = (fileUri: URI): string => {
 	const fileName = basename(fileUri.path);
 
-	const extensions = [
-		PROMPT_FILE_EXTENSION,
-		INSTRUCTION_FILE_EXTENSION,
-		MODE_FILE_EXTENSION,
-	];
+	const extensions = [PROMPT_FILE_EXTENSION, INSTRUCTION_FILE_EXTENSION, MODE_FILE_EXTENSION];
 
 	for (const ext of extensions) {
 		if (fileName.endsWith(ext)) {

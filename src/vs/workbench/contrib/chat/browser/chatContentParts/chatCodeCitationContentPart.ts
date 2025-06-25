@@ -36,26 +36,47 @@ export class ChatCodeCitationContentPart extends Disposable implements IChatCont
 			dom.h('.chat-code-citation-button-container@button'),
 		]);
 		elements.label.textContent = label + ' - ';
-		const button = this._register(new Button(elements.button, {
-			buttonBackground: undefined,
-			buttonBorder: undefined,
-			buttonForeground: undefined,
-			buttonHoverBackground: undefined,
-			buttonSecondaryBackground: undefined,
-			buttonSecondaryForeground: undefined,
-			buttonSecondaryHoverBackground: undefined,
-			buttonSeparator: undefined
-		}));
-		button.label = localize('viewMatches', "View matches");
-		this._register(button.onDidClick(() => {
-			const citationText = `# Code Citations\n\n` + citations.citations.map(c => `## License: ${c.license}\n${c.value.toString()}\n\n\`\`\`\n${c.snippet}\n\`\`\`\n\n`).join('\n');
-			this.editorService.openEditor({ resource: undefined, contents: citationText, languageId: 'markdown' });
-			this.telemetryService.publicLog2<{}, ChatCodeCitationOpenedClassification>('openedChatCodeCitations');
-		}));
+		const button = this._register(
+			new Button(elements.button, {
+				buttonBackground: undefined,
+				buttonBorder: undefined,
+				buttonForeground: undefined,
+				buttonHoverBackground: undefined,
+				buttonSecondaryBackground: undefined,
+				buttonSecondaryForeground: undefined,
+				buttonSecondaryHoverBackground: undefined,
+				buttonSeparator: undefined,
+			})
+		);
+		button.label = localize('viewMatches', 'View matches');
+		this._register(
+			button.onDidClick(() => {
+				const citationText =
+					`# Code Citations\n\n` +
+					citations.citations
+						.map(
+							c =>
+								`## License: ${c.license}\n${c.value.toString()}\n\n\`\`\`\n${c.snippet}\n\`\`\`\n\n`
+						)
+						.join('\n');
+				this.editorService.openEditor({
+					resource: undefined,
+					contents: citationText,
+					languageId: 'markdown',
+				});
+				this.telemetryService.publicLog2<{}, ChatCodeCitationOpenedClassification>(
+					'openedChatCodeCitations'
+				);
+			})
+		);
 		this.domNode = elements.root;
 	}
 
-	hasSameContent(other: IChatRendererContent, followingContent: IChatRendererContent[], element: ChatTreeItem): boolean {
+	hasSameContent(
+		other: IChatRendererContent,
+		followingContent: IChatRendererContent[],
+		element: ChatTreeItem
+	): boolean {
 		return other.kind === 'codeCitations';
 	}
 }

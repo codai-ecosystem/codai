@@ -5,7 +5,13 @@
 
 import * as dom from '../../dom.js';
 import { EventType, Gesture } from '../../touch.js';
-import { ISelectBoxDelegate, ISelectBoxOptions, ISelectBoxStyles, ISelectData, ISelectOptionItem } from './selectBox.js';
+import {
+	ISelectBoxDelegate,
+	ISelectBoxOptions,
+	ISelectBoxStyles,
+	ISelectData,
+	ISelectOptionItem,
+} from './selectBox.js';
 import * as arrays from '../../../common/arrays.js';
 import { Emitter, Event } from '../../../common/event.js';
 import { KeyCode } from '../../../common/keyCodes.js';
@@ -13,7 +19,6 @@ import { Disposable } from '../../../common/lifecycle.js';
 import { isMacintosh } from '../../../common/platform.js';
 
 export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
-
 	private selectElement: HTMLSelectElement;
 	private selectBoxOptions: ISelectBoxOptions;
 	private options: ISelectOptionItem[];
@@ -21,7 +26,12 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 	private readonly _onDidSelect: Emitter<ISelectData>;
 	private styles: ISelectBoxStyles;
 
-	constructor(options: ISelectOptionItem[], selected: number, styles: ISelectBoxStyles, selectBoxOptions?: ISelectBoxOptions) {
+	constructor(
+		options: ISelectOptionItem[],
+		selected: number,
+		styles: ISelectBoxStyles,
+		selectBoxOptions?: ISelectBoxOptions
+	) {
 		super();
 		this.selectBoxOptions = selectBoxOptions || Object.create(null);
 
@@ -50,41 +60,57 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 	private registerListeners() {
 		this._register(Gesture.addTarget(this.selectElement));
 		[EventType.Tap].forEach(eventType => {
-			this._register(dom.addDisposableListener(this.selectElement, eventType, (e) => {
-				this.selectElement.focus();
-			}));
+			this._register(
+				dom.addDisposableListener(this.selectElement, eventType, e => {
+					this.selectElement.focus();
+				})
+			);
 		});
 
-		this._register(dom.addStandardDisposableListener(this.selectElement, 'click', (e) => {
-			dom.EventHelper.stop(e, true);
-		}));
+		this._register(
+			dom.addStandardDisposableListener(this.selectElement, 'click', e => {
+				dom.EventHelper.stop(e, true);
+			})
+		);
 
-		this._register(dom.addStandardDisposableListener(this.selectElement, 'change', (e) => {
-			this.selectElement.title = e.target.value;
-			this._onDidSelect.fire({
-				index: e.target.selectedIndex,
-				selected: e.target.value
-			});
-		}));
+		this._register(
+			dom.addStandardDisposableListener(this.selectElement, 'change', e => {
+				this.selectElement.title = e.target.value;
+				this._onDidSelect.fire({
+					index: e.target.selectedIndex,
+					selected: e.target.value,
+				});
+			})
+		);
 
-		this._register(dom.addStandardDisposableListener(this.selectElement, 'keydown', (e) => {
-			let showSelect = false;
+		this._register(
+			dom.addStandardDisposableListener(this.selectElement, 'keydown', e => {
+				let showSelect = false;
 
-			if (isMacintosh) {
-				if (e.keyCode === KeyCode.DownArrow || e.keyCode === KeyCode.UpArrow || e.keyCode === KeyCode.Space) {
-					showSelect = true;
+				if (isMacintosh) {
+					if (
+						e.keyCode === KeyCode.DownArrow ||
+						e.keyCode === KeyCode.UpArrow ||
+						e.keyCode === KeyCode.Space
+					) {
+						showSelect = true;
+					}
+				} else {
+					if (
+						(e.keyCode === KeyCode.DownArrow && e.altKey) ||
+						e.keyCode === KeyCode.Space ||
+						e.keyCode === KeyCode.Enter
+					) {
+						showSelect = true;
+					}
 				}
-			} else {
-				if (e.keyCode === KeyCode.DownArrow && e.altKey || e.keyCode === KeyCode.Space || e.keyCode === KeyCode.Enter) {
-					showSelect = true;
-				}
-			}
 
-			if (showSelect) {
-				// Space, Enter, is used to expand select box, do not propagate it (prevent action bar action run)
-				e.stopPropagation();
-			}
-		}));
+				if (showSelect) {
+					// Space, Enter, is used to expand select box, do not propagate it (prevent action bar action run)
+					e.stopPropagation();
+				}
+			})
+		);
 	}
 
 	public get onDidSelect(): Event<ISelectData> {
@@ -92,7 +118,6 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 	}
 
 	public setOptions(options: ISelectOptionItem[], selected?: number): void {
-
 		if (!this.options || !arrays.equals(this.options, options)) {
 			this.options = options;
 			this.selectElement.options.length = 0;
@@ -100,7 +125,6 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 			this.options.forEach((option, index) => {
 				this.selectElement.add(this.createOption(option.text, index, option.isDisabled));
 			});
-
 		}
 
 		if (selected !== undefined) {
@@ -122,7 +146,10 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 		}
 
 		this.selectElement.selectedIndex = this.selected;
-		if ((this.selected < this.options.length) && typeof this.options[this.selected].text === 'string') {
+		if (
+			this.selected < this.options.length &&
+			typeof this.options[this.selected].text === 'string'
+		) {
 			this.selectElement.title = this.options[this.selected].text;
 		} else {
 			this.selectElement.title = '';
@@ -169,14 +196,12 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 	}
 
 	public applyStyles(): void {
-
 		// Style native select
 		if (this.selectElement) {
 			this.selectElement.style.backgroundColor = this.styles.selectBackground ?? '';
 			this.selectElement.style.color = this.styles.selectForeground ?? '';
 			this.selectElement.style.borderColor = this.styles.selectBorder ?? '';
 		}
-
 	}
 
 	private createOption(value: string, index: number, disabled?: boolean): HTMLOptionElement {

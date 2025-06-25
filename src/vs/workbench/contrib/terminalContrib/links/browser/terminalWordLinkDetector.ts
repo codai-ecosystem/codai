@@ -12,14 +12,17 @@ import { IProductService } from '../../../../../platform/product/common/productS
 import { TerminalSettingId } from '../../../../../platform/terminal/common/terminal.js';
 import { ITerminalSimpleLink, ITerminalLinkDetector, TerminalBuiltinLinkType } from './links.js';
 import { convertLinkRangeToBuffer, getXtermLineContent } from './terminalLinkHelpers.js';
-import { ITerminalConfiguration, TERMINAL_CONFIG_SECTION } from '../../../terminal/common/terminal.js';
+import {
+	ITerminalConfiguration,
+	TERMINAL_CONFIG_SECTION,
+} from '../../../terminal/common/terminal.js';
 import type { IBufferLine, Terminal } from '@xterm/xterm';
 
 const enum Constants {
 	/**
 	 * The max line length to try extract word links from.
 	 */
-	MaxLineLength = 2000
+	MaxLineLength = 2000,
 }
 
 interface Word {
@@ -40,16 +43,18 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
 	constructor(
 		readonly xterm: Terminal,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IProductService private readonly _productService: IProductService,
+		@IProductService private readonly _productService: IProductService
 	) {
 		super();
 
 		this._refreshSeparatorCodes();
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalSettingId.WordSeparators)) {
-				this._refreshSeparatorCodes();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration(TerminalSettingId.WordSeparators)) {
+					this._refreshSeparatorCodes();
+				}
+			})
+		);
 	}
 
 	detect(lines: IBufferLine[], startLine: number, endLine: number): ITerminalSimpleLink[] {
@@ -80,7 +85,7 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
 					startColumn: word.startIndex + 1,
 					startLineNumber: 1,
 					endColumn: word.endIndex + 1,
-					endLineNumber: 1
+					endLineNumber: 1,
 				},
 				startLine
 			);
@@ -93,7 +98,7 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
 						text: word.text,
 						uri,
 						bufferRange,
-						type: TerminalBuiltinLinkType.Url
+						type: TerminalBuiltinLinkType.Url,
 					});
 				}
 				continue;
@@ -104,7 +109,7 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
 				text: word.text,
 				bufferRange,
 				type: TerminalBuiltinLinkType.Search,
-				contextLine: text
+				contextLine: text,
 			});
 		}
 
@@ -119,7 +124,7 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
 			words.push({
 				text: splitWords[i],
 				startIndex: runningIndex,
-				endIndex: runningIndex + splitWords[i].length
+				endIndex: runningIndex + splitWords[i].length,
 			});
 			runningIndex += splitWords[i].length + 1;
 		}
@@ -127,11 +132,17 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
 	}
 
 	private _refreshSeparatorCodes(): void {
-		const separators = this._configurationService.getValue<ITerminalConfiguration>(TERMINAL_CONFIG_SECTION).wordSeparators;
+		const separators =
+			this._configurationService.getValue<ITerminalConfiguration>(
+				TERMINAL_CONFIG_SECTION
+			).wordSeparators;
 		let powerlineSymbols = '';
 		for (let i = 0xe0b0; i <= 0xe0bf; i++) {
 			powerlineSymbols += String.fromCharCode(i);
 		}
-		this._separatorRegex = new RegExp(`[${escapeRegExpCharacters(separators)}${powerlineSymbols}]`, 'g');
+		this._separatorRegex = new RegExp(
+			`[${escapeRegExpCharacters(separators)}${powerlineSymbols}]`,
+			'g'
+		);
 	}
 }

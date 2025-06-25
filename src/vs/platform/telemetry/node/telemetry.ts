@@ -7,7 +7,10 @@ import * as fs from 'fs';
 import { join } from '../../../base/common/path.js';
 import { Promises } from '../../../base/node/pfs.js';
 
-export async function buildTelemetryMessage(appRoot: string, extensionsPath?: string): Promise<string> {
+export async function buildTelemetryMessage(
+	appRoot: string,
+	extensionsPath?: string
+): Promise<string> {
 	const mergedTelemetry = Object.create(null);
 
 	// Simple function to merge the telemetry into one json object
@@ -33,14 +36,18 @@ export async function buildTelemetryMessage(appRoot: string, extensionsPath?: st
 
 		const telemetryJsonFolders: string[] = [];
 		for (const dir of dirs) {
-			const files = (await Promises.readdir(join(extensionsPath, dir))).filter(file => file === 'telemetry.json');
+			const files = (await Promises.readdir(join(extensionsPath, dir))).filter(
+				file => file === 'telemetry.json'
+			);
 			if (files.length === 1) {
 				telemetryJsonFolders.push(dir); // // We know it contains a telemetry.json file so we add it to the list of folders which have one
 			}
 		}
 
 		for (const folder of telemetryJsonFolders) {
-			const contents = (await fs.promises.readFile(join(extensionsPath, folder, 'telemetry.json'))).toString();
+			const contents = (
+				await fs.promises.readFile(join(extensionsPath, folder, 'telemetry.json'))
+			).toString();
 			mergeTelemetry(contents, folder);
 		}
 	}

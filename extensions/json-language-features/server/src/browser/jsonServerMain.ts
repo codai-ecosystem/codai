@@ -3,9 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createConnection, BrowserMessageReader, BrowserMessageWriter, Disposable } from 'vscode-languageserver/browser';
+import {
+	createConnection,
+	BrowserMessageReader,
+	BrowserMessageWriter,
+	Disposable,
+} from 'vscode-languageserver/browser';
 import { RuntimeEnvironment, startServer } from '../jsonServer';
-
 
 const messageReader = new BrowserMessageReader(self);
 const messageWriter = new BrowserMessageWriter(self);
@@ -24,8 +28,8 @@ const runtime: RuntimeEnvironment = {
 		setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable {
 			const handle = setTimeout(callback, ms, ...args);
 			return { dispose: () => clearTimeout(handle) };
-		}
-	}
+		},
+	},
 };
 
 startServer(connection, runtime);

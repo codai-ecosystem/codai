@@ -21,12 +21,14 @@ This is a central platform & aide hub service that is part of the larger Codai e
 ## Code Style & Patterns
 
 ### TypeScript
+
 - Use strict TypeScript configuration
 - Define proper interfaces and types
 - Prefer type inference where possible
 - Use generic types for reusable components
 
 ### React/Next.js
+
 - Use functional components with hooks
 - Implement proper error boundaries
 - Use Next.js App Router (app/ directory)
@@ -34,12 +36,14 @@ This is a central platform & aide hub service that is part of the larger Codai e
 - Implement proper SEO with metadata
 
 ### Styling
+
 - Use Tailwind CSS utilities
 - Create reusable component classes
 - Follow mobile-first responsive design
 - Use CSS variables for theming
 
 ### File Organization
+
 ```
 codai/
 ├── app/                 # Next.js App Router
@@ -84,6 +88,7 @@ When integrating with other Codai services:
 ## AI-Specific Considerations
 
 As an AI-native service:
+
 - Implement proper loading states for AI operations
 - Handle async AI responses gracefully
 - Provide meaningful error messages

@@ -10,7 +10,11 @@ import { IInstantiationService } from '../../../../../../platform/instantiation/
 import { IChatToolInvocation, IChatToolInvocationSerialized } from '../../../common/chatService.js';
 import { IChatCodeBlockInfo } from '../../chat.js';
 import { IChatContentPartRenderContext } from '../chatContentParts.js';
-import { ChatCollapsibleListContentPart, CollapsibleListPool, IChatCollapsibleListItem } from '../chatReferencesContentPart.js';
+import {
+	ChatCollapsibleListContentPart,
+	CollapsibleListPool,
+	IChatCollapsibleListItem,
+} from '../chatReferencesContentPart.js';
 import { BaseChatToolInvocationSubPart } from './chatToolInvocationSubPart.js';
 
 export class ChatResultListSubPart extends BaseChatToolInvocationSubPart {
@@ -23,20 +27,22 @@ export class ChatResultListSubPart extends BaseChatToolInvocationSubPart {
 		message: string | IMarkdownString,
 		toolDetails: Array<URI | Location>,
 		listPool: CollapsibleListPool,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super(toolInvocation);
 
-		const collapsibleListPart = this._register(instantiationService.createInstance(
-			ChatCollapsibleListContentPart,
-			toolDetails.map<IChatCollapsibleListItem>(detail => ({
-				kind: 'reference',
-				reference: detail,
-			})),
-			message,
-			context,
-			listPool,
-		));
+		const collapsibleListPart = this._register(
+			instantiationService.createInstance(
+				ChatCollapsibleListContentPart,
+				toolDetails.map<IChatCollapsibleListItem>(detail => ({
+					kind: 'reference',
+					reference: detail,
+				})),
+				message,
+				context,
+				listPool
+			)
+		);
 		this._register(collapsibleListPart.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
 		this.domNode = collapsibleListPart.domNode;
 	}

@@ -17,7 +17,9 @@ export class StyleLoadingMonitor {
 		};
 
 		window.addEventListener('DOMContentLoaded', () => {
-			for (const link of document.getElementsByClassName('code-user-style') as HTMLCollectionOf<HTMLElement>) {
+			for (const link of document.getElementsByClassName(
+				'code-user-style'
+			) as HTMLCollectionOf<HTMLElement>) {
 				if (link.dataset.source) {
 					link.onerror = onStyleLoadError;
 				}

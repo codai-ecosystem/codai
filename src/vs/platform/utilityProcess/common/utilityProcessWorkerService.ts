@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 export interface IUtilityProcessWorkerProcess {
-
 	/**
 	 * The module to load as child process into the worker.
 	 */
@@ -23,7 +22,6 @@ export interface IUtilityProcessWorkerProcess {
 }
 
 export interface IOnDidTerminateUtilityrocessWorkerProcess {
-
 	/**
 	 * More information around how the utility process worker
 	 * process terminated. Will be `undefined` in case the
@@ -36,7 +34,6 @@ export interface IOnDidTerminateUtilityrocessWorkerProcess {
 }
 
 export interface IUtilityProcessWorkerProcessExit {
-
 	/**
 	 * The utility process worker process exit code if known.
 	 */
@@ -49,7 +46,6 @@ export interface IUtilityProcessWorkerProcessExit {
 }
 
 export interface IUtilityProcessWorkerConfiguration {
-
 	/**
 	 * Configuration specific to the process to fork.
 	 */
@@ -66,7 +62,8 @@ export interface IUtilityProcessWorkerConfiguration {
 	};
 }
 
-export interface IUtilityProcessWorkerCreateConfiguration extends IUtilityProcessWorkerConfiguration {
+export interface IUtilityProcessWorkerCreateConfiguration
+	extends IUtilityProcessWorkerConfiguration {
 	readonly reply: {
 		readonly windowId: number;
 		readonly channel: string;
@@ -77,7 +74,6 @@ export interface IUtilityProcessWorkerCreateConfiguration extends IUtilityProces
 export const ipcUtilityProcessWorkerChannelName = 'utilityProcessWorker';
 
 export interface IUtilityProcessWorkerService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -104,7 +100,9 @@ export interface IUtilityProcessWorkerService {
 	 * about the termination that can be used to figure out if the termination was unexpected
 	 * or not and whether the worker needs to be restarted.
 	 */
-	createWorker(configuration: IUtilityProcessWorkerCreateConfiguration): Promise<IOnDidTerminateUtilityrocessWorkerProcess>;
+	createWorker(
+		configuration: IUtilityProcessWorkerCreateConfiguration
+	): Promise<IOnDidTerminateUtilityrocessWorkerProcess>;
 
 	/**
 	 * Terminates the process for the provided configuration if any.

@@ -16,7 +16,10 @@ import { ILogService } from '../../../../platform/log/common/log.js';
  * @returns A promise that resolves to the UInt8Array string of the resized image.
  */
 
-export async function resizeImage(data: Uint8Array | string, mimeType?: string): Promise<Uint8Array> {
+export async function resizeImage(
+	data: Uint8Array | string,
+	mimeType?: string
+): Promise<Uint8Array> {
 	const isGif = mimeType === 'image/gif';
 
 	if (typeof data === 'string') {
@@ -55,13 +58,13 @@ export async function resizeImage(data: Uint8Array | string, mimeType?: string):
 			const ctx = canvas.getContext('2d');
 			if (ctx) {
 				ctx.drawImage(img, 0, 0, width, height);
-				canvas.toBlob((blob) => {
+				canvas.toBlob(blob => {
 					if (blob) {
 						const reader = new FileReader();
 						reader.onload = () => {
 							resolve(new Uint8Array(reader.result as ArrayBuffer));
 						};
-						reader.onerror = (error) => reject(error);
+						reader.onerror = error => reject(error);
 						reader.readAsArrayBuffer(blob);
 					} else {
 						reject(new Error('Failed to create blob from canvas'));
@@ -71,7 +74,7 @@ export async function resizeImage(data: Uint8Array | string, mimeType?: string):
 				reject(new Error('Failed to get canvas context'));
 			}
 		};
-		img.onerror = (error) => {
+		img.onerror = error => {
 			URL.revokeObjectURL(url);
 			reject(error);
 		};
@@ -99,17 +102,25 @@ export function convertUint8ArrayToString(data: Uint8Array): string {
 
 function isValidBase64(str: string): boolean {
 	// checks if the string is a valid base64 string that is NOT encoded
-	return /^[A-Za-z0-9+/]*={0,2}$/.test(str) && (() => {
-		try {
-			atob(str);
-			return true;
-		} catch {
-			return false;
-		}
-	})();
+	return (
+		/^[A-Za-z0-9+/]*={0,2}$/.test(str) &&
+		(() => {
+			try {
+				atob(str);
+				return true;
+			} catch {
+				return false;
+			}
+		})()
+	);
 }
 
-export async function createFileForMedia(fileService: IFileService, imagesFolder: URI, dataTransfer: Uint8Array, mimeType: string): Promise<URI | undefined> {
+export async function createFileForMedia(
+	fileService: IFileService,
+	imagesFolder: URI,
+	dataTransfer: Uint8Array,
+	mimeType: string
+): Promise<URI | undefined> {
 	const exists = await fileService.exists(imagesFolder);
 	if (!exists) {
 		await fileService.createFolder(imagesFolder);
@@ -125,7 +136,11 @@ export async function createFileForMedia(fileService: IFileService, imagesFolder
 	return fileUri;
 }
 
-export async function cleanupOldImages(fileService: IFileService, logService: ILogService, imagesFolder: URI): Promise<void> {
+export async function cleanupOldImages(
+	fileService: IFileService,
+	logService: ILogService,
+	imagesFolder: URI
+): Promise<void> {
 	const exists = await fileService.exists(imagesFolder);
 	if (!exists) {
 		return;
@@ -137,16 +152,18 @@ export async function cleanupOldImages(fileService: IFileService, logService: IL
 		return;
 	}
 
-	await Promise.all(files.children.map(async (file) => {
-		try {
-			const timestamp = getTimestampFromFilename(file.name);
-			if (timestamp && (Date.now() - timestamp > duration)) {
-				await fileService.del(file.resource);
+	await Promise.all(
+		files.children.map(async file => {
+			try {
+				const timestamp = getTimestampFromFilename(file.name);
+				if (timestamp && Date.now() - timestamp > duration) {
+					await fileService.del(file.resource);
+				}
+			} catch (err) {
+				logService.error('Failed to clean up old images', err);
 			}
-		} catch (err) {
-			logService.error('Failed to clean up old images', err);
-		}
-	}));
+		})
+	);
 }
 
 function getTimestampFromFilename(filename: string): number | undefined {

@@ -33,12 +33,13 @@ interface CardFooterProps {
 	children: React.ReactNode;
 }
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(	({ className, variant = 'default', interactive = false, ...props }, ref) => {
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+	({ className, variant = 'default', interactive = false, ...props }, ref) => {
 		const variantClasses = {
 			default: 'border border-codai-border/20 bg-codai-card shadow-sm',
 			outlined: 'border-2 border-codai-border bg-transparent',
 			elevated: 'border-0 bg-codai-card shadow-lg',
-			ghost: 'border-0 bg-transparent shadow-none'
+			ghost: 'border-0 bg-transparent shadow-none',
 		};
 
 		const interactiveClasses = interactive
@@ -59,59 +60,48 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(	({ className, variant 
 		);
 	}
 );
-Card.displayName = "Card";
+Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
 	({ className, ...props }, ref) => (
-		<div
-			ref={ref}
-			className={clsx("flex flex-col space-y-1.5 p-6 pb-3", className)}
-			{...props}
-		/>
+		<div ref={ref} className={clsx('flex flex-col space-y-1.5 p-6 pb-3', className)} {...props} />
 	)
 );
-CardHeader.displayName = "CardHeader";
+CardHeader.displayName = 'CardHeader';
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, CardTitleProps>(
 	({ className, ...props }, ref) => (
 		<h3
-			ref={ref}			className={clsx(
-				"text-xl font-semibold leading-none tracking-tight text-codai-foreground",
+			ref={ref}
+			className={clsx(
+				'text-xl font-semibold leading-none tracking-tight text-codai-foreground',
 				className
 			)}
 			{...props}
 		/>
 	)
 );
-CardTitle.displayName = "CardTitle";
+CardTitle.displayName = 'CardTitle';
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, CardDescriptionProps>(
 	({ className, ...props }, ref) => (
-		<p
-			ref={ref}
-			className={clsx("text-sm text-codai-muted-foreground", className)}
-			{...props}
-		/>
+		<p ref={ref} className={clsx('text-sm text-codai-muted-foreground', className)} {...props} />
 	)
 );
-CardDescription.displayName = "CardDescription";
+CardDescription.displayName = 'CardDescription';
 
 const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
 	({ className, ...props }, ref) => (
-		<div ref={ref} className={clsx("p-6 pt-0", className)} {...props} />
+		<div ref={ref} className={clsx('p-6 pt-0', className)} {...props} />
 	)
 );
-CardContent.displayName = "CardContent";
+CardContent.displayName = 'CardContent';
 
 const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
 	({ className, ...props }, ref) => (
-		<div
-			ref={ref}
-			className={clsx("flex items-center p-6 pt-0", className)}
-			{...props}
-		/>
+		<div ref={ref} className={clsx('flex items-center p-6 pt-0', className)} {...props} />
 	)
 );
-CardFooter.displayName = "CardFooter";
+CardFooter.displayName = 'CardFooter';
 
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };

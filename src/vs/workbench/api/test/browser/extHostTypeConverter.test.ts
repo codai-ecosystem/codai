@@ -3,17 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import assert from 'assert';
 import * as extHostTypes from '../../common/extHostTypes.js';
-import { MarkdownString, NotebookCellOutputItem, NotebookData, LanguageSelector, WorkspaceEdit } from '../../common/extHostTypeConverters.js';
+import {
+	MarkdownString,
+	NotebookCellOutputItem,
+	NotebookData,
+	LanguageSelector,
+	WorkspaceEdit,
+} from '../../common/extHostTypeConverters.js';
 import { isEmptyObject } from '../../../../base/common/types.js';
 import { URI } from '../../../../base/common/uri.js';
 import { IWorkspaceTextEditDto } from '../../common/extHost.protocol.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('ExtHostTypeConverter', function () {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function size<T>(from: Record<any, any>): number {
@@ -27,7 +31,6 @@ suite('ExtHostTypeConverter', function () {
 	}
 
 	test('MarkdownConvert - uris', function () {
-
 		let data = MarkdownString.from('Hello');
 		assert.strictEqual(isEmptyObject(data.uris), true);
 		assert.strictEqual(data.value, 'Hello');
@@ -55,26 +58,42 @@ suite('ExtHostTypeConverter', function () {
 		assert.strictEqual(size(data.uris!), 1);
 		assert.ok(!!data.uris!['command:me']);
 
-		data = MarkdownString.from('*hello* [click](file:///somepath/here). [click](file:///somepath/here)');
-		assert.strictEqual(data.value, '*hello* [click](file:///somepath/here). [click](file:///somepath/here)');
+		data = MarkdownString.from(
+			'*hello* [click](file:///somepath/here). [click](file:///somepath/here)'
+		);
+		assert.strictEqual(
+			data.value,
+			'*hello* [click](file:///somepath/here). [click](file:///somepath/here)'
+		);
 		assert.strictEqual(size(data.uris!), 1);
 		assert.ok(!!data.uris!['file:///somepath/here']);
 
-		data = MarkdownString.from('*hello* [click](file:///somepath/here). [click](file:///somepath/here)');
-		assert.strictEqual(data.value, '*hello* [click](file:///somepath/here). [click](file:///somepath/here)');
+		data = MarkdownString.from(
+			'*hello* [click](file:///somepath/here). [click](file:///somepath/here)'
+		);
+		assert.strictEqual(
+			data.value,
+			'*hello* [click](file:///somepath/here). [click](file:///somepath/here)'
+		);
 		assert.strictEqual(size(data.uris!), 1);
 		assert.ok(!!data.uris!['file:///somepath/here']);
 
-		data = MarkdownString.from('*hello* [click](file:///somepath/here). [click](file:///somepath/here2)');
-		assert.strictEqual(data.value, '*hello* [click](file:///somepath/here). [click](file:///somepath/here2)');
+		data = MarkdownString.from(
+			'*hello* [click](file:///somepath/here). [click](file:///somepath/here2)'
+		);
+		assert.strictEqual(
+			data.value,
+			'*hello* [click](file:///somepath/here). [click](file:///somepath/here2)'
+		);
 		assert.strictEqual(size(data.uris!), 2);
 		assert.ok(!!data.uris!['file:///somepath/here']);
 		assert.ok(!!data.uris!['file:///somepath/here2']);
 	});
 
 	test('NPM script explorer running a script from the hover does not work #65561', function () {
-
-		const data = MarkdownString.from('*hello* [click](command:npm.runScriptFromHover?%7B%22documentUri%22%3A%7B%22%24mid%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2Ffoo%2Fbaz.ex%22%2C%22path%22%3A%22%2Fc%3A%2Ffoo%2Fbaz.ex%22%2C%22scheme%22%3A%22file%22%7D%2C%22script%22%3A%22dev%22%7D)');
+		const data = MarkdownString.from(
+			'*hello* [click](command:npm.runScriptFromHover?%7B%22documentUri%22%3A%7B%22%24mid%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2Ffoo%2Fbaz.ex%22%2C%22path%22%3A%22%2Fc%3A%2Ffoo%2Fbaz.ex%22%2C%22scheme%22%3A%22file%22%7D%2C%22script%22%3A%22dev%22%7D)'
+		);
 		// assert that both uri get extracted but that the latter is only decoded once...
 		assert.strictEqual(size(data.uris!), 2);
 		for (const value of Object.values(data.uris!)) {
@@ -87,9 +106,10 @@ suite('ExtHostTypeConverter', function () {
 	});
 
 	test('Notebook metadata is ignored when using Notebook Serializer #125716', function () {
-
 		const d = new extHostTypes.NotebookData([]);
-		d.cells.push(new extHostTypes.NotebookCellData(extHostTypes.NotebookCellKind.Code, 'hello', 'fooLang'));
+		d.cells.push(
+			new extHostTypes.NotebookCellData(extHostTypes.NotebookCellKind.Code, 'hello', 'fooLang')
+		);
 		d.metadata = { foo: 'bar', bar: 123 };
 
 		const dto = NotebookData.from(d);
@@ -101,13 +121,15 @@ suite('ExtHostTypeConverter', function () {
 	});
 
 	test('NotebookCellOutputItem', function () {
-
 		const item = extHostTypes.NotebookCellOutputItem.text('Hello', 'foo/bar');
 
 		const dto = NotebookCellOutputItem.from(item);
 
 		assert.strictEqual(dto.mime, 'foo/bar');
-		assert.deepStrictEqual(Array.from(dto.valueBytes.buffer), Array.from(new TextEncoder().encode('Hello')));
+		assert.deepStrictEqual(
+			Array.from(dto.valueBytes.buffer),
+			Array.from(new TextEncoder().encode('Hello'))
+		);
 
 		const item2 = NotebookCellOutputItem.to(dto);
 
@@ -128,10 +150,14 @@ suite('ExtHostTypeConverter', function () {
 	});
 
 	test('JS/TS Surround With Code Actions provide bad Workspace Edits when obtained by VSCode Command API #178654', function () {
-
 		const uri = URI.parse('file:///foo/bar');
 		const ws = new extHostTypes.WorkspaceEdit();
-		ws.set(uri, [extHostTypes.SnippetTextEdit.insert(new extHostTypes.Position(1, 1), new extHostTypes.SnippetString('foo$0bar'))]);
+		ws.set(uri, [
+			extHostTypes.SnippetTextEdit.insert(
+				new extHostTypes.Position(1, 1),
+				new extHostTypes.SnippetString('foo$0bar')
+			),
+		]);
 
 		const dto = WorkspaceEdit.from(ws);
 		const first = <IWorkspaceTextEditDto>dto.edits[0];

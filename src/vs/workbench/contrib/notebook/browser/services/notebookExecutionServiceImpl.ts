@@ -11,12 +11,24 @@ import { IContextKeyService } from '../../../../../platform/contextkey/common/co
 import { IWorkspaceTrustRequestService } from '../../../../../platform/workspace/common/workspaceTrust.js';
 import { KernelPickerMRUStrategy } from '../viewParts/notebookKernelQuickPickStrategy.js';
 import { NotebookCellTextModel } from '../../common/model/notebookCellTextModel.js';
-import { CellKind, INotebookTextModel, NotebookCellExecutionState } from '../../common/notebookCommon.js';
-import { INotebookExecutionService, ICellExecutionParticipant } from '../../common/notebookExecutionService.js';
-import { INotebookCellExecution, INotebookExecutionStateService } from '../../common/notebookExecutionStateService.js';
-import { INotebookKernelHistoryService, INotebookKernelService } from '../../common/notebookKernelService.js';
+import {
+	CellKind,
+	INotebookTextModel,
+	NotebookCellExecutionState,
+} from '../../common/notebookCommon.js';
+import {
+	INotebookExecutionService,
+	ICellExecutionParticipant,
+} from '../../common/notebookExecutionService.js';
+import {
+	INotebookCellExecution,
+	INotebookExecutionStateService,
+} from '../../common/notebookExecutionStateService.js';
+import {
+	INotebookKernelHistoryService,
+	INotebookKernelService,
+} from '../../common/notebookKernelService.js';
 import { INotebookLoggingService } from '../../common/notebookLoggingService.js';
-
 
 export class NotebookExecutionService implements INotebookExecutionService, IDisposable {
 	declare _serviceBrand: undefined;
@@ -25,22 +37,30 @@ export class NotebookExecutionService implements INotebookExecutionService, IDis
 	constructor(
 		@ICommandService private readonly _commandService: ICommandService,
 		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@INotebookKernelHistoryService private readonly _notebookKernelHistoryService: INotebookKernelHistoryService,
-		@IWorkspaceTrustRequestService private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@INotebookKernelHistoryService
+		private readonly _notebookKernelHistoryService: INotebookKernelHistoryService,
+		@IWorkspaceTrustRequestService
+		private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService,
 		@INotebookLoggingService private readonly _logService: INotebookLoggingService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
-	) {
-	}
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService
+	) {}
 
-	async executeNotebookCells(notebook: INotebookTextModel, cells: Iterable<NotebookCellTextModel>, contextKeyService: IContextKeyService): Promise<void> {
-		const cellsArr = Array.from(cells)
-			.filter(c => c.cellKind === CellKind.Code);
+	async executeNotebookCells(
+		notebook: INotebookTextModel,
+		cells: Iterable<NotebookCellTextModel>,
+		contextKeyService: IContextKeyService
+	): Promise<void> {
+		const cellsArr = Array.from(cells).filter(c => c.cellKind === CellKind.Code);
 		if (!cellsArr.length) {
 			return;
 		}
 
 		this._logService.debug(`Execution`, `${JSON.stringify(cellsArr.map(c => c.handle))}`);
-		const message = nls.localize('notebookRunTrust', "Executing a notebook cell will run code from this workspace.");
+		const message = nls.localize(
+			'notebookRunTrust',
+			'Executing a notebook cell will run code from this workspace.'
+		);
 		const trust = await this._workspaceTrustRequestService.requestWorkspaceTrust({ message });
 		if (!trust) {
 			return;
@@ -53,10 +73,18 @@ export class NotebookExecutionService implements INotebookExecutionService, IDis
 			if (!!cellExe) {
 				continue;
 			}
-			cellExecutions.push([cell, this._notebookExecutionStateService.createCellExecution(notebook.uri, cell.handle)]);
+			cellExecutions.push([
+				cell,
+				this._notebookExecutionStateService.createCellExecution(notebook.uri, cell.handle),
+			]);
 		}
 
-		const kernel = await KernelPickerMRUStrategy.resolveKernel(notebook, this._notebookKernelService, this._notebookKernelHistoryService, this._commandService);
+		const kernel = await KernelPickerMRUStrategy.resolveKernel(
+			notebook,
+			this._notebookKernelService,
+			this._notebookKernelHistoryService,
+			this._commandService
+		);
 
 		if (!kernel) {
 			// clear all pending cell executions
@@ -81,32 +109,51 @@ export class NotebookExecutionService implements INotebookExecutionService, IDis
 			await this.runExecutionParticipants(validCellExecutions);
 
 			this._notebookKernelService.selectKernelForNotebook(kernel, notebook);
-			await kernel.executeNotebookCellsRequest(notebook.uri, validCellExecutions.map(c => c.cellHandle));
+			await kernel.executeNotebookCellsRequest(
+				notebook.uri,
+				validCellExecutions.map(c => c.cellHandle)
+			);
 			// the connecting state can change before the kernel resolves executeNotebookCellsRequest
-			const unconfirmed = validCellExecutions.filter(exe => exe.state === NotebookCellExecutionState.Unconfirmed);
+			const unconfirmed = validCellExecutions.filter(
+				exe => exe.state === NotebookCellExecutionState.Unconfirmed
+			);
 			if (unconfirmed.length) {
-				this._logService.debug(`Execution`, `Completing unconfirmed executions ${JSON.stringify(unconfirmed.map(exe => exe.cellHandle))}`);
+				this._logService.debug(
+					`Execution`,
+					`Completing unconfirmed executions ${JSON.stringify(unconfirmed.map(exe => exe.cellHandle))}`
+				);
 				unconfirmed.forEach(exe => exe.complete({}));
 			}
-			this._logService.debug(`Execution`, `Completed executions ${JSON.stringify(validCellExecutions.map(exe => exe.cellHandle))}`);
+			this._logService.debug(
+				`Execution`,
+				`Completed executions ${JSON.stringify(validCellExecutions.map(exe => exe.cellHandle))}`
+			);
 		}
 	}
 
-	async cancelNotebookCellHandles(notebook: INotebookTextModel, cells: Iterable<number>): Promise<void> {
+	async cancelNotebookCellHandles(
+		notebook: INotebookTextModel,
+		cells: Iterable<number>
+	): Promise<void> {
 		const cellsArr = Array.from(cells);
 		this._logService.debug(`Execution`, `CancelNotebookCellHandles ${JSON.stringify(cellsArr)}`);
 		const kernel = this._notebookKernelService.getSelectedOrSuggestedKernel(notebook);
 		if (kernel) {
 			await kernel.cancelNotebookCellExecution(notebook.uri, cellsArr);
-
 		}
 	}
 
-	async cancelNotebookCells(notebook: INotebookTextModel, cells: Iterable<NotebookCellTextModel>): Promise<void> {
-		this.cancelNotebookCellHandles(notebook, Array.from(cells, cell => cell.handle));
+	async cancelNotebookCells(
+		notebook: INotebookTextModel,
+		cells: Iterable<NotebookCellTextModel>
+	): Promise<void> {
+		this.cancelNotebookCellHandles(
+			notebook,
+			Array.from(cells, cell => cell.handle)
+		);
 	}
 
-	private readonly cellExecutionParticipants = new Set<ICellExecutionParticipant>;
+	private readonly cellExecutionParticipants = new Set<ICellExecutionParticipant>();
 
 	registerExecutionParticipant(participant: ICellExecutionParticipant) {
 		this.cellExecutionParticipants.add(participant);

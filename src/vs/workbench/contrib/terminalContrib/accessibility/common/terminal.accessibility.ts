@@ -12,5 +12,5 @@ export const enum TerminalAccessibilityCommandId {
 }
 
 export const defaultTerminalAccessibilityCommandsToSkipShell = [
-	TerminalAccessibilityCommandId.FocusAccessibleBuffer
+	TerminalAccessibilityCommandId.FocusAccessibleBuffer,
 ];

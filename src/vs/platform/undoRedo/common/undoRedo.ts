@@ -11,7 +11,7 @@ export const IUndoRedoService = createDecorator<IUndoRedoService>('undoRedoServi
 
 export const enum UndoRedoElementType {
 	Resource,
-	Workspace
+	Workspace,
 }
 
 export interface IResourceUndoRedoElement {
@@ -85,7 +85,7 @@ export class ResourceEditStackSnapshot {
 	constructor(
 		public readonly resource: URI,
 		public readonly elements: number[]
-	) { }
+	) {}
 }
 
 export class UndoRedoGroup {
@@ -137,7 +137,10 @@ export interface IUndoRedoService {
 	 * Register an URI -> string hasher.
 	 * This is useful for making multiple URIs share the same undo-redo stack.
 	 */
-	registerUriComparisonKeyComputer(scheme: string, uriComparisonKeyComputer: UriComparisonKeyComputer): IDisposable;
+	registerUriComparisonKeyComputer(
+		scheme: string,
+		uriComparisonKeyComputer: UriComparisonKeyComputer
+	): IDisposable;
 
 	/**
 	 * Get the hash used internally for a certain URI.
@@ -166,7 +169,11 @@ export interface IUndoRedoService {
 	/**
 	 * Validate or invalidate stack elements associated with a resource.
 	 */
-	setElementsValidFlag(resource: URI, isValid: boolean, filter: (element: IUndoRedoElement) => boolean): void;
+	setElementsValidFlag(
+		resource: URI,
+		isValid: boolean,
+		filter: (element: IUndoRedoElement) => boolean
+	): void;
 
 	/**
 	 * Remove elements that target `resource`.

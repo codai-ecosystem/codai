@@ -58,9 +58,7 @@ const Dropdown = ({ children, className }: DropdownProps) => {
 
 	return (
 		<DropdownContext.Provider value={{ isOpen, setIsOpen, triggerRef }}>
-			<div className={clsx('relative inline-block', className)}>
-				{children}
-			</div>
+			<div className={clsx('relative inline-block', className)}>{children}</div>
 		</DropdownContext.Provider>
 	);
 };
@@ -96,7 +94,12 @@ const DropdownTrigger = ({ children, className, asChild = false }: DropdownTrigg
 	);
 };
 
-const DropdownContent = ({ children, className, align = 'center', side = 'bottom' }: DropdownContentProps) => {
+const DropdownContent = ({
+	children,
+	className,
+	align = 'center',
+	side = 'bottom',
+}: DropdownContentProps) => {
 	const context = React.useContext(DropdownContext);
 	if (!context) throw new Error('DropdownContent must be used within Dropdown');
 
@@ -107,14 +110,14 @@ const DropdownContent = ({ children, className, align = 'center', side = 'bottom
 	const alignClasses = {
 		start: 'left-0',
 		center: 'left-1/2 transform -translate-x-1/2',
-		end: 'right-0'
+		end: 'right-0',
 	};
 
 	const sideClasses = {
 		top: 'bottom-full mb-2',
 		right: 'left-full ml-2',
 		bottom: 'top-full mt-2',
-		left: 'right-full mr-2'
+		left: 'right-full mr-2',
 	};
 
 	return (

@@ -14,7 +14,8 @@ export interface ILocaleService {
 	clearLocalePreference(): Promise<void>;
 }
 
-export const IActiveLanguagePackService = createDecorator<IActiveLanguagePackService>('activeLanguageService');
+export const IActiveLanguagePackService =
+	createDecorator<IActiveLanguagePackService>('activeLanguageService');
 
 export interface IActiveLanguagePackService {
 	readonly _serviceBrand: undefined;

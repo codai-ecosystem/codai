@@ -24,7 +24,7 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 			this.agentRuntime.messages$.subscribe((message: any) => {
 				this.postMessage({
 					type: 'agent_message',
-					data: message
+					data: message,
 				});
 			});
 		}
@@ -33,7 +33,7 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 		this.memoryGraph.changes$.subscribe(change => {
 			this.postMessage({
 				type: 'graph_change',
-				data: change
+				data: change,
 			});
 		});
 	}
@@ -52,8 +52,8 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 				retainContextWhenHidden: true,
 				localResourceRoots: [
 					vscode.Uri.file(this.context.asAbsolutePath('dist')),
-					vscode.Uri.file(this.context.asAbsolutePath('assets'))
-				]
+					vscode.Uri.file(this.context.asAbsolutePath('assets')),
+				],
 			}
 		);
 
@@ -91,7 +91,7 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 			if (!this.agentRuntime || !this.agentRuntime.executeTask) {
 				this.postMessage({
 					type: 'error',
-					data: { message: 'Agent runtime not available yet. Please wait for initialization.' }
+					data: { message: 'Agent runtime not available yet. Please wait for initialization.' },
 				});
 				return;
 			}
@@ -107,7 +107,7 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 				inputs: {
 					userInput: message.content,
 					conversationId,
-					currentGraph: this.memoryGraph.currentGraph
+					currentGraph: this.memoryGraph.currentGraph,
 				},
 				createdAt: new Date(),
 				progress: 0,
@@ -115,13 +115,12 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 
 			this.postMessage({
 				type: 'task_started',
-				data: { taskId: task.id, message: 'Processing your request...' }
+				data: { taskId: task.id, message: 'Processing your request...' },
 			});
-
 		} catch (error) {
 			this.postMessage({
 				type: 'error',
-				data: { message: `Error processing request: ${error}` }
+				data: { message: `Error processing request: ${error}` },
 			});
 		}
 	}
@@ -131,7 +130,7 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 			if (!this.agentRuntime || !this.agentRuntime.executeTask) {
 				this.postMessage({
 					type: 'error',
-					data: { message: 'Agent runtime not available yet. Please wait for initialization.' }
+					data: { message: 'Agent runtime not available yet. Please wait for initialization.' },
 				});
 				return;
 			}
@@ -150,28 +149,31 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 
 			this.postMessage({
 				type: 'project_creation_started',
-				data: { taskId: task.id, projectName: data.name }
+				data: { taskId: task.id, projectName: data.name },
 			});
-
 		} catch (error) {
 			this.postMessage({
 				type: 'error',
-				data: { message: `Error creating project: ${error}` }
+				data: { message: `Error creating project: ${error}` },
 			});
 		}
 	}
 	private async sendCurrentState() {
 		const state = {
 			graph: this.memoryGraph.currentGraph,
-			activeConversations: this.agentRuntime && this.agentRuntime.conversations ?
-				Array.from(this.agentRuntime.conversations.keys()) : [],
-			activeTasks: this.agentRuntime && this.agentRuntime.activeTasks ?
-				Array.from(this.agentRuntime.activeTasks.values()) : [],
+			activeConversations:
+				this.agentRuntime && this.agentRuntime.conversations
+					? Array.from(this.agentRuntime.conversations.keys())
+					: [],
+			activeTasks:
+				this.agentRuntime && this.agentRuntime.activeTasks
+					? Array.from(this.agentRuntime.activeTasks.values())
+					: [],
 		};
 
 		this.postMessage({
 			type: 'state_update',
-			data: state
+			data: state,
 		});
 	}
 
@@ -183,7 +185,8 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 
 	private generateId(): string {
 		return Math.random().toString(36).substr(2, 9);
-	} private getWebviewContent(): string {
+	}
+	private getWebviewContent(): string {
 		// Use fallback approach for older VS Code API versions
 		const scriptPath = this.context.asAbsolutePath('dist/conversation.js');
 		const stylePath = this.context.asAbsolutePath('dist/conversation.css');
@@ -467,11 +470,11 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 					data: {
 						success: false,
 						message: 'Agent runtime not available',
-						details: 'The agent runtime has not been initialized'
-					}
+						details: 'The agent runtime has not been initialized',
+					},
 				});
 				return;
-			}			// Test basic agent runtime functionality
+			} // Test basic agent runtime functionality
 			const agentStatuses = this.agentRuntime.getAgentStatuses();
 			const statusArray: any[] = [];
 			for (const [id, status] of agentStatuses.entries()) {
@@ -480,7 +483,7 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 					isHealthy: status.isHealthy,
 					isEnabled: status.isEnabled,
 					lastActivity: status.lastActivity,
-					tasksCompleted: status.totalTasksCompleted
+					tasksCompleted: status.totalTasksCompleted,
 				});
 			}
 
@@ -494,10 +497,10 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 				priority: 'medium' as const,
 				inputs: {
 					test: true,
-					message: 'Simple connectivity test'
+					message: 'Simple connectivity test',
 				},
 				createdAt: new Date(),
-				progress: 0
+				progress: 0,
 			};
 
 			const result = await this.agentRuntime.executeTask(testTask);
@@ -513,12 +516,11 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 						testExecution: {
 							success: result.success,
 							duration: result.duration,
-							hasOutputs: !!result.outputs
-						}
-					}
-				}
+							hasOutputs: !!result.outputs,
+						},
+					},
+				},
 			});
-
 		} catch (error) {
 			this.postMessage({
 				type: 'agent_test_result',
@@ -527,9 +529,9 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 					message: 'Agent runtime test failed',
 					details: {
 						error: error instanceof Error ? error.message : String(error),
-						stack: error instanceof Error ? error.stack : undefined
-					}
-				}
+						stack: error instanceof Error ? error.stack : undefined,
+					},
+				},
 			});
 		}
 	}

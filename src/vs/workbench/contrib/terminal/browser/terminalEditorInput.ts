@@ -7,25 +7,40 @@ import { localize } from '../../../../nls.js';
 import Severity from '../../../../base/common/severity.js';
 import { dispose, toDisposable } from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
-import { EditorInputCapabilities, IEditorIdentifier, IUntypedEditorInput } from '../../../common/editor.js';
+import {
+	EditorInputCapabilities,
+	IEditorIdentifier,
+	IUntypedEditorInput,
+} from '../../../common/editor.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { EditorInput, IEditorCloseHandler } from '../../../common/editor/editorInput.js';
 import { ITerminalInstance, ITerminalInstanceService, terminalEditorId } from './terminal.js';
 import { getColorClass, getUriClasses } from './terminalIcon.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { IShellLaunchConfig, TerminalExitReason, TerminalLocation, TerminalSettingId } from '../../../../platform/terminal/common/terminal.js';
+import {
+	IShellLaunchConfig,
+	TerminalExitReason,
+	TerminalLocation,
+	TerminalSettingId,
+} from '../../../../platform/terminal/common/terminal.js';
 import { IEditorGroup } from '../../../services/editor/common/editorGroupsService.js';
-import { ILifecycleService, ShutdownReason, WillShutdownEvent } from '../../../services/lifecycle/common/lifecycle.js';
+import {
+	ILifecycleService,
+	ShutdownReason,
+	WillShutdownEvent,
+} from '../../../services/lifecycle/common/lifecycle.js';
 import { ConfirmOnKill } from '../common/terminal.js';
-import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { TerminalContextKeys } from '../common/terminalContextKey.js';
 import { ConfirmResult, IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
 import { Emitter } from '../../../../base/common/event.js';
 
 export class TerminalEditorInput extends EditorInput implements IEditorCloseHandler {
-
 	static readonly ID = 'workbench.editors.terminal';
 
 	override readonly closeHandler = this;
@@ -60,7 +75,12 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 	}
 
 	override get capabilities(): EditorInputCapabilities {
-		return EditorInputCapabilities.Readonly | EditorInputCapabilities.Singleton | EditorInputCapabilities.CanDropIntoEditor | EditorInputCapabilities.ForceDescription;
+		return (
+			EditorInputCapabilities.Readonly |
+			EditorInputCapabilities.Singleton |
+			EditorInputCapabilities.CanDropIntoEditor |
+			EditorInputCapabilities.ForceDescription
+		);
 	}
 
 	setTerminalInstance(instance: ITerminalInstance): void {
@@ -72,10 +92,17 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 	}
 
 	override copy(): EditorInput {
-		const instance = this._terminalInstanceService.createInstance(this._copyLaunchConfig || {}, TerminalLocation.Editor);
+		const instance = this._terminalInstanceService.createInstance(
+			this._copyLaunchConfig || {},
+			TerminalLocation.Editor
+		);
 		instance.focusWhenReady();
 		this._copyLaunchConfig = undefined;
-		return this._instantiationService.createInstance(TerminalEditorInput, instance.resource, instance);
+		return this._instantiationService.createInstance(
+			TerminalEditorInput,
+			instance.resource,
+			instance
+		);
 	}
 
 	/**
@@ -97,7 +124,9 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 		if (this._isReverted) {
 			return false;
 		}
-		const confirmOnKill = this._configurationService.getValue<ConfirmOnKill>(TerminalSettingId.ConfirmOnKill);
+		const confirmOnKill = this._configurationService.getValue<ConfirmOnKill>(
+			TerminalSettingId.ConfirmOnKill
+		);
 		if (confirmOnKill === 'editor' || confirmOnKill === 'always') {
 			return this._terminalInstance?.hasChildProcesses || false;
 		}
@@ -107,11 +136,26 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 	async confirm(terminals: ReadonlyArray<IEditorIdentifier>): Promise<ConfirmResult> {
 		const { confirmed } = await this._dialogService.confirm({
 			type: Severity.Warning,
-			message: localize('confirmDirtyTerminal.message', "Do you want to terminate running processes?"),
-			primaryButton: localize({ key: 'confirmDirtyTerminal.button', comment: ['&& denotes a mnemonic'] }, "&&Terminate"),
-			detail: terminals.length > 1 ?
-				terminals.map(terminal => terminal.editor.getName()).join('\n') + '\n\n' + localize('confirmDirtyTerminals.detail', "Closing will terminate the running processes in the terminals.") :
-				localize('confirmDirtyTerminal.detail', "Closing will terminate the running processes in this terminal.")
+			message: localize(
+				'confirmDirtyTerminal.message',
+				'Do you want to terminate running processes?'
+			),
+			primaryButton: localize(
+				{ key: 'confirmDirtyTerminal.button', comment: ['&& denotes a mnemonic'] },
+				'&&Terminate'
+			),
+			detail:
+				terminals.length > 1
+					? terminals.map(terminal => terminal.editor.getName()).join('\n') +
+						'\n\n' +
+						localize(
+							'confirmDirtyTerminals.detail',
+							'Closing will terminate the running processes in the terminals.'
+						)
+					: localize(
+							'confirmDirtyTerminal.detail',
+							'Closing will terminate the running processes in this terminal.'
+						),
 		});
 
 		return confirmed ? ConfirmResult.DONT_SAVE : ConfirmResult.CANCEL;
@@ -135,7 +179,8 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 	) {
 		super();
 
-		this._terminalEditorFocusContextKey = TerminalContextKeys.editorFocus.bindTo(_contextKeyService);
+		this._terminalEditorFocusContextKey =
+			TerminalContextKeys.editorFocus.bindTo(_contextKeyService);
 
 		if (_terminalInstance) {
 			this._setupInstanceListeners();
@@ -148,20 +193,26 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 			return;
 		}
 
-		const instanceOnDidFocusListener = instance.onDidFocus(() => this._terminalEditorFocusContextKey.set(true));
-		const instanceOnDidBlurListener = instance.onDidBlur(() => this._terminalEditorFocusContextKey.reset());
+		const instanceOnDidFocusListener = instance.onDidFocus(() =>
+			this._terminalEditorFocusContextKey.set(true)
+		);
+		const instanceOnDidBlurListener = instance.onDidBlur(() =>
+			this._terminalEditorFocusContextKey.reset()
+		);
 
-		this._register(toDisposable(() => {
-			if (!this._isDetached && !this._isShuttingDown) {
-				// Will be ignored if triggered by onExit or onDisposed terminal events
-				// as disposed was already called
-				instance.dispose(TerminalExitReason.User);
-			}
-			dispose([instanceOnDidFocusListener, instanceOnDidBlurListener]);
-		}));
+		this._register(
+			toDisposable(() => {
+				if (!this._isDetached && !this._isShuttingDown) {
+					// Will be ignored if triggered by onExit or onDisposed terminal events
+					// as disposed was already called
+					instance.dispose(TerminalExitReason.User);
+				}
+				dispose([instanceOnDidFocusListener, instanceOnDidBlurListener]);
+			})
+		);
 
 		const disposeListeners = [
-			instance.onExit((e) => {
+			instance.onExit(e => {
 				if (!instance.waitOnExit) {
 					this.dispose();
 				}
@@ -171,7 +222,7 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 			instance.onIconChanged(() => this._onDidChangeLabel.fire()),
 			instanceOnDidFocusListener,
 			instanceOnDidBlurListener,
-			instance.statusList.onDidChangePrimaryStatus(() => this._onDidChangeLabel.fire())
+			instance.statusList.onDidChangePrimaryStatus(() => this._onDidChangeLabel.fire()),
 		];
 
 		// Don't dispose editor when instance is torn down on shutdown to avoid extra work and so
@@ -181,7 +232,9 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 			dispose(disposeListeners);
 
 			// Don't touch processes if the shutdown was a result of reload as they will be reattached
-			const shouldPersistTerminals = this._configurationService.getValue<boolean>(TerminalSettingId.EnablePersistentSessions) && e.reason === ShutdownReason.RELOAD;
+			const shouldPersistTerminals =
+				this._configurationService.getValue<boolean>(TerminalSettingId.EnablePersistentSessions) &&
+				e.reason === ShutdownReason.RELOAD;
 			if (shouldPersistTerminals) {
 				instance.detachProcessAndDispose(TerminalExitReason.Shutdown);
 			} else {
@@ -210,7 +263,10 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 		if (colorClass) {
 			extraClasses.push(colorClass);
 		}
-		const uriClasses = getUriClasses(this._terminalInstance, this._themeService.getColorTheme().type);
+		const uriClasses = getUriClasses(
+			this._terminalInstance,
+			this._themeService.getColorTheme().type
+		);
 		if (uriClasses) {
 			extraClasses.push(...uriClasses);
 		}
@@ -239,8 +295,8 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
 			options: {
 				override: terminalEditorId,
 				pinned: true,
-				forceReload: true
-			}
+				forceReload: true,
+			},
 		};
 	}
 }

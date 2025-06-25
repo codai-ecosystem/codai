@@ -7,9 +7,24 @@ import { raceCancellation } from '../../../base/common/async.js';
 import { Emitter, Event } from '../../../base/common/event.js';
 import { DisposableStore, IDisposable } from '../../../base/common/lifecycle.js';
 import { ILogService } from '../../../platform/log/common/log.js';
-import { ExtHostContext, ExtHostSpeechShape, MainContext, MainThreadSpeechShape } from '../common/extHost.protocol.js';
-import { IKeywordRecognitionEvent, ISpeechProviderMetadata, ISpeechService, ISpeechToTextEvent, ITextToSpeechEvent, TextToSpeechStatus } from '../../contrib/speech/common/speechService.js';
-import { IExtHostContext, extHostNamedCustomer } from '../../services/extensions/common/extHostCustomers.js';
+import {
+	ExtHostContext,
+	ExtHostSpeechShape,
+	MainContext,
+	MainThreadSpeechShape,
+} from '../common/extHost.protocol.js';
+import {
+	IKeywordRecognitionEvent,
+	ISpeechProviderMetadata,
+	ISpeechService,
+	ISpeechToTextEvent,
+	ITextToSpeechEvent,
+	TextToSpeechStatus,
+} from '../../contrib/speech/common/speechService.js';
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from '../../services/extensions/common/extHostCustomers.js';
 
 type SpeechToTextSession = {
 	readonly onDidChange: Emitter<ISpeechToTextEvent>;
@@ -25,7 +40,6 @@ type KeywordRecognitionSession = {
 
 @extHostNamedCustomer(MainContext.MainThreadSpeech)
 export class MainThreadSpeech implements MainThreadSpeechShape {
-
 	private readonly proxy: ExtHostSpeechShape;
 
 	private readonly providerRegistrations = new Map<number, IDisposable>();
@@ -50,7 +64,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 			createSpeechToTextSession: (token, options) => {
 				if (token.isCancellationRequested) {
 					return {
-						onDidChange: Event.None
+						onDidChange: Event.None,
 					};
 				}
 
@@ -62,21 +76,23 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 				const onDidChange = disposables.add(new Emitter<ISpeechToTextEvent>());
 				this.speechToTextSessions.set(session, { onDidChange });
 
-				disposables.add(token.onCancellationRequested(() => {
-					this.proxy.$cancelSpeechToTextSession(session);
-					this.speechToTextSessions.delete(session);
-					disposables.dispose();
-				}));
+				disposables.add(
+					token.onCancellationRequested(() => {
+						this.proxy.$cancelSpeechToTextSession(session);
+						this.speechToTextSessions.delete(session);
+						disposables.dispose();
+					})
+				);
 
 				return {
-					onDidChange: onDidChange.event
+					onDidChange: onDidChange.event,
 				};
 			},
 			createTextToSpeechSession: (token, options) => {
 				if (token.isCancellationRequested) {
 					return {
 						onDidChange: Event.None,
-						synthesize: async () => { }
+						synthesize: async () => {},
 					};
 				}
 
@@ -88,11 +104,13 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 				const onDidChange = disposables.add(new Emitter<ITextToSpeechEvent>());
 				this.textToSpeechSessions.set(session, { onDidChange });
 
-				disposables.add(token.onCancellationRequested(() => {
-					this.proxy.$cancelTextToSpeechSession(session);
-					this.textToSpeechSessions.delete(session);
-					disposables.dispose();
-				}));
+				disposables.add(
+					token.onCancellationRequested(() => {
+						this.proxy.$cancelTextToSpeechSession(session);
+						this.textToSpeechSessions.delete(session);
+						disposables.dispose();
+					})
+				);
 
 				return {
 					onDidChange: onDidChange.event,
@@ -100,17 +118,27 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 						await this.proxy.$synthesizeSpeech(session, text);
 						const disposable = new DisposableStore();
 						try {
-							await raceCancellation(Event.toPromise(Event.filter(onDidChange.event, e => e.status === TextToSpeechStatus.Stopped, disposable), disposable), token);
+							await raceCancellation(
+								Event.toPromise(
+									Event.filter(
+										onDidChange.event,
+										e => e.status === TextToSpeechStatus.Stopped,
+										disposable
+									),
+									disposable
+								),
+								token
+							);
 						} finally {
 							disposable.dispose();
 						}
-					}
+					},
 				};
 			},
 			createKeywordRecognitionSession: token => {
 				if (token.isCancellationRequested) {
 					return {
-						onDidChange: Event.None
+						onDidChange: Event.None,
 					};
 				}
 
@@ -122,21 +150,23 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 				const onDidChange = disposables.add(new Emitter<IKeywordRecognitionEvent>());
 				this.keywordRecognitionSessions.set(session, { onDidChange });
 
-				disposables.add(token.onCancellationRequested(() => {
-					this.proxy.$cancelKeywordRecognitionSession(session);
-					this.keywordRecognitionSessions.delete(session);
-					disposables.dispose();
-				}));
+				disposables.add(
+					token.onCancellationRequested(() => {
+						this.proxy.$cancelKeywordRecognitionSession(session);
+						this.keywordRecognitionSessions.delete(session);
+						disposables.dispose();
+					})
+				);
 
 				return {
-					onDidChange: onDidChange.event
+					onDidChange: onDidChange.event,
 				};
-			}
+			},
 		});
 		this.providerRegistrations.set(handle, {
 			dispose: () => {
 				registration.dispose();
-			}
+			},
 		});
 	}
 

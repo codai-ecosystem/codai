@@ -30,76 +30,102 @@ export class RevertButtonsFeature extends Disposable {
 	) {
 		super();
 
-		this._register(autorunWithStore((reader, store) => {
-			if (!this._options.shouldRenderOldRevertArrows.read(reader)) { return; }
-			const model = this._diffModel.read(reader);
-			const diff = model?.diff.read(reader);
-			if (!model || !diff) { return; }
-			if (model.movedTextToCompare.read(reader)) { return; }
+		this._register(
+			autorunWithStore((reader, store) => {
+				if (!this._options.shouldRenderOldRevertArrows.read(reader)) {
+					return;
+				}
+				const model = this._diffModel.read(reader);
+				const diff = model?.diff.read(reader);
+				if (!model || !diff) {
+					return;
+				}
+				if (model.movedTextToCompare.read(reader)) {
+					return;
+				}
 
-			const glyphWidgetsModified: IGlyphMarginWidget[] = [];
+				const glyphWidgetsModified: IGlyphMarginWidget[] = [];
 
-			const selectedDiffs = this._selectedDiffs.read(reader);
-			const selectedDiffsSet = new Set(selectedDiffs.map(d => d.mapping));
+				const selectedDiffs = this._selectedDiffs.read(reader);
+				const selectedDiffsSet = new Set(selectedDiffs.map(d => d.mapping));
 
-			if (selectedDiffs.length > 0) {
-				// The button to revert the selection
-				const selections = this._editors.modifiedSelections.read(reader);
+				if (selectedDiffs.length > 0) {
+					// The button to revert the selection
+					const selections = this._editors.modifiedSelections.read(reader);
 
-				const btn = store.add(new RevertButton(
-					selections[selections.length - 1].positionLineNumber,
-					this._widget,
-					selectedDiffs.flatMap(d => d.rangeMappings),
-					true
-				));
-				this._editors.modified.addGlyphMarginWidget(btn);
-				glyphWidgetsModified.push(btn);
-			}
-
-			for (const m of diff.mappings) {
-				if (selectedDiffsSet.has(m)) { continue; }
-				if (!m.lineRangeMapping.modified.isEmpty && m.lineRangeMapping.innerChanges) {
-					const btn = store.add(new RevertButton(
-						m.lineRangeMapping.modified.startLineNumber,
-						this._widget,
-						m.lineRangeMapping,
-						false
-					));
+					const btn = store.add(
+						new RevertButton(
+							selections[selections.length - 1].positionLineNumber,
+							this._widget,
+							selectedDiffs.flatMap(d => d.rangeMappings),
+							true
+						)
+					);
 					this._editors.modified.addGlyphMarginWidget(btn);
 					glyphWidgetsModified.push(btn);
 				}
-			}
 
-			store.add(toDisposable(() => {
-				for (const w of glyphWidgetsModified) {
-					this._editors.modified.removeGlyphMarginWidget(w);
+				for (const m of diff.mappings) {
+					if (selectedDiffsSet.has(m)) {
+						continue;
+					}
+					if (!m.lineRangeMapping.modified.isEmpty && m.lineRangeMapping.innerChanges) {
+						const btn = store.add(
+							new RevertButton(
+								m.lineRangeMapping.modified.startLineNumber,
+								this._widget,
+								m.lineRangeMapping,
+								false
+							)
+						);
+						this._editors.modified.addGlyphMarginWidget(btn);
+						glyphWidgetsModified.push(btn);
+					}
 				}
-			}));
-		}));
+
+				store.add(
+					toDisposable(() => {
+						for (const w of glyphWidgetsModified) {
+							this._editors.modified.removeGlyphMarginWidget(w);
+						}
+					})
+				);
+			})
+		);
 	}
 
-	private readonly _selectedDiffs = derived(this, (reader) => {
+	private readonly _selectedDiffs = derived(this, reader => {
 		/** @description selectedDiffs */
 		const model = this._diffModel.read(reader);
 		const diff = model?.diff.read(reader);
 		// Return `emptyArr` because it is a constant. [] is always a new array and would trigger a change.
-		if (!diff) { return emptyArr; }
+		if (!diff) {
+			return emptyArr;
+		}
 
 		const selections = this._editors.modifiedSelections.read(reader);
-		if (selections.every(s => s.isEmpty())) { return emptyArr; }
+		if (selections.every(s => s.isEmpty())) {
+			return emptyArr;
+		}
 
-		const selectedLineNumbers = new LineRangeSet(selections.map(s => LineRange.fromRangeInclusive(s)));
+		const selectedLineNumbers = new LineRangeSet(
+			selections.map(s => LineRange.fromRangeInclusive(s))
+		);
 
-		const selectedMappings = diff.mappings.filter(m =>
-			m.lineRangeMapping.innerChanges && selectedLineNumbers.intersects(m.lineRangeMapping.modified)
+		const selectedMappings = diff.mappings.filter(
+			m =>
+				m.lineRangeMapping.innerChanges &&
+				selectedLineNumbers.intersects(m.lineRangeMapping.modified)
 		);
 		const result = selectedMappings.map(mapping => ({
 			mapping,
-			rangeMappings: mapping.lineRangeMapping.innerChanges!.filter(
-				c => selections.some(s => Range.areIntersecting(c.modifiedRange, s))
-			)
+			rangeMappings: mapping.lineRangeMapping.innerChanges!.filter(c =>
+				selections.some(s => Range.areIntersecting(c.modifiedRange, s))
+			),
 		}));
-		if (result.length === 0 || result.every(r => r.rangeMappings.length === 0)) { return emptyArr; }
+		if (result.length === 0 || result.every(r => r.rangeMappings.length === 0)) {
+			return emptyArr;
+		}
 		return result;
 	});
 }
@@ -109,7 +135,9 @@ export class RevertButton extends Disposable implements IGlyphMarginWidget {
 
 	private readonly _id: string;
 
-	getId(): string { return this._id; }
+	getId(): string {
+		return this._id;
+	}
 
 	private readonly _domNode;
 
@@ -117,41 +145,48 @@ export class RevertButton extends Disposable implements IGlyphMarginWidget {
 		private readonly _lineNumber: number,
 		private readonly _widget: DiffEditorWidget,
 		private readonly _diffs: RangeMapping[] | LineRangeMapping,
-		private readonly _revertSelection: boolean,
+		private readonly _revertSelection: boolean
 	) {
 		super();
 		this._id = `revertButton${RevertButton.counter++}`;
-		this._domNode = h('div.revertButton', {
-			title: this._revertSelection
-				? localize('revertSelectedChanges', 'Revert Selected Changes')
-				: localize('revertChange', 'Revert Change')
-		},
+		this._domNode = h(
+			'div.revertButton',
+			{
+				title: this._revertSelection
+					? localize('revertSelectedChanges', 'Revert Selected Changes')
+					: localize('revertChange', 'Revert Change'),
+			},
 			[renderIcon(Codicon.arrowRight)]
 		).root;
 
+		this._register(
+			addDisposableListener(this._domNode, EventType.MOUSE_DOWN, e => {
+				// don't prevent context menu from showing up
+				if (e.button !== 2) {
+					e.stopPropagation();
+					e.preventDefault();
+				}
+			})
+		);
 
-		this._register(addDisposableListener(this._domNode, EventType.MOUSE_DOWN, e => {
-			// don't prevent context menu from showing up
-			if (e.button !== 2) {
+		this._register(
+			addDisposableListener(this._domNode, EventType.MOUSE_UP, e => {
 				e.stopPropagation();
 				e.preventDefault();
-			}
-		}));
+			})
+		);
 
-		this._register(addDisposableListener(this._domNode, EventType.MOUSE_UP, e => {
-			e.stopPropagation();
-			e.preventDefault();
-		}));
-
-		this._register(addDisposableListener(this._domNode, EventType.CLICK, (e) => {
-			if (this._diffs instanceof LineRangeMapping) {
-				this._widget.revert(this._diffs);
-			} else {
-				this._widget.revertRangeMappings(this._diffs);
-			}
-			e.stopPropagation();
-			e.preventDefault();
-		}));
+		this._register(
+			addDisposableListener(this._domNode, EventType.CLICK, e => {
+				if (this._diffs instanceof LineRangeMapping) {
+					this._widget.revert(this._diffs);
+				} else {
+					this._widget.revertRangeMappings(this._diffs);
+				}
+				e.stopPropagation();
+				e.preventDefault();
+			})
+		);
 	}
 
 	/**

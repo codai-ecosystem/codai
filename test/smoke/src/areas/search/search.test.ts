@@ -9,14 +9,22 @@ import { installAllHandlers, retry } from '../../utils';
 
 export function setup(logger: Logger) {
 	describe('Search', () => {
-
 		// Shared before/after handling
 		installAllHandlers(logger);
 
 		after(function () {
 			const app = this.app as Application;
-			retry(async () => cp.execSync('git checkout . --quiet', { cwd: app.workspacePathOrFolder }), 0, 5);
-			retry(async () => cp.execSync('git reset --hard HEAD --quiet', { cwd: app.workspacePathOrFolder }), 0, 5);
+			retry(
+				async () => cp.execSync('git checkout . --quiet', { cwd: app.workspacePathOrFolder }),
+				0,
+				5
+			);
+			retry(
+				async () =>
+					cp.execSync('git reset --hard HEAD --quiet', { cwd: app.workspacePathOrFolder }),
+				0,
+				5
+			);
 		});
 
 		it('verifies the sidebar moves to the right', async function () {
@@ -61,7 +69,8 @@ export function setup(logger: Logger) {
 			await app.workbench.search.removeFileMatch('app.js', '2 results in 2 files');
 		});
 
-		it.skip('replaces first search result with a replace term', async function () { // TODO@roblourens https://github.com/microsoft/vscode/issues/137195
+		it.skip('replaces first search result with a replace term', async function () {
+			// TODO@roblourens https://github.com/microsoft/vscode/issues/137195
 			const app = this.app as Application;
 
 			await app.workbench.search.searchFor('body');
@@ -79,7 +88,6 @@ export function setup(logger: Logger) {
 	});
 
 	describe('Quick Open', () => {
-
 		// Shared before/after handling
 		installAllHandlers(logger);
 
@@ -93,24 +101,24 @@ export function setup(logger: Logger) {
 				'index.js',
 				'users.js',
 				'package.json',
-				'jsconfig.json'
+				'jsconfig.json',
 			];
 
 			await app.workbench.quickaccess.openFileQuickAccessAndWait('.js', 8);
-			await app.workbench.quickinput.waitForQuickInputElements(names => expectedNames.every(expectedName => names.some(name => expectedName === name)));
+			await app.workbench.quickinput.waitForQuickInputElements(names =>
+				expectedNames.every(expectedName => names.some(name => expectedName === name))
+			);
 			await app.workbench.quickinput.closeQuickInput();
 		});
 
 		it('quick open respects fuzzy matching', async function () {
 			const app = this.app as Application;
-			const expectedNames = [
-				'tasks.json',
-				'app.js',
-				'package.json'
-			];
+			const expectedNames = ['tasks.json', 'app.js', 'package.json'];
 
 			await app.workbench.quickaccess.openFileQuickAccessAndWait('a.s', 3);
-			await app.workbench.quickinput.waitForQuickInputElements(names => expectedNames.every(expectedName => names.some(name => expectedName === name)));
+			await app.workbench.quickinput.waitForQuickInputElements(names =>
+				expectedNames.every(expectedName => names.some(name => expectedName === name))
+			);
 			await app.workbench.quickinput.closeQuickInput();
 		});
 	});

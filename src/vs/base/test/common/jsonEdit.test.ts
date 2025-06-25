@@ -8,7 +8,6 @@ import { Edit, FormattingOptions } from '../../common/jsonFormatter.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('JSON - edits', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function assertEdit(content: string, edits: Edit[], expected: string) {
@@ -20,7 +19,10 @@ suite('JSON - edits', () => {
 			assert(typeof edit.content === 'string');
 			assert(lastEditOffset >= edit.offset + edit.length); // make sure all edits are ordered
 			lastEditOffset = edit.offset;
-			content = content.substring(0, edit.offset) + edit.content + content.substring(edit.offset + edit.length);
+			content =
+				content.substring(0, edit.offset) +
+				edit.content +
+				content.substring(edit.offset + edit.length);
 		}
 		assert.strictEqual(content, expected);
 	}
@@ -28,7 +30,7 @@ suite('JSON - edits', () => {
 	const formatterOptions: FormattingOptions = {
 		insertSpaces: true,
 		tabSize: 2,
-		eol: '\n'
+		eol: '\n',
 	};
 
 	test('set property', () => {
@@ -83,13 +85,25 @@ suite('JSON - edits', () => {
 		assertEdit(content, edits, '{\n  "x": {\n    "a": 1,\n    "b": "bar"\n  }\n}\n');
 
 		edits = setProperty(content, ['x', 'c'], 'bar', formatterOptions, () => 0);
-		assertEdit(content, edits, '{\n  "x": {\n    "c": "bar",\n    "a": 1,\n    "b": true\n  }\n}\n');
+		assertEdit(
+			content,
+			edits,
+			'{\n  "x": {\n    "c": "bar",\n    "a": 1,\n    "b": true\n  }\n}\n'
+		);
 
 		edits = setProperty(content, ['x', 'c'], 'bar', formatterOptions, () => 1);
-		assertEdit(content, edits, '{\n  "x": {\n    "a": 1,\n    "c": "bar",\n    "b": true\n  }\n}\n');
+		assertEdit(
+			content,
+			edits,
+			'{\n  "x": {\n    "a": 1,\n    "c": "bar",\n    "b": true\n  }\n}\n'
+		);
 
 		edits = setProperty(content, ['x', 'c'], 'bar', formatterOptions, () => 2);
-		assertEdit(content, edits, '{\n  "x": {\n    "a": 1,\n    "b": true,\n    "c": "bar"\n  }\n}\n');
+		assertEdit(
+			content,
+			edits,
+			'{\n  "x": {\n    "a": 1,\n    "b": true,\n    "c": "bar"\n  }\n}\n'
+		);
 
 		edits = setProperty(content, ['c'], 'bar', formatterOptions);
 		assertEdit(content, edits, '{\n  "x": {\n    "a": 1,\n    "b": true\n  },\n  "c": "bar"\n}\n');
@@ -192,5 +206,4 @@ suite('JSON - edits', () => {
 		const edits = setProperty(content, [2], undefined, formatterOptions);
 		assertEdit(content, edits, '// This is a comment\n[\n  1,\n  "foo"\n]');
 	});
-
 });

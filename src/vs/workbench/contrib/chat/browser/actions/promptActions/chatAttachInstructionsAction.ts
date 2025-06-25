@@ -16,13 +16,27 @@ import { PromptFilePickers } from './dialogs/askToSelectPrompt/promptFilePickers
 import { ServicesAccessor } from '../../../../../../editor/browser/editorExtensions.js';
 import { ICommandService } from '../../../../../../platform/commands/common/commands.js';
 import { ContextKeyExpr } from '../../../../../../platform/contextkey/common/contextkey.js';
-import { Action2, MenuId, registerAction2 } from '../../../../../../platform/actions/common/actions.js';
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from '../../../../../../platform/actions/common/actions.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
-import { attachInstructionsFiles, IAttachOptions } from './dialogs/askToSelectPrompt/utils/attachInstructions.js';
-import { ChatContextPick, IChatContextPickerItem, IChatContextPickerPickItem } from '../../chatContextPickService.js';
+import {
+	attachInstructionsFiles,
+	IAttachOptions,
+} from './dialogs/askToSelectPrompt/utils/attachInstructions.js';
+import {
+	ChatContextPick,
+	IChatContextPickerItem,
+	IChatContextPickerPickItem,
+} from '../../chatContextPickService.js';
 import { IQuickPickSeparator } from '../../../../../../platform/quickinput/common/quickInput.js';
 import { Codicon } from '../../../../../../base/common/codicons.js';
-import { getCleanPromptName, PromptsType } from '../../../../../../platform/prompts/common/prompts.js';
+import {
+	getCleanPromptName,
+	PromptsType,
+} from '../../../../../../platform/prompts/common/prompts.js';
 import { compare } from '../../../../../../base/common/strings.js';
 import { ILabelService } from '../../../../../../platform/label/common/label.js';
 import { dirname } from '../../../../../../base/common/resources.js';
@@ -42,7 +56,6 @@ const ATTACH_INSTRUCTIONS_ACTION_ID = 'workbench.action.chat.attach.instructions
  * Options for the {@link AttachInstructionsAction} action.
  */
 export interface IAttachInstructionsActionOptions {
-
 	/**
 	 * Target chat widget reference to attach the instruction to. If the reference is
 	 * provided, the command will attach the instruction as attachment of the widget.
@@ -73,24 +86,24 @@ class AttachInstructionsAction extends Action2 {
 	constructor() {
 		super({
 			id: ATTACH_INSTRUCTIONS_ACTION_ID,
-			title: localize2('attach-instructions.capitalized.ellipses', "Attach Instructions..."),
+			title: localize2('attach-instructions.capitalized.ellipses', 'Attach Instructions...'),
 			f1: false,
 			precondition: ContextKeyExpr.and(PromptsConfig.enabledCtx, ChatContextKeys.enabled),
 			category: CHAT_CATEGORY,
 			keybinding: {
 				primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.Slash,
-				weight: KeybindingWeight.WorkbenchContrib
+				weight: KeybindingWeight.WorkbenchContrib,
 			},
 			menu: {
 				id: MenuId.CommandPalette,
-				when: ContextKeyExpr.and(PromptsConfig.enabledCtx, ChatContextKeys.enabled)
-			}
+				when: ContextKeyExpr.and(PromptsConfig.enabledCtx, ChatContextKeys.enabled),
+			},
 		});
 	}
 
 	public override async run(
 		accessor: ServicesAccessor,
-		options?: IAttachInstructionsActionOptions,
+		options?: IAttachInstructionsActionOptions
 	): Promise<void> {
 		const viewsService = accessor.get(IViewsService);
 		const promptsService = accessor.get(IPromptsService);
@@ -115,15 +128,9 @@ class AttachInstructionsAction extends Action2 {
 		};
 
 		if (skipSelectionDialog) {
-			assertDefined(
-				resource,
-				'Resource must be defined when skipping prompt selection dialog.',
-			);
+			assertDefined(resource, 'Resource must be defined when skipping prompt selection dialog.');
 
-			const widget = await attachInstructionsFiles(
-				[resource],
-				attachOptions,
-			);
+			const widget = await attachInstructionsFiles([resource], attachOptions);
 
 			widget.focusInput();
 
@@ -131,19 +138,24 @@ class AttachInstructionsAction extends Action2 {
 		}
 
 		// find all prompt files in the user workspace
-		const promptFiles = await promptsService.listPromptFiles(PromptsType.instructions, CancellationToken.None);
+		const promptFiles = await promptsService.listPromptFiles(
+			PromptsType.instructions,
+			CancellationToken.None
+		);
 		const placeholder = localize(
 			'commands.instructions.select-dialog.placeholder',
-			'Select instructions files to attach',
+			'Select instructions files to attach'
 		);
 
-		const result = await pickers.selectPromptFile({ promptFiles, resource, placeholder, type: PromptsType.instructions });
+		const result = await pickers.selectPromptFile({
+			promptFiles,
+			resource,
+			placeholder,
+			type: PromptsType.instructions,
+		});
 
 		if (result !== undefined) {
-			const widget = await attachInstructionsFiles(
-				[result.promptFile],
-				attachOptions,
-			);
+			const widget = await attachInstructionsFiles([result.promptFile], attachOptions);
 			widget.focusInput();
 		}
 	}
@@ -184,9 +196,7 @@ export const registerAttachPromptActions = () => {
 	registerAction2(AttachInstructionsAction);
 };
 
-
 export class ChatInstructionsPickerPick implements IChatContextPickerItem {
-
 	readonly type = 'pickerPick';
 	readonly label = localize('chatContext.attach.instructions.label', 'Instructions...');
 	readonly icon = Codicon.bookmark;
@@ -195,53 +205,52 @@ export class ChatInstructionsPickerPick implements IChatContextPickerItem {
 	constructor(
 		@IPromptsService private readonly promptsService: IPromptsService,
 		@ILabelService private readonly labelService: ILabelService
-	) { }
+	) {}
 
 	isEnabled(widget: IChatWidget): Promise<boolean> | boolean {
 		return widget.attachmentModel.promptInstructions.featureEnabled;
 	}
 
 	asPicker(): { readonly placeholder: string; readonly picks: Promise<ChatContextPick[]> } {
+		const picks = this.promptsService
+			.listPromptFiles(PromptsType.instructions, CancellationToken.None)
+			.then(value => {
+				const result: (IChatContextPickerPickItem | IQuickPickSeparator)[] = [];
 
-		const picks = this.promptsService.listPromptFiles(PromptsType.instructions, CancellationToken.None).then(value => {
+				value = value.slice(0).sort((a, b) => compare(a.storage, b.storage));
 
-			const result: (IChatContextPickerPickItem | IQuickPickSeparator)[] = [];
+				let storageType: string | undefined;
 
-			value = value.slice(0).sort((a, b) => compare(a.storage, b.storage));
+				for (const { uri, storage } of value) {
+					if (storageType !== storage) {
+						storageType = storage;
+						result.push({
+							type: 'separator',
+							label:
+								storage === 'user'
+									? localize('user-data-dir.capitalized', 'User data folder')
+									: this.labelService.getUriLabel(dirname(uri), { relative: true }),
+						});
+					}
 
-			let storageType: string | undefined;
-
-			for (const { uri, storage } of value) {
-
-				if (storageType !== storage) {
-					storageType = storage;
 					result.push({
-						type: 'separator',
-						label: storage === 'user'
-							? localize('user-data-dir.capitalized', 'User data folder')
-							: this.labelService.getUriLabel(dirname(uri), { relative: true })
+						label: getCleanPromptName(uri),
+						asAttachment: (): IPromptFileVariableEntry => {
+							return {
+								kind: 'promptFile',
+								id: uri.toString(),
+								value: uri,
+								name: this.labelService.getUriBasenameLabel(uri),
+							};
+						},
 					});
 				}
-
-				result.push({
-					label: getCleanPromptName(uri),
-					asAttachment: (): IPromptFileVariableEntry => {
-						return {
-							kind: 'promptFile',
-							id: uri.toString(),
-							value: uri,
-							name: this.labelService.getUriBasenameLabel(uri),
-						};
-					}
-				});
-			}
-			return result;
-		});
+				return result;
+			});
 
 		return {
 			placeholder: localize('placeholder', 'Select instructions files to attach'),
-			picks
+			picks,
 		};
 	}
-
 }

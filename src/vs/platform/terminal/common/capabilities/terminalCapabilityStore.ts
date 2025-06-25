@@ -5,7 +5,12 @@
 
 import { Emitter } from '../../../../base/common/event.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { ITerminalCapabilityImplMap, ITerminalCapabilityStore, TerminalCapability, TerminalCapabilityChangeEvent } from './capabilities.js';
+import {
+	ITerminalCapabilityImplMap,
+	ITerminalCapabilityStore,
+	TerminalCapability,
+	TerminalCapabilityChangeEvent,
+} from './capabilities.js';
 
 export class TerminalCapabilityStore extends Disposable implements ITerminalCapabilityStore {
 	private _map: Map<TerminalCapability, { type: TerminalCapability }> = new Map();
@@ -15,9 +20,13 @@ export class TerminalCapabilityStore extends Disposable implements ITerminalCapa
 	private readonly _onDidAddCapabilityType = this._register(new Emitter<TerminalCapability>());
 	readonly onDidAddCapabilityType = this._onDidAddCapabilityType.event;
 
-	private readonly _onDidRemoveCapability = this._register(new Emitter<TerminalCapabilityChangeEvent<any>>());
+	private readonly _onDidRemoveCapability = this._register(
+		new Emitter<TerminalCapabilityChangeEvent<any>>()
+	);
 	readonly onDidRemoveCapability = this._onDidRemoveCapability.event;
-	private readonly _onDidAddCapability = this._register(new Emitter<TerminalCapabilityChangeEvent<any>>());
+	private readonly _onDidAddCapability = this._register(
+		new Emitter<TerminalCapabilityChangeEvent<any>>()
+	);
 	readonly onDidAddCapability = this._onDidAddCapability.event;
 
 	get items(): IterableIterator<TerminalCapability> {
@@ -50,7 +59,10 @@ export class TerminalCapabilityStore extends Disposable implements ITerminalCapa
 	}
 }
 
-export class TerminalCapabilityStoreMultiplexer extends Disposable implements ITerminalCapabilityStore {
+export class TerminalCapabilityStoreMultiplexer
+	extends Disposable
+	implements ITerminalCapabilityStore
+{
 	readonly _stores: ITerminalCapabilityStore[] = [];
 
 	private readonly _onDidRemoveCapabilityType = this._register(new Emitter<TerminalCapability>());
@@ -58,9 +70,13 @@ export class TerminalCapabilityStoreMultiplexer extends Disposable implements IT
 	private readonly _onDidAddCapabilityType = this._register(new Emitter<TerminalCapability>());
 	readonly onDidAddCapabilityType = this._onDidAddCapabilityType.event;
 
-	private readonly _onDidRemoveCapability = this._register(new Emitter<TerminalCapabilityChangeEvent<any>>());
+	private readonly _onDidRemoveCapability = this._register(
+		new Emitter<TerminalCapabilityChangeEvent<any>>()
+	);
 	readonly onDidRemoveCapability = this._onDidRemoveCapability.event;
-	private readonly _onDidAddCapability = this._register(new Emitter<TerminalCapabilityChangeEvent<any>>());
+	private readonly _onDidAddCapability = this._register(
+		new Emitter<TerminalCapabilityChangeEvent<any>>()
+	);
 	readonly onDidAddCapability = this._onDidAddCapability.event;
 
 	get items(): IterableIterator<TerminalCapability> {

@@ -4,7 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isSafari, isWebkitWebView } from '../../../base/browser/browser.js';
-import { $, addDisposableListener, getActiveDocument, getActiveWindow, isHTMLElement, onDidRegisterWindow } from '../../../base/browser/dom.js';
+import {
+	$,
+	addDisposableListener,
+	getActiveDocument,
+	getActiveWindow,
+	isHTMLElement,
+	onDidRegisterWindow,
+} from '../../../base/browser/dom.js';
 import { mainWindow } from '../../../base/browser/window.js';
 import { DeferredPromise } from '../../../base/common/async.js';
 import { Event } from '../../../base/common/event.js';
@@ -23,7 +30,6 @@ import { ILogService } from '../../log/common/log.js';
 const vscodeResourcesMime = 'application/vnd.code.resources';
 
 export class BrowserClipboardService extends Disposable implements IClipboardService {
-
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
@@ -40,9 +46,17 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 		// copied resources: since we keep resources in memory
 		// and not in the clipboard, we have to invalidate
 		// that state when the user copies other data.
-		this._register(Event.runAndSubscribe(onDidRegisterWindow, ({ window, disposables }) => {
-			disposables.add(addDisposableListener(window.document, 'copy', () => this.clearResourcesState()));
-		}, { window: mainWindow, disposables: this._store }));
+		this._register(
+			Event.runAndSubscribe(
+				onDidRegisterWindow,
+				({ window, disposables }) => {
+					disposables.add(
+						addDisposableListener(window.document, 'copy', () => this.clearResourcesState())
+					);
+				},
+				{ window: mainWindow, disposables: this._store }
+			)
+		);
 	}
 
 	triggerPaste(): Promise<void> | undefined {
@@ -54,7 +68,13 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 			const clipboardItems = await navigator.clipboard.read();
 			const clipboardItem = clipboardItems[0];
 
-			const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
+			const supportedImageTypes = [
+				'image/png',
+				'image/jpeg',
+				'image/gif',
+				'image/tiff',
+				'image/bmp',
+			];
 			const mimeType = supportedImageTypes.find(type => clipboardItem.types.includes(type));
 
 			if (mimeType) {
@@ -91,7 +111,10 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 			const currentWritePromise = new DeferredPromise<string>();
 
 			// Cancel the previous promise since we just created a new one in response to this new event
-			if (this.webKitPendingClipboardWritePromise && !this.webKitPendingClipboardWritePromise.isSettled) {
+			if (
+				this.webKitPendingClipboardWritePromise &&
+				!this.webKitPendingClipboardWritePromise.isSettled
+			) {
 				this.webKitPendingClipboardWritePromise.cancel();
 			}
 			this.webKitPendingClipboardWritePromise = currentWritePromise;
@@ -100,26 +123,38 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 			// This allows us to pass in a Promise that will either be cancelled by another event or
 			// resolved with the contents of the first call to this.writeText.
 			// see https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem/ClipboardItem#parameters
-			getActiveWindow().navigator.clipboard.write([new ClipboardItem({
-				'text/plain': currentWritePromise.p,
-			})]).catch(async err => {
-				if (!(err instanceof Error) || err.name !== 'NotAllowedError' || !currentWritePromise.isRejected) {
-					this.logService.error(err);
-				}
-			});
+			getActiveWindow()
+				.navigator.clipboard.write([
+					new ClipboardItem({
+						'text/plain': currentWritePromise.p,
+					}),
+				])
+				.catch(async err => {
+					if (
+						!(err instanceof Error) ||
+						err.name !== 'NotAllowedError' ||
+						!currentWritePromise.isRejected
+					) {
+						this.logService.error(err);
+					}
+				});
 		};
 
-
-		this._register(Event.runAndSubscribe(this.layoutService.onDidAddContainer, ({ container, disposables }) => {
-			disposables.add(addDisposableListener(container, 'click', handler));
-			disposables.add(addDisposableListener(container, 'keydown', handler));
-		}, { container: this.layoutService.mainContainer, disposables: this._store }));
+		this._register(
+			Event.runAndSubscribe(
+				this.layoutService.onDidAddContainer,
+				({ container, disposables }) => {
+					disposables.add(addDisposableListener(container, 'click', handler));
+					disposables.add(addDisposableListener(container, 'keydown', handler));
+				},
+				{ container: this.layoutService.mainContainer, disposables: this._store }
+			)
+		);
 	}
 
 	private readonly mapTextToType = new Map<string, string>(); // unsupported in web (only in-memory)
 
 	async writeText(text: string, type?: string): Promise<void> {
-
 		// Clear resources given we are writing text
 		this.clearResourcesState();
 
@@ -154,7 +189,9 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 		const activeDocument = getActiveDocument();
 		const activeElement = activeDocument.activeElement;
 
-		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild($('textarea', { 'aria-hidden': true }));
+		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild(
+			$('textarea', { 'aria-hidden': true })
+		);
 		textArea.style.height = '1px';
 		textArea.style.width = '1px';
 		textArea.style.position = 'absolute';
@@ -173,7 +210,6 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 	}
 
 	async readText(type?: string): Promise<string> {
-
 		// With type: only in-memory is supported
 		if (type) {
 			return this.mapTextToType.get(type) || '';
@@ -213,12 +249,13 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 		try {
 			await getActiveWindow().navigator.clipboard.write([
 				new ClipboardItem({
-					[`web ${vscodeResourcesMime}`]: new Blob([
-						JSON.stringify(resources.map(x => x.toJSON()))
-					], {
-						type: vscodeResourcesMime
-					})
-				})
+					[`web ${vscodeResourcesMime}`]: new Blob(
+						[JSON.stringify(resources.map(x => x.toJSON()))],
+						{
+							type: vscodeResourcesMime,
+						}
+					),
+				}),
 			]);
 
 			// Continue to write to the in-memory clipboard as well.
@@ -271,7 +308,9 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 		// and use that to later validate the resources clipboard.
 
 		const clipboardText = await this.readText();
-		return hash(clipboardText.substring(0, BrowserClipboardService.MAX_RESOURCE_STATE_SOURCE_LENGTH));
+		return hash(
+			clipboardText.substring(0, BrowserClipboardService.MAX_RESOURCE_STATE_SOURCE_LENGTH)
+		);
 	}
 
 	async hasResources(): Promise<boolean> {

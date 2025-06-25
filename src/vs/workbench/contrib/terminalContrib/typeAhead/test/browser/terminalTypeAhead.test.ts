@@ -7,13 +7,24 @@ import assert from 'assert';
 import type { IBuffer, Terminal } from '@xterm/xterm';
 import { SinonStub, stub, useFakeTimers } from 'sinon';
 import { Emitter } from '../../../../../../base/common/event.js';
-import { CharPredictState, IPrediction, PredictionStats, TypeAheadAddon } from '../../browser/terminalTypeAheadAddon.js';
-import { IBeforeProcessDataEvent, ITerminalProcessManager } from '../../../../terminal/common/terminal.js';
+import {
+	CharPredictState,
+	IPrediction,
+	PredictionStats,
+	TypeAheadAddon,
+} from '../../browser/terminalTypeAheadAddon.js';
+import {
+	IBeforeProcessDataEvent,
+	ITerminalProcessManager,
+} from '../../../../terminal/common/terminal.js';
 import { ITelemetryService } from '../../../../../../platform/telemetry/common/telemetry.js';
 import { TestConfigurationService } from '../../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { DisposableStore } from '../../../../../../base/common/lifecycle.js';
-import { DEFAULT_LOCAL_ECHO_EXCLUDE, type ITerminalTypeAheadConfiguration } from '../../common/terminalTypeAheadConfiguration.js';
+import {
+	DEFAULT_LOCAL_ECHO_EXCLUDE,
+	type ITerminalTypeAheadConfiguration,
+} from '../../common/terminalTypeAheadConfiguration.js';
 
 const CSI = `\x1b[`;
 
@@ -36,18 +47,22 @@ suite('Workbench - Terminal Typeahead', () => {
 			succeed = ds.add(new Emitter<IPrediction>());
 			fail = ds.add(new Emitter<IPrediction>());
 
-			stats = ds.add(new PredictionStats({
-				onPredictionAdded: add.event,
-				onPredictionSucceeded: succeed.event,
-				onPredictionFailed: fail.event,
-			} as any));
+			stats = ds.add(
+				new PredictionStats({
+					onPredictionAdded: add.event,
+					onPredictionSucceeded: succeed.event,
+					onPredictionFailed: fail.event,
+				} as any)
+			);
 		});
 
 		test('creates sane data', () => {
 			const stubs = createPredictionStubs(5);
 			const clock = useFakeTimers();
 			try {
-				for (const s of stubs) { add.fire(s); }
+				for (const s of stubs) {
+					add.fire(s);
+				}
 
 				for (let i = 0; i < stubs.length; i++) {
 					clock.tick(100);
@@ -60,7 +75,7 @@ suite('Workbench - Terminal Typeahead', () => {
 					count: 3,
 					min: 100,
 					max: 500,
-					median: 300
+					median: 300,
 				});
 			} finally {
 				clock.restore();
@@ -71,13 +86,22 @@ suite('Workbench - Terminal Typeahead', () => {
 			const bufferSize = 24;
 			const stubs = createPredictionStubs(bufferSize * 2);
 
-			for (const s of stubs.slice(0, bufferSize)) { add.fire(s); succeed.fire(s); }
+			for (const s of stubs.slice(0, bufferSize)) {
+				add.fire(s);
+				succeed.fire(s);
+			}
 			assert.strictEqual(stats.accuracy, 1);
 
-			for (const s of stubs.slice(bufferSize, bufferSize * 3 / 2)) { add.fire(s); fail.fire(s); }
+			for (const s of stubs.slice(bufferSize, (bufferSize * 3) / 2)) {
+				add.fire(s);
+				fail.fire(s);
+			}
 			assert.strictEqual(stats.accuracy, 0.5);
 
-			for (const s of stubs.slice(bufferSize * 3 / 2)) { add.fire(s); fail.fire(s); }
+			for (const s of stubs.slice((bufferSize * 3) / 2)) {
+				add.fire(s);
+				fail.fire(s);
+			}
 			assert.strictEqual(stats.accuracy, 0);
 		});
 	});
@@ -144,13 +168,16 @@ suite('Workbench - Terminal Typeahead', () => {
 			expectProcessed('o', predictedHelloo);
 
 			t.onData('x');
-			expectProcessed('\box', [
-				`${CSI}?25l`, // hide cursor
-				`${CSI}2;8H`, // move cursor
-				'\box', // new data
-				`${CSI}2;9H`, // place cursor back at end of line
-				`${CSI}?25h`, // show cursor
-			].join(''));
+			expectProcessed(
+				'\box',
+				[
+					`${CSI}?25l`, // hide cursor
+					`${CSI}2;8H`, // move cursor
+					'\box', // new data
+					`${CSI}2;9H`, // place cursor back at end of line
+					`${CSI}?25h`, // show cursor
+				].join('')
+			);
 			assert.strictEqual(addon.stats?.accuracy, 1);
 		});
 
@@ -161,14 +188,17 @@ suite('Workbench - Terminal Typeahead', () => {
 			expectProcessed('o', predictedHelloo);
 
 			t.onData('x');
-			expectProcessed('\bqx', [
-				`${CSI}?25l`, // hide cursor
-				`${CSI}2;8H`, // move cursor cursor
-				`${CSI}X`, // delete character
-				`${CSI}0m`, // reset style
-				'\bqx', // new data
-				`${CSI}?25h`, // show cursor
-			].join(''));
+			expectProcessed(
+				'\bqx',
+				[
+					`${CSI}?25l`, // hide cursor
+					`${CSI}2;8H`, // move cursor cursor
+					`${CSI}X`, // delete character
+					`${CSI}0m`, // reset style
+					'\bqx', // new data
+					`${CSI}?25h`, // show cursor
+				].join('')
+			);
 			assert.strictEqual(addon.stats?.accuracy, 0.5);
 		});
 
@@ -177,14 +207,17 @@ suite('Workbench - Terminal Typeahead', () => {
 			addon.activate(t.terminal);
 			t.onData('o');
 
-			expectProcessed('q', [
-				`${CSI}?25l`, // hide cursor
-				`${CSI}2;7H`, // move cursor cursor
-				`${CSI}X`, // delete character
-				`${CSI}0m`, // reset style
-				'q', // new character
-				`${CSI}?25h`, // show cursor
-			].join(''));
+			expectProcessed(
+				'q',
+				[
+					`${CSI}?25l`, // hide cursor
+					`${CSI}2;7H`, // move cursor cursor
+					`${CSI}X`, // delete character
+					`${CSI}0m`, // reset style
+					'q', // new character
+					`${CSI}?25h`, // show cursor
+				].join('')
+			);
 			assert.strictEqual(addon.stats?.accuracy, 0);
 		});
 
@@ -204,7 +237,8 @@ suite('Workbench - Terminal Typeahead', () => {
 				addon.physicalCursor(t.terminal.buffer.active)?.x,
 				// The cursor should not have changed because we've hit the
 				// boundary (start of prompt)
-				cursorXBefore);
+				cursorXBefore
+			);
 		});
 
 		test('handles right arrow when we hit the boundary', () => {
@@ -223,7 +257,8 @@ suite('Workbench - Terminal Typeahead', () => {
 				addon.physicalCursor(t.terminal.buffer.active)?.x,
 				// The cursor should not have changed because we've hit the
 				// boundary (end of prompt)
-				cursorXBefore);
+				cursorXBefore
+			);
 		});
 
 		test('internal cursor state is reset when all predictions are undone', () => {
@@ -240,25 +275,36 @@ suite('Workbench - Terminal Typeahead', () => {
 				addon.physicalCursor(t.terminal.buffer.active)?.x,
 				// The cursor should not have changed because we've hit the
 				// boundary (start of prompt)
-				cursorXBefore);
+				cursorXBefore
+			);
 		});
 
 		test('restores cursor graphics mode', () => {
-			const t = ds.add(createMockTerminal({
-				lines: ['hello|'],
-				cursorAttrs: { isAttributeDefault: false, isBold: true, isFgPalette: true, getFgColor: 1 },
-			}));
+			const t = ds.add(
+				createMockTerminal({
+					lines: ['hello|'],
+					cursorAttrs: {
+						isAttributeDefault: false,
+						isBold: true,
+						isFgPalette: true,
+						getFgColor: 1,
+					},
+				})
+			);
 			addon.activate(t.terminal);
 			t.onData('o');
 
-			expectProcessed('q', [
-				`${CSI}?25l`, // hide cursor
-				`${CSI}2;7H`, // move cursor cursor
-				`${CSI}X`, // delete character
-				`${CSI}1;38;5;1m`, // reset style
-				'q', // new character
-				`${CSI}?25h`, // show cursor
-			].join(''));
+			expectProcessed(
+				'q',
+				[
+					`${CSI}?25l`, // hide cursor
+					`${CSI}2;7H`, // move cursor cursor
+					`${CSI}X`, // delete character
+					`${CSI}1;38;5;1m`, // reset style
+					'q', // new character
+					`${CSI}?25h`, // show cursor
+				].join('')
+			);
 			assert.strictEqual(addon.stats?.accuracy, 0);
 		});
 
@@ -266,14 +312,17 @@ suite('Workbench - Terminal Typeahead', () => {
 			const t = ds.add(createMockTerminal({ lines: ['hello|'] }));
 			addon.activate(t.terminal);
 			t.onData('o');
-			expectProcessed(`${CSI}4mo`, [
-				`${CSI}?25l`, // hide cursor
-				`${CSI}2;7H`, // move cursor
-				`${CSI}4m`, // new PTY's style
-				'o', // new character
-				`${CSI}2;8H`, // place cursor back at end of line
-				`${CSI}?25h`, // show cursor
-			].join(''));
+			expectProcessed(
+				`${CSI}4mo`,
+				[
+					`${CSI}?25l`, // hide cursor
+					`${CSI}2;7H`, // move cursor
+					`${CSI}4m`, // new PTY's style
+					'o', // new character
+					`${CSI}2;8H`, // place cursor back at end of line
+					`${CSI}?25h`, // show cursor
+				].join('')
+			);
 			assert.strictEqual(addon.stats?.accuracy, 1);
 		});
 
@@ -281,15 +330,18 @@ suite('Workbench - Terminal Typeahead', () => {
 			const t = ds.add(createMockTerminal({ lines: ['hello|'] }));
 			addon.activate(t.terminal);
 			t.onData('o');
-			expectProcessed(`${CSI}?25lo${CSI}?25h`, [
-				`${CSI}?25l`, // hide cursor from PTY
-				`${CSI}?25l`, // hide cursor
-				`${CSI}2;7H`, // move cursor
-				'o', // new character
-				`${CSI}?25h`, // show cursor from PTY
-				`${CSI}2;8H`, // place cursor back at end of line
-				`${CSI}?25h`, // show cursor
-			].join(''));
+			expectProcessed(
+				`${CSI}?25lo${CSI}?25h`,
+				[
+					`${CSI}?25l`, // hide cursor from PTY
+					`${CSI}?25l`, // hide cursor
+					`${CSI}2;7H`, // move cursor
+					'o', // new character
+					`${CSI}?25h`, // show cursor from PTY
+					`${CSI}2;8H`, // place cursor back at end of line
+					`${CSI}?25h`, // show cursor
+				].join('')
+			);
 			assert.strictEqual(addon.stats?.accuracy, 1);
 		});
 
@@ -385,13 +437,16 @@ suite('Workbench - Terminal Typeahead', () => {
 
 			t.onData('hi'.repeat(50));
 			t.expectWritten('');
-			expectProcessed('hi', [
-				`${CSI}?25l`, // hide cursor
-				'hi', // this greeting characters
-				...new Array(36).fill(`${CSI}3mh${CSI}23m${CSI}3mi${CSI}23m`), // rest of the greetings that fit on this line
-				`${CSI}2;81H`, // move to end of line
-				`${CSI}?25h`
-			].join(''));
+			expectProcessed(
+				'hi',
+				[
+					`${CSI}?25l`, // hide cursor
+					'hi', // this greeting characters
+					...new Array(36).fill(`${CSI}3mh${CSI}23m${CSI}3mi${CSI}23m`), // rest of the greetings that fit on this line
+					`${CSI}2;81H`, // move to end of line
+					`${CSI}?25h`,
+				].join('')
+			);
 		});
 	});
 });
@@ -447,10 +502,7 @@ function stubPrediction(): IPrediction {
 	};
 }
 
-function createMockTerminal({ lines, cursorAttrs }: {
-	lines: string[];
-	cursorAttrs?: any;
-}) {
+function createMockTerminal({ lines, cursorAttrs }: { lines: string[]; cursorAttrs?: any }) {
 	const ds = new DisposableStore();
 	const written: string[] = [];
 	const cursor = { y: 1, x: 1 };
@@ -496,18 +548,20 @@ function createMockTerminal({ lines, cursorAttrs }: {
 			},
 			_core: {
 				_inputHandler: {
-					_curAttrData: mockCell('', cursorAttrs)
+					_curAttrData: mockCell('', cursorAttrs),
 				},
-				writeSync() {
-
-				}
+				writeSync() {},
 			},
 			buffer: {
 				active: {
 					type: 'normal',
 					baseY: 0,
-					get cursorY() { return cursor.y; },
-					get cursorX() { return cursor.x; },
+					get cursorY() {
+						return cursor.y;
+					},
+					get cursorX() {
+						return cursor.x;
+					},
 					getLine(y: number) {
 						const s = lines[y - 1] || '';
 						return {
@@ -519,31 +573,34 @@ function createMockTerminal({ lines, cursorAttrs }: {
 							},
 						};
 					},
-				}
-			}
-		} as unknown as Terminal
+				},
+			},
+		} as unknown as Terminal,
 	};
 }
 
 function mockCell(char: string, attrs: { [key: string]: unknown } = {}) {
-	return new Proxy({}, {
-		get(_, prop) {
-			if (typeof prop === 'string' && attrs.hasOwnProperty(prop)) {
-				return () => attrs[prop];
-			}
+	return new Proxy(
+		{},
+		{
+			get(_, prop) {
+				if (typeof prop === 'string' && attrs.hasOwnProperty(prop)) {
+					return () => attrs[prop];
+				}
 
-			switch (prop) {
-				case 'getWidth':
-					return () => 1;
-				case 'getChars':
-					return () => char;
-				case 'getCode':
-					return () => char.charCodeAt(0) || 0;
-				case 'isAttributeDefault':
-					return () => true;
-				default:
-					return String(prop).startsWith('is') ? (() => false) : (() => 0);
-			}
-		},
-	});
+				switch (prop) {
+					case 'getWidth':
+						return () => 1;
+					case 'getChars':
+						return () => char;
+					case 'getCode':
+						return () => char.charCodeAt(0) || 0;
+					case 'isAttributeDefault':
+						return () => true;
+					default:
+						return String(prop).startsWith('is') ? () => false : () => 0;
+				}
+			},
+		}
+	);
 }

@@ -4,13 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { BidirectionalMap, LinkedMap, LRUCache, mapsStrictEqualIgnoreOrder, MRUCache, NKeyMap, ResourceMap, SetMap, Touch } from '../../common/map.js';
+import {
+	BidirectionalMap,
+	LinkedMap,
+	LRUCache,
+	mapsStrictEqualIgnoreOrder,
+	MRUCache,
+	NKeyMap,
+	ResourceMap,
+	SetMap,
+	Touch,
+} from '../../common/map.js';
 import { extUriIgnorePathCase } from '../../common/resources.js';
 import { URI } from '../../common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('Map', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('LinkedMap - Simple', () => {
@@ -644,7 +653,6 @@ suite('BidirectionalMap', () => {
 });
 
 suite('SetMap', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('add and get', () => {
@@ -673,7 +681,7 @@ suite('SetMap', () => {
 		setMap.add('a', 2);
 		setMap.add('b', 3);
 		let sum = 0;
-		setMap.forEach('a', value => sum += value);
+		setMap.forEach('a', value => (sum += value));
 		assert.strictEqual(sum, 3);
 	});
 
@@ -722,17 +730,20 @@ suite('NKeyMap', () => {
 		map.set(2, 'b', 'a', 'r');
 		map.set(3, 'b', 'a', 'z');
 		map.set(3, 'b', 'o', 'o');
-		assert.strictEqual(map.toString(), [
-			'f: ',
-			'  o: ',
-			'    o: 1',
-			'b: ',
-			'  a: ',
-			'    r: 2',
-			'    z: 3',
-			'  o: ',
-			'    o: 3',
-			'',
-		].join('\n'));
+		assert.strictEqual(
+			map.toString(),
+			[
+				'f: ',
+				'  o: ',
+				'    o: 1',
+				'b: ',
+				'  a: ',
+				'    r: 2',
+				'    z: 3',
+				'  o: ',
+				'    o: 3',
+				'',
+			].join('\n')
+		);
 	});
 });

@@ -11,8 +11,14 @@ import * as strings from '../../../../base/common/strings.js';
 import { Range } from '../../../../editor/common/core/range.js';
 import { isWindows } from '../../../../base/common/platform.js';
 import { Schemas } from '../../../../base/common/network.js';
-import { IWebWorkerServerRequestHandler, IWebWorkerServer } from '../../../../base/common/worker/webWorker.js';
-import { WorkerTextModelSyncServer, ICommonModel } from '../../../../editor/common/services/textModelSync/textModelSync.impl.js';
+import {
+	IWebWorkerServerRequestHandler,
+	IWebWorkerServer,
+} from '../../../../base/common/worker/webWorker.js';
+import {
+	WorkerTextModelSyncServer,
+	ICommonModel,
+} from '../../../../editor/common/services/textModelSync/textModelSync.impl.js';
 
 export interface IResourceCreator {
 	toResource: (folderRelativePath: string) => URI | null;
@@ -33,7 +39,6 @@ export class OutputLinkComputer implements IWebWorkerServerRequestHandler {
 	}
 
 	private computePatterns(_workspaceFolders: string[]): void {
-
 		// Produce patterns for each workspace root we are configured with
 		// This means that we will be able to detect links for paths that
 		// contain any of the workspace roots as segments.
@@ -69,11 +74,13 @@ export class OutputLinkComputer implements IWebWorkerServerRequestHandler {
 					}
 
 					return null;
-				}
+				},
 			};
 
 			for (let i = 0, len = lines.length; i < len; i++) {
-				links.push(...OutputLinkComputer.detectLinks(lines[i], i + 1, folderPatterns, resourceCreator));
+				links.push(
+					...OutputLinkComputer.detectLinks(lines[i], i + 1, folderPatterns, resourceCreator)
+				);
 			}
 		}
 
@@ -83,7 +90,8 @@ export class OutputLinkComputer implements IWebWorkerServerRequestHandler {
 	static createPatterns(workspaceFolder: URI): RegExp[] {
 		const patterns: RegExp[] = [];
 
-		const workspaceFolderPath = workspaceFolder.scheme === Schemas.file ? workspaceFolder.fsPath : workspaceFolder.path;
+		const workspaceFolderPath =
+			workspaceFolder.scheme === Schemas.file ? workspaceFolder.fsPath : workspaceFolder.path;
 		const workspaceFolderVariants = [workspaceFolderPath];
 		if (isWindows && workspaceFolder.scheme === Schemas.file) {
 			workspaceFolderVariants.push(extpath.toSlashes(workspaceFolderPath));
@@ -96,22 +104,46 @@ export class OutputLinkComputer implements IWebWorkerServerRequestHandler {
 			const strictPathPattern = `${validPathCharacterPattern}+`;
 
 			// Example: /workspaces/express/server.js on line 8, column 13
-			patterns.push(new RegExp(strings.escapeRegExpCharacters(workspaceFolderVariant) + `(${pathPattern}) on line ((\\d+)(, column (\\d+))?)`, 'gi'));
+			patterns.push(
+				new RegExp(
+					strings.escapeRegExpCharacters(workspaceFolderVariant) +
+						`(${pathPattern}) on line ((\\d+)(, column (\\d+))?)`,
+					'gi'
+				)
+			);
 
 			// Example: /workspaces/express/server.js:line 8, column 13
-			patterns.push(new RegExp(strings.escapeRegExpCharacters(workspaceFolderVariant) + `(${pathPattern}):line ((\\d+)(, column (\\d+))?)`, 'gi'));
+			patterns.push(
+				new RegExp(
+					strings.escapeRegExpCharacters(workspaceFolderVariant) +
+						`(${pathPattern}):line ((\\d+)(, column (\\d+))?)`,
+					'gi'
+				)
+			);
 
 			// Example: /workspaces/mankala/Features.ts(45): error
 			// Example: /workspaces/mankala/Features.ts (45): error
 			// Example: /workspaces/mankala/Features.ts(45,18): error
 			// Example: /workspaces/mankala/Features.ts (45,18): error
 			// Example: /workspaces/mankala/Features Special.ts (45,18): error
-			patterns.push(new RegExp(strings.escapeRegExpCharacters(workspaceFolderVariant) + `(${pathPattern})(\\s?\\((\\d+)(,(\\d+))?)\\)`, 'gi'));
+			patterns.push(
+				new RegExp(
+					strings.escapeRegExpCharacters(workspaceFolderVariant) +
+						`(${pathPattern})(\\s?\\((\\d+)(,(\\d+))?)\\)`,
+					'gi'
+				)
+			);
 
 			// Example: at /workspaces/mankala/Game.ts
 			// Example: at /workspaces/mankala/Game.ts:336
 			// Example: at /workspaces/mankala/Game.ts:336:9
-			patterns.push(new RegExp(strings.escapeRegExpCharacters(workspaceFolderVariant) + `(${strictPathPattern})(:(\\d+))?(:(\\d+))?`, 'gi'));
+			patterns.push(
+				new RegExp(
+					strings.escapeRegExpCharacters(workspaceFolderVariant) +
+						`(${strictPathPattern})(:(\\d+))?(:(\\d+))?`,
+					'gi'
+				)
+			);
 		}
 
 		return patterns;
@@ -120,7 +152,12 @@ export class OutputLinkComputer implements IWebWorkerServerRequestHandler {
 	/**
 	 * Detect links. Made static to allow for tests.
 	 */
-	static detectLinks(line: string, lineIndex: number, patterns: RegExp[], resourceCreator: IResourceCreator): ILink[] {
+	static detectLinks(
+		line: string,
+		lineIndex: number,
+		patterns: RegExp[],
+		resourceCreator: IResourceCreator
+	): ILink[] {
 		const links: ILink[] = [];
 
 		patterns.forEach(pattern => {
@@ -129,7 +166,6 @@ export class OutputLinkComputer implements IWebWorkerServerRequestHandler {
 			let match: RegExpExecArray | null;
 			let offset = 0;
 			while ((match = pattern.exec(line)) !== null) {
-
 				// Convert the relative path information to a resource that we can use in links
 				const folderRelativePath = strings.rtrim(match[1], '.').replace(/\\/g, '/'); // remove trailing "." that likely indicate end of sentence
 				let resourceString: string | undefined;
@@ -148,7 +184,12 @@ export class OutputLinkComputer implements IWebWorkerServerRequestHandler {
 
 					if (match[5]) {
 						const columnNumber = match[5];
-						resourceString = strings.format('{0}#{1},{2}', resourceString, lineNumber, columnNumber);
+						resourceString = strings.format(
+							'{0}#{1},{2}',
+							resourceString,
+							lineNumber,
+							columnNumber
+						);
 					} else {
 						resourceString = strings.format('{0}#{1}', resourceString, lineNumber);
 					}
@@ -163,7 +204,7 @@ export class OutputLinkComputer implements IWebWorkerServerRequestHandler {
 					startColumn: index + 1,
 					startLineNumber: lineIndex,
 					endColumn: index + 1 + fullMatch.length,
-					endLineNumber: lineIndex
+					endLineNumber: lineIndex,
 				};
 
 				if (links.some(link => Range.areIntersectingOrTouching(link.range, linkRange))) {
@@ -172,7 +213,7 @@ export class OutputLinkComputer implements IWebWorkerServerRequestHandler {
 
 				links.push({
 					range: linkRange,
-					url: resourceString
+					url: resourceString,
 				});
 			}
 		});

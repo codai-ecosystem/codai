@@ -17,22 +17,24 @@ export class McpDiscovery extends Disposable implements IWorkbenchContribution {
 
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super();
 
 		const enabled = observableConfigValue(mcpEnabledSection, true, configurationService);
 		const store = this._register(new DisposableStore());
 
-		this._register(autorun(reader => {
-			if (enabled.read(reader)) {
-				for (const discovery of mcpDiscoveryRegistry.getAll()) {
-					const inst = store.add(instantiationService.createInstance(discovery));
-					inst.start();
+		this._register(
+			autorun(reader => {
+				if (enabled.read(reader)) {
+					for (const discovery of mcpDiscoveryRegistry.getAll()) {
+						const inst = store.add(instantiationService.createInstance(discovery));
+						inst.start();
+					}
+				} else {
+					store.clear();
 				}
-			} else {
-				store.clear();
-			}
-		}));
+			})
+		);
 	}
 }

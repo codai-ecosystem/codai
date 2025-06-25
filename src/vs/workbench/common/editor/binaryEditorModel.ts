@@ -12,7 +12,6 @@ import { Mimes } from '../../../base/common/mime.js';
  * An editor model that just represents a resource that can be loaded.
  */
 export class BinaryEditorModel extends EditorModel {
-
 	private readonly mime = Mimes.binary;
 
 	private size: number | undefined;
@@ -55,7 +54,6 @@ export class BinaryEditorModel extends EditorModel {
 	}
 
 	override async resolve(): Promise<void> {
-
 		// Make sure to resolve up to date stat for file resources
 		if (this.fileService.hasProvider(this.resource)) {
 			const stat = await this.fileService.stat(this.resource);

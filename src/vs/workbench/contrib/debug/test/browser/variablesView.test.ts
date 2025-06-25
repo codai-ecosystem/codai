@@ -22,19 +22,36 @@ import { MockDebugService, MockSession } from '../common/mockDebug.js';
 
 const $ = dom.$;
 
-function assertVariable(disposables: Pick<DisposableStore, "add">, variablesRenderer: VariablesRenderer, displayType: boolean) {
+function assertVariable(
+	disposables: Pick<DisposableStore, 'add'>,
+	variablesRenderer: VariablesRenderer,
+	displayType: boolean
+) {
 	const session = new MockSession();
 	const thread = new Thread(session, 'mockthread', 1);
 	const range = {
 		startLineNumber: 1,
 		startColumn: 1,
 		endLineNumber: undefined!,
-		endColumn: undefined!
+		endColumn: undefined!,
 	};
 	const stackFrame = new StackFrame(thread, 1, null!, 'app.js', 'normal', range, 0, true);
 	const scope = new Scope(stackFrame, 1, 'local', 1, false, 10, 10);
 	const node = {
-		element: new Variable(session, 1, scope, 2, 'foo', 'bar.foo', undefined, 0, 0, undefined, {}, 'string'),
+		element: new Variable(
+			session,
+			1,
+			scope,
+			2,
+			'foo',
+			'bar.foo',
+			undefined,
+			0,
+			0,
+			undefined,
+			{},
+			'string'
+		),
 		depth: 0,
 		visibleChildrenCount: 1,
 		visibleChildIndex: -1,
@@ -42,7 +59,7 @@ function assertVariable(disposables: Pick<DisposableStore, "add">, variablesRend
 		collapsed: false,
 		visible: true,
 		filterData: undefined,
-		children: []
+		children: [],
 	};
 	const expression = $('.');
 	const name = $('.');
@@ -64,7 +81,7 @@ function assertVariable(disposables: Pick<DisposableStore, "add">, variablesRend
 		inputBoxContainer,
 		elementDisposable,
 		templateDisposable,
-		currentElement
+		currentElement,
 	};
 	variablesRenderer.renderElement(node, 0, data);
 	assert.strictEqual(value.textContent, '');
@@ -93,7 +110,8 @@ suite('Debug - Variable Debug View', () => {
 		expressionRenderer = instantiationService.createInstance(DebugExpressionRenderer);
 		const debugService = new MockDebugService();
 		instantiationService.stub(IHoverService, NullHoverService);
-		debugService.getViewModel = () => <IViewModel>{ focusedStackFrame: undefined, getSelectedExpression: () => undefined };
+		debugService.getViewModel = () =>
+			<IViewModel>{ focusedStackFrame: undefined, getSelectedExpression: () => undefined };
 		debugService.getViewModel().getSelectedExpression = () => undefined;
 		instantiationService.stub(IDebugService, debugService);
 	});

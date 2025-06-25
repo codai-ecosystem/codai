@@ -6,7 +6,10 @@
 import { IHTMLDataProvider, newHTMLDataProvider } from 'vscode-html-languageservice';
 import { CustomDataRequestService } from './htmlServer';
 
-export function fetchHTMLDataProviders(dataPaths: string[], requestService: CustomDataRequestService): Promise<IHTMLDataProvider[]> {
+export function fetchHTMLDataProviders(
+	dataPaths: string[],
+	requestService: CustomDataRequestService
+): Promise<IHTMLDataProvider[]> {
 	const providers = dataPaths.map(async p => {
 		try {
 			const content = await requestService.getContent(p);
@@ -32,7 +35,6 @@ function parseHTMLData(id: string, source: string): IHTMLDataProvider {
 		version: rawData.version || 1,
 		tags: rawData.tags || [],
 		globalAttributes: rawData.globalAttributes || [],
-		valueSets: rawData.valueSets || []
+		valueSets: rawData.valueSets || [],
 	});
 }
-

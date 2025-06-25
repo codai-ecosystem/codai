@@ -9,11 +9,25 @@ import { Task, TaskResult, AgentConfig } from '../types.js';
 export class BuilderAgent extends BaseAgentImpl {
 	constructor(config: AgentConfig, memoryGraph: MemoryGraphEngine) {
 		super(config, memoryGraph);
-	} canExecuteTask(task: Task): boolean {
+	}
+	canExecuteTask(task: Task): boolean {
 		const buildingKeywords = [
-			'code', 'generation', 'generate', 'implementation', 'implement',
-			'file', 'creation', 'create', 'setup', 'component',
-			'api', 'build', 'builder', 'construct', 'develop', 'development'
+			'code',
+			'generation',
+			'generate',
+			'implementation',
+			'implement',
+			'file',
+			'creation',
+			'create',
+			'setup',
+			'component',
+			'api',
+			'build',
+			'builder',
+			'construct',
+			'develop',
+			'development',
 		];
 
 		// Exclude planning-related tasks explicitly
@@ -21,8 +35,10 @@ export class BuilderAgent extends BaseAgentImpl {
 		const taskText = `${task.title} ${task.description}`.toLowerCase();
 
 		// If it's explicitly a planning task, reject it
-		if (planningKeywords.some(keyword => taskText.includes(keyword)) &&
-			!buildingKeywords.some(keyword => taskText.includes(keyword))) {
+		if (
+			planningKeywords.some(keyword => taskText.includes(keyword)) &&
+			!buildingKeywords.some(keyword => taskText.includes(keyword))
+		) {
 			return false;
 		}
 
@@ -35,8 +51,9 @@ export class BuilderAgent extends BaseAgentImpl {
 		}
 
 		// Check title and description for building keywords
-		return buildingKeywords.some(keyword => taskText.includes(keyword)) ||
-			task.agentId === 'builder';
+		return (
+			buildingKeywords.some(keyword => taskText.includes(keyword)) || task.agentId === 'builder'
+		);
 	}
 	async executeTask(task: Task): Promise<TaskResult> {
 		const startTime = Date.now();
@@ -223,20 +240,24 @@ export class BuilderAgent extends BaseAgentImpl {
 
 		// TypeScript config
 		if (language.includes('TypeScript')) {
-			configs['tsconfig.json'] = JSON.stringify({
-				compilerOptions: {
-					target: 'ES2020',
-					module: 'ESNext',
-					lib: ['ES2020', 'DOM'],
-					moduleResolution: 'node',
-					strict: true,
-					esModuleInterop: true,
-					skipLibCheck: true,
-					forceConsistentCasingInFileNames: true,
+			configs['tsconfig.json'] = JSON.stringify(
+				{
+					compilerOptions: {
+						target: 'ES2020',
+						module: 'ESNext',
+						lib: ['ES2020', 'DOM'],
+						moduleResolution: 'node',
+						strict: true,
+						esModuleInterop: true,
+						skipLibCheck: true,
+						forceConsistentCasingInFileNames: true,
+					},
+					include: ['src/**/*'],
+					exclude: ['node_modules', 'dist'],
 				},
-				include: ['src/**/*'],
-				exclude: ['node_modules', 'dist'],
-			}, null, 2);
+				null,
+				2
+			);
 		}
 
 		// Tailwind config
@@ -288,9 +309,7 @@ export class BuilderAgent extends BaseAgentImpl {
 	}
 
 	private generateSetupCommands(specification: any, language: string): string[] {
-		const commands = [
-			'npm install',
-		];
+		const commands = ['npm install'];
 
 		if (specification.technical_stack?.includes('Tailwind CSS')) {
 			commands.push('npx tailwindcss init -p');
@@ -332,22 +351,25 @@ export class BuilderAgent extends BaseAgentImpl {
 				});
 			});
 		`;
-	} private async updateMemoryWithComponent(specification: any): Promise<string[]> {
+	}
+	private async updateMemoryWithComponent(specification: any): Promise<string[]> {
 		const componentNode: LogicNode = {
 			id: this.generateId(),
 			type: 'logic',
 			name: specification.name,
 			description: specification.description || `Component: ${specification.name}`,
 			logicType: 'function',
-			inputs: specification.props ? Object.keys(specification.props).map(key => ({
-				name: key,
-				type: 'any',
-				required: true,
-				description: `${key} prop`
-			})) : [],
+			inputs: specification.props
+				? Object.keys(specification.props).map(key => ({
+						name: key,
+						type: 'any',
+						required: true,
+						description: `${key} prop`,
+					}))
+				: [],
 			createdAt: new Date(),
 			updatedAt: new Date(),
-			version: '1.0.0'
+			version: '1.0.0',
 		};
 
 		await this.memoryGraph.addNode(componentNode);
@@ -391,13 +413,17 @@ export class BuilderAgent extends BaseAgentImpl {
 	private generateAPITests(specification: any, language: string): string {
 		if (specification.endpoints && Array.isArray(specification.endpoints)) {
 			// Handle multiple endpoints
-			const testCases = specification.endpoints.map((endpoint: any) => `
+			const testCases = specification.endpoints
+				.map(
+					(endpoint: any) => `
 				it('should handle ${endpoint.method} requests to ${endpoint.path}', async () => {
 					const response = await request(app)
 						.${endpoint.method.toLowerCase()}('${endpoint.path}');
 
 					expect(response.status).toBe(200);
-				});`).join('\n');
+				});`
+				)
+				.join('\n');
 
 			return `
 				import { describe, it, expect } from 'vitest';
@@ -441,7 +467,7 @@ export class BuilderAgent extends BaseAgentImpl {
 					rateLimiting: false,
 					createdAt: new Date(),
 					updatedAt: new Date(),
-					version: '1.0.0'
+					version: '1.0.0',
 				};
 
 				await this.memoryGraph.addNode(apiNode);
@@ -459,7 +485,7 @@ export class BuilderAgent extends BaseAgentImpl {
 				rateLimiting: false,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				version: '1.0.0'
+				version: '1.0.0',
 			};
 
 			await this.memoryGraph.addNode(apiNode);
@@ -509,7 +535,7 @@ export class BuilderAgent extends BaseAgentImpl {
 			{
 				path: 'src/main.ts',
 				content: code.main,
-			}
+			},
 		];
 	}
 

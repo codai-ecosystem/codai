@@ -4,13 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	/**
 	 * A hover represents additional information for a symbol or word. Hovers are
 	 * rendered in a tooltip-like widget.
 	 */
 	export class VerboseHover extends Hover {
-
 		/**
 		 * Can increase the verbosity of the hover
 		 */
@@ -27,11 +25,15 @@ declare module 'vscode' {
 		 * @param contents The contents of the hover.
 		 * @param range The range to which the hover applies.
 		 */
-		constructor(contents: MarkdownString | MarkedString | Array<MarkdownString | MarkedString>, range?: Range, canIncreaseVerbosity?: boolean, canDecreaseVerbosity?: boolean);
+		constructor(
+			contents: MarkdownString | MarkedString | Array<MarkdownString | MarkedString>,
+			range?: Range,
+			canIncreaseVerbosity?: boolean,
+			canDecreaseVerbosity?: boolean
+		);
 	}
 
 	export interface HoverContext {
-
 		/**
 		 * The delta by which to increase/decrease the hover verbosity level
 		 */
@@ -51,14 +53,13 @@ declare module 'vscode' {
 		/**
 		 * Decrease the hover verbosity
 		 */
-		Decrease = 1
+		Decrease = 1,
 	}
 
 	/**
 	 * The hover provider class
 	 */
 	export interface HoverProvider {
-
 		/**
 		 * Provide a hover for the given position and document. Multiple hovers at the same
 		 * position will be merged by the editor. A hover can have a range which defaults
@@ -71,6 +72,11 @@ declare module 'vscode' {
 		 * @returns A hover or a thenable that resolves to such. The lack of a result can be
 		 * signaled by returning `undefined` or `null`.
 		 */
-		provideHover(document: TextDocument, position: Position, token: CancellationToken, context?: HoverContext): ProviderResult<VerboseHover>;
+		provideHover(
+			document: TextDocument,
+			position: Position,
+			token: CancellationToken,
+			context?: HoverContext
+		): ProviderResult<VerboseHover>;
 	}
 }

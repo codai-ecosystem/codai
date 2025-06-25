@@ -3,15 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FileSystemProviderCapabilities, IStat, FileType, IFileDeleteOptions, IFileOverwriteOptions, IFileWriteOptions, FileSystemProviderErrorCode, IFileSystemProviderWithFileReadWriteCapability, createFileSystemProviderError } from '../../../../platform/files/common/files.js';
+import {
+	FileSystemProviderCapabilities,
+	IStat,
+	FileType,
+	IFileDeleteOptions,
+	IFileOverwriteOptions,
+	IFileWriteOptions,
+	FileSystemProviderErrorCode,
+	IFileSystemProviderWithFileReadWriteCapability,
+	createFileSystemProviderError,
+} from '../../../../platform/files/common/files.js';
 import { Event } from '../../../../base/common/event.js';
 import { IDisposable, Disposable } from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
 import { NotSupportedError } from '../../../../base/common/errors.js';
 
 export class FetchFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
-
-	readonly capabilities = FileSystemProviderCapabilities.Readonly + FileSystemProviderCapabilities.FileReadWrite + FileSystemProviderCapabilities.PathCaseSensitive;
+	readonly capabilities =
+		FileSystemProviderCapabilities.Readonly +
+		FileSystemProviderCapabilities.FileReadWrite +
+		FileSystemProviderCapabilities.PathCaseSensitive;
 	readonly onDidChangeCapabilities = Event.None;
 	readonly onDidChangeFile = Event.None;
 
@@ -34,7 +46,7 @@ export class FetchFileSystemProvider implements IFileSystemProviderWithFileReadW
 			type: FileType.File,
 			size: 0,
 			mtime: 0,
-			ctime: 0
+			ctime: 0,
 		};
 	}
 

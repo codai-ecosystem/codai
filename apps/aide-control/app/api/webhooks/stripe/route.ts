@@ -22,11 +22,9 @@ export async function POST(req: NextRequest) {
 			event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
 		} catch (err) {
 			console.error('Webhook signature verification failed:', err);
-			return NextResponse.json(
-				{ error: 'Invalid signature' },
-				{ status: 400 }
-			);
-		} const admin = getAdminApp();
+			return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+		}
+		const admin = getAdminApp();
 		const db = (admin as any).firestore();
 
 		switch (event.type) {
@@ -74,17 +72,11 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ received: true });
 	} catch (error) {
 		console.error('Webhook error:', error);
-		return NextResponse.json(
-			{ error: 'Webhook processing failed' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
 	}
 }
 
-async function handleCheckoutCompleted(
-	db: any,
-	session: Stripe.Checkout.Session
-) {
+async function handleCheckoutCompleted(db: any, session: Stripe.Checkout.Session) {
 	const { customer, subscription, metadata } = session;
 	const userId = metadata?.userId;
 
@@ -118,10 +110,7 @@ async function handleCheckoutCompleted(
 	}
 }
 
-async function handleSubscriptionChange(
-	db: any,
-	subscription: Stripe.Subscription
-) {
+async function handleSubscriptionChange(db: any, subscription: Stripe.Subscription) {
 	const customerId = subscription.customer as string;
 
 	try {
@@ -140,20 +129,26 @@ async function handleSubscriptionChange(
 		const userId = userDoc.id;
 
 		// Update subscription details
-		await db.collection('users').doc(userId).update({
-			stripeSubscriptionId: subscription.id,
-			subscriptionStatus: subscription.status,
-			currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
-			updatedAt: new Date().toISOString(),
-		});
+		await db
+			.collection('users')
+			.doc(userId)
+			.update({
+				stripeSubscriptionId: subscription.id,
+				subscriptionStatus: subscription.status,
+				currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+				updatedAt: new Date().toISOString(),
+			});
 
 		// Update billing record
-		await db.collection('billing').doc(userId).update({
-			subscriptionId: subscription.id,
-			status: subscription.status,
-			currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
-			updatedAt: new Date().toISOString(),
-		});
+		await db
+			.collection('billing')
+			.doc(userId)
+			.update({
+				subscriptionId: subscription.id,
+				status: subscription.status,
+				currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+				updatedAt: new Date().toISOString(),
+			});
 
 		console.log(`Subscription updated for user ${userId}: ${subscription.status}`);
 	} catch (error) {
@@ -161,10 +156,7 @@ async function handleSubscriptionChange(
 	}
 }
 
-async function handleSubscriptionCanceled(
-	db: any,
-	subscription: Stripe.Subscription
-) {
+async function handleSubscriptionCanceled(db: any, subscription: Stripe.Subscription) {
 	const customerId = subscription.customer as string;
 
 	try {
@@ -202,10 +194,7 @@ async function handleSubscriptionCanceled(
 	}
 }
 
-async function handlePaymentSucceeded(
-	db: any,
-	invoice: Stripe.Invoice
-) {
+async function handlePaymentSucceeded(db: any, invoice: Stripe.Invoice) {
 	const customerId = invoice.customer as string;
 
 	try {
@@ -238,10 +227,7 @@ async function handlePaymentSucceeded(
 	}
 }
 
-async function handlePaymentFailed(
-	db: any,
-	invoice: Stripe.Invoice
-) {
+async function handlePaymentFailed(db: any, invoice: Stripe.Invoice) {
 	const customerId = invoice.customer as string;
 
 	try {
@@ -272,10 +258,7 @@ async function handlePaymentFailed(
 	}
 }
 
-async function handleCustomerCreated(
-	db: any,
-	customer: Stripe.Customer
-) {
+async function handleCustomerCreated(db: any, customer: Stripe.Customer) {
 	console.log(`New Stripe customer created: ${customer.id}`);
 	// Additional customer setup logic can be added here
 }

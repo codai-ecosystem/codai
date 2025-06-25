@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isCodeEditor } from '../../../../editor/browser/editorBrowser.js';
-import { ILifecycleService, StartupKind, StartupKindToString } from '../../../services/lifecycle/common/lifecycle.js';
+import {
+	ILifecycleService,
+	StartupKind,
+	StartupKindToString,
+} from '../../../services/lifecycle/common/lifecycle.js';
 import { IUpdateService } from '../../../../platform/update/common/update.js';
 import * as files from '../../files/common/files.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
@@ -21,15 +25,14 @@ import { posix } from '../../../../base/common/path.js';
 import { hash } from '../../../../base/common/hash.js';
 
 export abstract class StartupTimings {
-
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
 		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
 		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
 		@IUpdateService private readonly _updateService: IUpdateService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustService: IWorkspaceTrustManagementService
-	) {
-	}
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustService: IWorkspaceTrustManagementService
+	) {}
 
 	protected async _isStandardStartup(): Promise<string | undefined> {
 		// check for standard startup:
@@ -45,7 +48,9 @@ export abstract class StartupTimings {
 		if (!this._workspaceTrustService.isWorkspaceTrusted()) {
 			return 'Workspace not trusted';
 		}
-		const activeViewlet = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
+		const activeViewlet = this._paneCompositeService.getActivePaneComposite(
+			ViewContainerLocation.Sidebar
+		);
 		if (!activeViewlet || activeViewlet.getId() !== files.VIEWLET_ID) {
 			return 'Explorer viewlet not visible';
 		}
@@ -56,7 +61,9 @@ export abstract class StartupTimings {
 		if (!isCodeEditor(visibleEditorPanes[0].getControl())) {
 			return 'Active editor is not a text editor';
 		}
-		const activePanel = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
+		const activePanel = this._paneCompositeService.getActivePaneComposite(
+			ViewContainerLocation.Panel
+		);
 		if (activePanel) {
 			return `Current active panel : ${this._paneCompositeService.getPaneComposite(activePanel.getId(), ViewContainerLocation.Panel)?.name}`;
 		}
@@ -69,7 +76,6 @@ export abstract class StartupTimings {
 }
 
 export class BrowserStartupTimings extends StartupTimings implements IWorkbenchContribution {
-
 	constructor(
 		@IEditorService editorService: IEditorService,
 		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
@@ -78,11 +84,18 @@ export class BrowserStartupTimings extends StartupTimings implements IWorkbenchC
 		@IWorkspaceTrustManagementService workspaceTrustService: IWorkspaceTrustManagementService,
 		@ITimerService private readonly timerService: ITimerService,
 		@ILogService private readonly logService: ILogService,
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService private readonly productService: IProductService
 	) {
-		super(editorService, paneCompositeService, lifecycleService, updateService, workspaceTrustService);
+		super(
+			editorService,
+			paneCompositeService,
+			lifecycleService,
+			updateService,
+			workspaceTrustService
+		);
 
 		this.logPerfMarks();
 	}
@@ -104,11 +117,7 @@ export class BrowserStartupTimings extends StartupTimings implements IWorkbenchC
 }
 
 export class BrowserResourcePerformanceMarks {
-
-	constructor(
-		@ITelemetryService telemetryService: ITelemetryService
-	) {
-
+	constructor(@ITelemetryService telemetryService: ITelemetryService) {
 		type Entry = {
 			hosthash: string;
 			name: string;
@@ -117,12 +126,23 @@ export class BrowserResourcePerformanceMarks {
 		type EntryClassifify = {
 			owner: 'jrieken';
 			comment: 'Resource performance numbers';
-			hosthash: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Hash of the hostname' };
-			name: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Resource basename' };
-			duration: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Resource duration' };
+			hosthash: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Hash of the hostname';
+			};
+			name: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Resource basename';
+			};
+			duration: {
+				classification: 'SystemMetaData';
+				purpose: 'PerformanceAndHealth';
+				comment: 'Resource duration';
+			};
 		};
 		for (const item of performance.getEntriesByType('resource')) {
-
 			try {
 				const url = new URL(item.name);
 				const name = posix.basename(url.pathname);
@@ -130,7 +150,7 @@ export class BrowserResourcePerformanceMarks {
 				telemetryService.publicLog2<Entry, EntryClassifify>('startup.resource.perf', {
 					hosthash: `H${hash(url.host).toString(16)}`,
 					name,
-					duration: item.duration
+					duration: item.duration,
 				});
 			} catch {
 				// ignore

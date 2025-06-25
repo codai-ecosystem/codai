@@ -31,7 +31,10 @@ if (process.env['ELECTRON_RUN_AS_NODE'] || process.versions['electron']) {
 		// Node.js default resolve if this is the last user-specified loader.
 		return nextResolve(specifier, context);
 	}`;
-	register(`data:text/javascript;base64,${Buffer.from(jsCode).toString('base64')}`, import.meta.url);
+	register(
+		`data:text/javascript;base64,${Buffer.from(jsCode).toString('base64')}`,
+		import.meta.url
+	);
 }
 
 // Prepare globals that are needed for running
@@ -40,7 +43,9 @@ if (process.env['VSCODE_DEV']) {
 	try {
 		const overrides: unknown = require('../product.overrides.json');
 		globalThis._VSCODE_PRODUCT_JSON = Object.assign(globalThis._VSCODE_PRODUCT_JSON, overrides);
-	} catch (error) { /* ignore */ }
+	} catch (error) {
+		/* ignore */
+	}
 }
 globalThis._VSCODE_PACKAGE_JSON = { ...pkg };
 globalThis._VSCODE_FILE_ROOT = __dirname;
@@ -79,14 +84,16 @@ async function doSetupNLS(): Promise<INLSConfiguration | undefined> {
 	}
 
 	if (
-		process.env['VSCODE_DEV'] ||	// no NLS support in dev mode
-		!messagesFile					// no NLS messages file
+		process.env['VSCODE_DEV'] || // no NLS support in dev mode
+		!messagesFile // no NLS messages file
 	) {
 		return undefined;
 	}
 
 	try {
-		globalThis._VSCODE_NLS_MESSAGES = JSON.parse((await fs.promises.readFile(messagesFile)).toString());
+		globalThis._VSCODE_NLS_MESSAGES = JSON.parse(
+			(await fs.promises.readFile(messagesFile)).toString()
+		);
 	} catch (error) {
 		console.error(`Error reading NLS messages file ${messagesFile}: ${error}`);
 
@@ -102,9 +109,13 @@ async function doSetupNLS(): Promise<INLSConfiguration | undefined> {
 		// Fallback to the default message file to ensure english translation at least
 		if (nlsConfig?.defaultMessagesFile && nlsConfig.defaultMessagesFile !== messagesFile) {
 			try {
-				globalThis._VSCODE_NLS_MESSAGES = JSON.parse((await fs.promises.readFile(nlsConfig.defaultMessagesFile)).toString());
+				globalThis._VSCODE_NLS_MESSAGES = JSON.parse(
+					(await fs.promises.readFile(nlsConfig.defaultMessagesFile)).toString()
+				);
 			} catch (error) {
-				console.error(`Error reading default NLS messages file ${nlsConfig.defaultMessagesFile}: ${error}`);
+				console.error(
+					`Error reading default NLS messages file ${nlsConfig.defaultMessagesFile}: ${error}`
+				);
 			}
 		}
 	}
@@ -117,7 +128,6 @@ async function doSetupNLS(): Promise<INLSConfiguration | undefined> {
 //#endregion
 
 export async function bootstrapESM(): Promise<void> {
-
 	// NLS
 	await setupNLS();
 }

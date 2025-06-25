@@ -28,7 +28,6 @@ export interface Commands {
 }
 
 export class Workbench {
-
 	readonly quickaccess: QuickAccess;
 	readonly quickinput: QuickInput;
 	readonly editors: Editors;
@@ -66,6 +65,13 @@ export class Workbench {
 		this.terminal = new Terminal(code, this.quickaccess, this.quickinput);
 		this.notebook = new Notebook(this.quickaccess, this.quickinput, code);
 		this.localization = new Localization(code);
-		this.task = new Task(code, this.editor, this.editors, this.quickaccess, this.quickinput, this.terminal);
+		this.task = new Task(
+			code,
+			this.editor,
+			this.editors,
+			this.quickaccess,
+			this.quickinput,
+			this.terminal
+		);
 	}
 }

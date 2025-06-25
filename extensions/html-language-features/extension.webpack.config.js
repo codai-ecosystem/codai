@@ -17,6 +17,6 @@ module.exports = withDefaults({
 	},
 	output: {
 		filename: 'htmlClientMain.js',
-		path: path.join(__dirname, 'client', 'dist', 'node')
-	}
+		path: path.join(__dirname, 'client', 'dist', 'node'),
+	},
 });

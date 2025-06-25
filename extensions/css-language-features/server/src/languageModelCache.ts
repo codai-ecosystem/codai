@@ -11,8 +11,14 @@ export interface LanguageModelCache<T> {
 	dispose(): void;
 }
 
-export function getLanguageModelCache<T>(maxEntries: number, cleanupIntervalTimeInSec: number, parse: (document: TextDocument) => T): LanguageModelCache<T> {
-	let languageModels: { [uri: string]: { version: number; languageId: string; cTime: number; languageModel: T } } = {};
+export function getLanguageModelCache<T>(
+	maxEntries: number,
+	cleanupIntervalTimeInSec: number,
+	parse: (document: TextDocument) => T
+): LanguageModelCache<T> {
+	let languageModels: {
+		[uri: string]: { version: number; languageId: string; cTime: number; languageModel: T };
+	} = {};
 	let nModels = 0;
 
 	let cleanupInterval: NodeJS.Timeout | undefined = undefined;
@@ -35,7 +41,11 @@ export function getLanguageModelCache<T>(maxEntries: number, cleanupIntervalTime
 			const version = document.version;
 			const languageId = document.languageId;
 			const languageModelInfo = languageModels[document.uri];
-			if (languageModelInfo && languageModelInfo.version === version && languageModelInfo.languageId === languageId) {
+			if (
+				languageModelInfo &&
+				languageModelInfo.version === version &&
+				languageModelInfo.languageId === languageId
+			) {
 				languageModelInfo.cTime = Date.now();
 				return languageModelInfo.languageModel;
 			}
@@ -61,7 +71,6 @@ export function getLanguageModelCache<T>(maxEntries: number, cleanupIntervalTime
 				}
 			}
 			return languageModel;
-
 		},
 		onDocumentRemoved(document: TextDocument) {
 			const uri = document.uri;
@@ -77,6 +86,6 @@ export function getLanguageModelCache<T>(maxEntries: number, cleanupIntervalTime
 				languageModels = {};
 				nModels = 0;
 			}
-		}
+		},
 	};
 }

@@ -47,12 +47,12 @@ async function initializeUsersCollection() {
 		role: 'admin' as const,
 		serviceConfigs: {
 			llm: [],
-			embedding: []
+			embedding: [],
 		},
 		usageLimit: 1000000, // 1M tokens
 		usageCurrent: 0,
 		createdAt: new Date(),
-		updatedAt: new Date()
+		updatedAt: new Date(),
 	};
 
 	// Note: We don't actually create this user - it's just a template
@@ -87,15 +87,15 @@ async function initializeBillingPlansCollection() {
 					serviceType: 'llm',
 					providerId: 'openai',
 					limit: 50000, // 50K tokens per month
-					costMultiplier: 1.0
+					costMultiplier: 1.0,
 				},
 				{
 					serviceType: 'embedding',
 					providerId: 'openai',
 					limit: 25000, // 25K tokens per month
-					costMultiplier: 1.0
-				}
-			]
+					costMultiplier: 1.0,
+				},
+			],
 		},
 		{
 			name: 'Professional',
@@ -107,21 +107,21 @@ async function initializeBillingPlansCollection() {
 					serviceType: 'llm',
 					providerId: 'openai',
 					limit: 500000, // 500K tokens per month
-					costMultiplier: 0.9 // 10% discount
+					costMultiplier: 0.9, // 10% discount
 				},
 				{
 					serviceType: 'llm',
 					providerId: 'anthropic',
 					limit: 250000, // 250K tokens per month
-					costMultiplier: 0.9
+					costMultiplier: 0.9,
 				},
 				{
 					serviceType: 'embedding',
 					providerId: 'openai',
 					limit: 1000000, // 1M tokens per month
-					costMultiplier: 0.9
-				}
-			]
+					costMultiplier: 0.9,
+				},
+			],
 		},
 		{
 			name: 'Enterprise',
@@ -133,28 +133,28 @@ async function initializeBillingPlansCollection() {
 					serviceType: 'llm',
 					providerId: 'openai',
 					limit: 5000000, // 5M tokens per month
-					costMultiplier: 0.8 // 20% discount
+					costMultiplier: 0.8, // 20% discount
 				},
 				{
 					serviceType: 'llm',
 					providerId: 'anthropic',
 					limit: 2500000, // 2.5M tokens per month
-					costMultiplier: 0.8
+					costMultiplier: 0.8,
 				},
 				{
 					serviceType: 'llm',
 					providerId: 'azure-openai',
 					limit: 2500000, // 2.5M tokens per month
-					costMultiplier: 0.8
+					costMultiplier: 0.8,
 				},
 				{
 					serviceType: 'embedding',
 					providerId: 'openai',
 					limit: 10000000, // 10M tokens per month
-					costMultiplier: 0.8
-				}
-			]
-		}
+					costMultiplier: 0.8,
+				},
+			],
+		},
 	];
 
 	// Create the plans
@@ -162,7 +162,7 @@ async function initializeBillingPlansCollection() {
 		const planRef = await adminDb.collection(COLLECTIONS.PLANS).add({
 			...plan,
 			createdAt: new Date(),
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		});
 		console.log(`   Created plan: ${plan.name} (${planRef.id})`);
 	}
@@ -183,7 +183,7 @@ async function initializeUsageCollection() {
 	// Create a dummy document to initialize the collection, then delete it
 	const tempDoc = await usageRef.add({
 		_temp: true,
-		createdAt: new Date()
+		createdAt: new Date(),
 	});
 	await tempDoc.delete();
 
@@ -202,13 +202,13 @@ async function initializeAuditLogsCollection() {
 		action: 'database_initialized',
 		details: {
 			collections: Object.values(COLLECTIONS),
-			timestamp: new Date().toISOString()
+			timestamp: new Date().toISOString(),
 		},
 		timestamp: new Date(),
 		metadata: {
 			source: 'database_initialization_script',
-			version: '1.0.0'
-		}
+			version: '1.0.0',
+		},
 	});
 
 	console.log('   Audit logging initialized');
@@ -228,28 +228,30 @@ export async function createDatabaseIndexes() {
 		{
 			collection: COLLECTIONS.USERS,
 			fields: ['email', 'role'],
-			description: 'For user lookups and role-based queries'
+			description: 'For user lookups and role-based queries',
 		},
 		{
 			collection: COLLECTIONS.PROJECTS,
 			fields: ['userId', 'createdAt'],
-			description: 'For user project listings ordered by creation date'
+			description: 'For user project listings ordered by creation date',
 		},
 		{
 			collection: COLLECTIONS.USAGE,
 			fields: ['userId', 'timestamp'],
-			description: 'For user usage tracking queries'
+			description: 'For user usage tracking queries',
 		},
 		{
 			collection: COLLECTIONS.AUDIT_LOGS,
 			fields: ['userId', 'action', 'timestamp'],
-			description: 'For audit log queries by user and action'
-		}
+			description: 'For audit log queries by user and action',
+		},
 	];
 
 	console.log('   Recommended indexes:');
 	recommendedIndexes.forEach((index, i) => {
-		console.log(`   ${i + 1}. ${index.collection}: ${index.fields.join(', ')} - ${index.description}`);
+		console.log(
+			`   ${i + 1}. ${index.collection}: ${index.fields.join(', ')} - ${index.description}`
+		);
 	});
 
 	console.log('   Note: Create these indexes in the Firebase console for optimal performance');
@@ -270,7 +272,7 @@ export async function validateDatabaseSetup() {
 			COLLECTIONS.PROJECTS,
 			COLLECTIONS.USAGE,
 			COLLECTIONS.AUDIT_LOGS,
-			COLLECTIONS.PLANS
+			COLLECTIONS.PLANS,
 		];
 
 		for (const collection of collections) {
@@ -281,7 +283,7 @@ export async function validateDatabaseSetup() {
 				validations.push({
 					collection,
 					status: 'error',
-					error: error instanceof Error ? error.message : 'Unknown error'
+					error: error instanceof Error ? error.message : 'Unknown error',
 				});
 			}
 		}
@@ -293,13 +295,17 @@ export async function validateDatabaseSetup() {
 			collection: 'billing_plans_count',
 			status: planCount > 0 ? 'valid' : 'warning',
 			error: planCount === 0 ? 'No billing plans found' : null,
-			details: { count: planCount }
+			details: { count: planCount },
 		});
 
 		console.log('   Validation results:');
 		validations.forEach(validation => {
-			const icon = validation.status === 'accessible' || validation.status === 'valid' ? '✅' :
-				validation.status === 'warning' ? '⚠️' : '❌';
+			const icon =
+				validation.status === 'accessible' || validation.status === 'valid'
+					? '✅'
+					: validation.status === 'warning'
+						? '⚠️'
+						: '❌';
 			console.log(`   ${icon} ${validation.collection}: ${validation.status}`);
 			if (validation.error) {
 				console.log(`      Error: ${validation.error}`);

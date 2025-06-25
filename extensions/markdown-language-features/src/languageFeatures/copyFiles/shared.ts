@@ -23,7 +23,12 @@ export const imageEditKind = baseLinkEditKind.append('image');
 export const audioEditKind = baseLinkEditKind.append('audio');
 export const videoEditKind = baseLinkEditKind.append('video');
 
-export function getSnippetLabelAndKind(counter: { readonly insertedAudioCount: number; readonly insertedVideoCount: number; readonly insertedImageCount: number; readonly insertedLinkCount: number }): {
+export function getSnippetLabelAndKind(counter: {
+	readonly insertedAudioCount: number;
+	readonly insertedVideoCount: number;
+	readonly insertedImageCount: number;
+	readonly insertedLinkCount: number;
+}): {
 	label: string;
 	kind: vscode.DocumentDropOrPasteEditKind;
 } {
@@ -76,16 +81,18 @@ export function getSnippetLabelAndKind(counter: { readonly insertedAudioCount: n
 
 		// Just images
 		return {
-			label: counter.insertedImageCount > 1
-				? vscode.l10n.t('Insert Markdown Images')
-				: vscode.l10n.t('Insert Markdown Image'),
+			label:
+				counter.insertedImageCount > 1
+					? vscode.l10n.t('Insert Markdown Images')
+					: vscode.l10n.t('Insert Markdown Image'),
 			kind: imageEditKind,
 		};
 	} else {
 		return {
-			label: counter.insertedLinkCount > 1
-				? vscode.l10n.t('Insert Markdown Links')
-				: vscode.l10n.t('Insert Markdown Link'),
+			label:
+				counter.insertedLinkCount > 1
+					? vscode.l10n.t('Insert Markdown Links')
+					: vscode.l10n.t('Insert Markdown Link'),
 			kind: linkEditKind,
 		};
 	}
@@ -95,8 +102,10 @@ export function createInsertUriListEdit(
 	document: ITextDocument,
 	ranges: readonly vscode.Range[],
 	urlList: UriList,
-	options?: UriListSnippetOptions,
-): { edits: vscode.SnippetTextEdit[]; label: string; kind: vscode.DocumentDropOrPasteEditKind } | undefined {
+	options?: UriListSnippetOptions
+):
+	| { edits: vscode.SnippetTextEdit[]; label: string; kind: vscode.DocumentDropOrPasteEditKind }
+	| undefined {
 	if (!ranges.length || !urlList.entries.length) {
 		return;
 	}
@@ -135,7 +144,12 @@ export function createInsertUriListEdit(
 		edits.push(new vscode.SnippetTextEdit(range, snippet.snippet));
 	}
 
-	const { label, kind } = getSnippetLabelAndKind({ insertedAudioCount, insertedVideoCount, insertedImageCount, insertedLinkCount });
+	const { label, kind } = getSnippetLabelAndKind({
+		insertedAudioCount,
+		insertedVideoCount,
+		insertedImageCount,
+		insertedLinkCount,
+	});
 	return { edits, label, kind };
 }
 
@@ -161,7 +175,6 @@ interface UriListSnippetOptions {
 	readonly preserveAbsoluteUris?: boolean;
 }
 
-
 export interface UriSnippet {
 	readonly snippet: vscode.SnippetString;
 	readonly insertedLinkCount: number;
@@ -177,7 +190,7 @@ export function createUriListSnippet(
 		readonly str?: string;
 		readonly kind?: MediaKind;
 	}>,
-	options?: UriListSnippetOptions,
+	options?: UriListSnippetOptions
 ): UriSnippet | undefined {
 	if (!uris.length) {
 		return;
@@ -196,14 +209,20 @@ export function createUriListSnippet(
 	let placeholderIndex = options?.placeholderStartIndex ?? 1;
 
 	uris.forEach((uri, i) => {
-		const mdPath = (!options?.preserveAbsoluteUris ? getRelativeMdPath(documentDir, uri.uri) : undefined) ?? uri.str ?? uri.uri.toString();
+		const mdPath =
+			(!options?.preserveAbsoluteUris ? getRelativeMdPath(documentDir, uri.uri) : undefined) ??
+			uri.str ??
+			uri.uri.toString();
 
 		const desiredKind = getDesiredLinkKind(uri.uri, uri.kind, options);
 
 		if (desiredKind === DesiredLinkKind.Link) {
 			insertedLinkCount++;
 			snippet.appendText('[');
-			snippet.appendPlaceholder(escapeBrackets(options?.placeholderText ?? 'text'), placeholderIndex);
+			snippet.appendPlaceholder(
+				escapeBrackets(options?.placeholderText ?? 'text'),
+				placeholderIndex
+			);
 			snippet.appendText(`](${escapeMarkdownLinkPath(mdPath)})`);
 		} else {
 			const insertAsVideo = desiredKind === DesiredLinkKind.Video;
@@ -215,12 +234,21 @@ export function createUriListSnippet(
 					insertedAudioCount++;
 				}
 				const mediaSnippet = insertAsVideo
-					? config.get<string>('editor.filePaste.videoSnippet', '<video controls src="${src}" title="${title}"></video>')
-					: config.get<string>('editor.filePaste.audioSnippet', '<audio controls src="${src}" title="${title}"></audio>');
-				snippet.value += resolveSnippet(mediaSnippet, new Map<string, string>([
-					['src', mdPath],
-					['title', `\${${placeholderIndex++}:${title}}`],
-				]));
+					? config.get<string>(
+							'editor.filePaste.videoSnippet',
+							'<video controls src="${src}" title="${title}"></video>'
+						)
+					: config.get<string>(
+							'editor.filePaste.audioSnippet',
+							'<audio controls src="${src}" title="${title}"></audio>'
+						);
+				snippet.value += resolveSnippet(
+					mediaSnippet,
+					new Map<string, string>([
+						['src', mdPath],
+						['title', `\${${placeholderIndex++}:${title}}`],
+					])
+				);
 			} else {
 				insertedImageCount++;
 				snippet.appendText('![');
@@ -245,7 +273,11 @@ enum DesiredLinkKind {
 	Audio,
 }
 
-function getDesiredLinkKind(uri: vscode.Uri, uriFileKind: MediaKind | undefined, options: UriListSnippetOptions | undefined): DesiredLinkKind {
+function getDesiredLinkKind(
+	uri: vscode.Uri,
+	uriFileKind: MediaKind | undefined,
+	options: UriListSnippetOptions | undefined
+): DesiredLinkKind {
 	if (options?.linkKindHint instanceof vscode.DocumentDropOrPasteEditKind) {
 		if (linkEditKind.contains(options.linkKindHint)) {
 			return DesiredLinkKind.Link;
@@ -260,18 +292,24 @@ function getDesiredLinkKind(uri: vscode.Uri, uriFileKind: MediaKind | undefined,
 
 	if (typeof uriFileKind !== 'undefined') {
 		switch (uriFileKind) {
-			case MediaKind.Video: return DesiredLinkKind.Video;
-			case MediaKind.Audio: return DesiredLinkKind.Audio;
-			case MediaKind.Image: return DesiredLinkKind.Image;
+			case MediaKind.Video:
+				return DesiredLinkKind.Video;
+			case MediaKind.Audio:
+				return DesiredLinkKind.Audio;
+			case MediaKind.Image:
+				return DesiredLinkKind.Image;
 		}
 	}
 
 	const normalizedExt = URI.Utils.extname(uri).toLowerCase().replace('.', '');
 	if (options?.linkKindHint === 'media' || mediaFileExtensions.has(normalizedExt)) {
 		switch (mediaFileExtensions.get(normalizedExt)) {
-			case MediaKind.Video: return DesiredLinkKind.Video;
-			case MediaKind.Audio: return DesiredLinkKind.Audio;
-			default: return DesiredLinkKind.Image;
+			case MediaKind.Video:
+				return DesiredLinkKind.Video;
+			case MediaKind.Audio:
+				return DesiredLinkKind.Audio;
+			default:
+				return DesiredLinkKind.Image;
 		}
 	}
 

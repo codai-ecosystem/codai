@@ -33,8 +33,12 @@ let shellEnvPromise: Promise<typeof process.env> | undefined = undefined;
  * - we hit a timeout of `MAX_SHELL_RESOLVE_TIME`
  * - any other error from spawning a shell to figure out the environment
  */
-export async function getResolvedShellEnv(configurationService: IConfigurationService, logService: ILogService, args: NativeParsedArgs, env: IProcessEnvironment): Promise<typeof process.env> {
-
+export async function getResolvedShellEnv(
+	configurationService: IConfigurationService,
+	logService: ILogService,
+	args: NativeParsedArgs,
+	env: IProcessEnvironment
+): Promise<typeof process.env> {
 	// Skip if --force-disable-user-env
 	if (args['force-disable-user-env']) {
 		logService.trace('resolveShellEnv(): skipped (--force-disable-user-env)');
@@ -65,7 +69,9 @@ export async function getResolvedShellEnv(configurationService: IConfigurationSe
 				const cts = new CancellationTokenSource();
 
 				let timeoutValue = 10000; // default to 10 seconds
-				const configuredTimeoutValue = configurationService.getValue<unknown>('application.shellEnvironmentResolutionTimeout');
+				const configuredTimeoutValue = configurationService.getValue<unknown>(
+					'application.shellEnvironmentResolutionTimeout'
+				);
 				if (typeof configuredTimeoutValue === 'number') {
 					timeoutValue = clamp(configuredTimeoutValue, 1, 120) * 1000 /* convert from seconds */;
 				}
@@ -73,7 +79,14 @@ export async function getResolvedShellEnv(configurationService: IConfigurationSe
 				// Give up resolving shell env after some time
 				const timeout = setTimeout(() => {
 					cts.dispose(true);
-					reject(new Error(localize('resolveShellEnvTimeout', "Unable to resolve your shell environment in a reasonable time. Please review your shell configuration and restart.")));
+					reject(
+						new Error(
+							localize(
+								'resolveShellEnvTimeout',
+								'Unable to resolve your shell environment in a reasonable time. Please review your shell configuration and restart.'
+							)
+						)
+					);
 				}, timeoutValue);
 
 				// Resolve shell env and handle errors
@@ -81,7 +94,15 @@ export async function getResolvedShellEnv(configurationService: IConfigurationSe
 					resolve(await doResolveShellEnv(logService, cts.token));
 				} catch (error) {
 					if (!isCancellationError(error) && !cts.token.isCancellationRequested) {
-						reject(new Error(localize('resolveShellEnvError', "Unable to resolve your shell environment: {0}", toErrorMessage(error))));
+						reject(
+							new Error(
+								localize(
+									'resolveShellEnvError',
+									'Unable to resolve your shell environment: {0}',
+									toErrorMessage(error)
+								)
+							)
+						);
 					} else {
 						resolve({});
 					}
@@ -96,7 +117,10 @@ export async function getResolvedShellEnv(configurationService: IConfigurationSe
 	}
 }
 
-async function doResolveShellEnv(logService: ILogService, token: CancellationToken): Promise<typeof process.env> {
+async function doResolveShellEnv(
+	logService: ILogService,
+	token: CancellationToken
+): Promise<typeof process.env> {
 	const runAsNode = process.env['ELECTRON_RUN_AS_NODE'];
 	logService.trace('doResolveShellEnv#runAsNode', runAsNode);
 
@@ -110,7 +134,7 @@ async function doResolveShellEnv(logService: ILogService, token: CancellationTok
 		...process.env,
 		ELECTRON_RUN_AS_NODE: '1',
 		ELECTRON_NO_ATTACH_CONSOLE: '1',
-		VSCODE_RESOLVING_ENVIRONMENT: '1'
+		VSCODE_RESOLVING_ENVIRONMENT: '1',
 	};
 
 	logService.trace('doResolveShellEnv#env', env);
@@ -129,7 +153,12 @@ async function doResolveShellEnv(logService: ILogService, token: CancellationTok
 	const extraArgs = '';
 	if (/^(?:pwsh|powershell)(?:-preview)?$/.test(name)) {
 		const profilePaths = await getPowershellProfilePaths(systemShell);
-		const profilePathThatExists = await first(profilePaths.map(profilePath => async () => (await FSPromises.exists(profilePath)) ? profilePath : undefined));
+		const profilePathThatExists = await first(
+			profilePaths.map(
+				profilePath => async () =>
+					(await FSPromises.exists(profilePath)) ? profilePath : undefined
+			)
+		);
 		if (!profilePathThatExists) {
 			logService.trace('doResolveShellEnv#noPowershellProfile after testing paths', profilePaths);
 
@@ -148,10 +177,12 @@ async function doResolveShellEnv(logService: ILogService, token: CancellationTok
 		// -Login is documented as a no-op on Windows on Powershell 7, so simply omit
 		// it to avoid causing errors or requiring a version check.
 		shellArgs = isWindows ? ['-Command'] : ['-Login', '-Command'];
-	} else if (name === 'nu') { // nushell requires ^ before quoted path to treat it as a command
+	} else if (name === 'nu') {
+		// nushell requires ^ before quoted path to treat it as a command
 		command = `^'${process.execPath}' ${extraArgs} -p '"${mark}" + JSON.stringify(process.env) + "${mark}"'`;
 		shellArgs = ['-i', '-l', '-c'];
-	} else if (name === 'xonsh') { // #200374: native implementation is shorter
+	} else if (name === 'xonsh') {
+		// #200374: native implementation is shorter
 		command = `import os, json; print("${mark}", json.dumps(dict(os.environ)), "${mark}")`;
 		shellArgs = ['-i', '-l', '-c'];
 	} else {
@@ -174,7 +205,7 @@ async function doResolveShellEnv(logService: ILogService, token: CancellationTok
 		const child = spawn(systemShell, [...shellArgs, command], {
 			detached: !isWindows,
 			stdio: ['ignore', 'pipe', 'pipe'],
-			env
+			env,
 		});
 
 		token.onCancellationRequested(() => {
@@ -204,7 +235,16 @@ async function doResolveShellEnv(logService: ILogService, token: CancellationTok
 			}
 
 			if (code || signal) {
-				return reject(new Error(localize('resolveShellEnvExitError', "Unexpected exit code from spawned shell (code {0}, signal {1})", code, signal)));
+				return reject(
+					new Error(
+						localize(
+							'resolveShellEnvExitError',
+							'Unexpected exit code from spawned shell (code {0}, signal {1})',
+							code,
+							signal
+						)
+					)
+				);
 			}
 
 			const match = regex.exec(raw);
@@ -251,7 +291,6 @@ async function getPowershellProfilePaths(psExecutable: string) {
 	const paths: string[] = [];
 	const userHome = homedir();
 	if (isWindows) {
-
 		// "The $PSHOME variable stores the installation directory for PowerShell" --
 		// but this is not set ambiently on the operating system.
 		let pshome = process.env.PSHOME;
@@ -269,31 +308,30 @@ async function getPowershellProfilePaths(psExecutable: string) {
 		}
 
 		paths.push(
-			join(pshome, 'Profile.ps1'), 													// All Users, All Hosts
-			join(pshome, 'Microsoft.PowerShell_profile.ps1'), 								// All Users, Current Host
-			join(userHome, 'Documents', 'PowerShell', 'Profile.ps1'), 						// Current User, All Hosts
-			join(userHome, 'Documents', 'PowerShell', 'Microsoft.PowerShell_profile.ps1'), 	// Current User, Current Host
+			join(pshome, 'Profile.ps1'), // All Users, All Hosts
+			join(pshome, 'Microsoft.PowerShell_profile.ps1'), // All Users, Current Host
+			join(userHome, 'Documents', 'PowerShell', 'Profile.ps1'), // Current User, All Hosts
+			join(userHome, 'Documents', 'PowerShell', 'Microsoft.PowerShell_profile.ps1'), // Current User, Current Host
 
-			join(userHome, 'Documents', 'WindowsPowerShell', 'Profile.ps1'), 						// (Powershell 5) Current User, All Hosts
-			join(userHome, 'Documents', 'WindowsPowerShell', 'Microsoft.PowerShell_profile.ps1'), 	// (Powershell 5) Current User, Current Host
+			join(userHome, 'Documents', 'WindowsPowerShell', 'Profile.ps1'), // (Powershell 5) Current User, All Hosts
+			join(userHome, 'Documents', 'WindowsPowerShell', 'Microsoft.PowerShell_profile.ps1') // (Powershell 5) Current User, Current Host
 		);
 	} else if (isMacintosh) {
-
 		// note: powershell 7 is the first (and yet only) powershell version on posix,
 		// so no need to look for any extra paths yet.
 
 		paths.push(
-			'/usr/local/microsoft/powershell/7/profile.ps1', 								// All Users, All Hosts
-			'/usr/local/microsoft/powershell/7/Microsoft.PowerShell_profile.ps1', 			// All Users, Current Host
-			join(userHome, '.config', 'powershell', 'profile.ps1'), 						// Current User, All Hosts
-			join(userHome, '.config', 'powershell', 'Microsoft.PowerShell_profile.ps1'), 	// Current User, Current Host
+			'/usr/local/microsoft/powershell/7/profile.ps1', // All Users, All Hosts
+			'/usr/local/microsoft/powershell/7/Microsoft.PowerShell_profile.ps1', // All Users, Current Host
+			join(userHome, '.config', 'powershell', 'profile.ps1'), // Current User, All Hosts
+			join(userHome, '.config', 'powershell', 'Microsoft.PowerShell_profile.ps1') // Current User, Current Host
 		);
 	} else {
 		paths.push(
-			'/opt/microsoft/powershell/7/profile.ps1', 										// All Users, All Hosts
-			'/opt/microsoft/powershell/7/Microsoft.PowerShell_profile.ps1', 				// All Users, Current Host
-			join(userHome, '.config', 'powershell', 'profile.ps1'),							// Current User, All Hosts
-			join(userHome, '.config', 'powershell', 'Microsoft.PowerShell_profile.ps1'), 	// Current User, Current Host
+			'/opt/microsoft/powershell/7/profile.ps1', // All Users, All Hosts
+			'/opt/microsoft/powershell/7/Microsoft.PowerShell_profile.ps1', // All Users, Current Host
+			join(userHome, '.config', 'powershell', 'profile.ps1'), // Current User, All Hosts
+			join(userHome, '.config', 'powershell', 'Microsoft.PowerShell_profile.ps1') // Current User, Current Host
 		);
 	}
 

@@ -10,7 +10,7 @@ import { IInstantiationService } from '../../../../platform/instantiation/common
 import { Registry } from '../../../../platform/registry/common/platform.js';
 
 export const enum ExplorerExtensions {
-	FileContributionRegistry = 'workbench.registry.explorer.fileContributions'
+	FileContributionRegistry = 'workbench.registry.explorer.fileContributions',
 }
 
 /**
@@ -36,8 +36,13 @@ export interface IExplorerFileContributionRegistry {
 	register(descriptor: IExplorerFileContributionDescriptor): void;
 }
 
-class ExplorerFileContributionRegistry extends Disposable implements IExplorerFileContributionRegistry {
-	private readonly _onDidRegisterDescriptor = this._register(new Emitter<IExplorerFileContributionDescriptor>());
+class ExplorerFileContributionRegistry
+	extends Disposable
+	implements IExplorerFileContributionRegistry
+{
+	private readonly _onDidRegisterDescriptor = this._register(
+		new Emitter<IExplorerFileContributionDescriptor>()
+	);
 	public readonly onDidRegisterDescriptor = this._onDidRegisterDescriptor.event;
 
 	private readonly descriptors: IExplorerFileContributionDescriptor[] = [];
@@ -51,7 +56,11 @@ class ExplorerFileContributionRegistry extends Disposable implements IExplorerFi
 	/**
 	 * Creates a new instance of all registered contributions.
 	 */
-	public create(insta: IInstantiationService, container: HTMLElement, store: DisposableStore): IExplorerFileContribution[] {
+	public create(
+		insta: IInstantiationService,
+		container: HTMLElement,
+		store: DisposableStore
+	): IExplorerFileContribution[] {
 		return this.descriptors.map(d => {
 			const i = d.create(insta, container);
 			store.add(i);

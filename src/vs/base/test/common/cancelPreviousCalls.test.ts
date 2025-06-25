@@ -16,12 +16,12 @@ suite('cancelPreviousCalls decorator', () => {
 		/**
 		 * Arguments that the {@linkcode doSomethingAsync} method was called with.
 		 */
-		private readonly callArgs1: ([number, string, CancellationToken | undefined])[] = [];
+		private readonly callArgs1: [number, string, CancellationToken | undefined][] = [];
 
 		/**
 		 * Arguments that the {@linkcode doSomethingElseAsync} method was called with.
 		 */
-		private readonly callArgs2: ([number, string, CancellationToken | undefined])[] = [];
+		private readonly callArgs2: [number, string, CancellationToken | undefined][] = [];
 
 		/**
 		 * Returns the arguments that the {@linkcode doSomethingAsync} method was called with.
@@ -38,14 +38,22 @@ suite('cancelPreviousCalls decorator', () => {
 		}
 
 		@cancelPreviousCalls
-		async doSomethingAsync(arg1: number, arg2: string, cancellationToken?: CancellationToken): Promise<void> {
+		async doSomethingAsync(
+			arg1: number,
+			arg2: string,
+			cancellationToken?: CancellationToken
+		): Promise<void> {
 			this.callArgs1.push([arg1, arg2, cancellationToken]);
 
 			await new Promise(resolve => setTimeout(resolve, 25));
 		}
 
 		@cancelPreviousCalls
-		async doSomethingElseAsync(arg1: number, arg2: string, cancellationToken?: CancellationToken): Promise<void> {
+		async doSomethingElseAsync(
+			arg1: number,
+			arg2: string,
+			cancellationToken?: CancellationToken
+		): Promise<void> {
 			this.callArgs2.push([arg1, arg2, cancellationToken]);
 
 			await new Promise(resolve => setTimeout(resolve, 25));
@@ -61,13 +69,13 @@ suite('cancelPreviousCalls decorator', () => {
 		assert.strictEqual(
 			callArguments.length,
 			1,
-			`The 'doSomethingAsync' method must be called just once.`,
+			`The 'doSomethingAsync' method must be called just once.`
 		);
 
 		const args = callArguments[0];
 		assert(
 			args.length === 3,
-			`The 'doSomethingAsync' method must be called with '3' arguments, got '${args.length}'.`,
+			`The 'doSomethingAsync' method must be called with '3' arguments, got '${args.length}'.`
 		);
 
 		const arg1 = args[0];
@@ -77,28 +85,28 @@ suite('cancelPreviousCalls decorator', () => {
 		assert.strictEqual(
 			arg1,
 			1,
-			`The 'doSomethingAsync' method call must have the correct 1st argument.`,
+			`The 'doSomethingAsync' method call must have the correct 1st argument.`
 		);
 
 		assert.strictEqual(
 			arg2,
 			'foo',
-			`The 'doSomethingAsync' method call must have the correct 2nd argument.`,
+			`The 'doSomethingAsync' method call must have the correct 2nd argument.`
 		);
 
 		assert(
 			CancellationToken.isCancellationToken(arg3),
-			`The last argument of the 'doSomethingAsync' method must be a 'CancellationToken', got '${arg3}'.`,
+			`The last argument of the 'doSomethingAsync' method must be a 'CancellationToken', got '${arg3}'.`
 		);
 
 		assert(
 			arg3.isCancellationRequested === false,
-			`The 'CancellationToken' argument must not yet be cancelled.`,
+			`The 'CancellationToken' argument must not yet be cancelled.`
 		);
 
 		assert(
 			instance.callArguments2.length === 0,
-			`The 'doSomethingElseAsync' method must not be called.`,
+			`The 'doSomethingElseAsync' method must not be called.`
 		);
 	});
 
@@ -113,68 +121,68 @@ suite('cancelPreviousCalls decorator', () => {
 		assert.strictEqual(
 			callArguments.length,
 			2,
-			`The 'doSomethingAsync' method must be called twice.`,
+			`The 'doSomethingAsync' method must be called twice.`
 		);
 
 		const call1Args = callArguments[0];
 		assert(
 			call1Args.length === 3,
-			`The first call of the 'doSomethingAsync' method must have '3' arguments, got '${call1Args.length}'.`,
+			`The first call of the 'doSomethingAsync' method must have '3' arguments, got '${call1Args.length}'.`
 		);
 
 		assert.strictEqual(
 			call1Args[0],
 			1,
-			`The first call of the 'doSomethingAsync' method must have the correct 1st argument.`,
+			`The first call of the 'doSomethingAsync' method must have the correct 1st argument.`
 		);
 
 		assert.strictEqual(
 			call1Args[1],
 			'foo',
-			`The first call of the 'doSomethingAsync' method must have the correct 2nd argument.`,
+			`The first call of the 'doSomethingAsync' method must have the correct 2nd argument.`
 		);
 
 		assert(
 			CancellationToken.isCancellationToken(call1Args[2]),
-			`The first call of the 'doSomethingAsync' method must have the 'CancellationToken' as the 3rd argument.`,
+			`The first call of the 'doSomethingAsync' method must have the 'CancellationToken' as the 3rd argument.`
 		);
 
 		assert(
 			call1Args[2].isCancellationRequested === true,
-			`The 'CancellationToken' of the first call must be cancelled.`,
+			`The 'CancellationToken' of the first call must be cancelled.`
 		);
 
 		const call2Args = callArguments[1];
 		assert(
 			call2Args.length === 3,
-			`The second call of the 'doSomethingAsync' method must have '3' arguments, got '${call1Args.length}'.`,
+			`The second call of the 'doSomethingAsync' method must have '3' arguments, got '${call1Args.length}'.`
 		);
 
 		assert.strictEqual(
 			call2Args[0],
 			2,
-			`The second call of the 'doSomethingAsync' method must have the correct 1st argument.`,
+			`The second call of the 'doSomethingAsync' method must have the correct 1st argument.`
 		);
 
 		assert.strictEqual(
 			call2Args[1],
 			'bar',
-			`The second call of the 'doSomethingAsync' method must have the correct 2nd argument.`,
+			`The second call of the 'doSomethingAsync' method must have the correct 2nd argument.`
 		);
 
 		assert(
 			CancellationToken.isCancellationToken(call2Args[2]),
-			`The second call of the 'doSomethingAsync' method must have the 'CancellationToken' as the 3rd argument.`,
+			`The second call of the 'doSomethingAsync' method must have the 'CancellationToken' as the 3rd argument.`
 		);
 
 		assert(
 			call2Args[2].isCancellationRequested === false,
-			`The 'CancellationToken' of the second call must be cancelled.`,
+			`The 'CancellationToken' of the second call must be cancelled.`
 		);
 
 		assert(
 			instance.callArguments2.length === 0,
-			`The 'doSomethingElseAsync' method must not be called.`,
+			`The 'doSomethingElseAsync' method must not be called.`
 		);
 	});
 
@@ -188,69 +196,69 @@ suite('cancelPreviousCalls decorator', () => {
 		assert.strictEqual(
 			instance.callArguments1.length,
 			1,
-			`The 'doSomethingAsync' method must be called once.`,
+			`The 'doSomethingAsync' method must be called once.`
 		);
 
 		const call1Args = instance.callArguments1[0];
 		assert(
 			call1Args.length === 3,
-			`The first call of the 'doSomethingAsync' method must have '3' arguments, got '${call1Args.length}'.`,
+			`The first call of the 'doSomethingAsync' method must have '3' arguments, got '${call1Args.length}'.`
 		);
 
 		assert.strictEqual(
 			call1Args[0],
 			10,
-			`The first call of the 'doSomethingAsync' method must have the correct 1st argument.`,
+			`The first call of the 'doSomethingAsync' method must have the correct 1st argument.`
 		);
 
 		assert.strictEqual(
 			call1Args[1],
 			'baz',
-			`The first call of the 'doSomethingAsync' method must have the correct 2nd argument.`,
+			`The first call of the 'doSomethingAsync' method must have the correct 2nd argument.`
 		);
 
 		assert(
 			CancellationToken.isCancellationToken(call1Args[2]),
-			`The first call of the 'doSomethingAsync' method must have the 'CancellationToken' as the 3rd argument.`,
+			`The first call of the 'doSomethingAsync' method must have the 'CancellationToken' as the 3rd argument.`
 		);
 
 		assert(
 			call1Args[2].isCancellationRequested === false,
-			`The 'CancellationToken' of the first call must not be cancelled.`,
+			`The 'CancellationToken' of the first call must not be cancelled.`
 		);
 
 		assert.strictEqual(
 			instance.callArguments2.length,
 			1,
-			`The 'doSomethingElseAsync' method must be called once.`,
+			`The 'doSomethingElseAsync' method must be called once.`
 		);
 
 		const call2Args = instance.callArguments2[0];
 		assert(
 			call2Args.length === 3,
-			`The first call of the 'doSomethingElseAsync' method must have '3' arguments, got '${call1Args.length}'.`,
+			`The first call of the 'doSomethingElseAsync' method must have '3' arguments, got '${call1Args.length}'.`
 		);
 
 		assert.strictEqual(
 			call2Args[0],
 			25,
-			`The first call of the 'doSomethingElseAsync' method must have the correct 1st argument.`,
+			`The first call of the 'doSomethingElseAsync' method must have the correct 1st argument.`
 		);
 
 		assert.strictEqual(
 			call2Args[1],
 			'qux',
-			`The first call of the 'doSomethingElseAsync' method must have the correct 2nd argument.`,
+			`The first call of the 'doSomethingElseAsync' method must have the correct 2nd argument.`
 		);
 
 		assert(
 			CancellationToken.isCancellationToken(call2Args[2]),
-			`The first call of the 'doSomethingElseAsync' method must have the 'CancellationToken' as the 3rd argument.`,
+			`The first call of the 'doSomethingElseAsync' method must have the 'CancellationToken' as the 3rd argument.`
 		);
 
 		assert(
 			call2Args[2].isCancellationRequested === false,
-			`The 'CancellationToken' of the second call must be cancelled.`,
+			`The 'CancellationToken' of the second call must be cancelled.`
 		);
 
 		instance.doSomethingElseAsync(105, 'uxi');
@@ -258,46 +266,46 @@ suite('cancelPreviousCalls decorator', () => {
 		assert.strictEqual(
 			instance.callArguments1.length,
 			1,
-			`The 'doSomethingAsync' method must be called once.`,
+			`The 'doSomethingAsync' method must be called once.`
 		);
 
 		assert.strictEqual(
 			instance.callArguments2.length,
 			2,
-			`The 'doSomethingElseAsync' method must be called twice.`,
+			`The 'doSomethingElseAsync' method must be called twice.`
 		);
 
 		assert(
 			call1Args[2].isCancellationRequested === false,
-			`The 'CancellationToken' of the first call must not be cancelled.`,
+			`The 'CancellationToken' of the first call must not be cancelled.`
 		);
 
 		const call3Args = instance.callArguments2[1];
 		assert(
 			CancellationToken.isCancellationToken(call3Args[2]),
-			`The last argument of the second call of the 'doSomethingElseAsync' method must be a 'CancellationToken'.`,
+			`The last argument of the second call of the 'doSomethingElseAsync' method must be a 'CancellationToken'.`
 		);
 
 		assert(
 			call2Args[2].isCancellationRequested,
-			`The 'CancellationToken' of the first call must be cancelled.`,
+			`The 'CancellationToken' of the first call must be cancelled.`
 		);
 
 		assert(
 			call3Args[2].isCancellationRequested === false,
-			`The 'CancellationToken' of the second call must not be cancelled.`,
+			`The 'CancellationToken' of the second call must not be cancelled.`
 		);
 
 		assert.strictEqual(
 			call3Args[0],
 			105,
-			`The second call of the 'doSomethingElseAsync' method must have the correct 1st argument.`,
+			`The second call of the 'doSomethingElseAsync' method must have the correct 1st argument.`
 		);
 
 		assert.strictEqual(
 			call3Args[1],
 			'uxi',
-			`The second call of the 'doSomethingElseAsync' method must have the correct 2nd argument.`,
+			`The second call of the 'doSomethingElseAsync' method must have the correct 2nd argument.`
 		);
 	});
 });

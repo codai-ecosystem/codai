@@ -22,7 +22,7 @@ export class ChatErrorContentPart extends Disposable implements IChatContentPart
 		kind: ChatErrorLevel,
 		content: IMarkdownString,
 		private readonly errorDetails: IChatRendererContent,
-		renderer: MarkdownRenderer,
+		renderer: MarkdownRenderer
 	) {
 		super();
 
@@ -37,11 +37,7 @@ export class ChatErrorContentPart extends Disposable implements IChatContentPart
 export class ChatErrorWidget extends Disposable {
 	public readonly domNode: HTMLElement;
 
-	constructor(
-		kind: ChatErrorLevel,
-		content: IMarkdownString,
-		renderer: MarkdownRenderer,
-	) {
+	constructor(kind: ChatErrorLevel, content: IMarkdownString, renderer: MarkdownRenderer) {
 		super();
 
 		this.domNode = $('.chat-notification-widget');

@@ -8,7 +8,7 @@ describe('Debug GraphControls', () => {
 		const props = {
 			onFilterChange: vi.fn(),
 			currentFilter: 'data',
-			nodeTypes: ['data', 'api', 'processing']
+			nodeTypes: ['data', 'api', 'processing'],
 		};
 
 		const { container } = render(<GraphControls {...props} />);

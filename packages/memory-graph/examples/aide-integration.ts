@@ -33,9 +33,9 @@ export class AIDEMemoryIntegration {
 						'User registration',
 						'Login/logout functionality',
 						'Password reset',
-						'Email verification'
-					]
-				}
+						'Email verification',
+					],
+				},
 			});
 
 			const [loginScreen] = await this.runtime.addIntent({
@@ -43,8 +43,8 @@ export class AIDEMemoryIntegration {
 				data: {
 					name: 'Login Screen',
 					screenType: 'page',
-					route: '/login'
-				}
+					route: '/login',
+				},
 			});
 
 			const [userModel] = await this.runtime.addIntent({
@@ -56,9 +56,9 @@ export class AIDEMemoryIntegration {
 						{ name: 'id', type: 'string', required: true, unique: true },
 						{ name: 'email', type: 'string', required: true, unique: true },
 						{ name: 'password', type: 'string', required: true },
-						{ name: 'createdAt', type: 'Date', required: true }
-					]
-				}
+						{ name: 'createdAt', type: 'Date', required: true },
+					],
+				},
 			});
 
 			const [authAPI] = await this.runtime.addIntent({
@@ -66,8 +66,8 @@ export class AIDEMemoryIntegration {
 				data: {
 					name: 'Authentication API',
 					method: 'POST',
-					path: '/api/auth/login'
-				}
+					path: '/api/auth/login',
+				},
 			});
 
 			// Create relationships
@@ -97,7 +97,7 @@ export class AIDEMemoryIntegration {
 			complexity: analysis.complexity,
 			completeness: analysis.completeness,
 			recentChanges: recentHistory,
-			currentGraph: this.runtime.currentGraph
+			currentGraph: this.runtime.currentGraph,
 		};
 	}
 
@@ -106,7 +106,9 @@ export class AIDEMemoryIntegration {
 	 */
 	async generateCodeSuggestions(nodeId: string): Promise<CodeSuggestion[]> {
 		const node = this.runtime.graph.getNode(nodeId);
-		if (!node) { return []; }
+		if (!node) {
+			return [];
+		}
 
 		const suggestions: CodeSuggestion[] = [];
 
@@ -118,7 +120,7 @@ export class AIDEMemoryIntegration {
 					title: `Implement ${apiNode.name}`,
 					description: `Create ${apiNode.method} endpoint for ${apiNode.path}`,
 					code: this.generateAPICode(apiNode),
-					priority: 'high'
+					priority: 'high',
 				});
 				break;
 
@@ -129,7 +131,7 @@ export class AIDEMemoryIntegration {
 					title: `Create ${modelNode.name} Model`,
 					description: `Define data model with fields and relationships`,
 					code: this.generateModelCode(modelNode),
-					priority: 'medium'
+					priority: 'medium',
 				});
 				break;
 
@@ -140,7 +142,7 @@ export class AIDEMemoryIntegration {
 					title: `Create ${screenNode.name} Component`,
 					description: `Build React component for ${screenNode.screenType}`,
 					code: this.generateScreenCode(screenNode),
-					priority: 'medium'
+					priority: 'medium',
 				});
 				break;
 		}
@@ -155,7 +157,7 @@ export class AIDEMemoryIntegration {
 		await this.runtime.addConversationEntry({
 			type: 'analysis',
 			content: action,
-			resultNodeIds: action.affectedNodeIds || []
+			resultNodeIds: action.affectedNodeIds || [],
 		});
 	}
 	// Helper methods for code generation
@@ -168,10 +170,11 @@ export class AIDEMemoryIntegration {
 			GET: `const result = await ${serviceName}Service.findAll();`,
 			POST: `const result = await ${serviceName}Service.create(req.body);`,
 			PUT: `const result = await ${serviceName}Service.update(req.params.id, req.body);`,
-			DELETE: `const result = await ${serviceName}Service.delete(req.params.id);`
+			DELETE: `const result = await ${serviceName}Service.delete(req.params.id);`,
 		};
 
-		const implementation = implementations[apiNode.method as keyof typeof implementations] ||
+		const implementation =
+			implementations[apiNode.method as keyof typeof implementations] ||
 			`const result = await ${serviceName}Service.process(req.body);`;
 
 		return `
@@ -195,9 +198,10 @@ export async function handle${handlerName}(req: Request, res: Response) {
 	}
 
 	private generateModelCode(modelNode: any): string {
-		const fields = modelNode.fields?.map((field: any) =>
-			`\t${field.name}${field.required ? '' : '?'}: ${field.type};`
-		).join('\n') || '';
+		const fields =
+			modelNode.fields
+				?.map((field: any) => `\t${field.name}${field.required ? '' : '?'}: ${field.type};`)
+				.join('\n') || '';
 
 		return `
 // ${modelNode.name} Data Model
@@ -206,9 +210,14 @@ ${fields}
 }
 
 export const ${modelNode.name}Schema = z.object({
-${modelNode.fields?.map((field: any) =>
-			`\t${field.name}: z.${field.type.toLowerCase()}()${field.required ? '' : '.optional()'}`
-		).join(',\n') || ''}
+${
+	modelNode.fields
+		?.map(
+			(field: any) =>
+				`\t${field.name}: z.${field.type.toLowerCase()}()${field.required ? '' : '.optional()'}`
+		)
+		.join(',\n') || ''
+}
 });`;
 	}
 	private generateScreenCode(screenNode: any): string {

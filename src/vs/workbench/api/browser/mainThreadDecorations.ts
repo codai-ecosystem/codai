@@ -6,15 +6,27 @@
 import { URI, UriComponents } from '../../../base/common/uri.js';
 import { Emitter } from '../../../base/common/event.js';
 import { IDisposable, dispose } from '../../../base/common/lifecycle.js';
-import { ExtHostContext, MainContext, MainThreadDecorationsShape, ExtHostDecorationsShape, DecorationData, DecorationRequest } from '../common/extHost.protocol.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
-import { IDecorationsService, IDecorationData } from '../../services/decorations/common/decorations.js';
+import {
+	ExtHostContext,
+	MainContext,
+	MainThreadDecorationsShape,
+	ExtHostDecorationsShape,
+	DecorationData,
+	DecorationRequest,
+} from '../common/extHost.protocol.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
+import {
+	IDecorationsService,
+	IDecorationData,
+} from '../../services/decorations/common/decorations.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { DeferredPromise } from '../../../base/common/async.js';
 import { CancellationError } from '../../../base/common/errors.js';
 
 class DecorationRequestsQueue {
-
 	private _idPool = 0;
 	private _requests = new Map<number, DecorationRequest>();
 	private _resolver = new Map<number, DeferredPromise<DecorationData>>();
@@ -53,11 +65,13 @@ class DecorationRequestsQueue {
 			// make request
 			const requests = this._requests;
 			const resolver = this._resolver;
-			this._proxy.$provideDecorations(this._handle, [...requests.values()], CancellationToken.None).then(data => {
-				for (const [id, defer] of resolver) {
-					defer.complete(data[id]);
-				}
-			});
+			this._proxy
+				.$provideDecorations(this._handle, [...requests.values()], CancellationToken.None)
+				.then(data => {
+					for (const [id, defer] of resolver) {
+						defer.complete(data[id]);
+					}
+				});
 
 			// reset
 			this._requests = new Map();
@@ -69,7 +83,6 @@ class DecorationRequestsQueue {
 
 @extHostNamedCustomer(MainContext.MainThreadDecorations)
 export class MainThreadDecorations implements MainThreadDecorationsShape {
-
 	private readonly _provider = new Map<number, [Emitter<URI[]>, IDisposable]>();
 	private readonly _proxy: ExtHostDecorationsShape;
 
@@ -102,9 +115,9 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 					bubble: bubble ?? false,
 					color: themeColor?.id,
 					tooltip,
-					letter
+					letter,
 				};
-			}
+			},
 		});
 		this._provider.set(handle, [emitter, registration]);
 	}

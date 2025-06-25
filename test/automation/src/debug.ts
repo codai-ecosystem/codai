@@ -47,13 +47,17 @@ function toStackFrame(element: IElement): IStackFrame {
 
 	return {
 		name: name.textContent || '',
-		lineNumber
+		lineNumber,
 	};
 }
 
 export class Debug extends Viewlet {
-
-	constructor(code: Code, private commands: Commands, private editors: Editors, private editor: Editor) {
+	constructor(
+		code: Code,
+		private commands: Commands,
+		private editors: Editors,
+		private editor: Editor
+	) {
 		super(code);
 	}
 
@@ -88,7 +92,9 @@ export class Debug extends Viewlet {
 		});
 		const portPrefix = 'Port: ';
 
-		const output = await this.waitForOutput(output => output.some(line => line.indexOf(portPrefix) >= 0));
+		const output = await this.waitForOutput(output =>
+			output.some(line => line.indexOf(portPrefix) >= 0)
+		);
 		const lastOutput = output.filter(line => line.indexOf(portPrefix) >= 0)[0];
 
 		return lastOutput ? parseInt(lastOutput.substr(portPrefix.length)) : 3000;
@@ -117,8 +123,13 @@ export class Debug extends Viewlet {
 		await this.code.waitForElement(NOT_DEBUG_STATUS_BAR);
 	}
 
-	async waitForStackFrame(func: (stackFrame: IStackFrame) => boolean, message: string): Promise<IStackFrame> {
-		const elements = await this.code.waitForElements(STACK_FRAME, true, elements => elements.some(e => func(toStackFrame(e))));
+	async waitForStackFrame(
+		func: (stackFrame: IStackFrame) => boolean,
+		message: string
+	): Promise<IStackFrame> {
+		const elements = await this.code.waitForElements(STACK_FRAME, true, elements =>
+			elements.some(e => func(toStackFrame(e)))
+		);
 		return elements.map(toStackFrame).filter(s => func(s))[0];
 	}
 
@@ -133,21 +144,31 @@ export class Debug extends Viewlet {
 
 	async waitForReplCommand(text: string, accept: (result: string) => boolean): Promise<void> {
 		await this.commands.runCommand('Debug: Focus on Debug Console View');
-		const selector = this.code.quality === Quality.Stable ? REPL_FOCUSED_TEXTAREA : REPL_FOCUSED_NATIVE_EDIT_CONTEXT;
+		const selector =
+			this.code.quality === Quality.Stable
+				? REPL_FOCUSED_TEXTAREA
+				: REPL_FOCUSED_NATIVE_EDIT_CONTEXT;
 		await this.code.waitForActiveElement(selector);
 		await this.code.waitForSetValue(selector, text);
 
 		// Wait for the keys to be picked up by the editor model such that repl evaluates what just got typed
 		await this.editor.waitForEditorContents('debug:replinput', s => s.indexOf(text) >= 0);
 		await this.code.sendKeybinding('enter', async () => {
-			await this.code.waitForElements(CONSOLE_EVALUATION_RESULT, false,
-				elements => !!elements.length && accept(elements[elements.length - 1].textContent));
+			await this.code.waitForElements(
+				CONSOLE_EVALUATION_RESULT,
+				false,
+				elements => !!elements.length && accept(elements[elements.length - 1].textContent)
+			);
 		});
 	}
 
 	// Different node versions give different number of variables. As a workaround be more relaxed when checking for variable count
 	async waitForVariableCount(count: number, alternativeCount: number): Promise<void> {
-		await this.code.waitForElements(VARIABLE, false, els => els.length === count || els.length === alternativeCount);
+		await this.code.waitForElements(
+			VARIABLE,
+			false,
+			els => els.length === count || els.length === alternativeCount
+		);
 	}
 
 	async waitForLink(): Promise<void> {
@@ -155,7 +176,9 @@ export class Debug extends Viewlet {
 	}
 
 	private async waitForOutput(fn: (output: string[]) => boolean): Promise<string[]> {
-		const elements = await this.code.waitForElements(CONSOLE_OUTPUT, false, elements => fn(elements.map(e => e.textContent)));
+		const elements = await this.code.waitForElements(CONSOLE_OUTPUT, false, elements =>
+			fn(elements.map(e => e.textContent))
+		);
 		return elements.map(e => e.textContent);
 	}
 }

@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IDisposable } from '../../../base/common/lifecycle.js';
-import { AccessibleViewType, AccessibleContentProvider, ExtensionContentProvider } from './accessibleView.js';
+import {
+	AccessibleViewType,
+	AccessibleContentProvider,
+	ExtensionContentProvider,
+} from './accessibleView.js';
 import { ContextKeyExpression } from '../../contextkey/common/contextkey.js';
 import { ServicesAccessor } from '../../instantiation/common/instantiation.js';
 
@@ -15,11 +19,13 @@ export interface IAccessibleViewImplementation {
 	/**
 	 * @returns the provider or undefined if the view should not be shown
 	 */
-	getProvider: (accessor: ServicesAccessor) => AccessibleContentProvider | ExtensionContentProvider | undefined;
+	getProvider: (
+		accessor: ServicesAccessor
+	) => AccessibleContentProvider | ExtensionContentProvider | undefined;
 	when?: ContextKeyExpression | undefined;
 }
 
-export const AccessibleViewRegistry = new class AccessibleViewRegistry {
+export const AccessibleViewRegistry = new (class AccessibleViewRegistry {
 	_implementations: IAccessibleViewImplementation[] = [];
 
 	register(implementation: IAccessibleViewImplementation): IDisposable {
@@ -30,12 +36,11 @@ export const AccessibleViewRegistry = new class AccessibleViewRegistry {
 				if (idx !== -1) {
 					this._implementations.splice(idx, 1);
 				}
-			}
+			},
 		};
 	}
 
 	getImplementations(): IAccessibleViewImplementation[] {
 		return this._implementations;
 	}
-};
-
+})();

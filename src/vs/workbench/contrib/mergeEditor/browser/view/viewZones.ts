@@ -7,7 +7,10 @@ import { $ } from '../../../../../base/browser/dom.js';
 import { CompareResult } from '../../../../../base/common/arrays.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { IObservable, IReader } from '../../../../../base/common/observable.js';
-import { ICodeEditor, IViewZoneChangeAccessor } from '../../../../../editor/browser/editorBrowser.js';
+import {
+	ICodeEditor,
+	IViewZoneChangeAccessor,
+} from '../../../../../editor/browser/editorBrowser.js';
 import { MergeEditorLineRange } from '../model/lineRange.js';
 import { DetailedLineRangeMapping } from '../model/mapping.js';
 import { ModifiedBaseRange } from '../model/modifiedBaseRange.js';
@@ -24,7 +27,7 @@ export class ViewZoneComputer {
 	constructor(
 		private readonly input1Editor: ICodeEditor,
 		private readonly input2Editor: ICodeEditor,
-		private readonly resultEditor: ICodeEditor,
+		private readonly resultEditor: ICodeEditor
 	) {
 		this.conflictActionsFactoryInput1 = new ConflictActionsFactory(this.input1Editor);
 		this.conflictActionsFactoryInput2 = new ConflictActionsFactory(this.input2Editor);
@@ -60,10 +63,7 @@ export class ViewZoneComputer {
 			(baseRange, diff) =>
 				baseRange.baseRange.intersectsOrTouches(diff.inputRange)
 					? CompareResult.neitherLessOrGreaterThan
-					: MergeEditorLineRange.compareByStart(
-						baseRange.baseRange,
-						diff.inputRange
-					)
+					: MergeEditorLineRange.compareByStart(baseRange.baseRange, diff.inputRange)
 		);
 
 		const shouldShowCodeLenses = options.codeLensesVisible;
@@ -72,18 +72,42 @@ export class ViewZoneComputer {
 		let lastModifiedBaseRange: ModifiedBaseRange | undefined = undefined;
 		let lastBaseResultDiff: DetailedLineRangeMapping | undefined = undefined;
 		for (const m of baseRangeWithStoreAndTouchingDiffs) {
-			if (shouldShowCodeLenses && m.left && (m.left.isConflicting || showNonConflictingChanges || !model.isHandled(m.left).read(reader))) {
+			if (
+				shouldShowCodeLenses &&
+				m.left &&
+				(m.left.isConflicting || showNonConflictingChanges || !model.isHandled(m.left).read(reader))
+			) {
 				const actions = new ActionsSource(viewModel, m.left);
 				if (options.shouldAlignResult || !actions.inputIsEmpty.read(reader)) {
-					input1ViewZones.push(new CommandViewZone(this.conflictActionsFactoryInput1, m.left.input1Range.startLineNumber - 1, actions.itemsInput1));
-					input2ViewZones.push(new CommandViewZone(this.conflictActionsFactoryInput2, m.left.input2Range.startLineNumber - 1, actions.itemsInput2));
+					input1ViewZones.push(
+						new CommandViewZone(
+							this.conflictActionsFactoryInput1,
+							m.left.input1Range.startLineNumber - 1,
+							actions.itemsInput1
+						)
+					);
+					input2ViewZones.push(
+						new CommandViewZone(
+							this.conflictActionsFactoryInput2,
+							m.left.input2Range.startLineNumber - 1,
+							actions.itemsInput2
+						)
+					);
 					if (options.shouldAlignBase) {
 						baseViewZones.push(new Placeholder(m.left.baseRange.startLineNumber - 1, 16));
 					}
 				}
-				const afterLineNumber = m.left.baseRange.startLineNumber + (lastBaseResultDiff?.resultingDeltaFromOriginalToModified ?? 0) - 1;
-				resultViewZones.push(new CommandViewZone(this.conflictActionsFactoryResult, afterLineNumber, actions.resultItems));
-
+				const afterLineNumber =
+					m.left.baseRange.startLineNumber +
+					(lastBaseResultDiff?.resultingDeltaFromOriginalToModified ?? 0) -
+					1;
+				resultViewZones.push(
+					new CommandViewZone(
+						this.conflictActionsFactoryResult,
+						afterLineNumber,
+						actions.resultItems
+					)
+				);
 			}
 
 			const lastResultDiff = m.rights.at(-1)!;
@@ -102,16 +126,27 @@ export class ViewZoneComputer {
 				lastModifiedBaseRange = m.left;
 				// This is a total hack.
 				alignedLines[alignedLines.length - 1].resultLine =
-					m.left.baseRange.endLineNumberExclusive
-					+ (lastBaseResultDiff ? lastBaseResultDiff.resultingDeltaFromOriginalToModified : 0);
-
+					m.left.baseRange.endLineNumberExclusive +
+					(lastBaseResultDiff ? lastBaseResultDiff.resultingDeltaFromOriginalToModified : 0);
 			} else {
-				alignedLines = [{
-					baseLine: lastResultDiff.inputRange.endLineNumberExclusive,
-					input1Line: lastResultDiff.inputRange.endLineNumberExclusive + (lastModifiedBaseRange ? (lastModifiedBaseRange.input1Range.endLineNumberExclusive - lastModifiedBaseRange.baseRange.endLineNumberExclusive) : 0),
-					input2Line: lastResultDiff.inputRange.endLineNumberExclusive + (lastModifiedBaseRange ? (lastModifiedBaseRange.input2Range.endLineNumberExclusive - lastModifiedBaseRange.baseRange.endLineNumberExclusive) : 0),
-					resultLine: lastResultDiff.outputRange.endLineNumberExclusive,
-				}];
+				alignedLines = [
+					{
+						baseLine: lastResultDiff.inputRange.endLineNumberExclusive,
+						input1Line:
+							lastResultDiff.inputRange.endLineNumberExclusive +
+							(lastModifiedBaseRange
+								? lastModifiedBaseRange.input1Range.endLineNumberExclusive -
+									lastModifiedBaseRange.baseRange.endLineNumberExclusive
+								: 0),
+						input2Line:
+							lastResultDiff.inputRange.endLineNumberExclusive +
+							(lastModifiedBaseRange
+								? lastModifiedBaseRange.input2Range.endLineNumberExclusive -
+									lastModifiedBaseRange.baseRange.endLineNumberExclusive
+								: 0),
+						resultLine: lastResultDiff.outputRange.endLineNumberExclusive,
+					},
+				];
 			}
 
 			for (const { input1Line, baseLine, input2Line, resultLine } of alignedLines) {
@@ -119,14 +154,17 @@ export class ViewZoneComputer {
 					continue;
 				}
 
-				const input1Line_ =
-					input1Line !== undefined ? input1Line + input1LinesAdded : -1;
-				const input2Line_ =
-					input2Line !== undefined ? input2Line + input2LinesAdded : -1;
+				const input1Line_ = input1Line !== undefined ? input1Line + input1LinesAdded : -1;
+				const input2Line_ = input2Line !== undefined ? input2Line + input2LinesAdded : -1;
 				const baseLine_ = baseLine + baseLinesAdded;
 				const resultLine_ = resultLine !== undefined ? resultLine + resultLinesAdded : -1;
 
-				const max = Math.max(options.shouldAlignBase ? baseLine_ : 0, input1Line_, input2Line_, options.shouldAlignResult ? resultLine_ : 0);
+				const max = Math.max(
+					options.shouldAlignBase ? baseLine_ : 0,
+					input1Line_,
+					input2Line_,
+					options.shouldAlignResult ? resultLine_ : 0
+				);
 
 				if (input1Line !== undefined) {
 					const diffInput1 = max - input1Line_;
@@ -162,7 +200,12 @@ export class ViewZoneComputer {
 			}
 		}
 
-		return new MergeEditorViewZones(input1ViewZones, input2ViewZones, baseViewZones, resultViewZones);
+		return new MergeEditorViewZones(
+			input1ViewZones,
+			input2ViewZones,
+			baseViewZones,
+			resultViewZones
+		);
 	}
 }
 
@@ -178,15 +221,19 @@ export class MergeEditorViewZones {
 		public readonly input1ViewZones: readonly MergeEditorViewZone[],
 		public readonly input2ViewZones: readonly MergeEditorViewZone[],
 		public readonly baseViewZones: readonly MergeEditorViewZone[],
-		public readonly resultViewZones: readonly MergeEditorViewZone[],
-	) { }
+		public readonly resultViewZones: readonly MergeEditorViewZone[]
+	) {}
 }
 
 /**
  * This is an abstract class to create various editor view zones.
-*/
+ */
 export abstract class MergeEditorViewZone {
-	abstract create(viewZoneChangeAccessor: IViewZoneChangeAccessor, viewZoneIdsToCleanUp: string[], disposableStore: DisposableStore): void;
+	abstract create(
+		viewZoneChangeAccessor: IViewZoneChangeAccessor,
+		viewZoneIdsToCleanUp: string[],
+		disposableStore: DisposableStore
+	): void;
 }
 
 class Spacer extends MergeEditorViewZone {
@@ -239,18 +286,22 @@ class CommandViewZone extends MergeEditorViewZone {
 	constructor(
 		private readonly conflictActionsFactory: ConflictActionsFactory,
 		private readonly lineNumber: number,
-		private readonly items: IObservable<IContentWidgetAction[]>,
+		private readonly items: IObservable<IContentWidgetAction[]>
 	) {
 		super();
 	}
 
-	override create(viewZoneChangeAccessor: IViewZoneChangeAccessor, viewZoneIdsToCleanUp: string[], disposableStore: DisposableStore): void {
+	override create(
+		viewZoneChangeAccessor: IViewZoneChangeAccessor,
+		viewZoneIdsToCleanUp: string[],
+		disposableStore: DisposableStore
+	): void {
 		disposableStore.add(
 			this.conflictActionsFactory.createWidget(
 				viewZoneChangeAccessor,
 				this.lineNumber,
 				this.items,
-				viewZoneIdsToCleanUp,
+				viewZoneIdsToCleanUp
 			)
 		);
 	}

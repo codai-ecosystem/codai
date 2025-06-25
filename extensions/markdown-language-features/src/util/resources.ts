@@ -10,4 +10,3 @@ export interface WebviewResourceProvider {
 
 	readonly cspSource: string;
 }
-

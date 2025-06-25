@@ -21,7 +21,7 @@ const enum ChCode {
 const enum State {
 	ROOT_STATE = 0,
 	DICT_STATE = 1,
-	ARR_STATE = 2
+	ARR_STATE = 2,
 }
 /**
  * A very fast plist parser
@@ -49,9 +49,12 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			while (by > 0) {
 				const chCode = content.charCodeAt(pos);
 				if (chCode === ChCode.LINE_FEED) {
-					pos++; line++; char = 0;
+					pos++;
+					line++;
+					char = 0;
 				} else {
-					pos++; char++;
+					pos++;
+					char++;
 				}
 				by--;
 			}
@@ -68,7 +71,12 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 	function skipWhitespace(): void {
 		while (pos < len) {
 			const chCode = content.charCodeAt(pos);
-			if (chCode !== ChCode.SPACE && chCode !== ChCode.TAB && chCode !== ChCode.CARRIAGE_RETURN && chCode !== ChCode.LINE_FEED) {
+			if (
+				chCode !== ChCode.SPACE &&
+				chCode !== ChCode.TAB &&
+				chCode !== ChCode.CARRIAGE_RETURN &&
+				chCode !== ChCode.LINE_FEED
+			) {
 				break;
 			}
 			advancePosBy(1);
@@ -143,7 +151,7 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 				newDict[locationKeyName] = {
 					filename: filename,
 					line: line,
-					char: char
+					char: char,
 				};
 			}
 			cur[curKey] = newDict;
@@ -158,7 +166,7 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			cur[curKey] = newArr;
 			curKey = null;
 			pushState(State.ARR_STATE, newArr);
-		}
+		},
 	};
 
 	const arrState = {
@@ -168,7 +176,7 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 				newDict[locationKeyName] = {
 					filename: filename,
 					line: line,
-					char: char
+					char: char,
 				};
 			}
 			cur.push(newDict);
@@ -178,22 +186,22 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			const newArr: any[] = [];
 			cur.push(newArr);
 			pushState(State.ARR_STATE, newArr);
-		}
+		},
 	};
-
 
 	function enterDict() {
 		if (state === State.DICT_STATE) {
 			dictState.enterDict();
 		} else if (state === State.ARR_STATE) {
 			arrState.enterDict();
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			cur = {};
 			if (locationKeyName !== null) {
 				cur[locationKeyName] = {
 					filename: filename,
 					line: line,
-					char: char
+					char: char,
 				};
 			}
 			pushState(State.DICT_STATE, cur);
@@ -204,7 +212,8 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			popState();
 		} else if (state === State.ARR_STATE) {
 			return fail('unexpected </dict>');
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			return fail('unexpected </dict>');
 		}
 	}
@@ -213,7 +222,8 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			dictState.enterArray();
 		} else if (state === State.ARR_STATE) {
 			arrState.enterArray();
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			cur = [];
 			pushState(State.ARR_STATE, cur);
 		}
@@ -223,7 +233,8 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			return fail('unexpected </array>');
 		} else if (state === State.ARR_STATE) {
 			popState();
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			return fail('unexpected </array>');
 		}
 	}
@@ -235,7 +246,8 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			curKey = val;
 		} else if (state === State.ARR_STATE) {
 			return fail('unexpected <key>');
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			return fail('unexpected <key>');
 		}
 	}
@@ -248,7 +260,8 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			curKey = null;
 		} else if (state === State.ARR_STATE) {
 			cur.push(val);
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			cur = val;
 		}
 	}
@@ -264,7 +277,8 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			curKey = null;
 		} else if (state === State.ARR_STATE) {
 			cur.push(val);
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			cur = val;
 		}
 	}
@@ -280,7 +294,8 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			curKey = null;
 		} else if (state === State.ARR_STATE) {
 			cur.push(val);
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			cur = val;
 		}
 	}
@@ -293,7 +308,8 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			curKey = null;
 		} else if (state === State.ARR_STATE) {
 			cur.push(val);
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			cur = val;
 		}
 	}
@@ -306,7 +322,8 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			curKey = null;
 		} else if (state === State.ARR_STATE) {
 			cur.push(val);
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			cur = val;
 		}
 	}
@@ -319,26 +336,35 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 			curKey = null;
 		} else if (state === State.ARR_STATE) {
 			cur.push(val);
-		} else { // ROOT_STATE
+		} else {
+			// ROOT_STATE
 			cur = val;
 		}
 	}
 
 	function escapeVal(str: string): string {
-		return str.replace(/&#([0-9]+);/g, function (_: string, m0: string) {
-			return String.fromCodePoint(parseInt(m0, 10));
-		}).replace(/&#x([0-9a-f]+);/g, function (_: string, m0: string) {
-			return String.fromCodePoint(parseInt(m0, 16));
-		}).replace(/&amp;|&lt;|&gt;|&quot;|&apos;/g, function (_: string) {
-			switch (_) {
-				case '&amp;': return '&';
-				case '&lt;': return '<';
-				case '&gt;': return '>';
-				case '&quot;': return '"';
-				case '&apos;': return '\'';
-			}
-			return _;
-		});
+		return str
+			.replace(/&#([0-9]+);/g, function (_: string, m0: string) {
+				return String.fromCodePoint(parseInt(m0, 10));
+			})
+			.replace(/&#x([0-9a-f]+);/g, function (_: string, m0: string) {
+				return String.fromCodePoint(parseInt(m0, 16));
+			})
+			.replace(/&amp;|&lt;|&gt;|&quot;|&apos;/g, function (_: string) {
+				switch (_) {
+					case '&amp;':
+						return '&';
+					case '&lt;':
+						return '<';
+					case '&gt;':
+						return '>';
+					case '&quot;':
+						return '"';
+					case '&apos;':
+						return "'";
+				}
+				return _;
+			});
 	}
 
 	interface IParsedTag {
@@ -356,7 +382,7 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
 
 		return {
 			name: r.trim(),
-			isClosed: isClosed
+			isClosed: isClosed,
 		};
 	}
 

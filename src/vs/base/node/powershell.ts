@@ -16,7 +16,7 @@ const PwshPreviewMsixRegex: RegExp = /^Microsoft.PowerShellPreview_.*/;
 const enum Arch {
 	x64,
 	x86,
-	ARM
+	ARM,
 }
 
 let processArch: Arch;
@@ -62,9 +62,7 @@ PROCESSOR_ARCHITEW6432 is undefined
 */
 let osArch: Arch;
 if (process.env['PROCESSOR_ARCHITEW6432']) {
-	osArch = process.env['PROCESSOR_ARCHITEW6432'] === 'ARM64'
-		? Arch.ARM
-		: Arch.x64;
+	osArch = process.env['PROCESSOR_ARCHITEW6432'] === 'ARM64' ? Arch.ARM : Arch.x64;
 } else if (process.env['PROCESSOR_ARCHITECTURE'] === 'ARM64') {
 	osArch = Arch.ARM;
 } else if (process.env['PROCESSOR_ARCHITECTURE'] === 'X86') {
@@ -86,7 +84,8 @@ class PossiblePowerShellExe implements IPossiblePowerShellExe {
 	constructor(
 		public readonly exePath: string,
 		public readonly displayName: string,
-		private knownToExist?: boolean) { }
+		private knownToExist?: boolean
+	) {}
 
 	public async exists(): Promise<boolean> {
 		if (this.knownToExist === undefined) {
@@ -96,9 +95,9 @@ class PossiblePowerShellExe implements IPossiblePowerShellExe {
 	}
 }
 
-function getProgramFilesPath(
-	{ useAlternateBitness = false }: { useAlternateBitness?: boolean } = {}): string | null {
-
+function getProgramFilesPath({
+	useAlternateBitness = false,
+}: { useAlternateBitness?: boolean } = {}): string | null {
 	if (!useAlternateBitness) {
 		// Just use the native system bitness
 		return process.env.ProgramFiles || null;
@@ -118,10 +117,13 @@ function getProgramFilesPath(
 	return null;
 }
 
-async function findPSCoreWindowsInstallation(
-	{ useAlternateBitness = false, findPreview = false }:
-		{ useAlternateBitness?: boolean; findPreview?: boolean } = {}): Promise<IPossiblePowerShellExe | null> {
-
+async function findPSCoreWindowsInstallation({
+	useAlternateBitness = false,
+	findPreview = false,
+}: {
+	useAlternateBitness?: boolean;
+	findPreview?: boolean;
+} = {}): Promise<IPossiblePowerShellExe | null> {
 	const programFilesPath = getProgramFilesPath({ useAlternateBitness });
 	if (!programFilesPath) {
 		return null;
@@ -130,14 +132,13 @@ async function findPSCoreWindowsInstallation(
 	const powerShellInstallBaseDir = path.join(programFilesPath, 'PowerShell');
 
 	// Ensure the base directory exists
-	if (!await pfs.SymlinkSupport.existsDirectory(powerShellInstallBaseDir)) {
+	if (!(await pfs.SymlinkSupport.existsDirectory(powerShellInstallBaseDir))) {
 		return null;
 	}
 
 	let highestSeenVersion: number = -1;
 	let pwshExePath: string | null = null;
 	for (const item of await pfs.Promises.readdir(powerShellInstallBaseDir)) {
-
 		let currentVersion: number = -1;
 		if (findPreview) {
 			// We are looking for something like "7-preview"
@@ -172,7 +173,7 @@ async function findPSCoreWindowsInstallation(
 
 		// Now look for the file
 		const exePath = path.join(powerShellInstallBaseDir, item, 'pwsh.exe');
-		if (!await pfs.SymlinkSupport.existsFile(exePath)) {
+		if (!(await pfs.SymlinkSupport.existsFile(exePath))) {
 			continue;
 		}
 
@@ -190,7 +191,9 @@ async function findPSCoreWindowsInstallation(
 	return new PossiblePowerShellExe(pwshExePath, `PowerShell${preview}${bitness}`, true);
 }
 
-async function findPSCoreMsix({ findPreview }: { findPreview?: boolean } = {}): Promise<IPossiblePowerShellExe | null> {
+async function findPSCoreMsix({
+	findPreview,
+}: { findPreview?: boolean } = {}): Promise<IPossiblePowerShellExe | null> {
 	// We can't proceed if there's no LOCALAPPDATA path
 	if (!process.env.LOCALAPPDATA) {
 		return null;
@@ -199,7 +202,7 @@ async function findPSCoreMsix({ findPreview }: { findPreview?: boolean } = {}): 
 	// Find the base directory for MSIX application exe shortcuts
 	const msixAppDir = path.join(process.env.LOCALAPPDATA, 'Microsoft', 'WindowsApps');
 
-	if (!await pfs.SymlinkSupport.existsDirectory(msixAppDir)) {
+	if (!(await pfs.SymlinkSupport.existsDirectory(msixAppDir))) {
 		return null;
 	}
 
@@ -237,7 +240,10 @@ function findWinPS(): IPossiblePowerShellExe | null {
 	const winPSPath = path.join(
 		process.env.windir!,
 		processArch === Arch.x86 && osArch !== Arch.x86 ? 'SysNative' : 'System32',
-		'WindowsPowerShell', 'v1.0', 'powershell.exe');
+		'WindowsPowerShell',
+		'v1.0',
+		'powershell.exe'
+	);
 
 	return new PossiblePowerShellExe(winPSPath, 'Windows PowerShell', true);
 }
@@ -320,8 +326,8 @@ export async function* enumeratePowerShellInstallations(): AsyncIterable<IPowerS
 }
 
 /**
-* Returns the first available PowerShell executable found in the search order.
-*/
+ * Returns the first available PowerShell executable found in the search order.
+ */
 export async function getFirstAvailablePowerShellInstallation(): Promise<IPowerShellExeDetails | null> {
 	for await (const pwsh of enumeratePowerShellInstallations()) {
 		return pwsh;

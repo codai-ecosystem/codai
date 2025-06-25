@@ -6,18 +6,20 @@
 import * as vscode from 'vscode';
 import { MarkdownPreviewManager } from './previewManager';
 
-
 export const enum MarkdownPreviewSecurityLevel {
 	Strict = 0,
 	AllowInsecureContent = 1,
 	AllowScriptsAndAllContent = 2,
-	AllowInsecureLocalContent = 3
+	AllowInsecureLocalContent = 3,
 }
 
 export interface ContentSecurityPolicyArbiter {
 	getSecurityLevelForResource(resource: vscode.Uri): MarkdownPreviewSecurityLevel;
 
-	setSecurityLevelForResource(resource: vscode.Uri, level: MarkdownPreviewSecurityLevel): Thenable<void>;
+	setSecurityLevelForResource(
+		resource: vscode.Uri,
+		level: MarkdownPreviewSecurityLevel
+	): Thenable<void>;
 
 	shouldAllowSvgsForResource(resource: vscode.Uri): void;
 
@@ -34,29 +36,43 @@ export class ExtensionContentSecurityPolicyArbiter implements ContentSecurityPol
 	constructor(
 		private readonly _globalState: vscode.Memento,
 		private readonly _workspaceState: vscode.Memento
-	) { }
+	) {}
 
 	public getSecurityLevelForResource(resource: vscode.Uri): MarkdownPreviewSecurityLevel {
 		// Use new security level setting first
-		const level = this._globalState.get<MarkdownPreviewSecurityLevel | undefined>(this._security_level_key + this._getRoot(resource), undefined);
+		const level = this._globalState.get<MarkdownPreviewSecurityLevel | undefined>(
+			this._security_level_key + this._getRoot(resource),
+			undefined
+		);
 		if (typeof level !== 'undefined') {
 			return level;
 		}
 
 		// Fallback to old trusted workspace setting
-		if (this._globalState.get<boolean>(this._old_trusted_workspace_key + this._getRoot(resource), false)) {
+		if (
+			this._globalState.get<boolean>(
+				this._old_trusted_workspace_key + this._getRoot(resource),
+				false
+			)
+		) {
 			return MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent;
 		}
 		return MarkdownPreviewSecurityLevel.Strict;
 	}
 
-	public setSecurityLevelForResource(resource: vscode.Uri, level: MarkdownPreviewSecurityLevel): Thenable<void> {
+	public setSecurityLevelForResource(
+		resource: vscode.Uri,
+		level: MarkdownPreviewSecurityLevel
+	): Thenable<void> {
 		return this._globalState.update(this._security_level_key + this._getRoot(resource), level);
 	}
 
 	public shouldAllowSvgsForResource(resource: vscode.Uri) {
 		const securityLevel = this.getSecurityLevelForResource(resource);
-		return securityLevel === MarkdownPreviewSecurityLevel.AllowInsecureContent || securityLevel === MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent;
+		return (
+			securityLevel === MarkdownPreviewSecurityLevel.AllowInsecureContent ||
+			securityLevel === MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent
+		);
 	}
 
 	public shouldDisableSecurityWarnings(): boolean {
@@ -84,11 +100,10 @@ export class ExtensionContentSecurityPolicyArbiter implements ContentSecurityPol
 }
 
 export class PreviewSecuritySelector {
-
 	public constructor(
 		private readonly _cspArbiter: ContentSecurityPolicyArbiter,
 		private readonly _webviewManager: MarkdownPreviewManager
-	) { }
+	) {}
 
 	public async showSecuritySelectorForResource(resource: vscode.Uri): Promise<void> {
 		interface PreviewSecurityPickItem extends vscode.QuickPickItem {
@@ -104,45 +119,70 @@ export class PreviewSecuritySelector {
 			[
 				{
 					type: MarkdownPreviewSecurityLevel.Strict,
-					label: markActiveWhen(currentSecurityLevel === MarkdownPreviewSecurityLevel.Strict) + vscode.l10n.t("Strict"),
-					description: vscode.l10n.t("Only load secure content"),
-				}, {
+					label:
+						markActiveWhen(currentSecurityLevel === MarkdownPreviewSecurityLevel.Strict) +
+						vscode.l10n.t('Strict'),
+					description: vscode.l10n.t('Only load secure content'),
+				},
+				{
 					type: MarkdownPreviewSecurityLevel.AllowInsecureLocalContent,
-					label: markActiveWhen(currentSecurityLevel === MarkdownPreviewSecurityLevel.AllowInsecureLocalContent) + vscode.l10n.t("Allow insecure local content"),
-					description: vscode.l10n.t("Enable loading content over http served from localhost"),
-				}, {
+					label:
+						markActiveWhen(
+							currentSecurityLevel === MarkdownPreviewSecurityLevel.AllowInsecureLocalContent
+						) + vscode.l10n.t('Allow insecure local content'),
+					description: vscode.l10n.t('Enable loading content over http served from localhost'),
+				},
+				{
 					type: MarkdownPreviewSecurityLevel.AllowInsecureContent,
-					label: markActiveWhen(currentSecurityLevel === MarkdownPreviewSecurityLevel.AllowInsecureContent) + vscode.l10n.t("Allow insecure content"),
-					description: vscode.l10n.t("Enable loading content over http"),
-				}, {
+					label:
+						markActiveWhen(
+							currentSecurityLevel === MarkdownPreviewSecurityLevel.AllowInsecureContent
+						) + vscode.l10n.t('Allow insecure content'),
+					description: vscode.l10n.t('Enable loading content over http'),
+				},
+				{
 					type: MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent,
-					label: markActiveWhen(currentSecurityLevel === MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent) + vscode.l10n.t("Disable"),
-					description: vscode.l10n.t("Allow all content and script execution. Not recommended"),
-				}, {
+					label:
+						markActiveWhen(
+							currentSecurityLevel === MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent
+						) + vscode.l10n.t('Disable'),
+					description: vscode.l10n.t('Allow all content and script execution. Not recommended'),
+				},
+				{
 					type: 'moreinfo',
-					label: vscode.l10n.t("More Information"),
-					description: ''
-				}, {
+					label: vscode.l10n.t('More Information'),
+					description: '',
+				},
+				{
 					type: 'toggle',
 					label: this._cspArbiter.shouldDisableSecurityWarnings()
-						? vscode.l10n.t("Enable preview security warnings in this workspace")
-						: vscode.l10n.t("Disable preview security warning in this workspace"),
-					description: vscode.l10n.t("Does not affect the content security level")
+						? vscode.l10n.t('Enable preview security warnings in this workspace')
+						: vscode.l10n.t('Disable preview security warning in this workspace'),
+					description: vscode.l10n.t('Does not affect the content security level'),
 				},
-			], {
-			placeHolder: vscode.l10n.t("Select security settings for Markdown previews in this workspace"),
-		});
+			],
+			{
+				placeHolder: vscode.l10n.t(
+					'Select security settings for Markdown previews in this workspace'
+				),
+			}
+		);
 		if (!selection) {
 			return;
 		}
 
 		if (selection.type === 'moreinfo') {
-			vscode.commands.executeCommand('vscode.open', vscode.Uri.parse('https://go.microsoft.com/fwlink/?linkid=854414'));
+			vscode.commands.executeCommand(
+				'vscode.open',
+				vscode.Uri.parse('https://go.microsoft.com/fwlink/?linkid=854414')
+			);
 			return;
 		}
 
 		if (selection.type === 'toggle') {
-			this._cspArbiter.setShouldDisableSecurityWarning(!this._cspArbiter.shouldDisableSecurityWarnings());
+			this._cspArbiter.setShouldDisableSecurityWarning(
+				!this._cspArbiter.shouldDisableSecurityWarnings()
+			);
 			this._webviewManager.refresh();
 			return;
 		} else {

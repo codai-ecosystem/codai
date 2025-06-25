@@ -112,10 +112,23 @@ export interface IWalkthroughStep {
 	readonly title: string;
 	readonly description: string | undefined;
 	readonly media:
-	| { image: string | { dark: string; light: string; hc: string }; altText: string; markdown?: never; svg?: never; video?: never }
-	| { markdown: string; image?: never; svg?: never; video?: never }
-	| { svg: string; altText: string; markdown?: never; image?: never; video?: never }
-	| { video: string | { dark: string; light: string; hc: string }; poster: string | { dark: string; light: string; hc: string }; altText: string; markdown?: never; image?: never; svg?: never };
+		| {
+				image: string | { dark: string; light: string; hc: string };
+				altText: string;
+				markdown?: never;
+				svg?: never;
+				video?: never;
+		  }
+		| { markdown: string; image?: never; svg?: never; video?: never }
+		| { svg: string; altText: string; markdown?: never; image?: never; video?: never }
+		| {
+				video: string | { dark: string; light: string; hc: string };
+				poster: string | { dark: string; light: string; hc: string };
+				altText: string;
+				markdown?: never;
+				image?: never;
+				svg?: never;
+		  };
 	readonly completionEvents?: string[];
 	/** @deprecated use `completionEvents: 'onCommand:...'` */
 	readonly doneOn?: { command: string };
@@ -234,17 +247,28 @@ export interface IExtensionCapabilities {
 	readonly untrustedWorkspaces?: ExtensionUntrustedWorkspaceSupport;
 }
 
-
 export const ALL_EXTENSION_KINDS: readonly ExtensionKind[] = ['ui', 'workspace', 'web'];
 
 export type LimitedWorkspaceSupportType = 'limited';
 export type ExtensionUntrustedWorkspaceSupportType = boolean | LimitedWorkspaceSupportType;
-export type ExtensionUntrustedWorkspaceSupport = { supported: true } | { supported: false; description: string } | { supported: LimitedWorkspaceSupportType; description: string; restrictedConfigurations?: string[] };
+export type ExtensionUntrustedWorkspaceSupport =
+	| { supported: true }
+	| { supported: false; description: string }
+	| {
+			supported: LimitedWorkspaceSupportType;
+			description: string;
+			restrictedConfigurations?: string[];
+	  };
 
 export type ExtensionVirtualWorkspaceSupportType = boolean | LimitedWorkspaceSupportType;
-export type ExtensionVirtualWorkspaceSupport = boolean | { supported: true } | { supported: false | LimitedWorkspaceSupportType; description: string };
+export type ExtensionVirtualWorkspaceSupport =
+	| boolean
+	| { supported: true }
+	| { supported: false | LimitedWorkspaceSupportType; description: string };
 
-export function getWorkspaceSupportTypeMessage(supportType: ExtensionUntrustedWorkspaceSupport | ExtensionVirtualWorkspaceSupport | undefined): string | undefined {
+export function getWorkspaceSupportTypeMessage(
+	supportType: ExtensionUntrustedWorkspaceSupport | ExtensionVirtualWorkspaceSupport | undefined
+): string | undefined {
 	if (typeof supportType === 'object' && supportType !== null) {
 		if (supportType.supported !== true) {
 			return supportType.description;
@@ -252,7 +276,6 @@ export function getWorkspaceSupportTypeMessage(supportType: ExtensionUntrustedWo
 	}
 	return undefined;
 }
-
 
 export interface IExtensionIdentifier {
 	id: string;
@@ -317,7 +340,7 @@ export type IExtensionManifest = Readonly<IRelaxedExtensionManifest>;
 
 export const enum ExtensionType {
 	System,
-	User
+	User,
 }
 
 export const enum TargetPlatform {
@@ -386,9 +409,12 @@ export class ExtensionIdentifier {
 		this._lower = value.toLowerCase();
 	}
 
-	public static equals(a: ExtensionIdentifier | string | null | undefined, b: ExtensionIdentifier | string | null | undefined) {
+	public static equals(
+		a: ExtensionIdentifier | string | null | undefined,
+		b: ExtensionIdentifier | string | null | undefined
+	) {
 		if (typeof a === 'undefined' || a === null) {
-			return (typeof b === 'undefined' || b === null);
+			return typeof b === 'undefined' || b === null;
 		}
 		if (typeof b === 'undefined' || b === null) {
 			return false;
@@ -396,13 +422,13 @@ export class ExtensionIdentifier {
 		if (typeof a === 'string' || typeof b === 'string') {
 			// At least one of the arguments is an extension id in string form,
 			// so we have to use the string comparison which ignores case.
-			const aValue = (typeof a === 'string' ? a : a.value);
-			const bValue = (typeof b === 'string' ? b : b.value);
+			const aValue = typeof a === 'string' ? a : a.value;
+			const bValue = typeof b === 'string' ? b : b.value;
 			return strings.equalsIgnoreCase(aValue, bValue);
 		}
 
 		// Now we know both arguments are ExtensionIdentifier
-		return (a._lower === b._lower);
+		return a._lower === b._lower;
 	}
 
 	/**
@@ -417,7 +443,6 @@ export class ExtensionIdentifier {
 }
 
 export class ExtensionIdentifierSet {
-
 	private readonly _set = new Set<string>();
 
 	public get size(): number {
@@ -446,7 +471,6 @@ export class ExtensionIdentifierSet {
 }
 
 export class ExtensionIdentifierMap<T> {
-
 	private readonly _map = new Map<string, T>();
 
 	public clear(): void {
@@ -486,11 +510,13 @@ export class ExtensionIdentifierMap<T> {
  * An error that is clearly from an extension, identified by the `ExtensionIdentifier`
  */
 export class ExtensionError extends Error {
-
 	readonly extension: ExtensionIdentifier;
 
 	constructor(extensionIdentifier: ExtensionIdentifier, cause: Error, message?: string) {
-		super(`Error in extension ${ExtensionIdentifier.toKey(extensionIdentifier)}: ${message ?? cause.message}`, { cause });
+		super(
+			`Error in extension ${ExtensionIdentifier.toKey(extensionIdentifier)}: ${message ?? cause.message}`,
+			{ cause }
+		);
 		this.name = 'ExtensionError';
 		this.extension = extensionIdentifier;
 	}
@@ -516,14 +542,21 @@ export function isApplicationScopedExtension(manifest: IExtensionManifest): bool
 }
 
 export function isLanguagePackExtension(manifest: IExtensionManifest): boolean {
-	return manifest.contributes && manifest.contributes.localizations ? manifest.contributes.localizations.length > 0 : false;
+	return manifest.contributes && manifest.contributes.localizations
+		? manifest.contributes.localizations.length > 0
+		: false;
 }
 
 export function isAuthenticationProviderExtension(manifest: IExtensionManifest): boolean {
-	return manifest.contributes && manifest.contributes.authentication ? manifest.contributes.authentication.length > 0 : false;
+	return manifest.contributes && manifest.contributes.authentication
+		? manifest.contributes.authentication.length > 0
+		: false;
 }
 
-export function isResolverExtension(manifest: IExtensionManifest, remoteAuthority: string | undefined): boolean {
+export function isResolverExtension(
+	manifest: IExtensionManifest,
+	remoteAuthority: string | undefined
+): boolean {
 	if (remoteAuthority) {
 		const activationEvent = `onResolveRemoteAuthority:${getRemoteName(remoteAuthority)}`;
 		return !!manifest.activationEvents?.includes(activationEvent);
@@ -531,7 +564,9 @@ export function isResolverExtension(manifest: IExtensionManifest, remoteAuthorit
 	return false;
 }
 
-export function parseApiProposals(enabledApiProposals: string[]): { proposalName: string; version?: number }[] {
+export function parseApiProposals(
+	enabledApiProposals: string[]
+): { proposalName: string; version?: number }[] {
 	return enabledApiProposals.map(proposal => {
 		const [proposalName, version] = proposal.split('@');
 		return { proposalName, version: version ? parseInt(version) : undefined };
@@ -542,7 +577,9 @@ export function parseEnabledApiProposalNames(enabledApiProposals: string[]): str
 	return enabledApiProposals.map(proposal => proposal.split('@')[0]);
 }
 
-export const IBuiltinExtensionsScannerService = createDecorator<IBuiltinExtensionsScannerService>('IBuiltinExtensionsScannerService');
+export const IBuiltinExtensionsScannerService = createDecorator<IBuiltinExtensionsScannerService>(
+	'IBuiltinExtensionsScannerService'
+);
 export interface IBuiltinExtensionsScannerService {
 	readonly _serviceBrand: undefined;
 	scanBuiltinExtensions(): Promise<IExtension[]>;

@@ -41,8 +41,8 @@ export class DeployAgent extends BaseAgent {
 			metadata: {
 				deployType,
 				actionsGenerated: actions.length,
-				contextItems: context.length
-			}
+				contextItems: context.length,
+			},
 		};
 	}
 
@@ -55,33 +55,56 @@ export class DeployAgent extends BaseAgent {
 				web: { status: 'not_deployed', url: null },
 				mobile: { status: 'not_deployed', builds: [] },
 				desktop: { status: 'not_deployed', packages: [] },
-				cloud: { status: 'not_deployed', services: [] }
-			}
+				cloud: { status: 'not_deployed', services: [] },
+			},
 		};
 	}
 
 	private determineDeployType(message: string): string {
 		const lowercaseMessage = message.toLowerCase();
 
-		if (lowercaseMessage.includes('web') || lowercaseMessage.includes('website') || lowercaseMessage.includes('vercel') || lowercaseMessage.includes('netlify')) {
+		if (
+			lowercaseMessage.includes('web') ||
+			lowercaseMessage.includes('website') ||
+			lowercaseMessage.includes('vercel') ||
+			lowercaseMessage.includes('netlify')
+		) {
 			return 'web';
 		}
-		if (lowercaseMessage.includes('mobile') || lowercaseMessage.includes('app store') || lowercaseMessage.includes('play store')) {
+		if (
+			lowercaseMessage.includes('mobile') ||
+			lowercaseMessage.includes('app store') ||
+			lowercaseMessage.includes('play store')
+		) {
 			return 'mobile';
 		}
-		if (lowercaseMessage.includes('desktop') || lowercaseMessage.includes('electron') || lowercaseMessage.includes('tauri')) {
+		if (
+			lowercaseMessage.includes('desktop') ||
+			lowercaseMessage.includes('electron') ||
+			lowercaseMessage.includes('tauri')
+		) {
 			return 'desktop';
 		}
 		if (lowercaseMessage.includes('docker') || lowercaseMessage.includes('container')) {
 			return 'docker';
 		}
-		if (lowercaseMessage.includes('cloud') || lowercaseMessage.includes('aws') || lowercaseMessage.includes('azure') || lowercaseMessage.includes('gcp')) {
+		if (
+			lowercaseMessage.includes('cloud') ||
+			lowercaseMessage.includes('aws') ||
+			lowercaseMessage.includes('azure') ||
+			lowercaseMessage.includes('gcp')
+		) {
 			return 'cloud';
 		}
 
 		return 'general';
 	}
-	private async deployWeb(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async deployWeb(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a deployment agent responsible for web application deployment. Your task is to:
 1. Set up static hosting and CDN configurations
 2. Configure CI/CD pipelines for automated deployments
@@ -110,19 +133,19 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'vercel.json',
-			content: this.generateVercelConfig()
+			content: this.generateVercelConfig(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: '.github/workflows/deploy.yml',
-			content: this.generateGitHubActionsWorkflow()
+			content: this.generateGitHubActionsWorkflow(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: 'deploy.sh',
-			content: this.generateDeployScript()
+			content: this.generateDeployScript(),
 		});
 
 		return `🌐 **Web Deployment Ready**
@@ -161,7 +184,12 @@ ${aiResponse}
 - Deploy: \`./deploy.sh\`
 - Preview: \`npm run preview\``;
 	}
-	private async deployMobile(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async deployMobile(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a deployment agent responsible for mobile application deployment. Your task is to:
 1. Set up app store deployment and distribution pipelines
 2. Configure code signing and certificates
@@ -189,13 +217,13 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'eas.json',
-			content: this.generateEASConfig()
+			content: this.generateEASConfig(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: 'app.json',
-			content: this.generateAppConfig()
+			content: this.generateAppConfig(),
 		});
 
 		return `📱 **Mobile Deployment Setup**
@@ -238,7 +266,12 @@ ${aiResponse}
 - App icons and screenshots
 - App store descriptions`;
 	}
-	private async deployDesktop(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async deployDesktop(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a deployment agent responsible for desktop application deployment. Your task is to:
 1. Set up cross-platform desktop distribution
 2. Configure code signing for Windows, macOS, and Linux
@@ -266,13 +299,13 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'tauri.conf.json',
-			content: this.generateTauriConfig()
+			content: this.generateTauriConfig(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: 'src-tauri/Cargo.toml',
-			content: this.generateCargoToml()
+			content: this.generateCargoToml(),
 		});
 
 		return `🖥️ **Desktop Deployment Setup**
@@ -316,7 +349,12 @@ ${aiResponse}
 - Permission-based API access
 - CSP (Content Security Policy)`;
 	}
-	private async deployDocker(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async deployDocker(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a deployment agent responsible for containerized deployment with Docker. Your task is to:
 1. Create optimized Docker configurations
 2. Set up multi-stage builds for production
@@ -344,19 +382,19 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'Dockerfile',
-			content: this.generateDockerfile()
+			content: this.generateDockerfile(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: 'docker-compose.yml',
-			content: this.generateDockerCompose()
+			content: this.generateDockerCompose(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: '.dockerignore',
-			content: this.generateDockerIgnore()
+			content: this.generateDockerIgnore(),
 		});
 
 		return `🐳 **Docker Deployment Ready**
@@ -398,7 +436,12 @@ ${aiResponse}
 - Logging and monitoring
 - Backup and recovery`;
 	}
-	private async deployCloud(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async deployCloud(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a deployment agent responsible for cloud infrastructure deployment. Your task is to:
 1. Design scalable cloud architecture
 2. Set up Infrastructure as Code (IaC) with Terraform/CloudFormation
@@ -426,13 +469,13 @@ Please provide:
 		actions.push({
 			type: 'createFile',
 			target: 'terraform/main.tf',
-			content: this.generateTerraformConfig()
+			content: this.generateTerraformConfig(),
 		});
 
 		actions.push({
 			type: 'createFile',
 			target: 'k8s/deployment.yaml',
-			content: this.generateKubernetesDeployment()
+			content: this.generateKubernetesDeployment(),
 		});
 
 		return `☁️ **Cloud Deployment Infrastructure**
@@ -483,7 +526,12 @@ ${aiResponse}
 - Performance monitoring
 - Uptime monitoring`;
 	}
-	private async analyzeDeploymentRequirements(message: string, intentId: string, context: string[], actions: AgentAction[]): Promise<string> {
+	private async analyzeDeploymentRequirements(
+		message: string,
+		intentId: string,
+		context: string[],
+		actions: AgentAction[]
+	): Promise<string> {
 		const systemPrompt = `You are a deployment analysis agent responsible for analyzing deployment requirements. Your task is to:
 1. Analyze project requirements and constraints
 2. Suggest optimal deployment strategies
@@ -565,29 +613,33 @@ ${aiResponse}
 
 	// Helper methods for generating deployment configurations
 	private generateVercelConfig(): string {
-		return JSON.stringify({
-			"version": 2,
-			"builds": [
-				{
-					"src": "package.json",
-					"use": "@vercel/node"
-				}
-			],
-			"routes": [
-				{
-					"src": "/(.*)",
-					"dest": "/"
-				}
-			],
-			"env": {
-				"NODE_ENV": "production"
+		return JSON.stringify(
+			{
+				version: 2,
+				builds: [
+					{
+						src: 'package.json',
+						use: '@vercel/node',
+					},
+				],
+				routes: [
+					{
+						src: '/(.*)',
+						dest: '/',
+					},
+				],
+				env: {
+					NODE_ENV: 'production',
+				},
+				build: {
+					env: {
+						NODE_ENV: 'production',
+					},
+				},
 			},
-			"build": {
-				"env": {
-					"NODE_ENV": "production"
-				}
-			}
-		}, null, 2);
+			null,
+			2
+		);
 	}
 
 	private generateGitHubActionsWorkflow(): string {
@@ -670,134 +722,144 @@ echo "✅ Deployment complete!"`;
 	}
 
 	private generateEASConfig(): string {
-		return JSON.stringify({
-			"cli": {
-				"version": ">= 3.0.0"
-			},
-			"build": {
-				"development": {
-					"developmentClient": true,
-					"distribution": "internal"
+		return JSON.stringify(
+			{
+				cli: {
+					version: '>= 3.0.0',
 				},
-				"preview": {
-					"distribution": "internal"
+				build: {
+					development: {
+						developmentClient: true,
+						distribution: 'internal',
+					},
+					preview: {
+						distribution: 'internal',
+					},
+					production: {},
 				},
-				"production": {}
+				submit: {
+					production: {},
+				},
 			},
-			"submit": {
-				"production": {}
-			}
-		}, null, 2);
+			null,
+			2
+		);
 	}
 
 	private generateAppConfig(): string {
-		return JSON.stringify({
-			"expo": {
-				"name": "AIDE Mobile App",
-				"slug": "aide-mobile",
-				"version": "1.0.0",
-				"orientation": "portrait",
-				"icon": "./assets/icon.png",
-				"userInterfaceStyle": "light",
-				"splash": {
-					"image": "./assets/splash.png",
-					"resizeMode": "contain",
-					"backgroundColor": "#ffffff"
-				},
-				"assetBundlePatterns": [
-					"**/*"
-				],
-				"ios": {
-					"supportsTablet": true,
-					"bundleIdentifier": "com.aide.mobile"
-				},
-				"android": {
-					"adaptiveIcon": {
-						"foregroundImage": "./assets/adaptive-icon.png",
-						"backgroundColor": "#FFFFFF"
+		return JSON.stringify(
+			{
+				expo: {
+					name: 'AIDE Mobile App',
+					slug: 'aide-mobile',
+					version: '1.0.0',
+					orientation: 'portrait',
+					icon: './assets/icon.png',
+					userInterfaceStyle: 'light',
+					splash: {
+						image: './assets/splash.png',
+						resizeMode: 'contain',
+						backgroundColor: '#ffffff',
 					},
-					"package": "com.aide.mobile"
+					assetBundlePatterns: ['**/*'],
+					ios: {
+						supportsTablet: true,
+						bundleIdentifier: 'com.aide.mobile',
+					},
+					android: {
+						adaptiveIcon: {
+							foregroundImage: './assets/adaptive-icon.png',
+							backgroundColor: '#FFFFFF',
+						},
+						package: 'com.aide.mobile',
+					},
+					web: {
+						favicon: './assets/favicon.png',
+					},
 				},
-				"web": {
-					"favicon": "./assets/favicon.png"
-				}
-			}
-		}, null, 2);
+			},
+			null,
+			2
+		);
 	}
 
 	private generateTauriConfig(): string {
-		return JSON.stringify({
-			"build": {
-				"beforeBuildCommand": "npm run build",
-				"beforeDevCommand": "npm run dev",
-				"devPath": "http://localhost:3000",
-				"distDir": "../dist"
-			},
-			"package": {
-				"productName": "AIDE Desktop",
-				"version": "1.0.0"
-			},
-			"tauri": {
-				"allowlist": {
-					"all": false,
-					"shell": {
-						"all": false,
-						"open": true
-					},
-					"fs": {
-						"all": false,
-						"readFile": true,
-						"writeFile": true,
-						"scope": ["$DOCUMENT/*", "$DESKTOP/*"]
-					}
+		return JSON.stringify(
+			{
+				build: {
+					beforeBuildCommand: 'npm run build',
+					beforeDevCommand: 'npm run dev',
+					devPath: 'http://localhost:3000',
+					distDir: '../dist',
 				},
-				"bundle": {
-					"active": true,
-					"category": "DeveloperTool",
-					"copyright": "",
-					"externalBin": [],
-					"icon": [
-						"icons/32x32.png",
-						"icons/128x128.png",
-						"icons/128x128@2x.png",
-						"icons/icon.icns",
-						"icons/icon.ico"
+				package: {
+					productName: 'AIDE Desktop',
+					version: '1.0.0',
+				},
+				tauri: {
+					allowlist: {
+						all: false,
+						shell: {
+							all: false,
+							open: true,
+						},
+						fs: {
+							all: false,
+							readFile: true,
+							writeFile: true,
+							scope: ['$DOCUMENT/*', '$DESKTOP/*'],
+						},
+					},
+					bundle: {
+						active: true,
+						category: 'DeveloperTool',
+						copyright: '',
+						externalBin: [],
+						icon: [
+							'icons/32x32.png',
+							'icons/128x128.png',
+							'icons/128x128@2x.png',
+							'icons/icon.icns',
+							'icons/icon.ico',
+						],
+						identifier: 'com.aide.desktop',
+						longDescription: '',
+						macOS: {
+							entitlements: null,
+							exceptionDomain: '',
+							frameworks: [],
+							providerShortName: null,
+							signingIdentity: null,
+						},
+						resources: [],
+						shortDescription: '',
+						targets: 'all',
+						windows: {
+							certificateThumbprint: null,
+							digestAlgorithm: 'sha256',
+							timestampUrl: '',
+						},
+					},
+					security: {
+						csp: null,
+					},
+					updater: {
+						active: false,
+					},
+					windows: [
+						{
+							fullscreen: false,
+							height: 600,
+							resizable: true,
+							title: 'AIDE Desktop',
+							width: 800,
+						},
 					],
-					"identifier": "com.aide.desktop",
-					"longDescription": "",
-					"macOS": {
-						"entitlements": null,
-						"exceptionDomain": "",
-						"frameworks": [],
-						"providerShortName": null,
-						"signingIdentity": null
-					},
-					"resources": [],
-					"shortDescription": "",
-					"targets": "all",
-					"windows": {
-						"certificateThumbprint": null,
-						"digestAlgorithm": "sha256",
-						"timestampUrl": ""
-					}
 				},
-				"security": {
-					"csp": null
-				},
-				"updater": {
-					"active": false
-				},
-				"windows": [
-					{
-						"fullscreen": false,
-						"height": 600,
-						"resizable": true,
-						"title": "AIDE Desktop",
-						"width": 800
-					}
-				]
-			}
-		}, null, 2);
+			},
+			null,
+			2
+		);
 	}
 
 	private generateCargoToml(): string {

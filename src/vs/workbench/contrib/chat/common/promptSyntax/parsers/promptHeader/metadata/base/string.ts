@@ -7,7 +7,10 @@ import { PromptMetadataRecord } from './record.js';
 import { localize } from '../../../../../../../../../nls.js';
 import { PromptMetadataDiagnostic, PromptMetadataError } from '../../diagnostics.js';
 import { FrontMatterSequence } from '../../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/frontMatterSequence.js';
-import { FrontMatterRecord, FrontMatterString } from '../../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
+import {
+	FrontMatterRecord,
+	FrontMatterString,
+} from '../../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
 
 /**
  * Base class for all metadata records with a `string` value.
@@ -25,11 +28,7 @@ export abstract class PromptStringMetadata extends PromptMetadataRecord {
 		return this.valueToken?.cleanText;
 	}
 
-	constructor(
-		expectedRecordName: string,
-		recordToken: FrontMatterRecord,
-		languageId: string,
-	) {
+	constructor(expectedRecordName: string, recordToken: FrontMatterRecord, languageId: string) {
 		super(expectedRecordName, recordToken, languageId);
 	}
 
@@ -41,8 +40,8 @@ export abstract class PromptStringMetadata extends PromptMetadataRecord {
 
 		// validate that the record value is a string or a generic sequence
 		// of tokens that can be interpreted as a string without quotes
-		const isString = (valueToken instanceof FrontMatterString);
-		const isSequence = (valueToken instanceof FrontMatterSequence);
+		const isString = valueToken instanceof FrontMatterString;
+		const isSequence = valueToken instanceof FrontMatterSequence;
 		if (isString || isSequence) {
 			this.valueToken = valueToken;
 			return this.issues;
@@ -56,9 +55,9 @@ export abstract class PromptStringMetadata extends PromptMetadataRecord {
 					"The '{0}' metadata must be a '{1}', got '{2}'.",
 					this.recordName,
 					'string',
-					valueToken.valueTypeName.toString(),
-				),
-			),
+					valueToken.valueTypeName.toString()
+				)
+			)
 		);
 
 		delete this.valueToken;

@@ -8,7 +8,10 @@ import { ILogService } from '../../../../../../platform/log/common/log.js';
 import { asBoolean } from '../../../../../../platform/prompts/common/config.js';
 import { IWorkbenchContribution } from '../../../../../common/contributions.js';
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
-import { CONFIG_KEY, PROMPT_LOCATIONS_CONFIG_KEY } from '../../../../../../platform/prompts/common/prompts.js';
+import {
+	CONFIG_KEY,
+	PROMPT_LOCATIONS_CONFIG_KEY,
+} from '../../../../../../platform/prompts/common/prompts.js';
 
 /**
  * Contribution that migrates the old config setting value to a new one.
@@ -18,13 +21,12 @@ import { CONFIG_KEY, PROMPT_LOCATIONS_CONFIG_KEY } from '../../../../../../platf
 export class ConfigMigration implements IWorkbenchContribution {
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IConfigurationService private readonly configService: IConfigurationService,
+		@IConfigurationService private readonly configService: IConfigurationService
 	) {
 		// migrate the old config setting value to a new one
-		this.migrateConfig()
-			.catch((error) => {
-				this.logService.warn('failed to migrate config setting value.', error);
-			});
+		this.migrateConfig().catch(error => {
+			this.logService.warn('failed to migrate config setting value.', error);
+		});
 	}
 
 	/**
@@ -34,20 +36,19 @@ export class ConfigMigration implements IWorkbenchContribution {
 		const value = await this.configService.getValue(CONFIG_KEY);
 
 		// if setting is not set, nothing to do
-		if ((value === undefined) || (value === null)) {
+		if (value === undefined || value === null) {
 			return;
 		}
 
 		// if the setting value is a boolean, we don't need to do
 		// anything since it is already a valid configuration value
-		if ((typeof value === 'boolean') || (asBoolean(value) !== undefined)) {
+		if (typeof value === 'boolean' || asBoolean(value) !== undefined) {
 			return;
 		}
 
 		// in the old setting logic an array of strings was treated
 		// as a list of locations, so we need to migrate that
 		if (Array.isArray(value)) {
-
 			// copy array values into a map of paths
 			const locationsValue: Record<string, boolean> = {};
 			for (const filePath of value) {
@@ -73,17 +74,14 @@ export class ConfigMigration implements IWorkbenchContribution {
 			// sanity check on the contents of value variable - while
 			// we've handled the 'null' case above this assertion is
 			// here to prevent churn when this block is moved around
-			assert(
-				value !== null,
-				'Object value must not be a null.',
-			);
+			assert(value !== null, 'Object value must not be a null.');
 
 			// copy object values into a map of paths
 			const locationsValue: Record<string, boolean> = {};
 			for (const [location, enabled] of Object.entries(value)) {
 				// if the old location enabled value wasn't a boolean
 				// then ignore it as it is not a valid value
-				if ((typeof enabled !== 'boolean') || (asBoolean(enabled) === undefined)) {
+				if (typeof enabled !== 'boolean' || asBoolean(enabled) === undefined) {
 					continue;
 				}
 
@@ -107,10 +105,7 @@ export class ConfigMigration implements IWorkbenchContribution {
 			// sanity check on the contents of value variable - while
 			// we've handled the 'boolean' case above this assertion is
 			// here to prevent churn when this block is moved around
-			assert(
-				asBoolean(value) === undefined,
-				`String value must not be a boolean, got '${value}'.`,
-			);
+			assert(asBoolean(value) === undefined, `String value must not be a boolean, got '${value}'.`);
 
 			await this.configService.updateValue(CONFIG_KEY, true);
 			await this.configService.updateValue(PROMPT_LOCATIONS_CONFIG_KEY, { [value]: true });

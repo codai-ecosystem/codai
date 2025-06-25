@@ -18,9 +18,7 @@ const moduleNames = [
 	'@xterm/addon-webgl',
 ];
 
-const backendOnlyModuleNames = [
-	'@xterm/headless'
-];
+const backendOnlyModuleNames = ['@xterm/headless'];
 
 const vscodeDir = process.argv.length >= 3 ? process.argv[2] : process.cwd();
 if (path.basename(vscodeDir) !== 'vscode') {
@@ -75,8 +73,14 @@ async function update() {
 	}
 
 	if (modulesWithVersion.length > 0) {
-		for (const cwd of [vscodeDir, path.join(vscodeDir, 'remote'), path.join(vscodeDir, 'remote/web')]) {
-			console.log(`${path.join(cwd, 'package.json')}: Updating\n  ${modulesWithVersion.join('\n  ')}`);
+		for (const cwd of [
+			vscodeDir,
+			path.join(vscodeDir, 'remote'),
+			path.join(vscodeDir, 'remote/web'),
+		]) {
+			console.log(
+				`${path.join(cwd, 'package.json')}: Updating\n  ${modulesWithVersion.join('\n  ')}`
+			);
 			cp.execSync(`npm install ${modulesWithVersion.join(' ')}`, { cwd });
 		}
 	}
@@ -92,7 +96,9 @@ async function update() {
 	}
 	if (backendOnlyModulesWithVersion.length > 0) {
 		for (const cwd of [vscodeDir, path.join(vscodeDir, 'remote')]) {
-			console.log(`${path.join(cwd, 'package.json')}: Updating\n  ${backendOnlyModulesWithVersion.join('\n  ')}`);
+			console.log(
+				`${path.join(cwd, 'package.json')}: Updating\n  ${backendOnlyModulesWithVersion.join('\n  ')}`
+			);
 			cp.execSync(`npm install ${backendOnlyModulesWithVersion.join(' ')}`, { cwd });
 		}
 	}

@@ -5,53 +5,75 @@
 
 import assert from 'assert';
 import { IndexedDB } from '../../../../base/browser/indexedDB.js';
-import { bufferToReadable, bufferToStream, VSBuffer, VSBufferReadable, VSBufferReadableStream } from '../../../../base/common/buffer.js';
+import {
+	bufferToReadable,
+	bufferToStream,
+	VSBuffer,
+	VSBufferReadable,
+	VSBufferReadableStream,
+} from '../../../../base/common/buffer.js';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { basename, joinPath } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { flakySuite } from '../../../../base/test/common/testUtils.js';
 import { IndexedDBFileSystemProvider } from '../../browser/indexedDBFileSystemProvider.js';
-import { FileOperation, FileOperationError, FileOperationEvent, FileOperationResult, FileSystemProviderError, FileSystemProviderErrorCode, FileType } from '../../common/files.js';
+import {
+	FileOperation,
+	FileOperationError,
+	FileOperationEvent,
+	FileOperationResult,
+	FileSystemProviderError,
+	FileSystemProviderErrorCode,
+	FileType,
+} from '../../common/files.js';
 import { FileService } from '../../common/fileService.js';
 import { NullLogService } from '../../../log/common/log.js';
 
 flakySuite('IndexedDBFileSystemProvider', function () {
-
 	let service: FileService;
 	let userdataFileProvider: IndexedDBFileSystemProvider;
 	const testDir = '/';
 
-	const userdataURIFromPaths = (paths: readonly string[]) => joinPath(URI.from({ scheme: Schemas.vscodeUserData, path: testDir }), ...paths);
+	const userdataURIFromPaths = (paths: readonly string[]) =>
+		joinPath(URI.from({ scheme: Schemas.vscodeUserData, path: testDir }), ...paths);
 
 	const disposables = new DisposableStore();
 
 	const initFixtures = async () => {
 		await Promise.all(
-			[['fixtures', 'resolver', 'examples'],
-			['fixtures', 'resolver', 'other', 'deep'],
-			['fixtures', 'service', 'deep'],
-			['batched']]
+			[
+				['fixtures', 'resolver', 'examples'],
+				['fixtures', 'resolver', 'other', 'deep'],
+				['fixtures', 'service', 'deep'],
+				['batched'],
+			]
 				.map(path => userdataURIFromPaths(path))
-				.map(uri => service.createFolder(uri)));
+				.map(uri => service.createFolder(uri))
+		);
 		await Promise.all(
-			([
-				[['fixtures', 'resolver', 'examples', 'company.js'], 'class company {}'],
-				[['fixtures', 'resolver', 'examples', 'conway.js'], 'export function conway() {}'],
-				[['fixtures', 'resolver', 'examples', 'employee.js'], 'export const employee = "jax"'],
-				[['fixtures', 'resolver', 'examples', 'small.js'], ''],
-				[['fixtures', 'resolver', 'other', 'deep', 'company.js'], 'class company {}'],
-				[['fixtures', 'resolver', 'other', 'deep', 'conway.js'], 'export function conway() {}'],
-				[['fixtures', 'resolver', 'other', 'deep', 'employee.js'], 'export const employee = "jax"'],
-				[['fixtures', 'resolver', 'other', 'deep', 'small.js'], ''],
-				[['fixtures', 'resolver', 'index.html'], '<p>p</p>'],
-				[['fixtures', 'resolver', 'site.css'], '.p {color: red;}'],
-				[['fixtures', 'service', 'deep', 'company.js'], 'class company {}'],
-				[['fixtures', 'service', 'deep', 'conway.js'], 'export function conway() {}'],
-				[['fixtures', 'service', 'deep', 'employee.js'], 'export const employee = "jax"'],
-				[['fixtures', 'service', 'deep', 'small.js'], ''],
-				[['fixtures', 'service', 'binary.txt'], '<p>p</p>'],
-			] as const)
+			(
+				[
+					[['fixtures', 'resolver', 'examples', 'company.js'], 'class company {}'],
+					[['fixtures', 'resolver', 'examples', 'conway.js'], 'export function conway() {}'],
+					[['fixtures', 'resolver', 'examples', 'employee.js'], 'export const employee = "jax"'],
+					[['fixtures', 'resolver', 'examples', 'small.js'], ''],
+					[['fixtures', 'resolver', 'other', 'deep', 'company.js'], 'class company {}'],
+					[['fixtures', 'resolver', 'other', 'deep', 'conway.js'], 'export function conway() {}'],
+					[
+						['fixtures', 'resolver', 'other', 'deep', 'employee.js'],
+						'export const employee = "jax"',
+					],
+					[['fixtures', 'resolver', 'other', 'deep', 'small.js'], ''],
+					[['fixtures', 'resolver', 'index.html'], '<p>p</p>'],
+					[['fixtures', 'resolver', 'site.css'], '.p {color: red;}'],
+					[['fixtures', 'service', 'deep', 'company.js'], 'class company {}'],
+					[['fixtures', 'service', 'deep', 'conway.js'], 'export function conway() {}'],
+					[['fixtures', 'service', 'deep', 'employee.js'], 'export const employee = "jax"'],
+					[['fixtures', 'service', 'deep', 'small.js'], ''],
+					[['fixtures', 'service', 'binary.txt'], '<p>p</p>'],
+				] as const
+			)
 				.map(([path, contents]) => [userdataURIFromPaths(path), contents] as const)
 				.map(([uri, contents]) => service.createFile(uri, VSBuffer.fromString(contents)))
 		);
@@ -63,9 +85,17 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		service = new FileService(logService);
 		disposables.add(service);
 
-		const indexedDB = await IndexedDB.create('vscode-web-db-test', 1, ['vscode-userdata-store', 'vscode-logs-store']);
+		const indexedDB = await IndexedDB.create('vscode-web-db-test', 1, [
+			'vscode-userdata-store',
+			'vscode-logs-store',
+		]);
 
-		userdataFileProvider = new IndexedDBFileSystemProvider(Schemas.vscodeUserData, indexedDB, 'vscode-userdata-store', true);
+		userdataFileProvider = new IndexedDBFileSystemProvider(
+			Schemas.vscodeUserData,
+			indexedDB,
+			'vscode-userdata-store',
+			true
+		);
 		disposables.add(service.registerProvider(Schemas.vscodeUserData, userdataFileProvider));
 		disposables.add(userdataFileProvider);
 	};
@@ -81,14 +111,24 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 	});
 
 	test('root is always present', async () => {
-		assert.strictEqual((await userdataFileProvider.stat(userdataURIFromPaths([]))).type, FileType.Directory);
-		await userdataFileProvider.delete(userdataURIFromPaths([]), { recursive: true, useTrash: false, atomic: false });
-		assert.strictEqual((await userdataFileProvider.stat(userdataURIFromPaths([]))).type, FileType.Directory);
+		assert.strictEqual(
+			(await userdataFileProvider.stat(userdataURIFromPaths([]))).type,
+			FileType.Directory
+		);
+		await userdataFileProvider.delete(userdataURIFromPaths([]), {
+			recursive: true,
+			useTrash: false,
+			atomic: false,
+		});
+		assert.strictEqual(
+			(await userdataFileProvider.stat(userdataURIFromPaths([]))).type,
+			FileType.Directory
+		);
 	});
 
 	test('createFolder', async () => {
 		let event: FileOperationEvent | undefined;
-		disposables.add(service.onDidRunOperation(e => event = e));
+		disposables.add(service.onDidRunOperation(e => (event = e)));
 
 		const parent = await service.resolve(userdataURIFromPaths([]));
 		const newFolderResource = joinPath(parent.resource, 'newFolder');
@@ -97,7 +137,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		const newFolder = await service.createFolder(newFolderResource);
 		assert.strictEqual(newFolder.name, 'newFolder');
 		assert.strictEqual((await userdataFileProvider.readdir(parent.resource)).length, 1);
-		assert.strictEqual((await userdataFileProvider.stat(newFolderResource)).type, FileType.Directory);
+		assert.strictEqual(
+			(await userdataFileProvider.stat(newFolderResource)).type,
+			FileType.Directory
+		);
 
 		assert.ok(event);
 		assert.strictEqual(event.resource.path, newFolderResource.path);
@@ -108,7 +151,7 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 
 	test('createFolder: creating multiple folders at once', async () => {
 		let event: FileOperationEvent;
-		disposables.add(service.onDidRunOperation(e => event = e));
+		disposables.add(service.onDidRunOperation(e => (event = e)));
 
 		const multiFolderPaths = ['a', 'couple', 'of', 'folders'];
 		const parent = await service.resolve(userdataURIFromPaths([]));
@@ -118,7 +161,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 
 		const lastFolderName = multiFolderPaths[multiFolderPaths.length - 1];
 		assert.strictEqual(newFolder.name, lastFolderName);
-		assert.strictEqual((await userdataFileProvider.stat(newFolderResource)).type, FileType.Directory);
+		assert.strictEqual(
+			(await userdataFileProvider.stat(newFolderResource)).type,
+			FileType.Directory
+		);
 
 		assert.ok(event!);
 		assert.strictEqual(event!.resource.path, newFolderResource.path);
@@ -166,11 +212,13 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		assert.ok(result.isDirectory);
 		assert.strictEqual(result.children.length, testsElements.length);
 
-		assert.ok(result.children.every(entry => {
-			return testsElements.some(name => {
-				return basename(entry.resource) === name;
-			});
-		}));
+		assert.ok(
+			result.children.every(entry => {
+				return testsElements.some(name => {
+					return basename(entry.resource) === name;
+				});
+			})
+		);
 
 		result.children.forEach(value => {
 			assert.ok(basename(value.resource));
@@ -206,9 +254,11 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		return assertCreateFile(contents => bufferToStream(VSBuffer.fromString(contents)));
 	});
 
-	async function assertCreateFile(converter: (content: string) => VSBuffer | VSBufferReadable | VSBufferReadableStream): Promise<void> {
+	async function assertCreateFile(
+		converter: (content: string) => VSBuffer | VSBufferReadable | VSBufferReadableStream
+	): Promise<void> {
 		let event: FileOperationEvent;
-		disposables.add(service.onDidRunOperation(e => event = e));
+		disposables.add(service.onDidRunOperation(e => (event = e)));
 
 		const contents = 'Hello World';
 		const resource = userdataURIFromPaths(['test.txt']);
@@ -217,7 +267,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		const fileStat = await service.createFile(resource, converter(contents));
 		assert.strictEqual(fileStat.name, 'test.txt');
 		assert.strictEqual((await userdataFileProvider.stat(fileStat.resource)).type, FileType.File);
-		assert.strictEqual(new TextDecoder().decode(await userdataFileProvider.readFile(fileStat.resource)), contents);
+		assert.strictEqual(
+			new TextDecoder().decode(await userdataFileProvider.readFile(fileStat.resource)),
+			contents
+		);
 
 		assert.ok(event!);
 		assert.strictEqual(event!.resource.path, resource.path);
@@ -226,20 +279,41 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 	}
 
 	const fileCreateBatchTester = (size: number, name: string) => {
-		const batch = Array.from({ length: size }).map((_, i) => ({ contents: `Hello${i}`, resource: userdataURIFromPaths(['batched', name, `Hello${i}.txt`]) }));
+		const batch = Array.from({ length: size }).map((_, i) => ({
+			contents: `Hello${i}`,
+			resource: userdataURIFromPaths(['batched', name, `Hello${i}.txt`]),
+		}));
 		let creationPromises: Promise<any> | undefined = undefined;
 		return {
 			async create() {
-				return creationPromises = Promise.all(batch.map(entry => userdataFileProvider.writeFile(entry.resource, VSBuffer.fromString(entry.contents).buffer, { create: true, overwrite: true, unlock: false, atomic: false })));
+				return (creationPromises = Promise.all(
+					batch.map(entry =>
+						userdataFileProvider.writeFile(
+							entry.resource,
+							VSBuffer.fromString(entry.contents).buffer,
+							{ create: true, overwrite: true, unlock: false, atomic: false }
+						)
+					)
+				));
 			},
 			async assertContentsCorrect() {
-				if (!creationPromises) { throw Error('read called before create'); }
+				if (!creationPromises) {
+					throw Error('read called before create');
+				}
 				await creationPromises;
-				await Promise.all(batch.map(async (entry, i) => {
-					assert.strictEqual((await userdataFileProvider.stat(entry.resource)).type, FileType.File);
-					assert.strictEqual(new TextDecoder().decode(await userdataFileProvider.readFile(entry.resource)), entry.contents);
-				}));
-			}
+				await Promise.all(
+					batch.map(async (entry, i) => {
+						assert.strictEqual(
+							(await userdataFileProvider.stat(entry.resource)).type,
+							FileType.File
+						);
+						assert.strictEqual(
+							new TextDecoder().decode(await userdataFileProvider.readFile(entry.resource)),
+							entry.contents
+						);
+					})
+				);
+			},
 		};
 	};
 
@@ -272,7 +346,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		try {
 			await service.move(sourceFile, targetFile, false);
 		} catch (error) {
-			assert.deepStrictEqual((<FileSystemProviderError>error).code, FileSystemProviderErrorCode.FileNotFound);
+			assert.deepStrictEqual(
+				(<FileSystemProviderError>error).code,
+				FileSystemProviderErrorCode.FileNotFound
+			);
 			return;
 		}
 
@@ -290,7 +367,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		try {
 			await service.move(sourceFile, targetFile, false);
 		} catch (error) {
-			assert.deepStrictEqual((<FileOperationError>error).fileOperationResult, FileOperationResult.FILE_MOVE_CONFLICT);
+			assert.deepStrictEqual(
+				(<FileOperationError>error).fileOperationResult,
+				FileOperationResult.FILE_MOVE_CONFLICT
+			);
 			return;
 		}
 
@@ -307,7 +387,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		try {
 			await service.move(sourceFolder, targetFolder, false);
 		} catch (error) {
-			assert.deepStrictEqual((<FileOperationError>error).fileOperationResult, FileOperationResult.FILE_MOVE_CONFLICT);
+			assert.deepStrictEqual(
+				(<FileOperationError>error).fileOperationResult,
+				FileOperationResult.FILE_MOVE_CONFLICT
+			);
 			return;
 		}
 
@@ -325,7 +408,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		try {
 			await service.move(sourceFile, targetFolder, false);
 		} catch (error) {
-			assert.deepStrictEqual((<FileOperationError>error).fileOperationResult, FileOperationResult.FILE_MOVE_CONFLICT);
+			assert.deepStrictEqual(
+				(<FileOperationError>error).fileOperationResult,
+				FileOperationResult.FILE_MOVE_CONFLICT
+			);
 			return;
 		}
 
@@ -343,7 +429,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		try {
 			await service.move(sourceFolder, targetFile, false);
 		} catch (error) {
-			assert.deepStrictEqual((<FileOperationError>error).fileOperationResult, FileOperationResult.FILE_MOVE_CONFLICT);
+			assert.deepStrictEqual(
+				(<FileOperationError>error).fileOperationResult,
+				FileOperationResult.FILE_MOVE_CONFLICT
+			);
 			return;
 		}
 
@@ -370,7 +459,7 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 
 		await Promise.all([
 			service.writeFile(sourceFile, VSBuffer.fromString('This is source file')),
-			service.writeFile(targetFile, VSBuffer.fromString('This is target file'))
+			service.writeFile(targetFile, VSBuffer.fromString('This is target file')),
 		]);
 
 		await service.move(sourceFile, targetFile, true);
@@ -416,7 +505,7 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		await Promise.all([
 			service.writeFile(sourceFile1, VSBuffer.fromString('Source File 1')),
 			service.writeFile(sourceFile2, VSBuffer.fromString('Source File 2')),
-			service.createFolder(sourceEmptyFolder)
+			service.createFolder(sourceEmptyFolder),
 		]);
 
 		const targetFolder = joinPath(parent.resource, 'targetFolder');
@@ -447,7 +536,7 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		await Promise.all([
 			service.writeFile(sourceFile1, VSBuffer.fromString('Source File 1')),
 			service.writeFile(targetFile2, VSBuffer.fromString('Target File 2')),
-			service.writeFile(targetFile3, VSBuffer.fromString('Target File 3'))
+			service.writeFile(targetFile3, VSBuffer.fromString('Target File 3')),
 		]);
 
 		await service.move(sourceFolder, targetFolder, true);
@@ -463,7 +552,7 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 		await initFixtures();
 
 		let event: FileOperationEvent;
-		disposables.add(service.onDidRunOperation(e => event = e));
+		disposables.add(service.onDidRunOperation(e => (event = e)));
 
 		const anotherResource = userdataURIFromPaths(['fixtures', 'service', 'deep', 'company.js']);
 		const resource = userdataURIFromPaths(['fixtures', 'service', 'deep', 'conway.js']);
@@ -488,7 +577,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 			}
 
 			assert.ok(error);
-			assert.strictEqual((<FileOperationError>error).fileOperationResult, FileOperationResult.FILE_NOT_FOUND);
+			assert.strictEqual(
+				(<FileOperationError>error).fileOperationResult,
+				FileOperationResult.FILE_NOT_FOUND
+			);
 		}
 		await reload();
 		{
@@ -500,14 +592,17 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 			}
 
 			assert.ok(error);
-			assert.strictEqual((<FileOperationError>error).fileOperationResult, FileOperationResult.FILE_NOT_FOUND);
+			assert.strictEqual(
+				(<FileOperationError>error).fileOperationResult,
+				FileOperationResult.FILE_NOT_FOUND
+			);
 		}
 	});
 
 	test('deleteFolder (recursive)', async () => {
 		await initFixtures();
 		let event: FileOperationEvent;
-		disposables.add(service.onDidRunOperation(e => event = e));
+		disposables.add(service.onDidRunOperation(e => (event = e)));
 
 		const resource = userdataURIFromPaths(['fixtures', 'service', 'deep']);
 		const subResource1 = userdataURIFromPaths(['fixtures', 'service', 'deep', 'company.js']);
@@ -517,7 +612,10 @@ flakySuite('IndexedDBFileSystemProvider', function () {
 
 		const source = await service.resolve(resource);
 
-		assert.strictEqual(await service.canDelete(source.resource, { recursive: true, useTrash: false }), true);
+		assert.strictEqual(
+			await service.canDelete(source.resource, { recursive: true, useTrash: false }),
+			true
+		);
 		await service.del(source.resource, { recursive: true, useTrash: false });
 
 		assert.strictEqual(await service.exists(source.resource), false);

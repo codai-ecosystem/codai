@@ -21,7 +21,6 @@ export interface ISequence<T> {
 }
 
 export class Sequence<T> implements ISequence<T>, ISpliceable<T> {
-
 	readonly elements: T[] = [];
 
 	private readonly _onDidSplice = new Emitter<ISplice<T>>();

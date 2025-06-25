@@ -8,11 +8,14 @@ const emptyArr: number[] = [];
 /**
  * Represents an immutable set that works best for a small number of elements (less than 32).
  * It uses bits to encode element membership efficiently.
-*/
+ */
 export class SmallImmutableSet<T> {
 	private static cache = new Array<SmallImmutableSet<any>>(129);
 
-	private static create<T>(items: number, additionalItems: readonly number[]): SmallImmutableSet<T> {
+	private static create<T>(
+		items: number,
+		additionalItems: readonly number[]
+	): SmallImmutableSet<T> {
 		if (items <= 128 && additionalItems.length === 0) {
 			// We create a cache of 128=2^7 elements to cover all sets with up to 7 (dense) elements.
 			let cached = SmallImmutableSet.cache[items];
@@ -34,8 +37,7 @@ export class SmallImmutableSet<T> {
 	private constructor(
 		private readonly items: number,
 		private readonly additionalItems: readonly number[]
-	) {
-	}
+	) {}
 
 	public add(value: T, keyProvider: IDenseKeyProvider<T>): SmallImmutableSet<T> {
 		const key = keyProvider.getKey(value);
@@ -136,12 +138,12 @@ export interface IDenseKeyProvider<T> {
 export const identityKeyProvider: IDenseKeyProvider<number> = {
 	getKey(value: number) {
 		return value;
-	}
+	},
 };
 
 /**
  * Assigns values a unique incrementing key.
-*/
+ */
 export class DenseKeyProvider<T> {
 	private readonly items = new Map<T, number>();
 

@@ -8,7 +8,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 suite('HTML Language Configuration', () => {
-	const config = JSON.parse((fs.readFileSync(path.join(__dirname, '../../../../html/language-configuration.json')).toString()));
+	const config = JSON.parse(
+		fs.readFileSync(path.join(__dirname, '../../../../html/language-configuration.json')).toString()
+	);
 
 	function createRegex(str: string | { pattern: string; flags: string }): RegExp {
 		if (typeof str === 'string') {
@@ -50,7 +52,9 @@ suite('HTML Language Configuration', () => {
 		assertWord('console.log("hello");\n\r |var x1 = new F<A>(a, b);', 'var');
 	});
 
-	const onEnterBeforeRules: RegExp[] = config.onEnterRules.map((r: any) => createRegex(r.beforeText));
+	const onEnterBeforeRules: RegExp[] = config.onEnterRules.map((r: any) =>
+		createRegex(r.beforeText)
+	);
 
 	function assertBeforeRule(text: string, expectedMatch: boolean): void {
 		for (const reg of onEnterBeforeRules) {
@@ -67,5 +71,4 @@ suite('HTML Language Configuration', () => {
 		assertBeforeRule('<button attr1=\'val1\' attr2="val2">', true);
 		assertBeforeRule('<button attr1=val1 attr2=val2></button>', false);
 	});
-
 });

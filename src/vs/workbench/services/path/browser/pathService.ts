@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IRemoteAgentService } from '../../remote/common/remoteAgentService.js';
 import { IPathService, AbstractPathService } from '../common/pathService.js';
 import { URI } from '../../../../base/common/uri.js';
@@ -12,7 +15,6 @@ import { IWorkspaceContextService } from '../../../../platform/workspace/common/
 import { dirname } from '../../../../base/common/resources.js';
 
 export class BrowserPathService extends AbstractPathService {
-
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
@@ -27,8 +29,10 @@ export class BrowserPathService extends AbstractPathService {
 	}
 }
 
-function guessLocalUserHome(environmentService: IWorkbenchEnvironmentService, contextService: IWorkspaceContextService): URI {
-
+function guessLocalUserHome(
+	environmentService: IWorkbenchEnvironmentService,
+	contextService: IWorkspaceContextService
+): URI {
 	// In web we do not really have the concept of a "local" user home
 	// but we still require it in many places as a fallback. As such,
 	// we have to come up with a synthetic location derived from the
@@ -52,7 +56,7 @@ function guessLocalUserHome(environmentService: IWorkbenchEnvironmentService, co
 	return URI.from({
 		scheme: AbstractPathService.findDefaultUriScheme(environmentService, contextService),
 		authority: environmentService.remoteAuthority,
-		path: '/'
+		path: '/',
 	});
 }
 

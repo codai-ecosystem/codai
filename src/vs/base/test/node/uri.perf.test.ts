@@ -10,7 +10,6 @@ import { URI } from '../../common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../common/utils.js';
 
 suite('URI - perf', function () {
-
 	// COMMENT THIS OUT TO RUN TEST
 	if (1) {
 		return;
@@ -21,7 +20,9 @@ suite('URI - perf', function () {
 	let manyFileUris: URI[];
 	setup(function () {
 		manyFileUris = [];
-		const data = readFileSync(FileAccess.asFileUri('vs/base/test/node/uri.perf.data.txt').fsPath).toString();
+		const data = readFileSync(
+			FileAccess.asFileUri('vs/base/test/node/uri.perf.data.txt').fsPath
+		).toString();
 		const lines = data.split('\n');
 		for (const line of lines) {
 			manyFileUris.push(URI.file(line));
@@ -33,7 +34,9 @@ suite('URI - perf', function () {
 			const t1 = Date.now();
 			callback();
 			const d = Date.now() - t1;
-			console.log(`${name} took ${d}ms (${(d / manyFileUris.length).toPrecision(3)} ms/uri) (${manyFileUris.length} uris)`);
+			console.log(
+				`${name} took ${d}ms (${(d / manyFileUris.length).toPrecision(3)} ms/uri) (${manyFileUris.length} uris)`
+			);
 			_done();
 		});
 	}
@@ -65,5 +68,4 @@ suite('URI - perf', function () {
 			assert.ok(data);
 		}
 	});
-
 });

@@ -8,7 +8,10 @@ import { endsWith, startsWith } from '../utils/strings';
 import { WorkspaceFolder } from 'vscode-languageserver';
 import { URI, Utils } from 'vscode-uri';
 
-export function getDocumentContext(documentUri: string, workspaceFolders: WorkspaceFolder[]): DocumentContext {
+export function getDocumentContext(
+	documentUri: string,
+	workspaceFolders: WorkspaceFolder[]
+): DocumentContext {
 	function getRootFolder(): string | undefined {
 		for (const folder of workspaceFolders) {
 			let folderURI = folder.uri;
@@ -28,7 +31,8 @@ export function getDocumentContext(documentUri: string, workspaceFolders: Worksp
 				// starts with a schema
 				return ref;
 			}
-			if (ref[0] === '/') { // resolve absolute path against the current workspace folder
+			if (ref[0] === '/') {
+				// resolve absolute path against the current workspace folder
 				const folderUri = getRootFolder();
 				if (folderUri) {
 					return folderUri + ref.substr(1);
@@ -40,4 +44,3 @@ export function getDocumentContext(documentUri: string, workspaceFolders: Worksp
 		},
 	};
 }
-

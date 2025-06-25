@@ -8,12 +8,14 @@ import { MainContext, ExtHostUrlsShape, MainThreadUrlsShape } from './extHost.pr
 import { URI, UriComponents } from '../../../base/common/uri.js';
 import { toDisposable } from '../../../base/common/lifecycle.js';
 import { onUnexpectedError } from '../../../base/common/errors.js';
-import { ExtensionIdentifierSet, IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionIdentifierSet,
+	IExtensionDescription,
+} from '../../../platform/extensions/common/extensions.js';
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
 import { IExtHostRpcService } from './extHostRpcService.js';
 
 export class ExtHostUrls implements ExtHostUrlsShape {
-
 	declare _serviceBrand: undefined;
 
 	private static HandlePool = 0;
@@ -22,13 +24,14 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 	private handles = new ExtensionIdentifierSet();
 	private handlers = new Map<number, vscode.UriHandler>();
 
-	constructor(
-		@IExtHostRpcService extHostRpc: IExtHostRpcService
-	) {
+	constructor(@IExtHostRpcService extHostRpc: IExtHostRpcService) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadUrls);
 	}
 
-	registerUriHandler(extension: IExtensionDescription, handler: vscode.UriHandler): vscode.Disposable {
+	registerUriHandler(
+		extension: IExtensionDescription,
+		handler: vscode.UriHandler
+	): vscode.Disposable {
 		const extensionId = extension.identifier;
 		if (this.handles.has(extensionId)) {
 			throw new Error(`Protocol handler already registered for extension ${extensionId}`);
@@ -66,5 +69,5 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 	}
 }
 
-export interface IExtHostUrlsService extends ExtHostUrls { }
+export interface IExtHostUrlsService extends ExtHostUrls {}
 export const IExtHostUrlsService = createDecorator<IExtHostUrlsService>('IExtHostUrlsService');

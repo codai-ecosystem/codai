@@ -11,11 +11,9 @@ import { DeferredPromise } from '../../../../../base/common/async.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('FileQueryCacheState', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('reuse old cacheKey until new cache is loaded', async function () {
-
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -47,7 +45,6 @@ suite('FileQueryCacheState', () => {
 	});
 
 	test('do not spawn additional load if previous is still loading', async function () {
-
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -72,7 +69,6 @@ suite('FileQueryCacheState', () => {
 	});
 
 	test('do not use previous cacheKey if query changed', async function () {
-
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -103,7 +99,6 @@ suite('FileQueryCacheState', () => {
 	});
 
 	test('dispose propagates', async function () {
-
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -123,7 +118,6 @@ suite('FileQueryCacheState', () => {
 	});
 
 	test('keep using old cacheKey when loading fails', async function () {
-
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -174,7 +168,6 @@ suite('FileQueryCacheState', () => {
 	}
 
 	class MockCache {
-
 		public cacheKeys: string[] = [];
 		public loading: { [cacheKey: string]: DeferredPromise<any> } = {};
 		public disposing: { [cacheKey: string]: DeferredPromise<void> } = {};
@@ -183,7 +176,7 @@ suite('FileQueryCacheState', () => {
 
 		public baseQuery: IFileQuery = {
 			type: QueryType.File,
-			folderQueries: []
+			folderQueries: [],
 		};
 
 		public query(cacheKey: string): IFileQuery {

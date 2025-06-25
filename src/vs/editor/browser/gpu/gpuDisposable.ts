@@ -7,7 +7,9 @@ import type { IReference } from '../../../base/common/lifecycle.js';
 import { isFunction } from '../../../base/common/types.js';
 
 export namespace GPULifecycle {
-	export async function requestDevice(fallback?: (message: string) => void): Promise<IReference<GPUDevice>> {
+	export async function requestDevice(
+		fallback?: (message: string) => void
+	): Promise<IReference<GPUDevice>> {
 		try {
 			if (!navigator.gpu) {
 				throw new Error('This browser does not support WebGPU');
@@ -25,15 +27,26 @@ export namespace GPULifecycle {
 		}
 	}
 
-	export function createBuffer(device: GPUDevice, descriptor: GPUBufferDescriptor, initialValues?: Float32Array | (() => Float32Array)): IReference<GPUBuffer> {
+	export function createBuffer(
+		device: GPUDevice,
+		descriptor: GPUBufferDescriptor,
+		initialValues?: Float32Array | (() => Float32Array)
+	): IReference<GPUBuffer> {
 		const buffer = device.createBuffer(descriptor);
 		if (initialValues) {
-			device.queue.writeBuffer(buffer, 0, (isFunction(initialValues) ? initialValues() : initialValues) as Float32Array<ArrayBuffer>);
+			device.queue.writeBuffer(
+				buffer,
+				0,
+				(isFunction(initialValues) ? initialValues() : initialValues) as Float32Array<ArrayBuffer>
+			);
 		}
 		return wrapDestroyableInDisposable(buffer);
 	}
 
-	export function createTexture(device: GPUDevice, descriptor: GPUTextureDescriptor): IReference<GPUTexture> {
+	export function createTexture(
+		device: GPUDevice,
+		descriptor: GPUTextureDescriptor
+	): IReference<GPUTexture> {
 		return wrapDestroyableInDisposable(device.createTexture(descriptor));
 	}
 }
@@ -41,6 +54,6 @@ export namespace GPULifecycle {
 function wrapDestroyableInDisposable<T extends { destroy(): void }>(value: T): IReference<T> {
 	return {
 		object: value,
-		dispose: () => value.destroy()
+		dispose: () => value.destroy(),
 	};
 }

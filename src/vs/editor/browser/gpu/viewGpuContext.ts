@@ -14,7 +14,11 @@ import { observableValue, runOnChange, type IObservable } from '../../../base/co
 import { IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
 import { TextureAtlas } from './atlas/textureAtlas.js';
 import { IConfigurationService } from '../../../platform/configuration/common/configuration.js';
-import { INotificationService, IPromptChoice, Severity } from '../../../platform/notification/common/notification.js';
+import {
+	INotificationService,
+	IPromptChoice,
+	Severity,
+} from '../../../platform/notification/common/notification.js';
 import { GPULifecycle } from './gpuDisposable.js';
 import { ensureNonNullable, observeDevicePixelDimensions } from './gpuUtils.js';
 import { RectangleRenderer } from './rectangleRenderer.js';
@@ -59,7 +63,9 @@ export class ViewGpuContext extends Disposable {
 	 */
 	static get atlas(): TextureAtlas {
 		if (!ViewGpuContext._atlas) {
-			throw new BugIndicatingError('Cannot call ViewGpuContext.textureAtlas before device is resolved');
+			throw new BugIndicatingError(
+				'Cannot call ViewGpuContext.textureAtlas before device is resolved'
+			);
 		}
 		return ViewGpuContext._atlas;
 	}
@@ -81,7 +87,7 @@ export class ViewGpuContext extends Disposable {
 		context: ViewContext,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
 		@INotificationService private readonly _notificationService: INotificationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService private readonly configurationService: IConfigurationService
 	) {
 		super();
 
@@ -89,60 +95,87 @@ export class ViewGpuContext extends Disposable {
 		this.canvas.setClassName('editorCanvas');
 
 		// Adjust the canvas size to avoid drawing under the scroll bar
-		this._register(Event.runAndSubscribe(configurationService.onDidChangeConfiguration, e => {
-			if (!e || e.affectsConfiguration('editor.scrollbar.verticalScrollbarSize')) {
-				const verticalScrollbarSize = configurationService.getValue<IEditorOptions>('editor').scrollbar?.verticalScrollbarSize ?? 14;
-				this.canvas.domNode.style.boxSizing = 'border-box';
-				this.canvas.domNode.style.paddingRight = `${verticalScrollbarSize}px`;
-			}
-		}));
+		this._register(
+			Event.runAndSubscribe(configurationService.onDidChangeConfiguration, e => {
+				if (!e || e.affectsConfiguration('editor.scrollbar.verticalScrollbarSize')) {
+					const verticalScrollbarSize =
+						configurationService.getValue<IEditorOptions>('editor').scrollbar
+							?.verticalScrollbarSize ?? 14;
+					this.canvas.domNode.style.boxSizing = 'border-box';
+					this.canvas.domNode.style.paddingRight = `${verticalScrollbarSize}px`;
+				}
+			})
+		);
 
 		this.ctx = ensureNonNullable(this.canvas.domNode.getContext('webgpu'));
 
 		// Request the GPU device, we only want to do this a single time per window as it's async
 		// and can delay the initial render.
 		if (!ViewGpuContext.device) {
-			ViewGpuContext.device = GPULifecycle.requestDevice((message) => {
-				const choices: IPromptChoice[] = [{
-					label: nls.localize('editor.dom.render', "Use DOM-based rendering"),
-					run: () => this.configurationService.updateValue('editor.experimentalGpuAcceleration', 'off'),
-				}];
+			ViewGpuContext.device = GPULifecycle.requestDevice(message => {
+				const choices: IPromptChoice[] = [
+					{
+						label: nls.localize('editor.dom.render', 'Use DOM-based rendering'),
+						run: () =>
+							this.configurationService.updateValue('editor.experimentalGpuAcceleration', 'off'),
+					},
+				];
 				this._notificationService.prompt(Severity.Warning, message, choices);
 			}).then(ref => {
 				ViewGpuContext.deviceSync = ref.object;
 				if (!ViewGpuContext._atlas) {
-					ViewGpuContext._atlas = this._instantiationService.createInstance(TextureAtlas, ref.object.limits.maxTextureDimension2D, undefined);
+					ViewGpuContext._atlas = this._instantiationService.createInstance(
+						TextureAtlas,
+						ref.object.limits.maxTextureDimension2D,
+						undefined
+					);
 				}
 				return ref.object;
 			});
 		}
 
 		const dprObs = observableValue(this, getActiveWindow().devicePixelRatio);
-		this._register(addDisposableListener(getActiveWindow(), 'resize', () => {
-			dprObs.set(getActiveWindow().devicePixelRatio, undefined);
-		}));
+		this._register(
+			addDisposableListener(getActiveWindow(), 'resize', () => {
+				dprObs.set(getActiveWindow().devicePixelRatio, undefined);
+			})
+		);
 		this.devicePixelRatio = dprObs;
 		this._register(runOnChange(this.devicePixelRatio, () => ViewGpuContext.atlas?.clear()));
 
-		const canvasDevicePixelDimensions = observableValue(this, { width: this.canvas.domNode.width, height: this.canvas.domNode.height });
-		this._register(observeDevicePixelDimensions(
-			this.canvas.domNode,
-			getActiveWindow(),
-			(width, height) => {
+		const canvasDevicePixelDimensions = observableValue(this, {
+			width: this.canvas.domNode.width,
+			height: this.canvas.domNode.height,
+		});
+		this._register(
+			observeDevicePixelDimensions(this.canvas.domNode, getActiveWindow(), (width, height) => {
 				this.canvas.domNode.width = width;
 				this.canvas.domNode.height = height;
 				canvasDevicePixelDimensions.set({ width, height }, undefined);
-			}
-		));
+			})
+		);
 		this.canvasDevicePixelDimensions = canvasDevicePixelDimensions;
 
 		const contentLeft = observableValue(this, 0);
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			contentLeft.set(context.configuration.options.get(EditorOption.layoutInfo).contentLeft, undefined);
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				contentLeft.set(
+					context.configuration.options.get(EditorOption.layoutInfo).contentLeft,
+					undefined
+				);
+			})
+		);
 		this.contentLeft = contentLeft;
 
-		this.rectangleRenderer = this._instantiationService.createInstance(RectangleRenderer, context, this.contentLeft, this.devicePixelRatio, this.canvas.domNode, this.ctx, ViewGpuContext.device);
+		this.rectangleRenderer = this._instantiationService.createInstance(
+			RectangleRenderer,
+			context,
+			this.contentLeft,
+			this.devicePixelRatio,
+			this.canvas.domNode,
+			this.ctx,
+			ViewGpuContext.device
+		);
 	}
 
 	/**
@@ -150,14 +183,15 @@ export class ViewGpuContext extends Disposable {
 	 * renderer. Eventually this should trend all lines, except maybe exceptional cases like
 	 * decorations that use class names.
 	 */
-	public canRender(options: ViewLineOptions, viewportData: ViewportData, lineNumber: number): boolean {
+	public canRender(
+		options: ViewLineOptions,
+		viewportData: ViewportData,
+		lineNumber: number
+	): boolean {
 		const data = viewportData.getViewLineRenderingData(lineNumber);
 
 		// Check if the line has simple attributes that aren't supported
-		if (
-			data.containsRTL ||
-			data.maxColumn > this.maxGpuCols
-		) {
+		if (data.containsRTL || data.maxColumn > this.maxGpuCols) {
 			return false;
 		}
 
@@ -169,7 +203,10 @@ export class ViewGpuContext extends Disposable {
 					supported = false;
 					break;
 				}
-				const styleRules = ViewGpuContext._decorationCssRuleExtractor.getStyleRules(this.canvas.domNode, decoration.inlineClassName);
+				const styleRules = ViewGpuContext._decorationCssRuleExtractor.getStyleRules(
+					this.canvas.domNode,
+					decoration.inlineClassName
+				);
 				supported &&= styleRules.every(rule => {
 					// Pseudo classes aren't supported currently
 					if (rule.selectorText.includes(':')) {
@@ -195,7 +232,11 @@ export class ViewGpuContext extends Disposable {
 	/**
 	 * Like {@link canRender} but returns detailed information about why the line cannot be rendered.
 	 */
-	public canRenderDetailed(options: ViewLineOptions, viewportData: ViewportData, lineNumber: number): string[] {
+	public canRenderDetailed(
+		options: ViewLineOptions,
+		viewportData: ViewportData,
+		lineNumber: number
+	): string[] {
 		const data = viewportData.getViewLineRenderingData(lineNumber);
 		const reasons: string[] = [];
 		if (data.containsRTL) {
@@ -215,7 +256,10 @@ export class ViewGpuContext extends Disposable {
 					supported = false;
 					continue;
 				}
-				const styleRules = ViewGpuContext._decorationCssRuleExtractor.getStyleRules(this.canvas.domNode, decoration.inlineClassName);
+				const styleRules = ViewGpuContext._decorationCssRuleExtractor.getStyleRules(
+					this.canvas.domNode,
+					decoration.inlineClassName
+				);
 				supported &&= styleRules.every(rule => {
 					// Pseudo classes aren't supported currently
 					if (rule.selectorText.includes(':')) {
@@ -235,13 +279,19 @@ export class ViewGpuContext extends Disposable {
 				}
 			}
 			if (problemTypes.length > 0) {
-				reasons.push(`inlineDecorations with unsupported types (${problemTypes.map(e => `\`${e}\``).join(', ')})`);
+				reasons.push(
+					`inlineDecorations with unsupported types (${problemTypes.map(e => `\`${e}\``).join(', ')})`
+				);
 			}
 			if (problemRules.length > 0) {
-				reasons.push(`inlineDecorations with unsupported CSS rules (${problemRules.map(e => `\`${e}\``).join(', ')})`);
+				reasons.push(
+					`inlineDecorations with unsupported CSS rules (${problemRules.map(e => `\`${e}\``).join(', ')})`
+				);
 			}
 			if (problemSelectors.length > 0) {
-				reasons.push(`inlineDecorations with unsupported CSS selectors (${problemSelectors.map(e => `\`${e}\``).join(', ')})`);
+				reasons.push(
+					`inlineDecorations with unsupported CSS selectors (${problemSelectors.map(e => `\`${e}\``).join(', ')})`
+				);
 			}
 		}
 		return reasons;
@@ -251,11 +301,7 @@ export class ViewGpuContext extends Disposable {
 /**
  * A list of supported decoration CSS rules that can be used in the GPU renderer.
  */
-const gpuSupportedDecorationCssRules = [
-	'color',
-	'font-weight',
-	'opacity',
-];
+const gpuSupportedDecorationCssRules = ['color', 'font-weight', 'opacity'];
 
 function supportsCssRule(rule: string, style: CSSStyleDeclaration) {
 	if (!gpuSupportedDecorationCssRules.includes(rule)) {
@@ -263,6 +309,7 @@ function supportsCssRule(rule: string, style: CSSStyleDeclaration) {
 	}
 	// Check for values that aren't supported
 	switch (rule) {
-		default: return true;
+		default:
+			return true;
 	}
 }

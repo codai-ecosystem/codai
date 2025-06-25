@@ -6,7 +6,6 @@
 // version: 4
 
 declare module 'vscode' {
-
 	export interface ChatWelcomeMessageContent {
 		icon: ThemeIcon;
 		title: string;

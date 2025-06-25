@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { fillInIncompleteTokens, renderMarkdown, renderMarkdownAsPlaintext } from '../../browser/markdownRenderer.js';
+import {
+	fillInIncompleteTokens,
+	renderMarkdown,
+	renderMarkdownAsPlaintext,
+} from '../../browser/markdownRenderer.js';
 import { IMarkdownString, MarkdownString } from '../../common/htmlContent.js';
 import * as marked from '../../common/marked/marked.js';
 import { parse } from '../../common/marshalling.js';
@@ -20,11 +24,11 @@ function assertNodeEquals(actualNode: HTMLElement, expectedHtml: string) {
 	const expectedNode = strToNode(expectedHtml);
 	assert.ok(
 		actualNode.isEqualNode(expectedNode),
-		`Expected: ${expectedNode.outerHTML}\nActual: ${actualNode.outerHTML}`);
+		`Expected: ${expectedNode.outerHTML}\nActual: ${actualNode.outerHTML}`
+	);
 }
 
 suite('MarkdownRenderer', () => {
-
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	suite('Sanitization', () => {
@@ -39,36 +43,64 @@ suite('MarkdownRenderer', () => {
 		test('image rendering conforms to default', () => {
 			const markdown = { value: `![image](http://example.com/cat.gif 'caption')` };
 			const result: HTMLElement = store.add(renderMarkdown(markdown)).element;
-			assertNodeEquals(result, '<div><p><img title="caption" alt="image" src="http://example.com/cat.gif"></p></div>');
+			assertNodeEquals(
+				result,
+				'<div><p><img title="caption" alt="image" src="http://example.com/cat.gif"></p></div>'
+			);
 		});
 
 		test('image rendering conforms to default without title', () => {
 			const markdown = { value: `![image](http://example.com/cat.gif)` };
 			const result: HTMLElement = store.add(renderMarkdown(markdown)).element;
-			assertNodeEquals(result, '<div><p><img alt="image" src="http://example.com/cat.gif"></p></div>');
+			assertNodeEquals(
+				result,
+				'<div><p><img alt="image" src="http://example.com/cat.gif"></p></div>'
+			);
 		});
 
 		test('image width from title params', () => {
-			const result: HTMLElement = store.add(renderMarkdown({ value: `![image](http://example.com/cat.gif|width=100px 'caption')` })).element;
-			assertNodeEquals(result, `<div><p><img width="100" title="caption" alt="image" src="http://example.com/cat.gif"></p></div>`);
+			const result: HTMLElement = store.add(
+				renderMarkdown({ value: `![image](http://example.com/cat.gif|width=100px 'caption')` })
+			).element;
+			assertNodeEquals(
+				result,
+				`<div><p><img width="100" title="caption" alt="image" src="http://example.com/cat.gif"></p></div>`
+			);
 		});
 
 		test('image height from title params', () => {
-			const result: HTMLElement = store.add(renderMarkdown({ value: `![image](http://example.com/cat.gif|height=100 'caption')` })).element;
-			assertNodeEquals(result, `<div><p><img height="100" title="caption" alt="image" src="http://example.com/cat.gif"></p></div>`);
+			const result: HTMLElement = store.add(
+				renderMarkdown({ value: `![image](http://example.com/cat.gif|height=100 'caption')` })
+			).element;
+			assertNodeEquals(
+				result,
+				`<div><p><img height="100" title="caption" alt="image" src="http://example.com/cat.gif"></p></div>`
+			);
 		});
 
 		test('image width and height from title params', () => {
-			const result: HTMLElement = store.add(renderMarkdown({ value: `![image](http://example.com/cat.gif|height=200,width=100 'caption')` })).element;
-			assertNodeEquals(result, `<div><p><img height="200" width="100" title="caption" alt="image" src="http://example.com/cat.gif"></p></div>`);
+			const result: HTMLElement = store.add(
+				renderMarkdown({
+					value: `![image](http://example.com/cat.gif|height=200,width=100 'caption')`,
+				})
+			).element;
+			assertNodeEquals(
+				result,
+				`<div><p><img height="200" width="100" title="caption" alt="image" src="http://example.com/cat.gif"></p></div>`
+			);
 		});
 
 		test('image with file uri should render as same origin uri', () => {
 			if (isWeb) {
 				return;
 			}
-			const result: HTMLElement = store.add(renderMarkdown({ value: `![image](file:///images/cat.gif)` })).element;
-			assertNodeEquals(result, '<div><p><img src="vscode-file://vscode-app/images/cat.gif" alt="image"></p></div>');
+			const result: HTMLElement = store.add(
+				renderMarkdown({ value: `![image](file:///images/cat.gif)` })
+			).element;
+			assertNodeEquals(
+				result,
+				'<div><p><img src="vscode-file://vscode-app/images/cat.gif" alt="image"></p></div>'
+			);
 		});
 	});
 
@@ -82,10 +114,12 @@ suite('MarkdownRenderer', () => {
 		test('asyncRenderCallback should be invoked for code blocks', () => {
 			const markdown = { value: '```js\n1 + 1;\n```' };
 			return new Promise<void>(resolve => {
-				store.add(renderMarkdown(markdown, {
-					asyncRenderCallback: resolve,
-					codeBlockRenderer: simpleCodeBlockRenderer
-				}));
+				store.add(
+					renderMarkdown(markdown, {
+						asyncRenderCallback: resolve,
+						codeBlockRenderer: simpleCodeBlockRenderer,
+					})
+				);
 			});
 		});
 
@@ -94,7 +128,7 @@ suite('MarkdownRenderer', () => {
 			return new Promise<void>((resolve, reject) => {
 				const result = renderMarkdown(markdown, {
 					asyncRenderCallback: reject,
-					codeBlockRenderer: simpleCodeBlockRenderer
+					codeBlockRenderer: simpleCodeBlockRenderer,
 				});
 				result.dispose();
 				setTimeout(resolve, 10);
@@ -111,7 +145,7 @@ suite('MarkdownRenderer', () => {
 						return new Promise(resolve => {
 							resolveCodeBlockRendering = resolve;
 						});
-					}
+					},
 				});
 				setTimeout(() => {
 					result.dispose();
@@ -124,25 +158,29 @@ suite('MarkdownRenderer', () => {
 		test('Code blocks should use leading language id (#157793)', async () => {
 			const markdown = { value: '```js some other stuff\n1 + 1;\n```' };
 			const lang = await new Promise<string>(resolve => {
-				store.add(renderMarkdown(markdown, {
-					codeBlockRenderer: async (lang, value) => {
-						resolve(lang);
-						return simpleCodeBlockRenderer(lang, value);
-					}
-				}));
+				store.add(
+					renderMarkdown(markdown, {
+						codeBlockRenderer: async (lang, value) => {
+							resolve(lang);
+							return simpleCodeBlockRenderer(lang, value);
+						},
+					})
+				);
 			});
 			assert.strictEqual(lang, 'js');
 		});
 	});
 
 	suite('ThemeIcons Support On', () => {
-
 		test('render appendText', () => {
 			const mds = new MarkdownString(undefined, { supportThemeIcons: true });
 			mds.appendText('$(zap) $(not a theme icon) $(add)');
 
 			const result: HTMLElement = store.add(renderMarkdown(mds)).element;
-			assert.strictEqual(result.innerHTML, `<p>$(zap)&nbsp;$(not&nbsp;a&nbsp;theme&nbsp;icon)&nbsp;$(add)</p>`);
+			assert.strictEqual(
+				result.innerHTML,
+				`<p>$(zap)&nbsp;$(not&nbsp;a&nbsp;theme&nbsp;icon)&nbsp;$(add)</p>`
+			);
 		});
 
 		test('render appendMarkdown', () => {
@@ -150,7 +188,10 @@ suite('MarkdownRenderer', () => {
 			mds.appendMarkdown('$(zap) $(not a theme icon) $(add)');
 
 			const result: HTMLElement = store.add(renderMarkdown(mds)).element;
-			assert.strictEqual(result.innerHTML, `<p><span class="codicon codicon-zap"></span> $(not a theme icon) <span class="codicon codicon-add"></span></p>`);
+			assert.strictEqual(
+				result.innerHTML,
+				`<p><span class="codicon codicon-zap"></span> $(not a theme icon) <span class="codicon codicon-add"></span></p>`
+			);
 		});
 
 		test('render appendMarkdown with escaped icon', () => {
@@ -158,7 +199,10 @@ suite('MarkdownRenderer', () => {
 			mds.appendMarkdown('\\$(zap) $(not a theme icon) $(add)');
 
 			const result: HTMLElement = store.add(renderMarkdown(mds)).element;
-			assert.strictEqual(result.innerHTML, `<p>$(zap) $(not a theme icon) <span class="codicon codicon-add"></span></p>`);
+			assert.strictEqual(
+				result.innerHTML,
+				`<p>$(zap) $(not a theme icon) <span class="codicon codicon-add"></span></p>`
+			);
 		});
 
 		test('render icon in link', () => {
@@ -166,7 +210,10 @@ suite('MarkdownRenderer', () => {
 			mds.appendMarkdown(`[$(zap)-link](#link)`);
 
 			const result: HTMLElement = store.add(renderMarkdown(mds)).element;
-			assert.strictEqual(result.innerHTML, `<p><a data-href="#link" href="" title="#link" draggable="false"><span class="codicon codicon-zap"></span>-link</a></p>`);
+			assert.strictEqual(
+				result.innerHTML,
+				`<p><a data-href="#link" href="" title="#link" draggable="false"><span class="codicon codicon-zap"></span>-link</a></p>`
+			);
 		});
 
 		test('render icon in table', () => {
@@ -177,7 +224,9 @@ suite('MarkdownRenderer', () => {
 | $(zap) | [$(zap)-link](#link) |`);
 
 			const result: HTMLElement = store.add(renderMarkdown(mds)).element;
-			assert.strictEqual(result.innerHTML, `<table>
+			assert.strictEqual(
+				result.innerHTML,
+				`<table>
 <thead>
 <tr>
 <th>text</th>
@@ -189,7 +238,8 @@ suite('MarkdownRenderer', () => {
 <td><a data-href="#link" href="" title="#link" draggable="false"><span class="codicon codicon-zap"></span>-link</a></td>
 </tr>
 </tbody></table>
-`);
+`
+			);
 		});
 
 		test('render icon in <a> without href (#152170)', () => {
@@ -202,13 +252,15 @@ suite('MarkdownRenderer', () => {
 	});
 
 	suite('ThemeIcons Support Off', () => {
-
 		test('render appendText', () => {
 			const mds = new MarkdownString(undefined, { supportThemeIcons: false });
 			mds.appendText('$(zap) $(not a theme icon) $(add)');
 
 			const result: HTMLElement = store.add(renderMarkdown(mds)).element;
-			assert.strictEqual(result.innerHTML, `<p>$(zap)&nbsp;$(not&nbsp;a&nbsp;theme&nbsp;icon)&nbsp;$(add)</p>`);
+			assert.strictEqual(
+				result.innerHTML,
+				`<p>$(zap)&nbsp;$(not&nbsp;a&nbsp;theme&nbsp;icon)&nbsp;$(add)</p>`
+			);
 		});
 
 		test('render appendMarkdown with escaped icon', () => {
@@ -221,8 +273,9 @@ suite('MarkdownRenderer', () => {
 	});
 
 	test('npm Hover Run Script not working #90855', function () {
-
-		const md: IMarkdownString = JSON.parse('{"value":"[Run Script](command:npm.runScriptFromHover?%7B%22documentUri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Cjrieken%5C%5CCode%5C%5C_sample%5C%5Cfoo%5C%5Cpackage.json%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fjrieken%2FCode%2F_sample%2Ffoo%2Fpackage.json%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fjrieken%2FCode%2F_sample%2Ffoo%2Fpackage.json%22%2C%22scheme%22%3A%22file%22%7D%2C%22script%22%3A%22echo%22%7D \\"Run the script as a task\\")","supportThemeIcons":false,"isTrusted":true,"uris":{"__uri_e49443":{"$mid":1,"fsPath":"c:\\\\Users\\\\jrieken\\\\Code\\\\_sample\\\\foo\\\\package.json","_sep":1,"external":"file:///c%3A/Users/jrieken/Code/_sample/foo/package.json","path":"/c:/Users/jrieken/Code/_sample/foo/package.json","scheme":"file"},"command:npm.runScriptFromHover?%7B%22documentUri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Cjrieken%5C%5CCode%5C%5C_sample%5C%5Cfoo%5C%5Cpackage.json%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fjrieken%2FCode%2F_sample%2Ffoo%2Fpackage.json%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fjrieken%2FCode%2F_sample%2Ffoo%2Fpackage.json%22%2C%22scheme%22%3A%22file%22%7D%2C%22script%22%3A%22echo%22%7D":{"$mid":1,"path":"npm.runScriptFromHover","scheme":"command","query":"{\\"documentUri\\":\\"__uri_e49443\\",\\"script\\":\\"echo\\"}"}}}');
+		const md: IMarkdownString = JSON.parse(
+			'{"value":"[Run Script](command:npm.runScriptFromHover?%7B%22documentUri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Cjrieken%5C%5CCode%5C%5C_sample%5C%5Cfoo%5C%5Cpackage.json%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fjrieken%2FCode%2F_sample%2Ffoo%2Fpackage.json%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fjrieken%2FCode%2F_sample%2Ffoo%2Fpackage.json%22%2C%22scheme%22%3A%22file%22%7D%2C%22script%22%3A%22echo%22%7D \\"Run the script as a task\\")","supportThemeIcons":false,"isTrusted":true,"uris":{"__uri_e49443":{"$mid":1,"fsPath":"c:\\\\Users\\\\jrieken\\\\Code\\\\_sample\\\\foo\\\\package.json","_sep":1,"external":"file:///c%3A/Users/jrieken/Code/_sample/foo/package.json","path":"/c:/Users/jrieken/Code/_sample/foo/package.json","scheme":"file"},"command:npm.runScriptFromHover?%7B%22documentUri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Cjrieken%5C%5CCode%5C%5C_sample%5C%5Cfoo%5C%5Cpackage.json%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fjrieken%2FCode%2F_sample%2Ffoo%2Fpackage.json%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fjrieken%2FCode%2F_sample%2Ffoo%2Fpackage.json%22%2C%22scheme%22%3A%22file%22%7D%2C%22script%22%3A%22echo%22%7D":{"$mid":1,"path":"npm.runScriptFromHover","scheme":"command","query":"{\\"documentUri\\":\\"__uri_e49443\\",\\"script\\":\\"echo\\"}"}}}'
+		);
 		const element = store.add(renderMarkdown(md)).element;
 
 		const anchor = element.querySelector('a')!;
@@ -238,29 +291,41 @@ suite('MarkdownRenderer', () => {
 	});
 
 	test('Should not render command links by default', () => {
-		const md = new MarkdownString(`[command1](command:doFoo) <a href="command:doFoo">command2</a>`, {
-			supportHtml: true
-		});
+		const md = new MarkdownString(
+			`[command1](command:doFoo) <a href="command:doFoo">command2</a>`,
+			{
+				supportHtml: true,
+			}
+		);
 
 		const result: HTMLElement = store.add(renderMarkdown(md)).element;
 		assert.strictEqual(result.innerHTML, `<p>command1 command2</p>`);
 	});
 
 	test('Should render command links in trusted strings', () => {
-		const md = new MarkdownString(`[command1](command:doFoo) <a href="command:doFoo">command2</a>`, {
-			isTrusted: true,
-			supportHtml: true,
-		});
+		const md = new MarkdownString(
+			`[command1](command:doFoo) <a href="command:doFoo">command2</a>`,
+			{
+				isTrusted: true,
+				supportHtml: true,
+			}
+		);
 
 		const result: HTMLElement = store.add(renderMarkdown(md)).element;
-		assert.strictEqual(result.innerHTML, `<p><a data-href="command:doFoo" href="" title="command:doFoo" draggable="false">command1</a> <a data-href="command:doFoo" href="">command2</a></p>`);
+		assert.strictEqual(
+			result.innerHTML,
+			`<p><a data-href="command:doFoo" href="" title="command:doFoo" draggable="false">command1</a> <a data-href="command:doFoo" href="">command2</a></p>`
+		);
 	});
 
 	suite('PlaintextMarkdownRender', () => {
-
 		test('test code, blockquote, heading, list, listitem, paragraph, table, tablerow, tablecell, strong, em, br, del, text are rendered plaintext', () => {
-			const markdown = { value: '`code`\n>quote\n# heading\n- list\n\ntable | table2\n--- | --- \none | two\n\n\nbo**ld**\n_italic_\n~~del~~\nsome text' };
-			const expected = 'code\nquote\nheading\nlist\n\ntable table2\none two\nbold\nitalic\ndel\nsome text';
+			const markdown = {
+				value:
+					'`code`\n>quote\n# heading\n- list\n\ntable | table2\n--- | --- \none | two\n\n\nbo**ld**\n_italic_\n~~del~~\nsome text',
+			};
+			const expected =
+				'code\nquote\nheading\nlist\n\ntable table2\none two\nbold\nitalic\ndel\nsome text';
 			const result: string = renderMarkdownAsPlaintext(markdown);
 			assert.strictEqual(result, expected);
 		});
@@ -274,17 +339,9 @@ suite('MarkdownRenderer', () => {
 
 		test(`Should not remove html inside of code blocks`, () => {
 			const markdown = {
-				value: [
-					'```html',
-					'<form>html</form>',
-					'```',
-				].join('\n')
+				value: ['```html', '<form>html</form>', '```'].join('\n'),
 			};
-			const expected = [
-				'```',
-				'<form>html</form>',
-				'```',
-			].join('\n');
+			const expected = ['```', '<form>html</form>', '```'].join('\n');
 			const result: string = renderMarkdownAsPlaintext(markdown, true);
 			assert.strictEqual(result, expected);
 		});
@@ -351,7 +408,7 @@ suite('MarkdownRenderer', () => {
 	suite('fillInIncompleteTokens', () => {
 		function ignoreRaw(...tokenLists: marked.Token[][]): void {
 			tokenLists.forEach(tokens => {
-				tokens.forEach(t => t.raw = '');
+				tokens.forEach(t => (t.raw = ''));
 			});
 		}
 
@@ -887,7 +944,7 @@ suite('MarkdownRenderer', () => {
 				assert.deepStrictEqual(newTokens, completeTokens);
 			});
 
-			test('Looks like incomplete link target but isn\'t', () => {
+			test("Looks like incomplete link target but isn't", () => {
 				const complete = '**bold** `codespan` text](';
 				const tokens = marked.marked.lexer(complete);
 				const newTokens = fillInIncompleteTokens(tokens);

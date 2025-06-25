@@ -14,7 +14,12 @@ import { dispose, IDisposable, toDisposable } from '../../../common/lifecycle.js
 import { deepClone } from '../../../common/objects.js';
 import { createQueuedSender } from '../../../node/processes.js';
 import { removeDangerousEnvVariables } from '../../../common/processes.js';
-import { ChannelClient as IPCClient, ChannelServer as IPCServer, IChannel, IChannelClient } from '../common/ipc.js';
+import {
+	ChannelClient as IPCClient,
+	ChannelServer as IPCServer,
+	IChannel,
+	IChannelClient,
+} from '../common/ipc.js';
 
 /**
  * This implementation doesn't perform well since it uses base64 encoding for buffers.
@@ -23,21 +28,27 @@ import { ChannelClient as IPCClient, ChannelServer as IPCServer, IChannel, IChan
 
 export class Server<TContext extends string> extends IPCServer<TContext> {
 	constructor(ctx: TContext) {
-		super({
-			send: r => {
-				try {
-					process.send?.((<Buffer>r.buffer).toString('base64'));
-				} catch (e) { /* not much to do */ }
+		super(
+			{
+				send: r => {
+					try {
+						process.send?.((<Buffer>r.buffer).toString('base64'));
+					} catch (e) {
+						/* not much to do */
+					}
+				},
+				onMessage: Event.fromNodeEventEmitter(process, 'message', msg =>
+					VSBuffer.wrap(Buffer.from(msg, 'base64'))
+				),
 			},
-			onMessage: Event.fromNodeEventEmitter(process, 'message', msg => VSBuffer.wrap(Buffer.from(msg, 'base64')))
-		}, ctx);
+			ctx
+		);
 
 		process.once('disconnect', () => this.dispose());
 	}
 }
 
 export interface IIPCOptions {
-
 	/**
 	 * A descriptive name for the server this connection is to. Used in logging.
 	 */
@@ -82,7 +93,6 @@ export interface IIPCOptions {
 }
 
 export class Client implements IChannelClient, IDisposable {
-
 	private disposeDelayer: Delayer<void> | undefined;
 	private activeRequests = new Set<IDisposable>();
 	private child: ChildProcess | null;
@@ -92,7 +102,10 @@ export class Client implements IChannelClient, IDisposable {
 	private readonly _onDidProcessExit = new Emitter<{ code: number; signal: string }>();
 	readonly onDidProcessExit = this._onDidProcessExit.event;
 
-	constructor(private modulePath: string, private options: IIPCOptions) {
+	constructor(
+		private modulePath: string,
+		private options: IIPCOptions
+	) {
 		const timeout = options && options.timeout ? options.timeout : 60000;
 		this.disposeDelayer = new Delayer<void>(timeout);
 		this.child = null;
@@ -109,11 +122,16 @@ export class Client implements IChannelClient, IDisposable {
 			},
 			listen(event: string, arg?: any) {
 				return that.requestEvent(channelName, event, arg);
-			}
+			},
 		} as T;
 	}
 
-	protected requestPromise<T>(channelName: string, name: string, arg?: any, cancellationToken = CancellationToken.None): Promise<T> {
+	protected requestPromise<T>(
+		channelName: string,
+		name: string,
+		arg?: any,
+		cancellationToken = CancellationToken.None
+	): Promise<T> {
 		if (!this.disposeDelayer) {
 			return Promise.reject(new Error('disposed'));
 		}
@@ -126,7 +144,9 @@ export class Client implements IChannelClient, IDisposable {
 
 		const channel = this.getCachedChannel(channelName);
 		const result = createCancelablePromise(token => channel.call<T>(name, arg, token));
-		const cancellationTokenListener = cancellationToken.onCancellationRequested(() => result.cancel());
+		const cancellationTokenListener = cancellationToken.onCancellationRequested(() =>
+			result.cancel()
+		);
 
 		const disposable = toDisposable(() => result.cancel());
 		this.activeRequests.add(disposable);
@@ -166,7 +186,7 @@ export class Client implements IChannelClient, IDisposable {
 				if (this.activeRequests.size === 0 && this.disposeDelayer) {
 					this.disposeDelayer.trigger(() => this.disposeClient());
 				}
-			}
+			},
 		});
 
 		return emitter.event;
@@ -177,7 +197,7 @@ export class Client implements IChannelClient, IDisposable {
 			const args = this.options && this.options.args ? this.options.args : [];
 			const forkOpts: ForkOptions = Object.create(null);
 
-			forkOpts.env = { ...deepClone(process.env), 'VSCODE_PARENT_PID': String(process.pid) };
+			forkOpts.env = { ...deepClone(process.env), VSCODE_PARENT_PID: String(process.pid) };
 
 			if (this.options && this.options.env) {
 				forkOpts.env = { ...forkOpts.env, ...this.options.env };
@@ -196,9 +216,9 @@ export class Client implements IChannelClient, IDisposable {
 			}
 
 			if (forkOpts.execArgv === undefined) {
-				forkOpts.execArgv = process.execArgv			// if not set, the forked process inherits the execArgv of the parent process
+				forkOpts.execArgv = process.execArgv // if not set, the forked process inherits the execArgv of the parent process
 					.filter(a => !/^--inspect(-brk)?=/.test(a)) // --inspect and --inspect-brk can not be inherited as the port would conflict
-					.filter(a => !a.startsWith('--vscode-')); 	// --vscode-* arguments are unsupported by node.js and thus need to remove
+					.filter(a => !a.startsWith('--vscode-')); // --vscode-* arguments are unsupported by node.js and thus need to remove
 			}
 
 			removeDangerousEnvVariables(forkOpts.env);
@@ -209,7 +229,6 @@ export class Client implements IChannelClient, IDisposable {
 			const onRawMessage = Event.fromNodeEventEmitter(this.child, 'message', msg => msg);
 
 			const rawMessageDisposable = onRawMessage(msg => {
-
 				// Handle remote console logs specially
 				if (isRemoteConsoleLog(msg)) {
 					log(msg, `IPC Library: ${this.options.serverName}`);
@@ -221,7 +240,8 @@ export class Client implements IChannelClient, IDisposable {
 			});
 
 			const sender = this.options.useQueue ? createQueuedSender(this.child) : this.child;
-			const send = (r: VSBuffer) => this.child && this.child.connected && sender.send((<Buffer>r.buffer).toString('base64'));
+			const send = (r: VSBuffer) =>
+				this.child && this.child.connected && sender.send((<Buffer>r.buffer).toString('base64'));
 			const onMessage = onMessageEmitter.event;
 			const protocol = { send, onMessage };
 
@@ -230,7 +250,9 @@ export class Client implements IChannelClient, IDisposable {
 			const onExit = () => this.disposeClient();
 			process.once('exit', onExit);
 
-			this.child.on('error', err => console.warn('IPC "' + this.options.serverName + '" errored with ' + err));
+			this.child.on('error', err =>
+				console.warn('IPC "' + this.options.serverName + '" errored with ' + err)
+			);
 
 			this.child.on('exit', (code: any, signal: any) => {
 				process.removeListener('exit' as 'loaded', onExit); // https://github.com/electron/electron/issues/21475
@@ -240,7 +262,14 @@ export class Client implements IChannelClient, IDisposable {
 				this.activeRequests.clear();
 
 				if (code !== 0 && signal !== 'SIGTERM') {
-					console.warn('IPC "' + this.options.serverName + '" crashed with exit code ' + code + ' and signal ' + signal);
+					console.warn(
+						'IPC "' +
+							this.options.serverName +
+							'" crashed with exit code ' +
+							code +
+							' and signal ' +
+							signal
+					);
 				}
 
 				this.disposeDelayer?.cancel();

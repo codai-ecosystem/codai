@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	export interface ChatStatusItem {
 		/**
 		 * The identifier of this item.

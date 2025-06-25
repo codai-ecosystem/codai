@@ -9,17 +9,38 @@
 
 import * as path from '../../../../base/common/path.js';
 import { URI } from '../../../../base/common/uri.js';
-import { IWorkspaceContextService, IWorkspaceFolder } from '../../../../platform/workspace/common/workspace.js';
+import {
+	IWorkspaceContextService,
+	IWorkspaceFolder,
+} from '../../../../platform/workspace/common/workspace.js';
 import { IConfigurationResolverService } from '../../../services/configurationResolver/common/configurationResolver.js';
 import { sanitizeProcessEnvironment } from '../../../../base/common/processes.js';
-import { IShellLaunchConfig, ITerminalBackend, ITerminalEnvironment, TerminalShellType, WindowsShellType } from '../../../../platform/terminal/common/terminal.js';
-import { IProcessEnvironment, isWindows, isMacintosh, language, OperatingSystem } from '../../../../base/common/platform.js';
-import { escapeNonWindowsPath, sanitizeCwd } from '../../../../platform/terminal/common/terminalEnvironment.js';
+import {
+	IShellLaunchConfig,
+	ITerminalBackend,
+	ITerminalEnvironment,
+	TerminalShellType,
+	WindowsShellType,
+} from '../../../../platform/terminal/common/terminal.js';
+import {
+	IProcessEnvironment,
+	isWindows,
+	isMacintosh,
+	language,
+	OperatingSystem,
+} from '../../../../base/common/platform.js';
+import {
+	escapeNonWindowsPath,
+	sanitizeCwd,
+} from '../../../../platform/terminal/common/terminalEnvironment.js';
 import { isString } from '../../../../base/common/types.js';
 import { IHistoryService } from '../../../services/history/common/history.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 
-export function mergeEnvironments(parent: IProcessEnvironment, other: ITerminalEnvironment | undefined): void {
+export function mergeEnvironments(
+	parent: IProcessEnvironment,
+	other: ITerminalEnvironment | undefined
+): void {
 	if (!other) {
 		return;
 	}
@@ -41,7 +62,7 @@ export function mergeEnvironments(parent: IProcessEnvironment, other: ITerminalE
 			}
 		}
 	} else {
-		Object.keys(other).forEach((key) => {
+		Object.keys(other).forEach(key => {
 			const value = other[key];
 			if (value !== undefined) {
 				_mergeEnvironmentValue(parent, key, value);
@@ -50,7 +71,11 @@ export function mergeEnvironments(parent: IProcessEnvironment, other: ITerminalE
 	}
 }
 
-function _mergeEnvironmentValue(env: ITerminalEnvironment, key: string, value: string | null): void {
+function _mergeEnvironmentValue(
+	env: ITerminalEnvironment,
+	key: string,
+	value: string | null
+): void {
 	if (typeof value === 'string') {
 		env[key] = value;
 	} else {
@@ -58,7 +83,12 @@ function _mergeEnvironmentValue(env: ITerminalEnvironment, key: string, value: s
 	}
 }
 
-export function addTerminalEnvironmentKeys(env: IProcessEnvironment, version: string | undefined, locale: string | undefined, detectLocale: 'auto' | 'off' | 'on'): void {
+export function addTerminalEnvironmentKeys(
+	env: IProcessEnvironment,
+	version: string | undefined,
+	locale: string | undefined,
+	detectLocale: 'auto' | 'off' | 'on'
+): void {
 	env['TERM_PROGRAM'] = 'vscode';
 	if (version) {
 		env['TERM_PROGRAM_VERSION'] = version;
@@ -81,27 +111,40 @@ function mergeNonNullKeys(env: IProcessEnvironment, other: ITerminalEnvironment 
 	}
 }
 
-async function resolveConfigurationVariables(variableResolver: VariableResolver, env: ITerminalEnvironment): Promise<ITerminalEnvironment> {
-	await Promise.all(Object.entries(env).map(async ([key, value]) => {
-		if (typeof value === 'string') {
-			try {
-				env[key] = await variableResolver(value);
-			} catch (e) {
-				env[key] = value;
+async function resolveConfigurationVariables(
+	variableResolver: VariableResolver,
+	env: ITerminalEnvironment
+): Promise<ITerminalEnvironment> {
+	await Promise.all(
+		Object.entries(env).map(async ([key, value]) => {
+			if (typeof value === 'string') {
+				try {
+					env[key] = await variableResolver(value);
+				} catch (e) {
+					env[key] = value;
+				}
 			}
-		}
-	}));
+		})
+	);
 
 	return env;
 }
 
-export function shouldSetLangEnvVariable(env: IProcessEnvironment, detectLocale: 'auto' | 'off' | 'on'): boolean {
+export function shouldSetLangEnvVariable(
+	env: IProcessEnvironment,
+	detectLocale: 'auto' | 'off' | 'on'
+): boolean {
 	if (detectLocale === 'on') {
 		return true;
 	}
 	if (detectLocale === 'auto') {
 		const lang = env['LANG'];
-		return !lang || (lang.search(/\.UTF\-8$/) === -1 && lang.search(/\.utf8$/) === -1 && lang.search(/\.euc.+/) === -1);
+		return (
+			!lang ||
+			(lang.search(/\.UTF\-8$/) === -1 &&
+				lang.search(/\.utf8$/) === -1 &&
+				lang.search(/\.euc.+/) === -1)
+		);
 	}
 	return false; // 'off'
 }
@@ -191,7 +234,7 @@ export async function getCwd(
 	logService?: ILogService
 ): Promise<string> {
 	if (shell.cwd) {
-		const unresolved = (typeof shell.cwd === 'object') ? shell.cwd.fsPath : shell.cwd;
+		const unresolved = typeof shell.cwd === 'object' ? shell.cwd.fsPath : shell.cwd;
 		const resolved = await _resolveCwd(unresolved, variableResolver);
 		return sanitizeCwd(resolved || unresolved);
 	}
@@ -219,7 +262,11 @@ export async function getCwd(
 	return sanitizeCwd(cwd);
 }
 
-async function _resolveCwd(cwd: string, variableResolver: VariableResolver | undefined, logService?: ILogService): Promise<string | undefined> {
+async function _resolveCwd(
+	cwd: string,
+	variableResolver: VariableResolver | undefined,
+	logService?: ILogService
+): Promise<string | undefined> {
 	if (variableResolver) {
 		try {
 			return await variableResolver(cwd);
@@ -233,11 +280,15 @@ async function _resolveCwd(cwd: string, variableResolver: VariableResolver | und
 
 export type VariableResolver = (str: string) => Promise<string>;
 
-export function createVariableResolver(lastActiveWorkspace: IWorkspaceFolder | undefined, env: IProcessEnvironment, configurationResolverService: IConfigurationResolverService | undefined): VariableResolver | undefined {
+export function createVariableResolver(
+	lastActiveWorkspace: IWorkspaceFolder | undefined,
+	env: IProcessEnvironment,
+	configurationResolverService: IConfigurationResolverService | undefined
+): VariableResolver | undefined {
 	if (!configurationResolverService) {
 		return undefined;
 	}
-	return (str) => configurationResolverService.resolveWithEnvironment(env, lastActiveWorkspace, str);
+	return str => configurationResolverService.resolveWithEnvironment(env, lastActiveWorkspace, str);
 }
 
 export async function createTerminalEnvironment(
@@ -316,7 +367,15 @@ export async function createTerminalEnvironment(
  * tests.
  * @returns An escaped version of the path to be execuded in the terminal.
  */
-export async function preparePathForShell(resource: string | URI, executable: string | undefined, title: string, shellType: TerminalShellType | undefined, backend: Pick<ITerminalBackend, 'getWslPath'> | undefined, os: OperatingSystem | undefined, isWindowsFrontend: boolean = isWindows): Promise<string> {
+export async function preparePathForShell(
+	resource: string | URI,
+	executable: string | undefined,
+	title: string,
+	shellType: TerminalShellType | undefined,
+	backend: Pick<ITerminalBackend, 'getWslPath'> | undefined,
+	os: OperatingSystem | undefined,
+	isWindowsFrontend: boolean = isWindows
+): Promise<string> {
 	let originalPath: string;
 	if (isString(resource)) {
 		originalPath = resource;
@@ -338,14 +397,14 @@ export async function preparePathForShell(resource: string | URI, executable: st
 	const hasParens = originalPath.includes('(') || originalPath.includes(')');
 
 	const pathBasename = path.basename(executable, '.exe');
-	const isPowerShell = pathBasename === 'pwsh' ||
+	const isPowerShell =
+		pathBasename === 'pwsh' ||
 		title === 'pwsh' ||
 		pathBasename === 'powershell' ||
 		title === 'powershell';
 
-
-	if (isPowerShell && (hasSpace || originalPath.includes('\''))) {
-		return `& '${originalPath.replace(/'/g, '\'\'')}'`;
+	if (isPowerShell && (hasSpace || originalPath.includes("'"))) {
+		return `& '${originalPath.replace(/'/g, "''")}'`;
 	}
 
 	if (hasParens && isPowerShell) {
@@ -358,17 +417,18 @@ export async function preparePathForShell(resource: string | URI, executable: st
 		if (shellType !== undefined) {
 			if (shellType === WindowsShellType.GitBash) {
 				return escapeNonWindowsPath(originalPath.replace(/\\/g, '/'));
-			}
-			else if (shellType === WindowsShellType.Wsl) {
+			} else if (shellType === WindowsShellType.Wsl) {
 				return backend?.getWslPath(originalPath, 'win-to-unix') || originalPath;
-			}
-			else if (hasSpace) {
+			} else if (hasSpace) {
 				return `"${originalPath}"`;
 			}
 			return originalPath;
 		}
 		const lowerExecutable = executable.toLowerCase();
-		if (lowerExecutable.includes('wsl') || (lowerExecutable.includes('bash.exe') && !lowerExecutable.toLowerCase().includes('git'))) {
+		if (
+			lowerExecutable.includes('wsl') ||
+			(lowerExecutable.includes('bash.exe') && !lowerExecutable.toLowerCase().includes('git'))
+		) {
 			return backend?.getWslPath(originalPath, 'win-to-unix') || originalPath;
 		} else if (hasSpace) {
 			return `"${originalPath}"`;
@@ -379,14 +439,22 @@ export async function preparePathForShell(resource: string | URI, executable: st
 	return escapeNonWindowsPath(originalPath);
 }
 
-export function getWorkspaceForTerminal(cwd: URI | string | undefined, workspaceContextService: IWorkspaceContextService, historyService: IHistoryService): IWorkspaceFolder | undefined {
+export function getWorkspaceForTerminal(
+	cwd: URI | string | undefined,
+	workspaceContextService: IWorkspaceContextService,
+	historyService: IHistoryService
+): IWorkspaceFolder | undefined {
 	const cwdUri = typeof cwd === 'string' ? URI.parse(cwd) : cwd;
-	let workspaceFolder = cwdUri ? workspaceContextService.getWorkspaceFolder(cwdUri) ?? undefined : undefined;
+	let workspaceFolder = cwdUri
+		? (workspaceContextService.getWorkspaceFolder(cwdUri) ?? undefined)
+		: undefined;
 	if (!workspaceFolder) {
 		// fallback to last active workspace if cwd is not available or it is not in workspace
 		// TOOD: last active workspace is known to be unreliable, we should remove this fallback eventually
 		const activeWorkspaceRootUri = historyService.getLastActiveWorkspaceRoot();
-		workspaceFolder = activeWorkspaceRootUri ? workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ?? undefined : undefined;
+		workspaceFolder = activeWorkspaceRootUri
+			? (workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ?? undefined)
+			: undefined;
 	}
 	return workspaceFolder;
 }

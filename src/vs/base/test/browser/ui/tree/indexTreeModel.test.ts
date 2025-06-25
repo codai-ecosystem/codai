@@ -4,8 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { IIndexTreeModelSpliceOptions, IIndexTreeNode, IndexTreeModel } from '../../../../browser/ui/tree/indexTreeModel.js';
-import { ITreeElement, ITreeFilter, ITreeNode, TreeVisibility } from '../../../../browser/ui/tree/tree.js';
+import {
+	IIndexTreeModelSpliceOptions,
+	IIndexTreeNode,
+	IndexTreeModel,
+} from '../../../../browser/ui/tree/indexTreeModel.js';
+import {
+	ITreeElement,
+	ITreeFilter,
+	ITreeNode,
+	TreeVisibility,
+} from '../../../../browser/ui/tree/tree.js';
 import { timeout } from '../../../../common/async.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../common/utils.js';
 import { DisposableStore, IDisposable } from '../../../../common/lifecycle.js';
@@ -20,9 +29,10 @@ function toArray<T>(list: ITreeNode<T>[]): T[] {
 	return list.map(i => i.element);
 }
 
-
 function toElements<T>(node: ITreeNode<T>): any {
-	return node.children?.length ? { e: node.element, children: node.children.map(toElements) } : node.element;
+	return node.children?.length
+		? { e: node.element, children: node.children.map(toElements) }
+		: node.element;
 }
 
 const diffIdentityProvider = { getId: (n: number) => String(n) };
@@ -37,7 +47,6 @@ function withSmartSplice(fn: (options: IIndexTreeModelSpliceOptions<number, any>
 }
 
 suite('IndexTreeModel', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	const disposables = new DisposableStore();
@@ -52,223 +61,225 @@ suite('IndexTreeModel', () => {
 		assert.strictEqual(list.length, 0);
 	});
 
-	test('insert', () => withSmartSplice(options => {
-		const list: ITreeNode<number>[] = [];
-		const model = new IndexTreeModel<number>('test', -1);
-		const disposable = bindListToModel(list, model);
+	test('insert', () =>
+		withSmartSplice(options => {
+			const list: ITreeNode<number>[] = [];
+			const model = new IndexTreeModel<number>('test', -1);
+			const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{ element: 0 },
-			{ element: 1 },
-			{ element: 2 }
-		], options);
+			model.splice([0], 0, [{ element: 0 }, { element: 1 }, { element: 2 }], options);
 
-		assert.deepStrictEqual(list.length, 3);
-		assert.deepStrictEqual(list[0].element, 0);
-		assert.deepStrictEqual(list[0].collapsed, false);
-		assert.deepStrictEqual(list[0].depth, 1);
-		assert.deepStrictEqual(list[1].element, 1);
-		assert.deepStrictEqual(list[1].collapsed, false);
-		assert.deepStrictEqual(list[1].depth, 1);
-		assert.deepStrictEqual(list[2].element, 2);
-		assert.deepStrictEqual(list[2].collapsed, false);
-		assert.deepStrictEqual(list[2].depth, 1);
+			assert.deepStrictEqual(list.length, 3);
+			assert.deepStrictEqual(list[0].element, 0);
+			assert.deepStrictEqual(list[0].collapsed, false);
+			assert.deepStrictEqual(list[0].depth, 1);
+			assert.deepStrictEqual(list[1].element, 1);
+			assert.deepStrictEqual(list[1].collapsed, false);
+			assert.deepStrictEqual(list[1].depth, 1);
+			assert.deepStrictEqual(list[2].element, 2);
+			assert.deepStrictEqual(list[2].collapsed, false);
+			assert.deepStrictEqual(list[2].depth, 1);
 
-		disposable.dispose();
-	}));
+			disposable.dispose();
+		}));
 
-	test('deep insert', () => withSmartSplice(options => {
-		const list: ITreeNode<number>[] = [];
-		const model = new IndexTreeModel<number>('test', -1);
-		const disposable = bindListToModel(list, model);
+	test('deep insert', () =>
+		withSmartSplice(options => {
+			const list: ITreeNode<number>[] = [];
+			const model = new IndexTreeModel<number>('test', -1);
+			const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{
-				element: 0, children: [
-					{ element: 10 },
-					{ element: 11 },
-					{ element: 12 },
-				]
-			},
-			{ element: 1 },
-			{ element: 2 }
-		]);
+			model.splice([0], 0, [
+				{
+					element: 0,
+					children: [{ element: 10 }, { element: 11 }, { element: 12 }],
+				},
+				{ element: 1 },
+				{ element: 2 },
+			]);
 
-		assert.deepStrictEqual(list.length, 6);
-		assert.deepStrictEqual(list[0].element, 0);
-		assert.deepStrictEqual(list[0].collapsed, false);
-		assert.deepStrictEqual(list[0].depth, 1);
-		assert.deepStrictEqual(list[1].element, 10);
-		assert.deepStrictEqual(list[1].collapsed, false);
-		assert.deepStrictEqual(list[1].depth, 2);
-		assert.deepStrictEqual(list[2].element, 11);
-		assert.deepStrictEqual(list[2].collapsed, false);
-		assert.deepStrictEqual(list[2].depth, 2);
-		assert.deepStrictEqual(list[3].element, 12);
-		assert.deepStrictEqual(list[3].collapsed, false);
-		assert.deepStrictEqual(list[3].depth, 2);
-		assert.deepStrictEqual(list[4].element, 1);
-		assert.deepStrictEqual(list[4].collapsed, false);
-		assert.deepStrictEqual(list[4].depth, 1);
-		assert.deepStrictEqual(list[5].element, 2);
-		assert.deepStrictEqual(list[5].collapsed, false);
-		assert.deepStrictEqual(list[5].depth, 1);
+			assert.deepStrictEqual(list.length, 6);
+			assert.deepStrictEqual(list[0].element, 0);
+			assert.deepStrictEqual(list[0].collapsed, false);
+			assert.deepStrictEqual(list[0].depth, 1);
+			assert.deepStrictEqual(list[1].element, 10);
+			assert.deepStrictEqual(list[1].collapsed, false);
+			assert.deepStrictEqual(list[1].depth, 2);
+			assert.deepStrictEqual(list[2].element, 11);
+			assert.deepStrictEqual(list[2].collapsed, false);
+			assert.deepStrictEqual(list[2].depth, 2);
+			assert.deepStrictEqual(list[3].element, 12);
+			assert.deepStrictEqual(list[3].collapsed, false);
+			assert.deepStrictEqual(list[3].depth, 2);
+			assert.deepStrictEqual(list[4].element, 1);
+			assert.deepStrictEqual(list[4].collapsed, false);
+			assert.deepStrictEqual(list[4].depth, 1);
+			assert.deepStrictEqual(list[5].element, 2);
+			assert.deepStrictEqual(list[5].collapsed, false);
+			assert.deepStrictEqual(list[5].depth, 1);
 
-		disposable.dispose();
-	}));
+			disposable.dispose();
+		}));
 
-	test('deep insert collapsed', () => withSmartSplice(options => {
-		const list: ITreeNode<number>[] = [];
-		const model = new IndexTreeModel<number>('test', -1);
-		const disposable = bindListToModel(list, model);
+	test('deep insert collapsed', () =>
+		withSmartSplice(options => {
+			const list: ITreeNode<number>[] = [];
+			const model = new IndexTreeModel<number>('test', -1);
+			const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{
-				element: 0, collapsed: true, children: [
-					{ element: 10 },
-					{ element: 11 },
-					{ element: 12 },
-				]
-			},
-			{ element: 1 },
-			{ element: 2 }
-		], options);
+			model.splice(
+				[0],
+				0,
+				[
+					{
+						element: 0,
+						collapsed: true,
+						children: [{ element: 10 }, { element: 11 }, { element: 12 }],
+					},
+					{ element: 1 },
+					{ element: 2 },
+				],
+				options
+			);
 
-		assert.deepStrictEqual(list.length, 3);
-		assert.deepStrictEqual(list[0].element, 0);
-		assert.deepStrictEqual(list[0].collapsed, true);
-		assert.deepStrictEqual(list[0].depth, 1);
-		assert.deepStrictEqual(list[1].element, 1);
-		assert.deepStrictEqual(list[1].collapsed, false);
-		assert.deepStrictEqual(list[1].depth, 1);
-		assert.deepStrictEqual(list[2].element, 2);
-		assert.deepStrictEqual(list[2].collapsed, false);
-		assert.deepStrictEqual(list[2].depth, 1);
+			assert.deepStrictEqual(list.length, 3);
+			assert.deepStrictEqual(list[0].element, 0);
+			assert.deepStrictEqual(list[0].collapsed, true);
+			assert.deepStrictEqual(list[0].depth, 1);
+			assert.deepStrictEqual(list[1].element, 1);
+			assert.deepStrictEqual(list[1].collapsed, false);
+			assert.deepStrictEqual(list[1].depth, 1);
+			assert.deepStrictEqual(list[2].element, 2);
+			assert.deepStrictEqual(list[2].collapsed, false);
+			assert.deepStrictEqual(list[2].depth, 1);
 
-		disposable.dispose();
-	}));
+			disposable.dispose();
+		}));
 
-	test('delete', () => withSmartSplice(options => {
-		const list: ITreeNode<number>[] = [];
-		const model = new IndexTreeModel<number>('test', -1);
-		const disposable = bindListToModel(list, model);
+	test('delete', () =>
+		withSmartSplice(options => {
+			const list: ITreeNode<number>[] = [];
+			const model = new IndexTreeModel<number>('test', -1);
+			const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{ element: 0 },
-			{ element: 1 },
-			{ element: 2 }
-		], options);
+			model.splice([0], 0, [{ element: 0 }, { element: 1 }, { element: 2 }], options);
 
-		assert.deepStrictEqual(list.length, 3);
+			assert.deepStrictEqual(list.length, 3);
 
-		model.splice([1], 1, undefined, options);
-		assert.deepStrictEqual(list.length, 2);
-		assert.deepStrictEqual(list[0].element, 0);
-		assert.deepStrictEqual(list[0].collapsed, false);
-		assert.deepStrictEqual(list[0].depth, 1);
-		assert.deepStrictEqual(list[1].element, 2);
-		assert.deepStrictEqual(list[1].collapsed, false);
-		assert.deepStrictEqual(list[1].depth, 1);
+			model.splice([1], 1, undefined, options);
+			assert.deepStrictEqual(list.length, 2);
+			assert.deepStrictEqual(list[0].element, 0);
+			assert.deepStrictEqual(list[0].collapsed, false);
+			assert.deepStrictEqual(list[0].depth, 1);
+			assert.deepStrictEqual(list[1].element, 2);
+			assert.deepStrictEqual(list[1].collapsed, false);
+			assert.deepStrictEqual(list[1].depth, 1);
 
-		model.splice([0], 2, undefined, options);
-		assert.deepStrictEqual(list.length, 0);
+			model.splice([0], 2, undefined, options);
+			assert.deepStrictEqual(list.length, 0);
 
-		disposable.dispose();
-	}));
+			disposable.dispose();
+		}));
 
-	test('nested delete', () => withSmartSplice(options => {
-		const list: ITreeNode<number>[] = [];
-		const model = new IndexTreeModel<number>('test', -1);
-		const disposable = bindListToModel(list, model);
+	test('nested delete', () =>
+		withSmartSplice(options => {
+			const list: ITreeNode<number>[] = [];
+			const model = new IndexTreeModel<number>('test', -1);
+			const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{
-				element: 0, children: [
-					{ element: 10 },
-					{ element: 11 },
-					{ element: 12 },
-				]
-			},
-			{ element: 1 },
-			{ element: 2 }
-		], options);
+			model.splice(
+				[0],
+				0,
+				[
+					{
+						element: 0,
+						children: [{ element: 10 }, { element: 11 }, { element: 12 }],
+					},
+					{ element: 1 },
+					{ element: 2 },
+				],
+				options
+			);
 
-		assert.deepStrictEqual(list.length, 6);
+			assert.deepStrictEqual(list.length, 6);
 
-		model.splice([1], 2, undefined, options);
-		assert.deepStrictEqual(list.length, 4);
-		assert.deepStrictEqual(list[0].element, 0);
-		assert.deepStrictEqual(list[0].collapsed, false);
-		assert.deepStrictEqual(list[0].depth, 1);
-		assert.deepStrictEqual(list[1].element, 10);
-		assert.deepStrictEqual(list[1].collapsed, false);
-		assert.deepStrictEqual(list[1].depth, 2);
-		assert.deepStrictEqual(list[2].element, 11);
-		assert.deepStrictEqual(list[2].collapsed, false);
-		assert.deepStrictEqual(list[2].depth, 2);
-		assert.deepStrictEqual(list[3].element, 12);
-		assert.deepStrictEqual(list[3].collapsed, false);
-		assert.deepStrictEqual(list[3].depth, 2);
+			model.splice([1], 2, undefined, options);
+			assert.deepStrictEqual(list.length, 4);
+			assert.deepStrictEqual(list[0].element, 0);
+			assert.deepStrictEqual(list[0].collapsed, false);
+			assert.deepStrictEqual(list[0].depth, 1);
+			assert.deepStrictEqual(list[1].element, 10);
+			assert.deepStrictEqual(list[1].collapsed, false);
+			assert.deepStrictEqual(list[1].depth, 2);
+			assert.deepStrictEqual(list[2].element, 11);
+			assert.deepStrictEqual(list[2].collapsed, false);
+			assert.deepStrictEqual(list[2].depth, 2);
+			assert.deepStrictEqual(list[3].element, 12);
+			assert.deepStrictEqual(list[3].collapsed, false);
+			assert.deepStrictEqual(list[3].depth, 2);
 
-		disposable.dispose();
-	}));
+			disposable.dispose();
+		}));
 
-	test('deep delete', () => withSmartSplice(options => {
-		const list: ITreeNode<number>[] = [];
-		const model = new IndexTreeModel<number>('test', -1);
-		const disposable = bindListToModel(list, model);
+	test('deep delete', () =>
+		withSmartSplice(options => {
+			const list: ITreeNode<number>[] = [];
+			const model = new IndexTreeModel<number>('test', -1);
+			const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{
-				element: 0, children: [
-					{ element: 10 },
-					{ element: 11 },
-					{ element: 12 },
-				]
-			},
-			{ element: 1 },
-			{ element: 2 }
-		], options);
+			model.splice(
+				[0],
+				0,
+				[
+					{
+						element: 0,
+						children: [{ element: 10 }, { element: 11 }, { element: 12 }],
+					},
+					{ element: 1 },
+					{ element: 2 },
+				],
+				options
+			);
 
-		assert.deepStrictEqual(list.length, 6);
+			assert.deepStrictEqual(list.length, 6);
 
-		model.splice([0], 1, undefined, options);
-		assert.deepStrictEqual(list.length, 2);
-		assert.deepStrictEqual(list[0].element, 1);
-		assert.deepStrictEqual(list[0].collapsed, false);
-		assert.deepStrictEqual(list[0].depth, 1);
-		assert.deepStrictEqual(list[1].element, 2);
-		assert.deepStrictEqual(list[1].collapsed, false);
-		assert.deepStrictEqual(list[1].depth, 1);
+			model.splice([0], 1, undefined, options);
+			assert.deepStrictEqual(list.length, 2);
+			assert.deepStrictEqual(list[0].element, 1);
+			assert.deepStrictEqual(list[0].collapsed, false);
+			assert.deepStrictEqual(list[0].depth, 1);
+			assert.deepStrictEqual(list[1].element, 2);
+			assert.deepStrictEqual(list[1].collapsed, false);
+			assert.deepStrictEqual(list[1].depth, 1);
 
-		disposable.dispose();
-	}));
+			disposable.dispose();
+		}));
 
 	test('smart splice deep', () => {
 		const list: ITreeNode<number>[] = [];
 		const model = new IndexTreeModel<number>('test', -1);
 		const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{ element: 0 },
-			{ element: 1 },
-			{ element: 2 },
-			{ element: 3 },
-		], { diffIdentityProvider });
+		model.splice([0], 0, [{ element: 0 }, { element: 1 }, { element: 2 }, { element: 3 }], {
+			diffIdentityProvider,
+		});
 
-		assert.deepStrictEqual(list.filter(l => l.depth === 1).map(toElements), [
-			0,
-			1,
-			2,
+		assert.deepStrictEqual(list.filter(l => l.depth === 1).map(toElements), [0, 1, 2, 3]);
+
+		model.splice(
+			[0],
 			3,
-		]);
-
-		model.splice([0], 3, [
-			{ element: -0.5 },
-			{ element: 0, children: [{ element: 0.1 }] },
-			{ element: 1 },
-			{ element: 2, children: [{ element: 2.1 }, { element: 2.2, children: [{ element: 2.21 }] }] },
-		], { diffIdentityProvider, diffDepth: Infinity });
+			[
+				{ element: -0.5 },
+				{ element: 0, children: [{ element: 0.1 }] },
+				{ element: 1 },
+				{
+					element: 2,
+					children: [{ element: 2.1 }, { element: 2.2, children: [{ element: 2.21 }] }],
+				},
+			],
+			{ diffIdentityProvider, diffDepth: Infinity }
+		);
 
 		assert.deepStrictEqual(list.filter(l => l.depth === 1).map(toElements), [
 			-0.5,
@@ -281,110 +292,121 @@ suite('IndexTreeModel', () => {
 		disposable.dispose();
 	});
 
-	test('hidden delete', () => withSmartSplice(options => {
-		const list: ITreeNode<number>[] = [];
-		const model = new IndexTreeModel<number>('test', -1);
-		const disposable = bindListToModel(list, model);
+	test('hidden delete', () =>
+		withSmartSplice(options => {
+			const list: ITreeNode<number>[] = [];
+			const model = new IndexTreeModel<number>('test', -1);
+			const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{
-				element: 0, collapsed: true, children: [
-					{ element: 10 },
-					{ element: 11 },
-					{ element: 12 },
-				]
-			},
-			{ element: 1 },
-			{ element: 2 }
-		], options);
+			model.splice(
+				[0],
+				0,
+				[
+					{
+						element: 0,
+						collapsed: true,
+						children: [{ element: 10 }, { element: 11 }, { element: 12 }],
+					},
+					{ element: 1 },
+					{ element: 2 },
+				],
+				options
+			);
 
-		assert.deepStrictEqual(list.length, 3);
+			assert.deepStrictEqual(list.length, 3);
 
-		model.splice([0, 1], 1, undefined, options);
-		assert.deepStrictEqual(list.length, 3);
+			model.splice([0, 1], 1, undefined, options);
+			assert.deepStrictEqual(list.length, 3);
 
-		model.splice([0, 0], 2, undefined, options);
-		assert.deepStrictEqual(list.length, 3);
+			model.splice([0, 0], 2, undefined, options);
+			assert.deepStrictEqual(list.length, 3);
 
-		disposable.dispose();
-	}));
+			disposable.dispose();
+		}));
 
-	test('collapse', () => withSmartSplice(options => {
-		const list: ITreeNode<number>[] = [];
-		const model = new IndexTreeModel<number>('test', -1);
-		const disposable = bindListToModel(list, model);
+	test('collapse', () =>
+		withSmartSplice(options => {
+			const list: ITreeNode<number>[] = [];
+			const model = new IndexTreeModel<number>('test', -1);
+			const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{
-				element: 0, children: [
-					{ element: 10 },
-					{ element: 11 },
-					{ element: 12 },
-				]
-			},
-			{ element: 1 },
-			{ element: 2 }
-		], options);
+			model.splice(
+				[0],
+				0,
+				[
+					{
+						element: 0,
+						children: [{ element: 10 }, { element: 11 }, { element: 12 }],
+					},
+					{ element: 1 },
+					{ element: 2 },
+				],
+				options
+			);
 
-		assert.deepStrictEqual(list.length, 6);
+			assert.deepStrictEqual(list.length, 6);
 
-		model.setCollapsed([0], true);
-		assert.deepStrictEqual(list.length, 3);
-		assert.deepStrictEqual(list[0].element, 0);
-		assert.deepStrictEqual(list[0].collapsed, true);
-		assert.deepStrictEqual(list[0].depth, 1);
-		assert.deepStrictEqual(list[1].element, 1);
-		assert.deepStrictEqual(list[1].collapsed, false);
-		assert.deepStrictEqual(list[1].depth, 1);
-		assert.deepStrictEqual(list[2].element, 2);
-		assert.deepStrictEqual(list[2].collapsed, false);
-		assert.deepStrictEqual(list[2].depth, 1);
+			model.setCollapsed([0], true);
+			assert.deepStrictEqual(list.length, 3);
+			assert.deepStrictEqual(list[0].element, 0);
+			assert.deepStrictEqual(list[0].collapsed, true);
+			assert.deepStrictEqual(list[0].depth, 1);
+			assert.deepStrictEqual(list[1].element, 1);
+			assert.deepStrictEqual(list[1].collapsed, false);
+			assert.deepStrictEqual(list[1].depth, 1);
+			assert.deepStrictEqual(list[2].element, 2);
+			assert.deepStrictEqual(list[2].collapsed, false);
+			assert.deepStrictEqual(list[2].depth, 1);
 
-		disposable.dispose();
-	}));
+			disposable.dispose();
+		}));
 
-	test('expand', () => withSmartSplice(options => {
-		const list: ITreeNode<number>[] = [];
-		const model = new IndexTreeModel<number>('test', -1);
-		const disposable = bindListToModel(list, model);
+	test('expand', () =>
+		withSmartSplice(options => {
+			const list: ITreeNode<number>[] = [];
+			const model = new IndexTreeModel<number>('test', -1);
+			const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{
-				element: 0, collapsed: true, children: [
-					{ element: 10 },
-					{ element: 11 },
-					{ element: 12 },
-				]
-			},
-			{ element: 1 },
-			{ element: 2 }
-		], options);
+			model.splice(
+				[0],
+				0,
+				[
+					{
+						element: 0,
+						collapsed: true,
+						children: [{ element: 10 }, { element: 11 }, { element: 12 }],
+					},
+					{ element: 1 },
+					{ element: 2 },
+				],
+				options
+			);
 
-		assert.deepStrictEqual(list.length, 3);
+			assert.deepStrictEqual(list.length, 3);
 
-		model.expandTo([0, 1]);
-		assert.deepStrictEqual(list.length, 6);
-		assert.deepStrictEqual(list[0].element, 0);
-		assert.deepStrictEqual(list[0].collapsed, false);
-		assert.deepStrictEqual(list[0].depth, 1);
-		assert.deepStrictEqual(list[1].element, 10);
-		assert.deepStrictEqual(list[1].collapsed, false);
-		assert.deepStrictEqual(list[1].depth, 2);
-		assert.deepStrictEqual(list[2].element, 11);
-		assert.deepStrictEqual(list[2].collapsed, false);
-		assert.deepStrictEqual(list[2].depth, 2);
-		assert.deepStrictEqual(list[3].element, 12);
-		assert.deepStrictEqual(list[3].collapsed, false);
-		assert.deepStrictEqual(list[3].depth, 2);
-		assert.deepStrictEqual(list[4].element, 1);
-		assert.deepStrictEqual(list[4].collapsed, false);
-		assert.deepStrictEqual(list[4].depth, 1);
-		assert.deepStrictEqual(list[5].element, 2);
-		assert.deepStrictEqual(list[5].collapsed, false);
-		assert.deepStrictEqual(list[5].depth, 1);
+			model.expandTo([0, 1]);
+			assert.deepStrictEqual(list.length, 6);
+			assert.deepStrictEqual(list[0].element, 0);
+			assert.deepStrictEqual(list[0].collapsed, false);
+			assert.deepStrictEqual(list[0].depth, 1);
+			assert.deepStrictEqual(list[1].element, 10);
+			assert.deepStrictEqual(list[1].collapsed, false);
+			assert.deepStrictEqual(list[1].depth, 2);
+			assert.deepStrictEqual(list[2].element, 11);
+			assert.deepStrictEqual(list[2].collapsed, false);
+			assert.deepStrictEqual(list[2].depth, 2);
+			assert.deepStrictEqual(list[3].element, 12);
+			assert.deepStrictEqual(list[3].collapsed, false);
+			assert.deepStrictEqual(list[3].depth, 2);
+			assert.deepStrictEqual(list[4].element, 1);
+			assert.deepStrictEqual(list[4].collapsed, false);
+			assert.deepStrictEqual(list[4].depth, 1);
+			assert.deepStrictEqual(list[5].element, 2);
+			assert.deepStrictEqual(list[5].collapsed, false);
+			assert.deepStrictEqual(list[5].depth, 1);
 
-		disposable.dispose();
-	}));
+			disposable.dispose();
+		}));
 
 	test('smart diff consistency', () => {
 		const times = 500;
@@ -423,9 +445,15 @@ suite('IndexTreeModel', () => {
 				expected.splice(spliceIndex, deleteCount, ...inserts.map(i => i.element));
 
 				const listElements = list.map(l => l.element);
-				changes.push(`splice(${spliceIndex}, ${deleteCount}, [${inserts.map(e => e.element).join(', ')}]) -> ${listElements.join(', ')}`);
+				changes.push(
+					`splice(${spliceIndex}, ${deleteCount}, [${inserts.map(e => e.element).join(', ')}]) -> ${listElements.join(', ')}`
+				);
 
-				assert.deepStrictEqual(expected, listElements, `Expected ${listElements.join(', ')} to equal ${expected.join(', ')}. Steps:\n\n${changes.join('\n')}`);
+				assert.deepStrictEqual(
+					expected,
+					listElements,
+					`Expected ${listElements.join(', ')} to equal ${expected.join(', ')}. Steps:\n\n${changes.join('\n')}`
+				);
 			}
 
 			disposable.dispose();
@@ -439,19 +467,18 @@ suite('IndexTreeModel', () => {
 
 		model.splice([0], 0, [
 			{
-				element: 1, children: [
+				element: 1,
+				children: [
 					{
-						element: 11, children: [
-							{ element: 111 }
-						]
-					}
-				]
+						element: 11,
+						children: [{ element: 111 }],
+					},
+				],
 			},
 			{
-				element: 2, children: [
-					{ element: 21 }
-				]
-			}
+				element: 2,
+				children: [{ element: 21 }],
+			},
 		]);
 
 		assert.deepStrictEqual(list.length, 5);
@@ -475,10 +502,9 @@ suite('IndexTreeModel', () => {
 
 		model.splice([0], 0, [
 			{
-				element: 0, children: [
-					{ element: 10 }
-				]
-			}
+				element: 0,
+				children: [{ element: 10 }],
+			},
 		]);
 
 		assert.deepStrictEqual(list.length, 2);
@@ -536,27 +562,28 @@ suite('IndexTreeModel', () => {
 
 	test('simple filter', () => {
 		const list: ITreeNode<number>[] = [];
-		const filter = new class implements ITreeFilter<number> {
+		const filter = new (class implements ITreeFilter<number> {
 			filter(element: number): TreeVisibility {
 				return element % 2 === 0 ? TreeVisibility.Visible : TreeVisibility.Hidden;
 			}
-		};
+		})();
 
 		const model = new IndexTreeModel<number>('test', -1, { filter });
 		const disposable = bindListToModel(list, model);
 
 		model.splice([0], 0, [
 			{
-				element: 0, children: [
+				element: 0,
+				children: [
 					{ element: 1 },
 					{ element: 2 },
 					{ element: 3 },
 					{ element: 4 },
 					{ element: 5 },
 					{ element: 6 },
-					{ element: 7 }
-				]
-			}
+					{ element: 7 },
+				],
+			},
 		]);
 
 		assert.deepStrictEqual(list.length, 4);
@@ -573,22 +600,20 @@ suite('IndexTreeModel', () => {
 
 	test('recursive filter on initial model', () => {
 		const list: ITreeNode<number>[] = [];
-		const filter = new class implements ITreeFilter<number> {
+		const filter = new (class implements ITreeFilter<number> {
 			filter(element: number): TreeVisibility {
 				return element === 0 ? TreeVisibility.Recurse : TreeVisibility.Hidden;
 			}
-		};
+		})();
 
 		const model = new IndexTreeModel<number>('test', -1, { filter });
 		const disposable = bindListToModel(list, model);
 
 		model.splice([0], 0, [
 			{
-				element: 0, children: [
-					{ element: 1 },
-					{ element: 2 }
-				]
-			}
+				element: 0,
+				children: [{ element: 1 }, { element: 2 }],
+			},
 		]);
 
 		assert.deepStrictEqual(toArray(list), []);
@@ -599,26 +624,27 @@ suite('IndexTreeModel', () => {
 	test('refilter', () => {
 		const list: ITreeNode<number>[] = [];
 		let shouldFilter = false;
-		const filter = new class implements ITreeFilter<number> {
+		const filter = new (class implements ITreeFilter<number> {
 			filter(element: number): TreeVisibility {
-				return (!shouldFilter || element % 2 === 0) ? TreeVisibility.Visible : TreeVisibility.Hidden;
+				return !shouldFilter || element % 2 === 0 ? TreeVisibility.Visible : TreeVisibility.Hidden;
 			}
-		};
+		})();
 
 		const model = new IndexTreeModel<number>('test', -1, { filter });
 		const disposable = bindListToModel(list, model);
 
 		model.splice([0], 0, [
 			{
-				element: 0, children: [
+				element: 0,
+				children: [
 					{ element: 1 },
 					{ element: 2 },
 					{ element: 3 },
 					{ element: 4 },
 					{ element: 5 },
 					{ element: 6 },
-					{ element: 7 }
-				]
+					{ element: 7 },
+				],
 			},
 		]);
 
@@ -641,34 +667,34 @@ suite('IndexTreeModel', () => {
 	test('recursive filter', () => {
 		const list: ITreeNode<string>[] = [];
 		let query = new RegExp('');
-		const filter = new class implements ITreeFilter<string> {
+		const filter = new (class implements ITreeFilter<string> {
 			filter(element: string): TreeVisibility {
 				return query.test(element) ? TreeVisibility.Visible : TreeVisibility.Recurse;
 			}
-		};
+		})();
 
 		const model = new IndexTreeModel<string>('test', 'root', { filter });
 		const disposable = bindListToModel(list, model);
 
 		model.splice([0], 0, [
 			{
-				element: 'vscode', children: [
+				element: 'vscode',
+				children: [
 					{ element: '.build' },
 					{ element: 'git' },
 					{
-						element: 'github', children: [
+						element: 'github',
+						children: [
 							{ element: 'calendar.yml' },
 							{ element: 'endgame' },
 							{ element: 'build.js' },
-						]
+						],
 					},
 					{
-						element: 'build', children: [
-							{ element: 'lib' },
-							{ element: 'gulpfile.js' }
-						]
-					}
-				]
+						element: 'build',
+						children: [{ element: 'lib' }, { element: 'gulpfile.js' }],
+					},
+				],
 			},
 		]);
 
@@ -690,11 +716,11 @@ suite('IndexTreeModel', () => {
 	test('recursive filter updates when children change (#133272)', async () => {
 		const list: ITreeNode<string>[] = [];
 		let query = '';
-		const filter = new class implements ITreeFilter<string> {
+		const filter = new (class implements ITreeFilter<string> {
 			filter(element: string): TreeVisibility {
 				return element.includes(query) ? TreeVisibility.Visible : TreeVisibility.Recurse;
 			}
-		};
+		})();
 
 		const model = new IndexTreeModel<string>('test', 'root', { filter });
 		const disposable = bindListToModel(list, model);
@@ -702,9 +728,7 @@ suite('IndexTreeModel', () => {
 		model.splice([0], 0, [
 			{
 				element: 'a',
-				children: [
-					{ element: 'b' },
-				],
+				children: [{ element: 'b' }],
 			},
 		]);
 
@@ -715,7 +739,8 @@ suite('IndexTreeModel', () => {
 
 		model.splice([0, 0, 0], 0, [
 			{
-				element: 'visible', children: []
+				element: 'visible',
+				children: [],
 			},
 		]);
 
@@ -729,34 +754,34 @@ suite('IndexTreeModel', () => {
 	test('recursive filter with collapse', () => {
 		const list: ITreeNode<string>[] = [];
 		let query = new RegExp('');
-		const filter = new class implements ITreeFilter<string> {
+		const filter = new (class implements ITreeFilter<string> {
 			filter(element: string): TreeVisibility {
 				return query.test(element) ? TreeVisibility.Visible : TreeVisibility.Recurse;
 			}
-		};
+		})();
 
 		const model = new IndexTreeModel<string>('test', 'root', { filter });
 		const disposable = bindListToModel(list, model);
 
 		model.splice([0], 0, [
 			{
-				element: 'vscode', children: [
+				element: 'vscode',
+				children: [
 					{ element: '.build' },
 					{ element: 'git' },
 					{
-						element: 'github', children: [
+						element: 'github',
+						children: [
 							{ element: 'calendar.yml' },
 							{ element: 'endgame' },
 							{ element: 'build.js' },
-						]
+						],
 					},
 					{
-						element: 'build', children: [
-							{ element: 'lib' },
-							{ element: 'gulpfile.js' }
-						]
-					}
-				]
+						element: 'build',
+						children: [{ element: 'lib' }, { element: 'gulpfile.js' }],
+					},
+				],
 			},
 		]);
 
@@ -778,34 +803,35 @@ suite('IndexTreeModel', () => {
 	test('recursive filter while collapsed', () => {
 		const list: ITreeNode<string>[] = [];
 		let query = new RegExp('');
-		const filter = new class implements ITreeFilter<string> {
+		const filter = new (class implements ITreeFilter<string> {
 			filter(element: string): TreeVisibility {
 				return query.test(element) ? TreeVisibility.Visible : TreeVisibility.Recurse;
 			}
-		};
+		})();
 
 		const model = new IndexTreeModel<string>('test', 'root', { filter });
 		const disposable = bindListToModel(list, model);
 
 		model.splice([0], 0, [
 			{
-				element: 'vscode', collapsed: true, children: [
+				element: 'vscode',
+				collapsed: true,
+				children: [
 					{ element: '.build' },
 					{ element: 'git' },
 					{
-						element: 'github', children: [
+						element: 'github',
+						children: [
 							{ element: 'calendar.yml' },
 							{ element: 'endgame' },
 							{ element: 'build.js' },
-						]
+						],
 					},
 					{
-						element: 'build', children: [
-							{ element: 'lib' },
-							{ element: 'gulpfile.js' }
-						]
-					}
-				]
+						element: 'build',
+						children: [{ element: 'lib' }, { element: 'gulpfile.js' }],
+					},
+				],
 			},
 		]);
 
@@ -832,7 +858,6 @@ suite('IndexTreeModel', () => {
 	});
 
 	suite('getNodeLocation', () => {
-
 		test('simple', () => {
 			const list: IIndexTreeNode<number>[] = [];
 			const model = new IndexTreeModel<number>('test', -1);
@@ -840,14 +865,11 @@ suite('IndexTreeModel', () => {
 
 			model.splice([0], 0, [
 				{
-					element: 0, children: [
-						{ element: 10 },
-						{ element: 11 },
-						{ element: 12 },
-					]
+					element: 0,
+					children: [{ element: 10 }, { element: 11 }, { element: 12 }],
 				},
 				{ element: 1 },
-				{ element: 2 }
+				{ element: 2 },
 			]);
 
 			assert.deepStrictEqual(model.getNodeLocation(list[0]), [0]);
@@ -862,27 +884,28 @@ suite('IndexTreeModel', () => {
 
 		test('with filter', () => {
 			const list: IIndexTreeNode<number>[] = [];
-			const filter = new class implements ITreeFilter<number> {
+			const filter = new (class implements ITreeFilter<number> {
 				filter(element: number): TreeVisibility {
 					return element % 2 === 0 ? TreeVisibility.Visible : TreeVisibility.Hidden;
 				}
-			};
+			})();
 
 			const model = new IndexTreeModel<number>('test', -1, { filter });
 			const disposable = bindListToModel(list, model);
 
 			model.splice([0], 0, [
 				{
-					element: 0, children: [
+					element: 0,
+					children: [
 						{ element: 1 },
 						{ element: 2 },
 						{ element: 3 },
 						{ element: 4 },
 						{ element: 5 },
 						{ element: 6 },
-						{ element: 7 }
-					]
-				}
+						{ element: 7 },
+					],
+				},
 			]);
 
 			assert.deepStrictEqual(model.getNodeLocation(list[0]), [0]);
@@ -897,20 +920,16 @@ suite('IndexTreeModel', () => {
 	test('refilter with filtered out nodes', () => {
 		const list: ITreeNode<string>[] = [];
 		let query = new RegExp('');
-		const filter = new class implements ITreeFilter<string> {
+		const filter = new (class implements ITreeFilter<string> {
 			filter(element: string): boolean {
 				return query.test(element);
 			}
-		};
+		})();
 
 		const model = new IndexTreeModel<string>('test', 'root', { filter });
 		const disposable = bindListToModel(list, model);
 
-		model.splice([0], 0, [
-			{ element: 'silver' },
-			{ element: 'gold' },
-			{ element: 'platinum' }
-		]);
+		model.splice([0], 0, [{ element: 'silver' }, { element: 'gold' }, { element: 'platinum' }]);
 
 		assert.deepStrictEqual(toArray(list), ['silver', 'gold', 'platinum']);
 
@@ -921,7 +940,7 @@ suite('IndexTreeModel', () => {
 		model.splice([0], Number.POSITIVE_INFINITY, [
 			{ element: 'silver' },
 			{ element: 'gold' },
-			{ element: 'platinum' }
+			{ element: 'platinum' },
 		]);
 		assert.deepStrictEqual(toArray(list), ['platinum']);
 
@@ -934,18 +953,18 @@ suite('IndexTreeModel', () => {
 	test('explicit hidden nodes should have renderNodeCount == 0, issue #83211', () => {
 		const list: ITreeNode<string>[] = [];
 		let query = new RegExp('');
-		const filter = new class implements ITreeFilter<string> {
+		const filter = new (class implements ITreeFilter<string> {
 			filter(element: string): boolean {
 				return query.test(element);
 			}
-		};
+		})();
 
 		const model = new IndexTreeModel<string>('test', 'root', { filter });
 		const disposable = bindListToModel(list, model);
 
 		model.splice([0], 0, [
 			{ element: 'a', children: [{ element: 'aa' }] },
-			{ element: 'b', children: [{ element: 'bb' }] }
+			{ element: 'b', children: [{ element: 'bb' }] },
 		]);
 
 		assert.deepStrictEqual(toArray(list), ['a', 'aa', 'b', 'bb']);

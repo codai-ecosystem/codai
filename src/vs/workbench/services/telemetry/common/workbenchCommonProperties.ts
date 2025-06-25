@@ -5,7 +5,11 @@
 
 import { IStorageService, StorageScope } from '../../../../platform/storage/common/storage.js';
 import { resolveCommonProperties } from '../../../../platform/telemetry/common/commonProperties.js';
-import { ICommonProperties, firstSessionDateStorageKey, lastSessionDateStorageKey } from '../../../../platform/telemetry/common/telemetry.js';
+import {
+	ICommonProperties,
+	firstSessionDateStorageKey,
+	lastSessionDateStorageKey,
+} from '../../../../platform/telemetry/common/telemetry.js';
 import { cleanRemoteAuthority } from '../../../../platform/telemetry/common/telemetryUtils.js';
 import { INodeProcess } from '../../../../base/common/platform.js';
 
@@ -22,8 +26,21 @@ export function resolveWorkbenchCommonProperties(
 	process: INodeProcess,
 	remoteAuthority?: string
 ): ICommonProperties {
-	const result = resolveCommonProperties(release, hostname, process.arch, commit, version, machineId, sqmId, devDeviceId, isInternalTelemetry);
-	const firstSessionDate = storageService.get(firstSessionDateStorageKey, StorageScope.APPLICATION)!;
+	const result = resolveCommonProperties(
+		release,
+		hostname,
+		process.arch,
+		commit,
+		version,
+		machineId,
+		sqmId,
+		devDeviceId,
+		isInternalTelemetry
+	);
+	const firstSessionDate = storageService.get(
+		firstSessionDateStorageKey,
+		StorageScope.APPLICATION
+	)!;
 	const lastSessionDate = storageService.get(lastSessionDateStorageKey, StorageScope.APPLICATION)!;
 
 	// __GDPR__COMMON__ "common.version.shell" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }

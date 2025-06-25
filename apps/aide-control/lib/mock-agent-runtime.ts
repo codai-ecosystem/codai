@@ -47,15 +47,15 @@ export class AgentRuntime {
 	public tasks$ = {
 		subscribe: (callback: (event: any) => void) => {
 			// Mock observable
-			return { unsubscribe: () => { } };
-		}
+			return { unsubscribe: () => {} };
+		},
 	};
 
 	public messages$ = {
 		subscribe: (callback: (message: AgentMessage) => void) => {
 			// Mock observable
-			return { unsubscribe: () => { } };
-		}
+			return { unsubscribe: () => {} };
+		},
 	};
 
 	constructor(memoryGraph: any, apiKeys: any) {
@@ -66,7 +66,7 @@ export class AgentRuntime {
 		// Mock implementation
 		return {
 			success: true,
-			data: { result: 'Mock task execution completed' }
+			data: { result: 'Mock task execution completed' },
 		};
 	}
 
@@ -76,7 +76,7 @@ export class AgentRuntime {
 			id: `msg_${Date.now()}`,
 			content: `Mock response to: ${message.content}`,
 			role: 'assistant',
-			timestamp: new Date()
+			timestamp: new Date(),
 		};
 	}
 
@@ -85,7 +85,7 @@ export class AgentRuntime {
 		return {
 			id: 'mock_context',
 			userId: 'mock_user',
-			messages: []
+			messages: [],
 		};
 	}
 
@@ -93,7 +93,11 @@ export class AgentRuntime {
 		// Mock implementation
 	}
 
-	async startConversation(conversationId: string, userMessage: AgentMessage, options?: any): Promise<void> {
+	async startConversation(
+		conversationId: string,
+		userMessage: AgentMessage,
+		options?: any
+	): Promise<void> {
 		// Mock implementation
 	}
 	getAgentStatuses(): Map<string, any> {

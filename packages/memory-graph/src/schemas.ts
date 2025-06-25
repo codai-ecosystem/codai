@@ -22,7 +22,18 @@ export const RelationshipSchema = z.object({
 	id: z.string(),
 	fromNodeId: z.string(),
 	toNodeId: z.string(),
-	type: z.enum(['contains', 'depends_on', 'implements', 'extends', 'uses', 'configures', 'tests', 'derives_from', 'relates_to', 'influences']),
+	type: z.enum([
+		'contains',
+		'depends_on',
+		'implements',
+		'extends',
+		'uses',
+		'configures',
+		'tests',
+		'derives_from',
+		'relates_to',
+		'influences',
+	]),
 	strength: z.number().min(0).max(1).default(1), // Relationship strength/confidence
 	metadata: z.record(z.unknown()).optional(),
 	createdAt: z.date().default(() => new Date()),
@@ -62,17 +73,25 @@ export const ScreenNodeSchema = NodeSchema.extend({
 export const LogicNodeSchema = NodeSchema.extend({
 	type: z.literal('logic'),
 	logicType: z.enum(['function', 'class', 'hook', 'service', 'utility', 'middleware']),
-	inputs: z.array(z.object({
-		name: z.string(),
-		type: z.string(),
-		required: z.boolean().default(true),
-		description: z.string().optional(),
-	})).optional(),
-	outputs: z.array(z.object({
-		name: z.string(),
-		type: z.string(),
-		description: z.string().optional(),
-	})).optional(),
+	inputs: z
+		.array(
+			z.object({
+				name: z.string(),
+				type: z.string(),
+				required: z.boolean().default(true),
+				description: z.string().optional(),
+			})
+		)
+		.optional(),
+	outputs: z
+		.array(
+			z.object({
+				name: z.string(),
+				type: z.string(),
+				description: z.string().optional(),
+			})
+		)
+		.optional(),
 	complexity: z.number().min(1).max(10).optional(),
 	testCoverage: z.number().min(0).max(100).optional(),
 });
@@ -89,11 +108,13 @@ export const DataNodeSchema = NodeSchema.extend({
 // Decision node - design decisions and trade-offs
 export const DecisionNodeSchema = NodeSchema.extend({
 	type: z.literal('decision'),
-	options: z.array(z.object({
-		description: z.string(),
-		pros: z.array(z.string()),
-		cons: z.array(z.string()),
-	})),
+	options: z.array(
+		z.object({
+			description: z.string(),
+			pros: z.array(z.string()),
+			cons: z.array(z.string()),
+		})
+	),
 	selectedOption: z.number(),
 	rationale: z.string(),
 	impact: z.enum(['low', 'medium', 'high', 'critical']),
@@ -103,11 +124,13 @@ export const DecisionNodeSchema = NodeSchema.extend({
 // Conversation node - key parts of the development conversation
 export const ConversationNodeSchema = NodeSchema.extend({
 	type: z.literal('conversation'),
-	messages: z.array(z.object({
-		role: z.enum(['user', 'assistant', 'system']),
-		content: z.string(),
-		timestamp: z.date(),
-	})),
+	messages: z.array(
+		z.object({
+			role: z.enum(['user', 'assistant', 'system']),
+			content: z.string(),
+			timestamp: z.date(),
+		})
+	),
 	summary: z.string(),
 	tags: z.array(z.string()).optional(),
 });
@@ -156,23 +179,29 @@ export const MemoryGraphSchema = z.object({
 	projectType: z.enum(['web', 'mobile', 'desktop', 'backend', 'fullstack', 'library']).optional(),
 	nodes: z.array(AnyNodeSchema),
 	relationships: z.array(RelationshipSchema),
-	metadata: z.object({
-		aiProvider: z.string().optional(),
-		lastInteractionAt: z.date().optional(),
-		tags: z.array(z.string()).optional(),
-		stats: z.object({
-			nodeCount: z.number().optional(),
-			edgeCount: z.number().optional(),
-			complexity: z.number().optional(),
-		}).optional(),
-		collaborators: z.array(z.string()).optional(),
-		repositoryUrl: z.string().optional(),
-	}).optional(),
-	settings: z.object({
-		autoSave: z.boolean().default(true),
-		persistLocation: z.string().optional(),
-		backupFrequency: z.number().optional(), // Minutes
-	}).optional(),
+	metadata: z
+		.object({
+			aiProvider: z.string().optional(),
+			lastInteractionAt: z.date().optional(),
+			tags: z.array(z.string()).optional(),
+			stats: z
+				.object({
+					nodeCount: z.number().optional(),
+					edgeCount: z.number().optional(),
+					complexity: z.number().optional(),
+				})
+				.optional(),
+			collaborators: z.array(z.string()).optional(),
+			repositoryUrl: z.string().optional(),
+		})
+		.optional(),
+	settings: z
+		.object({
+			autoSave: z.boolean().default(true),
+			persistLocation: z.string().optional(),
+			backupFrequency: z.number().optional(), // Minutes
+		})
+		.optional(),
 });
 
 // Export types from schemas

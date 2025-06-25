@@ -8,7 +8,6 @@ import { normalizeMimeType } from '../../common/mime.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('Mime', () => {
-
 	test('normalize', () => {
 		assert.strictEqual(normalizeMimeType('invalid'), 'invalid');
 		assert.strictEqual(normalizeMimeType('invalid', true), undefined);

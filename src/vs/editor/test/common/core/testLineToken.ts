@@ -4,14 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IViewLineTokens } from '../../../common/tokens/lineTokens.js';
-import { ColorId, TokenMetadata, ITokenPresentation, StandardTokenType } from '../../../common/encodedTokenAttributes.js';
+import {
+	ColorId,
+	TokenMetadata,
+	ITokenPresentation,
+	StandardTokenType,
+} from '../../../common/encodedTokenAttributes.js';
 import { ILanguageIdCodec } from '../../../common/languages.js';
 
 /**
  * A token on a line.
  */
 export class TestLineToken {
-
 	/**
 	 * last char index of this token (not inclusive).
 	 */
@@ -44,10 +48,7 @@ export class TestLineToken {
 	}
 
 	private static _equals(a: TestLineToken, b: TestLineToken): boolean {
-		return (
-			a.endIndex === b.endIndex
-			&& a._metadata === b._metadata
-		);
+		return a.endIndex === b.endIndex && a._metadata === b._metadata;
 	}
 
 	public static equalsArr(a: TestLineToken[], b: TestLineToken[]): boolean {
@@ -66,7 +67,6 @@ export class TestLineToken {
 }
 
 export class TestLineTokens implements IViewLineTokens {
-
 	private readonly _actual: TestLineToken[];
 
 	constructor(actual: TestLineToken[]) {
@@ -138,9 +138,8 @@ export class TestLineTokens implements IViewLineTokens {
 }
 
 export class TestLineTokenFactory {
-
 	public static inflateArr(tokens: Uint32Array): TestLineToken[] {
-		const tokensCount = (tokens.length >>> 1);
+		const tokensCount = tokens.length >>> 1;
 
 		const result: TestLineToken[] = new Array<TestLineToken>(tokensCount);
 		for (let i = 0; i < tokensCount; i++) {
@@ -152,5 +151,4 @@ export class TestLineTokenFactory {
 
 		return result;
 	}
-
 }

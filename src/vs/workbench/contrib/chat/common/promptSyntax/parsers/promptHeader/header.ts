@@ -13,9 +13,16 @@ import { Text } from '../../../../../../../editor/common/codecs/textToken.js';
 import { PromptMetadataError, PromptMetadataWarning, TDiagnostic } from './diagnostics.js';
 import { ObjectStream } from '../../../../../../../editor/common/codecs/utils/objectStream.js';
 import { SimpleToken } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/index.js';
-import { PromptToolsMetadata, PromptModeMetadata, PromptDescriptionMetadata } from './metadata/index.js';
+import {
+	PromptToolsMetadata,
+	PromptModeMetadata,
+	PromptDescriptionMetadata,
+} from './metadata/index.js';
 import { FrontMatterRecord } from '../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
-import { FrontMatterDecoder, TFrontMatterToken } from '../../../../../../../editor/common/codecs/frontMatterCodec/frontMatterDecoder.js';
+import {
+	FrontMatterDecoder,
+	TFrontMatterToken,
+} from '../../../../../../../editor/common/codecs/frontMatterCodec/frontMatterDecoder.js';
 
 /**
  * Metadata defined in the prompt header.
@@ -84,7 +91,7 @@ export class PromptHeader extends Disposable {
 
 	constructor(
 		public readonly contentsToken: Text,
-		public readonly languageId: string,
+		public readonly languageId: string
 	) {
 		super();
 
@@ -93,9 +100,7 @@ export class PromptHeader extends Disposable {
 		this.recordNames = new Set<string>();
 
 		this.stream = this._register(
-			new FrontMatterDecoder(
-				ObjectStream.fromArray([...contentsToken.children]),
-			),
+			new FrontMatterDecoder(ObjectStream.fromArray([...contentsToken.children]))
 		);
 		this.stream.onData(this.onData.bind(this));
 		this.stream.onError(this.onError.bind(this));
@@ -109,7 +114,7 @@ export class PromptHeader extends Disposable {
 		// we currently expect only front matter 'records' for
 		// the prompt metadata, hence add diagnostics for all
 		// other tokens and ignore them
-		if ((token instanceof FrontMatterRecord) === false) {
+		if (token instanceof FrontMatterRecord === false) {
 			// unless its a simple token, in which case we just ignore it
 			if (token instanceof SimpleToken) {
 				return;
@@ -121,9 +126,9 @@ export class PromptHeader extends Disposable {
 					localize(
 						'prompt.header.diagnostics.unexpected-token',
 						"Unexpected token '{0}'.",
-						token.text,
-					),
-				),
+						token.text
+					)
+				)
 			);
 
 			return;
@@ -140,9 +145,9 @@ export class PromptHeader extends Disposable {
 					localize(
 						'prompt.header.metadata.diagnostics.duplicate-record',
 						"Duplicate metadata '{0}' will be ignored.",
-						recordName,
-					),
-				),
+						recordName
+					)
+				)
 			);
 
 			return;
@@ -204,9 +209,9 @@ export class PromptHeader extends Disposable {
 				localize(
 					'prompt.header.metadata.diagnostics.unknown-record',
 					"Unknown metadata '{0}' will be ignored.",
-					recordName,
-				),
-			),
+					recordName
+				)
+			)
 		);
 	}
 
@@ -231,7 +236,7 @@ export class PromptHeader extends Disposable {
 
 		// when mode is set, valid, and tools are present,
 		// the only valid value for the mode is 'agent'
-		return (mode.chatMode === ChatMode.Agent);
+		return mode.chatMode === ChatMode.Agent;
 	}
 
 	/**
@@ -246,18 +251,9 @@ export class PromptHeader extends Disposable {
 		const { tools, mode } = this.meta;
 
 		// sanity checks on the behavior of the `toolsAndModeCompatible` getter
-		assertDefined(
-			tools,
-			'Tools metadata must have been present.',
-		);
-		assertDefined(
-			mode,
-			'Mode metadata must have been present.',
-		);
-		assert(
-			mode.chatMode !== ChatMode.Agent,
-			'Mode metadata must not be agent mode.',
-		);
+		assertDefined(tools, 'Tools metadata must have been present.');
+		assertDefined(mode, 'Mode metadata must have been present.');
+		assert(mode.chatMode !== ChatMode.Agent, 'Mode metadata must not be agent mode.');
 
 		this.issues.push(
 			new PromptMetadataWarning(
@@ -267,9 +263,9 @@ export class PromptHeader extends Disposable {
 					"Record '{0}' is implied to have the '{1}' value if '{2}' record is present so the specified value will be ignored.",
 					mode.recordName,
 					ChatMode.Agent,
-					tools.recordName,
-				),
-			),
+					tools.recordName
+				)
+			)
 		);
 	}
 
@@ -282,10 +278,10 @@ export class PromptHeader extends Disposable {
 				this.contentsToken.range,
 				localize(
 					'prompt.header.diagnostics.parsing-error',
-					"Failed to parse prompt header: {0}",
-					error.message,
-				),
-			),
+					'Failed to parse prompt header: {0}',
+					error.message
+				)
+			)
 		);
 	}
 

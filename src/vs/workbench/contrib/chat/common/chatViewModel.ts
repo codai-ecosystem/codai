@@ -14,10 +14,36 @@ import { URI } from '../../../../base/common/uri.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { annotateVulnerabilitiesInText } from './annotations.js';
-import { getFullyQualifiedId, IChatAgentCommand, IChatAgentData, IChatAgentNameService, IChatAgentResult } from './chatAgents.js';
-import { ChatPauseState, IChatModel, IChatProgressRenderableResponseContent, IChatRequestDisablement, IChatRequestModel, IChatRequestVariableEntry, IChatResponseModel, IChatTextEditGroup, IResponse } from './chatModel.js';
+import {
+	getFullyQualifiedId,
+	IChatAgentCommand,
+	IChatAgentData,
+	IChatAgentNameService,
+	IChatAgentResult,
+} from './chatAgents.js';
+import {
+	ChatPauseState,
+	IChatModel,
+	IChatProgressRenderableResponseContent,
+	IChatRequestDisablement,
+	IChatRequestModel,
+	IChatRequestVariableEntry,
+	IChatResponseModel,
+	IChatTextEditGroup,
+	IResponse,
+} from './chatModel.js';
 import { IParsedChatRequest } from './chatParserTypes.js';
-import { ChatAgentVoteDirection, ChatAgentVoteDownReason, IChatCodeCitation, IChatContentReference, IChatFollowup, IChatProgressMessage, IChatResponseErrorDetails, IChatTask, IChatUsedContext } from './chatService.js';
+import {
+	ChatAgentVoteDirection,
+	ChatAgentVoteDownReason,
+	IChatCodeCitation,
+	IChatContentReference,
+	IChatFollowup,
+	IChatProgressMessage,
+	IChatResponseErrorDetails,
+	IChatTask,
+	IChatUsedContext,
+} from './chatService.js';
 import { countWords } from './chatWordCounter.js';
 import { CodeBlockModelCollection } from './codeBlockModelCollection.js';
 
@@ -35,7 +61,12 @@ export function assertIsResponseVM(item: unknown): asserts item is IChatResponse
 	}
 }
 
-export type IChatViewModelChangeEvent = IChatAddRequestEvent | IChangePlaceholderEvent | IChatSessionInitEvent | IChatSetHiddenEvent | null;
+export type IChatViewModelChangeEvent =
+	| IChatAddRequestEvent
+	| IChangePlaceholderEvent
+	| IChatSessionInitEvent
+	| IChatSetHiddenEvent
+	| null;
 
 export interface IChatAddRequestEvent {
 	kind: 'addRequest';
@@ -165,7 +196,12 @@ export interface IChatErrorDetailsPart {
 /**
  * Type for content parts rendered by IChatListRenderer (not necessarily in the model)
  */
-export type IChatRendererContent = IChatProgressRenderableResponseContent | IChatReferences | IChatCodeCitations | IChatWorkingProgress | IChatErrorDetailsPart;
+export type IChatRendererContent =
+	| IChatProgressRenderableResponseContent
+	| IChatReferences
+	| IChatCodeCitations
+	| IChatWorkingProgress
+	| IChatErrorDetailsPart;
 
 export interface IChatLiveUpdateData {
 	totalTime: number;
@@ -214,7 +250,6 @@ export interface IChatResponseViewModel {
 }
 
 export class ChatViewModel extends Disposable implements IChatViewModel {
-
 	private readonly _onDidDisposeModel = this._register(new Emitter<void>());
 	readonly onDidDisposeModel = this._onDidDisposeModel.event;
 
@@ -257,7 +292,7 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 	constructor(
 		private readonly _model: IChatModel,
 		public readonly codeBlockModelCollection: CodeBlockModelCollection,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -272,61 +307,85 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 		});
 
 		this._register(_model.onDidDispose(() => this._onDidDisposeModel.fire()));
-		this._register(_model.onDidChange(e => {
-			if (e.kind === 'addRequest') {
-				const requestModel = this.instantiationService.createInstance(ChatRequestViewModel, e.request);
-				this._items.push(requestModel);
-				this.updateCodeBlockTextModels(requestModel);
+		this._register(
+			_model.onDidChange(e => {
+				if (e.kind === 'addRequest') {
+					const requestModel = this.instantiationService.createInstance(
+						ChatRequestViewModel,
+						e.request
+					);
+					this._items.push(requestModel);
+					this.updateCodeBlockTextModels(requestModel);
 
-				if (e.request.response) {
-					this.onAddResponse(e.request.response);
-				}
-			} else if (e.kind === 'addResponse') {
-				this.onAddResponse(e.response);
-			} else if (e.kind === 'removeRequest') {
-				const requestIdx = this._items.findIndex(item => isRequestVM(item) && item.id === e.requestId);
-				if (requestIdx >= 0) {
-					this._items.splice(requestIdx, 1);
-				}
+					if (e.request.response) {
+						this.onAddResponse(e.request.response);
+					}
+				} else if (e.kind === 'addResponse') {
+					this.onAddResponse(e.response);
+				} else if (e.kind === 'removeRequest') {
+					const requestIdx = this._items.findIndex(
+						item => isRequestVM(item) && item.id === e.requestId
+					);
+					if (requestIdx >= 0) {
+						this._items.splice(requestIdx, 1);
+					}
 
-				const responseIdx = e.responseId && this._items.findIndex(item => isResponseVM(item) && item.id === e.responseId);
-				if (typeof responseIdx === 'number' && responseIdx >= 0) {
-					const items = this._items.splice(responseIdx, 1);
-					const item = items[0];
-					if (item instanceof ChatResponseViewModel) {
-						item.dispose();
+					const responseIdx =
+						e.responseId &&
+						this._items.findIndex(item => isResponseVM(item) && item.id === e.responseId);
+					if (typeof responseIdx === 'number' && responseIdx >= 0) {
+						const items = this._items.splice(responseIdx, 1);
+						const item = items[0];
+						if (item instanceof ChatResponseViewModel) {
+							item.dispose();
+						}
 					}
 				}
-			}
 
-			const modelEventToVmEvent: IChatViewModelChangeEvent =
-				e.kind === 'addRequest' ? { kind: 'addRequest' }
-					: e.kind === 'initialize' ? { kind: 'initialize' }
-						: e.kind === 'setHidden' ? { kind: 'setHidden' }
-							: null;
-			this._onDidChange.fire(modelEventToVmEvent);
-		}));
+				const modelEventToVmEvent: IChatViewModelChangeEvent =
+					e.kind === 'addRequest'
+						? { kind: 'addRequest' }
+						: e.kind === 'initialize'
+							? { kind: 'initialize' }
+							: e.kind === 'setHidden'
+								? { kind: 'setHidden' }
+								: null;
+				this._onDidChange.fire(modelEventToVmEvent);
+			})
+		);
 	}
 
 	private onAddResponse(responseModel: IChatResponseModel) {
-		const response = this.instantiationService.createInstance(ChatResponseViewModel, responseModel, this);
-		this._register(response.onDidChange(() => {
-			if (response.isComplete) {
-				this.updateCodeBlockTextModels(response);
-			}
-			return this._onDidChange.fire(null);
-		}));
+		const response = this.instantiationService.createInstance(
+			ChatResponseViewModel,
+			responseModel,
+			this
+		);
+		this._register(
+			response.onDidChange(() => {
+				if (response.isComplete) {
+					this.updateCodeBlockTextModels(response);
+				}
+				return this._onDidChange.fire(null);
+			})
+		);
 		this._items.push(response);
 		this.updateCodeBlockTextModels(response);
 	}
 
 	getItems(): (IChatRequestViewModel | IChatResponseViewModel)[] {
-		return this._items.filter((item) => !item.shouldBeRemovedOnSend || item.shouldBeRemovedOnSend.afterUndoStop);
+		return this._items.filter(
+			item => !item.shouldBeRemovedOnSend || item.shouldBeRemovedOnSend.afterUndoStop
+		);
 	}
 
 	override dispose() {
 		super.dispose();
-		dispose(this._items.filter((item): item is ChatResponseViewModel => item instanceof ChatResponseViewModel));
+		dispose(
+			this._items.filter(
+				(item): item is ChatResponseViewModel => item instanceof ChatResponseViewModel
+			)
+		);
 	}
 
 	updateCodeBlockTextModels(model: IChatRequestViewModel | IChatResponseViewModel) {
@@ -334,7 +393,9 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 		if (isRequestVM(model)) {
 			content = model.messageText;
 		} else {
-			content = annotateVulnerabilitiesInText(model.response.value).map(x => x.content.value).join('');
+			content = annotateVulnerabilitiesInText(model.response.value)
+				.map(x => x.content.value)
+				.join('');
 		}
 
 		let codeBlockIndex = 0;
@@ -342,7 +403,11 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 			if (token.type === 'code') {
 				const lang = token.lang || '';
 				const text = token.text;
-				this.codeBlockModelCollection.update(this._model.sessionId, model, codeBlockIndex++, { text, languageId: lang, isComplete: true });
+				this.codeBlockModelCollection.update(this._model.sessionId, model, codeBlockIndex++, {
+					text,
+					languageId: lang,
+					isComplete: true,
+				});
 			}
 		});
 	}
@@ -415,9 +480,7 @@ export class ChatRequestViewModel implements IChatRequestViewModel {
 
 	currentRenderedHeight: number | undefined;
 
-	constructor(
-		private readonly _model: IChatRequestModel,
-	) { }
+	constructor(private readonly _model: IChatRequestModel) {}
 }
 
 export class ChatResponseViewModel extends Disposable implements IChatResponseViewModel {
@@ -435,9 +498,7 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 	}
 
 	get dataId() {
-		return this._model.id +
-			`_${this._modelChangeCount}` +
-			(this.isLast ? '_last' : '');
+		return this._model.id + `_${this._modelChangeCount}` + (this.isLast ? '_last' : '');
 	}
 
 	get sessionId() {
@@ -579,7 +640,7 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 		private readonly _model: IChatResponseModel,
 		private readonly _chatViewModel: IChatViewModel,
 		@ILogService private readonly logService: ILogService,
-		@IChatAgentNameService private readonly chatAgentNameService: IChatAgentNameService,
+		@IChatAgentNameService private readonly chatAgentNameService: IChatAgentNameService
 	) {
 		super();
 
@@ -592,39 +653,46 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 			};
 		}
 
-		this._register(_model.onDidChange(() => {
-			// This is set when the response is loading, but the model can change later for other reasons
-			if (this._contentUpdateTimings) {
-				const now = Date.now();
-				const wordCount = countWords(_model.entireResponse.getMarkdown());
+		this._register(
+			_model.onDidChange(() => {
+				// This is set when the response is loading, but the model can change later for other reasons
+				if (this._contentUpdateTimings) {
+					const now = Date.now();
+					const wordCount = countWords(_model.entireResponse.getMarkdown());
 
-				if (wordCount === this._contentUpdateTimings.lastWordCount) {
-					this.trace('onDidChange', `Update- no new words`);
-				} else {
-					if (this._contentUpdateTimings.lastWordCount === 0) {
-						this._contentUpdateTimings.lastUpdateTime = now;
+					if (wordCount === this._contentUpdateTimings.lastWordCount) {
+						this.trace('onDidChange', `Update- no new words`);
+					} else {
+						if (this._contentUpdateTimings.lastWordCount === 0) {
+							this._contentUpdateTimings.lastUpdateTime = now;
+						}
+
+						const timeDiff = Math.min(now - this._contentUpdateTimings.lastUpdateTime, 1000);
+						const newTotalTime = Math.max(this._contentUpdateTimings.totalTime + timeDiff, 250);
+						const impliedWordLoadRate = wordCount / (newTotalTime / 1000);
+						this.trace(
+							'onDidChange',
+							`Update- got ${wordCount} words over last ${newTotalTime}ms = ${impliedWordLoadRate} words/s`
+						);
+						this._contentUpdateTimings = {
+							totalTime:
+								this._contentUpdateTimings.totalTime !== 0 ||
+								this.response.value.some(v => v.kind === 'markdownContent')
+									? newTotalTime
+									: this._contentUpdateTimings.totalTime,
+							lastUpdateTime: now,
+							impliedWordLoadRate,
+							lastWordCount: wordCount,
+						};
 					}
-
-					const timeDiff = Math.min(now - this._contentUpdateTimings.lastUpdateTime, 1000);
-					const newTotalTime = Math.max(this._contentUpdateTimings.totalTime + timeDiff, 250);
-					const impliedWordLoadRate = wordCount / (newTotalTime / 1000);
-					this.trace('onDidChange', `Update- got ${wordCount} words over last ${newTotalTime}ms = ${impliedWordLoadRate} words/s`);
-					this._contentUpdateTimings = {
-						totalTime: this._contentUpdateTimings.totalTime !== 0 || this.response.value.some(v => v.kind === 'markdownContent') ?
-							newTotalTime :
-							this._contentUpdateTimings.totalTime,
-						lastUpdateTime: now,
-						impliedWordLoadRate,
-						lastWordCount: wordCount
-					};
 				}
-			}
 
-			// new data -> new id, new content to render
-			this._modelChangeCount++;
+				// new data -> new id, new content to render
+				this._modelChangeCount++;
 
-			this._onDidChange.fire();
-		}));
+				this._onDidChange.fire();
+			})
+		);
 	}
 
 	private trace(tag: string, message: string) {

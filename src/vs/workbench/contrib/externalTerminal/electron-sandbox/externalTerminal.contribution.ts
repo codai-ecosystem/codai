@@ -5,15 +5,30 @@
 
 import * as nls from '../../../../nls.js';
 import * as paths from '../../../../base/common/path.js';
-import { DEFAULT_TERMINAL_OSX, IExternalTerminalSettings } from '../../../../platform/externalTerminal/common/externalTerminal.js';
+import {
+	DEFAULT_TERMINAL_OSX,
+	IExternalTerminalSettings,
+} from '../../../../platform/externalTerminal/common/externalTerminal.js';
 import { MenuId, MenuRegistry } from '../../../../platform/actions/common/actions.js';
 import { KeyMod, KeyCode } from '../../../../base/common/keyCodes.js';
 import { IHistoryService } from '../../../services/history/common/history.js';
-import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
+import {
+	KeybindingsRegistry,
+	KeybindingWeight,
+} from '../../../../platform/keybinding/common/keybindingsRegistry.js';
 import { Schemas } from '../../../../base/common/network.js';
-import { IConfigurationRegistry, Extensions, ConfigurationScope, type IConfigurationPropertySchema } from '../../../../platform/configuration/common/configurationRegistry.js';
+import {
+	IConfigurationRegistry,
+	Extensions,
+	ConfigurationScope,
+	type IConfigurationPropertySchema,
+} from '../../../../platform/configuration/common/configurationRegistry.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../../common/contributions.js';
+import {
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+	Extensions as WorkbenchExtensions,
+} from '../../../common/contributions.js';
 import { IExternalTerminalService } from '../../../../platform/externalTerminal/electron-sandbox/externalTerminalService.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { TerminalContextKeys } from '../../terminal/common/terminalContextKey.js';
@@ -26,7 +41,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyC,
 	when: TerminalContextKeys.notFocus,
 	weight: KeybindingWeight.WorkbenchContrib,
-	handler: async (accessor) => {
+	handler: async accessor => {
 		const historyService = accessor.get(IHistoryService);
 		// Open external terminal in local workspaces
 		const terminalService = accessor.get(IExternalTerminalService);
@@ -50,7 +65,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 					return;
 				}
 			}
-		} catch { }
+		} catch {}
 
 		// Open the current file's folder if it's local or its canonical URI is local
 		// Opens current file's folder, if no folder is open in editor
@@ -67,24 +82,25 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 					return;
 				}
 			}
-		} catch { }
+		} catch {}
 
 		// Fallback to opening without a cwd which will end up using the local home path
 		terminalService.openTerminal(config, undefined);
-	}
+	},
 });
 
 MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 	command: {
 		id: OPEN_NATIVE_CONSOLE_COMMAND_ID,
-		title: nls.localize2('globalConsoleAction', "Open New External Terminal")
-	}
+		title: nls.localize2('globalConsoleAction', 'Open New External Terminal'),
+	},
 });
 
 export class ExternalTerminalContribution implements IWorkbenchContribution {
-
 	public _serviceBrand: undefined;
-	constructor(@IExternalTerminalService private readonly _externalTerminalService: IExternalTerminalService) {
+	constructor(
+		@IExternalTerminalService private readonly _externalTerminalService: IExternalTerminalService
+	) {
 		this._updateConfiguration();
 	}
 
@@ -93,55 +109,71 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 		const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
 		const terminalKindProperties: Partial<IConfigurationPropertySchema> = {
 			type: 'string',
-			enum: [
-				'integrated',
-				'external',
-				'both'
-			],
+			enum: ['integrated', 'external', 'both'],
 			enumDescriptions: [
-				nls.localize('terminal.kind.integrated', "Show the integrated terminal action."),
-				nls.localize('terminal.kind.external', "Show the external terminal action."),
-				nls.localize('terminal.kind.both', "Show both integrated and external terminal actions.")
+				nls.localize('terminal.kind.integrated', 'Show the integrated terminal action.'),
+				nls.localize('terminal.kind.external', 'Show the external terminal action.'),
+				nls.localize('terminal.kind.both', 'Show both integrated and external terminal actions.'),
 			],
-			default: 'integrated'
+			default: 'integrated',
 		};
 		configurationRegistry.registerConfiguration({
 			id: 'externalTerminal',
 			order: 100,
-			title: nls.localize('terminalConfigurationTitle', "External Terminal"),
+			title: nls.localize('terminalConfigurationTitle', 'External Terminal'),
 			type: 'object',
 			properties: {
 				'terminal.explorerKind': {
 					...terminalKindProperties,
-					description: nls.localize('explorer.openInTerminalKind', "When opening a file from the Explorer in a terminal, determines what kind of terminal will be launched"),
+					description: nls.localize(
+						'explorer.openInTerminalKind',
+						'When opening a file from the Explorer in a terminal, determines what kind of terminal will be launched'
+					),
 				},
 				'terminal.sourceControlRepositoriesKind': {
 					...terminalKindProperties,
-					description: nls.localize('sourceControlRepositories.openInTerminalKind', "When opening a repository from the Source Control Repositories view in a terminal, determines what kind of terminal will be launched"),
+					description: nls.localize(
+						'sourceControlRepositories.openInTerminalKind',
+						'When opening a repository from the Source Control Repositories view in a terminal, determines what kind of terminal will be launched'
+					),
 				},
 				'terminal.external.windowsExec': {
 					type: 'string',
-					description: nls.localize('terminal.external.windowsExec', "Customizes which terminal to run on Windows."),
+					description: nls.localize(
+						'terminal.external.windowsExec',
+						'Customizes which terminal to run on Windows.'
+					),
 					default: terminals.windows,
-					scope: ConfigurationScope.APPLICATION
+					scope: ConfigurationScope.APPLICATION,
 				},
 				'terminal.external.osxExec': {
 					type: 'string',
-					description: nls.localize('terminal.external.osxExec', "Customizes which terminal application to run on macOS."),
+					description: nls.localize(
+						'terminal.external.osxExec',
+						'Customizes which terminal application to run on macOS.'
+					),
 					default: DEFAULT_TERMINAL_OSX,
-					scope: ConfigurationScope.APPLICATION
+					scope: ConfigurationScope.APPLICATION,
 				},
 				'terminal.external.linuxExec': {
 					type: 'string',
-					description: nls.localize('terminal.external.linuxExec', "Customizes which terminal to run on Linux."),
+					description: nls.localize(
+						'terminal.external.linuxExec',
+						'Customizes which terminal to run on Linux.'
+					),
 					default: terminals.linux,
-					scope: ConfigurationScope.APPLICATION
-				}
-			}
+					scope: ConfigurationScope.APPLICATION,
+				},
+			},
 		});
 	}
 }
 
 // Register workbench contributions
-const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
-workbenchRegistry.registerWorkbenchContribution(ExternalTerminalContribution, LifecyclePhase.Restored);
+const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
+	WorkbenchExtensions.Workbench
+);
+workbenchRegistry.registerWorkbenchContribution(
+	ExternalTerminalContribution,
+	LifecyclePhase.Restored
+);

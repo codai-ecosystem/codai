@@ -101,7 +101,7 @@ export class DeploymentService {
 			const config = {
 				targets: this.deploymentTargets,
 				history: this.deploymentHistory,
-				lastUpdated: new Date().toISOString()
+				lastUpdated: new Date().toISOString(),
 			};
 
 			await fs.promises.writeFile(configPath, JSON.stringify(config, null, 2));
@@ -148,7 +148,7 @@ export class DeploymentService {
 				target: config.target,
 				status: 'pending',
 				startTime: new Date(),
-				logs: [`Pipeline generated for ${config.provider}`]
+				logs: [`Pipeline generated for ${config.provider}`],
 			};
 
 			this.deploymentHistory.push(deployment);
@@ -192,11 +192,11 @@ export class DeploymentService {
 			name: 'Deploy to ' + config.environment,
 			on: {
 				push: {
-					branches: [config.environment === 'production' ? 'main' : 'develop']
+					branches: [config.environment === 'production' ? 'main' : 'develop'],
 				},
 				pull_request: {
-					branches: ['main']
-				}
+					branches: ['main'],
+				},
 			},
 			jobs: {
 				test: {
@@ -204,24 +204,24 @@ export class DeploymentService {
 					steps: [
 						{
 							name: 'Checkout code',
-							uses: 'actions/checkout@v3'
+							uses: 'actions/checkout@v3',
 						},
 						{
 							name: 'Setup Node.js',
 							uses: 'actions/setup-node@v3',
 							with: {
-								'node-version': '18'
-							}
+								'node-version': '18',
+							},
 						},
 						{
 							name: 'Install dependencies',
-							run: 'npm ci'
+							run: 'npm ci',
 						},
 						{
 							name: 'Run tests',
-							run: config.testCommand || 'npm test'
-						}
-					]
+							run: config.testCommand || 'npm test',
+						},
+					],
 				},
 				build: {
 					'runs-on': 'ubuntu-latest',
@@ -229,37 +229,37 @@ export class DeploymentService {
 					steps: [
 						{
 							name: 'Checkout code',
-							uses: 'actions/checkout@v3'
+							uses: 'actions/checkout@v3',
 						},
 						{
 							name: 'Setup Node.js',
 							uses: 'actions/setup-node@v3',
 							with: {
-								'node-version': '18'
-							}
+								'node-version': '18',
+							},
 						},
 						{
 							name: 'Install dependencies',
-							run: 'npm ci'
+							run: 'npm ci',
 						},
 						{
 							name: 'Build',
-							run: config.buildCommand || 'npm run build'
-						}
-					]
+							run: config.buildCommand || 'npm run build',
+						},
+					],
 				},
 				deploy: {
 					'runs-on': 'ubuntu-latest',
 					needs: ['build'],
-					if: 'github.ref == \'refs/heads/main\'',
+					if: "github.ref == 'refs/heads/main'",
 					steps: [
 						{
 							name: 'Deploy to ' + config.environment,
-							run: 'echo "Deploying to ' + config.environment + '"'
-						}
-					]
-				}
-			}
+							run: 'echo "Deploying to ' + config.environment + '"',
+						},
+					],
+				},
+			},
 		};
 	}
 
@@ -270,35 +270,27 @@ export class DeploymentService {
 		return {
 			stages: ['test', 'build', 'deploy'],
 			variables: {
-				NODE_VERSION: '18'
+				NODE_VERSION: '18',
 			},
 			test: {
 				stage: 'test',
 				image: 'node:18',
-				script: [
-					'npm ci',
-					config.testCommand || 'npm test'
-				]
+				script: ['npm ci', config.testCommand || 'npm test'],
 			},
 			build: {
 				stage: 'build',
 				image: 'node:18',
-				script: [
-					'npm ci',
-					config.buildCommand || 'npm run build'
-				],
+				script: ['npm ci', config.buildCommand || 'npm run build'],
 				artifacts: {
-					paths: ['dist/']
-				}
+					paths: ['dist/'],
+				},
 			},
 			deploy: {
 				stage: 'deploy',
 				image: 'node:18',
-				script: [
-					'echo "Deploying to ' + config.environment + '"'
-				],
-				only: ['main']
-			}
+				script: ['echo "Deploying to ' + config.environment + '"'],
+				only: ['main'],
+			},
 		};
 	}
 
@@ -309,7 +301,7 @@ export class DeploymentService {
 		return {
 			trigger: ['main'],
 			pool: {
-				vmImage: 'ubuntu-latest'
+				vmImage: 'ubuntu-latest',
 			},
 			stages: [
 				{
@@ -321,20 +313,20 @@ export class DeploymentService {
 								{
 									task: 'NodeTool@0',
 									inputs: {
-										versionSpec: '18.x'
-									}
+										versionSpec: '18.x',
+									},
 								},
 								{
 									script: 'npm ci',
-									displayName: 'Install dependencies'
+									displayName: 'Install dependencies',
 								},
 								{
 									script: config.testCommand || 'npm test',
-									displayName: 'Run tests'
-								}
-							]
-						}
-					]
+									displayName: 'Run tests',
+								},
+							],
+						},
+					],
 				},
 				{
 					stage: 'Build',
@@ -346,38 +338,38 @@ export class DeploymentService {
 								{
 									task: 'NodeTool@0',
 									inputs: {
-										versionSpec: '18.x'
-									}
+										versionSpec: '18.x',
+									},
 								},
 								{
 									script: 'npm ci',
-									displayName: 'Install dependencies'
+									displayName: 'Install dependencies',
 								},
 								{
 									script: config.buildCommand || 'npm run build',
-									displayName: 'Build application'
-								}
-							]
-						}
-					]
+									displayName: 'Build application',
+								},
+							],
+						},
+					],
 				},
 				{
 					stage: 'Deploy',
 					dependsOn: 'Build',
-					condition: 'eq(variables[\'Build.SourceBranch\'], \'refs/heads/main\')',
+					condition: "eq(variables['Build.SourceBranch'], 'refs/heads/main')",
 					jobs: [
 						{
 							job: 'Deploy',
 							steps: [
 								{
 									script: 'echo "Deploying to ' + config.environment + '"',
-									displayName: 'Deploy'
-								}
-							]
-						}
-					]
-				}
-			]
+									displayName: 'Deploy',
+								},
+							],
+						},
+					],
+				},
+			],
 		};
 	}
 
@@ -429,8 +421,8 @@ export class DeploymentService {
 				'RUN npm ci --only=production',
 				'COPY . .',
 				'RUN npm run build',
-				'CMD ["npm", "start"]'
-			]
+				'CMD ["npm", "start"]',
+			],
 		};
 
 		const dockerConfig = { ...defaultConfig, ...config };
@@ -468,8 +460,8 @@ COPY --from=builder ${dockerConfig.workdir}/dist ./dist
 
 # Set environment variables
 ${Object.entries(dockerConfig.environment)
-				.map(([key, value]) => `ENV ${key}=${value}`)
-				.join('\n')}
+	.map(([key, value]) => `ENV ${key}=${value}`)
+	.join('\n')}
 
 # Expose ports
 ${dockerConfig.ports.map(port => `EXPOSE ${port}`).join('\n')}
@@ -560,16 +552,16 @@ coverage
 				enabled: true,
 				metrics: {
 					enabled: true,
-					interval: '30s'
+					interval: '30s',
 				},
 				logging: {
 					enabled: true,
-					level: 'info'
+					level: 'info',
 				},
 				alerts: {
 					enabled: true,
-					errorThreshold: 10
-				}
+					errorThreshold: 10,
+				},
 			};
 
 			// Write monitoring configuration
@@ -602,7 +594,6 @@ services:
 			vscode.window.showInformationMessage(
 				`Monitoring setup completed for ${config.appName} on ${config.provider}`
 			);
-
 		} catch (error) {
 			vscode.window.showErrorMessage(`Failed to setup monitoring: ${error}`);
 			throw error;

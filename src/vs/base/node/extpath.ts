@@ -28,7 +28,8 @@ export async function realcase(path: string, token?: CancellationToken): Promise
 	}
 
 	const dir = dirname(path);
-	if (path === dir) {	// end recursion
+	if (path === dir) {
+		// end recursion
 		return path;
 	}
 
@@ -39,18 +40,19 @@ export async function realcase(path: string, token?: CancellationToken): Promise
 		}
 
 		const entries = await Promises.readdir(dir);
-		const found = entries.filter(e => e.toLowerCase() === name);	// use a case insensitive search
+		const found = entries.filter(e => e.toLowerCase() === name); // use a case insensitive search
 		if (found.length === 1) {
 			// on a case sensitive filesystem we cannot determine here, whether the file exists or not, hence we need the 'file exists' precondition
-			const prefix = await realcase(dir, token);   // recurse
+			const prefix = await realcase(dir, token); // recurse
 			if (prefix) {
 				return join(prefix, found[0]);
 			}
 		} else if (found.length > 1) {
 			// must be a case sensitive $filesystem
 			const ix = found.indexOf(name);
-			if (ix >= 0) {	// case sensitive
-				const prefix = await realcase(dir, token);   // recurse
+			if (ix >= 0) {
+				// case sensitive
+				const prefix = await realcase(dir, token); // recurse
 				if (prefix) {
 					return join(prefix, found[ix]);
 				}
@@ -71,7 +73,6 @@ export async function realpath(path: string): Promise<string> {
 		// https://github.com/microsoft/vscode/issues/118562
 		return await Promises.realpath(path);
 	} catch (error) {
-
 		// We hit an error calling fs.realpath(). Since fs.realpath() is doing some path normalization
 		// we now do a similar normalization and then try again if we can access the path with read
 		// permissions at least. If that succeeds, we return that path.
@@ -89,7 +90,6 @@ export function realpathSync(path: string): string {
 	try {
 		return fs.realpathSync(path);
 	} catch (error) {
-
 		// We hit an error calling fs.realpathSync(). Since fs.realpathSync() is doing some path normalization
 		// we now do a similar normalization and then try again if we can access the path with read
 		// permissions at least. If that succeeds, we return that path.

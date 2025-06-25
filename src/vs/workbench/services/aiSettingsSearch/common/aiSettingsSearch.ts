@@ -8,7 +8,9 @@ import { Event } from '../../../../base/common/event.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 
-export const IAiSettingsSearchService = createDecorator<IAiSettingsSearchService>('IAiSettingsSearchService');
+export const IAiSettingsSearchService = createDecorator<IAiSettingsSearchService>(
+	'IAiSettingsSearchService'
+);
 
 export enum AiSettingsSearchResultKind {
 	EMBEDDED = 1,
@@ -43,5 +45,9 @@ export interface IAiSettingsSearchService {
 }
 
 export interface IAiSettingsSearchProvider {
-	searchSettings(query: string, option: AiSettingsSearchProviderOptions, token: CancellationToken): void;
+	searchSettings(
+		query: string,
+		option: AiSettingsSearchProviderOptions,
+		token: CancellationToken
+	): void;
 }

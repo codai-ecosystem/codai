@@ -28,7 +28,7 @@ export class DoubleQuote extends SimpleToken<'"'> {
 	 * as the current one.
 	 */
 	public sameType(other: BaseToken): other is typeof this {
-		return (other instanceof this.constructor);
+		return other instanceof this.constructor;
 	}
 
 	/**

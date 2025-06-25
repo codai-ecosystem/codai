@@ -7,7 +7,10 @@ import { MarkdownString } from '../../../../../base/common/htmlContent.js';
 import { assertSnapshot } from '../../../../../base/test/common/snapshot.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { IChatMarkdownContent } from '../../common/chatService.js';
-import { annotateSpecialMarkdownContent, extractVulnerabilitiesFromText } from '../../common/annotations.js';
+import {
+	annotateSpecialMarkdownContent,
+	extractVulnerabilitiesFromText,
+} from '../../common/annotations.js';
 
 function content(str: string): IChatMarkdownContent {
 	return { kind: 'markdownContent', content: new MarkdownString(str) };
@@ -21,7 +24,15 @@ suite('Annotations', function () {
 			const before = 'some code ';
 			const vulnContent = 'content with vuln';
 			const after = ' after';
-			const annotatedResult = annotateSpecialMarkdownContent([content(before), { kind: 'markdownVuln', content: new MarkdownString(vulnContent), vulnerabilities: [{ title: 'title', description: 'vuln' }] }, content(after)]);
+			const annotatedResult = annotateSpecialMarkdownContent([
+				content(before),
+				{
+					kind: 'markdownVuln',
+					content: new MarkdownString(vulnContent),
+					vulnerabilities: [{ title: 'title', description: 'vuln' }],
+				},
+				content(after),
+			]);
 			await assertSnapshot(annotatedResult);
 
 			const markdown = annotatedResult[0] as IChatMarkdownContent;
@@ -33,7 +44,15 @@ suite('Annotations', function () {
 			const before = 'some code\nover\nmultiple lines ';
 			const vulnContent = 'content with vuln\nand\nnewlines';
 			const after = 'more code\nwith newline';
-			const annotatedResult = annotateSpecialMarkdownContent([content(before), { kind: 'markdownVuln', content: new MarkdownString(vulnContent), vulnerabilities: [{ title: 'title', description: 'vuln' }] }, content(after)]);
+			const annotatedResult = annotateSpecialMarkdownContent([
+				content(before),
+				{
+					kind: 'markdownVuln',
+					content: new MarkdownString(vulnContent),
+					vulnerabilities: [{ title: 'title', description: 'vuln' }],
+				},
+				content(after),
+			]);
 			await assertSnapshot(annotatedResult);
 
 			const markdown = annotatedResult[0] as IChatMarkdownContent;
@@ -47,9 +66,17 @@ suite('Annotations', function () {
 			const after = 'more code\nwith newline';
 			const annotatedResult = annotateSpecialMarkdownContent([
 				content(before),
-				{ kind: 'markdownVuln', content: new MarkdownString(vulnContent), vulnerabilities: [{ title: 'title', description: 'vuln' }] },
+				{
+					kind: 'markdownVuln',
+					content: new MarkdownString(vulnContent),
+					vulnerabilities: [{ title: 'title', description: 'vuln' }],
+				},
 				content(after),
-				{ kind: 'markdownVuln', content: new MarkdownString(vulnContent), vulnerabilities: [{ title: 'title', description: 'vuln' }] },
+				{
+					kind: 'markdownVuln',
+					content: new MarkdownString(vulnContent),
+					vulnerabilities: [{ title: 'title', description: 'vuln' }],
+				},
 			]);
 			await assertSnapshot(annotatedResult);
 

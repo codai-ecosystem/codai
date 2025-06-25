@@ -22,7 +22,6 @@ export interface IHighlight {
 }
 
 export interface IHighlightedLabelOptions {
-
 	/**
 	 * Whether the label supports rendering icons.
 	 */
@@ -36,7 +35,6 @@ export interface IHighlightedLabelOptions {
  * originating from a filter function like the fuzzy matcher.
  */
 export class HighlightedLabel extends Disposable {
-
 	private readonly domNode: HTMLElement;
 	private text: string = '';
 	private title: string = '';
@@ -50,7 +48,10 @@ export class HighlightedLabel extends Disposable {
 	 *
 	 * @param container The parent container to append to.
 	 */
-	constructor(container: HTMLElement, private readonly options?: IHighlightedLabelOptions) {
+	constructor(
+		container: HTMLElement,
+		private readonly options?: IHighlightedLabelOptions
+	) {
 		super();
 
 		this.supportIcons = options?.supportIcons ?? false;
@@ -73,7 +74,12 @@ export class HighlightedLabel extends Disposable {
 	 * @param escapeNewLines Whether to escape new lines.
 	 * @returns
 	 */
-	set(text: string | undefined, highlights: readonly IHighlight[] = [], title: string = '', escapeNewLines?: boolean) {
+	set(
+		text: string | undefined,
+		highlights: readonly IHighlight[] = [],
+		title: string = '',
+		escapeNewLines?: boolean
+	) {
 		if (!text) {
 			text = '';
 		}
@@ -83,7 +89,12 @@ export class HighlightedLabel extends Disposable {
 			text = HighlightedLabel.escapeNewLines(text, highlights);
 		}
 
-		if (this.didEverRender && this.text === text && this.title === title && objects.equals(this.highlights, highlights)) {
+		if (
+			this.didEverRender &&
+			this.text === text &&
+			this.title === title &&
+			objects.equals(this.highlights, highlights)
+		) {
 			return;
 		}
 
@@ -94,7 +105,6 @@ export class HighlightedLabel extends Disposable {
 	}
 
 	private render(): void {
-
 		const children: Array<HTMLSpanElement | string> = [];
 		let pos = 0;
 
@@ -114,7 +124,11 @@ export class HighlightedLabel extends Disposable {
 			}
 
 			const substring = this.text.substring(pos, highlight.end);
-			const element = dom.$('span.highlight', undefined, ...this.supportIcons ? renderLabelWithIcons(substring) : [substring]);
+			const element = dom.$(
+				'span.highlight',
+				undefined,
+				...(this.supportIcons ? renderLabelWithIcons(substring) : [substring])
+			);
 
 			if (highlight.extraClasses) {
 				element.classList.add(...highlight.extraClasses);
@@ -125,7 +139,7 @@ export class HighlightedLabel extends Disposable {
 		}
 
 		if (pos < this.text.length) {
-			const substring = this.text.substring(pos,);
+			const substring = this.text.substring(pos);
 			if (this.supportIcons) {
 				children.push(...renderLabelWithIcons(substring));
 			} else {
@@ -141,7 +155,9 @@ export class HighlightedLabel extends Disposable {
 		} else {
 			if (!this.customHover && this.title !== '') {
 				const hoverDelegate = this.options?.hoverDelegate ?? getDefaultHoverDelegate('mouse');
-				this.customHover = this._register(getBaseLayerHoverDelegate().setupManagedHover(hoverDelegate, this.domNode, this.title));
+				this.customHover = this._register(
+					getBaseLayerHoverDelegate().setupManagedHover(hoverDelegate, this.domNode, this.title)
+				);
 			} else if (this.customHover) {
 				this.customHover.update(this.title);
 			}

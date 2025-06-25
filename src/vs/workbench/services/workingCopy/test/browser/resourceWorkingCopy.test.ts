@@ -7,7 +7,10 @@ import assert from 'assert';
 import { Event } from '../../../../../base/common/event.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { CancellationToken } from '../../../../../base/common/cancellation.js';
-import { TestServiceAccessor, workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestServiceAccessor,
+	workbenchInstantiationService,
+} from '../../../../test/browser/workbenchTestServices.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { FileChangesEvent, FileChangeType } from '../../../../../platform/files/common/files.js';
 import { IRevertOptions, ISaveOptions } from '../../../../common/editor.js';
@@ -18,7 +21,6 @@ import { runWithFakedTimers } from '../../../../../base/test/common/timeTravelSc
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('ResourceWorkingCopy', function () {
-
 	class TestResourceWorkingCopy extends ResourceWorkingCopy {
 		name = 'testName';
 		typeId = 'testTypeId';
@@ -26,11 +28,16 @@ suite('ResourceWorkingCopy', function () {
 		onDidChangeDirty = Event.None;
 		onDidChangeContent = Event.None;
 		onDidSave = Event.None;
-		isDirty(): boolean { return false; }
-		async backup(token: CancellationToken): Promise<IWorkingCopyBackup> { throw new Error('Method not implemented.'); }
-		async save(options?: ISaveOptions): Promise<boolean> { return false; }
-		async revert(options?: IRevertOptions): Promise<void> { }
-
+		isDirty(): boolean {
+			return false;
+		}
+		async backup(token: CancellationToken): Promise<IWorkingCopyBackup> {
+			throw new Error('Method not implemented.');
+		}
+		async save(options?: ISaveOptions): Promise<boolean> {
+			return false;
+		}
+		async revert(options?: IRevertOptions): Promise<void> {}
 	}
 
 	const disposables = new DisposableStore();
@@ -60,14 +67,18 @@ suite('ResourceWorkingCopy', function () {
 
 			let onDidChangeOrphanedPromise = Event.toPromise(workingCopy.onDidChangeOrphaned);
 			accessor.fileService.notExistsSet.set(resource, true);
-			accessor.fileService.fireFileChanges(new FileChangesEvent([{ resource, type: FileChangeType.DELETED }], false));
+			accessor.fileService.fireFileChanges(
+				new FileChangesEvent([{ resource, type: FileChangeType.DELETED }], false)
+			);
 
 			await onDidChangeOrphanedPromise;
 			assert.strictEqual(workingCopy.isOrphaned(), true);
 
 			onDidChangeOrphanedPromise = Event.toPromise(workingCopy.onDidChangeOrphaned);
 			accessor.fileService.notExistsSet.delete(resource);
-			accessor.fileService.fireFileChanges(new FileChangesEvent([{ resource, type: FileChangeType.ADDED }], false));
+			accessor.fileService.fireFileChanges(
+				new FileChangesEvent([{ resource, type: FileChangeType.ADDED }], false)
+			);
 
 			await onDidChangeOrphanedPromise;
 			assert.strictEqual(workingCopy.isOrphaned(), false);
@@ -78,9 +89,11 @@ suite('ResourceWorkingCopy', function () {
 		assert.strictEqual(workingCopy.isDisposed(), false);
 
 		let disposedEvent = false;
-		disposables.add(workingCopy.onWillDispose(() => {
-			disposedEvent = true;
-		}));
+		disposables.add(
+			workingCopy.onWillDispose(() => {
+				disposedEvent = true;
+			})
+		);
 
 		workingCopy.dispose();
 

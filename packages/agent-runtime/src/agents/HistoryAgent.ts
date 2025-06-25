@@ -25,7 +25,7 @@ export class HistoryAgent extends BaseAgentImpl {
 			'audit',
 			'rollback',
 			'release',
-			'development'
+			'development',
 		];
 
 		// Check if task has a type property and it matches our capabilities
@@ -36,9 +36,10 @@ export class HistoryAgent extends BaseAgentImpl {
 			}
 		}
 
-		return historyTasks.some(taskType =>
-			task.title.toLowerCase().includes(taskType) ||
-			task.description.toLowerCase().includes(taskType)
+		return historyTasks.some(
+			taskType =>
+				task.title.toLowerCase().includes(taskType) ||
+				task.description.toLowerCase().includes(taskType)
 		);
 	}
 
@@ -59,10 +60,10 @@ export class HistoryAgent extends BaseAgentImpl {
 			await this.sendMessage({
 				type: 'notification',
 				content: `Starting history task: ${task.title}`,
-				metadata: { taskId: task.id }
+				metadata: { taskId: task.id },
 			});
 
-			const taskType = task.inputs.historyType as string || 'general';
+			const taskType = (task.inputs.historyType as string) || 'general';
 			const projectPath = task.inputs.projectPath as string;
 			const timeRange = task.inputs.timeRange as string;
 
@@ -90,7 +91,7 @@ export class HistoryAgent extends BaseAgentImpl {
 				success: true,
 				outputs: { result },
 				duration,
-				memoryChanges: []
+				memoryChanges: [],
 			};
 		} catch (error) {
 			// Ensure minimum execution time even in error case
@@ -100,10 +101,10 @@ export class HistoryAgent extends BaseAgentImpl {
 			return {
 				success: false,
 				outputs: {
-					error: error instanceof Error ? error.message : 'Unknown history error'
+					error: error instanceof Error ? error.message : 'Unknown history error',
 				},
 				duration,
-				memoryChanges: []
+				memoryChanges: [],
 			};
 		}
 	}
@@ -127,14 +128,18 @@ export class HistoryAgent extends BaseAgentImpl {
 
 		const changelog = this.formatChangelog(commits, releases);
 
-		return JSON.stringify({
-			type: 'changelog',
-			content: changelog,
-			format: 'markdown',
-			commits: commits.length,
-			releases: releases.length,
-			instructions: 'Changelog generated from commit history. Review and edit as needed.'
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'changelog',
+				content: changelog,
+				format: 'markdown',
+				commits: commits.length,
+				releases: releases.length,
+				instructions: 'Changelog generated from commit history. Review and edit as needed.',
+			},
+			null,
+			2
+		);
 	}
 
 	/**
@@ -144,34 +149,43 @@ export class HistoryAgent extends BaseAgentImpl {
 		const commits = await this.getCommitHistory(projectPath);
 		const analysis = this.analyzeCommitPatterns(commits);
 
-		return JSON.stringify({
-			type: 'commit_analysis',
-			summary: analysis.summary,
-			patterns: analysis.patterns,
-			statistics: analysis.statistics,
-			recommendations: analysis.recommendations,
-			instructions: 'Commit history analysis completed. Use insights to improve development workflow.'
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'commit_analysis',
+				summary: analysis.summary,
+				patterns: analysis.patterns,
+				statistics: analysis.statistics,
+				recommendations: analysis.recommendations,
+				instructions:
+					'Commit history analysis completed. Use insights to improve development workflow.',
+			},
+			null,
+			2
+		);
 	}
 
 	/**
 	 * Create release notes for a version
 	 */
 	private async createReleaseNotes(projectPath: string, task: Task): Promise<string> {
-		const version = task.inputs.version as string || 'latest';
+		const version = (task.inputs.version as string) || 'latest';
 		const previousVersion = task.inputs.previousVersion as string;
 
 		const changes = await this.getChangesBetweenVersions(projectPath, previousVersion, version);
 		const releaseNotes = this.formatReleaseNotes(version, changes);
 
-		return JSON.stringify({
-			type: 'release_notes',
-			version,
-			content: releaseNotes,
-			changes: changes.length,
-			format: 'markdown',
-			instructions: 'Release notes generated. Review and publish when ready.'
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'release_notes',
+				version,
+				content: releaseNotes,
+				changes: changes.length,
+				format: 'markdown',
+				instructions: 'Release notes generated. Review and publish when ready.',
+			},
+			null,
+			2
+		);
 	}
 
 	/**
@@ -184,34 +198,42 @@ export class HistoryAgent extends BaseAgentImpl {
 
 		const timeline = this.createTimeline(commits, releases, milestones);
 
-		return JSON.stringify({
-			type: 'project_timeline',
-			timeline,
-			totalEvents: timeline.length,
-			timespan: this.calculateTimespan(timeline),
-			instructions: 'Project timeline generated. Use for project review and planning.'
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'project_timeline',
+				timeline,
+				totalEvents: timeline.length,
+				timespan: this.calculateTimespan(timeline),
+				instructions: 'Project timeline generated. Use for project review and planning.',
+			},
+			null,
+			2
+		);
 	}
 
 	/**
 	 * Analyze differences between versions or branches
 	 */
 	private async analyzeDifferences(projectPath: string, task: Task): Promise<string> {
-		const source = task.inputs.source as string || 'HEAD~1';
-		const target = task.inputs.target as string || 'HEAD';
+		const source = (task.inputs.source as string) || 'HEAD~1';
+		const target = (task.inputs.target as string) || 'HEAD';
 
 		const diff = await this.getDifference(projectPath, source, target);
 		const analysis = this.analyzeDiff(diff);
 
-		return JSON.stringify({
-			type: 'diff_analysis',
-			source,
-			target,
-			changes: analysis.changes,
-			statistics: analysis.statistics,
-			impact: analysis.impact,
-			instructions: 'Difference analysis completed. Review changes before proceeding.'
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'diff_analysis',
+				source,
+				target,
+				changes: analysis.changes,
+				statistics: analysis.statistics,
+				impact: analysis.impact,
+				instructions: 'Difference analysis completed. Review changes before proceeding.',
+			},
+			null,
+			2
+		);
 	}
 
 	/**
@@ -220,14 +242,19 @@ export class HistoryAgent extends BaseAgentImpl {
 	private async performAuditTrail(projectPath: string, task: Task): Promise<string> {
 		const auditData = await this.collectAuditData(projectPath);
 		const auditReport = this.generateAuditReport(auditData);
-		return JSON.stringify({
-			type: 'audit_trail',
-			auditReport: auditReport,
-			compliance: auditData.compliance,
-			risks: auditData.risks,
-			recommendations: auditData.recommendations,
-			instructions: 'Comprehensive audit trail generated. Address any compliance issues identified.'
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'audit_trail',
+				auditReport: auditReport,
+				compliance: auditData.compliance,
+				risks: auditData.risks,
+				recommendations: auditData.recommendations,
+				instructions:
+					'Comprehensive audit trail generated. Address any compliance issues identified.',
+			},
+			null,
+			2
+		);
 	}
 
 	/**
@@ -236,14 +263,18 @@ export class HistoryAgent extends BaseAgentImpl {
 	private async analyzeProjectHistory(projectPath: string, task: Task): Promise<string> {
 		const history = await this.getProjectHistory(projectPath);
 		const analysis = this.analyzeHistory(history);
-		return JSON.stringify({
-			type: 'project_history',
-			analysis: analysis,
-			insights: analysis.insights,
-			patterns: analysis.trends,
-			recommendations: analysis.metrics,
-			instructions: 'Project history analysis completed. Use insights for future planning.'
-		}, null, 2);
+		return JSON.stringify(
+			{
+				type: 'project_history',
+				analysis: analysis,
+				insights: analysis.insights,
+				patterns: analysis.trends,
+				recommendations: analysis.metrics,
+				instructions: 'Project history analysis completed. Use insights for future planning.',
+			},
+			null,
+			2
+		);
 	}
 
 	/**
@@ -258,15 +289,15 @@ export class HistoryAgent extends BaseAgentImpl {
 				author: 'Developer',
 				date: '2024-01-15',
 				message: 'Initial commit',
-				changes: { additions: 100, deletions: 0, files: 5 }
+				changes: { additions: 100, deletions: 0, files: 5 },
 			},
 			{
 				hash: 'def456',
 				author: 'Developer',
 				date: '2024-01-16',
 				message: 'Add authentication system',
-				changes: { additions: 250, deletions: 10, files: 8 }
-			}
+				changes: { additions: 250, deletions: 10, files: 8 },
+			},
 		];
 	}
 
@@ -280,8 +311,8 @@ export class HistoryAgent extends BaseAgentImpl {
 				version: 'v1.0.0',
 				date: '2024-01-20',
 				type: 'major',
-				changes: ['Initial release', 'Authentication system', 'Basic UI']
-			}
+				changes: ['Initial release', 'Authentication system', 'Basic UI'],
+			},
 		];
 	}
 
@@ -295,18 +326,14 @@ export class HistoryAgent extends BaseAgentImpl {
 		for (const release of releases) {
 			changelog += `## [${release.version}] - ${release.date}\n\n`;
 
-			const releaseCommits = commits.filter(c =>
-				new Date(c.date) <= new Date(release.date)
+			const releaseCommits = commits.filter(c => new Date(c.date) <= new Date(release.date));
+
+			const features = releaseCommits.filter(
+				c => c.message.toLowerCase().includes('feat') || c.message.toLowerCase().includes('add')
 			);
 
-			const features = releaseCommits.filter(c =>
-				c.message.toLowerCase().includes('feat') ||
-				c.message.toLowerCase().includes('add')
-			);
-
-			const fixes = releaseCommits.filter(c =>
-				c.message.toLowerCase().includes('fix') ||
-				c.message.toLowerCase().includes('bug')
+			const fixes = releaseCommits.filter(
+				c => c.message.toLowerCase().includes('fix') || c.message.toLowerCase().includes('bug')
 			);
 
 			if (features.length > 0) {
@@ -335,8 +362,8 @@ export class HistoryAgent extends BaseAgentImpl {
 	private analyzeCommitPatterns(commits: any[]): any {
 		const totalCommits = commits.length;
 		const authors = [...new Set(commits.map(c => c.author))];
-		const avgChangesPerCommit = commits.reduce((sum, c) =>
-			sum + c.changes.additions + c.changes.deletions, 0) / totalCommits;
+		const avgChangesPerCommit =
+			commits.reduce((sum, c) => sum + c.changes.additions + c.changes.deletions, 0) / totalCommits;
 
 		const commitsByDay = commits.reduce((acc, c) => {
 			const day = new Date(c.date).getDay();
@@ -346,20 +373,21 @@ export class HistoryAgent extends BaseAgentImpl {
 
 		const patterns = {
 			mostActiveDay: Object.keys(commitsByDay).reduce((a, b) =>
-				commitsByDay[a] > commitsByDay[b] ? a : b),
+				commitsByDay[a] > commitsByDay[b] ? a : b
+			),
 			commitFrequency: this.calculateCommitFrequency(commits),
-			messagePatterns: this.analyzeCommitMessages(commits)
+			messagePatterns: this.analyzeCommitMessages(commits),
 		};
 
 		return {
 			summary: {
 				totalCommits,
 				uniqueAuthors: authors.length,
-				avgChangesPerCommit: Math.round(avgChangesPerCommit)
+				avgChangesPerCommit: Math.round(avgChangesPerCommit),
 			},
 			patterns,
 			statistics: commitsByDay,
-			recommendations: this.generateCommitRecommendations(patterns)
+			recommendations: this.generateCommitRecommendations(patterns),
 		};
 	}
 
@@ -404,12 +432,16 @@ export class HistoryAgent extends BaseAgentImpl {
 	/**
 	 * Get changes between two versions
 	 */
-	private async getChangesBetweenVersions(projectPath: string, from: string, to: string): Promise<any[]> {
+	private async getChangesBetweenVersions(
+		projectPath: string,
+		from: string,
+		to: string
+	): Promise<any[]> {
 		// This would use git to compare versions
 		return [
 			{ type: 'feature', description: 'Added new authentication method', breaking: false },
 			{ type: 'fix', description: 'Fixed memory leak in data processing', breaking: false },
-			{ type: 'feature', description: 'Updated API to v2', breaking: true }
+			{ type: 'feature', description: 'Updated API to v2', breaking: true },
 		];
 	}
 
@@ -420,7 +452,7 @@ export class HistoryAgent extends BaseAgentImpl {
 		const events = [
 			...commits.map(c => ({ ...c, type: 'commit' })),
 			...releases.map(r => ({ ...r, type: 'release' })),
-			...milestones.map(m => ({ ...m, type: 'milestone' }))
+			...milestones.map(m => ({ ...m, type: 'milestone' })),
 		];
 
 		return events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -433,7 +465,7 @@ export class HistoryAgent extends BaseAgentImpl {
 		// This would get milestone data from project management tools
 		return [
 			{ name: 'MVP Release', date: '2024-01-20', description: 'Minimum viable product' },
-			{ name: 'Beta Launch', date: '2024-02-15', description: 'Public beta testing' }
+			{ name: 'Beta Launch', date: '2024-02-15', description: 'Public beta testing' },
 		];
 	}
 
@@ -450,7 +482,7 @@ export class HistoryAgent extends BaseAgentImpl {
 		return {
 			start: first.toISOString().split('T')[0],
 			end: last.toISOString().split('T')[0],
-			duration: `${days} days`
+			duration: `${days} days`,
 		};
 	}
 
@@ -465,8 +497,8 @@ export class HistoryAgent extends BaseAgentImpl {
 			deletions: 12,
 			changes: [
 				{ file: 'src/main.ts', type: 'modified', additions: 30, deletions: 5 },
-				{ file: 'package.json', type: 'modified', additions: 15, deletions: 7 }
-			]
+				{ file: 'package.json', type: 'modified', additions: 15, deletions: 7 },
+			],
 		};
 	}
 
@@ -483,13 +515,13 @@ export class HistoryAgent extends BaseAgentImpl {
 				filesChanged: diff.files.length,
 				linesAdded: diff.additions,
 				linesDeleted: diff.deletions,
-				totalLines: totalChanges
+				totalLines: totalChanges,
 			},
 			impact: {
 				riskLevel,
 				complexity: this.assessComplexity(diff),
-				recommendation: this.getChangeRecommendation(riskLevel)
-			}
+				recommendation: this.getChangeRecommendation(riskLevel),
+			},
 		};
 	}
 
@@ -502,17 +534,17 @@ export class HistoryAgent extends BaseAgentImpl {
 			compliance: {
 				commitMessages: true,
 				codeReviews: false,
-				testCoverage: true
+				testCoverage: true,
 			},
 			risks: [
 				{ type: 'security', description: 'Hardcoded credentials found', severity: 'high' },
-				{ type: 'quality', description: 'Test coverage below threshold', severity: 'medium' }
+				{ type: 'quality', description: 'Test coverage below threshold', severity: 'medium' },
 			],
 			recommendations: [
 				'Implement mandatory code reviews',
 				'Add commit message linting',
-				'Increase test coverage to 80%'
-			]
+				'Increase test coverage to 80%',
+			],
 		};
 	}
 
@@ -546,8 +578,8 @@ ${auditData.recommendations.map((rec: string) => `- ${rec}`).join('\n')}`;
 			metrics: {
 				totalCommits: 150,
 				activeDays: 45,
-				avgCommitsPerDay: 3.3
-			}
+				avgCommitsPerDay: 3.3,
+			},
 		};
 	}
 
@@ -559,14 +591,14 @@ ${auditData.recommendations.map((rec: string) => `- ${rec}`).join('\n')}`;
 			insights: [
 				'Development velocity has increased over time',
 				'Most active development happens on weekdays',
-				'Feature development cycles average 2 weeks'
+				'Feature development cycles average 2 weeks',
 			],
 			trends: {
 				velocity: 'increasing',
 				quality: 'stable',
-				complexity: 'growing'
+				complexity: 'growing',
 			},
-			metrics: history.metrics
+			metrics: history.metrics,
 		};
 	}
 
@@ -578,7 +610,7 @@ ${auditData.recommendations.map((rec: string) => `- ${rec}`).join('\n')}`;
 		return {
 			daily: 2.5,
 			weekly: 17.5,
-			monthly: 75
+			monthly: 75,
 		};
 	}
 
@@ -588,12 +620,13 @@ ${auditData.recommendations.map((rec: string) => `- ${rec}`).join('\n')}`;
 	private analyzeCommitMessages(commits: any[]): any {
 		const messages = commits.map(c => c.message);
 		const hasConventional = messages.some(m =>
-			m.match(/^(feat|fix|docs|style|refactor|test|chore):/));
+			m.match(/^(feat|fix|docs|style|refactor|test|chore):/)
+		);
 
 		return {
 			hasConventionalCommits: hasConventional,
 			avgLength: messages.reduce((sum, m) => sum + m.length, 0) / messages.length,
-			commonPrefixes: ['feat:', 'fix:', 'update:']
+			commonPrefixes: ['feat:', 'fix:', 'update:'],
 		};
 	}
 
@@ -636,7 +669,7 @@ ${auditData.recommendations.map((rec: string) => `- ${rec}`).join('\n')}`;
 		const recommendations = {
 			low: 'Changes appear safe to deploy with standard testing',
 			medium: 'Recommend additional testing and staged deployment',
-			high: 'Requires thorough testing, code review, and careful deployment'
+			high: 'Requires thorough testing, code review, and careful deployment',
 		};
 
 		return recommendations[riskLevel as keyof typeof recommendations] || recommendations.medium;

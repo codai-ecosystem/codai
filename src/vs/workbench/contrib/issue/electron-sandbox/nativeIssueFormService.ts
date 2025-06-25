@@ -30,8 +30,17 @@ export class NativeIssueFormService extends IssueFormService implements IIssueFo
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IHostService hostService: IHostService,
 		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,) {
-		super(instantiationService, auxiliaryWindowService, menuService, contextKeyService, logService, dialogService, hostService);
+		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService
+	) {
+		super(
+			instantiationService,
+			auxiliaryWindowService,
+			menuService,
+			contextKeyService,
+			logService,
+			dialogService,
+			hostService
+		);
 	}
 
 	// override to grab platform info
@@ -55,7 +64,16 @@ export class NativeIssueFormService extends IssueFormService implements IIssueFo
 
 		// create issue reporter and instantiate
 		if (this.issueReporterWindow) {
-			const issueReporter = this.store.add(this.instantiationService.createInstance(IssueReporter, !!this.environmentService.disableExtensions, data, { type: this.type, arch: this.arch, release: this.release }, product, this.issueReporterWindow));
+			const issueReporter = this.store.add(
+				this.instantiationService.createInstance(
+					IssueReporter,
+					!!this.environmentService.disableExtensions,
+					data,
+					{ type: this.type, arch: this.arch, release: this.release },
+					product,
+					this.issueReporterWindow
+				)
+			);
 			issueReporter.render();
 		} else {
 			this.store.dispose();

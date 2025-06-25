@@ -6,9 +6,15 @@
 import { IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
 import { ISocket } from '../../../base/parts/ipc/common/ipc.net.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
-import { RemoteConnectionOfType, RemoteConnectionType, RemoteConnection } from './remoteAuthorityResolver.js';
+import {
+	RemoteConnectionOfType,
+	RemoteConnectionType,
+	RemoteConnection,
+} from './remoteAuthorityResolver.js';
 
-export const IRemoteSocketFactoryService = createDecorator<IRemoteSocketFactoryService>('remoteSocketFactoryService');
+export const IRemoteSocketFactoryService = createDecorator<IRemoteSocketFactoryService>(
+	'remoteSocketFactoryService'
+);
 
 export interface IRemoteSocketFactoryService {
 	readonly _serviceBrand: undefined;
@@ -21,12 +27,22 @@ export interface IRemoteSocketFactoryService {
 	 */
 	register<T extends RemoteConnectionType>(type: T, factory: ISocketFactory<T>): IDisposable;
 
-	connect(connectTo: RemoteConnection, path: string, query: string, debugLabel: string): Promise<ISocket>;
+	connect(
+		connectTo: RemoteConnection,
+		path: string,
+		query: string,
+		debugLabel: string
+	): Promise<ISocket>;
 }
 
 export interface ISocketFactory<T extends RemoteConnectionType> {
 	supports(connectTo: RemoteConnectionOfType<T>): boolean;
-	connect(connectTo: RemoteConnectionOfType<T>, path: string, query: string, debugLabel: string): Promise<ISocket>;
+	connect(
+		connectTo: RemoteConnectionOfType<T>,
+		path: string,
+		query: string,
+		debugLabel: string
+	): Promise<ISocket>;
 }
 
 export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
@@ -34,7 +50,10 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 
 	private readonly factories: { [T in RemoteConnectionType]?: ISocketFactory<T>[] } = {};
 
-	public register<T extends RemoteConnectionType>(type: T, factory: ISocketFactory<T>): IDisposable {
+	public register<T extends RemoteConnectionType>(
+		type: T,
+		factory: ISocketFactory<T>
+	): IDisposable {
 		this.factories[type] ??= [];
 		this.factories[type]!.push(factory);
 		return toDisposable(() => {
@@ -45,12 +64,19 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 		});
 	}
 
-	private getSocketFactory<T extends RemoteConnectionType>(messagePassing: RemoteConnectionOfType<T>): ISocketFactory<T> | undefined {
+	private getSocketFactory<T extends RemoteConnectionType>(
+		messagePassing: RemoteConnectionOfType<T>
+	): ISocketFactory<T> | undefined {
 		const factories = (this.factories[messagePassing.type] || []) as ISocketFactory<T>[];
 		return factories.find(factory => factory.supports(messagePassing));
 	}
 
-	public connect(connectTo: RemoteConnection, path: string, query: string, debugLabel: string): Promise<ISocket> {
+	public connect(
+		connectTo: RemoteConnection,
+		path: string,
+		query: string,
+		debugLabel: string
+	): Promise<ISocket> {
 		const socketFactory = this.getSocketFactory(connectTo);
 		if (!socketFactory) {
 			throw new Error(`No socket factory found for ${connectTo}`);

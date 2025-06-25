@@ -11,7 +11,9 @@ import { Range } from '../core/range.js';
 import { URI } from '../../../base/common/uri.js';
 import { IDisposable } from '../../../base/common/lifecycle.js';
 
-export const IMarkerDecorationsService = createDecorator<IMarkerDecorationsService>('markerDecorationsService');
+export const IMarkerDecorationsService = createDecorator<IMarkerDecorationsService>(
+	'markerDecorationsService'
+);
 
 export interface IMarkerDecorationsService {
 	readonly _serviceBrand: undefined;

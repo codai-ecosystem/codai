@@ -21,9 +21,16 @@ import { ILogService, NullLogService } from '../../../../../../../platform/log/c
 import { TextModelPromptParser } from '../../../../common/promptSyntax/parsers/textModelPromptParser.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../../base/test/common/utils.js';
 import { IInstantiationService } from '../../../../../../../platform/instantiation/common/instantiation.js';
-import { INSTRUCTIONS_LANGUAGE_ID, PROMPT_LANGUAGE_ID } from '../../../../common/promptSyntax/constants.js';
+import {
+	INSTRUCTIONS_LANGUAGE_ID,
+	PROMPT_LANGUAGE_ID,
+} from '../../../../common/promptSyntax/constants.js';
 import { InMemoryFileSystemProvider } from '../../../../../../../platform/files/common/inMemoryFilesystemProvider.js';
-import { ExpectedDiagnosticError, ExpectedDiagnosticWarning, TExpectedDiagnostic } from '../testUtils/expectedDiagnostic.js';
+import {
+	ExpectedDiagnosticError,
+	ExpectedDiagnosticWarning,
+	TExpectedDiagnostic,
+} from '../testUtils/expectedDiagnostic.js';
 import { TestInstantiationService } from '../../../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 
 /**
@@ -46,7 +53,7 @@ class TextModelPromptParserTest extends Disposable {
 		initialContents: string[],
 		languageId: string = PROMPT_LANGUAGE_ID,
 		@IFileService fileService: IFileService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -55,21 +62,16 @@ class TextModelPromptParserTest extends Disposable {
 		this._register(fileService.registerProvider(Schemas.file, fileSystemProvider));
 
 		// both line endings should yield the same results
-		const lineEnding = (randomBoolean()) ? '\r\n' : '\n';
+		const lineEnding = randomBoolean() ? '\r\n' : '\n';
 
 		// create the underlying model
 		this.model = this._register(
-			createTextModel(
-				initialContents.join(lineEnding),
-				languageId,
-				undefined,
-				uri,
-			),
+			createTextModel(initialContents.join(lineEnding), languageId, undefined, uri)
 		);
 
 		// create the parser instance
 		this.parser = this._register(
-			instantiationService.createInstance(TextModelPromptParser, this.model, {}),
+			instantiationService.createInstance(TextModelPromptParser, this.model, {})
 		).start();
 	}
 
@@ -83,9 +85,7 @@ class TextModelPromptParserTest extends Disposable {
 	/**
 	 * Validate the current state of the parser.
 	 */
-	public async validateReferences(
-		expectedReferences: readonly ExpectedReference[],
-	) {
+	public async validateReferences(expectedReferences: readonly ExpectedReference[]) {
 		await this.parser.allSettled();
 
 		const { references } = this.parser;
@@ -94,7 +94,7 @@ class TextModelPromptParserTest extends Disposable {
 
 			assertDefined(
 				reference,
-				`Expected reference #${i} be ${expectedReferences[i]}, got 'undefined'.`,
+				`Expected reference #${i} be ${expectedReferences[i]}, got 'undefined'.`
 			);
 
 			expectedReferences[i].validateEqual(reference);
@@ -103,23 +103,18 @@ class TextModelPromptParserTest extends Disposable {
 		assert.strictEqual(
 			expectedReferences.length,
 			references.length,
-			`[${this.model.uri}] Unexpected number of references.`,
+			`[${this.model.uri}] Unexpected number of references.`
 		);
 	}
 
 	/**
 	 * Validate list of diagnostic objects of the prompt header.
 	 */
-	public async validateHeaderDiagnostics(
-		expectedDiagnostics: readonly TExpectedDiagnostic[],
-	) {
+	public async validateHeaderDiagnostics(expectedDiagnostics: readonly TExpectedDiagnostic[]) {
 		await this.parser.allSettled();
 
 		const { header } = this.parser;
-		assertDefined(
-			header,
-			'Prompt header must be defined.',
-		);
+		assertDefined(header, 'Prompt header must be defined.');
 		const { diagnostics } = header;
 
 		for (let i = 0; i < expectedDiagnostics.length; i++) {
@@ -127,14 +122,14 @@ class TextModelPromptParserTest extends Disposable {
 
 			assertDefined(
 				diagnostic,
-				`Expected diagnostic #${i} be ${expectedDiagnostics[i]}, got 'undefined'.`,
+				`Expected diagnostic #${i} be ${expectedDiagnostics[i]}, got 'undefined'.`
 			);
 
 			try {
 				expectedDiagnostics[i].validateEqual(diagnostic);
 			} catch (_error) {
 				throw new Error(
-					`Expected diagnostic #${i} to be ${expectedDiagnostics[i]}, got '${diagnostic}'.`,
+					`Expected diagnostic #${i} to be ${expectedDiagnostics[i]}, got '${diagnostic}'.`
 				);
 			}
 		}
@@ -142,7 +137,7 @@ class TextModelPromptParserTest extends Disposable {
 		assert.strictEqual(
 			expectedDiagnostics.length,
 			diagnostics.length,
-			`Expected '${expectedDiagnostics.length}' diagnostic objects, got '${diagnostics.length}'.`,
+			`Expected '${expectedDiagnostics.length}' diagnostic objects, got '${diagnostics.length}'.`
 		);
 	}
 }
@@ -155,7 +150,10 @@ suite('TextModelPromptParser', () => {
 	setup(async () => {
 		instantiationService = disposables.add(new TestInstantiationService());
 		instantiationService.stub(ILogService, new NullLogService());
-		instantiationService.stub(IFileService, disposables.add(instantiationService.createInstance(FileService)));
+		instantiationService.stub(
+			IFileService,
+			disposables.add(instantiationService.createInstance(FileService))
+		);
 	});
 
 	/**
@@ -164,36 +162,33 @@ suite('TextModelPromptParser', () => {
 	const createTest = (
 		uri: URI,
 		initialContents: string[],
-		languageId: string = PROMPT_LANGUAGE_ID,
+		languageId: string = PROMPT_LANGUAGE_ID
 	): TextModelPromptParserTest => {
 		return disposables.add(
 			instantiationService.createInstance(
 				TextModelPromptParserTest,
 				uri,
 				initialContents,
-				languageId,
-			),
+				languageId
+			)
 		);
 	};
 
 	test('• core logic #1', async () => {
-		const test = createTest(
-			URI.file('/foo/bar.md'),
-			[
-				/* 01 */"The quick brown fox tries #file:/abs/path/to/file.md online yoga for the first time.",
-				/* 02 */"Maria discovered a stray turtle roaming in her kitchen.",
-				/* 03 */"Why did the robot write a poem about existential dread?",
-				/* 04 */"Sundays are made for two things: pancakes and procrastination.",
-				/* 05 */"Sometimes, the best code is the one you never have to write.",
-				/* 06 */"A lone kangaroo once hopped into the local cafe, seeking free Wi-Fi.",
-				/* 07 */"Critical #file:./folder/binary.file thinking is like coffee; best served strong [md link](/etc/hosts/random-file.txt) and without sugar.",
-				/* 08 */"Music is the mind's way of doodling in the air.",
-				/* 09 */"Stargazing is just turning your eyes into cosmic explorers.",
-				/* 10 */"Never trust a balloon salesman who hates birthdays.",
-				/* 11 */"Running backward can be surprisingly enlightening.",
-				/* 12 */"There's an art to whispering loudly.",
-			],
-		);
+		const test = createTest(URI.file('/foo/bar.md'), [
+			/* 01 */ 'The quick brown fox tries #file:/abs/path/to/file.md online yoga for the first time.',
+			/* 02 */ 'Maria discovered a stray turtle roaming in her kitchen.',
+			/* 03 */ 'Why did the robot write a poem about existential dread?',
+			/* 04 */ 'Sundays are made for two things: pancakes and procrastination.',
+			/* 05 */ 'Sometimes, the best code is the one you never have to write.',
+			/* 06 */ 'A lone kangaroo once hopped into the local cafe, seeking free Wi-Fi.',
+			/* 07 */ 'Critical #file:./folder/binary.file thinking is like coffee; best served strong [md link](/etc/hosts/random-file.txt) and without sugar.',
+			/* 08 */ "Music is the mind's way of doodling in the air.",
+			/* 09 */ 'Stargazing is just turning your eyes into cosmic explorers.',
+			/* 10 */ 'Never trust a balloon salesman who hates birthdays.',
+			/* 11 */ 'Running backward can be surprisingly enlightening.',
+			/* 12 */ "There's an art to whispering loudly.",
+		]);
 
 		await test.validateReferences([
 			new ExpectedReference({
@@ -227,26 +222,23 @@ suite('TextModelPromptParser', () => {
 	});
 
 	test('• core logic #2', async () => {
-		const test = createTest(
-			URI.file('/absolute/folder/and/a/filename.txt'),
-			[
-				/* 01 */"The penguin wore sunglasses but never left the iceberg.",
-				/* 02 */"I once saw a cloud that looked like an antique teapot.",
-				/* 03 */"Midnight snacks are the secret to eternal [link text](./foo-bar-baz/another-file.ts) happiness.",
-				/* 04 */"A stray sock in the hallway is a sign of chaotic creativity.",
-				/* 05 */"Dogs dream in colorful squeaks and belly rubs.",
-				/* 06 */"Never [caption](../../../c/file_name.prompt.md)\t underestimate the power of a well-timed nap.",
-				/* 07 */"The cactus on my desk has a thriving Instagram account.",
-				/* 08 */"In an alternate universe, pigeons deliver sushi by drone.",
-				/* 09 */"Lunar rainbows only appear when you sing in falsetto.",
-				/* 10 */"Carrots have secret telepathic abilities, but only on Tuesdays.",
-				/* 11 */"Sometimes, the best advice comes \t\t#file:../../main.rs\t#file:./somefolder/../samefile.jpeg\tfrom a talking dishwasher.",
-				/* 12 */"Paper airplanes believe they can fly until proven otherwise.",
-				/* 13 */"A library without stories is just a room full of silent trees.",
-				/* 14 */"The invisible cat meows only when it sees a postman.",
-				/* 15 */"Code reviews are like detective novels without the plot twists."
-			],
-		);
+		const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+			/* 01 */ 'The penguin wore sunglasses but never left the iceberg.',
+			/* 02 */ 'I once saw a cloud that looked like an antique teapot.',
+			/* 03 */ 'Midnight snacks are the secret to eternal [link text](./foo-bar-baz/another-file.ts) happiness.',
+			/* 04 */ 'A stray sock in the hallway is a sign of chaotic creativity.',
+			/* 05 */ 'Dogs dream in colorful squeaks and belly rubs.',
+			/* 06 */ 'Never [caption](../../../c/file_name.prompt.md)\t underestimate the power of a well-timed nap.',
+			/* 07 */ 'The cactus on my desk has a thriving Instagram account.',
+			/* 08 */ 'In an alternate universe, pigeons deliver sushi by drone.',
+			/* 09 */ 'Lunar rainbows only appear when you sing in falsetto.',
+			/* 10 */ 'Carrots have secret telepathic abilities, but only on Tuesdays.',
+			/* 11 */ 'Sometimes, the best advice comes \t\t#file:../../main.rs\t#file:./somefolder/../samefile.jpeg\tfrom a talking dishwasher.',
+			/* 12 */ 'Paper airplanes believe they can fly until proven otherwise.',
+			/* 13 */ 'A library without stories is just a room full of silent trees.',
+			/* 14 */ 'The invisible cat meows only when it sees a postman.',
+			/* 15 */ 'Code reviews are like detective novels without the plot twists.',
+		]);
 
 		await test.validateReferences([
 			new ExpectedReference({
@@ -256,7 +248,10 @@ suite('TextModelPromptParser', () => {
 				startLine: 3,
 				startColumn: 43,
 				pathStartColumn: 55,
-				childrenOrError: new OpenFailed(URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'), 'File not found.'),
+				childrenOrError: new OpenFailed(
+					URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'),
+					'File not found.'
+				),
 			}),
 			new ExpectedReference({
 				uri: URI.file('/absolute/c/file_name.prompt.md'),
@@ -265,7 +260,10 @@ suite('TextModelPromptParser', () => {
 				startLine: 6,
 				startColumn: 7,
 				pathStartColumn: 17,
-				childrenOrError: new OpenFailed(URI.file('/absolute/c/file_name.prompt.md'), 'File not found.'),
+				childrenOrError: new OpenFailed(
+					URI.file('/absolute/c/file_name.prompt.md'),
+					'File not found.'
+				),
 			}),
 			new ExpectedReference({
 				uri: URI.file('/absolute/folder/main.rs'),
@@ -283,7 +281,10 @@ suite('TextModelPromptParser', () => {
 				startLine: 11,
 				startColumn: 56,
 				pathStartColumn: 62,
-				childrenOrError: new OpenFailed(URI.file('/absolute/folder/and/a/samefile.jpeg'), 'File not found.'),
+				childrenOrError: new OpenFailed(
+					URI.file('/absolute/folder/and/a/samefile.jpeg'),
+					'File not found.'
+				),
 			}),
 		]);
 	});
@@ -291,19 +292,16 @@ suite('TextModelPromptParser', () => {
 	suite('• header', () => {
 		suite(' • metadata', () => {
 			test(`• empty header`, async () => {
-				const test = createTest(
-					URI.file('/absolute/folder/and/a/filename.txt'),
-					[
-					/* 01 */"---",
-					/* 02 */"",
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
-					/* 05 */"Midnight snacks are the secret to eternal [text](./foo-bar-baz/another-file.ts) happiness.",
-					/* 06 */"In an alternate universe, pigeons deliver sushi by drone.",
-					/* 07 */"Lunar rainbows only appear when you sing in falsetto.",
-					/* 08 */"Carrots have secret telepathic abilities, but only on Tuesdays.",
-					],
-				);
+				const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+					/* 01 */ '---',
+					/* 02 */ '',
+					/* 03 */ '---',
+					/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
+					/* 05 */ 'Midnight snacks are the secret to eternal [text](./foo-bar-baz/another-file.ts) happiness.',
+					/* 06 */ 'In an alternate universe, pigeons deliver sushi by drone.',
+					/* 07 */ 'Lunar rainbows only appear when you sing in falsetto.',
+					/* 08 */ 'Carrots have secret telepathic abilities, but only on Tuesdays.',
+				]);
 
 				await test.validateReferences([
 					new ExpectedReference({
@@ -313,15 +311,15 @@ suite('TextModelPromptParser', () => {
 						startLine: 5,
 						startColumn: 43,
 						pathStartColumn: 50,
-						childrenOrError: new OpenFailed(URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'), 'File not found.'),
+						childrenOrError: new OpenFailed(
+							URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'),
+							'File not found.'
+						),
 					}),
 				]);
 
 				const { header, metadata } = test.parser;
-				assertDefined(
-					header,
-					'Prompt header must be defined.',
-				);
+				assertDefined(header, 'Prompt header must be defined.');
 
 				assert.deepStrictEqual(
 					metadata,
@@ -331,30 +329,27 @@ suite('TextModelPromptParser', () => {
 						mode: undefined,
 						tools: undefined,
 					},
-					'Must have empty metadata.',
+					'Must have empty metadata.'
 				);
 			});
 
 			test(`• has correct 'prompt' metadata`, async () => {
-				const test = createTest(
-					URI.file('/absolute/folder/and/a/filename.txt'),
-					[
-					/* 01 */"---",
-					/* 02 */"description: 'My prompt.'\t\t",
-					/* 03 */"	something: true", /* unknown metadata record */
-					/* 04 */"	tools: [ 'tool_name1', \"tool_name2\", 'tool_name1', true, false, '', 'tool_name2' ]\t\t",
-					/* 05 */"	tools: [ 'tool_name3', \"tool_name4\" ]", /* duplicate `tools` record is ignored */
-					/* 06 */"	tools: 'tool_name5'", /* duplicate `tools` record with invalid value is ignored */
-					/* 07 */"	mode: 'agent'",
-					/* 07 */"	applyTo: 'frontend/**/*spec.ts'",
-					/* 08 */"---",
-					/* 09 */"The cactus on my desk has a thriving Instagram account.",
-					/* 10 */"Midnight snacks are the secret to eternal [text](./foo-bar-baz/another-file.ts) happiness.",
-					/* 11 */"In an alternate universe, pigeons deliver sushi by drone.",
-					/* 12 */"Lunar rainbows only appear when you sing in falsetto.",
-					/* 13 */"Carrots have secret telepathic abilities, but only on Tuesdays.",
-					],
-				);
+				const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+					/* 01 */ '---',
+					/* 02 */ "description: 'My prompt.'\t\t",
+					/* 03 */ '	something: true' /* unknown metadata record */,
+					/* 04 */ "	tools: [ 'tool_name1', \"tool_name2\", 'tool_name1', true, false, '', 'tool_name2' ]\t\t",
+					/* 05 */ '	tools: [ \'tool_name3\', "tool_name4" ]' /* duplicate `tools` record is ignored */,
+					/* 06 */ "	tools: 'tool_name5'" /* duplicate `tools` record with invalid value is ignored */,
+					/* 07 */ "	mode: 'agent'",
+					/* 07 */ "	applyTo: 'frontend/**/*spec.ts'",
+					/* 08 */ '---',
+					/* 09 */ 'The cactus on my desk has a thriving Instagram account.',
+					/* 10 */ 'Midnight snacks are the secret to eternal [text](./foo-bar-baz/another-file.ts) happiness.',
+					/* 11 */ 'In an alternate universe, pigeons deliver sushi by drone.',
+					/* 12 */ 'Lunar rainbows only appear when you sing in falsetto.',
+					/* 13 */ 'Carrots have secret telepathic abilities, but only on Tuesdays.',
+				]);
 
 				await test.validateReferences([
 					new ExpectedReference({
@@ -364,62 +359,54 @@ suite('TextModelPromptParser', () => {
 						startLine: 11,
 						startColumn: 43,
 						pathStartColumn: 50,
-						childrenOrError: new OpenFailed(URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'), 'File not found.'),
+						childrenOrError: new OpenFailed(
+							URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'),
+							'File not found.'
+						),
 					}),
 				]);
 
 				const { header, metadata } = test.parser;
-				assertDefined(
-					header,
-					'Prompt header must be defined.',
-				);
+				assertDefined(header, 'Prompt header must be defined.');
 
 				const { tools, mode, description, applyTo } = metadata;
 				assert.deepStrictEqual(
 					tools,
 					['tool_name1', 'tool_name2'],
-					`Prompt header must have correct tools metadata, got '${tools?.join(', ')}'.`,
+					`Prompt header must have correct tools metadata, got '${tools?.join(', ')}'.`
 				);
 
-				assert.strictEqual(
-					mode,
-					'agent',
-					`Prompt header must have correct 'mode' metadata.`,
-				);
+				assert.strictEqual(mode, 'agent', `Prompt header must have correct 'mode' metadata.`);
 
 				assert.strictEqual(
 					description,
 					'My prompt.',
-					`Prompt header must have correct 'description' metadata.`,
+					`Prompt header must have correct 'description' metadata.`
 				);
 
-				assert.strictEqual(
-					applyTo,
-					undefined,
-					`Prompt header must have no 'applyTo' metadata.`,
-				);
+				assert.strictEqual(applyTo, undefined, `Prompt header must have no 'applyTo' metadata.`);
 			});
 
 			test(`• has correct 'instructions' metadata`, async () => {
 				const test = createTest(
 					URI.file('/absolute/folder/and/a/filename.instructions.md'),
 					[
-					/* 01 */"---",
-					/* 02 */"description: 'My prompt.'\t\t",
-					/* 03 */"	something: true", /* unknown metadata record */
-					/* 04 */"	tools: [ 'tool_name1', \"tool_name2\", 'tool_name1', true, false, '', 'tool_name2' ]\t\t",
-					/* 05 */"	tools: [ 'tool_name3', \"tool_name4\" ]", /* duplicate `tools` record is ignored */
-					/* 06 */"	tools: 'tool_name5'", /* duplicate `tools` record with invalid value is ignored */
-					/* 07 */"	mode: 'agent'",
-					/* 07 */"	applyTo: 'frontend/**/*spec.ts'",
-					/* 08 */"---",
-					/* 09 */"The cactus on my desk has a thriving Instagram account.",
-					/* 10 */"Midnight snacks are the secret to eternal [text](./foo-bar-baz/another-file.ts) happiness.",
-					/* 11 */"In an alternate universe, pigeons deliver sushi by drone.",
-					/* 12 */"Lunar rainbows only appear when you sing in falsetto.",
-					/* 13 */"Carrots have secret telepathic abilities, but only on Tuesdays.",
+						/* 01 */ '---',
+						/* 02 */ "description: 'My prompt.'\t\t",
+						/* 03 */ '	something: true' /* unknown metadata record */,
+						/* 04 */ "	tools: [ 'tool_name1', \"tool_name2\", 'tool_name1', true, false, '', 'tool_name2' ]\t\t",
+						/* 05 */ '	tools: [ \'tool_name3\', "tool_name4" ]' /* duplicate `tools` record is ignored */,
+						/* 06 */ "	tools: 'tool_name5'" /* duplicate `tools` record with invalid value is ignored */,
+						/* 07 */ "	mode: 'agent'",
+						/* 07 */ "	applyTo: 'frontend/**/*spec.ts'",
+						/* 08 */ '---',
+						/* 09 */ 'The cactus on my desk has a thriving Instagram account.',
+						/* 10 */ 'Midnight snacks are the secret to eternal [text](./foo-bar-baz/another-file.ts) happiness.',
+						/* 11 */ 'In an alternate universe, pigeons deliver sushi by drone.',
+						/* 12 */ 'Lunar rainbows only appear when you sing in falsetto.',
+						/* 13 */ 'Carrots have secret telepathic abilities, but only on Tuesdays.',
 					],
-					INSTRUCTIONS_LANGUAGE_ID,
+					INSTRUCTIONS_LANGUAGE_ID
 				);
 
 				await test.validateReferences([
@@ -430,63 +417,56 @@ suite('TextModelPromptParser', () => {
 						startLine: 11,
 						startColumn: 43,
 						pathStartColumn: 50,
-						childrenOrError: new OpenFailed(URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'), 'File not found.'),
+						childrenOrError: new OpenFailed(
+							URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'),
+							'File not found.'
+						),
 					}),
 				]);
 
 				const { header, metadata } = test.parser;
-				assertDefined(
-					header,
-					'Prompt header must be defined.',
-				);
+				assertDefined(header, 'Prompt header must be defined.');
 
 				const { tools, mode, description, applyTo } = metadata;
 				assert.deepStrictEqual(
 					tools,
 					['tool_name1', 'tool_name2'],
-					`Prompt header must have correct tools metadata.`,
+					`Prompt header must have correct tools metadata.`
 				);
 
-				assert.strictEqual(
-					mode,
-					'agent',
-					`Prompt header must have correct 'mode' metadata.`,
-				);
+				assert.strictEqual(mode, 'agent', `Prompt header must have correct 'mode' metadata.`);
 
 				assert.strictEqual(
 					description,
 					'My prompt.',
-					`Prompt header must have correct 'description' metadata.`,
+					`Prompt header must have correct 'description' metadata.`
 				);
 
 				assert.strictEqual(
 					applyTo,
 					'frontend/**/*spec.ts',
-					`Prompt header must have no 'applyTo' metadata.`,
+					`Prompt header must have no 'applyTo' metadata.`
 				);
 			});
 		});
 
 		suite('• diagnostics', () => {
 			test('• core logic', async () => {
-				const test = createTest(
-					URI.file('/absolute/folder/and/a/filename.txt'),
-					[
-					/* 01 */"---",
-					/* 02 */"	description: true \t ",
-					/* 03 */"	mode: \"ask\"",
-					/* 04 */"	something: true", /* unknown metadata record */
-					/* 05 */"tools: [ 'tool_name1', \"tool_name2\", 'tool_name1', true, false, '', ,'tool_name2' ] ",
-					/* 06 */"  tools: [ 'tool_name3', \"tool_name4\" ]  \t\t  ", /* duplicate `tools` record is ignored */
-					/* 07 */"tools: 'tool_name5'", /* duplicate `tools` record with invalid value is ignored */
-					/* 08 */"---",
-					/* 09 */"The cactus on my desk has a thriving Instagram account.",
-					/* 10 */"Midnight snacks are the secret to eternal [text](./foo-bar-baz/another-file.ts) happiness.",
-					/* 11 */"In an alternate universe, pigeons deliver sushi by drone.",
-					/* 12 */"Lunar rainbows only appear when you sing in falsetto.",
-					/* 13 */"Carrots have secret telepathic abilities, but only on Tuesdays.",
-					],
-				);
+				const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+					/* 01 */ '---',
+					/* 02 */ '	description: true \t ',
+					/* 03 */ '	mode: "ask"',
+					/* 04 */ '	something: true' /* unknown metadata record */,
+					/* 05 */ "tools: [ 'tool_name1', \"tool_name2\", 'tool_name1', true, false, '', ,'tool_name2' ] ",
+					/* 06 */ '  tools: [ \'tool_name3\', "tool_name4" ]  \t\t  ' /* duplicate `tools` record is ignored */,
+					/* 07 */ "tools: 'tool_name5'" /* duplicate `tools` record with invalid value is ignored */,
+					/* 08 */ '---',
+					/* 09 */ 'The cactus on my desk has a thriving Instagram account.',
+					/* 10 */ 'Midnight snacks are the secret to eternal [text](./foo-bar-baz/another-file.ts) happiness.',
+					/* 11 */ 'In an alternate universe, pigeons deliver sushi by drone.',
+					/* 12 */ 'Lunar rainbows only appear when you sing in falsetto.',
+					/* 13 */ 'Carrots have secret telepathic abilities, but only on Tuesdays.',
+				]);
 
 				await test.validateReferences([
 					new ExpectedReference({
@@ -496,62 +476,56 @@ suite('TextModelPromptParser', () => {
 						startLine: 10,
 						startColumn: 43,
 						pathStartColumn: 50,
-						childrenOrError: new OpenFailed(URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'), 'File not found.'),
+						childrenOrError: new OpenFailed(
+							URI.file('/absolute/folder/and/a/foo-bar-baz/another-file.ts'),
+							'File not found.'
+						),
 					}),
 				]);
 
 				const { header, metadata } = test.parser;
-				assertDefined(
-					header,
-					'Prompt header must be defined.',
-				);
+				assertDefined(header, 'Prompt header must be defined.');
 
 				const { tools } = metadata;
-				assertDefined(
-					tools,
-					'Tools metadata must be defined.',
-				);
+				assertDefined(tools, 'Tools metadata must be defined.');
 
 				await test.validateHeaderDiagnostics([
 					new ExpectedDiagnosticError(
 						new Range(2, 15, 2, 15 + 4),
-						'The \'description\' metadata must be a \'string\', got \'boolean\'.',
+						"The 'description' metadata must be a 'string', got 'boolean'."
 					),
 					new ExpectedDiagnosticWarning(
 						new Range(4, 2, 4, 2 + 15),
-						'Unknown metadata \'something\' will be ignored.',
+						"Unknown metadata 'something' will be ignored."
 					),
 					new ExpectedDiagnosticWarning(
 						new Range(5, 38, 5, 38 + 12),
-						'Duplicate tool name \'tool_name1\'.',
+						"Duplicate tool name 'tool_name1'."
 					),
 					new ExpectedDiagnosticWarning(
 						new Range(5, 52, 5, 52 + 4),
-						'Unexpected tool name \'true\', expected \'string\'.',
+						"Unexpected tool name 'true', expected 'string'."
 					),
 					new ExpectedDiagnosticWarning(
 						new Range(5, 58, 5, 58 + 5),
-						'Unexpected tool name \'false\', expected \'string\'.',
+						"Unexpected tool name 'false', expected 'string'."
 					),
-					new ExpectedDiagnosticWarning(
-						new Range(5, 65, 5, 65 + 2),
-						'Tool name cannot be empty.',
-					),
+					new ExpectedDiagnosticWarning(new Range(5, 65, 5, 65 + 2), 'Tool name cannot be empty.'),
 					new ExpectedDiagnosticWarning(
 						new Range(5, 70, 5, 70 + 12),
-						'Duplicate tool name \'tool_name2\'.',
+						"Duplicate tool name 'tool_name2'."
 					),
 					new ExpectedDiagnosticWarning(
 						new Range(3, 2, 3, 2 + 11),
-						`Record 'mode' is implied to have the 'agent' value if 'tools' record is present so the specified value will be ignored.`,
+						`Record 'mode' is implied to have the 'agent' value if 'tools' record is present so the specified value will be ignored.`
 					),
 					new ExpectedDiagnosticWarning(
 						new Range(6, 3, 6, 3 + 37),
-						`Duplicate metadata 'tools' will be ignored.`,
+						`Duplicate metadata 'tools' will be ignored.`
 					),
 					new ExpectedDiagnosticWarning(
 						new Range(7, 1, 7, 1 + 19),
-						`Duplicate metadata 'tools' will be ignored.`,
+						`Duplicate metadata 'tools' will be ignored.`
 					),
 				]);
 			});
@@ -562,39 +536,29 @@ suite('TextModelPromptParser', () => {
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */"applyTo: '**/*'",
-					/* 03 */"mode: \"ask\"",
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ "applyTo: '**/*'",
+								/* 03 */ 'mode: "ask"',
+								/* 04 */ '---',
+								/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							PROMPT_LANGUAGE_ID,
+							PROMPT_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { applyTo, mode } = metadata;
-						assert.strictEqual(
-							mode,
-							ChatMode.Ask,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Ask, 'Mode metadata must have correct value.');
 
-						assert(
-							applyTo === undefined,
-							'ApplyTo metadata must not be defined.',
-						);
+						assert(applyTo === undefined, 'ApplyTo metadata must not be defined.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 1, 2, 1 + 15),
-								'The \'applyTo\' metadata record is only valid in instruction files.',
+								"The 'applyTo' metadata record is only valid in instruction files."
 							),
 						]);
 					});
@@ -603,35 +567,24 @@ suite('TextModelPromptParser', () => {
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */"applyTo: '**/*'",
-					/* 03 */"mode: \"edit\"",
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ "applyTo: '**/*'",
+								/* 03 */ 'mode: "edit"',
+								/* 04 */ '---',
+								/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { applyTo, mode } = metadata;
-						assert.strictEqual(
-							mode,
-							ChatMode.Edit,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Edit, 'Mode metadata must have correct value.');
 
-						assert.strictEqual(
-							applyTo,
-							'**/*',
-							'ApplyTo metadata must have correct value.',
-						);
+						assert.strictEqual(applyTo, '**/*', 'ApplyTo metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([]);
 					});
@@ -642,41 +595,27 @@ suite('TextModelPromptParser', () => {
 				const test = createTest(
 					URI.file('/absolute/folder/and/a/my.prompt.md'),
 					[
-					/* 01 */"---",
-					/* 02 */"mode: \"agent\"",
-					/* 03 */"applyTo: ''",
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
+						/* 01 */ '---',
+						/* 02 */ 'mode: "agent"',
+						/* 03 */ "applyTo: ''",
+						/* 04 */ '---',
+						/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
 					],
-					INSTRUCTIONS_LANGUAGE_ID,
+					INSTRUCTIONS_LANGUAGE_ID
 				);
 
 				await test.allSettled();
 
 				const { header, metadata } = test.parser;
-				assertDefined(
-					header,
-					'Prompt header must be defined.',
-				);
+				assertDefined(header, 'Prompt header must be defined.');
 
 				const { applyTo, mode } = metadata;
-				assert.strictEqual(
-					mode,
-					ChatMode.Agent,
-					'Mode metadata must have correct value.',
-				);
+				assert.strictEqual(mode, ChatMode.Agent, 'Mode metadata must have correct value.');
 
-				assert.strictEqual(
-					applyTo,
-					undefined,
-					'ApplyTo metadata must not be defined.',
-				);
+				assert.strictEqual(applyTo, undefined, 'ApplyTo metadata must not be defined.');
 
 				await test.validateHeaderDiagnostics([
-					new ExpectedDiagnosticWarning(
-						new Range(3, 10, 3, 10 + 2),
-						'Invalid glob pattern \'\'.',
-					),
+					new ExpectedDiagnosticWarning(new Range(3, 10, 3, 10 + 2), "Invalid glob pattern ''."),
 				]);
 			});
 
@@ -686,32 +625,25 @@ suite('TextModelPromptParser', () => {
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */"mode: \"my-mode\"",
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ 'mode: "my-mode"',
+								/* 03 */ '---',
+								/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
-						assert.strictEqual(
-							metadata.mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(metadata.mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 7, 2, 7 + 9),
-								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'my-mode'.`,
+								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'my-mode'.`
 							),
 						]);
 					});
@@ -720,32 +652,25 @@ suite('TextModelPromptParser', () => {
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */"mode: myMode ",
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ 'mode: myMode ',
+								/* 03 */ '---',
+								/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
-						assert.strictEqual(
-							metadata.mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(metadata.mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 7, 2, 7 + 6),
-								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'myMode'.`,
+								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'myMode'.`
 							),
 						]);
 					});
@@ -754,32 +679,25 @@ suite('TextModelPromptParser', () => {
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */"mode: my-mode",
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ 'mode: my-mode',
+								/* 03 */ '---',
+								/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
-						assert.strictEqual(
-							metadata.mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(metadata.mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 7, 2, 7 + 7),
-								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'my-mode'.`,
+								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'my-mode'.`
 							),
 						]);
 					});
@@ -788,32 +706,25 @@ suite('TextModelPromptParser', () => {
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */"mode: my mode is your mode\t \t",
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ 'mode: my mode is your mode\t \t',
+								/* 03 */ '---',
+								/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
-						assert.strictEqual(
-							metadata.mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(metadata.mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 7, 2, 7 + 20),
-								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'my mode is your mode'.`,
+								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'my mode is your mode'.`
 							),
 						]);
 					});
@@ -822,33 +733,26 @@ suite('TextModelPromptParser', () => {
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */"description: my clear but concise description",
-					/* 03 */"mode: mode24",
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ 'description: my clear but concise description',
+								/* 03 */ 'mode: mode24',
+								/* 04 */ '---',
+								/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
-						assert.strictEqual(
-							metadata.mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(metadata.mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(3, 7, 3, 7 + 6),
-								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'mode24'.`,
+								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got 'mode24'.`
 							),
 						]);
 					});
@@ -859,108 +763,83 @@ suite('TextModelPromptParser', () => {
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */`	mode: \t${booleanValue}\t`,
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ `	mode: \t${booleanValue}\t`,
+								/* 03 */ '---',
+								/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
-						assert.strictEqual(
-							metadata.mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(metadata.mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 9, 2, 9 + `${booleanValue}`.length),
-								`The 'mode' metadata must be a 'string', got 'boolean'.`,
+								`The 'mode' metadata must be a 'string', got 'boolean'.`
 							),
 						]);
 					});
 
 					test('• empty quoted string value', async () => {
-						const quotedString = (randomBoolean())
-							? `''`
-							: '""';
+						const quotedString = randomBoolean() ? `''` : '""';
 
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */`	mode: ${quotedString}`,
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ `	mode: ${quotedString}`,
+								/* 03 */ '---',
+								/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
-						assert.strictEqual(
-							metadata.mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(metadata.mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 8, 2, 8 + `${quotedString}`.length),
-								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got ''.`,
+								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got ''.`
 							),
 						]);
 					});
 
 					test('• empty value', async () => {
-						const value = (randomBoolean())
-							? '\t\t  \t\t'
-							: ' \t \v \t ';
+						const value = randomBoolean() ? '\t\t  \t\t' : ' \t \v \t ';
 
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */`	mode: ${value}`,
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ `	mode: ${value}`,
+								/* 03 */ '---',
+								/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
-						assert.strictEqual(
-							metadata.mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(metadata.mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 8, 2, 8),
-								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got ''.`,
+								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got ''.`
 							),
 						]);
 					});
@@ -969,32 +848,25 @@ suite('TextModelPromptParser', () => {
 						const test = createTest(
 							URI.file('/absolute/folder/and/a/my.prompt.md'),
 							[
-					/* 01 */"---",
-					/* 02 */`	mode: `,
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
+								/* 01 */ '---',
+								/* 02 */ `	mode: `,
+								/* 03 */ '---',
+								/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
 							],
-							INSTRUCTIONS_LANGUAGE_ID,
+							INSTRUCTIONS_LANGUAGE_ID
 						);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
-						assert.strictEqual(
-							metadata.mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(metadata.mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 8, 2, 8),
-								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got ''.`,
+								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got ''.`
 							),
 						]);
 					});
@@ -1004,194 +876,127 @@ suite('TextModelPromptParser', () => {
 			suite('• tools and mode compatibility', () => {
 				suite('• tools is set', () => {
 					test('• ask mode', async () => {
-						const test = createTest(
-							URI.file('/absolute/folder/and/a/filename.txt'),
-							[
-					/* 01 */"---",
-					/* 02 */"tools: [ 'tool_name3', \"tool_name4\" ]  \t\t  ",
-					/* 03 */"mode: \"ask\"",
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
-							],
-						);
+						const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+							/* 01 */ '---',
+							/* 02 */ 'tools: [ \'tool_name3\', "tool_name4" ]  \t\t  ',
+							/* 03 */ 'mode: "ask"',
+							/* 04 */ '---',
+							/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
+						]);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { tools, mode } = metadata;
-						assertDefined(
-							tools,
-							'Tools metadata must be defined.',
-						);
+						assertDefined(tools, 'Tools metadata must be defined.');
 
-						assert.strictEqual(
-							mode,
-							ChatMode.Agent,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Agent, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticWarning(
 								new Range(3, 1, 3, 1 + 11),
-								'Record \'mode\' is implied to have the \'agent\' value if \'tools\' record is present so the specified value will be ignored.',
+								"Record 'mode' is implied to have the 'agent' value if 'tools' record is present so the specified value will be ignored."
 							),
 						]);
 					});
 
 					test('• edit mode', async () => {
-						const test = createTest(
-							URI.file('/absolute/folder/and/a/filename.txt'),
-							[
-					/* 01 */"---",
-					/* 02 */"tools: [ 'tool_name3', \"tool_name4\" ]  \t\t  ",
-					/* 03 */"mode: \"edit\"",
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
-							],
-						);
+						const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+							/* 01 */ '---',
+							/* 02 */ 'tools: [ \'tool_name3\', "tool_name4" ]  \t\t  ',
+							/* 03 */ 'mode: "edit"',
+							/* 04 */ '---',
+							/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
+						]);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { tools, mode } = metadata;
-						assertDefined(
-							tools,
-							'Tools metadata must be defined.',
-						);
+						assertDefined(tools, 'Tools metadata must be defined.');
 
-						assert.strictEqual(
-							mode,
-							ChatMode.Agent,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Agent, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticWarning(
 								new Range(3, 1, 3, 1 + 12),
-								'Record \'mode\' is implied to have the \'agent\' value if \'tools\' record is present so the specified value will be ignored.',
+								"Record 'mode' is implied to have the 'agent' value if 'tools' record is present so the specified value will be ignored."
 							),
 						]);
 					});
 
 					test('• agent mode', async () => {
-						const test = createTest(
-							URI.file('/absolute/folder/and/a/filename.txt'),
-							[
-					/* 01 */"---",
-					/* 02 */"tools: [ 'tool_name3', \"tool_name4\" ]  \t\t  ",
-					/* 03 */"mode: \"agent\"",
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
-							],
-						);
+						const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+							/* 01 */ '---',
+							/* 02 */ 'tools: [ \'tool_name3\', "tool_name4" ]  \t\t  ',
+							/* 03 */ 'mode: "agent"',
+							/* 04 */ '---',
+							/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
+						]);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { tools, mode } = metadata;
-						assertDefined(
-							tools,
-							'Tools metadata must be defined.',
-						);
+						assertDefined(tools, 'Tools metadata must be defined.');
 
-						assert.strictEqual(
-							mode,
-							ChatMode.Agent,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Agent, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([]);
 					});
 
 					test('• no mode', async () => {
-						const test = createTest(
-							URI.file('/absolute/folder/and/a/filename.txt'),
-							[
-					/* 01 */"---",
-					/* 02 */"tools: [ 'tool_name3', \"tool_name4\" ]  \t\t  ",
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
-							],
-						);
+						const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+							/* 01 */ '---',
+							/* 02 */ 'tools: [ \'tool_name3\', "tool_name4" ]  \t\t  ',
+							/* 03 */ '---',
+							/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
+						]);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { tools, mode } = metadata;
-						assertDefined(
-							tools,
-							'Tools metadata must be defined.',
-						);
+						assertDefined(tools, 'Tools metadata must be defined.');
 
-						assert.strictEqual(
-							mode,
-							ChatMode.Agent,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Agent, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([]);
 					});
 
 					test('• invalid mode', async () => {
-						const value = (randomBoolean())
-							? 'unknown mode  '
-							: 'unknown';
+						const value = randomBoolean() ? 'unknown mode  ' : 'unknown';
 
-						const test = createTest(
-							URI.file('/absolute/folder/and/a/filename.txt'),
-							[
-					/* 01 */"---",
-					/* 02 */"tools: [ 'tool_name3', \"tool_name4\" ]  \t\t  ",
-					/* 03 */`mode:  \t\t${value}`,
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
-							],
-						);
+						const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+							/* 01 */ '---',
+							/* 02 */ 'tools: [ \'tool_name3\', "tool_name4" ]  \t\t  ',
+							/* 03 */ `mode:  \t\t${value}`,
+							/* 04 */ '---',
+							/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
+						]);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { tools, mode } = metadata;
-						assertDefined(
-							tools,
-							'Tools metadata must be defined.',
-						);
+						assertDefined(tools, 'Tools metadata must be defined.');
 
-						assert.strictEqual(
-							mode,
-							ChatMode.Agent,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Agent, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(3, 10, 3, 10 + value.trim().length),
-								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got '${value.trim()}'.`,
+								`The 'mode' metadata must be one of 'ask' | 'edit' | 'agent', got '${value.trim()}'.`
 							),
 						]);
 					});
@@ -1199,144 +1004,92 @@ suite('TextModelPromptParser', () => {
 
 				suite('• tools is not set', () => {
 					test('• ask mode', async () => {
-						const test = createTest(
-							URI.file('/absolute/folder/and/a/filename.txt'),
-							[
-					/* 01 */"---",
-					/* 02 */"description: ['my prompt', 'description.']",
-					/* 03 */"mode: \"ask\"",
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
-							],
-						);
+						const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+							/* 01 */ '---',
+							/* 02 */ "description: ['my prompt', 'description.']",
+							/* 03 */ 'mode: "ask"',
+							/* 04 */ '---',
+							/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
+						]);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { tools, mode } = metadata;
-						assert(
-							tools === undefined,
-							'Tools metadata must not be defined.',
-						);
+						assert(tools === undefined, 'Tools metadata must not be defined.');
 
-						assert.strictEqual(
-							mode,
-							ChatMode.Ask,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Ask, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([
 							new ExpectedDiagnosticError(
 								new Range(2, 14, 2, 14 + 29),
-								`The 'description' metadata must be a 'string', got 'array'.`,
+								`The 'description' metadata must be a 'string', got 'array'.`
 							),
 						]);
 					});
 
 					test('• edit mode', async () => {
-						const test = createTest(
-							URI.file('/absolute/folder/and/a/filename.txt'),
-							[
-					/* 01 */"---",
-					/* 02 */"description: my prompt description. \t\t  \t\t   ",
-					/* 03 */"mode: \"edit\"",
-					/* 04 */"---",
-					/* 05 */"The cactus on my desk has a thriving Instagram account.",
-							],
-						);
+						const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+							/* 01 */ '---',
+							/* 02 */ 'description: my prompt description. \t\t  \t\t   ',
+							/* 03 */ 'mode: "edit"',
+							/* 04 */ '---',
+							/* 05 */ 'The cactus on my desk has a thriving Instagram account.',
+						]);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { tools, mode } = metadata;
-						assert(
-							tools === undefined,
-							'Tools metadata must not be defined.',
-						);
+						assert(tools === undefined, 'Tools metadata must not be defined.');
 
-						assert.strictEqual(
-							mode,
-							ChatMode.Edit,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Edit, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([]);
 					});
 
 					test('• agent mode', async () => {
-						const test = createTest(
-							URI.file('/absolute/folder/and/a/filename.txt'),
-							[
-					/* 01 */"---",
-					/* 02 */"mode: \"agent\"",
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
-							],
-						);
+						const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+							/* 01 */ '---',
+							/* 02 */ 'mode: "agent"',
+							/* 03 */ '---',
+							/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
+						]);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { tools, mode } = metadata;
-						assert(
-							tools === undefined,
-							'Tools metadata must not be defined.',
-						);
+						assert(tools === undefined, 'Tools metadata must not be defined.');
 
-						assert.strictEqual(
-							mode,
-							ChatMode.Agent,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, ChatMode.Agent, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([]);
 					});
 
 					test('• no mode', async () => {
-						const test = createTest(
-							URI.file('/absolute/folder/and/a/filename.txt'),
-							[
-					/* 01 */"---",
-					/* 02 */"description: 'My prompt.'",
-					/* 03 */"---",
-					/* 04 */"The cactus on my desk has a thriving Instagram account.",
-							],
-						);
+						const test = createTest(URI.file('/absolute/folder/and/a/filename.txt'), [
+							/* 01 */ '---',
+							/* 02 */ "description: 'My prompt.'",
+							/* 03 */ '---',
+							/* 04 */ 'The cactus on my desk has a thriving Instagram account.',
+						]);
 
 						await test.allSettled();
 
 						const { header, metadata } = test.parser;
-						assertDefined(
-							header,
-							'Prompt header must be defined.',
-						);
+						assertDefined(header, 'Prompt header must be defined.');
 
 						const { tools, mode } = metadata;
-						assert(
-							tools === undefined,
-							'Tools metadata must not be defined.',
-						);
+						assert(tools === undefined, 'Tools metadata must not be defined.');
 
-						assert.strictEqual(
-							mode,
-							undefined,
-							'Mode metadata must have correct value.',
-						);
+						assert.strictEqual(mode, undefined, 'Mode metadata must have correct value.');
 
 						await test.validateHeaderDiagnostics([]);
 					});
@@ -1346,41 +1099,24 @@ suite('TextModelPromptParser', () => {
 	});
 
 	test('• gets disposed with the model', async () => {
-		const test = createTest(
-			URI.file('/some/path/file.prompt.md'),
-			[
-				'line1',
-				'line2',
-				'line3',
-			],
-		);
+		const test = createTest(URI.file('/some/path/file.prompt.md'), ['line1', 'line2', 'line3']);
 
 		// no references in the model contents
 		await test.validateReferences([]);
 
 		test.model.dispose();
 
-		assert(
-			test.parser.isDisposed,
-			'The parser should be disposed with its model.',
-		);
+		assert(test.parser.isDisposed, 'The parser should be disposed with its model.');
 	});
 
 	test('• toString()', async () => {
 		const modelUri = URI.file('/Users/legomushroom/repos/prompt-snippets/README.md');
-		const test = createTest(
-			modelUri,
-			[
-				'line1',
-				'line2',
-				'line3',
-			],
-		);
+		const test = createTest(modelUri, ['line1', 'line2', 'line3']);
 
 		assert.strictEqual(
 			test.parser.toString(),
 			`text-model-prompt:${modelUri.path}`,
-			'The parser should provide correct `toString()` implementation.',
+			'The parser should provide correct `toString()` implementation.'
 		);
 	});
 });

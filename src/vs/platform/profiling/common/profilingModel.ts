@@ -77,7 +77,6 @@ export interface ICpuProfileRaw extends IV8Profile {
 	nodes: IProfileNode[];
 }
 
-
 /**
  * Recursive function that computes and caches the aggregate time for the
  * children of the computed now.
@@ -97,9 +96,11 @@ const computeAggregateTime = (index: number, nodes: IComputedNode[]): number => 
 };
 
 const ensureSourceLocations = (profile: ICpuProfileRaw): ReadonlyArray<IAnnotationLocation> => {
-
 	let locationIdCounter = 0;
-	const locationsByRef = new Map<string, { id: number; callFrame: CdpCallFrame; location: ISourceLocation }>();
+	const locationsByRef = new Map<
+		string,
+		{ id: number; callFrame: CdpCallFrame; location: ISourceLocation }
+	>();
 
 	const getLocationIdFor = (callFrame: CdpCallFrame) => {
 		const ref = [
@@ -300,16 +301,23 @@ export class BottomUpNode {
 		return this.location.src;
 	}
 
-	constructor(public readonly location: ILocation, public readonly parent?: BottomUpNode) { }
+	constructor(
+		public readonly location: ILocation,
+		public readonly parent?: BottomUpNode
+	) {}
 
 	public addNode(node: IComputedNode) {
 		this.selfTime += node.selfTime;
 		this.aggregateTime += node.aggregateTime;
 	}
-
 }
 
-export const processNode = (aggregate: BottomUpNode, node: IComputedNode, model: IProfileModel, initialNode = node) => {
+export const processNode = (
+	aggregate: BottomUpNode,
+	node: IComputedNode,
+	model: IProfileModel,
+	initialNode = node
+) => {
 	let child = aggregate.children[node.locationId];
 	if (!child) {
 		child = new BottomUpNode(model.locations[node.locationId], aggregate);
@@ -325,7 +333,6 @@ export const processNode = (aggregate: BottomUpNode, node: IComputedNode, model:
 };
 
 //#endregion
-
 
 export interface BottomUpSample {
 	selfTime: number;

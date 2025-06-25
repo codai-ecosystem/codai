@@ -9,7 +9,6 @@ import { MarkerElement, ResourceMarkers } from './markersModel.js';
 import { MarkersViewMode } from '../common/markers.js';
 
 export interface IMarkersView extends IView {
-
 	readonly filters: MarkersFilters;
 	focusFilter(): void;
 	clearFilterText(): void;

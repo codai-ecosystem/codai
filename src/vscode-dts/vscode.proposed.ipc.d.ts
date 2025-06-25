@@ -4,13 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	/**
 	 * A message passing protocol, which enables sending and receiving messages
 	 * between two parties.
 	 */
 	export interface MessagePassingProtocol {
-
 		/**
 		 * Fired when a message is received from the other party.
 		 */
@@ -27,7 +25,6 @@ declare module 'vscode' {
 	}
 
 	export interface ExtensionContext {
-
 		/**
 		 * When not `undefined`, this is an instance of {@link MessagePassingProtocol} in
 		 * which the other party is owned by the web embedder.

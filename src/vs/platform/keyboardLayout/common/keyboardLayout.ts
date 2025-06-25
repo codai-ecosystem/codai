@@ -9,7 +9,8 @@ import { createDecorator } from '../../instantiation/common/instantiation.js';
 import { IKeyboardEvent } from '../../keybinding/common/keybinding.js';
 import { IKeyboardMapper } from './keyboardMapper.js';
 
-export const IKeyboardLayoutService = createDecorator<IKeyboardLayoutService>('keyboardLayoutService');
+export const IKeyboardLayoutService =
+	createDecorator<IKeyboardLayoutService>('keyboardLayoutService');
 
 export interface IWindowsKeyMapping {
 	vkey: string;
@@ -46,7 +47,10 @@ export interface IMacKeyboardMapping {
 
 export type IMacLinuxKeyMapping = IMacKeyMapping | ILinuxKeyMapping;
 export type IMacLinuxKeyboardMapping = IMacKeyboardMapping | ILinuxKeyboardMapping;
-export type IKeyboardMapping = IWindowsKeyboardMapping | ILinuxKeyboardMapping | IMacKeyboardMapping;
+export type IKeyboardMapping =
+	| IWindowsKeyboardMapping
+	| ILinuxKeyboardMapping
+	| IMacKeyboardMapping;
 
 export interface IWindowsKeyboardLayoutInfo {
 	name: string;
@@ -69,7 +73,11 @@ export interface IMacKeyboardLayoutInfo {
 	localizedName?: string;
 }
 
-export type IKeyboardLayoutInfo = (IWindowsKeyboardLayoutInfo | ILinuxKeyboardLayoutInfo | IMacKeyboardLayoutInfo) & { isUserKeyboardLayout?: boolean; isUSStandard?: true };
+export type IKeyboardLayoutInfo = (
+	| IWindowsKeyboardLayoutInfo
+	| ILinuxKeyboardLayoutInfo
+	| IMacKeyboardLayoutInfo
+) & { isUserKeyboardLayout?: boolean; isUSStandard?: true };
 
 export interface IKeyboardLayoutService {
 	readonly _serviceBrand: undefined;
@@ -83,20 +91,32 @@ export interface IKeyboardLayoutService {
 	validateCurrentKeyboardMapping(keyboardEvent: IKeyboardEvent): void;
 }
 
-export function areKeyboardLayoutsEqual(a: IKeyboardLayoutInfo | null, b: IKeyboardLayoutInfo | null): boolean {
+export function areKeyboardLayoutsEqual(
+	a: IKeyboardLayoutInfo | null,
+	b: IKeyboardLayoutInfo | null
+): boolean {
 	if (!a || !b) {
 		return false;
 	}
 
-	if ((<IWindowsKeyboardLayoutInfo>a).name && (<IWindowsKeyboardLayoutInfo>b).name && (<IWindowsKeyboardLayoutInfo>a).name === (<IWindowsKeyboardLayoutInfo>b).name) {
+	if (
+		(<IWindowsKeyboardLayoutInfo>a).name &&
+		(<IWindowsKeyboardLayoutInfo>b).name &&
+		(<IWindowsKeyboardLayoutInfo>a).name === (<IWindowsKeyboardLayoutInfo>b).name
+	) {
 		return true;
 	}
 
-	if ((<IMacKeyboardLayoutInfo>a).id && (<IMacKeyboardLayoutInfo>b).id && (<IMacKeyboardLayoutInfo>a).id === (<IMacKeyboardLayoutInfo>b).id) {
+	if (
+		(<IMacKeyboardLayoutInfo>a).id &&
+		(<IMacKeyboardLayoutInfo>b).id &&
+		(<IMacKeyboardLayoutInfo>a).id === (<IMacKeyboardLayoutInfo>b).id
+	) {
 		return true;
 	}
 
-	if ((<ILinuxKeyboardLayoutInfo>a).model &&
+	if (
+		(<ILinuxKeyboardLayoutInfo>a).model &&
 		(<ILinuxKeyboardLayoutInfo>b).model &&
 		(<ILinuxKeyboardLayoutInfo>a).model === (<ILinuxKeyboardLayoutInfo>b).model &&
 		(<ILinuxKeyboardLayoutInfo>a).layout === (<ILinuxKeyboardLayoutInfo>b).layout
@@ -107,7 +127,10 @@ export function areKeyboardLayoutsEqual(a: IKeyboardLayoutInfo | null, b: IKeybo
 	return false;
 }
 
-export function parseKeyboardLayoutDescription(layout: IKeyboardLayoutInfo | null): { label: string; description: string } {
+export function parseKeyboardLayoutDescription(layout: IKeyboardLayoutInfo | null): {
+	label: string;
+	description: string;
+} {
 	if (!layout) {
 		return { label: '', description: '' };
 	}
@@ -117,7 +140,7 @@ export function parseKeyboardLayoutDescription(layout: IKeyboardLayoutInfo | nul
 		const windowsLayout = <IWindowsKeyboardLayoutInfo>layout;
 		return {
 			label: windowsLayout.text,
-			description: ''
+			description: '',
 		};
 	}
 
@@ -126,26 +149,26 @@ export function parseKeyboardLayoutDescription(layout: IKeyboardLayoutInfo | nul
 		if (macLayout.localizedName) {
 			return {
 				label: macLayout.localizedName,
-				description: ''
+				description: '',
 			};
 		}
 
 		if (/^com\.apple\.keylayout\./.test(macLayout.id)) {
 			return {
 				label: macLayout.id.replace(/^com\.apple\.keylayout\./, '').replace(/-/, ' '),
-				description: ''
+				description: '',
 			};
 		}
 		if (/^.*inputmethod\./.test(macLayout.id)) {
 			return {
 				label: macLayout.id.replace(/^.*inputmethod\./, '').replace(/[-\.]/, ' '),
-				description: `Input Method (${macLayout.lang})`
+				description: `Input Method (${macLayout.lang})`,
 			};
 		}
 
 		return {
 			label: macLayout.lang,
-			description: ''
+			description: '',
 		};
 	}
 
@@ -153,7 +176,7 @@ export function parseKeyboardLayoutDescription(layout: IKeyboardLayoutInfo | nul
 
 	return {
 		label: linuxLayout.layout,
-		description: ''
+		description: '',
 	};
 }
 
@@ -177,15 +200,18 @@ function windowsKeyMappingEquals(a: IWindowsKeyMapping, b: IWindowsKeyMapping): 
 		return false;
 	}
 	return (
-		a.vkey === b.vkey
-		&& a.value === b.value
-		&& a.withShift === b.withShift
-		&& a.withAltGr === b.withAltGr
-		&& a.withShiftAltGr === b.withShiftAltGr
+		a.vkey === b.vkey &&
+		a.value === b.value &&
+		a.withShift === b.withShift &&
+		a.withAltGr === b.withAltGr &&
+		a.withShiftAltGr === b.withShiftAltGr
 	);
 }
 
-export function windowsKeyboardMappingEquals(a: IWindowsKeyboardMapping | null, b: IWindowsKeyboardMapping | null): boolean {
+export function windowsKeyboardMappingEquals(
+	a: IWindowsKeyboardMapping | null,
+	b: IWindowsKeyboardMapping | null
+): boolean {
 	if (!a && !b) {
 		return true;
 	}
@@ -211,14 +237,17 @@ function macLinuxKeyMappingEquals(a: IMacLinuxKeyMapping, b: IMacLinuxKeyMapping
 		return false;
 	}
 	return (
-		a.value === b.value
-		&& a.withShift === b.withShift
-		&& a.withAltGr === b.withAltGr
-		&& a.withShiftAltGr === b.withShiftAltGr
+		a.value === b.value &&
+		a.withShift === b.withShift &&
+		a.withAltGr === b.withAltGr &&
+		a.withShiftAltGr === b.withShiftAltGr
 	);
 }
 
-export function macLinuxKeyboardMappingEquals(a: IMacLinuxKeyboardMapping | null, b: IMacLinuxKeyboardMapping | null): boolean {
+export function macLinuxKeyboardMappingEquals(
+	a: IMacLinuxKeyboardMapping | null,
+	b: IMacLinuxKeyboardMapping | null
+): boolean {
 	if (!a && !b) {
 		return true;
 	}

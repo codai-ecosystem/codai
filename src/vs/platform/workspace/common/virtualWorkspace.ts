@@ -11,9 +11,13 @@ export function isVirtualResource(resource: URI) {
 	return resource.scheme !== Schemas.file && resource.scheme !== Schemas.vscodeRemote;
 }
 
-export function getVirtualWorkspaceLocation(workspace: IWorkspace): { scheme: string; authority: string } | undefined {
+export function getVirtualWorkspaceLocation(
+	workspace: IWorkspace
+): { scheme: string; authority: string } | undefined {
 	if (workspace.folders.length) {
-		return workspace.folders.every(f => isVirtualResource(f.uri)) ? workspace.folders[0].uri : undefined;
+		return workspace.folders.every(f => isVirtualResource(f.uri))
+			? workspace.folders[0].uri
+			: undefined;
 	} else if (workspace.configuration && isVirtualResource(workspace.configuration)) {
 		return workspace.configuration;
 	}

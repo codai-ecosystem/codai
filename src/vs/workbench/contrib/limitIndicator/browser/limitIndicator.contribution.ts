@@ -7,9 +7,16 @@ import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
 import Severity from '../../../../base/common/severity.js';
 import { ICodeEditor, getCodeEditor } from '../../../../editor/browser/editorBrowser.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
-import { ILanguageStatus, ILanguageStatusService } from '../../../services/languageStatus/common/languageStatusService.js';
+import {
+	ILanguageStatus,
+	ILanguageStatusService,
+} from '../../../services/languageStatus/common/languageStatusService.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry, IWorkbenchContribution } from '../../../common/contributions.js';
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+	IWorkbenchContribution,
+} from '../../../common/contributions.js';
 import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
 import { Event } from '../../../../base/common/event.js';
 import * as nls from '../../../../nls.js';
@@ -18,14 +25,13 @@ import { FoldingController } from '../../../../editor/contrib/folding/browser/fo
 import { ColorDetector } from '../../../../editor/contrib/colorPicker/browser/colorDetector.js';
 
 const openSettingsCommand = 'workbench.action.openSettings';
-const configureSettingsLabel = nls.localize('status.button.configure', "Configure");
+const configureSettingsLabel = nls.localize('status.button.configure', 'Configure');
 
 /**
  * Uses that language status indicator to show information which language features have been limited for performance reasons.
  * Currently this is used for folding ranges and for color decorators.
  */
 export class LimitIndicatorContribution extends Disposable implements IWorkbenchContribution {
-
 	constructor(
 		@IEditorService editorService: IEditorService,
 		@ILanguageStatusService languageStatusService: ILanguageStatusService
@@ -33,7 +39,9 @@ export class LimitIndicatorContribution extends Disposable implements IWorkbench
 		super();
 
 		const accessors = [new ColorDecorationAccessor(), new FoldingRangeAccessor()];
-		const statusEntries = accessors.map(indicator => new LanguageStatusEntry(languageStatusService, indicator));
+		const statusEntries = accessors.map(
+			indicator => new LanguageStatusEntry(languageStatusService, indicator)
+		);
 		statusEntries.forEach(entry => this._register(entry));
 
 		let control: any;
@@ -52,9 +60,7 @@ export class LimitIndicatorContribution extends Disposable implements IWorkbench
 
 		onActiveEditorChanged();
 	}
-
 }
-
 
 export interface LimitInfo {
 	readonly onDidChange: Event<void>;
@@ -97,12 +103,13 @@ class FoldingRangeAccessor implements LanguageFeatureAccessor {
 }
 
 class LanguageStatusEntry {
-
 	private _limitStatusItem: IDisposable | undefined;
 	private _indicatorChangeListener: IDisposable | undefined;
 
-	constructor(private languageStatusService: ILanguageStatusService, private accessor: LanguageFeatureAccessor) {
-	}
+	constructor(
+		private languageStatusService: ILanguageStatusService,
+		private accessor: LanguageFeatureAccessor
+	) {}
 
 	onActiveEditorChanged(editor: ICodeEditor | null): boolean {
 		if (this._indicatorChangeListener) {
@@ -124,7 +131,6 @@ class LanguageStatusEntry {
 		return false;
 	}
 
-
 	private updateStatusItem(info: LimitInfo | undefined) {
 		if (this._limitStatusItem) {
 			this._limitStatusItem.dispose();
@@ -137,11 +143,19 @@ class LanguageStatusEntry {
 				name: this.accessor.name,
 				severity: Severity.Warning,
 				label: this.accessor.label,
-				detail: nls.localize('status.limited.details', 'only {0} shown for performance reasons', info.limited),
-				command: { id: openSettingsCommand, arguments: [this.accessor.settingsId], title: configureSettingsLabel },
+				detail: nls.localize(
+					'status.limited.details',
+					'only {0} shown for performance reasons',
+					info.limited
+				),
+				command: {
+					id: openSettingsCommand,
+					arguments: [this.accessor.settingsId],
+					title: configureSettingsLabel,
+				},
 				accessibilityInfo: undefined,
 				source: this.accessor.source,
-				busy: false
+				busy: false,
 			};
 			this._limitStatusItem = this.languageStatusService.addStatus(status);
 		}
@@ -155,7 +169,6 @@ class LanguageStatusEntry {
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(
-	LimitIndicatorContribution,
-	LifecyclePhase.Restored
-);
+Registry.as<IWorkbenchContributionsRegistry>(
+	WorkbenchExtensions.Workbench
+).registerWorkbenchContribution(LimitIndicatorContribution, LifecyclePhase.Restored);

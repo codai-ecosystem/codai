@@ -3,7 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Application, Terminal, TerminalCommandId, TerminalCommandIdWithValue, SettingsEditor } from '../../../../automation';
+import {
+	Application,
+	Terminal,
+	TerminalCommandId,
+	TerminalCommandIdWithValue,
+	SettingsEditor,
+} from '../../../../automation';
 import { setTerminalTestSettings } from './terminal-helpers';
 
 const CONTRIBUTED_PROFILE_NAME = `JavaScript Debug Terminal`;
@@ -32,20 +38,31 @@ export function setup(options?: { skipSuite: boolean }) {
 		});
 
 		it('should set the default profile to a contributed one', async () => {
-			await terminal.runCommandWithValue(TerminalCommandIdWithValue.SelectDefaultProfile, CONTRIBUTED_PROFILE_NAME);
+			await terminal.runCommandWithValue(
+				TerminalCommandIdWithValue.SelectDefaultProfile,
+				CONTRIBUTED_PROFILE_NAME
+			);
 			await terminal.createTerminal();
 			await terminal.assertSingleTab({ name: CONTRIBUTED_PROFILE_NAME });
 		});
 
 		it('should use the default contributed profile on panel open and for splitting', async () => {
-			await terminal.runCommandWithValue(TerminalCommandIdWithValue.SelectDefaultProfile, CONTRIBUTED_PROFILE_NAME);
+			await terminal.runCommandWithValue(
+				TerminalCommandIdWithValue.SelectDefaultProfile,
+				CONTRIBUTED_PROFILE_NAME
+			);
 			await terminal.runCommand(TerminalCommandId.Show);
 			await terminal.runCommand(TerminalCommandId.Split);
-			await terminal.assertTerminalGroups([[{ name: CONTRIBUTED_PROFILE_NAME }, { name: CONTRIBUTED_PROFILE_NAME }]]);
+			await terminal.assertTerminalGroups([
+				[{ name: CONTRIBUTED_PROFILE_NAME }, { name: CONTRIBUTED_PROFILE_NAME }],
+			]);
 		});
 
 		it('should set the default profile', async () => {
-			await terminal.runCommandWithValue(TerminalCommandIdWithValue.SelectDefaultProfile, process.platform === 'win32' ? 'PowerShell' : undefined);
+			await terminal.runCommandWithValue(
+				TerminalCommandIdWithValue.SelectDefaultProfile,
+				process.platform === 'win32' ? 'PowerShell' : undefined
+			);
 			await terminal.createTerminal();
 			await terminal.assertSingleTab({ name: ANY_PROFILE_NAME });
 		});
@@ -63,21 +80,34 @@ export function setup(options?: { skipSuite: boolean }) {
 		});
 
 		it('createWithProfile command should create a terminal with a contributed profile', async () => {
-			await terminal.runCommandWithValue(TerminalCommandIdWithValue.NewWithProfile, CONTRIBUTED_PROFILE_NAME);
+			await terminal.runCommandWithValue(
+				TerminalCommandIdWithValue.NewWithProfile,
+				CONTRIBUTED_PROFILE_NAME
+			);
 			await terminal.assertSingleTab({ name: CONTRIBUTED_PROFILE_NAME });
 		});
 
 		it('createWithProfile command should create a split terminal with a profile', async () => {
 			await terminal.runCommand(TerminalCommandId.Show);
-			await terminal.runCommandWithValue(TerminalCommandIdWithValue.NewWithProfile, undefined, true);
+			await terminal.runCommandWithValue(
+				TerminalCommandIdWithValue.NewWithProfile,
+				undefined,
+				true
+			);
 			await terminal.assertTerminalGroups([[{}, {}]]);
 		});
 
 		it('createWithProfile command should create a split terminal with a contributed profile', async () => {
 			await terminal.runCommand(TerminalCommandId.Show);
 			await terminal.assertSingleTab({});
-			await terminal.runCommandWithValue(TerminalCommandIdWithValue.NewWithProfile, CONTRIBUTED_PROFILE_NAME, true);
-			await terminal.assertTerminalGroups([[{ name: ANY_PROFILE_NAME }, { name: CONTRIBUTED_PROFILE_NAME }]]);
+			await terminal.runCommandWithValue(
+				TerminalCommandIdWithValue.NewWithProfile,
+				CONTRIBUTED_PROFILE_NAME,
+				true
+			);
+			await terminal.assertTerminalGroups([
+				[{ name: ANY_PROFILE_NAME }, { name: CONTRIBUTED_PROFILE_NAME }],
+			]);
 		});
 	});
 }

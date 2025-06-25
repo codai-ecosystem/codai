@@ -5,7 +5,11 @@
 
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { Range } from '../../../../editor/common/core/range.js';
-import { DefaultEndOfLine, FindMatch, IReadonlyTextBuffer } from '../../../../editor/common/model.js';
+import {
+	DefaultEndOfLine,
+	FindMatch,
+	IReadonlyTextBuffer,
+} from '../../../../editor/common/model.js';
 import { PieceTreeTextBufferBuilder } from '../../../../editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder.js';
 import { SearchParams } from '../../../../editor/common/model/textModelSearch.js';
 
@@ -16,7 +20,11 @@ interface RawOutputFindMatch {
 
 export class CellSearchModel extends Disposable {
 	private _outputTextBuffers: IReadonlyTextBuffer[] | undefined = undefined;
-	constructor(readonly _source: string, private _inputTextBuffer: IReadonlyTextBuffer | undefined, private _outputs: string[]) {
+	constructor(
+		readonly _source: string,
+		private _inputTextBuffer: IReadonlyTextBuffer | undefined,
+		private _outputs: string[]
+	) {
 		super();
 	}
 
@@ -47,7 +55,7 @@ export class CellSearchModel extends Disposable {
 
 	get outputTextBuffers(): IReadonlyTextBuffer[] {
 		if (!this._outputTextBuffers) {
-			this._outputTextBuffers = this._outputs.map((output) => {
+			this._outputTextBuffers = this._outputs.map(output => {
 				const builder = new PieceTreeTextBufferBuilder();
 				builder.acceptChunk(output);
 				const bufferFactory = builder.finish(true);
@@ -75,20 +83,22 @@ export class CellSearchModel extends Disposable {
 		if (!searchData) {
 			return [];
 		}
-		return this.outputTextBuffers.map(buffer => {
-			const matches = buffer.findMatchesLineByLine(
-				this._getFullModelRange(buffer),
-				searchData,
-				true,
-				5000
-			);
-			if (matches.length === 0) {
-				return undefined;
-			}
-			return {
-				textBuffer: buffer,
-				matches
-			};
-		}).filter((item): item is RawOutputFindMatch => !!item);
+		return this.outputTextBuffers
+			.map(buffer => {
+				const matches = buffer.findMatchesLineByLine(
+					this._getFullModelRange(buffer),
+					searchData,
+					true,
+					5000
+				);
+				if (matches.length === 0) {
+					return undefined;
+				}
+				return {
+					textBuffer: buffer,
+					matches,
+				};
+			})
+			.filter((item): item is RawOutputFindMatch => !!item);
 	}
 }

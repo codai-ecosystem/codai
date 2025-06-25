@@ -35,11 +35,11 @@ const args = minimist(process.argv.slice(2), {
 		'debug',
 	],
 	alias: {
-		h: 'help'
+		h: 'help',
 	},
 	default: {
-		'browser': 'chromium'
-	}
+		browser: 'chromium',
+	},
 });
 
 if (args.help) {
@@ -63,8 +63,16 @@ const height = 800;
 type BrowserType = 'chromium' | 'firefox' | 'webkit';
 type BrowserChannel = 'msedge' | 'chrome';
 
-async function runTestsInBrowser(browserType: BrowserType, browserChannel: BrowserChannel, endpoint: url.UrlWithStringQuery, server: cp.ChildProcess): Promise<void> {
-	const browser = await playwright[browserType].launch({ headless: !Boolean(args.debug), channel: browserChannel });
+async function runTestsInBrowser(
+	browserType: BrowserType,
+	browserChannel: BrowserChannel,
+	endpoint: url.UrlWithStringQuery,
+	server: cp.ChildProcess
+): Promise<void> {
+	const browser = await playwright[browserType].launch({
+		headless: !Boolean(args.debug),
+		channel: browserChannel,
+	});
 	const context = await browser.newContext();
 
 	const page = await context.newPage();
@@ -80,7 +88,10 @@ async function runTestsInBrowser(browserType: BrowserType, browserChannel: Brows
 	page.on('console', async msg => {
 		try {
 			if (msg.type() === 'error' || msg.type() === 'warning') {
-				consoleLogFn(msg)(msg.text(), await Promise.all(msg.args().map(async arg => await arg.jsonValue())));
+				consoleLogFn(msg)(
+					msg.text(),
+					await Promise.all(msg.args().map(async arg => await arg.jsonValue()))
+				);
 			}
 		} catch (err) {
 			console.error('Error logging console', err);
@@ -94,43 +105,59 @@ async function runTestsInBrowser(browserType: BrowserType, browserChannel: Brows
 		console[type](...args);
 	});
 
-	await page.exposeFunction('codeAutomationExit', async (code: number, logs: Array<{ readonly relativePath: string; readonly contents: string }>) => {
-		try {
-			for (const log of logs) {
-				const absoluteLogsPath = path.join(logsPath, log.relativePath);
+	await page.exposeFunction(
+		'codeAutomationExit',
+		async (
+			code: number,
+			logs: Array<{ readonly relativePath: string; readonly contents: string }>
+		) => {
+			try {
+				for (const log of logs) {
+					const absoluteLogsPath = path.join(logsPath, log.relativePath);
 
-				await promises.mkdir(path.dirname(absoluteLogsPath), { recursive: true });
-				await promises.writeFile(absoluteLogsPath, log.contents);
+					await promises.mkdir(path.dirname(absoluteLogsPath), { recursive: true });
+					await promises.writeFile(absoluteLogsPath, log.contents);
+				}
+			} catch (error) {
+				console.error(`Error saving web client logs (${error})`);
 			}
-		} catch (error) {
-			console.error(`Error saving web client logs (${error})`);
-		}
 
-		if (args.debug) {
-			return;
-		}
+			if (args.debug) {
+				return;
+			}
 
-		try {
-			await browser.close();
-		} catch (error) {
-			console.error(`Error when closing browser: ${error}`);
-		}
+			try {
+				await browser.close();
+			} catch (error) {
+				console.error(`Error when closing browser: ${error}`);
+			}
 
-		try {
-			await promisify(kill)(server.pid!);
-		} catch (error) {
-			console.error(`Error when killing server process tree (pid: ${server.pid}): ${error}`);
-		}
+			try {
+				await promisify(kill)(server.pid!);
+			} catch (error) {
+				console.error(`Error when killing server process tree (pid: ${server.pid}): ${error}`);
+			}
 
-		process.exit(code);
-	});
+			process.exit(code);
+		}
+	);
 
 	const host = endpoint.host;
 	const protocol = 'vscode-remote';
 
 	const testWorkspacePath = URI.file(path.resolve(args.workspacePath)).path;
-	const testExtensionUri = url.format({ pathname: URI.file(path.resolve(args.extensionDevelopmentPath)).path, protocol, host, slashes: true });
-	const testFilesUri = url.format({ pathname: URI.file(path.resolve(args.extensionTestsPath)).path, protocol, host, slashes: true });
+	const testExtensionUri = url.format({
+		pathname: URI.file(path.resolve(args.extensionDevelopmentPath)).path,
+		protocol,
+		host,
+		slashes: true,
+	});
+	const testFilesUri = url.format({
+		pathname: URI.file(path.resolve(args.extensionTestsPath)).path,
+		protocol,
+		host,
+		slashes: true,
+	});
 
 	const payloadParam = `[["extensionDevelopmentPath","${testExtensionUri}"],["extensionTestsPath","${testFilesUri}"],["enableProposedApi",""],["webviewExternalEndpointCommit","ef65ac1ba57f57f2a3961bfe94aa20481caca4c6"],["skipWelcome","true"]]`;
 
@@ -155,8 +182,10 @@ function consoleLogFn(msg: playwright.ConsoleMessage) {
 	return console.log;
 }
 
-async function launchServer(browserType: BrowserType, browserChannel: BrowserChannel): Promise<{ endpoint: url.UrlWithStringQuery; server: cp.ChildProcess }> {
-
+async function launchServer(
+	browserType: BrowserType,
+	browserChannel: BrowserChannel
+): Promise<{ endpoint: url.UrlWithStringQuery; server: cp.ChildProcess }> {
 	// Ensure a tmp user-data-dir is used for the tests
 	const tmpDir = tmp.dirSync({ prefix: 't' });
 	const testDataPath = tmpDir.name;
@@ -166,21 +195,37 @@ async function launchServer(browserType: BrowserType, browserChannel: BrowserCha
 
 	const env = {
 		VSCODE_BROWSER: browserChannel ? `${browserType}-${browserChannel}` : browserType,
-		...process.env
+		...process.env,
 	};
 
-	const serverArgs = ['--enable-proposed-api', '--disable-telemetry', '--server-data-dir', userDataDir, '--accept-server-license-terms', '--disable-workspace-trust'];
+	const serverArgs = [
+		'--enable-proposed-api',
+		'--disable-telemetry',
+		'--server-data-dir',
+		userDataDir,
+		'--accept-server-license-terms',
+		'--disable-workspace-trust',
+	];
 
 	let serverLocation: string;
 	if (process.env.VSCODE_REMOTE_SERVER_PATH) {
-		const { serverApplicationName } = require(path.join(process.env.VSCODE_REMOTE_SERVER_PATH, 'product.json'));
-		serverLocation = path.join(process.env.VSCODE_REMOTE_SERVER_PATH, 'bin', `${serverApplicationName}${process.platform === 'win32' ? '.cmd' : ''}`);
+		const { serverApplicationName } = require(
+			path.join(process.env.VSCODE_REMOTE_SERVER_PATH, 'product.json')
+		);
+		serverLocation = path.join(
+			process.env.VSCODE_REMOTE_SERVER_PATH,
+			'bin',
+			`${serverApplicationName}${process.platform === 'win32' ? '.cmd' : ''}`
+		);
 
 		if (args.debug) {
 			console.log(`Starting built server from '${serverLocation}'`);
 		}
 	} else {
-		serverLocation = path.join(root, `scripts/code-server.${process.platform === 'win32' ? 'bat' : 'sh'}`);
+		serverLocation = path.join(
+			root,
+			`scripts/code-server.${process.platform === 'win32' ? 'bat' : 'sh'}`
+		);
 		process.env.VSCODE_DEV = '1';
 
 		if (args.debug) {
@@ -193,12 +238,8 @@ async function launchServer(browserType: BrowserType, browserChannel: BrowserCha
 	serverArgs.push('--logsPath', serverLogsPath);
 
 	const stdio: cp.StdioOptions = args.debug ? 'pipe' : ['ignore', 'pipe', 'ignore'];
-	const shell: boolean = (process.platform === 'win32');
-	const serverProcess = cp.spawn(
-		serverLocation,
-		serverArgs,
-		{ env, stdio, shell }
-	);
+	const shell: boolean = process.platform === 'win32';
+	const serverProcess = cp.spawn(serverLocation, serverArgs, { env, stdio, shell });
 
 	if (args.debug) {
 		serverProcess.stderr!.on('data', error => console.log(`Server stderr: ${error}`));
@@ -226,9 +267,12 @@ async function launchServer(browserType: BrowserType, browserChannel: BrowserCha
 }
 
 const [browserType, browserChannel] = args.browser.split('-');
-launchServer(browserType, browserChannel).then(async ({ endpoint, server }) => {
-	return runTestsInBrowser(browserType, browserChannel, endpoint, server);
-}, error => {
-	console.error(error);
-	process.exit(1);
-});
+launchServer(browserType, browserChannel).then(
+	async ({ endpoint, server }) => {
+		return runTestsInBrowser(browserType, browserChannel, endpoint, server);
+	},
+	error => {
+		console.error(error);
+		process.exit(1);
+	}
+);

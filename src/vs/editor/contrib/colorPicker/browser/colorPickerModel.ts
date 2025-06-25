@@ -8,7 +8,6 @@ import { Emitter, Event } from '../../../../base/common/event.js';
 import { IColorPresentation } from '../../../common/languages.js';
 
 export class ColorPickerModel {
-
 	readonly originalColor: Color;
 	private _color: Color;
 
@@ -25,7 +24,9 @@ export class ColorPickerModel {
 		this._onDidChangeColor.fire(color);
 	}
 
-	get presentation(): IColorPresentation { return this.colorPresentations[this.presentationIndex]; }
+	get presentation(): IColorPresentation {
+		return this.colorPresentations[this.presentationIndex];
+	}
 
 	private _colorPresentations: IColorPresentation[];
 
@@ -50,7 +51,11 @@ export class ColorPickerModel {
 	private readonly _onDidChangePresentation = new Emitter<IColorPresentation>();
 	readonly onDidChangePresentation: Event<IColorPresentation> = this._onDidChangePresentation.event;
 
-	constructor(color: Color, availableColorPresentations: IColorPresentation[], private presentationIndex: number) {
+	constructor(
+		color: Color,
+		availableColorPresentations: IColorPresentation[],
+		private presentationIndex: number
+	) {
 		this.originalColor = color;
 		this._color = color;
 		this._colorPresentations = availableColorPresentations;

@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isLinuxSnap, platform, Platform, PlatformToString } from '../../../base/common/platform.js';
+import {
+	isLinuxSnap,
+	platform,
+	Platform,
+	PlatformToString,
+} from '../../../base/common/platform.js';
 import { env, platform as nodePlatform } from '../../../base/common/process.js';
 import { generateUuid } from '../../../base/common/uuid.js';
 import { ICommonProperties } from './telemetry.js';
@@ -43,7 +48,10 @@ export function resolveCommonProperties(
 	// __GDPR__COMMON__ "version" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 	result['version'] = version;
 	// __GDPR__COMMON__ "common.platformVersion" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-	result['common.platformVersion'] = (release || '').replace(/^(\d+)(\.\d+)?(\.\d+)?(.*)/, '$1$2$3');
+	result['common.platformVersion'] = (release || '').replace(
+		/^(\d+)(\.\d+)?(\.\d+)?(.*)/,
+		'$1$2$3'
+	);
 	// __GDPR__COMMON__ "common.platform" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 	result['common.platform'] = PlatformToString(platform);
 	// __GDPR__COMMON__ "common.nodePlatform" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
@@ -63,20 +71,20 @@ export function resolveCommonProperties(
 	const startTime = Date.now();
 	Object.defineProperties(result, {
 		// __GDPR__COMMON__ "timestamp" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-		'timestamp': {
+		timestamp: {
 			get: () => new Date(),
-			enumerable: true
+			enumerable: true,
 		},
 		// __GDPR__COMMON__ "common.timesincesessionstart" : { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
 		'common.timesincesessionstart': {
 			get: () => Date.now() - startTime,
-			enumerable: true
+			enumerable: true,
 		},
 		// __GDPR__COMMON__ "common.sequence" : { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
 		'common.sequence': {
 			get: () => seq++,
-			enumerable: true
-		}
+			enumerable: true,
+		},
 	});
 
 	if (isLinuxSnap) {

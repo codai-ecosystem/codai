@@ -10,24 +10,50 @@ import { IWorkspaceFolder } from './workspace.js';
 
 export interface IEditSessionIdentityProvider {
 	readonly scheme: string;
-	getEditSessionIdentifier(workspaceFolder: IWorkspaceFolder, token: CancellationToken): Promise<string | undefined>;
-	provideEditSessionIdentityMatch(workspaceFolder: IWorkspaceFolder, identity1: string, identity2: string, token: CancellationToken): Promise<EditSessionIdentityMatch | undefined>;
+	getEditSessionIdentifier(
+		workspaceFolder: IWorkspaceFolder,
+		token: CancellationToken
+	): Promise<string | undefined>;
+	provideEditSessionIdentityMatch(
+		workspaceFolder: IWorkspaceFolder,
+		identity1: string,
+		identity2: string,
+		token: CancellationToken
+	): Promise<EditSessionIdentityMatch | undefined>;
 }
 
-export const IEditSessionIdentityService = createDecorator<IEditSessionIdentityService>('editSessionIdentityService');
+export const IEditSessionIdentityService = createDecorator<IEditSessionIdentityService>(
+	'editSessionIdentityService'
+);
 
 export interface IEditSessionIdentityService {
 	readonly _serviceBrand: undefined;
 
 	registerEditSessionIdentityProvider(provider: IEditSessionIdentityProvider): IDisposable;
-	getEditSessionIdentifier(workspaceFolder: IWorkspaceFolder, cancellationToken: CancellationToken): Promise<string | undefined>;
-	provideEditSessionIdentityMatch(workspaceFolder: IWorkspaceFolder, identity1: string, identity2: string, cancellationToken: CancellationToken): Promise<EditSessionIdentityMatch | undefined>;
-	addEditSessionIdentityCreateParticipant(participants: IEditSessionIdentityCreateParticipant): IDisposable;
-	onWillCreateEditSessionIdentity(workspaceFolder: IWorkspaceFolder, cancellationToken: CancellationToken): Promise<void>;
+	getEditSessionIdentifier(
+		workspaceFolder: IWorkspaceFolder,
+		cancellationToken: CancellationToken
+	): Promise<string | undefined>;
+	provideEditSessionIdentityMatch(
+		workspaceFolder: IWorkspaceFolder,
+		identity1: string,
+		identity2: string,
+		cancellationToken: CancellationToken
+	): Promise<EditSessionIdentityMatch | undefined>;
+	addEditSessionIdentityCreateParticipant(
+		participants: IEditSessionIdentityCreateParticipant
+	): IDisposable;
+	onWillCreateEditSessionIdentity(
+		workspaceFolder: IWorkspaceFolder,
+		cancellationToken: CancellationToken
+	): Promise<void>;
 }
 
 export interface IEditSessionIdentityCreateParticipant {
-	participate(workspaceFolder: IWorkspaceFolder, cancellationToken: CancellationToken): Promise<void>;
+	participate(
+		workspaceFolder: IWorkspaceFolder,
+		cancellationToken: CancellationToken
+	): Promise<void>;
 }
 
 export enum EditSessionIdentityMatch {

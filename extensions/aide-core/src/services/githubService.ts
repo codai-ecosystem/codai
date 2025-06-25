@@ -41,7 +41,9 @@ export class GitHubService {
 	private async initializeFromStoredToken(): Promise<void> {
 		try {
 			// Try to get token from VS Code authentication API
-			const session = await vscode.authentication.getSession('github', ['repo', 'user'], { silent: true });
+			const session = await vscode.authentication.getSession('github', ['repo', 'user'], {
+				silent: true,
+			});
 
 			if (session) {
 				await this.initialize(session.accessToken);
@@ -56,7 +58,9 @@ export class GitHubService {
 	 */
 	async authenticate(): Promise<boolean> {
 		try {
-			const session = await vscode.authentication.getSession('github', ['repo', 'user'], { createIfNone: true });
+			const session = await vscode.authentication.getSession('github', ['repo', 'user'], {
+				createIfNone: true,
+			});
 
 			if (session) {
 				await this.initialize(session.accessToken);
@@ -77,7 +81,7 @@ export class GitHubService {
 	private async initialize(token: string): Promise<void> {
 		this.octokit = new Octokit({
 			auth: token,
-			userAgent: 'AIDE-VSCode-Extension/1.0.0'
+			userAgent: 'AIDE-VSCode-Extension/1.0.0',
 		});
 
 		// Get current user information
@@ -91,7 +95,7 @@ export class GitHubService {
 				bio: data.bio || undefined,
 				company: data.company || undefined,
 				location: data.location || undefined,
-				avatarUrl: data.avatar_url
+				avatarUrl: data.avatar_url,
 			};
 		} catch (error) {
 			this.logger.error('Failed to get user information:', error);
@@ -115,7 +119,11 @@ export class GitHubService {
 	/**
 	 * Create a new GitHub repository
 	 */
-	async createRepository(name: string, description?: string, isPrivate: boolean = false): Promise<GitHubRepository | null> {
+	async createRepository(
+		name: string,
+		description?: string,
+		isPrivate: boolean = false
+	): Promise<GitHubRepository | null> {
 		if (!this.octokit) {
 			throw new Error('GitHub service not authenticated');
 		}
@@ -126,7 +134,7 @@ export class GitHubService {
 				description,
 				private: isPrivate,
 				auto_init: true,
-				gitignore_template: 'Node'
+				gitignore_template: 'Node',
 			});
 
 			return {
@@ -139,7 +147,7 @@ export class GitHubService {
 				sshUrl: data.ssh_url,
 				defaultBranch: data.default_branch,
 				createdAt: data.created_at,
-				updatedAt: data.updated_at
+				updatedAt: data.updated_at,
 			};
 		} catch (error: any) {
 			this.logger.error('Failed to create repository:', error);
@@ -166,7 +174,7 @@ export class GitHubService {
 			const { data } = await this.octokit.rest.repos.listForAuthenticatedUser({
 				type,
 				sort: 'updated',
-				per_page: 100
+				per_page: 100,
 			});
 
 			return data.map((repo: any) => ({
@@ -179,7 +187,7 @@ export class GitHubService {
 				sshUrl: repo.ssh_url,
 				defaultBranch: repo.default_branch,
 				createdAt: repo.created_at,
-				updatedAt: repo.updated_at
+				updatedAt: repo.updated_at,
 			}));
 		} catch (error) {
 			this.logger.error('Failed to get repositories:', error);
@@ -204,16 +212,21 @@ export class GitHubService {
 			// Use git command via terminal
 			const terminal = vscode.window.createTerminal('AIDE Git Clone');
 			terminal.sendText(`git clone ${repository.cloneUrl} "${localPath}"`);
-			terminal.show(); Promise.resolve(vscode.window.showInformationMessage(
-				`Cloning repository ${repository.name}...`,
-				'Open Folder'
-			)).then(selection => {
-				if (selection === 'Open Folder') {
-					vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(localPath), false);
-				}
-			}).catch((error: any) => {
-				this.logger.error('Failed to show information message:', error);
-			});
+			terminal.show();
+			Promise.resolve(
+				vscode.window.showInformationMessage(
+					`Cloning repository ${repository.name}...`,
+					'Open Folder'
+				)
+			)
+				.then(selection => {
+					if (selection === 'Open Folder') {
+						vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(localPath), false);
+					}
+				})
+				.catch((error: any) => {
+					this.logger.error('Failed to show information message:', error);
+				});
 
 			return true;
 		} catch (error) {
@@ -238,16 +251,21 @@ export class GitHubService {
 			terminal.sendText(`git branch -M ${repository.defaultBranch}`);
 			terminal.sendText(`git remote add origin ${repository.cloneUrl}`);
 			terminal.sendText(`git push -u origin ${repository.defaultBranch}`);
-			terminal.show(); Promise.resolve(vscode.window.showInformationMessage(
-				`Pushing to repository ${repository.name}...`,
-				'View Repository'
-			)).then(selection => {
-				if (selection === 'View Repository') {
-					vscode.env.openExternal(vscode.Uri.parse(repository.htmlUrl));
-				}
-			}).catch((error: any) => {
-				this.logger.error('Failed to show information message:', error);
-			});
+			terminal.show();
+			Promise.resolve(
+				vscode.window.showInformationMessage(
+					`Pushing to repository ${repository.name}...`,
+					'View Repository'
+				)
+			)
+				.then(selection => {
+					if (selection === 'View Repository') {
+						vscode.env.openExternal(vscode.Uri.parse(repository.htmlUrl));
+					}
+				})
+				.catch((error: any) => {
+					this.logger.error('Failed to show information message:', error);
+				});
 
 			return true;
 		} catch (error) {
@@ -290,7 +308,7 @@ export class GitHubService {
 		try {
 			const { data } = await this.octokit.rest.repos.get({
 				owner,
-				repo
+				repo,
 			});
 
 			return {
@@ -307,7 +325,7 @@ export class GitHubService {
 				size: data.size,
 				createdAt: data.created_at,
 				updatedAt: data.updated_at,
-				pushedAt: data.pushed_at
+				pushedAt: data.pushed_at,
 			};
 		} catch (error) {
 			this.logger.error('Failed to get repository status:', error);
@@ -318,7 +336,14 @@ export class GitHubService {
 	/**
 	 * Create a release
 	 */
-	async createRelease(owner: string, repo: string, tagName: string, name: string, body?: string, isDraft: boolean = false): Promise<boolean> {
+	async createRelease(
+		owner: string,
+		repo: string,
+		tagName: string,
+		name: string,
+		body?: string,
+		isDraft: boolean = false
+	): Promise<boolean> {
 		if (!this.octokit) {
 			throw new Error('GitHub service not authenticated');
 		}
@@ -330,7 +355,7 @@ export class GitHubService {
 				tag_name: tagName,
 				name,
 				body,
-				draft: isDraft
+				draft: isDraft,
 			});
 
 			vscode.window.showInformationMessage(`Release ${name} created successfully!`);

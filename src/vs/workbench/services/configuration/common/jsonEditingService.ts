@@ -15,14 +15,24 @@ import { Range } from '../../../../editor/common/core/range.js';
 import { Selection } from '../../../../editor/common/core/selection.js';
 import { ITextFileService } from '../../textfile/common/textfiles.js';
 import { IFileService } from '../../../../platform/files/common/files.js';
-import { ITextModelService, IResolvedTextEditorModel } from '../../../../editor/common/services/resolverService.js';
-import { IJSONEditingService, IJSONValue, JSONEditingError, JSONEditingErrorCode } from './jsonEditing.js';
+import {
+	ITextModelService,
+	IResolvedTextEditorModel,
+} from '../../../../editor/common/services/resolverService.js';
+import {
+	IJSONEditingService,
+	IJSONValue,
+	JSONEditingError,
+	JSONEditingErrorCode,
+} from './jsonEditing.js';
 import { ITextModel } from '../../../../editor/common/model.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IFilesConfigurationService } from '../../filesConfiguration/common/filesConfigurationService.js';
 
 export class JSONEditingService implements IJSONEditingService {
-
 	public _serviceBrand: undefined;
 
 	private queue: Queue<void>;
@@ -31,7 +41,8 @@ export class JSONEditingService implements IJSONEditingService {
 		@IFileService private readonly fileService: IFileService,
 		@ITextModelService private readonly textModelResolverService: ITextModelService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService
 	) {
 		this.queue = new Queue<void>();
 	}
@@ -74,11 +85,29 @@ export class JSONEditingService implements IJSONEditingService {
 	private applyEditsToBuffer(edit: Edit, model: ITextModel): boolean {
 		const startPosition = model.getPositionAt(edit.offset);
 		const endPosition = model.getPositionAt(edit.offset + edit.length);
-		const range = new Range(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column);
+		const range = new Range(
+			startPosition.lineNumber,
+			startPosition.column,
+			endPosition.lineNumber,
+			endPosition.column
+		);
 		const currentText = model.getValueInRange(range);
 		if (edit.content !== currentText) {
-			const editOperation = currentText ? EditOperation.replace(range, edit.content) : EditOperation.insert(startPosition, edit.content);
-			model.pushEditOperations([new Selection(startPosition.lineNumber, startPosition.column, startPosition.lineNumber, startPosition.column)], [editOperation], () => []);
+			const editOperation = currentText
+				? EditOperation.replace(range, edit.content)
+				: EditOperation.insert(startPosition, edit.content);
+			model.pushEditOperations(
+				[
+					new Selection(
+						startPosition.lineNumber,
+						startPosition.column,
+						startPosition.lineNumber,
+						startPosition.column
+					),
+				],
+				[editOperation],
+				() => []
+			);
 			return true;
 		}
 		return false;
@@ -92,17 +121,21 @@ export class JSONEditingService implements IJSONEditingService {
 		// With empty path the entire file is being replaced, so we just use JSON.stringify
 		if (!path.length) {
 			const content = JSON.stringify(value, null, insertSpaces ? ' '.repeat(tabSize) : '\t');
-			return [{
-				content,
-				length: content.length,
-				offset: 0
-			}];
+			return [
+				{
+					content,
+					length: content.length,
+					offset: 0,
+				},
+			];
 		}
 
 		return setProperty(model.getValue(), path, value, { tabSize, insertSpaces, eol });
 	}
 
-	private async resolveModelReference(resource: URI): Promise<IReference<IResolvedTextEditorModel>> {
+	private async resolveModelReference(
+		resource: URI
+	): Promise<IReference<IResolvedTextEditorModel>> {
 		const exists = await this.fileService.exists(resource);
 		if (!exists) {
 			await this.textFileService.write(resource, '{}', { encoding: 'utf8' });
@@ -112,18 +145,26 @@ export class JSONEditingService implements IJSONEditingService {
 
 	private hasParseErrors(model: ITextModel): boolean {
 		const parseErrors: json.ParseError[] = [];
-		json.parse(model.getValue(), parseErrors, { allowTrailingComma: true, allowEmptyContent: true });
+		json.parse(model.getValue(), parseErrors, {
+			allowTrailingComma: true,
+			allowEmptyContent: true,
+		});
 		return parseErrors.length > 0;
 	}
 
-	private async resolveAndValidate(resource: URI, checkDirty: boolean): Promise<IReference<IResolvedTextEditorModel>> {
+	private async resolveAndValidate(
+		resource: URI,
+		checkDirty: boolean
+	): Promise<IReference<IResolvedTextEditorModel>> {
 		const reference = await this.resolveModelReference(resource);
 
 		const model = reference.object.textEditorModel;
 
 		if (this.hasParseErrors(model)) {
 			reference.dispose();
-			return this.reject<IReference<IResolvedTextEditorModel>>(JSONEditingErrorCode.ERROR_INVALID_FILE);
+			return this.reject<IReference<IResolvedTextEditorModel>>(
+				JSONEditingErrorCode.ERROR_INVALID_FILE
+			);
 		}
 
 		return reference;
@@ -138,7 +179,10 @@ export class JSONEditingService implements IJSONEditingService {
 		switch (error) {
 			// User issues
 			case JSONEditingErrorCode.ERROR_INVALID_FILE: {
-				return nls.localize('errorInvalidFile', "Unable to write into the file. Please open the file to correct errors/warnings in the file and try again.");
+				return nls.localize(
+					'errorInvalidFile',
+					'Unable to write into the file. Please open the file to correct errors/warnings in the file and try again.'
+				);
 			}
 		}
 	}

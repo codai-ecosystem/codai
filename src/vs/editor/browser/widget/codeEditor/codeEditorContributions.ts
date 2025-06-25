@@ -7,12 +7,14 @@ import { getWindow, runWhenWindowIdle } from '../../../../base/browser/dom.js';
 import { onUnexpectedError } from '../../../../base/common/errors.js';
 import { Disposable, DisposableMap, IDisposable } from '../../../../base/common/lifecycle.js';
 import { ICodeEditor } from '../../editorBrowser.js';
-import { EditorContributionInstantiation, IEditorContributionDescription } from '../../editorExtensions.js';
+import {
+	EditorContributionInstantiation,
+	IEditorContributionDescription,
+} from '../../editorExtensions.js';
 import { IEditorContribution } from '../../../common/editorCommon.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 
 export class CodeEditorContributions extends Disposable {
-
 	private _editor: ICodeEditor | null = null;
 	private _instantiationService: IInstantiationService | null = null;
 
@@ -29,9 +31,7 @@ export class CodeEditorContributions extends Disposable {
 	 */
 	private readonly _finishedInstantiation: boolean[] = [];
 
-	constructor(
-
-	) {
+	constructor() {
 		super();
 
 		this._finishedInstantiation[EditorContributionInstantiation.Eager] = false;
@@ -40,7 +40,11 @@ export class CodeEditorContributions extends Disposable {
 		this._finishedInstantiation[EditorContributionInstantiation.Eventually] = false;
 	}
 
-	public initialize(editor: ICodeEditor, contributions: IEditorContributionDescription[], instantiationService: IInstantiationService) {
+	public initialize(
+		editor: ICodeEditor,
+		contributions: IEditorContributionDescription[],
+		instantiationService: IInstantiationService
+	) {
 		this._editor = editor;
 		this._instantiationService = instantiationService;
 
@@ -57,23 +61,33 @@ export class CodeEditorContributions extends Disposable {
 		// AfterFirstRender
 		// - these extensions will be instantiated at the latest 50ms after the first render.
 		// - but if there is idle time, we will instantiate them sooner.
-		this._register(runWhenWindowIdle(getWindow(this._editor.getDomNode()), () => {
-			this._instantiateSome(EditorContributionInstantiation.AfterFirstRender);
-		}));
+		this._register(
+			runWhenWindowIdle(getWindow(this._editor.getDomNode()), () => {
+				this._instantiateSome(EditorContributionInstantiation.AfterFirstRender);
+			})
+		);
 
 		// BeforeFirstInteraction
 		// - these extensions will be instantiated at the latest before a mouse or a keyboard event.
 		// - but if there is idle time, we will instantiate them sooner.
-		this._register(runWhenWindowIdle(getWindow(this._editor.getDomNode()), () => {
-			this._instantiateSome(EditorContributionInstantiation.BeforeFirstInteraction);
-		}));
+		this._register(
+			runWhenWindowIdle(getWindow(this._editor.getDomNode()), () => {
+				this._instantiateSome(EditorContributionInstantiation.BeforeFirstInteraction);
+			})
+		);
 
 		// Eventually
 		// - these extensions will only be instantiated when there is idle time.
 		// - since there is no guarantee that there will ever be idle time, we set a timeout of 5s here.
-		this._register(runWhenWindowIdle(getWindow(this._editor.getDomNode()), () => {
-			this._instantiateSome(EditorContributionInstantiation.Eventually);
-		}, 5000));
+		this._register(
+			runWhenWindowIdle(
+				getWindow(this._editor.getDomNode()),
+				() => {
+					this._instantiateSome(EditorContributionInstantiation.Eventually);
+				},
+				5000
+			)
+		);
 	}
 
 	public saveViewState(): { [key: string]: any } {
@@ -112,9 +126,13 @@ export class CodeEditorContributions extends Disposable {
 	}
 
 	public onAfterModelAttached(): IDisposable {
-		return runWhenWindowIdle(getWindow(this._editor?.getDomNode()), () => {
-			this._instantiateSome(EditorContributionInstantiation.AfterFirstRender);
-		}, 50);
+		return runWhenWindowIdle(
+			getWindow(this._editor?.getDomNode()),
+			() => {
+				this._instantiateSome(EditorContributionInstantiation.AfterFirstRender);
+			},
+			50
+		);
 	}
 
 	private _instantiateSome(instantiation: EditorContributionInstantiation): void {
@@ -130,7 +148,9 @@ export class CodeEditorContributions extends Disposable {
 		}
 	}
 
-	private _findPendingContributionsByInstantiation(instantiation: EditorContributionInstantiation): readonly IEditorContributionDescription[] {
+	private _findPendingContributionsByInstantiation(
+		instantiation: EditorContributionInstantiation
+	): readonly IEditorContributionDescription[] {
 		const result: IEditorContributionDescription[] = [];
 		for (const [, desc] of this._pending) {
 			if (desc.instantiation === instantiation) {
@@ -155,8 +175,13 @@ export class CodeEditorContributions extends Disposable {
 		try {
 			const instance = this._instantiationService.createInstance(desc.ctor, this._editor);
 			this._instances.set(desc.id, instance);
-			if (typeof instance.restoreViewState === 'function' && desc.instantiation !== EditorContributionInstantiation.Eager) {
-				console.warn(`Editor contribution '${desc.id}' should be eager instantiated because it uses saveViewState / restoreViewState.`);
+			if (
+				typeof instance.restoreViewState === 'function' &&
+				desc.instantiation !== EditorContributionInstantiation.Eager
+			) {
+				console.warn(
+					`Editor contribution '${desc.id}' should be eager instantiated because it uses saveViewState / restoreViewState.`
+				);
 			}
 		} catch (err) {
 			onUnexpectedError(err);

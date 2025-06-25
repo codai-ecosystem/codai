@@ -10,9 +10,7 @@ export class PreviewPanel {
 	private previewUrl: string = '';
 	private isBuilding: boolean = false;
 
-	constructor(
-		private context: vscode.ExtensionContext
-	) { }
+	constructor(private context: vscode.ExtensionContext) {}
 
 	public show(): void {
 		if (this.panel) {
@@ -29,8 +27,8 @@ export class PreviewPanel {
 				retainContextWhenHidden: true,
 				localResourceRoots: [
 					vscode.Uri.file(this.context.asAbsolutePath('dist')),
-					vscode.Uri.file(this.context.asAbsolutePath('assets'))
-				]
+					vscode.Uri.file(this.context.asAbsolutePath('assets')),
+				],
 			}
 		);
 
@@ -38,7 +36,7 @@ export class PreviewPanel {
 
 		// Handle messages from the webview
 		this.panel.webview.onDidReceiveMessage(
-			(message) => {
+			message => {
 				switch (message.type) {
 					case 'refresh_preview':
 						this.refreshPreview();
@@ -79,7 +77,7 @@ export class PreviewPanel {
 		this.previewUrl = url;
 		this.postMessage({
 			type: 'update_preview_url',
-			data: { url }
+			data: { url },
 		});
 	}
 
@@ -87,14 +85,14 @@ export class PreviewPanel {
 		this.isBuilding = isBuilding;
 		this.postMessage({
 			type: 'building_state_changed',
-			data: { isBuilding }
+			data: { isBuilding },
 		});
 	}
 
 	public showError(error: string): void {
 		this.postMessage({
 			type: 'preview_error',
-			data: { error }
+			data: { error },
 		});
 	}
 
@@ -102,7 +100,7 @@ export class PreviewPanel {
 		if (this.previewUrl) {
 			this.postMessage({
 				type: 'refresh_iframe',
-				data: { url: this.previewUrl }
+				data: { url: this.previewUrl },
 			});
 		}
 	}
@@ -110,7 +108,7 @@ export class PreviewPanel {
 	private toggleResponsiveMode(mode: string): void {
 		this.postMessage({
 			type: 'set_responsive_mode',
-			data: { mode }
+			data: { mode },
 		});
 	}
 

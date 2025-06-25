@@ -4,28 +4,54 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IIdentityProvider } from '../list/list.js';
-import { IIndexTreeModelOptions, IIndexTreeModelSpliceOptions, IndexTreeModel } from './indexTreeModel.js';
-import { ICollapseStateChangeEvent, IObjectTreeElement, ITreeElement, ITreeListSpliceData, ITreeModel, ITreeModelSpliceEvent, ITreeNode, ITreeSorter, ObjectTreeElementCollapseState, TreeError } from './tree.js';
+import {
+	IIndexTreeModelOptions,
+	IIndexTreeModelSpliceOptions,
+	IndexTreeModel,
+} from './indexTreeModel.js';
+import {
+	ICollapseStateChangeEvent,
+	IObjectTreeElement,
+	ITreeElement,
+	ITreeListSpliceData,
+	ITreeModel,
+	ITreeModelSpliceEvent,
+	ITreeNode,
+	ITreeSorter,
+	ObjectTreeElementCollapseState,
+	TreeError,
+} from './tree.js';
 import { Event } from '../../../common/event.js';
 import { Iterable } from '../../../common/iterator.js';
 
 export type ITreeNodeCallback<T, TFilterData> = (node: ITreeNode<T, TFilterData>) => void;
 
-export interface IObjectTreeModel<T extends NonNullable<any>, TFilterData extends NonNullable<any> = void> extends ITreeModel<T | null, TFilterData, T | null> {
-	setChildren(element: T | null, children: Iterable<IObjectTreeElement<T>> | undefined, options?: IObjectTreeModelSetChildrenOptions<T, TFilterData>): void;
+export interface IObjectTreeModel<
+	T extends NonNullable<any>,
+	TFilterData extends NonNullable<any> = void,
+> extends ITreeModel<T | null, TFilterData, T | null> {
+	setChildren(
+		element: T | null,
+		children: Iterable<IObjectTreeElement<T>> | undefined,
+		options?: IObjectTreeModelSetChildrenOptions<T, TFilterData>
+	): void;
 	resort(element?: T | null, recursive?: boolean): void;
 }
 
-export interface IObjectTreeModelSetChildrenOptions<T, TFilterData> extends IIndexTreeModelSpliceOptions<T, TFilterData> {
-}
+export interface IObjectTreeModelSetChildrenOptions<T, TFilterData>
+	extends IIndexTreeModelSpliceOptions<T, TFilterData> {}
 
-export interface IObjectTreeModelOptions<T, TFilterData> extends IIndexTreeModelOptions<T, TFilterData> {
+export interface IObjectTreeModelOptions<T, TFilterData>
+	extends IIndexTreeModelOptions<T, TFilterData> {
 	readonly sorter?: ITreeSorter<T>;
 	readonly identityProvider?: IIdentityProvider<T>;
 }
 
-export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends NonNullable<any> = void> implements IObjectTreeModel<T, TFilterData> {
-
+export class ObjectTreeModel<
+	T extends NonNullable<any>,
+	TFilterData extends NonNullable<any> = void,
+> implements IObjectTreeModel<T, TFilterData>
+{
 	readonly rootRef = null;
 
 	private model: IndexTreeModel<T | null, TFilterData>;
@@ -39,7 +65,9 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 	readonly onDidChangeCollapseState: Event<ICollapseStateChangeEvent<T, TFilterData>>;
 	readonly onDidChangeRenderNodeCount: Event<ITreeNode<T, TFilterData>>;
 
-	get size(): number { return this.nodes.size; }
+	get size(): number {
+		return this.nodes.size;
+	}
 
 	constructor(
 		private user: string,
@@ -48,14 +76,18 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 		this.model = new IndexTreeModel(user, null, options);
 		this.onDidSpliceModel = this.model.onDidSpliceModel;
 		this.onDidSpliceRenderedNodes = this.model.onDidSpliceRenderedNodes;
-		this.onDidChangeCollapseState = this.model.onDidChangeCollapseState as Event<ICollapseStateChangeEvent<T, TFilterData>>;
-		this.onDidChangeRenderNodeCount = this.model.onDidChangeRenderNodeCount as Event<ITreeNode<T, TFilterData>>;
+		this.onDidChangeCollapseState = this.model.onDidChangeCollapseState as Event<
+			ICollapseStateChangeEvent<T, TFilterData>
+		>;
+		this.onDidChangeRenderNodeCount = this.model.onDidChangeRenderNodeCount as Event<
+			ITreeNode<T, TFilterData>
+		>;
 
 		if (options.sorter) {
 			this.sorter = {
 				compare(a, b) {
 					return options.sorter!.compare(a.element, b.element);
-				}
+				},
 			};
 		}
 
@@ -65,7 +97,7 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 	setChildren(
 		element: T | null,
 		children: Iterable<IObjectTreeElement<T>> = Iterable.empty(),
-		options: IObjectTreeModelSetChildrenOptions<T, TFilterData> = {},
+		options: IObjectTreeModelSetChildrenOptions<T, TFilterData> = {}
 	): void {
 		const location = this.getElementLocation(element);
 		this._setChildren(location, this.preserveCollapseState(children), options);
@@ -74,7 +106,7 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 	private _setChildren(
 		location: number[],
 		children: Iterable<ITreeElement<T>> = Iterable.empty(),
-		options: IObjectTreeModelSetChildrenOptions<T, TFilterData>,
+		options: IObjectTreeModelSetChildrenOptions<T, TFilterData>
 	): void {
 		const insertedElements = new Set<T | null>();
 		const insertedElementIds = new Set<string>();
@@ -119,15 +151,16 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 			options.onDidDeleteNode?.(tnode);
 		};
 
-		this.model.splice(
-			[...location, 0],
-			Number.MAX_VALUE,
-			children,
-			{ ...options, onDidCreateNode, onDidDeleteNode }
-		);
+		this.model.splice([...location, 0], Number.MAX_VALUE, children, {
+			...options,
+			onDidCreateNode,
+			onDidDeleteNode,
+		});
 	}
 
-	private preserveCollapseState(elements: Iterable<IObjectTreeElement<T>> = Iterable.empty()): Iterable<ITreeElement<T>> {
+	private preserveCollapseState(
+		elements: Iterable<IObjectTreeElement<T>> = Iterable.empty()
+	): Iterable<ITreeElement<T>> {
 		if (this.sorter) {
 			elements = [...elements].sort(this.sorter.compare.bind(this.sorter));
 		}
@@ -145,9 +178,15 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 
 				if (typeof treeElement.collapsed === 'undefined') {
 					collapsed = undefined;
-				} else if (treeElement.collapsed === ObjectTreeElementCollapseState.Collapsed || treeElement.collapsed === ObjectTreeElementCollapseState.PreserveOrCollapsed) {
+				} else if (
+					treeElement.collapsed === ObjectTreeElementCollapseState.Collapsed ||
+					treeElement.collapsed === ObjectTreeElementCollapseState.PreserveOrCollapsed
+				) {
 					collapsed = true;
-				} else if (treeElement.collapsed === ObjectTreeElementCollapseState.Expanded || treeElement.collapsed === ObjectTreeElementCollapseState.PreserveOrExpanded) {
+				} else if (
+					treeElement.collapsed === ObjectTreeElementCollapseState.Expanded ||
+					treeElement.collapsed === ObjectTreeElementCollapseState.PreserveOrExpanded
+				) {
 					collapsed = false;
 				} else {
 					collapsed = Boolean(treeElement.collapsed);
@@ -156,14 +195,19 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 				return {
 					...treeElement,
 					children: this.preserveCollapseState(treeElement.children),
-					collapsed
+					collapsed,
 				};
 			}
 
-			const collapsible = typeof treeElement.collapsible === 'boolean' ? treeElement.collapsible : node.collapsible;
+			const collapsible =
+				typeof treeElement.collapsible === 'boolean' ? treeElement.collapsible : node.collapsible;
 			let collapsed: boolean | undefined;
 
-			if (typeof treeElement.collapsed === 'undefined' || treeElement.collapsed === ObjectTreeElementCollapseState.PreserveOrCollapsed || treeElement.collapsed === ObjectTreeElementCollapseState.PreserveOrExpanded) {
+			if (
+				typeof treeElement.collapsed === 'undefined' ||
+				treeElement.collapsed === ObjectTreeElementCollapseState.PreserveOrCollapsed ||
+				treeElement.collapsed === ObjectTreeElementCollapseState.PreserveOrExpanded
+			) {
 				collapsed = node.collapsed;
 			} else if (treeElement.collapsed === ObjectTreeElementCollapseState.Collapsed) {
 				collapsed = true;
@@ -177,7 +221,7 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 				...treeElement,
 				collapsible,
 				collapsed,
-				children: this.preserveCollapseState(treeElement.children)
+				children: this.preserveCollapseState(treeElement.children),
 			};
 		});
 	}
@@ -198,7 +242,11 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 		this._setChildren(location, this.resortChildren(node, recursive), {});
 	}
 
-	private resortChildren(node: ITreeNode<T | null, TFilterData>, recursive: boolean, first = true): Iterable<ITreeElement<T>> {
+	private resortChildren(
+		node: ITreeNode<T | null, TFilterData>,
+		recursive: boolean,
+		first = true
+	): Iterable<ITreeElement<T>> {
 		let childrenNodes = [...node.children] as ITreeNode<T, TFilterData>[];
 
 		if (recursive || first) {
@@ -209,7 +257,7 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
 			element: node.element as T,
 			collapsible: node.collapsible,
 			collapsed: node.collapsed,
-			children: this.resortChildren(node, recursive, false)
+			children: this.resortChildren(node, recursive, false),
 		}));
 	}
 

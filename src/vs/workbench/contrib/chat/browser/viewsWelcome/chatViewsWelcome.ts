@@ -27,7 +27,10 @@ export interface IChatViewsWelcomeContributionRegistry {
 	register(descriptor: IChatViewsWelcomeDescriptor): void;
 }
 
-class ChatViewsWelcomeContributionRegistry extends Disposable implements IChatViewsWelcomeContributionRegistry {
+class ChatViewsWelcomeContributionRegistry
+	extends Disposable
+	implements IChatViewsWelcomeContributionRegistry
+{
 	private readonly descriptors: IChatViewsWelcomeDescriptor[] = [];
 	private readonly _onDidChange = this._register(new Emitter<void>());
 	public readonly onDidChange: Event<void> = this._onDidChange.event;

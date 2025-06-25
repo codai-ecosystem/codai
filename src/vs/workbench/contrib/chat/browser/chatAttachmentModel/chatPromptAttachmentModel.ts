@@ -50,10 +50,7 @@ export class ChatPromptAttachmentModel extends ObservableDisposable {
 
 		// otherwise return `URI` for the main reference and
 		// all valid child `URI` references it may contain
-		return [
-			...reference.allValidReferences.map(pick('uri')),
-			reference.uri,
-		];
+		return [...reference.allValidReferences.map(pick('uri')), reference.uri];
 	}
 
 	/**
@@ -101,7 +98,7 @@ export class ChatPromptAttachmentModel extends ObservableDisposable {
 
 	constructor(
 		public readonly uri: URI,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -112,13 +109,11 @@ export class ChatPromptAttachmentModel extends ObservableDisposable {
 				// in this case we know that the attached file must have been a
 				// prompt file, hence we pass the `allowNonPromptFiles` option
 				// to the provider to allow for non-prompt files to be attached
-				{ allowNonPromptFiles: true },
+				{ allowNonPromptFiles: true }
 			)
 		);
 
-		this._register(this._reference.onUpdate(
-			this._onUpdate.fire.bind(this._onUpdate),
-		));
+		this._register(this._reference.onUpdate(this._onUpdate.fire.bind(this._onUpdate)));
 	}
 
 	/**

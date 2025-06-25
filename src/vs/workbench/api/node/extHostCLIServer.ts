@@ -44,7 +44,11 @@ export interface ExtensionManagementPipeArgs {
 	force?: boolean;
 }
 
-export type PipeCommand = OpenCommandPipeArgs | StatusPipeArgs | OpenExternalCommandPipeArgs | ExtensionManagementPipeArgs;
+export type PipeCommand =
+	| OpenCommandPipeArgs
+	| StatusPipeArgs
+	| OpenExternalCommandPipeArgs
+	| ExtensionManagementPipeArgs;
 
 export interface ICommandsExecuter {
 	executeCommand<T>(id: string, ...args: any[]): Promise<T>;
@@ -56,7 +60,7 @@ export class CLIServerBase {
 	constructor(
 		private readonly _commands: ICommandsExecuter,
 		private readonly logService: ILogService,
-		private readonly _ipcHandlePath: string,
+		private readonly _ipcHandlePath: string
 	) {
 		this._server = http.createServer((req, res) => this.onRequest(req, res));
 		this.setup().catch(err => {
@@ -120,7 +124,19 @@ export class CLIServerBase {
 	}
 
 	private async open(data: OpenCommandPipeArgs): Promise<undefined> {
-		const { fileURIs, folderURIs, forceNewWindow, diffMode, mergeMode, addMode, removeMode, forceReuseWindow, gotoLineMode, waitMarkerFilePath, remoteAuthority } = data;
+		const {
+			fileURIs,
+			folderURIs,
+			forceNewWindow,
+			diffMode,
+			mergeMode,
+			addMode,
+			removeMode,
+			forceReuseWindow,
+			gotoLineMode,
+			waitMarkerFilePath,
+			remoteAuthority,
+		} = data;
 		const urisToOpen: IWindowOpenable[] = [];
 		if (Array.isArray(folderURIs)) {
 			for (const s of folderURIs) {
@@ -146,7 +162,18 @@ export class CLIServerBase {
 		}
 		const waitMarkerFileURI = waitMarkerFilePath ? URI.file(waitMarkerFilePath) : undefined;
 		const preferNewWindow = !forceReuseWindow && !waitMarkerFileURI && !addMode && !removeMode;
-		const windowOpenArgs: IOpenWindowOptions = { forceNewWindow, diffMode, mergeMode, addMode, removeMode, gotoLineMode, forceReuseWindow, preferNewWindow, waitMarkerFileURI, remoteAuthority };
+		const windowOpenArgs: IOpenWindowOptions = {
+			forceNewWindow,
+			diffMode,
+			mergeMode,
+			addMode,
+			removeMode,
+			gotoLineMode,
+			forceReuseWindow,
+			preferNewWindow,
+			waitMarkerFileURI,
+			remoteAuthority,
+		};
 		this._commands.executeCommand('_remoteCLI.windowOpen', urisToOpen, windowOpenArgs);
 	}
 
@@ -159,14 +186,18 @@ export class CLIServerBase {
 	}
 
 	private async manageExtensions(data: ExtensionManagementPipeArgs): Promise<string | undefined> {
-		const toExtOrVSIX = (inputs: string[] | undefined) => inputs?.map(input => /\.vsix$/i.test(input) ? URI.parse(input) : input);
+		const toExtOrVSIX = (inputs: string[] | undefined) =>
+			inputs?.map(input => (/\.vsix$/i.test(input) ? URI.parse(input) : input));
 		const commandArgs = {
 			list: data.list,
 			install: toExtOrVSIX(data.install),
 			uninstall: toExtOrVSIX(data.uninstall),
-			force: data.force
+			force: data.force,
 		};
-		return await this._commands.executeCommand<string | undefined>('_remoteCLI.manageExtensions', commandArgs);
+		return await this._commands.executeCommand<string | undefined>(
+			'_remoteCLI.manageExtensions',
+			commandArgs
+		);
 	}
 
 	private async getStatus(data: StatusPipeArgs): Promise<string | undefined> {
@@ -183,10 +214,7 @@ export class CLIServerBase {
 }
 
 export class CLIServer extends CLIServerBase {
-	constructor(
-		@IExtHostCommands commands: IExtHostCommands,
-		@ILogService logService: ILogService
-	) {
+	constructor(@IExtHostCommands commands: IExtHostCommands, @ILogService logService: ILogService) {
 		super(commands, logService, createRandomIPCHandle());
 	}
 }

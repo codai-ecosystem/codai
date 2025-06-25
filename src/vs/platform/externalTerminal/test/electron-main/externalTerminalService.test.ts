@@ -5,8 +5,15 @@
 
 import { deepStrictEqual, strictEqual } from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { DEFAULT_TERMINAL_OSX, IExternalTerminalConfiguration } from '../../common/externalTerminal.js';
-import { LinuxExternalTerminalService, MacExternalTerminalService, WindowsExternalTerminalService } from '../../node/externalTerminalService.js';
+import {
+	DEFAULT_TERMINAL_OSX,
+	IExternalTerminalConfiguration,
+} from '../../common/externalTerminal.js';
+import {
+	LinuxExternalTerminalService,
+	MacExternalTerminalService,
+	WindowsExternalTerminalService,
+} from '../../node/externalTerminalService.js';
 
 const mockConfig = Object.freeze<IExternalTerminalConfiguration>({
 	terminal: {
@@ -14,9 +21,9 @@ const mockConfig = Object.freeze<IExternalTerminalConfiguration>({
 		external: {
 			windowsExec: 'testWindowsShell',
 			osxExec: 'testOSXShell',
-			linuxExec: 'testLinuxShell'
-		}
-	}
+			linuxExec: 'testLinuxShell',
+		},
+	},
 });
 
 suite('ExternalTerminalService', () => {
@@ -32,17 +39,12 @@ suite('ExternalTerminalService', () => {
 				strictEqual(opts.cwd, testCwd);
 				done();
 				return {
-					on: (evt: any) => evt
+					on: (evt: any) => evt,
 				};
-			}
+			},
 		};
 		const testService = new WindowsExternalTerminalService();
-		testService.spawnTerminal(
-			mockSpawner,
-			mockConfig.terminal.external,
-			testShell,
-			testCwd
-		);
+		testService.spawnTerminal(mockSpawner, mockConfig.terminal.external, testShell, testCwd);
 	});
 
 	test(`WinTerminalService - uses default terminal when configuration.terminal.external.windowsExec is undefined`, done => {
@@ -50,21 +52,19 @@ suite('ExternalTerminalService', () => {
 		const testCwd = 'path/to/workspace';
 		const mockSpawner: any = {
 			spawn: (command: any, args: any, opts: any) => {
-				strictEqual(args[args.length - 1], WindowsExternalTerminalService.getDefaultTerminalWindows());
+				strictEqual(
+					args[args.length - 1],
+					WindowsExternalTerminalService.getDefaultTerminalWindows()
+				);
 				done();
 				return {
-					on: (evt: any) => evt
+					on: (evt: any) => evt,
 				};
-			}
+			},
 		};
 		mockConfig.terminal.external.windowsExec = undefined;
 		const testService = new WindowsExternalTerminalService();
-		testService.spawnTerminal(
-			mockSpawner,
-			mockConfig.terminal.external,
-			testShell,
-			testCwd
-		);
+		testService.spawnTerminal(mockSpawner, mockConfig.terminal.external, testShell, testCwd);
 	});
 
 	test(`WinTerminalService - cwd is correct regardless of case`, done => {
@@ -72,20 +72,19 @@ suite('ExternalTerminalService', () => {
 		const testCwd = 'c:/foo';
 		const mockSpawner: any = {
 			spawn: (command: any, args: any, opts: any) => {
-				strictEqual(opts.cwd, 'C:/foo', 'cwd should be uppercase regardless of the case that\'s passed in');
+				strictEqual(
+					opts.cwd,
+					'C:/foo',
+					"cwd should be uppercase regardless of the case that's passed in"
+				);
 				done();
 				return {
-					on: (evt: any) => evt
+					on: (evt: any) => evt,
 				};
-			}
+			},
 		};
 		const testService = new WindowsExternalTerminalService();
-		testService.spawnTerminal(
-			mockSpawner,
-			mockConfig.terminal.external,
-			testShell,
-			testCwd
-		);
+		testService.spawnTerminal(mockSpawner, mockConfig.terminal.external, testShell, testCwd);
 	});
 
 	test(`WinTerminalService - cmder should be spawned differently`, done => {
@@ -97,15 +96,10 @@ suite('ExternalTerminalService', () => {
 				strictEqual(opts, undefined);
 				done();
 				return { on: (evt: any) => evt };
-			}
+			},
 		};
 		const testService = new WindowsExternalTerminalService();
-		testService.spawnTerminal(
-			mockSpawner,
-			{ windowsExec: 'cmder' },
-			testShell,
-			testCwd
-		);
+		testService.spawnTerminal(mockSpawner, { windowsExec: 'cmder' }, testShell, testCwd);
 	});
 
 	test(`WinTerminalService - windows terminal should open workspace directory`, done => {
@@ -116,15 +110,10 @@ suite('ExternalTerminalService', () => {
 				strictEqual(opts.cwd, 'C:/foo');
 				done();
 				return { on: (evt: any) => evt };
-			}
+			},
 		};
 		const testService = new WindowsExternalTerminalService();
-		testService.spawnTerminal(
-			mockSpawner,
-			mockConfig.terminal.external,
-			testShell,
-			testCwd
-		);
+		testService.spawnTerminal(mockSpawner, mockConfig.terminal.external, testShell, testCwd);
 	});
 
 	test(`MacTerminalService - uses terminal from configuration`, done => {
@@ -134,16 +123,12 @@ suite('ExternalTerminalService', () => {
 				strictEqual(args[1], mockConfig.terminal.external.osxExec);
 				done();
 				return {
-					on: (evt: any) => evt
+					on: (evt: any) => evt,
 				};
-			}
+			},
 		};
 		const testService = new MacExternalTerminalService();
-		testService.spawnTerminal(
-			mockSpawner,
-			mockConfig.terminal.external,
-			testCwd
-		);
+		testService.spawnTerminal(mockSpawner, mockConfig.terminal.external, testCwd);
 	});
 
 	test(`MacTerminalService - uses default terminal when configuration.terminal.external.osxExec is undefined`, done => {
@@ -153,16 +138,12 @@ suite('ExternalTerminalService', () => {
 				strictEqual(args[1], DEFAULT_TERMINAL_OSX);
 				done();
 				return {
-					on: (evt: any) => evt
+					on: (evt: any) => evt,
 				};
-			}
+			},
 		};
 		const testService = new MacExternalTerminalService();
-		testService.spawnTerminal(
-			mockSpawner,
-			{ osxExec: undefined },
-			testCwd
-		);
+		testService.spawnTerminal(mockSpawner, { osxExec: undefined }, testCwd);
 	});
 
 	test(`LinuxTerminalService - uses terminal from configuration`, done => {
@@ -173,16 +154,12 @@ suite('ExternalTerminalService', () => {
 				strictEqual(opts.cwd, testCwd);
 				done();
 				return {
-					on: (evt: any) => evt
+					on: (evt: any) => evt,
 				};
-			}
+			},
 		};
 		const testService = new LinuxExternalTerminalService();
-		testService.spawnTerminal(
-			mockSpawner,
-			mockConfig.terminal.external,
-			testCwd
-		);
+		testService.spawnTerminal(mockSpawner, mockConfig.terminal.external, testCwd);
 	});
 
 	test(`LinuxTerminalService - uses default terminal when configuration.terminal.external.linuxExec is undefined`, done => {
@@ -193,17 +170,13 @@ suite('ExternalTerminalService', () => {
 					strictEqual(command, defaultTerminalLinux);
 					done();
 					return {
-						on: (evt: any) => evt
+						on: (evt: any) => evt,
 					};
-				}
+				},
 			};
 			mockConfig.terminal.external.linuxExec = undefined;
 			const testService = new LinuxExternalTerminalService();
-			testService.spawnTerminal(
-				mockSpawner,
-				mockConfig.terminal.external,
-				testCwd
-			);
+			testService.spawnTerminal(mockSpawner, mockConfig.terminal.external, testCwd);
 		});
 	});
 });

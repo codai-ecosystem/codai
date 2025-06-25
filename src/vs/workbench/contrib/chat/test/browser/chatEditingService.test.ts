@@ -11,7 +11,10 @@ import { isEqual } from '../../../../../base/common/resources.js';
 import { assertType } from '../../../../../base/common/types.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { mock } from '../../../../../base/test/common/mock.js';
-import { assertThrowsAsync, ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
+import {
+	assertThrowsAsync,
+	ensureNoDisposablesAreLeakedInTestSuite,
+} from '../../../../../base/test/common/utils.js';
 import { Range } from '../../../../../editor/common/core/range.js';
 import { IModelService } from '../../../../../editor/common/services/model.js';
 import { ITextModelService } from '../../../../../editor/common/services/resolverService.js';
@@ -21,11 +24,19 @@ import { IWorkbenchAssignmentService } from '../../../../services/assignment/com
 import { NullWorkbenchAssignmentService } from '../../../../services/assignment/test/common/nullAssignmentService.js';
 import { nullExtensionDescription } from '../../../../services/extensions/common/extensions.js';
 import { workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
-import { IMultiDiffSourceResolver, IMultiDiffSourceResolverService } from '../../../multiDiffEditor/browser/multiDiffSourceResolverService.js';
+import {
+	IMultiDiffSourceResolver,
+	IMultiDiffSourceResolverService,
+} from '../../../multiDiffEditor/browser/multiDiffSourceResolverService.js';
 import { NotebookTextModel } from '../../../notebook/common/model/notebookTextModel.js';
 import { INotebookService } from '../../../notebook/common/notebookService.js';
 import { ChatEditingService } from '../../browser/chatEditing/chatEditingServiceImpl.js';
-import { ChatAgentService, IChatAgentData, IChatAgentImplementation, IChatAgentService } from '../../common/chatAgents.js';
+import {
+	ChatAgentService,
+	IChatAgentData,
+	IChatAgentImplementation,
+	IChatAgentService,
+} from '../../common/chatAgents.js';
 import { IChatEditingService } from '../../common/chatEditingService.js';
 import { IChatService } from '../../common/chatService.js';
 import { ChatService } from '../../common/chatServiceImpl.js';
@@ -54,7 +65,6 @@ function getAgentData(id: string): IChatAgentData {
 }
 
 suite('ChatEditingService', function () {
-
 	const store = new DisposableStore();
 	let editingService: ChatEditingService;
 	let chatService: IChatService;
@@ -65,25 +75,36 @@ suite('ChatEditingService', function () {
 		collection.set(IWorkbenchAssignmentService, new NullWorkbenchAssignmentService());
 		collection.set(IChatAgentService, new SyncDescriptor(ChatAgentService));
 		collection.set(IChatVariablesService, new MockChatVariablesService());
-		collection.set(IChatSlashCommandService, new class extends mock<IChatSlashCommandService>() { });
+		collection.set(
+			IChatSlashCommandService,
+			new (class extends mock<IChatSlashCommandService>() {})()
+		);
 		collection.set(IChatTransferService, new SyncDescriptor(ChatTransferService));
 		collection.set(IChatEditingService, new SyncDescriptor(ChatEditingService));
 		collection.set(IChatService, new SyncDescriptor(ChatService));
 		collection.set(ILanguageModelsService, new SyncDescriptor(NullLanguageModelsService));
-		collection.set(IMultiDiffSourceResolverService, new class extends mock<IMultiDiffSourceResolverService>() {
-			override registerResolver(_resolver: IMultiDiffSourceResolver): IDisposable {
-				return Disposable.None;
-			}
-		});
-		collection.set(INotebookService, new class extends mock<INotebookService>() {
-			override getNotebookTextModel(_uri: URI): NotebookTextModel | undefined {
-				return undefined;
-			}
-			override hasSupportedNotebooks(_resource: URI): boolean {
-				return false;
-			}
-		});
-		const insta = store.add(store.add(workbenchInstantiationService(undefined, store)).createChild(collection));
+		collection.set(
+			IMultiDiffSourceResolverService,
+			new (class extends mock<IMultiDiffSourceResolverService>() {
+				override registerResolver(_resolver: IMultiDiffSourceResolver): IDisposable {
+					return Disposable.None;
+				}
+			})()
+		);
+		collection.set(
+			INotebookService,
+			new (class extends mock<INotebookService>() {
+				override getNotebookTextModel(_uri: URI): NotebookTextModel | undefined {
+					return undefined;
+				}
+				override hasSupportedNotebooks(_resource: URI): boolean {
+					return false;
+				}
+			})()
+		);
+		const insta = store.add(
+			store.add(workbenchInstantiationService(undefined, store)).createChild(collection)
+		);
 		const value = insta.get(IChatEditingService);
 		assert.ok(value instanceof ChatEditingService);
 		editingService = value;
@@ -97,18 +118,22 @@ suite('ChatEditingService', function () {
 				return {};
 			},
 		};
-		store.add(chatAgentService.registerAgent('testAgent', { ...getAgentData('testAgent'), isDefault: true }));
+		store.add(
+			chatAgentService.registerAgent('testAgent', { ...getAgentData('testAgent'), isDefault: true })
+		);
 		store.add(chatAgentService.registerAgentImplementation('testAgent', agent));
 
 		textModelService = insta.get(ITextModelService);
 
 		const modelService = insta.get(IModelService);
 
-		store.add(textModelService.registerTextModelContentProvider('test', {
-			async provideTextContent(resource) {
-				return modelService.createModel(resource.path.repeat(10), null, resource, false);
-			},
-		}));
+		store.add(
+			textModelService.registerTextModelContentProvider('test', {
+				async provideTextContent(resource) {
+					return modelService.createModel(resource.path.repeat(10), null, resource, false);
+				},
+			})
+		);
 	});
 
 	teardown(() => {
@@ -135,7 +160,6 @@ suite('ChatEditingService', function () {
 		model.dispose();
 	});
 
-
 	test('create session, file entry & isCurrentlyBeingModifiedBy', async function () {
 		assert.ok(editingService);
 
@@ -150,14 +174,23 @@ suite('ChatEditingService', function () {
 		const chatRequest = model?.addRequest({ text: '', parts: [] }, { variables: [] }, 0);
 		assertType(chatRequest.response);
 		chatRequest.response.updateContent({ kind: 'textEdit', uri, edits: [], done: false });
-		chatRequest.response.updateContent({ kind: 'textEdit', uri, edits: [{ range: new Range(1, 1, 1, 1), text: 'FarBoo\n' }], done: false });
+		chatRequest.response.updateContent({
+			kind: 'textEdit',
+			uri,
+			edits: [{ range: new Range(1, 1, 1, 1), text: 'FarBoo\n' }],
+			done: false,
+		});
 		chatRequest.response.updateContent({ kind: 'textEdit', uri, edits: [], done: true });
 
-		const entry = await waitForState(session.entries.map(value => value.find(a => isEqual(a.modifiedURI, uri))));
+		const entry = await waitForState(
+			session.entries.map(value => value.find(a => isEqual(a.modifiedURI, uri)))
+		);
 
 		assert.ok(isEqual(entry.modifiedURI, uri));
 
-		await waitForState(entry.isCurrentlyBeingModifiedBy.map(value => value === chatRequest.response));
+		await waitForState(
+			entry.isCurrentlyBeingModifiedBy.map(value => value === chatRequest.response)
+		);
 		assert.ok(entry.isCurrentlyBeingModifiedBy.get() === chatRequest.response);
 
 		const unset = waitForState(entry.isCurrentlyBeingModifiedBy.map(res => res === undefined));
@@ -170,5 +203,4 @@ suite('ChatEditingService', function () {
 
 		model.dispose();
 	});
-
 });

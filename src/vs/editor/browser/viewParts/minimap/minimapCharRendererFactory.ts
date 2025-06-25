@@ -25,7 +25,11 @@ export class MinimapCharRendererFactory {
 	public static create(scale: number, fontFamily: string) {
 		// renderers are immutable. By default we'll 'create' a new minimap
 		// character renderer whenever we switch editors, no need to do extra work.
-		if (this.lastCreated && scale === this.lastCreated.scale && fontFamily === this.lastFontFamily) {
+		if (
+			this.lastCreated &&
+			scale === this.lastCreated.scale &&
+			fontFamily === this.lastFontFamily
+		) {
 			return this.lastCreated;
 		}
 
@@ -66,15 +70,26 @@ export class MinimapCharRendererFactory {
 			x += Constants.SAMPLED_CHAR_WIDTH;
 		}
 
-		return ctx.getImageData(0, 0, Constants.CHAR_COUNT * Constants.SAMPLED_CHAR_WIDTH, Constants.SAMPLED_CHAR_HEIGHT);
+		return ctx.getImageData(
+			0,
+			0,
+			Constants.CHAR_COUNT * Constants.SAMPLED_CHAR_WIDTH,
+			Constants.SAMPLED_CHAR_HEIGHT
+		);
 	}
 
 	/**
 	 * Creates a character renderer from the canvas sample data.
 	 */
-	public static createFromSampleData(source: Uint8ClampedArray, scale: number): MinimapCharRenderer {
+	public static createFromSampleData(
+		source: Uint8ClampedArray,
+		scale: number
+	): MinimapCharRenderer {
 		const expectedLength =
-			Constants.SAMPLED_CHAR_HEIGHT * Constants.SAMPLED_CHAR_WIDTH * Constants.RGBA_CHANNELS_CNT * Constants.CHAR_COUNT;
+			Constants.SAMPLED_CHAR_HEIGHT *
+			Constants.SAMPLED_CHAR_WIDTH *
+			Constants.RGBA_CHANNELS_CNT *
+			Constants.CHAR_COUNT;
 		if (source.length !== expectedLength) {
 			throw new Error('Unexpected source in MinimapCharRenderer');
 		}
@@ -143,7 +158,8 @@ export class MinimapCharRendererFactory {
 	}
 
 	private static _downsample(data: Uint8ClampedArray, scale: number): Uint8ClampedArray {
-		const pixelsPerCharacter = Constants.BASE_CHAR_HEIGHT * scale * Constants.BASE_CHAR_WIDTH * scale;
+		const pixelsPerCharacter =
+			Constants.BASE_CHAR_HEIGHT * scale * Constants.BASE_CHAR_WIDTH * scale;
 		const resultLen = pixelsPerCharacter * Constants.CHAR_COUNT;
 		const result = new Uint8ClampedArray(resultLen);
 
@@ -151,7 +167,10 @@ export class MinimapCharRendererFactory {
 		let sourceOffset = 0;
 		let brightest = 0;
 		for (let charIndex = 0; charIndex < Constants.CHAR_COUNT; charIndex++) {
-			brightest = Math.max(brightest, this._downsampleChar(data, sourceOffset, result, resultOffset, scale));
+			brightest = Math.max(
+				brightest,
+				this._downsampleChar(data, sourceOffset, result, resultOffset, scale)
+			);
 			resultOffset += pixelsPerCharacter;
 			sourceOffset += Constants.SAMPLED_CHAR_WIDTH * Constants.RGBA_CHANNELS_CNT;
 		}

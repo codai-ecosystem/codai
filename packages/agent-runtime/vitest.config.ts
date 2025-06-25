@@ -13,14 +13,14 @@ export default defineConfig({
 				'dist/',
 				'src/**/*.test.ts',
 				'src/**/*.spec.ts',
-				'src/test-setup.ts'
-			]
-		}
+				'src/test-setup.ts',
+			],
+		},
 	},
 	resolve: {
 		alias: {
 			'@dragoscatalin/memory-graph': '../memory-graph/src',
-			'@dragoscatalin/ui-components': '../ui-components/src'
-		}
-	}
+			'@dragoscatalin/ui-components': '../ui-components/src',
+		},
+	},
 });

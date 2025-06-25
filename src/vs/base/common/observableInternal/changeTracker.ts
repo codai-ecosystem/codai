@@ -25,12 +25,18 @@ export interface IChangeContext {
 /**
  * Subscribes to and records changes and the last value of the given observables.
  * Don't use the key "changes", as it is reserved for the changes array!
-*/
-export function recordChanges<TObs extends Record<any, IObservableWithChange<any, any>>>(obs: TObs):
-	IChangeTracker<{ [TKey in keyof TObs]: ReturnType<TObs[TKey]['get']> }
-		& { changes: readonly ({ [TKey in keyof TObs]: { key: TKey; change: TObs[TKey]['TChange'] } }[keyof TObs])[] }> {
+ */
+export function recordChanges<TObs extends Record<any, IObservableWithChange<any, any>>>(
+	obs: TObs
+): IChangeTracker<
+	{ [TKey in keyof TObs]: ReturnType<TObs[TKey]['get']> } & {
+		changes: readonly {
+			[TKey in keyof TObs]: { key: TKey; change: TObs[TKey]['TChange'] };
+		}[keyof TObs][];
+	}
+> {
 	return {
-		createChangeSummary: (_previousChangeSummary) => {
+		createChangeSummary: _previousChangeSummary => {
 			return {
 				changes: [],
 			} as any;
@@ -50,6 +56,6 @@ export function recordChanges<TObs extends Record<any, IObservableWithChange<any
 				}
 				changeSummary[key] = obs[key].read(reader);
 			}
-		}
+		},
 	};
 }

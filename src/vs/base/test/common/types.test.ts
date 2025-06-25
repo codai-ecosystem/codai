@@ -9,7 +9,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 import { assertDefined, isOneOf, typeCheck } from '../../common/types.js';
 
 suite('Types', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('isFunction', () => {
@@ -27,7 +26,11 @@ suite('Types', () => {
 		assert(!types.isFunction(new Date()));
 
 		assert(types.isFunction(assert));
-		assert(types.isFunction(function foo() { /**/ }));
+		assert(
+			types.isFunction(function foo() {
+				/**/
+			})
+		);
 	});
 
 	test('areFunctions', () => {
@@ -47,7 +50,11 @@ suite('Types', () => {
 
 		assert(types.areFunctions(assert));
 		assert(types.areFunctions(assert, assert));
-		assert(types.areFunctions(function foo() { /**/ }));
+		assert(
+			types.areFunctions(function foo() {
+				/**/
+			})
+		);
 	});
 
 	test('isObject', () => {
@@ -62,7 +69,7 @@ suite('Types', () => {
 		assert(!types.isObject(new RegExp('')));
 		assert(!types.isFunction(new Date()));
 		assert.strictEqual(types.isObject(assert), false);
-		assert(!types.isObject(function foo() { }));
+		assert(!types.isObject(function foo() {}));
 
 		assert(types.isObject({}));
 		assert(types.isObject({ foo: 'bar' }));
@@ -80,7 +87,11 @@ suite('Types', () => {
 		assert(!types.isEmptyObject(new RegExp('')));
 		assert(!types.isEmptyObject(new Date()));
 		assert.strictEqual(types.isEmptyObject(assert), false);
-		assert(!types.isEmptyObject(function foo() { /**/ }));
+		assert(
+			!types.isEmptyObject(function foo() {
+				/**/
+			})
+		);
 		assert(!types.isEmptyObject({ foo: 'bar' }));
 
 		assert(types.isEmptyObject({}));
@@ -98,7 +109,11 @@ suite('Types', () => {
 		assert(!types.isString(new RegExp('')));
 		assert(!types.isString(new Date()));
 		assert(!types.isString(assert));
-		assert(!types.isString(function foo() { /**/ }));
+		assert(
+			!types.isString(function foo() {
+				/**/
+			})
+		);
 		assert(!types.isString({ foo: 'bar' }));
 
 		assert(types.isString('foo'));
@@ -116,7 +131,11 @@ suite('Types', () => {
 		assert(!types.isNumber(new RegExp('')));
 		assert(!types.isNumber(new Date()));
 		assert(!types.isNumber(assert));
-		assert(!types.isNumber(function foo() { /**/ }));
+		assert(
+			!types.isNumber(function foo() {
+				/**/
+			})
+		);
 		assert(!types.isNumber({ foo: 'bar' }));
 		assert(!types.isNumber(parseInt('A', 10)));
 
@@ -134,7 +153,11 @@ suite('Types', () => {
 		assert(!types.isUndefined(new RegExp('')));
 		assert(!types.isUndefined(new Date()));
 		assert(!types.isUndefined(assert));
-		assert(!types.isUndefined(function foo() { /**/ }));
+		assert(
+			!types.isUndefined(function foo() {
+				/**/
+			})
+		);
 		assert(!types.isUndefined({ foo: 'bar' }));
 
 		assert(types.isUndefined(undefined));
@@ -150,7 +173,11 @@ suite('Types', () => {
 		assert(!types.isUndefinedOrNull(new RegExp('')));
 		assert(!types.isUndefinedOrNull(new Date()));
 		assert(!types.isUndefinedOrNull(assert));
-		assert(!types.isUndefinedOrNull(function foo() { /**/ }));
+		assert(
+			!types.isUndefinedOrNull(function foo() {
+				/**/
+			})
+		);
 		assert(!types.isUndefinedOrNull({ foo: 'bar' }));
 
 		assert(types.isUndefinedOrNull(undefined));
@@ -211,10 +238,7 @@ suite('Types', () => {
 		 * and in Node.js, and it is not possible to use the same code
 		 * here. Therefore we had to resort to the manual try/catch.
 		 */
-		const assertThrows = (
-			testFunction: () => void,
-			errorMessage: string,
-		) => {
+		const assertThrows = (testFunction: () => void, errorMessage: string) => {
 			let thrownError: Error | undefined;
 
 			try {
@@ -224,16 +248,9 @@ suite('Types', () => {
 			}
 
 			assertDefined(thrownError, 'Must throw an error.');
-			assert(
-				thrownError instanceof Error,
-				'Error must be an instance of `Error`.',
-			);
+			assert(thrownError instanceof Error, 'Error must be an instance of `Error`.');
 
-			assert.strictEqual(
-				thrownError.message,
-				errorMessage,
-				'Error must have correct message.',
-			);
+			assert.strictEqual(thrownError.message, errorMessage, 'Error must have correct message.');
 		};
 
 		test('should throw if `value` is `null`', async () => {
@@ -261,16 +278,9 @@ suite('Types', () => {
 
 			assertDefined(thrownError, 'Must throw an error.');
 
-			assert(
-				thrownError instanceof Error,
-				'Error must be an instance of `Error`.',
-			);
+			assert(thrownError instanceof Error, 'Error must be an instance of `Error`.');
 
-			assert.strictEqual(
-				thrownError.message,
-				errorMessage,
-				'Error must have correct message.',
-			);
+			assert.strictEqual(thrownError.message, errorMessage, 'Error must have correct message.');
 		});
 
 		test('should throw provided error instance', async () => {
@@ -292,15 +302,8 @@ suite('Types', () => {
 				thrownError = e;
 			}
 
-			assert(
-				thrownError instanceof TestError,
-				'Error must be an instance of `TestError`.',
-			);
-			assert.strictEqual(
-				thrownError.message,
-				errorMessage,
-				'Error must have correct message.',
-			);
+			assert(thrownError instanceof TestError, 'Error must be an instance of `TestError`.');
+			assert.strictEqual(thrownError.message, errorMessage, 'Error must have correct message.');
 		});
 	});
 
@@ -309,10 +312,7 @@ suite('Types', () => {
 			suite('string', () => {
 				test('type', () => {
 					assert.doesNotThrow(() => {
-						assert(
-							isOneOf('foo', ['foo', 'bar']),
-							'Foo must be one of: foo, bar',
-						);
+						assert(isOneOf('foo', ['foo', 'bar']), 'Foo must be one of: foo, bar');
 					});
 				});
 
@@ -321,10 +321,7 @@ suite('Types', () => {
 						const item: string = 'hi';
 						const list: ('hi' | 'ciao' | 'hola')[] = ['hi', 'ciao'];
 
-						assert(
-							isOneOf(item, list),
-							'Hi must be one of: hi, ciao',
-						);
+						assert(isOneOf(item, list), 'Hi must be one of: hi, ciao');
 
 						typeCheck<'hi' | 'ciao' | 'hola'>(item);
 					});
@@ -334,10 +331,7 @@ suite('Types', () => {
 			suite('number', () => {
 				test('type', () => {
 					assert.doesNotThrow(() => {
-						assert(
-							isOneOf(10, [10, 100]),
-							'10 must be one of: 10, 100'
-						);
+						assert(isOneOf(10, [10, 100]), '10 must be one of: 10, 100');
 					});
 				});
 
@@ -346,43 +340,30 @@ suite('Types', () => {
 						const item: number = 20;
 						const list: (20 | 2000)[] = [20, 2000];
 
-						assert(
-							isOneOf(item, list),
-							'20 must be one of: 20, 2000',
-						);
+						assert(isOneOf(item, list), '20 must be one of: 20, 2000');
 
 						typeCheck<20 | 2000>(item);
 					});
 				});
-
 			});
 
 			suite('boolean', () => {
 				test('type', () => {
 					assert.doesNotThrow(() => {
-						assert(
-							isOneOf(true, [true, false]),
-							'true must be one of: true, false'
-						);
+						assert(isOneOf(true, [true, false]), 'true must be one of: true, false');
 					});
 
 					assert.doesNotThrow(() => {
-						assert(
-							isOneOf(false, [true, false]),
-							'false must be one of: true, false'
-						);
+						assert(isOneOf(false, [true, false]), 'false must be one of: true, false');
 					});
 				});
 
 				test('subtype (true)', () => {
 					assert.doesNotThrow(() => {
 						const item: boolean = true;
-						const list: (true)[] = [true, true];
+						const list: true[] = [true, true];
 
-						assert(
-							isOneOf(item, list),
-							'true must be one of: true, true',
-						);
+						assert(isOneOf(item, list), 'true must be one of: true, true');
 
 						typeCheck<true>(item);
 					});
@@ -393,10 +374,7 @@ suite('Types', () => {
 						const item: boolean = false;
 						const list: (false | true)[] = [false, true];
 
-						assert(
-							isOneOf(item, list),
-							'false must be one of: false, true',
-						);
+						assert(isOneOf(item, list), 'false must be one of: false, true');
 
 						typeCheck<false>(item);
 					});
@@ -406,29 +384,20 @@ suite('Types', () => {
 			suite('undefined', () => {
 				test('type', () => {
 					assert.doesNotThrow(() => {
-						assert(
-							isOneOf(undefined, [undefined]),
-							'undefined must be one of: undefined'
-						);
+						assert(isOneOf(undefined, [undefined]), 'undefined must be one of: undefined');
 					});
 
 					assert.doesNotThrow(() => {
-						assert(
-							isOneOf(undefined, [void 0]),
-							'undefined must be one of: void 0'
-						);
+						assert(isOneOf(undefined, [void 0]), 'undefined must be one of: void 0');
 					});
 				});
 
 				test('subtype', () => {
 					assert.doesNotThrow(() => {
 						let item: undefined | null;
-						const list: (undefined)[] = [undefined];
+						const list: undefined[] = [undefined];
 
-						assert(
-							isOneOf(item, list),
-							'undefined | null must be one of: undefined',
-						);
+						assert(isOneOf(item, list), 'undefined | null must be one of: undefined');
 
 						typeCheck<undefined>(item);
 					});
@@ -438,22 +407,16 @@ suite('Types', () => {
 			suite('null', () => {
 				test('type', () => {
 					assert.doesNotThrow(() => {
-						assert(
-							isOneOf(null, [null]),
-							'null must be one of: null'
-						);
+						assert(isOneOf(null, [null]), 'null must be one of: null');
 					});
 				});
 
 				test('subtype', () => {
 					assert.doesNotThrow(() => {
 						const item: undefined | null | string = null;
-						const list: (null)[] = [null];
+						const list: null[] = [null];
 
-						assert(
-							isOneOf(item, list),
-							'null must be one of: null',
-						);
+						assert(isOneOf(item, list), 'null must be one of: null');
 
 						typeCheck<null>(item);
 					});
@@ -466,10 +429,7 @@ suite('Types', () => {
 						const item: any = '1';
 						const list: ('1' | '2')[] = ['2', '1'];
 
-						assert(
-							isOneOf(item, list),
-							'1 must be one of: 2, 1',
-						);
+						assert(isOneOf(item, list), '1 must be one of: 2, 1');
 
 						typeCheck<'1' | '2'>(item);
 					});
@@ -480,10 +440,7 @@ suite('Types', () => {
 						const item: '5' = '5';
 						const list: any[] = ['3', '5', '2.5'];
 
-						assert(
-							isOneOf(item, list),
-							'5 must be one of: 3, 5, 2.5',
-						);
+						assert(isOneOf(item, list), '5 must be one of: 3, 5, 2.5');
 
 						typeCheck<'5'>(item);
 					});
@@ -494,10 +451,7 @@ suite('Types', () => {
 						const item: any = '12';
 						const list: any[] = ['14.25', '7', '12'];
 
-						assert(
-							isOneOf(item, list),
-							'12 must be one of: 14.25, 7, 12',
-						);
+						assert(isOneOf(item, list), '12 must be one of: 14.25, 7, 12');
 
 						typeCheck<any>(item);
 					});
@@ -510,10 +464,7 @@ suite('Types', () => {
 						const item: unknown = '1';
 						const list: ('1' | '2')[] = ['2', '1'];
 
-						assert(
-							isOneOf(item, list),
-							'1 must be one of: 2, 1',
-						);
+						assert(isOneOf(item, list), '1 must be one of: 2, 1');
 
 						typeCheck<'1' | '2'>(item);
 					});
@@ -524,10 +475,7 @@ suite('Types', () => {
 						const item: unknown = '12';
 						const list: unknown[] = ['14.25', '7', '12'];
 
-						assert(
-							isOneOf(item, list),
-							'12 must be one of: 14.25, 7, 12',
-						);
+						assert(isOneOf(item, list), '12 must be one of: 14.25, 7, 12');
 
 						typeCheck<unknown>(item);
 					});
@@ -540,10 +488,7 @@ suite('Types', () => {
 				test('type', () => {
 					assert.throws(() => {
 						const item: string = 'baz';
-						assert(
-							isOneOf(item, ['foo', 'bar']),
-							'Baz must not be one of: foo, bar',
-						);
+						assert(isOneOf(item, ['foo', 'bar']), 'Baz must not be one of: foo, bar');
 					});
 				});
 
@@ -552,10 +497,7 @@ suite('Types', () => {
 						const item: string = 'vitannia';
 						const list: ('hi' | 'ciao' | 'hola')[] = ['hi', 'ciao'];
 
-						assert(
-							isOneOf(item, list),
-							'vitannia must be one of: hi, ciao',
-						);
+						assert(isOneOf(item, list), 'vitannia must be one of: hi, ciao');
 					});
 				});
 
@@ -564,10 +506,7 @@ suite('Types', () => {
 						const item: string = 'vitannia';
 						const list: ('hi' | 'ciao' | 'hola')[] = [];
 
-						assert(
-							isOneOf(item, list),
-							'vitannia must be one of: empty',
-						);
+						assert(isOneOf(item, list), 'vitannia must be one of: empty');
 					});
 				});
 			});
@@ -575,10 +514,7 @@ suite('Types', () => {
 			suite('number', () => {
 				test('type', () => {
 					assert.throws(() => {
-						assert(
-							isOneOf(19, [10, 100]),
-							'19 must not be one of: 10, 100',
-						);
+						assert(isOneOf(19, [10, 100]), '19 must not be one of: 10, 100');
 					});
 				});
 
@@ -587,10 +523,7 @@ suite('Types', () => {
 						const item: number = 24;
 						const list: (20 | 2000)[] = [20, 2000];
 
-						assert(
-							isOneOf(item, list),
-							'24 must not be one of: 20, 2000',
-						);
+						assert(isOneOf(item, list), '24 must not be one of: 20, 2000');
 					});
 				});
 
@@ -599,10 +532,7 @@ suite('Types', () => {
 						const item: number = 20;
 						const list: (20 | 2000)[] = [];
 
-						assert(
-							isOneOf(item, list),
-							'20 must not be one of: empty',
-						);
+						assert(isOneOf(item, list), '20 must not be one of: empty');
 					});
 				});
 			});
@@ -610,17 +540,11 @@ suite('Types', () => {
 			suite('boolean', () => {
 				test('type', () => {
 					assert.throws(() => {
-						assert(
-							isOneOf(true, [false]),
-							'true must not be one of: false',
-						);
+						assert(isOneOf(true, [false]), 'true must not be one of: false');
 					});
 
 					assert.throws(() => {
-						assert(
-							isOneOf(false, [true]),
-							'false must not be one of: true',
-						);
+						assert(isOneOf(false, [true]), 'false must not be one of: true');
 					});
 				});
 
@@ -629,10 +553,7 @@ suite('Types', () => {
 						const item: boolean = true;
 						const list: (true | false)[] = [false];
 
-						assert(
-							isOneOf(item, list),
-							'true must not be one of: false',
-						);
+						assert(isOneOf(item, list), 'true must not be one of: false');
 					});
 				});
 
@@ -641,10 +562,7 @@ suite('Types', () => {
 						const item: boolean = false;
 						const list: (false | true)[] = [true, true, true];
 
-						assert(
-							isOneOf(item, list),
-							'false must be one of: true, true, true',
-						);
+						assert(isOneOf(item, list), 'false must be one of: true, true, true');
 					});
 				});
 
@@ -653,10 +571,7 @@ suite('Types', () => {
 						const item: boolean = true;
 						const list: (false | true)[] = [];
 
-						assert(
-							isOneOf(item, list),
-							'true must be one of: empty',
-						);
+						assert(isOneOf(item, list), 'true must be one of: empty');
 					});
 				});
 			});
@@ -664,17 +579,11 @@ suite('Types', () => {
 			suite('undefined', () => {
 				test('type', () => {
 					assert.throws(() => {
-						assert(
-							isOneOf(undefined, []),
-							'undefined must not be one of: empty',
-						);
+						assert(isOneOf(undefined, []), 'undefined must not be one of: empty');
 					});
 
 					assert.throws(() => {
-						assert(
-							isOneOf(void 0, []),
-							'void 0 must not be one of: empty',
-						);
+						assert(isOneOf(void 0, []), 'void 0 must not be one of: empty');
 					});
 				});
 
@@ -683,10 +592,7 @@ suite('Types', () => {
 						let item: undefined | null;
 						const list: (undefined | null)[] = [null];
 
-						assert(
-							isOneOf(item, list),
-							'undefined must be one of: null',
-						);
+						assert(isOneOf(item, list), 'undefined must be one of: null');
 					});
 				});
 
@@ -695,10 +601,7 @@ suite('Types', () => {
 						let item: undefined | null;
 						const list: (undefined | null)[] = [];
 
-						assert(
-							isOneOf(item, list),
-							'undefined must be one of: empty',
-						);
+						assert(isOneOf(item, list), 'undefined must be one of: empty');
 					});
 				});
 			});
@@ -706,10 +609,7 @@ suite('Types', () => {
 			suite('null', () => {
 				test('type', () => {
 					assert.throws(() => {
-						assert(
-							isOneOf(null, []),
-							'null must be one of: empty',
-						);
+						assert(isOneOf(null, []), 'null must be one of: empty');
 					});
 				});
 
@@ -718,10 +618,7 @@ suite('Types', () => {
 						const item: undefined | null | string = null;
 						const list: null[] = [];
 
-						assert(
-							isOneOf(item, list),
-							'null must be one of: empty',
-						);
+						assert(isOneOf(item, list), 'null must be one of: empty');
 					});
 				});
 			});
@@ -732,10 +629,7 @@ suite('Types', () => {
 						const item: any = '1';
 						const list: ('1' | '2' | '3' | '4')[] = ['3', '4'];
 
-						assert(
-							isOneOf(item, list),
-							'1 must not be one of: 3, 4',
-						);
+						assert(isOneOf(item, list), '1 must not be one of: 3, 4');
 					});
 				});
 
@@ -744,10 +638,7 @@ suite('Types', () => {
 						const item: '5' = '5';
 						const list: any[] = ['3', '6', '2.5'];
 
-						assert(
-							isOneOf(item, list),
-							'5 must not be one of: 3, 6, 2.5',
-						);
+						assert(isOneOf(item, list), '5 must not be one of: 3, 6, 2.5');
 					});
 				});
 
@@ -756,10 +647,7 @@ suite('Types', () => {
 						const item: any = '12';
 						const list: any[] = ['14.25', '7', '15'];
 
-						assert(
-							isOneOf(item, list),
-							'12 must not be one of: 14.25, 7, 15',
-						);
+						assert(isOneOf(item, list), '12 must not be one of: 14.25, 7, 15');
 					});
 				});
 
@@ -768,10 +656,7 @@ suite('Types', () => {
 						const item: any = '25';
 						const list: any[] = [];
 
-						assert(
-							isOneOf(item, list),
-							'25 must not be one of: empty',
-						);
+						assert(isOneOf(item, list), '25 must not be one of: empty');
 					});
 				});
 			});
@@ -782,11 +667,7 @@ suite('Types', () => {
 						const item: unknown = '100';
 						const list: ('11' | '12')[] = ['12', '11'];
 
-						assert(
-							isOneOf(item, list),
-							'100 must not be one of: 12, 11',
-						);
-
+						assert(isOneOf(item, list), '100 must not be one of: 12, 11');
 					});
 
 					test('both', () => {
@@ -794,11 +675,7 @@ suite('Types', () => {
 							const item: unknown = '21';
 							const list: unknown[] = ['14.25', '7', '12'];
 
-							assert(
-								isOneOf(item, list),
-								'21 must not be one of: 14.25, 7, 12',
-							);
-
+							assert(isOneOf(item, list), '21 must not be one of: 14.25, 7, 12');
 						});
 					});
 				});
@@ -813,13 +690,15 @@ suite('Types', () => {
 		types.validateConstraints([undefined], [types.isUndefined]);
 		types.validateConstraints([1], [types.isNumber]);
 
-		class Foo { }
+		class Foo {}
 		types.validateConstraints([new Foo()], [Foo]);
 
-		function isFoo(f: any) { }
+		function isFoo(f: any) {}
 		assert.throws(() => types.validateConstraints([new Foo()], [isFoo]));
 
-		function isFoo2(f: any) { return true; }
+		function isFoo2(f: any) {
+			return true;
+		}
 		types.validateConstraints([new Foo()], [isFoo2]);
 
 		assert.throws(() => types.validateConstraints([1, true], [types.isNumber, types.isString]));

@@ -7,6 +7,7 @@ This PR enhances the Firebase Provisioning Service with improved error handling,
 ## Why is it needed?
 
 The original implementation had several issues:
+
 - Excessive use of magic strings for API endpoints
 - Inconsistent error handling across methods
 - Mock implementation mixed with production code
@@ -62,10 +63,10 @@ These improvements align the code with VS Code coding guidelines and best practi
 
 ## Checklist
 
-* [x] Code is clean and follows project conventions
-* [x] Documentation is updated
-* [x] Error handling is robust
-* [x] Types are well-defined
-* [x] Security considerations addressed
-* [x] Tests are included and passing
-* [x] Test coverage is comprehensive
+- [x] Code is clean and follows project conventions
+- [x] Documentation is updated
+- [x] Error handling is robust
+- [x] Types are well-defined
+- [x] Security considerations addressed
+- [x] Tests are included and passing
+- [x] Test coverage is comprehensive

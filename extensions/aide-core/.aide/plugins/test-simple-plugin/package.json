@@ -1,35 +1,35 @@
 {
-  "name": "test-simple-plugin",
-  "displayName": "Test Simple Plugin",
-  "description": "A simple test plugin for AIDE",
-  "version": "1.0.0",
-  "author": "Test Author",
-  "main": "./out/extension.js",
-  "engines": {
-    "aide": "^0.1.0"
-  },
-  "activationEvents": [
-    "*"
-  ],
-  "contributes": {
-    "agents": [
-      {
-        "id": "test-simple-agent",
-        "name": "Test Simple Agent",
-        "description": "A simple test agent",
-        "capabilities": [
-          "general"
-        ],
-        "priority": 1
-      }
-    ]
-  },
-  "scripts": {
-    "compile": "tsc -p ./"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.85.0",
-    "@types/node": "^20.x",
-    "typescript": "^5.3.0"
-  }
+	"name": "test-simple-plugin",
+	"displayName": "Test Simple Plugin",
+	"description": "A simple test plugin for AIDE",
+	"version": "1.0.0",
+	"author": "Test Author",
+	"main": "./out/extension.js",
+	"engines": {
+		"aide": "^0.1.0"
+	},
+	"activationEvents": [
+		"*"
+	],
+	"contributes": {
+		"agents": [
+			{
+				"id": "test-simple-agent",
+				"name": "Test Simple Agent",
+				"description": "A simple test agent",
+				"capabilities": [
+					"general"
+				],
+				"priority": 1
+			}
+		]
+	},
+	"scripts": {
+		"compile": "tsc -p ./"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.85.0",
+		"@types/node": "^20.x",
+		"typescript": "^5.3.0"
+	}
 }

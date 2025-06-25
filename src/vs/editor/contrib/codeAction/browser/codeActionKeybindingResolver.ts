@@ -7,7 +7,13 @@ import { HierarchicalKind } from '../../../../base/common/hierarchicalKind.js';
 import { ResolvedKeybinding } from '../../../../base/common/keybindings.js';
 import { Lazy } from '../../../../base/common/lazy.js';
 import { CodeAction } from '../../../common/languages.js';
-import { codeActionCommandId, fixAllCommandId, organizeImportsCommandId, refactorCommandId, sourceActionCommandId } from './codeAction.js';
+import {
+	codeActionCommandId,
+	fixAllCommandId,
+	organizeImportsCommandId,
+	refactorCommandId,
+	sourceActionCommandId,
+} from './codeAction.js';
 import { CodeActionAutoApply, CodeActionCommandArgs, CodeActionKind } from '../common/types.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 
@@ -23,37 +29,38 @@ export class CodeActionKeybindingResolver {
 		codeActionCommandId,
 		sourceActionCommandId,
 		organizeImportsCommandId,
-		fixAllCommandId
+		fixAllCommandId,
 	];
 
-	constructor(
-		@IKeybindingService private readonly keybindingService: IKeybindingService
-	) { }
+	constructor(@IKeybindingService private readonly keybindingService: IKeybindingService) {}
 
 	public getResolver(): (action: CodeAction) => ResolvedKeybinding | undefined {
 		// Lazy since we may not actually ever read the value
-		const allCodeActionBindings = new Lazy<readonly ResolveCodeActionKeybinding[]>(() => this.keybindingService.getKeybindings()
-			.filter(item => CodeActionKeybindingResolver.codeActionCommands.indexOf(item.command!) >= 0)
-			.filter(item => item.resolvedKeybinding)
-			.map((item): ResolveCodeActionKeybinding => {
-				// Special case these commands since they come built-in with VS Code and don't use 'commandArgs'
-				let commandArgs = item.commandArgs;
-				if (item.command === organizeImportsCommandId) {
-					commandArgs = { kind: CodeActionKind.SourceOrganizeImports.value };
-				} else if (item.command === fixAllCommandId) {
-					commandArgs = { kind: CodeActionKind.SourceFixAll.value };
-				}
+		const allCodeActionBindings = new Lazy<readonly ResolveCodeActionKeybinding[]>(() =>
+			this.keybindingService
+				.getKeybindings()
+				.filter(item => CodeActionKeybindingResolver.codeActionCommands.indexOf(item.command!) >= 0)
+				.filter(item => item.resolvedKeybinding)
+				.map((item): ResolveCodeActionKeybinding => {
+					// Special case these commands since they come built-in with VS Code and don't use 'commandArgs'
+					let commandArgs = item.commandArgs;
+					if (item.command === organizeImportsCommandId) {
+						commandArgs = { kind: CodeActionKind.SourceOrganizeImports.value };
+					} else if (item.command === fixAllCommandId) {
+						commandArgs = { kind: CodeActionKind.SourceFixAll.value };
+					}
 
-				return {
-					resolvedKeybinding: item.resolvedKeybinding!,
-					...CodeActionCommandArgs.fromUser(commandArgs, {
-						kind: HierarchicalKind.None,
-						apply: CodeActionAutoApply.Never
-					})
-				};
-			}));
+					return {
+						resolvedKeybinding: item.resolvedKeybinding!,
+						...CodeActionCommandArgs.fromUser(commandArgs, {
+							kind: HierarchicalKind.None,
+							apply: CodeActionAutoApply.Never,
+						}),
+					};
+				})
+		);
 
-		return (action) => {
+		return action => {
 			if (action.kind) {
 				const binding = this.bestKeybindingForCodeAction(action, allCodeActionBindings.value);
 				return binding?.resolvedKeybinding;
@@ -80,12 +87,15 @@ export class CodeActionKeybindingResolver {
 				}
 				return true;
 			})
-			.reduceRight((currentBest, candidate) => {
-				if (!currentBest) {
-					return candidate;
-				}
-				// Select the more specific binding
-				return currentBest.kind.contains(candidate.kind) ? candidate : currentBest;
-			}, undefined as ResolveCodeActionKeybinding | undefined);
+			.reduceRight(
+				(currentBest, candidate) => {
+					if (!currentBest) {
+						return candidate;
+					}
+					// Select the more specific binding
+					return currentBest.kind.contains(candidate.kind) ? candidate : currentBest;
+				},
+				undefined as ResolveCodeActionKeybinding | undefined
+			);
 	}
 }

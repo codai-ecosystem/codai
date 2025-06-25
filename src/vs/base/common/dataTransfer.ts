@@ -22,7 +22,10 @@ export interface IDataTransferItem {
 	value: any;
 }
 
-export function createStringDataTransferItem(stringOrPromise: string | Promise<string>, id?: string): IDataTransferItem {
+export function createStringDataTransferItem(
+	stringOrPromise: string | Promise<string>,
+	id?: string
+): IDataTransferItem {
 	return {
 		id,
 		asString: async () => stringOrPromise,
@@ -31,7 +34,12 @@ export function createStringDataTransferItem(stringOrPromise: string | Promise<s
 	};
 }
 
-export function createFileDataTransferItem(fileName: string, uri: URI | undefined, data: () => Promise<Uint8Array>, id?: string): IDataTransferItem {
+export function createFileDataTransferItem(
+	fileName: string,
+	uri: URI | undefined,
+	data: () => Promise<Uint8Array>,
+	id?: string
+): IDataTransferItem {
 	const file = { id: generateUuid(), name: fileName, uri, data };
 	return {
 		id,
@@ -72,7 +80,6 @@ export interface IReadonlyVSDataTransfer extends Iterable<readonly [string, IDat
 }
 
 export class VSDataTransfer implements IReadonlyVSDataTransfer {
-
 	private readonly _entries = new Map<string, IDataTransferItem[]>();
 
 	public get size(): number {
@@ -153,12 +160,13 @@ function normalizeMimeType(mimeType: string): string {
 }
 
 export function matchesMimeType(pattern: string, mimeTypes: readonly string[]): boolean {
-	return matchesMimeType_normalized(
-		normalizeMimeType(pattern),
-		mimeTypes.map(normalizeMimeType));
+	return matchesMimeType_normalized(normalizeMimeType(pattern), mimeTypes.map(normalizeMimeType));
 }
 
-function matchesMimeType_normalized(normalizedPattern: string, normalizedMimeTypes: readonly string[]): boolean {
+function matchesMimeType_normalized(
+	normalizedPattern: string,
+	normalizedMimeTypes: readonly string[]
+): boolean {
 	// Anything wildcard
 	if (normalizedPattern === '*/*') {
 		return normalizedMimeTypes.length > 0;
@@ -183,7 +191,6 @@ function matchesMimeType_normalized(normalizedPattern: string, normalizedMimeTyp
 	return false;
 }
 
-
 export const UriList = Object.freeze({
 	// http://amundsen.com/hypermedia/urilist/
 	create: (entries: ReadonlyArray<string | URI>): string => {
@@ -194,5 +201,5 @@ export const UriList = Object.freeze({
 	},
 	parse: (str: string): string[] => {
 		return UriList.split(str).filter(value => !value.startsWith('#'));
-	}
+	},
 });

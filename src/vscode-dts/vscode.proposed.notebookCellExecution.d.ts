@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	export interface NotebookCellExecution {
 		/**
 		 * Signal that execution has ended.

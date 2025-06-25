@@ -5,7 +5,11 @@
 
 import assert from 'assert';
 import { Event } from '../../../../base/common/event.js';
-import { DisposableStore, IReference, ImmortalReference } from '../../../../base/common/lifecycle.js';
+import {
+	DisposableStore,
+	IReference,
+	ImmortalReference,
+} from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
 import { mock } from '../../../../base/test/common/mock.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
@@ -18,7 +22,10 @@ import { ITextSnapshot } from '../../../../editor/common/model.js';
 import { IEditorWorkerService } from '../../../../editor/common/services/editorWorker.js';
 import { IModelService } from '../../../../editor/common/services/model.js';
 import { ModelService } from '../../../../editor/common/services/modelService.js';
-import { IResolvedTextEditorModel, ITextModelService } from '../../../../editor/common/services/resolverService.js';
+import {
+	IResolvedTextEditorModel,
+	ITextModelService,
+} from '../../../../editor/common/services/resolverService.js';
 import { TestCodeEditorService } from '../../../../editor/test/browser/editorTestServices.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { TestConfigurationService } from '../../../../platform/configuration/test/common/testConfigurationService.js';
@@ -51,10 +58,27 @@ import { LabelService } from '../../../services/label/common/labelService.js';
 import { ILifecycleService } from '../../../services/lifecycle/common/lifecycle.js';
 import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
 import { ITextFileService } from '../../../services/textfile/common/textfiles.js';
-import { ICopyOperation, ICreateFileOperation, ICreateOperation, IDeleteOperation, IMoveOperation, IWorkingCopyFileService } from '../../../services/workingCopy/common/workingCopyFileService.js';
+import {
+	ICopyOperation,
+	ICreateFileOperation,
+	ICreateOperation,
+	IDeleteOperation,
+	IMoveOperation,
+	IWorkingCopyFileService,
+} from '../../../services/workingCopy/common/workingCopyFileService.js';
 import { IWorkingCopyService } from '../../../services/workingCopy/common/workingCopyService.js';
-import { TestEditorGroupsService, TestEditorService, TestEnvironmentService, TestFileService, TestLifecycleService, TestWorkingCopyService } from '../../../test/browser/workbenchTestServices.js';
-import { TestContextService, TestTextResourcePropertiesService } from '../../../test/common/workbenchTestServices.js';
+import {
+	TestEditorGroupsService,
+	TestEditorService,
+	TestEnvironmentService,
+	TestFileService,
+	TestLifecycleService,
+	TestWorkingCopyService,
+} from '../../../test/browser/workbenchTestServices.js';
+import {
+	TestContextService,
+	TestTextResourcePropertiesService,
+} from '../../../test/common/workbenchTestServices.js';
 import { ILanguageService } from '../../../../editor/common/languages/language.js';
 import { LanguageService } from '../../../../editor/common/services/languageService.js';
 import { ILanguageConfigurationService } from '../../../../editor/common/languages/languageConfigurationRegistry.js';
@@ -63,7 +87,6 @@ import { ITreeSitterLibraryService } from '../../../../editor/common/services/tr
 import { TestTreeSitterLibraryService } from '../../../../editor/test/common/services/testTreeSitterLibraryService.js';
 
 suite('MainThreadEditors', () => {
-
 	let disposables: DisposableStore;
 	const resource = URI.parse('foo:bar');
 
@@ -110,70 +133,87 @@ suite('MainThreadEditors', () => {
 		services.set(ILifecycleService, new TestLifecycleService());
 		services.set(IWorkingCopyService, new TestWorkingCopyService());
 		services.set(IEditorGroupsService, new TestEditorGroupsService());
-		services.set(ITextFileService, new class extends mock<ITextFileService>() {
-			override isDirty() { return false; }
-			override files = <any>{
-				onDidSave: Event.None,
-				onDidRevert: Event.None,
-				onDidChangeDirty: Event.None
-			};
-			override create(operations: { resource: URI }[]) {
-				for (const o of operations) {
-					createdResources.add(o.resource);
+		services.set(
+			ITextFileService,
+			new (class extends mock<ITextFileService>() {
+				override isDirty() {
+					return false;
 				}
-				return Promise.resolve(Object.create(null));
-			}
-			override async getEncodedReadable(resource: URI, value?: string | ITextSnapshot): Promise<any> {
-				return undefined;
-			}
-		});
-		services.set(IWorkingCopyFileService, new class extends mock<IWorkingCopyFileService>() {
-			override onDidRunWorkingCopyFileOperation = Event.None;
-			override createFolder(operations: ICreateOperation[]): any {
-				this.create(operations);
-			}
-			override create(operations: ICreateFileOperation[]) {
-				for (const operation of operations) {
-					createdResources.add(operation.resource);
-				}
-				return Promise.resolve(Object.create(null));
-			}
-			override move(operations: IMoveOperation[]) {
-				const { source, target } = operations[0].file;
-				movedResources.set(source, target);
-				return Promise.resolve(Object.create(null));
-			}
-			override copy(operations: ICopyOperation[]) {
-				const { source, target } = operations[0].file;
-				copiedResources.set(source, target);
-				return Promise.resolve(Object.create(null));
-			}
-			override delete(operations: IDeleteOperation[]) {
-				for (const operation of operations) {
-					deletedResources.add(operation.resource);
-				}
-				return Promise.resolve(undefined);
-			}
-		});
-		services.set(ITextModelService, new class extends mock<ITextModelService>() {
-			override createModelReference(resource: URI): Promise<IReference<IResolvedTextEditorModel>> {
-				const textEditorModel = new class extends mock<IResolvedTextEditorModel>() {
-					override textEditorModel = modelService.getModel(resource)!;
+				override files = <any>{
+					onDidSave: Event.None,
+					onDidRevert: Event.None,
+					onDidChangeDirty: Event.None,
 				};
-				textEditorModel.isReadonly = () => false;
-				return Promise.resolve(new ImmortalReference(textEditorModel));
-			}
-		});
-		services.set(IEditorWorkerService, new class extends mock<IEditorWorkerService>() {
-
-		});
-		services.set(IPaneCompositePartService, new class extends mock<IPaneCompositePartService>() implements IPaneCompositePartService {
-			override onDidPaneCompositeOpen = Event.None;
-			override onDidPaneCompositeClose = Event.None;
-			override getActivePaneComposite() {
-				return undefined;
-			}
-		});
+				override create(operations: { resource: URI }[]) {
+					for (const o of operations) {
+						createdResources.add(o.resource);
+					}
+					return Promise.resolve(Object.create(null));
+				}
+				override async getEncodedReadable(
+					resource: URI,
+					value?: string | ITextSnapshot
+				): Promise<any> {
+					return undefined;
+				}
+			})()
+		);
+		services.set(
+			IWorkingCopyFileService,
+			new (class extends mock<IWorkingCopyFileService>() {
+				override onDidRunWorkingCopyFileOperation = Event.None;
+				override createFolder(operations: ICreateOperation[]): any {
+					this.create(operations);
+				}
+				override create(operations: ICreateFileOperation[]) {
+					for (const operation of operations) {
+						createdResources.add(operation.resource);
+					}
+					return Promise.resolve(Object.create(null));
+				}
+				override move(operations: IMoveOperation[]) {
+					const { source, target } = operations[0].file;
+					movedResources.set(source, target);
+					return Promise.resolve(Object.create(null));
+				}
+				override copy(operations: ICopyOperation[]) {
+					const { source, target } = operations[0].file;
+					copiedResources.set(source, target);
+					return Promise.resolve(Object.create(null));
+				}
+				override delete(operations: IDeleteOperation[]) {
+					for (const operation of operations) {
+						deletedResources.add(operation.resource);
+					}
+					return Promise.resolve(undefined);
+				}
+			})()
+		);
+		services.set(
+			ITextModelService,
+			new (class extends mock<ITextModelService>() {
+				override createModelReference(
+					resource: URI
+				): Promise<IReference<IResolvedTextEditorModel>> {
+					const textEditorModel = new (class extends mock<IResolvedTextEditorModel>() {
+						override textEditorModel = modelService.getModel(resource)!;
+					})();
+					textEditorModel.isReadonly = () => false;
+					return Promise.resolve(new ImmortalReference(textEditorModel));
+				}
+			})()
+		);
+		services.set(IEditorWorkerService, new (class extends mock<IEditorWorkerService>() {})());
+		services.set(
+			IPaneCompositePartService,
+			new (class extends mock<IPaneCompositePartService>() implements IPaneCompositePartService {
+				override onDidPaneCompositeOpen = Event.None;
+				override onDidPaneCompositeClose = Event.None;
+				override getActivePaneComposite() {
+					return undefined;
+				}
+			})()
+		);
 
 		services.set(ILanguageService, disposables.add(new LanguageService()));
 		services.set(ILanguageConfigurationService, new TestLanguageConfigurationService());
@@ -197,7 +237,6 @@ suite('MainThreadEditors', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test(`applyWorkspaceEdit returns false if model is changed by user`, () => {
-
 		const model = disposables.add(modelService.createModel('something', null, resource));
 
 		const workspaceResourceEdit: IWorkspaceTextEditDto = {
@@ -205,20 +244,21 @@ suite('MainThreadEditors', () => {
 			versionId: model.getVersionId(),
 			textEdit: {
 				text: 'asdfg',
-				range: new Range(1, 1, 1, 1)
-			}
+				range: new Range(1, 1, 1, 1),
+			},
 		};
 
 		// Act as if the user edited the model
 		model.applyEdits([EditOperation.insert(new Position(0, 0), 'something')]);
 
-		return bulkEdits.$tryApplyWorkspaceEdit(new SerializableObjectWithBuffers({ edits: [workspaceResourceEdit] })).then((result) => {
-			assert.strictEqual(result, false);
-		});
+		return bulkEdits
+			.$tryApplyWorkspaceEdit(new SerializableObjectWithBuffers({ edits: [workspaceResourceEdit] }))
+			.then(result => {
+				assert.strictEqual(result, false);
+			});
 	});
 
 	test(`issue #54773: applyWorkspaceEdit checks model version in race situation`, () => {
-
 		const model = disposables.add(modelService.createModel('something', null, resource));
 
 		const workspaceResourceEdit1: IWorkspaceTextEditDto = {
@@ -226,41 +266,53 @@ suite('MainThreadEditors', () => {
 			versionId: model.getVersionId(),
 			textEdit: {
 				text: 'asdfg',
-				range: new Range(1, 1, 1, 1)
-			}
+				range: new Range(1, 1, 1, 1),
+			},
 		};
 		const workspaceResourceEdit2: IWorkspaceTextEditDto = {
 			resource: resource,
 			versionId: model.getVersionId(),
 			textEdit: {
 				text: 'asdfg',
-				range: new Range(1, 1, 1, 1)
-			}
+				range: new Range(1, 1, 1, 1),
+			},
 		};
 
-		const p1 = bulkEdits.$tryApplyWorkspaceEdit(new SerializableObjectWithBuffers({ edits: [workspaceResourceEdit1] })).then((result) => {
-			// first edit request succeeds
-			assert.strictEqual(result, true);
-		});
-		const p2 = bulkEdits.$tryApplyWorkspaceEdit(new SerializableObjectWithBuffers({ edits: [workspaceResourceEdit2] })).then((result) => {
-			// second edit request fails
-			assert.strictEqual(result, false);
-		});
+		const p1 = bulkEdits
+			.$tryApplyWorkspaceEdit(
+				new SerializableObjectWithBuffers({ edits: [workspaceResourceEdit1] })
+			)
+			.then(result => {
+				// first edit request succeeds
+				assert.strictEqual(result, true);
+			});
+		const p2 = bulkEdits
+			.$tryApplyWorkspaceEdit(
+				new SerializableObjectWithBuffers({ edits: [workspaceResourceEdit2] })
+			)
+			.then(result => {
+				// second edit request fails
+				assert.strictEqual(result, false);
+			});
 		return Promise.all([p1, p2]);
 	});
 
 	test(`applyWorkspaceEdit with only resource edit`, () => {
-		return bulkEdits.$tryApplyWorkspaceEdit(new SerializableObjectWithBuffers({
-			edits: [
-				{ oldResource: resource, newResource: resource, options: undefined },
-				{ oldResource: undefined, newResource: resource, options: undefined },
-				{ oldResource: resource, newResource: undefined, options: undefined }
-			]
-		})).then((result) => {
-			assert.strictEqual(result, true);
-			assert.strictEqual(movedResources.get(resource), resource);
-			assert.strictEqual(createdResources.has(resource), true);
-			assert.strictEqual(deletedResources.has(resource), true);
-		});
+		return bulkEdits
+			.$tryApplyWorkspaceEdit(
+				new SerializableObjectWithBuffers({
+					edits: [
+						{ oldResource: resource, newResource: resource, options: undefined },
+						{ oldResource: undefined, newResource: resource, options: undefined },
+						{ oldResource: resource, newResource: undefined, options: undefined },
+					],
+				})
+			)
+			.then(result => {
+				assert.strictEqual(result, true);
+				assert.strictEqual(movedResources.get(resource), resource);
+				assert.strictEqual(createdResources.has(resource), true);
+				assert.strictEqual(deletedResources.has(resource), true);
+			});
 	});
 });

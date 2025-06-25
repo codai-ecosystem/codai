@@ -83,14 +83,14 @@ export class MemoryGraph {
 			data: {
 				name: 'AIDE Agent Runtime',
 				version: '1.0.0',
-				initialized: Date.now()
+				initialized: Date.now(),
 			},
 			timestamp: Date.now(),
 			relationships: [],
 			metadata: {
 				priority: 'high',
-				tags: ['system', 'root']
-			}
+				tags: ['system', 'root'],
+			},
 		});
 	}
 
@@ -108,7 +108,9 @@ export class MemoryGraph {
 	addEdge(edge: MemoryEdge): void {
 		// Verify both nodes exist
 		if (!this.nodes.has(edge.from) || !this.nodes.has(edge.to)) {
-			throw new Error(`Cannot create edge: one or both nodes do not exist (${edge.from}, ${edge.to})`);
+			throw new Error(
+				`Cannot create edge: one or both nodes do not exist (${edge.from}, ${edge.to})`
+			);
 		}
 
 		this.edges.set(edge.id, edge);
@@ -127,7 +129,7 @@ export class MemoryGraph {
 
 	/**
 	 * Record a workflow step in the memory graph
-	 */	recordWorkflowStep(workflowId: string, step: Partial<WorkflowStep>): void {
+	 */ recordWorkflowStep(workflowId: string, step: Partial<WorkflowStep>): void {
 		const fullStep: WorkflowStep = {
 			phase: step.phase || 'unknown',
 			agent: step.agent || 'unknown',
@@ -136,7 +138,7 @@ export class MemoryGraph {
 			timestamp: step.timestamp || Date.now(),
 			duration: step.duration || 0,
 			success: step.success !== false,
-			...(step.error !== undefined && { error: step.error })
+			...(step.error !== undefined && { error: step.error }),
 		};
 
 		if (!this.workflowHistory.has(workflowId)) {
@@ -157,8 +159,8 @@ export class MemoryGraph {
 				agent: fullStep.agent,
 				phase: fullStep.phase,
 				priority: 'medium',
-				tags: ['workflow', 'step']
-			}
+				tags: ['workflow', 'step'],
+			},
 		});
 
 		// Link to previous step if exists
@@ -176,8 +178,8 @@ export class MemoryGraph {
 				metadata: {
 					strength: 1.0,
 					confidence: 1.0,
-					bidirectional: false
-				}
+					bidirectional: false,
+				},
 			});
 		}
 	}
@@ -204,8 +206,8 @@ export class MemoryGraph {
 			relationships: [],
 			metadata: {
 				priority: 'high',
-				tags: ['context', 'shared']
-			}
+				tags: ['context', 'shared'],
+			},
 		});
 	}
 
@@ -239,13 +241,13 @@ export class MemoryGraph {
 					workflowId,
 					data: workflowData,
 					matchScore,
-					frequency: this.calculatePatternFrequency(workflowData)
+					frequency: this.calculatePatternFrequency(workflowData),
 				});
 			}
 		}
 
 		// Sort by match score and frequency
-		patterns.sort((a, b) => (b.matchScore * b.frequency) - (a.matchScore * a.frequency));
+		patterns.sort((a, b) => b.matchScore * b.frequency - a.matchScore * a.frequency);
 
 		this.patternCache.set(cacheKey, patterns);
 		return patterns;
@@ -261,7 +263,7 @@ export class MemoryGraph {
 			duration: steps.reduce((sum, s) => sum + s.duration, 0),
 			success: steps.every(s => s.success),
 			technologies: [],
-			patterns: []
+			patterns: [],
 		};
 
 		// Extract technologies and patterns from inputs/outputs
@@ -285,10 +287,25 @@ export class MemoryGraph {
 		if (typeof data === 'string') {
 			// Look for common technology patterns
 			const techPatterns = [
-				/react/i, /vue/i, /angular/i, /typescript/i, /javascript/i,
-				/python/i, /java/i, /c#/i, /go/i, /rust/i,
-				/docker/i, /kubernetes/i, /aws/i, /azure/i, /gcp/i,
-				/jest/i, /vitest/i, /cypress/i, /playwright/i
+				/react/i,
+				/vue/i,
+				/angular/i,
+				/typescript/i,
+				/javascript/i,
+				/python/i,
+				/java/i,
+				/c#/i,
+				/go/i,
+				/rust/i,
+				/docker/i,
+				/kubernetes/i,
+				/aws/i,
+				/azure/i,
+				/gcp/i,
+				/jest/i,
+				/vitest/i,
+				/cypress/i,
+				/playwright/i,
 			];
 
 			techPatterns.forEach(pattern => {
@@ -319,11 +336,15 @@ export class MemoryGraph {
 				matches++;
 			}
 			// Check in phases
-			else if (workflowData.phases.some((phase: string) => phase.toLowerCase().includes(keywordLower))) {
+			else if (
+				workflowData.phases.some((phase: string) => phase.toLowerCase().includes(keywordLower))
+			) {
 				matches++;
 			}
 			// Check in agents
-			else if (workflowData.agents.some((agent: string) => agent.toLowerCase().includes(keywordLower))) {
+			else if (
+				workflowData.agents.some((agent: string) => agent.toLowerCase().includes(keywordLower))
+			) {
 				matches++;
 			}
 		});
@@ -384,9 +405,7 @@ export class MemoryGraph {
 		const node = this.nodes.get(nodeId);
 		if (!node) return [];
 
-		return node.relationships
-			.map(relId => this.nodes.get(relId))
-			.filter(Boolean) as MemoryNode[];
+		return node.relationships.map(relId => this.nodes.get(relId)).filter(Boolean) as MemoryNode[];
 	}
 
 	/**
@@ -409,7 +428,7 @@ export class MemoryGraph {
 			nodeCount: this.nodes.size,
 			edgeCount: this.edges.size,
 			lastUpdate: Date.now(),
-			version: '1.0.0'
+			version: '1.0.0',
 		};
 	}
 
@@ -418,8 +437,9 @@ export class MemoryGraph {
 	 */
 	private calculateIntegrity(): number {
 		const totalNodes = this.nodes.size;
-		const connectedNodes = Array.from(this.nodes.values())
-			.filter(node => node.relationships.length > 0).length;
+		const connectedNodes = Array.from(this.nodes.values()).filter(
+			node => node.relationships.length > 0
+		).length;
 
 		return totalNodes > 0 ? connectedNodes / totalNodes : 1.0;
 	}
@@ -467,7 +487,7 @@ export class MemoryGraph {
 	/**
 	 * Export graph data for persistence
 	 */
-	export(): { nodes: MemoryNode[], edges: MemoryEdge[], metadata: any } {
+	export(): { nodes: MemoryNode[]; edges: MemoryEdge[]; metadata: any } {
 		return {
 			nodes: Array.from(this.nodes.values()),
 			edges: Array.from(this.edges.values()),
@@ -475,15 +495,15 @@ export class MemoryGraph {
 				version: '1.0.0',
 				exported: Date.now(),
 				nodeCount: this.nodes.size,
-				edgeCount: this.edges.size
-			}
+				edgeCount: this.edges.size,
+			},
 		};
 	}
 
 	/**
 	 * Import graph data from persistence
 	 */
-	import(data: { nodes: MemoryNode[], edges: MemoryEdge[] }): void {
+	import(data: { nodes: MemoryNode[]; edges: MemoryEdge[] }): void {
 		this.nodes.clear();
 		this.edges.clear();
 

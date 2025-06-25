@@ -12,10 +12,7 @@ export class AutoRepliesPtyServiceContribution implements IPtyServiceContributio
 	private readonly _terminalProcesses: Map<number, ITerminalChildProcess> = new Map();
 	private readonly _autoResponders: Map<number, Map<string, TerminalAutoResponder>> = new Map();
 
-	constructor(
-		@ILogService private readonly _logService: ILogService
-	) {
-	}
+	constructor(@ILogService private readonly _logService: ILogService) {}
 
 	async installAutoReply(match: string, reply: string) {
 		this._autoReplies.set(match, reply);
@@ -75,11 +72,19 @@ export class AutoRepliesPtyServiceContribution implements IPtyServiceContributio
 		}
 	}
 
-	private _processInstallAutoReply(persistentProcessId: number, terminalProcess: ITerminalChildProcess, match: string, reply: string) {
+	private _processInstallAutoReply(
+		persistentProcessId: number,
+		terminalProcess: ITerminalChildProcess,
+		match: string,
+		reply: string
+	) {
 		const processAutoResponders = this._autoResponders.get(persistentProcessId);
 		if (processAutoResponders) {
 			processAutoResponders.get(match)?.dispose();
-			processAutoResponders.set(match, new TerminalAutoResponder(terminalProcess, match, reply, this._logService));
+			processAutoResponders.set(
+				match,
+				new TerminalAutoResponder(terminalProcess, match, reply, this._logService)
+			);
 		}
 	}
 }

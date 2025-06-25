@@ -8,26 +8,47 @@ import { alert } from '../../../../base/browser/ui/aria/aria.js';
 import { Event } from '../../../../base/common/event.js';
 import { IMarkdownString, isMarkdownString } from '../../../../base/common/htmlContent.js';
 import { KeyCode } from '../../../../base/common/keyCodes.js';
-import { DisposableStore, IDisposable, MutableDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	DisposableStore,
+	IDisposable,
+	MutableDisposable,
+} from '../../../../base/common/lifecycle.js';
 import './messageController.css';
-import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from '../../../browser/editorBrowser.js';
-import { EditorCommand, EditorContributionInstantiation, registerEditorCommand, registerEditorContribution } from '../../../browser/editorExtensions.js';
+import {
+	ContentWidgetPositionPreference,
+	ICodeEditor,
+	IContentWidget,
+	IContentWidgetPosition,
+} from '../../../browser/editorBrowser.js';
+import {
+	EditorCommand,
+	EditorContributionInstantiation,
+	registerEditorCommand,
+	registerEditorContribution,
+} from '../../../browser/editorExtensions.js';
 import { IPosition } from '../../../common/core/position.js';
 import { Range } from '../../../common/core/range.js';
 import { IEditorContribution, ScrollType } from '../../../common/editorCommon.js';
 import { PositionAffinity } from '../../../common/model.js';
 import { openLinkFromMarkdown } from '../../../browser/widget/markdownRenderer/browser/markdownRenderer.js';
 import * as nls from '../../../../nls.js';
-import { IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import * as dom from '../../../../base/browser/dom.js';
 
 export class MessageController implements IEditorContribution {
-
 	public static readonly ID = 'editor.contrib.messageController';
 
-	static readonly MESSAGE_VISIBLE = new RawContextKey<boolean>('messageVisible', false, nls.localize('messageVisible', 'Whether the editor is currently showing an inline message'));
+	static readonly MESSAGE_VISIBLE = new RawContextKey<boolean>(
+		'messageVisible',
+		false,
+		nls.localize('messageVisible', 'Whether the editor is currently showing an inline message')
+	);
 
 	static get(editor: ICodeEditor): MessageController | null {
 		return editor.getContribution<MessageController>(MessageController.ID);
@@ -45,7 +66,6 @@ export class MessageController implements IEditorContribution {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IOpenerService private readonly _openerService: IOpenerService
 	) {
-
 		this._editor = editor;
 		this._visible = MessageController.MESSAGE_VISIBLE.bindTo(contextKeyService);
 	}
@@ -62,58 +82,91 @@ export class MessageController implements IEditorContribution {
 	}
 
 	showMessage(message: IMarkdownString | string, position: IPosition): void {
-
 		alert(isMarkdownString(message) ? message.value : message);
 
 		this._visible.set(true);
 		this._messageWidget.clear();
 		this._messageListeners.clear();
-		this._message = isMarkdownString(message) ? renderMarkdown(message, {
-			actionHandler: {
-				callback: (url) => {
-					this.closeMessage();
-					openLinkFromMarkdown(this._openerService, url, isMarkdownString(message) ? message.isTrusted : undefined);
-				},
-				disposables: this._messageListeners
-			},
-		}) : undefined;
-		this._messageWidget.value = new MessageWidget(this._editor, position, typeof message === 'string' ? message : this._message!.element);
+		this._message = isMarkdownString(message)
+			? renderMarkdown(message, {
+					actionHandler: {
+						callback: url => {
+							this.closeMessage();
+							openLinkFromMarkdown(
+								this._openerService,
+								url,
+								isMarkdownString(message) ? message.isTrusted : undefined
+							);
+						},
+						disposables: this._messageListeners,
+					},
+				})
+			: undefined;
+		this._messageWidget.value = new MessageWidget(
+			this._editor,
+			position,
+			typeof message === 'string' ? message : this._message!.element
+		);
 
 		// close on blur (debounced to allow to tab into the message), cursor, model change, dispose
-		this._messageListeners.add(Event.debounce(this._editor.onDidBlurEditorText, (last, event) => event, 0)(() => {
-			if (this._mouseOverMessage) {
-				return; // override when mouse over message
-			}
+		this._messageListeners.add(
+			Event.debounce(
+				this._editor.onDidBlurEditorText,
+				(last, event) => event,
+				0
+			)(() => {
+				if (this._mouseOverMessage) {
+					return; // override when mouse over message
+				}
 
-			if (this._messageWidget.value && dom.isAncestor(dom.getActiveElement(), this._messageWidget.value.getDomNode())) {
-				return; // override when focus is inside the message
-			}
+				if (
+					this._messageWidget.value &&
+					dom.isAncestor(dom.getActiveElement(), this._messageWidget.value.getDomNode())
+				) {
+					return; // override when focus is inside the message
+				}
 
-			this.closeMessage();
-		}
-		));
+				this.closeMessage();
+			})
+		);
 		this._messageListeners.add(this._editor.onDidChangeCursorPosition(() => this.closeMessage()));
 		this._messageListeners.add(this._editor.onDidDispose(() => this.closeMessage()));
 		this._messageListeners.add(this._editor.onDidChangeModel(() => this.closeMessage()));
-		this._messageListeners.add(dom.addDisposableListener(this._messageWidget.value.getDomNode(), dom.EventType.MOUSE_ENTER, () => this._mouseOverMessage = true, true));
-		this._messageListeners.add(dom.addDisposableListener(this._messageWidget.value.getDomNode(), dom.EventType.MOUSE_LEAVE, () => this._mouseOverMessage = false, true));
+		this._messageListeners.add(
+			dom.addDisposableListener(
+				this._messageWidget.value.getDomNode(),
+				dom.EventType.MOUSE_ENTER,
+				() => (this._mouseOverMessage = true),
+				true
+			)
+		);
+		this._messageListeners.add(
+			dom.addDisposableListener(
+				this._messageWidget.value.getDomNode(),
+				dom.EventType.MOUSE_LEAVE,
+				() => (this._mouseOverMessage = false),
+				true
+			)
+		);
 
 		// close on mouse move
 		let bounds: Range;
-		this._messageListeners.add(this._editor.onMouseMove(e => {
-			// outside the text area
-			if (!e.target.position) {
-				return;
-			}
+		this._messageListeners.add(
+			this._editor.onMouseMove(e => {
+				// outside the text area
+				if (!e.target.position) {
+					return;
+				}
 
-			if (!bounds) {
-				// define bounding box around position and first mouse occurance
-				bounds = new Range(position.lineNumber - 3, 1, e.target.position.lineNumber + 3, 1);
-			} else if (!bounds.containsPosition(e.target.position)) {
-				// check if position is still in bounds
-				this.closeMessage();
-			}
-		}));
+				if (!bounds) {
+					// define bounding box around position and first mouse occurance
+					bounds = new Range(position.lineNumber - 3, 1, e.target.position.lineNumber + 3, 1);
+				} else if (!bounds.containsPosition(e.target.position)) {
+					// check if position is still in bounds
+					this.closeMessage();
+				}
+			})
+		);
 	}
 
 	closeMessage(): void {
@@ -127,19 +180,19 @@ export class MessageController implements IEditorContribution {
 
 const MessageCommand = EditorCommand.bindToContribution<MessageController>(MessageController.get);
 
-
-registerEditorCommand(new MessageCommand({
-	id: 'leaveEditorMessage',
-	precondition: MessageController.MESSAGE_VISIBLE,
-	handler: c => c.closeMessage(),
-	kbOpts: {
-		weight: KeybindingWeight.EditorContrib + 30,
-		primary: KeyCode.Escape
-	}
-}));
+registerEditorCommand(
+	new MessageCommand({
+		id: 'leaveEditorMessage',
+		precondition: MessageController.MESSAGE_VISIBLE,
+		handler: c => c.closeMessage(),
+		kbOpts: {
+			weight: KeybindingWeight.EditorContrib + 30,
+			primary: KeyCode.Escape,
+		},
+	})
+);
 
 class MessageWidget implements IContentWidget {
-
 	// Editor.IContentWidget.allowEditorOverflow
 	readonly allowEditorOverflow = true;
 	readonly suppressMouseDown = false;
@@ -161,7 +214,6 @@ class MessageWidget implements IContentWidget {
 	}
 
 	constructor(editor: ICodeEditor, { lineNumber, column }: IPosition, text: HTMLElement | string) {
-
 		this._editor = editor;
 		this._editor.revealLinesInCenterIfOutsideViewport(lineNumber, lineNumber, ScrollType.Smooth);
 		this._position = { lineNumber, column };
@@ -207,10 +259,7 @@ class MessageWidget implements IContentWidget {
 	getPosition(): IContentWidgetPosition {
 		return {
 			position: this._position,
-			preference: [
-				ContentWidgetPositionPreference.ABOVE,
-				ContentWidgetPositionPreference.BELOW,
-			],
+			preference: [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW],
 			positionAffinity: PositionAffinity.Right,
 		};
 	}
@@ -218,7 +267,10 @@ class MessageWidget implements IContentWidget {
 	afterRender(position: ContentWidgetPositionPreference | null): void {
 		this._domNode.classList.toggle('below', position === ContentWidgetPositionPreference.BELOW);
 	}
-
 }
 
-registerEditorContribution(MessageController.ID, MessageController, EditorContributionInstantiation.Lazy);
+registerEditorContribution(
+	MessageController.ID,
+	MessageController,
+	EditorContributionInstantiation.Lazy
+);

@@ -96,10 +96,10 @@ This file provides templates for JSDoc comments to be used across the AIDE proje
  * <ComponentName prop="value" />
  */
 interface ComponentNameProps {
-  /** Description of this prop */
-  propName: PropType;
-  /** Description of this optional prop */
-  optionalProp?: OptionalPropType;
+	/** Description of this prop */
+	propName: PropType;
+	/** Description of this optional prop */
+	optionalProp?: OptionalPropType;
 }
 ```
 

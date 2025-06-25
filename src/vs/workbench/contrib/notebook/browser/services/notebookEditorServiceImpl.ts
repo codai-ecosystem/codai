@@ -5,11 +5,24 @@
 
 import { CodeWindow } from '../../../../../base/browser/window.js';
 import { ResourceMap } from '../../../../../base/common/map.js';
-import { getDefaultNotebookCreationOptions, NotebookEditorWidget } from '../notebookEditorWidget.js';
+import {
+	getDefaultNotebookCreationOptions,
+	NotebookEditorWidget,
+} from '../notebookEditorWidget.js';
 import { DisposableStore, IDisposable } from '../../../../../base/common/lifecycle.js';
-import { IEditorGroupsService, IEditorGroup } from '../../../../services/editor/common/editorGroupsService.js';
-import { IInstantiationService, ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
-import { isCompositeNotebookEditorInput, isNotebookEditorInput, NotebookEditorInput } from '../../common/notebookEditorInput.js';
+import {
+	IEditorGroupsService,
+	IEditorGroup,
+} from '../../../../services/editor/common/editorGroupsService.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../../../../platform/instantiation/common/instantiation.js';
+import {
+	isCompositeNotebookEditorInput,
+	isNotebookEditorInput,
+	NotebookEditorInput,
+} from '../../common/notebookEditorInput.js';
 import { IBorrowValue, INotebookEditorService } from './notebookEditorService.js';
 import { INotebookEditor, INotebookEditorCreationOptions } from '../notebookBrowser.js';
 import { Emitter } from '../../../../../base/common/event.js';
@@ -17,14 +30,19 @@ import { GroupIdentifier, GroupModelChangeKind } from '../../../../common/editor
 import { Dimension } from '../../../../../base/browser/dom.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
-import { IContextKey, IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
-import { InteractiveWindowOpen, MOST_RECENT_REPL_EDITOR } from '../../common/notebookContextKeys.js';
+import {
+	IContextKey,
+	IContextKeyService,
+} from '../../../../../platform/contextkey/common/contextkey.js';
+import {
+	InteractiveWindowOpen,
+	MOST_RECENT_REPL_EDITOR,
+} from '../../common/notebookContextKeys.js';
 import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
 import { IEditorProgressService } from '../../../../../platform/progress/common/progress.js';
 import { NotebookDiffEditorInput } from '../../common/notebookDiffEditorInput.js';
 
 export class NotebookEditorWidgetService implements INotebookEditorService {
-
 	readonly _serviceBrand: undefined;
 
 	private _tokenPool = 1;
@@ -41,7 +59,17 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 	private readonly _mostRecentRepl: IContextKey<string | undefined>;
 
-	private readonly _borrowableEditors = new Map<number, ResourceMap<{ widget: NotebookEditorWidget; editorType: string; token: number | undefined; disposableStore: DisposableStore }[]>>();
+	private readonly _borrowableEditors = new Map<
+		number,
+		ResourceMap<
+			{
+				widget: NotebookEditorWidget;
+				editorType: string;
+				token: number | undefined;
+				disposableStore: DisposableStore;
+			}[]
+		>
+	>();
 
 	constructor(
 		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
@@ -52,84 +80,98 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		const onNewGroup = (group: IEditorGroup) => {
 			const { id } = group;
 			const listeners: IDisposable[] = [];
-			listeners.push(group.onDidCloseEditor(e => {
-				const widgetMap = this._borrowableEditors.get(group.id);
-				if (!widgetMap) {
-					return;
-				}
-
-				const inputs = e.editor instanceof NotebookEditorInput || e.editor instanceof NotebookDiffEditorInput
-					? [e.editor]
-					: (isCompositeNotebookEditorInput(e.editor) ? e.editor.editorInputs : []);
-				inputs.forEach(input => {
-					const widgets = widgetMap.get(input.resource);
-					const index = widgets?.findIndex(widget => widget.editorType === input.typeId);
-					if (!widgets || index === undefined || index === -1) {
+			listeners.push(
+				group.onDidCloseEditor(e => {
+					const widgetMap = this._borrowableEditors.get(group.id);
+					if (!widgetMap) {
 						return;
 					}
-					const value = widgets.splice(index, 1)[0];
-					value.token = undefined;
-					this._disposeWidget(value.widget);
-					value.disposableStore.dispose();
-					value.widget = (<any>undefined); // unset the widget so that others that still hold a reference don't harm us
-				});
-			}));
-			listeners.push(group.onWillMoveEditor(e => {
-				if (isNotebookEditorInput(e.editor)) {
-					this._allowWidgetMove(e.editor, e.groupId, e.target);
-				}
 
-				if (isCompositeNotebookEditorInput(e.editor)) {
-					e.editor.editorInputs.forEach(input => {
-						this._allowWidgetMove(input, e.groupId, e.target);
+					const inputs =
+						e.editor instanceof NotebookEditorInput || e.editor instanceof NotebookDiffEditorInput
+							? [e.editor]
+							: isCompositeNotebookEditorInput(e.editor)
+								? e.editor.editorInputs
+								: [];
+					inputs.forEach(input => {
+						const widgets = widgetMap.get(input.resource);
+						const index = widgets?.findIndex(widget => widget.editorType === input.typeId);
+						if (!widgets || index === undefined || index === -1) {
+							return;
+						}
+						const value = widgets.splice(index, 1)[0];
+						value.token = undefined;
+						this._disposeWidget(value.widget);
+						value.disposableStore.dispose();
+						value.widget = <any>undefined; // unset the widget so that others that still hold a reference don't harm us
 					});
-				}
-			}));
+				})
+			);
+			listeners.push(
+				group.onWillMoveEditor(e => {
+					if (isNotebookEditorInput(e.editor)) {
+						this._allowWidgetMove(e.editor, e.groupId, e.target);
+					}
+
+					if (isCompositeNotebookEditorInput(e.editor)) {
+						e.editor.editorInputs.forEach(input => {
+							this._allowWidgetMove(input, e.groupId, e.target);
+						});
+					}
+				})
+			);
 			this.groupListener.set(id, listeners);
 		};
 		this._disposables.add(editorGroupService.onDidAddGroup(onNewGroup));
 		editorGroupService.whenReady.then(() => editorGroupService.groups.forEach(onNewGroup));
 
 		// group removed -> clean up listeners, clean up widgets
-		this._disposables.add(editorGroupService.onDidRemoveGroup(group => {
-			const listeners = this.groupListener.get(group.id);
-			if (listeners) {
-				listeners.forEach(listener => listener.dispose());
-				this.groupListener.delete(group.id);
-			}
-			const widgets = this._borrowableEditors.get(group.id);
-			this._borrowableEditors.delete(group.id);
-			if (widgets) {
-				for (const values of widgets.values()) {
-					for (const value of values) {
-						value.token = undefined;
-						this._disposeWidget(value.widget);
-						value.disposableStore.dispose();
+		this._disposables.add(
+			editorGroupService.onDidRemoveGroup(group => {
+				const listeners = this.groupListener.get(group.id);
+				if (listeners) {
+					listeners.forEach(listener => listener.dispose());
+					this.groupListener.delete(group.id);
+				}
+				const widgets = this._borrowableEditors.get(group.id);
+				this._borrowableEditors.delete(group.id);
+				if (widgets) {
+					for (const values of widgets.values()) {
+						for (const value of values) {
+							value.token = undefined;
+							this._disposeWidget(value.widget);
+							value.disposableStore.dispose();
+						}
 					}
 				}
-			}
-		}));
+			})
+		);
 
 		this._mostRecentRepl = MOST_RECENT_REPL_EDITOR.bindTo(contextKeyService);
 		const interactiveWindowOpen = InteractiveWindowOpen.bindTo(contextKeyService);
-		this._disposables.add(editorService.onDidEditorsChange(e => {
-			if (e.event.kind === GroupModelChangeKind.EDITOR_OPEN && !interactiveWindowOpen.get()) {
-				if (editorService.editors.find(editor => isCompositeNotebookEditorInput(editor))) {
-					interactiveWindowOpen.set(true);
+		this._disposables.add(
+			editorService.onDidEditorsChange(e => {
+				if (e.event.kind === GroupModelChangeKind.EDITOR_OPEN && !interactiveWindowOpen.get()) {
+					if (editorService.editors.find(editor => isCompositeNotebookEditorInput(editor))) {
+						interactiveWindowOpen.set(true);
+					}
+				} else if (
+					e.event.kind === GroupModelChangeKind.EDITOR_CLOSE &&
+					interactiveWindowOpen.get()
+				) {
+					if (!editorService.editors.find(editor => isCompositeNotebookEditorInput(editor))) {
+						interactiveWindowOpen.set(false);
+					}
 				}
-			} else if (e.event.kind === GroupModelChangeKind.EDITOR_CLOSE && interactiveWindowOpen.get()) {
-				if (!editorService.editors.find(editor => isCompositeNotebookEditorInput(editor))) {
-					interactiveWindowOpen.set(false);
-				}
-			}
-		}));
+			})
+		);
 	}
 
 	dispose() {
 		this._disposables.dispose();
 		this._onNotebookEditorAdd.dispose();
 		this._onNotebookEditorsRemove.dispose();
-		this.groupListener.forEach((listeners) => {
+		this.groupListener.forEach(listeners => {
 			listeners.forEach(listener => listener.dispose());
 		});
 		this.groupListener.clear();
@@ -149,7 +191,11 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		domNode.remove();
 	}
 
-	private _allowWidgetMove(input: NotebookEditorInput, sourceID: GroupIdentifier, targetID: GroupIdentifier): void {
+	private _allowWidgetMove(
+		input: NotebookEditorInput,
+		sourceID: GroupIdentifier,
+		targetID: GroupIdentifier
+	): void {
 		const sourcePart = this.editorGroupService.getPart(sourceID);
 		const targetPart = this.editorGroupService.getPart(targetID);
 
@@ -157,13 +203,19 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 			return;
 		}
 
-		const target = this._borrowableEditors.get(targetID)?.get(input.resource)?.findIndex(widget => widget.editorType === input.typeId);
+		const target = this._borrowableEditors
+			.get(targetID)
+			?.get(input.resource)
+			?.findIndex(widget => widget.editorType === input.typeId);
 		if (target !== undefined && target !== -1) {
 			// not needed, a separate widget is already there
 			return;
 		}
 
-		const widget = this._borrowableEditors.get(sourceID)?.get(input.resource)?.find(widget => widget.editorType === input.typeId);
+		const widget = this._borrowableEditors
+			.get(sourceID)
+			?.get(input.resource)
+			?.find(widget => widget.editorType === input.typeId);
 		if (!widget) {
 			throw new Error('no widget at source group');
 		}
@@ -210,16 +262,32 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		return ret;
 	}
 
-	retrieveWidget(accessor: ServicesAccessor, groupId: number, input: { resource: URI; typeId: string }, creationOptions?: INotebookEditorCreationOptions, initialDimension?: Dimension, codeWindow?: CodeWindow): IBorrowValue<NotebookEditorWidget> {
-
-		let value = this._borrowableEditors.get(groupId)?.get(input.resource)?.find(widget => widget.editorType === input.typeId);
+	retrieveWidget(
+		accessor: ServicesAccessor,
+		groupId: number,
+		input: { resource: URI; typeId: string },
+		creationOptions?: INotebookEditorCreationOptions,
+		initialDimension?: Dimension,
+		codeWindow?: CodeWindow
+	): IBorrowValue<NotebookEditorWidget> {
+		let value = this._borrowableEditors
+			.get(groupId)
+			?.get(input.resource)
+			?.find(widget => widget.editorType === input.typeId);
 
 		if (!value) {
 			// NEW widget
 			const editorGroupContextKeyService = accessor.get(IContextKeyService);
 			const editorGroupEditorProgressService = accessor.get(IEditorProgressService);
 			const widgetDisposeStore = new DisposableStore();
-			const widget = this.createWidget(editorGroupContextKeyService, widgetDisposeStore, editorGroupEditorProgressService, creationOptions, codeWindow, initialDimension);
+			const widget = this.createWidget(
+				editorGroupContextKeyService,
+				widgetDisposeStore,
+				editorGroupEditorProgressService,
+				creationOptions,
+				codeWindow,
+				initialDimension
+			);
 			const token = this._tokenPool++;
 			value = { widget, editorType: input.typeId, token, disposableStore: widgetDisposeStore };
 
@@ -241,23 +309,42 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 	}
 
 	// protected for unit testing overrides
-	protected createWidget(editorGroupContextKeyService: IContextKeyService, widgetDisposeStore: DisposableStore, editorGroupEditorProgressService: IEditorProgressService, creationOptions?: INotebookEditorCreationOptions, codeWindow?: CodeWindow, initialDimension?: Dimension) {
-		const notebookInstantiationService = widgetDisposeStore.add(this.instantiationService.createChild(new ServiceCollection(
-			[IContextKeyService, editorGroupContextKeyService],
-			[IEditorProgressService, editorGroupEditorProgressService])));
+	protected createWidget(
+		editorGroupContextKeyService: IContextKeyService,
+		widgetDisposeStore: DisposableStore,
+		editorGroupEditorProgressService: IEditorProgressService,
+		creationOptions?: INotebookEditorCreationOptions,
+		codeWindow?: CodeWindow,
+		initialDimension?: Dimension
+	) {
+		const notebookInstantiationService = widgetDisposeStore.add(
+			this.instantiationService.createChild(
+				new ServiceCollection(
+					[IContextKeyService, editorGroupContextKeyService],
+					[IEditorProgressService, editorGroupEditorProgressService]
+				)
+			)
+		);
 		const ctorOptions = creationOptions ?? getDefaultNotebookCreationOptions();
-		const widget = notebookInstantiationService.createInstance(NotebookEditorWidget, {
-			...ctorOptions,
-			codeWindow: codeWindow ?? ctorOptions.codeWindow,
-		}, initialDimension);
+		const widget = notebookInstantiationService.createInstance(
+			NotebookEditorWidget,
+			{
+				...ctorOptions,
+				codeWindow: codeWindow ?? ctorOptions.codeWindow,
+			},
+			initialDimension
+		);
 		return widget;
 	}
 
-	private _createBorrowValue(myToken: number, widget: { widget: NotebookEditorWidget; token: number | undefined }): IBorrowValue<NotebookEditorWidget> {
+	private _createBorrowValue(
+		myToken: number,
+		widget: { widget: NotebookEditorWidget; token: number | undefined }
+	): IBorrowValue<NotebookEditorWidget> {
 		return {
 			get value() {
 				return widget.token === myToken ? widget.widget : undefined;
-			}
+			},
 		};
 	}
 

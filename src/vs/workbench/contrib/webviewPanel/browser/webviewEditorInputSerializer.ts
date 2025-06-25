@@ -7,7 +7,11 @@ import { URI, UriComponents } from '../../../../base/common/uri.js';
 import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IEditorSerializer } from '../../../common/editor.js';
-import { WebviewContentOptions, WebviewExtensionDescription, WebviewOptions } from '../../webview/browser/webview.js';
+import {
+	WebviewContentOptions,
+	WebviewExtensionDescription,
+	WebviewOptions,
+} from '../../webview/browser/webview.js';
 import { WebviewIcons } from './webviewIconManager.js';
 import { WebviewInput } from './webviewEditorInput.js';
 import { IWebviewWorkbenchService } from './webviewWorkbenchService.js';
@@ -46,12 +50,11 @@ export interface DeserializedWebview {
 }
 
 export class WebviewEditorInputSerializer implements IEditorSerializer {
-
 	public static readonly ID = WebviewInput.typeId;
 
 	public constructor(
 		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService
-	) { }
+	) {}
 
 	public canSerialize(input: WebviewInput): boolean {
 		return this._webviewWorkbenchService.shouldPersist(input);
@@ -88,7 +91,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 			title: data.title,
 			iconPath: data.iconPath,
 			state: data.state,
-			group: data.group
+			group: data.group,
 		});
 	}
 
@@ -113,15 +116,17 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 			extensionLocation: input.extension?.location,
 			extensionId: input.extension?.id.value,
 			state: input.webview.state,
-			iconPath: input.iconPath ? { light: input.iconPath.light, dark: input.iconPath.dark, } : undefined,
-			group: input.group
+			iconPath: input.iconPath
+				? { light: input.iconPath.light, dark: input.iconPath.dark }
+				: undefined,
+			group: input.group,
 		};
 	}
 }
 
 export function reviveWebviewExtensionDescription(
 	extensionId: string | undefined,
-	extensionLocation: UriComponents | undefined,
+	extensionLocation: UriComponents | undefined
 ): WebviewExtensionDescription | undefined {
 	if (!extensionId) {
 		return undefined;
@@ -173,7 +178,9 @@ export function restoreWebviewOptions(options: SerializedWebviewOptions): Webvie
 	return options;
 }
 
-export function restoreWebviewContentOptions(options: SerializedWebviewOptions): WebviewContentOptions {
+export function restoreWebviewContentOptions(
+	options: SerializedWebviewOptions
+): WebviewContentOptions {
 	return {
 		...options,
 		localResourceRoots: options.localResourceRoots?.map(uri => reviveUri(uri)),

@@ -4,9 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 
@@ -17,7 +24,9 @@ export interface IGettingStartedExperiment {
 	iteration: number;
 }
 
-export const IGettingStartedExperimentService = createDecorator<IGettingStartedExperimentService>('gettingStartedExperimentService');
+export const IGettingStartedExperimentService = createDecorator<IGettingStartedExperimentService>(
+	'gettingStartedExperimentService'
+);
 
 export interface IGettingStartedExperimentService {
 	readonly _serviceBrand: undefined;
@@ -37,22 +46,49 @@ interface ExperimentGroupDefinition {
 export enum GettingStartedExperimentGroup {
 	New = 'newExp',
 	Control = 'controlExp',
-	Default = 'defaultExp'
+	Default = 'defaultExp',
 }
 
 const STABLE_EXPERIMENT_GROUPS: ExperimentGroupDefinition[] = [
 	// Bump the iteration each time we change group allocations
-	{ name: GettingStartedExperimentGroup.Default, min: 0, max: 1, iteration: 1, walkthroughId: 'Setup' }
+	{
+		name: GettingStartedExperimentGroup.Default,
+		min: 0,
+		max: 1,
+		iteration: 1,
+		walkthroughId: 'Setup',
+	},
 ];
 
 const INSIDERS_EXPERIMENT_GROUPS: ExperimentGroupDefinition[] = [
 	// Bump the iteration each time we change group allocations
-	{ name: GettingStartedExperimentGroup.New, min: 0.0, max: 0.3, iteration: 1, walkthroughId: 'NewWelcomeExperience' },
-	{ name: GettingStartedExperimentGroup.Control, min: 0.3, max: 0.6, iteration: 1, walkthroughId: 'Setup' },
-	{ name: GettingStartedExperimentGroup.Default, min: 0.6, max: 1, iteration: 1, walkthroughId: 'Setup' }
+	{
+		name: GettingStartedExperimentGroup.New,
+		min: 0.0,
+		max: 0.3,
+		iteration: 1,
+		walkthroughId: 'NewWelcomeExperience',
+	},
+	{
+		name: GettingStartedExperimentGroup.Control,
+		min: 0.3,
+		max: 0.6,
+		iteration: 1,
+		walkthroughId: 'Setup',
+	},
+	{
+		name: GettingStartedExperimentGroup.Default,
+		min: 0.6,
+		max: 1,
+		iteration: 1,
+		walkthroughId: 'Setup',
+	},
 ];
 
-export class GettingStartedExperimentService extends Disposable implements IGettingStartedExperimentService {
+export class GettingStartedExperimentService
+	extends Disposable
+	implements IGettingStartedExperimentService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private readonly experiment: IGettingStartedExperiment | undefined;
@@ -60,7 +96,7 @@ export class GettingStartedExperimentService extends Disposable implements IGett
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IProductService private readonly productService: IProductService,
+		@IProductService private readonly productService: IProductService
 	) {
 		super();
 		this.experiment = this.getOrCreateExperiment();
@@ -78,7 +114,10 @@ export class GettingStartedExperimentService extends Disposable implements IGett
 	}
 
 	private getOrCreateExperiment(): IGettingStartedExperiment | undefined {
-		const storedExperiment = this.storageService.get(EXPERIMENT_STORAGE_KEY, StorageScope.APPLICATION);
+		const storedExperiment = this.storageService.get(
+			EXPERIMENT_STORAGE_KEY,
+			StorageScope.APPLICATION
+		);
 		if (storedExperiment) {
 			try {
 				return JSON.parse(storedExperiment);
@@ -111,7 +150,12 @@ export class GettingStartedExperimentService extends Disposable implements IGett
 
 		for (const group of experimentGroups) {
 			if (cohort >= group.min && cohort < group.max) {
-				return { cohort, experimentGroup: group.name, walkthroughId: group.walkthroughId, iteration: group.iteration };
+				return {
+					cohort,
+					experimentGroup: group.name,
+					walkthroughId: group.walkthroughId,
+					iteration: group.iteration,
+				};
 			}
 		}
 
@@ -126,10 +170,26 @@ export class GettingStartedExperimentService extends Disposable implements IGett
 		type GettingStartedExperimentClassification = {
 			owner: 'bhavyaus';
 			comment: 'Records which experiment cohort the user is in for getting started experience';
-			cohort: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The exact cohort number for the user' };
-			experimentGroup: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The experiment group the user is in' };
-			iteration: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The iteration number for the experiment' };
-			walkthroughId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The walkthrough ID for the experiment' };
+			cohort: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				comment: 'The exact cohort number for the user';
+			};
+			experimentGroup: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				comment: 'The experiment group the user is in';
+			};
+			iteration: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				comment: 'The iteration number for the experiment';
+			};
+			walkthroughId: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				comment: 'The walkthrough ID for the experiment';
+			};
 		};
 
 		type GettingStartedExperimentEvent = {
@@ -139,15 +199,15 @@ export class GettingStartedExperimentService extends Disposable implements IGett
 			walkthroughId: string;
 		};
 
-		this.telemetryService.publicLog2<GettingStartedExperimentEvent, GettingStartedExperimentClassification>(
-			'gettingStarted.experimentCohort',
-			{
-				cohort: this.experiment.cohort,
-				experimentGroup: this.experiment.experimentGroup,
-				iteration: this.experiment.iteration,
-				walkthroughId: this.experiment.walkthroughId
-			}
-		);
+		this.telemetryService.publicLog2<
+			GettingStartedExperimentEvent,
+			GettingStartedExperimentClassification
+		>('gettingStarted.experimentCohort', {
+			cohort: this.experiment.cohort,
+			experimentGroup: this.experiment.experimentGroup,
+			iteration: this.experiment.iteration,
+			walkthroughId: this.experiment.walkthroughId,
+		});
 	}
 
 	getCurrentExperiment(): IGettingStartedExperiment | undefined {
@@ -155,4 +215,8 @@ export class GettingStartedExperimentService extends Disposable implements IGett
 	}
 }
 
-registerSingleton(IGettingStartedExperimentService, GettingStartedExperimentService, InstantiationType.Delayed);
+registerSingleton(
+	IGettingStartedExperimentService,
+	GettingStartedExperimentService,
+	InstantiationType.Delayed
+);

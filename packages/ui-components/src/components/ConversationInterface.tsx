@@ -1,6 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Loader2, Bot, User, Zap, Archive, Settings } from 'lucide-react';
-import { AgentMessage, AgentRuntime, ConversationContext, AgentStatus } from '@dragoscatalin/agent-runtime';
+import {
+	AgentMessage,
+	AgentRuntime,
+	ConversationContext,
+	AgentStatus,
+} from '@dragoscatalin/agent-runtime';
 import { MemoryGraphEngine } from '@dragoscatalin/memory-graph';
 import { MessageBubble } from './MessageBubble';
 import { StreamingMessageRenderer } from './StreamingMessageRenderer';
@@ -56,7 +61,7 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 
 	// Subscribe to agent runtime events
 	useEffect(() => {
-		const messagesSubscription = agentRuntime.messages$.subscribe((message) => {
+		const messagesSubscription = agentRuntime.messages$.subscribe(message => {
 			setMessages(prev => [...prev, message]);
 		});
 		const statusSubscription = agentRuntime.status$.subscribe(({ agentId, status }) => {
@@ -90,57 +95,59 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 		loadConversation();
 	}, [agentRuntime]);
 
-	const handleSendMessage = useCallback(async (content: string) => {
-		if (!content.trim() || isProcessing) return;
+	const handleSendMessage = useCallback(
+		async (content: string) => {
+			if (!content.trim() || isProcessing) return;
 
-		setIsProcessing(true);
-		setInputValue('');
+			setIsProcessing(true);
+			setInputValue('');
 
-		try {
-			// Create user message
-			const userMessage: AgentMessage = {
-				id: `msg-${Date.now()}`,
-				agentId: 'user',
-				type: 'request',
-				content: content.trim(),
-				timestamp: new Date(),
-			};
+			try {
+				// Create user message
+				const userMessage: AgentMessage = {
+					id: `msg-${Date.now()}`,
+					agentId: 'user',
+					type: 'request',
+					content: content.trim(),
+					timestamp: new Date(),
+				};
 
-			setMessages(prev => [...prev, userMessage]);
+				setMessages(prev => [...prev, userMessage]);
 
-			// Start conversation with agents
-			await agentRuntime.startConversation(conversationIdRef.current, content.trim(), {
-				onMessageStream: (agentId: string, chunk: string, complete: boolean) => {
-					setStreamingMessage({ agentId, content: chunk, complete });
-					if (complete) {
-						setStreamingMessage(null);
-					}
-				},
-				onAgentStart: (agentId: string) => {
-					setActiveAgents(prev => [...prev.filter(id => id !== agentId), agentId]);
-				},
-				onAgentComplete: (agentId: string) => {
-					setActiveAgents(prev => prev.filter(id => id !== agentId));
-				},
-			});
+				// Start conversation with agents
+				await agentRuntime.startConversation(conversationIdRef.current, content.trim(), {
+					onMessageStream: (agentId: string, chunk: string, complete: boolean) => {
+						setStreamingMessage({ agentId, content: chunk, complete });
+						if (complete) {
+							setStreamingMessage(null);
+						}
+					},
+					onAgentStart: (agentId: string) => {
+						setActiveAgents(prev => [...prev.filter(id => id !== agentId), agentId]);
+					},
+					onAgentComplete: (agentId: string) => {
+						setActiveAgents(prev => prev.filter(id => id !== agentId));
+					},
+				});
+			} catch (error) {
+				console.error('Failed to send message:', error);
 
-		} catch (error) {
-			console.error('Failed to send message:', error);
+				// Add error message
+				const errorMessage: AgentMessage = {
+					id: `err-${Date.now()}`,
+					agentId: 'system',
+					type: 'error',
+					content: `Failed to process message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+					timestamp: new Date(),
+				};
 
-			// Add error message
-			const errorMessage: AgentMessage = {
-				id: `err-${Date.now()}`,
-				agentId: 'system',
-				type: 'error',
-				content: `Failed to process message: ${error instanceof Error ? error.message : 'Unknown error'}`,
-				timestamp: new Date(),
-			};
-
-			setMessages(prev => [...prev, errorMessage]);
-		} finally {
-			setIsProcessing(false);
-		}
-	}, [agentRuntime, isProcessing]);
+				setMessages(prev => [...prev, errorMessage]);
+			} finally {
+				setIsProcessing(false);
+			}
+		},
+		[agentRuntime, isProcessing]
+	);
 
 	const handleKeyPress = (e: React.KeyboardEvent) => {
 		if (e.key === 'Enter' && !e.shiftKey) {
@@ -168,14 +175,22 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 						</div>
 						<h3 className="text-xl font-semibold mb-2">Welcome to AIDE</h3>
 						<p className="text-muted-foreground mb-4">
-							Your AI-native development environment. Describe what you'd like to build,
-							and I'll coordinate with specialized agents to help you create it.
+							Your AI-native development environment. Describe what you'd like to build, and I'll
+							coordinate with specialized agents to help you create it.
 						</p>
 						<div className="text-sm text-muted-foreground space-y-1">
-							<p>✨ <strong>Natural Language:</strong> Just describe what you want</p>
-							<p>🤖 <strong>Multi-Agent:</strong> Specialized AI agents work together</p>
-							<p>🧠 <strong>Memory:</strong> Learns and remembers your preferences</p>
-							<p>🚀 <strong>End-to-End:</strong> From idea to deployment</p>
+							<p>
+								✨ <strong>Natural Language:</strong> Just describe what you want
+							</p>
+							<p>
+								🤖 <strong>Multi-Agent:</strong> Specialized AI agents work together
+							</p>
+							<p>
+								🧠 <strong>Memory:</strong> Learns and remembers your preferences
+							</p>
+							<p>
+								🚀 <strong>End-to-End:</strong> From idea to deployment
+							</p>
 						</div>
 					</Card>
 				</div>
@@ -190,7 +205,8 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 			<div className="border-b border-border p-4">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center space-x-3">
-						<h2 className="text-lg font-semibold">AIDE Conversation</h2>						{conversationContext?.currentGoal && (
+						<h2 className="text-lg font-semibold">AIDE Conversation</h2>{' '}
+						{conversationContext?.currentGoal && (
 							<Badge variant="outline">{conversationContext.currentGoal}</Badge>
 						)}
 					</div>
@@ -206,19 +222,11 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 							</div>
 						)}
 
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setShowHistory(!showHistory)}
-						>
+						<Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)}>
 							<Archive className="w-4 h-4" />
 						</Button>
 
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={handleNewConversation}
-						>
+						<Button variant="ghost" size="sm" onClick={handleNewConversation}>
 							New Chat
 						</Button>
 					</div>
@@ -228,11 +236,7 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 				{activeAgents.length > 0 && (
 					<div className="mt-2 flex flex-wrap gap-2">
 						{activeAgents.map(agentId => (
-							<AgentStatusIndicator
-								key={agentId}
-								agentId={agentId}
-								runtime={agentRuntime}
-							/>
+							<AgentStatusIndicator key={agentId} agentId={agentId} runtime={agentRuntime} />
 						))}
 					</div>
 				)}
@@ -243,7 +247,7 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 				{showHistory && (
 					<ConversationHistory
 						memoryGraph={memoryGraph}
-						onConversationSelect={(id) => {
+						onConversationSelect={id => {
 							conversationIdRef.current = id;
 							setShowHistory(false);
 						}}
@@ -253,7 +257,7 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 				<div className="p-4 space-y-4">
 					{getWelcomeMessage()}
 
-					{messages.map((message) => (
+					{messages.map(message => (
 						<MessageBubble
 							key={message.id}
 							message={message}
@@ -291,7 +295,7 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 						<Input
 							ref={inputRef}
 							value={inputValue}
-							onChange={(e) => setInputValue(e.target.value)}
+							onChange={e => setInputValue(e.target.value)}
 							onKeyPress={handleKeyPress}
 							placeholder="Describe what you'd like to build, or ask a question..."
 							disabled={isProcessing}
@@ -315,7 +319,8 @@ export const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 				{/* Input hints */}
 				<div className="mt-2 text-xs text-muted-foreground">
 					<p>
-						💡 Try: "Create a React todo app" • "Add authentication" • "Deploy to Vercel" • "Fix the login bug"
+						💡 Try: "Create a React todo app" • "Add authentication" • "Deploy to Vercel" • "Fix the
+						login bug"
 					</p>
 				</div>
 			</div>

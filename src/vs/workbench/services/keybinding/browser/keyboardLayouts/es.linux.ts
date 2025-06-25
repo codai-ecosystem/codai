@@ -5,7 +5,6 @@
 
 import { KeyboardLayoutContribution } from './_.contribution.js';
 
-
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 	layout: { model: 'pc105', group: 0, layout: 'es', variant: '', options: '', rules: 'evdev' },
 	secondaryLayouts: [],
@@ -53,7 +52,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		Backspace: ['\b', '\b', '\b', '\b', 0],
 		Tab: ['\t', '', '\t', '', 0],
 		Space: [' ', ' ', ' ', ' ', 0],
-		Minus: ['\'', '?', '\\', '¿', 0],
+		Minus: ["'", '?', '\\', '¿', 0],
 		Equal: ['¡', '¿', '̃', '~', 0],
 		BracketLeft: ['̀', '̂', '[', '̊', 0],
 		BracketRight: ['+', '*', ']', '̄', 0],
@@ -182,6 +181,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		BrowserFavorites: [],
 		MailReply: [],
 		MailForward: [],
-		MailSend: []
-	}
+		MailSend: [],
+	},
 });

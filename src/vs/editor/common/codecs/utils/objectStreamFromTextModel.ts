@@ -13,7 +13,7 @@ import { ObjectStream } from './objectStream.js';
  */
 export function objectStreamFromTextModel(
 	model: ITextModel,
-	cancellationToken?: CancellationToken,
+	cancellationToken?: CancellationToken
 ): ObjectStream<VSBuffer> {
 	return new ObjectStream(modelToGenerator(model), cancellationToken);
 }
@@ -31,13 +31,9 @@ export const modelToGenerator = (model: ITextModel): Generator<VSBuffer, undefin
 				return undefined;
 			}
 
-			yield VSBuffer.fromString(
-				model.getLineContent(currentLine),
-			);
+			yield VSBuffer.fromString(model.getLineContent(currentLine));
 			if (currentLine !== totalLines) {
-				yield VSBuffer.fromString(
-					model.getEOL(),
-				);
+				yield VSBuffer.fromString(model.getEOL());
 			}
 
 			currentLine++;

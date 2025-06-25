@@ -18,8 +18,10 @@ export function hotClassGetOriginalInstance<T>(value: T): T {
  * Wrap a class in a reloadable wrapper.
  * When the wrapper is created, the original class is created.
  * When the original class changes, the instance is re-created.
-*/
-export function wrapInHotClass0<TArgs extends BrandedService[]>(clazz: IObservable<Result<TArgs>>): Result<TArgs> {
+ */
+export function wrapInHotClass0<TArgs extends BrandedService[]>(
+	clazz: IObservable<Result<TArgs>>
+): Result<TArgs> {
 	return !isHotReloadEnabled() ? clazz.get() : createWrapper(clazz, BaseClass0);
 }
 
@@ -28,43 +30,51 @@ type Result<TArgs extends any[]> = new (...args: TArgs) => IDisposable;
 class BaseClass {
 	public _instance: unknown;
 
-	constructor(
-		public readonly instantiationService: IInstantiationService,
-	) { }
+	constructor(public readonly instantiationService: IInstantiationService) {}
 
-	public init(...params: any[]): void { }
+	public init(...params: any[]): void {}
 }
 
 function createWrapper<T extends any[]>(clazz: IObservable<any>, B: new (...args: T) => BaseClass) {
-	return (class ReloadableWrapper extends B {
+	return class ReloadableWrapper extends B {
 		private _autorun: IDisposable | undefined = undefined;
 
 		override init(...params: any[]) {
 			this._autorun = autorunWithStore((reader, store) => {
 				const clazz_ = clazz.read(reader);
-				this._instance = store.add(this.instantiationService.createInstance(clazz_, ...params) as IDisposable);
+				this._instance = store.add(
+					this.instantiationService.createInstance(clazz_, ...params) as IDisposable
+				);
 			});
 		}
 
 		dispose(): void {
 			this._autorun?.dispose();
 		}
-	}) as any;
+	} as any;
 }
 
 class BaseClass0 extends BaseClass {
-	constructor(@IInstantiationService i: IInstantiationService) { super(i); this.init(); }
+	constructor(@IInstantiationService i: IInstantiationService) {
+		super(i);
+		this.init();
+	}
 }
 
 /**
  * Wrap a class in a reloadable wrapper.
  * When the wrapper is created, the original class is created.
  * When the original class changes, the instance is re-created.
-*/
-export function wrapInHotClass1<TArgs extends [any, ...BrandedService[]]>(clazz: IObservable<Result<TArgs>>): Result<TArgs> {
+ */
+export function wrapInHotClass1<TArgs extends [any, ...BrandedService[]]>(
+	clazz: IObservable<Result<TArgs>>
+): Result<TArgs> {
 	return !isHotReloadEnabled() ? clazz.get() : createWrapper(clazz, BaseClass1);
 }
 
 class BaseClass1 extends BaseClass {
-	constructor(param1: any, @IInstantiationService i: IInstantiationService,) { super(i); this.init(param1); }
+	constructor(param1: any, @IInstantiationService i: IInstantiationService) {
+		super(i);
+		this.init(param1);
+	}
 }

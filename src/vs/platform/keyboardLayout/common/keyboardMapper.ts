@@ -13,7 +13,6 @@ export interface IKeyboardMapper {
 }
 
 export class CachedKeyboardMapper implements IKeyboardMapper {
-
 	private _actual: IKeyboardMapper;
 	private _cache: Map<string, ResolvedKeybinding[]>;
 

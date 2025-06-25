@@ -12,16 +12,21 @@ import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
 import { InputMode } from '../../../../editor/common/inputMode.js';
 
 export class ToggleOvertypeInsertMode extends Action2 {
-
 	constructor() {
 		super({
 			id: 'editor.action.toggleOvertypeInsertMode',
 			title: {
-				...localize2('toggleOvertypeInsertMode', "Toggle Overtype/Insert Mode"),
-				mnemonicTitle: localize({ key: 'mitoggleOvertypeInsertMode', comment: ['&& denotes a mnemonic'] }, "&&Toggle Overtype/Insert Mode"),
+				...localize2('toggleOvertypeInsertMode', 'Toggle Overtype/Insert Mode'),
+				mnemonicTitle: localize(
+					{ key: 'mitoggleOvertypeInsertMode', comment: ['&& denotes a mnemonic'] },
+					'&&Toggle Overtype/Insert Mode'
+				),
 			},
 			metadata: {
-				description: localize2('toggleOvertypeMode.description', "Toggle between overtype and insert mode"),
+				description: localize2(
+					'toggleOvertypeMode.description',
+					'Toggle between overtype and insert mode'
+				),
 			},
 			keybinding: {
 				weight: KeybindingWeight.WorkbenchContrib,
@@ -29,7 +34,7 @@ export class ToggleOvertypeInsertMode extends Action2 {
 				mac: { primary: KeyMod.Alt | KeyMod.CtrlCmd | KeyCode.KeyO },
 			},
 			f1: true,
-			category: Categories.View
+			category: Categories.View,
 		});
 	}
 

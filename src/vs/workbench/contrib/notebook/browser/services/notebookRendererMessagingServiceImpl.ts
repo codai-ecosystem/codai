@@ -5,12 +5,18 @@
 
 import { Emitter } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { INotebookRendererMessagingService, IScopedRendererMessaging } from '../../common/notebookRendererMessagingService.js';
+import {
+	INotebookRendererMessagingService,
+	IScopedRendererMessaging,
+} from '../../common/notebookRendererMessagingService.js';
 import { IExtensionService } from '../../../../services/extensions/common/extensions.js';
 
 type MessageToSend = { editorId: string; rendererId: string; message: unknown };
 
-export class NotebookRendererMessagingService extends Disposable implements INotebookRendererMessagingService {
+export class NotebookRendererMessagingService
+	extends Disposable
+	implements INotebookRendererMessagingService
+{
 	declare _serviceBrand: undefined;
 	/**
 	 * Activation promises. Maps renderer IDs to a queue of messages that should
@@ -21,20 +27,27 @@ export class NotebookRendererMessagingService extends Disposable implements INot
 	private readonly postMessageEmitter = this._register(new Emitter<MessageToSend>());
 	public readonly onShouldPostMessage = this.postMessageEmitter.event;
 
-	constructor(
-		@IExtensionService private readonly extensionService: IExtensionService
-	) {
+	constructor(@IExtensionService private readonly extensionService: IExtensionService) {
 		super();
 	}
 
 	/** @inheritdoc */
-	public receiveMessage(editorId: string | undefined, rendererId: string, message: unknown): Promise<boolean> {
+	public receiveMessage(
+		editorId: string | undefined,
+		rendererId: string,
+		message: unknown
+	): Promise<boolean> {
 		if (editorId === undefined) {
-			const sends = [...this.scopedMessaging.values()].map(e => e.receiveMessageHandler?.(rendererId, message));
+			const sends = [...this.scopedMessaging.values()].map(e =>
+				e.receiveMessageHandler?.(rendererId, message)
+			);
 			return Promise.all(sends).then(s => s.some(s => !!s));
 		}
 
-		return this.scopedMessaging.get(editorId)?.receiveMessageHandler?.(rendererId, message) ?? Promise.resolve(false);
+		return (
+			this.scopedMessaging.get(editorId)?.receiveMessageHandler?.(rendererId, message) ??
+			Promise.resolve(false)
+		);
 	}
 
 	/** @inheritdoc */

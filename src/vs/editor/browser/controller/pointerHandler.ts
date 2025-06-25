@@ -22,45 +22,77 @@ import { TextAreaSyntethicEvents } from './editContext/textArea/textAreaEditCont
  */
 export class PointerEventHandler extends MouseHandler {
 	private _lastPointerType: string;
-	constructor(context: ViewContext, viewController: ViewController, viewHelper: IPointerHandlerHelper) {
+	constructor(
+		context: ViewContext,
+		viewController: ViewController,
+		viewHelper: IPointerHandlerHelper
+	) {
 		super(context, viewController, viewHelper);
 
 		this._register(Gesture.addTarget(this.viewHelper.linesContentDomNode));
-		this._register(dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Tap, (e) => this.onTap(e)));
-		this._register(dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Change, (e) => this.onChange(e)));
-		this._register(dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Contextmenu, (e: MouseEvent) => this._onContextMenu(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode), false)));
+		this._register(
+			dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Tap, e =>
+				this.onTap(e)
+			)
+		);
+		this._register(
+			dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Change, e =>
+				this.onChange(e)
+			)
+		);
+		this._register(
+			dom.addDisposableListener(
+				this.viewHelper.linesContentDomNode,
+				EventType.Contextmenu,
+				(e: MouseEvent) =>
+					this._onContextMenu(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode), false)
+			)
+		);
 
 		this._lastPointerType = 'mouse';
 
-		this._register(dom.addDisposableListener(this.viewHelper.linesContentDomNode, 'pointerdown', (e: any) => {
-			const pointerType = e.pointerType;
-			if (pointerType === 'mouse') {
-				this._lastPointerType = 'mouse';
-				return;
-			} else if (pointerType === 'touch') {
-				this._lastPointerType = 'touch';
-			} else {
-				this._lastPointerType = 'pen';
-			}
-		}));
+		this._register(
+			dom.addDisposableListener(this.viewHelper.linesContentDomNode, 'pointerdown', (e: any) => {
+				const pointerType = e.pointerType;
+				if (pointerType === 'mouse') {
+					this._lastPointerType = 'mouse';
+					return;
+				} else if (pointerType === 'touch') {
+					this._lastPointerType = 'touch';
+				} else {
+					this._lastPointerType = 'pen';
+				}
+			})
+		);
 
 		// PonterEvents
 		const pointerEvents = new EditorPointerEventFactory(this.viewHelper.viewDomNode);
 
-		this._register(pointerEvents.onPointerMove(this.viewHelper.viewDomNode, (e) => this._onMouseMove(e)));
-		this._register(pointerEvents.onPointerUp(this.viewHelper.viewDomNode, (e) => this._onMouseUp(e)));
-		this._register(pointerEvents.onPointerLeave(this.viewHelper.viewDomNode, (e) => this._onMouseLeave(e)));
-		this._register(pointerEvents.onPointerDown(this.viewHelper.viewDomNode, (e, pointerId) => this._onMouseDown(e, pointerId)));
+		this._register(
+			pointerEvents.onPointerMove(this.viewHelper.viewDomNode, e => this._onMouseMove(e))
+		);
+		this._register(pointerEvents.onPointerUp(this.viewHelper.viewDomNode, e => this._onMouseUp(e)));
+		this._register(
+			pointerEvents.onPointerLeave(this.viewHelper.viewDomNode, e => this._onMouseLeave(e))
+		);
+		this._register(
+			pointerEvents.onPointerDown(this.viewHelper.viewDomNode, (e, pointerId) =>
+				this._onMouseDown(e, pointerId)
+			)
+		);
 	}
 
 	private onTap(event: GestureEvent): void {
-		if (!event.initialTarget || !this.viewHelper.linesContentDomNode.contains(<any>event.initialTarget)) {
+		if (
+			!event.initialTarget ||
+			!this.viewHelper.linesContentDomNode.contains(<any>event.initialTarget)
+		) {
 			return;
 		}
 
 		event.preventDefault();
 		this.viewHelper.focusTextArea();
-		this._dispatchGesture(event, /*inSelectionMode*/false);
+		this._dispatchGesture(event, /*inSelectionMode*/ false);
 	}
 
 	private onChange(event: GestureEvent): void {
@@ -68,12 +100,15 @@ export class PointerEventHandler extends MouseHandler {
 			this._context.viewModel.viewLayout.deltaScrollNow(-event.translationX, -event.translationY);
 		}
 		if (this._lastPointerType === 'pen') {
-			this._dispatchGesture(event, /*inSelectionMode*/true);
+			this._dispatchGesture(event, /*inSelectionMode*/ true);
 		}
 	}
 
 	private _dispatchGesture(event: GestureEvent, inSelectionMode: boolean): void {
-		const target = this._createMouseTarget(new EditorMouseEvent(event, false, this.viewHelper.viewDomNode), false);
+		const target = this._createMouseTarget(
+			new EditorMouseEvent(event, false, this.viewHelper.viewDomNode),
+			false
+		);
 		if (target.position) {
 			this.viewController.dispatchMouse({
 				position: target.position,
@@ -88,7 +123,8 @@ export class PointerEventHandler extends MouseHandler {
 				shiftKey: false,
 				leftButton: false,
 				middleButton: false,
-				onInjectedText: target.type === MouseTargetType.CONTENT_TEXT && target.detail.injectedText !== null
+				onInjectedText:
+					target.type === MouseTargetType.CONTENT_TEXT && target.detail.injectedText !== null,
 			});
 		}
 	}
@@ -103,15 +139,33 @@ export class PointerEventHandler extends MouseHandler {
 }
 
 class TouchHandler extends MouseHandler {
-
-	constructor(context: ViewContext, viewController: ViewController, viewHelper: IPointerHandlerHelper) {
+	constructor(
+		context: ViewContext,
+		viewController: ViewController,
+		viewHelper: IPointerHandlerHelper
+	) {
 		super(context, viewController, viewHelper);
 
 		this._register(Gesture.addTarget(this.viewHelper.linesContentDomNode));
 
-		this._register(dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Tap, (e) => this.onTap(e)));
-		this._register(dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Change, (e) => this.onChange(e)));
-		this._register(dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Contextmenu, (e: MouseEvent) => this._onContextMenu(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode), false)));
+		this._register(
+			dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Tap, e =>
+				this.onTap(e)
+			)
+		);
+		this._register(
+			dom.addDisposableListener(this.viewHelper.linesContentDomNode, EventType.Change, e =>
+				this.onChange(e)
+			)
+		);
+		this._register(
+			dom.addDisposableListener(
+				this.viewHelper.linesContentDomNode,
+				EventType.Contextmenu,
+				(e: MouseEvent) =>
+					this._onContextMenu(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode), false)
+			)
+		);
 	}
 
 	private onTap(event: GestureEvent): void {
@@ -119,7 +173,10 @@ class TouchHandler extends MouseHandler {
 
 		this.viewHelper.focusTextArea();
 
-		const target = this._createMouseTarget(new EditorMouseEvent(event, false, this.viewHelper.viewDomNode), false);
+		const target = this._createMouseTarget(
+			new EditorMouseEvent(event, false, this.viewHelper.viewDomNode),
+			false
+		);
 
 		if (target.position) {
 			// Send the tap event also to the <textarea> (for input purposes)
@@ -139,7 +196,11 @@ class TouchHandler extends MouseHandler {
 export class PointerHandler extends Disposable {
 	private readonly handler: MouseHandler;
 
-	constructor(context: ViewContext, viewController: ViewController, viewHelper: IPointerHandlerHelper) {
+	constructor(
+		context: ViewContext,
+		viewController: ViewController,
+		viewHelper: IPointerHandlerHelper
+	) {
 		super();
 		const isPhone = platform.isIOS || (platform.isAndroid && platform.isMobile);
 		if (isPhone && BrowserFeatures.pointerEvents) {

@@ -9,7 +9,7 @@ import { lengthAdd, lengthZero, Length, lengthLessThan } from './length.js';
 /**
  * Allows to efficiently find a longest child at a given offset in a fixed node.
  * The requested offsets must increase monotonously.
-*/
+ */
 export class NodeReader {
 	private readonly nextNodes: AstNode[];
 	private readonly offsets: Length[];
@@ -25,7 +25,7 @@ export class NodeReader {
 	/**
 	 * Returns the longest node at `offset` that satisfies the predicate.
 	 * @param offset must be greater than or equal to the last offset this method has been called with!
-	*/
+	 */
 	readLongestNodeAt(offset: Length, predicate: (node: AstNode) => boolean): AstNode | undefined {
 		if (lengthLessThan(offset, this.lastOffset)) {
 			throw new Error('Invalid offset');

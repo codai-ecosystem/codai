@@ -25,12 +25,14 @@ const resourceBaseAuthority = searchParams.get('vscode-resource-base-authority')
 
 const resolveTimeout = 30_000;
 
-type RequestStoreResult<T> = {
-	status: 'ok';
-	value: T;
-} | {
-	status: 'timeout';
-};
+type RequestStoreResult<T> =
+	| {
+			status: 'ok';
+			value: T;
+	  }
+	| {
+			status: 'timeout';
+	  };
 
 interface RequestStoreEntry<T> {
 	resolve: (x: RequestStoreResult<T>) => void;
@@ -45,7 +47,7 @@ class RequestStore<T> {
 		const requestId = ++this.requestPool;
 
 		let resolve: (x: RequestStoreResult<T>) => void;
-		const promise = new Promise<RequestStoreResult<T>>(r => resolve = r);
+		const promise = new Promise<RequestStoreResult<T>>(r => (resolve = r));
 
 		const entry: RequestStoreEntry<T> = { resolve: resolve!, promise };
 		this.map.set(requestId, entry);
@@ -83,17 +85,13 @@ const resourceRequestStore = new RequestStore<ResourceResponse>();
  */
 const localhostRequestStore = new RequestStore<string | undefined>();
 
-const unauthorized = () =>
-	new Response('Unauthorized', { status: 401, });
+const unauthorized = () => new Response('Unauthorized', { status: 401 });
 
-const notFound = () =>
-	new Response('Not Found', { status: 404, });
+const notFound = () => new Response('Not Found', { status: 404 });
 
-const methodNotAllowed = () =>
-	new Response('Method Not Allowed', { status: 405, });
+const methodNotAllowed = () => new Response('Method Not Allowed', { status: 405 });
 
-const requestTimeout = () =>
-	new Response('Request Timeout', { status: 408, });
+const requestTimeout = () => new Response('Request Timeout', { status: 408 });
 
 sw.addEventListener('message', async (event: ExtendableMessageEvent) => {
 	if (!event.source) {
@@ -108,7 +106,7 @@ sw.addEventListener('message', async (event: ExtendableMessageEvent) => {
 				if (client) {
 					client.postMessage({
 						channel: 'version',
-						version: VERSION
+						version: VERSION,
 					});
 				}
 			});
@@ -137,19 +135,28 @@ sw.addEventListener('message', async (event: ExtendableMessageEvent) => {
 
 sw.addEventListener('fetch', (event: FetchEvent) => {
 	const requestUrl = new URL(event.request.url);
-	if (typeof resourceBaseAuthority === 'string' && requestUrl.protocol === 'https:' && requestUrl.hostname.endsWith('.' + resourceBaseAuthority)) {
+	if (
+		typeof resourceBaseAuthority === 'string' &&
+		requestUrl.protocol === 'https:' &&
+		requestUrl.hostname.endsWith('.' + resourceBaseAuthority)
+	) {
 		switch (event.request.method) {
 			case 'GET':
 			case 'HEAD': {
-				const firstHostSegment = requestUrl.hostname.slice(0, requestUrl.hostname.length - (resourceBaseAuthority.length + 1));
+				const firstHostSegment = requestUrl.hostname.slice(
+					0,
+					requestUrl.hostname.length - (resourceBaseAuthority.length + 1)
+				);
 				const scheme = firstHostSegment.split('+', 1)[0];
 				const authority = firstHostSegment.slice(scheme.length + 1); // may be empty
-				return event.respondWith(processResourceRequest(event, {
-					scheme,
-					authority,
-					path: requestUrl.pathname,
-					query: requestUrl.search.replace(/^\?/, ''),
-				}));
+				return event.respondWith(
+					processResourceRequest(event, {
+						scheme,
+						authority,
+						path: requestUrl.pathname,
+						query: requestUrl.search.replace(/^\?/, ''),
+					})
+				);
 			}
 			default: {
 				return event.respondWith(methodNotAllowed());
@@ -165,12 +172,14 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 		switch (event.request.method) {
 			case 'GET':
 			case 'HEAD': {
-				return event.respondWith(processResourceRequest(event, {
-					path: requestUrl.pathname,
-					scheme: requestUrl.protocol.slice(0, requestUrl.protocol.length - 1),
-					authority: requestUrl.host,
-					query: requestUrl.search.replace(/^\?/, ''),
-				}));
+				return event.respondWith(
+					processResourceRequest(event, {
+						path: requestUrl.pathname,
+						scheme: requestUrl.protocol.slice(0, requestUrl.protocol.length - 1),
+						authority: requestUrl.host,
+						query: requestUrl.search.replace(/^\?/, ''),
+					})
+				);
 			}
 			default: {
 				return event.respondWith(methodNotAllowed());
@@ -179,7 +188,10 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 	}
 
 	// See if it's a localhost request
-	if (requestUrl.origin !== sw.origin && requestUrl.host.match(/^(localhost|127.0.0.1|0.0.0.0):(\d+)$/)) {
+	if (
+		requestUrl.origin !== sw.origin &&
+		requestUrl.host.match(/^(localhost|127.0.0.1|0.0.0.0):(\d+)$/)
+	) {
 		return event.respondWith(processLocalhostRequest(event, requestUrl));
 	}
 });
@@ -225,7 +237,7 @@ async function processResourceRequest(
 		return notFound();
 	}
 
-	const shouldTryCaching = (event.request.method === 'GET');
+	const shouldTryCaching = event.request.method === 'GET';
 
 	const resolveResourceEntry = (
 		result: RequestStoreResult<ResourceResponse>,
@@ -236,7 +248,8 @@ async function processResourceRequest(
 		}
 
 		const entry = result.value;
-		if (entry.status === 304) { // Not modified
+		if (entry.status === 304) {
+			// Not modified
 			if (cachedResponse) {
 				return cachedResponse.clone();
 			} else {
@@ -273,7 +286,7 @@ async function processResourceRequest(
 					headers: {
 						...commonHeaders,
 						'Content-range': `bytes 0-${end}/${byteLength}`,
-					}
+					},
 				});
 			} else {
 				// We don't understand the requested bytes
@@ -281,8 +294,8 @@ async function processResourceRequest(
 					status: 416,
 					headers: {
 						...commonHeaders,
-						'Content-range': `*/${byteLength}`
-					}
+						'Content-range': `*/${byteLength}`,
+					},
 				});
 			}
 		}
@@ -314,7 +327,7 @@ async function processResourceRequest(
 
 		const response = new Response(entry.data as Uint8Array<ArrayBuffer>, {
 			status: 200,
-			headers
+			headers,
 		});
 
 		if (shouldTryCaching && entry.etag) {
@@ -366,10 +379,7 @@ async function processResourceRequest(
 	return promise.then(entry => resolveResourceEntry(entry, cached));
 }
 
-async function processLocalhostRequest(
-	event: FetchEvent,
-	requestUrl: URL
-): Promise<Response> {
+async function processLocalhostRequest(event: FetchEvent, requestUrl: URL): Promise<Response> {
 	const client = await sw.clients.get(event.clientId);
 	if (!client) {
 		// This is expected when requesting resources on other localhost ports
@@ -398,12 +408,15 @@ async function processLocalhostRequest(
 		}
 
 		const redirectOrigin = result.value;
-		const location = event.request.url.replace(new RegExp(`^${requestUrl.origin}(/|$)`), `${redirectOrigin}$1`);
+		const location = event.request.url.replace(
+			new RegExp(`^${requestUrl.origin}(/|$)`),
+			`${redirectOrigin}$1`
+		);
 		return new Response(null, {
 			status: 302,
 			headers: {
-				Location: location
-			}
+				Location: location,
+			},
 		});
 	};
 
@@ -441,7 +454,10 @@ async function getOuterIframeClient(webviewId: string): Promise<Client[]> {
 	const allClients = await sw.clients.matchAll({ includeUncontrolled: true });
 	return allClients.filter(client => {
 		const clientUrl = new URL(client.url);
-		const hasExpectedPathName = (clientUrl.pathname === `${rootPath}/` || clientUrl.pathname === `${rootPath}/index.html` || clientUrl.pathname === `${rootPath}/index-no-csp.html`);
+		const hasExpectedPathName =
+			clientUrl.pathname === `${rootPath}/` ||
+			clientUrl.pathname === `${rootPath}/index.html` ||
+			clientUrl.pathname === `${rootPath}/index-no-csp.html`;
 		return hasExpectedPathName && clientUrl.searchParams.get('id') === webviewId;
 	});
 }
@@ -456,8 +472,15 @@ async function getWorkerClientForId(clientId: string): Promise<Client | undefine
 }
 
 type ResourceResponse =
-	| { readonly status: 200; id: number; path: string; mime: string; data: Uint8Array; etag: string | undefined; mtime: number | undefined }
+	| {
+			readonly status: 200;
+			id: number;
+			path: string;
+			mime: string;
+			data: Uint8Array;
+			etag: string | undefined;
+			mtime: number | undefined;
+	  }
 	| { readonly status: 304; id: number; path: string; mime: string; mtime: number | undefined }
 	| { readonly status: 401; id: number; path: string }
-	| { readonly status: 404; id: number; path: string }
-	;
+	| { readonly status: 404; id: number; path: string };

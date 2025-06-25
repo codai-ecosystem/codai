@@ -46,9 +46,10 @@ export const DEFAULT_OPTIONS: IPromptContentsProviderOptions = {
  *   - implement the {@link toString} method to return a string representation of this
  *     provider type to aid with debugging/tracing
  */
-export abstract class PromptContentsProviderBase<
-	TChangeEvent extends NonNullable<unknown>,
-> extends ObservableDisposable implements IPromptContentsProvider {
+export abstract class PromptContentsProviderBase<TChangeEvent extends NonNullable<unknown>>
+	extends ObservableDisposable
+	implements IPromptContentsProvider
+{
 	public abstract readonly uri: URI;
 	public abstract createNew(promptContentsSource: { uri: URI }): IPromptContentsProvider;
 	public abstract override toString(): string;
@@ -65,7 +66,7 @@ export abstract class PromptContentsProviderBase<
 	 */
 	protected abstract getContentsStream(
 		changesEvent: TChangeEvent | 'full',
-		cancellationToken?: CancellationToken,
+		cancellationToken?: CancellationToken
 	): Promise<VSBufferReadableStream>;
 
 	/**
@@ -81,9 +82,7 @@ export abstract class PromptContentsProviderBase<
 	 */
 	protected readonly options: IPromptContentsProviderOptions;
 
-	constructor(
-		options: Partial<IPromptContentsProviderOptions>,
-	) {
+	constructor(options: Partial<IPromptContentsProviderOptions>) {
 		super();
 
 		this.options = {
@@ -96,7 +95,9 @@ export abstract class PromptContentsProviderBase<
 	 * Event emitter for the prompt contents change event.
 	 * See {@link onContentChanged} for more details.
 	 */
-	private readonly onContentChangedEmitter = this._register(new Emitter<VSBufferReadableStream | ResolveError>());
+	private readonly onContentChangedEmitter = this._register(
+		new Emitter<VSBufferReadableStream | ResolveError>()
+	);
 
 	/**
 	 * Event that fires when the prompt contents change. The event is either
@@ -117,14 +118,14 @@ export abstract class PromptContentsProviderBase<
 	@cancelPreviousCalls
 	private onContentsChanged(
 		event: TChangeEvent | 'full',
-		cancellationToken?: CancellationToken,
+		cancellationToken?: CancellationToken
 	): this {
-		const promise = (cancellationToken?.isCancellationRequested)
+		const promise = cancellationToken?.isCancellationRequested
 			? Promise.reject(new CancellationError())
 			: this.getContentsStream(event, cancellationToken);
 
 		promise
-			.then((stream) => {
+			.then(stream => {
 				if (cancellationToken?.isCancellationRequested || this.isDisposed) {
 					stream.destroy();
 					throw new CancellationError();
@@ -132,16 +133,14 @@ export abstract class PromptContentsProviderBase<
 
 				this.onContentChangedEmitter.fire(stream);
 			})
-			.catch((error) => {
+			.catch(error => {
 				if (error instanceof ResolveError) {
 					this.onContentChangedEmitter.fire(error);
 
 					return;
 				}
 
-				this.onContentChangedEmitter.fire(
-					new FailedToResolveContentsStream(this.uri, error),
-				);
+				this.onContentChangedEmitter.fire(new FailedToResolveContentsStream(this.uri, error));
 			});
 
 		return this;
@@ -151,10 +150,7 @@ export abstract class PromptContentsProviderBase<
 	 * Start producing the prompt contents data.
 	 */
 	public start(): this {
-		assert(
-			!this.isDisposed,
-			'Cannot start contents provider that was already disposed.',
-		);
+		assert(!this.isDisposed, 'Cannot start contents provider that was already disposed.');
 
 		// `'full'` means "everything has changed"
 		this.onContentsChanged('full');

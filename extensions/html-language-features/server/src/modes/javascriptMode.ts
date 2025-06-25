@@ -5,10 +5,38 @@
 
 import { LanguageModelCache, getLanguageModelCache } from '../languageModelCache';
 import {
-	SymbolInformation, SymbolKind, CompletionItem, Location, SignatureHelp, SignatureInformation, ParameterInformation,
-	Definition, TextEdit, TextDocument, Diagnostic, DiagnosticSeverity, Range, CompletionItemKind, Hover,
-	DocumentHighlight, DocumentHighlightKind, CompletionList, Position, FormattingOptions, FoldingRange, FoldingRangeKind, SelectionRange,
-	LanguageMode, Settings, SemanticTokenData, Workspace, DocumentContext, CompletionItemData, isCompletionItemData, FILE_PROTOCOL, DocumentUri
+	SymbolInformation,
+	SymbolKind,
+	CompletionItem,
+	Location,
+	SignatureHelp,
+	SignatureInformation,
+	ParameterInformation,
+	Definition,
+	TextEdit,
+	TextDocument,
+	Diagnostic,
+	DiagnosticSeverity,
+	Range,
+	CompletionItemKind,
+	Hover,
+	DocumentHighlight,
+	DocumentHighlightKind,
+	CompletionList,
+	Position,
+	FormattingOptions,
+	FoldingRange,
+	FoldingRangeKind,
+	SelectionRange,
+	LanguageMode,
+	Settings,
+	SemanticTokenData,
+	Workspace,
+	DocumentContext,
+	CompletionItemData,
+	isCompletionItemData,
+	FILE_PROTOCOL,
+	DocumentUri,
 } from './languageModes';
 import { getWordAtText, isWhitespaceOnly, repeat } from '../utils/strings';
 import { HTMLDocumentRegions } from './embeddedSupport';
@@ -16,17 +44,27 @@ import { HTMLDocumentRegions } from './embeddedSupport';
 import * as ts from 'typescript';
 import { getSemanticTokens, getSemanticTokenLegend } from './javascriptSemanticTokens';
 
-const JS_WORD_REGEX = /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g;
+const JS_WORD_REGEX =
+	/(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g;
 
 function getLanguageServiceHost(scriptKind: ts.ScriptKind) {
-	const compilerOptions: ts.CompilerOptions = { allowNonTsExtensions: true, allowJs: true, lib: ['lib.es2020.full.d.ts'], target: ts.ScriptTarget.Latest, moduleResolution: ts.ModuleResolutionKind.Classic, experimentalDecorators: false };
+	const compilerOptions: ts.CompilerOptions = {
+		allowNonTsExtensions: true,
+		allowJs: true,
+		lib: ['lib.es2020.full.d.ts'],
+		target: ts.ScriptTarget.Latest,
+		moduleResolution: ts.ModuleResolutionKind.Classic,
+		experimentalDecorators: false,
+	};
 
 	let currentTextDocument = TextDocument.create('init', 'javascript', 1, '');
-	const jsLanguageService = import(/* webpackChunkName: "javascriptLibs" */ './javascriptLibs.js').then(libs => {
+	const jsLanguageService = import(
+		/* webpackChunkName: "javascriptLibs" */ './javascriptLibs.js'
+	).then(libs => {
 		const host: ts.LanguageServiceHost = {
 			getCompilationSettings: () => compilerOptions,
 			getScriptFileNames: () => [currentTextDocument.uri, 'jquery'],
-			getScriptKind: (fileName) => {
+			getScriptKind: fileName => {
 				if (fileName === currentTextDocument.uri) {
 					return scriptKind;
 				}
@@ -48,7 +86,7 @@ function getLanguageServiceHost(scriptKind: ts.ScriptKind) {
 				return {
 					getText: (start, end) => text.substring(start, end),
 					getLength: () => text.length,
-					getChangeRange: () => undefined
+					getChangeRange: () => undefined,
 				};
 			},
 			getCurrentDirectory: () => '',
@@ -74,8 +112,7 @@ function getLanguageServiceHost(scriptKind: ts.ScriptKind) {
 					return false;
 				}
 				return true;
-
-			}
+			},
 		};
 		return {
 			service: ts.createLanguageService(host),
@@ -95,26 +132,35 @@ function getLanguageServiceHost(scriptKind: ts.ScriptKind) {
 		},
 		dispose() {
 			jsLanguageService.then(s => s.service.dispose());
-		}
+		},
 	};
 }
 
 const ignoredErrors = [
-	1108,  /* A_return_statement_can_only_be_used_within_a_function_body_1108 */
-	2792, /* Cannot_find_module_0_Did_you_mean_to_set_the_moduleResolution_option_to_node_or_to_add_aliases_to_the_paths_option */
+	1108 /* A_return_statement_can_only_be_used_within_a_function_body_1108 */,
+	2792 /* Cannot_find_module_0_Did_you_mean_to_set_the_moduleResolution_option_to_node_or_to_add_aliases_to_the_paths_option */,
 ];
 
-export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocumentRegions>, languageId: 'javascript' | 'typescript', workspace: Workspace): LanguageMode {
-	const jsDocuments = getLanguageModelCache<TextDocument>(10, 60, document => documentRegions.get(document).getEmbeddedDocument(languageId));
+export function getJavaScriptMode(
+	documentRegions: LanguageModelCache<HTMLDocumentRegions>,
+	languageId: 'javascript' | 'typescript',
+	workspace: Workspace
+): LanguageMode {
+	const jsDocuments = getLanguageModelCache<TextDocument>(10, 60, document =>
+		documentRegions.get(document).getEmbeddedDocument(languageId)
+	);
 
-	const host = getLanguageServiceHost(languageId === 'javascript' ? ts.ScriptKind.JS : ts.ScriptKind.TS);
+	const host = getLanguageServiceHost(
+		languageId === 'javascript' ? ts.ScriptKind.JS : ts.ScriptKind.TS
+	);
 	const globalSettings: Settings = {};
 
 	const libParentUri = `${FILE_PROTOCOL}://${languageId}/libs/`;
 
 	function updateHostSettings(settings: Settings) {
 		const hostSettings = host.getCompilationSettings();
-		hostSettings.experimentalDecorators = settings?.['js/ts']?.implicitProjectConfig?.experimentalDecorators;
+		hostSettings.experimentalDecorators =
+			settings?.['js/ts']?.implicitProjectConfig?.experimentalDecorators;
 		hostSettings.strictNullChecks = settings?.['js/ts']?.implicitProjectConfig.strictNullChecks;
 	}
 
@@ -122,38 +168,57 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 		getId() {
 			return languageId;
 		},
-		async doValidation(document: TextDocument, settings = workspace.settings): Promise<Diagnostic[]> {
+		async doValidation(
+			document: TextDocument,
+			settings = workspace.settings
+		): Promise<Diagnostic[]> {
 			updateHostSettings(settings);
 
 			const jsDocument = jsDocuments.get(document);
 			const languageService = await host.getLanguageService(jsDocument);
-			const syntaxDiagnostics: ts.Diagnostic[] = languageService.getSyntacticDiagnostics(jsDocument.uri);
+			const syntaxDiagnostics: ts.Diagnostic[] = languageService.getSyntacticDiagnostics(
+				jsDocument.uri
+			);
 			const semanticDiagnostics = languageService.getSemanticDiagnostics(jsDocument.uri);
-			return syntaxDiagnostics.concat(semanticDiagnostics).filter(d => !ignoredErrors.includes(d.code)).map((diag: ts.Diagnostic): Diagnostic => {
-				return {
-					range: convertRange(jsDocument, diag),
-					severity: DiagnosticSeverity.Error,
-					source: languageId,
-					message: ts.flattenDiagnosticMessageText(diag.messageText, '\n')
-				};
-			});
+			return syntaxDiagnostics
+				.concat(semanticDiagnostics)
+				.filter(d => !ignoredErrors.includes(d.code))
+				.map((diag: ts.Diagnostic): Diagnostic => {
+					return {
+						range: convertRange(jsDocument, diag),
+						severity: DiagnosticSeverity.Error,
+						source: languageId,
+						message: ts.flattenDiagnosticMessageText(diag.messageText, '\n'),
+					};
+				});
 		},
-		async doComplete(document: TextDocument, position: Position, _documentContext: DocumentContext): Promise<CompletionList> {
+		async doComplete(
+			document: TextDocument,
+			position: Position,
+			_documentContext: DocumentContext
+		): Promise<CompletionList> {
 			const jsDocument = jsDocuments.get(document);
 			const jsLanguageService = await host.getLanguageService(jsDocument);
 			const offset = jsDocument.offsetAt(position);
-			const completions = jsLanguageService.getCompletionsAtPosition(jsDocument.uri, offset, { includeExternalModuleExports: false, includeInsertTextCompletions: false });
+			const completions = jsLanguageService.getCompletionsAtPosition(jsDocument.uri, offset, {
+				includeExternalModuleExports: false,
+				includeInsertTextCompletions: false,
+			});
 			if (!completions) {
 				return { isIncomplete: false, items: [] };
 			}
-			const replaceRange = convertRange(jsDocument, getWordAtText(jsDocument.getText(), offset, JS_WORD_REGEX));
+			const replaceRange = convertRange(
+				jsDocument,
+				getWordAtText(jsDocument.getText(), offset, JS_WORD_REGEX)
+			);
 			return {
 				isIncomplete: false,
 				items: completions.entries.map(entry => {
-					const data: CompletionItemData = { // data used for resolving item details (see 'doResolve')
+					const data: CompletionItemData = {
+						// data used for resolving item details (see 'doResolve')
 						languageId,
 						uri: document.uri,
-						offset: offset
+						offset: offset,
 					};
 					return {
 						uri: document.uri,
@@ -162,16 +227,24 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 						sortText: entry.sortText,
 						kind: convertKind(entry.kind),
 						textEdit: TextEdit.replace(replaceRange, entry.name),
-						data
+						data,
 					};
-				})
+				}),
 			};
 		},
 		async doResolve(document: TextDocument, item: CompletionItem): Promise<CompletionItem> {
 			if (isCompletionItemData(item.data)) {
 				const jsDocument = jsDocuments.get(document);
 				const jsLanguageService = await host.getLanguageService(jsDocument);
-				const details = jsLanguageService.getCompletionEntryDetails(jsDocument.uri, item.data.offset, item.label, undefined, undefined, undefined, undefined);
+				const details = jsLanguageService.getCompletionEntryDetails(
+					jsDocument.uri,
+					item.data.offset,
+					item.label,
+					undefined,
+					undefined,
+					undefined,
+					undefined
+				);
 				if (details) {
 					item.detail = ts.displayPartsToString(details.displayParts);
 					item.documentation = ts.displayPartsToString(details.documentation);
@@ -183,32 +256,41 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 		async doHover(document: TextDocument, position: Position): Promise<Hover | null> {
 			const jsDocument = jsDocuments.get(document);
 			const jsLanguageService = await host.getLanguageService(jsDocument);
-			const info = jsLanguageService.getQuickInfoAtPosition(jsDocument.uri, jsDocument.offsetAt(position));
+			const info = jsLanguageService.getQuickInfoAtPosition(
+				jsDocument.uri,
+				jsDocument.offsetAt(position)
+			);
 			if (info) {
 				const contents = ts.displayPartsToString(info.displayParts);
 				return {
 					range: convertRange(jsDocument, info.textSpan),
-					contents: ['```typescript', contents, '```'].join('\n')
+					contents: ['```typescript', contents, '```'].join('\n'),
 				};
 			}
 			return null;
 		},
-		async doSignatureHelp(document: TextDocument, position: Position): Promise<SignatureHelp | null> {
+		async doSignatureHelp(
+			document: TextDocument,
+			position: Position
+		): Promise<SignatureHelp | null> {
 			const jsDocument = jsDocuments.get(document);
 			const jsLanguageService = await host.getLanguageService(jsDocument);
-			const signHelp = jsLanguageService.getSignatureHelpItems(jsDocument.uri, jsDocument.offsetAt(position), undefined);
+			const signHelp = jsLanguageService.getSignatureHelpItems(
+				jsDocument.uri,
+				jsDocument.offsetAt(position),
+				undefined
+			);
 			if (signHelp) {
 				const ret: SignatureHelp = {
 					activeSignature: signHelp.selectedItemIndex,
 					activeParameter: signHelp.argumentIndex,
-					signatures: []
+					signatures: [],
 				};
 				signHelp.items.forEach(item => {
-
 					const signature: SignatureInformation = {
 						label: '',
 						documentation: undefined,
-						parameters: []
+						parameters: [],
 					};
 
 					signature.label += ts.displayPartsToString(item.prefixDisplayParts);
@@ -216,7 +298,7 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 						const label = ts.displayPartsToString(p.displayParts);
 						const parameter: ParameterInformation = {
 							label: label,
-							documentation: ts.displayPartsToString(p.documentation)
+							documentation: ts.displayPartsToString(p.documentation),
 						};
 						signature.label += label;
 						signature.parameters!.push(parameter);
@@ -239,7 +321,12 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 			if (!canRename) {
 				return null;
 			}
-			const renameInfos = jsLanguageService.findRenameLocations(jsDocument.uri, jsDocumentPosition, false, false);
+			const renameInfos = jsLanguageService.findRenameLocations(
+				jsDocument.uri,
+				jsDocumentPosition,
+				false,
+				false
+			);
 
 			const edits: TextEdit[] = [];
 			renameInfos?.map(renameInfo => {
@@ -253,16 +340,26 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 				changes: { [document.uri]: edits },
 			};
 		},
-		async findDocumentHighlight(document: TextDocument, position: Position): Promise<DocumentHighlight[]> {
+		async findDocumentHighlight(
+			document: TextDocument,
+			position: Position
+		): Promise<DocumentHighlight[]> {
 			const jsDocument = jsDocuments.get(document);
 			const jsLanguageService = await host.getLanguageService(jsDocument);
-			const highlights = jsLanguageService.getDocumentHighlights(jsDocument.uri, jsDocument.offsetAt(position), [jsDocument.uri]);
+			const highlights = jsLanguageService.getDocumentHighlights(
+				jsDocument.uri,
+				jsDocument.offsetAt(position),
+				[jsDocument.uri]
+			);
 			const out: DocumentHighlight[] = [];
 			for (const entry of highlights || []) {
 				for (const highlight of entry.highlightSpans) {
 					out.push({
 						range: convertRange(jsDocument, highlight.textSpan),
-						kind: highlight.kind === 'writtenReference' ? DocumentHighlightKind.Write : DocumentHighlightKind.Text
+						kind:
+							highlight.kind === 'writtenReference'
+								? DocumentHighlightKind.Write
+								: DocumentHighlightKind.Text,
 					});
 				}
 			}
@@ -283,9 +380,9 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 							kind: convertSymbolKind(item.kind),
 							location: {
 								uri: document.uri,
-								range: convertRange(jsDocument, item.spans[0])
+								range: convertRange(jsDocument, item.spans[0]),
 							},
-							containerName: containerLabel
+							containerName: containerLabel,
 						};
 						existing[sig] = true;
 						result.push(symbol);
@@ -297,7 +394,6 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 							collectSymbols(child, containerLabel);
 						}
 					}
-
 				};
 
 				items.forEach(item => collectSymbols(item));
@@ -308,41 +404,53 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 		async findDefinition(document: TextDocument, position: Position): Promise<Definition | null> {
 			const jsDocument = jsDocuments.get(document);
 			const jsLanguageService = await host.getLanguageService(jsDocument);
-			const definition = jsLanguageService.getDefinitionAtPosition(jsDocument.uri, jsDocument.offsetAt(position));
+			const definition = jsLanguageService.getDefinitionAtPosition(
+				jsDocument.uri,
+				jsDocument.offsetAt(position)
+			);
 			if (definition) {
-				return (await Promise.all(definition.map(async d => {
-					if (d.fileName === jsDocument.uri) {
-						return {
-							uri: document.uri,
-							range: convertRange(jsDocument, d.textSpan)
-						};
-					} else {
-						const libUri = libParentUri + d.fileName;
-						const content = await host.loadLibrary(d.fileName);
-						if (!content) {
-							return undefined;
-						}
-						const libDocument = TextDocument.create(libUri, languageId, 1, content);
-						return {
-							uri: libUri,
-							range: convertRange(libDocument, d.textSpan)
-						};
-					}
-				}))).filter(d => !!d);
+				return (
+					await Promise.all(
+						definition.map(async d => {
+							if (d.fileName === jsDocument.uri) {
+								return {
+									uri: document.uri,
+									range: convertRange(jsDocument, d.textSpan),
+								};
+							} else {
+								const libUri = libParentUri + d.fileName;
+								const content = await host.loadLibrary(d.fileName);
+								if (!content) {
+									return undefined;
+								}
+								const libDocument = TextDocument.create(libUri, languageId, 1, content);
+								return {
+									uri: libUri,
+									range: convertRange(libDocument, d.textSpan),
+								};
+							}
+						})
+					)
+				).filter(d => !!d);
 			}
 			return null;
 		},
 		async findReferences(document: TextDocument, position: Position): Promise<Location[]> {
 			const jsDocument = jsDocuments.get(document);
 			const jsLanguageService = await host.getLanguageService(jsDocument);
-			const references = jsLanguageService.getReferencesAtPosition(jsDocument.uri, jsDocument.offsetAt(position));
+			const references = jsLanguageService.getReferencesAtPosition(
+				jsDocument.uri,
+				jsDocument.offsetAt(position)
+			);
 			if (references) {
-				return references.filter(d => d.fileName === jsDocument.uri).map(d => {
-					return {
-						uri: document.uri,
-						range: convertRange(jsDocument, d.textSpan)
-					};
-				});
+				return references
+					.filter(d => d.fileName === jsDocument.uri)
+					.map(d => {
+						return {
+							uri: document.uri,
+							range: convertRange(jsDocument, d.textSpan),
+						};
+					});
 			}
 			return [];
 		},
@@ -350,42 +458,67 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 			const jsDocument = jsDocuments.get(document);
 			const jsLanguageService = await host.getLanguageService(jsDocument);
 			function convertSelectionRange(selectionRange: ts.SelectionRange): SelectionRange {
-				const parent = selectionRange.parent ? convertSelectionRange(selectionRange.parent) : undefined;
+				const parent = selectionRange.parent
+					? convertSelectionRange(selectionRange.parent)
+					: undefined;
 				return SelectionRange.create(convertRange(jsDocument, selectionRange.textSpan), parent);
 			}
-			const range = jsLanguageService.getSmartSelectionRange(jsDocument.uri, jsDocument.offsetAt(position));
+			const range = jsLanguageService.getSmartSelectionRange(
+				jsDocument.uri,
+				jsDocument.offsetAt(position)
+			);
 			return convertSelectionRange(range);
 		},
-		async format(document: TextDocument, range: Range, formatParams: FormattingOptions, settings: Settings = globalSettings): Promise<TextEdit[]> {
+		async format(
+			document: TextDocument,
+			range: Range,
+			formatParams: FormattingOptions,
+			settings: Settings = globalSettings
+		): Promise<TextEdit[]> {
 			const jsDocument = documentRegions.get(document).getEmbeddedDocument('javascript', true);
 			const jsLanguageService = await host.getLanguageService(jsDocument);
 
 			const formatterSettings = settings && settings.javascript && settings.javascript.format;
 
 			const initialIndentLevel = computeInitialIndent(document, range, formatParams);
-			const formatSettings = convertOptions(formatParams, formatterSettings, initialIndentLevel + 1);
+			const formatSettings = convertOptions(
+				formatParams,
+				formatterSettings,
+				initialIndentLevel + 1
+			);
 			const start = jsDocument.offsetAt(range.start);
 			let end = jsDocument.offsetAt(range.end);
 			let lastLineRange = null;
-			if (range.end.line > range.start.line && (range.end.character === 0 || isWhitespaceOnly(jsDocument.getText().substr(end - range.end.character, range.end.character)))) {
+			if (
+				range.end.line > range.start.line &&
+				(range.end.character === 0 ||
+					isWhitespaceOnly(
+						jsDocument.getText().substr(end - range.end.character, range.end.character)
+					))
+			) {
 				end -= range.end.character;
 				lastLineRange = Range.create(Position.create(range.end.line, 0), range.end);
 			}
-			const edits = jsLanguageService.getFormattingEditsForRange(jsDocument.uri, start, end, formatSettings);
+			const edits = jsLanguageService.getFormattingEditsForRange(
+				jsDocument.uri,
+				start,
+				end,
+				formatSettings
+			);
 			if (edits) {
 				const result = [];
 				for (const edit of edits) {
 					if (edit.span.start >= start && edit.span.start + edit.span.length <= end) {
 						result.push({
 							range: convertRange(jsDocument, edit.span),
-							newText: edit.newText
+							newText: edit.newText,
 						});
 					}
 				}
 				if (lastLineRange) {
 					result.push({
 						range: lastLineRange,
-						newText: generateIndent(initialIndentLevel, formatParams)
+						newText: generateIndent(initialIndentLevel, formatParams),
 					});
 				}
 				return result;
@@ -432,14 +565,14 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 		dispose() {
 			host.dispose();
 			jsDocuments.dispose();
-		}
+		},
 	};
 }
 
-
-
-
-function convertRange(document: TextDocument, span: { start: number | undefined; length: number | undefined }): Range {
+function convertRange(
+	document: TextDocument,
+	span: { start: number | undefined; length: number | undefined }
+): Range {
 	if (typeof span.start === 'undefined') {
 		const pos = document.positionAt(0);
 		return Range.create(pos, pos);
@@ -541,38 +674,65 @@ const enum Kind {
 	warning = 'warning',
 	string = 'string',
 	parameter = 'parameter',
-	typeParameter = 'type parameter'
+	typeParameter = 'type parameter',
 }
 
 function convertSymbolKind(kind: string): SymbolKind {
 	switch (kind) {
-		case Kind.module: return SymbolKind.Module;
-		case Kind.class: return SymbolKind.Class;
-		case Kind.enum: return SymbolKind.Enum;
-		case Kind.enumMember: return SymbolKind.EnumMember;
-		case Kind.interface: return SymbolKind.Interface;
-		case Kind.indexSignature: return SymbolKind.Method;
-		case Kind.callSignature: return SymbolKind.Method;
-		case Kind.method: return SymbolKind.Method;
-		case Kind.memberVariable: return SymbolKind.Property;
-		case Kind.memberGetAccessor: return SymbolKind.Property;
-		case Kind.memberSetAccessor: return SymbolKind.Property;
-		case Kind.variable: return SymbolKind.Variable;
-		case Kind.let: return SymbolKind.Variable;
-		case Kind.const: return SymbolKind.Variable;
-		case Kind.localVariable: return SymbolKind.Variable;
-		case Kind.alias: return SymbolKind.Variable;
-		case Kind.function: return SymbolKind.Function;
-		case Kind.localFunction: return SymbolKind.Function;
-		case Kind.constructSignature: return SymbolKind.Constructor;
-		case Kind.constructorImplementation: return SymbolKind.Constructor;
-		case Kind.typeParameter: return SymbolKind.TypeParameter;
-		case Kind.string: return SymbolKind.String;
-		default: return SymbolKind.Variable;
+		case Kind.module:
+			return SymbolKind.Module;
+		case Kind.class:
+			return SymbolKind.Class;
+		case Kind.enum:
+			return SymbolKind.Enum;
+		case Kind.enumMember:
+			return SymbolKind.EnumMember;
+		case Kind.interface:
+			return SymbolKind.Interface;
+		case Kind.indexSignature:
+			return SymbolKind.Method;
+		case Kind.callSignature:
+			return SymbolKind.Method;
+		case Kind.method:
+			return SymbolKind.Method;
+		case Kind.memberVariable:
+			return SymbolKind.Property;
+		case Kind.memberGetAccessor:
+			return SymbolKind.Property;
+		case Kind.memberSetAccessor:
+			return SymbolKind.Property;
+		case Kind.variable:
+			return SymbolKind.Variable;
+		case Kind.let:
+			return SymbolKind.Variable;
+		case Kind.const:
+			return SymbolKind.Variable;
+		case Kind.localVariable:
+			return SymbolKind.Variable;
+		case Kind.alias:
+			return SymbolKind.Variable;
+		case Kind.function:
+			return SymbolKind.Function;
+		case Kind.localFunction:
+			return SymbolKind.Function;
+		case Kind.constructSignature:
+			return SymbolKind.Constructor;
+		case Kind.constructorImplementation:
+			return SymbolKind.Constructor;
+		case Kind.typeParameter:
+			return SymbolKind.TypeParameter;
+		case Kind.string:
+			return SymbolKind.String;
+		default:
+			return SymbolKind.Variable;
 	}
 }
 
-function convertOptions(options: FormattingOptions, formatSettings: any, initialIndentLevel: number): ts.FormatCodeSettings {
+function convertOptions(
+	options: FormattingOptions,
+	formatSettings: any,
+	initialIndentLevel: number
+): ts.FormatCodeSettings {
 	return {
 		convertTabsToSpaces: options.insertSpaces,
 		tabSize: options.tabSize,
@@ -580,23 +740,55 @@ function convertOptions(options: FormattingOptions, formatSettings: any, initial
 		indentStyle: ts.IndentStyle.Smart,
 		newLineCharacter: '\n',
 		baseIndentSize: options.tabSize * initialIndentLevel,
-		insertSpaceAfterCommaDelimiter: Boolean(!formatSettings || formatSettings.insertSpaceAfterCommaDelimiter),
-		insertSpaceAfterConstructor: Boolean(formatSettings && formatSettings.insertSpaceAfterConstructor),
-		insertSpaceAfterSemicolonInForStatements: Boolean(!formatSettings || formatSettings.insertSpaceAfterSemicolonInForStatements),
-		insertSpaceBeforeAndAfterBinaryOperators: Boolean(!formatSettings || formatSettings.insertSpaceBeforeAndAfterBinaryOperators),
-		insertSpaceAfterKeywordsInControlFlowStatements: Boolean(!formatSettings || formatSettings.insertSpaceAfterKeywordsInControlFlowStatements),
-		insertSpaceAfterFunctionKeywordForAnonymousFunctions: Boolean(!formatSettings || formatSettings.insertSpaceAfterFunctionKeywordForAnonymousFunctions),
-		insertSpaceBeforeFunctionParenthesis: Boolean(formatSettings && formatSettings.insertSpaceBeforeFunctionParenthesis),
-		insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis: Boolean(formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis),
-		insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets: Boolean(formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets),
-		insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: Boolean(formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces),
-		insertSpaceAfterOpeningAndBeforeClosingEmptyBraces: Boolean(!formatSettings || formatSettings.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces),
-		insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces: Boolean(formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces),
-		insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces: Boolean(formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces),
-		insertSpaceAfterTypeAssertion: Boolean(formatSettings && formatSettings.insertSpaceAfterTypeAssertion),
-		placeOpenBraceOnNewLineForControlBlocks: Boolean(formatSettings && formatSettings.placeOpenBraceOnNewLineForFunctions),
-		placeOpenBraceOnNewLineForFunctions: Boolean(formatSettings && formatSettings.placeOpenBraceOnNewLineForControlBlocks),
-		semicolons: formatSettings?.semicolons
+		insertSpaceAfterCommaDelimiter: Boolean(
+			!formatSettings || formatSettings.insertSpaceAfterCommaDelimiter
+		),
+		insertSpaceAfterConstructor: Boolean(
+			formatSettings && formatSettings.insertSpaceAfterConstructor
+		),
+		insertSpaceAfterSemicolonInForStatements: Boolean(
+			!formatSettings || formatSettings.insertSpaceAfterSemicolonInForStatements
+		),
+		insertSpaceBeforeAndAfterBinaryOperators: Boolean(
+			!formatSettings || formatSettings.insertSpaceBeforeAndAfterBinaryOperators
+		),
+		insertSpaceAfterKeywordsInControlFlowStatements: Boolean(
+			!formatSettings || formatSettings.insertSpaceAfterKeywordsInControlFlowStatements
+		),
+		insertSpaceAfterFunctionKeywordForAnonymousFunctions: Boolean(
+			!formatSettings || formatSettings.insertSpaceAfterFunctionKeywordForAnonymousFunctions
+		),
+		insertSpaceBeforeFunctionParenthesis: Boolean(
+			formatSettings && formatSettings.insertSpaceBeforeFunctionParenthesis
+		),
+		insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis: Boolean(
+			formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis
+		),
+		insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets: Boolean(
+			formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets
+		),
+		insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: Boolean(
+			formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces
+		),
+		insertSpaceAfterOpeningAndBeforeClosingEmptyBraces: Boolean(
+			!formatSettings || formatSettings.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces
+		),
+		insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces: Boolean(
+			formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces
+		),
+		insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces: Boolean(
+			formatSettings && formatSettings.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces
+		),
+		insertSpaceAfterTypeAssertion: Boolean(
+			formatSettings && formatSettings.insertSpaceAfterTypeAssertion
+		),
+		placeOpenBraceOnNewLineForControlBlocks: Boolean(
+			formatSettings && formatSettings.placeOpenBraceOnNewLineForFunctions
+		),
+		placeOpenBraceOnNewLineForFunctions: Boolean(
+			formatSettings && formatSettings.placeOpenBraceOnNewLineForControlBlocks
+		),
+		semicolons: formatSettings?.semicolons,
 	};
 }
 

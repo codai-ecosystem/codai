@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 /**
  * Configuration for the AIDE Control Panel
@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
 		// Disable static page generation for specific paths
 		// This ensures API endpoints aren't statically generated
 		// and can access request context at runtime
-		serverComponentsExternalPackages: ['firebase-admin']
+		serverComponentsExternalPackages: ['firebase-admin'],
 	},
 
 	// Configure environment variables
@@ -34,7 +34,10 @@ const nextConfig: NextConfig = {
 		// Default service mode
 		DEFAULT_SERVICE_MODE: process.env.DEFAULT_SERVICE_MODE || 'managed',
 		// Runtime config allows us to control features more easily
-		ENABLE_MOCK_DATA: (process.env.ENABLE_MOCK_DATA === 'true' || !process.env.FIREBASE_ADMIN_CREDENTIALS) ? 'true' : 'false',
+		ENABLE_MOCK_DATA:
+			process.env.ENABLE_MOCK_DATA === 'true' || !process.env.FIREBASE_ADMIN_CREDENTIALS
+				? 'true'
+				: 'false',
 	},
 
 	// Image domains for Next.js Image component
@@ -73,8 +76,9 @@ const nextConfig: NextConfig = {
 					},
 					{
 						key: 'Content-Security-Policy',
-						value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; img-src 'self' https://*.googleapis.com https://firebasestorage.googleapis.com data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src https://*.firebaseapp.com;",
-					}
+						value:
+							"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; img-src 'self' https://*.googleapis.com https://firebasestorage.googleapis.com data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src https://*.firebaseapp.com;",
+					},
 				],
 			},
 		];

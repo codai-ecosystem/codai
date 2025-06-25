@@ -7,7 +7,10 @@ import { deepStrictEqual } from 'assert';
 import { URI } from '../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { IWorkspaceFolder } from '../../../../../platform/workspace/common/workspace.js';
-import { WorkspaceFolderCwdPair, shrinkWorkspaceFolderCwdPairs } from '../../browser/terminalActions.js';
+import {
+	WorkspaceFolderCwdPair,
+	shrinkWorkspaceFolderCwdPairs,
+} from '../../browser/terminalActions.js';
 
 function makeFakeFolder(name: string, uri: URI): IWorkspaceFolder {
 	return {
@@ -18,10 +21,14 @@ function makeFakeFolder(name: string, uri: URI): IWorkspaceFolder {
 	};
 }
 
-function makePair(folder: IWorkspaceFolder, cwd?: URI | IWorkspaceFolder, isAbsolute?: boolean): WorkspaceFolderCwdPair {
+function makePair(
+	folder: IWorkspaceFolder,
+	cwd?: URI | IWorkspaceFolder,
+	isAbsolute?: boolean
+): WorkspaceFolderCwdPair {
 	return {
 		folder,
-		cwd: !cwd ? folder.uri : (cwd instanceof URI ? cwd : cwd.uri),
+		cwd: !cwd ? folder.uri : cwd instanceof URI ? cwd : cwd.uri,
 		isAbsolute: !!isAbsolute,
 		isOverridden: !!cwd && cwd.toString() !== folder.uri.toString(),
 	};
@@ -71,7 +78,10 @@ suite('terminalActions', () => {
 				const pairB = makePair(b, a); // CWD points to A
 				const pairC = makePair(c);
 				const pairD = makePair(d, c);
-				deepStrictEqual(shrinkWorkspaceFolderCwdPairs([pairA, pairB, pairC, pairD]), [pairA, pairC]);
+				deepStrictEqual(shrinkWorkspaceFolderCwdPairs([pairA, pairB, pairC, pairD]), [
+					pairA,
+					pairC,
+				]);
 			});
 
 			test('two repeated + two repeated (reverse order)', () => {
@@ -79,7 +89,10 @@ suite('terminalActions', () => {
 				const pairA = makePair(a);
 				const pairD = makePair(d, c);
 				const pairC = makePair(c);
-				deepStrictEqual(shrinkWorkspaceFolderCwdPairs([pairA, pairB, pairC, pairD]), [pairA, pairC]);
+				deepStrictEqual(shrinkWorkspaceFolderCwdPairs([pairA, pairB, pairC, pairD]), [
+					pairA,
+					pairC,
+				]);
 			});
 		});
 	});

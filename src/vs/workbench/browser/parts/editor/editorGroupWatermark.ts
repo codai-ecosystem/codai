@@ -11,12 +11,28 @@ import { isMacintosh, isWeb, OS } from '../../../../base/common/platform.js';
 import { localize } from '../../../../nls.js';
 import { CommandsRegistry } from '../../../../platform/commands/common/commands.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { ContextKeyExpr, ContextKeyExpression, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	ContextKeyExpr,
+	ContextKeyExpression,
+	IContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
-import { IStorageService, StorageScope, StorageTarget, WillSaveStateReason } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+	WillSaveStateReason,
+} from '../../../../platform/storage/common/storage.js';
 import { defaultKeybindingLabelStyles } from '../../../../platform/theme/browser/defaultStyles.js';
-import { editorForeground, registerColor, transparent } from '../../../../platform/theme/common/colorRegistry.js';
-import { IWorkspaceContextService, WorkbenchState } from '../../../../platform/workspace/common/workspace.js';
+import {
+	editorForeground,
+	registerColor,
+	transparent,
+} from '../../../../platform/theme/common/colorRegistry.js';
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+} from '../../../../platform/workspace/common/workspace.js';
 
 interface WatermarkEntry {
 	readonly id: string;
@@ -27,38 +43,79 @@ interface WatermarkEntry {
 	};
 }
 
-const showCommands: WatermarkEntry = { text: localize('watermark.showCommands', "Show All Commands"), id: 'workbench.action.showCommands' };
-const gotoFile: WatermarkEntry = { text: localize('watermark.quickAccess', "Go to File"), id: 'workbench.action.quickOpen' };
-const openFile: WatermarkEntry = { text: localize('watermark.openFile', "Open File"), id: 'workbench.action.files.openFile' };
-const openFolder: WatermarkEntry = { text: localize('watermark.openFolder', "Open Folder"), id: 'workbench.action.files.openFolder' };
-const openFileOrFolder: WatermarkEntry = { text: localize('watermark.openFileFolder', "Open File or Folder"), id: 'workbench.action.files.openFileFolder' };
-const openRecent: WatermarkEntry = { text: localize('watermark.openRecent', "Open Recent"), id: 'workbench.action.openRecent' };
-const newUntitledFile: WatermarkEntry = { text: localize('watermark.newUntitledFile', "New Untitled Text File"), id: 'workbench.action.files.newUntitledFile' };
-const findInFiles: WatermarkEntry = { text: localize('watermark.findInFiles', "Find in Files"), id: 'workbench.action.findInFiles' };
-const toggleTerminal: WatermarkEntry = { text: localize({ key: 'watermark.toggleTerminal', comment: ['toggle is a verb here'] }, "Toggle Terminal"), id: 'workbench.action.terminal.toggleTerminal', when: { web: ContextKeyExpr.equals('terminalProcessSupported', true) } };
-const startDebugging: WatermarkEntry = { text: localize('watermark.startDebugging', "Start Debugging"), id: 'workbench.action.debug.start', when: { web: ContextKeyExpr.equals('terminalProcessSupported', true) } };
-const openSettings: WatermarkEntry = { text: localize('watermark.openSettings', "Open Settings"), id: 'workbench.action.openSettings' };
+const showCommands: WatermarkEntry = {
+	text: localize('watermark.showCommands', 'Show All Commands'),
+	id: 'workbench.action.showCommands',
+};
+const gotoFile: WatermarkEntry = {
+	text: localize('watermark.quickAccess', 'Go to File'),
+	id: 'workbench.action.quickOpen',
+};
+const openFile: WatermarkEntry = {
+	text: localize('watermark.openFile', 'Open File'),
+	id: 'workbench.action.files.openFile',
+};
+const openFolder: WatermarkEntry = {
+	text: localize('watermark.openFolder', 'Open Folder'),
+	id: 'workbench.action.files.openFolder',
+};
+const openFileOrFolder: WatermarkEntry = {
+	text: localize('watermark.openFileFolder', 'Open File or Folder'),
+	id: 'workbench.action.files.openFileFolder',
+};
+const openRecent: WatermarkEntry = {
+	text: localize('watermark.openRecent', 'Open Recent'),
+	id: 'workbench.action.openRecent',
+};
+const newUntitledFile: WatermarkEntry = {
+	text: localize('watermark.newUntitledFile', 'New Untitled Text File'),
+	id: 'workbench.action.files.newUntitledFile',
+};
+const findInFiles: WatermarkEntry = {
+	text: localize('watermark.findInFiles', 'Find in Files'),
+	id: 'workbench.action.findInFiles',
+};
+const toggleTerminal: WatermarkEntry = {
+	text: localize(
+		{ key: 'watermark.toggleTerminal', comment: ['toggle is a verb here'] },
+		'Toggle Terminal'
+	),
+	id: 'workbench.action.terminal.toggleTerminal',
+	when: { web: ContextKeyExpr.equals('terminalProcessSupported', true) },
+};
+const startDebugging: WatermarkEntry = {
+	text: localize('watermark.startDebugging', 'Start Debugging'),
+	id: 'workbench.action.debug.start',
+	when: { web: ContextKeyExpr.equals('terminalProcessSupported', true) },
+};
+const openSettings: WatermarkEntry = {
+	text: localize('watermark.openSettings', 'Open Settings'),
+	id: 'workbench.action.openSettings',
+};
 
-const showChat = ContextKeyExpr.and(ContextKeyExpr.equals('chatSetupHidden', false), ContextKeyExpr.equals('chatSetupDisabled', false));
-const openChat: WatermarkEntry = { text: localize('watermark.openChat', "Open Chat"), id: 'workbench.action.chat.open', when: { native: showChat, web: showChat } };
+const showChat = ContextKeyExpr.and(
+	ContextKeyExpr.equals('chatSetupHidden', false),
+	ContextKeyExpr.equals('chatSetupDisabled', false)
+);
+const openChat: WatermarkEntry = {
+	text: localize('watermark.openChat', 'Open Chat'),
+	id: 'workbench.action.chat.open',
+	when: { native: showChat, web: showChat },
+};
 
 const emptyWindowEntries: WatermarkEntry[] = coalesce([
 	showCommands,
 	...(isMacintosh && !isWeb ? [openFileOrFolder] : [openFile, openFolder]),
 	openRecent,
 	isMacintosh && !isWeb ? newUntitledFile : undefined, // fill in one more on macOS to get to 5 entries
-	openChat
+	openChat,
 ]);
 
 const randomEmptyWindowEntries: WatermarkEntry[] = [
 	/* Nothing yet */
 ];
 
-const workspaceEntries: WatermarkEntry[] = [
-	showCommands,
-	gotoFile,
-	openChat
-];
+const workspaceEntries: WatermarkEntry[] = [showCommands, gotoFile, openChat];
 
 const randomWorkspaceEntries: WatermarkEntry[] = [
 	findInFiles,
@@ -68,7 +125,6 @@ const randomWorkspaceEntries: WatermarkEntry[] = [
 ];
 
 export class EditorGroupWatermark extends Disposable {
-
 	private static readonly CACHED_WHEN = 'editorGroupWatermark.whenConditions';
 
 	private readonly cachedWhen: { [when: string]: boolean };
@@ -90,13 +146,14 @@ export class EditorGroupWatermark extends Disposable {
 	) {
 		super();
 
-		this.cachedWhen = this.storageService.getObject(EditorGroupWatermark.CACHED_WHEN, StorageScope.PROFILE, Object.create(null));
+		this.cachedWhen = this.storageService.getObject(
+			EditorGroupWatermark.CACHED_WHEN,
+			StorageScope.PROFILE,
+			Object.create(null)
+		);
 		this.workbenchState = this.contextService.getWorkbenchState();
 
-		const elements = h('.editor-group-watermark', [
-			h('.letterpress'),
-			h('.shortcuts@shortcuts'),
-		]);
+		const elements = h('.editor-group-watermark', [h('.letterpress'), h('.shortcuts@shortcuts')]);
 
 		append(container, elements.root);
 		this.shortcuts = elements.shortcuts;
@@ -107,32 +164,51 @@ export class EditorGroupWatermark extends Disposable {
 	}
 
 	private registerListeners(): void {
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('workbench.tips.enabled') && this.enabled !== this.configurationService.getValue<boolean>('workbench.tips.enabled')) {
-				this.render();
-			}
-		}));
-
-		this._register(this.contextService.onDidChangeWorkbenchState(workbenchState => {
-			if (this.workbenchState !== workbenchState) {
-				this.workbenchState = workbenchState;
-				this.render();
-			}
-		}));
-
-		this._register(this.storageService.onWillSaveState(e => {
-			if (e.reason === WillSaveStateReason.SHUTDOWN) {
-				const entries = [...emptyWindowEntries, ...randomEmptyWindowEntries, ...workspaceEntries, ...randomWorkspaceEntries];
-				for (const entry of entries) {
-					const when = isWeb ? entry.when?.web : entry.when?.native;
-					if (when) {
-						this.cachedWhen[entry.id] = this.contextKeyService.contextMatchesRules(when);
-					}
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (
+					e.affectsConfiguration('workbench.tips.enabled') &&
+					this.enabled !== this.configurationService.getValue<boolean>('workbench.tips.enabled')
+				) {
+					this.render();
 				}
+			})
+		);
 
-				this.storageService.store(EditorGroupWatermark.CACHED_WHEN, JSON.stringify(this.cachedWhen), StorageScope.PROFILE, StorageTarget.MACHINE);
-			}
-		}));
+		this._register(
+			this.contextService.onDidChangeWorkbenchState(workbenchState => {
+				if (this.workbenchState !== workbenchState) {
+					this.workbenchState = workbenchState;
+					this.render();
+				}
+			})
+		);
+
+		this._register(
+			this.storageService.onWillSaveState(e => {
+				if (e.reason === WillSaveStateReason.SHUTDOWN) {
+					const entries = [
+						...emptyWindowEntries,
+						...randomEmptyWindowEntries,
+						...workspaceEntries,
+						...randomWorkspaceEntries,
+					];
+					for (const entry of entries) {
+						const when = isWeb ? entry.when?.web : entry.when?.native;
+						if (when) {
+							this.cachedWhen[entry.id] = this.contextKeyService.contextMatchesRules(when);
+						}
+					}
+
+					this.storageService.store(
+						EditorGroupWatermark.CACHED_WHEN,
+						JSON.stringify(this.cachedWhen),
+						StorageScope.PROFILE,
+						StorageTarget.MACHINE
+					);
+				}
+			})
+		);
 	}
 
 	private render(): void {
@@ -145,8 +221,16 @@ export class EditorGroupWatermark extends Disposable {
 			return;
 		}
 
-		const fixedEntries = this.filterEntries(this.workbenchState !== WorkbenchState.EMPTY ? workspaceEntries : emptyWindowEntries, false /* not shuffled */);
-		const randomEntries = this.filterEntries(this.workbenchState !== WorkbenchState.EMPTY ? randomWorkspaceEntries : randomEmptyWindowEntries, true /* shuffled */).slice(0, Math.max(0, 5 - fixedEntries.length));
+		const fixedEntries = this.filterEntries(
+			this.workbenchState !== WorkbenchState.EMPTY ? workspaceEntries : emptyWindowEntries,
+			false /* not shuffled */
+		);
+		const randomEntries = this.filterEntries(
+			this.workbenchState !== WorkbenchState.EMPTY
+				? randomWorkspaceEntries
+				: randomEmptyWindowEntries,
+			true /* shuffled */
+		).slice(0, Math.max(0, 5 - fixedEntries.length));
 		const entries = [...fixedEntries, ...randomEntries];
 
 		const box = append(this.shortcuts, $('.watermark-box'));
@@ -167,7 +251,12 @@ export class EditorGroupWatermark extends Disposable {
 
 				const dd = append(dl, $('dd'));
 
-				const label = this.keybindingLabels.add(new KeybindingLabel(dd, OS, { renderUnboundKeybindings: true, ...defaultKeybindingLabelStyles }));
+				const label = this.keybindingLabels.add(
+					new KeybindingLabel(dd, OS, {
+						renderUnboundKeybindings: true,
+						...defaultKeybindingLabelStyles,
+					})
+				);
 				label.set(keys);
 			}
 		};
@@ -178,7 +267,12 @@ export class EditorGroupWatermark extends Disposable {
 
 	private filterEntries(entries: WatermarkEntry[], shuffleEntries: boolean): WatermarkEntry[] {
 		const filteredEntries = entries
-			.filter(entry => (isWeb && !entry.when?.web) || (!isWeb && !entry.when?.native) || this.cachedWhen[entry.id])
+			.filter(
+				entry =>
+					(isWeb && !entry.when?.web) ||
+					(!isWeb && !entry.when?.native) ||
+					this.cachedWhen[entry.id]
+			)
 			.filter(entry => !!CommandsRegistry.getCommand(entry.id))
 			.filter(entry => !!this.keybindingService.lookupKeybinding(entry.id));
 
@@ -190,4 +284,13 @@ export class EditorGroupWatermark extends Disposable {
 	}
 }
 
-registerColor('editorWatermark.foreground', { dark: transparent(editorForeground, 0.6), light: transparent(editorForeground, 0.68), hcDark: editorForeground, hcLight: editorForeground }, localize('editorLineHighlight', 'Foreground color for the labels in the editor watermark.'));
+registerColor(
+	'editorWatermark.foreground',
+	{
+		dark: transparent(editorForeground, 0.6),
+		light: transparent(editorForeground, 0.68),
+		hcDark: editorForeground,
+		hcLight: editorForeground,
+	},
+	localize('editorLineHighlight', 'Foreground color for the labels in the editor watermark.')
+);

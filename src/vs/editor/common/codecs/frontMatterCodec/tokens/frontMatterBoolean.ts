@@ -27,10 +27,7 @@ export class FrontMatterBoolean extends FrontMatterValueToken<'boolean', readonl
 	 */
 	constructor(token: Word) {
 		const value = asBoolean(token);
-		assertDefined(
-			value,
-			`Cannot convert '${token}' to a boolean value.`,
-		);
+		assertDefined(value, `Cannot convert '${token}' to a boolean value.`);
 
 		super([token]);
 
@@ -42,9 +39,7 @@ export class FrontMatterBoolean extends FrontMatterValueToken<'boolean', readonl
 	 * Unlike the constructor, this method does not throw, returning
 	 * a 'null' value on failure instead.
 	 */
-	public static tryFromToken(
-		token: BaseToken,
-	): FrontMatterBoolean | null {
+	public static tryFromToken(token: BaseToken): FrontMatterBoolean | null {
 		if (token instanceof Word === false) {
 			return null;
 		}
@@ -73,9 +68,7 @@ export class FrontMatterBoolean extends FrontMatterValueToken<'boolean', readonl
 /**
  * Try to convert a {@link Word} token to a `boolean` value.
  */
-const asBoolean = (
-	token: Word,
-): boolean | null => {
+const asBoolean = (token: Word): boolean | null => {
 	if (token.text.toLowerCase() === 'true') {
 		return true;
 	}

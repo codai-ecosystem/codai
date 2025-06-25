@@ -9,9 +9,16 @@ import { URI, UriComponents } from '../../../../base/common/uri.js';
 import { IRange } from '../../../../editor/common/core/range.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { NotebookCellExecutionState, NotebookExecutionState } from './notebookCommon.js';
-import { CellExecutionUpdateType, ICellExecuteOutputEdit, ICellExecuteOutputItemEdit } from './notebookExecutionService.js';
+import {
+	CellExecutionUpdateType,
+	ICellExecuteOutputEdit,
+	ICellExecuteOutputItemEdit,
+} from './notebookExecutionService.js';
 
-export type ICellExecuteUpdate = ICellExecuteOutputEdit | ICellExecuteOutputItemEdit | ICellExecutionStateUpdate;
+export type ICellExecuteUpdate =
+	| ICellExecuteOutputEdit
+	| ICellExecuteOutputItemEdit
+	| ICellExecutionStateUpdate;
 
 export interface ICellExecutionStateUpdate {
 	editType: CellExecutionUpdateType.ExecutionState;
@@ -51,7 +58,7 @@ export interface ICellExecutionComplete {
 }
 export enum NotebookExecutionType {
 	cell,
-	notebook
+	notebook,
 }
 export interface ICellExecutionStateChangedEvent {
 	type: NotebookExecutionType.cell;
@@ -78,7 +85,9 @@ export interface IFailedCellInfo {
 	visible: boolean;
 }
 
-export const INotebookExecutionStateService = createDecorator<INotebookExecutionStateService>('INotebookExecutionStateService');
+export const INotebookExecutionStateService = createDecorator<INotebookExecutionStateService>(
+	'INotebookExecutionStateService'
+);
 
 export interface INotebookExecutionStateService {
 	_serviceBrand: undefined;
@@ -88,7 +97,9 @@ export interface INotebookExecutionStateService {
 
 	forceCancelNotebookExecutions(notebookUri: URI): void;
 	getCellExecutionsForNotebook(notebook: URI): INotebookCellExecution[];
-	getCellExecutionsByHandleForNotebook(notebook: URI): Map<number, INotebookCellExecution> | undefined;
+	getCellExecutionsByHandleForNotebook(
+		notebook: URI
+	): Map<number, INotebookCellExecution> | undefined;
 	getCellExecution(cellUri: URI): INotebookCellExecution | undefined;
 	createCellExecution(notebook: URI, cellHandle: number): INotebookCellExecution;
 	getExecution(notebook: URI): INotebookExecution | undefined;

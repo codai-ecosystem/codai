@@ -10,7 +10,7 @@ import { EventEmitter } from 'events';
 const mockVscode = {
 	commands: {
 		registerCommand: jest.fn(),
-		executeCommand: jest.fn()
+		executeCommand: jest.fn(),
 	},
 	window: {
 		showInformationMessage: jest.fn(),
@@ -18,21 +18,21 @@ const mockVscode = {
 		createOutputChannel: jest.fn(() => ({
 			appendLine: jest.fn(),
 			show: jest.fn(),
-			dispose: jest.fn()
-		}))
+			dispose: jest.fn(),
+		})),
 	},
 	workspace: {
 		getConfiguration: jest.fn(() => ({
 			get: jest.fn(),
-			update: jest.fn()
+			update: jest.fn(),
 		})),
-		workspaceFolders: []
+		workspaceFolders: [],
 	},
 	ExtensionContext: jest.fn(),
 	Disposable: jest.fn(() => ({ dispose: jest.fn() })),
 	Uri: {
-		file: jest.fn((path: string) => ({ fsPath: path }))
-	}
+		file: jest.fn((path: string) => ({ fsPath: path })),
+	},
 };
 
 // Mock modules
@@ -60,12 +60,12 @@ describe('AIDE System Integration Tests', () => {
 			extensionPath: '/mock/path',
 			globalState: {
 				get: jest.fn(),
-				update: jest.fn()
+				update: jest.fn(),
 			},
 			workspaceState: {
 				get: jest.fn(),
-				update: jest.fn()
-			}
+				update: jest.fn(),
+			},
 		};
 
 		// Reset all mocks
@@ -92,7 +92,9 @@ describe('AIDE System Integration Tests', () => {
 			await aideCore.activate(mockContext);
 
 			// Verify essential commands are registered
-			const registeredCommands = mockVscode.commands.registerCommand.mock.calls.map(call => call[0]);
+			const registeredCommands = mockVscode.commands.registerCommand.mock.calls.map(
+				call => call[0]
+			);
 
 			expect(registeredCommands).toContain('aide.askQuestion');
 			expect(registeredCommands).toContain('aide.showConversation');
@@ -126,7 +128,7 @@ describe('AIDE System Integration Tests', () => {
 				version: '1.0.0',
 				activate: jest.fn(),
 				deactivate: jest.fn(),
-				onEvent: jest.fn()
+				onEvent: jest.fn(),
 			};
 
 			await pluginManager.registerPlugin(testPlugin);
@@ -143,7 +145,7 @@ describe('AIDE System Integration Tests', () => {
 				version: '1.0.0',
 				activate: jest.fn(),
 				deactivate: jest.fn(),
-				onEvent: jest.fn()
+				onEvent: jest.fn(),
 			};
 
 			// Register and activate
@@ -184,7 +186,7 @@ describe('AIDE System Integration Tests', () => {
 			const message = await conversationService.addMessage(conversationId, {
 				content: 'Test message',
 				role: 'user',
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 
 			expect(message).toBeDefined();
@@ -206,12 +208,7 @@ describe('AIDE System Integration Tests', () => {
 
 		it('should analyze project structure', async () => {
 			// Mock a simple project structure
-			const mockFiles = [
-				'/src/index.ts',
-				'/src/utils.ts',
-				'/package.json',
-				'/README.md'
-			];
+			const mockFiles = ['/src/index.ts', '/src/utils.ts', '/package.json', '/README.md'];
 
 			// Mock file system operations
 			const originalAnalyze = projectService.analyzeProject;
@@ -219,7 +216,7 @@ describe('AIDE System Integration Tests', () => {
 				files: mockFiles,
 				languages: ['typescript'],
 				frameworks: ['node'],
-				dependencies: ['jest', 'typescript']
+				dependencies: ['jest', 'typescript'],
 			});
 
 			const analysis = await projectService.analyzeProject('/mock/project');
@@ -248,7 +245,7 @@ describe('AIDE System Integration Tests', () => {
 			const mockCompletion = {
 				text: 'console.log("Hello World");',
 				range: { start: 0, end: 0 },
-				confidence: 0.9
+				confidence: 0.9,
 			};
 
 			// Mock the completion generation
@@ -257,7 +254,7 @@ describe('AIDE System Integration Tests', () => {
 
 			const completion = await codeCompletionAgent.generateCompletion('console.', {
 				language: 'typescript',
-				context: 'function test() {'
+				context: 'function test() {',
 			});
 
 			expect(completion).toBeDefined();
@@ -271,31 +268,34 @@ describe('AIDE System Integration Tests', () => {
 						type: 'warning',
 						message: 'Unused variable',
 						line: 5,
-						column: 10
-					}
+						column: 10,
+					},
 				],
 				suggestions: [
 					{
 						type: 'optimization',
 						message: 'Consider using const instead of let',
-						line: 3
-					}
+						line: 3,
+					},
 				],
 				metrics: {
 					complexity: 2,
-					maintainability: 85
-				}
+					maintainability: 85,
+				},
 			};
 
 			const originalAnalyze = codeAnalysisAgent.analyzeCode;
 			codeAnalysisAgent.analyzeCode = jest.fn().mockResolvedValue(mockAnalysis);
 
-			const analysis = await codeAnalysisAgent.analyzeCode(`
+			const analysis = await codeAnalysisAgent.analyzeCode(
+				`
 				function test() {
 					let unused = 5;
 					console.log("Hello");
 				}
-			`, { language: 'typescript' });
+			`,
+				{ language: 'typescript' }
+			);
 
 			expect(analysis).toBeDefined();
 			expect(analysis.issues.length).toBe(1);
@@ -306,7 +306,7 @@ describe('AIDE System Integration Tests', () => {
 			const mockResponse = {
 				content: 'I can help you with that code issue.',
 				confidence: 0.95,
-				suggestions: ['Check variable names', 'Review function structure']
+				suggestions: ['Check variable names', 'Review function structure'],
 			};
 
 			const originalProcess = conversationAgent.processMessage;
@@ -328,10 +328,10 @@ describe('AIDE System Integration Tests', () => {
 			await aideCore.activate(mockContext);
 		});
 
-		it('should emit and handle events correctly', (done) => {
+		it('should emit and handle events correctly', done => {
 			const eventManager = aideCore.getEventManager();
 
-			eventManager.on('test-event', (data) => {
+			eventManager.on('test-event', data => {
 				expect(data).toEqual({ message: 'test' });
 				done();
 			});
@@ -366,7 +366,7 @@ describe('AIDE System Integration Tests', () => {
 			// Mock a service that fails to initialize
 			const failingService = {
 				initialize: jest.fn().mockRejectedValue(new Error('Service failed')),
-				dispose: jest.fn()
+				dispose: jest.fn(),
 			};
 
 			// This should not throw
@@ -382,7 +382,7 @@ describe('AIDE System Integration Tests', () => {
 				version: '1.0.0',
 				activate: jest.fn().mockRejectedValue(new Error('Plugin failed')),
 				deactivate: jest.fn(),
-				onEvent: jest.fn()
+				onEvent: jest.fn(),
 			};
 
 			const pluginManager = aideCore.getPluginManager();
@@ -409,12 +409,12 @@ describe('AIDE System Integration Tests', () => {
 
 		it('should handle configuration changes', () => {
 			mockVscode.workspace.getConfiguration.mockReturnValue({
-				get: jest.fn((key) => {
+				get: jest.fn(key => {
 					if (key === 'aide.enableCodeCompletion') return true;
 					if (key === 'aide.maxMemoryEntries') return 1000;
 					return undefined;
 				}),
-				update: jest.fn()
+				update: jest.fn(),
 			});
 
 			const config = aideCore.getConfiguration();
@@ -443,9 +443,9 @@ describe('AIDE System Integration Tests', () => {
 			const conversationService = aideCore.getConversationService();
 
 			// Start multiple conversations concurrently
-			const promises = Array(5).fill(0).map(() =>
-				conversationService.startConversation()
-			);
+			const promises = Array(5)
+				.fill(0)
+				.map(() => conversationService.startConversation());
 
 			const conversationIds = await Promise.all(promises);
 

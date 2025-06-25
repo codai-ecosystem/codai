@@ -4,6 +4,7 @@ Enhance Firebase Provisioning Service with comprehensive testing, better
 documentation, type safety, error handling, and code organization.
 
 Key improvements:
+
 - Migrate tests from Jest to Vitest format
 - Add comprehensive test coverage for all service methods
 - Extract API endpoint URLs as constants

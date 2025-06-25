@@ -3,9 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EditorAction, ServicesAccessor, IActionOptions } from '../../../../editor/browser/editorExtensions.js';
-import { grammarsExtPoint, ITMSyntaxExtensionPoint } from '../../../services/textMate/common/TMGrammars.js';
-import { IExtensionService, ExtensionPointContribution } from '../../../services/extensions/common/extensions.js';
+import {
+	EditorAction,
+	ServicesAccessor,
+	IActionOptions,
+} from '../../../../editor/browser/editorExtensions.js';
+import {
+	grammarsExtPoint,
+	ITMSyntaxExtensionPoint,
+} from '../../../services/textMate/common/TMGrammars.js';
+import {
+	IExtensionService,
+	ExtensionPointContribution,
+} from '../../../services/extensions/common/extensions.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 import { ICodeEditor } from '../../../../editor/browser/editorBrowser.js';
 
@@ -18,7 +28,6 @@ export interface IGrammarContributions {
 }
 
 class GrammarContributions implements IGrammarContributions {
-
 	private static _grammars: ModeScopeMap = {};
 
 	constructor(contributions: ExtensionPointContribution<ITMSyntaxExtensionPoint[]>[]) {
@@ -28,8 +37,8 @@ class GrammarContributions implements IGrammarContributions {
 	}
 
 	private fillModeScopeMap(contributions: ExtensionPointContribution<ITMSyntaxExtensionPoint[]>[]) {
-		contributions.forEach((contribution) => {
-			contribution.value.forEach((grammar) => {
+		contributions.forEach(contribution => {
+			contribution.value.forEach(grammar => {
 				if (grammar.language && grammar.scopeName) {
 					GrammarContributions._grammars[grammar.language] = grammar.scopeName;
 				}
@@ -47,7 +56,6 @@ type IEmmetActionOptions = IActionOptions & {
 };
 
 export abstract class EmmetEditorAction extends EditorAction {
-
 	protected emmetActionName: string;
 
 	constructor(opts: IEmmetActionOptions) {
@@ -55,16 +63,35 @@ export abstract class EmmetEditorAction extends EditorAction {
 		this.emmetActionName = opts.actionName;
 	}
 
-	private static readonly emmetSupportedModes = ['html', 'css', 'xml', 'xsl', 'haml', 'jade', 'jsx', 'slim', 'scss', 'sass', 'less', 'stylus', 'styl', 'svg'];
+	private static readonly emmetSupportedModes = [
+		'html',
+		'css',
+		'xml',
+		'xsl',
+		'haml',
+		'jade',
+		'jsx',
+		'slim',
+		'scss',
+		'sass',
+		'less',
+		'stylus',
+		'styl',
+		'svg',
+	];
 
 	private _lastGrammarContributions: Promise<GrammarContributions> | null = null;
 	private _lastExtensionService: IExtensionService | null = null;
-	private _withGrammarContributions(extensionService: IExtensionService): Promise<GrammarContributions | null> {
+	private _withGrammarContributions(
+		extensionService: IExtensionService
+	): Promise<GrammarContributions | null> {
 		if (this._lastExtensionService !== extensionService) {
 			this._lastExtensionService = extensionService;
-			this._lastGrammarContributions = extensionService.readExtensionPointContributions(grammarsExtPoint).then((contributions) => {
-				return new GrammarContributions(contributions);
-			});
+			this._lastGrammarContributions = extensionService
+				.readExtensionPointContributions(grammarsExtPoint)
+				.then(contributions => {
+					return new GrammarContributions(contributions);
+				});
 		}
 		return this._lastGrammarContributions || Promise.resolve(null);
 	}
@@ -73,15 +100,16 @@ export abstract class EmmetEditorAction extends EditorAction {
 		const extensionService = accessor.get(IExtensionService);
 		const commandService = accessor.get(ICommandService);
 
-		return this._withGrammarContributions(extensionService).then((grammarContributions) => {
-
+		return this._withGrammarContributions(extensionService).then(grammarContributions => {
 			if (this.id === 'editor.emmet.action.expandAbbreviation' && grammarContributions) {
-				return commandService.executeCommand<void>('emmet.expandAbbreviation', EmmetEditorAction.getLanguage(editor, grammarContributions));
+				return commandService.executeCommand<void>(
+					'emmet.expandAbbreviation',
+					EmmetEditorAction.getLanguage(editor, grammarContributions)
+				);
 			}
 
 			return undefined;
 		});
-
 	}
 
 	public static getLanguage(editor: ICodeEditor, grammars: IGrammarContributions) {
@@ -121,9 +149,7 @@ export abstract class EmmetEditorAction extends EditorAction {
 
 		return {
 			language: syntax,
-			parentMode: checkParentMode()
+			parentMode: checkParentMode(),
 		};
 	}
-
-
 }

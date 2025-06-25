@@ -50,7 +50,7 @@ export class TerminalHover extends Disposable implements ITerminalWidget {
 			actions: this._actions,
 			linkHandler: this._linkHandler,
 			// .xterm-hover lets xterm know that the hover is part of a link
-			additionalClasses: ['xterm-hover']
+			additionalClasses: ['xterm-hover'],
 		});
 		if (hover) {
 			this._register(hover);
@@ -62,7 +62,9 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 	private _domNode: HTMLElement;
 	private readonly _targetElements: HTMLElement[] = [];
 
-	get targetElements(): readonly HTMLElement[] { return this._targetElements; }
+	get targetElements(): readonly HTMLElement[] {
+		return this._targetElements;
+	}
 
 	constructor(
 		container: HTMLElement,
@@ -74,7 +76,11 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 		const rowCount = this._options.viewportRange.end.y - this._options.viewportRange.start.y + 1;
 
 		// Add top target row
-		const width = (this._options.viewportRange.end.y > this._options.viewportRange.start.y ? this._options.terminalDimensions.width - this._options.viewportRange.start.x : this._options.viewportRange.end.x - this._options.viewportRange.start.x + 1) * this._options.cellDimensions.width;
+		const width =
+			(this._options.viewportRange.end.y > this._options.viewportRange.start.y
+				? this._options.terminalDimensions.width - this._options.viewportRange.start.x
+				: this._options.viewportRange.end.x - this._options.viewportRange.start.x + 1) *
+			this._options.cellDimensions.width;
 		const topTarget = $('div.terminal-hover-target.hoverHighlight');
 		topTarget.style.left = `${this._options.viewportRange.start.x * this._options.cellDimensions.width}px`;
 		topTarget.style.bottom = `${(this._options.terminalDimensions.height - this._options.viewportRange.start.y - 1) * this._options.cellDimensions.height}px`;
@@ -104,18 +110,22 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 
 		if (this._options.modifierDownCallback && this._options.modifierUpCallback) {
 			let down = false;
-			this._register(dom.addDisposableListener(container.ownerDocument, 'keydown', e => {
-				if (e.ctrlKey && !down) {
-					down = true;
-					this._options.modifierDownCallback!();
-				}
-			}));
-			this._register(dom.addDisposableListener(container.ownerDocument, 'keyup', e => {
-				if (!e.ctrlKey) {
-					down = false;
-					this._options.modifierUpCallback!();
-				}
-			}));
+			this._register(
+				dom.addDisposableListener(container.ownerDocument, 'keydown', e => {
+					if (e.ctrlKey && !down) {
+						down = true;
+						this._options.modifierDownCallback!();
+					}
+				})
+			);
+			this._register(
+				dom.addDisposableListener(container.ownerDocument, 'keyup', e => {
+					if (!e.ctrlKey) {
+						down = false;
+						this._options.modifierUpCallback!();
+					}
+				})
+			);
 		}
 
 		container.appendChild(this._domNode);

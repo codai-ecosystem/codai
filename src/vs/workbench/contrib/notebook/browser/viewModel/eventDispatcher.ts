@@ -5,16 +5,26 @@
 
 import { Emitter } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { NotebookCellStateChangedEvent, NotebookLayoutChangedEvent, NotebookMetadataChangedEvent, NotebookViewEvent, NotebookViewEventType } from '../notebookViewEvents.js';
+import {
+	NotebookCellStateChangedEvent,
+	NotebookLayoutChangedEvent,
+	NotebookMetadataChangedEvent,
+	NotebookViewEvent,
+	NotebookViewEventType,
+} from '../notebookViewEvents.js';
 
 export class NotebookEventDispatcher extends Disposable {
 	private readonly _onDidChangeLayout = this._register(new Emitter<NotebookLayoutChangedEvent>());
 	readonly onDidChangeLayout = this._onDidChangeLayout.event;
 
-	private readonly _onDidChangeMetadata = this._register(new Emitter<NotebookMetadataChangedEvent>());
+	private readonly _onDidChangeMetadata = this._register(
+		new Emitter<NotebookMetadataChangedEvent>()
+	);
 	readonly onDidChangeMetadata = this._onDidChangeMetadata.event;
 
-	private readonly _onDidChangeCellState = this._register(new Emitter<NotebookCellStateChangedEvent>());
+	private readonly _onDidChangeCellState = this._register(
+		new Emitter<NotebookCellStateChangedEvent>()
+	);
 	readonly onDidChangeCellState = this._onDidChangeCellState.event;
 
 	emit(events: NotebookViewEvent[]) {
@@ -35,4 +45,3 @@ export class NotebookEventDispatcher extends Disposable {
 		}
 	}
 }
-

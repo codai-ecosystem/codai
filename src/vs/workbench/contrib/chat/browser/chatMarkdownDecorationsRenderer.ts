@@ -12,15 +12,36 @@ import { DisposableStore, IDisposable } from '../../../../base/common/lifecycle.
 import { URI } from '../../../../base/common/uri.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 import { IHoverService } from '../../../../platform/hover/browser/hover.js';
-import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from '../../../../platform/instantiation/common/instantiation.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { ILabelService } from '../../../../platform/label/common/label.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { asCssVariable } from '../../../../platform/theme/common/colorUtils.js';
 import { contentRefUrl } from '../common/annotations.js';
-import { getFullyQualifiedId, IChatAgentCommand, IChatAgentData, IChatAgentNameService, IChatAgentService } from '../common/chatAgents.js';
+import {
+	getFullyQualifiedId,
+	IChatAgentCommand,
+	IChatAgentData,
+	IChatAgentNameService,
+	IChatAgentService,
+} from '../common/chatAgents.js';
 import { chatSlashCommandBackground, chatSlashCommandForeground } from '../common/chatColors.js';
-import { chatAgentLeader, ChatRequestAgentPart, ChatRequestAgentSubcommandPart, ChatRequestDynamicVariablePart, ChatRequestSlashCommandPart, ChatRequestSlashPromptPart, ChatRequestTextPart, ChatRequestToolPart, chatSubcommandLeader, IParsedChatRequest, IParsedChatRequestPart } from '../common/chatParserTypes.js';
+import {
+	chatAgentLeader,
+	ChatRequestAgentPart,
+	ChatRequestAgentSubcommandPart,
+	ChatRequestDynamicVariablePart,
+	ChatRequestSlashCommandPart,
+	ChatRequestSlashPromptPart,
+	ChatRequestTextPart,
+	ChatRequestToolPart,
+	chatSubcommandLeader,
+	IParsedChatRequest,
+	IParsedChatRequestPart,
+} from '../common/chatParserTypes.js';
 import { IChatMarkdownContent, IChatService } from '../common/chatService.js';
 import { ILanguageModelToolsService } from '../common/languageModelToolsService.js';
 import { IChatWidgetService } from './chat.js';
@@ -38,7 +59,11 @@ const agentRefUrl = `http://_chatagent_`;
 /** For rendering agent decorations with hover */
 const agentSlashRefUrl = `http://_chatslash_`;
 
-export function agentToMarkdown(agent: IChatAgentData, isClickable: boolean, accessor: ServicesAccessor): string {
+export function agentToMarkdown(
+	agent: IChatAgentData,
+	isClickable: boolean,
+	accessor: ServicesAccessor
+): string {
 	const chatAgentNameService = accessor.get(IChatAgentNameService);
 	const chatAgentService = accessor.get(IChatAgentService);
 
@@ -59,7 +84,10 @@ interface IAgentWidgetArgs {
 	isClickable?: boolean;
 }
 
-export function agentSlashCommandToMarkdown(agent: IChatAgentData, command: IChatAgentCommand): string {
+export function agentSlashCommandToMarkdown(
+	agent: IChatAgentData,
+	command: IChatAgentCommand
+): string {
 	const text = `${chatSubcommandLeader}${command.name}`;
 	const args: ISlashCommandWidgetArgs = { agentId: agent.id, command: command.name };
 	return `[${text}](${agentSlashRefUrl}?${encodeURIComponent(JSON.stringify(args))})`;
@@ -75,7 +103,6 @@ export interface IDecorationWidgetArgs {
 }
 
 export class ChatMarkdownDecorationsRenderer {
-
 	constructor(
 		@IKeybindingService private readonly keybindingService: IKeybindingService,
 		@ILogService private readonly logService: ILogService,
@@ -87,8 +114,9 @@ export class ChatMarkdownDecorationsRenderer {
 		@ICommandService private readonly commandService: ICommandService,
 		@ILabelService private readonly labelService: ILabelService,
 		@ILanguageModelToolsService private readonly toolsService: ILanguageModelToolsService,
-		@IChatMarkdownAnchorService private readonly chatMarkdownAnchorService: IChatMarkdownAnchorService,
-	) { }
+		@IChatMarkdownAnchorService
+		private readonly chatMarkdownAnchorService: IChatMarkdownAnchorService
+	) {}
 
 	convertParsedRequestToMarkdown(parsedRequest: IParsedChatRequest): string {
 		let result = '';
@@ -96,7 +124,9 @@ export class ChatMarkdownDecorationsRenderer {
 			if (part instanceof ChatRequestTextPart) {
 				result += part.text;
 			} else if (part instanceof ChatRequestAgentPart) {
-				result += this.instantiationService.invokeFunction(accessor => agentToMarkdown(part.agent, false, accessor));
+				result += this.instantiationService.invokeFunction(accessor =>
+					agentToMarkdown(part.agent, false, accessor)
+				);
 			} else {
 				result += this.genericDecorationToMarkdown(part);
 			}
@@ -106,22 +136,31 @@ export class ChatMarkdownDecorationsRenderer {
 	}
 
 	private genericDecorationToMarkdown(part: IParsedChatRequestPart): string {
-		const uri = part instanceof ChatRequestDynamicVariablePart && part.data instanceof URI ?
-			part.data :
-			undefined;
-		const title = uri ? this.labelService.getUriLabel(uri, { relative: true }) :
-			part instanceof ChatRequestSlashCommandPart ? part.slashCommand.detail :
-				part instanceof ChatRequestAgentSubcommandPart ? part.command.description :
-					part instanceof ChatRequestSlashPromptPart ? part.slashPromptCommand.command :
-						part instanceof ChatRequestToolPart ? (this.toolsService.getTool(part.toolId)?.userDescription) :
-							'';
+		const uri =
+			part instanceof ChatRequestDynamicVariablePart && part.data instanceof URI
+				? part.data
+				: undefined;
+		const title = uri
+			? this.labelService.getUriLabel(uri, { relative: true })
+			: part instanceof ChatRequestSlashCommandPart
+				? part.slashCommand.detail
+				: part instanceof ChatRequestAgentSubcommandPart
+					? part.command.description
+					: part instanceof ChatRequestSlashPromptPart
+						? part.slashPromptCommand.command
+						: part instanceof ChatRequestToolPart
+							? this.toolsService.getTool(part.toolId)?.userDescription
+							: '';
 
 		const args: IDecorationWidgetArgs = { title };
 		const text = part.text;
 		return `[${text}](${decorationRefUrl}?${encodeURIComponent(JSON.stringify(args))})`;
 	}
 
-	walkTreeAndAnnotateReferenceLinks(content: IChatMarkdownContent, element: HTMLElement): IDisposable {
+	walkTreeAndAnnotateReferenceLinks(
+		content: IChatMarkdownContent,
+		element: HTMLElement
+	): IDisposable {
 		const store = new DisposableStore();
 		element.querySelectorAll('a').forEach(a => {
 			const href = a.getAttribute('data-href');
@@ -135,9 +174,7 @@ export class ChatMarkdownDecorationsRenderer {
 					}
 
 					if (args) {
-						a.parentElement!.replaceChild(
-							this.renderAgentWidget(args, store),
-							a);
+						a.parentElement!.replaceChild(this.renderAgentWidget(args, store), a);
 					}
 				} else if (href.startsWith(agentSlashRefUrl)) {
 					let args: ISlashCommandWidgetArgs | undefined;
@@ -150,17 +187,16 @@ export class ChatMarkdownDecorationsRenderer {
 					if (args) {
 						a.parentElement!.replaceChild(
 							this.renderSlashCommandWidget(a.textContent!, args, store),
-							a);
+							a
+						);
 					}
 				} else if (href.startsWith(decorationRefUrl)) {
 					let args: IDecorationWidgetArgs | undefined;
 					try {
 						args = JSON.parse(decodeURIComponent(href.slice(decorationRefUrl.length + 1)));
-					} catch (e) { }
+					} catch (e) {}
 
-					a.parentElement!.replaceChild(
-						this.renderResourceWidget(a.textContent!, args, store),
-						a);
+					a.parentElement!.replaceChild(this.renderResourceWidget(a.textContent!, args, store), a);
 				} else if (href.startsWith(contentRefUrl)) {
 					this.renderFileWidget(content, href, a, store);
 				} else if (href.startsWith('command:')) {
@@ -177,69 +213,98 @@ export class ChatMarkdownDecorationsRenderer {
 		let container: HTMLElement;
 		if (args.isClickable) {
 			container = dom.$('span.chat-agent-widget');
-			const button = store.add(new Button(container, {
-				buttonBackground: asCssVariable(chatSlashCommandBackground),
-				buttonForeground: asCssVariable(chatSlashCommandForeground),
-				buttonHoverBackground: undefined
-			}));
+			const button = store.add(
+				new Button(container, {
+					buttonBackground: asCssVariable(chatSlashCommandBackground),
+					buttonForeground: asCssVariable(chatSlashCommandForeground),
+					buttonHoverBackground: undefined,
+				})
+			);
 			button.label = nameWithLeader;
-			store.add(button.onDidClick(() => {
-				const agent = this.chatAgentService.getAgent(args.agentId);
-				const widget = this.chatWidgetService.lastFocusedWidget;
-				if (!widget || !agent) {
-					return;
-				}
+			store.add(
+				button.onDidClick(() => {
+					const agent = this.chatAgentService.getAgent(args.agentId);
+					const widget = this.chatWidgetService.lastFocusedWidget;
+					if (!widget || !agent) {
+						return;
+					}
 
-				this.chatService.sendRequest(widget.viewModel!.sessionId, agent.metadata.sampleRequest ?? '',
-					{
-						location: widget.location,
-						agentId: agent.id,
-						userSelectedModelId: widget.input.currentLanguageModel,
-						mode: widget.input.currentMode
-					});
-			}));
+					this.chatService.sendRequest(
+						widget.viewModel!.sessionId,
+						agent.metadata.sampleRequest ?? '',
+						{
+							location: widget.location,
+							agentId: agent.id,
+							userSelectedModelId: widget.input.currentLanguageModel,
+							mode: widget.input.currentMode,
+						}
+					);
+				})
+			);
 		} else {
 			container = this.renderResourceWidget(nameWithLeader, undefined, store);
 		}
 
 		const agent = this.chatAgentService.getAgent(args.agentId);
-		const hover: Lazy<ChatAgentHover> = new Lazy(() => store.add(this.instantiationService.createInstance(ChatAgentHover)));
-		store.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), container, () => {
-			hover.value.setAgent(args.agentId);
-			return hover.value.domNode;
-		}, agent && getChatAgentHoverOptions(() => agent, this.commandService)));
+		const hover: Lazy<ChatAgentHover> = new Lazy(() =>
+			store.add(this.instantiationService.createInstance(ChatAgentHover))
+		);
+		store.add(
+			this.hoverService.setupManagedHover(
+				getDefaultHoverDelegate('element'),
+				container,
+				() => {
+					hover.value.setAgent(args.agentId);
+					return hover.value.domNode;
+				},
+				agent && getChatAgentHoverOptions(() => agent, this.commandService)
+			)
+		);
 		return container;
 	}
 
-	private renderSlashCommandWidget(name: string, args: ISlashCommandWidgetArgs, store: DisposableStore): HTMLElement {
+	private renderSlashCommandWidget(
+		name: string,
+		args: ISlashCommandWidgetArgs,
+		store: DisposableStore
+	): HTMLElement {
 		const container = dom.$('span.chat-agent-widget.chat-command-widget');
 		const agent = this.chatAgentService.getAgent(args.agentId);
-		const button = store.add(new Button(container, {
-			buttonBackground: asCssVariable(chatSlashCommandBackground),
-			buttonForeground: asCssVariable(chatSlashCommandForeground),
-			buttonHoverBackground: undefined
-		}));
+		const button = store.add(
+			new Button(container, {
+				buttonBackground: asCssVariable(chatSlashCommandBackground),
+				buttonForeground: asCssVariable(chatSlashCommandForeground),
+				buttonHoverBackground: undefined,
+			})
+		);
 		button.label = name;
-		store.add(button.onDidClick(() => {
-			const widget = this.chatWidgetService.lastFocusedWidget;
-			if (!widget || !agent) {
-				return;
-			}
+		store.add(
+			button.onDidClick(() => {
+				const widget = this.chatWidgetService.lastFocusedWidget;
+				if (!widget || !agent) {
+					return;
+				}
 
-			const command = agent.slashCommands.find(c => c.name === args.command);
-			this.chatService.sendRequest(widget.viewModel!.sessionId, command?.sampleRequest ?? '', {
-				location: widget.location,
-				agentId: agent.id,
-				slashCommand: args.command,
-				userSelectedModelId: widget.input.currentLanguageModel,
-				mode: widget.input.currentMode
-			});
-		}));
+				const command = agent.slashCommands.find(c => c.name === args.command);
+				this.chatService.sendRequest(widget.viewModel!.sessionId, command?.sampleRequest ?? '', {
+					location: widget.location,
+					agentId: agent.id,
+					slashCommand: args.command,
+					userSelectedModelId: widget.input.currentLanguageModel,
+					mode: widget.input.currentMode,
+				});
+			})
+		);
 
 		return container;
 	}
 
-	private renderFileWidget(content: IChatMarkdownContent, href: string, a: HTMLAnchorElement, store: DisposableStore): void {
+	private renderFileWidget(
+		content: IChatMarkdownContent,
+		href: string,
+		a: HTMLAnchorElement,
+		store: DisposableStore
+	): void {
 		// TODO this can be a nicer FileLabel widget with an icon. Do a simple link for now.
 		const fullUri = URI.parse(href);
 
@@ -249,23 +314,38 @@ export class ChatMarkdownDecorationsRenderer {
 			return;
 		}
 
-		const inlineAnchor = store.add(this.instantiationService.createInstance(InlineAnchorWidget, a, data));
+		const inlineAnchor = store.add(
+			this.instantiationService.createInstance(InlineAnchorWidget, a, data)
+		);
 		store.add(this.chatMarkdownAnchorService.register(inlineAnchor));
 	}
 
-	private renderResourceWidget(name: string, args: IDecorationWidgetArgs | undefined, store: DisposableStore): HTMLElement {
+	private renderResourceWidget(
+		name: string,
+		args: IDecorationWidgetArgs | undefined,
+		store: DisposableStore
+	): HTMLElement {
 		const container = dom.$('span.chat-resource-widget');
 		const alias = dom.$('span', undefined, name);
 		if (args?.title) {
-			store.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), container, args.title));
+			store.add(
+				this.hoverService.setupManagedHover(
+					getDefaultHoverDelegate('element'),
+					container,
+					args.title
+				)
+			);
 		}
 
 		container.appendChild(alias);
 		return container;
 	}
 
-
-	private injectKeybindingHint(a: HTMLAnchorElement, href: string, keybindingService: IKeybindingService): void {
+	private injectKeybindingHint(
+		a: HTMLAnchorElement,
+		href: string,
+		keybindingService: IKeybindingService
+	): void {
 		const command = href.match(/command:([^\)]+)/)?.[1];
 		if (command) {
 			const kb = keybindingService.lookupKeybinding(command);

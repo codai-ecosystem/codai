@@ -5,7 +5,11 @@
 
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { IHistory } from '../../../../base/common/history.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 
 export class FindWidgetSearchHistory implements IHistory<string> {
 	public static readonly FIND_HISTORY_KEY = 'workbench.find.history';
@@ -15,18 +19,14 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 
 	private static _instance: FindWidgetSearchHistory | null = null;
 
-	static getOrCreate(
-		storageService: IStorageService,
-	): FindWidgetSearchHistory {
+	static getOrCreate(storageService: IStorageService): FindWidgetSearchHistory {
 		if (!FindWidgetSearchHistory._instance) {
 			FindWidgetSearchHistory._instance = new FindWidgetSearchHistory(storageService);
 		}
 		return FindWidgetSearchHistory._instance;
 	}
 
-	constructor(
-		@IStorageService private readonly storageService: IStorageService,
-	) {
+	constructor(@IStorageService private readonly storageService: IStorageService) {
 		this._onDidChangeEmitter = new Emitter<string[]>();
 		this.onDidChange = this._onDidChangeEmitter.event;
 		this.load();
@@ -53,7 +53,10 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 		this.save();
 	}
 
-	forEach(callbackfn: (value: string, value2: string, set: Set<string>) => void, thisArg?: any): void {
+	forEach(
+		callbackfn: (value: string, value2: string, set: Set<string>) => void,
+		thisArg?: any
+	): void {
 		// fetch latest from storage
 		this.load();
 		return this.inMemoryValues.forEach(callbackfn);
@@ -90,7 +93,7 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 				FindWidgetSearchHistory.FIND_HISTORY_KEY,
 				JSON.stringify(elements),
 				StorageScope.WORKSPACE,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 			this._onDidChangeEmitter.fire(elements);
 			resolve();

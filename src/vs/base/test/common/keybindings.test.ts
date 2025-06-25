@@ -9,7 +9,6 @@ import { KeyCodeChord, ScanCodeChord } from '../../common/keybindings.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('keyCodes', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('issue #173325: wrong interpretations of special keys (e.g. [Equal] is mistaken for V)', () => {
@@ -17,5 +16,4 @@ suite('keyCodes', () => {
 		const b = new ScanCodeChord(true, false, false, false, ScanCode.Equal);
 		assert.strictEqual(a.getHashCode() === b.getHashCode(), false);
 	});
-
 });

@@ -30,16 +30,19 @@ export class TimestampWidget extends Disposable {
 		this._date = dom.append(container, dom.$('span.timestamp'));
 		this._date.style.display = 'none';
 		this._useRelativeTime = this.useRelativeTimeSetting;
-		this.hover = this._register(hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this._date, ''));
+		this.hover = this._register(
+			hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this._date, '')
+		);
 		this.setTimestamp(timeStamp);
 	}
 
 	private get useRelativeTimeSetting(): boolean {
-		return this.configurationService.getValue<ICommentsConfiguration>(COMMENTS_SECTION).useRelativeTime;
+		return this.configurationService.getValue<ICommentsConfiguration>(COMMENTS_SECTION)
+			.useRelativeTime;
 	}
 
 	public async setTimestamp(timestamp: Date | undefined) {
-		if ((timestamp !== this._timestamp) || (this.useRelativeTimeSetting !== this._useRelativeTime)) {
+		if (timestamp !== this._timestamp || this.useRelativeTimeSetting !== this._useRelativeTime) {
 			this.updateDate(timestamp);
 		}
 		this._timestamp = timestamp;
@@ -50,8 +53,10 @@ export class TimestampWidget extends Disposable {
 		if (!timestamp) {
 			this._date.textContent = '';
 			this._date.style.display = 'none';
-		} else if ((timestamp !== this._timestamp)
-			|| (this.useRelativeTimeSetting !== this._useRelativeTime)) {
+		} else if (
+			timestamp !== this._timestamp ||
+			this.useRelativeTimeSetting !== this._useRelativeTime
+		) {
 			this._date.style.display = '';
 			let textContent: string;
 			let tooltip: string | undefined;

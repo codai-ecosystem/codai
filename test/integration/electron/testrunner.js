@@ -14,13 +14,15 @@ const tty = require('tty');
 // @ts-ignore
 if (!tty.getWindowSize) {
 	// @ts-ignore
-	tty.getWindowSize = function () { return [80, 75]; };
+	tty.getWindowSize = function () {
+		return [80, 75];
+	};
 }
 const Mocha = require('mocha');
 
 let mocha = new Mocha({
 	ui: 'tdd',
-	color: true
+	color: true,
 });
 
 exports.configure = function configure(opts) {
@@ -38,13 +40,14 @@ exports.run = function run(testsRoot, clb) {
 		}
 		try {
 			// Fill into Mocha
-			files.forEach(function (f) { return mocha.addFile(paths.join(testsRoot, f)); });
+			files.forEach(function (f) {
+				return mocha.addFile(paths.join(testsRoot, f));
+			});
 			// Run the tests
 			mocha.run(function (failures) {
 				clb(null, failures);
 			});
-		}
-		catch (error) {
+		} catch (error) {
 			return clb(error);
 		}
 	});

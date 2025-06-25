@@ -8,9 +8,7 @@ import { Disposable } from '../../../base/common/lifecycle.js';
 import { AppResourcePath, COI, FileAccess, Schemas } from '../../../base/common/network.js';
 import { URI } from '../../../base/common/uri.js';
 
-
 export class WebviewProtocolProvider extends Disposable {
-
 	private static validWebviewFilePaths = new Map([
 		['/index.html', 'index.html'],
 		['/fake.html', 'fake.html'],
@@ -39,15 +37,20 @@ export class WebviewProtocolProvider extends Disposable {
 					path: url.fsPath,
 					headers: {
 						...COI.getHeadersFromQuery(request.url),
-						'Cross-Origin-Resource-Policy': 'cross-origin'
-					}
+						'Cross-Origin-Resource-Policy': 'cross-origin',
+					},
 				});
 			} else {
-				return callback({ error: -10 /* ACCESS_DENIED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */ });
+				return callback({
+					error:
+						-10 /* ACCESS_DENIED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
+				});
 			}
 		} catch {
 			// noop
 		}
-		return callback({ error: -2 /* FAILED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */ });
+		return callback({
+			error: -2 /* FAILED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
+		});
 	}
 }

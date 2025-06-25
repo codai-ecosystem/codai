@@ -16,7 +16,11 @@ import { AbstractInline1ChatAction } from '../../../inlineChat/browser/inlineCha
 import { isDetachedTerminalInstance } from '../../../terminal/browser/terminal.js';
 import { registerActiveXtermAction } from '../../../terminal/browser/terminalActions.js';
 import { TerminalContextKeys } from '../../../terminal/common/terminalContextKey.js';
-import { MENU_TERMINAL_CHAT_WIDGET_STATUS, TerminalChatCommandId, TerminalChatContextKeys } from './terminalChat.js';
+import {
+	MENU_TERMINAL_CHAT_WIDGET_STATUS,
+	TerminalChatCommandId,
+	TerminalChatContextKeys,
+} from './terminalChat.js';
 import { TerminalChatController } from './terminalChatController.js';
 
 registerActiveXtermAction({
@@ -32,7 +36,10 @@ registerActiveXtermAction({
 	f1: true,
 	precondition: ContextKeyExpr.and(
 		ChatContextKeys.enabled,
-		ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
+		ContextKeyExpr.or(
+			TerminalContextKeys.processSupported,
+			TerminalContextKeys.terminalHasBeenCreated
+		),
 		TerminalChatContextKeys.hasChatAgent
 	),
 	run: (_xterm, _accessor, activeInstance, opts?: unknown) => {
@@ -40,21 +47,26 @@ registerActiveXtermAction({
 			return;
 		}
 
-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
+		const contr =
+			TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
 
 		if (opts) {
 			opts = typeof opts === 'string' ? { query: opts } : opts;
-			if (typeof opts === 'object' && opts !== null && 'query' in opts && typeof opts.query === 'string') {
+			if (
+				typeof opts === 'object' &&
+				opts !== null &&
+				'query' in opts &&
+				typeof opts.query === 'string'
+			) {
 				contr?.updateInput(opts.query, false);
 				if (!('isPartialQuery' in opts && opts.isPartialQuery)) {
 					contr?.terminalChatWidget?.acceptInput();
 				}
 			}
-
 		}
 
 		contr?.terminalChatWidget?.reveal();
-	}
+	},
 });
 
 registerActiveXtermAction({
@@ -69,24 +81,24 @@ registerActiveXtermAction({
 		),
 		weight: KeybindingWeight.WorkbenchContrib,
 	},
-	menu: [{
-		id: MENU_TERMINAL_CHAT_WIDGET_STATUS,
-		group: '0_main',
-		order: 2,
-	}],
+	menu: [
+		{
+			id: MENU_TERMINAL_CHAT_WIDGET_STATUS,
+			group: '0_main',
+			order: 2,
+		},
+	],
 	icon: Codicon.close,
 	f1: true,
-	precondition: ContextKeyExpr.and(
-		ChatContextKeys.enabled,
-		TerminalChatContextKeys.visible,
-	),
+	precondition: ContextKeyExpr.and(ChatContextKeys.enabled, TerminalChatContextKeys.visible),
 	run: (_xterm, _accessor, activeInstance) => {
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
+		const contr =
+			TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
 		contr?.terminalChatWidget?.clear();
-	}
+	},
 });
 
 registerActiveXtermAction({
@@ -96,7 +108,10 @@ registerActiveXtermAction({
 	category: AbstractInline1ChatAction.category,
 	precondition: ContextKeyExpr.and(
 		ChatContextKeys.enabled,
-		ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
+		ContextKeyExpr.or(
+			TerminalContextKeys.processSupported,
+			TerminalContextKeys.terminalHasBeenCreated
+		),
 		TerminalChatContextKeys.requestActive.negate(),
 		TerminalChatContextKeys.responseContainsCodeBlock,
 		TerminalChatContextKeys.responseContainsMultipleCodeBlocks.negate()
@@ -111,15 +126,20 @@ registerActiveXtermAction({
 		id: MENU_TERMINAL_CHAT_WIDGET_STATUS,
 		group: '0_main',
 		order: 0,
-		when: ContextKeyExpr.and(TerminalChatContextKeys.responseContainsCodeBlock, TerminalChatContextKeys.responseContainsMultipleCodeBlocks.negate(), TerminalChatContextKeys.requestActive.negate())
+		when: ContextKeyExpr.and(
+			TerminalChatContextKeys.responseContainsCodeBlock,
+			TerminalChatContextKeys.responseContainsMultipleCodeBlocks.negate(),
+			TerminalChatContextKeys.requestActive.negate()
+		),
 	},
 	run: (_xterm, _accessor, activeInstance) => {
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
+		const contr =
+			TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
 		contr?.terminalChatWidget?.acceptCommand(true);
-	}
+	},
 });
 
 registerActiveXtermAction({
@@ -129,7 +149,10 @@ registerActiveXtermAction({
 	category: AbstractInline1ChatAction.category,
 	precondition: ContextKeyExpr.and(
 		ChatContextKeys.enabled,
-		ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
+		ContextKeyExpr.or(
+			TerminalContextKeys.processSupported,
+			TerminalContextKeys.terminalHasBeenCreated
+		),
 		TerminalChatContextKeys.requestActive.negate(),
 		TerminalChatContextKeys.responseContainsMultipleCodeBlocks
 	),
@@ -143,15 +166,19 @@ registerActiveXtermAction({
 		id: MENU_TERMINAL_CHAT_WIDGET_STATUS,
 		group: '0_main',
 		order: 0,
-		when: ContextKeyExpr.and(TerminalChatContextKeys.responseContainsMultipleCodeBlocks, TerminalChatContextKeys.requestActive.negate())
+		when: ContextKeyExpr.and(
+			TerminalChatContextKeys.responseContainsMultipleCodeBlocks,
+			TerminalChatContextKeys.requestActive.negate()
+		),
 	},
 	run: (_xterm, _accessor, activeInstance) => {
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
+		const contr =
+			TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
 		contr?.terminalChatWidget?.acceptCommand(true);
-	}
+	},
 });
 
 registerActiveXtermAction({
@@ -162,7 +189,10 @@ registerActiveXtermAction({
 	icon: Codicon.insert,
 	precondition: ContextKeyExpr.and(
 		ChatContextKeys.enabled,
-		ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
+		ContextKeyExpr.or(
+			TerminalContextKeys.processSupported,
+			TerminalContextKeys.terminalHasBeenCreated
+		),
 		TerminalChatContextKeys.requestActive.negate(),
 		TerminalChatContextKeys.responseContainsCodeBlock,
 		TerminalChatContextKeys.responseContainsMultipleCodeBlocks.negate()
@@ -171,21 +201,26 @@ registerActiveXtermAction({
 		when: TerminalChatContextKeys.requestActive.negate(),
 		weight: KeybindingWeight.WorkbenchContrib,
 		primary: KeyMod.Alt | KeyCode.Enter,
-		secondary: [KeyMod.CtrlCmd | KeyCode.Enter | KeyMod.Alt]
+		secondary: [KeyMod.CtrlCmd | KeyCode.Enter | KeyMod.Alt],
 	},
 	menu: {
 		id: MENU_TERMINAL_CHAT_WIDGET_STATUS,
 		group: '0_main',
 		order: 1,
-		when: ContextKeyExpr.and(TerminalChatContextKeys.responseContainsCodeBlock, TerminalChatContextKeys.responseContainsMultipleCodeBlocks.negate(), TerminalChatContextKeys.requestActive.negate())
+		when: ContextKeyExpr.and(
+			TerminalChatContextKeys.responseContainsCodeBlock,
+			TerminalChatContextKeys.responseContainsMultipleCodeBlocks.negate(),
+			TerminalChatContextKeys.requestActive.negate()
+		),
 	},
 	run: (_xterm, _accessor, activeInstance) => {
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
+		const contr =
+			TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
 		contr?.terminalChatWidget?.acceptCommand(false);
-	}
+	},
 });
 
 registerActiveXtermAction({
@@ -195,7 +230,10 @@ registerActiveXtermAction({
 	category: AbstractInline1ChatAction.category,
 	precondition: ContextKeyExpr.and(
 		ChatContextKeys.enabled,
-		ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
+		ContextKeyExpr.or(
+			TerminalContextKeys.processSupported,
+			TerminalContextKeys.terminalHasBeenCreated
+		),
 		TerminalChatContextKeys.requestActive.negate(),
 		TerminalChatContextKeys.responseContainsMultipleCodeBlocks
 	),
@@ -203,44 +241,54 @@ registerActiveXtermAction({
 		when: TerminalChatContextKeys.requestActive.negate(),
 		weight: KeybindingWeight.WorkbenchContrib,
 		primary: KeyMod.Alt | KeyCode.Enter,
-		secondary: [KeyMod.CtrlCmd | KeyCode.Enter | KeyMod.Alt]
+		secondary: [KeyMod.CtrlCmd | KeyCode.Enter | KeyMod.Alt],
 	},
 	menu: {
 		id: MENU_TERMINAL_CHAT_WIDGET_STATUS,
 		group: '0_main',
 		order: 1,
-		when: ContextKeyExpr.and(TerminalChatContextKeys.responseContainsMultipleCodeBlocks, TerminalChatContextKeys.requestActive.negate())
+		when: ContextKeyExpr.and(
+			TerminalChatContextKeys.responseContainsMultipleCodeBlocks,
+			TerminalChatContextKeys.requestActive.negate()
+		),
 	},
 	run: (_xterm, _accessor, activeInstance) => {
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
+		const contr =
+			TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
 		contr?.terminalChatWidget?.acceptCommand(false);
-	}
+	},
 });
 
 registerActiveXtermAction({
 	id: TerminalChatCommandId.RerunRequest,
-	title: localize2('chat.rerun.label', "Rerun Request"),
+	title: localize2('chat.rerun.label', 'Rerun Request'),
 	f1: false,
 	icon: Codicon.refresh,
 	category: AbstractInline1ChatAction.category,
 	precondition: ContextKeyExpr.and(
 		ChatContextKeys.enabled,
-		ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
-		TerminalChatContextKeys.requestActive.negate(),
+		ContextKeyExpr.or(
+			TerminalContextKeys.processSupported,
+			TerminalContextKeys.terminalHasBeenCreated
+		),
+		TerminalChatContextKeys.requestActive.negate()
 	),
 	keybinding: {
 		weight: KeybindingWeight.WorkbenchContrib,
 		primary: KeyMod.CtrlCmd | KeyCode.KeyR,
-		when: TerminalChatContextKeys.focused
+		when: TerminalChatContextKeys.focused,
 	},
 	menu: {
 		id: MENU_TERMINAL_CHAT_WIDGET_STATUS,
 		group: '0_main',
 		order: 5,
-		when: ContextKeyExpr.and(TerminalChatContextKeys.inputHasText.toNegated(), TerminalChatContextKeys.requestActive.negate())
+		when: ContextKeyExpr.and(
+			TerminalChatContextKeys.inputHasText.toNegated(),
+			TerminalChatContextKeys.requestActive.negate()
+		),
 	},
 	run: async (_xterm, _accessor, activeInstance) => {
 		const chatService = _accessor.get(IChatService);
@@ -258,10 +306,10 @@ registerActiveXtermAction({
 				noCommandDetection: false,
 				attempt: lastRequest.attempt + 1,
 				location: ChatAgentLocation.Terminal,
-				userSelectedModelId: widget?.input.currentLanguageModel
+				userSelectedModelId: widget?.input.currentLanguageModel,
 			});
 		}
-	}
+	},
 });
 
 registerActiveXtermAction({
@@ -270,22 +318,31 @@ registerActiveXtermAction({
 	category: AbstractInline1ChatAction.category,
 	precondition: ContextKeyExpr.and(
 		ChatContextKeys.enabled,
-		ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
-		TerminalChatContextKeys.requestActive.negate(),
+		ContextKeyExpr.or(
+			TerminalContextKeys.processSupported,
+			TerminalContextKeys.terminalHasBeenCreated
+		),
+		TerminalChatContextKeys.requestActive.negate()
 	),
 	icon: Codicon.commentDiscussion,
-	menu: [{
-		id: MENU_TERMINAL_CHAT_WIDGET_STATUS,
-		group: 'zzz',
-		order: 1,
-		isHiddenByDefault: true,
-		when: ContextKeyExpr.and(TerminalChatContextKeys.responseContainsCodeBlock, TerminalChatContextKeys.requestActive.negate()),
-	}],
+	menu: [
+		{
+			id: MENU_TERMINAL_CHAT_WIDGET_STATUS,
+			group: 'zzz',
+			order: 1,
+			isHiddenByDefault: true,
+			when: ContextKeyExpr.and(
+				TerminalChatContextKeys.responseContainsCodeBlock,
+				TerminalChatContextKeys.requestActive.negate()
+			),
+		},
+	],
 	run: (_xterm, _accessor, activeInstance) => {
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
+		const contr =
+			TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
 		contr?.viewInChat();
-	}
+	},
 });

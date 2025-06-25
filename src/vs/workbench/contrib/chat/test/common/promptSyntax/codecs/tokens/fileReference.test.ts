@@ -11,7 +11,10 @@ import { BaseToken } from '../../../../../../../../editor/common/codecs/baseToke
 import { PromptToken } from '../../../../../common/promptSyntax/codecs/tokens/promptToken.js';
 import { FileReference } from '../../../../../common/promptSyntax/codecs/tokens/fileReference.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../../../base/test/common/utils.js';
-import { PromptVariable, PromptVariableWithData } from '../../../../../common/promptSyntax/codecs/tokens/promptVariable.js';
+import {
+	PromptVariable,
+	PromptVariableWithData,
+} from '../../../../../common/promptSyntax/codecs/tokens/promptVariable.js';
 
 suite('FileReference', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -22,29 +25,21 @@ suite('FileReference', () => {
 		const path = `/temp/test/file-${randomInt(Number.MAX_SAFE_INTEGER)}.txt`;
 		const columnEndNumber = columnStartNumber + path.length;
 
-		const range = new Range(
-			lineNumber,
-			columnStartNumber,
-			lineNumber,
-			columnEndNumber,
-		);
+		const range = new Range(lineNumber, columnStartNumber, lineNumber, columnEndNumber);
 		const fileReference = new FileReference(range, path);
 		const { linkRange } = fileReference;
 
-		assertDefined(
-			linkRange,
-			'The link range must be defined.',
-		);
+		assertDefined(linkRange, 'The link range must be defined.');
 
 		const expectedLinkRange = new Range(
 			lineNumber,
 			columnStartNumber + '#file:'.length,
 			lineNumber,
-			columnStartNumber + path.length,
+			columnStartNumber + path.length
 		);
 		assert(
 			expectedLinkRange.equalsRange(linkRange),
-			`Expected link range to be ${expectedLinkRange}, got ${linkRange}.`,
+			`Expected link range to be ${expectedLinkRange}, got ${linkRange}.`
 		);
 	});
 
@@ -54,19 +49,10 @@ suite('FileReference', () => {
 		const link = `/temp/test/file-${randomInt(Number.MAX_SAFE_INTEGER)}.txt`;
 		const columnEndNumber = columnStartNumber + link.length;
 
-		const range = new Range(
-			lineNumber,
-			columnStartNumber,
-			lineNumber,
-			columnEndNumber,
-		);
+		const range = new Range(lineNumber, columnStartNumber, lineNumber, columnEndNumber);
 		const fileReference = new FileReference(range, link);
 
-		assert.strictEqual(
-			fileReference.path,
-			link,
-			'Must return the correct link path.',
-		);
+		assert.strictEqual(fileReference.path, link, 'Must return the correct link path.');
 	});
 
 	test('• extends `PromptVariableWithData` and others', () => {
@@ -75,32 +61,18 @@ suite('FileReference', () => {
 		const link = `/temp/test/file-${randomInt(Number.MAX_SAFE_INTEGER)}.txt`;
 		const columnEndNumber = columnStartNumber + link.length;
 
-		const range = new Range(
-			lineNumber,
-			columnStartNumber,
-			lineNumber,
-			columnEndNumber,
-		);
+		const range = new Range(lineNumber, columnStartNumber, lineNumber, columnEndNumber);
 		const fileReference = new FileReference(range, link);
 
 		assert(
 			fileReference instanceof PromptVariableWithData,
-			'Must extend `PromptVariableWithData`.',
+			'Must extend `PromptVariableWithData`.'
 		);
 
-		assert(
-			fileReference instanceof PromptVariable,
-			'Must extend `PromptVariable`.',
-		);
+		assert(fileReference instanceof PromptVariable, 'Must extend `PromptVariable`.');
 
-		assert(
-			fileReference instanceof PromptToken,
-			'Must extend `PromptToken`.',
-		);
+		assert(fileReference instanceof PromptToken, 'Must extend `PromptToken`.');
 
-		assert(
-			fileReference instanceof BaseToken,
-			'Must extend `BaseToken`.',
-		);
+		assert(fileReference instanceof BaseToken, 'Must extend `BaseToken`.');
 	});
 });

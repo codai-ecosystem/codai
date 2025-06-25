@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { PromptStringMetadata } from './base/string.js';
-import { FrontMatterRecord, FrontMatterToken } from '../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
+import {
+	FrontMatterRecord,
+	FrontMatterToken,
+} from '../../../../../../../../editor/common/codecs/frontMatterCodec/tokens/index.js';
 
 /**
  * Name of the metadata record in the prompt header.
@@ -19,10 +22,7 @@ export class PromptDescriptionMetadata extends PromptStringMetadata {
 		return RECORD_NAME;
 	}
 
-	constructor(
-		recordToken: FrontMatterRecord,
-		languageId: string,
-	) {
+	constructor(recordToken: FrontMatterRecord, languageId: string) {
 		super(RECORD_NAME, recordToken, languageId);
 	}
 
@@ -30,10 +30,8 @@ export class PromptDescriptionMetadata extends PromptStringMetadata {
 	 * Check if a provided front matter token is a metadata record
 	 * with name equal to `description`.
 	 */
-	public static isDescriptionRecord(
-		token: FrontMatterToken,
-	): boolean {
-		if ((token instanceof FrontMatterRecord) === false) {
+	public static isDescriptionRecord(token: FrontMatterToken): boolean {
+		if (token instanceof FrontMatterRecord === false) {
 			return false;
 		}
 

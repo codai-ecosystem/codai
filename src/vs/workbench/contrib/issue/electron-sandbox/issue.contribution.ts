@@ -9,11 +9,17 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
 import { Action2, registerAction2 } from '../../../../platform/actions/common/actions.js';
 import { CommandsRegistry } from '../../../../platform/commands/common/commands.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { IProcessService } from '../../../../platform/process/common/process.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
-import { IQuickAccessRegistry, Extensions as QuickAccessExtensions } from '../../../../platform/quickinput/common/quickAccess.js';
+import {
+	IQuickAccessRegistry,
+	Extensions as QuickAccessExtensions,
+} from '../../../../platform/quickinput/common/quickAccess.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { Extensions, IWorkbenchContributionsRegistry } from '../../../common/contributions.js';
 import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
@@ -29,7 +35,6 @@ registerSingleton(IWorkbenchIssueService, NativeIssueService, InstantiationType.
 registerSingleton(IIssueFormService, NativeIssueFormService, InstantiationType.Delayed);
 
 class NativeIssueContribution extends BaseIssueContribution {
-
 	constructor(
 		@IProductService productService: IProductService,
 		@IConfigurationService configurationService: IConfigurationService
@@ -47,44 +52,61 @@ class NativeIssueContribution extends BaseIssueContribution {
 		let disposable: IDisposable | undefined;
 
 		const registerQuickAccessProvider = () => {
-			disposable = Registry.as<IQuickAccessRegistry>(QuickAccessExtensions.Quickaccess).registerQuickAccessProvider({
+			disposable = Registry.as<IQuickAccessRegistry>(
+				QuickAccessExtensions.Quickaccess
+			).registerQuickAccessProvider({
 				ctor: IssueQuickAccess,
 				prefix: IssueQuickAccess.PREFIX,
 				contextKey: 'inReportIssuePicker',
-				placeholder: localize('tasksQuickAccessPlaceholder', "Type the name of an extension to report on."),
-				helpEntries: [{
-					description: localize('openIssueReporter', "Open Issue Reporter"),
-					commandId: 'workbench.action.openIssueReporter'
-				}]
+				placeholder: localize(
+					'tasksQuickAccessPlaceholder',
+					'Type the name of an extension to report on.'
+				),
+				helpEntries: [
+					{
+						description: localize('openIssueReporter', 'Open Issue Reporter'),
+						commandId: 'workbench.action.openIssueReporter',
+					},
+				],
 			});
 		};
 
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (!configurationService.getValue<boolean>('extensions.experimental.issueQuickAccess') && disposable) {
-				disposable.dispose();
-				disposable = undefined;
-			} else if (!disposable) {
-				registerQuickAccessProvider();
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration(e => {
+				if (
+					!configurationService.getValue<boolean>('extensions.experimental.issueQuickAccess') &&
+					disposable
+				) {
+					disposable.dispose();
+					disposable = undefined;
+				} else if (!disposable) {
+					registerQuickAccessProvider();
+				}
+			})
+		);
 
 		if (configurationService.getValue<boolean>('extensions.experimental.issueQuickAccess')) {
 			registerQuickAccessProvider();
 		}
 	}
 }
-Registry.as<IWorkbenchContributionsRegistry>(Extensions.Workbench).registerWorkbenchContribution(NativeIssueContribution, LifecyclePhase.Restored);
+Registry.as<IWorkbenchContributionsRegistry>(Extensions.Workbench).registerWorkbenchContribution(
+	NativeIssueContribution,
+	LifecyclePhase.Restored
+);
 
 class ReportPerformanceIssueUsingReporterAction extends Action2 {
-
 	static readonly ID = 'workbench.action.reportPerformanceIssueUsingReporter';
 
 	constructor() {
 		super({
 			id: ReportPerformanceIssueUsingReporterAction.ID,
-			title: localize2({ key: 'reportPerformanceIssue', comment: [`Here, 'issue' means problem or bug`] }, "Report Performance Issue..."),
+			title: localize2(
+				{ key: 'reportPerformanceIssue', comment: [`Here, 'issue' means problem or bug`] },
+				'Report Performance Issue...'
+			),
 			category: Categories.Help,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -95,7 +117,7 @@ class ReportPerformanceIssueUsingReporterAction extends Action2 {
 	}
 }
 
-CommandsRegistry.registerCommand('_issues.getSystemStatus', (accessor) => {
+CommandsRegistry.registerCommand('_issues.getSystemStatus', accessor => {
 	return accessor.get(IProcessService).getSystemStatus();
 });
 

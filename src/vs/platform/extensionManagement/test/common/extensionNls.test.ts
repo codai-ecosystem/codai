@@ -17,21 +17,21 @@ const manifest: IExtensionManifest = {
 	publisher: 'test',
 	version: '1.0.0',
 	engines: {
-		vscode: '*'
+		vscode: '*',
 	},
 	contributes: {
 		commands: [
 			{
 				command: 'test.command',
 				title: '%test.command.title%',
-				category: '%test.command.category%'
+				category: '%test.command.category%',
 			},
 		],
 		authentication: [
 			{
 				id: 'test.authentication',
 				label: '%test.authentication.label%',
-			}
+			},
 		],
 		configuration: {
 			// to ensure we test another "title" property
@@ -40,30 +40,32 @@ const manifest: IExtensionManifest = {
 				'test.configuration': {
 					type: 'string',
 					description: 'not important',
-				}
-			}
-		}
-	}
+				},
+			},
+		},
+	},
 };
 
 suite('Localize Manifest', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 	test('replaces template strings', function () {
-		const localizedManifest = localizeManifest(
-			store.add(new NullLogger()),
-			deepClone(manifest),
-			{
-				'test.command.title': 'Test Command',
-				'test.command.category': 'Test Category',
-				'test.authentication.label': 'Test Authentication',
-				'test.configuration.title': 'Test Configuration',
-			}
-		);
+		const localizedManifest = localizeManifest(store.add(new NullLogger()), deepClone(manifest), {
+			'test.command.title': 'Test Command',
+			'test.command.category': 'Test Category',
+			'test.authentication.label': 'Test Authentication',
+			'test.configuration.title': 'Test Configuration',
+		});
 
 		assert.strictEqual(localizedManifest.contributes?.commands?.[0].title, 'Test Command');
 		assert.strictEqual(localizedManifest.contributes?.commands?.[0].category, 'Test Category');
-		assert.strictEqual(localizedManifest.contributes?.authentication?.[0].label, 'Test Authentication');
-		assert.strictEqual((localizedManifest.contributes?.configuration as IConfigurationNode).title, 'Test Configuration');
+		assert.strictEqual(
+			localizedManifest.contributes?.authentication?.[0].label,
+			'Test Authentication'
+		);
+		assert.strictEqual(
+			(localizedManifest.contributes?.configuration as IConfigurationNode).title,
+			'Test Configuration'
+		);
 	});
 
 	test('replaces template strings with fallback if not found in translations', function () {
@@ -81,8 +83,14 @@ suite('Localize Manifest', () => {
 
 		assert.strictEqual(localizedManifest.contributes?.commands?.[0].title, 'Test Command');
 		assert.strictEqual(localizedManifest.contributes?.commands?.[0].category, 'Test Category');
-		assert.strictEqual(localizedManifest.contributes?.authentication?.[0].label, 'Test Authentication');
-		assert.strictEqual((localizedManifest.contributes?.configuration as IConfigurationNode).title, 'Test Configuration');
+		assert.strictEqual(
+			localizedManifest.contributes?.authentication?.[0].label,
+			'Test Authentication'
+		);
+		assert.strictEqual(
+			(localizedManifest.contributes?.configuration as IConfigurationNode).title,
+			'Test Configuration'
+		);
 	});
 
 	test('replaces template strings - command title & categories become ILocalizedString', function () {
@@ -111,8 +119,14 @@ suite('Localize Manifest', () => {
 		assert.strictEqual(category.original, 'Test Category');
 
 		// Everything else stays as a string.
-		assert.strictEqual(localizedManifest.contributes?.authentication?.[0].label, 'Testauthentifizierung');
-		assert.strictEqual((localizedManifest.contributes?.configuration as IConfigurationNode).title, 'Testkonfiguration');
+		assert.strictEqual(
+			localizedManifest.contributes?.authentication?.[0].label,
+			'Testauthentifizierung'
+		);
+		assert.strictEqual(
+			(localizedManifest.contributes?.configuration as IConfigurationNode).title,
+			'Testkonfiguration'
+		);
 	});
 
 	test('replaces template strings - is best effort #164630', function () {
@@ -121,7 +135,7 @@ suite('Localize Manifest', () => {
 			publisher: 'test',
 			version: '1.0.0',
 			engines: {
-				vscode: '*'
+				vscode: '*',
 			},
 			contributes: {
 				authentication: [
@@ -129,16 +143,16 @@ suite('Localize Manifest', () => {
 						id: 'test.authentication',
 						// This not existing in the bundle shouldn't cause an error.
 						label: '%doesnotexist%',
-					}
+					},
 				],
 				commands: [
 					{
 						command: 'test.command',
 						title: '%test.command.title%',
-						category: '%test.command.category%'
+						category: '%test.command.category%',
 					},
 				],
-			}
+			},
 		};
 
 		const localizedManifest = localizeManifest(
@@ -146,8 +160,9 @@ suite('Localize Manifest', () => {
 			deepClone(manifestWithTypo),
 			{
 				'test.command.title': 'Test Command',
-				'test.command.category': 'Test Category'
-			});
+				'test.command.category': 'Test Category',
+			}
+		);
 
 		assert.strictEqual(localizedManifest.contributes?.commands?.[0].title, 'Test Command');
 		assert.strictEqual(localizedManifest.contributes?.commands?.[0].category, 'Test Category');

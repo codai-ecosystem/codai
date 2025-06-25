@@ -12,14 +12,14 @@ type Config = {
 	disallowed: Set<string>;
 };
 
-export = new class implements eslint.Rule.RuleModule {
-
+export = new (class implements eslint.Rule.RuleModule {
 	readonly meta: eslint.Rule.RuleMetaData = {
 		messages: {
-			layerbreaker: 'Bad layering. You are not allowed to access {{from}} from here, allowed layers are: [{{allowed}}]'
+			layerbreaker:
+				'Bad layering. You are not allowed to access {{from}} from here, allowed layers are: [{{allowed}}]',
 		},
 		docs: {
-			url: 'https://github.com/microsoft/vscode/wiki/Source-Code-Organization'
+			url: 'https://github.com/microsoft/vscode/wiki/Source-Code-Organization',
 		},
 		schema: [
 			{
@@ -27,15 +27,14 @@ export = new class implements eslint.Rule.RuleModule {
 				additionalProperties: {
 					type: 'array',
 					items: {
-						type: 'string'
-					}
-				}
-			}
-		]
+						type: 'string',
+					},
+				},
+			},
+		],
 	};
 
 	create(context: eslint.Rule.RuleContext): eslint.Rule.RuleListener {
-
 		const fileDirname = dirname(context.getFilename());
 		const parts = fileDirname.split(/\\|\//);
 		const ruleArgs = <Record<string, string[]>>context.options[0];
@@ -45,7 +44,7 @@ export = new class implements eslint.Rule.RuleModule {
 			if (ruleArgs[parts[i]]) {
 				config = {
 					allowed: new Set(ruleArgs[parts[i]]).add(parts[i]),
-					disallowed: new Set()
+					disallowed: new Set(),
 				};
 				Object.keys(ruleArgs).forEach(key => {
 					if (!config!.allowed.has(key)) {
@@ -82,13 +81,12 @@ export = new class implements eslint.Rule.RuleModule {
 						messageId: 'layerbreaker',
 						data: {
 							from: part,
-							allowed: [...config!.allowed.keys()].join(', ')
-						}
+							allowed: [...config!.allowed.keys()].join(', '),
+						},
 					});
 					break;
 				}
 			}
 		});
 	}
-};
-
+})();

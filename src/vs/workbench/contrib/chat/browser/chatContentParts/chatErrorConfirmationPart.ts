@@ -11,8 +11,17 @@ import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js
 import { MarkdownRenderer } from '../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { defaultButtonStyles } from '../../../../../platform/theme/browser/defaultStyles.js';
-import { ChatErrorLevel, IChatResponseErrorDetailsConfirmationButton, IChatSendRequestOptions, IChatService } from '../../common/chatService.js';
-import { assertIsResponseVM, IChatErrorDetailsPart, IChatRendererContent } from '../../common/chatViewModel.js';
+import {
+	ChatErrorLevel,
+	IChatResponseErrorDetailsConfirmationButton,
+	IChatSendRequestOptions,
+	IChatService,
+} from '../../common/chatService.js';
+import {
+	assertIsResponseVM,
+	IChatErrorDetailsPart,
+	IChatRendererContent,
+} from '../../common/chatViewModel.js';
 import { IChatWidgetService } from '../chat.js';
 import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
 import { ChatErrorWidget } from './chatErrorContentPart.js';
@@ -34,7 +43,7 @@ export class ChatErrorConfirmationContentPart extends Disposable implements ICha
 		context: IChatContentPartRenderContext,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IChatWidgetService chatWidgetService: IChatWidgetService,
-		@IChatService chatService: IChatService,
+		@IChatService chatService: IChatService
 	) {
 		super();
 
@@ -51,21 +60,23 @@ export class ChatErrorConfirmationContentPart extends Disposable implements ICha
 			const button = this._register(new Button(buttonContainer, buttonOptions));
 			button.label = buttonData.label;
 
-			this._register(button.onDidClick(async () => {
-				const prompt = buttonData.label;
-				const options: IChatSendRequestOptions = buttonData.isSecondary ?
-					{ rejectedConfirmationData: [buttonData.data] } :
-					{ acceptedConfirmationData: [buttonData.data] };
-				options.agentId = element.agent?.id;
-				options.slashCommand = element.slashCommand?.name;
-				options.confirmation = buttonData.label;
-				const widget = chatWidgetService.getWidgetBySessionId(element.sessionId);
-				options.userSelectedModelId = widget?.input.currentLanguageModel;
-				options.mode = widget?.input.currentMode;
-				if (await chatService.sendRequest(element.sessionId, prompt, options)) {
-					this._onDidChangeHeight.fire();
-				}
-			}));
+			this._register(
+				button.onDidClick(async () => {
+					const prompt = buttonData.label;
+					const options: IChatSendRequestOptions = buttonData.isSecondary
+						? { rejectedConfirmationData: [buttonData.data] }
+						: { acceptedConfirmationData: [buttonData.data] };
+					options.agentId = element.agent?.id;
+					options.slashCommand = element.slashCommand?.name;
+					options.confirmation = buttonData.label;
+					const widget = chatWidgetService.getWidgetBySessionId(element.sessionId);
+					options.userSelectedModelId = widget?.input.currentLanguageModel;
+					options.mode = widget?.input.currentMode;
+					if (await chatService.sendRequest(element.sessionId, prompt, options)) {
+						this._onDidChangeHeight.fire();
+					}
+				})
+			);
 		});
 	}
 

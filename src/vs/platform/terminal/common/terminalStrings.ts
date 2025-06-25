@@ -18,7 +18,10 @@ export interface ITerminalFormatMessageOptions {
 /**
  * Formats a message from the product to be written to the terminal.
  */
-export function formatMessageForTerminal(message: string, options: ITerminalFormatMessageOptions = {}): string {
+export function formatMessageForTerminal(
+	message: string,
+	options: ITerminalFormatMessageOptions = {}
+): string {
 	let result = '';
 	if (!options.excludeLeadingNewLine) {
 		result += '\r\n';

@@ -25,7 +25,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		KeyN: ['b', 'B', '∫', 'ı', 0],
 		KeyO: ['r', 'R', '®', '‰', 0],
 		KeyP: ['l', 'L', '¬', 'Ò', 0],
-		KeyQ: ['\'', '"', 'æ', 'Æ', 0],
+		KeyQ: ["'", '"', 'æ', 'Æ', 0],
 		KeyR: ['p', 'P', 'π', '∏', 0],
 		KeyS: ['o', 'O', 'ø', 'Ø', 0],
 		KeyT: ['y', 'Y', '¥', 'Á', 0],
@@ -126,6 +126,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		ControlRight: [],
 		ShiftRight: [],
 		AltRight: [],
-		MetaRight: []
-	}
+		MetaRight: [],
+	},
 });

@@ -19,62 +19,62 @@ export function StatusBar({
 	progress,
 	actions,
 	children,
-	className = ''
+	className = '',
 }: StatusBarProps) {
 	const getStatusIcon = () => {
 		switch (status) {
-			case 'running': return '⟳';
-			case 'error': return '⚠';
-			case 'success': return '✓';
+			case 'running':
+				return '⟳';
+			case 'error':
+				return '⚠';
+			case 'success':
+				return '✓';
 			case 'idle':
-			default: return '●';
+			default:
+				return '●';
 		}
 	};
 
 	const getStatusColor = () => {
 		switch (status) {
-			case 'running': return 'blue';
-			case 'error': return 'red';
-			case 'success': return 'green';
+			case 'running':
+				return 'blue';
+			case 'error':
+				return 'red';
+			case 'success':
+				return 'green';
 			case 'idle':
-			default: return 'gray';
+			default:
+				return 'gray';
 		}
 	};
 
 	return (
-		<footer
-			className={`aide-status-bar ${className}`}
-			role="contentinfo"
-		>
-			<div className="aide-status-bar-content">				<div className="aide-status-bar-main">
-				<span
-					className={`aide-status-indicator status-${status}`}
-					aria-label={`Status: ${status}`}
-				>
-					{getStatusIcon()}
-				</span>
-				{message && (
-					<span className="aide-status-message">{message}</span>
-				)}					{progress !== undefined && progress >= 0 && progress <= 100 && (
-					<div className="aide-status-progress">							<div
-						className="aide-status-progress-bar"
-						data-progress={progress}
-						role="progressbar"
-						aria-label={`Progress: ${progress}%`}
-					/>
-					</div>
-				)}
-			</div>
-				{children && (
-					<div className="aide-status-bar-content-area">
-						{children}
-					</div>
-				)}
-				{actions && (
-					<div className="aide-status-bar-actions">
-						{actions}
-					</div>
-				)}
+		<footer className={`aide-status-bar ${className}`} role="contentinfo">
+			<div className="aide-status-bar-content">
+				{' '}
+				<div className="aide-status-bar-main">
+					<span
+						className={`aide-status-indicator status-${status}`}
+						aria-label={`Status: ${status}`}
+					>
+						{getStatusIcon()}
+					</span>
+					{message && <span className="aide-status-message">{message}</span>}{' '}
+					{progress !== undefined && progress >= 0 && progress <= 100 && (
+						<div className="aide-status-progress">
+							{' '}
+							<div
+								className="aide-status-progress-bar"
+								data-progress={progress}
+								role="progressbar"
+								aria-label={`Progress: ${progress}%`}
+							/>
+						</div>
+					)}
+				</div>
+				{children && <div className="aide-status-bar-content-area">{children}</div>}
+				{actions && <div className="aide-status-bar-actions">{actions}</div>}
 			</div>
 		</footer>
 	);

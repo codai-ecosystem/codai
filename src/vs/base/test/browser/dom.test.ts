@@ -4,7 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { $, h, multibyteAwareBtoa, trackAttributes, copyAttributes, disposableWindowInterval, getWindows, getWindowsCount, getWindowId, getWindowById, hasWindow, getWindow, getDocument, isHTMLElement, SafeTriangle } from '../../browser/dom.js';
+import {
+	$,
+	h,
+	multibyteAwareBtoa,
+	trackAttributes,
+	copyAttributes,
+	disposableWindowInterval,
+	getWindows,
+	getWindowsCount,
+	getWindowId,
+	getWindowById,
+	hasWindow,
+	getWindow,
+	getDocument,
+	isHTMLElement,
+	SafeTriangle,
+} from '../../browser/dom.js';
 import { asCssValueWithDefault } from '../../../base/browser/cssValue.js';
 import { ensureCodeWindow, isAuxiliaryWindow, mainWindow } from '../../browser/window.js';
 import { DeferredPromise, timeout } from '../../common/async.js';
@@ -13,7 +29,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../common/utils.js';
 
 suite('dom', () => {
 	test('hasClass', () => {
-
 		const element = document.createElement('div');
 		element.className = 'foobar boo far';
 
@@ -26,7 +41,6 @@ suite('dom', () => {
 	});
 
 	test('removeClass', () => {
-
 		let element = document.createElement('div');
 		element.className = 'foobar boo far';
 
@@ -261,10 +275,7 @@ suite('dom', () => {
 	test('should recurse', () => {
 		const result = h('div.code-view', [
 			h('div.title@title'),
-			h('div.container', [
-				h('div.gutter@gutterDiv'),
-				h('span@editor'),
-			]),
+			h('div.container', [h('div.gutter@gutterDiv'), h('span@editor')]),
 		]);
 
 		assert.strictEqual(result.root.tagName, 'DIV');
@@ -287,7 +298,10 @@ suite('dom', () => {
 		assert.strictEqual(asCssValueWithDefault(undefined, 'blue'), 'blue');
 		assert.strictEqual(asCssValueWithDefault('var(--my-var)', 'blue'), 'var(--my-var, blue)');
 		assert.strictEqual(asCssValueWithDefault('var(--my-var, red)', 'blue'), 'var(--my-var, red)');
-		assert.strictEqual(asCssValueWithDefault('var(--my-var, var(--my-var2))', 'blue'), 'var(--my-var, var(--my-var2, blue))');
+		assert.strictEqual(
+			asCssValueWithDefault('var(--my-var, var(--my-var2))', 'blue'),
+			'var(--my-var, var(--my-var2, blue))'
+		);
 	});
 
 	test('copyAttributes', () => {
@@ -366,15 +380,20 @@ suite('dom', () => {
 		test('basics', async () => {
 			let count = 0;
 			const promise = new DeferredPromise<void>();
-			const interval = disposableWindowInterval(mainWindow, () => {
-				count++;
-				if (count === 3) {
-					promise.complete(undefined);
-					return true;
-				} else {
-					return false;
-				}
-			}, 0, 10);
+			const interval = disposableWindowInterval(
+				mainWindow,
+				() => {
+					count++;
+					if (count === 3) {
+						promise.complete(undefined);
+						return true;
+					} else {
+						return false;
+					}
+				},
+				0,
+				10
+			);
 
 			await promise.p;
 			assert.strictEqual(count, 3);
@@ -383,11 +402,16 @@ suite('dom', () => {
 
 		test('iterations', async () => {
 			let count = 0;
-			const interval = disposableWindowInterval(mainWindow, () => {
-				count++;
+			const interval = disposableWindowInterval(
+				mainWindow,
+				() => {
+					count++;
 
-				return false;
-			}, 0, 0);
+					return false;
+				},
+				0,
+				0
+			);
 
 			await timeout(5);
 			assert.strictEqual(count, 0);
@@ -396,11 +420,16 @@ suite('dom', () => {
 
 		test('dispose', async () => {
 			let count = 0;
-			const interval = disposableWindowInterval(mainWindow, () => {
-				count++;
+			const interval = disposableWindowInterval(
+				mainWindow,
+				() => {
+					count++;
 
-				return false;
-			}, 0, 10);
+					return false;
+				},
+				0,
+				10
+			);
 
 			interval.dispose();
 			await timeout(5);

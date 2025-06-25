@@ -23,11 +23,11 @@ class LogChatInputHistoryAction extends Action2 {
 	constructor() {
 		super({
 			id: LogChatInputHistoryAction.ID,
-			title: localize2('workbench.action.chat.logInputHistory.label', "Log Chat Input History"),
+			title: localize2('workbench.action.chat.logInputHistory.label', 'Log Chat Input History'),
 			icon: Codicon.attach,
 			category: Categories.Developer,
 			f1: true,
-			precondition: ChatContextKeys.enabled
+			precondition: ChatContextKeys.enabled,
 		});
 	}
 
@@ -43,11 +43,11 @@ class LogChatIndexAction extends Action2 {
 	constructor() {
 		super({
 			id: LogChatIndexAction.ID,
-			title: localize2('workbench.action.chat.logChatIndex.label', "Log Chat Index"),
+			title: localize2('workbench.action.chat.logChatIndex.label', 'Log Chat Index'),
 			icon: Codicon.attach,
 			category: Categories.Developer,
 			f1: true,
-			precondition: ChatContextKeys.enabled
+			precondition: ChatContextKeys.enabled,
 		});
 	}
 

@@ -14,66 +14,87 @@ import { AccessibilityVerbositySettingId } from '../../accessibility/browser/acc
 import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
 import { CellViewModel, NotebookViewModel } from './viewModel/notebookViewModelImpl.js';
 import { CellKind, NotebookCellExecutionState } from '../common/notebookCommon.js';
-import { ICellExecutionStateChangedEvent, IExecutionStateChangedEvent, INotebookExecutionStateService, NotebookExecutionType } from '../common/notebookExecutionStateService.js';
+import {
+	ICellExecutionStateChangedEvent,
+	IExecutionStateChangedEvent,
+	INotebookExecutionStateService,
+	NotebookExecutionType,
+} from '../common/notebookExecutionStateService.js';
 import { getAllOutputsText } from './viewModel/cellOutputTextHelper.js';
 import { IAccessibilityService } from '../../../../platform/accessibility/common/accessibility.js';
 import { alert } from '../../../../base/browser/ui/aria/aria.js';
 
 type executionUpdate = { cellHandle: number; state: NotebookCellExecutionState | undefined };
 
-export class NotebookAccessibilityProvider extends Disposable implements IListAccessibilityProvider<CellViewModel> {
+export class NotebookAccessibilityProvider
+	extends Disposable
+	implements IListAccessibilityProvider<CellViewModel>
+{
 	private readonly _onDidAriaLabelChange = new Emitter<CellViewModel>();
 	private readonly onDidAriaLabelChange = this._onDidAriaLabelChange.event;
 
 	constructor(
 		private readonly viewModel: () => NotebookViewModel | undefined,
 		private readonly isReplHistory: boolean,
-		@INotebookExecutionStateService private readonly notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private readonly notebookExecutionStateService: INotebookExecutionStateService,
 		@IKeybindingService private readonly keybindingService: IKeybindingService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IAccessibilityService private readonly accessibilityService: IAccessibilityService
 	) {
 		super();
-		this._register(Event.debounce<ICellExecutionStateChangedEvent | IExecutionStateChangedEvent, executionUpdate[]>(
-			this.notebookExecutionStateService.onDidChangeExecution,
-			(last: executionUpdate[] | undefined, e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent) => this.mergeEvents(last, e),
-			100
-		)((updates: executionUpdate[]) => {
-			if (!updates.length) {
-				return;
-			}
-			const viewModel = this.viewModel();
-			if (viewModel) {
-				for (const update of updates) {
-					const cellModel = viewModel.getCellByHandle(update.cellHandle);
-					if (cellModel) {
-						this._onDidAriaLabelChange.fire(cellModel as CellViewModel);
-					}
+		this._register(
+			Event.debounce<
+				ICellExecutionStateChangedEvent | IExecutionStateChangedEvent,
+				executionUpdate[]
+			>(
+				this.notebookExecutionStateService.onDidChangeExecution,
+				(
+					last: executionUpdate[] | undefined,
+					e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent
+				) => this.mergeEvents(last, e),
+				100
+			)((updates: executionUpdate[]) => {
+				if (!updates.length) {
+					return;
 				}
+				const viewModel = this.viewModel();
+				if (viewModel) {
+					for (const update of updates) {
+						const cellModel = viewModel.getCellByHandle(update.cellHandle);
+						if (cellModel) {
+							this._onDidAriaLabelChange.fire(cellModel as CellViewModel);
+						}
+					}
 
-				const lastUpdate = updates[updates.length - 1];
-				if (this.shouldReadCellOutputs(lastUpdate.state)) {
-					const cell = viewModel.getCellByHandle(lastUpdate.cellHandle);
-					if (cell && cell.outputsViewModels.length) {
-						const text = getAllOutputsText(viewModel.notebookDocument, cell, true);
-						alert(text);
+					const lastUpdate = updates[updates.length - 1];
+					if (this.shouldReadCellOutputs(lastUpdate.state)) {
+						const cell = viewModel.getCellByHandle(lastUpdate.cellHandle);
+						if (cell && cell.outputsViewModels.length) {
+							const text = getAllOutputsText(viewModel.notebookDocument, cell, true);
+							alert(text);
+						}
 					}
 				}
-			}
-		}, this));
+			}, this)
+		);
 	}
 
 	private shouldReadCellOutputs(state: NotebookCellExecutionState | undefined): boolean {
-		return state === undefined // execution completed
-			&& this.isReplHistory
-			&& this.accessibilityService.isScreenReaderOptimized()
-			&& this.configurationService.getValue<boolean>('accessibility.replEditor.readLastExecutionOutput');
+		return (
+			state === undefined && // execution completed
+			this.isReplHistory &&
+			this.accessibilityService.isScreenReaderOptimized() &&
+			this.configurationService.getValue<boolean>(
+				'accessibility.replEditor.readLastExecutionOutput'
+			)
+		);
 	}
 
 	get verbositySettingId() {
-		return this.isReplHistory ?
-			AccessibilityVerbositySettingId.ReplEditor :
-			AccessibilityVerbositySettingId.Notebook;
+		return this.isReplHistory
+			? AccessibilityVerbositySettingId.ReplEditor
+			: AccessibilityVerbositySettingId.Notebook;
 	}
 
 	getAriaLabel(element: CellViewModel) {
@@ -94,9 +115,9 @@ export class NotebookAccessibilityProvider extends Disposable implements IListAc
 	}
 
 	private createItemLabel(executionLabel: string, cellKind: CellKind) {
-		return this.isReplHistory ?
-			`cell${executionLabel}` :
-			`${cellKind === CellKind.Markup ? 'markdown' : 'code'} cell${executionLabel}`;
+		return this.isReplHistory
+			? `cell${executionLabel}`
+			: `${cellKind === CellKind.Markup ? 'markdown' : 'code'} cell${executionLabel}`;
 	}
 
 	private getLabel(element: CellViewModel) {
@@ -112,23 +133,37 @@ export class NotebookAccessibilityProvider extends Disposable implements IListAc
 	}
 
 	private get widgetAriaLabelName() {
-		return this.isReplHistory ?
-			nls.localize('replHistoryTreeAriaLabel', "REPL Editor History") :
-			nls.localize('notebookTreeAriaLabel', "Notebook");
+		return this.isReplHistory
+			? nls.localize('replHistoryTreeAriaLabel', 'REPL Editor History')
+			: nls.localize('notebookTreeAriaLabel', 'Notebook');
 	}
 
 	getWidgetAriaLabel() {
-		const keybinding = this.keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)?.getLabel();
+		const keybinding = this.keybindingService
+			.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)
+			?.getLabel();
 
 		if (this.configurationService.getValue(this.verbositySettingId)) {
 			return keybinding
-				? nls.localize('notebookTreeAriaLabelHelp', "{0}\nUse {1} for accessibility help", this.widgetAriaLabelName, keybinding)
-				: nls.localize('notebookTreeAriaLabelHelpNoKb', "{0}\nRun the Open Accessibility Help command for more information", this.widgetAriaLabelName);
+				? nls.localize(
+						'notebookTreeAriaLabelHelp',
+						'{0}\nUse {1} for accessibility help',
+						this.widgetAriaLabelName,
+						keybinding
+					)
+				: nls.localize(
+						'notebookTreeAriaLabelHelpNoKb',
+						'{0}\nRun the Open Accessibility Help command for more information',
+						this.widgetAriaLabelName
+					);
 		}
 		return this.widgetAriaLabelName;
 	}
 
-	private mergeEvents(last: executionUpdate[] | undefined, e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent): executionUpdate[] {
+	private mergeEvents(
+		last: executionUpdate[] | undefined,
+		e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent
+	): executionUpdate[] {
 		const viewModel = this.viewModel();
 		const result = last || [];
 		if (viewModel && e.type === NotebookExecutionType.cell && e.affectsNotebook(viewModel.uri)) {

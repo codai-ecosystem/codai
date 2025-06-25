@@ -12,7 +12,10 @@ import { joinPath } from '../../../../base/common/resources.js';
 import { InMemoryFileSystemProvider } from '../../../files/common/inMemoryFilesystemProvider.js';
 import { AbstractNativeEnvironmentService } from '../../../environment/common/environmentService.js';
 import product from '../../../product/common/product.js';
-import { InMemoryUserDataProfilesService, UserDataProfilesService } from '../../common/userDataProfile.js';
+import {
+	InMemoryUserDataProfilesService,
+	UserDataProfilesService,
+} from '../../common/userDataProfile.js';
 import { UriIdentityService } from '../../../uriIdentity/common/uriIdentityService.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { Event } from '../../../../base/common/event.js';
@@ -23,12 +26,15 @@ class TestEnvironmentService extends AbstractNativeEnvironmentService {
 	constructor(private readonly _appSettingsHome: URI) {
 		super(Object.create(null), Object.create(null), { _serviceBrand: undefined, ...product });
 	}
-	override get userRoamingDataHome() { return this._appSettingsHome.with({ scheme: Schemas.vscodeUserData }); }
-	override get cacheHome() { return this.userRoamingDataHome; }
+	override get userRoamingDataHome() {
+		return this._appSettingsHome.with({ scheme: Schemas.vscodeUserData });
+	}
+	override get cacheHome() {
+		return this.userRoamingDataHome;
+	}
 }
 
 suite('UserDataProfileService (Common)', () => {
-
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 	let testObject: UserDataProfilesService;
 	let environmentService: TestEnvironmentService;
@@ -41,20 +47,47 @@ suite('UserDataProfileService (Common)', () => {
 		disposables.add(fileService.registerProvider(Schemas.vscodeUserData, fileSystemProvider));
 
 		environmentService = new TestEnvironmentService(joinPath(ROOT, 'User'));
-		testObject = disposables.add(new InMemoryUserDataProfilesService(environmentService, fileService, disposables.add(new UriIdentityService(fileService)), logService));
+		testObject = disposables.add(
+			new InMemoryUserDataProfilesService(
+				environmentService,
+				fileService,
+				disposables.add(new UriIdentityService(fileService)),
+				logService
+			)
+		);
 	});
-
 
 	test('default profile', () => {
 		assert.strictEqual(testObject.defaultProfile.isDefault, true);
 		assert.strictEqual(testObject.defaultProfile.useDefaultFlags, undefined);
-		assert.strictEqual(testObject.defaultProfile.location.toString(), environmentService.userRoamingDataHome.toString());
-		assert.strictEqual(testObject.defaultProfile.globalStorageHome.toString(), joinPath(environmentService.userRoamingDataHome, 'globalStorage').toString());
-		assert.strictEqual(testObject.defaultProfile.keybindingsResource.toString(), joinPath(environmentService.userRoamingDataHome, 'keybindings.json').toString());
-		assert.strictEqual(testObject.defaultProfile.settingsResource.toString(), joinPath(environmentService.userRoamingDataHome, 'settings.json').toString());
-		assert.strictEqual(testObject.defaultProfile.snippetsHome.toString(), joinPath(environmentService.userRoamingDataHome, 'snippets').toString());
-		assert.strictEqual(testObject.defaultProfile.tasksResource.toString(), joinPath(environmentService.userRoamingDataHome, 'tasks.json').toString());
-		assert.strictEqual(testObject.defaultProfile.extensionsResource.toString(), joinPath(environmentService.userRoamingDataHome, 'extensions.json').toString());
+		assert.strictEqual(
+			testObject.defaultProfile.location.toString(),
+			environmentService.userRoamingDataHome.toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.globalStorageHome.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'globalStorage').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.keybindingsResource.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'keybindings.json').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.settingsResource.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'settings.json').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.snippetsHome.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'snippets').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.tasksResource.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'tasks.json').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.extensionsResource.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'extensions.json').toString()
+		);
 	});
 
 	test('profiles always include default profile', () => {
@@ -166,51 +199,81 @@ suite('UserDataProfileService (Common)', () => {
 	});
 
 	test('profile using default profile for settings', async () => {
-		const profile = await testObject.createNamedProfile('name', { useDefaultFlags: { settings: true } });
+		const profile = await testObject.createNamedProfile('name', {
+			useDefaultFlags: { settings: true },
+		});
 
 		assert.strictEqual(profile.isDefault, false);
 		assert.deepStrictEqual(profile.useDefaultFlags, { settings: true });
-		assert.strictEqual(profile.settingsResource.toString(), testObject.defaultProfile.settingsResource.toString());
+		assert.strictEqual(
+			profile.settingsResource.toString(),
+			testObject.defaultProfile.settingsResource.toString()
+		);
 	});
 
 	test('profile using default profile for keybindings', async () => {
-		const profile = await testObject.createNamedProfile('name', { useDefaultFlags: { keybindings: true } });
+		const profile = await testObject.createNamedProfile('name', {
+			useDefaultFlags: { keybindings: true },
+		});
 
 		assert.strictEqual(profile.isDefault, false);
 		assert.deepStrictEqual(profile.useDefaultFlags, { keybindings: true });
-		assert.strictEqual(profile.keybindingsResource.toString(), testObject.defaultProfile.keybindingsResource.toString());
+		assert.strictEqual(
+			profile.keybindingsResource.toString(),
+			testObject.defaultProfile.keybindingsResource.toString()
+		);
 	});
 
 	test('profile using default profile for snippets', async () => {
-		const profile = await testObject.createNamedProfile('name', { useDefaultFlags: { snippets: true } });
+		const profile = await testObject.createNamedProfile('name', {
+			useDefaultFlags: { snippets: true },
+		});
 
 		assert.strictEqual(profile.isDefault, false);
 		assert.deepStrictEqual(profile.useDefaultFlags, { snippets: true });
-		assert.strictEqual(profile.snippetsHome.toString(), testObject.defaultProfile.snippetsHome.toString());
+		assert.strictEqual(
+			profile.snippetsHome.toString(),
+			testObject.defaultProfile.snippetsHome.toString()
+		);
 	});
 
 	test('profile using default profile for tasks', async () => {
-		const profile = await testObject.createNamedProfile('name', { useDefaultFlags: { tasks: true } });
+		const profile = await testObject.createNamedProfile('name', {
+			useDefaultFlags: { tasks: true },
+		});
 
 		assert.strictEqual(profile.isDefault, false);
 		assert.deepStrictEqual(profile.useDefaultFlags, { tasks: true });
-		assert.strictEqual(profile.tasksResource.toString(), testObject.defaultProfile.tasksResource.toString());
+		assert.strictEqual(
+			profile.tasksResource.toString(),
+			testObject.defaultProfile.tasksResource.toString()
+		);
 	});
 
 	test('profile using default profile for global state', async () => {
-		const profile = await testObject.createNamedProfile('name', { useDefaultFlags: { globalState: true } });
+		const profile = await testObject.createNamedProfile('name', {
+			useDefaultFlags: { globalState: true },
+		});
 
 		assert.strictEqual(profile.isDefault, false);
 		assert.deepStrictEqual(profile.useDefaultFlags, { globalState: true });
-		assert.strictEqual(profile.globalStorageHome.toString(), testObject.defaultProfile.globalStorageHome.toString());
+		assert.strictEqual(
+			profile.globalStorageHome.toString(),
+			testObject.defaultProfile.globalStorageHome.toString()
+		);
 	});
 
 	test('profile using default profile for extensions', async () => {
-		const profile = await testObject.createNamedProfile('name', { useDefaultFlags: { extensions: true } });
+		const profile = await testObject.createNamedProfile('name', {
+			useDefaultFlags: { extensions: true },
+		});
 
 		assert.strictEqual(profile.isDefault, false);
 		assert.deepStrictEqual(profile.useDefaultFlags, { extensions: true });
-		assert.strictEqual(profile.extensionsResource.toString(), testObject.defaultProfile.extensionsResource.toString());
+		assert.strictEqual(
+			profile.extensionsResource.toString(),
+			testObject.defaultProfile.extensionsResource.toString()
+		);
 	});
 
 	test('update profile using default profile for keybindings', async () => {
@@ -219,12 +282,20 @@ suite('UserDataProfileService (Common)', () => {
 
 		assert.strictEqual(profile.isDefault, false);
 		assert.deepStrictEqual(profile.useDefaultFlags, { keybindings: true });
-		assert.strictEqual(profile.keybindingsResource.toString(), testObject.defaultProfile.keybindingsResource.toString());
+		assert.strictEqual(
+			profile.keybindingsResource.toString(),
+			testObject.defaultProfile.keybindingsResource.toString()
+		);
 	});
 
 	test('create profile with a workspace associates it to the profile', async () => {
 		const workspace = URI.file('/workspace1');
-		const profile = await testObject.createProfile('id', 'name', {}, { id: workspace.path, uri: workspace });
+		const profile = await testObject.createProfile(
+			'id',
+			'name',
+			{},
+			{ id: workspace.path, uri: workspace }
+		);
 		assert.deepStrictEqual(profile.workspaces?.length, 1);
 		assert.deepStrictEqual(profile.workspaces?.[0].toString(), workspace.toString());
 	});
@@ -258,7 +329,12 @@ suite('UserDataProfileService (Common)', () => {
 
 	test('associate workspace to another profile should update workspaces', async () => {
 		const workspace = URI.file('/workspace1');
-		const profile1 = await testObject.createProfile('id', 'name', {}, { id: workspace.path, uri: workspace });
+		const profile1 = await testObject.createProfile(
+			'id',
+			'name',
+			{},
+			{ id: workspace.path, uri: workspace }
+		);
 		const profile2 = await testObject.createProfile('id1', 'name1');
 
 		const promise = Event.toPromise(testObject.onDidChangeProfiles);
@@ -279,7 +355,12 @@ suite('UserDataProfileService (Common)', () => {
 
 	test('unassociate workspace to a profile should update workspaces', async () => {
 		const workspace = URI.file('/workspace1');
-		const profile = await testObject.createProfile('id', 'name', {}, { id: workspace.path, uri: workspace });
+		const profile = await testObject.createProfile(
+			'id',
+			'name',
+			{},
+			{ id: workspace.path, uri: workspace }
+		);
 
 		const promise = Event.toPromise(testObject.onDidChangeProfiles);
 		testObject.unsetWorkspace({ id: workspace.path, uri: workspace });
@@ -330,7 +411,10 @@ suite('UserDataProfileService (Common)', () => {
 		assert.deepStrictEqual(testObject.profiles[0], testObject.defaultProfile);
 		assert.deepStrictEqual(testObject.defaultProfile.isDefault, true);
 		assert.deepStrictEqual(testObject.defaultProfile.workspaces?.length, 1);
-		assert.deepStrictEqual(testObject.defaultProfile.workspaces[0].toString(), workspace.toString());
+		assert.deepStrictEqual(
+			testObject.defaultProfile.workspaces[0].toString(),
+			workspace.toString()
+		);
 	});
 
 	test('can create transient and persistent profiles with same name', async () => {
@@ -349,5 +433,4 @@ suite('UserDataProfileService (Common)', () => {
 		assert.deepStrictEqual(testObject.profiles[2].id, profile1.id);
 		assert.deepStrictEqual(testObject.profiles[3].id, profile2.id);
 	});
-
 });

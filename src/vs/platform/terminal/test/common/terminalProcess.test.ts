@@ -17,14 +17,11 @@ suite('platform - terminalProcess', () => {
 			deepStrictEqual(chunkInput('foo'.repeat(50)), [
 				'foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofo',
 				'ofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoof',
-				'oofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoo'
+				'oofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoo',
 			]);
 		});
 		test('small data with escapes', () => {
-			deepStrictEqual(chunkInput('foo \x1b[30mbar'), [
-				'foo ',
-				'\x1b[30mbar'
-			]);
+			deepStrictEqual(chunkInput('foo \x1b[30mbar'), ['foo ', '\x1b[30mbar']);
 		});
 		test('large data with escapes', () => {
 			deepStrictEqual(chunkInput('foofoofoofoo\x1b[30mbarbarbarbarbar\x1b[0m'.repeat(3)), [
@@ -34,7 +31,7 @@ suite('platform - terminalProcess', () => {
 				'\x1B[30mbarbarbarbarbar',
 				'\x1B[0mfoofoofoofoo',
 				'\x1B[30mbarbarbarbarbar',
-				'\x1B[0m'
+				'\x1B[0m',
 			]);
 		});
 	});

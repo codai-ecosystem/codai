@@ -3,8 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEditorHoverContext, IEditorHoverParticipant, IEditorHoverRenderContext, IHoverPart, IRenderedHoverParts, RenderedHoverParts } from './hoverTypes.js';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	IEditorHoverContext,
+	IEditorHoverParticipant,
+	IEditorHoverRenderContext,
+	IHoverPart,
+	IRenderedHoverParts,
+	RenderedHoverParts,
+} from './hoverTypes.js';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { EditorHoverStatusBar } from './contentHoverStatusBar.js';
 import { HoverStartSource } from './hoverOperation.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
@@ -25,7 +37,6 @@ import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 import { IOffsetRange } from '../../../common/core/ranges/offsetRange.js';
 
 export class RenderedContentHover extends Disposable {
-
 	public closestMouseDistance: number | undefined;
 	public initialMousePosX: number | undefined;
 	public initialMousePosY: number | undefined;
@@ -48,17 +59,23 @@ export class RenderedContentHover extends Disposable {
 	) {
 		super();
 		const parts = hoverResult.hoverParts;
-		this._renderedHoverParts = this._register(new RenderedContentHoverParts(
-			editor,
-			participants,
-			parts,
-			context,
-			keybindingService,
-			hoverService
-		));
+		this._renderedHoverParts = this._register(
+			new RenderedContentHoverParts(
+				editor,
+				participants,
+				parts,
+				context,
+				keybindingService,
+				hoverService
+			)
+		);
 		const contentHoverComputerOptions = hoverResult.options;
 		const anchor = contentHoverComputerOptions.anchor;
-		const { showAtPosition, showAtSecondaryPosition } = RenderedContentHover.computeHoverPositions(editor, anchor.range, parts);
+		const { showAtPosition, showAtSecondaryPosition } = RenderedContentHover.computeHoverPositions(
+			editor,
+			anchor.range,
+			parts
+		);
 		this.shouldAppearBeforeContent = parts.some(m => m.isBeforeContent);
 		this.showAtPosition = showAtPosition;
 		this.showAtSecondaryPosition = showAtSecondaryPosition;
@@ -96,11 +113,18 @@ export class RenderedContentHover extends Disposable {
 		return this._renderedHoverParts.getAccessibleHoverContentAtIndex(index);
 	}
 
-	public async updateHoverVerbosityLevel(action: HoverVerbosityAction, index: number, focus?: boolean): Promise<void> {
+	public async updateHoverVerbosityLevel(
+		action: HoverVerbosityAction,
+		index: number,
+		focus?: boolean
+	): Promise<void> {
 		this._renderedHoverParts.updateHoverVerbosityLevel(action, index, focus);
 	}
 
-	public doesHoverAtIndexSupportVerbosityAction(index: number, action: HoverVerbosityAction): boolean {
+	public doesHoverAtIndexSupportVerbosityAction(
+		index: number,
+		action: HoverVerbosityAction
+	): boolean {
 		return this._renderedHoverParts.doesHoverAtIndexSupportVerbosityAction(index, action);
 	}
 
@@ -108,8 +132,11 @@ export class RenderedContentHover extends Disposable {
 		return this._renderedHoverParts.isColorPickerVisible();
 	}
 
-	public static computeHoverPositions(editor: ICodeEditor, anchorRange: Range, hoverParts: IHoverPart[]): { showAtPosition: Position; showAtSecondaryPosition: Position } {
-
+	public static computeHoverPositions(
+		editor: ICodeEditor,
+		anchorRange: Range,
+		hoverParts: IHoverPart[]
+	): { showAtPosition: Position; showAtSecondaryPosition: Position } {
 		let startColumnBoundary = 1;
 		if (editor.hasModel()) {
 			// Ensure the range is on the current view line
@@ -117,8 +144,12 @@ export class RenderedContentHover extends Disposable {
 			const coordinatesConverter = viewModel.coordinatesConverter;
 			const anchorViewRange = coordinatesConverter.convertModelRangeToViewRange(anchorRange);
 			const anchorViewMinColumn = viewModel.getLineMinColumn(anchorViewRange.startLineNumber);
-			const anchorViewRangeStart = new Position(anchorViewRange.startLineNumber, anchorViewMinColumn);
-			startColumnBoundary = coordinatesConverter.convertViewPositionToModelPosition(anchorViewRangeStart).column;
+			const anchorViewRangeStart = new Position(
+				anchorViewRange.startLineNumber,
+				anchorViewMinColumn
+			);
+			startColumnBoundary =
+				coordinatesConverter.convertViewPositionToModelPosition(anchorViewRangeStart).column;
 		}
 
 		// The anchor range is always on a single line
@@ -128,9 +159,11 @@ export class RenderedContentHover extends Disposable {
 
 		for (const hoverPart of hoverParts) {
 			const hoverPartRange = hoverPart.range;
-			const hoverPartRangeOnAnchorStartLine = hoverPartRange.startLineNumber === anchorStartLineNumber;
+			const hoverPartRangeOnAnchorStartLine =
+				hoverPartRange.startLineNumber === anchorStartLineNumber;
 			const hoverPartRangeOnAnchorEndLine = hoverPartRange.endLineNumber === anchorStartLineNumber;
-			const hoverPartRangeIsOnAnchorLine = hoverPartRangeOnAnchorStartLine && hoverPartRangeOnAnchorEndLine;
+			const hoverPartRangeIsOnAnchorLine =
+				hoverPartRangeOnAnchorStartLine && hoverPartRangeOnAnchorEndLine;
 			if (hoverPartRangeIsOnAnchorLine) {
 				// this message has a range that is completely sitting on the line of the anchor
 				const hoverPartStartColumn = hoverPartRange.startColumn;
@@ -196,8 +229,10 @@ interface IRenderedContentStatusBar {
 type IRenderedContentHoverPartOrStatusBar = IRenderedContentHoverPart | IRenderedContentStatusBar;
 
 class RenderedStatusBar implements IDisposable {
-
-	constructor(fragment: DocumentFragment, private readonly _statusBar: EditorHoverStatusBar) {
+	constructor(
+		fragment: DocumentFragment,
+		private readonly _statusBar: EditorHoverStatusBar
+	) {
 		fragment.appendChild(this._statusBar.hoverElement);
 	}
 
@@ -215,10 +250,9 @@ class RenderedStatusBar implements IDisposable {
 }
 
 class RenderedContentHoverParts extends Disposable {
-
 	private static readonly _DECORATION_OPTIONS = ModelDecorationOptions.register({
 		description: 'content-hover-highlight',
-		className: 'hoverHighlight'
+		className: 'hoverHighlight',
 	});
 
 	private readonly _renderedParts: IRenderedContentHoverPartOrStatusBar[] = [];
@@ -240,7 +274,9 @@ class RenderedContentHoverParts extends Disposable {
 		super();
 		this._context = context;
 		this._fragment = document.createDocumentFragment();
-		this._register(this._renderParts(participants, hoverParts, context, keybindingService, hoverService));
+		this._register(
+			this._renderParts(participants, hoverParts, context, keybindingService, hoverService)
+		);
 		this._register(this._registerListenersOnRenderedParts());
 		this._register(this._createEditorDecorations(editor, hoverParts));
 		this._updateMarkdownAndColorParticipantInfo(participants);
@@ -256,26 +292,38 @@ class RenderedContentHoverParts extends Disposable {
 			highlightRange = Range.plusRange(highlightRange, hoverPartRange);
 		}
 		const highlightDecoration = editor.createDecorationsCollection();
-		highlightDecoration.set([{
-			range: highlightRange,
-			options: RenderedContentHoverParts._DECORATION_OPTIONS
-		}]);
+		highlightDecoration.set([
+			{
+				range: highlightRange,
+				options: RenderedContentHoverParts._DECORATION_OPTIONS,
+			},
+		]);
 		return toDisposable(() => {
 			highlightDecoration.clear();
 		});
 	}
 
-	private _renderParts(participants: IEditorHoverParticipant<IHoverPart>[], hoverParts: IHoverPart[], hoverContext: IEditorHoverContext, keybindingService: IKeybindingService, hoverService: IHoverService): IDisposable {
+	private _renderParts(
+		participants: IEditorHoverParticipant<IHoverPart>[],
+		hoverParts: IHoverPart[],
+		hoverContext: IEditorHoverContext,
+		keybindingService: IKeybindingService,
+		hoverService: IHoverService
+	): IDisposable {
 		const statusBar = new EditorHoverStatusBar(keybindingService, hoverService);
 		const hoverRenderingContext: IEditorHoverRenderContext = {
 			fragment: this._fragment,
 			statusBar,
-			...hoverContext
+			...hoverContext,
 		};
 		const disposables = new DisposableStore();
 		disposables.add(statusBar);
 		for (const participant of participants) {
-			const renderedHoverParts = this._renderHoverPartsForParticipant(hoverParts, participant, hoverRenderingContext);
+			const renderedHoverParts = this._renderHoverPartsForParticipant(
+				hoverParts,
+				participant,
+				hoverRenderingContext
+			);
 			disposables.add(renderedHoverParts);
 			for (const renderedHoverPart of renderedHoverParts.renderedHoverParts) {
 				this._renderedParts.push({
@@ -298,8 +346,14 @@ class RenderedContentHoverParts extends Disposable {
 		return disposables;
 	}
 
-	private _renderHoverPartsForParticipant(hoverParts: IHoverPart[], participant: IEditorHoverParticipant<IHoverPart>, hoverRenderingContext: IEditorHoverRenderContext): IRenderedHoverParts<IHoverPart> {
-		const hoverPartsForParticipant = hoverParts.filter(hoverPart => hoverPart.owner === participant);
+	private _renderHoverPartsForParticipant(
+		hoverParts: IHoverPart[],
+		participant: IEditorHoverParticipant<IHoverPart>,
+		hoverRenderingContext: IEditorHoverRenderContext
+	): IRenderedHoverParts<IHoverPart> {
+		const hoverPartsForParticipant = hoverParts.filter(
+			hoverPart => hoverPart.owner === participant
+		);
 		const hasHoverPartsForParticipant = hoverPartsForParticipant.length > 0;
 		if (!hasHoverPartsForParticipant) {
 			return new RenderedHoverParts([]);
@@ -307,7 +361,10 @@ class RenderedContentHoverParts extends Disposable {
 		return participant.renderHoverParts(hoverRenderingContext, hoverPartsForParticipant);
 	}
 
-	private _renderStatusBar(fragment: DocumentFragment, statusBar: EditorHoverStatusBar): RenderedStatusBar | undefined {
+	private _renderStatusBar(
+		fragment: DocumentFragment,
+		statusBar: EditorHoverStatusBar
+	): RenderedStatusBar | undefined {
 		if (!statusBar.hasContent) {
 			return undefined;
 		}
@@ -316,24 +373,32 @@ class RenderedContentHoverParts extends Disposable {
 
 	private _registerListenersOnRenderedParts(): IDisposable {
 		const disposables = new DisposableStore();
-		this._renderedParts.forEach((renderedPart: IRenderedContentHoverPartOrStatusBar, index: number) => {
-			const element = renderedPart.hoverElement;
-			element.tabIndex = 0;
-			disposables.add(dom.addDisposableListener(element, dom.EventType.FOCUS_IN, (event: Event) => {
-				event.stopPropagation();
-				this._focusedHoverPartIndex = index;
-			}));
-			disposables.add(dom.addDisposableListener(element, dom.EventType.FOCUS_OUT, (event: Event) => {
-				event.stopPropagation();
-				this._focusedHoverPartIndex = -1;
-			}));
-		});
+		this._renderedParts.forEach(
+			(renderedPart: IRenderedContentHoverPartOrStatusBar, index: number) => {
+				const element = renderedPart.hoverElement;
+				element.tabIndex = 0;
+				disposables.add(
+					dom.addDisposableListener(element, dom.EventType.FOCUS_IN, (event: Event) => {
+						event.stopPropagation();
+						this._focusedHoverPartIndex = index;
+					})
+				);
+				disposables.add(
+					dom.addDisposableListener(element, dom.EventType.FOCUS_OUT, (event: Event) => {
+						event.stopPropagation();
+						this._focusedHoverPartIndex = -1;
+					})
+				);
+			}
+		);
 		return disposables;
 	}
 
-	private _updateMarkdownAndColorParticipantInfo(participants: IEditorHoverParticipant<IHoverPart>[]) {
+	private _updateMarkdownAndColorParticipantInfo(
+		participants: IEditorHoverParticipant<IHoverPart>[]
+	) {
 		const markdownHoverParticipant = participants.find(p => {
-			return (p instanceof MarkdownHoverParticipant) && !(p instanceof InlayHintsHover);
+			return p instanceof MarkdownHoverParticipant && !(p instanceof InlayHintsHover);
 		});
 		if (markdownHoverParticipant) {
 			this._markdownHoverParticipant = markdownHoverParticipant as MarkdownHoverParticipant;
@@ -362,13 +427,28 @@ class RenderedContentHoverParts extends Disposable {
 			return '';
 		}
 		if (renderedPart.type === 'statusBar') {
-			const statusBarDescription = [localize('hoverAccessibilityStatusBar', "This is a hover status bar.")];
+			const statusBarDescription = [
+				localize('hoverAccessibilityStatusBar', 'This is a hover status bar.'),
+			];
 			for (const action of renderedPart.actions) {
 				const keybinding = action.actionKeybindingLabel;
 				if (keybinding) {
-					statusBarDescription.push(localize('hoverAccessibilityStatusBarActionWithKeybinding', "It has an action with label {0} and keybinding {1}.", action.actionLabel, keybinding));
+					statusBarDescription.push(
+						localize(
+							'hoverAccessibilityStatusBarActionWithKeybinding',
+							'It has an action with label {0} and keybinding {1}.',
+							action.actionLabel,
+							keybinding
+						)
+					);
 				} else {
-					statusBarDescription.push(localize('hoverAccessibilityStatusBarActionWithoutKeybinding', "It has an action with label {0}.", action.actionLabel));
+					statusBarDescription.push(
+						localize(
+							'hoverAccessibilityStatusBarActionWithoutKeybinding',
+							'It has an action with label {0}.',
+							action.actionLabel
+						)
+					);
 				}
 			}
 			return statusBarDescription.join('\n');
@@ -376,7 +456,11 @@ class RenderedContentHoverParts extends Disposable {
 		return renderedPart.participant.getAccessibleContent(renderedPart.hoverPart);
 	}
 
-	public async updateHoverVerbosityLevel(action: HoverVerbosityAction, index: number, focus?: boolean): Promise<void> {
+	public async updateHoverVerbosityLevel(
+		action: HoverVerbosityAction,
+		index: number,
+		focus?: boolean
+	): Promise<void> {
 		if (!this._markdownHoverParticipant) {
 			return;
 		}
@@ -387,11 +471,17 @@ class RenderedContentHoverParts extends Disposable {
 			rangeOfIndicesToUpdate = this._findRangeOfMarkdownHoverParts(this._markdownHoverParticipant);
 		}
 		for (let i = rangeOfIndicesToUpdate.start; i < rangeOfIndicesToUpdate.endExclusive; i++) {
-			const normalizedMarkdownHoverIndex = this._normalizedIndexToMarkdownHoverIndexRange(this._markdownHoverParticipant, i);
+			const normalizedMarkdownHoverIndex = this._normalizedIndexToMarkdownHoverIndexRange(
+				this._markdownHoverParticipant,
+				i
+			);
 			if (normalizedMarkdownHoverIndex === undefined) {
 				continue;
 			}
-			const renderedPart = await this._markdownHoverParticipant.updateMarkdownHoverVerbosityLevel(action, normalizedMarkdownHoverIndex);
+			const renderedPart = await this._markdownHoverParticipant.updateMarkdownHoverVerbosityLevel(
+				action,
+				normalizedMarkdownHoverIndex
+			);
 			if (!renderedPart) {
 				continue;
 			}
@@ -412,22 +502,34 @@ class RenderedContentHoverParts extends Disposable {
 		this._context.onContentsChanged();
 	}
 
-	public doesHoverAtIndexSupportVerbosityAction(index: number, action: HoverVerbosityAction): boolean {
+	public doesHoverAtIndexSupportVerbosityAction(
+		index: number,
+		action: HoverVerbosityAction
+	): boolean {
 		if (!this._markdownHoverParticipant) {
 			return false;
 		}
-		const normalizedMarkdownHoverIndex = this._normalizedIndexToMarkdownHoverIndexRange(this._markdownHoverParticipant, index);
+		const normalizedMarkdownHoverIndex = this._normalizedIndexToMarkdownHoverIndexRange(
+			this._markdownHoverParticipant,
+			index
+		);
 		if (normalizedMarkdownHoverIndex === undefined) {
 			return false;
 		}
-		return this._markdownHoverParticipant.doesMarkdownHoverAtIndexSupportVerbosityAction(normalizedMarkdownHoverIndex, action);
+		return this._markdownHoverParticipant.doesMarkdownHoverAtIndexSupportVerbosityAction(
+			normalizedMarkdownHoverIndex,
+			action
+		);
 	}
 
 	public isColorPickerVisible(): boolean {
 		return this._colorHoverParticipant?.isColorPickerVisible() ?? false;
 	}
 
-	private _normalizedIndexToMarkdownHoverIndexRange(markdownHoverParticipant: MarkdownHoverParticipant, index: number): number | undefined {
+	private _normalizedIndexToMarkdownHoverIndexRange(
+		markdownHoverParticipant: MarkdownHoverParticipant,
+		index: number
+	): number | undefined {
 		const renderedPart = this._renderedParts[index];
 		if (!renderedPart || renderedPart.type !== 'hoverPart') {
 			return undefined;
@@ -436,9 +538,9 @@ class RenderedContentHoverParts extends Disposable {
 		if (!isHoverPartMarkdownHover) {
 			return undefined;
 		}
-		const firstIndexOfMarkdownHovers = this._renderedParts.findIndex(renderedPart =>
-			renderedPart.type === 'hoverPart'
-			&& renderedPart.participant === markdownHoverParticipant
+		const firstIndexOfMarkdownHovers = this._renderedParts.findIndex(
+			renderedPart =>
+				renderedPart.type === 'hoverPart' && renderedPart.participant === markdownHoverParticipant
 		);
 		if (firstIndexOfMarkdownHovers === -1) {
 			throw new BugIndicatingError();
@@ -446,11 +548,24 @@ class RenderedContentHoverParts extends Disposable {
 		return index - firstIndexOfMarkdownHovers;
 	}
 
-	private _findRangeOfMarkdownHoverParts(markdownHoverParticipant: MarkdownHoverParticipant): IOffsetRange {
+	private _findRangeOfMarkdownHoverParts(
+		markdownHoverParticipant: MarkdownHoverParticipant
+	): IOffsetRange {
 		const copiedRenderedParts = this._renderedParts.slice();
-		const firstIndexOfMarkdownHovers = copiedRenderedParts.findIndex(renderedPart => renderedPart.type === 'hoverPart' && renderedPart.participant === markdownHoverParticipant);
-		const inversedLastIndexOfMarkdownHovers = copiedRenderedParts.reverse().findIndex(renderedPart => renderedPart.type === 'hoverPart' && renderedPart.participant === markdownHoverParticipant);
-		const lastIndexOfMarkdownHovers = inversedLastIndexOfMarkdownHovers >= 0 ? copiedRenderedParts.length - inversedLastIndexOfMarkdownHovers : inversedLastIndexOfMarkdownHovers;
+		const firstIndexOfMarkdownHovers = copiedRenderedParts.findIndex(
+			renderedPart =>
+				renderedPart.type === 'hoverPart' && renderedPart.participant === markdownHoverParticipant
+		);
+		const inversedLastIndexOfMarkdownHovers = copiedRenderedParts
+			.reverse()
+			.findIndex(
+				renderedPart =>
+					renderedPart.type === 'hoverPart' && renderedPart.participant === markdownHoverParticipant
+			);
+		const lastIndexOfMarkdownHovers =
+			inversedLastIndexOfMarkdownHovers >= 0
+				? copiedRenderedParts.length - inversedLastIndexOfMarkdownHovers
+				: inversedLastIndexOfMarkdownHovers;
 		return { start: firstIndexOfMarkdownHovers, endExclusive: lastIndexOfMarkdownHovers + 1 };
 	}
 

@@ -6,7 +6,11 @@
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { URI } from '../../../../base/common/uri.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { Memento } from '../../../common/memento.js';
 import { ModifiedFileEntryState } from './chatEditingService.js';
 import { IChatRequestVariableEntry } from './chatModel.js';
@@ -26,7 +30,9 @@ export interface IChatInputState {
 	chatMode?: ChatMode;
 }
 
-export const IChatWidgetHistoryService = createDecorator<IChatWidgetHistoryService>('IChatWidgetHistoryService');
+export const IChatWidgetHistoryService = createDecorator<IChatWidgetHistoryService>(
+	'IChatWidgetHistoryService'
+);
 export interface IChatWidgetHistoryService {
 	_serviceBrand: undefined;
 
@@ -52,14 +58,17 @@ export class ChatWidgetHistoryService implements IChatWidgetHistoryService {
 	private readonly _onDidClearHistory = new Emitter<void>();
 	readonly onDidClearHistory: Event<void> = this._onDidClearHistory.event;
 
-	constructor(
-		@IStorageService storageService: IStorageService
-	) {
+	constructor(@IStorageService storageService: IStorageService) {
 		this.memento = new Memento('interactive-session', storageService);
-		const loadedState = this.memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE) as IChatHistory;
+		const loadedState = this.memento.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE
+		) as IChatHistory;
 		for (const provider in loadedState.history) {
 			// Migration from old format
-			loadedState.history[provider] = loadedState.history[provider].map(entry => typeof entry === 'string' ? { text: entry } : entry);
+			loadedState.history[provider] = loadedState.history[provider].map(entry =>
+				typeof entry === 'string' ? { text: entry } : entry
+			);
 		}
 
 		this.viewState = loadedState;

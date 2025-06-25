@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 			},
 			timestamp: new Date().toISOString(),
 		};
-		
+
 		return NextResponse.json(statusResponse, {
 			status: 200,
 			headers: {
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 		});
 	} catch (error) {
 		console.error('Status endpoint error:', error);
-		
+
 		return NextResponse.json(
 			{
 				error: 'Failed to retrieve status',

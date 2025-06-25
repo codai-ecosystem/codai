@@ -26,13 +26,26 @@ export interface LanguageFilter {
 
 export type LanguageSelector = string | LanguageFilter | ReadonlyArray<string | LanguageFilter>;
 
-export function score(selector: LanguageSelector | undefined, candidateUri: URI, candidateLanguage: string, candidateIsSynchronized: boolean, candidateNotebookUri: URI | undefined, candidateNotebookType: string | undefined): number {
-
+export function score(
+	selector: LanguageSelector | undefined,
+	candidateUri: URI,
+	candidateLanguage: string,
+	candidateIsSynchronized: boolean,
+	candidateNotebookUri: URI | undefined,
+	candidateNotebookType: string | undefined
+): number {
 	if (Array.isArray(selector)) {
 		// array -> take max individual value
 		let ret = 0;
 		for (const filter of selector) {
-			const value = score(filter, candidateUri, candidateLanguage, candidateIsSynchronized, candidateNotebookUri, candidateNotebookType);
+			const value = score(
+				filter,
+				candidateUri,
+				candidateLanguage,
+				candidateIsSynchronized,
+				candidateNotebookUri,
+				candidateNotebookType
+			);
 			if (value === 10) {
 				return value; // already at the highest
 			}
@@ -41,9 +54,7 @@ export function score(selector: LanguageSelector | undefined, candidateUri: URI,
 			}
 		}
 		return ret;
-
 	} else if (typeof selector === 'string') {
-
 		if (!candidateIsSynchronized) {
 			return 0;
 		}
@@ -58,10 +69,10 @@ export function score(selector: LanguageSelector | undefined, candidateUri: URI,
 		} else {
 			return 0;
 		}
-
 	} else if (selector) {
 		// filter -> select accordingly, use defaults for scheme
-		const { language, pattern, scheme, hasAccessToAllModels, notebookType } = selector as LanguageFilter; // TODO: microsoft/TypeScript#42768
+		const { language, pattern, scheme, hasAccessToAllModels, notebookType } =
+			selector as LanguageFilter; // TODO: microsoft/TypeScript#42768
 
 		if (!candidateIsSynchronized && !hasAccessToAllModels) {
 			return 0;
@@ -118,7 +129,10 @@ export function score(selector: LanguageSelector | undefined, candidateUri: URI,
 				normalizedPattern = { ...pattern, base: normalize(pattern.base) };
 			}
 
-			if (normalizedPattern === candidateUri.fsPath || matchGlobPattern(normalizedPattern, candidateUri.fsPath)) {
+			if (
+				normalizedPattern === candidateUri.fsPath ||
+				matchGlobPattern(normalizedPattern, candidateUri.fsPath)
+			) {
 				ret = 10;
 			} else {
 				return 0;
@@ -126,12 +140,10 @@ export function score(selector: LanguageSelector | undefined, candidateUri: URI,
 		}
 
 		return ret;
-
 	} else {
 		return 0;
 	}
 }
-
 
 export function targetsNotebooks(selector: LanguageSelector): boolean {
 	if (typeof selector === 'string') {

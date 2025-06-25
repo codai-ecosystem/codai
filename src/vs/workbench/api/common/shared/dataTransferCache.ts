@@ -5,21 +5,29 @@
 
 import { coalesce } from '../../../../base/common/arrays.js';
 import { VSBuffer } from '../../../../base/common/buffer.js';
-import { IDataTransferFile, IReadonlyVSDataTransfer } from '../../../../base/common/dataTransfer.js';
+import {
+	IDataTransferFile,
+	IReadonlyVSDataTransfer,
+} from '../../../../base/common/dataTransfer.js';
 
 export class DataTransferFileCache {
-
 	private requestIdPool = 0;
-	private readonly dataTransferFiles = new Map</* requestId */ number, ReadonlyArray<IDataTransferFile>>();
+	private readonly dataTransferFiles = new Map<
+		/* requestId */ number,
+		ReadonlyArray<IDataTransferFile>
+	>();
 
 	public add(dataTransfer: IReadonlyVSDataTransfer): { id: number; dispose: () => void } {
 		const requestId = this.requestIdPool++;
-		this.dataTransferFiles.set(requestId, coalesce(Array.from(dataTransfer, ([, item]) => item.asFile())));
+		this.dataTransferFiles.set(
+			requestId,
+			coalesce(Array.from(dataTransfer, ([, item]) => item.asFile()))
+		);
 		return {
 			id: requestId,
 			dispose: () => {
 				this.dataTransferFiles.delete(requestId);
-			}
+			},
 		};
 	}
 

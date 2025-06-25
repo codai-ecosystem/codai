@@ -7,8 +7,15 @@ import { URI } from '../../../../base/common/uri.js';
 import { localize, localize2 } from '../../../../nls.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
-import { IQuickInputService, IQuickPickItem } from '../../../../platform/quickinput/common/quickInput.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IQuickInputService,
+	IQuickPickItem,
+} from '../../../../platform/quickinput/common/quickInput.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 import { IBrowserWorkbenchEnvironmentService } from '../../../services/environment/browser/environmentService.js';
@@ -22,16 +29,21 @@ export const manageTrustedDomainSettingsCommand = {
 	id: 'workbench.action.manageTrustedDomain',
 	description: {
 		description: localize2('trustedDomain.manageTrustedDomain', 'Manage Trusted Domains'),
-		args: []
+		args: [],
 	},
 	handler: async (accessor: ServicesAccessor) => {
 		const editorService = accessor.get(IEditorService);
-		editorService.openEditor({ resource: TRUSTED_DOMAINS_URI, languageId: 'jsonc', options: { pinned: true } });
+		editorService.openEditor({
+			resource: TRUSTED_DOMAINS_URI,
+			languageId: 'jsonc',
+			options: { pinned: true },
+		});
 		return;
-	}
+	},
 };
 
-type ConfigureTrustedDomainsQuickPickItem = IQuickPickItem & ({ id: 'manage' } | { id: 'trust'; toTrust: string });
+type ConfigureTrustedDomainsQuickPickItem = IQuickPickItem &
+	({ id: 'manage' } | { id: 'trust'; toTrust: string });
 
 export async function configureOpenerTrustedDomainsHandler(
 	trustedDomains: string[],
@@ -40,7 +52,7 @@ export async function configureOpenerTrustedDomainsHandler(
 	quickInputService: IQuickInputService,
 	storageService: IStorageService,
 	editorService: IEditorService,
-	telemetryService: ITelemetryService,
+	telemetryService: ITelemetryService
 ) {
 	const parsedDomainToConfigure = URI.parse(domainToConfigure);
 	const toplevelDomainSegements = parsedDomainToConfigure.authority.split('.');
@@ -53,13 +65,14 @@ export async function configureOpenerTrustedDomainsHandler(
 		label: localize('trustedDomain.trustDomain', 'Trust {0}', domainToConfigure),
 		id: 'trust',
 		toTrust: domainToConfigure,
-		picked: true
+		picked: true,
 	});
 
 	const isIP =
 		toplevelDomainSegements.length === 4 &&
-		toplevelDomainSegements.every(segment =>
-			Number.isInteger(+segment) || Number.isInteger(+segment.split(':')[0]));
+		toplevelDomainSegements.every(
+			segment => Number.isInteger(+segment) || Number.isInteger(+segment.split(':')[0])
+		);
 
 	if (isIP) {
 		if (parsedDomainToConfigure.authority.includes(':')) {
@@ -68,33 +81,40 @@ export async function configureOpenerTrustedDomainsHandler(
 				type: 'item',
 				label: localize('trustedDomain.trustAllPorts', 'Trust {0} on all ports', base),
 				toTrust: base + ':*',
-				id: 'trust'
+				id: 'trust',
 			});
 		}
 	} else {
 		options.push({
 			type: 'item',
-			label: localize('trustedDomain.trustSubDomain', 'Trust {0} and all its subdomains', domainEnd),
+			label: localize(
+				'trustedDomain.trustSubDomain',
+				'Trust {0} and all its subdomains',
+				domainEnd
+			),
 			toTrust: topLevelDomain,
-			id: 'trust'
+			id: 'trust',
 		});
 	}
 
 	options.push({
 		type: 'item',
-		label: localize('trustedDomain.trustAllDomains', 'Trust all domains (disables link protection)'),
+		label: localize(
+			'trustedDomain.trustAllDomains',
+			'Trust all domains (disables link protection)'
+		),
 		toTrust: '*',
-		id: 'trust'
+		id: 'trust',
 	});
 	options.push({
 		type: 'item',
 		label: localize('trustedDomain.manageTrustedDomains', 'Manage Trusted Domains'),
-		id: 'manage'
+		id: 'manage',
 	});
 
-	const pickedResult = await quickInputService.pick<ConfigureTrustedDomainsQuickPickItem>(
-		options, { activeItem: options[0] }
-	);
+	const pickedResult = await quickInputService.pick<ConfigureTrustedDomainsQuickPickItem>(options, {
+		activeItem: options[0],
+	});
 
 	if (pickedResult && pickedResult.id) {
 		switch (pickedResult.id) {
@@ -102,7 +122,7 @@ export async function configureOpenerTrustedDomainsHandler(
 				await editorService.openEditor({
 					resource: TRUSTED_DOMAINS_URI.with({ fragment: resource.toString() }),
 					languageId: 'jsonc',
-					options: { pinned: true }
+					options: { pinned: true },
 				});
 				return trustedDomains;
 			case 'trust': {
@@ -130,7 +150,9 @@ export interface IStaticTrustedDomains {
 	readonly trustedDomains: string[];
 }
 
-export async function readTrustedDomains(accessor: ServicesAccessor): Promise<IStaticTrustedDomains> {
+export async function readTrustedDomains(
+	accessor: ServicesAccessor
+): Promise<IStaticTrustedDomains> {
 	const { defaultTrustedDomains, trustedDomains } = readStaticTrustedDomains(accessor);
 	return {
 		defaultTrustedDomains,
@@ -144,17 +166,20 @@ export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTru
 	const environmentService = accessor.get(IBrowserWorkbenchEnvironmentService);
 
 	const defaultTrustedDomains = [
-		...productService.linkProtectionTrustedDomains ?? [],
-		...environmentService.options?.additionalTrustedDomains ?? []
+		...(productService.linkProtectionTrustedDomains ?? []),
+		...(environmentService.options?.additionalTrustedDomains ?? []),
 	];
 
 	let trustedDomains: string[] = [];
 	try {
-		const trustedDomainsSrc = storageService.get(TRUSTED_DOMAINS_STORAGE_KEY, StorageScope.APPLICATION);
+		const trustedDomainsSrc = storageService.get(
+			TRUSTED_DOMAINS_STORAGE_KEY,
+			StorageScope.APPLICATION
+		);
 		if (trustedDomainsSrc) {
 			trustedDomains = JSON.parse(trustedDomainsSrc);
 		}
-	} catch (err) { }
+	} catch (err) {}
 
 	return {
 		defaultTrustedDomains,

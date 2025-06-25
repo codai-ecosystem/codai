@@ -34,7 +34,12 @@ async function testCellDnd(beginning: IBeginningState, dragAction: IDragAction, 
 		(editor, viewModel) => {
 			editor.setSelections(beginning.selections);
 			editor.setFocus({ start: beginning.focus, end: beginning.focus + 1 });
-			performCellDropEdits(editor, viewModel.cellAt(dragAction.dragIdx)!, dragAction.direction, viewModel.cellAt(dragAction.dragOverIdx)!);
+			performCellDropEdits(
+				editor,
+				viewModel.cellAt(dragAction.dragIdx)!,
+				dragAction.direction,
+				viewModel.cellAt(dragAction.dragOverIdx)!
+			);
 
 			for (const i in end.endOrder) {
 				assert.equal(viewModel.viewCells[i].getText(), end.endOrder[i]);
@@ -43,7 +48,8 @@ async function testCellDnd(beginning: IBeginningState, dragAction: IDragAction, 
 			assert.equal(editor.getSelections().length, 1);
 			assert.deepStrictEqual(editor.getSelections()[0], end.selection);
 			assert.deepStrictEqual(editor.getFocus(), { start: end.focus, end: end.focus + 1 });
-		});
+		}
+	);
 }
 
 suite('cellDND', () => {
@@ -54,17 +60,17 @@ suite('cellDND', () => {
 			{
 				startOrder: ['0', '1', '2', '3'],
 				selections: [{ start: 0, end: 1 }],
-				focus: 0
+				focus: 0,
 			},
 			{
 				dragIdx: 0,
 				dragOverIdx: 1,
-				direction: 'below'
+				direction: 'below',
 			},
 			{
 				endOrder: ['1', '0', '2', '3'],
 				selection: { start: 1, end: 2 },
-				focus: 1
+				focus: 1,
 			}
 		);
 	});
@@ -74,17 +80,17 @@ suite('cellDND', () => {
 			{
 				startOrder: ['0', '1', '2', '3'],
 				selections: [{ start: 1, end: 3 }],
-				focus: 1
+				focus: 1,
 			},
 			{
 				dragIdx: 1,
 				dragOverIdx: 3,
-				direction: 'below'
+				direction: 'below',
 			},
 			{
 				endOrder: ['0', '3', '1', '2'],
 				selection: { start: 2, end: 4 },
-				focus: 2
+				focus: 2,
 			}
 		);
 	});
@@ -94,17 +100,17 @@ suite('cellDND', () => {
 			{
 				startOrder: ['0', '1', '2', '3'],
 				selections: [{ start: 2, end: 4 }],
-				focus: 2
+				focus: 2,
 			},
 			{
 				dragIdx: 3,
 				dragOverIdx: 0,
-				direction: 'above'
+				direction: 'above',
 			},
 			{
 				endOrder: ['2', '3', '0', '1'],
 				selection: { start: 0, end: 2 },
-				focus: 0
+				focus: 0,
 			}
 		);
 	});
@@ -113,18 +119,21 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 0, end: 1 }, { start: 2, end: 3 }],
-				focus: 0
+				selections: [
+					{ start: 0, end: 1 },
+					{ start: 2, end: 3 },
+				],
+				focus: 0,
 			},
 			{
 				dragIdx: 0,
 				dragOverIdx: 3,
-				direction: 'below'
+				direction: 'below',
 			},
 			{
 				endOrder: ['1', '3', '0', '2'],
 				selection: { start: 2, end: 4 },
-				focus: 2
+				focus: 2,
 			}
 		);
 	});
@@ -133,18 +142,21 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 1, end: 2 }, { start: 3, end: 4 }],
-				focus: 1
+				selections: [
+					{ start: 1, end: 2 },
+					{ start: 3, end: 4 },
+				],
+				focus: 1,
 			},
 			{
 				dragIdx: 1,
 				dragOverIdx: 0,
-				direction: 'above'
+				direction: 'above',
 			},
 			{
 				endOrder: ['1', '3', '0', '2'],
 				selection: { start: 0, end: 2 },
-				focus: 0
+				focus: 0,
 			}
 		);
 	});
@@ -153,18 +165,21 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 0, end: 1 }, { start: 3, end: 4 }],
-				focus: 0
+				selections: [
+					{ start: 0, end: 1 },
+					{ start: 3, end: 4 },
+				],
+				focus: 0,
 			},
 			{
 				dragIdx: 0,
 				dragOverIdx: 1,
-				direction: 'below'
+				direction: 'below',
 			},
 			{
 				endOrder: ['1', '0', '3', '2'],
 				selection: { start: 1, end: 3 },
-				focus: 1
+				focus: 1,
 			}
 		);
 	});
@@ -173,18 +188,21 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 1, end: 2 }, { start: 3, end: 4 }],
-				focus: 1
+				selections: [
+					{ start: 1, end: 2 },
+					{ start: 3, end: 4 },
+				],
+				focus: 1,
 			},
 			{
 				dragIdx: 1,
 				dragOverIdx: 1,
-				direction: 'above'
+				direction: 'above',
 			},
 			{
 				endOrder: ['0', '1', '3', '2'],
 				selection: { start: 1, end: 3 },
-				focus: 1
+				focus: 1,
 			}
 		);
 	});
@@ -193,18 +211,21 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 0, end: 2 }, { start: 3, end: 4 }],
-				focus: 0
+				selections: [
+					{ start: 0, end: 2 },
+					{ start: 3, end: 4 },
+				],
+				focus: 0,
 			},
 			{
 				dragIdx: 0,
 				dragOverIdx: 0,
-				direction: 'below'
+				direction: 'below',
 			},
 			{
 				endOrder: ['0', '1', '3', '2'],
 				selection: { start: 0, end: 3 },
-				focus: 0
+				focus: 0,
 			}
 		);
 	});
@@ -214,17 +235,17 @@ suite('cellDND', () => {
 			{
 				startOrder: ['0', '1', '2', '3'],
 				selections: [{ start: 1, end: 2 }],
-				focus: 1
+				focus: 1,
 			},
 			{
 				dragIdx: 2,
 				dragOverIdx: 3,
-				direction: 'below'
+				direction: 'below',
 			},
 			{
 				endOrder: ['0', '1', '3', '2'],
 				selection: { start: 3, end: 4 },
-				focus: 3
+				focus: 3,
 			}
 		);
 	});

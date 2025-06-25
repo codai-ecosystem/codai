@@ -17,8 +17,8 @@ export type TDiagnostic = PromptMetadataWarning | PromptMetadataError;
 export abstract class PromptMetadataDiagnostic {
 	constructor(
 		public readonly range: Range,
-		public readonly message: string,
-	) { }
+		public readonly message: string
+	) {}
 
 	/**
 	 * String representation of the diagnostic object.

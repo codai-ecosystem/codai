@@ -64,14 +64,14 @@ const embeddingService = serviceManager.getEmbeddingService('user-123', 'openai'
 
 ```typescript
 const config: ServiceConfig = {
-  mode: 'self-managed',
-  providerId: 'openai',
-  serviceType: 'llm',
-  apiKey: 'sk-...',
-  additionalConfig: {
-    model: 'gpt-4',
-    maxTokens: 4096
-  }
+	mode: 'self-managed',
+	providerId: 'openai',
+	serviceType: 'llm',
+	apiKey: 'sk-...',
+	additionalConfig: {
+		model: 'gpt-4',
+		maxTokens: 4096,
+	},
 };
 
 await serviceManager.updateServiceConfig('user-123', 'llm', config);
@@ -81,16 +81,16 @@ await serviceManager.updateServiceConfig('user-123', 'llm', config);
 
 ```typescript
 await serviceManager.recordUsage('user-123', {
-  serviceType: 'llm',
-  providerId: 'openai',
-  requestDetails: {
-    endpoint: '/chat/completions',
-    inputTokens: 100,
-    outputTokens: 200,
-    model: 'gpt-4'
-  },
-  cost: 0.002,
-  timestamp: new Date()
+	serviceType: 'llm',
+	providerId: 'openai',
+	requestDetails: {
+		endpoint: '/chat/completions',
+		inputTokens: 100,
+		outputTokens: 200,
+		model: 'gpt-4',
+	},
+	cost: 0.002,
+	timestamp: new Date(),
 });
 ```
 
@@ -99,14 +99,17 @@ await serviceManager.recordUsage('user-123', {
 ### User Service Management
 
 #### GET `/api/services/user`
+
 Get user's service configurations.
 
 **Headers:**
+
 ```
 Authorization: Bearer <firebase-token>
 ```
 
 **Response:**
+
 ```json
 {
   "serviceConfigs": {
@@ -117,93 +120,106 @@ Authorization: Bearer <firebase-token>
 ```
 
 #### POST `/api/services/user`
+
 Update user's service configuration.
 
 **Headers:**
+
 ```
 Authorization: Bearer <firebase-token>
 Content-Type: application/json
 ```
 
 **Body:**
+
 ```json
 {
-  "serviceType": "llm",
-  "config": {
-    "mode": "self-managed",
-    "providerId": "openai",
-    "serviceType": "llm",
-    "apiKey": "sk-...",
-    "additionalConfig": {
-      "model": "gpt-4"
-    }
-  }
+	"serviceType": "llm",
+	"config": {
+		"mode": "self-managed",
+		"providerId": "openai",
+		"serviceType": "llm",
+		"apiKey": "sk-...",
+		"additionalConfig": {
+			"model": "gpt-4"
+		}
+	}
 }
 ```
 
 #### DELETE `/api/services/user`
+
 Remove user's service configuration.
 
 **Headers:**
+
 ```
 Authorization: Bearer <firebase-token>
 ```
 
 **Query Parameters:**
+
 - `serviceType`: "llm" | "embedding"
 - `providerId`: Provider ID to remove
 
 ### Health Check
 
 #### GET `/api/services/health`
+
 Service manager health check (admin only).
 
 **Headers:**
+
 ```
 Authorization: Bearer <firebase-admin-token>
 ```
 
 **Response:**
+
 ```json
 {
-  "status": "healthy",
-  "services": {
-    "llm": 5,
-    "embedding": 3
-  },
-  "timestamp": "2024-01-01T00:00:00.000Z"
+	"status": "healthy",
+	"services": {
+		"llm": 5,
+		"embedding": 3
+	},
+	"timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
 
 ### Usage Recording
 
 #### POST `/api/services/usage`
+
 Record service usage.
 
 **Headers:**
+
 ```
 Authorization: Bearer <firebase-token>
 Content-Type: application/json
 ```
 
 **Body:**
+
 ```json
 {
-  "serviceType": "llm",
-  "providerId": "openai",
-  "requestDetails": {
-    "endpoint": "/chat/completions",
-    "inputTokens": 100,
-    "outputTokens": 200,
-    "model": "gpt-4"
-  },
-  "cost": 0.002
+	"serviceType": "llm",
+	"providerId": "openai",
+	"requestDetails": {
+		"endpoint": "/chat/completions",
+		"inputTokens": 100,
+		"outputTokens": 200,
+		"model": "gpt-4"
+	},
+	"cost": 0.002
 }
 ```
 
 ## Dependencies
 
 ### Required
+
 - `firebase` - Client-side Firebase SDK
 - `firebase-admin` - Server-side Firebase Admin SDK
 - `next` - Next.js framework

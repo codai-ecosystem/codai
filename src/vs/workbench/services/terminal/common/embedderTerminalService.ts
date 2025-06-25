@@ -3,13 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
-import { IProcessDataEvent, IProcessProperty, IProcessPropertyMap, IProcessReadyEvent, IShellLaunchConfig, ITerminalChildProcess, ITerminalLaunchError, ProcessPropertyType } from '../../../../platform/terminal/common/terminal.js';
+import {
+	IProcessDataEvent,
+	IProcessProperty,
+	IProcessPropertyMap,
+	IProcessReadyEvent,
+	IShellLaunchConfig,
+	ITerminalChildProcess,
+	ITerminalLaunchError,
+	ProcessPropertyType,
+} from '../../../../platform/terminal/common/terminal.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 
-export const IEmbedderTerminalService = createDecorator<IEmbedderTerminalService>('embedderTerminalService');
+export const IEmbedderTerminalService =
+	createDecorator<IEmbedderTerminalService>('embedderTerminalService');
 
 /**
  * Manages terminals that the embedder can create before the terminal contrib is available.
@@ -22,7 +35,8 @@ export interface IEmbedderTerminalService {
 	createTerminal(options: IEmbedderTerminalOptions): void;
 }
 
-export type EmbedderTerminal = IShellLaunchConfig & Required<Pick<IShellLaunchConfig, 'customPtyImplementation'>>;
+export type EmbedderTerminal = IShellLaunchConfig &
+	Required<Pick<IShellLaunchConfig, 'customPtyImplementation'>>;
 
 export interface IEmbedderTerminalOptions {
 	name: string;
@@ -70,7 +84,6 @@ class EmbedderTerminalService implements IEmbedderTerminalService {
 	}
 }
 
-
 class EmbedderTerminalProcess extends Disposable implements ITerminalChildProcess {
 	private readonly _pty: IEmbedderTerminalPty;
 
@@ -96,10 +109,14 @@ class EmbedderTerminalProcess extends Disposable implements ITerminalChildProces
 			this._register(this._pty.onDidClose(e => this._onProcessExit.fire(e || undefined)));
 		}
 		if (this._pty.onDidChangeName) {
-			this._register(this._pty.onDidChangeName(e => this._onDidChangeProperty.fire({
-				type: ProcessPropertyType.Title,
-				value: e
-			})));
+			this._register(
+				this._pty.onDidChangeName(e =>
+					this._onDidChangeProperty.fire({
+						type: ProcessPropertyType.Title,
+						value: e,
+					})
+				)
+			);
 		}
 	}
 
@@ -139,12 +156,18 @@ class EmbedderTerminalProcess extends Disposable implements ITerminalChildProces
 	async getCwd(): Promise<string> {
 		return '';
 	}
-	refreshProperty<T extends ProcessPropertyType>(property: ProcessPropertyType): Promise<IProcessPropertyMap[T]> {
-		throw new Error(`refreshProperty is not suppported in EmbedderTerminalProcess. property: ${property}`);
+	refreshProperty<T extends ProcessPropertyType>(
+		property: ProcessPropertyType
+	): Promise<IProcessPropertyMap[T]> {
+		throw new Error(
+			`refreshProperty is not suppported in EmbedderTerminalProcess. property: ${property}`
+		);
 	}
 
 	updateProperty(property: ProcessPropertyType, value: any): Promise<void> {
-		throw new Error(`updateProperty is not suppported in EmbedderTerminalProcess. property: ${property}, value: ${value}`);
+		throw new Error(
+			`updateProperty is not suppported in EmbedderTerminalProcess. property: ${property}, value: ${value}`
+		);
 	}
 }
 

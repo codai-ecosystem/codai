@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { DocumentDropEdit } from '../../../../common/languages.js';
 import { sortEditsByYieldTo } from '../../browser/edit.js';
 
-
 function createTestEdit(kind: string, args?: Partial<DocumentDropEdit>): DocumentDropEdit {
 	return {
 		title: '',
@@ -19,7 +18,6 @@ function createTestEdit(kind: string, args?: Partial<DocumentDropEdit>): Documen
 }
 
 suite('sortEditsByYieldTo', () => {
-
 	test('Should noop for empty edits', () => {
 		const edits: DocumentDropEdit[] = [];
 
@@ -31,7 +29,10 @@ suite('sortEditsByYieldTo', () => {
 			createTestEdit('a', { yieldTo: [{ kind: new HierarchicalKind('b') }] }),
 			createTestEdit('b'),
 		];
-		assert.deepStrictEqual(sortEditsByYieldTo(edits).map(x => x.kind?.value), ['b', 'a']);
+		assert.deepStrictEqual(
+			sortEditsByYieldTo(edits).map(x => x.kind?.value),
+			['b', 'a']
+		);
 	});
 
 	test('Should handle chain of yield to', () => {
@@ -42,7 +43,10 @@ suite('sortEditsByYieldTo', () => {
 				createTestEdit('b'),
 			];
 
-			assert.deepStrictEqual(sortEditsByYieldTo(edits).map(x => x.kind?.value), ['b', 'a', 'c']);
+			assert.deepStrictEqual(
+				sortEditsByYieldTo(edits).map(x => x.kind?.value),
+				['b', 'a', 'c']
+			);
 		}
 		{
 			const edits: DocumentDropEdit[] = [
@@ -51,7 +55,10 @@ suite('sortEditsByYieldTo', () => {
 				createTestEdit('b'),
 			];
 
-			assert.deepStrictEqual(sortEditsByYieldTo(edits).map(x => x.kind?.value), ['b', 'a', 'c']);
+			assert.deepStrictEqual(
+				sortEditsByYieldTo(edits).map(x => x.kind?.value),
+				['b', 'a', 'c']
+			);
 		}
 	});
 
@@ -62,7 +69,10 @@ suite('sortEditsByYieldTo', () => {
 			createTestEdit('b'),
 		];
 
-		assert.deepStrictEqual(sortEditsByYieldTo(edits).map(x => x.kind?.value), ['c', 'a', 'b']);
+		assert.deepStrictEqual(
+			sortEditsByYieldTo(edits).map(x => x.kind?.value),
+			['c', 'a', 'b']
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();

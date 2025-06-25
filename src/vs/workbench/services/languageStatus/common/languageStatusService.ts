@@ -13,7 +13,10 @@ import { Command } from '../../../../editor/common/languages.js';
 import { LanguageFeatureRegistry } from '../../../../editor/common/languageFeatureRegistry.js';
 import { LanguageSelector } from '../../../../editor/common/languageSelector.js';
 import { IAccessibilityInformation } from '../../../../platform/accessibility/common/accessibility.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 
 export interface ILanguageStatus {
@@ -30,13 +33,16 @@ export interface ILanguageStatus {
 }
 
 export interface ILanguageStatusProvider {
-	provideLanguageStatus(langId: string, token: CancellationToken): Promise<ILanguageStatus | undefined>;
+	provideLanguageStatus(
+		langId: string,
+		token: CancellationToken
+	): Promise<ILanguageStatus | undefined>;
 }
 
-export const ILanguageStatusService = createDecorator<ILanguageStatusService>('ILanguageStatusService');
+export const ILanguageStatusService =
+	createDecorator<ILanguageStatusService>('ILanguageStatusService');
 
 export interface ILanguageStatusService {
-
 	_serviceBrand: undefined;
 
 	onDidChange: Event<void>;
@@ -46,9 +52,7 @@ export interface ILanguageStatusService {
 	getLanguageStatus(model: ITextModel): ILanguageStatus[];
 }
 
-
 class LanguageStatusServiceImpl implements ILanguageStatusService {
-
 	declare _serviceBrand: undefined;
 
 	private readonly _provider = new LanguageFeatureRegistry<ILanguageStatus>();

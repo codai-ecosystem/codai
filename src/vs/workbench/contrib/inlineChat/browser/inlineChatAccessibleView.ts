@@ -7,7 +7,11 @@ import { InlineChatController } from './inlineChatController.js';
 import { CTX_INLINE_CHAT_FOCUSED, CTX_INLINE_CHAT_RESPONSE_FOCUSED } from '../common/inlineChat.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
-import { AccessibleViewProviderId, AccessibleViewType, AccessibleContentProvider } from '../../../../platform/accessibility/browser/accessibleView.js';
+import {
+	AccessibleViewProviderId,
+	AccessibleViewType,
+	AccessibleContentProvider,
+} from '../../../../platform/accessibility/browser/accessibleView.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { IAccessibleViewImplementation } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
 import { MarkdownString } from '../../../../base/common/htmlContent.js';
@@ -22,7 +26,8 @@ export class InlineChatAccessibleView implements IAccessibleViewImplementation {
 	getProvider(accessor: ServicesAccessor) {
 		const codeEditorService = accessor.get(ICodeEditorService);
 
-		const editor = (codeEditorService.getActiveCodeEditor() || codeEditorService.getFocusedCodeEditor());
+		const editor =
+			codeEditorService.getActiveCodeEditor() || codeEditorService.getFocusedCodeEditor();
 		if (!editor) {
 			return;
 		}

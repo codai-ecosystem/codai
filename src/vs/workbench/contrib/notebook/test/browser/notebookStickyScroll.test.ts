@@ -17,9 +17,16 @@ import { NotebookCellOutline } from '../../browser/contrib/outline/notebookOutli
 import { INotebookEditor, INotebookEditorPane } from '../../browser/notebookBrowser.js';
 import { INotebookCellList } from '../../browser/view/notebookRenderingCommon.js';
 import { OutlineEntry } from '../../browser/viewModel/OutlineEntry.js';
-import { NotebookStickyLine, computeContent } from '../../browser/viewParts/notebookEditorStickyScroll.js';
+import {
+	NotebookStickyLine,
+	computeContent,
+} from '../../browser/viewParts/notebookEditorStickyScroll.js';
 import { CellKind } from '../../common/notebookCommon.js';
-import { createNotebookCellList, setupInstantiationService, withTestNotebook } from './testNotebookEditor.js';
+import {
+	createNotebookCellList,
+	setupInstantiationService,
+	withTestNotebook,
+} from './testNotebookEditor.js';
 import { OutlineTarget } from '../../../../services/outline/browser/outline.js';
 
 suite('NotebookEditorStickyScroll', () => {
@@ -44,17 +51,29 @@ suite('NotebookEditorStickyScroll', () => {
 		if (!editor.hasModel()) {
 			assert.ok(false, 'MUST have active text editor');
 		}
-		const outline = store.add(instantiationService.createInstance(NotebookCellOutline, new class extends mock<INotebookEditorPane>() {
-			override getControl() {
-				return editor;
-			}
-			override onDidChangeModel: Event<void> = Event.None;
-			override onDidChangeSelection: Event<IEditorPaneSelectionChangeEvent> = Event.None;
-		}, OutlineTarget.QuickPick));
+		const outline = store.add(
+			instantiationService.createInstance(
+				NotebookCellOutline,
+				new (class extends mock<INotebookEditorPane>() {
+					override getControl() {
+						return editor;
+					}
+					override onDidChangeModel: Event<void> = Event.None;
+					override onDidChangeSelection: Event<IEditorPaneSelectionChangeEvent> = Event.None;
+				})(),
+				OutlineTarget.QuickPick
+			)
+		);
 		return outline;
 	}
 
-	function nbStickyTestHelper(domNode: HTMLElement, notebookEditor: INotebookEditor, notebookCellList: INotebookCellList, notebookOutlineEntries: OutlineEntry[], disposables: Pick<DisposableStore, 'add'>) {
+	function nbStickyTestHelper(
+		domNode: HTMLElement,
+		notebookEditor: INotebookEditor,
+		notebookCellList: INotebookCellList,
+		notebookOutlineEntries: OutlineEntry[],
+		disposables: Pick<DisposableStore, 'add'>
+	) {
 		const output = computeContent(notebookEditor, notebookCellList, notebookOutlineEntries, 0);
 		for (const stickyLine of output.values()) {
 			disposables.add(stickyLine.line);
@@ -62,7 +81,9 @@ suite('NotebookEditorStickyScroll', () => {
 		return createStickyTestElement(output.values());
 	}
 
-	function createStickyTestElement(stickyLines: IterableIterator<{ line: NotebookStickyLine; rendered: boolean }>) {
+	function createStickyTestElement(
+		stickyLines: IterableIterator<{ line: NotebookStickyLine; rendered: boolean }>
+	) {
 		const outputElements = [];
 		for (const stickyLine of stickyLines) {
 			if (stickyLine.rendered) {
@@ -82,7 +103,7 @@ suite('NotebookEditorStickyScroll', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]
+				['var c = 2;', 'javascript', CellKind.Code, [], {}],
 			],
 			async (editor, viewModel) => {
 				viewModel.restoreEditorViewState({
@@ -103,23 +124,30 @@ suite('NotebookEditorStickyScroll', () => {
 
 				const outline = getOutline(editor);
 				const notebookOutlineEntries = outline.entries;
-				const resultingMap = nbStickyTestHelper(domNode, editor, cellList, notebookOutlineEntries, disposables);
+				const resultingMap = nbStickyTestHelper(
+					domNode,
+					editor,
+					cellList,
+					notebookOutlineEntries,
+					disposables
+				);
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test1: should render 0->1, 	visible range 3->8', async function () {
 		await withTestNotebook(
 			[
-				['# header a', 'markdown', CellKind.Markup, [], {}],	// 0
-				['## header aa', 'markdown', CellKind.Markup, [], {}],	// 50
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 100
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 150
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 200
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 250
-				['# header b', 'markdown', CellKind.Markup, [], {}],	// 300
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]		// 350
+				['# header a', 'markdown', CellKind.Markup, [], {}], // 0
+				['## header aa', 'markdown', CellKind.Markup, [], {}], // 50
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 100
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 150
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 200
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 250
+				['# header b', 'markdown', CellKind.Markup, [], {}], // 300
+				['var c = 2;', 'javascript', CellKind.Code, [], {}], // 350
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -140,25 +168,32 @@ suite('NotebookEditorStickyScroll', () => {
 
 				const outline = getOutline(editor);
 				const notebookOutlineEntries = outline.entries;
-				const resultingMap = nbStickyTestHelper(domNode, editor, cellList, notebookOutlineEntries, ds);
+				const resultingMap = nbStickyTestHelper(
+					domNode,
+					editor,
+					cellList,
+					notebookOutlineEntries,
+					ds
+				);
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test2: should render 0, 		visible range 6->9 so collapsing next 2 against following section', async function () {
 		await withTestNotebook(
 			[
-				['# header a', 'markdown', CellKind.Markup, [], {}],	// 0
-				['## header aa', 'markdown', CellKind.Markup, [], {}],	// 50
-				['### header aaa', 'markdown', CellKind.Markup, [], {}],// 100
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 150
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 200
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 250
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 300
-				['# header b', 'markdown', CellKind.Markup, [], {}],	// 350
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]		// 400
+				['# header a', 'markdown', CellKind.Markup, [], {}], // 0
+				['## header aa', 'markdown', CellKind.Markup, [], {}], // 50
+				['### header aaa', 'markdown', CellKind.Markup, [], {}], // 100
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 150
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 200
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 250
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 300
+				['# header b', 'markdown', CellKind.Markup, [], {}], // 350
+				['var c = 2;', 'javascript', CellKind.Code, [], {}], // 400
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -179,26 +214,33 @@ suite('NotebookEditorStickyScroll', () => {
 
 				const outline = getOutline(editor);
 				const notebookOutlineEntries = outline.entries;
-				const resultingMap = nbStickyTestHelper(domNode, editor, cellList, notebookOutlineEntries, ds);
+				const resultingMap = nbStickyTestHelper(
+					domNode,
+					editor,
+					cellList,
+					notebookOutlineEntries,
+					ds
+				);
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test3: should render 0->2, 	collapsing against equivalent level header', async function () {
 		await withTestNotebook(
 			[
-				['# header a', 'markdown', CellKind.Markup, [], {}],	// 0
-				['## header aa', 'markdown', CellKind.Markup, [], {}],	// 50
-				['### header aaa', 'markdown', CellKind.Markup, [], {}],// 100
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 150
-				['### header aab', 'markdown', CellKind.Markup, [], {}],// 200
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 250
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 300
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 350
-				['# header b', 'markdown', CellKind.Markup, [], {}],	// 400
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]		// 450
+				['# header a', 'markdown', CellKind.Markup, [], {}], // 0
+				['## header aa', 'markdown', CellKind.Markup, [], {}], // 50
+				['### header aaa', 'markdown', CellKind.Markup, [], {}], // 100
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 150
+				['### header aab', 'markdown', CellKind.Markup, [], {}], // 200
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 250
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 300
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 350
+				['# header b', 'markdown', CellKind.Markup, [], {}], // 400
+				['var c = 2;', 'javascript', CellKind.Code, [], {}], // 450
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -219,11 +261,18 @@ suite('NotebookEditorStickyScroll', () => {
 
 				const outline = getOutline(editor);
 				const notebookOutlineEntries = outline.entries;
-				const resultingMap = nbStickyTestHelper(domNode, editor, cellList, notebookOutlineEntries, ds);
+				const resultingMap = nbStickyTestHelper(
+					domNode,
+					editor,
+					cellList,
+					notebookOutlineEntries,
+					ds
+				);
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	// outdated/improper behavior
@@ -237,7 +286,7 @@ suite('NotebookEditorStickyScroll', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]
+				['var c = 2;', 'javascript', CellKind.Code, [], {}],
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -258,11 +307,18 @@ suite('NotebookEditorStickyScroll', () => {
 
 				const outline = getOutline(editor);
 				const notebookOutlineEntries = outline.entries;
-				const resultingMap = nbStickyTestHelper(domNode, editor, cellList, notebookOutlineEntries, ds);
+				const resultingMap = nbStickyTestHelper(
+					domNode,
+					editor,
+					cellList,
+					notebookOutlineEntries,
+					ds
+				);
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test5: should render 0->2, 	scrolltop halfway through cell 2', async function () {
@@ -277,7 +333,7 @@ suite('NotebookEditorStickyScroll', () => {
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
 				['# header b', 'markdown', CellKind.Markup, [], {}],
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]
+				['var c = 2;', 'javascript', CellKind.Code, [], {}],
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -298,11 +354,18 @@ suite('NotebookEditorStickyScroll', () => {
 
 				const outline = getOutline(editor);
 				const notebookOutlineEntries = outline.entries;
-				const resultingMap = nbStickyTestHelper(domNode, editor, cellList, notebookOutlineEntries, ds);
+				const resultingMap = nbStickyTestHelper(
+					domNode,
+					editor,
+					cellList,
+					notebookOutlineEntries,
+					ds
+				);
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test6: should render 6->7, 	scrolltop halfway through cell 7', async function () {
@@ -317,7 +380,7 @@ suite('NotebookEditorStickyScroll', () => {
 				['# header b', 'markdown', CellKind.Markup, [], {}],
 				['## header bb', 'markdown', CellKind.Markup, [], {}],
 				['### header bbb', 'markdown', CellKind.Markup, [], {}],
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]
+				['var c = 2;', 'javascript', CellKind.Code, [], {}],
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -338,28 +401,35 @@ suite('NotebookEditorStickyScroll', () => {
 
 				const outline = getOutline(editor);
 				const notebookOutlineEntries = outline.entries;
-				const resultingMap = nbStickyTestHelper(domNode, editor, cellList, notebookOutlineEntries, ds);
+				const resultingMap = nbStickyTestHelper(
+					domNode,
+					editor,
+					cellList,
+					notebookOutlineEntries,
+					ds
+				);
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test7: should render 0->1, 	collapsing against next section', async function () {
 		await withTestNotebook(
 			[
-				['# header a', 'markdown', CellKind.Markup, [], {}], 		//0
-				['## header aa', 'markdown', CellKind.Markup, [], {}], 		//50
-				['### header aaa', 'markdown', CellKind.Markup, [], {}], 	//100
-				['#### header aaaa', 'markdown', CellKind.Markup, [], {}], 	//150
-				['var b = 1;', 'javascript', CellKind.Code, [], {}], 		//200
-				['var b = 1;', 'javascript', CellKind.Code, [], {}], 		//250
-				['var b = 1;', 'javascript', CellKind.Code, [], {}], 		//300
-				['var b = 1;', 'javascript', CellKind.Code, [], {}], 		//350
-				['# header b', 'markdown', CellKind.Markup, [], {}], 		//400
-				['## header bb', 'markdown', CellKind.Markup, [], {}], 		//450
+				['# header a', 'markdown', CellKind.Markup, [], {}], //0
+				['## header aa', 'markdown', CellKind.Markup, [], {}], //50
+				['### header aaa', 'markdown', CellKind.Markup, [], {}], //100
+				['#### header aaaa', 'markdown', CellKind.Markup, [], {}], //150
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], //200
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], //250
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], //300
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], //350
+				['# header b', 'markdown', CellKind.Markup, [], {}], //400
+				['## header bb', 'markdown', CellKind.Markup, [], {}], //450
 				['### header bbb', 'markdown', CellKind.Markup, [], {}],
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]
+				['var c = 2;', 'javascript', CellKind.Code, [], {}],
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -380,10 +450,17 @@ suite('NotebookEditorStickyScroll', () => {
 
 				const outline = getOutline(editor);
 				const notebookOutlineEntries = outline.entries;
-				const resultingMap = nbStickyTestHelper(domNode, editor, cellList, notebookOutlineEntries, ds);
+				const resultingMap = nbStickyTestHelper(
+					domNode,
+					editor,
+					cellList,
+					notebookOutlineEntries,
+					ds
+				);
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 });

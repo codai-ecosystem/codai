@@ -15,9 +15,19 @@ import { whenDeleted, writeFileSync } from '../../base/node/pfs.js';
 import { findFreePort } from '../../base/node/ports.js';
 import { watchFileContents } from '../../platform/files/node/watcher/nodejs/nodejsWatcherLib.js';
 import { NativeParsedArgs } from '../../platform/environment/common/argv.js';
-import { buildHelpMessage, buildVersionMessage, NATIVE_CLI_COMMANDS, OPTIONS } from '../../platform/environment/node/argv.js';
+import {
+	buildHelpMessage,
+	buildVersionMessage,
+	NATIVE_CLI_COMMANDS,
+	OPTIONS,
+} from '../../platform/environment/node/argv.js';
 import { addArg, parseCLIProcessArgv } from '../../platform/environment/node/argvHelper.js';
-import { getStdinFilePath, hasStdinWithoutTty, readFromStdin, stdinDataListener } from '../../platform/environment/node/stdin.js';
+import {
+	getStdinFilePath,
+	hasStdinWithoutTty,
+	readFromStdin,
+	stdinDataListener,
+} from '../../platform/environment/node/stdin.js';
 import { createWaitMarkerFileSync } from '../../platform/environment/node/wait.js';
 import product from '../../platform/product/common/product.js';
 import { CancellationTokenSource } from '../../base/common/cancellation.js';
@@ -30,14 +40,16 @@ import { URI } from '../../base/common/uri.js';
 import { DeferredPromise } from '../../base/common/async.js';
 
 function shouldSpawnCliProcess(argv: NativeParsedArgs): boolean {
-	return !!argv['install-source']
-		|| !!argv['list-extensions']
-		|| !!argv['install-extension']
-		|| !!argv['uninstall-extension']
-		|| !!argv['update-extensions']
-		|| !!argv['locate-extension']
-		|| !!argv['add-mcp']
-		|| !!argv['telemetry'];
+	return (
+		!!argv['install-source'] ||
+		!!argv['list-extensions'] ||
+		!!argv['install-extension'] ||
+		!!argv['uninstall-extension'] ||
+		!!argv['update-extensions'] ||
+		!!argv['locate-extension'] ||
+		!!argv['add-mcp'] ||
+		!!argv['telemetry']
+	);
 }
 
 export async function main(argv: string[]): Promise<any> {
@@ -57,7 +69,7 @@ export async function main(argv: string[]): Promise<any> {
 				return;
 			}
 			const env: IProcessEnvironment = {
-				...process.env
+				...process.env,
 			};
 			// bootstrap-esm.js determines the electron environment based
 			// on the following variable. For the server we need to unset
@@ -70,14 +82,27 @@ export async function main(argv: string[]): Promise<any> {
 				let tunnelProcess: ChildProcess;
 				const stdio: StdioOptions = ['ignore', 'pipe', 'pipe'];
 				if (process.env['VSCODE_DEV']) {
-					tunnelProcess = spawn('cargo', ['run', '--', subcommand, ...tunnelArgs], { cwd: join(getAppRoot(), 'cli'), stdio, env });
+					tunnelProcess = spawn('cargo', ['run', '--', subcommand, ...tunnelArgs], {
+						cwd: join(getAppRoot(), 'cli'),
+						stdio,
+						env,
+					});
 				} else {
-					const appPath = process.platform === 'darwin'
-						// ./Contents/MacOS/Electron => ./Contents/Resources/app/bin/code-tunnel-insiders
-						? join(dirname(dirname(process.execPath)), 'Resources', 'app')
-						: dirname(process.execPath);
-					const tunnelCommand = join(appPath, 'bin', `${product.tunnelApplicationName}${isWindows ? '.exe' : ''}`);
-					tunnelProcess = spawn(tunnelCommand, [subcommand, ...tunnelArgs], { cwd: cwd(), stdio, env });
+					const appPath =
+						process.platform === 'darwin'
+							? // ./Contents/MacOS/Electron => ./Contents/Resources/app/bin/code-tunnel-insiders
+								join(dirname(dirname(process.execPath)), 'Resources', 'app')
+							: dirname(process.execPath);
+					const tunnelCommand = join(
+						appPath,
+						'bin',
+						`${product.tunnelApplicationName}${isWindows ? '.exe' : ''}`
+					);
+					tunnelProcess = spawn(tunnelCommand, [subcommand, ...tunnelArgs], {
+						cwd: cwd(),
+						stdio,
+						env,
+					});
 				}
 
 				tunnelProcess.stdout!.pipe(process.stdout);
@@ -104,21 +129,31 @@ export async function main(argv: string[]): Promise<any> {
 		let file: string;
 		switch (args['locate-shell-integration-path']) {
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path bash)"`
-			case 'bash': file = 'shellIntegration-bash.sh'; break;
+			case 'bash':
+				file = 'shellIntegration-bash.sh';
+				break;
 			// Usage: `if ($env:TERM_PROGRAM -eq "vscode") { . "$(code --locate-shell-integration-path pwsh)" }`
-			case 'pwsh': file = 'shellIntegration.ps1'; break;
+			case 'pwsh':
+				file = 'shellIntegration.ps1';
+				break;
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"`
-			case 'zsh': file = 'shellIntegration-rc.zsh'; break;
+			case 'zsh':
+				file = 'shellIntegration-rc.zsh';
+				break;
 			// Usage: `string match -q "$TERM_PROGRAM" "vscode"; and . (code --locate-shell-integration-path fish)`
-			case 'fish': file = 'shellIntegration.fish'; break;
-			default: throw new Error('Error using --locate-shell-integration-path: Invalid shell type');
+			case 'fish':
+				file = 'shellIntegration.fish';
+				break;
+			default:
+				throw new Error('Error using --locate-shell-integration-path: Invalid shell type');
 		}
-		console.log(join(getAppRoot(), 'out', 'vs', 'workbench', 'contrib', 'terminal', 'common', 'scripts', file));
+		console.log(
+			join(getAppRoot(), 'out', 'vs', 'workbench', 'contrib', 'terminal', 'common', 'scripts', file)
+		);
 	}
 
 	// Extensions Management
 	else if (shouldSpawnCliProcess(args)) {
-
 		// We do not bundle `cliProcessMain.js` into this file because
 		// it is rather large and only needed for very few CLI operations.
 		// This has the downside that we need to know if we run OSS or
@@ -140,14 +175,21 @@ export async function main(argv: string[]): Promise<any> {
 	// Write File
 	else if (args['file-write']) {
 		const argsFile = args._[0];
-		if (!argsFile || !isAbsolute(argsFile) || !existsSync(argsFile) || !statSync(argsFile).isFile()) {
+		if (
+			!argsFile ||
+			!isAbsolute(argsFile) ||
+			!existsSync(argsFile) ||
+			!statSync(argsFile).isFile()
+		) {
 			throw new Error('Using --file-write with invalid arguments.');
 		}
 
 		let source: string | undefined;
 		let target: string | undefined;
 		try {
-			const argsContents: { source: string; target: string } = JSON.parse(readFileSync(argsFile, 'utf8'));
+			const argsContents: { source: string; target: string } = JSON.parse(
+				readFileSync(argsFile, 'utf8')
+			);
 			source = argsContents.source;
 			target = argsContents.target;
 		} catch (error) {
@@ -166,22 +208,26 @@ export async function main(argv: string[]): Promise<any> {
 
 		// Validate
 		if (
-			!source || !target || source === target ||				// make sure source and target are provided and are not the same
-			!isAbsolute(source) || !isAbsolute(target) ||			// make sure both source and target are absolute paths
-			!existsSync(source) || !statSync(source).isFile() ||	// make sure source exists as file
-			!existsSync(target) || !statSync(target).isFile()		// make sure target exists as file
+			!source ||
+			!target ||
+			source === target || // make sure source and target are provided and are not the same
+			!isAbsolute(source) ||
+			!isAbsolute(target) || // make sure both source and target are absolute paths
+			!existsSync(source) ||
+			!statSync(source).isFile() || // make sure source exists as file
+			!existsSync(target) ||
+			!statSync(target).isFile() // make sure target exists as file
 		) {
 			throw new Error('Using --file-write with invalid arguments.');
 		}
 
 		try {
-
 			// Check for readonly status and chmod if so if we are told so
 			let targetMode: number = 0;
 			let restoreMode = false;
 			if (!!args['file-chmod']) {
 				targetMode = statSync(target).mode;
-				if (!(targetMode & 0o200 /* File mode indicating writable by owner */)) {
+				if (!((targetMode & 0o200) /* File mode indicating writable by owner */)) {
 					chmodSync(target, targetMode | 0o200);
 					restoreMode = true;
 				}
@@ -216,7 +262,7 @@ export async function main(argv: string[]): Promise<any> {
 	else {
 		const env: IProcessEnvironment = {
 			...process.env,
-			'ELECTRON_NO_ATTACH_CONSOLE': '1'
+			ELECTRON_NO_ATTACH_CONSOLE: '1',
 		};
 
 		delete env['ELECTRON_RUN_AS_NODE'];
@@ -245,7 +291,6 @@ export async function main(argv: string[]): Promise<any> {
 
 		let stdinFilePath: string | undefined;
 		if (hasStdinWithoutTty()) {
-
 			// Read from stdin: we require a single "-" argument to be passed in order to start reading from
 			// stdin. We do this because there is no reliable way to find out if data is piped to stdin. Just
 			// checking for stdin being connected to a TTY is not enough (https://github.com/microsoft/vscode/issues/40351)
@@ -257,7 +302,6 @@ export async function main(argv: string[]): Promise<any> {
 					const readFromStdinDone = new DeferredPromise<void>();
 					await readFromStdin(stdinFilePath, !!args.verbose, () => readFromStdinDone.complete());
 					if (!args.wait) {
-
 						// if `--wait` is not provided, we keep this process alive
 						// for at least as long as the stdin stream is open to
 						// ensure that we read all the data.
@@ -285,18 +329,23 @@ export async function main(argv: string[]): Promise<any> {
 					stdinFilePath = undefined;
 				}
 			} else {
-
 				// If the user pipes data via stdin but forgot to add the "-" argument, help by printing a message
 				// if we detect that data flows into via stdin after a certain timeout.
-				processCallbacks.push(_ => stdinDataListener(1000).then(dataReceived => {
-					if (dataReceived) {
-						if (isWindows) {
-							console.log(`Run with '${product.applicationName} -' to read output from another program (e.g. 'echo Hello World | ${product.applicationName} -').`);
-						} else {
-							console.log(`Run with '${product.applicationName} -' to read from stdin (e.g. 'ps aux | grep code | ${product.applicationName} -').`);
+				processCallbacks.push(_ =>
+					stdinDataListener(1000).then(dataReceived => {
+						if (dataReceived) {
+							if (isWindows) {
+								console.log(
+									`Run with '${product.applicationName} -' to read output from another program (e.g. 'echo Hello World | ${product.applicationName} -').`
+								);
+							} else {
+								console.log(
+									`Run with '${product.applicationName} -' to read from stdin (e.g. 'ps aux | grep code | ${product.applicationName} -').`
+								);
+							}
 						}
-					}
-				}));
+					})
+				);
 			}
 		}
 
@@ -340,7 +389,7 @@ export async function main(argv: string[]): Promise<any> {
 					await Promise.race([
 						whenDeleted(waitMarkerFilePath!),
 						Event.toPromise(Event.fromNodeEventEmitter(child, 'error')),
-						childExitPromise
+						childExitPromise,
 					]);
 				} finally {
 					if (stdinFilePath) {
@@ -362,7 +411,9 @@ export async function main(argv: string[]): Promise<any> {
 
 			// fail the operation when one of the ports couldn't be acquired.
 			if (portMain * portRenderer * portExthost === 0) {
-				throw new Error('Failed to find free ports for profiler. Make sure to shutdown all instances of the editor first.');
+				throw new Error(
+					'Failed to find free ports for profiler. Make sure to shutdown all instances of the editor first.'
+				);
 			}
 
 			const filenamePrefix = randomPath(homedir(), 'prof');
@@ -376,9 +427,12 @@ export async function main(argv: string[]): Promise<any> {
 			writeFileSync(filenamePrefix, argv.slice(-6).join('|'));
 
 			processCallbacks.push(async _child => {
-
 				class Profiler {
-					static async start(name: string, filenamePrefix: string, opts: { port: number; tries?: number; target?: (targets: Target[]) => Target }) {
+					static async start(
+						name: string,
+						filenamePrefix: string,
+						opts: { port: number; tries?: number; target?: (targets: Target[]) => Target }
+					) {
 						const profiler = await import('v8-inspect-profiler');
 
 						let session: ProfilingSession;
@@ -404,8 +458,11 @@ export async function main(argv: string[]): Promise<any> {
 									suffix = '.txt';
 								}
 
-								writeFileSync(`${filenamePrefix}.${name}.cpuprofile${suffix}`, JSON.stringify(result.profile, undefined, 4));
-							}
+								writeFileSync(
+									`${filenamePrefix}.${name}.cpuprofile${suffix}`,
+									JSON.stringify(result.profile, undefined, 4)
+								);
+							},
 						};
 					}
 				}
@@ -413,7 +470,10 @@ export async function main(argv: string[]): Promise<any> {
 				try {
 					// load and start profiler
 					const mainProfileRequest = Profiler.start('main', filenamePrefix, { port: portMain });
-					const extHostProfileRequest = Profiler.start('extHost', filenamePrefix, { port: portExthost, tries: 300 });
+					const extHostProfileRequest = Profiler.start('extHost', filenamePrefix, {
+						port: portExthost,
+						tries: 300,
+					});
 					const rendererProfileRequest = Profiler.start('renderer', filenamePrefix, {
 						port: portRenderer,
 						tries: 200,
@@ -423,12 +483,15 @@ export async function main(argv: string[]): Promise<any> {
 									return false;
 								}
 								if (target.type === 'page') {
-									return target.url.indexOf('workbench/workbench.html') > 0 || target.url.indexOf('workbench/workbench-dev.html') > 0;
+									return (
+										target.url.indexOf('workbench/workbench.html') > 0 ||
+										target.url.indexOf('workbench/workbench-dev.html') > 0
+									);
 								} else {
 									return true;
 								}
 							})[0];
-						}
+						},
 					});
 
 					const main = await mainProfileRequest;
@@ -445,7 +508,6 @@ export async function main(argv: string[]): Promise<any> {
 
 					// re-create the marker file to signal that profiling is done
 					writeFileSync(filenamePrefix, '');
-
 				} catch (e) {
 					console.error('Failed to profile startup. Make sure to quit Code first.');
 				}
@@ -454,7 +516,7 @@ export async function main(argv: string[]): Promise<any> {
 
 		const options: SpawnOptions = {
 			detached: true,
-			env
+			env,
 		};
 
 		if (!args.verbose) {
@@ -492,7 +554,6 @@ export async function main(argv: string[]): Promise<any> {
 				// so we make it redirect those to temp files, and then use a logger to
 				// redirect the file output to the console
 				for (const outputType of args.verbose ? ['stdout', 'stderr'] : ['stdout']) {
-
 					// Tmp file to target output to
 					const tmpName = randomPath(tmpdir(), `code-${outputType}`);
 					writeFileSync(tmpName, '');
@@ -509,7 +570,14 @@ export async function main(argv: string[]): Promise<any> {
 								// but the watcher might still be reading data.
 								setTimeout(() => cts.dispose(true), 200);
 							});
-							await watchFileContents(tmpName, chunk => stream.write(chunk), () => { /* ignore */ }, cts.token);
+							await watchFileContents(
+								tmpName,
+								chunk => stream.write(chunk),
+								() => {
+									/* ignore */
+								},
+								cts.token
+							);
 						} finally {
 							unlinkSync(tmpName);
 						}

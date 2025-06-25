@@ -14,12 +14,19 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { NullLogService } from '../../../log/common/log.js';
 import { IProductService } from '../../../product/common/productService.js';
 import { IRequestService } from '../../../request/common/request.js';
-import { IUserDataSyncStoreService, SyncResource, UserDataSyncErrorCode, UserDataSyncStoreError } from '../../common/userDataSync.js';
-import { RequestsSession, UserDataSyncStoreService } from '../../common/userDataSyncStoreService.js';
+import {
+	IUserDataSyncStoreService,
+	SyncResource,
+	UserDataSyncErrorCode,
+	UserDataSyncStoreError,
+} from '../../common/userDataSync.js';
+import {
+	RequestsSession,
+	UserDataSyncStoreService,
+} from '../../common/userDataSyncStoreService.js';
 import { UserDataSyncClient, UserDataSyncTestServer } from './userDataSyncClient.js';
 
 suite('UserDataSyncStoreService', () => {
-
 	const disposableStore = ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('test read manifest for the first time', async () => {
@@ -33,9 +40,18 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-Client-Name'], `${productService.applicationName}${isWeb ? '-web' : ''}`);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-Client-Version'], productService.version);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], undefined);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Client-Name'],
+			`${productService.applicationName}${isWeb ? '-web' : ''}`
+		);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Client-Version'],
+			productService.version
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			undefined
+		);
 		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
 	});
 
@@ -53,7 +69,10 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
 		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
 	});
 
@@ -72,7 +91,10 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
 		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
 	});
 
@@ -92,8 +114,14 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			undefined
+		);
 	});
 
 	test('test headers are send for write request', async () => {
@@ -113,8 +141,14 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.writeResource(SyncResource.Settings, 'some content', null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			undefined
+		);
 	});
 
 	test('test headers are send for read request', async () => {
@@ -134,8 +168,14 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.readResource(SyncResource.Settings, null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			undefined
+		);
 	});
 
 	test('test headers are reset after session is cleared ', async () => {
@@ -156,8 +196,14 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], undefined);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			undefined
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
 		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
 	});
 
@@ -187,10 +233,22 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], undefined);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], userSessionId);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			undefined
+		);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			undefined
+		);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			userSessionId
+		);
 	});
 
 	test('test old headers are reset from second request after session is changed on server ', async () => {
@@ -220,10 +278,22 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], undefined);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], userSessionId);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			undefined
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			undefined
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			userSessionId
+		);
 	});
 
 	test('test old headers are sent after session is cleared from another server ', async () => {
@@ -251,10 +321,22 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], undefined);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
-		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], userSessionId);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			undefined
+		);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			undefined
+		);
+		assert.strictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			userSessionId
+		);
 	});
 
 	test('test headers are reset after session is cleared from another server ', async () => {
@@ -282,8 +364,14 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], undefined);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			undefined
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
 		assert.strictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
 	});
 
@@ -315,10 +403,22 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 
 		assert.strictEqual(target.requestsWithAllHeaders.length, 1);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], undefined);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'], machineSessionId);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], userSessionId);
-		assert.notStrictEqual(target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'], undefined);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			undefined
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-Machine-Session-Id'],
+			machineSessionId
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			userSessionId
+		);
+		assert.notStrictEqual(
+			target.requestsWithAllHeaders[0].headers!['X-User-Session-Id'],
+			undefined
+		);
 	});
 
 	test('test rate limit on server with retry after', async () => {
@@ -335,7 +435,10 @@ suite('UserDataSyncStoreService', () => {
 			assert.fail('should fail');
 		} catch (e) {
 			assert.ok(e instanceof UserDataSyncStoreError);
-			assert.deepStrictEqual((<UserDataSyncStoreError>e).code, UserDataSyncErrorCode.TooManyRequestsAndRetryAfter);
+			assert.deepStrictEqual(
+				(<UserDataSyncStoreError>e).code,
+				UserDataSyncErrorCode.TooManyRequestsAndRetryAfter
+			);
 			await promise;
 			assert.ok(!!testObject.donotMakeRequestsUntil);
 		}
@@ -343,7 +446,9 @@ suite('UserDataSyncStoreService', () => {
 
 	test('test donotMakeRequestsUntil is reset after retry time is finished', async () => {
 		return runWithFakedTimers({ useFakeTimers: true }, async () => {
-			const client = disposableStore.add(new UserDataSyncClient(new UserDataSyncTestServer(1, 0.25)));
+			const client = disposableStore.add(
+				new UserDataSyncClient(new UserDataSyncTestServer(1, 0.25))
+			);
 			await client.setUp();
 			const testObject = client.instantiationService.get(IUserDataSyncStoreService);
 
@@ -351,7 +456,7 @@ suite('UserDataSyncStoreService', () => {
 			try {
 				await testObject.manifest(null);
 				assert.fail('should fail');
-			} catch (e) { }
+			} catch (e) {}
 
 			const promise = Event.toPromise(testObject.onDidChangeDonotMakeRequestsUntil);
 			await timeout(300);
@@ -368,15 +473,22 @@ suite('UserDataSyncStoreService', () => {
 		await testObject.manifest(null);
 		try {
 			await testObject.manifest(null);
-		} catch (e) { }
+		} catch (e) {}
 
-		const target = disposableStore.add(client.instantiationService.createInstance(UserDataSyncStoreService));
-		assert.strictEqual(target.donotMakeRequestsUntil?.getTime(), testObject.donotMakeRequestsUntil?.getTime());
+		const target = disposableStore.add(
+			client.instantiationService.createInstance(UserDataSyncStoreService)
+		);
+		assert.strictEqual(
+			target.donotMakeRequestsUntil?.getTime(),
+			testObject.donotMakeRequestsUntil?.getTime()
+		);
 	});
 
 	test('test donotMakeRequestsUntil is checked and reset after retreived', async () => {
 		return runWithFakedTimers({ useFakeTimers: true }, async () => {
-			const client = disposableStore.add(new UserDataSyncClient(new UserDataSyncTestServer(1, 0.25)));
+			const client = disposableStore.add(
+				new UserDataSyncClient(new UserDataSyncTestServer(1, 0.25))
+			);
 			await client.setUp();
 			const testObject = client.instantiationService.get(IUserDataSyncStoreService);
 
@@ -384,10 +496,12 @@ suite('UserDataSyncStoreService', () => {
 			try {
 				await testObject.manifest(null);
 				assert.fail('should fail');
-			} catch (e) { }
+			} catch (e) {}
 
 			await timeout(300);
-			const target = disposableStore.add(client.instantiationService.createInstance(UserDataSyncStoreService));
+			const target = disposableStore.add(
+				client.instantiationService.createInstance(UserDataSyncStoreService)
+			);
 			assert.ok(!target.donotMakeRequestsUntil);
 		});
 	});
@@ -405,20 +519,27 @@ suite('UserDataSyncStoreService', () => {
 
 		assert.strictEqual(actual, expected);
 	});
-
 });
 
 suite('UserDataSyncRequestsSession', () => {
-
 	const requestService: IRequestService = {
 		_serviceBrand: undefined,
-		async request() { return { res: { headers: {} }, stream: newWriteableBufferStream() }; },
-		async resolveProxy() { return undefined; },
-		async lookupAuthorization() { return undefined; },
-		async lookupKerberosAuthorization() { return undefined; },
-		async loadCertificates() { return []; }
+		async request() {
+			return { res: { headers: {} }, stream: newWriteableBufferStream() };
+		},
+		async resolveProxy() {
+			return undefined;
+		},
+		async lookupAuthorization() {
+			return undefined;
+		},
+		async lookupKerberosAuthorization() {
+			return undefined;
+		},
+		async loadCertificates() {
+			return [];
+		},
 	};
-
 
 	ensureNoDisposablesAreLeakedInTestSuite();
 
@@ -430,33 +551,40 @@ suite('UserDataSyncRequestsSession', () => {
 			await testObject.request('url', {}, CancellationToken.None);
 		} catch (error) {
 			assert.ok(error instanceof UserDataSyncStoreError);
-			assert.strictEqual((<UserDataSyncStoreError>error).code, UserDataSyncErrorCode.LocalTooManyRequests);
+			assert.strictEqual(
+				(<UserDataSyncStoreError>error).code,
+				UserDataSyncErrorCode.LocalTooManyRequests
+			);
 			return;
 		}
 		assert.fail('Should fail with limit exceeded');
 	});
 
-	test('requests are handled after session is expired', () => runWithFakedTimers({ useFakeTimers: true }, async () => {
-		const testObject = new RequestsSession(1, 100, requestService, new NullLogService());
-		await testObject.request('url', {}, CancellationToken.None);
-		await timeout(125);
-		await testObject.request('url', {}, CancellationToken.None);
-	}));
-
-	test('too many requests are thrown after session is expired', () => runWithFakedTimers({ useFakeTimers: true }, async () => {
-		const testObject = new RequestsSession(1, 100, requestService, new NullLogService());
-		await testObject.request('url', {}, CancellationToken.None);
-		await timeout(125);
-		await testObject.request('url', {}, CancellationToken.None);
-
-		try {
+	test('requests are handled after session is expired', () =>
+		runWithFakedTimers({ useFakeTimers: true }, async () => {
+			const testObject = new RequestsSession(1, 100, requestService, new NullLogService());
 			await testObject.request('url', {}, CancellationToken.None);
-		} catch (error) {
-			assert.ok(error instanceof UserDataSyncStoreError);
-			assert.strictEqual((<UserDataSyncStoreError>error).code, UserDataSyncErrorCode.LocalTooManyRequests);
-			return;
-		}
-		assert.fail('Should fail with limit exceeded');
-	}));
+			await timeout(125);
+			await testObject.request('url', {}, CancellationToken.None);
+		}));
 
+	test('too many requests are thrown after session is expired', () =>
+		runWithFakedTimers({ useFakeTimers: true }, async () => {
+			const testObject = new RequestsSession(1, 100, requestService, new NullLogService());
+			await testObject.request('url', {}, CancellationToken.None);
+			await timeout(125);
+			await testObject.request('url', {}, CancellationToken.None);
+
+			try {
+				await testObject.request('url', {}, CancellationToken.None);
+			} catch (error) {
+				assert.ok(error instanceof UserDataSyncStoreError);
+				assert.strictEqual(
+					(<UserDataSyncStoreError>error).code,
+					UserDataSyncErrorCode.LocalTooManyRequests
+				);
+				return;
+			}
+			assert.fail('Should fail with limit exceeded');
+		}));
 });

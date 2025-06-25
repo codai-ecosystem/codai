@@ -3,18 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { window, workspace, Disposable, TextDocument, Position, SnippetString, TextDocumentChangeEvent, TextDocumentChangeReason, TextDocumentContentChangeEvent } from 'vscode';
+import {
+	window,
+	workspace,
+	Disposable,
+	TextDocument,
+	Position,
+	SnippetString,
+	TextDocumentChangeEvent,
+	TextDocumentChangeReason,
+	TextDocumentContentChangeEvent,
+} from 'vscode';
 import { Runtime } from './htmlClient';
 import { LanguageParticipants } from './languageParticipants';
 
-export function activateAutoInsertion(provider: (kind: 'autoQuote' | 'autoClose', document: TextDocument, position: Position) => Thenable<string>, languageParticipants: LanguageParticipants, runtime: Runtime): Disposable {
+export function activateAutoInsertion(
+	provider: (
+		kind: 'autoQuote' | 'autoClose',
+		document: TextDocument,
+		position: Position
+	) => Thenable<string>,
+	languageParticipants: LanguageParticipants,
+	runtime: Runtime
+): Disposable {
 	const disposables: Disposable[] = [];
 	workspace.onDidChangeTextDocument(onDidChangeTextDocument, null, disposables);
 
 	let anyIsEnabled = false;
 	const isEnabled = {
-		'autoQuote': false,
-		'autoClose': false
+		autoQuote: false,
+		autoClose: false,
 	};
 	updateEnabledState();
 	window.onDidChangeActiveTextEditor(updateEnabledState, null, disposables);
@@ -24,7 +42,7 @@ export function activateAutoInsertion(provider: (kind: 'autoQuote' | 'autoClose'
 	disposables.push({
 		dispose: () => {
 			timeout?.dispose();
-		}
+		},
 	});
 
 	function updateEnabledState() {
@@ -44,7 +62,12 @@ export function activateAutoInsertion(provider: (kind: 'autoQuote' | 'autoClose'
 	}
 
 	function onDidChangeTextDocument({ document, contentChanges, reason }: TextDocumentChangeEvent) {
-		if (!anyIsEnabled || contentChanges.length === 0 || reason === TextDocumentChangeReason.Undo || reason === TextDocumentChangeReason.Redo) {
+		if (
+			!anyIsEnabled ||
+			contentChanges.length === 0 ||
+			reason === TextDocumentChangeReason.Undo ||
+			reason === TextDocumentChangeReason.Redo
+		) {
 			return;
 		}
 		const activeDocument = window.activeTextEditor && window.activeTextEditor.document;
@@ -70,7 +93,11 @@ export function activateAutoInsertion(provider: (kind: 'autoQuote' | 'autoClose'
 		return !/\n/.test(text);
 	}
 
-	function doAutoInsert(kind: 'autoQuote' | 'autoClose', document: TextDocument, lastChange: TextDocumentContentChangeEvent) {
+	function doAutoInsert(
+		kind: 'autoQuote' | 'autoClose',
+		document: TextDocument,
+		lastChange: TextDocumentContentChangeEvent
+	) {
 		const rangeStart = lastChange.range.start;
 		const version = document.version;
 		timeout = runtime.timer.setTimeout(() => {
@@ -83,7 +110,10 @@ export function activateAutoInsertion(provider: (kind: 'autoQuote' | 'autoClose'
 						if (document === activeDocument && activeDocument.version === version) {
 							const selections = activeEditor.selections;
 							if (selections.length && selections.some(s => s.active.isEqual(position))) {
-								activeEditor.insertSnippet(new SnippetString(text), selections.map(s => s.active));
+								activeEditor.insertSnippet(
+									new SnippetString(text),
+									selections.map(s => s.active)
+								);
 							} else {
 								activeEditor.insertSnippet(new SnippetString(text), position);
 							}

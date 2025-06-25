@@ -25,17 +25,17 @@ async function run() {
 
 	const browser = await playwright['chromium'].launch({
 		headless: !DEBUG_TESTS,
-		devtools: DEBUG_TESTS
+		devtools: DEBUG_TESTS,
 		// slowMo: DEBUG_TESTS ? 2000 : 0
 	});
 
 	const page = await browser.newPage({
 		viewport: {
 			width: 800,
-			height: 600
-		}
+			height: 600,
+		},
 	});
-	page.on('pageerror', (e) => {
+	page.on('pageerror', e => {
 		console.error(`[esm-check] A page error occurred:`);
 		console.error(e);
 		process.exit(1);

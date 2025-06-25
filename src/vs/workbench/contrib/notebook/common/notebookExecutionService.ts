@@ -30,13 +30,22 @@ export interface ICellExecuteOutputItemEdit {
 	items: IOutputItemDto[];
 }
 
-export const INotebookExecutionService = createDecorator<INotebookExecutionService>('INotebookExecutionService');
+export const INotebookExecutionService = createDecorator<INotebookExecutionService>(
+	'INotebookExecutionService'
+);
 
 export interface INotebookExecutionService {
 	_serviceBrand: undefined;
 
-	executeNotebookCells(notebook: INotebookTextModel, cells: Iterable<NotebookCellTextModel>, contextKeyService: IContextKeyService): Promise<void>;
-	cancelNotebookCells(notebook: INotebookTextModel, cells: Iterable<NotebookCellTextModel>): Promise<void>;
+	executeNotebookCells(
+		notebook: INotebookTextModel,
+		cells: Iterable<NotebookCellTextModel>,
+		contextKeyService: IContextKeyService
+	): Promise<void>;
+	cancelNotebookCells(
+		notebook: INotebookTextModel,
+		cells: Iterable<NotebookCellTextModel>
+	): Promise<void>;
 	cancelNotebookCellHandles(notebook: INotebookTextModel, cells: Iterable<number>): Promise<void>;
 	registerExecutionParticipant(participant: ICellExecutionParticipant): IDisposable;
 }

@@ -6,18 +6,15 @@
 import * as eslint from 'eslint';
 import { join } from 'path';
 
-
-export = new class ApiProviderNaming implements eslint.Rule.RuleModule {
-
+export = new (class ApiProviderNaming implements eslint.Rule.RuleModule {
 	readonly meta: eslint.Rule.RuleMetaData = {
 		messages: {
-			amdX: 'Use `import type` for import declarations, use `amdX#importAMDNodeModule` for import expressions'
+			amdX: 'Use `import type` for import declarations, use `amdX#importAMDNodeModule` for import expressions',
 		},
 		schema: false,
 	};
 
 	create(context: eslint.Rule.RuleContext): eslint.Rule.RuleListener {
-
 		const modules = new Set<string>();
 
 		try {
@@ -26,15 +23,12 @@ export = new class ApiProviderNaming implements eslint.Rule.RuleModule {
 			for (const key of all) {
 				modules.add(key);
 			}
-
 		} catch (e) {
 			console.error(e);
 			throw e;
 		}
 
-
 		const checkImport = (node: any) => {
-
 			if (node.type !== 'Literal' || typeof node.value !== 'string') {
 				return;
 			}
@@ -49,13 +43,13 @@ export = new class ApiProviderNaming implements eslint.Rule.RuleModule {
 
 			context.report({
 				node,
-				messageId: 'amdX'
+				messageId: 'amdX',
 			});
 		};
 
 		return {
 			['ImportExpression Literal']: checkImport,
-			['ImportDeclaration Literal']: checkImport
+			['ImportDeclaration Literal']: checkImport,
 		};
 	}
-};
+})();

@@ -8,7 +8,6 @@ import { Client as MessagePortClient } from '../../browser/ipc.mp.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../test/common/utils.js';
 
 suite('IPC, MessagePorts', () => {
-
 	test('message port close event', async () => {
 		const { port1, port2 } = new MessageChannel();
 
@@ -20,7 +19,9 @@ suite('IPC, MessagePorts', () => {
 		// connections from the server.
 		//
 		// This event is not provided by browser MessagePort API though.
-		const whenClosed = new Promise<boolean>(resolve => port1.addEventListener('close', () => resolve(true)));
+		const whenClosed = new Promise<boolean>(resolve =>
+			port1.addEventListener('close', () => resolve(true))
+		);
 
 		client2.dispose();
 

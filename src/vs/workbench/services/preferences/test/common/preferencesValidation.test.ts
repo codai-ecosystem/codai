@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { IConfigurationPropertySchema } from '../../../../../platform/configuration/common/configurationRegistry.js';
 import { createValidator, getInvalidTypeError } from '../../common/preferencesValidation.js';
 
-
 suite('Preferences Validation', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
@@ -20,19 +19,28 @@ suite('Preferences Validation', () => {
 		}
 
 		public accepts(input: any) {
-			assert.strictEqual(this.validator(input), '', `Expected ${JSON.stringify(this.settings)} to accept \`${JSON.stringify(input)}\`. Got ${this.validator(input)}.`);
+			assert.strictEqual(
+				this.validator(input),
+				'',
+				`Expected ${JSON.stringify(this.settings)} to accept \`${JSON.stringify(input)}\`. Got ${this.validator(input)}.`
+			);
 		}
 
 		public rejects(input: any) {
-			assert.notStrictEqual(this.validator(input), '', `Expected ${JSON.stringify(this.settings)} to reject \`${JSON.stringify(input)}\`.`);
+			assert.notStrictEqual(
+				this.validator(input),
+				'',
+				`Expected ${JSON.stringify(this.settings)} to reject \`${JSON.stringify(input)}\`.`
+			);
 			return {
-				withMessage:
-					(message: string) => {
-						const actual = this.validator(input);
-						assert.ok(actual);
-						assert(actual.indexOf(message) > -1,
-							`Expected error of ${JSON.stringify(this.settings)} on \`${input}\` to contain ${message}. Got ${this.validator(input)}.`);
-					}
+				withMessage: (message: string) => {
+					const actual = this.validator(input);
+					assert.ok(actual);
+					assert(
+						actual.indexOf(message) > -1,
+						`Expected error of ${JSON.stringify(this.settings)} on \`${input}\` to contain ${message}. Got ${this.validator(input)}.`
+					);
+				},
 			};
 		}
 
@@ -77,7 +85,6 @@ suite('Preferences Validation', () => {
 			this.rejects(6);
 		}
 	}
-
 
 	test('exclusive max and max work together properly', () => {
 		{
@@ -238,72 +245,91 @@ suite('Preferences Validation', () => {
 
 	test('objects work', () => {
 		{
-			const obj = new Tester({ type: 'object', properties: { 'a': { type: 'string', maxLength: 2 } }, additionalProperties: false });
-			obj.rejects({ 'a': 'string' });
-			obj.accepts({ 'a': 'st' });
-			obj.rejects({ 'a': null });
-			obj.rejects({ 'a': 7 });
+			const obj = new Tester({
+				type: 'object',
+				properties: { a: { type: 'string', maxLength: 2 } },
+				additionalProperties: false,
+			});
+			obj.rejects({ a: 'string' });
+			obj.accepts({ a: 'st' });
+			obj.rejects({ a: null });
+			obj.rejects({ a: 7 });
 			obj.accepts({});
 			obj.rejects('test');
 			obj.rejects(7);
 			obj.rejects([1, 2, 3]);
 		}
 		{
-			const pattern = new Tester({ type: 'object', patternProperties: { '^a[a-z]$': { type: 'string', minLength: 2 } }, additionalProperties: false });
-			pattern.accepts({ 'ab': 'string' });
-			pattern.accepts({ 'ab': 'string', 'ac': 'hmm' });
-			pattern.rejects({ 'ab': 'string', 'ac': 'h' });
-			pattern.rejects({ 'ab': 'string', 'ac': 99999 });
-			pattern.rejects({ 'abc': 'string' });
-			pattern.rejects({ 'a0': 'string' });
-			pattern.rejects({ 'ab': 'string', 'bc': 'hmm' });
-			pattern.rejects({ 'be': 'string' });
-			pattern.rejects({ 'be': 'a' });
+			const pattern = new Tester({
+				type: 'object',
+				patternProperties: { '^a[a-z]$': { type: 'string', minLength: 2 } },
+				additionalProperties: false,
+			});
+			pattern.accepts({ ab: 'string' });
+			pattern.accepts({ ab: 'string', ac: 'hmm' });
+			pattern.rejects({ ab: 'string', ac: 'h' });
+			pattern.rejects({ ab: 'string', ac: 99999 });
+			pattern.rejects({ abc: 'string' });
+			pattern.rejects({ a0: 'string' });
+			pattern.rejects({ ab: 'string', bc: 'hmm' });
+			pattern.rejects({ be: 'string' });
+			pattern.rejects({ be: 'a' });
 			pattern.accepts({});
 		}
 		{
-			const pattern = new Tester({ type: 'object', patternProperties: { '^#': { type: 'string', minLength: 3 } }, additionalProperties: { type: 'string', maxLength: 3 } });
+			const pattern = new Tester({
+				type: 'object',
+				patternProperties: { '^#': { type: 'string', minLength: 3 } },
+				additionalProperties: { type: 'string', maxLength: 3 },
+			});
 			pattern.accepts({ '#ab': 'string' });
-			pattern.accepts({ 'ab': 'str' });
+			pattern.accepts({ ab: 'str' });
 			pattern.rejects({ '#ab': 's' });
-			pattern.rejects({ 'ab': 99999 });
+			pattern.rejects({ ab: 99999 });
 			pattern.rejects({ '#ab': 99999 });
 			pattern.accepts({});
 		}
 		{
-			const pattern = new Tester({ type: 'object', properties: { 'hello': { type: 'string' } }, additionalProperties: { type: 'boolean' } });
-			pattern.accepts({ 'hello': 'world' });
-			pattern.accepts({ 'hello': 'world', 'bye': false });
-			pattern.rejects({ 'hello': 'world', 'bye': 'false' });
-			pattern.rejects({ 'hello': 'world', 'bye': 1 });
-			pattern.rejects({ 'hello': 'world', 'bye': 'world' });
-			pattern.accepts({ 'hello': 'test' });
+			const pattern = new Tester({
+				type: 'object',
+				properties: { hello: { type: 'string' } },
+				additionalProperties: { type: 'boolean' },
+			});
+			pattern.accepts({ hello: 'world' });
+			pattern.accepts({ hello: 'world', bye: false });
+			pattern.rejects({ hello: 'world', bye: 'false' });
+			pattern.rejects({ hello: 'world', bye: 1 });
+			pattern.rejects({ hello: 'world', bye: 'world' });
+			pattern.accepts({ hello: 'test' });
 			pattern.accepts({});
 		}
 	});
 
 	test('numerical objects work', () => {
 		{
-			const obj = new Tester({ type: 'object', properties: { 'b': { type: 'number' } } });
-			obj.accepts({ 'b': 2.5 });
-			obj.accepts({ 'b': -2.5 });
-			obj.accepts({ 'b': 0 });
-			obj.accepts({ 'b': '0.12' });
-			obj.rejects({ 'b': 'abc' });
-			obj.rejects({ 'b': [] });
-			obj.rejects({ 'b': false });
-			obj.rejects({ 'b': null });
-			obj.rejects({ 'b': undefined });
+			const obj = new Tester({ type: 'object', properties: { b: { type: 'number' } } });
+			obj.accepts({ b: 2.5 });
+			obj.accepts({ b: -2.5 });
+			obj.accepts({ b: 0 });
+			obj.accepts({ b: '0.12' });
+			obj.rejects({ b: 'abc' });
+			obj.rejects({ b: [] });
+			obj.rejects({ b: false });
+			obj.rejects({ b: null });
+			obj.rejects({ b: undefined });
 		}
 		{
-			const obj = new Tester({ type: 'object', properties: { 'b': { type: 'integer', minimum: 2, maximum: 5.5 } } });
-			obj.accepts({ 'b': 2 });
-			obj.accepts({ 'b': 3 });
-			obj.accepts({ 'b': '3.0' });
-			obj.accepts({ 'b': 5 });
-			obj.rejects({ 'b': 1 });
-			obj.rejects({ 'b': 6 });
-			obj.rejects({ 'b': 5.5 });
+			const obj = new Tester({
+				type: 'object',
+				properties: { b: { type: 'integer', minimum: 2, maximum: 5.5 } },
+			});
+			obj.accepts({ b: 2 });
+			obj.accepts({ b: 3 });
+			obj.accepts({ b: '3.0' });
+			obj.accepts({ b: 5 });
+			obj.rejects({ b: 1 });
+			obj.rejects({ b: 6 });
+			obj.rejects({ b: 5.5 });
 		}
 	});
 
@@ -317,7 +343,11 @@ suite('Preferences Validation', () => {
 			urls.accepts('hellohello');
 		}
 		{
-			const urls = new Tester({ pattern: '^(hello)*$', type: 'string', patternErrorMessage: 'err: must be friendly' });
+			const urls = new Tester({
+				pattern: '^(hello)*$',
+				type: 'string',
+				patternErrorMessage: 'err: must be friendly',
+			});
 			urls.accepts('');
 			urls.rejects('hel').withMessage('err: must be friendly');
 			urls.accepts('hello');
@@ -325,7 +355,11 @@ suite('Preferences Validation', () => {
 			urls.accepts('hellohello');
 		}
 		{
-			const unicodePattern = new Tester({ type: 'string', pattern: '^[\\p{L}\\d_. -]*$', minLength: 3 });
+			const unicodePattern = new Tester({
+				type: 'string',
+				pattern: '^[\\p{L}\\d_. -]*$',
+				minLength: 3,
+			});
 			unicodePattern.accepts('_autoload');
 			unicodePattern.rejects('#hash');
 			unicodePattern.rejects('');
@@ -333,7 +367,12 @@ suite('Preferences Validation', () => {
 	});
 
 	test('custom error messages are shown', () => {
-		const withMessage = new Tester({ minLength: 1, maxLength: 0, type: 'string', errorMessage: 'always error!' });
+		const withMessage = new Tester({
+			minLength: 1,
+			maxLength: 0,
+			type: 'string',
+			errorMessage: 'always error!',
+		});
 		withMessage.rejects('').withMessage('always error!');
 		withMessage.rejects(' ').withMessage('always error!');
 		withMessage.rejects('1').withMessage('always error!');
@@ -347,19 +386,28 @@ suite('Preferences Validation', () => {
 		}
 
 		public accepts(input: unknown[]) {
-			assert.strictEqual(this.validator(input), '', `Expected ${JSON.stringify(this.settings)} to accept \`${JSON.stringify(input)}\`. Got ${this.validator(input)}.`);
+			assert.strictEqual(
+				this.validator(input),
+				'',
+				`Expected ${JSON.stringify(this.settings)} to accept \`${JSON.stringify(input)}\`. Got ${this.validator(input)}.`
+			);
 		}
 
 		public rejects(input: any) {
-			assert.notStrictEqual(this.validator(input), '', `Expected ${JSON.stringify(this.settings)} to reject \`${JSON.stringify(input)}\`.`);
+			assert.notStrictEqual(
+				this.validator(input),
+				'',
+				`Expected ${JSON.stringify(this.settings)} to reject \`${JSON.stringify(input)}\`.`
+			);
 			return {
-				withMessage:
-					(message: string) => {
-						const actual = this.validator(input);
-						assert.ok(actual);
-						assert(actual.indexOf(message) > -1,
-							`Expected error of ${JSON.stringify(this.settings)} on \`${input}\` to contain ${message}. Got ${this.validator(input)}.`);
-					}
+				withMessage: (message: string) => {
+					const actual = this.validator(input);
+					assert.ok(actual);
+					assert(
+						actual.indexOf(message) > -1,
+						`Expected error of ${JSON.stringify(this.settings)} on \`${input}\` to contain ${message}. Got ${this.validator(input)}.`
+					);
+				},
 			};
 		}
 	}
@@ -377,7 +425,12 @@ suite('Preferences Validation', () => {
 
 	test('min-max items array', () => {
 		{
-			const arr = new ArrayTester({ type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 2 });
+			const arr = new ArrayTester({
+				type: 'array',
+				items: { type: 'string' },
+				minItems: 1,
+				maxItems: 2,
+			});
 			arr.rejects([]).withMessage('Array must have at least 1 items');
 			arr.accepts(['a']);
 			arr.accepts(['a', 'a']);
@@ -413,7 +466,11 @@ suite('Preferences Validation', () => {
 			arr.rejects([6, 'a', 7]);
 		}
 		{
-			const arr = new ArrayTester({ type: 'array', items: { type: 'integer', minimum: -2, maximum: 3 }, maxItems: 4 });
+			const arr = new ArrayTester({
+				type: 'array',
+				items: { type: 'integer', minimum: -2, maximum: 3 },
+				maxItems: 4,
+			});
 			arr.accepts([]);
 			arr.accepts([-2, 3]);
 			arr.accepts([2, 3]);
@@ -433,28 +490,46 @@ suite('Preferences Validation', () => {
 	});
 
 	test('min-max and enum', () => {
-		const arr = new ArrayTester({ type: 'array', items: { type: 'string', enum: ['a', 'b'] }, minItems: 1, maxItems: 2 });
+		const arr = new ArrayTester({
+			type: 'array',
+			items: { type: 'string', enum: ['a', 'b'] },
+			minItems: 1,
+			maxItems: 2,
+		});
 
 		arr.rejects(['a', 'b', 'c']).withMessage('Array must have at most 2 items');
 		arr.rejects(['a', 'b', 'c']).withMessage(`Value 'c' is not one of`);
 	});
 
 	test('pattern', () => {
-		const arr = new ArrayTester({ type: 'array', items: { type: 'string', pattern: '^(hello)*$' } });
+		const arr = new ArrayTester({
+			type: 'array',
+			items: { type: 'string', pattern: '^(hello)*$' },
+		});
 
 		arr.accepts(['hello']);
 		arr.rejects(['a']).withMessage(`Value 'a' must match regex`);
 	});
 
 	test('Unicode pattern', () => {
-		const arr = new ArrayTester({ type: 'array', items: { type: 'string', pattern: '^[\\p{L}\\d_. -]*$' } });
+		const arr = new ArrayTester({
+			type: 'array',
+			items: { type: 'string', pattern: '^[\\p{L}\\d_. -]*$' },
+		});
 
 		arr.accepts(['hello', 'world']);
 		arr.rejects(['hello', '#world']).withMessage(`Value '#world' must match regex`);
 	});
 
 	test('pattern with error message', () => {
-		const arr = new ArrayTester({ type: 'array', items: { type: 'string', pattern: '^(hello)*$', patternErrorMessage: 'err: must be friendly' } });
+		const arr = new ArrayTester({
+			type: 'array',
+			items: {
+				type: 'string',
+				pattern: '^(hello)*$',
+				patternErrorMessage: 'err: must be friendly',
+			},
+		});
 
 		arr.rejects(['a']).withMessage(`err: must be friendly`);
 	});

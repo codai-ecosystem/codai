@@ -5,13 +5,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 // Import ReactFlow types
-import type {
-	Edge,
-	Node,
-	NodeTypes,
-	NodeMouseHandler,
-	EdgeMouseHandler,
-} from 'reactflow';
+import type { Edge, Node, NodeTypes, NodeMouseHandler, EdgeMouseHandler } from 'reactflow';
 // Import ReactFlow components
 import ReactFlow, {
 	Background,
@@ -68,7 +62,7 @@ const NODE_TYPE_ICONS: Record<string, string> = {
 };
 
 // Custom node components - wrap NodeCard for ReactFlow compatibility
-const ReactFlowNodeCard: React.FC<any> = (props) => {
+const ReactFlowNodeCard: React.FC<any> = props => {
 	const { data, selected, id } = props;
 	return (
 		<NodeCard
@@ -76,8 +70,8 @@ const ReactFlowNodeCard: React.FC<any> = (props) => {
 			position={data.position}
 			isSelected={selected || false}
 			isEditable={data.isEditable || false}
-			onClick={data.onClick || (() => { })}
-			onUpdate={data.onUpdate || (() => { })}
+			onClick={data.onClick || (() => {})}
+			onUpdate={data.onUpdate || (() => {})}
 			id={id}
 			selected={selected}
 			data={data}
@@ -93,11 +87,8 @@ const nodeTypes: NodeTypes = {
 /**
  * Convert Memory Graph nodes to ReactFlow nodes
  */
-const mapNodesToFlowNodes = (
-	nodes: AnyNode[],
-	selectedNodeId?: string
-): Node[] => {
-	return nodes.map((node) => {
+const mapNodesToFlowNodes = (nodes: AnyNode[], selectedNodeId?: string): Node[] => {
+	return nodes.map(node => {
 		// Get position from metadata or default to random position
 		const metadata = node.metadata || {};
 		const position = (metadata.position as NodePosition) || {
@@ -134,7 +125,7 @@ const mapRelationshipsToFlowEdges = (
 	relationships: Relationship[],
 	selectedEdgeId?: string
 ): Edge[] => {
-	return relationships.map((rel) => ({
+	return relationships.map(rel => ({
 		id: rel.id,
 		source: rel.fromNodeId,
 		target: rel.toNodeId,
@@ -170,11 +161,14 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
 	onRelationshipSelect,
 }) => {
 	// Graph data from Observable
-	const graph = useObservable(() => memoryGraph.graph$ as Observable<{
-		nodes: AnyNode[];
-		relationships: Relationship[];
-		metadata?: Record<string, any>;
-	}>);
+	const graph = useObservable(
+		() =>
+			memoryGraph.graph$ as Observable<{
+				nodes: AnyNode[];
+				relationships: Relationship[];
+				metadata?: Record<string, any>;
+			}>
+	);
 
 	// State for nodes and edges
 	const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -273,10 +267,13 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
 		return {
 			nodeCount: graph.nodes.length,
 			edgeCount: graph.relationships.length,
-			nodeTypeDistribution: graph.nodes.reduce((acc: Record<string, number>, node: AnyNode) => {
-				acc[node.type] = (acc[node.type] || 0) + 1;
-				return acc;
-			}, {} as Record<string, number>),
+			nodeTypeDistribution: graph.nodes.reduce(
+				(acc: Record<string, number>, node: AnyNode) => {
+					acc[node.type] = (acc[node.type] || 0) + 1;
+					return acc;
+				},
+				{} as Record<string, number>
+			),
 			complexity: graph.metadata?.stats?.complexity || 0,
 		};
 	}, [graph]);
@@ -354,11 +351,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
 				</ReactFlowProvider>
 			</div>
 
-			{detailsPanel && (
-				<div className="memory-graph-details-panel">
-					{detailsPanel}
-				</div>
-			)}
+			{detailsPanel && <div className="memory-graph-details-panel">{detailsPanel}</div>}
 		</div>
 	);
 };
@@ -366,7 +359,7 @@ export const MemoryGraphView: React.FC<MemoryGraphViewProps> = ({
 /**
  * Standalone wrapper for Memory Graph View
  */
-export const StandaloneMemoryGraphView: React.FC<MemoryGraphViewProps> = (props) => {
+export const StandaloneMemoryGraphView: React.FC<MemoryGraphViewProps> = props => {
 	return (
 		<ReactFlowProvider>
 			<MemoryGraphView {...props} />

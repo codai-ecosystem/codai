@@ -11,9 +11,17 @@ import { ModelService } from '../../../../editor/common/services/modelService.js
 import { TestCodeEditorService } from '../../../../editor/test/browser/editorTestServices.js';
 import { ITextFileService } from '../../../services/textfile/common/textfiles.js';
 import { IDocumentsAndEditorsDelta } from '../../common/extHost.protocol.js';
-import { createTestCodeEditor, ITestCodeEditor } from '../../../../editor/test/browser/testCodeEditor.js';
+import {
+	createTestCodeEditor,
+	ITestCodeEditor,
+} from '../../../../editor/test/browser/testCodeEditor.js';
 import { mock } from '../../../../base/test/common/mock.js';
-import { TestEditorService, TestEditorGroupsService, TestEnvironmentService, TestPathService } from '../../../test/browser/workbenchTestServices.js';
+import {
+	TestEditorService,
+	TestEditorGroupsService,
+	TestEnvironmentService,
+	TestPathService,
+} from '../../../test/browser/workbenchTestServices.js';
 import { Event } from '../../../../base/common/event.js';
 import { ITextModel } from '../../../../editor/common/model.js';
 import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
@@ -23,7 +31,10 @@ import { TestThemeService } from '../../../../platform/theme/test/common/testThe
 import { UndoRedoService } from '../../../../platform/undoRedo/common/undoRedoService.js';
 import { TestDialogService } from '../../../../platform/dialogs/test/common/testDialogService.js';
 import { TestNotificationService } from '../../../../platform/notification/test/common/testNotificationService.js';
-import { TestTextResourcePropertiesService, TestWorkingCopyFileService } from '../../../test/common/workbenchTestServices.js';
+import {
+	TestTextResourcePropertiesService,
+	TestWorkingCopyFileService,
+} from '../../../test/common/workbenchTestServices.js';
 import { UriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentityService.js';
 import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
 import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
@@ -42,7 +53,6 @@ import { ITreeSitterLibraryService } from '../../../../editor/common/services/tr
 import { TestTreeSitterLibraryService } from '../../../../editor/test/common/services/testTreeSitterLibraryService.js';
 
 suite('MainThreadDocumentsAndEditors', () => {
-
 	let disposables: DisposableStore;
 
 	let modelService: ModelService;
@@ -53,9 +63,7 @@ suite('MainThreadDocumentsAndEditors', () => {
 	function myCreateTestCodeEditor(model: ITextModel | undefined): ITestCodeEditor {
 		return createTestCodeEditor(model, {
 			hasTextFocus: false,
-			serviceCollection: new ServiceCollection(
-				[ICodeEditorService, codeEditorService]
-			)
+			serviceCollection: new ServiceCollection([ICodeEditorService, codeEditorService]),
 		});
 	}
 
@@ -64,7 +72,7 @@ suite('MainThreadDocumentsAndEditors', () => {
 
 		deltas.length = 0;
 		const configService = new TestConfigurationService();
-		configService.setUserConfiguration('editor', { 'detectIndentation': false });
+		configService.setUserConfiguration('editor', { detectIndentation: false });
 		const dialogService = new TestDialogService();
 		const notificationService = new TestNotificationService();
 		const undoRedoService = new UndoRedoService(dialogService, notificationService);
@@ -81,32 +89,41 @@ suite('MainThreadDocumentsAndEditors', () => {
 			instantiationService
 		);
 		codeEditorService = new TestCodeEditorService(themeService);
-		textFileService = new class extends mock<ITextFileService>() {
-			override isDirty() { return false; }
+		textFileService = new (class extends mock<ITextFileService>() {
+			override isDirty() {
+				return false;
+			}
 			override files = <any>{
 				onDidSave: Event.None,
 				onDidRevert: Event.None,
 				onDidChangeDirty: Event.None,
-				onDidChangeEncoding: Event.None
+				onDidChangeEncoding: Event.None,
 			};
 			override untitled = <any>{
-				onDidChangeEncoding: Event.None
+				onDidChangeEncoding: Event.None,
 			};
-			override getEncoding() { return 'utf8'; }
-		};
+			override getEncoding() {
+				return 'utf8';
+			}
+		})();
 		const workbenchEditorService = disposables.add(new TestEditorService());
 		const editorGroupService = new TestEditorGroupsService();
 
-		const fileService = new class extends mock<IFileService>() {
+		const fileService = new (class extends mock<IFileService>() {
 			override onDidRunOperation = Event.None;
 			override onDidChangeFileSystemProviderCapabilities = Event.None;
 			override onDidChangeFileSystemProviderRegistrations = Event.None;
-		};
+		})();
 
 		new MainThreadDocumentsAndEditors(
 			SingleProxyRPCProtocol({
-				$acceptDocumentsAndEditorsDelta: (delta: IDocumentsAndEditorsDelta) => { deltas.push(delta); },
-				$acceptEditorDiffInformation: (id: string, diffInformation: ITextEditorDiffInformation | undefined) => { }
+				$acceptDocumentsAndEditorsDelta: (delta: IDocumentsAndEditorsDelta) => {
+					deltas.push(delta);
+				},
+				$acceptEditorDiffInformation: (
+					id: string,
+					diffInformation: ITextEditorDiffInformation | undefined
+				) => {},
 			}),
 			modelService,
 			textFileService,
@@ -115,28 +132,28 @@ suite('MainThreadDocumentsAndEditors', () => {
 			fileService,
 			null!,
 			editorGroupService,
-			new class extends mock<IPaneCompositePartService>() implements IPaneCompositePartService {
+			new (class extends mock<IPaneCompositePartService>() implements IPaneCompositePartService {
 				override onDidPaneCompositeOpen = Event.None;
 				override onDidPaneCompositeClose = Event.None;
 				override getActivePaneComposite() {
 					return undefined;
 				}
-			},
+			})(),
 			TestEnvironmentService,
 			new TestWorkingCopyFileService(),
 			new UriIdentityService(fileService),
-			new class extends mock<IClipboardService>() {
+			new (class extends mock<IClipboardService>() {
 				override readText() {
 					return Promise.resolve('clipboard_contents');
 				}
-			},
+			})(),
 			new TestPathService(),
 			new TestConfigurationService(),
-			new class extends mock<IQuickDiffModelService>() {
+			new (class extends mock<IQuickDiffModelService>() {
 				override createQuickDiffModelReference() {
 					return undefined;
 				}
-			}
+			})()
 		);
 	});
 
@@ -162,7 +179,6 @@ suite('MainThreadDocumentsAndEditors', () => {
 	});
 
 	test('ignore huge model', function () {
-
 		const oldLimit = TextModel._MODEL_SYNC_LIMIT;
 		try {
 			const largeModelString = 'abc'.repeat(1024);
@@ -179,14 +195,12 @@ suite('MainThreadDocumentsAndEditors', () => {
 			assert.strictEqual(delta.removedDocuments, undefined);
 			assert.strictEqual(delta.addedEditors, undefined);
 			assert.strictEqual(delta.removedEditors, undefined);
-
 		} finally {
 			TextModel._MODEL_SYNC_LIMIT = oldLimit;
 		}
 	});
 
 	test('ignore huge model from editor', function () {
-
 		const oldLimit = TextModel._MODEL_SYNC_LIMIT;
 		try {
 			const largeModelString = 'abc'.repeat(1024);
@@ -200,7 +214,6 @@ suite('MainThreadDocumentsAndEditors', () => {
 			assert.strictEqual(deltas.length, 0);
 			editor.dispose();
 			model.dispose();
-
 		} finally {
 			TextModel._MODEL_SYNC_LIMIT = oldLimit;
 		}

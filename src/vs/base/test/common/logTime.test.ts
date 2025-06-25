@@ -18,20 +18,14 @@ suite('logTime', () => {
 	 * a predictable constant value so the message can be
 	 * consistently compared in the tests
 	 */
-	const cleanupTimingMessage = (
-		message: string,
-	): string => {
+	const cleanupTimingMessage = (message: string): string => {
 		// sanity check on the message type since this function
 		// can be called with `any` inside these tests
-		assert(
-			typeof message === 'string',
-			`Message must be a string, got '${message}'.`,
-		);
+		assert(typeof message === 'string', `Message must be a string, got '${message}'.`);
 
 		// regex: targets the ' 123.75 ms' part at the end
 		//        of the provided 'message' string
-		return message
-			.replaceAll(/\s\d+.\d{2}\sms$/gi, ' 100.50 ms');
+		return message.replaceAll(/\s\d+.\d{2}\sms$/gi, ' 100.50 ms');
 	};
 
 	suite('• decorator', () => {
@@ -40,9 +34,7 @@ suite('logTime', () => {
 			class TestClass {
 				public logTime = logSpy;
 
-				constructor(
-					private readonly returnValue: number
-				) { }
+				constructor(private readonly returnValue: number) {}
 
 				@logTime()
 				public async myAsyncMethod(): Promise<number> {
@@ -57,34 +49,24 @@ suite('logTime', () => {
 
 			const resultPromise = testObject.myAsyncMethod();
 
-			assert(
-				resultPromise instanceof Promise,
-				'My method must return a promise.',
-			);
+			assert(resultPromise instanceof Promise, 'My method must return a promise.');
 
 			const result = await resultPromise;
-			assert.strictEqual(
-				result,
-				expectedReturnValue,
-				'Decorator must return correct value.',
-			);
+			assert.strictEqual(result, expectedReturnValue, 'Decorator must return correct value.');
 
-			assert(
-				logSpy.calledOnce,
-				'The trace logger method must be called.',
-			);
+			assert(logSpy.calledOnce, 'The trace logger method must be called.');
 
 			const callArgs = logSpy.getCalls()[0].args;
 
 			assert(
 				callArgs.length === 1,
-				'Logger method must be called with correct number of arguments.',
+				'Logger method must be called with correct number of arguments.'
 			);
 
 			assert.strictEqual(
 				cleanupTimingMessage(callArgs[0]),
 				'[⏱][TestClass.myAsyncMethod] took 100.50 ms',
-				'Logger method must be called with correct message.',
+				'Logger method must be called with correct message.'
 			);
 		});
 	});
@@ -95,9 +77,7 @@ suite('logTime', () => {
 		class TestClass {
 			public logTime = logSpy;
 
-			constructor(
-				private readonly returnValue: number
-			) { }
+			constructor(private readonly returnValue: number) {}
 
 			@logTime()
 			public mySyncMethod(): number {
@@ -109,40 +89,28 @@ suite('logTime', () => {
 		const testObject = new TestClass(expectedReturnValue);
 
 		const result = testObject.mySyncMethod();
-		assert.strictEqual(
-			result,
-			expectedReturnValue,
-			'Decorator must return correct value.',
-		);
+		assert.strictEqual(result, expectedReturnValue, 'Decorator must return correct value.');
 
-		assert(
-			logSpy.calledOnce,
-			'The trace logger method must be called.',
-		);
+		assert(logSpy.calledOnce, 'The trace logger method must be called.');
 
 		const callArgs = logSpy.getCalls()[0].args;
 
-		assert(
-			callArgs.length === 1,
-			'Logger method must be called with correct number of arguments.',
-		);
+		assert(callArgs.length === 1, 'Logger method must be called with correct number of arguments.');
 
 		assert.strictEqual(
 			cleanupTimingMessage(callArgs[0]),
 			'[⏱][TestClass.mySyncMethod] took 100.50 ms',
-			'Logger method must be called with correct message.',
+			'Logger method must be called with correct message.'
 		);
 	});
 
-	test('• uses \'trace\' level by default', async () => {
+	test("• uses 'trace' level by default", async () => {
 		const logSpy = sinon.spy();
 
 		class TestClass {
 			public logTime = logSpy;
 
-			constructor(
-				private readonly returnValue: number
-			) { }
+			constructor(private readonly returnValue: number) {}
 
 			@logTime()
 			public async myAsyncMethod(): Promise<number> {
@@ -157,34 +125,21 @@ suite('logTime', () => {
 
 		const resultPromise = testObject.myAsyncMethod();
 
-		assert(
-			resultPromise instanceof Promise,
-			'My method must return a promise.',
-		);
+		assert(resultPromise instanceof Promise, 'My method must return a promise.');
 
 		const result = await resultPromise;
-		assert.strictEqual(
-			result,
-			expectedReturnValue,
-			'Decorator must return correct value.',
-		);
+		assert.strictEqual(result, expectedReturnValue, 'Decorator must return correct value.');
 
-		assert(
-			logSpy.calledOnce,
-			'The trace logger method must be called.',
-		);
+		assert(logSpy.calledOnce, 'The trace logger method must be called.');
 
 		const callArgs = logSpy.getCalls()[0].args;
 
-		assert(
-			callArgs.length === 1,
-			'Logger method must be called with correct number of arguments.',
-		);
+		assert(callArgs.length === 1, 'Logger method must be called with correct number of arguments.');
 
 		assert.strictEqual(
 			cleanupTimingMessage(callArgs[0]),
 			'[⏱][TestClass.myAsyncMethod] took 100.50 ms',
-			'Logger method must be called with correct message.',
+			'Logger method must be called with correct message.'
 		);
 	});
 
@@ -200,37 +155,27 @@ suite('logTime', () => {
 
 					return expectedReturnValue;
 				},
-				logSpy,
+				logSpy
 			);
 
-			assert(
-				resultPromise instanceof Promise,
-				'Callback function must return a promise.',
-			);
+			assert(resultPromise instanceof Promise, 'Callback function must return a promise.');
 
 			const result = await resultPromise;
-			assert.strictEqual(
-				result,
-				expectedReturnValue,
-				'Helper must return correct value.',
-			);
+			assert.strictEqual(result, expectedReturnValue, 'Helper must return correct value.');
 
-			assert(
-				logSpy.calledOnce,
-				'The trace logger method must be called.',
-			);
+			assert(logSpy.calledOnce, 'The trace logger method must be called.');
 
 			const callArgs = logSpy.getCalls()[0].args;
 
 			assert(
 				callArgs.length === 1,
-				'Logger method must be called with correct number of arguments.',
+				'Logger method must be called with correct number of arguments.'
 			);
 
 			assert.strictEqual(
 				cleanupTimingMessage(callArgs[0]),
 				'[⏱][my-async-function] took 100.50 ms',
-				'Logger message must start with the correct value.',
+				'Logger message must start with the correct value.'
 			);
 		});
 
@@ -243,31 +188,24 @@ suite('logTime', () => {
 				() => {
 					return expectedReturnValue;
 				},
-				logSpy,
+				logSpy
 			);
 
-			assert.strictEqual(
-				result,
-				expectedReturnValue,
-				'Helper must return correct value.',
-			);
+			assert.strictEqual(result, expectedReturnValue, 'Helper must return correct value.');
 
-			assert(
-				logSpy.calledOnce,
-				'The trace logger method must be called.',
-			);
+			assert(logSpy.calledOnce, 'The trace logger method must be called.');
 
 			const callArgs = logSpy.getCalls()[0].args;
 
 			assert(
 				callArgs.length === 1,
-				'Logger method must be called with correct number of arguments.',
+				'Logger method must be called with correct number of arguments.'
 			);
 
 			assert.strictEqual(
 				cleanupTimingMessage(callArgs[0]),
 				'[⏱][my-sync-function] took 100.50 ms',
-				'Logger message must start with the correct value.',
+				'Logger message must start with the correct value.'
 			);
 		});
 	});

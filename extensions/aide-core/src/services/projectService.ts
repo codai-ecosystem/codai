@@ -103,7 +103,7 @@ export class ProjectService {
 			type: config.type,
 			technologies: template.technologies,
 			structure: await this.analyzeProjectStructure(projectPath),
-			dependencies: Object.keys(template.dependencies)
+			dependencies: Object.keys(template.dependencies),
 		});
 
 		// Show success message
@@ -140,7 +140,7 @@ export class ProjectService {
 			dependencies: [] as string[],
 			hasPackageJson: false,
 			hasGitRepo: false,
-			framework: 'unknown'
+			framework: 'unknown',
 		};
 
 		// Check for package.json
@@ -151,7 +151,7 @@ export class ProjectService {
 				const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 				analysis.dependencies = Object.keys({
 					...packageJson.dependencies,
-					...packageJson.devDependencies
+					...packageJson.devDependencies,
 				});
 
 				// Detect framework
@@ -189,7 +189,10 @@ export class ProjectService {
 			recommendations.push('Consider using a framework like React, Vue, or Angular');
 		}
 
-		if (!analysis.dependencies.includes('typescript') && analysis.technologies.includes('javascript')) {
+		if (
+			!analysis.dependencies.includes('typescript') &&
+			analysis.technologies.includes('javascript')
+		) {
 			recommendations.push('Consider adding TypeScript for better type safety');
 		}
 
@@ -263,44 +266,44 @@ export class ProjectService {
 			files: [
 				{
 					path: 'src/App.tsx',
-					content: this.getReactAppTemplate()
+					content: this.getReactAppTemplate(),
 				},
 				{
 					path: 'src/index.tsx',
-					content: this.getReactIndexTemplate()
+					content: this.getReactIndexTemplate(),
 				},
 				{
 					path: 'public/index.html',
-					content: this.getHtmlTemplate()
+					content: this.getHtmlTemplate(),
 				},
 				{
 					path: 'tsconfig.json',
-					content: this.getTsConfigTemplate()
+					content: this.getTsConfigTemplate(),
 				},
 				{
 					path: '.eslintrc.js',
-					content: this.getEslintConfigTemplate()
-				}
+					content: this.getEslintConfigTemplate(),
+				},
 			],
 			dependencies: {
-				'react': '^18.2.0',
-				'react-dom': '^18.2.0'
+				react: '^18.2.0',
+				'react-dom': '^18.2.0',
 			},
 			devDependencies: {
 				'@types/react': '^18.2.0',
 				'@types/react-dom': '^18.2.0',
-				'typescript': '^5.0.0',
+				typescript: '^5.0.0',
 				'@vitejs/plugin-react': '^4.0.0',
-				'vite': '^4.0.0'
+				vite: '^4.0.0',
 			},
 			scripts: {
-				'dev': 'vite',
-				'build': 'vite build',
-				'preview': 'vite preview'
+				dev: 'vite',
+				build: 'vite build',
+				preview: 'vite preview',
 			},
 			configuration: {
-				'vite.config.ts': this.getViteConfigTemplate()
-			}
+				'vite.config.ts': this.getViteConfigTemplate(),
+			},
 		});
 
 		// Next.js Template
@@ -314,30 +317,30 @@ export class ProjectService {
 			files: [
 				{
 					path: 'app/page.tsx',
-					content: this.getNextjsPageTemplate()
+					content: this.getNextjsPageTemplate(),
 				},
 				{
 					path: 'app/layout.tsx',
-					content: this.getNextjsLayoutTemplate()
-				}
+					content: this.getNextjsLayoutTemplate(),
+				},
 			],
 			dependencies: {
-				'next': '^14.0.0',
-				'react': '^18.2.0',
-				'react-dom': '^18.2.0'
+				next: '^14.0.0',
+				react: '^18.2.0',
+				'react-dom': '^18.2.0',
 			},
 			devDependencies: {
 				'@types/node': '^20.0.0',
 				'@types/react': '^18.2.0',
 				'@types/react-dom': '^18.2.0',
-				'typescript': '^5.0.0'
+				typescript: '^5.0.0',
 			},
 			scripts: {
-				'dev': 'next dev',
-				'build': 'next build',
-				'start': 'next start'
+				dev: 'next dev',
+				build: 'next build',
+				start: 'next start',
 			},
-			configuration: {}
+			configuration: {},
 		});
 
 		// Express + TypeScript API Template
@@ -351,31 +354,31 @@ export class ProjectService {
 			files: [
 				{
 					path: 'src/app.ts',
-					content: this.getExpressAppTemplate()
+					content: this.getExpressAppTemplate(),
 				},
 				{
 					path: 'src/routes/index.ts',
-					content: this.getExpressRoutesTemplate()
-				}
+					content: this.getExpressRoutesTemplate(),
+				},
 			],
 			dependencies: {
-				'express': '^4.18.0',
-				'cors': '^2.8.5'
+				express: '^4.18.0',
+				cors: '^2.8.5',
 			},
 			devDependencies: {
 				'@types/express': '^4.17.0',
 				'@types/cors': '^2.8.0',
 				'@types/node': '^20.0.0',
-				'typescript': '^5.0.0',
+				typescript: '^5.0.0',
 				'ts-node': '^10.9.0',
-				'nodemon': '^3.0.0'
+				nodemon: '^3.0.0',
 			},
 			scripts: {
-				'dev': 'nodemon src/app.ts',
-				'build': 'tsc',
-				'start': 'node dist/app.js'
+				dev: 'nodemon src/app.ts',
+				build: 'tsc',
+				start: 'node dist/app.js',
 			},
-			configuration: {}
+			configuration: {},
 		});
 	}
 
@@ -390,16 +393,16 @@ export class ProjectService {
 			files: [
 				{
 					path: 'tailwind.config.js',
-					content: this.getTailwindConfigTemplate()
-				}
+					content: this.getTailwindConfigTemplate(),
+				},
 			],
 			dependencies: {},
 			devDependencies: {
-				'tailwindcss': '^3.3.0',
-				'autoprefixer': '^10.4.0',
-				'postcss': '^8.4.0'
+				tailwindcss: '^3.3.0',
+				autoprefixer: '^10.4.0',
+				postcss: '^8.4.0',
 			},
-			scripts: {}
+			scripts: {},
 		});
 
 		return features;
@@ -408,7 +411,11 @@ export class ProjectService {
 	/**
 	 * Create project files from template
 	 */
-	private async createProjectFiles(template: ProjectTemplate, projectPath: string, config: ProjectConfig): Promise<void> {
+	private async createProjectFiles(
+		template: ProjectTemplate,
+		projectPath: string,
+		config: ProjectConfig
+	): Promise<void> {
 		for (const file of template.files) {
 			const filePath = path.join(projectPath, file.path);
 			const dir = path.dirname(filePath);
@@ -430,14 +437,18 @@ export class ProjectService {
 	/**
 	 * Create package.json for project
 	 */
-	private async createPackageJson(template: ProjectTemplate, projectPath: string, config: ProjectConfig): Promise<void> {
+	private async createPackageJson(
+		template: ProjectTemplate,
+		projectPath: string,
+		config: ProjectConfig
+	): Promise<void> {
 		const packageJson = {
 			name: config.name.toLowerCase().replace(/\s+/g, '-'),
 			version: '1.0.0',
 			description: `${config.name} - Generated by AIDE`,
 			scripts: template.scripts,
 			dependencies: template.dependencies,
-			devDependencies: template.devDependencies
+			devDependencies: template.devDependencies,
 		};
 
 		const packageJsonPath = path.join(projectPath, 'package.json');
@@ -447,7 +458,11 @@ export class ProjectService {
 	/**
 	 * Create configuration files
 	 */
-	private async createConfigurationFiles(template: ProjectTemplate, projectPath: string, config: ProjectConfig): Promise<void> {
+	private async createConfigurationFiles(
+		template: ProjectTemplate,
+		projectPath: string,
+		config: ProjectConfig
+	): Promise<void> {
 		for (const [filename, content] of Object.entries(template.configuration)) {
 			const filePath = path.join(projectPath, filename);
 			fs.writeFileSync(filePath, content);
@@ -568,27 +583,31 @@ root.render(
 	}
 
 	private getTsConfigTemplate(): string {
-		return JSON.stringify({
-			compilerOptions: {
-				target: 'ES2020',
-				useDefineForClassFields: true,
-				lib: ['ES2020', 'DOM', 'DOM.Iterable'],
-				module: 'ESNext',
-				skipLibCheck: true,
-				moduleResolution: 'bundler',
-				allowImportingTsExtensions: true,
-				resolveJsonModule: true,
-				isolatedModules: true,
-				noEmit: true,
-				jsx: 'react-jsx',
-				strict: true,
-				noUnusedLocals: true,
-				noUnusedParameters: true,
-				noFallthroughCasesInSwitch: true
+		return JSON.stringify(
+			{
+				compilerOptions: {
+					target: 'ES2020',
+					useDefineForClassFields: true,
+					lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+					module: 'ESNext',
+					skipLibCheck: true,
+					moduleResolution: 'bundler',
+					allowImportingTsExtensions: true,
+					resolveJsonModule: true,
+					isolatedModules: true,
+					noEmit: true,
+					jsx: 'react-jsx',
+					strict: true,
+					noUnusedLocals: true,
+					noUnusedParameters: true,
+					noFallthroughCasesInSwitch: true,
+				},
+				include: ['src'],
+				references: [{ path: './tsconfig.node.json' }],
 			},
-			include: ['src'],
-			references: [{ path: './tsconfig.node.json' }]
-		}, null, 2);
+			null,
+			2
+		);
 	}
 
 	private getEslintConfigTemplate(): string {

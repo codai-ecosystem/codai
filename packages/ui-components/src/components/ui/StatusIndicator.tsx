@@ -17,50 +17,50 @@ export function StatusIndicator({
 	size = 'md',
 	showLabel = false,
 	animate = true,
-	className = ''
+	className = '',
 }: StatusIndicatorProps) {
 	const sizeClasses = {
 		sm: 'w-2 h-2',
 		md: 'w-3 h-3',
-		lg: 'w-4 h-4'
+		lg: 'w-4 h-4',
 	};
 
 	const statusConfig = {
 		online: {
 			color: 'bg-green-500',
 			label: 'Online',
-			animate: 'animate-pulse'
+			animate: 'animate-pulse',
 		},
 		operational: {
 			color: 'bg-green-500',
 			label: 'Operational',
-			animate: 'animate-pulse'
+			animate: 'animate-pulse',
 		},
 		offline: {
 			color: 'bg-gray-400',
 			label: 'Offline',
-			animate: ''
+			animate: '',
 		},
 		away: {
 			color: 'bg-yellow-500',
 			label: 'Away',
-			animate: ''
+			animate: '',
 		},
 		busy: {
 			color: 'bg-red-500',
 			label: 'Busy',
-			animate: ''
+			animate: '',
 		},
 		degraded: {
 			color: 'bg-yellow-500',
 			label: 'Degraded',
-			animate: 'animate-pulse'
+			animate: 'animate-pulse',
 		},
 		down: {
 			color: 'bg-red-500',
 			label: 'Down',
-			animate: 'animate-pulse'
-		}
+			animate: 'animate-pulse',
+		},
 	};
 
 	const config = statusConfig[status];
@@ -88,9 +88,7 @@ export function StatusIndicator({
 				)}
 			</div>
 			{showLabel && (
-				<span className="text-sm font-medium text-codai-foreground">
-					{config.label}
-				</span>
+				<span className="text-sm font-medium text-codai-foreground">{config.label}</span>
 			)}
 		</div>
 	);

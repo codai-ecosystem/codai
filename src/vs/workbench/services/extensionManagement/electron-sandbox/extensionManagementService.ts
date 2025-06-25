@@ -4,11 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { generateUuid } from '../../../../base/common/uuid.js';
-import { ILocalExtension, IExtensionGalleryService, InstallOptions, IAllowedExtensionsService } from '../../../../platform/extensionManagement/common/extensionManagement.js';
+import {
+	ILocalExtension,
+	IExtensionGalleryService,
+	InstallOptions,
+	IAllowedExtensionsService,
+} from '../../../../platform/extensionManagement/common/extensionManagement.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ExtensionManagementService as BaseExtensionManagementService } from '../common/extensionManagementService.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { IExtensionManagementServer, IExtensionManagementServerService, IWorkbenchExtensionManagementService } from '../common/extensionManagement.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
+import {
+	IExtensionManagementServer,
+	IExtensionManagementServerService,
+	IWorkbenchExtensionManagementService,
+} from '../common/extensionManagement.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IDownloadService } from '../../../../platform/download/common/download.js';
@@ -29,10 +41,11 @@ import { IUserDataProfilesService } from '../../../../platform/userDataProfile/c
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 
 export class ExtensionManagementService extends BaseExtensionManagementService {
-
 	constructor(
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService,
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentService: INativeWorkbenchEnvironmentService,
+		@IExtensionManagementServerService
+		extensionManagementServerService: IExtensionManagementServerService,
 		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
 		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
 		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
@@ -42,14 +55,15 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@IDialogService dialogService: IDialogService,
 		@IWorkspaceTrustRequestService workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionManifestPropertiesService
+		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IExtensionsScannerService extensionsScannerService: IExtensionsScannerService,
 		@IAllowedExtensionsService allowedExtensionsService: IAllowedExtensionsService,
 		@IStorageService storageService: IStorageService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(
 			extensionManagementServerService,
@@ -73,8 +87,15 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 		);
 	}
 
-	protected override async installVSIXInServer(vsix: URI, server: IExtensionManagementServer, options: InstallOptions | undefined): Promise<ILocalExtension> {
-		if (vsix.scheme === Schemas.vscodeRemote && server === this.extensionManagementServerService.localExtensionManagementServer) {
+	protected override async installVSIXInServer(
+		vsix: URI,
+		server: IExtensionManagementServer,
+		options: InstallOptions | undefined
+	): Promise<ILocalExtension> {
+		if (
+			vsix.scheme === Schemas.vscodeRemote &&
+			server === this.extensionManagementServerService.localExtensionManagementServer
+		) {
 			const downloadedLocation = joinPath(this.environmentService.tmpDir, generateUuid());
 			await this.downloadService.download(vsix, downloadedLocation);
 			vsix = downloadedLocation;
@@ -83,4 +104,8 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 	}
 }
 
-registerSingleton(IWorkbenchExtensionManagementService, ExtensionManagementService, InstantiationType.Delayed);
+registerSingleton(
+	IWorkbenchExtensionManagementService,
+	ExtensionManagementService,
+	InstantiationType.Delayed
+);

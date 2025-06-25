@@ -8,10 +8,10 @@ import { IWorkspaceFolderCreationData } from '../../../../platform/workspaces/co
 import { URI } from '../../../../base/common/uri.js';
 import { IWorkspaceIdentifier } from '../../../../platform/workspace/common/workspace.js';
 
-export const IWorkspaceEditingService = createDecorator<IWorkspaceEditingService>('workspaceEditingService');
+export const IWorkspaceEditingService =
+	createDecorator<IWorkspaceEditingService>('workspaceEditingService');
 
 export interface IWorkspaceEditingService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -30,7 +30,12 @@ export interface IWorkspaceEditingService {
 	 * Allows to add and remove folders to the existing workspace at once.
 	 * When `donotNotifyError` is `true`, error will be bubbled up otherwise, the service handles the error with proper message and action
 	 */
-	updateFolders(index: number, deleteCount?: number, foldersToAdd?: IWorkspaceFolderCreationData[], donotNotifyError?: boolean): Promise<void>;
+	updateFolders(
+		index: number,
+		deleteCount?: number,
+		foldersToAdd?: IWorkspaceFolderCreationData[],
+		donotNotifyError?: boolean
+	): Promise<void>;
 
 	/**
 	 * Enters the workspace with the provided path.

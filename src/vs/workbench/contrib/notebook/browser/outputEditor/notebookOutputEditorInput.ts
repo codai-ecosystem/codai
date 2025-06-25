@@ -13,14 +13,13 @@ import { INotebookEditorModelResolverService } from '../../common/notebookEditor
 import { isEqual } from '../../../../../base/common/resources.js';
 import { NotebookCellTextModel } from '../../common/model/notebookCellTextModel.js';
 
-
 class ResolvedNotebookOutputEditorInputModel implements IDisposable {
 	constructor(
 		readonly resolvedNotebookEditorModel: IResolvedNotebookEditorModel,
 		readonly notebookUri: URI,
 		readonly cell: NotebookCellTextModel,
-		readonly outputId: string,
-	) { }
+		readonly outputId: string
+	) {}
 
 	dispose(): void {
 		this.resolvedNotebookEditorModel.dispose();
@@ -50,7 +49,8 @@ export class NotebookOutputEditorInput extends EditorInput {
 		cellIndex: number,
 		outputId: string | undefined,
 		outputIndex: number,
-		@INotebookEditorModelResolverService private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService,
+		@INotebookEditorModelResolverService
+		private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService
 	) {
 		super();
 		this._notebookUri = notebookUri;
@@ -91,11 +91,13 @@ export class NotebookOutputEditorInput extends EditorInput {
 			this._notebookRef.object,
 			this._notebookUri,
 			cell,
-			resolvedOutputId,
+			resolvedOutputId
 		);
 	}
 
-	public getSerializedData(): { notebookUri: URI; cellIndex: number; outputIndex: number } | undefined {
+	public getSerializedData():
+		| { notebookUri: URI; cellIndex: number; outputIndex: number }
+		| undefined {
 		// need to translate from uris -> current indexes
 		// uris aren't deterministic across reloads, so indices are best option
 
@@ -103,7 +105,9 @@ export class NotebookOutputEditorInput extends EditorInput {
 			return;
 		}
 
-		const cellIndex = this._notebookRef.object.notebook.cells.findIndex(c => isEqual(c.uri, this.cellUri));
+		const cellIndex = this._notebookRef.object.notebook.cells.findIndex(c =>
+			isEqual(c.uri, this.cellUri)
+		);
 		const cell = this._notebookRef.object.notebook.cells[cellIndex];
 		if (!cell) {
 			return;
@@ -122,7 +126,7 @@ export class NotebookOutputEditorInput extends EditorInput {
 	}
 
 	override getName(): string {
-		return nls.localize('notebookOutputEditorInput', "Notebook Output Preview");
+		return nls.localize('notebookOutputEditorInput', 'Notebook Output Preview');
 	}
 
 	override get editorId(): string {

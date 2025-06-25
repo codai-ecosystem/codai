@@ -29,7 +29,9 @@ export function getIconsStyleSheet(themeService: IThemeService | undefined): IIc
 		dispose: () => disposable.dispose(),
 		onDidChange: onDidChangeEmmiter.event,
 		getCSS(): css.CssFragment {
-			const productIconTheme = themeService ? themeService.getProductIconTheme() : new UnthemedProductIconTheme();
+			const productIconTheme = themeService
+				? themeService.getProductIconTheme()
+				: new UnthemedProductIconTheme();
 			const usedFontIds: { [id: string]: IconFontDefinition } = {};
 
 			const rules = new css.Builder();
@@ -47,31 +49,43 @@ export function getIconsStyleSheet(themeService: IThemeService | undefined): IIc
 					usedFontIds[fontContribution.id] = fontContribution.definition;
 					rootAttribs.push(
 						css.inline`${fontFamilyVar}: ${css.stringValue(fontContribution.id)};`,
-						css.inline`${contentVar}: ${css.stringValue(definition.fontCharacter)};`,
+						css.inline`${contentVar}: ${css.stringValue(definition.fontCharacter)};`
 					);
-					rules.push(css.inline`.codicon-${css.className(contribution.id)}:before { content: ${css.stringValue(definition.fontCharacter)}; font-family: ${css.stringValue(fontContribution.id)}; }`);
+					rules.push(
+						css.inline`.codicon-${css.className(contribution.id)}:before { content: ${css.stringValue(definition.fontCharacter)}; font-family: ${css.stringValue(fontContribution.id)}; }`
+					);
 				} else {
-					rootAttribs.push(css.inline`${contentVar}: ${css.stringValue(definition.fontCharacter)}; ${fontFamilyVar}: 'codicon';`);
-					rules.push(css.inline`.codicon-${css.className(contribution.id)}:before { content: ${css.stringValue(definition.fontCharacter)}; }`);
+					rootAttribs.push(
+						css.inline`${contentVar}: ${css.stringValue(definition.fontCharacter)}; ${fontFamilyVar}: 'codicon';`
+					);
+					rules.push(
+						css.inline`.codicon-${css.className(contribution.id)}:before { content: ${css.stringValue(definition.fontCharacter)}; }`
+					);
 				}
 			}
 
 			for (const id in usedFontIds) {
 				const definition = usedFontIds[id];
-				const fontWeight = definition.weight ? css.inline`font-weight: ${css.identValue(definition.weight)};` : css.inline``;
-				const fontStyle = definition.style ? css.inline`font-style: ${css.identValue(definition.style)};` : css.inline``;
+				const fontWeight = definition.weight
+					? css.inline`font-weight: ${css.identValue(definition.weight)};`
+					: css.inline``;
+				const fontStyle = definition.style
+					? css.inline`font-style: ${css.identValue(definition.style)};`
+					: css.inline``;
 
 				const src = new css.Builder();
 				for (const l of definition.src) {
 					src.push(css.inline`${css.asCSSUrl(l.location)} format(${css.stringValue(l.format)})`);
 				}
-				rules.push(css.inline`@font-face { src: ${src.join(', ')}; font-family: ${css.stringValue(id)};${fontWeight}${fontStyle} font-display: block; }`);
+				rules.push(
+					css.inline`@font-face { src: ${src.join(', ')}; font-family: ${css.stringValue(id)};${fontWeight}${fontStyle} font-display: block; }`
+				);
 			}
 
 			rules.push(css.inline`:root { ${rootAttribs.join(' ')} }`);
 
 			return rules.join('\n');
-		}
+		},
 	};
 }
 

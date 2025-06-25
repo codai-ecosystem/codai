@@ -75,11 +75,29 @@ export const parseTestUri = (uri: URI): ParsedTestUri | undefined => {
 		if (type === TestUriParts.Results) {
 			switch (part) {
 				case TestUriParts.Text:
-					return { resultId, taskIndex, testExtId, messageIndex: index, type: TestUriType.ResultMessage };
+					return {
+						resultId,
+						taskIndex,
+						testExtId,
+						messageIndex: index,
+						type: TestUriType.ResultMessage,
+					};
 				case TestUriParts.ActualOutput:
-					return { resultId, taskIndex, testExtId, messageIndex: index, type: TestUriType.ResultActualOutput };
+					return {
+						resultId,
+						taskIndex,
+						testExtId,
+						messageIndex: index,
+						type: TestUriType.ResultActualOutput,
+					};
 				case TestUriParts.ExpectedOutput:
-					return { resultId, taskIndex, testExtId, messageIndex: index, type: TestUriType.ResultExpectedOutput };
+					return {
+						resultId,
+						taskIndex,
+						testExtId,
+						messageIndex: index,
+						type: TestUriType.ResultExpectedOutput,
+					};
 				case TestUriParts.Messages:
 			}
 		}
@@ -99,7 +117,7 @@ export const parseTestUri = (uri: URI): ParsedTestUri | undefined => {
 export const buildTestUri = (parsed: ParsedTestUri): URI => {
 	const uriParts = {
 		scheme: TEST_DATA_SCHEME,
-		authority: TestUriParts.Results
+		authority: TestUriParts.Results,
 	};
 
 	if (parsed.type === TestUriType.TaskOutput) {
@@ -118,9 +136,19 @@ export const buildTestUri = (parsed: ParsedTestUri): URI => {
 
 	switch (parsed.type) {
 		case TestUriType.ResultActualOutput:
-			return msgRef(parsed.resultId, parsed.taskIndex, parsed.messageIndex, TestUriParts.ActualOutput);
+			return msgRef(
+				parsed.resultId,
+				parsed.taskIndex,
+				parsed.messageIndex,
+				TestUriParts.ActualOutput
+			);
 		case TestUriType.ResultExpectedOutput:
-			return msgRef(parsed.resultId, parsed.taskIndex, parsed.messageIndex, TestUriParts.ExpectedOutput);
+			return msgRef(
+				parsed.resultId,
+				parsed.taskIndex,
+				parsed.messageIndex,
+				TestUriParts.ExpectedOutput
+			);
 		case TestUriType.ResultMessage:
 			return msgRef(parsed.resultId, parsed.taskIndex, parsed.messageIndex, TestUriParts.Text);
 		case TestUriType.TestOutput:

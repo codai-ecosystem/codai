@@ -9,7 +9,6 @@ import { PLAINTEXT_LANGUAGE_ID } from '../../../common/languages/modesRegistry.j
 import { LanguageService } from '../../../common/services/languageService.js';
 
 suite('LanguageService', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('LanguageSelection does not leak a disposable', () => {
@@ -17,10 +16,9 @@ suite('LanguageService', () => {
 		const languageSelection1 = languageService.createById(PLAINTEXT_LANGUAGE_ID);
 		assert.strictEqual(languageSelection1.languageId, PLAINTEXT_LANGUAGE_ID);
 		const languageSelection2 = languageService.createById(PLAINTEXT_LANGUAGE_ID);
-		const listener = languageSelection2.onDidChange(() => { });
+		const listener = languageSelection2.onDidChange(() => {});
 		assert.strictEqual(languageSelection2.languageId, PLAINTEXT_LANGUAGE_ID);
 		listener.dispose();
 		languageService.dispose();
 	});
-
 });

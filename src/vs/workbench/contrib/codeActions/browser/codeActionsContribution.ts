@@ -9,10 +9,20 @@ import { IJSONSchema, IJSONSchemaMap } from '../../../../base/common/jsonSchema.
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { editorConfigurationBaseNode } from '../../../../editor/common/config/editorConfigurationSchema.js';
 import { ILanguageFeaturesService } from '../../../../editor/common/services/languageFeatures.js';
-import { codeActionCommandId, refactorCommandId, sourceActionCommandId } from '../../../../editor/contrib/codeAction/browser/codeAction.js';
+import {
+	codeActionCommandId,
+	refactorCommandId,
+	sourceActionCommandId,
+} from '../../../../editor/contrib/codeAction/browser/codeAction.js';
 import { CodeActionKind } from '../../../../editor/contrib/codeAction/common/types.js';
 import * as nls from '../../../../nls.js';
-import { ConfigurationScope, Extensions, IConfigurationNode, IConfigurationPropertySchema, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
+import {
+	ConfigurationScope,
+	Extensions,
+	IConfigurationNode,
+	IConfigurationPropertySchema,
+	IConfigurationRegistry,
+} from '../../../../platform/configuration/common/configurationRegistry.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
@@ -22,14 +32,23 @@ const createCodeActionsAutoSave = (description: string): IJSONSchema => {
 		type: 'string',
 		enum: ['always', 'explicit', 'never', true, false],
 		enumDescriptions: [
-			nls.localize('alwaysSave', 'Triggers Code Actions on explicit saves and auto saves triggered by window or focus changes.'),
+			nls.localize(
+				'alwaysSave',
+				'Triggers Code Actions on explicit saves and auto saves triggered by window or focus changes.'
+			),
 			nls.localize('explicitSave', 'Triggers Code Actions only when explicitly saved'),
 			nls.localize('neverSave', 'Never triggers Code Actions on save'),
-			nls.localize('explicitSaveBoolean', 'Triggers Code Actions only when explicitly saved. This value will be deprecated in favor of "explicit".'),
-			nls.localize('neverSaveBoolean', 'Never triggers Code Actions on save. This value will be deprecated in favor of "never".')
+			nls.localize(
+				'explicitSaveBoolean',
+				'Triggers Code Actions only when explicitly saved. This value will be deprecated in favor of "explicit".'
+			),
+			nls.localize(
+				'neverSaveBoolean',
+				'Never triggers Code Actions on save. This value will be deprecated in favor of "never".'
+			),
 		],
 		default: 'explicit',
-		description: description
+		description: description,
 	};
 };
 
@@ -40,29 +59,38 @@ const createNotebookCodeActionsAutoSave = (description: string): IJSONSchema => 
 		enumDescriptions: [
 			nls.localize('explicit', 'Triggers Code Actions only when explicitly saved.'),
 			nls.localize('never', 'Never triggers Code Actions on save.'),
-			nls.localize('explicitBoolean', 'Triggers Code Actions only when explicitly saved. This value will be deprecated in favor of "explicit".'),
-			nls.localize('neverBoolean', 'Triggers Code Actions only when explicitly saved. This value will be deprecated in favor of "never".')
+			nls.localize(
+				'explicitBoolean',
+				'Triggers Code Actions only when explicitly saved. This value will be deprecated in favor of "explicit".'
+			),
+			nls.localize(
+				'neverBoolean',
+				'Triggers Code Actions only when explicitly saved. This value will be deprecated in favor of "never".'
+			),
 		],
 		default: 'explicit',
-		description: description
+		description: description,
 	};
 };
-
 
 const codeActionsOnSaveSchema: IConfigurationPropertySchema = {
 	oneOf: [
 		{
 			type: 'object',
 			additionalProperties: {
-				type: 'string'
+				type: 'string',
 			},
 		},
 		{
 			type: 'array',
-			items: { type: 'string' }
-		}
+			items: { type: 'string' },
+		},
 	],
-	markdownDescription: nls.localize('editor.codeActionsOnSave', 'Run Code Actions for the editor on save. Code Actions must be specified and the editor must not be shutting down. When {0} is set to `afterDelay`, Code Actions will only be run when the file is saved explicitly. Example: `"source.organizeImports": "explicit" `', '`#files.autoSave#`'),
+	markdownDescription: nls.localize(
+		'editor.codeActionsOnSave',
+		'Run Code Actions for the editor on save. Code Actions must be specified and the editor must not be shutting down. When {0} is set to `afterDelay`, Code Actions will only be run when the file is saved explicitly. Example: `"source.organizeImports": "explicit" `',
+		'`#files.autoSave#`'
+	),
 	type: ['object', 'array'],
 	additionalProperties: {
 		type: 'string',
@@ -75,8 +103,8 @@ const codeActionsOnSaveSchema: IConfigurationPropertySchema = {
 export const editorConfiguration = Object.freeze<IConfigurationNode>({
 	...editorConfigurationBaseNode,
 	properties: {
-		'editor.codeActionsOnSave': codeActionsOnSaveSchema
-	}
+		'editor.codeActionsOnSave': codeActionsOnSaveSchema,
+	},
 });
 
 const notebookCodeActionsOnSaveSchema: IConfigurationPropertySchema = {
@@ -84,15 +112,19 @@ const notebookCodeActionsOnSaveSchema: IConfigurationPropertySchema = {
 		{
 			type: 'object',
 			additionalProperties: {
-				type: 'string'
+				type: 'string',
 			},
 		},
 		{
 			type: 'array',
-			items: { type: 'string' }
-		}
+			items: { type: 'string' },
+		},
 	],
-	markdownDescription: nls.localize('notebook.codeActionsOnSave', 'Run a series of Code Actions for a notebook on save. Code Actions must be specified and the editor must not be shutting down. When {0} is set to `afterDelay`, Code Actions will only be run when the file is saved explicitly. Example: `"notebook.source.organizeImports": "explicit"`', '`#files.autoSave#`'),
+	markdownDescription: nls.localize(
+		'notebook.codeActionsOnSave',
+		'Run a series of Code Actions for a notebook on save. Code Actions must be specified and the editor must not be shutting down. When {0} is set to `afterDelay`, Code Actions will only be run when the file is saved explicitly. Example: `"notebook.source.organizeImports": "explicit"`',
+		'`#files.autoSave#`'
+	),
 	type: 'object',
 	additionalProperties: {
 		type: ['string', 'boolean'],
@@ -100,18 +132,17 @@ const notebookCodeActionsOnSaveSchema: IConfigurationPropertySchema = {
 		// enum: ['explicit', 'always', 'never'], -- autosave support needs to be built first
 		// nls.localize('always', 'Always triggers Code Actions on save, including autosave, focus, and window change events.'),
 	},
-	default: {}
+	default: {},
 };
 
 export const notebookEditorConfiguration = Object.freeze<IConfigurationNode>({
 	...editorConfigurationBaseNode,
 	properties: {
-		'notebook.codeActionsOnSave': notebookCodeActionsOnSaveSchema
-	}
+		'notebook.codeActionsOnSave': notebookCodeActionsOnSaveSchema,
+	},
 });
 
 export class CodeActionsContribution extends Disposable implements IWorkbenchContribution {
-
 	private readonly _onDidChangeSchemaContributions = this._register(new Emitter<void>());
 
 	private _allProvidedCodeActionKinds: HierarchicalKind[] = [];
@@ -125,12 +156,14 @@ export class CodeActionsContribution extends Disposable implements IWorkbenchCon
 		// TODO: @justschen caching of code actions based on extensions loaded: https://github.com/microsoft/vscode/issues/216019
 		this._register(
 			Event.runAndSubscribe(
-				Event.debounce(languageFeatures.codeActionProvider.onDidChange, () => { }, 1000),
+				Event.debounce(languageFeatures.codeActionProvider.onDidChange, () => {}, 1000),
 				() => {
 					this._allProvidedCodeActionKinds = this.getAllProvidedCodeActionKinds();
 					this.updateConfigurationSchema(this._allProvidedCodeActionKinds);
 					this._onDidChangeSchemaContributions.fire();
-				}));
+				}
+			)
+		);
 
 		keybindingService.registerSchemaContribution({
 			getSchemaAdditions: () => this.getKeybindingSchemaAdditions(),
@@ -153,15 +186,28 @@ export class CodeActionsContribution extends Disposable implements IWorkbenchCon
 		const notebookProperties: IJSONSchemaMap = { ...notebookCodeActionsOnSaveSchema.properties };
 		for (const codeActionKind of allProvidedKinds) {
 			if (CodeActionKind.Source.contains(codeActionKind) && !properties[codeActionKind.value]) {
-				properties[codeActionKind.value] = createCodeActionsAutoSave(nls.localize('codeActionsOnSave.generic', "Controls whether '{0}' actions should be run on file save.", codeActionKind.value));
-				notebookProperties[codeActionKind.value] = createNotebookCodeActionsAutoSave(nls.localize('codeActionsOnSave.generic', "Controls whether '{0}' actions should be run on file save.", codeActionKind.value));
+				properties[codeActionKind.value] = createCodeActionsAutoSave(
+					nls.localize(
+						'codeActionsOnSave.generic',
+						"Controls whether '{0}' actions should be run on file save.",
+						codeActionKind.value
+					)
+				);
+				notebookProperties[codeActionKind.value] = createNotebookCodeActionsAutoSave(
+					nls.localize(
+						'codeActionsOnSave.generic',
+						"Controls whether '{0}' actions should be run on file save.",
+						codeActionKind.value
+					)
+				);
 			}
 		}
 		codeActionsOnSaveSchema.properties = properties;
 		notebookCodeActionsOnSaveSchema.properties = notebookProperties;
 
-		Registry.as<IConfigurationRegistry>(Extensions.Configuration)
-			.notifyConfigurationSchemaUpdated(editorConfiguration);
+		Registry.as<IConfigurationRegistry>(Extensions.Configuration).notifyConfigurationSchemaUpdated(
+			editorConfiguration
+		);
 	}
 
 	private getKeybindingSchemaAdditions(): IJSONSchema[] {
@@ -170,24 +216,21 @@ export class CodeActionsContribution extends Disposable implements IWorkbenchCon
 				if: {
 					required: ['command'],
 					properties: {
-						'command': { const: command }
-					}
+						command: { const: command },
+					},
 				},
 				then: {
 					properties: {
-						'args': {
+						args: {
 							required: ['kind'],
 							properties: {
-								'kind': {
-									anyOf: [
-										{ enum: Array.from(kinds) },
-										{ type: 'string' },
-									]
-								}
-							}
-						}
-					}
-				}
+								kind: {
+									anyOf: [{ enum: Array.from(kinds) }, { type: 'string' }],
+								},
+							},
+						},
+					},
+				},
 			};
 		};
 

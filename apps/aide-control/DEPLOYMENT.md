@@ -110,12 +110,10 @@ The build process includes enhanced error handling for:
 ### Common Issues
 
 1. **Build fails with Firebase errors**
-
    - Solution: The build process now includes fallback initialization
    - Check that `FIREBASE_ADMIN_CREDENTIALS` is valid JSON when provided
 
 2. **Container starts but app not accessible**
-
    - Verify port mapping: `-p 3000:8080` (external:internal)
    - Check container logs: `docker logs aide-control`
 

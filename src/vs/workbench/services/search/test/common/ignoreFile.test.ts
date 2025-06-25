@@ -7,7 +7,13 @@ import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { IgnoreFile } from '../../common/ignoreFile.js';
 
-function runAssert(input: string, ignoreFile: string, ignoreFileLocation: string, shouldMatch: boolean, traverse: boolean) {
+function runAssert(
+	input: string,
+	ignoreFile: string,
+	ignoreFileLocation: string,
+	shouldMatch: boolean,
+	traverse: boolean
+) {
 	return (prefix: string) => {
 		const isDir = input.endsWith('/');
 		const rawInput = isDir ? input.slice(0, input.length - 1) : input;
@@ -17,18 +23,29 @@ function runAssert(input: string, ignoreFile: string, ignoreFileLocation: string
 			const traverses = matcher.isPathIncludedInTraversal(prefix + rawInput, isDir);
 
 			if (shouldMatch) {
-				assert(traverses, `${ignoreFileLocation}: ${ignoreFile} should traverse ${isDir ? 'dir' : 'file'} ${prefix}${rawInput}`);
+				assert(
+					traverses,
+					`${ignoreFileLocation}: ${ignoreFile} should traverse ${isDir ? 'dir' : 'file'} ${prefix}${rawInput}`
+				);
 			} else {
-				assert(!traverses, `${ignoreFileLocation}: ${ignoreFile} should not traverse ${isDir ? 'dir' : 'file'} ${prefix}${rawInput}`);
+				assert(
+					!traverses,
+					`${ignoreFileLocation}: ${ignoreFile} should not traverse ${isDir ? 'dir' : 'file'} ${prefix}${rawInput}`
+				);
 			}
-		}
-		else {
+		} else {
 			const ignores = matcher.isArbitraryPathIgnored(prefix + rawInput, isDir);
 
 			if (shouldMatch) {
-				assert(ignores, `${ignoreFileLocation}: ${ignoreFile} should ignore ${isDir ? 'dir' : 'file'} ${prefix}${rawInput}`);
+				assert(
+					ignores,
+					`${ignoreFileLocation}: ${ignoreFile} should ignore ${isDir ? 'dir' : 'file'} ${prefix}${rawInput}`
+				);
 			} else {
-				assert(!ignores, `${ignoreFileLocation}: ${ignoreFile} should not ignore ${isDir ? 'dir' : 'file'} ${prefix}${rawInput}`);
+				assert(
+					!ignores,
+					`${ignoreFileLocation}: ${ignoreFile} should not ignore ${isDir ? 'dir' : 'file'} ${prefix}${rawInput}`
+				);
 			}
 		}
 	};
@@ -174,7 +191,6 @@ suite('Parsing .gitignore files', () => {
 
 		assertIgnoreMatch(i, '/inner/', '/inner/node_modules');
 		assertIgnoreMatch(i, '/inner/', '/inner/more/node_modules');
-
 
 		i = '/node_modules\n/out\n';
 
@@ -413,11 +429,18 @@ suite('Parsing .gitignore files', () => {
 		for (const exclude of excluded) {
 			assertIgnoreMatch(i, '/', exclude);
 		}
-
 	});
 
 	test('various advanced constructs found in popular repos', () => {
-		const runTest = ({ pattern, included, excluded }: { pattern: string; included: string[]; excluded: string[] }) => {
+		const runTest = ({
+			pattern,
+			included,
+			excluded,
+		}: {
+			pattern: string;
+			included: string[];
+			excluded: string[];
+		}) => {
 			for (const include of included) {
 				assertNoIgnoreMatch(pattern, '/', include);
 			}
@@ -462,10 +485,7 @@ suite('Parsing .gitignore files', () => {
 			!.yarn/sdks
 			!.yarn/versions`,
 
-			excluded: [
-				'/.yarn/test',
-				'/.yarn/cache',
-			],
+			excluded: ['/.yarn/test', '/.yarn/cache'],
 			included: [
 				'/inner/.yarn/test',
 				'/inner/.yarn/cache',
@@ -499,9 +519,7 @@ suite('Parsing .gitignore files', () => {
 				'/inner/._._sby',
 				'/_swz',
 			],
-			included: [
-				'/.jaa',
-			],
+			included: ['/.jaa'],
 		});
 
 		// TODO: the rest of these :)
@@ -564,6 +582,5 @@ suite('Parsing .gitignore files', () => {
 			excluded: [],
 			included: [],
 		});
-
 	});
 });

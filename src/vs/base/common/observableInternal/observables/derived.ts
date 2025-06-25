@@ -3,9 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IObservable, IReader, ITransaction, ISettableObservable, IObservableWithChange } from '../base.js';
+import {
+	IObservable,
+	IReader,
+	ITransaction,
+	ISettableObservable,
+	IObservableWithChange,
+} from '../base.js';
 import { IChangeTracker } from '../changeTracker.js';
-import { DisposableStore, EqualityComparer, IDisposable, strictEquals } from '../commonFacade/deps.js';
+import {
+	DisposableStore,
+	EqualityComparer,
+	IDisposable,
+	strictEquals,
+} from '../commonFacade/deps.js';
 import { DebugOwner, DebugNameData, IDebugNameData } from '../debugName.js';
 import { _setDerivedOpts } from './baseObservable.js';
 import { IDerivedReader, Derived, DerivedWithSetter } from './derivedImpl.js';
@@ -16,9 +27,17 @@ import { IDerivedReader, Derived, DerivedWithSetter } from './derivedImpl.js';
  *
  * {@link computeFn} should start with a JS Doc using `@description` to name the derived.
  */
-export function derived<T, TChange = void>(computeFn: (reader: IDerivedReader<TChange>) => T): IObservableWithChange<T, TChange>;
-export function derived<T, TChange = void>(owner: DebugOwner, computeFn: (reader: IDerivedReader<TChange>) => T): IObservableWithChange<T, TChange>;
-export function derived<T, TChange = void>(computeFnOrOwner: ((reader: IDerivedReader<TChange>) => T) | DebugOwner, computeFn?: ((reader: IDerivedReader<TChange>) => T) | undefined): IObservable<T> {
+export function derived<T, TChange = void>(
+	computeFn: (reader: IDerivedReader<TChange>) => T
+): IObservableWithChange<T, TChange>;
+export function derived<T, TChange = void>(
+	owner: DebugOwner,
+	computeFn: (reader: IDerivedReader<TChange>) => T
+): IObservableWithChange<T, TChange>;
+export function derived<T, TChange = void>(
+	computeFnOrOwner: ((reader: IDerivedReader<TChange>) => T) | DebugOwner,
+	computeFn?: ((reader: IDerivedReader<TChange>) => T) | undefined
+): IObservable<T> {
 	if (computeFn !== undefined) {
 		return new Derived(
 			new DebugNameData(computeFnOrOwner, undefined, computeFn),
@@ -37,7 +56,11 @@ export function derived<T, TChange = void>(computeFnOrOwner: ((reader: IDerivedR
 	);
 }
 
-export function derivedWithSetter<T>(owner: DebugOwner | undefined, computeFn: (reader: IReader) => T, setter: (value: T, transaction: ITransaction | undefined) => void): ISettableObservable<T> {
+export function derivedWithSetter<T>(
+	owner: DebugOwner | undefined,
+	computeFn: (reader: IReader) => T,
+	setter: (value: T, transaction: ITransaction | undefined) => void
+): ISettableObservable<T> {
 	return new DerivedWithSetter(
 		new DebugNameData(owner, undefined, computeFn),
 		computeFn,
@@ -51,7 +74,7 @@ export function derivedWithSetter<T>(owner: DebugOwner | undefined, computeFn: (
 export function derivedOpts<T>(
 	options: IDebugNameData & {
 		equalsFn?: EqualityComparer<T>;
-		onLastObserverRemoved?: (() => void);
+		onLastObserverRemoved?: () => void;
 	},
 	computeFn: (reader: IReader) => T
 ): IObservable<T> {
@@ -96,14 +119,22 @@ export function derivedHandleChanges<T, TDelta, TChangeSummary>(
 
 /**
  * @deprecated Use `derived(reader => { reader.store.add(...) })` instead!
-*/
-export function derivedWithStore<T>(computeFn: (reader: IReader, store: DisposableStore) => T): IObservable<T>;
+ */
+export function derivedWithStore<T>(
+	computeFn: (reader: IReader, store: DisposableStore) => T
+): IObservable<T>;
 
 /**
  * @deprecated Use `derived(reader => { reader.store.add(...) })` instead!
-*/
-export function derivedWithStore<T>(owner: DebugOwner, computeFn: (reader: IReader, store: DisposableStore) => T): IObservable<T>;
-export function derivedWithStore<T>(computeFnOrOwner: ((reader: IReader, store: DisposableStore) => T) | DebugOwner, computeFnOrUndefined?: ((reader: IReader, store: DisposableStore) => T)): IObservable<T> {
+ */
+export function derivedWithStore<T>(
+	owner: DebugOwner,
+	computeFn: (reader: IReader, store: DisposableStore) => T
+): IObservable<T>;
+export function derivedWithStore<T>(
+	computeFnOrOwner: ((reader: IReader, store: DisposableStore) => T) | DebugOwner,
+	computeFnOrUndefined?: (reader: IReader, store: DisposableStore) => T
+): IObservable<T> {
 	let computeFn: (reader: IReader, store: DisposableStore) => T;
 	let owner: DebugOwner;
 	if (computeFnOrUndefined === undefined) {
@@ -134,9 +165,17 @@ export function derivedWithStore<T>(computeFnOrOwner: ((reader: IReader, store: 
 	);
 }
 
-export function derivedDisposable<T extends IDisposable | undefined>(computeFn: (reader: IReader) => T): IObservable<T>;
-export function derivedDisposable<T extends IDisposable | undefined>(owner: DebugOwner, computeFn: (reader: IReader) => T): IObservable<T>;
-export function derivedDisposable<T extends IDisposable | undefined>(computeFnOrOwner: ((reader: IReader) => T) | DebugOwner, computeFnOrUndefined?: ((reader: IReader) => T)): IObservable<T> {
+export function derivedDisposable<T extends IDisposable | undefined>(
+	computeFn: (reader: IReader) => T
+): IObservable<T>;
+export function derivedDisposable<T extends IDisposable | undefined>(
+	owner: DebugOwner,
+	computeFn: (reader: IReader) => T
+): IObservable<T>;
+export function derivedDisposable<T extends IDisposable | undefined>(
+	computeFnOrOwner: ((reader: IReader) => T) | DebugOwner,
+	computeFnOrUndefined?: (reader: IReader) => T
+): IObservable<T> {
 	let computeFn: (reader: IReader) => T;
 	let owner: DebugOwner;
 	if (computeFnOrUndefined === undefined) {

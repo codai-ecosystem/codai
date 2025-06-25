@@ -4,15 +4,27 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { OffsetRange } from '../../../core/ranges/offsetRange.js';
-import { IDiffAlgorithm, SequenceDiff, ISequence, ITimeout, InfiniteTimeout, DiffAlgorithmResult } from './diffAlgorithm.js';
+import {
+	IDiffAlgorithm,
+	SequenceDiff,
+	ISequence,
+	ITimeout,
+	InfiniteTimeout,
+	DiffAlgorithmResult,
+} from './diffAlgorithm.js';
 import { Array2D } from '../utils.js';
 
 /**
  * A O(MN) diffing algorithm that supports a score function.
  * The algorithm can be improved by processing the 2d array diagonally.
-*/
+ */
 export class DynamicProgrammingDiffing implements IDiffAlgorithm {
-	compute(sequence1: ISequence, sequence2: ISequence, timeout: ITimeout = InfiniteTimeout.instance, equalityScore?: (offset1: number, offset2: number) => number): DiffAlgorithmResult {
+	compute(
+		sequence1: ISequence,
+		sequence2: ISequence,
+		timeout: ITimeout = InfiniteTimeout.instance,
+		equalityScore?: (offset1: number, offset2: number) => number
+	): DiffAlgorithmResult {
 		if (sequence1.length === 0 || sequence2.length === 0) {
 			return DiffAlgorithmResult.trivial(sequence1, sequence2);
 		}
@@ -45,7 +57,7 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 						// Prefer consecutive diagonals
 						extendedSeqScore += lengths.get(s1 - 1, s2 - 1);
 					}
-					extendedSeqScore += (equalityScore ? equalityScore(s1, s2) : 1);
+					extendedSeqScore += equalityScore ? equalityScore(s1, s2) : 1;
 				} else {
 					extendedSeqScore = -1;
 				}
@@ -76,10 +88,12 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 
 		function reportDecreasingAligningPositions(s1: number, s2: number): void {
 			if (s1 + 1 !== lastAligningPosS1 || s2 + 1 !== lastAligningPosS2) {
-				result.push(new SequenceDiff(
-					new OffsetRange(s1 + 1, lastAligningPosS1),
-					new OffsetRange(s2 + 1, lastAligningPosS2),
-				));
+				result.push(
+					new SequenceDiff(
+						new OffsetRange(s1 + 1, lastAligningPosS1),
+						new OffsetRange(s2 + 1, lastAligningPosS2)
+					)
+				);
 			}
 			lastAligningPosS1 = s1;
 			lastAligningPosS2 = s2;

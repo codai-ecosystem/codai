@@ -5,12 +5,9 @@
 
 import { KeyboardLayoutContribution } from './_.contribution.js';
 
-
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 	layout: { name: '0000041D', id: '', text: 'Swedish' },
-	secondaryLayouts: [
-		{ name: '0000040B', id: '', text: 'Finnish' }
-	],
+	secondaryLayouts: [{ name: '0000040B', id: '', text: 'Finnish' }],
 	mapping: {
 		Sleep: [],
 		WakeUp: [],
@@ -59,7 +56,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		Equal: ['´', '`', '', '', 0, 'VK_OEM_4'],
 		BracketLeft: ['å', 'Å', '', '', 0, 'VK_OEM_6'],
 		BracketRight: ['¨', '^', '~', '', 0, 'VK_OEM_1'],
-		Backslash: ['\'', '*', '', '', 0, 'VK_OEM_2'],
+		Backslash: ["'", '*', '', '', 0, 'VK_OEM_2'],
 		Semicolon: ['ö', 'Ö', '', '', 0, 'VK_OEM_3'],
 		Quote: ['ä', 'Ä', '', '', 0, 'VK_OEM_7'],
 		Backquote: ['§', '½', '', '', 0, 'VK_OEM_5'],
@@ -166,6 +163,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		BrowserForward: [],
 		BrowserStop: [],
 		BrowserRefresh: [],
-		BrowserFavorites: []
-	}
+		BrowserFavorites: [],
+	},
 });

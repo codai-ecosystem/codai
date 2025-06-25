@@ -12,7 +12,11 @@ export class SimpleMemoryGraph implements IMemoryGraph {
 	private eventHandlers: Map<string, Function[]> = new Map();
 
 	// IMemoryGraph interface implementation
-	addNode(type: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision', content: string, metadata?: Record<string, any>): string {
+	addNode(
+		type: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision',
+		content: string,
+		metadata?: Record<string, any>
+	): string {
 		const id = uuidv4();
 		const node = {
 			id,
@@ -23,7 +27,7 @@ export class SimpleMemoryGraph implements IMemoryGraph {
 			metadata: metadata || {},
 			version: 1,
 			createdAt: new Date(),
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		};
 		this.nodeMap.set(id, node);
 		this.emit('nodeAdded', { nodeId: id, node });
@@ -42,7 +46,10 @@ export class SimpleMemoryGraph implements IMemoryGraph {
 		return this.nodeMap.get(id) || null;
 	}
 
-	updateNode(id: string, updates: Partial<{ content: string; metadata: Record<string, any> }>): boolean {
+	updateNode(
+		id: string,
+		updates: Partial<{ content: string; metadata: Record<string, any> }>
+	): boolean {
 		const node = this.nodeMap.get(id);
 		if (!node) return false;
 
@@ -76,7 +83,13 @@ export class SimpleMemoryGraph implements IMemoryGraph {
 		return existed;
 	}
 
-	addEdge(fromId: string, toId: string, type?: string, weight?: number, metadata?: Record<string, any>): string {
+	addEdge(
+		fromId: string,
+		toId: string,
+		type?: string,
+		weight?: number,
+		metadata?: Record<string, any>
+	): string {
 		const id = uuidv4();
 		const edge = {
 			id,
@@ -85,23 +98,26 @@ export class SimpleMemoryGraph implements IMemoryGraph {
 			type: type || 'relates_to',
 			strength: weight || 1.0,
 			metadata: metadata || {},
-			createdAt: new Date()
+			createdAt: new Date(),
 		};
 		this.edgeMap.set(id, edge);
 		this.emit('edgeAdded', { edgeId: id, edge });
 		return id;
 	}
 
-	getNodesByType(type: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision'): any[] {
+	getNodesByType(
+		type: 'intent' | 'feature' | 'screen' | 'logic' | 'relationship' | 'decision'
+	): any[] {
 		return Array.from(this.nodeMap.values()).filter(node => node.type === type);
 	}
 
 	searchNodes(query: string): any[] {
 		const lowercaseQuery = query.toLowerCase();
-		return Array.from(this.nodeMap.values()).filter(node =>
-			node.content.toLowerCase().includes(lowercaseQuery) ||
-			node.name.toLowerCase().includes(lowercaseQuery) ||
-			node.description.toLowerCase().includes(lowercaseQuery)
+		return Array.from(this.nodeMap.values()).filter(
+			node =>
+				node.content.toLowerCase().includes(lowercaseQuery) ||
+				node.name.toLowerCase().includes(lowercaseQuery) ||
+				node.description.toLowerCase().includes(lowercaseQuery)
 		);
 	}
 	getConnectedNodes(nodeId: string): any[] {
@@ -113,19 +129,21 @@ export class SimpleMemoryGraph implements IMemoryGraph {
 				connectedNodeIds.add(edge.fromNodeId);
 			}
 		}
-		return Array.from(connectedNodeIds).map(id => this.nodeMap.get(id)).filter(Boolean);
+		return Array.from(connectedNodeIds)
+			.map(id => this.nodeMap.get(id))
+			.filter(Boolean);
 	}
 
 	getConnections(nodeId: string): any[] {
-		return Array.from(this.edgeMap.values()).filter(edge =>
-			edge.fromNodeId === nodeId || edge.toNodeId === nodeId
+		return Array.from(this.edgeMap.values()).filter(
+			edge => edge.fromNodeId === nodeId || edge.toNodeId === nodeId
 		);
 	}
 
-	getGraphData(): { nodes: any[], edges: any[] } {
+	getGraphData(): { nodes: any[]; edges: any[] } {
 		return {
 			nodes: Array.from(this.nodeMap.values()),
-			edges: Array.from(this.edgeMap.values())
+			edges: Array.from(this.edgeMap.values()),
 		};
 	}
 
@@ -134,7 +152,7 @@ export class SimpleMemoryGraph implements IMemoryGraph {
 			nodeCount: this.nodeMap.size,
 			edgeCount: this.edgeMap.size,
 			typeDistribution: this.getTypeDistribution(),
-			complexity: this.calculateComplexity()
+			complexity: this.calculateComplexity(),
 		};
 	}
 	// IMemoryGraphEngine interface implementation (simplified)
@@ -215,7 +233,7 @@ export class SimpleMemoryGraph implements IMemoryGraph {
 	async loadFromStorage(): Promise<void> {
 		// For now, we'll just load from memory
 		console.log('SimpleMemoryGraph: loadFromStorage called (no-op for now)');
-	}	// Helper methods
+	} // Helper methods
 	private getTypeDistribution(): Record<string, number> {
 		const distribution: Record<string, number> = {};
 		for (const node of Array.from(this.nodeMap.values())) {
@@ -227,6 +245,6 @@ export class SimpleMemoryGraph implements IMemoryGraph {
 	private calculateComplexity(): number {
 		const nodeCount = this.nodeMap.size;
 		const edgeCount = this.edgeMap.size;
-		return nodeCount > 0 ? (edgeCount / nodeCount) : 0;
+		return nodeCount > 0 ? edgeCount / nodeCount : 0;
 	}
 }

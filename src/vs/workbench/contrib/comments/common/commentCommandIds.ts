@@ -17,5 +17,5 @@ export const enum CommentCommandId {
 	Hide = 'workbench.action.hideComment',
 	CollapseAll = 'workbench.action.collapseAllComments',
 	ExpandAll = 'workbench.action.expandAllComments',
-	ExpandUnresolved = 'workbench.action.expandUnresolvedComments'
+	ExpandUnresolved = 'workbench.action.expandUnresolvedComments',
 }

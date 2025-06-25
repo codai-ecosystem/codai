@@ -42,6 +42,7 @@ ADMIN_EMAILS=admin1@yourcompany.com,admin2@yourcompany.com
 The application expects the following collections:
 
 ### `users` collection
+
 ```javascript
 {
   uid: string,
@@ -57,6 +58,7 @@ The application expects the following collections:
 ```
 
 ### `serviceConfigurations` collection
+
 ```javascript
 {
   id: string,
@@ -78,6 +80,7 @@ The application expects the following collections:
 ```
 
 ### `usageStats` collection
+
 ```javascript
 {
   id: string,
@@ -135,12 +138,14 @@ service cloud.firestore {
 ## Deployment
 
 ### Vercel Deployment
+
 1. Connect your GitHub repository to Vercel
 2. Configure environment variables in Vercel dashboard
 3. Set build command: `cd apps/aide-control && npm run build`
 4. Set output directory: `apps/aide-control/.next`
 
 ### Docker Deployment
+
 ```dockerfile
 FROM node:18-alpine
 
@@ -168,6 +173,7 @@ CMD ["npm", "start"]
 ## Monitoring
 
 Consider setting up:
+
 - Firebase Performance Monitoring
 - Sentry for error tracking
 - Google Analytics for usage insights
@@ -176,10 +182,12 @@ Consider setting up:
 ## Admin Access
 
 Admin users are identified by:
+
 1. Email address listed in `ADMIN_EMAILS` environment variable
 2. `isAdmin: true` field in their Firestore user document
 
 Initial admin setup:
+
 1. Create account through normal registration
 2. Manually set `isAdmin: true` in Firestore
 3. Add email to `ADMIN_EMAILS` environment variable

@@ -23,28 +23,52 @@ suite('merge editor mapping', () => {
 			['0:2', '0:3'],
 		]);
 
-		test('map', () => assert.deepStrictEqual(documentMap.rangeMappings.map(m => m.toString()), [
-			'[2:4, 2:6) -> [2:4, 2:7)',
-			'[3:2, 4:3) -> [3:2, 6:4)',
-			'[4:5, 4:7) -> [6:6, 6:9)'
-		]));
+		test('map', () =>
+			assert.deepStrictEqual(
+				documentMap.rangeMappings.map(m => m.toString()),
+				['[2:4, 2:6) -> [2:4, 2:7)', '[3:2, 4:3) -> [3:2, 6:4)', '[4:5, 4:7) -> [6:6, 6:9)']
+			));
 
 		function f(this: Mocha.Context) {
 			return documentMap.project(parsePos(this.test!.title)).toString();
 		}
 
-		test('1:1', function () { assert.deepStrictEqual(f.apply(this), '[1:1, 1:1) -> [1:1, 1:1)'); });
-		test('2:3', function () { assert.deepStrictEqual(f.apply(this), '[2:3, 2:3) -> [2:3, 2:3)'); });
-		test('2:4', function () { assert.deepStrictEqual(f.apply(this), '[2:4, 2:6) -> [2:4, 2:7)'); });
-		test('2:5', function () { assert.deepStrictEqual(f.apply(this), '[2:4, 2:6) -> [2:4, 2:7)'); });
-		test('2:6', function () { assert.deepStrictEqual(f.apply(this), '[2:6, 2:6) -> [2:7, 2:7)'); });
-		test('2:7', function () { assert.deepStrictEqual(f.apply(this), '[2:7, 2:7) -> [2:8, 2:8)'); });
-		test('3:1', function () { assert.deepStrictEqual(f.apply(this), '[3:1, 3:1) -> [3:1, 3:1)'); });
-		test('3:2', function () { assert.deepStrictEqual(f.apply(this), '[3:2, 4:3) -> [3:2, 6:4)'); });
-		test('4:2', function () { assert.deepStrictEqual(f.apply(this), '[3:2, 4:3) -> [3:2, 6:4)'); });
-		test('4:3', function () { assert.deepStrictEqual(f.apply(this), '[4:3, 4:3) -> [6:4, 6:4)'); });
-		test('4:4', function () { assert.deepStrictEqual(f.apply(this), '[4:4, 4:4) -> [6:5, 6:5)'); });
-		test('4:5', function () { assert.deepStrictEqual(f.apply(this), '[4:5, 4:7) -> [6:6, 6:9)'); });
+		test('1:1', function () {
+			assert.deepStrictEqual(f.apply(this), '[1:1, 1:1) -> [1:1, 1:1)');
+		});
+		test('2:3', function () {
+			assert.deepStrictEqual(f.apply(this), '[2:3, 2:3) -> [2:3, 2:3)');
+		});
+		test('2:4', function () {
+			assert.deepStrictEqual(f.apply(this), '[2:4, 2:6) -> [2:4, 2:7)');
+		});
+		test('2:5', function () {
+			assert.deepStrictEqual(f.apply(this), '[2:4, 2:6) -> [2:4, 2:7)');
+		});
+		test('2:6', function () {
+			assert.deepStrictEqual(f.apply(this), '[2:6, 2:6) -> [2:7, 2:7)');
+		});
+		test('2:7', function () {
+			assert.deepStrictEqual(f.apply(this), '[2:7, 2:7) -> [2:8, 2:8)');
+		});
+		test('3:1', function () {
+			assert.deepStrictEqual(f.apply(this), '[3:1, 3:1) -> [3:1, 3:1)');
+		});
+		test('3:2', function () {
+			assert.deepStrictEqual(f.apply(this), '[3:2, 4:3) -> [3:2, 6:4)');
+		});
+		test('4:2', function () {
+			assert.deepStrictEqual(f.apply(this), '[3:2, 4:3) -> [3:2, 6:4)');
+		});
+		test('4:3', function () {
+			assert.deepStrictEqual(f.apply(this), '[4:3, 4:3) -> [6:4, 6:4)');
+		});
+		test('4:4', function () {
+			assert.deepStrictEqual(f.apply(this), '[4:4, 4:4) -> [6:5, 6:5)');
+		});
+		test('4:5', function () {
+			assert.deepStrictEqual(f.apply(this), '[4:5, 4:7) -> [6:6, 6:9)');
+		});
 	});
 });
 
@@ -74,10 +98,12 @@ function createDocumentRangeMap(items: ([string, string] | string)[]) {
 		} else {
 			const len1 = parseLengthObj(item[0]);
 			const len2 = parseLengthObj(item[1]);
-			mappings.push(new RangeMapping(
-				Range.fromPositions(toPosition(lastLen1), toPosition(lastLen1.add(len1))),
-				Range.fromPositions(toPosition(lastLen2), toPosition(lastLen2.add(len2))),
-			));
+			mappings.push(
+				new RangeMapping(
+					Range.fromPositions(toPosition(lastLen1), toPosition(lastLen1.add(len1))),
+					Range.fromPositions(toPosition(lastLen2), toPosition(lastLen2.add(len2)))
+				)
+			);
 			lastLen1 = lastLen1.add(len1);
 			lastLen2 = lastLen2.add(len2);
 		}

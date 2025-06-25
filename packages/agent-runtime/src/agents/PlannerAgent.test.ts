@@ -17,11 +17,21 @@ const mockMemoryGraph = {
 	getDependencyChain: vi.fn(),
 	validateGraph: vi.fn(),
 	toJSON: vi.fn(),
-	get currentGraph() { return {}; },
-	get nodes() { return []; },
-	get relationships() { return []; },
-	get graph$() { return { asObservable: vi.fn() }; },
-	get changes$() { return { asObservable: vi.fn() }; }
+	get currentGraph() {
+		return {};
+	},
+	get nodes() {
+		return [];
+	},
+	get relationships() {
+		return [];
+	},
+	get graph$() {
+		return { asObservable: vi.fn() };
+	},
+	get changes$() {
+		return { asObservable: vi.fn() };
+	},
 } as any;
 
 describe('PlannerAgent', () => {
@@ -41,16 +51,16 @@ describe('PlannerAgent', () => {
 					name: 'planning',
 					description: 'Plan project features and architecture',
 					inputs: [{ name: 'requirements', type: 'string', required: false }],
-					outputs: [{ name: 'plan', type: 'object' }]
-				}
+					outputs: [{ name: 'plan', type: 'object' }],
+				},
 			],
 			aiProvider: {
 				provider: 'openai',
 				model: 'gpt-4',
-				temperature: 0.7
+				temperature: 0.7,
 			},
 			priority: 5,
-			isEnabled: true
+			isEnabled: true,
 		};
 
 		plannerAgent = new PlannerAgent(mockConfig, mockMemoryGraph);
@@ -67,7 +77,7 @@ describe('PlannerAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			expect(plannerAgent.canExecuteTask(task)).toBe(true);
@@ -83,7 +93,7 @@ describe('PlannerAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			expect(plannerAgent.canExecuteTask(task)).toBe(true);
@@ -99,7 +109,7 @@ describe('PlannerAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			expect(plannerAgent.canExecuteTask(task)).toBe(true);
@@ -115,7 +125,7 @@ describe('PlannerAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			expect(plannerAgent.canExecuteTask(task)).toBe(true);
@@ -131,7 +141,7 @@ describe('PlannerAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			expect(plannerAgent.canExecuteTask(task)).toBe(true);
@@ -147,7 +157,7 @@ describe('PlannerAgent', () => {
 				priority: 'low',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			expect(plannerAgent.canExecuteTask(task)).toBe(false);
@@ -164,10 +174,10 @@ describe('PlannerAgent', () => {
 				status: 'pending',
 				priority: 'medium',
 				inputs: {
-					requirements: 'Create a web application with user authentication and data management'
+					requirements: 'Create a web application with user authentication and data management',
 				},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -190,7 +200,7 @@ describe('PlannerAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -209,7 +219,7 @@ describe('PlannerAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -228,7 +238,7 @@ describe('PlannerAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -247,7 +257,7 @@ describe('PlannerAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -266,7 +276,7 @@ describe('PlannerAgent', () => {
 				priority: 'low',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -285,7 +295,7 @@ describe('PlannerAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -304,7 +314,7 @@ describe('PlannerAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -325,7 +335,7 @@ describe('PlannerAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -344,7 +354,7 @@ describe('PlannerAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -365,7 +375,7 @@ describe('PlannerAgent', () => {
 				priority: 'high',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -384,7 +394,7 @@ describe('PlannerAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			const result = await plannerAgent.executeTask(task);
@@ -405,7 +415,7 @@ describe('PlannerAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			await plannerAgent.executeTask(task);
@@ -423,7 +433,7 @@ describe('PlannerAgent', () => {
 				priority: 'medium',
 				inputs: {},
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			await plannerAgent.executeTask(task);

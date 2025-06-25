@@ -28,7 +28,6 @@ export interface IValidEmbeddedLanguagesMap {
 }
 
 export class TMScopeRegistry {
-
 	private _scopeNameToLanguageRegistration: { [scopeName: string]: IValidGrammarDefinition };
 
 	constructor() {
@@ -45,8 +44,8 @@ export class TMScopeRegistry {
 			if (!resources.isEqual(existingRegistration.location, def.location)) {
 				console.warn(
 					`Overwriting grammar scope name to file mapping for scope ${def.scopeName}.\n` +
-					`Old grammar file: ${existingRegistration.location.toString()}.\n` +
-					`New grammar file: ${def.location.toString()}`
+						`Old grammar file: ${existingRegistration.location.toString()}.\n` +
+						`New grammar file: ${def.location.toString()}`
 				);
 			}
 		}

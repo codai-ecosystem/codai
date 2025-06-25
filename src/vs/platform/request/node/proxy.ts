@@ -23,7 +23,11 @@ export interface IOptions {
 	strictSSL?: boolean;
 }
 
-export async function getProxyAgent(rawRequestURL: string, env: typeof process.env, options: IOptions = {}): Promise<Agent> {
+export async function getProxyAgent(
+	rawRequestURL: string,
+	env: typeof process.env,
+	options: IOptions = {}
+): Promise<Agent> {
 	const requestURL = parseUrl(rawRequestURL);
 	const proxyURL = options.proxyUrl || getSystemProxyURI(requestURL, env);
 
@@ -39,7 +43,9 @@ export async function getProxyAgent(rawRequestURL: string, env: typeof process.e
 
 	const opts = {
 		host: proxyEndpoint.hostname || '',
-		port: (proxyEndpoint.port ? +proxyEndpoint.port : 0) || (proxyEndpoint.protocol === 'https' ? 443 : 80),
+		port:
+			(proxyEndpoint.port ? +proxyEndpoint.port : 0) ||
+			(proxyEndpoint.protocol === 'https' ? 443 : 80),
 		auth: proxyEndpoint.auth,
 		rejectUnauthorized: isBoolean(options.strictSSL) ? options.strictSSL : true,
 	};

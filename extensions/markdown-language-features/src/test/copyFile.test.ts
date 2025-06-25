@@ -8,29 +8,35 @@ import 'mocha';
 import * as vscode from 'vscode';
 import { resolveCopyDestination } from '../languageFeatures/copyFiles/copyFiles';
 
-
 suite('resolveCopyDestination', () => {
-
 	test('Relative destinations should resolve next to document', async () => {
 		const documentUri = vscode.Uri.parse('test://projects/project/sub/readme.md');
 
 		{
-			const dest = resolveCopyDestination(documentUri, 'img.png', '${fileName}', () => vscode.Uri.parse('test://projects/project/'));
+			const dest = resolveCopyDestination(documentUri, 'img.png', '${fileName}', () =>
+				vscode.Uri.parse('test://projects/project/')
+			);
 			assert.strictEqual(dest.toString(), 'test://projects/project/sub/img.png');
 		}
 		{
-			const dest = resolveCopyDestination(documentUri, 'img.png', './${fileName}', () => vscode.Uri.parse('test://projects/project/'));
+			const dest = resolveCopyDestination(documentUri, 'img.png', './${fileName}', () =>
+				vscode.Uri.parse('test://projects/project/')
+			);
 			assert.strictEqual(dest.toString(), 'test://projects/project/sub/img.png');
 		}
 		{
-			const dest = resolveCopyDestination(documentUri, 'img.png', '../${fileName}', () => vscode.Uri.parse('test://projects/project/'));
+			const dest = resolveCopyDestination(documentUri, 'img.png', '../${fileName}', () =>
+				vscode.Uri.parse('test://projects/project/')
+			);
 			assert.strictEqual(dest.toString(), 'test://projects/project/img.png');
 		}
 	});
 
 	test('Destination starting with / should go to workspace root', async () => {
 		const documentUri = vscode.Uri.parse('test://projects/project/sub/readme.md');
-		const dest = resolveCopyDestination(documentUri, 'img.png', '/${fileName}', () => vscode.Uri.parse('test://projects/project/'));
+		const dest = resolveCopyDestination(documentUri, 'img.png', '/${fileName}', () =>
+			vscode.Uri.parse('test://projects/project/')
+		);
 
 		assert.strictEqual(dest.toString(), 'test://projects/project/img.png');
 	});
@@ -45,17 +51,23 @@ suite('resolveCopyDestination', () => {
 	test('If path ends in /, we should automatically add the fileName', async () => {
 		{
 			const documentUri = vscode.Uri.parse('test://projects/project/sub/readme.md');
-			const dest = resolveCopyDestination(documentUri, 'img.png', 'images/', () => vscode.Uri.parse('test://projects/project/'));
+			const dest = resolveCopyDestination(documentUri, 'img.png', 'images/', () =>
+				vscode.Uri.parse('test://projects/project/')
+			);
 			assert.strictEqual(dest.toString(), 'test://projects/project/sub/images/img.png');
 		}
 		{
 			const documentUri = vscode.Uri.parse('test://projects/project/sub/readme.md');
-			const dest = resolveCopyDestination(documentUri, 'img.png', './', () => vscode.Uri.parse('test://projects/project/'));
+			const dest = resolveCopyDestination(documentUri, 'img.png', './', () =>
+				vscode.Uri.parse('test://projects/project/')
+			);
 			assert.strictEqual(dest.toString(), 'test://projects/project/sub/img.png');
 		}
 		{
 			const documentUri = vscode.Uri.parse('test://projects/project/sub/readme.md');
-			const dest = resolveCopyDestination(documentUri, 'img.png', '/', () => vscode.Uri.parse('test://projects/project/'));
+			const dest = resolveCopyDestination(documentUri, 'img.png', '/', () =>
+				vscode.Uri.parse('test://projects/project/')
+			);
 
 			assert.strictEqual(dest.toString(), 'test://projects/project/img.png');
 		}
@@ -63,14 +75,24 @@ suite('resolveCopyDestination', () => {
 
 	test('Basic transform', async () => {
 		const documentUri = vscode.Uri.parse('test://projects/project/sub/readme.md');
-		const dest = resolveCopyDestination(documentUri, 'img.png', '${fileName/.png/.gif/}', () => undefined);
+		const dest = resolveCopyDestination(
+			documentUri,
+			'img.png',
+			'${fileName/.png/.gif/}',
+			() => undefined
+		);
 
 		assert.strictEqual(dest.toString(), 'test://projects/project/sub/img.gif');
 	});
 
 	test('Transforms should support capture groups', async () => {
 		const documentUri = vscode.Uri.parse('test://projects/project/sub/readme.md');
-		const dest = resolveCopyDestination(documentUri, 'img.png', '${fileName/(.+)\\.(.+)/$2.$1/}', () => undefined);
+		const dest = resolveCopyDestination(
+			documentUri,
+			'img.png',
+			'${fileName/(.+)\\.(.+)/$2.$1/}',
+			() => undefined
+		);
 
 		assert.strictEqual(dest.toString(), 'test://projects/project/sub/png.img');
 	});
@@ -80,18 +102,29 @@ suite('resolveCopyDestination', () => {
 
 		// Escape leading '$'
 		assert.strictEqual(
-			resolveCopyDestination(documentUri, 'img.png', '\\${fileName}', () => undefined).toString(true),
-			'test://projects/project/sub/${fileName}');
+			resolveCopyDestination(documentUri, 'img.png', '\\${fileName}', () => undefined).toString(
+				true
+			),
+			'test://projects/project/sub/${fileName}'
+		);
 
 		// Escape closing '}'
 		assert.strictEqual(
-			resolveCopyDestination(documentUri, 'img.png', '${fileName\\}', () => undefined).toString(true),
-			'test://projects/project/sub/${fileName\\}');
+			resolveCopyDestination(documentUri, 'img.png', '${fileName\\}', () => undefined).toString(
+				true
+			),
+			'test://projects/project/sub/${fileName\\}'
+		);
 	});
 
 	test('Transforms should support escaped slashes', async () => {
 		const documentUri = vscode.Uri.parse('test://projects/project/sub/readme.md');
-		const dest = resolveCopyDestination(documentUri, 'img.png', '${fileName/(.+)/x\\/y/}.${fileExtName}', () => undefined);
+		const dest = resolveCopyDestination(
+			documentUri,
+			'img.png',
+			'${fileName/(.+)/x\\/y/}.${fileExtName}',
+			() => undefined
+		);
 
 		assert.strictEqual(dest.toString(), 'test://projects/project/sub/x/y.png');
 	});

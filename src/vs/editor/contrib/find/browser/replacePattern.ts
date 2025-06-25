@@ -8,7 +8,7 @@ import { buildReplaceStringWithCasePreserved } from '../../../../base/common/sea
 
 const enum ReplacePatternKind {
 	StaticValue = 0,
-	DynamicPieces = 1
+	DynamicPieces = 1,
 }
 
 /**
@@ -16,7 +16,7 @@ const enum ReplacePatternKind {
  */
 class StaticValueReplacePattern {
 	public readonly kind = ReplacePatternKind.StaticValue;
-	constructor(public readonly staticValue: string) { }
+	constructor(public readonly staticValue: string) {}
 }
 
 /**
@@ -24,11 +24,10 @@ class StaticValueReplacePattern {
  */
 class DynamicPiecesReplacePattern {
 	public readonly kind = ReplacePatternKind.DynamicPieces;
-	constructor(public readonly pieces: ReplacePiece[]) { }
+	constructor(public readonly pieces: ReplacePiece[]) {}
 }
 
 export class ReplacePattern {
-
 	public static fromStaticValue(value: string): ReplacePattern {
 		return new ReplacePattern([ReplacePiece.staticValue(value)]);
 	}
@@ -36,7 +35,7 @@ export class ReplacePattern {
 	private readonly _state: StaticValueReplacePattern | DynamicPiecesReplacePattern;
 
 	public get hasReplacementPatterns(): boolean {
-		return (this._state.kind === ReplacePatternKind.DynamicPieces);
+		return this._state.kind === ReplacePatternKind.DynamicPieces;
 	}
 
 	constructor(pieces: ReplacePiece[] | null) {
@@ -117,7 +116,7 @@ export class ReplacePattern {
 		while (matchIndex > 0) {
 			if (matchIndex < matches.length) {
 				// A match can be undefined
-				const match = (matches[matchIndex] || '');
+				const match = matches[matchIndex] || '';
 				return match + remainder;
 			}
 			remainder = String(matchIndex % 10) + remainder;
@@ -131,7 +130,6 @@ export class ReplacePattern {
  * A replace piece can either be a static string or an index to a specific match.
  */
 export class ReplacePiece {
-
 	public static staticValue(value: string): ReplacePiece {
 		return new ReplacePiece(value, -1, null);
 	}
@@ -160,7 +158,6 @@ export class ReplacePiece {
 }
 
 class ReplacePieceBuilder {
-
 	private readonly _source: string;
 	private _lastCharIndex: number;
 	private readonly _result: ReplacePiece[];
@@ -201,7 +198,6 @@ class ReplacePieceBuilder {
 		this._lastCharIndex = toCharIndex;
 	}
 
-
 	public finalize(): ReplacePattern {
 		this.emitUnchanged(this._source.length);
 		if (this._currentStaticPiece.length !== 0) {
@@ -239,7 +235,6 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 		const chCode = replaceString.charCodeAt(i);
 
 		if (chCode === CharCode.Backslash) {
-
 			// move to next char
 			i++;
 
@@ -287,7 +282,6 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 		}
 
 		if (chCode === CharCode.DollarSign) {
-
 			// move to next char
 			i++;
 

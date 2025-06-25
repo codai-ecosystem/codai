@@ -6,8 +6,18 @@
 import * as vscode from 'vscode';
 import { UriComponents, URI } from '../../../base/common/uri.js';
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
-import { ExtHostTimelineShape, MainThreadTimelineShape, IMainContext, MainContext } from './extHost.protocol.js';
-import { Timeline, TimelineItem, TimelineOptions, TimelineProvider } from '../../contrib/timeline/common/timeline.js';
+import {
+	ExtHostTimelineShape,
+	MainThreadTimelineShape,
+	IMainContext,
+	MainContext,
+} from './extHost.protocol.js';
+import {
+	Timeline,
+	TimelineItem,
+	TimelineOptions,
+	TimelineProvider,
+} from '../../contrib/timeline/common/timeline.js';
 import { IDisposable, toDisposable, DisposableStore } from '../../../base/common/lifecycle.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { CommandsConverter, ExtHostCommands } from './extHostCommands.js';
@@ -20,7 +30,12 @@ import { isProposedApiEnabled } from '../../services/extensions/common/extension
 
 export interface IExtHostTimeline extends ExtHostTimelineShape {
 	readonly _serviceBrand: undefined;
-	$getTimeline(id: string, uri: UriComponents, options: vscode.TimelineOptions, token: vscode.CancellationToken): Promise<Timeline | undefined>;
+	$getTimeline(
+		id: string,
+		uri: UriComponents,
+		options: vscode.TimelineOptions,
+		token: vscode.CancellationToken
+	): Promise<Timeline | undefined>;
 }
 
 export const IExtHostTimeline = createDecorator<IExtHostTimeline>('IExtHostTimeline');
@@ -30,86 +45,126 @@ export class ExtHostTimeline implements IExtHostTimeline {
 
 	private _proxy: MainThreadTimelineShape;
 
-	private _providers = new Map<string, { provider: TimelineProvider; extension: ExtensionIdentifier }>();
+	private _providers = new Map<
+		string,
+		{ provider: TimelineProvider; extension: ExtensionIdentifier }
+	>();
 
-	private _itemsBySourceAndUriMap = new Map<string, Map<string | undefined, Map<string, vscode.TimelineItem>>>();
+	private _itemsBySourceAndUriMap = new Map<
+		string,
+		Map<string | undefined, Map<string, vscode.TimelineItem>>
+	>();
 
-	constructor(
-		mainContext: IMainContext,
-		commands: ExtHostCommands,
-	) {
+	constructor(mainContext: IMainContext, commands: ExtHostCommands) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadTimeline);
 
 		commands.registerArgumentProcessor({
 			processArgument: (arg, extension) => {
 				if (arg && arg.$mid === MarshalledId.TimelineActionContext) {
-					if (this._providers.get(arg.source) && extension && isProposedApiEnabled(extension, 'timeline')) {
+					if (
+						this._providers.get(arg.source) &&
+						extension &&
+						isProposedApiEnabled(extension, 'timeline')
+					) {
 						const uri = arg.uri === undefined ? undefined : URI.revive(arg.uri);
-						return this._itemsBySourceAndUriMap.get(arg.source)?.get(getUriKey(uri))?.get(arg.handle);
+						return this._itemsBySourceAndUriMap
+							.get(arg.source)
+							?.get(getUriKey(uri))
+							?.get(arg.handle);
 					} else {
 						return undefined;
 					}
 				}
 				return arg;
-			}
+			},
 		});
 	}
 
-	async $getTimeline(id: string, uri: UriComponents, options: vscode.TimelineOptions, token: vscode.CancellationToken): Promise<Timeline | undefined> {
+	async $getTimeline(
+		id: string,
+		uri: UriComponents,
+		options: vscode.TimelineOptions,
+		token: vscode.CancellationToken
+	): Promise<Timeline | undefined> {
 		const item = this._providers.get(id);
 		return item?.provider.provideTimeline(URI.revive(uri), options, token);
 	}
 
-	registerTimelineProvider(scheme: string | string[], provider: vscode.TimelineProvider, extensionId: ExtensionIdentifier, commandConverter: CommandsConverter): IDisposable {
+	registerTimelineProvider(
+		scheme: string | string[],
+		provider: vscode.TimelineProvider,
+		extensionId: ExtensionIdentifier,
+		commandConverter: CommandsConverter
+	): IDisposable {
 		const timelineDisposables = new DisposableStore();
 
-		const convertTimelineItem = this.convertTimelineItem(provider.id, commandConverter, timelineDisposables).bind(this);
+		const convertTimelineItem = this.convertTimelineItem(
+			provider.id,
+			commandConverter,
+			timelineDisposables
+		).bind(this);
 
 		let disposable: IDisposable | undefined;
 		if (provider.onDidChange) {
-			disposable = provider.onDidChange(e => this._proxy.$emitTimelineChangeEvent({ uri: undefined, reset: true, ...e, id: provider.id }), this);
+			disposable = provider.onDidChange(
+				e =>
+					this._proxy.$emitTimelineChangeEvent({
+						uri: undefined,
+						reset: true,
+						...e,
+						id: provider.id,
+					}),
+				this
+			);
 		}
 
 		const itemsBySourceAndUriMap = this._itemsBySourceAndUriMap;
-		return this.registerTimelineProviderCore({
-			...provider,
-			scheme: scheme,
-			onDidChange: undefined,
-			async provideTimeline(uri: URI, options: TimelineOptions, token: CancellationToken) {
-				if (options?.resetCache) {
-					timelineDisposables.clear();
+		return this.registerTimelineProviderCore(
+			{
+				...provider,
+				scheme: scheme,
+				onDidChange: undefined,
+				async provideTimeline(uri: URI, options: TimelineOptions, token: CancellationToken) {
+					if (options?.resetCache) {
+						timelineDisposables.clear();
 
-					// For now, only allow the caching of a single Uri
-					// itemsBySourceAndUriMap.get(provider.id)?.get(getUriKey(uri))?.clear();
-					itemsBySourceAndUriMap.get(provider.id)?.clear();
-				}
+						// For now, only allow the caching of a single Uri
+						// itemsBySourceAndUriMap.get(provider.id)?.get(getUriKey(uri))?.clear();
+						itemsBySourceAndUriMap.get(provider.id)?.clear();
+					}
 
-				const result = await provider.provideTimeline(uri, options, token);
-				if (result === undefined || result === null) {
-					return undefined;
-				}
+					const result = await provider.provideTimeline(uri, options, token);
+					if (result === undefined || result === null) {
+						return undefined;
+					}
 
-				// TODO: Should we bother converting all the data if we aren't caching? Meaning it is being requested by an extension?
+					// TODO: Should we bother converting all the data if we aren't caching? Meaning it is being requested by an extension?
 
-				const convertItem = convertTimelineItem(uri, options);
-				return {
-					...result,
-					source: provider.id,
-					items: result.items.map(convertItem)
-				};
+					const convertItem = convertTimelineItem(uri, options);
+					return {
+						...result,
+						source: provider.id,
+						items: result.items.map(convertItem),
+					};
+				},
+				dispose() {
+					for (const sourceMap of itemsBySourceAndUriMap.values()) {
+						sourceMap.get(provider.id)?.clear();
+					}
+
+					disposable?.dispose();
+					timelineDisposables.dispose();
+				},
 			},
-			dispose() {
-				for (const sourceMap of itemsBySourceAndUriMap.values()) {
-					sourceMap.get(provider.id)?.clear();
-				}
-
-				disposable?.dispose();
-				timelineDisposables.dispose();
-			}
-		}, extensionId);
+			extensionId
+		);
 	}
 
-	private convertTimelineItem(source: string, commandConverter: CommandsConverter, disposables: DisposableStore) {
+	private convertTimelineItem(
+		source: string,
+		commandConverter: CommandsConverter,
+		disposables: DisposableStore
+	) {
 		return (uri: URI, options?: TimelineOptions) => {
 			let items: Map<string, vscode.TimelineItem> | undefined;
 			if (options?.cacheResults) {
@@ -139,12 +194,10 @@ export class ExtHostTimeline implements IExtHostTimeline {
 				if (item.iconPath) {
 					if (iconPath instanceof ThemeIcon) {
 						themeIcon = { id: iconPath.id, color: iconPath.color };
-					}
-					else if (URI.isUri(iconPath)) {
+					} else if (URI.isUri(iconPath)) {
 						icon = iconPath;
 						iconDark = iconPath;
-					}
-					else {
+					} else {
 						({ light: icon, dark: iconDark } = iconPath as { light: URI; dark: URI });
 					}
 				}
@@ -152,16 +205,14 @@ export class ExtHostTimeline implements IExtHostTimeline {
 				let tooltip;
 				if (MarkdownStringType.isMarkdownString(props.tooltip)) {
 					tooltip = MarkdownString.from(props.tooltip);
-				}
-				else if (isString(props.tooltip)) {
+				} else if (isString(props.tooltip)) {
 					tooltip = props.tooltip;
 				}
 				// TODO @jkearl, remove once migration complete.
 				else if (MarkdownStringType.isMarkdownString((props as any).detail)) {
 					console.warn('Using deprecated TimelineItem.detail, migrate to TimelineItem.tooltip');
 					tooltip = MarkdownString.from((props as any).detail);
-				}
-				else if (isString((props as any).detail)) {
+				} else if (isString((props as any).detail)) {
 					console.warn('Using deprecated TimelineItem.detail, migrate to TimelineItem.tooltip');
 					tooltip = (props as any).detail;
 				}
@@ -171,18 +222,23 @@ export class ExtHostTimeline implements IExtHostTimeline {
 					id: props.id ?? undefined,
 					handle: handle,
 					source: source,
-					command: item.command ? commandConverter.toInternal(item.command, disposables) : undefined,
+					command: item.command
+						? commandConverter.toInternal(item.command, disposables)
+						: undefined,
 					icon: icon,
 					iconDark: iconDark,
 					themeIcon: themeIcon,
 					tooltip,
-					accessibilityInformation: item.accessibilityInformation
+					accessibilityInformation: item.accessibilityInformation,
 				};
 			};
 		};
 	}
 
-	private registerTimelineProviderCore(provider: TimelineProvider, extension: ExtensionIdentifier): IDisposable {
+	private registerTimelineProviderCore(
+		provider: TimelineProvider,
+		extension: ExtensionIdentifier
+	): IDisposable {
 		// console.log(`ExtHostTimeline#registerTimelineProvider: id=${provider.id}`);
 
 		const existing = this._providers.get(provider.id);
@@ -193,7 +249,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 		this._proxy.$registerTimelineProvider({
 			id: provider.id,
 			label: provider.label,
-			scheme: provider.scheme
+			scheme: provider.scheme,
 		});
 		this._providers.set(provider.id, { provider, extension });
 

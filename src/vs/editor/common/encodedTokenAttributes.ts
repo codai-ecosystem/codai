@@ -8,7 +8,7 @@
  */
 export const enum LanguageId {
 	Null = 0,
-	PlainText = 1
+	PlainText = 1,
 }
 
 /**
@@ -29,7 +29,7 @@ export const enum FontStyle {
 export const enum ColorId {
 	None = 0,
 	DefaultForeground = 1,
-	DefaultBackground = 2
+	DefaultBackground = 2,
 }
 
 /**
@@ -39,7 +39,7 @@ export const enum StandardTokenType {
 	Other = 0,
 	Comment = 1,
 	String = 2,
-	RegEx = 3
+	RegEx = 3,
 }
 
 /**
@@ -81,7 +81,7 @@ export const enum MetadataConsts {
 	// use the first 8 bits for control purposes
 	SEMANTIC_USE_ITALIC /*        */ = 0b00000000_00000000_00000000_00000001,
 	SEMANTIC_USE_BOLD /*          */ = 0b00000000_00000000_00000000_00000010,
-	SEMANTIC_USE_UNDERLINE  /*    */ = 0b00000000_00000000_00000000_00000100,
+	SEMANTIC_USE_UNDERLINE /*    */ = 0b00000000_00000000_00000000_00000100,
 	SEMANTIC_USE_STRIKETHROUGH /* */ = 0b00000000_00000000_00000000_00001000,
 	SEMANTIC_USE_FOREGROUND /*    */ = 0b00000000_00000000_00000000_00010000,
 	SEMANTIC_USE_BACKGROUND /*    */ = 0b00000000_00000000_00000000_00100000,
@@ -91,13 +91,12 @@ export const enum MetadataConsts {
 	BALANCED_BRACKETS_OFFSET = 10,
 	FONT_STYLE_OFFSET = 11,
 	FOREGROUND_OFFSET = 15,
-	BACKGROUND_OFFSET = 24
+	BACKGROUND_OFFSET = 24,
 }
 
 /**
  */
 export class TokenMetadata {
-
 	public static getLanguageId(metadata: number): LanguageId {
 		return (metadata & MetadataConsts.LANGUAGEID_MASK) >>> MetadataConsts.LANGUAGEID_OFFSET;
 	}
@@ -163,7 +162,6 @@ export class TokenMetadata {
 		}
 		if (textDecoration) {
 			result += `text-decoration:${textDecoration};`;
-
 		}
 		return result;
 	}

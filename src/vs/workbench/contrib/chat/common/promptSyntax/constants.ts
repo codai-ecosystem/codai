@@ -31,7 +31,11 @@ export const MODE_LANGUAGE_ID = 'chatmode';
 /**
  * Prompt and instructions files language selector.
  */
-export const ALL_PROMPTS_LANGUAGE_SELECTOR: LanguageSelector = [PROMPT_LANGUAGE_ID, INSTRUCTIONS_LANGUAGE_ID, MODE_LANGUAGE_ID];
+export const ALL_PROMPTS_LANGUAGE_SELECTOR: LanguageSelector = [
+	PROMPT_LANGUAGE_ID,
+	INSTRUCTIONS_LANGUAGE_ID,
+	MODE_LANGUAGE_ID,
+];
 
 /**
  * The language id for for a prompts type.

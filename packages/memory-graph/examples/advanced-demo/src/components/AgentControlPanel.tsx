@@ -12,11 +12,10 @@ interface AgentControlPanelProps {
  * A control panel for interacting with the AgentRuntime
  * Allows users to create new tasks and monitor agent activities
  */
-export const AgentControlPanel = ({
-	agentRuntime,
-	onTaskSubmit
-}: AgentControlPanelProps) => {
-	const [activeTab, setActiveTab] = useState<'planner' | 'builder' | 'designer' | 'tester' | 'deployer'>('planner');
+export const AgentControlPanel = ({ agentRuntime, onTaskSubmit }: AgentControlPanelProps) => {
+	const [activeTab, setActiveTab] = useState<
+		'planner' | 'builder' | 'designer' | 'tester' | 'deployer'
+	>('planner');
 	const [taskDescription, setTaskDescription] = useState('');
 	const [isProcessing, setIsProcessing] = useState(false);
 
@@ -26,7 +25,7 @@ export const AgentControlPanel = ({
 		builder: 'Build the component for',
 		designer: 'Design the UI/UX for',
 		tester: 'Create tests for',
-		deployer: 'Create deployment configuration for'
+		deployer: 'Create deployment configuration for',
 	};
 
 	// Function to handle task submission
@@ -110,12 +109,14 @@ export const AgentControlPanel = ({
 			<div className="task-form">
 				<div className="form-header">
 					<h3>New {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Task</h3>
-					<button className="template-btn" onClick={useTemplate}>Use Template</button>
+					<button className="template-btn" onClick={useTemplate}>
+						Use Template
+					</button>
 				</div>
 
 				<textarea
 					value={taskDescription}
-					onChange={(e) => setTaskDescription(e.target.value)}
+					onChange={e => setTaskDescription(e.target.value)}
 					placeholder={`Enter a description for the ${activeTab} task...`}
 					rows={4}
 				/>

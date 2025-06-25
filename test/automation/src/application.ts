@@ -13,7 +13,7 @@ export const enum Quality {
 	Insiders,
 	Stable,
 	Exploration,
-	OSS
+	OSS,
 }
 
 export interface ApplicationOptions extends LaunchOptions {
@@ -22,17 +22,20 @@ export interface ApplicationOptions extends LaunchOptions {
 }
 
 export class Application {
-
 	constructor(private options: ApplicationOptions) {
 		this._userDataPath = options.userDataDir;
 		this._workspacePathOrFolder = options.workspacePath;
 	}
 
 	private _code: Code | undefined;
-	get code(): Code { return this._code!; }
+	get code(): Code {
+		return this._code!;
+	}
 
 	private _workbench: Workbench | undefined;
-	get workbench(): Workbench { return this._workbench!; }
+	get workbench(): Workbench {
+		return this._workbench!;
+	}
 
 	get quality(): Quality {
 		return this.options.quality;
@@ -66,7 +69,9 @@ export class Application {
 
 	private _profiler: Profiler | undefined;
 
-	get profiler(): Profiler { return this._profiler!; }
+	get profiler(): Profiler {
+		return this._profiler!;
+	}
 
 	async start(): Promise<void> {
 		await this._start();
@@ -74,20 +79,32 @@ export class Application {
 	}
 
 	async restart(options?: { workspaceOrFolder?: string; extraArgs?: string[] }): Promise<void> {
-		await measureAndLog(() => (async () => {
-			await this.stop();
-			await this._start(options?.workspaceOrFolder, options?.extraArgs);
-		})(), 'Application#restart()', this.logger);
+		await measureAndLog(
+			() =>
+				(async () => {
+					await this.stop();
+					await this._start(options?.workspaceOrFolder, options?.extraArgs);
+				})(),
+			'Application#restart()',
+			this.logger
+		);
 	}
 
-	private async _start(workspaceOrFolder = this.workspacePathOrFolder, extraArgs: string[] = []): Promise<void> {
+	private async _start(
+		workspaceOrFolder = this.workspacePathOrFolder,
+		extraArgs: string[] = []
+	): Promise<void> {
 		this._workspacePathOrFolder = workspaceOrFolder;
 
 		// Launch Code...
 		const code = await this.startApplication(extraArgs);
 
 		// ...and make sure the window is ready to interact
-		await measureAndLog(() => this.checkWindowReady(code), 'Application#checkWindowReady()', this.logger);
+		await measureAndLog(
+			() => this.checkWindowReady(code),
+			'Application#checkWindowReady()',
+			this.logger
+		);
 	}
 
 	async stop(): Promise<void> {
@@ -109,10 +126,10 @@ export class Application {
 	}
 
 	private async startApplication(extraArgs: string[] = []): Promise<Code> {
-		const code = this._code = await launch({
+		const code = (this._code = await launch({
 			...this.options,
 			extraArgs: [...(this.options.extraArgs || []), ...extraArgs],
-		});
+		}));
 
 		this._workbench = new Workbench(this._code);
 		this._profiler = new Profiler(this.code);
@@ -121,27 +138,48 @@ export class Application {
 	}
 
 	private async checkWindowReady(code: Code): Promise<void> {
-
 		// We need a rendered workbench
-		await measureAndLog(() => code.didFinishLoad(), 'Application#checkWindowReady: wait for navigation to be committed', this.logger);
-		await measureAndLog(() => code.waitForElement('.monaco-workbench'), 'Application#checkWindowReady: wait for .monaco-workbench element', this.logger);
-		await measureAndLog(() => code.whenWorkbenchRestored(), 'Application#checkWorkbenchRestored', this.logger);
+		await measureAndLog(
+			() => code.didFinishLoad(),
+			'Application#checkWindowReady: wait for navigation to be committed',
+			this.logger
+		);
+		await measureAndLog(
+			() => code.waitForElement('.monaco-workbench'),
+			'Application#checkWindowReady: wait for .monaco-workbench element',
+			this.logger
+		);
+		await measureAndLog(
+			() => code.whenWorkbenchRestored(),
+			'Application#checkWorkbenchRestored',
+			this.logger
+		);
 
 		// Remote but not web: wait for a remote connection state change
 		if (this.remote) {
-			await measureAndLog(() => code.waitForTextContent('.monaco-workbench .statusbar-item[id="status.host"]', undefined, statusHostLabel => {
-				this.logger.log(`checkWindowReady: remote indicator text is ${statusHostLabel}`);
+			await measureAndLog(
+				() =>
+					code.waitForTextContent(
+						'.monaco-workbench .statusbar-item[id="status.host"]',
+						undefined,
+						statusHostLabel => {
+							this.logger.log(`checkWindowReady: remote indicator text is ${statusHostLabel}`);
 
-				// The absence of "Opening Remote" is not a strict
-				// indicator for a successful connection, but we
-				// want to avoid hanging here until timeout because
-				// this method is potentially called from a location
-				// that has no tracing enabled making it hard to
-				// diagnose this. As such, as soon as the connection
-				// state changes away from the "Opening Remote..." one
-				// we return.
-				return !statusHostLabel.includes('Opening Remote');
-			}, 300 /* = 30s of retry */), 'Application#checkWindowReady: wait for remote indicator', this.logger);
+							// The absence of "Opening Remote" is not a strict
+							// indicator for a successful connection, but we
+							// want to avoid hanging here until timeout because
+							// this method is potentially called from a location
+							// that has no tracing enabled making it hard to
+							// diagnose this. As such, as soon as the connection
+							// state changes away from the "Opening Remote..." one
+							// we return.
+							return !statusHostLabel.includes('Opening Remote');
+						},
+						300 /* = 30s of retry */
+					),
+				'Application#checkWindowReady: wait for remote indicator',
+				this.logger
+			);
 		}
 	}
 }

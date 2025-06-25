@@ -4,8 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from '../../../../nls.js';
-import { IQuickPickSeparator, IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
-import { IPickerQuickAccessItem, PickerQuickAccessProvider, TriggerAction } from '../../../../platform/quickinput/browser/pickerQuickAccess.js';
+import {
+	IQuickPickSeparator,
+	IQuickInputService,
+} from '../../../../platform/quickinput/common/quickInput.js';
+import {
+	IPickerQuickAccessItem,
+	PickerQuickAccessProvider,
+	TriggerAction,
+} from '../../../../platform/quickinput/browser/pickerQuickAccess.js';
 import { matchesFuzzy } from '../../../../base/common/filters.js';
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 import { ITaskService, Task } from '../common/taskService.js';
@@ -21,7 +28,6 @@ import { IThemeService } from '../../../../platform/theme/common/themeService.js
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 
 export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
-
 	static PREFIX = 'task ';
 
 	constructor(
@@ -36,17 +42,29 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 	) {
 		super(TasksQuickAccessProvider.PREFIX, {
 			noResultsPick: {
-				label: localize('noTaskResults', "No matching tasks")
-			}
+				label: localize('noTaskResults', 'No matching tasks'),
+			},
 		});
 	}
 
-	protected async _getPicks(filter: string, disposables: DisposableStore, token: CancellationToken): Promise<Array<IPickerQuickAccessItem | IQuickPickSeparator>> {
+	protected async _getPicks(
+		filter: string,
+		disposables: DisposableStore,
+		token: CancellationToken
+	): Promise<Array<IPickerQuickAccessItem | IQuickPickSeparator>> {
 		if (token.isCancellationRequested) {
 			return [];
 		}
 
-		const taskQuickPick = new TaskQuickPick(this._taskService, this._configurationService, this._quickInputService, this._notificationService, this._themeService, this._dialogService, this._storageService);
+		const taskQuickPick = new TaskQuickPick(
+			this._taskService,
+			this._configurationService,
+			this._quickInputService,
+			this._notificationService,
+			this._themeService,
+			this._dialogService,
+			this._storageService
+		);
 		const topLevelPicks = await taskQuickPick.getTopLevelEntries();
 		const taskPicks: Array<IPickerQuickAccessItem | IQuickPickSeparator> = [];
 
@@ -63,9 +81,9 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 			const task: Task | ConfiguringTask | string = (<ITaskTwoLevelQuickPickEntry>entry).task!;
 			const quickAccessEntry: IPickerQuickAccessItem = <ITaskTwoLevelQuickPickEntry>entry;
 			quickAccessEntry.highlights = { label: highlights };
-			quickAccessEntry.trigger = (index) => {
-				if ((index === 1) && (quickAccessEntry.buttons?.length === 2)) {
-					const key = (task && !isString(task)) ? task.getKey() : undefined;
+			quickAccessEntry.trigger = index => {
+				if (index === 1 && quickAccessEntry.buttons?.length === 2) {
+					const key = task && !isString(task) ? task.getKey() : undefined;
 					if (key) {
 						this._taskService.removeRecentlyUsedTask(key);
 					}
@@ -82,7 +100,11 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 			quickAccessEntry.accept = async () => {
 				if (isString(task)) {
 					// switch to quick pick and show second level
-					const showResult = await taskQuickPick.show(localize('TaskService.pickRunTask', 'Select the task to run'), undefined, task);
+					const showResult = await taskQuickPick.show(
+						localize('TaskService.pickRunTask', 'Select the task to run'),
+						undefined,
+						task
+					);
 					if (showResult) {
 						this._taskService.run(showResult, { attachProblemMatcher: true });
 					}

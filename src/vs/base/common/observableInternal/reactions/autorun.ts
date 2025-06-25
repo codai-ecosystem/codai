@@ -14,18 +14,17 @@ import { AutorunObserver } from './autorunImpl.js';
  * {@link fn} should start with a JS Doc using `@description` to name the autorun.
  */
 export function autorun(fn: (reader: IReaderWithStore) => void): IDisposable {
-	return new AutorunObserver(
-		new DebugNameData(undefined, undefined, fn),
-		fn,
-		undefined
-	);
+	return new AutorunObserver(new DebugNameData(undefined, undefined, fn), fn, undefined);
 }
 
 /**
  * Runs immediately and whenever a transaction ends and an observed observable changed.
  * {@link fn} should start with a JS Doc using `@description` to name the autorun.
  */
-export function autorunOpts(options: IDebugNameData & {}, fn: (reader: IReaderWithStore) => void): IDisposable {
+export function autorunOpts(
+	options: IDebugNameData & {},
+	fn: (reader: IReaderWithStore) => void
+): IDisposable {
 	return new AutorunObserver(
 		new DebugNameData(options.owner, options.debugName, options.debugReferenceFn ?? fn),
 		fn,
@@ -90,7 +89,9 @@ export function autorunWithStoreHandleChanges<TChangeSummary>(
  *
  * @deprecated Use `autorun(reader => { reader.store.add(...) })` instead!
  */
-export function autorunWithStore(fn: (reader: IReader, store: DisposableStore) => void): IDisposable {
+export function autorunWithStore(
+	fn: (reader: IReader, store: DisposableStore) => void
+): IDisposable {
 	const store = new DisposableStore();
 	const disposable = autorunOpts(
 		{
@@ -114,7 +115,7 @@ export function autorunDelta<T>(
 	handler: (args: { lastValue: T | undefined; newValue: T }) => void
 ): IDisposable {
 	let _lastValue: T | undefined;
-	return autorunOpts({ debugReferenceFn: handler }, (reader) => {
+	return autorunOpts({ debugReferenceFn: handler }, reader => {
 		const newValue = observable.read(reader);
 		const lastValue = _lastValue;
 		_lastValue = newValue;
@@ -128,7 +129,7 @@ export function autorunIterableDelta<T>(
 	getUniqueIdentifier: (value: T) => unknown = v => v
 ) {
 	const lastValues = new Map<unknown, T>();
-	return autorunOpts({ debugReferenceFn: getValue }, (reader) => {
+	return autorunOpts({ debugReferenceFn: getValue }, reader => {
 		const newValues = new Map();
 		const removedValues = new Map(lastValues);
 		for (const value of getValue(reader)) {

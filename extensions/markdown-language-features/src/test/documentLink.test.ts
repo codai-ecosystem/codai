@@ -24,13 +24,16 @@ function workspaceFile(...segments: string[]) {
 
 async function getLinksForFile(file: vscode.Uri): Promise<vscode.DocumentLink[]> {
 	debugLog('getting links', file.toString(), Date.now());
-	const r = (await vscode.commands.executeCommand<vscode.DocumentLink[]>('vscode.executeLinkProvider', file, /*linkResolveCount*/ 100))!;
+	const r = (await vscode.commands.executeCommand<vscode.DocumentLink[]>(
+		'vscode.executeLinkProvider',
+		file,
+		/*linkResolveCount*/ 100
+	))!;
 	debugLog('got links', file.toString(), Date.now());
 	return r;
 }
 
 (vscode.env.uiKind === vscode.UIKind.Web ? suite.skip : suite)('Markdown Document links', () => {
-
 	setup(async () => {
 		// the tests make the assumption that link providers are already registered
 		await vscode.extensions.getExtension('vscode.markdown-language-features')!.activate();
@@ -116,10 +119,7 @@ async function getLinksForFile(file: vscode.Uri): Promise<vscode.DocumentLink[]>
 	});
 
 	test('Should navigate to fragment within current file', async () => {
-		await withFileContents(testFileA, joinLines(
-			'[](a#header)',
-			'[](#header)',
-			'# Header'));
+		await withFileContents(testFileA, joinLines('[](a#header)', '[](#header)', '# Header'));
 
 		const links = await getLinksForFile(testFileA);
 		{
@@ -134,11 +134,10 @@ async function getLinksForFile(file: vscode.Uri): Promise<vscode.DocumentLink[]>
 		}
 	});
 
-	test.skip('Should navigate to fragment within current untitled file', async () => { // TODO: skip for now for ls migration
+	test.skip('Should navigate to fragment within current untitled file', async () => {
+		// TODO: skip for now for ls migration
 		const testFile = workspaceFile('x.md').with({ scheme: 'untitled' });
-		await withFileContents(testFile, joinLines(
-			'[](#second)',
-			'# Second'));
+		await withFileContents(testFile, joinLines('[](#second)', '# Second'));
 
 		const [link] = await getLinksForFile(testFile);
 		await executeLink(link);
@@ -148,12 +147,8 @@ async function getLinksForFile(file: vscode.Uri): Promise<vscode.DocumentLink[]>
 	});
 });
 
-
 function assertActiveDocumentUri(expectedUri: vscode.Uri) {
-	assert.strictEqual(
-		vscode.window.activeTextEditor!.document.uri.fsPath,
-		expectedUri.fsPath
-	);
+	assert.strictEqual(vscode.window.activeTextEditor!.document.uri.fsPath, expectedUri.fsPath);
 }
 
 async function withFileContents(file: vscode.Uri, contents: string): Promise<void> {

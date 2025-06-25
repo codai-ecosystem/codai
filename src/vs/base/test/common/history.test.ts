@@ -7,7 +7,6 @@ import { HistoryNavigator, HistoryNavigator2 } from '../../common/history.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('History Navigator', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('create reduces the input to limit', () => {
@@ -183,7 +182,6 @@ suite('History Navigator', () => {
 });
 
 suite('History Navigator 2', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('constructor', () => {
@@ -290,5 +288,4 @@ suite('History Navigator 2', () => {
 		assert.ok(testObject.isAtEnd());
 		assert.deepStrictEqual(Array.from(testObject), ['0', '1', '2', '3', '4']);
 	});
-
 });

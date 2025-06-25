@@ -18,7 +18,6 @@ import { WorkerTextModelSyncClient } from '../../../../editor/common/services/te
 import { FileAccess } from '../../../../base/common/network.js';
 
 export class OutputLinkProvider extends Disposable {
-
 	private static readonly DISPOSE_WORKER_TIME = 3 * 60 * 1000; // dispose worker after 3 minutes of inactivity
 
 	private worker?: OutputLinkWorkerClient;
@@ -28,33 +27,43 @@ export class OutputLinkProvider extends Disposable {
 	constructor(
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 		@IModelService private readonly modelService: IModelService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService
 	) {
 		super();
 
-		this.disposeWorkerScheduler = new RunOnceScheduler(() => this.disposeWorker(), OutputLinkProvider.DISPOSE_WORKER_TIME);
+		this.disposeWorkerScheduler = new RunOnceScheduler(
+			() => this.disposeWorker(),
+			OutputLinkProvider.DISPOSE_WORKER_TIME
+		);
 
 		this.registerListeners();
 		this.updateLinkProviderWorker();
 	}
 
 	private registerListeners(): void {
-		this._register(this.contextService.onDidChangeWorkspaceFolders(() => this.updateLinkProviderWorker()));
+		this._register(
+			this.contextService.onDidChangeWorkspaceFolders(() => this.updateLinkProviderWorker())
+		);
 	}
 
 	private updateLinkProviderWorker(): void {
-
 		// Setup link provider depending on folders being opened or not
 		const folders = this.contextService.getWorkspace().folders;
 		if (folders.length > 0) {
 			if (!this.linkProviderRegistration) {
-				this.linkProviderRegistration = this.languageFeaturesService.linkProvider.register([{ language: OUTPUT_MODE_ID, scheme: '*' }, { language: LOG_MODE_ID, scheme: '*' }], {
-					provideLinks: async model => {
-						const links = await this.provideLinks(model.uri);
+				this.linkProviderRegistration = this.languageFeaturesService.linkProvider.register(
+					[
+						{ language: OUTPUT_MODE_ID, scheme: '*' },
+						{ language: LOG_MODE_ID, scheme: '*' },
+					],
+					{
+						provideLinks: async model => {
+							const links = await this.provideLinks(model.uri);
 
-						return links && { links };
+							return links && { links };
+						},
 					}
-				});
+				);
 			}
 		} else {
 			dispose(this.linkProviderRegistration);
@@ -95,19 +104,26 @@ class OutputLinkWorkerClient extends Disposable {
 
 	constructor(
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IModelService modelService: IModelService,
+		@IModelService modelService: IModelService
 	) {
 		super();
-		this._workerClient = this._register(createWebWorker<OutputLinkComputer>(
-			FileAccess.asBrowserUri('vs/workbench/contrib/output/common/outputLinkComputerMain.js'),
-			'OutputLinkDetectionWorker'
-		));
-		this._workerTextModelSyncClient = WorkerTextModelSyncClient.create(this._workerClient, modelService);
+		this._workerClient = this._register(
+			createWebWorker<OutputLinkComputer>(
+				FileAccess.asBrowserUri('vs/workbench/contrib/output/common/outputLinkComputerMain.js'),
+				'OutputLinkDetectionWorker'
+			)
+		);
+		this._workerTextModelSyncClient = WorkerTextModelSyncClient.create(
+			this._workerClient,
+			modelService
+		);
 		this._initializeBarrier = this._ensureWorkspaceFolders();
 	}
 
 	private async _ensureWorkspaceFolders(): Promise<void> {
-		await this._workerClient.proxy.$setWorkspaceFolders(this.contextService.getWorkspace().folders.map(folder => folder.uri.toString()));
+		await this._workerClient.proxy.$setWorkspaceFolders(
+			this.contextService.getWorkspace().folders.map(folder => folder.uri.toString())
+		);
 	}
 
 	public async provideLinks(modelUri: URI): Promise<ILink[]> {

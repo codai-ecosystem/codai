@@ -5,17 +5,21 @@
 
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { EditorsOrder, IEditorIdentifier } from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
 import { IWorkingCopy, IWorkingCopyIdentifier } from './workingCopy.js';
 import { Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
 import { IEditorService } from '../../editor/common/editorService.js';
 
-export const IWorkingCopyEditorService = createDecorator<IWorkingCopyEditorService>('workingCopyEditorService');
+export const IWorkingCopyEditorService = createDecorator<IWorkingCopyEditorService>(
+	'workingCopyEditorService'
+);
 
 export interface IWorkingCopyEditorHandler {
-
 	/**
 	 * Whether the handler is capable of opening the specific backup in
 	 * an editor.
@@ -34,7 +38,6 @@ export interface IWorkingCopyEditorHandler {
 }
 
 export interface IWorkingCopyEditorService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -54,7 +57,6 @@ export interface IWorkingCopyEditorService {
 }
 
 export class WorkingCopyEditorService extends Disposable implements IWorkingCopyEditorService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidRegisterHandler = this._register(new Emitter<IWorkingCopyEditorHandler>());
@@ -67,7 +69,6 @@ export class WorkingCopyEditorService extends Disposable implements IWorkingCopy
 	}
 
 	registerHandler(handler: IWorkingCopyEditorHandler): IDisposable {
-
 		// Add to registry and emit as event
 		this.handlers.add(handler);
 		this._onDidRegisterHandler.fire(handler);
@@ -76,7 +77,9 @@ export class WorkingCopyEditorService extends Disposable implements IWorkingCopy
 	}
 
 	findEditor(workingCopy: IWorkingCopy): IEditorIdentifier | undefined {
-		for (const editorIdentifier of this.editorService.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
+		for (const editorIdentifier of this.editorService.getEditors(
+			EditorsOrder.MOST_RECENTLY_ACTIVE
+		)) {
 			if (this.isOpen(workingCopy, editorIdentifier.editor)) {
 				return editorIdentifier;
 			}

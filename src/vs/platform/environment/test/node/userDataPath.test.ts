@@ -10,7 +10,6 @@ import { getUserDataPath } from '../../node/userDataPath.js';
 import product from '../../../product/common/product.js';
 
 suite('User data path', () => {
-
 	test('getUserDataPath - default', () => {
 		const path = getUserDataPath(parseArgs(process.argv, OPTIONS), product.nameShort);
 		assert.ok(path.length > 0);

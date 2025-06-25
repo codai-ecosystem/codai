@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ActionViewItem, IActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
+import {
+	ActionViewItem,
+	IActionViewItemOptions,
+} from '../../../../base/browser/ui/actionbar/actionViewItems.js';
 import { Action, IAction, Separator } from '../../../../base/common/actions.js';
 import { disposeIfDisposable } from '../../../../base/common/lifecycle.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
@@ -12,14 +15,20 @@ import { IContextMenuService } from '../../../../platform/contextview/browser/co
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { manageExtensionIcon } from '../../extensions/browser/extensionsIcons.js';
 import { getDomNodePagePosition } from '../../../../base/browser/dom.js';
-import { IMcpServer, IMcpServerContainer, IMcpService, IMcpWorkbenchService, IWorkbenchMcpServer, McpConnectionState } from '../common/mcpTypes.js';
+import {
+	IMcpServer,
+	IMcpServerContainer,
+	IMcpService,
+	IMcpWorkbenchService,
+	IWorkbenchMcpServer,
+	McpConnectionState,
+} from '../common/mcpTypes.js';
 import { IMcpRegistry } from '../common/mcpRegistryTypes.js';
 import { URI } from '../../../../base/common/uri.js';
 import { Location } from '../../../../editor/common/languages.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 
 export abstract class McpServerAction extends Action implements IMcpServerContainer {
-
 	static readonly EXTENSION_ACTION_CLASS = 'extension-action';
 	static readonly TEXT_ACTION_CLASS = `${McpServerAction.EXTENSION_ACTION_CLASS} text`;
 	static readonly LABEL_ACTION_CLASS = `${McpServerAction.EXTENSION_ACTION_CLASS} label`;
@@ -27,14 +36,18 @@ export abstract class McpServerAction extends Action implements IMcpServerContai
 	static readonly ICON_ACTION_CLASS = `${McpServerAction.EXTENSION_ACTION_CLASS} icon`;
 
 	private _mcpServer: IWorkbenchMcpServer | null = null;
-	get mcpServer(): IWorkbenchMcpServer | null { return this._mcpServer; }
-	set mcpServer(mcpServer: IWorkbenchMcpServer | null) { this._mcpServer = mcpServer; this.update(); }
+	get mcpServer(): IWorkbenchMcpServer | null {
+		return this._mcpServer;
+	}
+	set mcpServer(mcpServer: IWorkbenchMcpServer | null) {
+		this._mcpServer = mcpServer;
+		this.update();
+	}
 
 	abstract update(): void;
 }
 
 export abstract class DropDownAction extends McpServerAction {
-
 	constructor(
 		id: string,
 		label: string,
@@ -47,7 +60,11 @@ export abstract class DropDownAction extends McpServerAction {
 
 	private _actionViewItem: DropDownExtensionActionViewItem | null = null;
 	createActionViewItem(options: IActionViewItemOptions): DropDownExtensionActionViewItem {
-		this._actionViewItem = this.instantiationService.createInstance(DropDownExtensionActionViewItem, this, options);
+		this._actionViewItem = this.instantiationService.createInstance(
+			DropDownExtensionActionViewItem,
+			this,
+			options
+		);
 		return this._actionViewItem;
 	}
 
@@ -58,7 +75,6 @@ export abstract class DropDownAction extends McpServerAction {
 }
 
 export class DropDownExtensionActionViewItem extends ActionViewItem {
-
 	constructor(
 		action: IAction,
 		options: IActionViewItemOptions,
@@ -71,12 +87,15 @@ export class DropDownExtensionActionViewItem extends ActionViewItem {
 		if (this.element) {
 			const actions = this.getActions(menuActionGroups);
 			const elementPosition = getDomNodePagePosition(this.element);
-			const anchor = { x: elementPosition.left, y: elementPosition.top + elementPosition.height + 10 };
+			const anchor = {
+				x: elementPosition.left,
+				y: elementPosition.top + elementPosition.height + 10,
+			};
 			this.contextMenuService.showContextMenu({
 				getAnchor: () => anchor,
 				getActions: () => actions,
 				actionRunner: this.actionRunner,
-				onHide: () => disposeIfDisposable(actions)
+				onHide: () => disposeIfDisposable(actions),
 			});
 		}
 	}
@@ -91,14 +110,11 @@ export class DropDownExtensionActionViewItem extends ActionViewItem {
 }
 
 export class InstallAction extends McpServerAction {
-
 	static readonly CLASS = `${this.LABEL_ACTION_CLASS} prominent install`;
 	private static readonly HIDE = `${this.CLASS} hide`;
 
-	constructor(
-		@IMcpWorkbenchService private readonly mcpWorkbenchService: IMcpWorkbenchService,
-	) {
-		super('extensions.install', localize('install', "Install"), InstallAction.CLASS, false);
+	constructor(@IMcpWorkbenchService private readonly mcpWorkbenchService: IMcpWorkbenchService) {
+		super('extensions.install', localize('install', 'Install'), InstallAction.CLASS, false);
 		this.update();
 	}
 
@@ -113,7 +129,7 @@ export class InstallAction extends McpServerAction {
 		}
 		this.class = InstallAction.CLASS;
 		this.enabled = true;
-		this.label = localize('install', "Install");
+		this.label = localize('install', 'Install');
 	}
 
 	override async run(): Promise<any> {
@@ -125,14 +141,11 @@ export class InstallAction extends McpServerAction {
 }
 
 export class UninstallAction extends McpServerAction {
-
 	static readonly CLASS = `${this.LABEL_ACTION_CLASS} prominent uninstall`;
 	private static readonly HIDE = `${this.CLASS} hide`;
 
-	constructor(
-		@IMcpWorkbenchService private readonly mcpWorkbenchService: IMcpWorkbenchService,
-	) {
-		super('extensions.uninstall', localize('uninstall', "Uninstall"), UninstallAction.CLASS, false);
+	constructor(@IMcpWorkbenchService private readonly mcpWorkbenchService: IMcpWorkbenchService) {
+		super('extensions.uninstall', localize('uninstall', 'Uninstall'), UninstallAction.CLASS, false);
 		this.update();
 	}
 
@@ -147,7 +160,7 @@ export class UninstallAction extends McpServerAction {
 		}
 		this.class = UninstallAction.CLASS;
 		this.enabled = true;
-		this.label = localize('uninstall', "Uninstall");
+		this.label = localize('uninstall', 'Uninstall');
 	}
 
 	override async run(): Promise<any> {
@@ -159,27 +172,24 @@ export class UninstallAction extends McpServerAction {
 }
 
 export class ManageMcpServerAction extends DropDownAction {
-
 	static readonly ID = 'mcpServer.manage';
 
-	private static readonly Class = `${McpServerAction.ICON_ACTION_CLASS} manage ` + ThemeIcon.asClassName(manageExtensionIcon);
+	private static readonly Class =
+		`${McpServerAction.ICON_ACTION_CLASS} manage ` + ThemeIcon.asClassName(manageExtensionIcon);
 	private static readonly HideManageExtensionClass = `${this.Class} hide`;
 
 	constructor(
 		private readonly isEditorAction: boolean,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
-
 		super(ManageMcpServerAction.ID, '', '', true, instantiationService);
-		this.tooltip = localize('manage', "Manage");
+		this.tooltip = localize('manage', 'Manage');
 		this.update();
 	}
 
 	async getActionGroups(): Promise<IAction[][]> {
 		const groups: IAction[][] = [];
-		groups.push([
-			this.instantiationService.createInstance(StartServerAction),
-		]);
+		groups.push([this.instantiationService.createInstance(StartServerAction)]);
 		groups.push([
 			this.instantiationService.createInstance(StopServerAction),
 			this.instantiationService.createInstance(RestartServerAction),
@@ -189,15 +199,15 @@ export class ManageMcpServerAction extends DropDownAction {
 			this.instantiationService.createInstance(ShowServerConfigurationAction),
 		]);
 		if (!this.isEditorAction) {
-			groups.push([
-				this.instantiationService.createInstance(UninstallAction),
-			]);
+			groups.push([this.instantiationService.createInstance(UninstallAction)]);
 		}
-		groups.forEach(group => group.forEach(extensionAction => {
-			if (extensionAction instanceof McpServerAction) {
-				extensionAction.mcpServer = this.mcpServer;
-			}
-		}));
+		groups.forEach(group =>
+			group.forEach(extensionAction => {
+				if (extensionAction instanceof McpServerAction) {
+					extensionAction.mcpServer = this.mcpServer;
+				}
+			})
+		);
 
 		return groups;
 	}
@@ -211,20 +221,19 @@ export class ManageMcpServerAction extends DropDownAction {
 		this.enabled = false;
 		if (this.mcpServer) {
 			this.enabled = !!this.mcpServer.local;
-			this.class = this.enabled ? ManageMcpServerAction.Class : ManageMcpServerAction.HideManageExtensionClass;
+			this.class = this.enabled
+				? ManageMcpServerAction.Class
+				: ManageMcpServerAction.HideManageExtensionClass;
 		}
 	}
 }
 
 export class StartServerAction extends McpServerAction {
-
 	static readonly CLASS = `${this.LABEL_ACTION_CLASS} prominent start`;
 	private static readonly HIDE = `${this.CLASS} hide`;
 
-	constructor(
-		@IMcpService private readonly mcpService: IMcpService,
-	) {
-		super('extensions.start', localize('start', "Start Server"), StartServerAction.CLASS, false);
+	constructor(@IMcpService private readonly mcpService: IMcpService) {
+		super('extensions.start', localize('start', 'Start Server'), StartServerAction.CLASS, false);
 		this.update();
 	}
 
@@ -241,7 +250,7 @@ export class StartServerAction extends McpServerAction {
 		}
 		this.class = StartServerAction.CLASS;
 		this.enabled = true;
-		this.label = localize('start', "Start Server");
+		this.label = localize('start', 'Start Server');
 	}
 
 	override async run(): Promise<any> {
@@ -265,14 +274,11 @@ export class StartServerAction extends McpServerAction {
 }
 
 export class StopServerAction extends McpServerAction {
-
 	static readonly CLASS = `${this.LABEL_ACTION_CLASS} prominent stop`;
 	private static readonly HIDE = `${this.CLASS} hide`;
 
-	constructor(
-		@IMcpService private readonly mcpService: IMcpService,
-	) {
-		super('extensions.stop', localize('stop', "Stop Server"), StopServerAction.CLASS, false);
+	constructor(@IMcpService private readonly mcpService: IMcpService) {
+		super('extensions.stop', localize('stop', 'Stop Server'), StopServerAction.CLASS, false);
 		this.update();
 	}
 
@@ -289,7 +295,7 @@ export class StopServerAction extends McpServerAction {
 		}
 		this.class = StopServerAction.CLASS;
 		this.enabled = true;
-		this.label = localize('stop', "Stop Server");
+		this.label = localize('stop', 'Stop Server');
 	}
 
 	override async run(): Promise<any> {
@@ -312,14 +318,16 @@ export class StopServerAction extends McpServerAction {
 }
 
 export class RestartServerAction extends McpServerAction {
-
 	static readonly CLASS = `${this.LABEL_ACTION_CLASS} prominent restart`;
 	private static readonly HIDE = `${this.CLASS} hide`;
 
-	constructor(
-		@IMcpService private readonly mcpService: IMcpService,
-	) {
-		super('extensions.restart', localize('restart', "Restart Server"), RestartServerAction.CLASS, false);
+	constructor(@IMcpService private readonly mcpService: IMcpService) {
+		super(
+			'extensions.restart',
+			localize('restart', 'Restart Server'),
+			RestartServerAction.CLASS,
+			false
+		);
 		this.update();
 	}
 
@@ -336,7 +344,7 @@ export class RestartServerAction extends McpServerAction {
 		}
 		this.class = RestartServerAction.CLASS;
 		this.enabled = true;
-		this.label = localize('restart', "Restart Server");
+		this.label = localize('restart', 'Restart Server');
 	}
 
 	override async run(): Promise<any> {
@@ -361,14 +369,16 @@ export class RestartServerAction extends McpServerAction {
 }
 
 export class ShowServerOutputAction extends McpServerAction {
-
 	static readonly CLASS = `${this.LABEL_ACTION_CLASS} prominent output`;
 	private static readonly HIDE = `${this.CLASS} hide`;
 
-	constructor(
-		@IMcpService private readonly mcpService: IMcpService,
-	) {
-		super('extensions.output', localize('output', "Show Output"), ShowServerOutputAction.CLASS, false);
+	constructor(@IMcpService private readonly mcpService: IMcpService) {
+		super(
+			'extensions.output',
+			localize('output', 'Show Output'),
+			ShowServerOutputAction.CLASS,
+			false
+		);
 		this.update();
 	}
 
@@ -381,7 +391,7 @@ export class ShowServerOutputAction extends McpServerAction {
 		}
 		this.class = ShowServerOutputAction.CLASS;
 		this.enabled = true;
-		this.label = localize('output', "Show Output");
+		this.label = localize('output', 'Show Output');
 	}
 
 	override async run(): Promise<any> {
@@ -404,16 +414,20 @@ export class ShowServerOutputAction extends McpServerAction {
 }
 
 export class ShowServerConfigurationAction extends McpServerAction {
-
 	static readonly CLASS = `${this.LABEL_ACTION_CLASS} prominent config`;
 	private static readonly HIDE = `${this.CLASS} hide`;
 
 	constructor(
 		@IMcpService private readonly mcpService: IMcpService,
 		@IMcpRegistry private readonly mcpRegistry: IMcpRegistry,
-		@IEditorService private readonly editorService: IEditorService,
+		@IEditorService private readonly editorService: IEditorService
 	) {
-		super('extensions.config', localize('config', "Show Configuration"), ShowServerConfigurationAction.CLASS, false);
+		super(
+			'extensions.config',
+			localize('config', 'Show Configuration'),
+			ShowServerConfigurationAction.CLASS,
+			false
+		);
 		this.update();
 	}
 
@@ -426,7 +440,7 @@ export class ShowServerConfigurationAction extends McpServerAction {
 		}
 		this.class = ShowServerConfigurationAction.CLASS;
 		this.enabled = true;
-		this.label = localize('config', "Show Configuration");
+		this.label = localize('config', 'Show Configuration');
 	}
 
 	override async run(): Promise<any> {
@@ -436,7 +450,9 @@ export class ShowServerConfigurationAction extends McpServerAction {
 		}
 		this.editorService.openEditor({
 			resource: URI.isUri(configurationTarget) ? configurationTarget : configurationTarget!.uri,
-			options: { selection: URI.isUri(configurationTarget) ? undefined : configurationTarget!.range }
+			options: {
+				selection: URI.isUri(configurationTarget) ? undefined : configurationTarget!.range,
+			},
 		});
 	}
 
@@ -447,12 +463,16 @@ export class ShowServerConfigurationAction extends McpServerAction {
 		if (!this.mcpServer.local) {
 			return;
 		}
-		const server = this.mcpService.servers.get().find(s => s.definition.label === this.mcpServer?.name);
+		const server = this.mcpService.servers
+			.get()
+			.find(s => s.definition.label === this.mcpServer?.name);
 		if (!server) {
 			return;
 		}
 		const collection = this.mcpRegistry.collections.get().find(c => c.id === server.collection.id);
-		const serverDefinition = collection?.serverDefinitions.get().find(s => s.id === server.definition.id);
+		const serverDefinition = collection?.serverDefinitions
+			.get()
+			.find(s => s.id === server.definition.id);
 		return serverDefinition?.presentation?.origin || collection?.presentation?.origin;
 	}
 }

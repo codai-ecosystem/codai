@@ -9,30 +9,60 @@ import { Emitter } from '../../../../../base/common/event.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { MockContextKeyService } from '../../../../../platform/keybinding/test/common/mockKeybindingService.js';
 import { mock, TestStorageService } from '../../../../test/common/workbenchTestServices.js';
-import { ITestingContinuousRunService, TestingContinuousRunService } from '../../common/testingContinuousRunService.js';
+import {
+	ITestingContinuousRunService,
+	TestingContinuousRunService,
+} from '../../common/testingContinuousRunService.js';
 import { ITestProfileService } from '../../common/testProfileService.js';
 import { ITestService } from '../../common/testService.js';
-import { ITestRunProfile, ResolvedTestRunRequest, TestRunProfileBitset } from '../../common/testTypes.js';
+import {
+	ITestRunProfile,
+	ResolvedTestRunRequest,
+	TestRunProfileBitset,
+} from '../../common/testTypes.js';
 
 suite('TestingContinuousRunService', () => {
 	const ds = ensureNoDisposablesAreLeakedInTestSuite();
 	let testService: MockTestService;
 	let cr: ITestingContinuousRunService;
 
-	const profile1: ITestRunProfile = { profileId: 1, controllerId: 'ctrl', group: TestRunProfileBitset.Run, label: 'label', supportsContinuousRun: true, isDefault: false, hasConfigurationHandler: true, tag: null };
-	const profile2: ITestRunProfile = { profileId: 2, controllerId: 'ctrl', group: TestRunProfileBitset.Run, label: 'label', supportsContinuousRun: true, isDefault: false, hasConfigurationHandler: true, tag: null };
+	const profile1: ITestRunProfile = {
+		profileId: 1,
+		controllerId: 'ctrl',
+		group: TestRunProfileBitset.Run,
+		label: 'label',
+		supportsContinuousRun: true,
+		isDefault: false,
+		hasConfigurationHandler: true,
+		tag: null,
+	};
+	const profile2: ITestRunProfile = {
+		profileId: 2,
+		controllerId: 'ctrl',
+		group: TestRunProfileBitset.Run,
+		label: 'label',
+		supportsContinuousRun: true,
+		isDefault: false,
+		hasConfigurationHandler: true,
+		tag: null,
+	};
 
 	class MockTestService extends mock<ITestService>() {
 		public requests = new Set<ResolvedTestRunRequest>();
 		public log: [kind: 'start' | 'stop', profileId: number, testIds: string[]][] = [];
 
-		override startContinuousRun(req: ResolvedTestRunRequest, token: CancellationToken): Promise<void> {
+		override startContinuousRun(
+			req: ResolvedTestRunRequest,
+			token: CancellationToken
+		): Promise<void> {
 			this.requests.add(req);
 			this.log.push(['start', req.targets[0].profileId, req.targets[0].testIds]);
-			ds.add(token.onCancellationRequested(() => {
-				this.log.push(['stop', req.targets[0].profileId, req.targets[0].testIds]);
-				this.requests.delete(req);
-			}));
+			ds.add(
+				token.onCancellationRequested(() => {
+					this.log.push(['stop', req.targets[0].profileId, req.targets[0].testIds]);
+					this.requests.delete(req);
+				})
+			);
 			return Promise.resolve();
 		}
 	}
@@ -41,19 +71,24 @@ suite('TestingContinuousRunService', () => {
 		public didChangeEmitter = ds.add(new Emitter<void>());
 		override onDidChange = this.didChangeEmitter.event;
 
-		override getGroupDefaultProfiles(group: TestRunProfileBitset, controllerId?: string): ITestRunProfile[] {
+		override getGroupDefaultProfiles(
+			group: TestRunProfileBitset,
+			controllerId?: string
+		): ITestRunProfile[] {
 			return [];
 		}
 	}
 
 	setup(() => {
 		testService = new MockTestService();
-		cr = ds.add(new TestingContinuousRunService(
-			testService,
-			ds.add(new TestStorageService()),
-			ds.add(new MockContextKeyService()),
-			new MockProfilesService(),
-		));
+		cr = ds.add(
+			new TestingContinuousRunService(
+				testService,
+				ds.add(new TestStorageService()),
+				ds.add(new MockContextKeyService()),
+				new MockProfilesService()
+			)
+		);
 	});
 
 	test('isSpecificallyEnabledFor', () => {
@@ -64,9 +99,7 @@ suite('TestingContinuousRunService', () => {
 		assert.strictEqual(cr.isSpecificallyEnabledFor('testId'), false);
 		assert.strictEqual(cr.isSpecificallyEnabledFor('testId\0child'), true);
 
-		assert.deepStrictEqual(testService.log, [
-			['start', 1, ['testId\0child']],
-		]);
+		assert.deepStrictEqual(testService.log, [['start', 1, ['testId\0child']]]);
 	});
 
 	test('isEnabledForAParentOf', () => {
@@ -78,9 +111,7 @@ suite('TestingContinuousRunService', () => {
 		assert.strictEqual(cr.isEnabledForAParentOf('parentTestId\0testId\0nestd'), true);
 		assert.strictEqual(cr.isEnabled(), true);
 
-		assert.deepStrictEqual(testService.log, [
-			['start', 1, ['parentTestId\0testId']],
-		]);
+		assert.deepStrictEqual(testService.log, [['start', 1, ['parentTestId\0testId']]]);
 	});
 
 	test('isEnabledForAChildOf', () => {

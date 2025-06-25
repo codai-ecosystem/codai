@@ -14,12 +14,12 @@ export class Quote extends SimpleToken<`'`> {
 	/**
 	 * The underlying symbol of the token.
 	 */
-	public static override readonly symbol: '\'' = '\'';
+	public static override readonly symbol: "'" = "'";
 
 	/**
 	 * Return text representation of the token.
 	 */
-	public override get text(): '\'' {
+	public override get text(): "'" {
 		return Quote.symbol;
 	}
 
@@ -28,7 +28,7 @@ export class Quote extends SimpleToken<`'`> {
 	 * as the current one.
 	 */
 	public sameType(other: BaseToken): other is Quote {
-		return (other instanceof this.constructor);
+		return other instanceof this.constructor;
 	}
 
 	/**

@@ -28,7 +28,7 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 		super({
 			id: 'merge.dev.copyContentsJson',
 			category: MERGE_EDITOR_CATEGORY,
-			title: localize2('merge.dev.copyState', "Copy Merge Editor State as JSON"),
+			title: localize2('merge.dev.copyState', 'Copy Merge Editor State as JSON'),
 			icon: Codicon.layoutCentered,
 			f1: true,
 			precondition: ctxIsMergeEditor,
@@ -43,7 +43,7 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 		if (!(activeEditorPane instanceof MergeEditor)) {
 			notificationService.info({
 				name: localize('mergeEditor.name', 'Merge Editor'),
-				message: localize('mergeEditor.noActiveMergeEditor', "No active merge editor")
+				message: localize('mergeEditor.noActiveMergeEditor', 'No active merge editor'),
 			});
 			return;
 		}
@@ -64,7 +64,10 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 
 		notificationService.info({
 			name: localize('mergeEditor.name', 'Merge Editor'),
-			message: localize('mergeEditor.successfullyCopiedMergeEditorContents', "Successfully copied merge editor state"),
+			message: localize(
+				'mergeEditor.successfullyCopiedMergeEditorContents',
+				'Successfully copied merge editor state'
+			),
 		});
 	}
 }
@@ -74,7 +77,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 		super({
 			id: 'merge.dev.saveContentsToFolder',
 			category: MERGE_EDITOR_CATEGORY,
-			title: localize2('merge.dev.saveContentsToFolder', "Save Merge Editor State to Folder"),
+			title: localize2('merge.dev.saveContentsToFolder', 'Save Merge Editor State to Folder'),
 			icon: Codicon.layoutCentered,
 			f1: true,
 			precondition: ctxIsMergeEditor,
@@ -91,7 +94,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 		if (!(activeEditorPane instanceof MergeEditor)) {
 			notificationService.info({
 				name: localize('mergeEditor.name', 'Merge Editor'),
-				message: localize('mergeEditor.noActiveMergeEditor', "No active merge editor")
+				message: localize('mergeEditor.noActiveMergeEditor', 'No active merge editor'),
 			});
 			return;
 		}
@@ -104,7 +107,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 			canSelectFiles: false,
 			canSelectFolders: true,
 			canSelectMany: false,
-			title: localize('mergeEditor.selectFolderToSaveTo', 'Select folder to save to')
+			title: localize('mergeEditor.selectFolderToSaveTo', 'Select folder to save to'),
 		});
 		if (!result) {
 			return;
@@ -114,7 +117,11 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 		const extension = languageService.getExtensions(model.resultTextModel.getLanguageId())[0] || '';
 
 		async function write(fileName: string, source: string) {
-			await fileService.writeFile(URI.joinPath(targetDir, fileName + extension), VSBuffer.fromString(source), {});
+			await fileService.writeFile(
+				URI.joinPath(targetDir, fileName + extension),
+				VSBuffer.fromString(source),
+				{}
+			);
 		}
 
 		await Promise.all([
@@ -127,7 +134,10 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 
 		notificationService.info({
 			name: localize('mergeEditor.name', 'Merge Editor'),
-			message: localize('mergeEditor.successfullySavedMergeEditorContentsToFolder', "Successfully saved merge editor state to folder"),
+			message: localize(
+				'mergeEditor.successfullySavedMergeEditorContentsToFolder',
+				'Successfully saved merge editor state to folder'
+			),
 		});
 	}
 }
@@ -137,13 +147,16 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 		super({
 			id: 'merge.dev.loadContentsFromFolder',
 			category: MERGE_EDITOR_CATEGORY,
-			title: localize2('merge.dev.loadContentsFromFolder', "Load Merge Editor State from Folder"),
+			title: localize2('merge.dev.loadContentsFromFolder', 'Load Merge Editor State from Folder'),
 			icon: Codicon.layoutCentered,
-			f1: true
+			f1: true,
 		});
 	}
 
-	async run(accessor: ServicesAccessor, args?: { folderUri?: URI; resultState?: 'initial' | 'current' }) {
+	async run(
+		accessor: ServicesAccessor,
+		args?: { folderUri?: URI; resultState?: 'initial' | 'current' }
+	) {
 		const dialogService = accessor.get(IFileDialogService);
 		const editorService = accessor.get(IEditorService);
 		const fileService = accessor.get(IFileService);
@@ -159,7 +172,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 				canSelectFiles: false,
 				canSelectFolders: true,
 				canSelectMany: false,
-				title: localize('mergeEditor.selectFolderToSaveTo', 'Select folder to save to')
+				title: localize('mergeEditor.selectFolderToSaveTo', 'Select folder to save to'),
 			});
 			if (!result) {
 				return;
@@ -184,18 +197,37 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 
 		const input: IResourceMergeEditorInput = {
 			base: { resource: baseUri },
-			input1: { resource: input1Uri, label: 'Input 1', description: 'Input 1', detail: '(from file)' },
-			input2: { resource: input2Uri, label: 'Input 2', description: 'Input 2', detail: '(from file)' },
+			input1: {
+				resource: input1Uri,
+				label: 'Input 1',
+				description: 'Input 1',
+				detail: '(from file)',
+			},
+			input2: {
+				resource: input2Uri,
+				label: 'Input 2',
+				description: 'Input 2',
+				detail: '(from file)',
+			},
 			result: { resource: resultUri },
 		};
 		editorService.openEditor(input);
 	}
 }
 
-async function promptOpenInitial(quickInputService: IQuickInputService, resultStateOverride?: 'initial' | 'current') {
+async function promptOpenInitial(
+	quickInputService: IQuickInputService,
+	resultStateOverride?: 'initial' | 'current'
+) {
 	if (resultStateOverride) {
 		return resultStateOverride === 'initial';
 	}
-	const result = await quickInputService.pick([{ label: 'result', result: false }, { label: 'initial result', result: true }], { canPickMany: false });
+	const result = await quickInputService.pick(
+		[
+			{ label: 'result', result: false },
+			{ label: 'initial result', result: true },
+		],
+		{ canPickMany: false }
+	);
 	return result?.result;
 }

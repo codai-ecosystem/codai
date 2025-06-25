@@ -28,9 +28,7 @@ export class FrontMatterString<TQuote extends TQuoteToken = Quote> extends Front
 	 * Text of the string value without the wrapping quotes.
 	 */
 	public get cleanText(): string {
-		return BaseToken.render(
-			this.children.slice(1, this.children.length - 1),
-		);
+		return BaseToken.render(this.children.slice(1, this.children.length - 1));
 	}
 
 	public override toString(): string {

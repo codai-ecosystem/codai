@@ -30,7 +30,7 @@ export class CommentThreadAdditionalActions<T extends IRange | ICellRange> exten
 		private _commentMenus: CommentMenus,
 		private _actionRunDelegate: (() => void) | null,
 		@IKeybindingService private _keybindingService: IKeybindingService,
-		@IContextMenuService private _contextMenuService: IContextMenuService,
+		@IContextMenuService private _contextMenuService: IContextMenuService
 	) {
 		super();
 
@@ -73,23 +73,32 @@ export class CommentThreadAdditionalActions<T extends IRange | ICellRange> exten
 		this._hideMenu();
 	}
 
-
 	private _createAdditionalActions(container: HTMLElement) {
 		const menu = this._commentMenus.getCommentThreadAdditionalActions(this._contextKeyService);
 		this._register(menu);
-		this._register(menu.onDidChange(() => {
-			this._commentFormActions.setActions(menu, /*hasOnlySecondaryActions*/ true);
-			this._enableDisableMenu(menu);
-		}));
+		this._register(
+			menu.onDidChange(() => {
+				this._commentFormActions.setActions(menu, /*hasOnlySecondaryActions*/ true);
+				this._enableDisableMenu(menu);
+			})
+		);
 
-		this._commentFormActions = new CommentFormActions(this._keybindingService, this._contextKeyService, this._contextMenuService, container, async (action: IAction) => {
-			this._actionRunDelegate?.();
+		this._commentFormActions = new CommentFormActions(
+			this._keybindingService,
+			this._contextKeyService,
+			this._contextMenuService,
+			container,
+			async (action: IAction) => {
+				this._actionRunDelegate?.();
 
-			action.run({
-				thread: this._commentThread,
-				$mid: MarshalledId.CommentThreadInstance
-			});
-		}, 4, true);
+				action.run({
+					thread: this._commentThread,
+					$mid: MarshalledId.CommentThreadInstance,
+				});
+			},
+			4,
+			true
+		);
 
 		this._register(this._commentFormActions);
 		this._commentFormActions.setActions(menu, /*hasOnlySecondaryActions*/ true);

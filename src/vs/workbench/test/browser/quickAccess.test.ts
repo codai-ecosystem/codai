@@ -5,13 +5,29 @@
 
 import assert from 'assert';
 import { Registry } from '../../../platform/registry/common/platform.js';
-import { IQuickAccessRegistry, Extensions, IQuickAccessProvider, QuickAccessRegistry } from '../../../platform/quickinput/common/quickAccess.js';
-import { IQuickPick, IQuickPickItem, IQuickInputService } from '../../../platform/quickinput/common/quickInput.js';
+import {
+	IQuickAccessRegistry,
+	Extensions,
+	IQuickAccessProvider,
+	QuickAccessRegistry,
+} from '../../../platform/quickinput/common/quickAccess.js';
+import {
+	IQuickPick,
+	IQuickPickItem,
+	IQuickInputService,
+} from '../../../platform/quickinput/common/quickInput.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
-import { TestServiceAccessor, workbenchInstantiationService, createEditorPart } from './workbenchTestServices.js';
+import {
+	TestServiceAccessor,
+	workbenchInstantiationService,
+	createEditorPart,
+} from './workbenchTestServices.js';
 import { DisposableStore, toDisposable, IDisposable } from '../../../base/common/lifecycle.js';
 import { timeout } from '../../../base/common/async.js';
-import { PickerQuickAccessProvider, FastAndSlowPicks } from '../../../platform/quickinput/browser/pickerQuickAccess.js';
+import {
+	PickerQuickAccessProvider,
+	FastAndSlowPicks,
+} from '../../../platform/quickinput/browser/pickerQuickAccess.js';
 import { URI } from '../../../base/common/uri.js';
 import { IEditorGroupsService } from '../../services/editor/common/editorGroupsService.js';
 import { IEditorService } from '../../services/editor/common/editorService.js';
@@ -23,7 +39,6 @@ import { TestInstantiationService } from '../../../platform/instantiation/test/c
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/common/utils.js';
 
 suite('QuickAccess', () => {
-
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 	let instantiationService: TestInstantiationService;
 	let accessor: TestServiceAccessor;
@@ -45,15 +60,20 @@ suite('QuickAccess', () => {
 	let provider3Disposed = false;
 
 	class TestProviderDefault implements IQuickAccessProvider {
+		constructor(
+			@IQuickInputService private readonly quickInputService: IQuickInputService,
+			disposables: DisposableStore
+		) {}
 
-		constructor(@IQuickInputService private readonly quickInputService: IQuickInputService, disposables: DisposableStore) { }
-
-		provide(picker: IQuickPick<IQuickPickItem, { useSeparators: true }>, token: CancellationToken): IDisposable {
+		provide(
+			picker: IQuickPick<IQuickPickItem, { useSeparators: true }>,
+			token: CancellationToken
+		): IDisposable {
 			assert.ok(picker);
 			providerDefaultCalled = true;
 			const store = new DisposableStore();
-			store.add(toDisposable(() => providerDefaultDisposed = true));
-			store.add(token.onCancellationRequested(() => providerDefaultCanceled = true));
+			store.add(toDisposable(() => (providerDefaultDisposed = true)));
+			store.add(token.onCancellationRequested(() => (providerDefaultCanceled = true)));
 
 			// bring up provider #3
 			setTimeout(() => this.quickInputService.quickAccess.show(providerDescriptor3.prefix));
@@ -63,40 +83,49 @@ suite('QuickAccess', () => {
 	}
 
 	class TestProvider1 implements IQuickAccessProvider {
-		provide(picker: IQuickPick<IQuickPickItem, { useSeparators: true }>, token: CancellationToken): IDisposable {
+		provide(
+			picker: IQuickPick<IQuickPickItem, { useSeparators: true }>,
+			token: CancellationToken
+		): IDisposable {
 			assert.ok(picker);
 			provider1Called = true;
 			const store = new DisposableStore();
-			store.add(token.onCancellationRequested(() => provider1Canceled = true));
+			store.add(token.onCancellationRequested(() => (provider1Canceled = true)));
 
-			store.add(toDisposable(() => provider1Disposed = true));
+			store.add(toDisposable(() => (provider1Disposed = true)));
 			return store;
 		}
 	}
 
 	class TestProvider2 implements IQuickAccessProvider {
-		provide(picker: IQuickPick<IQuickPickItem, { useSeparators: true }>, token: CancellationToken): IDisposable {
+		provide(
+			picker: IQuickPick<IQuickPickItem, { useSeparators: true }>,
+			token: CancellationToken
+		): IDisposable {
 			assert.ok(picker);
 			provider2Called = true;
 			const store = new DisposableStore();
-			store.add(token.onCancellationRequested(() => provider2Canceled = true));
+			store.add(token.onCancellationRequested(() => (provider2Canceled = true)));
 
-			store.add(toDisposable(() => provider2Disposed = true));
+			store.add(toDisposable(() => (provider2Disposed = true)));
 			return store;
 		}
 	}
 
 	class TestProvider3 implements IQuickAccessProvider {
-		provide(picker: IQuickPick<IQuickPickItem, { useSeparators: true }>, token: CancellationToken): IDisposable {
+		provide(
+			picker: IQuickPick<IQuickPickItem, { useSeparators: true }>,
+			token: CancellationToken
+		): IDisposable {
 			assert.ok(picker);
 			provider3Called = true;
 			const store = new DisposableStore();
-			store.add(token.onCancellationRequested(() => provider3Canceled = true));
+			store.add(token.onCancellationRequested(() => (provider3Canceled = true)));
 
 			// hide without picking
 			setTimeout(() => picker.hide());
 
-			store.add(toDisposable(() => provider3Disposed = true));
+			store.add(toDisposable(() => (provider3Disposed = true)));
 			return store;
 		}
 	}
@@ -112,7 +141,7 @@ suite('QuickAccess', () => {
 	});
 
 	test('registry', () => {
-		const registry = (Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess));
+		const registry = Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess);
 		const restore = (registry as QuickAccessRegistry).clear();
 
 		assert.ok(!registry.getQuickAccessProvider('test'));
@@ -139,7 +168,7 @@ suite('QuickAccess', () => {
 	});
 
 	test('provider', async () => {
-		const registry = (Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess));
+		const registry = Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess);
 		const restore = (registry as QuickAccessRegistry).clear();
 
 		const disposables = new DisposableStore();
@@ -219,12 +248,15 @@ suite('QuickAccess', () => {
 	let fastAndSlowProviderCanceled = false;
 
 	class FastTestQuickPickProvider extends PickerQuickAccessProvider<IQuickPickItem> {
-
 		constructor() {
 			super('fast');
 		}
 
-		protected _getPicks(filter: string, disposables: DisposableStore, token: CancellationToken): Array<IQuickPickItem> {
+		protected _getPicks(
+			filter: string,
+			disposables: DisposableStore,
+			token: CancellationToken
+		): Array<IQuickPickItem> {
 			fastProviderCalled = true;
 
 			return [{ label: 'Fast Pick' }];
@@ -232,12 +264,15 @@ suite('QuickAccess', () => {
 	}
 
 	class SlowTestQuickPickProvider extends PickerQuickAccessProvider<IQuickPickItem> {
-
 		constructor() {
 			super('slow');
 		}
 
-		protected async _getPicks(filter: string, disposables: DisposableStore, token: CancellationToken): Promise<Array<IQuickPickItem>> {
+		protected async _getPicks(
+			filter: string,
+			disposables: DisposableStore,
+			token: CancellationToken
+		): Promise<Array<IQuickPickItem>> {
 			slowProviderCalled = true;
 
 			await timeout(1);
@@ -251,12 +286,15 @@ suite('QuickAccess', () => {
 	}
 
 	class FastAndSlowTestQuickPickProvider extends PickerQuickAccessProvider<IQuickPickItem> {
-
 		constructor() {
 			super('bothFastAndSlow');
 		}
 
-		protected _getPicks(filter: string, disposables: DisposableStore, token: CancellationToken): FastAndSlowPicks<IQuickPickItem> {
+		protected _getPicks(
+			filter: string,
+			disposables: DisposableStore,
+			token: CancellationToken
+		): FastAndSlowPicks<IQuickPickItem> {
 			fastAndSlowProviderCalled = true;
 
 			return {
@@ -269,17 +307,29 @@ suite('QuickAccess', () => {
 					}
 
 					return [{ label: 'Slow Pick' }];
-				})()
+				})(),
 			};
 		}
 	}
 
-	const fastProviderDescriptor = { ctor: FastTestQuickPickProvider, prefix: 'fast', helpEntries: [] };
-	const slowProviderDescriptor = { ctor: SlowTestQuickPickProvider, prefix: 'slow', helpEntries: [] };
-	const fastAndSlowProviderDescriptor = { ctor: FastAndSlowTestQuickPickProvider, prefix: 'bothFastAndSlow', helpEntries: [] };
+	const fastProviderDescriptor = {
+		ctor: FastTestQuickPickProvider,
+		prefix: 'fast',
+		helpEntries: [],
+	};
+	const slowProviderDescriptor = {
+		ctor: SlowTestQuickPickProvider,
+		prefix: 'slow',
+		helpEntries: [],
+	};
+	const fastAndSlowProviderDescriptor = {
+		ctor: FastAndSlowTestQuickPickProvider,
+		prefix: 'bothFastAndSlow',
+		helpEntries: [],
+	};
 
 	test('quick pick access - show()', async () => {
-		const registry = (Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess));
+		const registry = Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess);
 		const restore = (registry as QuickAccessRegistry).clear();
 
 		const disposables = new DisposableStore();
@@ -330,7 +380,7 @@ suite('QuickAccess', () => {
 	});
 
 	test('quick pick access - pick()', async () => {
-		const registry = (Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess));
+		const registry = Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess);
 		const restore = (registry as QuickAccessRegistry).clear();
 
 		const disposables = new DisposableStore();
@@ -347,11 +397,15 @@ suite('QuickAccess', () => {
 	});
 
 	test('PickerEditorState can properly restore editors', async () => {
-
-		const part = await createEditorPart(instantiationService, disposables.add(new DisposableStore()));
+		const part = await createEditorPart(
+			instantiationService,
+			disposables.add(new DisposableStore())
+		);
 		instantiationService.stub(IEditorGroupsService, part);
 
-		const editorService = disposables.add(instantiationService.createInstance(EditorService, undefined));
+		const editorService = disposables.add(
+			instantiationService.createInstance(EditorService, undefined)
+		);
 		instantiationService.stub(IEditorService, editorService);
 
 		const editorViewState = disposables.add(instantiationService.createInstance(PickerEditorState));
@@ -361,20 +415,23 @@ suite('QuickAccess', () => {
 		const input1 = {
 			resource: URI.parse('foo://bar1'),
 			options: {
-				pinned: true, preserveFocus: true, selection: new Range(1, 0, 1, 3)
-			}
+				pinned: true,
+				preserveFocus: true,
+				selection: new Range(1, 0, 1, 3),
+			},
 		};
 		const input2 = {
 			resource: URI.parse('foo://bar2'),
 			options: {
-				pinned: true, selection: new Range(1, 0, 1, 3)
-			}
+				pinned: true,
+				selection: new Range(1, 0, 1, 3),
+			},
 		};
 		const input3 = {
-			resource: URI.parse('foo://bar3')
+			resource: URI.parse('foo://bar3'),
 		};
 		const input4 = {
-			resource: URI.parse('foo://bar4')
+			resource: URI.parse('foo://bar4'),
 		};
 
 		const editor = await editorService.openEditor(input1);
@@ -386,9 +443,15 @@ suite('QuickAccess', () => {
 		await editorViewState.restore();
 
 		assert.strictEqual(part.activeGroup.activeEditor?.resource, input1.resource);
-		assert.deepStrictEqual(part.activeGroup.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).map(e => e.resource), [input1.resource, input2.resource]);
+		assert.deepStrictEqual(
+			part.activeGroup.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).map(e => e.resource),
+			[input1.resource, input2.resource]
+		);
 		if (part.activeGroup.activeEditorPane?.getSelection) {
-			assert.deepStrictEqual(part.activeGroup.activeEditorPane?.getSelection(), input1.options.selection);
+			assert.deepStrictEqual(
+				part.activeGroup.activeEditorPane?.getSelection(),
+				input1.options.selection
+			);
 		}
 		await part.activeGroup.closeAllEditors();
 	});

@@ -14,13 +14,12 @@ export interface IRow {
 }
 
 export class RowCache<T> implements IDisposable {
-
 	private cache = new Map<string, IRow[]>();
 
 	private readonly transactionNodesPendingRemoval = new Set<HTMLElement>();
 	private inTransaction = false;
 
-	constructor(private renderers: Map<string, IListRenderer<T, any>>) { }
+	constructor(private renderers: Map<string, IListRenderer<T, any>>) {}
 
 	/**
 	 * Returns a row either by creating a new one or reusing

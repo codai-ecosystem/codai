@@ -34,7 +34,7 @@ class OpenAIEmbeddingService implements EmbeddingService {
 		const response = await fetch(`${this.baseUrl}/embeddings`, {
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${this.apiKey}`,
+				Authorization: `Bearer ${this.apiKey}`,
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
@@ -55,7 +55,7 @@ class OpenAIEmbeddingService implements EmbeddingService {
 		const response = await fetch(`${this.baseUrl}/embeddings`, {
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${this.apiKey}`,
+				Authorization: `Bearer ${this.apiKey}`,
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
@@ -77,7 +77,7 @@ class OpenAIEmbeddingService implements EmbeddingService {
 		const pricing: Record<string, number> = {
 			'text-embedding-3-small': 0.002,
 			'text-embedding-3-large': 0.013,
-			'text-embedding-ada-002': 0.010,
+			'text-embedding-ada-002': 0.01,
 		};
 
 		const pricePerToken = pricing[model] || pricing['text-embedding-3-small'];
@@ -162,7 +162,7 @@ class AzureOpenAIEmbeddingService implements EmbeddingService {
 		const pricing: Record<string, number> = {
 			'text-embedding-3-small': 0.002,
 			'text-embedding-3-large': 0.013,
-			'text-embedding-ada-002': 0.010,
+			'text-embedding-ada-002': 0.01,
 		};
 
 		const pricePerToken = pricing[model] || pricing['text-embedding-3-small'];

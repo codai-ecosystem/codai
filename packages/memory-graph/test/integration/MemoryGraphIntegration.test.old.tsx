@@ -28,15 +28,16 @@ describe('Memory Graph Integration Tests', () => {
 					id: 'feature-1',
 					type: 'feature',
 					name: 'User Authentication',
-					description: 'Complete user authentication system with login, logout, and session management',
+					description:
+						'Complete user authentication system with login, logout, and session management',
 					requirements: ['Secure login', 'Session persistence', 'Password reset'],
 					dependencies: ['auth-service', 'user-db'],
 					implementation_notes: 'Use JWT tokens for session management',
 					metadata: {
 						priority: 'high',
 						complexity: 'medium',
-						status: 'in-progress'
-					}
+						status: 'in-progress',
+					},
 				},
 				{
 					id: 'screen-1',
@@ -48,8 +49,8 @@ describe('Memory Graph Integration Tests', () => {
 					data_requirements: ['email validation', 'password validation'],
 					metadata: {
 						platform: 'web',
-						responsive: true
-					}
+						responsive: true,
+					},
 				},
 				{
 					id: 'screen-2',
@@ -61,8 +62,8 @@ describe('Memory Graph Integration Tests', () => {
 					data_requirements: ['user data', 'activity data'],
 					metadata: {
 						platform: 'web',
-						responsive: true
-					}
+						responsive: true,
+					},
 				},
 				{
 					id: 'api-1',
@@ -76,8 +77,8 @@ describe('Memory Graph Integration Tests', () => {
 					authentication_required: false,
 					metadata: {
 						version: 'v1',
-						rate_limit: '100/hour'
-					}
+						rate_limit: '100/hour',
+					},
 				},
 				{
 					id: 'data-1',
@@ -89,9 +90,9 @@ describe('Memory Graph Integration Tests', () => {
 					constraints: ['email_unique', 'password_min_length'],
 					metadata: {
 						database: 'postgresql',
-						table: 'users'
-					}
-				}
+						table: 'users',
+					},
+				},
 			],
 			relationships: [
 				{
@@ -99,30 +100,30 @@ describe('Memory Graph Integration Tests', () => {
 					fromNodeId: 'feature-1',
 					toNodeId: 'screen-1',
 					type: 'contains',
-					metadata: {}
+					metadata: {},
 				},
 				{
 					id: 'rel-2',
 					fromNodeId: 'feature-1',
 					toNodeId: 'screen-2',
 					type: 'contains',
-					metadata: {}
+					metadata: {},
 				},
 				{
 					id: 'rel-3',
 					fromNodeId: 'screen-1',
 					toNodeId: 'api-1',
 					type: 'calls',
-					metadata: {}
+					metadata: {},
 				},
 				{
 					id: 'rel-4',
 					fromNodeId: 'api-1',
 					toNodeId: 'data-1',
 					type: 'uses',
-					metadata: {}
-				}
-			]
+					metadata: {},
+				},
+			],
 		};
 
 		mockOnNodeSelect = vi.fn();
@@ -159,7 +160,7 @@ describe('Memory Graph Integration Tests', () => {
 			expect(mockOnNodeSelect).toHaveBeenCalledWith(
 				expect.objectContaining({
 					id: 'feature-1',
-					name: 'User Authentication'
+					name: 'User Authentication',
 				})
 			);
 
@@ -173,7 +174,7 @@ describe('Memory Graph Integration Tests', () => {
 			expect(mockOnNodeSelect).toHaveBeenCalledWith(
 				expect.objectContaining({
 					id: 'screen-1',
-					name: 'Login Screen'
+					name: 'Login Screen',
 				})
 			);
 		});
@@ -181,12 +182,7 @@ describe('Memory Graph Integration Tests', () => {
 		it('supports zoom and pan workflow for large graphs', async () => {
 			const user = userEvent.setup();
 
-			render(
-				<MemoryGraphVisualization
-					graph={mockGraph}
-					onNodeSelect={mockOnNodeSelect}
-				/>
-			);
+			render(<MemoryGraphVisualization graph={mockGraph} onNodeSelect={mockOnNodeSelect} />);
 
 			// 1. User sees initial zoom level
 			expect(screen.getByText(/100\s*%/)).toBeInTheDocument();
@@ -206,7 +202,7 @@ describe('Memory Graph Integration Tests', () => {
 
 			expect(mockOnNodeSelect).toHaveBeenCalledWith(
 				expect.objectContaining({
-					id: 'feature-1'
+					id: 'feature-1',
 				})
 			);
 
@@ -244,12 +240,7 @@ describe('Memory Graph Integration Tests', () => {
 		it('supports layout switching workflow', async () => {
 			const user = userEvent.setup();
 
-			render(
-				<MemoryGraphVisualization
-					graph={mockGraph}
-					layout="force"
-				/>
-			);
+			render(<MemoryGraphVisualization graph={mockGraph} layout="force" />);
 
 			// 1. User sees current layout
 			expect(screen.getByText('force')).toBeInTheDocument();
@@ -293,12 +284,7 @@ describe('Memory Graph Integration Tests', () => {
 		it('maintains consistent state across interactions', async () => {
 			const user = userEvent.setup();
 
-			render(
-				<MemoryGraphVisualization
-					graph={mockGraph}
-					onNodeSelect={mockOnNodeSelect}
-				/>
-			);
+			render(<MemoryGraphVisualization graph={mockGraph} onNodeSelect={mockOnNodeSelect} />);
 
 			// 1. Multiple interactions should maintain consistent state
 			const nodes = ['User Authentication', 'Login Screen', 'Dashboard Screen'];
@@ -341,25 +327,20 @@ describe('Memory Graph Integration Tests', () => {
 					requirements: [`Requirement ${i}`],
 					dependencies: [],
 					implementation_notes: `Notes for feature ${i}`,
-					metadata: {}
+					metadata: {},
 				})),
 				relationships: Array.from({ length: 30 }, (_, i) => ({
 					id: `rel-${i}`,
 					fromNodeId: `node-${i % 20}`,
 					toNodeId: `node-${(i + 1) % 20}`,
 					type: 'depends_on' as const,
-					metadata: {}
-				}))
+					metadata: {},
+				})),
 			};
 
 			const startTime = performance.now();
 
-			render(
-				<MemoryGraphVisualization
-					graph={mediumGraph}
-					onNodeSelect={mockOnNodeSelect}
-				/>
-			);
+			render(<MemoryGraphVisualization graph={mediumGraph} onNodeSelect={mockOnNodeSelect} />);
 
 			const renderTime = performance.now() - startTime;
 
@@ -378,7 +359,7 @@ describe('Memory Graph Integration Tests', () => {
 			expect(mockOnNodeSelect).toHaveBeenCalledWith(
 				expect.objectContaining({
 					id: 'node-5',
-					name: 'Feature 5'
+					name: 'Feature 5',
 				})
 			);
 		});
@@ -394,19 +375,14 @@ describe('Memory Graph Integration Tests', () => {
 						fromNodeId: 'non-existent-node',
 						toNodeId: 'another-non-existent-node',
 						type: 'depends_on',
-						metadata: {}
-					}
-				]
+						metadata: {},
+					},
+				],
 			};
 
 			// Should not crash with invalid relationships
 			expect(() => {
-				render(
-					<MemoryGraphVisualization
-						graph={malformedGraph}
-						onNodeSelect={mockOnNodeSelect}
-					/>
-				);
+				render(<MemoryGraphVisualization graph={malformedGraph} onNodeSelect={mockOnNodeSelect} />);
 			}).not.toThrow();
 
 			// Valid nodes should still render
@@ -420,15 +396,10 @@ describe('Memory Graph Integration Tests', () => {
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				nodes: [],
-				relationships: []
+				relationships: [],
 			};
 
-			render(
-				<MemoryGraphVisualization
-					graph={emptyGraph}
-					onNodeSelect={mockOnNodeSelect}
-				/>
-			);
+			render(<MemoryGraphVisualization graph={emptyGraph} onNodeSelect={mockOnNodeSelect} />);
 
 			// Should render without errors
 			expect(screen.getByText('force')).toBeInTheDocument(); // Layout control should be there
@@ -440,12 +411,7 @@ describe('Memory Graph Integration Tests', () => {
 		it('maintains accessibility across component interactions', async () => {
 			const user = userEvent.setup();
 
-			render(
-				<MemoryGraphVisualization
-					graph={mockGraph}
-					onNodeSelect={mockOnNodeSelect}
-				/>
-			);
+			render(<MemoryGraphVisualization graph={mockGraph} onNodeSelect={mockOnNodeSelect} />);
 
 			// 1. All interactive elements should be accessible
 			const zoomInButton = screen.getByRole('button', { name: '+' });

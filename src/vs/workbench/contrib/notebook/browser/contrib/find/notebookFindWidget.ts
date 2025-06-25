@@ -14,20 +14,34 @@ import { Range } from '../../../../../../editor/common/core/range.js';
 import { FindMatch } from '../../../../../../editor/common/model.js';
 import { MATCHES_LIMIT } from '../../../../../../editor/contrib/find/browser/findModel.js';
 import { FindReplaceState } from '../../../../../../editor/contrib/find/browser/findState.js';
-import { NLS_MATCHES_LOCATION, NLS_NO_RESULTS } from '../../../../../../editor/contrib/find/browser/findWidget.js';
+import {
+	NLS_MATCHES_LOCATION,
+	NLS_NO_RESULTS,
+} from '../../../../../../editor/contrib/find/browser/findWidget.js';
 import { FindWidgetSearchHistory } from '../../../../../../editor/contrib/find/browser/findWidgetSearchHistory.js';
 import { ReplaceWidgetHistory } from '../../../../../../editor/contrib/find/browser/replaceWidgetHistory.js';
 import { localize } from '../../../../../../nls.js';
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
-import { IContextKey, IContextKeyService } from '../../../../../../platform/contextkey/common/contextkey.js';
-import { IContextMenuService, IContextViewService } from '../../../../../../platform/contextview/browser/contextView.js';
+import {
+	IContextKey,
+	IContextKeyService,
+} from '../../../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextMenuService,
+	IContextViewService,
+} from '../../../../../../platform/contextview/browser/contextView.js';
 import { IHoverService } from '../../../../../../platform/hover/browser/hover.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
 import { IStorageService } from '../../../../../../platform/storage/common/storage.js';
 import { NotebookFindFilters } from './findFilters.js';
 import { FindModel } from './findModel.js';
 import { SimpleFindReplaceWidget } from './notebookFindReplaceWidget.js';
-import { CellEditState, ICellViewModel, INotebookEditor, INotebookEditorContribution } from '../../notebookBrowser.js';
+import {
+	CellEditState,
+	ICellViewModel,
+	INotebookEditor,
+	INotebookEditorContribution,
+} from '../../notebookBrowser.js';
 import { INotebookFindScope } from '../../../common/notebookCommon.js';
 import { KEYBINDING_CONTEXT_NOTEBOOK_FIND_WIDGET_FOCUSED } from '../../../common/notebookContextKeys.js';
 
@@ -47,18 +61,21 @@ export interface IShowNotebookFindWidgetOptions {
 }
 
 export class NotebookFindContrib extends Disposable implements INotebookEditorContribution {
-
 	static readonly id: string = 'workbench.notebook.find';
 
 	private readonly _widget: Lazy<NotebookFindWidget>;
 
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
-		this._widget = new Lazy(() => this._register(this.instantiationService.createInstance(NotebookFindWidget, this.notebookEditor)));
+		this._widget = new Lazy(() =>
+			this._register(
+				this.instantiationService.createInstance(NotebookFindWidget, this.notebookEditor)
+			)
+		);
 	}
 
 	get widget(): NotebookFindWidget {
@@ -94,46 +111,71 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IHoverService hoverService: IHoverService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IStorageService storageService: IStorageService,
+		@IStorageService storageService: IStorageService
 	) {
 		const findSearchHistory = FindWidgetSearchHistory.getOrCreate(storageService);
 		const replaceHistory = ReplaceWidgetHistory.getOrCreate(storageService);
 
-		super(contextViewService, contextKeyService, configurationService, contextMenuService, instantiationService, hoverService, new FindReplaceState<NotebookFindFilters>(), _notebookEditor, findSearchHistory, replaceHistory);
+		super(
+			contextViewService,
+			contextKeyService,
+			configurationService,
+			contextMenuService,
+			instantiationService,
+			hoverService,
+			new FindReplaceState<NotebookFindFilters>(),
+			_notebookEditor,
+			findSearchHistory,
+			replaceHistory
+		);
 		this._findModel = new FindModel(this._notebookEditor, this._state, this._configurationService);
 
 		DOM.append(this._notebookEditor.getDomNode(), this.getDomNode());
-		this._findWidgetFocused = KEYBINDING_CONTEXT_NOTEBOOK_FIND_WIDGET_FOCUSED.bindTo(contextKeyService);
-		this._register(this._findInput.onKeyDown((e) => this._onFindInputKeyDown(e)));
-		this._register(this._replaceInput.onKeyDown((e) => this._onReplaceInputKeyDown(e)));
+		this._findWidgetFocused =
+			KEYBINDING_CONTEXT_NOTEBOOK_FIND_WIDGET_FOCUSED.bindTo(contextKeyService);
+		this._register(this._findInput.onKeyDown(e => this._onFindInputKeyDown(e)));
+		this._register(this._replaceInput.onKeyDown(e => this._onReplaceInputKeyDown(e)));
 
-		this._register(this._state.onFindReplaceStateChange((e) => {
-			this.onInputChanged();
+		this._register(
+			this._state.onFindReplaceStateChange(e => {
+				this.onInputChanged();
 
-			if (e.isSearching) {
-				if (this._state.isSearching) {
-					this._progressBar.infinite().show(PROGRESS_BAR_DELAY);
-				} else {
-					this._progressBar.stop().hide();
+				if (e.isSearching) {
+					if (this._state.isSearching) {
+						this._progressBar.infinite().show(PROGRESS_BAR_DELAY);
+					} else {
+						this._progressBar.stop().hide();
+					}
 				}
-			}
 
-			if (this._findModel.currentMatch >= 0) {
-				const currentMatch = this._findModel.getCurrentMatch();
-				this._replaceBtn.setEnabled(currentMatch.isModelMatch);
-			}
+				if (this._findModel.currentMatch >= 0) {
+					const currentMatch = this._findModel.getCurrentMatch();
+					this._replaceBtn.setEnabled(currentMatch.isModelMatch);
+				}
 
-			const matches = this._findModel.findMatches;
-			this._replaceAllBtn.setEnabled(matches.length > 0 && matches.find(match => match.webviewMatches.length > 0) === undefined);
+				const matches = this._findModel.findMatches;
+				this._replaceAllBtn.setEnabled(
+					matches.length > 0 && matches.find(match => match.webviewMatches.length > 0) === undefined
+				);
 
-			if (e.filters) {
-				this._findInput.updateFilterState(this._state.filters?.isModified() ?? false);
-			}
-		}));
+				if (e.filters) {
+					this._findInput.updateFilterState(this._state.filters?.isModified() ?? false);
+				}
+			})
+		);
 
-		this._register(DOM.addDisposableListener(this.getDomNode(), DOM.EventType.FOCUS, e => {
-			this._previousFocusElement = DOM.isHTMLElement(e.relatedTarget) ? e.relatedTarget : undefined;
-		}, true));
+		this._register(
+			DOM.addDisposableListener(
+				this.getDomNode(),
+				DOM.EventType.FOCUS,
+				e => {
+					this._previousFocusElement = DOM.isHTMLElement(e.relatedTarget)
+						? e.relatedTarget
+						: undefined;
+				},
+				true
+			)
+		);
 	}
 
 	get findModel(): FindModel {
@@ -206,7 +248,10 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 			this._progressBar.infinite().show(PROGRESS_BAR_DELAY);
 
 			const replacePattern = this.replacePattern;
-			const replaceString = replacePattern.buildReplaceString(match.matches, this._state.preserveCase);
+			const replaceString = replacePattern.buildReplaceString(
+				match.matches,
+				this._state.preserveCase
+			);
 
 			const viewModel = this._notebookEditor.getViewModel();
 			viewModel.replaceOne(cell, match.range, replaceString).then(() => {
@@ -242,7 +287,7 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 		});
 	}
 
-	protected findFirst(): void { }
+	protected findFirst(): void {}
 
 	protected onFocusTrackerFocus() {
 		this._findWidgetFocused.set(true);
@@ -262,13 +307,19 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 		// throw new Error('Method not implemented.');
 	}
 
-	protected onFindInputFocusTrackerFocus(): void { }
-	protected onFindInputFocusTrackerBlur(): void { }
+	protected onFindInputFocusTrackerFocus(): void {}
+	protected onFindInputFocusTrackerBlur(): void {}
 
-	override async show(initialInput?: string, options?: IShowNotebookFindWidgetOptions): Promise<void> {
+	override async show(
+		initialInput?: string,
+		options?: IShowNotebookFindWidgetOptions
+	): Promise<void> {
 		const searchStringUpdate = this._state.searchString !== initialInput;
 		super.show(initialInput, options);
-		this._state.change({ searchString: initialInput ?? this._state.searchString, isRevealed: true }, false);
+		this._state.change(
+			{ searchString: initialInput ?? this._state.searchString, isRevealed: true },
+			false
+		);
 
 		if (typeof options?.matchIndex === 'number') {
 			if (!this._findModel.findMatches.length) {
@@ -302,7 +353,14 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 
 	replace(initialFindInput?: string, initialReplaceInput?: string) {
 		super.showWithReplace(initialFindInput, initialReplaceInput);
-		this._state.change({ searchString: initialFindInput ?? '', replaceString: initialReplaceInput ?? '', isRevealed: true }, false);
+		this._state.change(
+			{
+				searchString: initialFindInput ?? '',
+				replaceString: initialReplaceInput ?? '',
+				isRevealed: true,
+			},
+			false
+		);
 		this._replaceInput.select();
 
 		if (this._showTimeout === null) {
@@ -377,7 +435,8 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 			if (this._state.matchesCount >= MATCHES_LIMIT) {
 				matchesCount += '+';
 			}
-			const matchesPosition: string = this._findModel.currentMatch < 0 ? '?' : String((this._findModel.currentMatch + 1));
+			const matchesPosition: string =
+				this._findModel.currentMatch < 0 ? '?' : String(this._findModel.currentMatch + 1);
 			label = strings.format(NLS_MATCHES_LOCATION, matchesPosition, matchesCount);
 		} else {
 			label = NLS_NO_RESULTS;
@@ -392,12 +451,17 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 	private _getAriaLabel(label: string, currentMatch: Range | null, searchString: string): string {
 		if (label === NLS_NO_RESULTS) {
 			return searchString === ''
-				? localize('ariaSearchNoResultEmpty', "{0} found", label)
+				? localize('ariaSearchNoResultEmpty', '{0} found', label)
 				: localize('ariaSearchNoResult', "{0} found for '{1}'", label, searchString);
 		}
 
 		// TODO@rebornix, aria for `cell ${index}, line {line}`
-		return localize('ariaSearchNoResultWithLineNumNoCurrentMatch', "{0} found for '{1}'", label, searchString);
+		return localize(
+			'ariaSearchNoResultWithLineNumNoCurrentMatch',
+			"{0} found for '{1}'",
+			label,
+			searchString
+		);
 	}
 	override dispose() {
 		this._notebookEditor?.removeClassName(FIND_SHOW_TRANSITION);

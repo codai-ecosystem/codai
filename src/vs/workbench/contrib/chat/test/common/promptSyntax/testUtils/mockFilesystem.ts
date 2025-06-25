@@ -41,18 +41,17 @@ type TWithURI<T extends IMockFilesystemNode> = T & { uri: URI };
 export class MockFilesystem {
 	constructor(
 		private readonly folders: IMockFolder[],
-		@IFileService private readonly fileService: IFileService,
-	) { }
+		@IFileService private readonly fileService: IFileService
+	) {}
 
 	/**
 	 * Starts the mock process.
 	 */
 	public async mock(): Promise<TWithURI<IMockFolder>[]> {
 		const result = await Promise.all(
-			this.folders
-				.map((folder) => {
-					return this.mockFolder(folder);
-				}),
+			this.folders.map(folder => {
+				return this.mockFolder(folder);
+			})
 		);
 
 		// wait for the filesystem event to settle before proceeding
@@ -71,7 +70,7 @@ export class MockFilesystem {
 	 */
 	private async mockFolder(
 		folder: IMockFolder,
-		parentFolder?: URI,
+		parentFolder?: URI
 	): Promise<TWithURI<IMockFolder>> {
 		const folderUri = parentFolder
 			? URI.joinPath(parentFolder, folder.name)
@@ -79,7 +78,7 @@ export class MockFilesystem {
 
 		assert(
 			!(await this.fileService.exists(folderUri)),
-			`Folder '${folderUri.path}' already exists.`,
+			`Folder '${folderUri.path}' already exists.`
 		);
 
 		try {
@@ -95,12 +94,11 @@ export class MockFilesystem {
 			if ('contents' in child) {
 				assert(
 					!(await this.fileService.exists(childUri)),
-					`File '${folderUri.path}' already exists.`,
+					`File '${folderUri.path}' already exists.`
 				);
 
-				const contents: string = (typeof child.contents === 'string')
-					? child.contents
-					: child.contents.join('\n');
+				const contents: string =
+					typeof child.contents === 'string' ? child.contents : child.contents.join('\n');
 
 				await this.fileService.writeFile(childUri, VSBuffer.fromString(contents));
 

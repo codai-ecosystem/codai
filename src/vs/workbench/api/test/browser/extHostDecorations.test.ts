@@ -16,7 +16,6 @@ import { IExtHostRpcService } from '../../common/extHostRpcService.js';
 import { nullExtensionDescription } from '../../../services/extensions/common/extensions.js';
 
 suite('ExtHostDecorations', function () {
-
 	let mainThreadShape: MainThreadDecorationsShape;
 	let extHostDecorations: ExtHostDecorations;
 	const providers = new Set<number>();
@@ -24,51 +23,56 @@ suite('ExtHostDecorations', function () {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	setup(function () {
-
 		providers.clear();
 
-		mainThreadShape = new class extends mock<MainThreadDecorationsShape>() {
+		mainThreadShape = new (class extends mock<MainThreadDecorationsShape>() {
 			override $registerDecorationProvider(handle: number) {
 				providers.add(handle);
 			}
-		};
+		})();
 
 		extHostDecorations = new ExtHostDecorations(
-			new class extends mock<IExtHostRpcService>() {
+			new (class extends mock<IExtHostRpcService>() {
 				override getProxy(): any {
 					return mainThreadShape;
 				}
-			},
+			})(),
 			new NullLogService()
 		);
 	});
 
 	test('SCM Decorations missing #100524', async function () {
-
 		let calledA = false;
 		let calledB = false;
 
 		// never returns
-		extHostDecorations.registerFileDecorationProvider({
-
-			provideFileDecoration() {
-				calledA = true;
-				return new Promise(() => { });
-			}
-		}, nullExtensionDescription);
+		extHostDecorations.registerFileDecorationProvider(
+			{
+				provideFileDecoration() {
+					calledA = true;
+					return new Promise(() => {});
+				},
+			},
+			nullExtensionDescription
+		);
 
 		// always returns
-		extHostDecorations.registerFileDecorationProvider({
-
-			provideFileDecoration() {
-				calledB = true;
-				return new Promise(resolve => resolve({ badge: 'H', tooltip: 'Hello' }));
-			}
-		}, nullExtensionDescription);
-
+		extHostDecorations.registerFileDecorationProvider(
+			{
+				provideFileDecoration() {
+					calledB = true;
+					return new Promise(resolve => resolve({ badge: 'H', tooltip: 'Hello' }));
+				},
+			},
+			nullExtensionDescription
+		);
 
 		const requests = [...providers.values()].map((handle, idx) => {
-			return extHostDecorations.$provideDecorations(handle, [{ id: idx, uri: URI.parse('test:///file') }], CancellationToken.None);
+			return extHostDecorations.$provideDecorations(
+				handle,
+				[{ id: idx, uri: URI.parse('test:///file') }],
+				CancellationToken.None
+			);
 		});
 
 		assert.strictEqual(calledA, true);
@@ -83,8 +87,6 @@ suite('ExtHostDecorations', function () {
 		const secondResult = await Promise.race([second, timeout(30).then(() => false)]);
 		assert.strictEqual(typeof secondResult, 'object');
 
-
 		await timeout(30);
 	});
-
 });

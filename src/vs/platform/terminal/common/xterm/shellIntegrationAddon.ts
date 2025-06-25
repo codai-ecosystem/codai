@@ -4,11 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IShellIntegration, ShellIntegrationStatus } from '../terminal.js';
-import { Disposable, dispose, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	Disposable,
+	dispose,
+	IDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { TerminalCapabilityStore } from '../capabilities/terminalCapabilityStore.js';
 import { CommandDetectionCapability } from '../capabilities/commandDetectionCapability.js';
 import { CwdDetectionCapability } from '../capabilities/cwdDetectionCapability.js';
-import { IBufferMarkCapability, ICommandDetectionCapability, ICwdDetectionCapability, ISerializedCommandDetectionCapability, IShellEnvDetectionCapability, TerminalCapability } from '../capabilities/capabilities.js';
+import {
+	IBufferMarkCapability,
+	ICommandDetectionCapability,
+	ICwdDetectionCapability,
+	ISerializedCommandDetectionCapability,
+	IShellEnvDetectionCapability,
+	TerminalCapability,
+} from '../capabilities/capabilities.js';
 import { PartialCommandDetectionCapability } from '../capabilities/partialCommandDetectionCapability.js';
 import { ILogService } from '../../../log/common/log.js';
 import { ITelemetryService } from '../../../telemetry/common/telemetry.js';
@@ -19,7 +31,6 @@ import { URI } from '../../../../base/common/uri.js';
 import { sanitizeCwd } from '../terminalEnvironment.js';
 import { removeAnsiEscapeCodesFromPrompt } from '../../../../base/common/strings.js';
 import { ShellEnvDetectionCapability } from '../capabilities/shellEnvDetectionCapability.js';
-
 
 /**
  * Shell integration is a feature that enhances the terminal's understanding of what's happening
@@ -53,7 +64,7 @@ export const enum ShellIntegrationOscPs {
 	 */
 	ITerm = 1337,
 	SetCwd = 7,
-	SetWindowsFriendlyCwd = 9
+	SetWindowsFriendlyCwd = 9,
 }
 
 /**
@@ -294,7 +305,7 @@ const enum VSCodeOscPt {
 	 *
 	 * WARNING: This sequence is unfinalized, DO NOT use this in your shell integration script.
 	 */
-	EnvSingleEnd = 'EnvSingleEnd'
+	EnvSingleEnd = 'EnvSingleEnd',
 }
 
 /**
@@ -313,7 +324,7 @@ const enum ITermOscPt {
 	 *
 	 * Format: `OSC 1337 ; CurrentDir=<Cwd> ST`
 	 */
-	CurrentDir = 'CurrentDir'
+	CurrentDir = 'CurrentDir',
 }
 
 /**
@@ -329,10 +340,14 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 	private _commonProtocolDisposables: IDisposable[] = [];
 
 	private _seenSequences: Set<string> = new Set();
-	get seenSequences(): ReadonlySet<string> { return this._seenSequences; }
+	get seenSequences(): ReadonlySet<string> {
+		return this._seenSequences;
+	}
 
 	private _status: ShellIntegrationStatus = ShellIntegrationStatus.Off;
-	get status(): ShellIntegrationStatus { return this._status; }
+	get status(): ShellIntegrationStatus {
+		return this._status;
+	}
 
 	private readonly _onDidChangeStatus = new Emitter<ShellIntegrationStatus>();
 	readonly onDidChangeStatus = this._onDidChangeStatus.event;
@@ -346,10 +361,12 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 		private readonly _logService: ILogService
 	) {
 		super();
-		this._register(toDisposable(() => {
-			this._clearActivationTimeout();
-			this._disposeCommonProtocol();
-		}));
+		this._register(
+			toDisposable(() => {
+				this._clearActivationTimeout();
+				this._disposeCommonProtocol();
+			})
+		);
 	}
 
 	private _disposeCommonProtocol(): void {
@@ -359,14 +376,35 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 
 	activate(xterm: Terminal) {
 		this._terminal = xterm;
-		this.capabilities.add(TerminalCapability.PartialCommandDetection, this._register(new PartialCommandDetectionCapability(this._terminal)));
-		this._register(xterm.parser.registerOscHandler(ShellIntegrationOscPs.VSCode, data => this._handleVSCodeSequence(data)));
-		this._register(xterm.parser.registerOscHandler(ShellIntegrationOscPs.ITerm, data => this._doHandleITermSequence(data)));
-		this._commonProtocolDisposables.push(
-			xterm.parser.registerOscHandler(ShellIntegrationOscPs.FinalTerm, data => this._handleFinalTermSequence(data))
+		this.capabilities.add(
+			TerminalCapability.PartialCommandDetection,
+			this._register(new PartialCommandDetectionCapability(this._terminal))
 		);
-		this._register(xterm.parser.registerOscHandler(ShellIntegrationOscPs.SetCwd, data => this._doHandleSetCwd(data)));
-		this._register(xterm.parser.registerOscHandler(ShellIntegrationOscPs.SetWindowsFriendlyCwd, data => this._doHandleSetWindowsFriendlyCwd(data)));
+		this._register(
+			xterm.parser.registerOscHandler(ShellIntegrationOscPs.VSCode, data =>
+				this._handleVSCodeSequence(data)
+			)
+		);
+		this._register(
+			xterm.parser.registerOscHandler(ShellIntegrationOscPs.ITerm, data =>
+				this._doHandleITermSequence(data)
+			)
+		);
+		this._commonProtocolDisposables.push(
+			xterm.parser.registerOscHandler(ShellIntegrationOscPs.FinalTerm, data =>
+				this._handleFinalTermSequence(data)
+			)
+		);
+		this._register(
+			xterm.parser.registerOscHandler(ShellIntegrationOscPs.SetCwd, data =>
+				this._doHandleSetCwd(data)
+			)
+		);
+		this._register(
+			xterm.parser.registerOscHandler(ShellIntegrationOscPs.SetWindowsFriendlyCwd, data =>
+				this._doHandleSetWindowsFriendlyCwd(data)
+			)
+		);
 		this._ensureCapabilitiesOrAddFailureTelemetry();
 	}
 
@@ -408,7 +446,9 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 				return true;
 			case FinalTermOscPt.CommandStart:
 				// Ignore the command line for these sequences as it's unreliable for example in powerlevel10k
-				this._createOrGetCommandDetection(this._terminal).handleCommandStart({ ignoreCommandLine: true });
+				this._createOrGetCommandDetection(this._terminal).handleCommandStart({
+					ignoreCommandLine: true,
+				});
 				return true;
 			case FinalTermOscPt.CommandExecuted:
 				this._createOrGetCommandDetection(this._terminal).handleCommandExecuted();
@@ -425,7 +465,10 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 	private _handleVSCodeSequence(data: string): boolean {
 		const didHandle = this._doHandleVSCodeSequence(data);
 		if (!this._hasUpdatedTelemetry && didHandle) {
-			this._telemetryService?.publicLog2<{}, { owner: 'meganrogge'; comment: 'Indicates shell integration was activated' }>('terminal/shellIntegrationActivationSucceeded');
+			this._telemetryService?.publicLog2<
+				{},
+				{ owner: 'meganrogge'; comment: 'Indicates shell integration was activated' }
+			>('terminal/shellIntegrationActivationSucceeded');
 			this._hasUpdatedTelemetry = true;
 			this._clearActivationTimeout();
 		}
@@ -441,8 +484,14 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 			return;
 		}
 		this._activationTimeout = setTimeout(() => {
-			if (!this.capabilities.get(TerminalCapability.CommandDetection) && !this.capabilities.get(TerminalCapability.CwdDetection)) {
-				this._telemetryService?.publicLog2<{}, { owner: 'meganrogge'; comment: 'Indicates shell integration activation timeout' }>('terminal/shellIntegrationActivationTimeout');
+			if (
+				!this.capabilities.get(TerminalCapability.CommandDetection) &&
+				!this.capabilities.get(TerminalCapability.CwdDetection)
+			) {
+				this._telemetryService?.publicLog2<
+					{},
+					{ owner: 'meganrogge'; comment: 'Indicates shell integration activation timeout' }
+				>('terminal/shellIntegrationActivationTimeout');
 				this._logService.warn('Shell integration failed to add capabilities within 10 seconds');
 			}
 			this._hasUpdatedTelemetry = true;
@@ -466,7 +515,8 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 		const command = argsIndex === -1 ? data : data.substring(0, argsIndex);
 		this._markSequenceSeen(command);
 		// Cast to strict checked index access
-		const args: (string | undefined)[] = argsIndex === -1 ? [] : data.substring(argsIndex + 1).split(';');
+		const args: (string | undefined)[] =
+			argsIndex === -1 ? [] : data.substring(argsIndex + 1).split(';');
 		switch (command) {
 			case VSCodeOscPt.PromptStart:
 				this._createOrGetCommandDetection(this._terminal).handlePromptStart();
@@ -492,7 +542,10 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 				} else {
 					commandLine = '';
 				}
-				this._createOrGetCommandDetection(this._terminal).setCommandLine(commandLine, arg1 === this._nonce);
+				this._createOrGetCommandDetection(this._terminal).setCommandLine(
+					commandLine,
+					arg1 === this._nonce
+				);
 				return true;
 			}
 			case VSCodeOscPt.ContinuationStart: {
@@ -511,13 +564,19 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 						const env = JSON.parse(deserializeMessage(arg0));
 						this._createOrGetShellEnvDetection().setEnvironment(env, arg1 === this._nonce);
 					} catch (e) {
-						this._logService.warn('Failed to parse environment from shell integration sequence', arg0);
+						this._logService.warn(
+							'Failed to parse environment from shell integration sequence',
+							arg0
+						);
 					}
 				}
 				return true;
 			}
 			case VSCodeOscPt.EnvSingleStart: {
-				this._createOrGetShellEnvDetection().startEnvironmentSingleVar(args[0] === '1', args[1] === this._nonce);
+				this._createOrGetShellEnvDetection().startEnvironmentSingleVar(
+					args[0] === '1',
+					args[1] === this._nonce
+				);
 				return true;
 			}
 			case VSCodeOscPt.EnvSingleDelete: {
@@ -527,7 +586,11 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 				const arg2 = args[2];
 				if (arg0 !== undefined && arg1 !== undefined) {
 					const env = deserializeMessage(arg1);
-					this._createOrGetShellEnvDetection().deleteEnvironmentSingleVar(arg0, env, arg2 === this._nonce);
+					this._createOrGetShellEnvDetection().deleteEnvironmentSingleVar(
+						arg0,
+						env,
+						arg2 === this._nonce
+					);
 				}
 				return true;
 			}
@@ -537,7 +600,11 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 				const arg2 = args[2];
 				if (arg0 !== undefined && arg1 !== undefined) {
 					const env = deserializeMessage(arg1);
-					this._createOrGetShellEnvDetection().setEnvironmentSingleVar(arg0, env, arg2 === this._nonce);
+					this._createOrGetShellEnvDetection().setEnvironmentSingleVar(
+						arg0,
+						env,
+						arg2 === this._nonce
+					);
 				}
 				return true;
 			}
@@ -570,11 +637,15 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 						return true;
 					}
 					case 'IsWindows': {
-						this._createOrGetCommandDetection(this._terminal).setIsWindowsPty(value === 'True' ? true : false);
+						this._createOrGetCommandDetection(this._terminal).setIsWindowsPty(
+							value === 'True' ? true : false
+						);
 						return true;
 					}
 					case 'HasRichCommandDetection': {
-						this._createOrGetCommandDetection(this._terminal).setHasRichCommandDetection(value === 'True' ? true : false);
+						this._createOrGetCommandDetection(this._terminal).setHasRichCommandDetection(
+							value === 'True' ? true : false
+						);
 						return true;
 					}
 					case 'Prompt': {
@@ -589,7 +660,9 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 					}
 					case 'Task': {
 						this._createOrGetBufferMarkDetection(this._terminal);
-						this.capabilities.get(TerminalCapability.CommandDetection)?.setIsCommandStorageDisabled();
+						this.capabilities
+							.get(TerminalCapability.CommandDetection)
+							?.setIsCommandStorageDisabled();
 						return true;
 					}
 				}
@@ -618,7 +691,10 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 		const lastPromptLine = prompt.substring(prompt.lastIndexOf('\n') + 1);
 		const promptTerminator = lastPromptLine.substring(lastPromptLine.lastIndexOf(' '));
 		if (promptTerminator) {
-			this._createOrGetCommandDetection(this._terminal).setPromptTerminator(promptTerminator, lastPromptLine);
+			this._createOrGetCommandDetection(this._terminal).setPromptTerminator(
+				promptTerminator,
+				lastPromptLine
+			);
 		}
 	}
 
@@ -775,22 +851,29 @@ export function deserializeMessage(message: string): string {
 		/\\(\\|x([0-9a-f]{2}))/gi,
 		// If it's a hex value, parse it to a character.
 		// Otherwise the operator is '\', which we return literally, now unescaped.
-		(_match: string, op: string, hex?: string) => hex ? String.fromCharCode(parseInt(hex, 16)) : op);
+		(_match: string, op: string, hex?: string) =>
+			hex ? String.fromCharCode(parseInt(hex, 16)) : op
+	);
 }
 
-export function parseKeyValueAssignment(message: string): { key: string; value: string | undefined } {
+export function parseKeyValueAssignment(message: string): {
+	key: string;
+	value: string | undefined;
+} {
 	const separatorIndex = message.indexOf('=');
 	if (separatorIndex === -1) {
 		return { key: message, value: undefined }; // No '=' was found.
 	}
 	return {
 		key: message.substring(0, separatorIndex),
-		value: message.substring(1 + separatorIndex)
+		value: message.substring(1 + separatorIndex),
 	};
 }
 
-
-export function parseMarkSequence(sequence: (string | undefined)[]): { id?: string; hidden?: boolean } {
+export function parseMarkSequence(sequence: (string | undefined)[]): {
+	id?: string;
+	hidden?: boolean;
+} {
 	let id = undefined;
 	let hidden = false;
 	for (const property of sequence) {

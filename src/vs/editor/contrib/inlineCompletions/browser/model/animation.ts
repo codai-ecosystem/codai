@@ -4,7 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { getActiveWindow } from '../../../../../base/browser/dom.js';
-import { ISettableObservable, observableValue, ITransaction, IReader, observableSignal } from '../../../../../base/common/observable.js';
+import {
+	ISettableObservable,
+	observableValue,
+	ITransaction,
+	IReader,
+	observableSignal,
+} from '../../../../../base/common/observable.js';
 
 export class AnimatedValue {
 	public static const(value: number): AnimatedValue {
@@ -17,7 +23,7 @@ export class AnimatedValue {
 		public readonly startValue: number,
 		public readonly endValue: number,
 		public readonly durationMs: number,
-		private readonly _interpolationFunction: InterpolationFunction = easeOutExpo,
+		private readonly _interpolationFunction: InterpolationFunction = easeOutExpo
 	) {
 		if (startValue === endValue) {
 			this.durationMs = 0;
@@ -33,25 +39,52 @@ export class AnimatedValue {
 		if (timePassed >= this.durationMs) {
 			return this.endValue;
 		}
-		const value = this._interpolationFunction(timePassed, this.startValue, this.endValue - this.startValue, this.durationMs);
+		const value = this._interpolationFunction(
+			timePassed,
+			this.startValue,
+			this.endValue - this.startValue,
+			this.durationMs
+		);
 		return value;
 	}
 }
 
-type InterpolationFunction = (passedTime: number, start: number, length: number, totalDuration: number) => number;
+type InterpolationFunction = (
+	passedTime: number,
+	start: number,
+	length: number,
+	totalDuration: number
+) => number;
 
-export function easeOutExpo(passedTime: number, start: number, length: number, totalDuration: number): number {
+export function easeOutExpo(
+	passedTime: number,
+	start: number,
+	length: number,
+	totalDuration: number
+): number {
 	return passedTime === totalDuration
 		? start + length
-		: length * (-Math.pow(2, -10 * passedTime / totalDuration) + 1) + start;
+		: length * (-Math.pow(2, (-10 * passedTime) / totalDuration) + 1) + start;
 }
 
-export function easeOutCubic(passedTime: number, start: number, length: number, totalDuration: number): number {
-	return length * ((passedTime = passedTime / totalDuration - 1) * passedTime * passedTime + 1) + start;
+export function easeOutCubic(
+	passedTime: number,
+	start: number,
+	length: number,
+	totalDuration: number
+): number {
+	return (
+		length * ((passedTime = passedTime / totalDuration - 1) * passedTime * passedTime + 1) + start
+	);
 }
 
-export function linear(passedTime: number, start: number, length: number, totalDuration: number): number {
-	return length * passedTime / totalDuration + start;
+export function linear(
+	passedTime: number,
+	start: number,
+	length: number,
+	totalDuration: number
+): number {
+	return (length * passedTime) / totalDuration + start;
 }
 
 export class ObservableAnimatedValue {
@@ -61,9 +94,7 @@ export class ObservableAnimatedValue {
 
 	private readonly _value: ISettableObservable<AnimatedValue>;
 
-	constructor(
-		initialValue: AnimatedValue,
-	) {
+	constructor(initialValue: AnimatedValue) {
 		this._value = observableValue(this, initialValue);
 	}
 

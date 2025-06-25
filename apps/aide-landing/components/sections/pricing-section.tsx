@@ -18,12 +18,14 @@ export function PricingSection() {
 	const stripePriceIds = {
 		professional: {
 			monthly: process.env.NEXT_PUBLIC_STRIPE_PROFESSIONAL_PRICE_ID || 'price_professional_monthly',
-			yearly: process.env.NEXT_PUBLIC_STRIPE_PROFESSIONAL_YEARLY_PRICE_ID || 'price_professional_yearly',
+			yearly:
+				process.env.NEXT_PUBLIC_STRIPE_PROFESSIONAL_YEARLY_PRICE_ID || 'price_professional_yearly',
 		},
 		enterprise: {
 			monthly: process.env.NEXT_PUBLIC_STRIPE_ENTERPRISE_PRICE_ID || 'price_enterprise_monthly',
-			yearly: process.env.NEXT_PUBLIC_STRIPE_ENTERPRISE_YEARLY_PRICE_ID || 'price_enterprise_yearly',
-		}
+			yearly:
+				process.env.NEXT_PUBLIC_STRIPE_ENTERPRISE_YEARLY_PRICE_ID || 'price_enterprise_yearly',
+		},
 	};
 
 	const handleSubscribe = async (planName: string, priceId?: string) => {
@@ -66,7 +68,10 @@ export function PricingSection() {
 		} catch (error) {
 			console.error('Error creating checkout session:', error);
 			// Fallback to control panel signup
-			window.open(`${process.env.NEXT_PUBLIC_CONTROL_PANEL_URL}/signup?plan=${planName.toLowerCase()}`, '_blank');
+			window.open(
+				`${process.env.NEXT_PUBLIC_CONTROL_PANEL_URL}/signup?plan=${planName.toLowerCase()}`,
+				'_blank'
+			);
 		} finally {
 			setIsLoading(null);
 		}
@@ -112,7 +117,8 @@ export function PricingSection() {
 			],
 			popular: false,
 			cta: 'Start Free',
-		}, {
+		},
+		{
 			name: 'Professional',
 			icon: Crown,
 			description: 'For growing teams and production applications',
@@ -173,7 +179,7 @@ export function PricingSection() {
 					ref={ref}
 					variants={containerVariants}
 					initial="hidden"
-					animate={inView ? "visible" : "hidden"}
+					animate={inView ? 'visible' : 'hidden'}
 					className="text-center mb-16"
 				>
 					<motion.div
@@ -190,7 +196,8 @@ export function PricingSection() {
 					>
 						Choose your
 						<span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-							{' '}perfect plan
+							{' '}
+							perfect plan
 						</span>
 					</motion.h2>
 
@@ -198,8 +205,8 @@ export function PricingSection() {
 						variants={itemVariants}
 						className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8"
 					>
-						Start building for free, then scale as you grow. All plans include core AI features
-						and VS Code integration.
+						Start building for free, then scale as you grow. All plans include core AI features and
+						VS Code integration.
 					</motion.p>
 
 					{/* Billing Toggle */}
@@ -209,19 +216,21 @@ export function PricingSection() {
 					>
 						<button
 							onClick={() => setBillingPeriod('monthly')}
-							className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${billingPeriod === 'monthly'
-								? 'bg-background text-foreground shadow-sm'
-								: 'text-muted-foreground hover:text-foreground'
-								}`}
+							className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+								billingPeriod === 'monthly'
+									? 'bg-background text-foreground shadow-sm'
+									: 'text-muted-foreground hover:text-foreground'
+							}`}
 						>
 							Monthly
 						</button>
 						<button
 							onClick={() => setBillingPeriod('yearly')}
-							className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${billingPeriod === 'yearly'
-								? 'bg-background text-foreground shadow-sm'
-								: 'text-muted-foreground hover:text-foreground'
-								}`}
+							className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+								billingPeriod === 'yearly'
+									? 'bg-background text-foreground shadow-sm'
+									: 'text-muted-foreground hover:text-foreground'
+							}`}
 						>
 							Yearly
 							<span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
@@ -234,17 +243,18 @@ export function PricingSection() {
 				<motion.div
 					variants={containerVariants}
 					initial="hidden"
-					animate={inView ? "visible" : "hidden"}
+					animate={inView ? 'visible' : 'hidden'}
 					className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto"
 				>
 					{plans.map((plan, index) => (
 						<motion.div
 							key={index}
 							variants={itemVariants}
-							className={`relative bg-card border rounded-3xl p-8 ${plan.popular
-								? 'border-primary shadow-xl scale-105'
-								: 'border-border hover:border-primary/50'
-								} transition-all duration-300 hover:shadow-lg`}
+							className={`relative bg-card border rounded-3xl p-8 ${
+								plan.popular
+									? 'border-primary shadow-xl scale-105'
+									: 'border-border hover:border-primary/50'
+							} transition-all duration-300 hover:shadow-lg`}
 						>
 							{/* Popular Badge */}
 							{plan.popular && (
@@ -254,7 +264,6 @@ export function PricingSection() {
 									</div>
 								</div>
 							)}
-
 							{/* Plan Header */}
 							<div className="text-center mb-8">
 								<div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 text-primary rounded-xl mb-4">
@@ -263,7 +272,6 @@ export function PricingSection() {
 								<h3 className="text-2xl font-bold text-foreground mb-2">{plan.name}</h3>
 								<p className="text-muted-foreground">{plan.description}</p>
 							</div>
-
 							{/* Pricing */}
 							<div className="text-center mb-8">
 								<div className="flex items-baseline justify-center">
@@ -280,7 +288,6 @@ export function PricingSection() {
 									</p>
 								)}
 							</div>
-
 							{/* Features */}
 							<ul className="space-y-4 mb-8">
 								{plan.features.map((feature, featureIndex) => (
@@ -289,15 +296,14 @@ export function PricingSection() {
 										<span className="text-muted-foreground">{feature}</span>
 									</li>
 								))}
-							</ul>							{/* CTA Button */}
+							</ul>{' '}
+							{/* CTA Button */}
 							<Button
-								onClick={() => handleSubscribe(
-									plan.name,
-									plan.priceId ? plan.priceId[billingPeriod] : undefined
-								)}
+								onClick={() =>
+									handleSubscribe(plan.name, plan.priceId ? plan.priceId[billingPeriod] : undefined)
+								}
 								disabled={isLoading === plan.name}
-								className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''
-									}`}
+								className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
 								variant={plan.popular ? 'default' : 'outline'}
 								size="lg"
 							>
@@ -306,16 +312,14 @@ export function PricingSection() {
 										<motion.div
 											className="w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"
 											animate={{ rotate: 360 }}
-											transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+											transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
 										/>
 										Processing...
 									</>
 								) : (
 									<>
 										{plan.cta}
-										{plan.name !== 'Starter' && (
-											<ExternalLink className="w-4 h-4 ml-2" />
-										)}
+										{plan.name !== 'Starter' && <ExternalLink className="w-4 h-4 ml-2" />}
 									</>
 								)}
 							</Button>
@@ -327,21 +331,17 @@ export function PricingSection() {
 				<motion.div
 					variants={itemVariants}
 					initial="hidden"
-					animate={inView ? "visible" : "hidden"}
+					animate={inView ? 'visible' : 'hidden'}
 					className="text-center mt-16"
 				>
 					<div className="bg-gradient-to-r from-primary/5 via-purple-500/5 to-blue-500/5 border border-primary/20 rounded-2xl p-8 max-w-4xl mx-auto">
-						<h3 className="text-2xl font-bold text-foreground mb-3">
-							Need a custom solution?
-						</h3>
+						<h3 className="text-2xl font-bold text-foreground mb-3">Need a custom solution?</h3>
 						<p className="text-muted-foreground mb-6">
-							Get in touch with our sales team to discuss enterprise features,
-							custom deployments, and volume pricing.
+							Get in touch with our sales team to discuss enterprise features, custom deployments,
+							and volume pricing.
 						</p>
 						<div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-							<Button size="lg">
-								Schedule a Demo
-							</Button>
+							<Button size="lg">Schedule a Demo</Button>
 							<Button variant="outline" size="lg">
 								Contact Sales
 							</Button>

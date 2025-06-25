@@ -45,27 +45,32 @@ export interface ICheckboxStyles {
 export const unthemedToggleStyles = {
 	inputActiveOptionBorder: '#007ACC00',
 	inputActiveOptionForeground: '#FFFFFF',
-	inputActiveOptionBackground: '#0E639C50'
+	inputActiveOptionBackground: '#0E639C50',
 };
 
 export class ToggleActionViewItem extends BaseActionViewItem {
-
 	protected readonly toggle: Toggle;
 
 	constructor(context: unknown, action: IAction, options: IActionViewItemOptions) {
 		super(context, action, options);
 
-		this.toggle = this._register(new Toggle({
-			actionClassName: this._action.class,
-			isChecked: !!this._action.checked,
-			title: (<IActionViewItemOptions>this.options).keybinding ? `${this._action.label} (${(<IActionViewItemOptions>this.options).keybinding})` : this._action.label,
-			notFocusable: true,
-			inputActiveOptionBackground: options.toggleStyles?.inputActiveOptionBackground,
-			inputActiveOptionBorder: options.toggleStyles?.inputActiveOptionBorder,
-			inputActiveOptionForeground: options.toggleStyles?.inputActiveOptionForeground,
-			hoverDelegate: options.hoverDelegate
-		}));
-		this._register(this.toggle.onChange(() => this._action.checked = !!this.toggle && this.toggle.checked));
+		this.toggle = this._register(
+			new Toggle({
+				actionClassName: this._action.class,
+				isChecked: !!this._action.checked,
+				title: (<IActionViewItemOptions>this.options).keybinding
+					? `${this._action.label} (${(<IActionViewItemOptions>this.options).keybinding})`
+					: this._action.label,
+				notFocusable: true,
+				inputActiveOptionBackground: options.toggleStyles?.inputActiveOptionBackground,
+				inputActiveOptionBorder: options.toggleStyles?.inputActiveOptionBorder,
+				inputActiveOptionForeground: options.toggleStyles?.inputActiveOptionForeground,
+				hoverDelegate: options.hoverDelegate,
+			})
+		);
+		this._register(
+			this.toggle.onChange(() => (this._action.checked = !!this.toggle && this.toggle.checked))
+		);
 	}
 
 	override render(container: HTMLElement): void {
@@ -100,11 +105,9 @@ export class ToggleActionViewItem extends BaseActionViewItem {
 	override setFocusable(focusable: boolean): void {
 		this.toggle.domNode.tabIndex = focusable ? 0 : -1;
 	}
-
 }
 
 export class Toggle extends Widget {
-
 	private readonly _onChange = this._register(new Emitter<boolean>());
 	readonly onChange: Event<boolean /* via keyboard */> = this._onChange.event;
 
@@ -137,7 +140,13 @@ export class Toggle extends Widget {
 		}
 
 		this.domNode = document.createElement('div');
-		this._hover = this._register(getBaseLayerHoverDelegate().setupManagedHover(opts.hoverDelegate ?? getDefaultHoverDelegate('mouse'), this.domNode, this._opts.title));
+		this._hover = this._register(
+			getBaseLayerHoverDelegate().setupManagedHover(
+				opts.hoverDelegate ?? getDefaultHoverDelegate('mouse'),
+				this.domNode,
+				this._opts.title
+			)
+		);
 		this.domNode.classList.add(...classes);
 		if (!this._opts.notFocusable) {
 			this.domNode.tabIndex = 0;
@@ -148,7 +157,7 @@ export class Toggle extends Widget {
 
 		this.applyStyles();
 
-		this.onclick(this.domNode, (ev) => {
+		this.onclick(this.domNode, ev => {
 			if (this.enabled) {
 				this.checked = !this._checked;
 				this._onChange.fire(false);
@@ -158,7 +167,7 @@ export class Toggle extends Widget {
 
 		this._register(this.ignoreGesture(this.domNode));
 
-		this.onkeydown(this.domNode, (keyboardEvent) => {
+		this.onkeydown(this.domNode, keyboardEvent => {
 			if (!this.enabled) {
 				return;
 			}
@@ -213,8 +222,10 @@ export class Toggle extends Widget {
 	protected applyStyles(): void {
 		if (this.domNode) {
 			this.domNode.style.borderColor = (this._checked && this._opts.inputActiveOptionBorder) || '';
-			this.domNode.style.color = (this._checked && this._opts.inputActiveOptionForeground) || 'inherit';
-			this.domNode.style.backgroundColor = (this._checked && this._opts.inputActiveOptionBackground) || '';
+			this.domNode.style.color =
+				(this._checked && this._opts.inputActiveOptionForeground) || 'inherit';
+			this.domNode.style.backgroundColor =
+				(this._checked && this._opts.inputActiveOptionBackground) || '';
 		}
 	}
 
@@ -241,7 +252,6 @@ export class Toggle extends Widget {
 }
 
 export class Checkbox extends Widget {
-
 	static readonly CLASS_NAME = 'monaco-checkbox';
 
 	private readonly _onChange = this._register(new Emitter<boolean>());
@@ -252,10 +262,22 @@ export class Checkbox extends Widget {
 
 	readonly domNode: HTMLElement;
 
-	constructor(private title: string, private isChecked: boolean, styles: ICheckboxStyles) {
+	constructor(
+		private title: string,
+		private isChecked: boolean,
+		styles: ICheckboxStyles
+	) {
 		super();
 
-		this.checkbox = this._register(new Toggle({ title: this.title, isChecked: this.isChecked, icon: Codicon.check, actionClassName: Checkbox.CLASS_NAME, ...unthemedToggleStyles }));
+		this.checkbox = this._register(
+			new Toggle({
+				title: this.title,
+				isChecked: this.isChecked,
+				icon: Codicon.check,
+				actionClassName: Checkbox.CLASS_NAME,
+				...unthemedToggleStyles,
+			})
+		);
 
 		this.domNode = this.checkbox.domNode;
 
@@ -263,10 +285,12 @@ export class Checkbox extends Widget {
 
 		this.applyStyles();
 
-		this._register(this.checkbox.onChange(keyboard => {
-			this.applyStyles();
-			this._onChange.fire(keyboard);
-		}));
+		this._register(
+			this.checkbox.onChange(keyboard => {
+				this.applyStyles();
+				this._onChange.fire(keyboard);
+			})
+		);
 	}
 
 	get checked(): boolean {
@@ -306,14 +330,18 @@ export class Checkbox extends Widget {
 	}
 
 	protected applyStyles(enabled = this.enabled): void {
-		this.domNode.style.color = (enabled ? this.styles.checkboxForeground : this.styles.checkboxDisabledForeground) || '';
-		this.domNode.style.backgroundColor = (enabled ? this.styles.checkboxBackground : this.styles.checkboxDisabledBackground) || '';
-		this.domNode.style.borderColor = (enabled ? this.styles.checkboxBorder : this.styles.checkboxDisabledBackground) || '';
+		this.domNode.style.color =
+			(enabled ? this.styles.checkboxForeground : this.styles.checkboxDisabledForeground) || '';
+		this.domNode.style.backgroundColor =
+			(enabled ? this.styles.checkboxBackground : this.styles.checkboxDisabledBackground) || '';
+		this.domNode.style.borderColor =
+			(enabled ? this.styles.checkboxBorder : this.styles.checkboxDisabledBackground) || '';
 
 		const size = this.styles.size || 18;
 		this.domNode.style.width =
 			this.domNode.style.height =
-			this.domNode.style.fontSize = `${size}px`;
+			this.domNode.style.fontSize =
+				`${size}px`;
 		this.domNode.style.fontSize = `${size - 2}px`;
 	}
 }
@@ -323,14 +351,15 @@ export interface ICheckboxActionViewItemOptions extends IActionViewItemOptions {
 }
 
 export class CheckboxActionViewItem extends BaseActionViewItem {
-
 	protected readonly toggle: Checkbox;
 	private cssClass?: string;
 
 	constructor(context: unknown, action: IAction, options: ICheckboxActionViewItemOptions) {
 		super(context, action, options);
 
-		this.toggle = this._register(new Checkbox(this._action.label, !!this._action.checked, options.checkboxStyles));
+		this.toggle = this._register(
+			new Checkbox(this._action.label, !!this._action.checked, options.checkboxStyles)
+		);
 		this._register(this.toggle.onChange(() => this.onChange()));
 	}
 
@@ -339,13 +368,17 @@ export class CheckboxActionViewItem extends BaseActionViewItem {
 		this.element.classList.add('checkbox-action-item');
 		this.element.appendChild(this.toggle.domNode);
 		if ((<IActionViewItemOptions>this.options).label && this._action.label) {
-			const label = this.element.appendChild($('span.checkbox-label', undefined, this._action.label));
-			this._register(addDisposableListener(label, EventType.CLICK, (e: MouseEvent) => {
-				this.toggle.checked = !this.toggle.checked;
-				e.stopPropagation();
-				e.preventDefault();
-				this.onChange();
-			}));
+			const label = this.element.appendChild(
+				$('span.checkbox-label', undefined, this._action.label)
+			);
+			this._register(
+				addDisposableListener(label, EventType.CLICK, (e: MouseEvent) => {
+					this.toggle.checked = !this.toggle.checked;
+					e.stopPropagation();
+					e.preventDefault();
+					this.onChange();
+				})
+			);
 		}
 
 		this.updateEnabled();
@@ -398,5 +431,4 @@ export class CheckboxActionViewItem extends BaseActionViewItem {
 	override setFocusable(focusable: boolean): void {
 		this.toggle.domNode.tabIndex = focusable ? 0 : -1;
 	}
-
 }

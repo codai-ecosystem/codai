@@ -40,8 +40,8 @@ export class PlannerAgent extends BaseAgent {
 			actions,
 			metadata: {
 				planningType,
-				contextItems: context.length
-			}
+				contextItems: context.length,
+			},
 		};
 	}
 
@@ -57,21 +57,33 @@ export class PlannerAgent extends BaseAgent {
 				'Feature Planning',
 				'Architecture Planning',
 				'Project Planning',
-				'Resource Estimation'
-			]
+				'Resource Estimation',
+			],
 		};
 	}
 
 	private determinePlanningType(message: string): string {
 		const lowerMessage = message.toLowerCase();
 
-		if (lowerMessage.includes('project') || lowerMessage.includes('app') || lowerMessage.includes('system')) {
+		if (
+			lowerMessage.includes('project') ||
+			lowerMessage.includes('app') ||
+			lowerMessage.includes('system')
+		) {
 			return 'project';
 		}
-		if (lowerMessage.includes('architecture') || lowerMessage.includes('design') || lowerMessage.includes('structure')) {
+		if (
+			lowerMessage.includes('architecture') ||
+			lowerMessage.includes('design') ||
+			lowerMessage.includes('structure')
+		) {
 			return 'architecture';
 		}
-		if (lowerMessage.includes('feature') || lowerMessage.includes('function') || lowerMessage.includes('component')) {
+		if (
+			lowerMessage.includes('feature') ||
+			lowerMessage.includes('function') ||
+			lowerMessage.includes('component')
+		) {
 			return 'feature';
 		}
 
@@ -108,7 +120,11 @@ ${aiResponse}
 
 **Memory Updated:** Added feature plan to memory graph for future reference.`;
 	}
-	private async planArchitecture(message: string, intentId: string, context: string[]): Promise<string> {
+	private async planArchitecture(
+		message: string,
+		intentId: string,
+		context: string[]
+	): Promise<string> {
 		const systemPrompt = `You are AIDE's PlannerAgent specializing in system architecture design. Your expertise includes:
 
 1. Designing scalable, maintainable system architectures
@@ -138,7 +154,8 @@ Structure your response clearly with architectural decisions and their rationale
 ${aiResponse}
 
 **Memory Updated:** Added architectural decisions to memory graph for reference during implementation.`;
-	} private async planProject(message: string, intentId: string, context: string[]): Promise<string> {
+	}
+	private async planProject(message: string, intentId: string, context: string[]): Promise<string> {
 		const systemPrompt = `You are AIDE's PlannerAgent specializing in comprehensive project planning. Your expertise includes:
 
 1. Creating complete project roadmaps from concept to deployment
@@ -185,10 +202,12 @@ ${aiResponse}
 	}
 
 	private extractProjectType(message: string): string {
-		if (message.includes('web-app') || message.includes('web application')) return 'Web Application';
+		if (message.includes('web-app') || message.includes('web application'))
+			return 'Web Application';
 		if (message.includes('mobile-app') || message.includes('mobile')) return 'Mobile Application';
 		if (message.includes('api') || message.includes('REST')) return 'API Service';
-		if (message.includes('desktop-app') || message.includes('desktop')) return 'Desktop Application';
+		if (message.includes('desktop-app') || message.includes('desktop'))
+			return 'Desktop Application';
 		return 'Custom Project';
 	}
 
@@ -296,7 +315,11 @@ project-name/
 				return `Project structure will be designed based on specific requirements and chosen technologies.`;
 		}
 	}
-	private async generalPlanning(message: string, intentId: string, context: string[]): Promise<string> {
+	private async generalPlanning(
+		message: string,
+		intentId: string,
+		context: string[]
+	): Promise<string> {
 		const systemPrompt = `You are AIDE's PlannerAgent providing general planning guidance. Your role is to:
 
 1. Analyze requirements and clarify project scope

@@ -27,7 +27,6 @@ import { IWindowsMainService } from '../../windows/electron-main/windows.js';
  *            (https://github.com/microsoft/vscode/pull/56727)
  */
 export class ElectronURLListener extends Disposable {
-
 	private uris: IProtocolUrl[] = [];
 	private retryCount = 0;
 
@@ -42,7 +41,10 @@ export class ElectronURLListener extends Disposable {
 		super();
 
 		if (initialProtocolUrls) {
-			logService.trace('ElectronURLListener initialUrisToHandle:', initialProtocolUrls.map(url => url.originalUrl));
+			logService.trace(
+				'ElectronURLListener initialUrisToHandle:',
+				initialProtocolUrls.map(url => url.originalUrl)
+			);
 
 			// the initial set of URIs we need to handle once the window is ready
 			this.uris = initialProtocolUrls;
@@ -50,33 +52,44 @@ export class ElectronURLListener extends Disposable {
 
 		// Windows: install as protocol handler
 		if (isWindows) {
-			const windowsParameters = environmentMainService.isBuilt ? [] : [`"${environmentMainService.appRoot}"`];
+			const windowsParameters = environmentMainService.isBuilt
+				? []
+				: [`"${environmentMainService.appRoot}"`];
 			windowsParameters.push('--open-url', '--');
-			app.setAsDefaultProtocolClient(productService.urlProtocol, process.execPath, windowsParameters);
+			app.setAsDefaultProtocolClient(
+				productService.urlProtocol,
+				process.execPath,
+				windowsParameters
+			);
 		}
 
 		// macOS: listen to `open-url` events from here on to handle
 		const onOpenElectronUrl = Event.map(
-			Event.fromNodeEventEmitter(app, 'open-url', (event: ElectronEvent, url: string) => ({ event, url })),
+			Event.fromNodeEventEmitter(app, 'open-url', (event: ElectronEvent, url: string) => ({
+				event,
+				url,
+			})),
 			({ event, url }) => {
 				event.preventDefault(); // always prevent default and return the url as string
 
 				return url;
-			});
-
-		this._register(onOpenElectronUrl(url => {
-			const uri = this.uriFromRawUrl(url);
-			if (!uri) {
-				return;
 			}
+		);
 
-			this.urlService.open(uri, { originalUrl: url });
-		}));
+		this._register(
+			onOpenElectronUrl(url => {
+				const uri = this.uriFromRawUrl(url);
+				if (!uri) {
+					return;
+				}
+
+				this.urlService.open(uri, { originalUrl: url });
+			})
+		);
 
 		// Send initial links to the window once it has loaded
-		const isWindowReady = windowsMainService.getWindows()
-			.filter(window => window.isReady)
-			.length > 0;
+		const isWindowReady =
+			windowsMainService.getWindows().filter(window => window.isReady).length > 0;
 
 		if (isWindowReady) {
 			logService.trace('ElectronURLListener: window is ready to handle URLs');
@@ -113,7 +126,10 @@ export class ElectronURLListener extends Disposable {
 			if (handled) {
 				this.logService.trace('ElectronURLListener#flush(): URL was handled', obj.originalUrl);
 			} else {
-				this.logService.trace('ElectronURLListener#flush(): URL was not yet handled', obj.originalUrl);
+				this.logService.trace(
+					'ElectronURLListener#flush(): URL was not yet handled',
+					obj.originalUrl
+				);
 
 				uris.push(obj);
 			}

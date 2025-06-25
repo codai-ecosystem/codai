@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { extractRangeFromFilter } from '../../common/search.js';
 
 suite('extractRangeFromFilter', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('basics', async function () {
@@ -56,39 +55,45 @@ suite('extractRangeFromFilter', () => {
 			{ filter: '/some/path/file.txt (19,20)@', unless: ['@'], result: undefined },
 			// unless before ,
 			{
-				filter: '/some/@path/file.txt (19,20)', unless: ['@'], result: {
+				filter: '/some/@path/file.txt (19,20)',
+				unless: ['@'],
+				result: {
 					filter: '/some/@path/file.txt',
 					range: {
 						endColumn: 20,
 						endLineNumber: 19,
 						startColumn: 20,
-						startLineNumber: 19
-					}
-				}
+						startLineNumber: 19,
+					},
+				},
 			},
 			// unless before :
 			{
-				filter: '/some/@path/file.txt:19:20', unless: ['@'], result: {
+				filter: '/some/@path/file.txt:19:20',
+				unless: ['@'],
+				result: {
 					filter: '/some/@path/file.txt',
 					range: {
 						endColumn: 20,
 						endLineNumber: 19,
 						startColumn: 20,
-						startLineNumber: 19
-					}
-				}
+						startLineNumber: 19,
+					},
+				},
 			},
 			// unless before #
 			{
-				filter: '/some/@path/file.txt#19', unless: ['@'], result: {
+				filter: '/some/@path/file.txt#19',
+				unless: ['@'],
+				result: {
 					filter: '/some/@path/file.txt',
 					range: {
 						endColumn: 1,
 						endLineNumber: 19,
 						startColumn: 1,
-						startLineNumber: 19
-					}
-				}
+						startLineNumber: 19,
+					},
+				},
 			},
 		];
 		for (const { filter, unless, result } of testSpecs) {

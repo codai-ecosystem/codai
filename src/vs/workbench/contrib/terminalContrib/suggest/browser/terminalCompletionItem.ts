@@ -6,7 +6,10 @@
 import { basename } from '../../../../../base/common/path.js';
 import { isWindows } from '../../../../../base/common/platform.js';
 import { CompletionItemKind } from '../../../../../editor/common/languages.js';
-import { ISimpleCompletion, SimpleCompletionItem } from '../../../../services/suggest/browser/simpleCompletionItem.js';
+import {
+	ISimpleCompletion,
+	SimpleCompletionItem,
+} from '../../../../services/suggest/browser/simpleCompletionItem.js';
 
 export enum TerminalCompletionItemKind {
 	File = 0,
@@ -93,9 +96,7 @@ export class TerminalCompletionItem extends SimpleCompletionItem {
 	 */
 	fileExtLow: string = '';
 
-	constructor(
-		override readonly completion: ITerminalCompletion
-	) {
+	constructor(override readonly completion: ITerminalCompletion) {
 		super(completion);
 
 		// ensure lower-variants (perf)

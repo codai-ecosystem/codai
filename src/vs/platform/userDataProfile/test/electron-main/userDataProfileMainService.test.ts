@@ -23,14 +23,21 @@ class TestEnvironmentService extends AbstractNativeEnvironmentService {
 	constructor(private readonly _appSettingsHome: URI) {
 		super(Object.create(null), Object.create(null), { _serviceBrand: undefined, ...product });
 	}
-	override get userRoamingDataHome() { return this._appSettingsHome.with({ scheme: Schemas.vscodeUserData }); }
-	override get extensionsPath() { return joinPath(this.userRoamingDataHome, 'extensions.json').path; }
-	override get stateResource() { return joinPath(this.userRoamingDataHome, 'state.json'); }
-	override get cacheHome() { return joinPath(this.userRoamingDataHome, 'cache'); }
+	override get userRoamingDataHome() {
+		return this._appSettingsHome.with({ scheme: Schemas.vscodeUserData });
+	}
+	override get extensionsPath() {
+		return joinPath(this.userRoamingDataHome, 'extensions.json').path;
+	}
+	override get stateResource() {
+		return joinPath(this.userRoamingDataHome, 'state.json');
+	}
+	override get cacheHome() {
+		return joinPath(this.userRoamingDataHome, 'cache');
+	}
 }
 
 suite('UserDataProfileMainService', () => {
-
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 	let testObject: UserDataProfilesMainService;
 	let environmentService: TestEnvironmentService, stateService: StateService;
@@ -42,9 +49,19 @@ suite('UserDataProfileMainService', () => {
 		disposables.add(fileService.registerProvider(Schemas.vscodeUserData, fileSystemProvider));
 
 		environmentService = new TestEnvironmentService(joinPath(ROOT, 'User'));
-		stateService = disposables.add(new StateService(SaveStrategy.DELAYED, environmentService, logService, fileService));
+		stateService = disposables.add(
+			new StateService(SaveStrategy.DELAYED, environmentService, logService, fileService)
+		);
 
-		testObject = disposables.add(new UserDataProfilesMainService(stateService, disposables.add(new UriIdentityService(fileService)), environmentService, fileService, logService));
+		testObject = disposables.add(
+			new UserDataProfilesMainService(
+				stateService,
+				disposables.add(new UriIdentityService(fileService)),
+				environmentService,
+				fileService,
+				logService
+			)
+		);
 		await stateService.init();
 	});
 
@@ -72,8 +89,17 @@ suite('UserDataProfileMainService', () => {
 		await testObject.createNamedProfile('profile1');
 
 		assert.equal(testObject.getProfileForWorkspace({ id: 'id' }), undefined);
-		assert.equal(testObject.getProfileForWorkspace({ id: 'id', configPath: environmentService.userRoamingDataHome }), undefined);
-		assert.equal(testObject.getProfileForWorkspace({ id: 'id', uri: environmentService.userRoamingDataHome }), undefined);
+		assert.equal(
+			testObject.getProfileForWorkspace({
+				id: 'id',
+				configPath: environmentService.userRoamingDataHome,
+			}),
+			undefined
+		);
+		assert.equal(
+			testObject.getProfileForWorkspace({ id: 'id', uri: environmentService.userRoamingDataHome }),
+			undefined
+		);
 	});
 
 	test('set profile to a workspace', async () => {
@@ -102,5 +128,4 @@ suite('UserDataProfileMainService', () => {
 
 		assert.strictEqual(testObject.getProfileForWorkspace(workspace)?.id, profile.id);
 	});
-
 });

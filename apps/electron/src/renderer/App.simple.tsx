@@ -8,17 +8,19 @@ const App: React.FC = () => {
 	const [message, setMessage] = useState('Hello from AIDE!');
 
 	return (
-		<div style={{
-			padding: '20px',
-			fontFamily: 'system-ui, sans-serif',
-			background: '#1e1e1e',
-			color: '#ffffff',
-			height: '100vh',
-			display: 'flex',
-			flexDirection: 'column',
-			alignItems: 'center',
-			justifyContent: 'center'
-		}}>
+		<div
+			style={{
+				padding: '20px',
+				fontFamily: 'system-ui, sans-serif',
+				background: '#1e1e1e',
+				color: '#ffffff',
+				height: '100vh',
+				display: 'flex',
+				flexDirection: 'column',
+				alignItems: 'center',
+				justifyContent: 'center',
+			}}
+		>
 			<h1>AIDE - AI Development Environment</h1>
 			<p>{message}</p>
 			<button
@@ -29,7 +31,7 @@ const App: React.FC = () => {
 					color: 'white',
 					border: 'none',
 					borderRadius: '4px',
-					cursor: 'pointer'
+					cursor: 'pointer',
 				}}
 			>
 				Click me!

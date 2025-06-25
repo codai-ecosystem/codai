@@ -5,7 +5,14 @@
 
 import { ButtonBar, IButton } from '../../../base/browser/ui/button/button.js';
 import { createInstantHoverDelegate } from '../../../base/browser/ui/hover/hoverDelegateFactory.js';
-import { ActionRunner, IAction, IActionRunner, SubmenuAction, WorkbenchActionExecutedClassification, WorkbenchActionExecutedEvent } from '../../../base/common/actions.js';
+import {
+	ActionRunner,
+	IAction,
+	IActionRunner,
+	SubmenuAction,
+	WorkbenchActionExecutedClassification,
+	WorkbenchActionExecutedEvent,
+} from '../../../base/common/actions.js';
 import { Codicon } from '../../../base/common/codicons.js';
 import { Emitter, Event } from '../../../base/common/event.js';
 import { DisposableStore } from '../../../base/common/lifecycle.js';
@@ -20,11 +27,16 @@ import { IHoverService } from '../../hover/browser/hover.js';
 import { IKeybindingService } from '../../keybinding/common/keybinding.js';
 import { ITelemetryService } from '../../telemetry/common/telemetry.js';
 
-export type IButtonConfigProvider = (action: IAction, index: number) => {
-	showIcon?: boolean;
-	showLabel?: boolean;
-	isSecondary?: boolean;
-} | undefined;
+export type IButtonConfigProvider = (
+	action: IAction,
+	index: number
+) =>
+	| {
+			showIcon?: boolean;
+			showLabel?: boolean;
+			isSecondary?: boolean;
+	  }
+	| undefined;
 
 export interface IWorkbenchButtonBarOptions {
 	telemetrySource?: string;
@@ -32,7 +44,6 @@ export interface IWorkbenchButtonBarOptions {
 }
 
 export class WorkbenchButtonBar extends ButtonBar {
-
 	protected readonly _store = new DisposableStore();
 	protected readonly _updateStore = new DisposableStore();
 
@@ -40,25 +51,28 @@ export class WorkbenchButtonBar extends ButtonBar {
 	private readonly _onDidChange = new Emitter<this>();
 	readonly onDidChange: Event<this> = this._onDidChange.event;
 
-
 	constructor(
 		container: HTMLElement,
 		private readonly _options: IWorkbenchButtonBarOptions | undefined,
 		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
 		@IKeybindingService private readonly _keybindingService: IKeybindingService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IHoverService private readonly _hoverService: IHoverService,
+		@IHoverService private readonly _hoverService: IHoverService
 	) {
 		super(container);
 
 		this._actionRunner = this._store.add(new ActionRunner());
 		if (_options?.telemetrySource) {
-			this._actionRunner.onDidRun(e => {
-				telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>(
-					'workbenchActionExecuted',
-					{ id: e.action.id, from: _options.telemetrySource! }
-				);
-			}, undefined, this._store);
+			this._actionRunner.onDidRun(
+				e => {
+					telemetryService.publicLog2<
+						WorkbenchActionExecutedEvent,
+						WorkbenchActionExecutedClassification
+					>('workbenchActionExecuted', { id: e.action.id, from: _options.telemetrySource! });
+				},
+				undefined,
+				this._store
+			);
 		}
 	}
 
@@ -70,8 +84,8 @@ export class WorkbenchButtonBar extends ButtonBar {
 	}
 
 	update(actions: IAction[], secondary: IAction[]): void {
-
-		const conifgProvider: IButtonConfigProvider = this._options?.buttonConfigProvider ?? (() => ({ showLabel: true }));
+		const conifgProvider: IButtonConfigProvider =
+			this._options?.buttonConfigProvider ?? (() => ({ showLabel: true }));
 
 		this._updateStore.clear();
 		this.clear();
@@ -80,15 +94,22 @@ export class WorkbenchButtonBar extends ButtonBar {
 		const hoverDelegate = this._updateStore.add(createInstantHoverDelegate());
 
 		for (let i = 0; i < actions.length; i++) {
-
 			const secondary = i > 0;
 			const actionOrSubmenu = actions[i];
 			let action: IAction;
 			let btn: IButton;
 			let tooltip: string = '';
-			const kb = actionOrSubmenu instanceof SubmenuAction ? '' : this._keybindingService.lookupKeybinding(actionOrSubmenu.id);
+			const kb =
+				actionOrSubmenu instanceof SubmenuAction
+					? ''
+					: this._keybindingService.lookupKeybinding(actionOrSubmenu.id);
 			if (kb) {
-				tooltip = localize('labelWithKeybinding', "{0} ({1})", actionOrSubmenu.tooltip || actionOrSubmenu.label, kb.getLabel());
+				tooltip = localize(
+					'labelWithKeybinding',
+					'{0} ({1})',
+					actionOrSubmenu.tooltip || actionOrSubmenu.label,
+					kb.getLabel()
+				);
 			} else {
 				tooltip = actionOrSubmenu.tooltip || actionOrSubmenu.label;
 			}
@@ -135,34 +156,44 @@ export class WorkbenchButtonBar extends ButtonBar {
 				}
 			}
 
-			this._updateStore.add(this._hoverService.setupManagedHover(hoverDelegate, btn.element, tooltip));
-			this._updateStore.add(btn.onDidClick(async () => {
-				this._actionRunner.run(action);
-			}));
+			this._updateStore.add(
+				this._hoverService.setupManagedHover(hoverDelegate, btn.element, tooltip)
+			);
+			this._updateStore.add(
+				btn.onDidClick(async () => {
+					this._actionRunner.run(action);
+				})
+			);
 		}
 
 		if (secondary.length > 0) {
-
 			const btn = this.addButton({
 				secondary: true,
-				ariaLabel: localize('moreActions', "More Actions")
+				ariaLabel: localize('moreActions', 'More Actions'),
 			});
 
 			btn.icon = Codicon.dropDownButton;
 			btn.element.classList.add('default-colors', 'monaco-text-button');
 
 			btn.enabled = true;
-			this._updateStore.add(this._hoverService.setupManagedHover(hoverDelegate, btn.element, localize('moreActions', "More Actions")));
-			this._updateStore.add(btn.onDidClick(async () => {
-				this._contextMenuService.showContextMenu({
-					getAnchor: () => btn.element,
-					getActions: () => secondary,
-					actionRunner: this._actionRunner,
-					onHide: () => btn.element.setAttribute('aria-expanded', 'false')
-				});
-				btn.element.setAttribute('aria-expanded', 'true');
-
-			}));
+			this._updateStore.add(
+				this._hoverService.setupManagedHover(
+					hoverDelegate,
+					btn.element,
+					localize('moreActions', 'More Actions')
+				)
+			);
+			this._updateStore.add(
+				btn.onDidClick(async () => {
+					this._contextMenuService.showContextMenu({
+						getAnchor: () => btn.element,
+						getActions: () => secondary,
+						actionRunner: this._actionRunner,
+						onHide: () => btn.element.setAttribute('aria-expanded', 'false'),
+					});
+					btn.element.setAttribute('aria-expanded', 'true');
+				})
+			);
 		}
 		this._onDidChange.fire(this);
 	}
@@ -175,7 +206,6 @@ export interface IMenuWorkbenchButtonBarOptions extends IWorkbenchButtonBarOptio
 }
 
 export class MenuWorkbenchButtonBar extends WorkbenchButtonBar {
-
 	constructor(
 		container: HTMLElement,
 		menuId: MenuId,
@@ -185,15 +215,21 @@ export class MenuWorkbenchButtonBar extends WorkbenchButtonBar {
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IHoverService hoverService: IHoverService,
+		@IHoverService hoverService: IHoverService
 	) {
-		super(container, options, contextMenuService, keybindingService, telemetryService, hoverService);
+		super(
+			container,
+			options,
+			contextMenuService,
+			keybindingService,
+			telemetryService,
+			hoverService
+		);
 
 		const menu = menuService.createMenu(menuId, contextKeyService);
 		this._store.add(menu);
 
 		const update = () => {
-
 			this.clear();
 
 			const actions = getActionBarActions(

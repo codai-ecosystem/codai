@@ -18,7 +18,10 @@ export interface INpmScriptInfo {
 	scripts: INpmScriptReference[];
 }
 
-export const readScripts = (document: TextDocument, buffer = document.getText()): INpmScriptInfo | undefined => {
+export const readScripts = (
+	document: TextDocument,
+	buffer = document.getText()
+): INpmScriptInfo | undefined => {
 	let start: Position | undefined;
 	let end: Position | undefined;
 	let inScripts = false;
@@ -57,7 +60,7 @@ export const readScripts = (document: TextDocument, buffer = document.getText())
 			} else if (inScripts) {
 				buildingScript = {
 					name: property,
-					nameRange: new Range(document.positionAt(offset), document.positionAt(offset + length))
+					nameRange: new Range(document.positionAt(offset), document.positionAt(offset + length)),
 				};
 			}
 		},

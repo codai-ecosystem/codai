@@ -6,21 +6,47 @@
 import { distinct } from '../../../../base/common/arrays.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { IStringDictionary } from '../../../../base/common/collections.js';
-import { IMatch, matchesContiguousSubString, matchesSubString, matchesWords } from '../../../../base/common/filters.js';
+import {
+	IMatch,
+	matchesContiguousSubString,
+	matchesSubString,
+	matchesWords,
+} from '../../../../base/common/filters.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import * as strings from '../../../../base/common/strings.js';
 import { TfIdfCalculator, TfIdfDocument } from '../../../../base/common/tfIdf.js';
 import { IRange } from '../../../../editor/common/core/range.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IExtensionManagementService, ILocalExtension } from '../../../../platform/extensionManagement/common/extensionManagement.js';
+import {
+	IExtensionManagementService,
+	ILocalExtension,
+} from '../../../../platform/extensionManagement/common/extensionManagement.js';
 import { ExtensionType } from '../../../../platform/extensions/common/extensions.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IAiSettingsSearchService } from '../../../services/aiSettingsSearch/common/aiSettingsSearch.js';
 import { IWorkbenchExtensionEnablementService } from '../../../services/extensionManagement/common/extensionManagement.js';
-import { IGroupFilter, ISearchResult, ISetting, ISettingMatch, ISettingMatcher, ISettingsEditorModel, ISettingsGroup, SettingKeyMatchTypes, SettingMatchType } from '../../../services/preferences/common/preferences.js';
+import {
+	IGroupFilter,
+	ISearchResult,
+	ISetting,
+	ISettingMatch,
+	ISettingMatcher,
+	ISettingsEditorModel,
+	ISettingsGroup,
+	SettingKeyMatchTypes,
+	SettingMatchType,
+} from '../../../services/preferences/common/preferences.js';
 import { nullRange } from '../../../services/preferences/common/preferencesModels.js';
-import { IPreferencesSearchService, IRemoteSearchProvider, ISearchProvider, IWorkbenchSettingsConfiguration } from '../common/preferences.js';
+import {
+	IPreferencesSearchService,
+	IRemoteSearchProvider,
+	ISearchProvider,
+	IWorkbenchSettingsConfiguration,
+} from '../common/preferences.js';
 
 export interface IEndpointDetails {
 	urlBase?: string;
@@ -37,23 +63,31 @@ export class PreferencesSearchService extends Disposable implements IPreferences
 	constructor(
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService
 	) {
 		super();
 
 		// This request goes to the shared process but results won't change during a window's lifetime, so cache the results.
-		this._installedExtensions = this.extensionManagementService.getInstalled(ExtensionType.User).then(exts => {
-			// Filter to enabled extensions that have settings
-			return exts
-				.filter(ext => this.extensionEnablementService.isEnabled(ext))
-				.filter(ext => ext.manifest && ext.manifest.contributes && ext.manifest.contributes.configuration)
-				.filter(ext => !!ext.identifier.uuid);
-		});
+		this._installedExtensions = this.extensionManagementService
+			.getInstalled(ExtensionType.User)
+			.then(exts => {
+				// Filter to enabled extensions that have settings
+				return exts
+					.filter(ext => this.extensionEnablementService.isEnabled(ext))
+					.filter(
+						ext =>
+							ext.manifest && ext.manifest.contributes && ext.manifest.contributes.configuration
+					)
+					.filter(ext => !!ext.identifier.uuid);
+			});
 	}
 
 	private get remoteSearchAllowed(): boolean {
-		const workbenchSettings = this.configurationService.getValue<IWorkbenchSettingsConfiguration>().workbench.settings;
+		const workbenchSettings =
+			this.configurationService.getValue<IWorkbenchSettingsConfiguration>().workbench.settings;
 		return workbenchSettings.enableNaturalLanguageSearch;
 	}
 
@@ -75,10 +109,7 @@ export class PreferencesSearchService extends Disposable implements IPreferences
 function cleanFilter(filter: string): string {
 	// Remove " and : which are likely to be copypasted as part of a setting name.
 	// Leave other special characters which the user might want to search for.
-	return filter
-		.replace(/[":]/g, ' ')
-		.replace(/  /g, ' ')
-		.trim();
+	return filter.replace(/[":]/g, ' ').replace(/  /g, ' ').trim();
 }
 
 export class LocalSearchProvider implements ISearchProvider {
@@ -89,7 +120,10 @@ export class LocalSearchProvider implements ISearchProvider {
 		this._filter = cleanFilter(this._filter);
 	}
 
-	searchModel(preferencesModel: ISettingsEditorModel, token: CancellationToken): Promise<ISearchResult | null> {
+	searchModel(
+		preferencesModel: ISettingsEditorModel,
+		token: CancellationToken
+	): Promise<ISearchResult | null> {
 		if (!this._filter) {
 			return Promise.resolve(null);
 		}
@@ -111,20 +145,30 @@ export class LocalSearchProvider implements ISearchProvider {
 				matches,
 				matchType,
 				keyMatchScore,
-				score: 0 // only used for RemoteSearchProvider matches.
+				score: 0, // only used for RemoteSearchProvider matches.
 			};
 		};
 
-		const filterMatches = preferencesModel.filterSettings(this._filter, this.getGroupFilter(this._filter), settingMatcher);
+		const filterMatches = preferencesModel.filterSettings(
+			this._filter,
+			this.getGroupFilter(this._filter),
+			settingMatcher
+		);
 
 		// Check the top key match type.
-		const topKeyMatchType = Math.max(...filterMatches.map(m => (m.matchType & SettingKeyMatchTypes)));
+		const topKeyMatchType = Math.max(...filterMatches.map(m => m.matchType & SettingKeyMatchTypes));
 		// Always allow description matches as part of https://github.com/microsoft/vscode/issues/239936.
-		const alwaysAllowedMatchTypes = SettingMatchType.DescriptionOrValueMatch | SettingMatchType.LanguageTagSettingMatch;
-		const filteredMatches = filterMatches.filter(m => (m.matchType & topKeyMatchType) || (m.matchType & alwaysAllowedMatchTypes) || m.matchType === SettingMatchType.ExactMatch);
+		const alwaysAllowedMatchTypes =
+			SettingMatchType.DescriptionOrValueMatch | SettingMatchType.LanguageTagSettingMatch;
+		const filteredMatches = filterMatches.filter(
+			m =>
+				m.matchType & topKeyMatchType ||
+				m.matchType & alwaysAllowedMatchTypes ||
+				m.matchType === SettingMatchType.ExactMatch
+		);
 		return Promise.resolve({
 			filterMatches: filteredMatches,
-			exactMatch: filteredMatches.some(m => m.matchType === SettingMatchType.ExactMatch)
+			exactMatch: filteredMatches.some(m => m.matchType === SettingMatchType.ExactMatch),
 		});
 	}
 
@@ -151,7 +195,11 @@ export class SettingMatches {
 		private searchDescription: boolean,
 		private readonly configurationService: IConfigurationService
 	) {
-		this.matches = distinct(this._findMatchesInSetting(searchString, setting), (match) => `${match.startLineNumber}_${match.startColumn}_${match.endLineNumber}_${match.endColumn}_`);
+		this.matches = distinct(
+			this._findMatchesInSetting(searchString, setting),
+			match =>
+				`${match.startLineNumber}_${match.startColumn}_${match.endLineNumber}_${match.endColumn}_`
+		);
 	}
 
 	private _findMatchesInSetting(searchString: string, setting: ISetting): IRange[] {
@@ -186,7 +234,10 @@ export class SettingMatches {
 			// Check if the key contains the word. Use contiguous search.
 			const keyMatches = matchesWords(word, settingKeyAsWords, true);
 			if (keyMatches?.length) {
-				keyMatchingWords.set(word, keyMatches.map(match => this.toKeyRange(setting, match)));
+				keyMatchingWords.set(
+					word,
+					keyMatches.map(match => this.toKeyRange(setting, match))
+				);
 			}
 		}
 		if (keyMatchingWords.size === queryWords.size) {
@@ -204,7 +255,10 @@ export class SettingMatches {
 		const keyIdMatches = matchesContiguousSubString(searchStringAlphaNumeric, keyAlphaNumeric);
 		if (keyIdMatches?.length) {
 			// Matches "editorformatonp" to "editor.formatonpaste".
-			keyMatchingWords.set(setting.key, keyIdMatches.map(match => this.toKeyRange(setting, match)));
+			keyMatchingWords.set(
+				setting.key,
+				keyIdMatches.map(match => this.toKeyRange(setting, match))
+			);
 			this.matchType |= SettingMatchType.ContiguousQueryInSettingId;
 		}
 
@@ -214,7 +268,10 @@ export class SettingMatches {
 			for (const word of queryWords) {
 				const keyMatches = matchesWords(word, settingKeyAsWords, false);
 				if (keyMatches?.length) {
-					keyMatchingWords.set(word, keyMatches.map(match => this.toKeyRange(setting, match)));
+					keyMatchingWords.set(
+						word,
+						keyMatches.map(match => this.toKeyRange(setting, match))
+					);
 				}
 			}
 			if (keyMatchingWords.size >= 2 || (keyMatchingWords.size === 1 && queryWords.size === 1)) {
@@ -226,7 +283,10 @@ export class SettingMatches {
 				const keyIdMatches = matchesSubString(searchStringAlphaNumeric, keyAlphaNumeric);
 				if (keyIdMatches?.length) {
 					// Matches "edfmonpas" to "editor.formatOnPaste".
-					keyMatchingWords.set(setting.key, keyIdMatches.map(match => this.toKeyRange(setting, match)));
+					keyMatchingWords.set(
+						setting.key,
+						keyIdMatches.map(match => this.toKeyRange(setting, match))
+					);
 					this.matchType |= SettingMatchType.NonContiguousQueryInSettingId;
 				}
 			}
@@ -234,23 +294,29 @@ export class SettingMatches {
 
 		// Check if the match was for a language tag group setting such as [markdown].
 		// In such a case, move that setting to be last.
-		if (setting.overrides?.length && (this.matchType !== SettingMatchType.None)) {
+		if (setting.overrides?.length && this.matchType !== SettingMatchType.None) {
 			this.matchType = SettingMatchType.LanguageTagSettingMatch;
-			const keyRanges = keyMatchingWords.size ?
-				Array.from(keyMatchingWords.values()).flat() : [];
+			const keyRanges = keyMatchingWords.size ? Array.from(keyMatchingWords.values()).flat() : [];
 			return [...keyRanges];
 		}
 
 		// Description search
 		// Search the description if we found non-contiguous key matches at best.
-		const hasContiguousKeyMatchTypes = this.matchType >= SettingMatchType.ContiguousWordsInSettingsLabel;
+		const hasContiguousKeyMatchTypes =
+			this.matchType >= SettingMatchType.ContiguousWordsInSettingsLabel;
 		if (this.searchDescription && !hasContiguousKeyMatchTypes) {
 			for (const word of queryWords) {
 				// Search the description lines.
 				for (let lineIndex = 0; lineIndex < setting.description.length; lineIndex++) {
-					const descriptionMatches = matchesContiguousSubString(word, setting.description[lineIndex]);
+					const descriptionMatches = matchesContiguousSubString(
+						word,
+						setting.description[lineIndex]
+					);
 					if (descriptionMatches?.length) {
-						descriptionMatchingWords.set(word, descriptionMatches.map(match => this.toDescriptionRange(setting, match, lineIndex)));
+						descriptionMatchingWords.set(
+							word,
+							descriptionMatches.map(match => this.toDescriptionRange(setting, match, lineIndex))
+						);
 					}
 				}
 			}
@@ -276,7 +342,10 @@ export class SettingMatches {
 					for (const word of queryWords) {
 						const valueMatches = matchesContiguousSubString(word, option);
 						if (valueMatches?.length) {
-							valueMatchingWords.set(word, valueMatches.map(match => this.toValueRange(setting, match)));
+							valueMatchingWords.set(
+								word,
+								valueMatches.map(match => this.toValueRange(setting, match))
+							);
 						}
 					}
 					if (valueMatchingWords.size === queryWords.size) {
@@ -294,7 +363,10 @@ export class SettingMatches {
 					for (const word of queryWords) {
 						const valueMatches = matchesContiguousSubString(word, settingValue);
 						if (valueMatches?.length) {
-							valueMatchingWords.set(word, valueMatches.map(match => this.toValueRange(setting, match)));
+							valueMatchingWords.set(
+								word,
+								valueMatches.map(match => this.toValueRange(setting, match))
+							);
 						}
 					}
 					if (valueMatchingWords.size === queryWords.size) {
@@ -307,12 +379,13 @@ export class SettingMatches {
 			}
 		}
 
-		const descriptionRanges = descriptionMatchingWords.size ?
-			Array.from(descriptionMatchingWords.values()).flat() : [];
-		const keyRanges = keyMatchingWords.size ?
-			Array.from(keyMatchingWords.values()).flat() : [];
-		const valueRanges = valueMatchingWords.size ?
-			Array.from(valueMatchingWords.values()).flat() : [];
+		const descriptionRanges = descriptionMatchingWords.size
+			? Array.from(descriptionMatchingWords.values()).flat()
+			: [];
+		const keyRanges = keyMatchingWords.size ? Array.from(keyMatchingWords.values()).flat() : [];
+		const valueRanges = valueMatchingWords.size
+			? Array.from(valueMatchingWords.values()).flat()
+			: [];
 		return [...descriptionRanges, ...keyRanges, ...valueRanges];
 	}
 
@@ -321,7 +394,7 @@ export class SettingMatches {
 			startLineNumber: setting.keyRange.startLineNumber,
 			startColumn: setting.keyRange.startColumn + match.start,
 			endLineNumber: setting.keyRange.startLineNumber,
-			endColumn: setting.keyRange.startColumn + match.end
+			endColumn: setting.keyRange.startColumn + match.end,
 		};
 	}
 
@@ -336,7 +409,7 @@ export class SettingMatches {
 			startLineNumber: descriptionRange.startLineNumber,
 			startColumn: descriptionRange.startColumn + match.start,
 			endLineNumber: descriptionRange.endLineNumber,
-			endColumn: descriptionRange.startColumn + match.end
+			endColumn: descriptionRange.startColumn + match.end,
 		};
 	}
 
@@ -345,7 +418,7 @@ export class SettingMatches {
 			startLineNumber: setting.valueRange.startLineNumber,
 			startColumn: setting.valueRange.startColumn + match.start + 1,
 			endLineNumber: setting.valueRange.startLineNumber,
-			endColumn: setting.valueRange.startColumn + match.end + 1
+			endColumn: setting.valueRange.startColumn + match.end + 1,
 		};
 	}
 }
@@ -354,7 +427,7 @@ class SettingsRecordProvider {
 	private _settingsRecord: IStringDictionary<ISetting> = {};
 	private _currentPreferencesModel: ISettingsEditorModel | undefined;
 
-	constructor() { }
+	constructor() {}
 
 	updateModel(preferencesModel: ISettingsEditorModel) {
 		if (preferencesModel === this._currentPreferencesModel) {
@@ -406,7 +479,10 @@ class EmbeddingsSearchProvider implements IRemoteSearchProvider {
 		this._filter = cleanFilter(filter);
 	}
 
-	async searchModel(preferencesModel: ISettingsEditorModel, token: CancellationToken): Promise<ISearchResult | null> {
+	async searchModel(
+		preferencesModel: ISettingsEditorModel,
+		token: CancellationToken
+	): Promise<ISearchResult | null> {
 		if (!this._filter || !this._aiSettingsSearchService.isEnabled()) {
 			return null;
 		}
@@ -417,7 +493,7 @@ class EmbeddingsSearchProvider implements IRemoteSearchProvider {
 		return {
 			filterMatches: await this.getEmbeddingsItems(token),
 			exactMatch: false,
-			providerName: 'embeddings'
+			providerName: 'embeddings',
 		};
 	}
 
@@ -438,7 +514,7 @@ class EmbeddingsSearchProvider implements IRemoteSearchProvider {
 				matches: [settingsRecord[settingKey].range],
 				matchType: SettingMatchType.RemoteMatch,
 				keyMatchScore: 0,
-				score: 0 // the results are sorted upstream.
+				score: 0, // the results are sorted upstream.
 			});
 		}
 
@@ -456,8 +532,7 @@ class TfIdfSearchProvider implements IRemoteSearchProvider {
 	private _documents: TfIdfDocument[] = [];
 	private _settingsRecord: IStringDictionary<ISetting> = {};
 
-	constructor() {
-	}
+	constructor() {}
 
 	setFilter(filter: string) {
 		this._filter = cleanFilter(filter);
@@ -480,7 +555,10 @@ class TfIdfSearchProvider implements IRemoteSearchProvider {
 		return result;
 	}
 
-	async searchModel(preferencesModel: ISettingsEditorModel, token: CancellationToken): Promise<ISearchResult | null> {
+	async searchModel(
+		preferencesModel: ISettingsEditorModel,
+		token: CancellationToken
+	): Promise<ISearchResult | null> {
 		if (!this._filter) {
 			return null;
 		}
@@ -498,7 +576,7 @@ class TfIdfSearchProvider implements IRemoteSearchProvider {
 					for (const setting of section.settings) {
 						this._documents.push({
 							key: setting.key,
-							textChunks: [this.settingItemToEmbeddingString(setting)]
+							textChunks: [this.settingItemToEmbeddingString(setting)],
 						});
 						this._settingsRecord[setting.key] = setting;
 					}
@@ -509,7 +587,7 @@ class TfIdfSearchProvider implements IRemoteSearchProvider {
 		return {
 			filterMatches: await this.getTfIdfItems(token),
 			exactMatch: false,
-			providerName: 'tfIdf'
+			providerName: 'tfIdf',
 		};
 	}
 
@@ -527,7 +605,10 @@ class TfIdfSearchProvider implements IRemoteSearchProvider {
 		}
 
 		for (const info of tfIdfRankings) {
-			if (info.score / maxScore < TfIdfSearchProvider.TF_IDF_POST_NORMALIZE_THRESHOLD || filterMatches.length === TfIdfSearchProvider.TF_IDF_MAX_PICKS) {
+			if (
+				info.score / maxScore < TfIdfSearchProvider.TF_IDF_POST_NORMALIZE_THRESHOLD ||
+				filterMatches.length === TfIdfSearchProvider.TF_IDF_MAX_PICKS
+			) {
 				break;
 			}
 			const pick = info.key;
@@ -536,7 +617,7 @@ class TfIdfSearchProvider implements IRemoteSearchProvider {
 				matches: [this._settingsRecord[pick].range],
 				matchType: SettingMatchType.RemoteMatch,
 				keyMatchScore: 0,
-				score: info.score
+				score: info.score,
 			});
 		}
 
@@ -552,7 +633,10 @@ class RemoteSearchProvider implements IRemoteSearchProvider {
 	constructor(
 		@IAiSettingsSearchService private readonly aiSettingsSearchService: IAiSettingsSearchService
 	) {
-		this._embeddingsSearchProvider = new EmbeddingsSearchProvider(this.aiSettingsSearchService, true);
+		this._embeddingsSearchProvider = new EmbeddingsSearchProvider(
+			this.aiSettingsSearchService,
+			true
+		);
 		this._tfIdfSearchProvider = new TfIdfSearchProvider();
 	}
 
@@ -562,7 +646,10 @@ class RemoteSearchProvider implements IRemoteSearchProvider {
 		this._embeddingsSearchProvider.setFilter(filter);
 	}
 
-	async searchModel(preferencesModel: ISettingsEditorModel, token: CancellationToken): Promise<ISearchResult | null> {
+	async searchModel(
+		preferencesModel: ISettingsEditorModel,
+		token: CancellationToken
+	): Promise<ISearchResult | null> {
 		if (!this._filter) {
 			return null;
 		}

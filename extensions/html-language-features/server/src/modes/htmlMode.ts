@@ -5,14 +5,28 @@
 
 import { getLanguageModelCache } from '../languageModelCache';
 import {
-	LanguageService as HTMLLanguageService, HTMLDocument, DocumentContext, FormattingOptions,
-	HTMLFormatConfiguration, SelectionRange,
-	TextDocument, Position, Range, FoldingRange,
-	LanguageMode, Workspace, Settings
+	LanguageService as HTMLLanguageService,
+	HTMLDocument,
+	DocumentContext,
+	FormattingOptions,
+	HTMLFormatConfiguration,
+	SelectionRange,
+	TextDocument,
+	Position,
+	Range,
+	FoldingRange,
+	LanguageMode,
+	Workspace,
+	Settings,
 } from './languageModes';
 
-export function getHTMLMode(htmlLanguageService: HTMLLanguageService, workspace: Workspace): LanguageMode {
-	const htmlDocuments = getLanguageModelCache<HTMLDocument>(10, 60, document => htmlLanguageService.parseHTMLDocument(document));
+export function getHTMLMode(
+	htmlLanguageService: HTMLLanguageService,
+	workspace: Workspace
+): LanguageMode {
+	const htmlDocuments = getLanguageModelCache<HTMLDocument>(10, 60, document =>
+		htmlLanguageService.parseHTMLDocument(document)
+	);
 	return {
 		getId() {
 			return 'html';
@@ -20,21 +34,42 @@ export function getHTMLMode(htmlLanguageService: HTMLLanguageService, workspace:
 		async getSelectionRange(document: TextDocument, position: Position): Promise<SelectionRange> {
 			return htmlLanguageService.getSelectionRanges(document, [position])[0];
 		},
-		doComplete(document: TextDocument, position: Position, documentContext: DocumentContext, settings = workspace.settings) {
+		doComplete(
+			document: TextDocument,
+			position: Position,
+			documentContext: DocumentContext,
+			settings = workspace.settings
+		) {
 			const htmlSettings = settings?.html;
 			const options = merge(htmlSettings?.suggest, {});
 			options.hideAutoCompleteProposals = htmlSettings?.autoClosingTags === true;
-			options.attributeDefaultValue = htmlSettings?.completion?.attributeDefaultValue ?? 'doublequotes';
+			options.attributeDefaultValue =
+				htmlSettings?.completion?.attributeDefaultValue ?? 'doublequotes';
 
 			const htmlDocument = htmlDocuments.get(document);
-			const completionList = htmlLanguageService.doComplete2(document, position, htmlDocument, documentContext, options);
+			const completionList = htmlLanguageService.doComplete2(
+				document,
+				position,
+				htmlDocument,
+				documentContext,
+				options
+			);
 			return completionList;
 		},
 		async doHover(document: TextDocument, position: Position, settings?: Settings) {
-			return htmlLanguageService.doHover(document, position, htmlDocuments.get(document), settings?.html?.hover);
+			return htmlLanguageService.doHover(
+				document,
+				position,
+				htmlDocuments.get(document),
+				settings?.html?.hover
+			);
 		},
 		async findDocumentHighlight(document: TextDocument, position: Position) {
-			return htmlLanguageService.findDocumentHighlights(document, position, htmlDocuments.get(document));
+			return htmlLanguageService.findDocumentHighlights(
+				document,
+				position,
+				htmlDocuments.get(document)
+			);
 		},
 		async findDocumentLinks(document: TextDocument, documentContext: DocumentContext) {
 			return htmlLanguageService.findDocumentLinks(document, documentContext);
@@ -42,7 +77,12 @@ export function getHTMLMode(htmlLanguageService: HTMLLanguageService, workspace:
 		async findDocumentSymbols(document: TextDocument) {
 			return htmlLanguageService.findDocumentSymbols(document, htmlDocuments.get(document));
 		},
-		async format(document: TextDocument, range: Range, formatParams: FormattingOptions, settings = workspace.settings) {
+		async format(
+			document: TextDocument,
+			range: Range,
+			formatParams: FormattingOptions,
+			settings = workspace.settings
+		) {
 			const formatSettings: HTMLFormatConfiguration = merge(settings?.html?.format, {});
 			if (formatSettings.contentUnformatted) {
 				formatSettings.contentUnformatted = formatSettings.contentUnformatted + ',script';
@@ -55,16 +95,27 @@ export function getHTMLMode(htmlLanguageService: HTMLLanguageService, workspace:
 		async getFoldingRanges(document: TextDocument): Promise<FoldingRange[]> {
 			return htmlLanguageService.getFoldingRanges(document);
 		},
-		async doAutoInsert(document: TextDocument, position: Position, kind: 'autoQuote' | 'autoClose', settings = workspace.settings) {
+		async doAutoInsert(
+			document: TextDocument,
+			position: Position,
+			kind: 'autoQuote' | 'autoClose',
+			settings = workspace.settings
+		) {
 			const offset = document.offsetAt(position);
 			const text = document.getText();
 			if (kind === 'autoQuote') {
 				if (offset > 0 && text.charAt(offset - 1) === '=') {
 					const htmlSettings = settings?.html;
 					const options = merge(htmlSettings?.suggest, {});
-					options.attributeDefaultValue = htmlSettings?.completion?.attributeDefaultValue ?? 'doublequotes';
+					options.attributeDefaultValue =
+						htmlSettings?.completion?.attributeDefaultValue ?? 'doublequotes';
 
-					return htmlLanguageService.doQuoteComplete(document, position, htmlDocuments.get(document), options);
+					return htmlLanguageService.doQuoteComplete(
+						document,
+						position,
+						htmlDocuments.get(document),
+						options
+					);
 				}
 			} else if (kind === 'autoClose') {
 				if (offset > 0 && text.charAt(offset - 1).match(/[>\/]/g)) {
@@ -90,7 +141,7 @@ export function getHTMLMode(htmlLanguageService: HTMLLanguageService, workspace:
 		},
 		dispose() {
 			htmlDocuments.dispose();
-		}
+		},
 	};
 }
 

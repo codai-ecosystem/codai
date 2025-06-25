@@ -7,17 +7,27 @@ import { MarkdownString } from '../../../../base/common/htmlContent.js';
 import { basename } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { IRange } from '../../../../editor/common/core/range.js';
-import { IChatProgressRenderableResponseContent, IChatProgressResponseContent, appendMarkdownString, canMergeMarkdownStrings } from './chatModel.js';
+import {
+	IChatProgressRenderableResponseContent,
+	IChatProgressResponseContent,
+	appendMarkdownString,
+	canMergeMarkdownStrings,
+} from './chatModel.js';
 import { IChatAgentVulnerabilityDetails, IChatMarkdownContent } from './chatService.js';
 
 export const contentRefUrl = 'http://_vscodecontentref_'; // must be lowercase for URI
 
-export function annotateSpecialMarkdownContent(response: Iterable<IChatProgressResponseContent>): IChatProgressRenderableResponseContent[] {
+export function annotateSpecialMarkdownContent(
+	response: Iterable<IChatProgressResponseContent>
+): IChatProgressRenderableResponseContent[] {
 	let refIdPool = 0;
 
 	const result: IChatProgressRenderableResponseContent[] = [];
 	for (const item of response) {
-		const previousItemIndex = findLastIdx(result, p => p.kind !== 'textEditGroup' && p.kind !== 'undoStop');
+		const previousItemIndex = findLastIdx(
+			result,
+			p => p.kind !== 'textEditGroup' && p.kind !== 'undoStop'
+		);
 		const previousItem = result[previousItemIndex];
 		if (item.kind === 'inlineReference') {
 			let label: string | undefined = item.name;
@@ -39,11 +49,23 @@ export function annotateSpecialMarkdownContent(response: Iterable<IChatProgressR
 
 			if (previousItem?.kind === 'markdownContent') {
 				const merged = appendMarkdownString(previousItem.content, new MarkdownString(markdownText));
-				result[previousItemIndex] = { ...previousItem, content: merged, inlineReferences: { ...annotationMetadata, ...(previousItem.inlineReferences || {}) } };
+				result[previousItemIndex] = {
+					...previousItem,
+					content: merged,
+					inlineReferences: { ...annotationMetadata, ...(previousItem.inlineReferences || {}) },
+				};
 			} else {
-				result.push({ content: new MarkdownString(markdownText), inlineReferences: annotationMetadata, kind: 'markdownContent' });
+				result.push({
+					content: new MarkdownString(markdownText),
+					inlineReferences: annotationMetadata,
+					kind: 'markdownContent',
+				});
 			}
-		} else if (item.kind === 'markdownContent' && previousItem?.kind === 'markdownContent' && canMergeMarkdownStrings(previousItem.content, item.content)) {
+		} else if (
+			item.kind === 'markdownContent' &&
+			previousItem?.kind === 'markdownContent' &&
+			canMergeMarkdownStrings(previousItem.content, item.content)
+		) {
 			const merged = appendMarkdownString(previousItem.content, item.content);
 			result[previousItemIndex] = { ...previousItem, content: merged };
 		} else if (item.kind === 'markdownVuln') {
@@ -79,13 +101,20 @@ export interface IMarkdownVulnerability {
 	readonly range: IRange;
 }
 
-export function annotateVulnerabilitiesInText(response: ReadonlyArray<IChatProgressResponseContent>): readonly IChatMarkdownContent[] {
+export function annotateVulnerabilitiesInText(
+	response: ReadonlyArray<IChatProgressResponseContent>
+): readonly IChatMarkdownContent[] {
 	const result: IChatMarkdownContent[] = [];
 	for (const item of response) {
 		const previousItem = result[result.length - 1];
 		if (item.kind === 'markdownContent') {
 			if (previousItem?.kind === 'markdownContent') {
-				result[result.length - 1] = { content: new MarkdownString(previousItem.content.value + item.content.value, { isTrusted: previousItem.content.isTrusted }), kind: 'markdownContent' };
+				result[result.length - 1] = {
+					content: new MarkdownString(previousItem.content.value + item.content.value, {
+						isTrusted: previousItem.content.isTrusted,
+					}),
+					kind: 'markdownContent',
+				};
 			} else {
 				result.push(item);
 			}
@@ -93,7 +122,12 @@ export function annotateVulnerabilitiesInText(response: ReadonlyArray<IChatProgr
 			const vulnText = encodeURIComponent(JSON.stringify(item.vulnerabilities));
 			const markdownText = `<vscode_annotation details='${vulnText}'>${item.content.value}</vscode_annotation>`;
 			if (previousItem?.kind === 'markdownContent') {
-				result[result.length - 1] = { content: new MarkdownString(previousItem.content.value + markdownText, { isTrusted: previousItem.content.isTrusted }), kind: 'markdownContent' };
+				result[result.length - 1] = {
+					content: new MarkdownString(previousItem.content.value + markdownText, {
+						isTrusted: previousItem.content.isTrusted,
+					}),
+					kind: 'markdownContent',
+				};
 			} else {
 				result.push({ content: new MarkdownString(markdownText), kind: 'markdownContent' });
 			}
@@ -103,24 +137,33 @@ export function annotateVulnerabilitiesInText(response: ReadonlyArray<IChatProgr
 	return result;
 }
 
-export function extractCodeblockUrisFromText(text: string): { uri: URI; isEdit?: boolean; textWithoutResult: string } | undefined {
+export function extractCodeblockUrisFromText(
+	text: string
+): { uri: URI; isEdit?: boolean; textWithoutResult: string } | undefined {
 	const match = /<vscode_codeblock_uri( isEdit)?>(.*?)<\/vscode_codeblock_uri>/ms.exec(text);
 	if (match) {
 		const [all, isEdit, uriString] = match;
 		if (uriString) {
 			const result = URI.parse(uriString);
-			const textWithoutResult = text.substring(0, match.index) + text.substring(match.index + all.length);
+			const textWithoutResult =
+				text.substring(0, match.index) + text.substring(match.index + all.length);
 			return { uri: result, textWithoutResult, isEdit: !!isEdit };
 		}
 	}
 	return undefined;
 }
 
-export function extractVulnerabilitiesFromText(text: string): { newText: string; vulnerabilities: IMarkdownVulnerability[] } {
+export function extractVulnerabilitiesFromText(text: string): {
+	newText: string;
+	vulnerabilities: IMarkdownVulnerability[];
+} {
 	const vulnerabilities: IMarkdownVulnerability[] = [];
 	let newText = text;
 	let match: RegExpExecArray | null;
-	while ((match = /<vscode_annotation details='(.*?)'>(.*?)<\/vscode_annotation>/ms.exec(newText)) !== null) {
+	while (
+		(match = /<vscode_annotation details='(.*?)'>(.*?)<\/vscode_annotation>/ms.exec(newText)) !==
+		null
+	) {
 		const [full, details, content] = match;
 		const start = match.index;
 		const textBefore = newText.substring(0, start);
@@ -134,9 +177,18 @@ export function extractVulnerabilitiesFromText(text: string): { newText: string;
 
 		try {
 			const vulnDetails: IChatAgentVulnerabilityDetails[] = JSON.parse(decodeURIComponent(details));
-			vulnDetails.forEach(({ title, description }) => vulnerabilities.push({
-				title, description, range: { startLineNumber: linesBefore + 1, startColumn, endLineNumber: linesBefore + linesInside + 1, endColumn }
-			}));
+			vulnDetails.forEach(({ title, description }) =>
+				vulnerabilities.push({
+					title,
+					description,
+					range: {
+						startLineNumber: linesBefore + 1,
+						startColumn,
+						endLineNumber: linesBefore + linesInside + 1,
+						endColumn,
+					},
+				})
+			);
 		} catch (err) {
 			// Something went wrong with encoding this text, just ignore it
 		}

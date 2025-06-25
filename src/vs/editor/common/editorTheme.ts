@@ -9,7 +9,6 @@ import { Color } from '../../base/common/color.js';
 import { ColorScheme } from '../../platform/theme/common/theme.js';
 
 export class EditorTheme {
-
 	private _theme: IColorTheme;
 
 	public get type(): ColorScheme {

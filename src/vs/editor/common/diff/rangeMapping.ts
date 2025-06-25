@@ -17,7 +17,11 @@ import { IChange } from './legacyLinesDiffComputer.js';
  * Maps a line range in the original text model to a line range in the modified text model.
  */
 export class LineRangeMapping {
-	public static inverse(mapping: readonly LineRangeMapping[], originalLineCount: number, modifiedLineCount: number): LineRangeMapping[] {
+	public static inverse(
+		mapping: readonly LineRangeMapping[],
+		originalLineCount: number,
+		modifiedLineCount: number
+	): LineRangeMapping[] {
 		const result: LineRangeMapping[] = [];
 		let lastOriginalEndLineNumber = 1;
 		let lastModifiedEndLineNumber = 1;
@@ -25,7 +29,7 @@ export class LineRangeMapping {
 		for (const m of mapping) {
 			const r = new LineRangeMapping(
 				new LineRange(lastOriginalEndLineNumber, m.original.startLineNumber),
-				new LineRange(lastModifiedEndLineNumber, m.modified.startLineNumber),
+				new LineRange(lastModifiedEndLineNumber, m.modified.startLineNumber)
 			);
 			if (!r.modified.isEmpty) {
 				result.push(r);
@@ -35,7 +39,7 @@ export class LineRangeMapping {
 		}
 		const r = new LineRangeMapping(
 			new LineRange(lastOriginalEndLineNumber, originalLineCount + 1),
-			new LineRange(lastModifiedEndLineNumber, modifiedLineCount + 1),
+			new LineRange(lastModifiedEndLineNumber, modifiedLineCount + 1)
 		);
 		if (!r.modified.isEmpty) {
 			result.push(r);
@@ -43,7 +47,11 @@ export class LineRangeMapping {
 		return result;
 	}
 
-	public static clip(mapping: readonly LineRangeMapping[], originalRange: LineRange, modifiedRange: LineRange): LineRangeMapping[] {
+	public static clip(
+		mapping: readonly LineRangeMapping[],
+		originalRange: LineRange,
+		modifiedRange: LineRange
+	): LineRangeMapping[] {
 		const result: LineRangeMapping[] = [];
 		for (const m of mapping) {
 			const original = m.original.intersect(originalRange);
@@ -65,14 +73,10 @@ export class LineRangeMapping {
 	 */
 	public readonly modified: LineRange;
 
-	constructor(
-		originalRange: LineRange,
-		modifiedRange: LineRange
-	) {
+	constructor(originalRange: LineRange, modifiedRange: LineRange) {
 		this.original = originalRange;
 		this.modified = modifiedRange;
 	}
-
 
 	public toString(): string {
 		return `{${this.original.toString()}->${this.modified.toString()}}`;
@@ -97,7 +101,7 @@ export class LineRangeMapping {
 	 * This method assumes that the LineRangeMapping describes a valid diff!
 	 * I.e. if one range is empty, the other range cannot be the entire document.
 	 * It avoids various problems when the line range points to non-existing line-numbers.
-	*/
+	 */
 	public toRangeMapping(): RangeMapping {
 		const origInclusiveRange = this.original.toInclusiveRange();
 		const modInclusiveRange = this.modified.toInclusiveRange();
@@ -113,13 +117,23 @@ export class LineRangeMapping {
 			// Thus, `endLineNumberExclusive` is a valid line number.
 			return new RangeMapping(
 				new Range(this.original.startLineNumber, 1, this.original.endLineNumberExclusive, 1),
-				new Range(this.modified.startLineNumber, 1, this.modified.endLineNumberExclusive, 1),
+				new Range(this.modified.startLineNumber, 1, this.modified.endLineNumberExclusive, 1)
 			);
 		} else {
 			// We can assume here that both startLineNumbers are greater than 1.
 			return new RangeMapping(
-				new Range(this.original.startLineNumber - 1, Number.MAX_SAFE_INTEGER, this.original.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER),
-				new Range(this.modified.startLineNumber - 1, Number.MAX_SAFE_INTEGER, this.modified.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER),
+				new Range(
+					this.original.startLineNumber - 1,
+					Number.MAX_SAFE_INTEGER,
+					this.original.endLineNumberExclusive - 1,
+					Number.MAX_SAFE_INTEGER
+				),
+				new Range(
+					this.modified.startLineNumber - 1,
+					Number.MAX_SAFE_INTEGER,
+					this.modified.endLineNumberExclusive - 1,
+					Number.MAX_SAFE_INTEGER
+				)
 			);
 		}
 	}
@@ -128,13 +142,15 @@ export class LineRangeMapping {
 	 * This method assumes that the LineRangeMapping describes a valid diff!
 	 * I.e. if one range is empty, the other range cannot be the entire document.
 	 * It avoids various problems when the line range points to non-existing line-numbers.
-	*/
+	 */
 	public toRangeMapping2(original: string[], modified: string[]): RangeMapping {
-		if (isValidLineNumber(this.original.endLineNumberExclusive, original)
-			&& isValidLineNumber(this.modified.endLineNumberExclusive, modified)) {
+		if (
+			isValidLineNumber(this.original.endLineNumberExclusive, original) &&
+			isValidLineNumber(this.modified.endLineNumberExclusive, modified)
+		) {
 			return new RangeMapping(
 				new Range(this.original.startLineNumber, 1, this.original.endLineNumberExclusive, 1),
-				new Range(this.modified.startLineNumber, 1, this.modified.endLineNumberExclusive, 1),
+				new Range(this.modified.startLineNumber, 1, this.modified.endLineNumberExclusive, 1)
 			);
 		}
 
@@ -142,25 +158,43 @@ export class LineRangeMapping {
 			return new RangeMapping(
 				Range.fromPositions(
 					new Position(this.original.startLineNumber, 1),
-					normalizePosition(new Position(this.original.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER), original)
+					normalizePosition(
+						new Position(this.original.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER),
+						original
+					)
 				),
 				Range.fromPositions(
 					new Position(this.modified.startLineNumber, 1),
-					normalizePosition(new Position(this.modified.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER), modified)
-				),
+					normalizePosition(
+						new Position(this.modified.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER),
+						modified
+					)
+				)
 			);
 		}
 
 		if (this.original.startLineNumber > 1 && this.modified.startLineNumber > 1) {
 			return new RangeMapping(
 				Range.fromPositions(
-					normalizePosition(new Position(this.original.startLineNumber - 1, Number.MAX_SAFE_INTEGER), original),
-					normalizePosition(new Position(this.original.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER), original)
+					normalizePosition(
+						new Position(this.original.startLineNumber - 1, Number.MAX_SAFE_INTEGER),
+						original
+					),
+					normalizePosition(
+						new Position(this.original.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER),
+						original
+					)
 				),
 				Range.fromPositions(
-					normalizePosition(new Position(this.modified.startLineNumber - 1, Number.MAX_SAFE_INTEGER), modified),
-					normalizePosition(new Position(this.modified.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER), modified)
-				),
+					normalizePosition(
+						new Position(this.modified.startLineNumber - 1, Number.MAX_SAFE_INTEGER),
+						modified
+					),
+					normalizePosition(
+						new Position(this.modified.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER),
+						modified
+					)
+				)
 			);
 		}
 
@@ -195,8 +229,12 @@ function isValidLineNumber(lineNumber: number, lines: string[]): boolean {
  */
 export class DetailedLineRangeMapping extends LineRangeMapping {
 	public static fromRangeMappings(rangeMappings: RangeMapping[]): DetailedLineRangeMapping {
-		const originalRange = LineRange.join(rangeMappings.map(r => LineRange.fromRangeInclusive(r.originalRange)));
-		const modifiedRange = LineRange.join(rangeMappings.map(r => LineRange.fromRangeInclusive(r.modifiedRange)));
+		const originalRange = LineRange.join(
+			rangeMappings.map(r => LineRange.fromRangeInclusive(r.originalRange))
+		);
+		const modifiedRange = LineRange.join(
+			rangeMappings.map(r => LineRange.fromRangeInclusive(r.modifiedRange))
+		);
 		return new DetailedLineRangeMapping(originalRange, modifiedRange, rangeMappings);
 	}
 
@@ -218,7 +256,11 @@ export class DetailedLineRangeMapping extends LineRangeMapping {
 	}
 
 	public override flip(): DetailedLineRangeMapping {
-		return new DetailedLineRangeMapping(this.modified, this.original, this.innerChanges?.map(c => c.flip()));
+		return new DetailedLineRangeMapping(
+			this.modified,
+			this.original,
+			this.innerChanges?.map(c => c.flip())
+		);
 	}
 
 	public withInnerChangesFromLineRanges(): DetailedLineRangeMapping {
@@ -257,10 +299,16 @@ export class RangeMapping {
 		for (let i = 1; i < rangeMappings.length; i++) {
 			const previous = rangeMappings[i - 1];
 			const current = rangeMappings[i];
-			if (!(
-				previous.originalRange.getEndPosition().isBeforeOrEqual(current.originalRange.getStartPosition())
-				&& previous.modifiedRange.getEndPosition().isBeforeOrEqual(current.modifiedRange.getStartPosition())
-			)) {
+			if (
+				!(
+					previous.originalRange
+						.getEndPosition()
+						.isBeforeOrEqual(current.originalRange.getStartPosition()) &&
+					previous.modifiedRange
+						.getEndPosition()
+						.isBeforeOrEqual(current.modifiedRange.getStartPosition())
+				)
+			) {
 				throw new BugIndicatingError('Range mappings must be sorted');
 			}
 		}
@@ -276,10 +324,7 @@ export class RangeMapping {
 	 */
 	readonly modifiedRange: Range;
 
-	constructor(
-		originalRange: Range,
-		modifiedRange: Range
-	) {
+	constructor(originalRange: Range, modifiedRange: Range) {
 		this.originalRange = originalRange;
 		this.modifiedRange = modifiedRange;
 	}
@@ -294,7 +339,7 @@ export class RangeMapping {
 
 	/**
 	 * Creates a single text edit that describes the change from the original to the modified text.
-	*/
+	 */
 	public toTextEdit(modified: AbstractText): TextReplacement {
 		const newText = modified.getValueOfRange(this.modifiedRange);
 		return new TextReplacement(this.originalRange, newText);
@@ -308,22 +353,28 @@ export class RangeMapping {
 	}
 }
 
-export function lineRangeMappingFromRangeMappings(alignments: readonly RangeMapping[], originalLines: AbstractText, modifiedLines: AbstractText, dontAssertStartLine: boolean = false): DetailedLineRangeMapping[] {
+export function lineRangeMappingFromRangeMappings(
+	alignments: readonly RangeMapping[],
+	originalLines: AbstractText,
+	modifiedLines: AbstractText,
+	dontAssertStartLine: boolean = false
+): DetailedLineRangeMapping[] {
 	const changes: DetailedLineRangeMapping[] = [];
 	for (const g of groupAdjacentBy(
 		alignments.map(a => getLineRangeMapping(a, originalLines, modifiedLines)),
 		(a1, a2) =>
-			a1.original.intersectsOrTouches(a2.original)
-			|| a1.modified.intersectsOrTouches(a2.modified)
+			a1.original.intersectsOrTouches(a2.original) || a1.modified.intersectsOrTouches(a2.modified)
 	)) {
 		const first = g[0];
 		const last = g[g.length - 1];
 
-		changes.push(new DetailedLineRangeMapping(
-			first.original.join(last.original),
-			first.modified.join(last.modified),
-			g.map(a => a.innerChanges![0]),
-		));
+		changes.push(
+			new DetailedLineRangeMapping(
+				first.original.join(last.original),
+				first.modified.join(last.modified),
+				g.map(a => a.innerChanges![0])
+			)
+		);
 	}
 
 	assertFn(() => {
@@ -332,22 +383,33 @@ export function lineRangeMappingFromRangeMappings(alignments: readonly RangeMapp
 				return false;
 			}
 
-			if (modifiedLines.length.lineCount - changes[changes.length - 1].modified.endLineNumberExclusive !== originalLines.length.lineCount - changes[changes.length - 1].original.endLineNumberExclusive) {
+			if (
+				modifiedLines.length.lineCount -
+					changes[changes.length - 1].modified.endLineNumberExclusive !==
+				originalLines.length.lineCount - changes[changes.length - 1].original.endLineNumberExclusive
+			) {
 				return false;
 			}
 		}
-		return checkAdjacentItems(changes,
-			(m1, m2) => m2.original.startLineNumber - m1.original.endLineNumberExclusive === m2.modified.startLineNumber - m1.modified.endLineNumberExclusive &&
+		return checkAdjacentItems(
+			changes,
+			(m1, m2) =>
+				m2.original.startLineNumber - m1.original.endLineNumberExclusive ===
+					m2.modified.startLineNumber - m1.modified.endLineNumberExclusive &&
 				// There has to be an unchanged line in between (otherwise both diffs should have been joined)
 				m1.original.endLineNumberExclusive < m2.original.startLineNumber &&
-				m1.modified.endLineNumberExclusive < m2.modified.startLineNumber,
+				m1.modified.endLineNumberExclusive < m2.modified.startLineNumber
 		);
 	});
 
 	return changes;
 }
 
-export function getLineRangeMapping(rangeMapping: RangeMapping, originalLines: AbstractText, modifiedLines: AbstractText): DetailedLineRangeMapping {
+export function getLineRangeMapping(
+	rangeMapping: RangeMapping,
+	originalLines: AbstractText,
+	modifiedLines: AbstractText
+): DetailedLineRangeMapping {
 	let lineStartDelta = 0;
 	let lineEndDelta = 0;
 
@@ -355,19 +417,30 @@ export function getLineRangeMapping(rangeMapping: RangeMapping, originalLines: A
 
 	// original: ]xxx \n <- this line is not modified
 	// modified: ]xx  \n
-	if (rangeMapping.modifiedRange.endColumn === 1 && rangeMapping.originalRange.endColumn === 1
-		&& rangeMapping.originalRange.startLineNumber + lineStartDelta <= rangeMapping.originalRange.endLineNumber
-		&& rangeMapping.modifiedRange.startLineNumber + lineStartDelta <= rangeMapping.modifiedRange.endLineNumber) {
+	if (
+		rangeMapping.modifiedRange.endColumn === 1 &&
+		rangeMapping.originalRange.endColumn === 1 &&
+		rangeMapping.originalRange.startLineNumber + lineStartDelta <=
+			rangeMapping.originalRange.endLineNumber &&
+		rangeMapping.modifiedRange.startLineNumber + lineStartDelta <=
+			rangeMapping.modifiedRange.endLineNumber
+	) {
 		// We can only do this if the range is not empty yet
 		lineEndDelta = -1;
 	}
 
 	// original: xxx[ \n <- this line is not modified
 	// modified: xxx[ \n
-	if (rangeMapping.modifiedRange.startColumn - 1 >= modifiedLines.getLineLength(rangeMapping.modifiedRange.startLineNumber)
-		&& rangeMapping.originalRange.startColumn - 1 >= originalLines.getLineLength(rangeMapping.originalRange.startLineNumber)
-		&& rangeMapping.originalRange.startLineNumber <= rangeMapping.originalRange.endLineNumber + lineEndDelta
-		&& rangeMapping.modifiedRange.startLineNumber <= rangeMapping.modifiedRange.endLineNumber + lineEndDelta) {
+	if (
+		rangeMapping.modifiedRange.startColumn - 1 >=
+			modifiedLines.getLineLength(rangeMapping.modifiedRange.startLineNumber) &&
+		rangeMapping.originalRange.startColumn - 1 >=
+			originalLines.getLineLength(rangeMapping.originalRange.startLineNumber) &&
+		rangeMapping.originalRange.startLineNumber <=
+			rangeMapping.originalRange.endLineNumber + lineEndDelta &&
+		rangeMapping.modifiedRange.startLineNumber <=
+			rangeMapping.modifiedRange.endLineNumber + lineEndDelta
+	) {
 		// We can only do this if the range is not empty yet
 		lineStartDelta = 1;
 	}
@@ -388,7 +461,10 @@ export function lineRangeMappingFromChange(change: IChange): LineRangeMapping {
 	let originalRange: LineRange;
 	if (change.originalEndLineNumber === 0) {
 		// Insertion
-		originalRange = new LineRange(change.originalStartLineNumber + 1, change.originalStartLineNumber + 1);
+		originalRange = new LineRange(
+			change.originalStartLineNumber + 1,
+			change.originalStartLineNumber + 1
+		);
 	} else {
 		originalRange = new LineRange(change.originalStartLineNumber, change.originalEndLineNumber + 1);
 	}
@@ -396,7 +472,10 @@ export function lineRangeMappingFromChange(change: IChange): LineRangeMapping {
 	let modifiedRange: LineRange;
 	if (change.modifiedEndLineNumber === 0) {
 		// Deletion
-		modifiedRange = new LineRange(change.modifiedStartLineNumber + 1, change.modifiedStartLineNumber + 1);
+		modifiedRange = new LineRange(
+			change.modifiedStartLineNumber + 1,
+			change.modifiedStartLineNumber + 1
+		);
 	} else {
 		modifiedRange = new LineRange(change.modifiedStartLineNumber, change.modifiedEndLineNumber + 1);
 	}

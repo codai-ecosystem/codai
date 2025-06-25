@@ -10,7 +10,6 @@ import { Event } from '../../../../base/common/event.js';
 export const IEditorPaneService = createDecorator<IEditorPaneService>('editorPaneService');
 
 export interface IEditorPaneService {
-
 	readonly _serviceBrand: undefined;
 
 	/**

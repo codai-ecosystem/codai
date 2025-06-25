@@ -57,43 +57,46 @@ export class CodeAgent extends BaseAgent {
 				const request: CodeGenerationRequest = {
 					type: 'function',
 					description: message,
-					language: this.extractLanguage(message) || 'typescript'
+					language: this.extractLanguage(message) || 'typescript',
 				};
 				const code = await this.generateCode(request);
 				return {
 					agent: this.agentType,
 					message: 'Code generated successfully',
-					metadata: { code, language: request.language }
+					metadata: { code, language: request.language },
 				};
 			} else if (message.includes('refactor') || message.includes('improve')) {
 				const request: RefactoringRequest = {
 					code: message,
 					operation: 'optimize',
-					language: this.extractLanguage(message) || 'typescript'
+					language: this.extractLanguage(message) || 'typescript',
 				};
 				const refactoredCode = await this.refactorCode(request);
 				return {
 					agent: this.agentType,
 					message: 'Code refactored successfully',
-					metadata: { code: refactoredCode }
+					metadata: { code: refactoredCode },
 				};
 			} else if (message.includes('analyze') || message.includes('review')) {
-				const analysis = await this.analyzeCode(message, this.extractLanguage(message) || 'typescript');
+				const analysis = await this.analyzeCode(
+					message,
+					this.extractLanguage(message) || 'typescript'
+				);
 				return {
 					agent: this.agentType,
 					message: 'Code analysis completed',
-					metadata: analysis
+					metadata: analysis,
 				};
 			}
 
 			return {
 				agent: this.agentType,
-				message: 'Unknown code operation requested'
+				message: 'Unknown code operation requested',
 			};
 		} catch (error) {
 			return {
 				agent: this.agentType,
-				message: `Code processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+				message: `Code processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
 			};
 		}
 	}
@@ -105,7 +108,7 @@ export class CodeAgent extends BaseAgent {
 		return {
 			status: this.status,
 			type: 'code-agent',
-			capabilities: ['generation', 'refactoring', 'analysis', 'testing', 'conversion']
+			capabilities: ['generation', 'refactoring', 'analysis', 'testing', 'conversion'],
 		};
 	}
 
@@ -139,7 +142,6 @@ export class CodeAgent extends BaseAgent {
 
 			this.status = 'Code generation completed';
 			return formattedCode;
-
 		} catch (error) {
 			this.status = 'Error in code generation';
 			throw error;
@@ -172,7 +174,6 @@ export class CodeAgent extends BaseAgent {
 
 			this.status = 'Code refactoring completed';
 			return refactoredCode;
-
 		} catch (error) {
 			this.status = 'Error in code refactoring';
 			throw error;
@@ -191,12 +192,11 @@ export class CodeAgent extends BaseAgent {
 				maintainability: this.calculateMaintainability(code, language),
 				issues: await this.findCodeIssues(code, language),
 				suggestions: await this.generateSuggestions(code, language),
-				dependencies: this.extractDependencies(code, language)
+				dependencies: this.extractDependencies(code, language),
 			};
 
 			this.status = 'Code analysis completed';
 			return result;
-
 		} catch (error) {
 			this.status = 'Error in code analysis';
 			throw error;
@@ -221,7 +221,6 @@ export class CodeAgent extends BaseAgent {
 
 			this.status = 'Test generation completed';
 			return testCode;
-
 		} catch (error) {
 			this.status = 'Error in test generation';
 			throw error;
@@ -246,7 +245,6 @@ export class CodeAgent extends BaseAgent {
 
 			this.status = 'Language conversion completed';
 			return convertedCode;
-
 		} catch (error) {
 			this.status = 'Error in language conversion';
 			throw error;
@@ -261,14 +259,17 @@ export class CodeAgent extends BaseAgent {
 			patterns: this.identifyPatterns(request.description),
 			structure: this.determineStructure(request.type, request.language),
 			dependencies: request.context?.dependencies || [],
-			complexity: this.estimateComplexity(request.description)
+			complexity: this.estimateComplexity(request.description),
 		};
 	}
 
 	/**
 	 * Create code structure based on request and analysis
 	 */
-	private async createCodeStructure(request: CodeGenerationRequest, analysis: any): Promise<string> {
+	private async createCodeStructure(
+		request: CodeGenerationRequest,
+		analysis: any
+	): Promise<string> {
 		const templates = this.getLanguageTemplates(request.language);
 		const template = templates[request.type] || templates.default;
 
@@ -277,7 +278,7 @@ export class CodeAgent extends BaseAgent {
 			description: request.description,
 			language: request.language,
 			framework: request.framework,
-			...analysis
+			...analysis,
 		});
 	}
 
@@ -291,7 +292,7 @@ export class CodeAgent extends BaseAgent {
 			javascript: this.formatJavaScript,
 			python: this.formatPython,
 			java: this.formatJava,
-			csharp: this.formatCSharp
+			csharp: this.formatCSharp,
 		};
 
 		const formatter = formatters[language as keyof typeof formatters];
@@ -317,7 +318,12 @@ export class CodeAgent extends BaseAgent {
 		const parameters = this.identifyParameters(selectedCode, code);
 
 		// Create function
-		const functionCode = this.createFunction(functionName, parameters, selectedCode, request.language);
+		const functionCode = this.createFunction(
+			functionName,
+			parameters,
+			selectedCode,
+			request.language
+		);
 
 		// Replace selected code with function call
 		const updatedCode = this.replaceWithFunctionCall(code, selection, functionName, parameters);
@@ -394,10 +400,11 @@ export class CodeAgent extends BaseAgent {
 			javascript: ['if', 'else', 'while', 'for', 'switch', 'case', 'try', 'catch'],
 			typescript: ['if', 'else', 'while', 'for', 'switch', 'case', 'try', 'catch'],
 			python: ['if', 'elif', 'else', 'while', 'for', 'try', 'except', 'with'],
-			java: ['if', 'else', 'while', 'for', 'switch', 'case', 'try', 'catch']
+			java: ['if', 'else', 'while', 'for', 'switch', 'case', 'try', 'catch'],
 		};
 
-		const keywords = controlKeywords[language as keyof typeof controlKeywords] || controlKeywords.javascript;
+		const keywords =
+			controlKeywords[language as keyof typeof controlKeywords] || controlKeywords.javascript;
 		let complexity = 1; // Base complexity
 
 		for (const keyword of keywords) {
@@ -420,7 +427,10 @@ export class CodeAgent extends BaseAgent {
 		const commentRatio = this.calculateCommentRatio(code, language);
 
 		// Simplified maintainability calculation
-		const maintainability = Math.max(0, 171 - 5.2 * Math.log(lines) - 0.23 * complexity + 16.2 * Math.log(lines) + 50 * commentRatio);
+		const maintainability = Math.max(
+			0,
+			171 - 5.2 * Math.log(lines) - 0.23 * complexity + 16.2 * Math.log(lines) + 50 * commentRatio
+		);
 
 		return Math.min(100, maintainability);
 	}
@@ -436,7 +446,7 @@ export class CodeAgent extends BaseAgent {
 			issues.push({
 				type: 'warning',
 				message: 'Remove console.log statements before production',
-				severity: 2
+				severity: 2,
 			});
 		}
 
@@ -444,7 +454,7 @@ export class CodeAgent extends BaseAgent {
 			issues.push({
 				type: 'suggestion',
 				message: 'Address TODO/FIXME comments',
-				severity: 1
+				severity: 1,
 			});
 		}
 
@@ -455,7 +465,7 @@ export class CodeAgent extends BaseAgent {
 				issues.push({
 					type: 'warning',
 					message: `Function is too long (${length} lines). Consider breaking it down.`,
-					severity: 2
+					severity: 2,
 				});
 			}
 		});
@@ -497,7 +507,7 @@ export class CodeAgent extends BaseAgent {
 		const patterns = {
 			javascript: [/import .+ from ['"`]([^'"`]+)['"`]/g, /require\(['"`]([^'"`]+)['"`]\)/g],
 			typescript: [/import .+ from ['"`]([^'"`]+)['"`]/g, /require\(['"`]([^'"`]+)['"`]\)/g],
-			python: [/import ([^\s]+)/g, /from ([^\s]+) import/g]
+			python: [/import ([^\s]+)/g, /from ([^\s]+) import/g],
 		};
 
 		const langPatterns = patterns[language as keyof typeof patterns] || patterns.javascript;
@@ -515,10 +525,7 @@ export class CodeAgent extends BaseAgent {
 	// Language-specific formatting methods
 	private formatTypeScript(code: string): string {
 		// Basic TypeScript formatting
-		return code
-			.replace(/;\s*}/g, ';\n}')
-			.replace(/{\s*/g, ' {\n  ')
-			.replace(/}\s*/g, '\n}\n');
+		return code.replace(/;\s*}/g, ';\n}').replace(/{\s*/g, ' {\n  ').replace(/}\s*/g, '\n}\n');
 	}
 
 	private formatJavaScript(code: string): string {
@@ -528,9 +535,7 @@ export class CodeAgent extends BaseAgent {
 
 	private formatPython(code: string): string {
 		// Basic Python formatting
-		return code
-			.replace(/:\s*/g, ':\n    ')
-			.replace(/\n\s*\n\s*\n/g, '\n\n'); // Remove multiple blank lines
+		return code.replace(/:\s*/g, ':\n    ').replace(/\n\s*\n\s*\n/g, '\n\n'); // Remove multiple blank lines
 	}
 
 	private formatJava(code: string): string {
@@ -561,7 +566,7 @@ export class CodeAgent extends BaseAgent {
 			function: { hasReturn: true, hasParameters: true },
 			class: { hasConstructor: true, hasMethods: true, hasProperties: true },
 			component: { hasProps: true, hasState: true, hasRender: true },
-			module: { hasExports: true, hasImports: true }
+			module: { hasExports: true, hasImports: true },
 		};
 
 		return structures[type as keyof typeof structures] || {};
@@ -585,12 +590,12 @@ export class CodeAgent extends BaseAgent {
 			typescript: {
 				function: `/**\n * {{description}}\n */\nfunction {{name}}({{parameters}}): {{returnType}} {\n  {{body}}\n}`,
 				class: `/**\n * {{description}}\n */\nclass {{name}} {\n  {{properties}}\n\n  constructor({{constructorParams}}) {\n    {{constructorBody}}\n  }\n\n  {{methods}}\n}`,
-				component: `import React from 'react';\n\ninterface {{name}}Props {\n  {{props}}\n}\n\nconst {{name}}: React.FC<{{name}}Props> = ({{propParams}}) => {\n  {{body}}\n\n  return (\n    {{jsx}}\n  );\n};\n\nexport default {{name}};`
+				component: `import React from 'react';\n\ninterface {{name}}Props {\n  {{props}}\n}\n\nconst {{name}}: React.FC<{{name}}Props> = ({{propParams}}) => {\n  {{body}}\n\n  return (\n    {{jsx}}\n  );\n};\n\nexport default {{name}};`,
 			},
 			javascript: {
 				function: `/**\n * {{description}}\n */\nfunction {{name}}({{parameters}}) {\n  {{body}}\n}`,
-				class: `/**\n * {{description}}\n */\nclass {{name}} {\n  constructor({{constructorParams}}) {\n    {{constructorBody}}\n  }\n\n  {{methods}}\n}`
-			}
+				class: `/**\n * {{description}}\n */\nclass {{name}} {\n  constructor({{constructorParams}}) {\n    {{constructorBody}}\n  }\n\n  {{methods}}\n}`,
+			},
 		};
 
 		return templates[language] || templates.typescript;
@@ -615,10 +620,11 @@ export class CodeAgent extends BaseAgent {
 			javascript: [/^\s*\/\//, /^\s*\/\*/, /\*\/\s*$/],
 			typescript: [/^\s*\/\//, /^\s*\/\*/, /\*\/\s*$/],
 			python: [/^\s*#/],
-			java: [/^\s*\/\//, /^\s*\/\*/, /\*\/\s*$/]
+			java: [/^\s*\/\//, /^\s*\/\*/, /\*\/\s*$/],
 		};
 
-		const patterns = commentPatterns[language as keyof typeof commentPatterns] || commentPatterns.javascript;
+		const patterns =
+			commentPatterns[language as keyof typeof commentPatterns] || commentPatterns.javascript;
 
 		for (const line of lines) {
 			for (const pattern of patterns) {
@@ -666,7 +672,12 @@ export class CodeAgent extends BaseAgent {
 		return Array.from(variables);
 	}
 
-	private createFunction(name: string, parameters: string[], body: string, language: string): string {
+	private createFunction(
+		name: string,
+		parameters: string[],
+		body: string,
+		language: string
+	): string {
 		const paramStr = parameters.join(', ');
 
 		switch (language) {
@@ -679,7 +690,12 @@ export class CodeAgent extends BaseAgent {
 		}
 	}
 
-	private replaceWithFunctionCall(code: string, selection: any, functionName: string, parameters: string[]): string {
+	private replaceWithFunctionCall(
+		code: string,
+		selection: any,
+		functionName: string,
+		parameters: string[]
+	): string {
 		const lines = code.split('\n');
 		const paramStr = parameters.join(', ');
 		const functionCall = `${functionName}(${paramStr});`;
@@ -711,8 +727,7 @@ export class CodeAgent extends BaseAgent {
 	}
 
 	private modernizeTypeScript(code: string): string {
-		return this.modernizeJavaScript(code)
-			.replace(/:\s*any\b/g, ': unknown'); // Replace any with unknown
+		return this.modernizeJavaScript(code).replace(/:\s*any\b/g, ': unknown'); // Replace any with unknown
 	}
 
 	private modernizePython(code: string): string {
@@ -733,7 +748,7 @@ export class CodeAgent extends BaseAgent {
 				elements.push({
 					type: 'function',
 					name: match[1],
-					code: match[0]
+					code: match[0],
 				});
 			}
 		}
@@ -741,18 +756,27 @@ export class CodeAgent extends BaseAgent {
 		return elements;
 	}
 
-	private async createTestCases(elements: any[], language: string, framework?: string): Promise<any[]> {
+	private async createTestCases(
+		elements: any[],
+		language: string,
+		framework?: string
+	): Promise<any[]> {
 		// Generate basic test cases for each element
 		return elements.map(element => ({
 			name: `test ${element.name}`,
-			code: `// Test for ${element.name}\n// TODO: Implement test logic`
+			code: `// Test for ${element.name}\n// TODO: Implement test logic`,
 		}));
 	}
 
-	private async formatTestFile(testCases: any[], language: string, framework?: string): Promise<string> {
-		const header = framework === 'jest'
-			? "import { describe, test, expect } from '@jest/globals';\n\n"
-			: "// Test file\n\n";
+	private async formatTestFile(
+		testCases: any[],
+		language: string,
+		framework?: string
+	): Promise<string> {
+		const header =
+			framework === 'jest'
+				? "import { describe, test, expect } from '@jest/globals';\n\n"
+				: '// Test file\n\n';
 
 		const tests = testCases.map(test => `${test.name}() {\n  ${test.code}\n}`).join('\n\n');
 
@@ -764,7 +788,7 @@ export class CodeAgent extends BaseAgent {
 		// Simplified AST representation
 		return {
 			type: 'program',
-			body: code.split('\n').map(line => ({ type: 'line', content: line }))
+			body: code.split('\n').map(line => ({ type: 'line', content: line })),
 		};
 	}
 
@@ -772,25 +796,25 @@ export class CodeAgent extends BaseAgent {
 		// Basic language mapping
 		const mappings: Record<string, Record<string, string>> = {
 			'javascript->python': {
-				'function': 'def',
-				'var': '',
-				'let': '',
-				'const': '',
+				function: 'def',
+				var: '',
+				let: '',
+				const: '',
 				'{': ':',
-				'}': ''
+				'}': '',
 			},
 			'python->javascript': {
-				'def': 'function',
+				def: 'function',
 				':': '{',
-				'    ': '  '
-			}
+				'    ': '  ',
+			},
 		};
 
 		const mapping = mappings[`${fromLang}->${toLang}`] || {};
 
 		return {
 			...ast,
-			mapping: mapping
+			mapping: mapping,
 		};
 	}
 

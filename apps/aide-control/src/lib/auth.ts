@@ -38,7 +38,7 @@ export const authConfig = {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
-							'Authorization': `Bearer ${logaiConfig.clientSecret}`,
+							Authorization: `Bearer ${logaiConfig.clientSecret}`,
 						},
 						body: JSON.stringify({
 							email: credentials.email,

@@ -25,10 +25,7 @@ async function getUserBilling(request: NextRequest) {
 		return NextResponse.json(billingInfo);
 	} catch (error) {
 		console.error('Error fetching user billing:', error);
-		return NextResponse.json(
-			{ error: 'Failed to fetch billing information' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to fetch billing information' }, { status: 500 });
 	}
 }
 
@@ -59,15 +56,12 @@ async function manageBilling(request: NextRequest) {
 				// Get or create Stripe customer
 				let customerId = user.customerId;
 				if (!customerId) {
-					customerId = await billingService.createCustomer(
-						user.email,
-						user.displayName
-					);
+					customerId = await billingService.createCustomer(user.email, user.displayName);
 
 					// Update user document with customer ID
 					await adminDb.collection(COLLECTIONS.USERS).doc(userId).update({
 						customerId,
-						updatedAt: new Date()
+						updatedAt: new Date(),
 					});
 				}
 
@@ -87,8 +81,8 @@ async function manageBilling(request: NextRequest) {
 					timestamp: new Date(),
 					metadata: {
 						userAgent: request.headers.get('user-agent'),
-						ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-					}
+						ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+					},
 				});
 
 				return NextResponse.json({ checkoutUrl });
@@ -98,10 +92,7 @@ async function manageBilling(request: NextRequest) {
 				const { subscriptionId } = params;
 
 				if (!subscriptionId) {
-					return NextResponse.json(
-						{ error: 'Subscription ID is required' },
-						{ status: 400 }
-					);
+					return NextResponse.json({ error: 'Subscription ID is required' }, { status: 400 });
 				}
 
 				await billingService.cancelSubscription(subscriptionId);
@@ -114,27 +105,21 @@ async function manageBilling(request: NextRequest) {
 					timestamp: new Date(),
 					metadata: {
 						userAgent: request.headers.get('user-agent'),
-						ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
-					}
+						ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+					},
 				});
 
 				return NextResponse.json({
-					message: 'Subscription cancelled successfully'
+					message: 'Subscription cancelled successfully',
 				});
 			}
 
 			default:
-				return NextResponse.json(
-					{ error: 'Invalid action' },
-					{ status: 400 }
-				);
+				return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
 		}
 	} catch (error) {
 		console.error('Error managing billing:', error);
-		return NextResponse.json(
-			{ error: 'Failed to process billing request' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to process billing request' }, { status: 500 });
 	}
 }
 

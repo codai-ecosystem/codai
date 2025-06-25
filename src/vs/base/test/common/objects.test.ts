@@ -17,7 +17,6 @@ const checkNot = (one: any, other: any, msg: string) => {
 };
 
 suite('Objects', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('equals', () => {
@@ -28,7 +27,17 @@ suite('Objects', () => {
 		check('1234', '1234', 'strings');
 		check([], [], 'empty arrays');
 		// check(['', 123], ['', 123], 'arrays');
-		check([[1, 2, 3], [4, 5, 6]], [[1, 2, 3], [4, 5, 6]], 'nested arrays');
+		check(
+			[
+				[1, 2, 3],
+				[4, 5, 6],
+			],
+			[
+				[1, 2, 3],
+				[4, 5, 6],
+			],
+			'nested arrays'
+		);
 		check({}, {}, 'empty objects');
 		check({ a: 1, b: '123' }, { a: 1, b: '123' }, 'objects');
 		check({ a: 1, b: '123' }, { b: '123', a: 1 }, 'objects (key order)');
@@ -52,12 +61,21 @@ suite('Objects', () => {
 
 		checkNot('1234', 1234, 'string !== number');
 
-		checkNot([[1, 2, 3], [4, 5, 6]], [[1, 2, 3], [4, 5, 6000]], 'arrays');
+		checkNot(
+			[
+				[1, 2, 3],
+				[4, 5, 6],
+			],
+			[
+				[1, 2, 3],
+				[4, 5, 6000],
+			],
+			'arrays'
+		);
 		checkNot({ a: { b: 1, c: 2 }, b: 3 }, { b: 3, a: { b: 9, c: 2 } }, 'objects');
 	});
 
 	test('mixin - array', function () {
-
 		const foo: any = {};
 		objects.mixin(foo, { bar: [1, 2, 3] });
 
@@ -71,11 +89,11 @@ suite('Objects', () => {
 
 	test('mixin - no overwrite', function () {
 		const foo: any = {
-			bar: '123'
+			bar: '123',
 		};
 
 		const bar: any = {
-			bar: '456'
+			bar: '456',
 		};
 
 		objects.mixin(foo, bar, false);
@@ -87,18 +105,21 @@ suite('Objects', () => {
 		const o1 = { something: 'hello' };
 		const o = {
 			o1: o1,
-			o2: o1
+			o2: o1,
 		};
-		assert.deepStrictEqual(objects.cloneAndChange(o, () => { }), o);
+		assert.deepStrictEqual(
+			objects.cloneAndChange(o, () => {}),
+			o
+		);
 	});
 
 	test('safeStringify', () => {
 		const obj1: any = {
-			friend: null
+			friend: null,
 		};
 
 		const obj2: any = {
-			friend: null
+			friend: null,
 		};
 
 		obj1.friend = obj2;
@@ -110,15 +131,12 @@ suite('Objects', () => {
 		const circular: any = {
 			a: 42,
 			b: null,
-			c: [
-				obj1, obj2
-			],
+			c: [obj1, obj2],
 			d: null,
-			e: BigInt(42)
+			e: BigInt(42),
 		};
 
 		arr.push(circular);
-
 
 		circular.b = circular;
 		circular.d = arr;
@@ -131,13 +149,13 @@ suite('Objects', () => {
 			c: [
 				{
 					friend: {
-						friend: '[Circular]'
-					}
+						friend: '[Circular]',
+					},
 				},
-				'[Circular]'
+				'[Circular]',
 			],
 			d: [1, '[Circular]', '[Circular]'],
-			e: '[BigInt 42]'
+			e: '[BigInt 42]',
 		});
 	});
 
@@ -146,9 +164,9 @@ suite('Objects', () => {
 			one: 'one',
 			two: 2,
 			three: {
-				3: true
+				3: true,
 			},
-			four: false
+			four: false,
 		};
 
 		let diff = objects.distinct(base, base);
@@ -161,7 +179,7 @@ suite('Objects', () => {
 
 		obj = {
 			one: 'one',
-			two: 2
+			two: 2,
 		};
 
 		diff = objects.distinct(base, obj);
@@ -169,9 +187,9 @@ suite('Objects', () => {
 
 		obj = {
 			three: {
-				3: true
+				3: true,
 			},
-			four: false
+			four: false,
 		};
 
 		diff = objects.distinct(base, obj);
@@ -181,9 +199,9 @@ suite('Objects', () => {
 			one: 'two',
 			two: 2,
 			three: {
-				3: true
+				3: true,
 			},
-			four: true
+			four: true,
 		};
 
 		diff = objects.distinct(base, obj);
@@ -195,9 +213,9 @@ suite('Objects', () => {
 			one: null,
 			two: 2,
 			three: {
-				3: true
+				3: true,
 			},
-			four: undefined
+			four: undefined,
 		};
 
 		diff = objects.distinct(base, obj);
@@ -209,7 +227,7 @@ suite('Objects', () => {
 			one: 'two',
 			two: 3,
 			three: { 3: false },
-			four: true
+			four: true,
 		};
 
 		diff = objects.distinct(base, obj);
@@ -223,7 +241,7 @@ suite('Objects', () => {
 	test('getCaseInsensitive', () => {
 		const obj1 = {
 			lowercase: 123,
-			mIxEdCaSe: 456
+			mIxEdCaSe: 456,
 		};
 
 		assert.strictEqual(obj1.lowercase, objects.getCaseInsensitive(obj1, 'lowercase'));
@@ -238,7 +256,7 @@ test('mapValues', () => {
 	const obj = {
 		a: 1,
 		b: 2,
-		c: 3
+		c: 3,
 	};
 
 	const result = objects.mapValues(obj, (value, key) => `${key}: ${value * 2}`);

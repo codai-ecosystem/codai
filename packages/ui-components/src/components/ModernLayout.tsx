@@ -31,7 +31,7 @@ export function ModernLayout({
 	subtitle,
 	headerActions,
 	navigationItems = [],
-	className = ''
+	className = '',
 }: LayoutProps) {
 	const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -41,45 +41,46 @@ export function ModernLayout({
 			label: 'Dashboard',
 			icon: <Icons.Chart />,
 			href: '/',
-			active: true
+			active: true,
 		},
 		{
 			id: 'users',
 			label: 'Users',
 			icon: <Icons.Users />,
-			href: '/users'
+			href: '/users',
 		},
 		{
 			id: 'api-keys',
 			label: 'API Keys',
 			icon: <Icons.Key />,
-			href: '/api-keys'
+			href: '/api-keys',
 		},
 		{
 			id: 'billing',
 			label: 'Billing',
 			icon: <Icons.CreditCard />,
-			href: '/billing'
+			href: '/billing',
 		},
 		{
 			id: 'analytics',
 			label: 'Analytics',
 			icon: <Icons.TrendingUp />,
-			href: '/analytics'
+			href: '/analytics',
 		},
 		{
 			id: 'settings',
 			label: 'Settings',
 			icon: <Icons.Settings />,
-			href: '/settings'
-		}
+			href: '/settings',
+		},
 	];
 
 	const navItems = navigationItems.length > 0 ? navigationItems : defaultNavigationItems;
 
 	return (
 		<div className={`min-h-screen bg-codai-background ${className}`}>
-			{/* Header */}			<Header
+			{/* Header */}{' '}
+			<Header
 				title={title}
 				{...(subtitle && { subtitle })}
 				actions={
@@ -95,25 +96,23 @@ export function ModernLayout({
 					</div>
 				}
 			/>
-
 			<div className="flex">
 				{/* Sidebar */}
-				<div className={`
+				<div
+					className={`
 					fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
 					transform transition-transform duration-300 ease-in-out
 					${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
 					lg:block pt-20 lg:pt-0
-				`}>
+				`}
+				>
 					<Sidebar
 						isOpen={sidebarOpen}
 						onToggle={() => setSidebarOpen(!sidebarOpen)}
 						className="h-screen lg:h-[calc(100vh-80px)]"
 					>
 						<div className="p-4">
-							<Navigation
-								items={navItems}
-								collapsed={!sidebarOpen}
-							/>
+							<Navigation items={navItems} collapsed={!sidebarOpen} />
 						</div>
 					</Sidebar>
 				</div>
@@ -127,14 +126,14 @@ export function ModernLayout({
 				)}
 
 				{/* Main content */}
-				<main className={`
+				<main
+					className={`
 					flex-1 p-6 lg:p-8
 					${sidebarOpen ? 'lg:ml-0' : 'lg:ml-0'}
 					transition-all duration-300
-				`}>
-					<div className="max-w-7xl mx-auto">
-						{children}
-					</div>
+				`}
+				>
+					<div className="max-w-7xl mx-auto">{children}</div>
 				</main>
 			</div>
 		</div>

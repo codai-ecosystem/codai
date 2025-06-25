@@ -15,13 +15,11 @@ export interface IFoldingRangeData extends FoldingRange {
 	rank: number;
 }
 
-const foldingContext: FoldingContext = {
-};
+const foldingContext: FoldingContext = {};
 
 const ID_SYNTAX_PROVIDER = 'syntax';
 
 export class SyntaxRangeProvider implements RangeProvider {
-
 	readonly id = ID_SYNTAX_PROVIDER;
 
 	readonly disposables: DisposableStore;
@@ -63,10 +61,16 @@ export class SyntaxRangeProvider implements RangeProvider {
 	}
 }
 
-function collectSyntaxRanges(providers: FoldingRangeProvider[], model: ITextModel, cancellationToken: CancellationToken): Promise<IFoldingRangeData[] | null> {
+function collectSyntaxRanges(
+	providers: FoldingRangeProvider[],
+	model: ITextModel,
+	cancellationToken: CancellationToken
+): Promise<IFoldingRangeData[] | null> {
 	let rangeData: IFoldingRangeData[] | null = null;
 	const promises = providers.map((provider, i) => {
-		return Promise.resolve(provider.provideFoldingRanges(model, foldingContext, cancellationToken)).then(ranges => {
+		return Promise.resolve(
+			provider.provideFoldingRanges(model, foldingContext, cancellationToken)
+		).then(ranges => {
 			if (cancellationToken.isCancellationRequested) {
 				return;
 			}
@@ -107,7 +111,12 @@ class RangesCollector {
 		this._foldingRangesLimit = foldingRangesLimit;
 	}
 
-	public add(startLineNumber: number, endLineNumber: number, type: string | undefined, nestingLevel: number) {
+	public add(
+		startLineNumber: number,
+		endLineNumber: number,
+		type: string | undefined,
+		nestingLevel: number
+	) {
 		if (startLineNumber > MAX_LINE_NUMBER || endLineNumber > MAX_LINE_NUMBER) {
 			return;
 		}
@@ -164,12 +173,13 @@ class RangesCollector {
 			}
 			return new FoldingRegions(startIndexes, endIndexes, types);
 		}
-
 	}
-
 }
 
-export function sanitizeRanges(rangeData: IFoldingRangeData[], foldingRangesLimit: FoldingLimitReporter): FoldingRegions {
+export function sanitizeRanges(
+	rangeData: IFoldingRangeData[],
+	foldingRangesLimit: FoldingLimitReporter
+): FoldingRegions {
 	const sorted = rangeData.sort((d1, d2) => {
 		let diff = d1.start - d2.start;
 		if (diff === 0) {

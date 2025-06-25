@@ -22,7 +22,7 @@ export class TesterAgent extends BaseAgentImpl {
 			'test_planning',
 			'test',
 			'testing',
-			'development'
+			'development',
 		];
 
 		// Check if task has a type property and it matches our capabilities
@@ -33,9 +33,10 @@ export class TesterAgent extends BaseAgentImpl {
 			}
 		}
 
-		return testingTasks.some(taskType =>
-			task.title.toLowerCase().includes(taskType) ||
-			task.description.toLowerCase().includes(taskType)
+		return testingTasks.some(
+			taskType =>
+				task.title.toLowerCase().includes(taskType) ||
+				task.description.toLowerCase().includes(taskType)
 		);
 	}
 
@@ -47,11 +48,11 @@ export class TesterAgent extends BaseAgentImpl {
 			await this.sendMessage({
 				type: 'notification',
 				content: `Starting testing task: ${task.title}`,
-				metadata: { taskId: task.id }
+				metadata: { taskId: task.id },
 			});
 
 			const codeToTest = task.inputs.code as string;
-			const testType = task.inputs.testType as string || 'unit';
+			const testType = (task.inputs.testType as string) || 'unit';
 
 			// Generate tests based on the test type
 			let result;
@@ -69,11 +70,12 @@ export class TesterAgent extends BaseAgentImpl {
 				result = await this.generateUnitTests(codeToTest, task);
 			}
 
-			const duration = Date.now() - startTime; return {
+			const duration = Date.now() - startTime;
+			return {
 				success: true,
 				outputs: { result, testType },
 				duration,
-				memoryChanges: []
+				memoryChanges: [],
 			};
 		} catch (error) {
 			const duration = Date.now() - startTime;
@@ -81,7 +83,7 @@ export class TesterAgent extends BaseAgentImpl {
 				success: false,
 				error: error instanceof Error ? error.message : String(error),
 				duration,
-				memoryChanges: []
+				memoryChanges: [],
 			};
 		}
 	}
@@ -271,14 +273,16 @@ describe('Security Tests', () => {
 	/**
 	 * Extract test cases from code
 	 */
-	private async extractTestCases(code: string): Promise<Array<{ name: string; input: string; expected: string }>> {
+	private async extractTestCases(
+		code: string
+	): Promise<Array<{ name: string; input: string; expected: string }>> {
 		// Analyze code to identify functions and their parameters
 		const functions = this.extractFunctions(code);
 
 		return functions.map(func => ({
 			name: `should test ${func.name}`,
 			input: func.parameters.join(', '),
-			expected: 'expected result'
+			expected: 'expected result',
 		}));
 	}
 
@@ -294,14 +298,20 @@ describe('Security Tests', () => {
 		while ((match = functionRegex.exec(code)) !== null) {
 			functions.push({
 				name: match[1],
-				parameters: match[2].split(',').map(p => p.trim()).filter(Boolean)
+				parameters: match[2]
+					.split(',')
+					.map(p => p.trim())
+					.filter(Boolean),
 			});
 		}
 
 		while ((match = arrowFunctionRegex.exec(code)) !== null) {
 			functions.push({
 				name: match[1],
-				parameters: match[2].split(',').map(p => p.trim()).filter(Boolean)
+				parameters: match[2]
+					.split(',')
+					.map(p => p.trim())
+					.filter(Boolean),
 			});
 		}
 
@@ -352,7 +362,10 @@ const { describe, it, beforeEach, afterEach } = require('mocha');
 	/**
 	 * Generate individual test case
 	 */
-	private generateTestCase(testCase: { name: string; input: string; expected: string }, framework: string): string {
+	private generateTestCase(
+		testCase: { name: string; input: string; expected: string },
+		framework: string
+	): string {
 		const testFunction = framework === 'mocha' ? 'it' : 'test';
 
 		return `	${testFunction}('${testCase.name}', () => {
@@ -376,7 +389,7 @@ const { describe, it, beforeEach, afterEach } = require('mocha');
 	private generateTestTeardown(): string {
 		return `});
 `;
-	}	/**
+	} /**
 	 * Store test result in memory graph
 	 */
 	private async storeTestResult(testType: string, testCode: string, task: Task): Promise<void> {
@@ -391,18 +404,20 @@ const { describe, it, beforeEach, afterEach } = require('mocha');
 			version: '0.2.0',
 			testType: testType as 'unit' | 'integration' | 'e2e' | 'performance' | 'security',
 			framework: this.detectTestFramework(task),
-			testCases: [{
-				name: 'Generated test case',
-				description: `Test case for ${task.title}`,
-				action: testCode,
-				expected: 'Test should pass'
-			}],
+			testCases: [
+				{
+					name: 'Generated test case',
+					description: `Test case for ${task.title}`,
+					action: testCode,
+					expected: 'Test should pass',
+				},
+			],
 			coverage: 80,
 			metadata: {
 				createdBy: this.config.id,
 				generatedCode: testCode,
-				taskId: task.id
-			}
+				taskId: task.id,
+			},
 		};
 
 		await this.memoryGraph.addNode(testNode);

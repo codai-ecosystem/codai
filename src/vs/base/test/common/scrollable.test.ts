@@ -8,7 +8,6 @@ import { SmoothScrollingOperation, SmoothScrollingUpdate } from '../../common/sc
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 class TestSmoothScrollingOperation extends SmoothScrollingOperation {
-
 	constructor(from: number, to: number, viewportSize: number, startTime: number, duration: number) {
 		duration = duration + 10;
 		startTime = startTime - 10;
@@ -24,11 +23,9 @@ class TestSmoothScrollingOperation extends SmoothScrollingOperation {
 	public testTick(now: number): SmoothScrollingUpdate {
 		return this._tick(now);
 	}
-
 }
 
 suite('SmoothScrollingOperation', () => {
-
 	const VIEWPORT_HEIGHT = 800;
 	const ANIMATION_DURATION = 125;
 	const LINE_HEIGHT = 20;
@@ -46,7 +43,13 @@ suite('SmoothScrollingOperation', () => {
 	}
 
 	function simulateSmoothScroll(from: number, to: number): [number, number][] {
-		const scrollable = new TestSmoothScrollingOperation(from, to, VIEWPORT_HEIGHT, 0, ANIMATION_DURATION);
+		const scrollable = new TestSmoothScrollingOperation(
+			from,
+			to,
+			VIEWPORT_HEIGHT,
+			0,
+			ANIMATION_DURATION
+		);
 
 		const result: [number, number][] = [];
 		let resultLen = 0;
@@ -118,5 +121,4 @@ suite('SmoothScrollingOperation', () => {
 			[500, 540],
 		]);
 	});
-
 });

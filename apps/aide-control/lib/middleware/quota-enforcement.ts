@@ -51,20 +51,20 @@ export function withQuotaEnforcement(
 						current: quotaStatus.usage.apiCalls,
 						limit: quotaStatus.plan?.apiCallsPerMonth || 0,
 						remaining: quotaStatus.remainingQuota.apiCalls,
-						warning: quotaStatus.warningThresholds.apiCalls
+						warning: quotaStatus.warningThresholds.apiCalls,
 					},
 					'compute-minutes': {
 						current: quotaStatus.usage.computeMinutes,
 						limit: quotaStatus.plan?.computeMinutesPerMonth || 0,
 						remaining: quotaStatus.remainingQuota.computeMinutes,
-						warning: quotaStatus.warningThresholds.computeMinutes
+						warning: quotaStatus.warningThresholds.computeMinutes,
 					},
-					'storage': {
+					storage: {
 						current: quotaStatus.usage.storageMB,
 						limit: quotaStatus.plan?.storageMBLimit || 0,
 						remaining: quotaStatus.remainingQuota.storage,
-						warning: quotaStatus.warningThresholds.storage
-					}
+						warning: quotaStatus.warningThresholds.storage,
+					},
 				};
 
 				const currentQuota = quotaTypeMap[options.usageType];
@@ -81,8 +81,8 @@ export function withQuotaEnforcement(
 						requestedAmount: options.amount,
 						currentUsage: currentQuota?.current || 0,
 						limit: currentQuota?.limit || 0,
-						planType: user.plan
-					}
+						planType: user.plan,
+					},
 				});
 
 				return NextResponse.json(
@@ -90,7 +90,7 @@ export function withQuotaEnforcement(
 						error: 'Quota exceeded',
 						message: `You have exceeded your ${options.usageType.replace('-', ' ')} quota`,
 						quotaStatus: currentQuota,
-						upgradeUrl: '/pricing'
+						upgradeUrl: '/pricing',
 					},
 					{ status: 429 } // Too Many Requests
 				);
@@ -102,20 +102,20 @@ export function withQuotaEnforcement(
 					current: quotaStatus.usage.apiCalls,
 					limit: quotaStatus.plan?.apiCallsPerMonth || 0,
 					remaining: quotaStatus.remainingQuota.apiCalls,
-					warning: quotaStatus.warningThresholds.apiCalls
+					warning: quotaStatus.warningThresholds.apiCalls,
 				},
 				'compute-minutes': {
 					current: quotaStatus.usage.computeMinutes,
 					limit: quotaStatus.plan?.computeMinutesPerMonth || 0,
 					remaining: quotaStatus.remainingQuota.computeMinutes,
-					warning: quotaStatus.warningThresholds.computeMinutes
+					warning: quotaStatus.warningThresholds.computeMinutes,
 				},
-				'storage': {
+				storage: {
 					current: quotaStatus.usage.storageMB,
 					limit: quotaStatus.plan?.storageMBLimit || 0,
 					remaining: quotaStatus.remainingQuota.storage,
-					warning: quotaStatus.warningThresholds.storage
-				}
+					warning: quotaStatus.warningThresholds.storage,
+				},
 			};
 
 			const currentQuota = quotaTypeMap[options.usageType];
@@ -129,7 +129,7 @@ export function withQuotaEnforcement(
 					const usageTypeMapping = {
 						'api-calls': 'api_call',
 						'compute-minutes': 'compute_minute',
-						'storage': 'storage_mb'
+						storage: 'storage_mb',
 					} as const;
 					await usageService.trackUsage(
 						user.uid,
@@ -140,8 +140,8 @@ export function withQuotaEnforcement(
 							operation: req.method,
 							details: {
 								timestamp: new Date().toISOString(),
-								...options.metadata
-							}
+								...options.metadata,
+							},
 						}
 					);
 				} catch (trackingError) {
@@ -159,7 +159,6 @@ export function withQuotaEnforcement(
 			}
 
 			return response;
-
 		} catch (error) {
 			console.error('Error in quota enforcement middleware:', error);
 			// In case of middleware errors, allow the request to proceed
@@ -173,8 +172,8 @@ export function withQuotaEnforcement(
 					action: 'Quota middleware encountered an error',
 					error: error instanceof Error ? error.message : 'Unknown error',
 					endpoint: new URL(req.url).pathname,
-					method: req.method
-				}
+					method: req.method,
+				},
 			});
 
 			return await handler(req, user);
@@ -194,7 +193,7 @@ export async function checkUserQuota(
 		const usageService = new UsageTrackingService();
 		const [canPerform, quotaStatus] = await Promise.all([
 			usageService.canUserPerformAction(userId, usageType, amount),
-			usageService.checkQuotaStatus(userId)
+			usageService.checkQuotaStatus(userId),
 		]);
 
 		const quotaTypeMap = {
@@ -202,20 +201,20 @@ export async function checkUserQuota(
 				current: quotaStatus.usage.apiCalls,
 				limit: quotaStatus.plan?.apiCallsPerMonth || 0,
 				remaining: quotaStatus.remainingQuota.apiCalls,
-				warning: quotaStatus.warningThresholds.apiCalls
+				warning: quotaStatus.warningThresholds.apiCalls,
 			},
 			'compute-minutes': {
 				current: quotaStatus.usage.computeMinutes,
 				limit: quotaStatus.plan?.computeMinutesPerMonth || 0,
 				remaining: quotaStatus.remainingQuota.computeMinutes,
-				warning: quotaStatus.warningThresholds.computeMinutes
+				warning: quotaStatus.warningThresholds.computeMinutes,
 			},
-			'storage': {
+			storage: {
 				current: quotaStatus.usage.storageMB,
 				limit: quotaStatus.plan?.storageMBLimit || 0,
 				remaining: quotaStatus.remainingQuota.storage,
-				warning: quotaStatus.warningThresholds.storage
-			}
+				warning: quotaStatus.warningThresholds.storage,
+			},
 		};
 
 		const currentQuota = quotaTypeMap[usageType];
@@ -224,14 +223,13 @@ export async function checkUserQuota(
 			allowed: canPerform,
 			quotaStatus: currentQuota,
 			remainingQuota: currentQuota?.remaining || 0,
-			warningThreshold: currentQuota?.warning || false
+			warningThreshold: currentQuota?.warning || false,
 		};
-
 	} catch (error) {
 		console.error('Error checking user quota:', error);
 		return {
 			allowed: false,
-			error: error instanceof Error ? error.message : 'Unknown error'
+			error: error instanceof Error ? error.message : 'Unknown error',
 		};
 	}
 }
@@ -239,47 +237,47 @@ export async function checkUserQuota(
 /**
  * Middleware specifically for API endpoints that consume API call quotas
  */
-export function withApiCallQuota(
-	callsConsumed: number = 1,
-	metadata: Record<string, any> = {}
-) {
+export function withApiCallQuota(callsConsumed: number = 1, metadata: Record<string, any> = {}) {
 	return (handler: (req: NextRequest, user: UserDocument) => Promise<NextResponse>) =>
-		withQuotaEnforcement({
-			usageType: 'api-calls',
-			amount: callsConsumed,
-			trackUsage: true,
-			metadata
-		}, handler);
+		withQuotaEnforcement(
+			{
+				usageType: 'api-calls',
+				amount: callsConsumed,
+				trackUsage: true,
+				metadata,
+			},
+			handler
+		);
 }
 
 /**
  * Middleware specifically for compute-intensive operations
  */
-export function withComputeQuota(
-	computeMinutes: number,
-	metadata: Record<string, any> = {}
-) {
+export function withComputeQuota(computeMinutes: number, metadata: Record<string, any> = {}) {
 	return (handler: (req: NextRequest, user: UserDocument) => Promise<NextResponse>) =>
-		withQuotaEnforcement({
-			usageType: 'compute-minutes',
-			amount: computeMinutes,
-			trackUsage: true,
-			metadata
-		}, handler);
+		withQuotaEnforcement(
+			{
+				usageType: 'compute-minutes',
+				amount: computeMinutes,
+				trackUsage: true,
+				metadata,
+			},
+			handler
+		);
 }
 
 /**
  * Middleware specifically for storage operations
  */
-export function withStorageQuota(
-	storageMB: number,
-	metadata: Record<string, any> = {}
-) {
+export function withStorageQuota(storageMB: number, metadata: Record<string, any> = {}) {
 	return (handler: (req: NextRequest, user: UserDocument) => Promise<NextResponse>) =>
-		withQuotaEnforcement({
-			usageType: 'storage',
-			amount: storageMB,
-			trackUsage: true,
-			metadata
-		}, handler);
+		withQuotaEnforcement(
+			{
+				usageType: 'storage',
+				amount: storageMB,
+				trackUsage: true,
+				metadata,
+			},
+			handler
+		);
 }

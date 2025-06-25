@@ -18,7 +18,7 @@ export interface TimelineViewProps {
 export const TimelineView: React.FC<TimelineViewProps> = ({
 	events,
 	className = '',
-	onEventClick
+	onEventClick,
 }) => {
 	const getEventTypeClasses = (type: TimelineEvent['type']) => {
 		switch (type) {
@@ -38,16 +38,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 			hour: '2-digit',
 			minute: '2-digit',
 			month: 'short',
-			day: 'numeric'
+			day: 'numeric',
 		}).format(date);
 	};
 
 	return (
 		<div className={`space-y-4 ${className}`}>
 			{events.length === 0 ? (
-				<div className="text-center text-gray-500 py-8">
-					No events to display
-				</div>
+				<div className="text-center text-gray-500 py-8">No events to display</div>
 			) : (
 				events.map((event, index) => (
 					<div key={event.id} className="relative">
@@ -58,7 +56,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 							className={`flex items-start space-x-3 ${onEventClick ? 'cursor-pointer hover:bg-gray-50 p-2 rounded' : ''}`}
 							onClick={() => onEventClick?.(event)}
 						>
-							<div className={`w-3 h-3 rounded-full border-2 ${getEventTypeClasses(event.type)} flex-shrink-0 mt-1`} />
+							<div
+								className={`w-3 h-3 rounded-full border-2 ${getEventTypeClasses(event.type)} flex-shrink-0 mt-1`}
+							/>
 							<div className="flex-1 min-w-0">
 								<div className="flex items-center justify-between">
 									<h4 className="text-sm font-medium text-gray-900">{event.title}</h4>

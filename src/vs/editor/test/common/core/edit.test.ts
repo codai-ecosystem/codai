@@ -11,7 +11,6 @@ import { OffsetRange } from '../../../common/core/ranges/offsetRange.js';
 import { ArrayEdit, ArrayReplacement } from '../../../common/core/edits/arrayEdit.js';
 
 suite('Edit', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	suite('StringEdit', () => {
@@ -98,10 +97,7 @@ suite('Edit', () => {
 				new StringReplacement(new OffsetRange(7, 9), 'a'),
 			]);
 			const ranges = edit.getNewRanges();
-			assert.deepStrictEqual(ranges, [
-				new OffsetRange(4, 9),
-				new OffsetRange(10, 11),
-			]);
+			assert.deepStrictEqual(ranges, [new OffsetRange(4, 9), new OffsetRange(10, 11)]);
 		});
 
 		test('getJoinedReplaceRange', () => {
@@ -150,8 +146,12 @@ suite('Edit', () => {
 
 				const e2 = getRandomEdit(s1, rng.nextIntRange(1, 4), rng);
 
-				const ae1 = ArrayEdit.create(e1.replacements.map(r => new ArrayReplacement(r.replaceRange, [...r.newText])));
-				const ae2 = ArrayEdit.create(e2.replacements.map(r => new ArrayReplacement(r.replaceRange, [...r.newText])));
+				const ae1 = ArrayEdit.create(
+					e1.replacements.map(r => new ArrayReplacement(r.replaceRange, [...r.newText]))
+				);
+				const ae2 = ArrayEdit.create(
+					e2.replacements.map(r => new ArrayReplacement(r.replaceRange, [...r.newText]))
+				);
 				const as0 = [...s0];
 				const as1 = ae1.apply(as0);
 				const as2 = ae2.apply(as1);
@@ -162,7 +162,6 @@ suite('Edit', () => {
 			}
 		});
 	});
-
 
 	function getRandomEdit(str: string, count: number, rng: Random): StringEdit {
 		const edits: StringReplacement[] = [];
@@ -177,7 +176,11 @@ suite('Edit', () => {
 		return StringEdit.create(edits);
 	}
 
-	function getRandomSingleEdit(str: string, rangeOffsetStart: number, rng: Random): StringReplacement {
+	function getRandomSingleEdit(
+		str: string,
+		rangeOffsetStart: number,
+		rng: Random
+	): StringReplacement {
 		const offsetStart = rng.nextIntRange(rangeOffsetStart, str.length);
 		const offsetEnd = rng.nextIntRange(offsetStart, str.length);
 

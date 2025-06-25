@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { KeybindingEditorDecorationsRenderer } from '../../browser/keybindingsEditorContribution.js';
 
 suite('KeybindingsEditorContribution', () => {
-
 	function assertUserSettingsFuzzyEquals(a: string, b: string, expected: boolean): void {
 		const actual = KeybindingEditorDecorationsRenderer._userSettingsFuzzyEquals(a, b);
 		const message = expected ? `${a} == ${b}` : `${a} != ${b}`;

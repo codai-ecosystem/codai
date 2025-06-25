@@ -3,7 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { bufferToStream, newWriteableBufferStream, VSBuffer, VSBufferReadableStream, VSBufferWriteableStream } from '../../../../base/common/buffer.js';
+import {
+	bufferToStream,
+	newWriteableBufferStream,
+	VSBuffer,
+	VSBufferReadableStream,
+	VSBufferWriteableStream,
+} from '../../../../base/common/buffer.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { isDefined } from '../../../../base/common/types.js';
 import { URI } from '../../../../base/common/uri.js';
@@ -11,7 +17,11 @@ import { IEnvironmentService } from '../../../../platform/environment/common/env
 import { IFileService } from '../../../../platform/files/common/files.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { StoredValue } from './storedValue.js';
@@ -54,37 +64,44 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
 	constructor(
 		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
 		@IStorageService storageService: IStorageService,
-		@ILogService private readonly logService: ILogService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
-		this.stored = this._register(new StoredValue<ReadonlyArray<{ rev: number; id: string; bytes: number }>>({
-			key: 'storedTestResults',
-			scope: StorageScope.WORKSPACE,
-			target: StorageTarget.MACHINE
-		}, storageService));
+		this.stored = this._register(
+			new StoredValue<ReadonlyArray<{ rev: number; id: string; bytes: number }>>(
+				{
+					key: 'storedTestResults',
+					scope: StorageScope.WORKSPACE,
+					target: StorageTarget.MACHINE,
+				},
+				storageService
+			)
+		);
 	}
 
 	/**
 	 * @override
 	 */
 	public async read(): Promise<HydratedTestResult[]> {
-		const results = await Promise.all(this.stored.get([]).map(async (rec) => {
-			if (rec.rev !== currentRevision) {
-				return undefined;
-			}
-
-			try {
-				const contents = await this.readForResultId(rec.id);
-				if (!contents) {
+		const results = await Promise.all(
+			this.stored.get([]).map(async rec => {
+				if (rec.rev !== currentRevision) {
 					return undefined;
 				}
 
-				return { rec, result: new HydratedTestResult(this.uriIdentityService, contents) };
-			} catch (e) {
-				this.logService.warn(`Error deserializing stored test result ${rec.id}`, e);
-				return undefined;
-			}
-		}));
+				try {
+					const contents = await this.readForResultId(rec.id);
+					if (!contents) {
+						return undefined;
+					}
+
+					return { rec, result: new HydratedTestResult(this.uriIdentityService, contents) };
+				} catch (e) {
+					this.logService.warn(`Error deserializing stored test result ${rec.id}`, e);
+					return undefined;
+				}
+			})
+		);
 
 		const defined = results.filter(isDefined);
 		if (defined.length !== results.length) {
@@ -118,7 +135,9 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
 		// 3. We store the min results, and have no more byte budget
 		for (
 			let i = 0;
-			i < results.length && i < RETAIN_MAX_RESULTS && (budget > 0 || toStore.length < RETAIN_MIN_RESULTS);
+			i < results.length &&
+			i < RETAIN_MAX_RESULTS &&
+			(budget > 0 || toStore.length < RETAIN_MIN_RESULTS);
 			i++
 		) {
 			const result = results[i];
@@ -162,7 +181,11 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
 	/**
 	 * Reads an output range for the test.
 	 */
-	protected abstract readOutputRangeForResultId(id: string, offset: number, length: number): Promise<VSBuffer>;
+	protected abstract readOutputRangeForResultId(
+		id: string,
+		offset: number,
+		length: number
+	): Promise<VSBuffer>;
 
 	/**
 	 * Deletes serialized results for the test.
@@ -177,7 +200,10 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
 	/**
 	 * Reads serialized results for the test. Is allowed to throw.
 	 */
-	protected abstract storeOutputForResultId(id: string, input: VSBufferWriteableStream): Promise<void>;
+	protected abstract storeOutputForResultId(
+		id: string,
+		input: VSBufferWriteableStream
+	): Promise<void>;
 }
 
 export class InMemoryResultStorage extends BaseTestResultStorage {
@@ -205,7 +231,11 @@ export class InMemoryResultStorage extends BaseTestResultStorage {
 		throw new Error('Method not implemented.');
 	}
 
-	protected readOutputRangeForResultId(id: string, offset: number, length: number): Promise<VSBuffer> {
+	protected readOutputRangeForResultId(
+		id: string,
+		offset: number,
+		length: number
+	): Promise<VSBuffer> {
 		throw new Error('Method not implemented.');
 	}
 }
@@ -219,10 +249,14 @@ export class TestResultStorage extends BaseTestResultStorage {
 		@ILogService logService: ILogService,
 		@IWorkspaceContextService workspaceContext: IWorkspaceContextService,
 		@IFileService private readonly fileService: IFileService,
-		@IEnvironmentService environmentService: IEnvironmentService,
+		@IEnvironmentService environmentService: IEnvironmentService
 	) {
 		super(uriIdentityService, storageService, logService);
-		this.directory = URI.joinPath(environmentService.workspaceStorageHome, workspaceContext.getWorkspace().id, 'testResults');
+		this.directory = URI.joinPath(
+			environmentService.workspaceStorageHome,
+			workspaceContext.getWorkspace().id,
+			'testResults'
+		);
 	}
 
 	protected async readForResultId(id: string) {
@@ -231,22 +265,31 @@ export class TestResultStorage extends BaseTestResultStorage {
 	}
 
 	protected storeForResultId(id: string, contents: ISerializedTestResults) {
-		return this.fileService.writeFile(this.getResultJsonPath(id), VSBuffer.fromString(JSON.stringify(contents)));
+		return this.fileService.writeFile(
+			this.getResultJsonPath(id),
+			VSBuffer.fromString(JSON.stringify(contents))
+		);
 	}
 
 	protected deleteForResultId(id: string) {
 		return this.fileService.del(this.getResultJsonPath(id)).catch(() => undefined);
 	}
 
-	protected async readOutputRangeForResultId(id: string, offset: number, length: number): Promise<VSBuffer> {
+	protected async readOutputRangeForResultId(
+		id: string,
+		offset: number,
+		length: number
+	): Promise<VSBuffer> {
 		try {
-			const { value } = await this.fileService.readFile(this.getResultOutputPath(id), { position: offset, length });
+			const { value } = await this.fileService.readFile(this.getResultOutputPath(id), {
+				position: offset,
+				length,
+			});
 			return value;
 		} catch {
 			return VSBuffer.alloc(0);
 		}
 	}
-
 
 	protected async readOutputForResultId(id: string): Promise<VSBufferReadableStream> {
 		try {
@@ -281,7 +324,12 @@ export class TestResultStorage extends BaseTestResultStorage {
 			return;
 		}
 
-		const stored = new Set(this.stored.get([]).filter(s => s.rev === currentRevision).map(s => s.id));
+		const stored = new Set(
+			this.stored
+				.get([])
+				.filter(s => s.rev === currentRevision)
+				.map(s => s.id)
+		);
 
 		await Promise.all(
 			children

@@ -55,19 +55,19 @@ export class ProjectBuilder {
 			actions.push({
 				type: 'createFile',
 				target: `${componentDir}/${componentName}.tsx`,
-				description: `Created ${componentName} component`
+				description: `Created ${componentName} component`,
 			});
 
 			actions.push({
 				type: 'createFile',
 				target: `${componentDir}/${componentName}.css`,
-				description: `Created ${componentName} component styles`
+				description: `Created ${componentName} component styles`,
 			});
 
 			actions.push({
 				type: 'createFile',
 				target: `${componentDir}/${componentName}.test.tsx`,
-				description: `Created ${componentName} component tests`
+				description: `Created ${componentName} component tests`,
 			});
 
 			this.logger.info(`Component ${componentName} built successfully`);
@@ -103,13 +103,13 @@ export class ProjectBuilder {
 			actions.push({
 				type: 'createFile',
 				target: `src/hooks/use${featureName}.ts`,
-				description: `Created ${featureName} feature hook`
+				description: `Created ${featureName} feature hook`,
 			});
 
 			actions.push({
 				type: 'createFile',
 				target: `src/features/${this.pascalToKebab(featureName)}/${featureName}View.tsx`,
-				description: `Created ${featureName} feature view component`
+				description: `Created ${featureName} feature view component`,
 			});
 
 			this.logger.info(`Feature ${featureName} built successfully`);
@@ -139,7 +139,7 @@ export class ProjectBuilder {
 			actions.push({
 				type: 'createFile',
 				target: `src/utils/${functionName}.ts`,
-				description: `Created ${functionName} utility function`
+				description: `Created ${functionName} utility function`,
 			});
 
 			this.logger.info(`Function ${functionName} built successfully`);
@@ -156,7 +156,11 @@ export class ProjectBuilder {
 	 * @param port Server port
 	 * @param actions Actions array to track operations
 	 */
-	public async buildServerProject(name: string, port: number, actions: AgentAction[]): Promise<boolean> {
+	public async buildServerProject(
+		name: string,
+		port: number,
+		actions: AgentAction[]
+	): Promise<boolean> {
 		try {
 			this.logger.info(`Building server project: ${name}`);
 			const projectDir = `${this.pascalToKebab(name)}-server`;
@@ -187,22 +191,22 @@ export class ProjectBuilder {
 				{
 					type: 'createFile',
 					target: `${projectDir}/package.json`,
-					description: `Created ${name} server package.json`
+					description: `Created ${name} server package.json`,
 				},
 				{
 					type: 'createFile',
 					target: `${projectDir}/tsconfig.json`,
-					description: `Created ${name} server tsconfig.json`
+					description: `Created ${name} server tsconfig.json`,
 				},
 				{
 					type: 'createFile',
 					target: `${projectDir}/.env`,
-					description: `Created ${name} server environment file`
+					description: `Created ${name} server environment file`,
 				},
 				{
 					type: 'createFile',
 					target: `${projectDir}/src/index.ts`,
-					description: `Created ${name} server entry point`
+					description: `Created ${name} server entry point`,
 				}
 			);
 

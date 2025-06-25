@@ -7,8 +7,16 @@ import { DeferredPromise, raceCancellation } from '../../../../base/common/async
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { AiSettingsSearchResult, AiSettingsSearchResultKind, IAiSettingsSearchProvider, IAiSettingsSearchService } from './aiSettingsSearch.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
+import {
+	AiSettingsSearchResult,
+	AiSettingsSearchResultKind,
+	IAiSettingsSearchProvider,
+	IAiSettingsSearchService,
+} from './aiSettingsSearch.js';
 
 export class AiSettingsSearchService implements IAiSettingsSearchService {
 	readonly _serviceBrand: undefined;
@@ -36,7 +44,7 @@ export class AiSettingsSearchService implements IAiSettingsSearchService {
 				if (index !== -1) {
 					this._providers.splice(index, 1);
 				}
-			}
+			},
 		};
 	}
 
@@ -48,7 +56,13 @@ export class AiSettingsSearchService implements IAiSettingsSearchService {
 		this._embeddingsResultsPromises.delete(query);
 		this._llmRankedResultsPromises.delete(query);
 
-		this._providers.forEach(provider => provider.searchSettings(query, { limit: AiSettingsSearchService.MAX_PICKS, embeddingsOnly }, token));
+		this._providers.forEach(provider =>
+			provider.searchSettings(
+				query,
+				{ limit: AiSettingsSearchService.MAX_PICKS, embeddingsOnly },
+				token
+			)
+		);
 	}
 
 	async getEmbeddingsResults(query: string, token: CancellationToken): Promise<string[] | null> {

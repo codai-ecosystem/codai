@@ -5,15 +5,26 @@
 
 import { IIdentityProvider } from '../../../../../base/browser/ui/list/list.js';
 import { ObjectTree } from '../../../../../base/browser/ui/tree/objectTree.js';
-import { IObjectTreeElement, ObjectTreeElementCollapseState } from '../../../../../base/browser/ui/tree/tree.js';
+import {
+	IObjectTreeElement,
+	ObjectTreeElementCollapseState,
+} from '../../../../../base/browser/ui/tree/tree.js';
 import { Emitter, Event } from '../../../../../base/common/event.js';
 import { FuzzyScore } from '../../../../../base/common/filters.js';
 import { IMarkdownString } from '../../../../../base/common/htmlContent.js';
 import { Iterable } from '../../../../../base/common/iterator.js';
 import { IDisposable } from '../../../../../base/common/lifecycle.js';
 import { MarshalledId } from '../../../../../base/common/marshallingIds.js';
-import { ISerializedTestTreeCollapseState, isCollapsedInSerializedTestTree } from './testingViewState.js';
-import { ITestItemContext, InternalTestItem, TestItemExpandState, TestResultState } from '../../common/testTypes.js';
+import {
+	ISerializedTestTreeCollapseState,
+	isCollapsedInSerializedTestTree,
+} from './testingViewState.js';
+import {
+	ITestItemContext,
+	InternalTestItem,
+	TestItemExpandState,
+	TestResultState,
+} from '../../common/testTypes.js';
 
 /**
  * Describes a rendering of tests in the explorer view. Different
@@ -103,7 +114,7 @@ export abstract class TestItemTreeElement {
 		 * Parent tree item. May not actually be the test item who owns this one
 		 * in a 'flat' projection.
 		 */
-		public readonly parent: TestItemTreeElement | null = null,
+		public readonly parent: TestItemTreeElement | null = null
 	) {
 		this.depth = parent ? parent.depth + 1 : 0;
 	}
@@ -136,8 +147,8 @@ export class TestTreeErrorMessage {
 
 	constructor(
 		public readonly message: string | IMarkdownString,
-		public readonly parent: TestExplorerTreeElement,
-	) { }
+		public readonly parent: TestExplorerTreeElement
+	) {}
 }
 
 export type TestExplorerTreeElement = TestItemTreeElement | TestTreeErrorMessage;
@@ -146,19 +157,25 @@ export const testIdentityProvider: IIdentityProvider<TestExplorerTreeElement> = 
 	getId(element) {
 		// For "not expandable" elements, whether they have children is part of the
 		// ID so they're rerendered if that changes (#204805)
-		const expandComponent = element instanceof TestTreeErrorMessage
-			? 'error'
-			: element.test.expand === TestItemExpandState.NotExpandable
-				? !!element.children.size
-				: element.test.expand;
+		const expandComponent =
+			element instanceof TestTreeErrorMessage
+				? 'error'
+				: element.test.expand === TestItemExpandState.NotExpandable
+					? !!element.children.size
+					: element.test.expand;
 
 		return element.treeId + '\0' + expandComponent;
-	}
+	},
 };
 
-export const getChildrenForParent = (serialized: ISerializedTestTreeCollapseState, rootsWithChildren: Iterable<TestExplorerTreeElement>, node: TestExplorerTreeElement | null): Iterable<IObjectTreeElement<TestExplorerTreeElement>> => {
+export const getChildrenForParent = (
+	serialized: ISerializedTestTreeCollapseState,
+	rootsWithChildren: Iterable<TestExplorerTreeElement>,
+	node: TestExplorerTreeElement | null
+): Iterable<IObjectTreeElement<TestExplorerTreeElement>> => {
 	let it: Iterable<TestExplorerTreeElement>;
-	if (node === null) { // roots
+	if (node === null) {
+		// roots
 		const rootsWithChildrenArr = [...rootsWithChildren];
 		if (rootsWithChildrenArr.length === 1) {
 			return getChildrenForParent(serialized, rootsWithChildrenArr, rootsWithChildrenArr[0]);
@@ -168,18 +185,19 @@ export const getChildrenForParent = (serialized: ISerializedTestTreeCollapseStat
 		it = node.children;
 	}
 
-	return Iterable.map(it, element => (
+	return Iterable.map(it, element =>
 		element instanceof TestTreeErrorMessage
 			? { element }
 			: {
-				element,
-				collapsible: element.test.expand !== TestItemExpandState.NotExpandable,
-				collapsed: element.test.item.error
-					? ObjectTreeElementCollapseState.PreserveOrExpanded
-					: (isCollapsedInSerializedTestTree(serialized, element.test.item.extId) ?? element.depth > 0
-						? ObjectTreeElementCollapseState.PreserveOrCollapsed
-						: ObjectTreeElementCollapseState.PreserveOrExpanded),
-				children: getChildrenForParent(serialized, rootsWithChildren, element),
-			}
-	));
+					element,
+					collapsible: element.test.expand !== TestItemExpandState.NotExpandable,
+					collapsed: element.test.item.error
+						? ObjectTreeElementCollapseState.PreserveOrExpanded
+						: (isCollapsedInSerializedTestTree(serialized, element.test.item.extId) ??
+							  element.depth > 0)
+							? ObjectTreeElementCollapseState.PreserveOrCollapsed
+							: ObjectTreeElementCollapseState.PreserveOrExpanded,
+					children: getChildrenForParent(serialized, rootsWithChildren, element),
+				}
+	);
 };

@@ -10,7 +10,7 @@ interface EdgeDetailsProps {
 export const EdgeDetails: React.FC<EdgeDetailsProps> = ({
 	relationship,
 	readOnly = true,
-	onUpdate
+	onUpdate,
 }) => {
 	// Mark unused parameters as intentionally unused
 	void readOnly;
@@ -45,9 +45,7 @@ export const EdgeDetails: React.FC<EdgeDetailsProps> = ({
 	return (
 		<div className="edge-details">
 			<div className="edge-details__header">
-				<h3 className="edge-details__title">
-					{relationship.type.replace('_', ' ')}
-				</h3>
+				<h3 className="edge-details__title">{relationship.type.replace('_', ' ')}</h3>
 				<div className="edge-details__type-description">
 					{getRelationshipTypeDescription(relationship.type)}
 				</div>

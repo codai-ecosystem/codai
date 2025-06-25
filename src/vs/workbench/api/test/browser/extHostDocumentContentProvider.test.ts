@@ -16,7 +16,6 @@ import { timeout } from '../../../../base/common/async.js';
 import { runWithFakedTimers } from '../../../../base/test/common/timeTravelScheduler.js';
 
 suite('ExtHostDocumentContentProvider', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	const resource = URI.parse('foo:bar');
@@ -25,16 +24,11 @@ suite('ExtHostDocumentContentProvider', () => {
 	const changes: [uri: UriComponents, value: string][] = [];
 
 	setup(() => {
-
 		changes.length = 0;
 
-		mainThreadContentProvider = new class implements MainThreadDocumentContentProvidersShape {
-			$registerTextContentProvider(handle: number, scheme: string): void {
-
-			}
-			$unregisterTextContentProvider(handle: number): void {
-
-			}
+		mainThreadContentProvider = new (class implements MainThreadDocumentContentProvidersShape {
+			$registerTextContentProvider(handle: number, scheme: string): void {}
+			$unregisterTextContentProvider(handle: number): void {}
 			async $onVirtualDocumentChange(uri: UriComponents, value: string): Promise<void> {
 				await timeout(10);
 				changes.push([uri, value]);
@@ -42,27 +36,32 @@ suite('ExtHostDocumentContentProvider', () => {
 			dispose(): void {
 				throw new Error('Method not implemented.');
 			}
-		};
+		})();
 
 		const ehContext = SingleProxyRPCProtocol(mainThreadContentProvider);
 		const documentsAndEditors = new ExtHostDocumentsAndEditors(ehContext, new NullLogService());
 		documentsAndEditors.$acceptDocumentsAndEditorsDelta({
-			addedDocuments: [{
-				isDirty: false,
-				languageId: 'foo',
-				uri: resource,
-				versionId: 1,
-				lines: ['foo'],
-				EOL: '\n',
-				encoding: 'utf8'
-			}]
+			addedDocuments: [
+				{
+					isDirty: false,
+					languageId: 'foo',
+					uri: resource,
+					versionId: 1,
+					lines: ['foo'],
+					EOL: '\n',
+					encoding: 'utf8',
+				},
+			],
 		});
-		documentContentProvider = new ExtHostDocumentContentProvider(ehContext, documentsAndEditors, new NullLogService());
+		documentContentProvider = new ExtHostDocumentContentProvider(
+			ehContext,
+			documentsAndEditors,
+			new NullLogService()
+		);
 	});
 
 	test('TextDocumentContentProvider drops onDidChange events when they happen quickly #179711', async () => {
 		await runWithFakedTimers({}, async function () {
-
 			const emitter = new Emitter<URI>();
 			const contents = ['X', 'Y'];
 			let counter = 0;
@@ -80,7 +79,7 @@ suite('ExtHostDocumentContentProvider', () => {
 					} finally {
 						stack--;
 					}
-				}
+				},
 			});
 
 			emitter.fire(resource);
@@ -95,6 +94,4 @@ suite('ExtHostDocumentContentProvider', () => {
 			d.dispose();
 		});
 	});
-
-
 });

@@ -7,11 +7,13 @@ import assert from 'assert';
 import { isEqual, isEqualOrParent } from '../../../../base/common/extpath.js';
 import { isLinux, isMacintosh, isWindows } from '../../../../base/common/platform.js';
 import { URI } from '../../../../base/common/uri.js';
-import { ensureNoDisposablesAreLeakedInTestSuite, toResource } from '../../../../base/test/common/utils.js';
+import {
+	ensureNoDisposablesAreLeakedInTestSuite,
+	toResource,
+} from '../../../../base/test/common/utils.js';
 import { FileChangesEvent, FileChangeType, IFileChange, isParent } from '../../common/files.js';
 
 suite('Files', () => {
-
 	test('FileChangesEvent - basics', function () {
 		const changes = [
 			{ resource: toResource.call(this, '/foo/updated.txt'), type: FileChangeType.UPDATED },
@@ -19,7 +21,7 @@ suite('Files', () => {
 			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED },
 			{ resource: toResource.call(this, '/bar/deleted.txt'), type: FileChangeType.DELETED },
 			{ resource: toResource.call(this, '/bar/folder'), type: FileChangeType.DELETED },
-			{ resource: toResource.call(this, '/BAR/FOLDER'), type: FileChangeType.DELETED }
+			{ resource: toResource.call(this, '/BAR/FOLDER'), type: FileChangeType.DELETED },
 		];
 
 		for (const ignorePathCasing of [false, true]) {
@@ -29,10 +31,35 @@ suite('Files', () => {
 			assert(event.affects(toResource.call(this, '/foo'), FileChangeType.UPDATED));
 			assert(event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.UPDATED));
 			assert(event.affects(toResource.call(this, '/foo/updated.txt'), FileChangeType.UPDATED));
-			assert(event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.UPDATED, FileChangeType.ADDED));
-			assert(event.affects(toResource.call(this, '/foo/updated.txt'), FileChangeType.UPDATED, FileChangeType.ADDED));
-			assert(event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.UPDATED, FileChangeType.ADDED, FileChangeType.DELETED));
-			assert(!event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.ADDED, FileChangeType.DELETED));
+			assert(
+				event.contains(
+					toResource.call(this, '/foo/updated.txt'),
+					FileChangeType.UPDATED,
+					FileChangeType.ADDED
+				)
+			);
+			assert(
+				event.affects(
+					toResource.call(this, '/foo/updated.txt'),
+					FileChangeType.UPDATED,
+					FileChangeType.ADDED
+				)
+			);
+			assert(
+				event.contains(
+					toResource.call(this, '/foo/updated.txt'),
+					FileChangeType.UPDATED,
+					FileChangeType.ADDED,
+					FileChangeType.DELETED
+				)
+			);
+			assert(
+				!event.contains(
+					toResource.call(this, '/foo/updated.txt'),
+					FileChangeType.ADDED,
+					FileChangeType.DELETED
+				)
+			);
 			assert(!event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.ADDED));
 			assert(!event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.DELETED));
 			assert(!event.affects(toResource.call(this, '/foo/updated.txt'), FileChangeType.DELETED));
@@ -48,14 +75,36 @@ suite('Files', () => {
 				assert(event.affects(toResource.call(this, '/bar'), FileChangeType.DELETED));
 			}
 			assert(event.contains(toResource.call(this, '/bar/folder/somefile'), FileChangeType.DELETED));
-			assert(event.contains(toResource.call(this, '/bar/folder/somefile/test.txt'), FileChangeType.DELETED));
-			assert(event.contains(toResource.call(this, '/BAR/FOLDER/somefile/test.txt'), FileChangeType.DELETED));
+			assert(
+				event.contains(
+					toResource.call(this, '/bar/folder/somefile/test.txt'),
+					FileChangeType.DELETED
+				)
+			);
+			assert(
+				event.contains(
+					toResource.call(this, '/BAR/FOLDER/somefile/test.txt'),
+					FileChangeType.DELETED
+				)
+			);
 			if (ignorePathCasing) {
-				assert(event.contains(toResource.call(this, '/BAR/folder/somefile/test.txt'), FileChangeType.DELETED));
+				assert(
+					event.contains(
+						toResource.call(this, '/BAR/folder/somefile/test.txt'),
+						FileChangeType.DELETED
+					)
+				);
 			} else {
-				assert(!event.contains(toResource.call(this, '/BAR/folder/somefile/test.txt'), FileChangeType.DELETED));
+				assert(
+					!event.contains(
+						toResource.call(this, '/BAR/folder/somefile/test.txt'),
+						FileChangeType.DELETED
+					)
+				);
 			}
-			assert(!event.contains(toResource.call(this, '/bar/folder2/somefile'), FileChangeType.DELETED));
+			assert(
+				!event.contains(toResource.call(this, '/bar/folder2/somefile'), FileChangeType.DELETED)
+			);
 
 			assert.strictEqual(1, event.rawAdded.length);
 			assert.strictEqual(2, event.rawUpdated.length);
@@ -76,7 +125,7 @@ suite('Files', () => {
 				{ resource: toResource.call(this, '/bar'), type },
 				{ resource: toResource.call(this, '/bar/foo'), type },
 				{ resource: toResource.call(this, '/bar/foo/updated.txt'), type },
-				{ resource: toResource.call(this, '/bar/foo/otherupdated.txt'), type }
+				{ resource: toResource.call(this, '/bar/foo/otherupdated.txt'), type },
 			];
 
 			for (const ignorePathCasing of [false, true]) {
@@ -121,8 +170,16 @@ suite('Files', () => {
 		assert.strictEqual(event.correlates(100), false);
 
 		changes = [
-			{ resource: toResource.call(this, '/foo/updated.txt'), type: FileChangeType.UPDATED, cId: 100 },
-			{ resource: toResource.call(this, '/foo/otherupdated.txt'), type: FileChangeType.UPDATED, cId: 100 },
+			{
+				resource: toResource.call(this, '/foo/updated.txt'),
+				type: FileChangeType.UPDATED,
+				cId: 100,
+			},
+			{
+				resource: toResource.call(this, '/foo/otherupdated.txt'),
+				type: FileChangeType.UPDATED,
+				cId: 100,
+			},
 			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED, cId: 100 },
 		];
 
@@ -132,7 +189,11 @@ suite('Files', () => {
 		assert.strictEqual(event.correlates(120), false);
 
 		changes = [
-			{ resource: toResource.call(this, '/foo/updated.txt'), type: FileChangeType.UPDATED, cId: 100 },
+			{
+				resource: toResource.call(this, '/foo/updated.txt'),
+				type: FileChangeType.UPDATED,
+				cId: 100,
+			},
 			{ resource: toResource.call(this, '/foo/otherupdated.txt'), type: FileChangeType.UPDATED },
 			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED, cId: 100 },
 		];
@@ -143,8 +204,16 @@ suite('Files', () => {
 		assert.strictEqual(event.correlates(120), false);
 
 		changes = [
-			{ resource: toResource.call(this, '/foo/updated.txt'), type: FileChangeType.UPDATED, cId: 100 },
-			{ resource: toResource.call(this, '/foo/otherupdated.txt'), type: FileChangeType.UPDATED, cId: 120 },
+			{
+				resource: toResource.call(this, '/foo/updated.txt'),
+				type: FileChangeType.UPDATED,
+				cId: 100,
+			},
+			{
+				resource: toResource.call(this, '/foo/otherupdated.txt'),
+				type: FileChangeType.UPDATED,
+				cId: 120,
+			},
 			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED, cId: 100 },
 		];
 
@@ -155,7 +224,6 @@ suite('Files', () => {
 	});
 
 	function testIsEqual(testMethod: (pA: string, pB: string, ignoreCase: boolean) => boolean): void {
-
 		// corner cases
 		assert(testMethod('', '', true));
 		assert(!testMethod(null!, '', true));
@@ -192,15 +260,21 @@ suite('Files', () => {
 		assert(isEqual(URI.file('c:\\some\\path').fsPath, URI.file('c:\\some\\path').fsPath, true));
 
 		assert(isEqual(URI.file('/someöäü/path').fsPath, URI.file('/someöäü/path').fsPath, true));
-		assert(isEqual(URI.file('c:\\someöäü\\path').fsPath, URI.file('c:\\someöäü\\path').fsPath, true));
+		assert(
+			isEqual(URI.file('c:\\someöäü\\path').fsPath, URI.file('c:\\someöäü\\path').fsPath, true)
+		);
 
 		assert(!isEqual(URI.file('/some/path').fsPath, URI.file('/some/other/path').fsPath, true));
-		assert(!isEqual(URI.file('c:\\some\\path').fsPath, URI.file('c:\\some\\other\\path').fsPath, true));
+		assert(
+			!isEqual(URI.file('c:\\some\\path').fsPath, URI.file('c:\\some\\other\\path').fsPath, true)
+		);
 
 		assert(isEqual(URI.file('/some/path').fsPath, URI.file('/some/PATH').fsPath, true));
 		assert(isEqual(URI.file('/someöäü/path').fsPath, URI.file('/someÖÄÜ/PATH').fsPath, true));
 		assert(isEqual(URI.file('c:\\some\\path').fsPath, URI.file('c:\\some\\PATH').fsPath, true));
-		assert(isEqual(URI.file('c:\\someöäü\\path').fsPath, URI.file('c:\\someÖÄÜ\\PATH').fsPath, true));
+		assert(
+			isEqual(URI.file('c:\\someöäü\\path').fsPath, URI.file('c:\\someÖÄÜ\\PATH').fsPath, true)
+		);
 		assert(isEqual(URI.file('c:\\some\\path').fsPath, URI.file('C:\\some\\PATH').fsPath, true));
 	});
 
@@ -246,7 +320,6 @@ suite('Files', () => {
 	});
 
 	test('isEqualOrParent (ignorecase)', function () {
-
 		// same assertions apply as with isEqual()
 		testIsEqual(isEqualOrParent); //
 

@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// https://github.com/microsoft/vscode/issues/212083
 
 	export interface Embedding {
@@ -13,14 +12,21 @@ declare module 'vscode' {
 
 	// TODO@API strictly not the right namespace...
 	export namespace lm {
-
 		export const embeddingModels: string[];
 
 		export const onDidChangeEmbeddingModels: Event<void>;
 
-		export function computeEmbeddings(embeddingsModel: string, input: string, token?: CancellationToken): Thenable<Embedding>;
+		export function computeEmbeddings(
+			embeddingsModel: string,
+			input: string,
+			token?: CancellationToken
+		): Thenable<Embedding>;
 
-		export function computeEmbeddings(embeddingsModel: string, input: string[], token?: CancellationToken): Thenable<Embedding[]>;
+		export function computeEmbeddings(
+			embeddingsModel: string,
+			input: string[],
+			token?: CancellationToken
+		): Thenable<Embedding[]>;
 	}
 
 	export interface EmbeddingsProvider {
@@ -28,6 +34,9 @@ declare module 'vscode' {
 	}
 
 	export namespace lm {
-		export function registerEmbeddingsProvider(embeddingsModel: string, provider: EmbeddingsProvider): Disposable;
+		export function registerEmbeddingsProvider(
+			embeddingsModel: string,
+			provider: EmbeddingsProvider
+		): Disposable;
 	}
 }

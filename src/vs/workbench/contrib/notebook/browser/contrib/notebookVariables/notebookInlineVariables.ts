@@ -13,7 +13,11 @@ import { format } from '../../../../../../base/common/strings.js';
 import { Position } from '../../../../../../editor/common/core/position.js';
 import { Range } from '../../../../../../editor/common/core/range.js';
 import { StandardTokenType } from '../../../../../../editor/common/encodedTokenAttributes.js';
-import { InlineValueContext, InlineValueText, InlineValueVariableLookup } from '../../../../../../editor/common/languages.js';
+import {
+	InlineValueContext,
+	InlineValueText,
+	InlineValueVariableLookup,
+} from '../../../../../../editor/common/languages.js';
 import { IModelDeltaDecoration, ITextModel } from '../../../../../../editor/common/model.js';
 import { ILanguageFeaturesService } from '../../../../../../editor/common/services/languageFeatures.js';
 import { localize } from '../../../../../../nls.js';
@@ -23,19 +27,31 @@ import { ServicesAccessor } from '../../../../../../platform/instantiation/commo
 import { createInlineValueDecoration } from '../../../../debug/browser/debugEditorContribution.js';
 import { IDebugService, State } from '../../../../debug/common/debug.js';
 import { NotebookSetting } from '../../../common/notebookCommon.js';
-import { ICellExecutionStateChangedEvent, INotebookExecutionStateService, NotebookExecutionType } from '../../../common/notebookExecutionStateService.js';
+import {
+	ICellExecutionStateChangedEvent,
+	INotebookExecutionStateService,
+	NotebookExecutionType,
+} from '../../../common/notebookExecutionStateService.js';
 import { INotebookKernelService, VariablesResult } from '../../../common/notebookKernelService.js';
 import { INotebookActionContext, NotebookAction } from '../../controller/coreActions.js';
-import { ICellViewModel, INotebookEditor, INotebookEditorContribution } from '../../notebookBrowser.js';
+import {
+	ICellViewModel,
+	INotebookEditor,
+	INotebookEditorContribution,
+} from '../../notebookBrowser.js';
 import { registerNotebookContribution } from '../../notebookEditorExtensions.js';
 
 class InlineSegment {
-	constructor(public column: number, public text: string) {
-	}
+	constructor(
+		public column: number,
+		public text: string
+	) {}
 }
 
-export class NotebookInlineVariablesController extends Disposable implements INotebookEditorContribution {
-
+export class NotebookInlineVariablesController
+	extends Disposable
+	implements INotebookEditorContribution
+{
 	static readonly id: string = 'notebook.inlineVariablesController';
 
 	private cellDecorationIds = new Map<ICellViewModel, string[]>();
@@ -48,35 +64,47 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
 		@INotebookKernelService private readonly notebookKernelService: INotebookKernelService,
-		@INotebookExecutionStateService private readonly notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private readonly notebookExecutionStateService: INotebookExecutionStateService,
 		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IDebugService private readonly debugService: IDebugService,
+		@IDebugService private readonly debugService: IDebugService
 	) {
 		super();
 
-		this._register(this.notebookExecutionStateService.onDidChangeExecution(async e => {
-			const inlineValuesSetting = this.configurationService.getValue<'on' | 'auto' | 'off'>(NotebookSetting.notebookInlineValues);
-			if (inlineValuesSetting === 'off') {
-				return;
-			}
-
-			if (e.type === NotebookExecutionType.cell) {
-				await this.updateInlineVariables(e);
-			}
-		}));
-
-		this._register(Event.runAndSubscribe(this.configurationService.onDidChangeConfiguration, e => {
-			if (!e || e.affectsConfiguration(NotebookSetting.notebookInlineValues)) {
-				if (this.configurationService.getValue<'on' | 'auto' | 'off'>(NotebookSetting.notebookInlineValues) === 'off') {
-					this.clearNotebookInlineDecorations();
+		this._register(
+			this.notebookExecutionStateService.onDidChangeExecution(async e => {
+				const inlineValuesSetting = this.configurationService.getValue<'on' | 'auto' | 'off'>(
+					NotebookSetting.notebookInlineValues
+				);
+				if (inlineValuesSetting === 'off') {
+					return;
 				}
-			}
-		}));
+
+				if (e.type === NotebookExecutionType.cell) {
+					await this.updateInlineVariables(e);
+				}
+			})
+		);
+
+		this._register(
+			Event.runAndSubscribe(this.configurationService.onDidChangeConfiguration, e => {
+				if (!e || e.affectsConfiguration(NotebookSetting.notebookInlineValues)) {
+					if (
+						this.configurationService.getValue<'on' | 'auto' | 'off'>(
+							NotebookSetting.notebookInlineValues
+						) === 'off'
+					) {
+						this.clearNotebookInlineDecorations();
+					}
+				}
+			})
+		);
 	}
 
 	private async updateInlineVariables(event: ICellExecutionStateChangedEvent): Promise<void> {
-		if (event.changed) { // undefined -> execution was completed, so return on all else. no code should execute until we know it's an execution completion
+		if (event.changed) {
+			// undefined -> execution was completed, so return on all else. no code should execute until we know it's an execution completion
 			return;
 		}
 
@@ -100,7 +128,10 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 			return;
 		}
 
-		if (!this.notebookEditor.textModel?.uri || !isEqual(this.notebookEditor.textModel.uri, event.notebook)) {
+		if (
+			!this.notebookEditor.textModel?.uri ||
+			!isEqual(this.notebookEditor.textModel.uri, event.notebook)
+		) {
 			return;
 		}
 
@@ -109,11 +140,16 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 			return;
 		}
 
-		const inlineValuesSetting = this.configurationService.getValue<'on' | 'auto' | 'off'>(NotebookSetting.notebookInlineValues);
+		const inlineValuesSetting = this.configurationService.getValue<'on' | 'auto' | 'off'>(
+			NotebookSetting.notebookInlineValues
+		);
 		const hasInlineValueProvider = this.languageFeaturesService.inlineValuesProvider.has(model);
 
 		// Skip if setting is off or if auto and no provider is registered
-		if (inlineValuesSetting === 'off' || (inlineValuesSetting === 'auto' && !hasInlineValueProvider)) {
+		if (
+			inlineValuesSetting === 'off' ||
+			(inlineValuesSetting === 'auto' && !hasInlineValueProvider)
+		) {
 			return;
 		}
 
@@ -127,7 +163,7 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 			const lastColumn = model.getLineMaxColumn(lastLine);
 			const ctx: InlineValueContext = {
 				frameId: 0, // ignored, we won't have a stack from since not in a debug session
-				stoppedLocation: new Range(lastLine, lastColumn, lastLine, lastColumn) // executing cell by cell, so "stopped" location would just be the end of document
+				stoppedLocation: new Range(lastLine, lastColumn, lastLine, lastColumn), // executing cell by cell, so "stopped" location would just be the end of document
 			};
 
 			const providers = this.languageFeaturesService.inlineValuesProvider.ordered(model).reverse();
@@ -135,68 +171,81 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 
 			const fullCellRange = new Range(1, 1, lastLine, lastColumn);
 
-			const promises = providers.flatMap(provider => Promise.resolve(provider.provideInlineValues(model, fullCellRange, ctx, token)).then(async (result) => {
-				if (!result) {
-					return;
-				}
-
-				const notebook = this.notebookEditor.textModel;
-				if (!notebook) {
-					return;
-				}
-
-				const kernel = this.notebookKernelService.getMatchingKernel(notebook);
-				const kernelVars: VariablesResult[] = [];
-				if (result.some(iv => iv.type === 'variable')) { // if anyone will need a lookup, get vars now to avoid needing to do it multiple times
-					if (!this.notebookEditor.hasModel()) {
-						return; // should not happen, a cell will be executed
-					}
-					const variables = kernel.selected?.provideVariables(event.notebook, undefined, 'named', 0, token);
-					if (variables) {
-						for await (const v of variables) {
-							kernelVars.push(v);
+			const promises = providers.flatMap(provider =>
+				Promise.resolve(provider.provideInlineValues(model, fullCellRange, ctx, token)).then(
+					async result => {
+						if (!result) {
+							return;
 						}
-					}
-				}
 
-				for (const iv of result) {
-					let text: string | undefined = undefined;
-					switch (iv.type) {
-						case 'text':
-							text = (iv as InlineValueText).text;
-							break;
-						case 'variable': {
-							const name = (iv as InlineValueVariableLookup).variableName;
-							if (!name) {
-								continue; // skip to next var, no valid name to lookup with
+						const notebook = this.notebookEditor.textModel;
+						if (!notebook) {
+							return;
+						}
+
+						const kernel = this.notebookKernelService.getMatchingKernel(notebook);
+						const kernelVars: VariablesResult[] = [];
+						if (result.some(iv => iv.type === 'variable')) {
+							// if anyone will need a lookup, get vars now to avoid needing to do it multiple times
+							if (!this.notebookEditor.hasModel()) {
+								return; // should not happen, a cell will be executed
 							}
-							const value = kernelVars.find(v => v.name === name)?.value;
-							if (!value) {
-								continue;
+							const variables = kernel.selected?.provideVariables(
+								event.notebook,
+								undefined,
+								'named',
+								0,
+								token
+							);
+							if (variables) {
+								for await (const v of variables) {
+									kernelVars.push(v);
+								}
 							}
-							text = format('{0} = {1}', name, value);
-							break;
 						}
-						case 'expression': {
-							continue; // no active debug session, so evaluate would break
-						}
-					}
 
-					if (text) {
-						const line = iv.range.startLineNumber;
-						let lineSegments = lineDecorations.get(line);
-						if (!lineSegments) {
-							lineSegments = [];
-							lineDecorations.set(line, lineSegments);
+						for (const iv of result) {
+							let text: string | undefined = undefined;
+							switch (iv.type) {
+								case 'text':
+									text = (iv as InlineValueText).text;
+									break;
+								case 'variable': {
+									const name = (iv as InlineValueVariableLookup).variableName;
+									if (!name) {
+										continue; // skip to next var, no valid name to lookup with
+									}
+									const value = kernelVars.find(v => v.name === name)?.value;
+									if (!value) {
+										continue;
+									}
+									text = format('{0} = {1}', name, value);
+									break;
+								}
+								case 'expression': {
+									continue; // no active debug session, so evaluate would break
+								}
+							}
+
+							if (text) {
+								const line = iv.range.startLineNumber;
+								let lineSegments = lineDecorations.get(line);
+								if (!lineSegments) {
+									lineSegments = [];
+									lineDecorations.set(line, lineSegments);
+								}
+								if (!lineSegments.some(iv => iv.text === text)) {
+									// de-dupe
+									lineSegments.push(new InlineSegment(iv.range.startColumn, text));
+								}
+							}
 						}
-						if (!lineSegments.some(iv => iv.text === text)) { // de-dupe
-							lineSegments.push(new InlineSegment(iv.range.startColumn, text));
-						}
+					},
+					err => {
+						onUnexpectedExternalError(err);
 					}
-				}
-			}, err => {
-				onUnexpectedExternalError(err);
-			}));
+				)
+			);
 
 			await Promise.all(promises);
 
@@ -211,19 +260,27 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 						const base = Math.floor((editorWidth - 50) / fontInfo.typicalHalfwidthCharacterWidth);
 						const lineLength = cell.textModel.getLineLength(line);
 						const available = Math.max(0, base - lineLength);
-						inlineDecorations.push(...createInlineValueDecoration(line, text, 'nb', undefined, available));
+						inlineDecorations.push(
+							...createInlineValueDecoration(line, text, 'nb', undefined, available)
+						);
 					} else {
 						inlineDecorations.push(...createInlineValueDecoration(line, text, 'nb'));
 					}
 				}
 			});
-
-		} else if (inlineValuesSetting === 'on') { // fallback approach only when setting is 'on'
+		} else if (inlineValuesSetting === 'on') {
+			// fallback approach only when setting is 'on'
 			if (!this.notebookEditor.hasModel()) {
 				return; // should not happen, a cell will be executed
 			}
 			const kernel = this.notebookKernelService.getMatchingKernel(this.notebookEditor.textModel);
-			const variables = kernel?.selected?.provideVariables(event.notebook, undefined, 'named', 0, token);
+			const variables = kernel?.selected?.provideVariables(
+				event.notebook,
+				undefined,
+				'named',
+				0,
+				token
+			);
 			if (!variables) {
 				return;
 			}
@@ -278,7 +335,7 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 						if (!this.isPositionInRanges(pos, ignoredRanges)) {
 							lastMatchOutsideIgnored = {
 								line: lineNumber + 1,
-								column: startIndex + 1
+								column: startIndex + 1,
 							};
 							foundMatch = true;
 							break; // Take first match in reverse order (which is last chronologically)
@@ -298,7 +355,8 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 						lineSegments = [];
 						lineDecorations.set(lastMatchOutsideIgnored.line, lineSegments);
 					}
-					if (!lineSegments.some(iv => iv.text === inlineVal)) { // de-dupe
+					if (!lineSegments.some(iv => iv.text === inlineVal)) {
+						// de-dupe
 						lineSegments.push(new InlineSegment(lastMatchOutsideIgnored.column, inlineVal));
 					}
 				}
@@ -317,7 +375,9 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 						const base = Math.floor((editorWidth - 50) / fontInfo.typicalHalfwidthCharacterWidth);
 						const lineLength = cell.textModel.getLineLength(line);
 						const available = Math.max(0, base - lineLength);
-						inlineDecorations.push(...createInlineValueDecoration(line, text, 'nb', undefined, available));
+						inlineDecorations.push(
+							...createInlineValueDecoration(line, text, 'nb', undefined, available)
+						);
 					} else {
 						inlineDecorations.push(...createInlineValueDecoration(line, text, 'nb'));
 					}
@@ -390,7 +450,9 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 
 		// Handle case where Python function is at the end of the document
 		if (inFunction) {
-			functionRanges.push(new Range(functionStartLine + 1, 1, lines.length, lines[lines.length - 1].length + 1));
+			functionRanges.push(
+				new Range(functionStartLine + 1, 1, lines.length, lines[lines.length - 1].length + 1)
+			);
 		}
 
 		return functionRanges;
@@ -402,7 +464,8 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 		let braceDepth = 0;
 		let functionStartLine = -1;
 		let inFunction = false;
-		const functionDeclRegex = /\b(?:function\s+\w+|(?:async\s+)?(?:\w+\s*=\s*)?\([^)]*\)\s*=>|class\s+\w+|(?:public|private|protected|static)?\s*\w+\s*\([^)]*\)\s*{)/;
+		const functionDeclRegex =
+			/\b(?:function\s+\w+|(?:async\s+)?(?:\w+\s*=\s*)?\([^)]*\)\s*=>|class\s+\w+|(?:public|private|protected|static)?\s*\w+\s*\([^)]*\)\s*{)/;
 
 		for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
 			const line = lines[lineNumber];
@@ -416,7 +479,9 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 				} else if (char === '}') {
 					braceDepth--;
 					if (braceDepth === 0 && inFunction) {
-						functionRanges.push(new Range(functionStartLine + 1, 1, lineNumber + 1, line.length + 1));
+						functionRanges.push(
+							new Range(functionStartLine + 1, 1, lineNumber + 1, line.length + 1)
+						);
 						inFunction = false;
 					}
 				}
@@ -468,7 +533,11 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 			for (let tokenIndex = 0; tokenIndex < lineTokens.getCount(); tokenIndex++) {
 				const tokenType = lineTokens.getStandardTokenType(tokenIndex);
 
-				if (tokenType === StandardTokenType.Comment || tokenType === StandardTokenType.String || tokenType === StandardTokenType.RegEx) {
+				if (
+					tokenType === StandardTokenType.Comment ||
+					tokenType === StandardTokenType.String ||
+					tokenType === StandardTokenType.RegEx
+				) {
 					if (startCharacter === undefined) {
 						// Start of a comment or string
 						startCharacter = lineTokens.getStartOffset(tokenIndex);
@@ -478,12 +547,14 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 
 					// Check if this is the end of the comment/string section (either end of line or different token type follows)
 					const isLastToken = tokenIndex === lineTokens.getCount() - 1;
-					const nextTokenDifferent = !isLastToken &&
-						lineTokens.getStandardTokenType(tokenIndex + 1) !== tokenType;
+					const nextTokenDifferent =
+						!isLastToken && lineTokens.getStandardTokenType(tokenIndex + 1) !== tokenType;
 
 					if (isLastToken || nextTokenDifferent) {
 						// End of comment/string section
-						commentRanges.push(new Range(lineNumber, startCharacter + 1, lineNumber, endCharacter + 1));
+						commentRanges.push(
+							new Range(lineNumber, startCharacter + 1, lineNumber, endCharacter + 1)
+						);
 						startCharacter = undefined;
 					}
 				} else {
@@ -503,13 +574,16 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 
 		// Different comment patterns by language
 		const lineCommentToken =
-			languageId === 'python' ? '#' :
-				languageId === 'javascript' || languageId === 'typescript' ? '//' :
-					null;
+			languageId === 'python'
+				? '#'
+				: languageId === 'javascript' || languageId === 'typescript'
+					? '//'
+					: null;
 
 		const blockComments =
-			(languageId === 'javascript' || languageId === 'typescript') ? { start: '/*', end: '*/' } :
-				null;
+			languageId === 'javascript' || languageId === 'typescript'
+				? { start: '/*', end: '*/' }
+				: null;
 
 		let inBlockComment = false;
 		let blockCommentStartLine = -1;
@@ -537,12 +611,14 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 				if (inBlockComment) {
 					const endIndex = line.indexOf(blockComments.end);
 					if (endIndex !== -1) {
-						commentRanges.push(new Range(
-							blockCommentStartLine + 1,
-							blockCommentStartCol + 1,
-							lineNumber + 1,
-							endIndex + blockComments.end.length + 1
-						));
+						commentRanges.push(
+							new Range(
+								blockCommentStartLine + 1,
+								blockCommentStartCol + 1,
+								lineNumber + 1,
+								endIndex + blockComments.end.length + 1
+							)
+						);
 						inBlockComment = false;
 					}
 					continue;
@@ -551,23 +627,22 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 
 			if (!inBlockComment && lineCommentToken && line.trimLeft().startsWith(lineCommentToken)) {
 				const startCol = line.indexOf(lineCommentToken);
-				commentRanges.push(new Range(
-					lineNumber + 1,
-					startCol + 1,
-					lineNumber + 1,
-					line.length + 1
-				));
+				commentRanges.push(
+					new Range(lineNumber + 1, startCol + 1, lineNumber + 1, line.length + 1)
+				);
 			}
 		}
 
 		// Handle block comment at end of file
 		if (inBlockComment) {
-			commentRanges.push(new Range(
-				blockCommentStartLine + 1,
-				blockCommentStartCol + 1,
-				lines.length,
-				lines[lines.length - 1].length + 1
-			));
+			commentRanges.push(
+				new Range(
+					blockCommentStartLine + 1,
+					blockCommentStartCol + 1,
+					lines.length,
+					lines[lines.length - 1].length + 1
+				)
+			);
 		}
 
 		return commentRanges;
@@ -579,10 +654,7 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 
 	private updateCellInlineDecorations(cell: ICellViewModel, decorations: IModelDeltaDecoration[]) {
 		const oldDecorations = this.cellDecorationIds.get(cell) ?? [];
-		this.cellDecorationIds.set(cell, cell.deltaModelDecorations(
-			oldDecorations,
-			decorations
-		));
+		this.cellDecorationIds.set(cell, cell.deltaModelDecorations(oldDecorations, decorations));
 	}
 
 	private initCellContentListener(cell: ICellViewModel) {
@@ -592,9 +664,12 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 		}
 
 		// Clear decorations on content change
-		this.cellContentListeners.set(cell.uri, cellModel.onDidChangeContent(() => {
-			this.clearCellInlineDecorations(cell);
-		}));
+		this.cellContentListeners.set(
+			cell.uri,
+			cellModel.onDidChangeContent(() => {
+				this.clearCellInlineDecorations(cell);
+			})
+		);
 	}
 
 	private clearCellInlineDecorations(cell: ICellViewModel) {
@@ -631,21 +706,30 @@ export class NotebookInlineVariablesController extends Disposable implements INo
 	}
 }
 
-registerNotebookContribution(NotebookInlineVariablesController.id, NotebookInlineVariablesController);
+registerNotebookContribution(
+	NotebookInlineVariablesController.id,
+	NotebookInlineVariablesController
+);
 
-registerAction2(class ClearNotebookInlineValues extends NotebookAction {
-	constructor() {
-		super({
-			id: 'notebook.clearAllInlineValues',
-			title: localize('clearAllInlineValues', 'Clear All Inline Values'),
-		});
+registerAction2(
+	class ClearNotebookInlineValues extends NotebookAction {
+		constructor() {
+			super({
+				id: 'notebook.clearAllInlineValues',
+				title: localize('clearAllInlineValues', 'Clear All Inline Values'),
+			});
+		}
+
+		override runWithContext(
+			accessor: ServicesAccessor,
+			context: INotebookActionContext
+		): Promise<void> {
+			const editor = context.notebookEditor;
+			const controller = editor.getContribution<NotebookInlineVariablesController>(
+				NotebookInlineVariablesController.id
+			);
+			controller.clearNotebookInlineDecorations();
+			return Promise.resolve();
+		}
 	}
-
-	override runWithContext(accessor: ServicesAccessor, context: INotebookActionContext): Promise<void> {
-		const editor = context.notebookEditor;
-		const controller = editor.getContribution<NotebookInlineVariablesController>(NotebookInlineVariablesController.id);
-		controller.clearNotebookInlineDecorations();
-		return Promise.resolve();
-	}
-
-});
+);

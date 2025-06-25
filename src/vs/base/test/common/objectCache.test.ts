@@ -14,9 +14,7 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/comm
  * Test object class.
  */
 class TestObject<TKey extends NonNullable<unknown> = string> extends ObservableDisposable {
-	constructor(
-		public readonly ID: TKey,
-	) {
+	constructor(public readonly ID: TKey) {
 		super();
 	}
 
@@ -40,14 +38,10 @@ suite('ObjectCache', function () {
 		 * @param key2 Test key2.
 		 */
 		const testCoreLogic = async <TKey extends NonNullable<unknown>>(key1: TKey, key2: TKey) => {
-			const factory = spy((
-				key: TKey,
-			) => {
+			const factory = spy((key: TKey) => {
 				const result: TestObject<TKey> = new TestObject(key);
 
-				result.assertNotDisposed(
-					'Object must not be disposed.',
-				);
+				result.assertNotDisposed('Object must not be disposed.');
 
 				return result;
 			});
@@ -61,28 +55,22 @@ suite('ObjectCache', function () {
 			const obj1 = cache.get(key1);
 			assert(
 				factory.calledOnceWithExactly(key1),
-				'[obj1] Must be called once with the correct arguments.',
+				'[obj1] Must be called once with the correct arguments.'
 			);
 
-			assert(
-				obj1.ID === key1,
-				'[obj1] Returned object must have the correct ID.',
-			);
+			assert(obj1.ID === key1, '[obj1] Returned object must have the correct ID.');
 
 			const obj2 = cache.get(key1);
 			assert(
 				factory.calledOnceWithExactly(key1),
-				'[obj2] Must be called once with the correct arguments.',
+				'[obj2] Must be called once with the correct arguments.'
 			);
 
-			assert(
-				obj2.ID === key1,
-				'[obj2] Returned object must have the correct ID.',
-			);
+			assert(obj2.ID === key1, '[obj2] Returned object must have the correct ID.');
 
 			assert(
 				obj1 === obj2 && obj1.equal(obj2),
-				'[obj2] Returned object must be the same instance.',
+				'[obj2] Returned object must be the same instance.'
 			);
 
 			factory.resetHistory();
@@ -90,30 +78,21 @@ suite('ObjectCache', function () {
 			const obj3 = cache.get(key2);
 			assert(
 				factory.calledOnceWithExactly(key2),
-				'[obj3] Must be called once with the correct arguments.',
+				'[obj3] Must be called once with the correct arguments.'
 			);
 
-			assert(
-				obj3.ID === key2,
-				'[obj3] Returned object must have the correct ID.',
-			);
+			assert(obj3.ID === key2, '[obj3] Returned object must have the correct ID.');
 
 			factory.resetHistory();
 
 			const obj4 = cache.get(key1);
-			assert(
-				factory.notCalled,
-				'[obj4] Factory must not be called.',
-			);
+			assert(factory.notCalled, '[obj4] Factory must not be called.');
 
-			assert(
-				obj4.ID === key1,
-				'[obj4] Returned object must have the correct ID.',
-			);
+			assert(obj4.ID === key1, '[obj4] Returned object must have the correct ID.');
 
 			assert(
 				obj1 === obj4 && obj1.equal(obj4),
-				'[obj4] Returned object must be the same instance.',
+				'[obj4] Returned object must be the same instance.'
 			);
 
 			factory.resetHistory();
@@ -129,19 +108,13 @@ suite('ObjectCache', function () {
 			await wait(5);
 
 			const obj5 = cache.get(key1);
-			assert(
-				factory.notCalled,
-				'[obj5] Factory must not be called.',
-			);
+			assert(factory.notCalled, '[obj5] Factory must not be called.');
 
-			assert(
-				obj5.ID === key1,
-				'[obj5] Returned object must have the correct ID.',
-			);
+			assert(obj5.ID === key1, '[obj5] Returned object must have the correct ID.');
 
 			assert(
 				obj1 === obj5 && obj1.equal(obj5),
-				'[obj5] Returned object must be the same instance.',
+				'[obj5] Returned object must be the same instance.'
 			);
 
 			factory.resetHistory();
@@ -154,13 +127,10 @@ suite('ObjectCache', function () {
 			const obj6 = cache.get(key2);
 			assert(
 				factory.calledOnceWithExactly(key2),
-				'[obj6] Must be called once with the correct arguments.',
+				'[obj6] Must be called once with the correct arguments.'
 			);
 
-			assert(
-				obj6.ID === key2,
-				'[obj6] Returned object must have the correct ID.',
-			);
+			assert(obj6.ID === key2, '[obj6] Returned object must have the correct ID.');
 		};
 
 		test('strings as keys', async function () {
@@ -172,10 +142,7 @@ suite('ObjectCache', function () {
 		});
 
 		test('objects as keys', async function () {
-			await testCoreLogic(
-				disposables.add(new TestObject({})),
-				disposables.add(new TestObject({})),
-			);
+			await testCoreLogic(disposables.add(new TestObject({})), disposables.add(new TestObject({})));
 		});
 	});
 
@@ -190,16 +157,12 @@ suite('ObjectCache', function () {
 		const testRemoveLogic = async <TKey extends NonNullable<unknown>>(
 			key1: TKey,
 			key2: TKey,
-			disposeOnRemove: boolean,
+			disposeOnRemove: boolean
 		) => {
-			const factory = spy((
-				key: TKey,
-			) => {
+			const factory = spy((key: TKey) => {
 				const result: TestObject<TKey> = new TestObject(key);
 
-				result.assertNotDisposed(
-					'Object must not be disposed.',
-				);
+				result.assertNotDisposed('Object must not be disposed.');
 
 				return result;
 			});
@@ -214,26 +177,20 @@ suite('ObjectCache', function () {
 			const obj1 = cache.get(key1);
 			assert(
 				factory.calledOnceWithExactly(key1),
-				'[obj1] Must be called once with the correct arguments.',
+				'[obj1] Must be called once with the correct arguments.'
 			);
 
-			assert(
-				obj1.ID === key1,
-				'[obj1] Returned object must have the correct ID.',
-			);
+			assert(obj1.ID === key1, '[obj1] Returned object must have the correct ID.');
 
 			factory.resetHistory();
 
 			const obj2 = cache.get(key2);
 			assert(
 				factory.calledOnceWithExactly(key2),
-				'[obj2] Must be called once with the correct arguments.',
+				'[obj2] Must be called once with the correct arguments.'
 			);
 
-			assert(
-				obj2.ID === key2,
-				'[obj2] Returned object must have the correct ID.',
-			);
+			assert(obj2.ID === key2, '[obj2] Returned object must have the correct ID.');
 
 			cache.remove(key2, disposeOnRemove);
 
@@ -246,7 +203,7 @@ suite('ObjectCache', function () {
 
 			assert(
 				object2Disposed === disposeOnRemove,
-				`[obj2] Removed object must be disposed: ${disposeOnRemove}.`,
+				`[obj2] Removed object must be disposed: ${disposeOnRemove}.`
 			);
 
 			factory.resetHistory();
@@ -255,25 +212,16 @@ suite('ObjectCache', function () {
 			 * Validate that another object is not disposed.
 			 */
 
-			assert(
-				obj1.isDisposed === false,
-				'[obj1] Object must not be disposed.',
-			);
+			assert(obj1.isDisposed === false, '[obj1] Object must not be disposed.');
 
 			const obj3 = cache.get(key1);
-			assert(
-				factory.notCalled,
-				'[obj3] Factory must not be called.',
-			);
+			assert(factory.notCalled, '[obj3] Factory must not be called.');
 
-			assert(
-				obj3.ID === key1,
-				'[obj3] Returned object must have the correct ID.',
-			);
+			assert(obj3.ID === key1, '[obj3] Returned object must have the correct ID.');
 
 			assert(
 				obj1 === obj3 && obj1.equal(obj3),
-				'[obj3] Returned object must be the same instance.',
+				'[obj3] Returned object must be the same instance.'
 			);
 
 			factory.resetHistory();
@@ -293,21 +241,19 @@ suite('ObjectCache', function () {
 			await testRemoveLogic(
 				disposables.add(new TestObject(1)),
 				disposables.add(new TestObject(1)),
-				false,
+				false
 			);
 
 			await testRemoveLogic(
 				disposables.add(new TestObject(2)),
 				disposables.add(new TestObject(2)),
-				true,
+				true
 			);
 		});
 	});
 
 	test('throws if factory returns a disposed object', async function () {
-		const factory = (
-			key: string,
-		) => {
+		const factory = (key: string) => {
 			const result = new TestObject(key);
 
 			if (key === 'key2') {

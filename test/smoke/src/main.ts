@@ -12,7 +12,17 @@ import * as minimist from 'minimist';
 import * as rimraf from 'rimraf';
 import * as vscodetest from '@vscode/test-electron';
 import fetch from 'node-fetch';
-import { Quality, MultiLogger, Logger, ConsoleLogger, FileLogger, measureAndLog, getDevElectronPath, getBuildElectronPath, getBuildVersion } from '../../automation';
+import {
+	Quality,
+	MultiLogger,
+	Logger,
+	ConsoleLogger,
+	FileLogger,
+	measureAndLog,
+	getDevElectronPath,
+	getBuildElectronPath,
+	getBuildVersion,
+} from '../../automation';
 import { retry, timeout } from './utils';
 
 import { setup as setupDataLossTests } from './areas/workbench/data-loss.test';
@@ -32,24 +42,11 @@ const rootPath = path.join(__dirname, '..', '..', '..');
 
 const [, , ...args] = process.argv;
 const opts = minimist(args, {
-	string: [
-		'browser',
-		'build',
-		'stable-build',
-		'wait-time',
-		'test-repo',
-		'electronArgs'
-	],
-	boolean: [
-		'verbose',
-		'remote',
-		'web',
-		'headless',
-		'tracing'
-	],
+	string: ['browser', 'build', 'stable-build', 'wait-time', 'test-repo', 'electronArgs'],
+	boolean: ['verbose', 'remote', 'web', 'headless', 'tracing'],
 	default: {
-		verbose: false
-	}
+		verbose: false,
+	},
 }) as {
 	verbose?: boolean;
 	remote?: boolean;
@@ -192,7 +189,9 @@ if (!opts.web) {
 	}
 
 	if (!fs.existsSync(electronPath || '')) {
-		fail(`Cannot find VSCode at ${electronPath}. Please run VSCode once first (scripts/code.sh, scripts\\code.bat) and try again.`);
+		fail(
+			`Cannot find VSCode at ${electronPath}. Please run VSCode once first (scripts/code.sh, scripts\\code.bat) and try again.`
+		);
 	}
 
 	quality = parseQuality();
@@ -253,7 +252,10 @@ async function setupRepository(): Promise<void> {
 		} else {
 			logger.log('Cleaning test project repository...');
 			cp.spawnSync('git', ['fetch'], { cwd: workspacePath, stdio: 'inherit' });
-			cp.spawnSync('git', ['reset', '--hard', 'FETCH_HEAD'], { cwd: workspacePath, stdio: 'inherit' });
+			cp.spawnSync('git', ['reset', '--hard', 'FETCH_HEAD'], {
+				cwd: workspacePath,
+				stdio: 'inherit',
+			});
 			cp.spawnSync('git', ['clean', '-xdf'], { cwd: workspacePath, stdio: 'inherit' });
 		}
 	}
@@ -263,57 +265,90 @@ async function ensureStableCode(): Promise<void> {
 	let stableCodePath = opts['stable-build'];
 	if (!stableCodePath) {
 		const current = parseVersion(version!);
-		const versionsReq = await retry(() => measureAndLog(() => fetch('https://update.code.visualstudio.com/api/releases/stable'), 'versionReq', logger), 1000, 20);
+		const versionsReq = await retry(
+			() =>
+				measureAndLog(
+					() => fetch('https://update.code.visualstudio.com/api/releases/stable'),
+					'versionReq',
+					logger
+				),
+			1000,
+			20
+		);
 
 		if (!versionsReq.ok) {
 			throw new Error('Could not fetch releases from update server');
 		}
 
-		const versions: string[] = await measureAndLog(() => versionsReq.json(), 'versionReq.json()', logger);
+		const versions: string[] = await measureAndLog(
+			() => versionsReq.json(),
+			'versionReq.json()',
+			logger
+		);
 		const stableVersion = versions.find(raw => {
 			const version = parseVersion(raw);
-			return version.major < current.major || (version.major === current.major && version.minor < current.minor);
+			return (
+				version.major < current.major ||
+				(version.major === current.major && version.minor < current.minor)
+			);
 		});
 
 		if (!stableVersion) {
 			throw new Error(`Could not find suitable stable version for ${version}`);
 		}
 
-		logger.log(`Found VS Code v${version}, downloading previous VS Code version ${stableVersion}...`);
+		logger.log(
+			`Found VS Code v${version}, downloading previous VS Code version ${stableVersion}...`
+		);
 
 		let lastProgressMessage: string | undefined = undefined;
 		let lastProgressReportedAt = 0;
 		const stableCodeDestination = path.join(testDataPath, 's');
-		const stableCodeExecutable = await retry(() => measureAndLog(() => vscodetest.download({
-			cachePath: stableCodeDestination,
-			version: stableVersion,
-			extractSync: true,
-			reporter: {
-				report: report => {
-					let progressMessage = `download stable code progress: ${report.stage}`;
-					const now = Date.now();
-					if (progressMessage !== lastProgressMessage || now - lastProgressReportedAt > 10000) {
-						lastProgressMessage = progressMessage;
-						lastProgressReportedAt = now;
+		const stableCodeExecutable = await retry(
+			() =>
+				measureAndLog(
+					() =>
+						vscodetest.download({
+							cachePath: stableCodeDestination,
+							version: stableVersion,
+							extractSync: true,
+							reporter: {
+								report: report => {
+									let progressMessage = `download stable code progress: ${report.stage}`;
+									const now = Date.now();
+									if (
+										progressMessage !== lastProgressMessage ||
+										now - lastProgressReportedAt > 10000
+									) {
+										lastProgressMessage = progressMessage;
+										lastProgressReportedAt = now;
 
-						if (report.stage === 'downloading') {
-							progressMessage += ` (${report.bytesSoFar}/${report.totalBytes})`;
+										if (report.stage === 'downloading') {
+											progressMessage += ` (${report.bytesSoFar}/${report.totalBytes})`;
+										}
+
+										logger.log(progressMessage);
+									}
+								},
+								error: error => logger.log(`download stable code error: ${error}`),
+							},
+						}),
+					'download stable code',
+					logger
+				),
+			1000,
+			3,
+			() =>
+				new Promise<void>((resolve, reject) => {
+					rimraf(stableCodeDestination, { maxBusyTries: 10 }, error => {
+						if (error) {
+							reject(error);
+						} else {
+							resolve();
 						}
-
-						logger.log(progressMessage);
-					}
-				},
-				error: error => logger.log(`download stable code error: ${error}`)
-			}
-		}), 'download stable code', logger), 1000, 3, () => new Promise<void>((resolve, reject) => {
-			rimraf(stableCodeDestination, { maxBusyTries: 10 }, error => {
-				if (error) {
-					reject(error);
-				} else {
-					resolve();
-				}
-			});
-		}));
+					});
+				})
+		);
 
 		if (process.platform === 'darwin') {
 			// Visual Studio Code.app/Contents/MacOS/Electron
@@ -365,7 +400,10 @@ before(async function () {
 		tracing: opts.tracing,
 		headless: opts.headless,
 		browser: opts.browser,
-		extraArgs: (opts.electronArgs || '').split(' ').map(arg => arg.trim()).filter(arg => !!arg)
+		extraArgs: (opts.electronArgs || '')
+			.split(' ')
+			.map(arg => arg.trim())
+			.filter(arg => !!arg),
 	};
 
 	await setup();
@@ -375,37 +413,59 @@ before(async function () {
 after(async function () {
 	try {
 		let deleted = false;
-		await measureAndLog(() => Promise.race([
-			new Promise<void>((resolve, reject) => rimraf(testDataPath, { maxBusyTries: 10 }, error => {
-				if (error) {
-					reject(error);
-				} else {
-					deleted = true;
-					resolve();
-				}
-			})),
-			timeout(30000).then(() => {
-				if (!deleted) {
-					throw new Error('giving up after 30s');
-				}
-			})
-		]), 'rimraf(testDataPath)', logger);
+		await measureAndLog(
+			() =>
+				Promise.race([
+					new Promise<void>((resolve, reject) =>
+						rimraf(testDataPath, { maxBusyTries: 10 }, error => {
+							if (error) {
+								reject(error);
+							} else {
+								deleted = true;
+								resolve();
+							}
+						})
+					),
+					timeout(30000).then(() => {
+						if (!deleted) {
+							throw new Error('giving up after 30s');
+						}
+					}),
+				]),
+			'rimraf(testDataPath)',
+			logger
+		);
 	} catch (error) {
-		logger.log(`Unable to delete smoke test workspace: ${error}. This indicates some process is locking the workspace folder.`);
+		logger.log(
+			`Unable to delete smoke test workspace: ${error}. This indicates some process is locking the workspace folder.`
+		);
 	}
 });
 
 describe(`VSCode Smoke Tests (${opts.web ? 'Web' : 'Electron'})`, () => {
-	if (!opts.web) { setupDataLossTests(() => opts['stable-build'] /* Do not change, deferred for a reason! */, logger); }
+	if (!opts.web) {
+		setupDataLossTests(
+			() => opts['stable-build'] /* Do not change, deferred for a reason! */,
+			logger
+		);
+	}
 	setupPreferencesTests(logger);
 	setupSearchTests(logger);
-	if (!opts.web) { setupNotebookTests(logger); }
+	if (!opts.web) {
+		setupNotebookTests(logger);
+	}
 	setupLanguagesTests(logger);
 	setupTerminalTests(logger);
 	setupTaskTests(logger);
 	setupStatusbarTests(logger);
-	if (quality !== Quality.Dev && quality !== Quality.OSS) { setupExtensionTests(logger); }
+	if (quality !== Quality.Dev && quality !== Quality.OSS) {
+		setupExtensionTests(logger);
+	}
 	setupMultirootTests(logger);
-	if (!opts.web && !opts.remote && quality !== Quality.Dev && quality !== Quality.OSS) { setupLocalizationTests(logger); }
-	if (!opts.web && !opts.remote) { setupLaunchTests(logger); }
+	if (!opts.web && !opts.remote && quality !== Quality.Dev && quality !== Quality.OSS) {
+		setupLocalizationTests(logger);
+	}
+	if (!opts.web && !opts.remote) {
+		setupLaunchTests(logger);
+	}
 });

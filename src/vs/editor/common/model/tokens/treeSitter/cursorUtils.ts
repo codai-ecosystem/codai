@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import type * as TreeSitter from '@vscode/tree-sitter-wasm';
 
-export function gotoNextSibling(newCursor: TreeSitter.TreeCursor, oldCursor: TreeSitter.TreeCursor) {
+export function gotoNextSibling(
+	newCursor: TreeSitter.TreeCursor,
+	oldCursor: TreeSitter.TreeCursor
+) {
 	const n = newCursor.gotoNextSibling();
 	const o = oldCursor.gotoNextSibling();
 	if (n !== o) {
@@ -22,7 +25,11 @@ export function gotoParent(newCursor: TreeSitter.TreeCursor, oldCursor: TreeSitt
 	return n && o;
 }
 
-export function gotoNthChild(newCursor: TreeSitter.TreeCursor, oldCursor: TreeSitter.TreeCursor, index: number) {
+export function gotoNthChild(
+	newCursor: TreeSitter.TreeCursor,
+	oldCursor: TreeSitter.TreeCursor,
+	index: number
+) {
 	const n = newCursor.gotoFirstChild();
 	const o = oldCursor.gotoFirstChild();
 	if (n !== o) {
@@ -44,7 +51,10 @@ export function gotoNthChild(newCursor: TreeSitter.TreeCursor, oldCursor: TreeSi
 	return n && o;
 }
 
-export function nextSiblingOrParentSibling(newCursor: TreeSitter.TreeCursor, oldCursor: TreeSitter.TreeCursor) {
+export function nextSiblingOrParentSibling(
+	newCursor: TreeSitter.TreeCursor,
+	oldCursor: TreeSitter.TreeCursor
+) {
 	do {
 		if (newCursor.currentNode.nextSibling) {
 			return gotoNextSibling(newCursor, oldCursor);
@@ -56,14 +66,20 @@ export function nextSiblingOrParentSibling(newCursor: TreeSitter.TreeCursor, old
 	return false;
 }
 
-export function getClosestPreviousNodes(cursor: TreeSitter.TreeCursor, tree: TreeSitter.Tree): TreeSitter.Node | undefined {
+export function getClosestPreviousNodes(
+	cursor: TreeSitter.TreeCursor,
+	tree: TreeSitter.Tree
+): TreeSitter.Node | undefined {
 	// Go up parents until the end of the parent is before the start of the current.
 	const findPrev = tree.walk();
 	findPrev.resetTo(cursor);
 
 	const startingNode = cursor.currentNode;
 	do {
-		if (findPrev.currentNode.previousSibling && ((findPrev.currentNode.endIndex - findPrev.currentNode.startIndex) !== 0)) {
+		if (
+			findPrev.currentNode.previousSibling &&
+			findPrev.currentNode.endIndex - findPrev.currentNode.startIndex !== 0
+		) {
 			findPrev.gotoPreviousSibling();
 		} else {
 			while (!findPrev.currentNode.previousSibling && findPrev.currentNode.parent) {
@@ -71,12 +87,16 @@ export function getClosestPreviousNodes(cursor: TreeSitter.TreeCursor, tree: Tre
 			}
 			findPrev.gotoPreviousSibling();
 		}
-	} while ((findPrev.currentNode.endIndex > startingNode.startIndex)
-	&& (findPrev.currentNode.parent || findPrev.currentNode.previousSibling)
+	} while (
+		findPrev.currentNode.endIndex > startingNode.startIndex &&
+		(findPrev.currentNode.parent || findPrev.currentNode.previousSibling) &&
+		findPrev.currentNode.id !== startingNode.id
+	);
 
-		&& (findPrev.currentNode.id !== startingNode.id));
-
-	if ((findPrev.currentNode.id !== startingNode.id) && findPrev.currentNode.endIndex <= startingNode.startIndex) {
+	if (
+		findPrev.currentNode.id !== startingNode.id &&
+		findPrev.currentNode.endIndex <= startingNode.startIndex
+	) {
 		return findPrev.currentNode;
 	} else {
 		return undefined;

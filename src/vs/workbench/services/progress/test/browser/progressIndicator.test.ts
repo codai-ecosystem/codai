@@ -58,13 +58,12 @@ class TestProgressBar {
 		return this.done();
 	}
 
-	show(): void { }
+	show(): void {}
 
-	hide(): void { }
+	hide(): void {}
 }
 
 suite('Progress Indicator', () => {
-
 	const disposables = new DisposableStore();
 
 	teardown(() => {
@@ -73,12 +72,22 @@ suite('Progress Indicator', () => {
 
 	test('ScopedProgressIndicator', async () => {
 		const testProgressBar = new TestProgressBar();
-		const progressScope = disposables.add(new class extends AbstractProgressScope {
-			constructor() { super('test.scopeId', true); }
-			testOnScopeOpened(scopeId: string) { super.onScopeOpened(scopeId); }
-			testOnScopeClosed(scopeId: string): void { super.onScopeClosed(scopeId); }
-		}());
-		const testObject = disposables.add(new ScopedProgressIndicator((<any>testProgressBar), progressScope));
+		const progressScope = disposables.add(
+			new (class extends AbstractProgressScope {
+				constructor() {
+					super('test.scopeId', true);
+				}
+				testOnScopeOpened(scopeId: string) {
+					super.onScopeOpened(scopeId);
+				}
+				testOnScopeClosed(scopeId: string): void {
+					super.onScopeClosed(scopeId);
+				}
+			})()
+		);
+		const testObject = disposables.add(
+			new ScopedProgressIndicator(<any>testProgressBar, progressScope)
+		);
 
 		// Active: Show (Infinite)
 		let fn = testObject.show(true);

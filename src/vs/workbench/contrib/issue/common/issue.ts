@@ -20,13 +20,13 @@ export interface WindowData {
 export const enum IssueType {
 	Bug,
 	PerformanceIssue,
-	FeatureRequest
+	FeatureRequest,
 }
 
 export enum IssueSource {
 	VSCode = 'vscode',
 	Extension = 'extension',
-	Marketplace = 'marketplace'
+	Marketplace = 'marketplace',
 }
 
 export interface IssueReporterStyles extends WindowStyles {
@@ -99,7 +99,8 @@ export interface IIssueFormService {
 	closeReporter(): Promise<void>;
 }
 
-export const IWorkbenchIssueService = createDecorator<IWorkbenchIssueService>('workbenchIssueService');
+export const IWorkbenchIssueService =
+	createDecorator<IWorkbenchIssueService>('workbenchIssueService');
 
 export interface IWorkbenchIssueService {
 	readonly _serviceBrand: undefined;

@@ -7,15 +7,14 @@ import { ContentHoverComputerOptions } from './contentHoverComputer.js';
 import { HoverAnchor, IHoverPart } from './hoverTypes.js';
 
 export class ContentHoverResult {
-
 	constructor(
 		public readonly hoverParts: IHoverPart[],
 		public readonly isComplete: boolean,
 		public readonly options: ContentHoverComputerOptions
-	) { }
+	) {}
 
 	public filter(anchor: HoverAnchor): ContentHoverResult {
-		const filteredHoverParts = this.hoverParts.filter((m) => m.isValidForHoverAnchor(anchor));
+		const filteredHoverParts = this.hoverParts.filter(m => m.isValidForHoverAnchor(anchor));
 		if (filteredHoverParts.length === this.hoverParts.length) {
 			return this;
 		}
@@ -24,7 +23,6 @@ export class ContentHoverResult {
 }
 
 export class FilteredContentHoverResult extends ContentHoverResult {
-
 	constructor(
 		private readonly original: ContentHoverResult,
 		messages: IHoverPart[],

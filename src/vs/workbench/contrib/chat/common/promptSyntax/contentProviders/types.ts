@@ -50,7 +50,5 @@ export interface IPromptContentsProvider extends IDisposable {
 	/**
 	 * Create a new instance of prompt contents provider.
 	 */
-	createNew(
-		promptContentsSource: { uri: URI },
-	): IPromptContentsProvider;
+	createNew(promptContentsSource: { uri: URI }): IPromptContentsProvider;
 }

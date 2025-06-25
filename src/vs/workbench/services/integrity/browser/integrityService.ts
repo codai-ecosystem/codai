@@ -4,10 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IIntegrityService, IntegrityTestResult } from '../common/integrity.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 
 export class IntegrityService implements IIntegrityService {
-
 	declare readonly _serviceBrand: undefined;
 
 	async isPure(): Promise<IntegrityTestResult> {

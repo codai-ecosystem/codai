@@ -49,10 +49,16 @@ describe('ProjectBuilder', () => {
 
 			// Verify
 			assert.strictEqual(templateGeneratorStub.generateComponentCode.calledOnce, true);
-			assert.strictEqual(templateGeneratorStub.generateComponentCode.firstCall.args[0], componentName);
+			assert.strictEqual(
+				templateGeneratorStub.generateComponentCode.firstCall.args[0],
+				componentName
+			);
 
 			assert.strictEqual(templateGeneratorStub.generateComponentStyleCode.calledOnce, true);
-			assert.strictEqual(templateGeneratorStub.generateComponentStyleCode.firstCall.args[0], componentName);
+			assert.strictEqual(
+				templateGeneratorStub.generateComponentStyleCode.firstCall.args[0],
+				componentName
+			);
 
 			// Should create component file
 			assert.strictEqual(fileManagerStub.createFile.callCount, 2);
@@ -62,7 +68,8 @@ describe('ProjectBuilder', () => {
 			assert.strictEqual(actions[0].type, 'createFile');
 			assert.strictEqual(actions[1].type, 'createFile');
 		});
-	}); describe('buildFeature', () => {
+	});
+	describe('buildFeature', () => {
 		it('should create feature files with the correct structure', async () => {
 			// Setup
 			const featureName = 'TestFeature';
@@ -81,13 +88,22 @@ describe('ProjectBuilder', () => {
 
 			// Verify
 			assert.strictEqual(templateGeneratorStub.generateComponentCode.calledOnce, true);
-			assert.strictEqual(templateGeneratorStub.generateComponentCode.firstCall.args[0], featureName);
+			assert.strictEqual(
+				templateGeneratorStub.generateComponentCode.firstCall.args[0],
+				featureName
+			);
 
 			assert.strictEqual(templateGeneratorStub.generateComponentStyleCode.calledOnce, true);
-			assert.strictEqual(templateGeneratorStub.generateComponentStyleCode.firstCall.args[0], featureName);
+			assert.strictEqual(
+				templateGeneratorStub.generateComponentStyleCode.firstCall.args[0],
+				featureName
+			);
 
 			assert.strictEqual(templateGeneratorStub.generateFeatureIndexCode.calledOnce, true);
-			assert.strictEqual(templateGeneratorStub.generateFeatureIndexCode.firstCall.args[0], featureName);
+			assert.strictEqual(
+				templateGeneratorStub.generateFeatureIndexCode.firstCall.args[0],
+				featureName
+			);
 
 			// Should create files (component, style, index)
 			assert.strictEqual(fileManagerStub.createFile.callCount, 3);

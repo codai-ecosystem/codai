@@ -9,20 +9,20 @@ export const TestMemoryGraphVisualization: React.FC = () => {
 		.addFeatureNode('feature-1', 'User Authentication', {
 			status: 'in_progress',
 			priority: 'high',
-			requirements: ['Login page', 'JWT tokens', 'Password reset']
+			requirements: ['Login page', 'JWT tokens', 'Password reset'],
 		})
 		.addScreenNode('screen-1', 'Login Screen', {
 			screenType: 'page',
 			route: '/login',
-			components: ['LoginForm', 'ForgotPasswordLink']
+			components: ['LoginForm', 'ForgotPasswordLink'],
 		})
 		.addLogicNode('logic-1', 'AuthService', {
 			logicType: 'service',
 			inputs: [
 				{ name: 'credentials', type: 'LoginCredentials' },
-				{ name: 'token', type: 'string' }
+				{ name: 'token', type: 'string' },
 			],
-			outputs: { type: 'AuthResult' }
+			outputs: { type: 'AuthResult' },
 		})
 		.addRelationship('feature-1', 'screen-1', 'contains')
 		.addRelationship('screen-1', 'logic-1', 'uses')

@@ -37,7 +37,7 @@ const { promisify } = require('node:util');
  * sequential: boolean;
  * help: boolean;
  * }}
-*/
+ */
 const args = minimist(process.argv.slice(2), {
 	boolean: ['build', 'debug', 'sequential', 'help'],
 	string: ['run', 'grep', 'runGlob', 'browser', 'reporter', 'reporter-options', 'tfs'],
@@ -45,13 +45,13 @@ const args = minimist(process.argv.slice(2), {
 		build: false,
 		browser: ['chromium', 'firefox', 'webkit'],
 		reporter: process.platform === 'win32' ? 'list' : 'spec',
-		'reporter-options': ''
+		'reporter-options': '',
 	},
 	alias: {
 		grep: ['g', 'f'],
 		runGlob: ['glob', 'runGrep'],
 		debug: ['debug-browser'],
-		help: 'h'
+		help: 'h',
 	},
 	describe: {
 		build: 'run with build output (out-build)',
@@ -63,8 +63,8 @@ const args = minimist(process.argv.slice(2), {
 		reporter: 'the mocha reporter',
 		'reporter-options': 'the mocha reporter options',
 		tfs: 'tfs',
-		help: 'show the help'
-	}
+		help: 'show the help',
+	},
 });
 
 if (args.help) {
@@ -94,8 +94,13 @@ const withReporter = (function () {
 				new MochaJUnitReporter(runner, {
 					reporterOptions: {
 						testsuitesTitle: `${args.tfs} ${process.platform}`,
-						mochaFile: process.env.BUILD_ARTIFACTSTAGINGDIRECTORY ? path.join(process.env.BUILD_ARTIFACTSTAGINGDIRECTORY, `test-results/${process.platform}-${process.arch}-${browserType}-${args.tfs.toLowerCase().replace(/[^\w]/g, '-')}-results.xml`) : undefined
-					}
+						mochaFile: process.env.BUILD_ARTIFACTSTAGINGDIRECTORY
+							? path.join(
+									process.env.BUILD_ARTIFACTSTAGINGDIRECTORY,
+									`test-results/${process.platform}-${process.arch}-${browserType}-${args.tfs.toLowerCase().replace(/[^\w]/g, '-')}-results.xml`
+								)
+							: undefined,
+					},
 				});
 			};
 		}
@@ -113,7 +118,6 @@ function ensureIsArray(a) {
 }
 
 const testModules = (async function () {
-
 	const excludeGlob = '**/{node,electron-sandbox,electron-main,electron-utility}/**/*.test.js';
 	let isDefaultModules = true;
 	let promise;
@@ -121,12 +125,13 @@ const testModules = (async function () {
 	if (args.run) {
 		// use file list (--run)
 		isDefaultModules = false;
-		promise = Promise.resolve(ensureIsArray(args.run).map(file => {
-			file = file.replace(/^src/, 'out');
-			file = file.replace(/\.ts$/, '.js');
-			return path.relative(out, file);
-		}));
-
+		promise = Promise.resolve(
+			ensureIsArray(args.run).map(file => {
+				file = file.replace(/^src/, 'out');
+				file = file.replace(/\.ts$/, '.js');
+				return path.relative(out, file);
+			})
+		);
 	} else {
 		// glob patterns (--glob)
 		const defaultGlob = '**/*.test.js';
@@ -149,7 +154,6 @@ const testModules = (async function () {
 		for (const file of files) {
 			if (!minimatch(file, excludeGlob)) {
 				modules.push(file.replace(/\.js$/, ''));
-
 			} else if (!isDefaultModules) {
 				console.warn(`DROPPING ${file} because it cannot be run inside a browser`);
 			}
@@ -215,13 +219,17 @@ async function createServer() {
 			case '/remoteMethod/__readFileInTests':
 				return remoteMethod(request, response, p => fs.promises.readFile(massagePath(p), 'utf-8'));
 			case '/remoteMethod/__writeFileInTests':
-				return remoteMethod(request, response, (p, contents) => fs.promises.writeFile(massagePath(p), contents));
+				return remoteMethod(request, response, (p, contents) =>
+					fs.promises.writeFile(massagePath(p), contents)
+				);
 			case '/remoteMethod/__readDirInTests':
 				return remoteMethod(request, response, p => fs.promises.readdir(massagePath(p)));
 			case '/remoteMethod/__unlinkInTests':
 				return remoteMethod(request, response, p => fs.promises.unlink(massagePath(p)));
 			case '/remoteMethod/__mkdirPInTests':
-				return remoteMethod(request, response, p => fs.promises.mkdir(massagePath(p), { recursive: true }));
+				return remoteMethod(request, response, p =>
+					fs.promises.mkdir(massagePath(p), { recursive: true })
+				);
 			default:
 				return serveStatic.handle(request, response);
 		}
@@ -232,7 +240,7 @@ async function createServer() {
 			resolve({
 				dispose: () => server.close(),
 				// @ts-ignore
-				url: `http://localhost:${server.address().port}${prefix}`
+				url: `http://localhost:${server.address().port}${prefix}`,
 			});
 		});
 		server.on('error', reject);
@@ -241,7 +249,11 @@ async function createServer() {
 
 async function runTestsInBrowser(testModules, browserType, browserChannel) {
 	const server = await createServer();
-	const browser = await playwright[browserType].launch({ headless: !Boolean(args.debug), devtools: Boolean(args.debug), channel: browserChannel });
+	const browser = await playwright[browserType].launch({
+		headless: !Boolean(args.debug),
+		devtools: Boolean(args.debug),
+		channel: browserChannel,
+	});
 	const context = await browser.newContext();
 	const page = await context.newPage();
 	const target = new URL(server.url + '/test/unit/browser/renderer.html');
@@ -255,7 +267,11 @@ async function runTestsInBrowser(testModules, browserType, browserChannel) {
 
 	// append CSS modules as query-param
 	await promisify(require('glob'))('**/*.css', { cwd: out }).then(async cssModules => {
-		const cssData = await new Response((await new Response(cssModules.join(',')).blob()).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+		const cssData = await new Response(
+			(await new Response(cssModules.join(',')).blob())
+				.stream()
+				.pipeThrough(new CompressionStream('gzip'))
+		).arrayBuffer();
 		target.searchParams.set('_devCssData', Buffer.from(cssData).toString('base64'));
 	});
 
@@ -278,10 +294,21 @@ async function runTestsInBrowser(testModules, browserType, browserChannel) {
 	}
 
 	page.on('console', async msg => {
-		consoleLogFn(msg)(msg.text(), await Promise.all(msg.args().map(async arg => await arg.jsonValue())));
+		consoleLogFn(msg)(
+			msg.text(),
+			await Promise.all(msg.args().map(async arg => await arg.jsonValue()))
+		);
 	});
 
-	withReporter(browserType, new EchoRunner(emitter, browserChannel ? `${browserType.toUpperCase()}-${browserChannel.toUpperCase()}` : browserType.toUpperCase()));
+	withReporter(
+		browserType,
+		new EchoRunner(
+			emitter,
+			browserChannel
+				? `${browserType.toUpperCase()}-${browserChannel.toUpperCase()}`
+				: browserType.toUpperCase()
+		)
+	);
 
 	// collection failures for console printing
 	const failingModuleIds = [];
@@ -327,21 +354,28 @@ async function runTestsInBrowser(testModules, browserType, browserChannel) {
 }
 
 class EchoRunner extends events.EventEmitter {
-
 	constructor(event, title = '') {
 		super();
 		createStatsCollector(this);
 		event.on('start', () => this.emit('start'));
 		event.on('end', () => this.emit('end'));
-		event.on('suite', (suite) => this.emit('suite', EchoRunner.deserializeSuite(suite, title)));
-		event.on('suite end', (suite) => this.emit('suite end', EchoRunner.deserializeSuite(suite, title)));
-		event.on('test', (test) => this.emit('test', EchoRunner.deserializeRunnable(test)));
-		event.on('test end', (test) => this.emit('test end', EchoRunner.deserializeRunnable(test)));
-		event.on('hook', (hook) => this.emit('hook', EchoRunner.deserializeRunnable(hook)));
-		event.on('hook end', (hook) => this.emit('hook end', EchoRunner.deserializeRunnable(hook)));
-		event.on('pass', (test) => this.emit('pass', EchoRunner.deserializeRunnable(test)));
-		event.on('fail', (test, err) => this.emit('fail', EchoRunner.deserializeRunnable(test, title), EchoRunner.deserializeError(err)));
-		event.on('pending', (test) => this.emit('pending', EchoRunner.deserializeRunnable(test)));
+		event.on('suite', suite => this.emit('suite', EchoRunner.deserializeSuite(suite, title)));
+		event.on('suite end', suite =>
+			this.emit('suite end', EchoRunner.deserializeSuite(suite, title))
+		);
+		event.on('test', test => this.emit('test', EchoRunner.deserializeRunnable(test)));
+		event.on('test end', test => this.emit('test end', EchoRunner.deserializeRunnable(test)));
+		event.on('hook', hook => this.emit('hook', EchoRunner.deserializeRunnable(hook)));
+		event.on('hook end', hook => this.emit('hook end', EchoRunner.deserializeRunnable(hook)));
+		event.on('pass', test => this.emit('pass', EchoRunner.deserializeRunnable(test)));
+		event.on('fail', (test, err) =>
+			this.emit(
+				'fail',
+				EchoRunner.deserializeRunnable(test, title),
+				EchoRunner.deserializeError(err)
+			)
+		);
+		event.on('pending', test => this.emit('pending', EchoRunner.deserializeRunnable(test)));
 	}
 
 	static deserializeSuite(suite, titleExtra) {
@@ -355,14 +389,17 @@ class EchoRunner extends events.EventEmitter {
 			timeout: () => suite.timeout,
 			retries: () => suite.retries,
 			slow: () => suite.slow,
-			bail: () => suite.bail
+			bail: () => suite.bail,
 		};
 	}
 
 	static deserializeRunnable(runnable, titleExtra) {
 		return {
 			title: runnable.title,
-			fullTitle: () => titleExtra && runnable.fullTitle ? `${runnable.fullTitle} - /${titleExtra}/` : runnable.fullTitle,
+			fullTitle: () =>
+				titleExtra && runnable.fullTitle
+					? `${runnable.fullTitle} - /${titleExtra}/`
+					: runnable.fullTitle,
 			titlePath: () => runnable.titlePath,
 			async: runnable.async,
 			slow: () => runnable.slow,
@@ -379,45 +416,46 @@ class EchoRunner extends events.EventEmitter {
 	}
 }
 
-testModules.then(async modules => {
+testModules
+	.then(async modules => {
+		// run tests in selected browsers
+		const browsers = Array.isArray(args.browser) ? args.browser : [args.browser];
 
-	// run tests in selected browsers
-	const browsers = Array.isArray(args.browser)
-		? args.browser : [args.browser];
+		let messages = [];
+		let didFail = false;
 
-	let messages = [];
-	let didFail = false;
-
-	try {
-		if (args.sequential) {
-			for (const browser of browsers) {
-				const [browserType, browserChannel] = browser.split('-');
-				messages.push(await runTestsInBrowser(modules, browserType, browserChannel));
+		try {
+			if (args.sequential) {
+				for (const browser of browsers) {
+					const [browserType, browserChannel] = browser.split('-');
+					messages.push(await runTestsInBrowser(modules, browserType, browserChannel));
+				}
+			} else {
+				messages = await Promise.all(
+					browsers.map(async browser => {
+						const [browserType, browserChannel] = browser.split('-');
+						return await runTestsInBrowser(modules, browserType, browserChannel);
+					})
+				);
 			}
-		} else {
-			messages = await Promise.all(browsers.map(async browser => {
-				const [browserType, browserChannel] = browser.split('-');
-				return await runTestsInBrowser(modules, browserType, browserChannel);
-			}));
+		} catch (err) {
+			console.error(err);
+			if (!isDebug) {
+				process.exit(1);
+			}
 		}
-	} catch (err) {
-		console.error(err);
+
+		// aftermath
+		for (const msg of messages) {
+			if (msg) {
+				didFail = true;
+				console.log(msg);
+			}
+		}
 		if (!isDebug) {
-			process.exit(1);
+			process.exit(didFail ? 1 : 0);
 		}
-	}
-
-	// aftermath
-	for (const msg of messages) {
-		if (msg) {
-			didFail = true;
-			console.log(msg);
-		}
-	}
-	if (!isDebug) {
-		process.exit(didFail ? 1 : 0);
-	}
-
-}).catch(err => {
-	console.error(err);
-});
+	})
+	.catch(err => {
+		console.error(err);
+	});

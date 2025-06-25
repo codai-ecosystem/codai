@@ -12,10 +12,7 @@ export async function POST(request: NextRequest) {
 		const { priceId, mode = 'subscription', successUrl, cancelUrl } = await request.json();
 
 		if (!priceId) {
-			return NextResponse.json(
-				{ error: 'Price ID is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Price ID is required' }, { status: 400 });
 		}
 
 		const session = await stripe.checkout.sessions.create({
@@ -43,9 +40,6 @@ export async function POST(request: NextRequest) {
 		});
 	} catch (error) {
 		console.error('Error creating checkout session:', error);
-		return NextResponse.json(
-			{ error: 'Failed to create checkout session' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 });
 	}
 }

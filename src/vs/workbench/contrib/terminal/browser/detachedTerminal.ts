@@ -13,7 +13,13 @@ import { IInstantiationService } from '../../../../platform/instantiation/common
 import { TerminalCapabilityStore } from '../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
 import { IMergedEnvironmentVariableCollection } from '../../../../platform/terminal/common/environmentVariable.js';
 import { ITerminalBackend } from '../../../../platform/terminal/common/terminal.js';
-import { IDetachedTerminalInstance, IDetachedXTermOptions, IDetachedXtermTerminal, ITerminalContribution, IXtermAttachToElementOptions } from './terminal.js';
+import {
+	IDetachedTerminalInstance,
+	IDetachedXTermOptions,
+	IDetachedXtermTerminal,
+	ITerminalContribution,
+	IXtermAttachToElementOptions,
+} from './terminal.js';
 import { TerminalExtensionsRegistry } from './terminalExtensions.js';
 import { TerminalWidgetManager } from './widgets/widgetManager.js';
 import { XtermTerminal } from './xterm/xtermTerminal.js';
@@ -34,7 +40,7 @@ export class DetachedTerminal extends Disposable implements IDetachedTerminalIns
 	constructor(
 		private readonly _xterm: XtermTerminal,
 		options: IDetachedXTermOptions,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 		this._register(_xterm);
@@ -43,7 +49,9 @@ export class DetachedTerminal extends Disposable implements IDetachedTerminalIns
 		const contributionDescs = TerminalExtensionsRegistry.getTerminalContributions();
 		for (const desc of contributionDescs) {
 			if (this._contributions.has(desc.id)) {
-				onUnexpectedError(new Error(`Cannot have two terminal contributions with the same id ${desc.id}`));
+				onUnexpectedError(
+					new Error(`Cannot have two terminal contributions with the same id ${desc.id}`)
+				);
 				continue;
 			}
 			if (desc.canRunInDetachedTerminals === false) {
@@ -55,7 +63,7 @@ export class DetachedTerminal extends Disposable implements IDetachedTerminalIns
 				contribution = instantiationService.createInstance(desc.ctor, {
 					instance: this,
 					processManager: options.processInfo,
-					widgetManager: this._widgets
+					widgetManager: this._widgets,
 				});
 				this._contributions.set(desc.id, contribution);
 				this._register(contribution);
@@ -91,7 +99,10 @@ export class DetachedTerminal extends Disposable implements IDetachedTerminalIns
 		}
 	}
 
-	attachToElement(container: HTMLElement, options?: Partial<IXtermAttachToElementOptions> | undefined): void {
+	attachToElement(
+		container: HTMLElement,
+		options?: Partial<IXtermAttachToElementOptions> | undefined
+	): void {
 		this.domElement = container;
 		const screenElement = this._xterm.attachToElement(container, options);
 		this._widgets.attachToElement(screenElement);

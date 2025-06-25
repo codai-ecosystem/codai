@@ -10,7 +10,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../common/utils.j
 export type IMouseWheelEvent = [number, number, number];
 
 suite('MouseWheelClassifier', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('OSX - Apple Magic Mouse', () => {
@@ -206,7 +205,6 @@ suite('MouseWheelClassifier', () => {
 
 			const actual = classifier.isPhysicalMouseWheel();
 			assert.strictEqual(actual, true, `i = ${i}`);
-
 		}
 	});
 
@@ -246,7 +244,6 @@ suite('MouseWheelClassifier', () => {
 
 			const actual = classifier.isPhysicalMouseWheel();
 			assert.strictEqual(actual, true, `i = ${i}`);
-
 		}
 	});
 
@@ -380,7 +377,6 @@ suite('MouseWheelClassifier', () => {
 
 			const actual = classifier.isPhysicalMouseWheel();
 			assert.strictEqual(actual, true, `i = ${i}`);
-
 		}
 	});
 
@@ -471,7 +467,6 @@ suite('MouseWheelClassifier', () => {
 
 			const actual = classifier.isPhysicalMouseWheel();
 			assert.strictEqual(actual, true, `i = ${i}`);
-
 		}
 	});
 
@@ -728,5 +723,4 @@ suite('MouseWheelClassifier', () => {
 			}
 		}
 	});
-
 });

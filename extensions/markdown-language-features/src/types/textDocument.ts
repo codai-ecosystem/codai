@@ -16,4 +16,3 @@ export interface ITextDocument {
 
 	positionAt(offset: number): vscode.Position;
 }
-

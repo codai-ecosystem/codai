@@ -26,7 +26,10 @@ export class TestTreeSitterLibraryService implements ITreeSitterLibraryService {
 		return null;
 	}
 
-	getHighlightingQueries(languageId: string, reader: IReader | undefined): Query | null | undefined {
+	getHighlightingQueries(
+		languageId: string,
+		reader: IReader | undefined
+	): Query | null | undefined {
 		return null;
 	}
 }

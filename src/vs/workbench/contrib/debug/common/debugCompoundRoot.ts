@@ -12,7 +12,8 @@ export class DebugCompoundRoot {
 	onDidSessionStop = this.stopEmitter.event;
 
 	sessionStopped(): void {
-		if (!this.stopped) { // avoid sending extranous terminate events
+		if (!this.stopped) {
+			// avoid sending extranous terminate events
 			this.stopped = true;
 			this.stopEmitter.fire();
 		}

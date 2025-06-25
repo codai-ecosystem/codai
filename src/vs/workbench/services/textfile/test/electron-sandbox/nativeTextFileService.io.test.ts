@@ -13,15 +13,27 @@ import { ServiceCollection } from '../../../../../platform/instantiation/common/
 import { IFileService, IStat } from '../../../../../platform/files/common/files.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { join } from '../../../../../base/common/path.js';
-import { UTF16le, detectEncodingByBOMFromBuffer, UTF8_with_bom, UTF16be, toCanonicalName } from '../../common/encoding.js';
+import {
+	UTF16le,
+	detectEncodingByBOMFromBuffer,
+	UTF8_with_bom,
+	UTF16be,
+	toCanonicalName,
+} from '../../common/encoding.js';
 import { VSBuffer } from '../../../../../base/common/buffer.js';
 import files from '../common/fixtures/files.js';
 import createSuite from '../common/textFileService.io.test.js';
-import { IWorkingCopyFileService, WorkingCopyFileService } from '../../../workingCopy/common/workingCopyFileService.js';
+import {
+	IWorkingCopyFileService,
+	WorkingCopyFileService,
+} from '../../../workingCopy/common/workingCopyFileService.js';
 import { WorkingCopyService } from '../../../workingCopy/common/workingCopyService.js';
 import { UriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentityService.js';
 import { TestInMemoryFileSystemProvider } from '../../../../test/browser/workbenchTestServices.js';
-import { TestNativeTextFileServiceWithEncodingOverrides, workbenchInstantiationService } from '../../../../test/electron-sandbox/workbenchTestServices.js';
+import {
+	TestNativeTextFileServiceWithEncodingOverrides,
+	workbenchInstantiationService,
+} from '../../../../test/electron-sandbox/workbenchTestServices.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('Files - NativeTextFileService i/o', function () {
@@ -43,18 +55,33 @@ suite('Files - NativeTextFileService i/o', function () {
 
 			const collection = new ServiceCollection();
 			collection.set(IFileService, fileService);
-			collection.set(IWorkingCopyFileService, disposables.add(new WorkingCopyFileService(fileService, disposables.add(new WorkingCopyService()), instantiationService, disposables.add(new UriIdentityService(fileService)))));
+			collection.set(
+				IWorkingCopyFileService,
+				disposables.add(
+					new WorkingCopyFileService(
+						fileService,
+						disposables.add(new WorkingCopyService()),
+						instantiationService,
+						disposables.add(new UriIdentityService(fileService))
+					)
+				)
+			);
 
-			service = disposables.add(instantiationService.createChild(collection).createInstance(TestNativeTextFileServiceWithEncodingOverrides));
+			service = disposables.add(
+				instantiationService
+					.createChild(collection)
+					.createInstance(TestNativeTextFileServiceWithEncodingOverrides)
+			);
 			disposables.add(<TextFileEditorModelManager>service.files);
 
 			await fileProvider.mkdir(URI.file(testDir));
 			for (const fileName in files) {
-				await fileProvider.writeFile(
-					URI.file(join(testDir, fileName)),
-					files[fileName],
-					{ create: true, overwrite: false, unlock: false, atomic: false }
-				);
+				await fileProvider.writeFile(URI.file(join(testDir, fileName)), files[fileName], {
+					create: true,
+					overwrite: false,
+					unlock: false,
+					atomic: false,
+				});
 			}
 
 			return { service, testDir };
@@ -67,15 +94,14 @@ suite('Files - NativeTextFileService i/o', function () {
 		exists,
 		stat,
 		readFile,
-		detectEncodingByBOM
+		detectEncodingByBOM,
 	});
 
 	async function exists(fsPath: string): Promise<boolean> {
 		try {
 			await fileProvider.readFile(URI.file(fsPath));
 			return true;
-		}
-		catch (e) {
+		} catch (e) {
 			return false;
 		}
 	}
@@ -96,7 +122,9 @@ suite('Files - NativeTextFileService i/o', function () {
 		return fileProvider.stat(URI.file(fsPath));
 	}
 
-	async function detectEncodingByBOM(fsPath: string): Promise<typeof UTF16be | typeof UTF16le | typeof UTF8_with_bom | null> {
+	async function detectEncodingByBOM(
+		fsPath: string
+	): Promise<typeof UTF16be | typeof UTF16le | typeof UTF8_with_bom | null> {
 		try {
 			const buffer = await readFile(fsPath);
 

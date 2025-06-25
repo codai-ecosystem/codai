@@ -9,7 +9,14 @@ import { onUnexpectedExternalError } from '../../../../base/common/errors.js';
 import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
 import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { EditorAction, EditorContributionInstantiation, IActionOptions, registerEditorAction, registerEditorContribution, ServicesAccessor } from '../../../browser/editorExtensions.js';
+import {
+	EditorAction,
+	EditorContributionInstantiation,
+	IActionOptions,
+	registerEditorAction,
+	registerEditorContribution,
+	ServicesAccessor,
+} from '../../../browser/editorExtensions.js';
 import { EditorOption } from '../../../common/config/editorOptions.js';
 import { Position } from '../../../common/core/position.js';
 import { Range } from '../../../common/core/range.js';
@@ -31,11 +38,10 @@ import { assertType } from '../../../../base/common/types.js';
 import { URI } from '../../../../base/common/uri.js';
 
 class SelectionRanges {
-
 	constructor(
 		readonly index: number,
 		readonly ranges: Range[]
-	) { }
+	) {}
 
 	mov(fwd: boolean): SelectionRanges {
 		const index = this.index + (fwd ? 1 : -1);
@@ -52,7 +58,6 @@ class SelectionRanges {
 }
 
 export class SmartSelectController implements IEditorContribution {
-
 	static readonly ID = 'editor.contrib.smartSelectController';
 
 	static get(editor: ICodeEditor): SmartSelectController | null {
@@ -65,8 +70,8 @@ export class SmartSelectController implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-	) { }
+		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService
+	) {}
 
 	dispose(): void {
 		this._selectionListener?.dispose();
@@ -81,13 +86,21 @@ export class SmartSelectController implements IEditorContribution {
 		const model = this._editor.getModel();
 
 		if (!this._state) {
-
-			await provideSelectionRanges(this._languageFeaturesService.selectionRangeProvider, model, selections.map(s => s.getPosition()), this._editor.getOption(EditorOption.smartSelect), CancellationToken.None).then(ranges => {
+			await provideSelectionRanges(
+				this._languageFeaturesService.selectionRangeProvider,
+				model,
+				selections.map(s => s.getPosition()),
+				this._editor.getOption(EditorOption.smartSelect),
+				CancellationToken.None
+			).then(ranges => {
 				if (!arrays.isNonEmptyArray(ranges) || ranges.length !== selections.length) {
 					// invalid result
 					return;
 				}
-				if (!this._editor.hasModel() || !arrays.equals(this._editor.getSelections(), selections, (a, b) => a.equalsSelection(b))) {
+				if (
+					!this._editor.hasModel() ||
+					!arrays.equals(this._editor.getSelections(), selections, (a, b) => a.equalsSelection(b))
+				) {
 					// invalid editor state
 					return;
 				}
@@ -95,12 +108,14 @@ export class SmartSelectController implements IEditorContribution {
 				for (let i = 0; i < ranges.length; i++) {
 					ranges[i] = ranges[i].filter(range => {
 						// filter ranges inside the selection
-						return range.containsPosition(selections[i].getStartPosition()) && range.containsPosition(selections[i].getEndPosition());
+						return (
+							range.containsPosition(selections[i].getStartPosition()) &&
+							range.containsPosition(selections[i].getEndPosition())
+						);
 					});
 					// prepend current selection
 					ranges[i].unshift(selections[i]);
 				}
-
 
 				this._state = ranges.map(ranges => new SelectionRanges(0, ranges));
 
@@ -120,7 +135,12 @@ export class SmartSelectController implements IEditorContribution {
 			return;
 		}
 		this._state = this._state.map(state => state.mov(forward));
-		const newSelections = this._state.map(state => Selection.fromPositions(state.ranges[state.index].getStartPosition(), state.ranges[state.index].getEndPosition()));
+		const newSelections = this._state.map(state =>
+			Selection.fromPositions(
+				state.ranges[state.index].getStartPosition(),
+				state.ranges[state.index].getEndPosition()
+			)
+		);
 		this._ignoreSelection = true;
 		try {
 			this._editor.setSelections(newSelections);
@@ -131,7 +151,6 @@ export class SmartSelectController implements IEditorContribution {
 }
 
 abstract class AbstractSmartSelect extends EditorAction {
-
 	private readonly _forward: boolean;
 
 	constructor(forward: boolean, opts: IActionOptions) {
@@ -151,7 +170,7 @@ class GrowSelectionAction extends AbstractSmartSelect {
 	constructor() {
 		super(true, {
 			id: 'editor.action.smartSelect.expand',
-			label: nls.localize2('smartSelect.expand', "Expand Selection"),
+			label: nls.localize2('smartSelect.expand', 'Expand Selection'),
 			precondition: undefined,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
@@ -160,26 +179,32 @@ class GrowSelectionAction extends AbstractSmartSelect {
 					primary: KeyMod.CtrlCmd | KeyMod.WinCtrl | KeyMod.Shift | KeyCode.RightArrow,
 					secondary: [KeyMod.WinCtrl | KeyMod.Shift | KeyCode.RightArrow],
 				},
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menuOpts: {
 				menuId: MenuId.MenubarSelectionMenu,
 				group: '1_basic',
-				title: nls.localize({ key: 'miSmartSelectGrow', comment: ['&& denotes a mnemonic'] }, "&&Expand Selection"),
-				order: 2
-			}
+				title: nls.localize(
+					{ key: 'miSmartSelectGrow', comment: ['&& denotes a mnemonic'] },
+					'&&Expand Selection'
+				),
+				order: 2,
+			},
 		});
 	}
 }
 
 // renamed command id
-CommandsRegistry.registerCommandAlias('editor.action.smartSelect.grow', 'editor.action.smartSelect.expand');
+CommandsRegistry.registerCommandAlias(
+	'editor.action.smartSelect.grow',
+	'editor.action.smartSelect.expand'
+);
 
 class ShrinkSelectionAction extends AbstractSmartSelect {
 	constructor() {
 		super(false, {
 			id: 'editor.action.smartSelect.shrink',
-			label: nls.localize2('smartSelect.shrink', "Shrink Selection"),
+			label: nls.localize2('smartSelect.shrink', 'Shrink Selection'),
 			precondition: undefined,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
@@ -188,19 +213,26 @@ class ShrinkSelectionAction extends AbstractSmartSelect {
 					primary: KeyMod.CtrlCmd | KeyMod.WinCtrl | KeyMod.Shift | KeyCode.LeftArrow,
 					secondary: [KeyMod.WinCtrl | KeyMod.Shift | KeyCode.LeftArrow],
 				},
-				weight: KeybindingWeight.EditorContrib
+				weight: KeybindingWeight.EditorContrib,
 			},
 			menuOpts: {
 				menuId: MenuId.MenubarSelectionMenu,
 				group: '1_basic',
-				title: nls.localize({ key: 'miSmartSelectShrink', comment: ['&& denotes a mnemonic'] }, "&&Shrink Selection"),
-				order: 3
-			}
+				title: nls.localize(
+					{ key: 'miSmartSelectShrink', comment: ['&& denotes a mnemonic'] },
+					'&&Shrink Selection'
+				),
+				order: 3,
+			},
 		});
 	}
 }
 
-registerEditorContribution(SmartSelectController.ID, SmartSelectController, EditorContributionInstantiation.Lazy);
+registerEditorContribution(
+	SmartSelectController.ID,
+	SmartSelectController,
+	EditorContributionInstantiation.Lazy
+);
 registerEditorAction(GrowSelectionAction);
 registerEditorAction(ShrinkSelectionAction);
 
@@ -209,9 +241,15 @@ export interface SelectionRangesOptions {
 	selectSubwords: boolean;
 }
 
-export async function provideSelectionRanges(registry: LanguageFeatureRegistry<languages.SelectionRangeProvider>, model: ITextModel, positions: Position[], options: SelectionRangesOptions, token: CancellationToken): Promise<Range[][]> {
-
-	const providers = registry.all(model)
+export async function provideSelectionRanges(
+	registry: LanguageFeatureRegistry<languages.SelectionRangeProvider>,
+	model: ITextModel,
+	positions: Position[],
+	options: SelectionRangesOptions,
+	token: CancellationToken
+): Promise<Range[][]> {
+	const providers = registry
+		.all(model)
 		.concat(new WordSelectionRangeProvider(options.selectSubwords)); // ALWAYS have word based selection range
 
 	if (providers.length === 1) {
@@ -223,27 +261,36 @@ export async function provideSelectionRanges(registry: LanguageFeatureRegistry<l
 	const allRawRanges: Range[][] = [];
 
 	for (const provider of providers) {
-
-		work.push(Promise.resolve(provider.provideSelectionRanges(model, positions, token)).then(allProviderRanges => {
-			if (arrays.isNonEmptyArray(allProviderRanges) && allProviderRanges.length === positions.length) {
-				for (let i = 0; i < positions.length; i++) {
-					if (!allRawRanges[i]) {
-						allRawRanges[i] = [];
-					}
-					for (const oneProviderRanges of allProviderRanges[i]) {
-						if (Range.isIRange(oneProviderRanges.range) && Range.containsPosition(oneProviderRanges.range, positions[i])) {
-							allRawRanges[i].push(Range.lift(oneProviderRanges.range));
+		work.push(
+			Promise.resolve(provider.provideSelectionRanges(model, positions, token)).then(
+				allProviderRanges => {
+					if (
+						arrays.isNonEmptyArray(allProviderRanges) &&
+						allProviderRanges.length === positions.length
+					) {
+						for (let i = 0; i < positions.length; i++) {
+							if (!allRawRanges[i]) {
+								allRawRanges[i] = [];
+							}
+							for (const oneProviderRanges of allProviderRanges[i]) {
+								if (
+									Range.isIRange(oneProviderRanges.range) &&
+									Range.containsPosition(oneProviderRanges.range, positions[i])
+								) {
+									allRawRanges[i].push(Range.lift(oneProviderRanges.range));
+								}
+							}
 						}
 					}
-				}
-			}
-		}, onUnexpectedExternalError));
+				},
+				onUnexpectedExternalError
+			)
+		);
 	}
 
 	await Promise.all(work);
 
 	return allRawRanges.map(oneRawRanges => {
-
 		if (oneRawRanges.length === 0) {
 			return [];
 		}
@@ -284,15 +331,38 @@ export async function provideSelectionRanges(registry: LanguageFeatureRegistry<l
 		for (let i = 1; i < oneRanges.length; i++) {
 			const prev = oneRanges[i - 1];
 			const cur = oneRanges[i];
-			if (cur.startLineNumber !== prev.startLineNumber || cur.endLineNumber !== prev.endLineNumber) {
+			if (
+				cur.startLineNumber !== prev.startLineNumber ||
+				cur.endLineNumber !== prev.endLineNumber
+			) {
 				// add line/block range without leading/failing whitespace
-				const rangeNoWhitespace = new Range(prev.startLineNumber, model.getLineFirstNonWhitespaceColumn(prev.startLineNumber), prev.endLineNumber, model.getLineLastNonWhitespaceColumn(prev.endLineNumber));
-				if (rangeNoWhitespace.containsRange(prev) && !rangeNoWhitespace.equalsRange(prev) && cur.containsRange(rangeNoWhitespace) && !cur.equalsRange(rangeNoWhitespace)) {
+				const rangeNoWhitespace = new Range(
+					prev.startLineNumber,
+					model.getLineFirstNonWhitespaceColumn(prev.startLineNumber),
+					prev.endLineNumber,
+					model.getLineLastNonWhitespaceColumn(prev.endLineNumber)
+				);
+				if (
+					rangeNoWhitespace.containsRange(prev) &&
+					!rangeNoWhitespace.equalsRange(prev) &&
+					cur.containsRange(rangeNoWhitespace) &&
+					!cur.equalsRange(rangeNoWhitespace)
+				) {
 					oneRangesWithTrivia.push(rangeNoWhitespace);
 				}
 				// add line/block range
-				const rangeFull = new Range(prev.startLineNumber, 1, prev.endLineNumber, model.getLineMaxColumn(prev.endLineNumber));
-				if (rangeFull.containsRange(prev) && !rangeFull.equalsRange(rangeNoWhitespace) && cur.containsRange(rangeFull) && !cur.equalsRange(rangeFull)) {
+				const rangeFull = new Range(
+					prev.startLineNumber,
+					1,
+					prev.endLineNumber,
+					model.getLineMaxColumn(prev.endLineNumber)
+				);
+				if (
+					rangeFull.containsRange(prev) &&
+					!rangeFull.equalsRange(rangeNoWhitespace) &&
+					cur.containsRange(rangeFull) &&
+					!cur.equalsRange(rangeFull)
+				) {
 					oneRangesWithTrivia.push(rangeFull);
 				}
 			}
@@ -302,18 +372,25 @@ export async function provideSelectionRanges(registry: LanguageFeatureRegistry<l
 	});
 }
 
+CommandsRegistry.registerCommand(
+	'_executeSelectionRangeProvider',
+	async function (accessor, ...args) {
+		const [resource, positions] = args;
+		assertType(URI.isUri(resource));
 
-CommandsRegistry.registerCommand('_executeSelectionRangeProvider', async function (accessor, ...args) {
+		const registry = accessor.get(ILanguageFeaturesService).selectionRangeProvider;
+		const reference = await accessor.get(ITextModelService).createModelReference(resource);
 
-	const [resource, positions] = args;
-	assertType(URI.isUri(resource));
-
-	const registry = accessor.get(ILanguageFeaturesService).selectionRangeProvider;
-	const reference = await accessor.get(ITextModelService).createModelReference(resource);
-
-	try {
-		return provideSelectionRanges(registry, reference.object.textEditorModel, positions, { selectLeadingAndTrailingWhitespace: true, selectSubwords: true }, CancellationToken.None);
-	} finally {
-		reference.dispose();
+		try {
+			return provideSelectionRanges(
+				registry,
+				reference.object.textEditorModel,
+				positions,
+				{ selectLeadingAndTrailingWhitespace: true, selectSubwords: true },
+				CancellationToken.None
+			);
+		} finally {
+			reference.dispose();
+		}
 	}
-});
+);

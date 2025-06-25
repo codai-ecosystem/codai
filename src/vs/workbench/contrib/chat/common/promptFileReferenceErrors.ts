@@ -14,12 +14,9 @@ abstract class ParseError extends Error {
 	/**
 	 * Error type name.
 	 */
-	public readonly abstract errorType: string;
+	public abstract readonly errorType: string;
 
-	constructor(
-		message?: string,
-		options?: ErrorOptions,
-	) {
+	constructor(message?: string, options?: ErrorOptions) {
 		super(message, options);
 	}
 
@@ -51,7 +48,7 @@ export abstract class ResolveError extends ParseError {
 	constructor(
 		public readonly uri: URI,
 		message?: string,
-		options?: ErrorOptions,
+		options?: ErrorOptions
 	) {
 		super(message, options);
 	}
@@ -66,12 +63,11 @@ export class FailedToResolveContentsStream extends ResolveError {
 	constructor(
 		uri: URI,
 		public readonly originalError: unknown,
-		message: string = `Failed to resolve prompt contents stream for '${uri.toString()}': ${originalError}.`,
+		message: string = `Failed to resolve prompt contents stream for '${uri.toString()}': ${originalError}.`
 	) {
 		super(uri, message);
 	}
 }
-
 
 /**
  * Error that reflects the case when attempt to open target file fails.
@@ -79,15 +75,8 @@ export class FailedToResolveContentsStream extends ResolveError {
 export class OpenFailed extends FailedToResolveContentsStream {
 	public override errorType = 'OpenError';
 
-	constructor(
-		uri: URI,
-		originalError: unknown,
-	) {
-		super(
-			uri,
-			originalError,
-			`Failed to open '${uri.fsPath}': ${originalError}.`,
-		);
+	constructor(uri: URI, originalError: unknown) {
+		super(uri, originalError, `Failed to open '${uri.fsPath}': ${originalError}.`);
 	}
 }
 
@@ -121,18 +110,16 @@ export class RecursiveReference extends ResolveError {
 
 	constructor(
 		uri: URI,
-		public readonly recursivePath: readonly string[],
+		public readonly recursivePath: readonly string[]
 	) {
 		// sanity check - a recursive path must always have at least
 		// two items in the list, otherwise it is not a recursive loop
 		assert(
 			recursivePath.length >= 2,
-			`Recursive path must contain at least two paths, got '${recursivePath.length}'.`,
+			`Recursive path must contain at least two paths, got '${recursivePath.length}'.`
 		);
 
-		super(
-			uri, 'Recursive references found.',
-		);
+		super(uri, 'Recursive references found.');
 	}
 
 	public override get message(): string {
@@ -144,17 +131,17 @@ export class RecursiveReference extends ResolveError {
 	 */
 	public getRecursivePathString(
 		filename: 'basename' | 'fullpath',
-		pathJoinCharacter: string = DEFAULT_RECURSIVE_PATH_JOIN_CHAR,
+		pathJoinCharacter: string = DEFAULT_RECURSIVE_PATH_JOIN_CHAR
 	): string {
-		const isDefault = (filename === 'fullpath') &&
-			(pathJoinCharacter === DEFAULT_RECURSIVE_PATH_JOIN_CHAR);
+		const isDefault =
+			filename === 'fullpath' && pathJoinCharacter === DEFAULT_RECURSIVE_PATH_JOIN_CHAR;
 
-		if (isDefault && (this.defaultPathStringCache !== undefined)) {
+		if (isDefault && this.defaultPathStringCache !== undefined) {
 			return this.defaultPathStringCache;
 		}
 
 		const result = this.recursivePath
-			.map((path) => {
+			.map(path => {
 				if (filename === 'fullpath') {
 					return `'${path}'`;
 				}
@@ -163,10 +150,7 @@ export class RecursiveReference extends ResolveError {
 					return `'${basename(path)}'`;
 				}
 
-				assertNever(
-					filename,
-					`Unknown filename format '${filename}'.`,
-				);
+				assertNever(filename, `Unknown filename format '${filename}'.`);
 			})
 			.join(pathJoinCharacter);
 
@@ -222,17 +206,10 @@ export class RecursiveReference extends ResolveError {
 export class NotPromptFile extends ResolveError {
 	public override errorType = 'NotPromptFileError';
 
-	constructor(
-		uri: URI,
-		message: string = '',
-	) {
-
+	constructor(uri: URI, message: string = '') {
 		const suffix = message ? `: ${message}` : '';
 
-		super(
-			uri,
-			`Resource at ${uri.path} is not a prompt file${suffix}`,
-		);
+		super(uri, `Resource at ${uri.path} is not a prompt file${suffix}`);
 	}
 }
 
@@ -242,16 +219,9 @@ export class NotPromptFile extends ResolveError {
 export class FolderReference extends NotPromptFile {
 	public override errorType = 'FolderReferenceError';
 
-	constructor(
-		uri: URI,
-		message: string = '',
-	) {
-
+	constructor(uri: URI, message: string = '') {
 		const suffix = message ? `: ${message}` : '';
 
-		super(
-			uri,
-			`Entity at '${uri.path}' is a folder${suffix}`,
-		);
+		super(uri, `Entity at '${uri.path}' is a folder${suffix}`);
 	}
 }

@@ -7,7 +7,12 @@ import { ObjectTree } from '../../../../../base/browser/ui/tree/objectTree.js';
 import { Emitter } from '../../../../../base/common/event.js';
 import { Disposable, DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { IWorkspaceFoldersChangeEvent } from '../../../../../platform/workspace/common/workspace.js';
-import { ITestTreeProjection, TestExplorerTreeElement, TestItemTreeElement, TestTreeErrorMessage } from '../../browser/explorerProjections/index.js';
+import {
+	ITestTreeProjection,
+	TestExplorerTreeElement,
+	TestItemTreeElement,
+	TestTreeErrorMessage,
+} from '../../browser/explorerProjections/index.js';
 import { MainThreadTestCollection } from '../../common/mainThreadTestCollection.js';
 import { TestsDiff, TestsDiffOp } from '../../common/testTypes.js';
 import { ITestService } from '../../common/testService.js';
@@ -27,7 +32,7 @@ class TestObjectTree<T> extends ObjectTree<T, any> {
 			element,
 			{
 				getHeight: () => 20,
-				getTemplateId: () => 'default'
+				getTemplateId: () => 'default',
 			},
 			[
 				{
@@ -45,13 +50,13 @@ class TestObjectTree<T> extends ObjectTree<T, any> {
 					},
 					disposeElement: (_el, _index, { store }) => store.clear(),
 					renderTemplate: container => ({ container, store: new DisposableStore() }),
-					templateId: 'default'
-				} satisfies ITreeRenderer<T, any, { store: DisposableStore; container: HTMLElement }>
+					templateId: 'default',
+				} satisfies ITreeRenderer<T, any, { store: DisposableStore; container: HTMLElement }>,
 			],
 			{
 				sorter: sorter ?? {
-					compare: (a, b) => serializer(a).localeCompare(serializer(b))
-				}
+					compare: (a, b) => serializer(a).localeCompare(serializer(b)),
+				},
 			}
 		);
 		this.layout(1000, 200);
@@ -77,59 +82,87 @@ class TestObjectTree<T> extends ObjectTree<T, any> {
 	}
 }
 
-const pos = (element: Element) => Number(element.parentElement!.parentElement!.getAttribute('aria-posinset'));
-
+const pos = (element: Element) =>
+	Number(element.parentElement!.parentElement!.getAttribute('aria-posinset'));
 
 class ByLabelTreeSorter implements ITreeSorter<TestExplorerTreeElement> {
 	public compare(a: TestExplorerTreeElement, b: TestExplorerTreeElement): number {
 		if (a instanceof TestTreeErrorMessage || b instanceof TestTreeErrorMessage) {
-			return (a instanceof TestTreeErrorMessage ? -1 : 0) + (b instanceof TestTreeErrorMessage ? 1 : 0);
+			return (
+				(a instanceof TestTreeErrorMessage ? -1 : 0) + (b instanceof TestTreeErrorMessage ? 1 : 0)
+			);
 		}
 
-		if (a instanceof TestItemTreeElement && b instanceof TestItemTreeElement && a.test.item.uri && b.test.item.uri && a.test.item.uri.toString() === b.test.item.uri.toString() && a.test.item.range && b.test.item.range) {
+		if (
+			a instanceof TestItemTreeElement &&
+			b instanceof TestItemTreeElement &&
+			a.test.item.uri &&
+			b.test.item.uri &&
+			a.test.item.uri.toString() === b.test.item.uri.toString() &&
+			a.test.item.range &&
+			b.test.item.range
+		) {
 			const delta = a.test.item.range.startLineNumber - b.test.item.range.startLineNumber;
 			if (delta !== 0) {
 				return delta;
 			}
 		}
 
-		return (a.test.item.sortText || a.test.item.label).localeCompare(b.test.item.sortText || b.test.item.label);
+		return (a.test.item.sortText || a.test.item.label).localeCompare(
+			b.test.item.sortText || b.test.item.label
+		);
 	}
 }
 
 // names are hard
-export class TestTreeTestHarness<T extends ITestTreeProjection = ITestTreeProjection> extends Disposable {
+export class TestTreeTestHarness<
+	T extends ITestTreeProjection = ITestTreeProjection,
+> extends Disposable {
 	private readonly onDiff = this._register(new Emitter<TestsDiff>());
 	public readonly onFolderChange = this._register(new Emitter<IWorkspaceFoldersChangeEvent>());
 	private isProcessingDiff = false;
 	public readonly projection: T;
 	public readonly tree: TestObjectTree<TestExplorerTreeElement>;
 
-	constructor(makeTree: (listener: ITestService) => T, public readonly c = testStubs.nested()) {
+	constructor(
+		makeTree: (listener: ITestService) => T,
+		public readonly c = testStubs.nested()
+	) {
 		super();
 		this._register(c);
-		this._register(this.c.onDidGenerateDiff(d => this.c.setDiff(d /* don't clear during testing */)));
+		this._register(
+			this.c.onDidGenerateDiff(d => this.c.setDiff(d /* don't clear during testing */))
+		);
 
-		const collection = new MainThreadTestCollection({ asCanonicalUri: u => u }, (testId, levels) => {
-			this.c.expand(testId, levels);
-			if (!this.isProcessingDiff) {
-				this.onDiff.fire(this.c.collectDiff());
+		const collection = new MainThreadTestCollection(
+			{ asCanonicalUri: u => u },
+			(testId, levels) => {
+				this.c.expand(testId, levels);
+				if (!this.isProcessingDiff) {
+					this.onDiff.fire(this.c.collectDiff());
+				}
+				return Promise.resolve();
 			}
-			return Promise.resolve();
-		});
+		);
 		this._register(this.onDiff.event(diff => collection.apply(diff)));
 
-		this.projection = this._register(makeTree({
-			collection,
-			onDidProcessDiff: this.onDiff.event,
-		} as any));
+		this.projection = this._register(
+			makeTree({
+				collection,
+				onDidProcessDiff: this.onDiff.event,
+			} as any)
+		);
 		const sorter = new ByLabelTreeSorter();
-		this.tree = this._register(new TestObjectTree(t => 'test' in t ? t.test.item.label : t.message.toString(), sorter));
-		this._register(this.tree.onDidChangeCollapseState(evt => {
-			if (evt.node.element instanceof TestItemTreeElement) {
-				this.projection.expandElement(evt.node.element, evt.deep ? Infinity : 0);
-			}
-		}));
+		this.tree = this._register(
+			new TestObjectTree(t => ('test' in t ? t.test.item.label : t.message.toString()), sorter)
+		);
+		this._register(
+			this.tree.onDidChangeCollapseState(evt => {
+				if (evt.node.element instanceof TestItemTreeElement) {
+					this.projection.expandElement(evt.node.element, evt.deep ? Infinity : 0);
+				}
+			})
+		);
 	}
 
 	public pushDiff(...diff: TestsDiffOp[]) {

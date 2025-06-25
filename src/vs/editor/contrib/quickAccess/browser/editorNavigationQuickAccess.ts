@@ -6,14 +6,26 @@
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { Event } from '../../../../base/common/event.js';
 import { createSingleCallFunction } from '../../../../base/common/functional.js';
-import { DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	DisposableStore,
+	IDisposable,
+	MutableDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { getCodeEditor, isDiffEditor } from '../../../browser/editorBrowser.js';
 import { IRange } from '../../../common/core/range.js';
 import { IDiffEditor, IEditor, ScrollType } from '../../../common/editorCommon.js';
 import { IModelDeltaDecoration, ITextModel, OverviewRulerLane } from '../../../common/model.js';
 import { overviewRulerRangeHighlight } from '../../../common/core/editorColorRegistry.js';
-import { IQuickAccessProvider, IQuickAccessProviderRunOptions } from '../../../../platform/quickinput/common/quickAccess.js';
-import { IKeyMods, IQuickPick, IQuickPickItem } from '../../../../platform/quickinput/common/quickInput.js';
+import {
+	IQuickAccessProvider,
+	IQuickAccessProviderRunOptions,
+} from '../../../../platform/quickinput/common/quickAccess.js';
+import {
+	IKeyMods,
+	IQuickPick,
+	IQuickPickItem,
+} from '../../../../platform/quickinput/common/quickInput.js';
 import { themeColorFromId } from '../../../../platform/theme/common/themeService.js';
 import { status } from '../../../../base/browser/ui/aria/aria.js';
 import { TextEditorSelectionSource } from '../../../../platform/editor/common/editor.js';
@@ -28,7 +40,6 @@ export interface IEditorNavigationQuickAccessOptions {
 }
 
 export interface IQuickAccessTextEditorContext {
-
 	/**
 	 * The current active editor.
 	 */
@@ -47,38 +58,50 @@ export interface IQuickAccessTextEditorContext {
  * (for example "Go to line", "Go to symbol").
  */
 export abstract class AbstractEditorNavigationQuickAccessProvider implements IQuickAccessProvider {
-
-	constructor(protected options?: IEditorNavigationQuickAccessOptions) { }
+	constructor(protected options?: IEditorNavigationQuickAccessOptions) {}
 
 	//#region Provider methods
 
-	provide(picker: IQuickPick<IQuickPickItem, { useSeparators: true }>, token: CancellationToken, runOptions?: IQuickAccessProviderRunOptions): IDisposable {
+	provide(
+		picker: IQuickPick<IQuickPickItem, { useSeparators: true }>,
+		token: CancellationToken,
+		runOptions?: IQuickAccessProviderRunOptions
+	): IDisposable {
 		const disposables = new DisposableStore();
 
 		// Apply options if any
 		picker.canAcceptInBackground = !!this.options?.canAcceptInBackground;
 
 		// Disable filtering & sorting, we control the results
-		picker.matchOnLabel = picker.matchOnDescription = picker.matchOnDetail = picker.sortByLabel = false;
+		picker.matchOnLabel =
+			picker.matchOnDescription =
+			picker.matchOnDetail =
+			picker.sortByLabel =
+				false;
 
 		// Provide based on current active editor
 		const pickerDisposable = disposables.add(new MutableDisposable());
 		pickerDisposable.value = this.doProvide(picker, token, runOptions);
 
 		// Re-create whenever the active editor changes
-		disposables.add(this.onDidActiveTextEditorControlChange(() => {
+		disposables.add(
+			this.onDidActiveTextEditorControlChange(() => {
+				// Clear old
+				pickerDisposable.value = undefined;
 
-			// Clear old
-			pickerDisposable.value = undefined;
-
-			// Add new
-			pickerDisposable.value = this.doProvide(picker, token);
-		}));
+				// Add new
+				pickerDisposable.value = this.doProvide(picker, token);
+			})
+		);
 
 		return disposables;
 	}
 
-	private doProvide(picker: IQuickPick<IQuickPickItem, { useSeparators: true }>, token: CancellationToken, runOptions?: IQuickAccessProviderRunOptions): IDisposable {
+	private doProvide(
+		picker: IQuickPick<IQuickPickItem, { useSeparators: true }>,
+		token: CancellationToken,
+		runOptions?: IQuickAccessProviderRunOptions
+	): IDisposable {
 		const disposables = new DisposableStore();
 
 		// With text control
@@ -90,15 +113,16 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
 			// without actually going to a line
 			const codeEditor = getCodeEditor(editor);
 			if (codeEditor) {
-
 				// Remember view state and update it when the cursor position
 				// changes even later because it could be that the user has
 				// configured quick access to remain open when focus is lost and
 				// we always want to restore the current location.
 				let lastKnownEditorViewState = editor.saveViewState() ?? undefined;
-				disposables.add(codeEditor.onDidChangeCursorPosition(() => {
-					lastKnownEditorViewState = editor.saveViewState() ?? undefined;
-				}));
+				disposables.add(
+					codeEditor.onDidChangeCursorPosition(() => {
+						lastKnownEditorViewState = editor.saveViewState() ?? undefined;
+					})
+				);
 
 				context.restoreViewState = () => {
 					if (lastKnownEditorViewState && editor === this.activeTextEditorControl) {
@@ -106,7 +130,11 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
 					}
 				};
 
-				disposables.add(createSingleCallFunction(token.onCancellationRequested)(() => context.restoreViewState?.()));
+				disposables.add(
+					createSingleCallFunction(token.onCancellationRequested)(() =>
+						context.restoreViewState?.()
+					)
+				);
 			}
 
 			// Clean up decorations on dispose
@@ -134,14 +162,30 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
 	/**
 	 * Subclasses to implement to provide picks for the picker when an editor is active.
 	 */
-	protected abstract provideWithTextEditor(context: IQuickAccessTextEditorContext, picker: IQuickPick<IQuickPickItem, { useSeparators: true }>, token: CancellationToken, runOptions?: IQuickAccessProviderRunOptions): IDisposable;
+	protected abstract provideWithTextEditor(
+		context: IQuickAccessTextEditorContext,
+		picker: IQuickPick<IQuickPickItem, { useSeparators: true }>,
+		token: CancellationToken,
+		runOptions?: IQuickAccessProviderRunOptions
+	): IDisposable;
 
 	/**
 	 * Subclasses to implement to provide picks for the picker when no editor is active.
 	 */
-	protected abstract provideWithoutTextEditor(picker: IQuickPick<IQuickPickItem, { useSeparators: true }>, token: CancellationToken): IDisposable;
+	protected abstract provideWithoutTextEditor(
+		picker: IQuickPick<IQuickPickItem, { useSeparators: true }>,
+		token: CancellationToken
+	): IDisposable;
 
-	protected gotoLocation({ editor }: IQuickAccessTextEditorContext, options: { range: IRange; keyMods: IKeyMods; forceSideBySide?: boolean; preserveFocus?: boolean }): void {
+	protected gotoLocation(
+		{ editor }: IQuickAccessTextEditorContext,
+		options: {
+			range: IRange;
+			keyMods: IKeyMods;
+			forceSideBySide?: boolean;
+			preserveFocus?: boolean;
+		}
+	): void {
 		editor.setSelection(options.range, TextEditorSelectionSource.JUMP);
 		editor.revealRangeInCenter(options.range, ScrollType.Smooth);
 		if (!options.preserveFocus) {
@@ -154,13 +198,10 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
 	}
 
 	protected getModel(editor: IEditor | IDiffEditor): ITextModel | undefined {
-		return isDiffEditor(editor) ?
-			editor.getModel()?.modified :
-			editor.getModel() as ITextModel;
+		return isDiffEditor(editor) ? editor.getModel()?.modified : (editor.getModel() as ITextModel);
 	}
 
 	//#endregion
-
 
 	//#region Editor access
 
@@ -176,14 +217,12 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
 
 	//#endregion
 
-
 	//#region Decorations Utils
 
 	private rangeHighlightDecorationId: IEditorLineDecoration | undefined = undefined;
 
 	addDecorations(editor: IEditor, range: IRange): void {
 		editor.changeDecorations(changeAccessor => {
-
 			// Reset old decorations if any
 			const deleteDecorations: string[] = [];
 			if (this.rangeHighlightDecorationId) {
@@ -195,15 +234,14 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
 
 			// Add new decorations for the range
 			const newDecorations: IModelDeltaDecoration[] = [
-
 				// highlight the entire line on the range
 				{
 					range,
 					options: {
 						description: 'quick-access-range-highlight',
 						className: 'rangeHighlight',
-						isWholeLine: true
-					}
+						isWholeLine: true,
+					},
 				},
 
 				// also add overview ruler highlight
@@ -213,13 +251,16 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
 						description: 'quick-access-range-highlight-overview',
 						overviewRuler: {
 							color: themeColorFromId(overviewRulerRangeHighlight),
-							position: OverviewRulerLane.Full
-						}
-					}
-				}
+							position: OverviewRulerLane.Full,
+						},
+					},
+				},
 			];
 
-			const [rangeHighlightId, overviewRulerDecorationId] = changeAccessor.deltaDecorations(deleteDecorations, newDecorations);
+			const [rangeHighlightId, overviewRulerDecorationId] = changeAccessor.deltaDecorations(
+				deleteDecorations,
+				newDecorations
+			);
 
 			this.rangeHighlightDecorationId = { rangeHighlightId, overviewRulerDecorationId };
 		});
@@ -229,10 +270,13 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
 		const rangeHighlightDecorationId = this.rangeHighlightDecorationId;
 		if (rangeHighlightDecorationId) {
 			editor.changeDecorations(changeAccessor => {
-				changeAccessor.deltaDecorations([
-					rangeHighlightDecorationId.overviewRulerDecorationId,
-					rangeHighlightDecorationId.rangeHighlightId
-				], []);
+				changeAccessor.deltaDecorations(
+					[
+						rangeHighlightDecorationId.overviewRulerDecorationId,
+						rangeHighlightDecorationId.rangeHighlightId,
+					],
+					[]
+				);
 			});
 
 			this.rangeHighlightDecorationId = undefined;

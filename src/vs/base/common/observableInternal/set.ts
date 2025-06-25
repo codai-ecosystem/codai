@@ -5,9 +5,7 @@
 
 import { observableValueOpts, IObservable, ITransaction } from '../observable.js';
 
-
 export class ObservableSet<T> implements Set<T> {
-
 	private readonly _data = new Set<T>();
 
 	private _obs = observableValueOpts({ equalsFn: () => false }, this);

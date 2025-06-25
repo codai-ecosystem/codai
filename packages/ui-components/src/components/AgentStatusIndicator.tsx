@@ -23,24 +23,26 @@ export const AgentStatusIndicator: React.FC<AgentStatusIndicatorProps> = ({
 	const [lastActivity, setLastActivity] = useState<Date | null>(null);
 
 	useEffect(() => {
-		const subscription = runtime.status$.subscribe(({ agentId: statusAgentId, status: agentStatus }) => {
-			if (statusAgentId === agentId) {
-				setStatus(agentStatus);
-				setLastActivity(new Date());
+		const subscription = runtime.status$.subscribe(
+			({ agentId: statusAgentId, status: agentStatus }) => {
+				if (statusAgentId === agentId) {
+					setStatus(agentStatus);
+					setLastActivity(new Date());
+				}
 			}
-		});
+		);
 
 		return () => subscription.unsubscribe();
 	}, [runtime, agentId]);
 
 	const getAgentName = (agentId: string) => {
 		const agentNames: Record<string, string> = {
-			'planner': 'Planner',
-			'builder': 'Builder',
-			'designer': 'Designer',
-			'tester': 'Tester',
-			'deployer': 'Deployer',
-			'history': 'History'
+			planner: 'Planner',
+			builder: 'Builder',
+			designer: 'Designer',
+			tester: 'Tester',
+			deployer: 'Deployer',
+			history: 'History',
 		};
 		return agentNames[agentId] || agentId;
 	};
@@ -96,13 +98,13 @@ export const AgentStatusIndicator: React.FC<AgentStatusIndicatorProps> = ({
 			<div className="flex items-center space-x-1">
 				{getStatusIcon(status)}
 				<span className="text-xs font-medium">{getAgentName(agentId)}</span>
-			</div>			<Badge
+			</div>{' '}
+			<Badge
 				variant={getStatusText(status) === 'active' ? 'default' : 'secondary'}
 				className="text-xs"
 			>
 				{getStatusText(status) || 'unknown'}
 			</Badge>
-
 			{showDetails && (
 				<>
 					{status.currentTasks > 0 && (
@@ -119,12 +121,9 @@ export const AgentStatusIndicator: React.FC<AgentStatusIndicatorProps> = ({
 					)}
 				</>
 			)}
-
 			{/* Activity indicator */}
 			<div className="relative">
-				<div
-					className={`w-2 h-2 rounded-full ${getStatusColor(status)}`}
-				/>
+				<div className={`w-2 h-2 rounded-full ${getStatusColor(status)}`} />
 				{getStatusText(status) === 'active' && (
 					<div className="absolute inset-0 w-2 h-2 rounded-full bg-green-500 animate-ping" />
 				)}

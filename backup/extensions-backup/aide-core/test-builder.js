@@ -20,7 +20,7 @@ async function testBuilderAgent() {
 		{ type: 'api', name: 'my-api' },
 		{ type: 'mobile', name: 'my-mobile-app' },
 		{ type: 'desktop', name: 'my-desktop-app' },
-		{ type: 'basic', name: 'my-basic-project' }
+		{ type: 'basic', name: 'my-basic-project' },
 	];
 
 	for (const project of projectTypes) {
@@ -63,25 +63,22 @@ async function testBuilderAgent() {
 		// Create a basic package.json
 		const packageJson = {
 			name: project.name,
-			version: "1.0.0",
+			version: '1.0.0',
 			description: `A ${project.type} project created by AIDE`,
-			main: "src/index.ts",
+			main: 'src/index.ts',
 			scripts: {
-				start: "node src/index.js",
-				build: "tsc",
-				dev: "tsx watch src/index.ts"
+				start: 'node src/index.js',
+				build: 'tsc',
+				dev: 'tsx watch src/index.ts',
 			},
 			dependencies: {},
 			devDependencies: {
-				"typescript": "^5.0.0",
-				"@types/node": "^20.0.0"
-			}
+				typescript: '^5.0.0',
+				'@types/node': '^20.0.0',
+			},
 		};
 
-		fs.writeFileSync(
-			path.join(projectPath, 'package.json'),
-			JSON.stringify(packageJson, null, 2)
-		);
+		fs.writeFileSync(path.join(projectPath, 'package.json'), JSON.stringify(packageJson, null, 2));
 
 		// Create a basic README
 		const readme = `# ${project.name}
@@ -103,10 +100,7 @@ This is a ${project.type} project with the following structure:
 - \`README.md\` - This file
 `;
 
-		fs.writeFileSync(
-			path.join(projectPath, 'README.md'),
-			readme
-		);
+		fs.writeFileSync(path.join(projectPath, 'README.md'), readme);
 
 		console.log(`✅ ${project.type} project structure created successfully`);
 	}

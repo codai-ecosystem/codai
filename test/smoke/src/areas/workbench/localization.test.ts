@@ -7,9 +7,7 @@ import { Logger, Application } from '../../../../automation';
 import { installAllHandlers } from '../../utils';
 
 export function setup(logger: Logger) {
-
 	describe('Localization', () => {
-
 		// Shared before/after handling
 		installAllHandlers(logger, opts => {
 			opts.verbose = true; // enable verbose logging for tracing
@@ -27,15 +25,23 @@ export function setup(logger: Logger) {
 			const localeInfo = await app.workbench.localization.getLocaleInfo();
 
 			if (localeInfo.locale === undefined || localeInfo.locale.toLowerCase() !== 'de') {
-				throw new Error(`The requested locale for VS Code was not German. The received value is: ${localeInfo.locale === undefined ? 'not set' : localeInfo.locale}`);
+				throw new Error(
+					`The requested locale for VS Code was not German. The received value is: ${localeInfo.locale === undefined ? 'not set' : localeInfo.locale}`
+				);
 			}
 
 			if (localeInfo.language.toLowerCase() !== 'de') {
 				throw new Error(`The UI language is not German. It is ${localeInfo.language}`);
 			}
 
-			if (result.open.toLowerCase() !== 'öffnen' || result.close.toLowerCase() !== 'schließen' || result.find.toLowerCase() !== 'finden') {
-				throw new Error(`Received wrong German localized strings: ${JSON.stringify(result, undefined, 0)}`);
+			if (
+				result.open.toLowerCase() !== 'öffnen' ||
+				result.close.toLowerCase() !== 'schließen' ||
+				result.find.toLowerCase() !== 'finden'
+			) {
+				throw new Error(
+					`Received wrong German localized strings: ${JSON.stringify(result, undefined, 0)}`
+				);
 			}
 		});
 	});

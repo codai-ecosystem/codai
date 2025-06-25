@@ -12,7 +12,12 @@ import { asJson, IRequestService } from '../../../../platform/request/common/req
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { IExtensionService } from '../../extensions/common/extensions.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
-import { ContextKeyExpr, IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	ContextKeyExpr,
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { Action2, MenuId, registerAction2 } from '../../../../platform/actions/common/actions.js';
 import { localize } from '../../../../nls.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
@@ -26,7 +31,10 @@ const enum DefaultAccountStatus {
 	Available = 'available',
 }
 
-const CONTEXT_DEFAULT_ACCOUNT_STATE = new RawContextKey<string>('defaultAccountStatus', DefaultAccountStatus.Uninitialized);
+const CONTEXT_DEFAULT_ACCOUNT_STATE = new RawContextKey<string>(
+	'defaultAccountStatus',
+	DefaultAccountStatus.Uninitialized
+);
 
 export interface IDefaultAccount {
 	readonly sessionId: string;
@@ -69,10 +77,10 @@ interface ITokenEntitlementsResponse {
 	token: string;
 }
 
-export const IDefaultAccountService = createDecorator<IDefaultAccountService>('defaultAccountService');
+export const IDefaultAccountService =
+	createDecorator<IDefaultAccountService>('defaultAccountService');
 
 export interface IDefaultAccountService {
-
 	readonly _serviceBrand: undefined;
 
 	readonly onDidChangeDefaultAccount: Event<IDefaultAccount | null>;
@@ -85,11 +93,15 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
 	declare _serviceBrand: undefined;
 
 	private _defaultAccount: IDefaultAccount | null | undefined = undefined;
-	get defaultAccount(): IDefaultAccount | null { return this._defaultAccount ?? null; }
+	get defaultAccount(): IDefaultAccount | null {
+		return this._defaultAccount ?? null;
+	}
 
 	private readonly initBarrier = new Barrier();
 
-	private readonly _onDidChangeDefaultAccount = this._register(new Emitter<IDefaultAccount | null>());
+	private readonly _onDidChangeDefaultAccount = this._register(
+		new Emitter<IDefaultAccount | null>()
+	);
 	readonly onDidChangeDefaultAccount = this._onDidChangeDefaultAccount.event;
 
 	async getDefaultAccount(): Promise<IDefaultAccount | null> {
@@ -107,11 +119,9 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
 
 		this.initBarrier.open();
 	}
-
 }
 
 export class NullDefaultAccountService extends Disposable implements IDefaultAccountService {
-
 	declare _serviceBrand: undefined;
 
 	readonly onDidChangeDefaultAccount = Event.None;
@@ -123,11 +133,12 @@ export class NullDefaultAccountService extends Disposable implements IDefaultAcc
 	setDefaultAccount(account: IDefaultAccount | null): void {
 		// noop
 	}
-
 }
 
-export class DefaultAccountManagementContribution extends Disposable implements IWorkbenchContribution {
-
+export class DefaultAccountManagementContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
 	static ID = 'workbench.contributions.defaultAccountManagement';
 
 	private defaultAccount: IDefaultAccount | null = null;
@@ -141,7 +152,7 @@ export class DefaultAccountManagementContribution extends Disposable implements 
 		@IProductService private readonly productService: IProductService,
 		@IRequestService private readonly requestService: IRequestService,
 		@ILogService private readonly logService: ILogService,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		super();
 		this.accountStatusContext = CONTEXT_DEFAULT_ACCOUNT_STATE.bindTo(contextKeyService);
@@ -153,30 +164,66 @@ export class DefaultAccountManagementContribution extends Disposable implements 
 			return;
 		}
 
-		const { authenticationProvider, tokenEntitlementUrl, chatEntitlementUrl } = this.productService.defaultAccount;
+		const { authenticationProvider, tokenEntitlementUrl, chatEntitlementUrl } =
+			this.productService.defaultAccount;
 		await this.extensionService.whenInstalledExtensionsRegistered();
 
-		const declaredProvider = this.authenticationService.declaredProviders.find(provider => provider.id === authenticationProvider.id);
+		const declaredProvider = this.authenticationService.declaredProviders.find(
+			provider => provider.id === authenticationProvider.id
+		);
 		if (!declaredProvider) {
-			this.logService.info(`Default account authentication provider ${authenticationProvider} is not declared.`);
+			this.logService.info(
+				`Default account authentication provider ${authenticationProvider} is not declared.`
+			);
 			return;
 		}
 
-		this.registerSignInAction(authenticationProvider.id, declaredProvider.label, authenticationProvider.enterpriseProviderId, authenticationProvider.enterpriseProviderConfig, authenticationProvider.scopes);
-		this.setDefaultAccount(await this.getDefaultAccountFromAuthenticatedSessions(authenticationProvider.id, authenticationProvider.enterpriseProviderId, authenticationProvider.enterpriseProviderConfig, authenticationProvider.scopes, tokenEntitlementUrl, chatEntitlementUrl));
+		this.registerSignInAction(
+			authenticationProvider.id,
+			declaredProvider.label,
+			authenticationProvider.enterpriseProviderId,
+			authenticationProvider.enterpriseProviderConfig,
+			authenticationProvider.scopes
+		);
+		this.setDefaultAccount(
+			await this.getDefaultAccountFromAuthenticatedSessions(
+				authenticationProvider.id,
+				authenticationProvider.enterpriseProviderId,
+				authenticationProvider.enterpriseProviderConfig,
+				authenticationProvider.scopes,
+				tokenEntitlementUrl,
+				chatEntitlementUrl
+			)
+		);
 
-		this._register(this.authenticationService.onDidChangeSessions(async e => {
-			if (e.providerId !== authenticationProvider.id && e.providerId !== authenticationProvider.enterpriseProviderId) {
-				return;
-			}
+		this._register(
+			this.authenticationService.onDidChangeSessions(async e => {
+				if (
+					e.providerId !== authenticationProvider.id &&
+					e.providerId !== authenticationProvider.enterpriseProviderId
+				) {
+					return;
+				}
 
-			if (this.defaultAccount && e.event.removed?.some(session => session.id === this.defaultAccount?.sessionId)) {
-				this.setDefaultAccount(null);
-				return;
-			}
-			this.setDefaultAccount(await this.getDefaultAccountFromAuthenticatedSessions(authenticationProvider.id, authenticationProvider.enterpriseProviderId, authenticationProvider.enterpriseProviderConfig, authenticationProvider.scopes, tokenEntitlementUrl, chatEntitlementUrl));
-		}));
-
+				if (
+					this.defaultAccount &&
+					e.event.removed?.some(session => session.id === this.defaultAccount?.sessionId)
+				) {
+					this.setDefaultAccount(null);
+					return;
+				}
+				this.setDefaultAccount(
+					await this.getDefaultAccountFromAuthenticatedSessions(
+						authenticationProvider.id,
+						authenticationProvider.enterpriseProviderId,
+						authenticationProvider.enterpriseProviderConfig,
+						authenticationProvider.scopes,
+						tokenEntitlementUrl,
+						chatEntitlementUrl
+					)
+				);
+			})
+		);
 	}
 
 	private setDefaultAccount(account: IDefaultAccount | null): void {
@@ -200,8 +247,18 @@ export class DefaultAccountManagementContribution extends Disposable implements 
 		return result.get(key);
 	}
 
-	private async getDefaultAccountFromAuthenticatedSessions(authProviderId: string, enterpriseAuthProviderId: string, enterpriseAuthProviderConfig: string, scopes: string[], tokenEntitlementUrl: string, chatEntitlementUrl: string): Promise<IDefaultAccount | null> {
-		const id = this.configurationService.getValue(enterpriseAuthProviderConfig) === enterpriseAuthProviderId ? enterpriseAuthProviderId : authProviderId;
+	private async getDefaultAccountFromAuthenticatedSessions(
+		authProviderId: string,
+		enterpriseAuthProviderId: string,
+		enterpriseAuthProviderConfig: string,
+		scopes: string[],
+		tokenEntitlementUrl: string,
+		chatEntitlementUrl: string
+	): Promise<IDefaultAccount | null> {
+		const id =
+			this.configurationService.getValue(enterpriseAuthProviderConfig) === enterpriseAuthProviderId
+				? enterpriseAuthProviderId
+				: authProviderId;
 		const sessions = await this.authenticationService.getSessions(id, undefined, undefined, true);
 		const session = sessions.find(s => this.scopesMatch(s.scopes, scopes));
 
@@ -211,7 +268,7 @@ export class DefaultAccountManagementContribution extends Disposable implements 
 
 		const [chatEntitlements, tokenEntitlements] = await Promise.all([
 			this.getChatEntitlements(session.accessToken, chatEntitlementUrl),
-			this.getTokenEntitlements(session.accessToken, tokenEntitlementUrl)
+			this.getTokenEntitlements(session.accessToken, tokenEntitlementUrl),
 		]);
 
 		return {
@@ -223,29 +280,39 @@ export class DefaultAccountManagementContribution extends Disposable implements 
 	}
 
 	private scopesMatch(scopes: ReadonlyArray<string>, expectedScopes: string[]): boolean {
-		return scopes.length === expectedScopes.length && expectedScopes.every(scope => scopes.includes(scope));
+		return (
+			scopes.length === expectedScopes.length &&
+			expectedScopes.every(scope => scopes.includes(scope))
+		);
 	}
 
-	private async getTokenEntitlements(accessToken: string, tokenEntitlementsUrl: string): Promise<Partial<IDefaultAccount>> {
+	private async getTokenEntitlements(
+		accessToken: string,
+		tokenEntitlementsUrl: string
+	): Promise<Partial<IDefaultAccount>> {
 		if (!tokenEntitlementsUrl) {
 			return {};
 		}
 
 		try {
-			const chatContext = await this.requestService.request({
-				type: 'GET',
-				url: tokenEntitlementsUrl,
-				disableCache: true,
-				headers: {
-					'Authorization': `Bearer ${accessToken}`
-				}
-			}, CancellationToken.None);
+			const chatContext = await this.requestService.request(
+				{
+					type: 'GET',
+					url: tokenEntitlementsUrl,
+					disableCache: true,
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+				},
+				CancellationToken.None
+			);
 
 			const chatData = await asJson<ITokenEntitlementsResponse>(chatContext);
 			if (chatData) {
 				return {
 					// Editor preview features are disabled if the flag is present and set to 0
-					chat_preview_features_enabled: this.extractFromToken(chatData.token, 'editor_preview_features') !== '0',
+					chat_preview_features_enabled:
+						this.extractFromToken(chatData.token, 'editor_preview_features') !== '0',
 				};
 			}
 			this.logService.error('Failed to fetch token entitlements', 'No data returned');
@@ -256,20 +323,26 @@ export class DefaultAccountManagementContribution extends Disposable implements 
 		return {};
 	}
 
-	private async getChatEntitlements(accessToken: string, chatEntitlementsUrl: string): Promise<Partial<IChatEntitlementsResponse>> {
+	private async getChatEntitlements(
+		accessToken: string,
+		chatEntitlementsUrl: string
+	): Promise<Partial<IChatEntitlementsResponse>> {
 		if (!chatEntitlementsUrl) {
 			return {};
 		}
 
 		try {
-			const context = await this.requestService.request({
-				type: 'GET',
-				url: chatEntitlementsUrl,
-				disableCache: true,
-				headers: {
-					'Authorization': `Bearer ${accessToken}`
-				}
-			}, CancellationToken.None);
+			const context = await this.requestService.request(
+				{
+					type: 'GET',
+					url: chatEntitlementsUrl,
+					disableCache: true,
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+				},
+				CancellationToken.None
+			);
 
 			const data = await asJson<IChatEntitlementsResponse>(context);
 			if (data) {
@@ -282,25 +355,41 @@ export class DefaultAccountManagementContribution extends Disposable implements 
 		return {};
 	}
 
-	private registerSignInAction(authProviderId: string, authProviderLabel: string, enterpriseAuthProviderId: string, enterpriseAuthProviderConfig: string, scopes: string[]): void {
+	private registerSignInAction(
+		authProviderId: string,
+		authProviderLabel: string,
+		enterpriseAuthProviderId: string,
+		enterpriseAuthProviderConfig: string,
+		scopes: string[]
+	): void {
 		const that = this;
-		this._register(registerAction2(class extends Action2 {
-			constructor() {
-				super({
-					id: 'workbench.accounts.actions.signin',
-					title: localize('sign in', "Sign in to {0}", authProviderLabel),
-					menu: {
-						id: MenuId.AccountsContext,
-						when: ContextKeyExpr.and(CONTEXT_DEFAULT_ACCOUNT_STATE.isEqualTo(DefaultAccountStatus.Unavailable), ContextKeyExpr.has('config.extensions.gallery.serviceUrl')),
-						group: '0_signin',
+		this._register(
+			registerAction2(
+				class extends Action2 {
+					constructor() {
+						super({
+							id: 'workbench.accounts.actions.signin',
+							title: localize('sign in', 'Sign in to {0}', authProviderLabel),
+							menu: {
+								id: MenuId.AccountsContext,
+								when: ContextKeyExpr.and(
+									CONTEXT_DEFAULT_ACCOUNT_STATE.isEqualTo(DefaultAccountStatus.Unavailable),
+									ContextKeyExpr.has('config.extensions.gallery.serviceUrl')
+								),
+								group: '0_signin',
+							},
+						});
 					}
-				});
-			}
-			run(): Promise<any> {
-				const id = that.configurationService.getValue(enterpriseAuthProviderConfig) === enterpriseAuthProviderId ? enterpriseAuthProviderId : authProviderId;
-				return that.authenticationService.createSession(id, scopes);
-			}
-		}));
+					run(): Promise<any> {
+						const id =
+							that.configurationService.getValue(enterpriseAuthProviderConfig) ===
+							enterpriseAuthProviderId
+								? enterpriseAuthProviderId
+								: authProviderId;
+						return that.authenticationService.createSession(id, scopes);
+					}
+				}
+			)
+		);
 	}
-
 }

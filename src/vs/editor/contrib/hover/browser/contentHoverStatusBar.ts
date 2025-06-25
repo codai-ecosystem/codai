@@ -13,7 +13,6 @@ import { getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hover
 const $ = dom.$;
 
 export class EditorHoverStatusBar extends Disposable implements IEditorHoverStatusBar {
-
 	public readonly hoverElement: HTMLElement;
 	public readonly actions: HoverAction[] = [];
 
@@ -26,7 +25,7 @@ export class EditorHoverStatusBar extends Disposable implements IEditorHoverStat
 
 	constructor(
 		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@IHoverService private readonly _hoverService: IHoverService,
+		@IHoverService private readonly _hoverService: IHoverService
 	) {
 		super();
 		this.hoverElement = $('div.hover-row.status-bar');
@@ -34,18 +33,25 @@ export class EditorHoverStatusBar extends Disposable implements IEditorHoverStat
 		this.actionsElement = dom.append(this.hoverElement, $('div.actions'));
 	}
 
-	public addAction(
-		actionOptions: {
-			label: string;
-			iconClass?: string; run: (target: HTMLElement) => void;
-			commandId: string;
-		}): IEditorHoverAction {
-
+	public addAction(actionOptions: {
+		label: string;
+		iconClass?: string;
+		run: (target: HTMLElement) => void;
+		commandId: string;
+	}): IEditorHoverAction {
 		const keybinding = this._keybindingService.lookupKeybinding(actionOptions.commandId);
 		const keybindingLabel = keybinding ? keybinding.getLabel() : null;
 		this._hasContent = true;
-		const action = this._register(HoverAction.render(this.actionsElement, actionOptions, keybindingLabel));
-		this._register(this._hoverService.setupManagedHover(getDefaultHoverDelegate('element'), action.actionContainer, action.actionRenderedLabel));
+		const action = this._register(
+			HoverAction.render(this.actionsElement, actionOptions, keybindingLabel)
+		);
+		this._register(
+			this._hoverService.setupManagedHover(
+				getDefaultHoverDelegate('element'),
+				action.actionContainer,
+				action.actionRenderedLabel
+			)
+		);
 		this.actions.push(action);
 		return action;
 	}

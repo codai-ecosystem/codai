@@ -72,7 +72,6 @@ interface IWebviewViewResolver {
 export const IWebviewViewService = createDecorator<IWebviewViewService>('webviewViewService');
 
 export interface IWebviewViewService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -93,14 +92,18 @@ export interface IWebviewViewService {
 }
 
 export class WebviewViewService extends Disposable implements IWebviewViewService {
-
 	readonly _serviceBrand: undefined;
 
 	private readonly _resolvers = new Map<string, IWebviewViewResolver>();
 
-	private readonly _awaitingRevival = new Map<string, { readonly webview: WebviewView; readonly resolve: () => void }>();
+	private readonly _awaitingRevival = new Map<
+		string,
+		{ readonly webview: WebviewView; readonly resolve: () => void }
+	>();
 
-	private readonly _onNewResolverRegistered = this._register(new Emitter<{ readonly viewType: string }>());
+	private readonly _onNewResolverRegistered = this._register(
+		new Emitter<{ readonly viewType: string }>()
+	);
 	public readonly onNewResolverRegistered = this._onNewResolverRegistered.event;
 
 	register(viewType: string, resolver: IWebviewViewResolver): IDisposable {

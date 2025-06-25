@@ -10,9 +10,7 @@
 	const { ipcRenderer, webFrame, contextBridge, webUtils } = require('electron');
 
 	const globals = {
-
 		ipcRenderer: {
-
 			send(channel, ...args) {
 				ipcRenderer.send(channel, ...args);
 			},
@@ -37,35 +35,51 @@
 				ipcRenderer.removeListener(channel, listener);
 
 				return this;
-			}
+			},
 		},
 
 		webFrame: {
-
 			setZoomLevel(level) {
 				if (typeof level === 'number') {
 					webFrame.setZoomLevel(level);
 				}
-			}
+			},
 		},
 
 		webUtils: {
-
 			getPathForFile(file) {
 				return webUtils.getPathForFile(file);
-			}
+			},
 		},
 
 		process: {
-			get platform() { return process.platform; },
-			get arch() { return process.arch; },
-			get env() { return { ...process.env }; },
-			get versions() { return process.versions; },
-			get type() { return 'renderer'; },
-			get execPath() { return process.execPath; },
+			get platform() {
+				return process.platform;
+			},
+			get arch() {
+				return process.arch;
+			},
+			get env() {
+				return { ...process.env };
+			},
+			get versions() {
+				return process.versions;
+			},
+			get type() {
+				return 'renderer';
+			},
+			get execPath() {
+				return process.execPath;
+			},
 
 			cwd() {
-				return process.env['VSCODE_CWD'] || process.execPath.substr(0, process.execPath.lastIndexOf(process.platform === 'win32' ? '\\' : '/'));
+				return (
+					process.env['VSCODE_CWD'] ||
+					process.execPath.substr(
+						0,
+						process.execPath.lastIndexOf(process.platform === 'win32' ? '\\' : '/')
+					)
+				);
 			},
 
 			getProcessMemoryInfo() {
@@ -75,7 +89,7 @@
 			on(type, callback) {
 				// @ts-ignore
 				process.on(type, callback);
-			}
+			},
 		},
 	};
 
@@ -89,4 +103,4 @@
 		// @ts-ignore
 		window.vscode = globals;
 	}
-}());
+})();

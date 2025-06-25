@@ -8,7 +8,11 @@ import { URI } from '../../../../../base/common/uri.js';
 import { ExtensionIdentifier } from '../../../../../platform/extensions/common/extensions.js';
 import { setupInstantiationService } from './testNotebookEditor.js';
 import { Emitter, Event } from '../../../../../base/common/event.js';
-import { INotebookKernel, INotebookKernelService, VariablesResult } from '../../common/notebookKernelService.js';
+import {
+	INotebookKernel,
+	INotebookKernelService,
+	VariablesResult,
+} from '../../common/notebookKernelService.js';
 import { NotebookKernelService } from '../../browser/services/notebookKernelServiceImpl.js';
 import { INotebookService } from '../../common/notebookService.js';
 import { mock } from '../../../../../base/test/common/mock.js';
@@ -18,14 +22,21 @@ import { NotebookTextModel } from '../../common/model/notebookTextModel.js';
 import { PLAINTEXT_LANGUAGE_ID } from '../../../../../editor/common/languages/modesRegistry.js';
 import { IMenu, IMenuService } from '../../../../../platform/actions/common/actions.js';
 import { NotebookKernelHistoryService } from '../../browser/services/notebookKernelHistoryServiceImpl.js';
-import { IApplicationStorageValueChangeEvent, IProfileStorageValueChangeEvent, IStorageService, IStorageValueChangeEvent, IWillSaveStateEvent, IWorkspaceStorageValueChangeEvent, StorageScope } from '../../../../../platform/storage/common/storage.js';
+import {
+	IApplicationStorageValueChangeEvent,
+	IProfileStorageValueChangeEvent,
+	IStorageService,
+	IStorageValueChangeEvent,
+	IWillSaveStateEvent,
+	IWorkspaceStorageValueChangeEvent,
+	StorageScope,
+} from '../../../../../platform/storage/common/storage.js';
 import { INotebookLoggingService } from '../../common/notebookLoggingService.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { CancellationToken } from '../../../../../base/common/cancellation.js';
 import { AsyncIterableObject } from '../../../../../base/common/async.js';
 
 suite('NotebookKernelHistoryService', () => {
-
 	let disposables: DisposableStore;
 	let instantiationService: TestInstantiationService;
 	let kernelService: INotebookKernelService;
@@ -44,26 +55,35 @@ suite('NotebookKernelHistoryService', () => {
 		disposables.add(onDidAddNotebookDocument);
 
 		instantiationService = setupInstantiationService(disposables);
-		instantiationService.stub(INotebookService, new class extends mock<INotebookService>() {
-			override onDidAddNotebookDocument = onDidAddNotebookDocument.event;
-			override onWillRemoveNotebookDocument = Event.None;
-			override getNotebookTextModels() { return []; }
-		});
-		instantiationService.stub(IMenuService, new class extends mock<IMenuService>() {
-			override createMenu() {
-				return new class extends mock<IMenu>() {
-					override onDidChange = Event.None;
-					override getActions() { return []; }
-					override dispose() { }
-				};
-			}
-		});
+		instantiationService.stub(
+			INotebookService,
+			new (class extends mock<INotebookService>() {
+				override onDidAddNotebookDocument = onDidAddNotebookDocument.event;
+				override onWillRemoveNotebookDocument = Event.None;
+				override getNotebookTextModels() {
+					return [];
+				}
+			})()
+		);
+		instantiationService.stub(
+			IMenuService,
+			new (class extends mock<IMenuService>() {
+				override createMenu() {
+					return new (class extends mock<IMenu>() {
+						override onDidChange = Event.None;
+						override getActions() {
+							return [];
+						}
+						override dispose() {}
+					})();
+				}
+			})()
+		);
 		kernelService = disposables.add(instantiationService.createInstance(NotebookKernelService));
 		instantiationService.set(INotebookKernelService, kernelService);
 	});
 
 	test('notebook kernel empty history', function () {
-
 		const u1 = URI.parse('foo:///one');
 
 		const k1 = new TestNotebookKernel({ label: 'z', notebookType: 'foo' });
@@ -72,35 +92,63 @@ suite('NotebookKernelHistoryService', () => {
 		disposables.add(kernelService.registerKernel(k1));
 		disposables.add(kernelService.registerKernel(k2));
 
-		instantiationService.stub(IStorageService, new class extends mock<IStorageService>() {
-			override onWillSaveState: Event<IWillSaveStateEvent> = Event.None;
-			override onDidChangeValue(scope: StorageScope.WORKSPACE, key: string | undefined, disposable: DisposableStore): Event<IWorkspaceStorageValueChangeEvent>;
-			override onDidChangeValue(scope: StorageScope.PROFILE, key: string | undefined, disposable: DisposableStore): Event<IProfileStorageValueChangeEvent>;
-			override onDidChangeValue(scope: StorageScope.APPLICATION, key: string | undefined, disposable: DisposableStore): Event<IApplicationStorageValueChangeEvent>;
-			override onDidChangeValue(scope: StorageScope, key: string | undefined, disposable: DisposableStore): Event<IStorageValueChangeEvent> {
-				return Event.None;
-			}
-			override get(key: string, scope: StorageScope, fallbackValue: string): string;
-			override get(key: string, scope: StorageScope, fallbackValue?: string | undefined): string | undefined;
-			override get(key: unknown, scope: unknown, fallbackValue?: unknown): string | undefined {
-				if (key === 'notebook.kernelHistory') {
-					return JSON.stringify({
-						'foo': {
-							'entries': []
-						}
-					});
+		instantiationService.stub(
+			IStorageService,
+			new (class extends mock<IStorageService>() {
+				override onWillSaveState: Event<IWillSaveStateEvent> = Event.None;
+				override onDidChangeValue(
+					scope: StorageScope.WORKSPACE,
+					key: string | undefined,
+					disposable: DisposableStore
+				): Event<IWorkspaceStorageValueChangeEvent>;
+				override onDidChangeValue(
+					scope: StorageScope.PROFILE,
+					key: string | undefined,
+					disposable: DisposableStore
+				): Event<IProfileStorageValueChangeEvent>;
+				override onDidChangeValue(
+					scope: StorageScope.APPLICATION,
+					key: string | undefined,
+					disposable: DisposableStore
+				): Event<IApplicationStorageValueChangeEvent>;
+				override onDidChangeValue(
+					scope: StorageScope,
+					key: string | undefined,
+					disposable: DisposableStore
+				): Event<IStorageValueChangeEvent> {
+					return Event.None;
 				}
+				override get(key: string, scope: StorageScope, fallbackValue: string): string;
+				override get(
+					key: string,
+					scope: StorageScope,
+					fallbackValue?: string | undefined
+				): string | undefined;
+				override get(key: unknown, scope: unknown, fallbackValue?: unknown): string | undefined {
+					if (key === 'notebook.kernelHistory') {
+						return JSON.stringify({
+							foo: {
+								entries: [],
+							},
+						});
+					}
 
-				return undefined;
-			}
-		});
+					return undefined;
+				}
+			})()
+		);
 
-		instantiationService.stub(INotebookLoggingService, new class extends mock<INotebookLoggingService>() {
-			override info() { }
-			override debug() { }
-		});
+		instantiationService.stub(
+			INotebookLoggingService,
+			new (class extends mock<INotebookLoggingService>() {
+				override info() {}
+				override debug() {}
+			})()
+		);
 
-		const kernelHistoryService = disposables.add(instantiationService.createInstance(NotebookKernelHistoryService));
+		const kernelHistoryService = disposables.add(
+			instantiationService.createInstance(NotebookKernelHistoryService)
+		);
 
 		let info = kernelHistoryService.getKernels({ uri: u1, notebookType: 'foo' });
 		assert.equal(info.all.length, 0);
@@ -116,7 +164,6 @@ suite('NotebookKernelHistoryService', () => {
 	});
 
 	test('notebook kernel history restore', function () {
-
 		const u1 = URI.parse('foo:///one');
 
 		const k1 = new TestNotebookKernel({ label: 'z', notebookType: 'foo' });
@@ -127,37 +174,63 @@ suite('NotebookKernelHistoryService', () => {
 		disposables.add(kernelService.registerKernel(k2));
 		disposables.add(kernelService.registerKernel(k3));
 
-		instantiationService.stub(IStorageService, new class extends mock<IStorageService>() {
-			override onWillSaveState: Event<IWillSaveStateEvent> = Event.None;
-			override onDidChangeValue(scope: StorageScope.WORKSPACE, key: string | undefined, disposable: DisposableStore): Event<IWorkspaceStorageValueChangeEvent>;
-			override onDidChangeValue(scope: StorageScope.PROFILE, key: string | undefined, disposable: DisposableStore): Event<IProfileStorageValueChangeEvent>;
-			override onDidChangeValue(scope: StorageScope.APPLICATION, key: string | undefined, disposable: DisposableStore): Event<IApplicationStorageValueChangeEvent>;
-			override onDidChangeValue(scope: StorageScope, key: string | undefined, disposable: DisposableStore): Event<IStorageValueChangeEvent> {
-				return Event.None;
-			}
-			override get(key: string, scope: StorageScope, fallbackValue: string): string;
-			override get(key: string, scope: StorageScope, fallbackValue?: string | undefined): string | undefined;
-			override get(key: unknown, scope: unknown, fallbackValue?: unknown): string | undefined {
-				if (key === 'notebook.kernelHistory') {
-					return JSON.stringify({
-						'foo': {
-							'entries': [
-								k2.id
-							]
-						}
-					});
+		instantiationService.stub(
+			IStorageService,
+			new (class extends mock<IStorageService>() {
+				override onWillSaveState: Event<IWillSaveStateEvent> = Event.None;
+				override onDidChangeValue(
+					scope: StorageScope.WORKSPACE,
+					key: string | undefined,
+					disposable: DisposableStore
+				): Event<IWorkspaceStorageValueChangeEvent>;
+				override onDidChangeValue(
+					scope: StorageScope.PROFILE,
+					key: string | undefined,
+					disposable: DisposableStore
+				): Event<IProfileStorageValueChangeEvent>;
+				override onDidChangeValue(
+					scope: StorageScope.APPLICATION,
+					key: string | undefined,
+					disposable: DisposableStore
+				): Event<IApplicationStorageValueChangeEvent>;
+				override onDidChangeValue(
+					scope: StorageScope,
+					key: string | undefined,
+					disposable: DisposableStore
+				): Event<IStorageValueChangeEvent> {
+					return Event.None;
 				}
+				override get(key: string, scope: StorageScope, fallbackValue: string): string;
+				override get(
+					key: string,
+					scope: StorageScope,
+					fallbackValue?: string | undefined
+				): string | undefined;
+				override get(key: unknown, scope: unknown, fallbackValue?: unknown): string | undefined {
+					if (key === 'notebook.kernelHistory') {
+						return JSON.stringify({
+							foo: {
+								entries: [k2.id],
+							},
+						});
+					}
 
-				return undefined;
-			}
-		});
+					return undefined;
+				}
+			})()
+		);
 
-		instantiationService.stub(INotebookLoggingService, new class extends mock<INotebookLoggingService>() {
-			override info() { }
-			override debug() { }
-		});
+		instantiationService.stub(
+			INotebookLoggingService,
+			new (class extends mock<INotebookLoggingService>() {
+				override info() {}
+				override debug() {}
+			})()
+		);
 
-		const kernelHistoryService = disposables.add(instantiationService.createInstance(NotebookKernelHistoryService));
+		const kernelHistoryService = disposables.add(
+			instantiationService.createInstance(NotebookKernelHistoryService)
+		);
 		let info = kernelHistoryService.getKernels({ uri: u1, notebookType: 'foo' });
 		assert.equal(info.all.length, 1);
 		assert.deepStrictEqual(info.selected, undefined);
@@ -186,7 +259,13 @@ class TestNotebookKernel implements INotebookKernel {
 	cancelNotebookCellExecution(): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
-	provideVariables(notebookUri: URI, parentId: number | undefined, kind: 'named' | 'indexed', start: number, token: CancellationToken): AsyncIterableObject<VariablesResult> {
+	provideVariables(
+		notebookUri: URI,
+		parentId: number | undefined,
+		kind: 'named' | 'indexed',
+		start: number,
+		token: CancellationToken
+	): AsyncIterableObject<VariablesResult> {
 		return AsyncIterableObject.EMPTY;
 	}
 

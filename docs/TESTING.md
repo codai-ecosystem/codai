@@ -161,25 +161,21 @@ Tests are automatically run on:
 ## Best Practices
 
 1. **Write testable code**
-
    - Dependency injection
    - Pure functions where possible
    - Clear separation of concerns
 
 2. **Test organization**
-
    - Co-locate tests with source code
    - Follow consistent naming patterns
    - Group related tests with describe blocks
 
 3. **Mock external dependencies**
-
    - Use vitest mock functions
    - Create test doubles for complex systems
    - Isolate tests from network/filesystem
 
 4. **Test for edge cases**
-
    - Null/undefined inputs
    - Empty collections
    - Error conditions

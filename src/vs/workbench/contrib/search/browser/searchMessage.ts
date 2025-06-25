@@ -11,7 +11,10 @@ import Severity from '../../../../base/common/severity.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { SeverityIcon } from '../../../../base/browser/ui/severityIcon/severityIcon.js';
-import { TextSearchCompleteMessage, TextSearchCompleteMessageType } from '../../../services/search/common/searchExtTypes.js';
+import {
+	TextSearchCompleteMessage,
+	TextSearchCompleteMessageType,
+} from '../../../services/search/common/searchExtTypes.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
@@ -25,18 +28,23 @@ export const renderSearchMessage = (
 	openerService: IOpenerService,
 	commandService: ICommandService,
 	disposableStore: DisposableStore,
-	triggerSearch: () => void,
+	triggerSearch: () => void
 ): HTMLElement => {
 	const div = dom.$('div.providerMessage');
 	const linkedText = parseLinkedText(message.text);
-	dom.append(div,
-		dom.$('.' +
-			SeverityIcon.className(
-				message.type === TextSearchCompleteMessageType.Information
-					? Severity.Info
-					: Severity.Warning)
-				.split(' ')
-				.join('.')));
+	dom.append(
+		div,
+		dom.$(
+			'.' +
+				SeverityIcon.className(
+					message.type === TextSearchCompleteMessageType.Information
+						? Severity.Info
+						: Severity.Warning
+				)
+					.split(' ')
+					.join('.')
+		)
+	);
 
 	for (const node of linkedText.nodes) {
 		if (typeof node === 'string') {
@@ -44,7 +52,9 @@ export const renderSearchMessage = (
 		} else {
 			const link = instantiationService.createInstance(Link, div, node, {
 				opener: async href => {
-					if (!message.trusted) { return; }
+					if (!message.trusted) {
+						return;
+					}
 					const parsed = URI.parse(href, true);
 					if (parsed.scheme === Schemas.command && message.trusted) {
 						const result = await commandService.executeCommand(parsed.path);
@@ -55,12 +65,20 @@ export const renderSearchMessage = (
 						openerService.open(parsed);
 					} else {
 						if (parsed.scheme === Schemas.command && !message.trusted) {
-							notificationService.error(nls.localize('unable to open trust', "Unable to open command link from untrusted source: {0}", href));
+							notificationService.error(
+								nls.localize(
+									'unable to open trust',
+									'Unable to open command link from untrusted source: {0}',
+									href
+								)
+							);
 						} else {
-							notificationService.error(nls.localize('unable to open', "Unable to open unknown link: {0}", href));
+							notificationService.error(
+								nls.localize('unable to open', 'Unable to open unknown link: {0}', href)
+							);
 						}
 					}
-				}
+				},
 			});
 			disposableStore.add(link);
 		}

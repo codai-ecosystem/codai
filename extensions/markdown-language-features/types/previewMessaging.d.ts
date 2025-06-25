@@ -8,7 +8,6 @@ interface BaseMessage {
 }
 
 export namespace FromWebviewMessage {
-
 	export interface CacheImageSizes extends BaseMessage {
 		readonly type: 'cacheImageSizes';
 		readonly imageData: ReadonlyArray<{ id: string; width: number; height: number }>;
@@ -44,8 +43,7 @@ export namespace FromWebviewMessage {
 		| DidClick
 		| ClickLink
 		| ShowPreviewSecuritySelector
-		| PreviewStyleLoadError
-		;
+		| PreviewStyleLoadError;
 }
 
 export namespace ToWebviewMessage {
@@ -82,6 +80,5 @@ export namespace ToWebviewMessage {
 		| UpdateView
 		| UpdateContent
 		| CopyImageContent
-		| OpenImageContent
-		;
+		| OpenImageContent;
 }

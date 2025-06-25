@@ -11,12 +11,11 @@ import { NativeLogMarkers } from '../../services/extensions/common/extensionHost
 const MAX_STREAM_BUFFER_LENGTH = 1024 * 1024;
 
 export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
-
 	private _isMakingConsoleCall: boolean = false;
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostInitDataService initData: IExtHostInitDataService,
+		@IExtHostInitDataService initData: IExtHostInitDataService
 	) {
 		super(extHostRpc, initData);
 
@@ -24,7 +23,11 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 		this._wrapStream('stdout', 'log');
 	}
 
-	protected override _nativeConsoleLogMessage(method: 'log' | 'info' | 'warn' | 'error' | 'debug', original: (...args: any[]) => void, args: IArguments) {
+	protected override _nativeConsoleLogMessage(
+		method: 'log' | 'info' | 'warn' | 'error' | 'debug',
+		original: (...args: any[]) => void,
+		args: IArguments
+	) {
 		const stream = method === 'error' || method === 'warn' ? process.stderr : process.stdout;
 		this._isMakingConsoleCall = true;
 		stream.write(`\n${NativeLogMarkers.Start}\n`);
@@ -46,19 +49,25 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 		let buf = '';
 
 		Object.defineProperty(stream, 'write', {
-			set: () => { },
-			get: () => (chunk: Uint8Array | string, encoding?: BufferEncoding, callback?: (err?: Error) => void) => {
-				if (!this._isMakingConsoleCall) {
-					buf += (chunk as any).toString(encoding);
-					const eol = buf.length > MAX_STREAM_BUFFER_LENGTH ? buf.length : buf.lastIndexOf('\n');
-					if (eol !== -1) {
-						console[severity](buf.slice(0, eol));
-						buf = buf.slice(eol + 1);
+			set: () => {},
+			get:
+				() =>
+				(
+					chunk: Uint8Array | string,
+					encoding?: BufferEncoding,
+					callback?: (err?: Error) => void
+				) => {
+					if (!this._isMakingConsoleCall) {
+						buf += (chunk as any).toString(encoding);
+						const eol = buf.length > MAX_STREAM_BUFFER_LENGTH ? buf.length : buf.lastIndexOf('\n');
+						if (eol !== -1) {
+							console[severity](buf.slice(0, eol));
+							buf = buf.slice(eol + 1);
+						}
 					}
-				}
 
-				original.call(stream, chunk, encoding, callback);
-			},
+					original.call(stream, chunk, encoding, callback);
+				},
 		});
 	}
 }

@@ -18,7 +18,6 @@ export interface IElectricAction {
 }
 
 export class BracketElectricCharacterSupport {
-
 	private readonly _richEditBrackets: RichEditBrackets | null;
 
 	constructor(richEditBrackets: RichEditBrackets | null) {
@@ -40,7 +39,11 @@ export class BracketElectricCharacterSupport {
 		return distinct(result);
 	}
 
-	public onElectricCharacter(character: string, context: ScopedLineTokens, column: number): IElectricAction | null {
+	public onElectricCharacter(
+		character: string,
+		context: ScopedLineTokens,
+		column: number
+	): IElectricAction | null {
 		if (!this._richEditBrackets || this._richEditBrackets.brackets.length === 0) {
 			return null;
 		}
@@ -72,7 +75,7 @@ export class BracketElectricCharacterSupport {
 		}
 
 		return {
-			matchOpenBracket: bracketText
+			matchOpenBracket: bracketText,
 		};
 	}
 }

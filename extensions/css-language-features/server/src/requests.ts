@@ -7,7 +7,9 @@ import { RequestType, Connection } from 'vscode-languageserver';
 import { RuntimeEnvironment } from './cssServer';
 
 export namespace FsContentRequest {
-	export const type: RequestType<{ uri: string; encoding?: string }, string, any> = new RequestType('fs/content');
+	export const type: RequestType<{ uri: string; encoding?: string }, string, any> = new RequestType(
+		'fs/content'
+	);
 }
 export namespace FsStatRequest {
 	export const type: RequestType<string, FileStat, any> = new RequestType('fs/stat');
@@ -33,7 +35,7 @@ export enum FileType {
 	/**
 	 * A symbolic link to a file.
 	 */
-	SymbolicLink = 64
+	SymbolicLink = 64,
 }
 export interface FileStat {
 	/**
@@ -62,8 +64,11 @@ export interface RequestService {
 	readDirectory(uri: string): Promise<[string, FileType][]>;
 }
 
-
-export function getRequestService(handledSchemas: string[], connection: Connection, runtime: RuntimeEnvironment): RequestService {
+export function getRequestService(
+	handledSchemas: string[],
+	connection: Connection,
+	runtime: RuntimeEnvironment
+): RequestService {
 	const builtInHandlers: { [protocol: string]: RequestService | undefined } = {};
 	for (const protocol of handledSchemas) {
 		if (protocol === 'file') {
@@ -94,7 +99,7 @@ export function getRequestService(handledSchemas: string[], connection: Connecti
 				return handler.getContent(uri, encoding);
 			}
 			return connection.sendRequest(FsContentRequest.type, { uri: uri.toString(), encoding });
-		}
+		},
 	};
 }
 

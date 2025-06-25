@@ -12,9 +12,7 @@ import { Event } from '../../../../base/common/event.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('URI Identity', function () {
-
 	class FakeFileService extends mock<IFileService>() {
-
 		override onDidChangeFileSystemProviderCapabilities = Event.None;
 		override onDidChangeFileSystemProviderRegistrations = Event.None;
 
@@ -33,10 +31,14 @@ suite('URI Identity', function () {
 	let _service: UriIdentityService;
 
 	setup(function () {
-		_service = new UriIdentityService(new FakeFileService(new Map([
-			['bar', FileSystemProviderCapabilities.PathCaseSensitive],
-			['foo', FileSystemProviderCapabilities.None]
-		])));
+		_service = new UriIdentityService(
+			new FakeFileService(
+				new Map([
+					['bar', FileSystemProviderCapabilities.PathCaseSensitive],
+					['foo', FileSystemProviderCapabilities.None],
+				])
+			)
+		);
 	});
 
 	teardown(function () {
@@ -65,7 +67,6 @@ suite('URI Identity', function () {
 	});
 
 	test('asCanonicalUri (casing)', function () {
-
 		const a = URI.parse('foo://bar/bang');
 		const a1 = URI.parse('foo://bar/BANG');
 		const b = URI.parse('bar://bar/bang');
@@ -87,7 +88,6 @@ suite('URI Identity', function () {
 	});
 
 	test('asCanonicalUri (keep fragement)', function () {
-
 		const a = URI.parse('foo://bar/bang');
 
 		assertCanonical(a, a);
@@ -103,8 +103,7 @@ suite('URI Identity', function () {
 	});
 
 	test.skip('[perf] CPU pegged after some builds #194853', function () {
-
-		const n = 100 + (2 ** 16);
+		const n = 100 + 2 ** 16;
 		for (let i = 0; i < n; i++) {
 			const uri = URI.parse(`foo://bar/${i}`);
 			const uri2 = _service.asCanonicalUri(uri);

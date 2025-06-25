@@ -5,7 +5,11 @@
 
 import { Range } from '../../../common/core/range.js';
 import { Selection } from '../../../common/core/selection.js';
-import { ICommand, ICursorStateComputerData, IEditOperationBuilder } from '../../../common/editorCommon.js';
+import {
+	ICommand,
+	ICursorStateComputerData,
+	IEditOperationBuilder,
+} from '../../../common/editorCommon.js';
 import { ITextModel } from '../../../common/model.js';
 
 interface IEditOperation {
@@ -14,7 +18,6 @@ interface IEditOperation {
 }
 
 export class ReplaceAllCommand implements ICommand {
-
 	private readonly _editorSelection: Selection;
 	private _trackedEditorSelectionId: string | null;
 	private readonly _ranges: Range[];
@@ -34,7 +37,7 @@ export class ReplaceAllCommand implements ICommand {
 			for (let i = 0; i < this._ranges.length; i++) {
 				ops.push({
 					range: this._ranges[i],
-					text: this._replaceStrings[i]
+					text: this._replaceStrings[i],
 				});
 			}
 
@@ -47,7 +50,10 @@ export class ReplaceAllCommand implements ICommand {
 			const resultOps: IEditOperation[] = [];
 			let previousOp = ops[0];
 			for (let i = 1; i < ops.length; i++) {
-				if (previousOp.range.endLineNumber === ops[i].range.startLineNumber && previousOp.range.endColumn === ops[i].range.startColumn) {
+				if (
+					previousOp.range.endLineNumber === ops[i].range.startLineNumber &&
+					previousOp.range.endColumn === ops[i].range.startColumn
+				) {
 					// These operations are one after another and can be merged
 					previousOp.range = previousOp.range.plusRange(ops[i].range);
 					previousOp.text = previousOp.text + ops[i].text;

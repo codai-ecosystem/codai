@@ -5,15 +5,14 @@
 
 import * as glob from '../../../../base/common/glob.js';
 
-
 export class IgnoreFile {
-
 	private isPathIgnored: (path: string, isDir: boolean, parent?: IgnoreFile) => boolean;
 
 	constructor(
 		contents: string,
 		private readonly location: string,
-		private readonly parent?: IgnoreFile) {
+		private readonly parent?: IgnoreFile
+	) {
 		if (location[location.length - 1] === '\\') {
 			throw Error('Unexpected path format, do not use trailing backslashes');
 		}
@@ -41,7 +40,9 @@ export class IgnoreFile {
 	 */
 	isPathIncludedInTraversal(path: string, isDir: boolean): boolean {
 		if (path[0] !== '/' || path[path.length - 1] === '/') {
-			throw Error('Unexpected path format, expectred to begin with slash and end without. got:' + path);
+			throw Error(
+				'Unexpected path format, expectred to begin with slash and end without. got:' + path
+			);
 		}
 
 		const ignored = this.isPathIgnored(path, isDir);
@@ -55,7 +56,9 @@ export class IgnoreFile {
 	 */
 	isArbitraryPathIgnored(path: string, isDir: boolean): boolean {
 		if (path[0] !== '/' || path[path.length - 1] === '/') {
-			throw Error('Unexpected path format, expectred to begin with slash and end without. got:' + path);
+			throw Error(
+				'Unexpected path format, expectred to begin with slash and end without. got:' + path
+			);
 		}
 
 		const segments = path.split('/').filter(x => x);
@@ -78,7 +81,11 @@ export class IgnoreFile {
 		return ignored;
 	}
 
-	private gitignoreLinesToExpression(lines: string[], dirPath: string, trimForExclusions: boolean): glob.ParsedExpression {
+	private gitignoreLinesToExpression(
+		lines: string[],
+		dirPath: string,
+		trimForExclusions: boolean
+	): glob.ParsedExpression {
 		const includeLines = lines.map(line => this.gitignoreLineToGlob(line, dirPath));
 
 		const includeExpression: glob.IExpression = Object.create(null);
@@ -89,8 +96,11 @@ export class IgnoreFile {
 		return glob.parse(includeExpression, { trimForExclusions });
 	}
 
-
-	private parseIgnoreFile(ignoreContents: string, dirPath: string, parent: IgnoreFile | undefined): (path: string, isDir: boolean) => boolean {
+	private parseIgnoreFile(
+		ignoreContents: string,
+		dirPath: string,
+		parent: IgnoreFile | undefined
+	): (path: string, isDir: boolean) => boolean {
 		const contentLines = ignoreContents
 			.split('\n')
 			.map(line => line.trim())
@@ -103,7 +113,9 @@ export class IgnoreFile {
 		const isFileIgnored = this.gitignoreLinesToExpression(fileIgnoreLines, dirPath, true);
 
 		// TODO: Slight hack... this naieve approach may reintroduce too many files in cases of weirdly complex .gitignores
-		const fileIncludeLines = fileLines.filter(line => line.includes('!')).map(line => line.replace(/!/g, ''));
+		const fileIncludeLines = fileLines
+			.filter(line => line.includes('!'))
+			.map(line => line.replace(/!/g, ''));
 		const isFileIncluded = this.gitignoreLinesToExpression(fileIncludeLines, dirPath, false);
 
 		// When checking if a dir is ignored we can use all lines
@@ -111,15 +123,25 @@ export class IgnoreFile {
 		const isDirIgnored = this.gitignoreLinesToExpression(dirIgnoreLines, dirPath, true);
 
 		// Same hack.
-		const dirIncludeLines = contentLines.filter(line => line.includes('!')).map(line => line.replace(/!/g, ''));
+		const dirIncludeLines = contentLines
+			.filter(line => line.includes('!'))
+			.map(line => line.replace(/!/g, ''));
 		const isDirIncluded = this.gitignoreLinesToExpression(dirIncludeLines, dirPath, false);
 
 		const isPathIgnored = (path: string, isDir: boolean) => {
-			if (!path.startsWith(dirPath)) { return false; }
-			if (isDir && isDirIgnored(path) && !isDirIncluded(path)) { return true; }
-			if (isFileIgnored(path) && !isFileIncluded(path)) { return true; }
+			if (!path.startsWith(dirPath)) {
+				return false;
+			}
+			if (isDir && isDirIgnored(path) && !isDirIncluded(path)) {
+				return true;
+			}
+			if (isFileIgnored(path) && !isFileIncluded(path)) {
+				return true;
+			}
 
-			if (parent) { return parent.isPathIgnored(path, isDir); }
+			if (parent) {
+				return parent.isPathIgnored(path, isDir);
+			}
 
 			return false;
 		};

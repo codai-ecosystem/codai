@@ -14,8 +14,7 @@ export class KeyboardLayoutContribution {
 		return this._layoutInfos;
 	}
 
-	private constructor() {
-	}
+	private constructor() {}
 
 	registerKeyboardLayout(layout: IKeymapInfo) {
 		this._layoutInfos.push(layout);

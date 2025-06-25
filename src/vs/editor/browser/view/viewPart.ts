@@ -9,7 +9,6 @@ import { ViewContext } from '../../common/viewModel/viewContext.js';
 import { ViewEventHandler } from '../../common/viewEventHandler.js';
 
 export abstract class ViewPart extends ViewEventHandler {
-
 	_context: ViewContext;
 
 	constructor(context: ViewContext) {
@@ -38,11 +37,10 @@ export const enum PartFingerprint {
 	TextArea,
 	ViewLines,
 	Minimap,
-	ViewLinesGpu
+	ViewLinesGpu,
 }
 
 export class PartFingerprints {
-
 	public static write(target: Element | FastDomNode<HTMLElement>, partId: PartFingerprint) {
 		target.setAttribute('data-mprt', String(partId));
 	}

@@ -9,8 +9,21 @@ import { Range } from '../../../../../../../editor/common/core/range.js';
 import { BaseToken } from '../../../../../../../editor/common/codecs/baseToken.js';
 import { CompositeToken } from '../../../../../../../editor/common/codecs/compositeToken.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../../base/test/common/utils.js';
-import { curry, difference, flatten, forEach, map, TTree } from '../../../../common/promptSyntax/utils/treeUtils.js';
-import { ExclamationMark, Space, Tab, VerticalTab, Word } from '../../../../../../../editor/common/codecs/simpleCodec/tokens/index.js';
+import {
+	curry,
+	difference,
+	flatten,
+	forEach,
+	map,
+	TTree,
+} from '../../../../common/promptSyntax/utils/treeUtils.js';
+import {
+	ExclamationMark,
+	Space,
+	Tab,
+	VerticalTab,
+	Word,
+} from '../../../../../../../editor/common/codecs/simpleCodec/tokens/index.js';
 
 suite('tree utilities', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -36,13 +49,13 @@ suite('tree utilities', () => {
 								},
 								{
 									id: '1.2.1.3',
-								}
+								},
 							],
 						},
 						{
 							id: '1.2.2',
 						},
-					]
+					],
 				},
 			],
 		};
@@ -83,13 +96,13 @@ suite('tree utilities', () => {
 									},
 									{
 										id: '1.2.1.3',
-									}
+									},
 								],
 							},
 							{
 								id: '1.2.2',
 							},
-						]
+						],
 					},
 				],
 			};
@@ -97,7 +110,7 @@ suite('tree utilities', () => {
 			const treeCopy = JSON.parse(JSON.stringify(tree));
 
 			const seenIds: string[] = [];
-			forEach((node) => {
+			forEach(node => {
 				seenIds.push(node.id);
 				return false;
 			}, tree);
@@ -113,11 +126,7 @@ suite('tree utilities', () => {
 				'1.2.2',
 			]);
 
-			assert.deepStrictEqual(
-				treeCopy,
-				tree,
-				'forEach should not modify the tree',
-			);
+			assert.deepStrictEqual(treeCopy, tree, 'forEach should not modify the tree');
 		});
 
 		test('• can be stopped prematurely', () => {
@@ -146,13 +155,13 @@ suite('tree utilities', () => {
 												id: '1.2.1.3.1',
 											},
 										],
-									}
+									},
 								],
 							},
 							{
 								id: '1.2.2',
 							},
-						]
+						],
 					},
 				],
 			};
@@ -160,7 +169,7 @@ suite('tree utilities', () => {
 			const treeCopy = JSON.parse(JSON.stringify(tree));
 
 			const seenIds: string[] = [];
-			forEach((node) => {
+			forEach(node => {
 				seenIds.push(node.id);
 
 				if (node.id === '1.2.1') {
@@ -170,18 +179,9 @@ suite('tree utilities', () => {
 				return false;
 			}, tree);
 
-			assert.deepStrictEqual(seenIds, [
-				'1',
-				'1.1',
-				'1.2',
-				'1.2.1',
-			]);
+			assert.deepStrictEqual(seenIds, ['1', '1.1', '1.2', '1.2.1']);
 
-			assert.deepStrictEqual(
-				treeCopy,
-				tree,
-				'forEach should not modify the tree',
-			);
+			assert.deepStrictEqual(treeCopy, tree, 'forEach should not modify the tree');
 		});
 	});
 
@@ -212,13 +212,13 @@ suite('tree utilities', () => {
 									},
 									{
 										id: '1.2.1.3',
-									}
+									},
 								],
 							},
 							{
 								id: '1.2.2',
 							},
-						]
+						],
 					},
 				],
 			};
@@ -233,7 +233,7 @@ suite('tree utilities', () => {
 				newId: '__1.2.1.3__',
 			};
 
-			const newTree = map((node) => {
+			const newTree = map(node => {
 				if (node.id === '1') {
 					return newRootNode;
 				}
@@ -273,26 +273,19 @@ suite('tree utilities', () => {
 							{
 								newId: '__1.2.2__',
 							},
-						]
+						],
 					},
 				],
 			});
 
-			assert(
-				newRootNode === newTree,
-				'Map should not replace return node reference (root node).',
-			);
+			assert(newRootNode === newTree, 'Map should not replace return node reference (root node).');
 
 			assert(
 				newChildNode === newTree.children![1].children![0].children![2],
-				'Map should not replace return node reference (child node).',
+				'Map should not replace return node reference (child node).'
 			);
 
-			assert.deepStrictEqual(
-				treeCopy,
-				tree,
-				'forEach should not modify the tree',
-			);
+			assert.deepStrictEqual(treeCopy, tree, 'forEach should not modify the tree');
 		});
 
 		test('• callback can control resulting children', () => {
@@ -323,16 +316,12 @@ suite('tree utilities', () => {
 												id: '1.2.1.3.2',
 											},
 										],
-									}
+									},
 								],
 							},
 							{
 								id: '1.2.2',
-								children: [
-									{ id: '1.2.2.1' },
-									{ id: '1.2.2.2' },
-									{ id: '1.2.2.3' },
-								],
+								children: [{ id: '1.2.2.1' }, { id: '1.2.2.2' }, { id: '1.2.2.3' }],
 							},
 							{
 								id: '1.2.3',
@@ -343,7 +332,7 @@ suite('tree utilities', () => {
 									{ id: '1.2.3.4' },
 								],
 							},
-						]
+						],
 					},
 				],
 			};
@@ -367,12 +356,8 @@ suite('tree utilities', () => {
 				if (node.id === '1.2.2') {
 					assert.deepStrictEqual(
 						newChildren,
-						[
-							{ newId: '__1.2.2.1__' },
-							{ newId: '__1.2.2.2__' },
-							{ newId: '__1.2.2.3__' },
-						],
-						`Node '${node.id}' must have correct new children.`,
+						[{ newId: '__1.2.2.1__' }, { newId: '__1.2.2.2__' }, { newId: '__1.2.2.3__' }],
+						`Node '${node.id}' must have correct new children.`
 					);
 
 					return {
@@ -392,7 +377,7 @@ suite('tree utilities', () => {
 							{ newId: '__1.2.3.3__' },
 							{ newId: '__1.2.3.4__' },
 						],
-						`Node '${node.id}' must have correct new children.`,
+						`Node '${node.id}' must have correct new children.`
 					);
 
 					newChildren.length = 2;
@@ -428,32 +413,23 @@ suite('tree utilities', () => {
 							},
 							{
 								newId: '__1.2.2__',
-								children: [
-									{ newId: '__1.2.2.3__' },
-								],
+								children: [{ newId: '__1.2.2.3__' }],
 							},
 							{
 								newId: '__1.2.3__',
-								children: [
-									{ newId: '__1.2.3.1__' },
-									{ newId: '__1.2.3.2__' },
-								],
+								children: [{ newId: '__1.2.3.1__' }, { newId: '__1.2.3.2__' }],
 							},
-						]
+						],
 					},
 				],
 			});
 
 			assert(
 				newNodeWithoutChildren === newTree.children![1].children![0].children![2],
-				'Map should not replace return node reference (node without children).',
+				'Map should not replace return node reference (node without children).'
 			);
 
-			assert.deepStrictEqual(
-				treeCopy,
-				tree,
-				'forEach should not modify the tree',
-			);
+			assert.deepStrictEqual(treeCopy, tree, 'forEach should not modify the tree');
 		});
 	});
 
@@ -473,13 +449,13 @@ suite('tree utilities', () => {
 			assert.strictEqual(
 				curriedFunction(secondArgument, thirdArgument),
 				originalFunction(firstArgument, secondArgument, thirdArgument),
-				'Curried and original functions must yield the same result.',
+				'Curried and original functions must yield the same result.'
 			);
 
 			// a sanity check to ensure we don't compare ambiguous infinities
 			assert(
 				isFinite(originalFunction(firstArgument, secondArgument, thirdArgument)),
-				'Function results must be finite.',
+				'Function results must be finite.'
 			);
 		}
 	});
@@ -490,7 +466,6 @@ suite('tree utilities', () => {
 				return `CompositeToken:\n${BaseToken.render(this.children, '\n')})`;
 			}
 		}
-
 
 		test('• tree roots differ (no children)', () => {
 			const tree1 = new Word(new Range(1, 1, 1, 1 + 5), 'hello');
@@ -503,26 +478,20 @@ suite('tree utilities', () => {
 					object1: tree1,
 					object2: tree2,
 				},
-				'Unexpected difference between token trees.',
+				'Unexpected difference between token trees.'
 			);
 		});
 
 		test('• returns tree difference (single children level)', () => {
-			const tree1 = asTreeNode<TTree<BaseToken>>(
-				new Word(new Range(1, 1, 1, 1 + 5), 'hello'),
-				[
-					new Space(new Range(1, 6, 1, 7)),
-					new Word(new Range(1, 7, 1, 7 + 5), 'world'),
-				],
-			);
+			const tree1 = asTreeNode<TTree<BaseToken>>(new Word(new Range(1, 1, 1, 1 + 5), 'hello'), [
+				new Space(new Range(1, 6, 1, 7)),
+				new Word(new Range(1, 7, 1, 7 + 5), 'world'),
+			]);
 
-			const tree2 = asTreeNode<TTree<BaseToken>>(
-				new Word(new Range(1, 1, 1, 1 + 5), 'hello'),
-				[
-					new Space(new Range(1, 6, 1, 7)),
-					new Word(new Range(1, 7, 1, 7 + 6), 'world!'),
-				],
-			);
+			const tree2 = asTreeNode<TTree<BaseToken>>(new Word(new Range(1, 1, 1, 1 + 5), 'hello'), [
+				new Space(new Range(1, 6, 1, 7)),
+				new Word(new Range(1, 7, 1, 7 + 6), 'world!'),
+			]);
 
 			assert.deepStrictEqual(
 				difference(tree1, tree2),
@@ -533,18 +502,12 @@ suite('tree utilities', () => {
 					children: [
 						{
 							index: 1,
-							object1: new Word(
-								new Range(1, 7, 1, 7 + 5),
-								'world',
-							),
-							object2: new Word(
-								new Range(1, 7, 1, 7 + 6),
-								'world!',
-							),
-						}
+							object1: new Word(new Range(1, 7, 1, 7 + 5), 'world'),
+							object2: new Word(new Range(1, 7, 1, 7 + 6), 'world!'),
+						},
 					],
 				},
-				'Unexpected difference between token trees.',
+				'Unexpected difference between token trees.'
 			);
 		});
 
@@ -561,7 +524,7 @@ suite('tree utilities', () => {
 					new Space(new Range(1, 6, 1, 7)),
 					new Word(new Range(1, 7, 1, 7 + 5), 'world'),
 					compositeToken1,
-				],
+				]
 			);
 
 			const compositeToken2 = new TestCompositeToken([
@@ -577,7 +540,7 @@ suite('tree utilities', () => {
 					new Space(new Range(1, 6, 1, 7)),
 					new Word(new Range(1, 7, 1, 7 + 5), 'world'),
 					compositeToken2,
-				],
+				]
 			);
 
 			assert.deepStrictEqual(
@@ -603,48 +566,36 @@ suite('tree utilities', () => {
 									object2: compositeToken2.children[4],
 								},
 							],
-						}
+						},
 					],
 				},
-				'Unexpected difference between token trees.',
+				'Unexpected difference between token trees.'
 			);
 		});
 
 		test('• returns null for equal trees', () => {
 			const tree1 = new TestCompositeToken([
-				asTreeNode(new Word(
-					new Range(1, 1, 1, 1 + 5),
-					'hello',
-				), []),
+				asTreeNode(new Word(new Range(1, 1, 1, 1 + 5), 'hello'), []),
 				asTreeNode(new Space(new Range(1, 6, 1, 7)), []),
-				asTreeNode(new Word(
-					new Range(1, 7, 1, 7 + 6),
-					'world!',
-				), []),
+				asTreeNode(new Word(new Range(1, 7, 1, 7 + 6), 'world!'), []),
 			]);
 
 			const tree2 = new TestCompositeToken([
-				asTreeNode(new Word(
-					new Range(1, 1, 1, 1 + 5),
-					'hello',
-				), []),
+				asTreeNode(new Word(new Range(1, 1, 1, 1 + 5), 'hello'), []),
 				asTreeNode(new Space(new Range(1, 6, 1, 7)), []),
-				asTreeNode(new Word(
-					new Range(1, 7, 1, 7 + 6),
-					'world!',
-				), []),
+				asTreeNode(new Word(new Range(1, 7, 1, 7 + 6), 'world!'), []),
 			]);
 
 			assert.strictEqual(
 				difference(tree1, tree2),
 				null,
-				'Unexpected difference between token trees.',
+				'Unexpected difference between token trees.'
 			);
 
 			assert.strictEqual(
 				difference(tree1, tree1),
 				null,
-				'Must be a null difference when compared with itself.',
+				'Must be a null difference when compared with itself.'
 			);
 		});
 	});
@@ -654,10 +605,7 @@ suite('tree utilities', () => {
  * Add provided 'children' list to a given object hence
  * allowing the object to be used as a general tree node.
  */
-function asTreeNode<T extends object>(
-	item: T,
-	children: readonly TTree<T>[],
-): TTree<T> {
+function asTreeNode<T extends object>(item: T, children: readonly TTree<T>[]): TTree<T> {
 	return new Proxy(item, {
 		get(target, prop, _receiver) {
 			if (prop === 'children') {

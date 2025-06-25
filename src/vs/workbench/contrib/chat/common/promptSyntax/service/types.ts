@@ -94,7 +94,6 @@ export interface ICustomChatMode {
 	readonly tools?: readonly string[];
 }
 
-
 /**
  * Type of combined tools metadata for the case
  * when the prompt is in the agent mode.
@@ -146,9 +145,7 @@ export interface IPromptsService extends IDisposable {
 	 * Get a prompt syntax parser for the provided text model.
 	 * See {@link TextModelPromptParser} for more info on the parser API.
 	 */
-	getSyntaxParserFor(
-		model: ITextModel,
-	): TSharedPrompt & { isDisposed: false };
+	getSyntaxParserFor(model: ITextModel): TSharedPrompt & { isDisposed: false };
 
 	/**
 	 * List all available prompt files.
@@ -180,9 +177,7 @@ export interface IPromptsService extends IDisposable {
 	 * Find all instruction files which have a glob pattern in their
 	 * 'applyTo' metadata record that match the provided list of files.
 	 */
-	findInstructionFilesFor(
-		fileUris: readonly URI[],
-	): Promise<readonly URI[]>;
+	findInstructionFilesFor(fileUris: readonly URI[]): Promise<readonly URI[]>;
 
 	/**
 	 * Event that is triggered when the list of custom chat modes changes.
@@ -207,10 +202,7 @@ export interface IPromptsService extends IDisposable {
 	 * each of the provided files, therefore the result is a number
 	 * of metadata trees, one for each file.
 	 */
-	getAllMetadata(
-		promptUris: readonly URI[],
-	): Promise<readonly IMetadata[]>;
-
+	getAllMetadata(promptUris: readonly URI[]): Promise<readonly IMetadata[]>;
 }
 
 export interface IChatPromptSlashCommand {

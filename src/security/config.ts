@@ -29,17 +29,17 @@ export const defaultSecurityConfig: SecurityConfig = {
 	rateLimit: {
 		enabled: true,
 		requestsPerMinute: 60,
-		burstLimit: 10
+		burstLimit: 10,
 	},
 	inputSanitization: {
 		enabled: true,
 		maxInputLength: 10000,
-		allowedFileTypes: ['.ts', '.js', '.json', '.md', '.txt', '.yml', '.yaml']
+		allowedFileTypes: ['.ts', '.js', '.json', '.md', '.txt', '.yml', '.yaml'],
 	},
 	secrets: {
 		encryptionKey: process.env.AIDE_ENCRYPTION_KEY || 'default-dev-key-change-in-prod',
-		apiKeysEncrypted: process.env.NODE_ENV === 'production'
-	}
+		apiKeysEncrypted: process.env.NODE_ENV === 'production',
+	},
 };
 
 /**
@@ -51,7 +51,8 @@ export function sanitizeInput(input: string): string {
 	}
 
 	// Remove potentially dangerous characters
-	return input.replace(/<script[^>]*>.*?<\/script>/gi, '')
+	return input
+		.replace(/<script[^>]*>.*?<\/script>/gi, '')
 		.replace(/javascript:/gi, '')
 		.replace(/on\w+\s*=/gi, '');
 }

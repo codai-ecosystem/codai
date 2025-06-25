@@ -5,13 +5,24 @@
 
 import * as dom from '../../../../base/browser/dom.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { IContextKeyService, IScopedContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import {
+	IContextKeyService,
+	IScopedContextKeyService,
+} from '../../../../platform/contextkey/common/contextkey.js';
 import { IEditorOptions } from '../../../../platform/editor/common/editor.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
-import { editorBackground, editorForeground, inputBackground } from '../../../../platform/theme/common/colorRegistry.js';
+import {
+	editorBackground,
+	editorForeground,
+	inputBackground,
+} from '../../../../platform/theme/common/colorRegistry.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 import { EditorPane } from '../../../browser/parts/editor/editorPane.js';
 import { IEditorOpenContext } from '../../../common/editor.js';
@@ -46,20 +57,27 @@ export class ChatEditor extends EditorPane {
 		@IThemeService themeService: IThemeService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService private readonly contextKeyService: IContextKeyService
 	) {
 		super(ChatEditorInput.EditorID, group, telemetryService, themeService, storageService);
 	}
 
 	private async clear() {
 		if (this.input) {
-			return this.instantiationService.invokeFunction(clearChatEditor, this.input as ChatEditorInput);
+			return this.instantiationService.invokeFunction(
+				clearChatEditor,
+				this.input as ChatEditorInput
+			);
 		}
 	}
 
 	protected override createEditor(parent: HTMLElement): void {
 		this._scopedContextKeyService = this._register(this.contextKeyService.createScoped(parent));
-		const scopedInstantiationService = this._register(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, this.scopedContextKeyService])));
+		const scopedInstantiationService = this._register(
+			this.instantiationService.createChild(
+				new ServiceCollection([IContextKeyService, this.scopedContextKeyService])
+			)
+		);
 
 		this.widget = this._register(
 			scopedInstantiationService.createInstance(
@@ -71,7 +89,7 @@ export class ChatEditor extends EditorPane {
 					renderFollowups: true,
 					supportsFileReferences: true,
 					rendererOptions: {
-						renderTextEditsAsSummary: (uri) => {
+						renderTextEditsAsSummary: uri => {
 							return true;
 						},
 						referencesExpandedWhenEmptyResponse: false,
@@ -86,8 +104,10 @@ export class ChatEditor extends EditorPane {
 					listBackground: editorBackground,
 					overlayBackground: EDITOR_DRAG_AND_DROP_BACKGROUND,
 					inputEditorBackground: inputBackground,
-					resultEditorBackground: editorBackground
-				}));
+					resultEditorBackground: editorBackground,
+				}
+			)
+		);
 		this._register(this.widget.onDidClear(() => this.clear()));
 		this.widget.render(parent);
 		this.widget.setVisible(true);
@@ -110,7 +130,12 @@ export class ChatEditor extends EditorPane {
 		super.clearInput();
 	}
 
-	override async setInput(input: ChatEditorInput, options: IChatEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
+	override async setInput(
+		input: ChatEditorInput,
+		options: IChatEditorOptions | undefined,
+		context: IEditorOpenContext,
+		token: CancellationToken
+	): Promise<void> {
 		super.setInput(input, options, context, token);
 
 		const editorModel = await input.resolve();
@@ -126,8 +151,13 @@ export class ChatEditor extends EditorPane {
 	}
 
 	private updateModel(model: IChatModel, viewState?: IChatViewState): void {
-		this._memento = new Memento('interactive-session-editor-' + CHAT_PROVIDER_ID, this.storageService);
-		this._viewState = viewState ?? this._memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE) as IChatViewState;
+		this._memento = new Memento(
+			'interactive-session-editor-' + CHAT_PROVIDER_ID,
+			this.storageService
+		);
+		this._viewState =
+			viewState ??
+			(this._memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE) as IChatViewState);
 		this.widget.setModel(model, { ...this._viewState });
 	}
 

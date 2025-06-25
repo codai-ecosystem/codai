@@ -164,5 +164,4 @@ export interface ILanguageService {
 	 * Request rich language features for a language.
 	 */
 	requestRichLanguageFeatures(languageId: string): void;
-
 }

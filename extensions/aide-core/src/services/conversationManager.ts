@@ -36,11 +36,7 @@ export class ConversationManager {
 	private activeSessions: Map<string, ConversationSession> = new Map();
 	private currentSession: ConversationSession | null = null;
 
-	constructor(
-		agentManager: AgentManager,
-		memoryGraph: IMemoryGraph,
-		aiService: AIService
-	) {
+	constructor(agentManager: AgentManager, memoryGraph: IMemoryGraph, aiService: AIService) {
 		this.agentManager = agentManager;
 		this.memoryGraph = memoryGraph;
 		this.aiService = aiService;
@@ -59,7 +55,7 @@ export class ConversationManager {
 			context: [],
 			intentHistory: [],
 			agentHistory: [],
-			status: 'active'
+			status: 'active',
 		};
 
 		this.activeSessions.set(sessionId, session);
@@ -67,16 +63,12 @@ export class ConversationManager {
 
 		this.logger.info(`Started new conversation session: ${sessionId}`);
 		// Add session to memory graph
-		this.memoryGraph.addNode(
-			'intent',
-			`Conversation session started: ${session.title}`,
-			{
-				sessionId,
-				startTime: session.startTime.toISOString(),
-				status: session.status,
-				type: 'conversation_session'
-			}
-		);
+		this.memoryGraph.addNode('intent', `Conversation session started: ${session.title}`, {
+			sessionId,
+			startTime: session.startTime.toISOString(),
+			status: session.status,
+			type: 'conversation_session',
+		});
 
 		return sessionId;
 	}
@@ -117,17 +109,13 @@ export class ConversationManager {
 
 			// Update session tracking
 			session.intentHistory.push(intent);
-			session.context.push(`User: ${message}`);			// Add message to memory graph
-			const messageNodeId = this.memoryGraph.addNode(
-				'intent',
-				message,
-				{
-					sessionId: session.id,
-					timestamp: new Date().toISOString(),
-					intent: intent,
-					type: 'user_message'
-				}
-			);			// Link to session (Note: Session node ID would need to be tracked)
+			session.context.push(`User: ${message}`); // Add message to memory graph
+			const messageNodeId = this.memoryGraph.addNode('intent', message, {
+				sessionId: session.id,
+				timestamp: new Date().toISOString(),
+				intent: intent,
+				type: 'user_message',
+			}); // Link to session (Note: Session node ID would need to be tracked)
 			// this.memoryGraph.addEdge(`session:${session.id}`, messageNodeId, 'contains');
 
 			// Route to appropriate agent with enhanced context
@@ -137,22 +125,17 @@ export class ConversationManager {
 			session.context.push(`Agent: ${agentResponse}`);
 
 			// Add response to memory graph
-			const responseNodeId = this.memoryGraph.addNode(
-				'intent',
-				agentResponse,
-				{
-					sessionId: session.id,
-					timestamp: new Date().toISOString(),
-					intent: intent,
-					type: 'agent_response'
-				}
-			);
+			const responseNodeId = this.memoryGraph.addNode('intent', agentResponse, {
+				sessionId: session.id,
+				timestamp: new Date().toISOString(),
+				intent: intent,
+				type: 'agent_response',
+			});
 
 			// Link message to response
 			this.memoryGraph.addEdge(messageNodeId, responseNodeId, 'generates');
 
 			return agentResponse;
-
 		} catch (error) {
 			this.logger.error('Error processing message:', error);
 			return `I apologize, but I encountered an error processing your message. Please try again or rephrase your request.`;
@@ -162,7 +145,10 @@ export class ConversationManager {
 	/**
 	 * Build enhanced context from session history and memory graph
 	 */
-	private async buildEnhancedContext(message: string, session: ConversationSession): Promise<ConversationContext> {
+	private async buildEnhancedContext(
+		message: string,
+		session: ConversationSession
+	): Promise<ConversationContext> {
 		// Get related context from memory graph
 		const relatedNodes = this.memoryGraph.searchNodes(message);
 		const relatedIntents = session.intentHistory.slice(-3); // Last 3 intents
@@ -180,14 +166,17 @@ export class ConversationManager {
 			relatedIntents,
 			activeAgent,
 			contextWindow,
-			userPreferences: await this.getUserPreferences()
+			userPreferences: await this.getUserPreferences(),
 		};
 	}
 
 	/**
 	 * Analyze intent with enhanced context awareness
 	 */
-	private async analyzeIntentWithContext(message: string, context: ConversationContext): Promise<string> {
+	private async analyzeIntentWithContext(
+		message: string,
+		context: ConversationContext
+	): Promise<string> {
 		const systemPrompt = `You are an intent analyzer for a development assistant. Analyze the user's message and determine their intent based on:
 
 1. The current message
@@ -208,7 +197,7 @@ What is the primary intent of this message?`;
 		try {
 			const aiResponse = await this.aiService.generateResponse([
 				{ role: 'system', content: systemPrompt },
-				{ role: 'user', content: prompt }
+				{ role: 'user', content: prompt },
 			]);
 
 			// Extract intent from response
@@ -223,12 +212,16 @@ What is the primary intent of this message?`;
 	/**
 	 * Route to agent with enhanced context
 	 */
-	private async routeToAgentWithContext(intent: string, message: string, context: ConversationContext): Promise<string> {
+	private async routeToAgentWithContext(
+		intent: string,
+		message: string,
+		context: ConversationContext
+	): Promise<string> {
 		// Track agent activity
 		this.currentSession!.agentHistory.push({
 			agent: intent,
 			timestamp: new Date(),
-			action: 'process_message'
+			action: 'process_message',
 		});
 
 		// Pass enhanced context to agent
@@ -236,7 +229,7 @@ What is the primary intent of this message?`;
 			...context.contextWindow,
 			`Session ID: ${context.sessionId}`,
 			`Related intents: ${context.relatedIntents.join(', ')}`,
-			`Previous agent: ${context.activeAgent}`
+			`Previous agent: ${context.activeAgent}`,
 		];
 
 		const responses = await this.agentManager.processMessage(message, {
@@ -244,7 +237,7 @@ What is the primary intent of this message?`;
 			contextWindow: enhancedContext,
 			sessionId: context.sessionId,
 			relatedIntents: context.relatedIntents,
-			activeAgent: context.activeAgent
+			activeAgent: context.activeAgent,
 		});
 
 		// Return the first response or combine multiple responses
@@ -274,11 +267,26 @@ What is the primary intent of this message?`;
 		const lowerMessage = message.toLowerCase();
 
 		if (lowerMessage.includes('plan') || lowerMessage.includes('strategy')) return 'plan';
-		if (lowerMessage.includes('build') || lowerMessage.includes('create') || lowerMessage.includes('implement')) return 'build';
-		if (lowerMessage.includes('design') || lowerMessage.includes('ui') || lowerMessage.includes('ux')) return 'design';
+		if (
+			lowerMessage.includes('build') ||
+			lowerMessage.includes('create') ||
+			lowerMessage.includes('implement')
+		)
+			return 'build';
+		if (
+			lowerMessage.includes('design') ||
+			lowerMessage.includes('ui') ||
+			lowerMessage.includes('ux')
+		)
+			return 'design';
 		if (lowerMessage.includes('test') || lowerMessage.includes('verify')) return 'test';
 		if (lowerMessage.includes('deploy') || lowerMessage.includes('release')) return 'deploy';
-		if (lowerMessage.includes('code') || lowerMessage.includes('function') || lowerMessage.includes('class')) return 'code';
+		if (
+			lowerMessage.includes('code') ||
+			lowerMessage.includes('function') ||
+			lowerMessage.includes('class')
+		)
+			return 'code';
 		if (lowerMessage.includes('help') || lowerMessage.includes('how')) return 'help';
 
 		return 'clarify';
@@ -293,7 +301,7 @@ What is the primary intent of this message?`;
 			preferredLanguage: config.get('preferredLanguage', 'typescript'),
 			framework: config.get('framework', 'react'),
 			testingFramework: config.get('testingFramework', 'jest'),
-			deploymentTarget: config.get('deploymentTarget', 'vercel')
+			deploymentTarget: config.get('deploymentTarget', 'vercel'),
 		};
 	}
 

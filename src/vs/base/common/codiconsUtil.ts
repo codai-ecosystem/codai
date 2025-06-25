@@ -5,7 +5,6 @@
 import { ThemeIcon } from './themables.js';
 import { isString } from './types.js';
 
-
 const _codiconFontCharacters: { [id: string]: number } = Object.create(null);
 
 export function register(id: string, fontCharacter: number | string): ThemeIcon {

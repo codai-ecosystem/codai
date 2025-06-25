@@ -20,7 +20,7 @@ suite('terminalEnvironment', () => {
 			strictEqual(collapseTildePath('/foo', '', '/'), '/foo');
 			strictEqual(collapseTildePath('/foo', undefined, '/'), '/foo');
 		});
-		test('should not collapse when user home isn\'t present', () => {
+		test("should not collapse when user home isn't present", () => {
 			strictEqual(collapseTildePath('/foo', '/bar', '/'), '/foo');
 			strictEqual(collapseTildePath('C:\\foo', 'C:\\bar', '\\'), 'C:\\foo');
 		});
@@ -48,7 +48,7 @@ suite('terminalEnvironment', () => {
 			});
 		}
 		test('should remove any wrapping quotes', () => {
-			strictEqual(sanitizeCwd('\'/foo/bar\''), '/foo/bar');
+			strictEqual(sanitizeCwd("'/foo/bar'"), '/foo/bar');
 			strictEqual(sanitizeCwd('"/foo/bar"'), '/foo/bar');
 		});
 	});

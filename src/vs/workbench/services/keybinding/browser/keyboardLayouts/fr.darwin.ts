@@ -5,7 +5,6 @@
 
 import { KeyboardLayoutContribution } from './_.contribution.js';
 
-
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 	layout: { id: 'com.apple.keylayout.French', lang: 'fr', localizedName: 'French' },
 	secondaryLayouts: [],
@@ -39,7 +38,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		Digit1: ['&', '1', '', '´', 8],
 		Digit2: ['é', '2', 'ë', '„', 0],
 		Digit3: ['"', '3', '“', '”', 0],
-		Digit4: ['\'', '4', '‘', '’', 0],
+		Digit4: ["'", '4', '‘', '’', 0],
 		Digit5: ['(', '5', '{', '[', 0],
 		Digit6: ['§', '6', '¶', 'å', 0],
 		Digit7: ['è', '7', '«', '»', 0],
@@ -127,6 +126,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		ControlRight: [],
 		ShiftRight: [],
 		AltRight: [],
-		MetaRight: []
-	}
+		MetaRight: [],
+	},
 });

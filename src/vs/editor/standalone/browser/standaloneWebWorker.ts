@@ -11,7 +11,10 @@ import { IModelService } from '../../common/services/model.js';
  * Create a new web worker that has model syncing capabilities built in.
  * Specify an AMD module to load that will `create` an object that will be proxied.
  */
-export function createWebWorker<T extends object>(modelService: IModelService, opts: IInternalWebWorkerOptions): MonacoWebWorker<T> {
+export function createWebWorker<T extends object>(
+	modelService: IModelService,
+	opts: IInternalWebWorkerOptions
+): MonacoWebWorker<T> {
 	return new MonacoWebWorkerImpl<T>(modelService, opts);
 }
 
@@ -50,8 +53,10 @@ export interface IInternalWebWorkerOptions {
 	keepIdleModels?: boolean;
 }
 
-class MonacoWebWorkerImpl<T extends object> extends EditorWorkerClient implements MonacoWebWorker<T> {
-
+class MonacoWebWorkerImpl<T extends object>
+	extends EditorWorkerClient
+	implements MonacoWebWorker<T>
+{
 	private readonly _foreignModuleHost: { [method: string]: Function } | null;
 	private _foreignProxy: Promise<T>;
 
@@ -59,23 +64,28 @@ class MonacoWebWorkerImpl<T extends object> extends EditorWorkerClient implement
 		super(opts.worker, opts.keepIdleModels || false, modelService);
 		this._foreignModuleHost = opts.host || null;
 		this._foreignProxy = this._getProxy().then(proxy => {
-			return new Proxy({}, {
-				get(target, prop, receiver) {
-					if (typeof prop !== 'string') {
-						throw new Error(`Not supported`);
-					}
-					return (...args: any[]) => {
-						return proxy.$fmr(prop, args);
-					};
+			return new Proxy(
+				{},
+				{
+					get(target, prop, receiver) {
+						if (typeof prop !== 'string') {
+							throw new Error(`Not supported`);
+						}
+						return (...args: any[]) => {
+							return proxy.$fmr(prop, args);
+						};
+					},
 				}
-			}) as T;
+			) as T;
 		});
 	}
 
 	// foreign host request
 	public override fhr(method: string, args: any[]): Promise<any> {
 		if (!this._foreignModuleHost || typeof this._foreignModuleHost[method] !== 'function') {
-			return Promise.reject(new Error('Missing method ' + method + ' or missing main thread foreign host.'));
+			return Promise.reject(
+				new Error('Missing method ' + method + ' or missing main thread foreign host.')
+			);
 		}
 
 		try {

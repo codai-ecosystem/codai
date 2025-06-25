@@ -27,14 +27,17 @@ export const TransformedContainer: FC<TransformedContainerProps> = ({
 	onMouseLeave,
 	onWheel,
 	className = '',
-	children
+	children,
 }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	// Update transform using DOM properties instead of inline styles
 	useEffect(() => {
 		if (containerRef.current) {
-			containerRef.current.style.setProperty('--graph-transform', `scale(${zoom}) translate(${panX}px, ${panY}px)`);
+			containerRef.current.style.setProperty(
+				'--graph-transform',
+				`scale(${zoom}) translate(${panX}px, ${panY}px)`
+			);
 		}
 	}, [zoom, panX, panY]);
 

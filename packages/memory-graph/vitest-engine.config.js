@@ -5,7 +5,7 @@ export default defineConfig({
 		globals: true,
 		environment: 'node',
 		deps: {
-			inline: ['uuid']
-		}
-	}
+			inline: ['uuid'],
+		},
+	},
 });

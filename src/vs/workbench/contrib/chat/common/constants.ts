@@ -13,7 +13,7 @@ export enum ChatConfiguration {
 export enum ChatMode {
 	Ask = 'ask',
 	Edit = 'edit',
-	Agent = 'agent'
+	Agent = 'agent',
 }
 
 export function modeToString(mode: ChatMode) {
@@ -55,10 +55,14 @@ export enum ChatAgentLocation {
 export namespace ChatAgentLocation {
 	export function fromRaw(value: RawChatParticipantLocation | string): ChatAgentLocation {
 		switch (value) {
-			case 'panel': return ChatAgentLocation.Panel;
-			case 'terminal': return ChatAgentLocation.Terminal;
-			case 'notebook': return ChatAgentLocation.Notebook;
-			case 'editor': return ChatAgentLocation.Editor;
+			case 'panel':
+				return ChatAgentLocation.Panel;
+			case 'terminal':
+				return ChatAgentLocation.Terminal;
+			case 'notebook':
+				return ChatAgentLocation.Notebook;
+			case 'editor':
+				return ChatAgentLocation.Editor;
 		}
 		return ChatAgentLocation.Panel;
 	}

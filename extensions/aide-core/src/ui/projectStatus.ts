@@ -65,7 +65,7 @@ export class ProjectStatus {
 			vscode.ViewColumn.Two,
 			{
 				enableScripts: true,
-				retainContextWhenHidden: true
+				retainContextWhenHidden: true,
 			}
 		);
 
@@ -73,9 +73,13 @@ export class ProjectStatus {
 		this.setupMessageHandlers();
 		this.refreshStatus();
 
-		this.panel.onDidDispose(() => {
-			this.panel = undefined;
-		}, null, context.subscriptions);
+		this.panel.onDidDispose(
+			() => {
+				this.panel = undefined;
+			},
+			null,
+			context.subscriptions
+		);
 	}
 
 	/**
@@ -118,7 +122,7 @@ export class ProjectStatus {
 		this.analyzeMemoryGraph();
 		this.panel.webview.postMessage({
 			type: 'updateStatus',
-			data: this.statusData
+			data: this.statusData,
 		});
 	}
 
@@ -165,7 +169,9 @@ export class ProjectStatus {
 				break;
 
 			default:
-				vscode.window.showInformationMessage('Live preview not supported for this project type yet.');
+				vscode.window.showInformationMessage(
+					'Live preview not supported for this project type yet.'
+				);
 				return;
 		}
 
@@ -173,7 +179,7 @@ export class ProjectStatus {
 			// Start the development server
 			const terminal = vscode.window.createTerminal({
 				name: 'AIDE Live Preview',
-				cwd: workspaceFolder.uri.fsPath
+				cwd: workspaceFolder.uri.fsPath,
 			});
 			terminal.sendText(startCommand);
 			terminal.show();
@@ -189,7 +195,7 @@ export class ProjectStatus {
 
 		// Update project status
 		this.updateStatus({
-			lastUpdated: new Date()
+			lastUpdated: new Date(),
 		});
 
 		vscode.window.showInformationMessage('Live preview started! Check your browser.');
@@ -199,7 +205,7 @@ export class ProjectStatus {
 	 * Sets up message handlers for webview communication
 	 */
 	private setupMessageHandlers(): void {
-		this.panel!.webview.onDidReceiveMessage(async (message) => {
+		this.panel!.webview.onDidReceiveMessage(async message => {
 			switch (message.type) {
 				case 'refreshStatus':
 					this.refreshStatus();
@@ -247,7 +253,7 @@ export class ProjectStatus {
 			...this.statusData.metrics,
 			filesCreated,
 			testsWritten,
-			deploymentsCount
+			deploymentsCount,
 		};
 
 		// Analyze project type from nodes
@@ -273,7 +279,7 @@ export class ProjectStatus {
 					status: 'planned',
 					progress: 0,
 					agent: node.metadata.agent || 'unknown',
-					dependencies: []
+					dependencies: [],
 				});
 			}
 		}
@@ -283,17 +289,27 @@ export class ProjectStatus {
 	 * Infers project type from memory patterns
 	 */
 	private inferProjectType(nodes: any[]): void {
-		const technologies = nodes
-			.map(node => node.content.toLowerCase())
-			.join(' ');
+		const technologies = nodes.map(node => node.content.toLowerCase()).join(' ');
 
-		if (technologies.includes('react') || technologies.includes('vue') || technologies.includes('angular')) {
+		if (
+			technologies.includes('react') ||
+			technologies.includes('vue') ||
+			technologies.includes('angular')
+		) {
 			this.statusData.type = 'web';
-		} else if (technologies.includes('react native') || technologies.includes('flutter') || technologies.includes('mobile')) {
+		} else if (
+			technologies.includes('react native') ||
+			technologies.includes('flutter') ||
+			technologies.includes('mobile')
+		) {
 			this.statusData.type = 'mobile';
 		} else if (technologies.includes('electron') || technologies.includes('desktop')) {
 			this.statusData.type = 'desktop';
-		} else if (technologies.includes('api') || technologies.includes('server') || technologies.includes('backend')) {
+		} else if (
+			technologies.includes('api') ||
+			technologies.includes('server') ||
+			technologies.includes('backend')
+		) {
 			this.statusData.type = 'api';
 		} else if (technologies.includes('library') || technologies.includes('package')) {
 			this.statusData.type = 'library';
@@ -310,7 +326,7 @@ export class ProjectStatus {
 			status: 'planned',
 			progress: 0,
 			agent: 'planner',
-			dependencies: []
+			dependencies: [],
 		};
 
 		this.updateFeature(feature);
@@ -319,7 +335,7 @@ export class ProjectStatus {
 		this.memoryGraph.addNode('feature', featureName, {
 			agent: 'planner',
 			status: 'planned',
-			createdAt: new Date().toISOString()
+			createdAt: new Date().toISOString(),
 		});
 
 		vscode.window.showInformationMessage(`Feature "${featureName}" added to project.`);
@@ -355,7 +371,7 @@ export class ProjectStatus {
 
 		// Update in memory graph
 		this.memoryGraph.updateNode(featureId, {
-			metadata: { status: status, lastUpdated: new Date().toISOString() }
+			metadata: { status: status, lastUpdated: new Date().toISOString() },
 		});
 	}
 
@@ -371,7 +387,7 @@ export class ProjectStatus {
 		this.panel!.webview.postMessage({
 			type: 'showFeatureDetails',
 			feature: feature,
-			relatedNodes: connectedNodes
+			relatedNodes: connectedNodes,
 		});
 	}
 
@@ -387,7 +403,7 @@ export class ProjectStatus {
 			lastUpdated: this.statusData.lastUpdated,
 			features: this.statusData.features,
 			metrics: this.statusData.metrics,
-			exportedAt: new Date().toISOString()
+			exportedAt: new Date().toISOString(),
 		};
 
 		const exportData = JSON.stringify(report, null, 2);
@@ -395,8 +411,8 @@ export class ProjectStatus {
 		const uri = await vscode.window.showSaveDialog({
 			defaultUri: vscode.Uri.file(`${this.statusData.name}-status-report.json`),
 			filters: {
-				'JSON Files': ['json']
-			}
+				'JSON Files': ['json'],
+			},
 		});
 
 		if (uri) {
@@ -414,7 +430,10 @@ export class ProjectStatus {
 			return;
 		}
 
-		const totalProgress = this.statusData.features.reduce((sum, feature) => sum + feature.progress, 0);
+		const totalProgress = this.statusData.features.reduce(
+			(sum, feature) => sum + feature.progress,
+			0
+		);
 		this.statusData.progress = Math.round(totalProgress / this.statusData.features.length);
 
 		// Update overall status based on progress
@@ -448,8 +467,8 @@ export class ProjectStatus {
 				linesOfCode: 0,
 				testsWritten: 0,
 				bugsFixed: 0,
-				deploymentsCount: 0
-			}
+				deploymentsCount: 0,
+			},
 		};
 	}
 

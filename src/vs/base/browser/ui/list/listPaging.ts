@@ -10,11 +10,26 @@ import { Disposable, IDisposable } from '../../../common/lifecycle.js';
 import { IPagedModel } from '../../../common/paging.js';
 import { ScrollbarVisibility } from '../../../common/scrollable.js';
 import './list.css';
-import { IListContextMenuEvent, IListElementRenderDetails, IListEvent, IListMouseEvent, IListRenderer, IListVirtualDelegate } from './list.js';
-import { IListAccessibilityProvider, IListOptions, IListOptionsUpdate, IListStyles, List, TypeNavigationMode } from './listWidget.js';
+import {
+	IListContextMenuEvent,
+	IListElementRenderDetails,
+	IListEvent,
+	IListMouseEvent,
+	IListRenderer,
+	IListVirtualDelegate,
+} from './list.js';
+import {
+	IListAccessibilityProvider,
+	IListOptions,
+	IListOptionsUpdate,
+	IListStyles,
+	List,
+	TypeNavigationMode,
+} from './listWidget.js';
 import { isActiveElement } from '../../dom.js';
 
-export interface IPagedRenderer<TElement, TTemplateData> extends IListRenderer<TElement, TTemplateData> {
+export interface IPagedRenderer<TElement, TTemplateData>
+	extends IListRenderer<TElement, TTemplateData> {
 	renderPlaceholder(index: number, templateData: TTemplateData): void;
 }
 
@@ -23,21 +38,29 @@ export interface ITemplateData<T> {
 	disposable?: IDisposable;
 }
 
-class PagedRenderer<TElement, TTemplateData> implements IListRenderer<number, ITemplateData<TTemplateData>> {
-
-	get templateId(): string { return this.renderer.templateId; }
+class PagedRenderer<TElement, TTemplateData>
+	implements IListRenderer<number, ITemplateData<TTemplateData>>
+{
+	get templateId(): string {
+		return this.renderer.templateId;
+	}
 
 	constructor(
 		private renderer: IPagedRenderer<TElement, TTemplateData>,
 		private modelProvider: () => IPagedModel<TElement>
-	) { }
+	) {}
 
 	renderTemplate(container: HTMLElement): ITemplateData<TTemplateData> {
 		const data = this.renderer.renderTemplate(container);
 		return { data, disposable: Disposable.None };
 	}
 
-	renderElement(index: number, _: number, data: ITemplateData<TTemplateData>, details?: IListElementRenderDetails): void {
+	renderElement(
+		index: number,
+		_: number,
+		data: ITemplateData<TTemplateData>,
+		details?: IListElementRenderDetails
+	): void {
 		data.disposable?.dispose();
 
 		if (!data.data) {
@@ -71,11 +94,10 @@ class PagedRenderer<TElement, TTemplateData> implements IListRenderer<number, IT
 }
 
 class PagedAccessibilityProvider<T> implements IListAccessibilityProvider<number> {
-
 	constructor(
 		private modelProvider: () => IPagedModel<T>,
 		private accessibilityProvider: IListAccessibilityProvider<T>
-	) { }
+	) {}
 
 	getWidgetAriaLabel(): string {
 		return this.accessibilityProvider.getWidgetAriaLabel();
@@ -113,15 +135,19 @@ export interface IPagedListOptions<T> {
 	readonly alwaysConsumeMouseWheel?: boolean;
 }
 
-function fromPagedListOptions<T>(modelProvider: () => IPagedModel<T>, options: IPagedListOptions<T>): IListOptions<number> {
+function fromPagedListOptions<T>(
+	modelProvider: () => IPagedModel<T>,
+	options: IPagedListOptions<T>
+): IListOptions<number> {
 	return {
 		...options,
-		accessibilityProvider: options.accessibilityProvider && new PagedAccessibilityProvider(modelProvider, options.accessibilityProvider)
+		accessibilityProvider:
+			options.accessibilityProvider &&
+			new PagedAccessibilityProvider(modelProvider, options.accessibilityProvider),
 	};
 }
 
 export class PagedList<T> implements IDisposable {
-
 	private list: List<number>;
 	private _model!: IPagedModel<T>;
 
@@ -133,8 +159,16 @@ export class PagedList<T> implements IDisposable {
 		options: IPagedListOptions<T> = {}
 	) {
 		const modelProvider = () => this.model;
-		const pagedRenderers = renderers.map(r => new PagedRenderer<T, ITemplateData<T>>(r, modelProvider));
-		this.list = new List(user, container, virtualDelegate, pagedRenderers, fromPagedListOptions(modelProvider, options));
+		const pagedRenderers = renderers.map(
+			r => new PagedRenderer<T, ITemplateData<T>>(r, modelProvider)
+		);
+		this.list = new List(
+			user,
+			container,
+			virtualDelegate,
+			pagedRenderers,
+			fromPagedListOptions(modelProvider, options)
+		);
 	}
 
 	updateOptions(options: IListOptionsUpdate) {
@@ -170,31 +204,59 @@ export class PagedList<T> implements IDisposable {
 	}
 
 	get onMouseClick(): Event<IListMouseEvent<T>> {
-		return Event.map(this.list.onMouseClick, ({ element, index, browserEvent }) => ({ element: element === undefined ? undefined : this._model.get(element), index, browserEvent }));
+		return Event.map(this.list.onMouseClick, ({ element, index, browserEvent }) => ({
+			element: element === undefined ? undefined : this._model.get(element),
+			index,
+			browserEvent,
+		}));
 	}
 
 	get onMouseDblClick(): Event<IListMouseEvent<T>> {
-		return Event.map(this.list.onMouseDblClick, ({ element, index, browserEvent }) => ({ element: element === undefined ? undefined : this._model.get(element), index, browserEvent }));
+		return Event.map(this.list.onMouseDblClick, ({ element, index, browserEvent }) => ({
+			element: element === undefined ? undefined : this._model.get(element),
+			index,
+			browserEvent,
+		}));
 	}
 
 	get onTap(): Event<IListMouseEvent<T>> {
-		return Event.map(this.list.onTap, ({ element, index, browserEvent }) => ({ element: element === undefined ? undefined : this._model.get(element), index, browserEvent }));
+		return Event.map(this.list.onTap, ({ element, index, browserEvent }) => ({
+			element: element === undefined ? undefined : this._model.get(element),
+			index,
+			browserEvent,
+		}));
 	}
 
 	get onPointer(): Event<IListMouseEvent<T>> {
-		return Event.map(this.list.onPointer, ({ element, index, browserEvent }) => ({ element: element === undefined ? undefined : this._model.get(element), index, browserEvent }));
+		return Event.map(this.list.onPointer, ({ element, index, browserEvent }) => ({
+			element: element === undefined ? undefined : this._model.get(element),
+			index,
+			browserEvent,
+		}));
 	}
 
 	get onDidChangeFocus(): Event<IListEvent<T>> {
-		return Event.map(this.list.onDidChangeFocus, ({ elements, indexes, browserEvent }) => ({ elements: elements.map(e => this._model.get(e)), indexes, browserEvent }));
+		return Event.map(this.list.onDidChangeFocus, ({ elements, indexes, browserEvent }) => ({
+			elements: elements.map(e => this._model.get(e)),
+			indexes,
+			browserEvent,
+		}));
 	}
 
 	get onDidChangeSelection(): Event<IListEvent<T>> {
-		return Event.map(this.list.onDidChangeSelection, ({ elements, indexes, browserEvent }) => ({ elements: elements.map(e => this._model.get(e)), indexes, browserEvent }));
+		return Event.map(this.list.onDidChangeSelection, ({ elements, indexes, browserEvent }) => ({
+			elements: elements.map(e => this._model.get(e)),
+			indexes,
+			browserEvent,
+		}));
 	}
 
 	get onContextMenu(): Event<IListContextMenuEvent<T>> {
-		return Event.map(this.list.onContextMenu, ({ element, index, anchor, browserEvent }) => (typeof element === 'undefined' ? { element, index, anchor, browserEvent } : { element: this._model.get(element), index, anchor, browserEvent }));
+		return Event.map(this.list.onContextMenu, ({ element, index, anchor, browserEvent }) =>
+			typeof element === 'undefined'
+				? { element, index, anchor, browserEvent }
+				: { element: this._model.get(element), index, anchor, browserEvent }
+		);
 	}
 
 	get model(): IPagedModel<T> {

@@ -28,12 +28,14 @@
 ## 🚀 Quick Start
 
 ### Web Version (Instant)
+
 1. Visit [codai.ro](https://codai.ro)
 2. Click "New Project"
 3. Tell the AI what you want to build
 4. Start coding with AI assistance
 
 ### Desktop App
+
 1. Download from [codai.ro/download](https://codai.ro/download)
 2. Install and launch
 3. Same simple experience, offline capable
@@ -56,28 +58,34 @@
 ## 💡 Example Projects
 
 ### "Build a weather app"
+
 ```
 You: I want a weather app that shows current conditions
 AI: I'll create a React app with weather API integration...
 ```
-*→ Complete app with location detection, API integration, responsive design*
+
+_→ Complete app with location detection, API integration, responsive design_
 
 ### "Create a blog website"
+
 ```
 You: I need a simple blog with posts and comments
 AI: Setting up Next.js with a content management system...
 ```
-*→ Full blog with admin panel, markdown support, SEO optimization*
+
+_→ Full blog with admin panel, markdown support, SEO optimization_
 
 ## 🔧 Technical Details
 
 ### Built On
+
 - **VS Code Engine**: Industry-standard editor with web support
 - **GitHub Copilot**: Advanced AI code completion and chat
 - **Modern Web Stack**: TypeScript, React, Next.js ready
 - **Universal Deployment**: Web, desktop, mobile targets
 
 ### System Requirements
+
 - **Web**: Modern browser (Chrome, Firefox, Safari, Edge)
 - **Desktop**: Windows 10+, macOS 10.15+, Linux (Ubuntu 18.04+)
 - **Memory**: 2GB RAM minimum, 4GB recommended
@@ -106,12 +114,14 @@ AI: Setting up Next.js with a content management system...
 ## 🌟 Key Features
 
 ### For Everyone
+
 - **Natural Language**: Describe features in plain English
 - **Instant Feedback**: See changes as you type and talk
 - **Error Prevention**: AI catches issues before they happen
 - **Learning Mode**: Understand what the AI is doing
 
 ### For Developers
+
 - **GitHub Integration**: Built-in git workflows
 - **Extension Support**: Add tools as needed
 - **Debug Assistant**: AI helps solve problems
@@ -120,12 +130,14 @@ AI: Setting up Next.js with a content management system...
 ## 🚀 Roadmap
 
 ### Current (v1.0)
+
 - ✅ GitHub Copilot integration
 - ✅ Web and desktop versions
 - ✅ Project templates
 - ✅ One-click deployment
 
 ### Coming Soon
+
 - 📱 Mobile companion app
 - 🔗 Team collaboration features
 - 🎨 Visual design tools
@@ -147,6 +159,7 @@ MIT License - see [LICENSE.txt](LICENSE.txt) for details.
 Built with ❤️ by [Dragos Catalin](https://factoria.ro) and the open-source community.
 
 Powered by:
+
 - [VS Code](https://code.visualstudio.com/) - Microsoft
 - [GitHub Copilot](https://github.com/features/copilot) - GitHub/OpenAI
 - [TypeScript](https://typescriptlang.org/) - Microsoft

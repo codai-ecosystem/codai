@@ -16,9 +16,7 @@ import { IExtHostContext } from '../../../services/extensions/common/extHostCust
 import { ExtensionHostKind } from '../../../services/extensions/common/extensionHostKind.js';
 import { mock } from '../../../test/common/workbenchTestServices.js';
 
-
 suite('MainThreadDiagnostics', function () {
-
 	let markerService: MarkerService;
 
 	setup(function () {
@@ -32,37 +30,49 @@ suite('MainThreadDiagnostics', function () {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('clear markers on dispose', function () {
-
 		const diag = new MainThreadDiagnostics(
-			new class implements IExtHostContext {
+			new (class implements IExtHostContext {
 				remoteAuthority = '';
 				extensionHostKind = ExtensionHostKind.LocalProcess;
-				dispose() { }
-				assertRegistered() { }
-				set(v: any): any { return null; }
+				dispose() {}
+				assertRegistered() {}
+				set(v: any): any {
+					return null;
+				}
 				getProxy(): any {
 					return {
-						$acceptMarkersChange() { }
+						$acceptMarkersChange() {},
 					};
 				}
-				drain(): any { return null; }
-			},
+				drain(): any {
+					return null;
+				}
+			})(),
 			markerService,
-			new class extends mock<IUriIdentityService>() {
-				override asCanonicalUri(uri: URI) { return uri; }
-			}
+			new (class extends mock<IUriIdentityService>() {
+				override asCanonicalUri(uri: URI) {
+					return uri;
+				}
+			})()
 		);
 
-		diag.$changeMany('foo', [[URI.file('a'), [{
-			code: '666',
-			startLineNumber: 1,
-			startColumn: 1,
-			endLineNumber: 1,
-			endColumn: 1,
-			message: 'fffff',
-			severity: 1,
-			source: 'me'
-		}]]]);
+		diag.$changeMany('foo', [
+			[
+				URI.file('a'),
+				[
+					{
+						code: '666',
+						startLineNumber: 1,
+						startColumn: 1,
+						endLineNumber: 1,
+						endColumn: 1,
+						message: 'fffff',
+						severity: 1,
+						source: 'me',
+					},
+				],
+			],
+		]);
 
 		assert.strictEqual(markerService.read().length, 1);
 		diag.dispose();
@@ -70,31 +80,35 @@ suite('MainThreadDiagnostics', function () {
 	});
 
 	test('OnDidChangeDiagnostics triggers twice on same diagnostics #136434', function () {
-
 		return runWithFakedTimers({}, async () => {
-
 			const changedData: [UriComponents, IMarkerData[]][][] = [];
 
 			const diag = new MainThreadDiagnostics(
-				new class implements IExtHostContext {
+				new (class implements IExtHostContext {
 					remoteAuthority = '';
 					extensionHostKind = ExtensionHostKind.LocalProcess;
-					dispose() { }
-					assertRegistered() { }
-					set(v: any): any { return null; }
+					dispose() {}
+					assertRegistered() {}
+					set(v: any): any {
+						return null;
+					}
 					getProxy(): any {
 						return {
 							$acceptMarkersChange(data: [UriComponents, IMarkerData[]][]) {
 								changedData.push(data);
-							}
+							},
 						};
 					}
-					drain(): any { return null; }
-				},
+					drain(): any {
+						return null;
+					}
+				})(),
 				markerService,
-				new class extends mock<IUriIdentityService>() {
-					override asCanonicalUri(uri: URI) { return uri; }
-				}
+				new (class extends mock<IUriIdentityService>() {
+					override asCanonicalUri(uri: URI) {
+						return uri;
+					}
+				})()
 			);
 
 			const markerDataStub = {
@@ -104,7 +118,7 @@ suite('MainThreadDiagnostics', function () {
 				endLineNumber: 1,
 				endColumn: 1,
 				severity: 1,
-				source: 'me'
+				source: 'me',
 			};
 			const target = URI.file('a');
 			diag.$changeMany('foo', [[target, [{ ...markerDataStub, message: 'same_owner' }]]]);
@@ -125,7 +139,6 @@ suite('MainThreadDiagnostics', function () {
 
 	test('onDidChangeDiagnostics different behavior when "extensionKind" ui running on remote workspace #136955', function () {
 		return runWithFakedTimers({}, async () => {
-
 			const markerData: IMarkerData = {
 				code: '666',
 				startLineNumber: 1,
@@ -134,7 +147,7 @@ suite('MainThreadDiagnostics', function () {
 				endColumn: 1,
 				severity: 1,
 				source: 'me',
-				message: 'message'
+				message: 'message',
 			};
 			const target = URI.file('a');
 			markerService.changeOne('bar', target, [markerData]);
@@ -142,25 +155,31 @@ suite('MainThreadDiagnostics', function () {
 			const changedData: [UriComponents, IMarkerData[]][][] = [];
 
 			const diag = new MainThreadDiagnostics(
-				new class implements IExtHostContext {
+				new (class implements IExtHostContext {
 					remoteAuthority = '';
 					extensionHostKind = ExtensionHostKind.LocalProcess;
-					dispose() { }
-					assertRegistered() { }
-					set(v: any): any { return null; }
+					dispose() {}
+					assertRegistered() {}
+					set(v: any): any {
+						return null;
+					}
 					getProxy(): any {
 						return {
 							$acceptMarkersChange(data: [UriComponents, IMarkerData[]][]) {
 								changedData.push(data);
-							}
+							},
 						};
 					}
-					drain(): any { return null; }
-				},
+					drain(): any {
+						return null;
+					}
+				})(),
 				markerService,
-				new class extends mock<IUriIdentityService>() {
-					override asCanonicalUri(uri: URI) { return uri; }
-				}
+				new (class extends mock<IUriIdentityService>() {
+					override asCanonicalUri(uri: URI) {
+						return uri;
+					}
+				})()
 			);
 
 			diag.$clear('bar');

@@ -26,16 +26,13 @@ async function getAgents(request: NextRequest, user: UserDocument) {
 				runtime: {
 					status: 'ready',
 					version: '0.1.0',
-					activeConversations: 0
-				}
-			}
+					activeConversations: 0,
+				},
+			},
 		});
 	} catch (error) {
 		console.error('Error getting agents:', error);
-		return NextResponse.json(
-			{ error: 'Failed to get agents' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to get agents' }, { status: 500 });
 	}
 }
 
@@ -48,10 +45,7 @@ async function startAgentTask(request: NextRequest, user: UserDocument) {
 		const { task, agentIds, projectId, context } = body;
 
 		if (!task || !task.description) {
-			return NextResponse.json(
-				{ error: 'Task description is required' },
-				{ status: 400 }
-			);
+			return NextResponse.json({ error: 'Task description is required' }, { status: 400 });
 		}
 
 		const runtimeService = AgentRuntimeService.getInstance();
@@ -65,24 +59,21 @@ async function startAgentTask(request: NextRequest, user: UserDocument) {
 			projectId: projectId || undefined,
 			inputs: {
 				context: context || {},
-				userMessage: task.description
+				userMessage: task.description,
 			},
-			priority: task.priority || 'medium'
+			priority: task.priority || 'medium',
 		});
 
 		return NextResponse.json({
 			success: true,
 			data: {
 				task: createdTask,
-				message: 'Task created and started successfully.'
-			}
+				message: 'Task created and started successfully.',
+			},
 		});
 	} catch (error) {
 		console.error('Error starting agent task:', error);
-		return NextResponse.json(
-			{ error: 'Failed to start agent task' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to start agent task' }, { status: 500 });
 	}
 }
 

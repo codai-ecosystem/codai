@@ -13,7 +13,12 @@ import { BackgroundTokenizationState } from '../../../tokenizationTextModelPart.
 import { LineTokens } from '../../../tokens/lineTokens.js';
 import { TextModel } from '../../textModel.js';
 import { AbstractSyntaxTokenBackend } from '../abstractSyntaxTokenBackend.js';
-import { autorun, derived, IObservable, ObservablePromise } from '../../../../../base/common/observable.js';
+import {
+	autorun,
+	derived,
+	IObservable,
+	ObservablePromise,
+} from '../../../../../base/common/observable.js';
 import { TreeSitterTree } from './treeSitterTree.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { TreeSitterTokenizationImpl } from './treeSitterTokenizationImpl.js';
@@ -21,9 +26,13 @@ import { ITreeSitterLibraryService } from '../../../services/treeSitter/treeSitt
 import { LineRange } from '../../../core/ranges/lineRange.js';
 
 export class TreeSitterSyntaxTokenBackend extends AbstractSyntaxTokenBackend {
-	protected _backgroundTokenizationState: BackgroundTokenizationState = BackgroundTokenizationState.InProgress;
-	protected readonly _onDidChangeBackgroundTokenizationState: Emitter<void> = this._register(new Emitter<void>());
-	public readonly onDidChangeBackgroundTokenizationState: Event<void> = this._onDidChangeBackgroundTokenizationState.event;
+	protected _backgroundTokenizationState: BackgroundTokenizationState =
+		BackgroundTokenizationState.InProgress;
+	protected readonly _onDidChangeBackgroundTokenizationState: Emitter<void> = this._register(
+		new Emitter<void>()
+	);
+	public readonly onDidChangeBackgroundTokenizationState: Event<void> =
+		this._onDidChangeBackgroundTokenizationState.event;
 
 	private readonly _tree: IObservable<TreeSitterTree | undefined>;
 	private readonly _tokenizationImpl: IObservable<TreeSitterTokenizationImpl | undefined>;
@@ -33,20 +42,20 @@ export class TreeSitterSyntaxTokenBackend extends AbstractSyntaxTokenBackend {
 		languageIdCodec: ILanguageIdCodec,
 		textModel: TextModel,
 		visibleLineRanges: IObservable<readonly LineRange[]>,
-		@ITreeSitterLibraryService private readonly _treeSitterLibraryService: ITreeSitterLibraryService,
+		@ITreeSitterLibraryService
+		private readonly _treeSitterLibraryService: ITreeSitterLibraryService,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
 		super(languageIdCodec, textModel);
 
-
-		const parserClassPromise = new ObservablePromise(this._treeSitterLibraryService.getParserClass());
-
+		const parserClassPromise = new ObservablePromise(
+			this._treeSitterLibraryService.getParserClass()
+		);
 
 		const parserClassObs = derived(this, reader => {
 			const parser = parserClassPromise.promiseResult?.read(reader)?.getDataOrThrow();
 			return parser;
 		});
-
 
 		this._tree = derived(this, reader => {
 			const parserClass = parserClassObs.read(reader);
@@ -61,9 +70,11 @@ export class TreeSitterSyntaxTokenBackend extends AbstractSyntaxTokenBackend {
 			}
 
 			const parser = new parserClass();
-			reader.store.add(toDisposable(() => {
-				parser.delete();
-			}));
+			reader.store.add(
+				toDisposable(() => {
+					parser.delete();
+				})
+			);
 			parser.setLanguage(treeSitterLang);
 
 			const queries = this._treeSitterLibraryService.getInjectionQueries(currentLanguage, reader);
@@ -71,9 +82,17 @@ export class TreeSitterSyntaxTokenBackend extends AbstractSyntaxTokenBackend {
 				return undefined;
 			}
 
-			return reader.store.add(this._instantiationService.createInstance(TreeSitterTree, currentLanguage, undefined, parser, parserClass, /*queries, */this._textModel));
+			return reader.store.add(
+				this._instantiationService.createInstance(
+					TreeSitterTree,
+					currentLanguage,
+					undefined,
+					parser,
+					parserClass,
+					/*queries, */ this._textModel
+				)
+			);
 		});
-
 
 		this._tokenizationImpl = derived(this, reader => {
 			const treeModel = this._tree.read(reader);
@@ -81,27 +100,44 @@ export class TreeSitterSyntaxTokenBackend extends AbstractSyntaxTokenBackend {
 				return undefined;
 			}
 
-			const queries = this._treeSitterLibraryService.getHighlightingQueries(treeModel.languageId, reader);
+			const queries = this._treeSitterLibraryService.getHighlightingQueries(
+				treeModel.languageId,
+				reader
+			);
 			if (!queries) {
 				return undefined;
 			}
 
-			return reader.store.add(this._instantiationService.createInstance(TreeSitterTokenizationImpl, treeModel, queries, this._languageIdCodec, visibleLineRanges));
+			return reader.store.add(
+				this._instantiationService.createInstance(
+					TreeSitterTokenizationImpl,
+					treeModel,
+					queries,
+					this._languageIdCodec,
+					visibleLineRanges
+				)
+			);
 		});
 
-		this._register(autorun(reader => {
-			const tokModel = this._tokenizationImpl.read(reader);
-			if (!tokModel) {
-				return;
-			}
-			reader.store.add(tokModel.onDidChangeTokens((e) => {
-				this._onDidChangeTokens.fire(e.changes);
-			}));
-			reader.store.add(tokModel.onDidChangeBackgroundTokenization(e => {
-				this._backgroundTokenizationState = BackgroundTokenizationState.Completed;
-				this._onDidChangeBackgroundTokenizationState.fire();
-			}));
-		}));
+		this._register(
+			autorun(reader => {
+				const tokModel = this._tokenizationImpl.read(reader);
+				if (!tokModel) {
+					return;
+				}
+				reader.store.add(
+					tokModel.onDidChangeTokens(e => {
+						this._onDidChangeTokens.fire(e.changes);
+					})
+				);
+				reader.store.add(
+					tokModel.onDidChangeBackgroundTokenization(e => {
+						this._backgroundTokenizationState = BackgroundTokenizationState.Completed;
+						this._onDidChangeBackgroundTokenizationState.fire();
+					})
+				);
+			})
+		);
 	}
 
 	get tree(): IObservable<TreeSitterTree | undefined> {
@@ -175,7 +211,11 @@ export class TreeSitterSyntaxTokenBackend extends AbstractSyntaxTokenBackend {
 		return true;
 	}
 
-	public override getTokenTypeIfInsertingCharacter(lineNumber: number, column: number, character: string): StandardTokenType {
+	public override getTokenTypeIfInsertingCharacter(
+		lineNumber: number,
+		column: number,
+		character: string
+	): StandardTokenType {
 		// TODO @alexr00 implement once we have custom parsing and don't just feed in the whole text model value
 		return StandardTokenType.Other;
 	}
@@ -198,15 +238,19 @@ export class TreeSitterSyntaxTokenBackend extends AbstractSyntaxTokenBackend {
 }
 
 export function rangesEqual(a: TreeSitter.Range, b: TreeSitter.Range) {
-	return (a.startPosition.row === b.startPosition.row)
-		&& (a.startPosition.column === b.startPosition.column)
-		&& (a.endPosition.row === b.endPosition.row)
-		&& (a.endPosition.column === b.endPosition.column)
-		&& (a.startIndex === b.startIndex)
-		&& (a.endIndex === b.endIndex);
+	return (
+		a.startPosition.row === b.startPosition.row &&
+		a.startPosition.column === b.startPosition.column &&
+		a.endPosition.row === b.endPosition.row &&
+		a.endPosition.column === b.endPosition.column &&
+		a.startIndex === b.startIndex &&
+		a.endIndex === b.endIndex
+	);
 }
 
 export function rangesIntersect(a: TreeSitter.Range, b: TreeSitter.Range) {
-	return (a.startIndex <= b.startIndex && a.endIndex >= b.startIndex) ||
-		(b.startIndex <= a.startIndex && b.endIndex >= a.startIndex);
+	return (
+		(a.startIndex <= b.startIndex && a.endIndex >= b.startIndex) ||
+		(b.startIndex <= a.startIndex && b.endIndex >= a.startIndex)
+	);
 }

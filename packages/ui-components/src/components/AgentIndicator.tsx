@@ -13,7 +13,7 @@ export const AgentIndicator: React.FC<AgentIndicatorProps> = ({
 	status,
 	activity,
 	className = '',
-	showActivity = true
+	showActivity = true,
 }) => {
 	const getStatusClasses = () => {
 		switch (status) {
@@ -50,9 +50,7 @@ export const AgentIndicator: React.FC<AgentIndicatorProps> = ({
 					</span>
 				</div>
 				<div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full ${getStatusClasses()}`}>
-					{status === 'working' && (
-						<div className="w-full h-full rounded-full animate-pulse" />
-					)}
+					{status === 'working' && <div className="w-full h-full rounded-full animate-pulse" />}
 				</div>
 			</div>
 			<div className="flex-1 min-w-0">
@@ -60,9 +58,7 @@ export const AgentIndicator: React.FC<AgentIndicatorProps> = ({
 					<span className="text-sm font-medium text-gray-900">{agentName}</span>
 					<span className="text-xs text-gray-500">{getStatusText()}</span>
 				</div>
-				{showActivity && activity && (
-					<p className="text-xs text-gray-600 truncate">{activity}</p>
-				)}
+				{showActivity && activity && <p className="text-xs text-gray-600 truncate">{activity}</p>}
 			</div>
 		</div>
 	);

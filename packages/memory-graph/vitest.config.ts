@@ -8,26 +8,21 @@ export default defineConfig({
 		setupFiles: ['./test/setup.ts'],
 		css: true,
 		deps: {
-			inline: ['uuid']
-		}, alias: {
+			inline: ['uuid'],
+		},
+		alias: {
 			crypto: 'crypto-browserify',
 			'@': './src',
-			process: 'process/browser'
+			process: 'process/browser',
 		},
 		coverage: {
 			provider: 'v8',
 			reporter: ['text', 'json', 'html'],
-			exclude: [
-				'node_modules/',
-				'dist/',
-				'demo/',
-				'test/setup.ts',
-				'**/*.d.ts'
-			]
-		}
+			exclude: ['node_modules/', 'dist/', 'demo/', 'test/setup.ts', '**/*.d.ts'],
+		},
 	},
 	define: {
 		'process.env': {},
-		'global': {}
-	}
+		global: {},
+	},
 });

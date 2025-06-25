@@ -8,7 +8,10 @@ import { ICodeEditor, IPasteEvent } from '../../../../editor/browser/editorBrows
 import { IEditorOpenContext, isTextEditorViewState } from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
 import { applyTextEditorOptions } from '../../../common/editor/editorOptions.js';
-import { AbstractTextResourceEditorInput, TextResourceEditorInput } from '../../../common/editor/textResourceEditorInput.js';
+import {
+	AbstractTextResourceEditorInput,
+	TextResourceEditorInput,
+} from '../../../common/editor/textResourceEditorInput.js';
 import { BaseTextEditorModel } from '../../../common/editor/textEditorModel.js';
 import { UntitledTextEditorInput } from '../../../services/untitled/common/untitledTextEditorInput.js';
 import { AbstractTextCodeEditor } from './textCodeEditor.js';
@@ -18,13 +21,19 @@ import { ITextResourceConfigurationService } from '../../../../editor/common/ser
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 import { ScrollType, ICodeEditorViewState } from '../../../../editor/common/editorCommon.js';
-import { IEditorGroup, IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
+import {
+	IEditorGroup,
+	IEditorGroupsService,
+} from '../../../services/editor/common/editorGroupsService.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 import { IModelService } from '../../../../editor/common/services/model.js';
 import { ILanguageService } from '../../../../editor/common/languages/language.js';
 import { PLAINTEXT_LANGUAGE_ID } from '../../../../editor/common/languages/modesRegistry.js';
-import { EditorOption, IEditorOptions as ICodeEditorOptions } from '../../../../editor/common/config/editorOptions.js';
+import {
+	EditorOption,
+	IEditorOptions as ICodeEditorOptions,
+} from '../../../../editor/common/config/editorOptions.js';
 import { ModelConstants } from '../../../../editor/common/model.js';
 import { ITextEditorOptions } from '../../../../platform/editor/common/editor.js';
 import { IFileService } from '../../../../platform/files/common/files.js';
@@ -34,24 +43,39 @@ import { IFileService } from '../../../../platform/files/common/files.js';
  * the TextEditor widget to show the contents.
  */
 export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<ICodeEditorViewState> {
-
 	constructor(
 		id: string,
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService
 	) {
-		super(id, group, telemetryService, instantiationService, storageService, textResourceConfigurationService, themeService, editorService, editorGroupService, fileService);
+		super(
+			id,
+			group,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorService,
+			editorGroupService,
+			fileService
+		);
 	}
 
-	override async setInput(input: AbstractTextResourceEditorInput, options: ITextEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
-
+	override async setInput(
+		input: AbstractTextResourceEditorInput,
+		options: ITextEditorOptions | undefined,
+		context: IEditorOpenContext,
+		token: CancellationToken
+	): Promise<void> {
 		// Set input and resolve
 		await super.setInput(input, options, context, token);
 		const resolvedModel = await input.resolve();
@@ -109,7 +133,10 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 
 		if (model) {
 			const lastLine = model.getLineCount();
-			control.revealPosition({ lineNumber: lastLine, column: model.getLineMaxColumn(lastLine) }, ScrollType.Smooth);
+			control.revealPosition(
+				{ lineNumber: lastLine, column: model.getLineMaxColumn(lastLine) },
+				ScrollType.Smooth
+			);
 		}
 	}
 
@@ -127,7 +154,6 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 }
 
 export class TextResourceEditor extends AbstractTextResourceEditor {
-
 	static readonly ID = 'workbench.editors.textResourceEditor';
 
 	constructor(
@@ -135,7 +161,8 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
@@ -143,10 +170,24 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IFileService fileService: IFileService
 	) {
-		super(TextResourceEditor.ID, group, telemetryService, instantiationService, storageService, textResourceConfigurationService, themeService, editorGroupService, editorService, fileService);
+		super(
+			TextResourceEditor.ID,
+			group,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorGroupService,
+			editorService,
+			fileService
+		);
 	}
 
-	protected override createEditorControl(parent: HTMLElement, configuration: ICodeEditorOptions): void {
+	protected override createEditorControl(
+		parent: HTMLElement,
+		configuration: ICodeEditorOptions
+	): void {
 		super.createEditorControl(parent, configuration);
 
 		// Install a listener for paste to update this editors
@@ -175,7 +216,9 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 			return; // require a live model
 		}
 
-		const pasteIsWholeContents = textModel.getLineCount() === e.range.endLineNumber && textModel.getLineMaxColumn(e.range.endLineNumber) === e.range.endColumn;
+		const pasteIsWholeContents =
+			textModel.getLineCount() === e.range.endLineNumber &&
+			textModel.getLineMaxColumn(e.range.endLineNumber) === e.range.endColumn;
 		if (!pasteIsWholeContents) {
 			return; // document had existing content after the pasted text, don't override.
 		}
@@ -197,7 +240,11 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 		// We can still try to guess a good languageId from the first line if
 		// the paste changed the first line
 		else {
-			const guess = this.languageService.guessLanguageIdByFilepathOrFirstLine(textModel.uri, textModel.getLineContent(1).substr(0, ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT)) ?? undefined;
+			const guess =
+				this.languageService.guessLanguageIdByFilepathOrFirstLine(
+					textModel.uri,
+					textModel.getLineContent(1).substr(0, ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT)
+				) ?? undefined;
 			if (guess) {
 				candidateLanguage = { id: guess, source: 'guess' };
 			}
@@ -212,7 +259,11 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 				textModel.setLanguage(this.languageService.createById(candidateLanguage.id));
 			}
 
-			const opts = this.modelService.getCreationOptions(textModel.getLanguageId(), textModel.uri, textModel.isForSimpleWidget);
+			const opts = this.modelService.getCreationOptions(
+				textModel.getLanguageId(),
+				textModel.uri,
+				textModel.isForSimpleWidget
+			);
 			textModel.detectIndentation(opts.insertSpaces, opts.tabSize);
 		}
 	}

@@ -7,7 +7,9 @@ import { ITextModel } from '../../model.js';
 import { Position } from '../position.js';
 import { PositionOffsetTransformerBase } from './positionToOffset.js';
 
-export function getPositionOffsetTransformerFromTextModel(textModel: ITextModel): PositionOffsetTransformerBase {
+export function getPositionOffsetTransformerFromTextModel(
+	textModel: ITextModel
+): PositionOffsetTransformerBase {
 	return new PositionOffsetTransformerWithTextModel(textModel);
 }
 

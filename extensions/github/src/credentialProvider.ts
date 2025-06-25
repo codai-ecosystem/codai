@@ -7,10 +7,9 @@ import { CredentialsProvider, Credentials, API as GitAPI } from './typings/git.j
 import { workspace, Uri, Disposable } from 'vscode';
 import { getSession } from './auth.js';
 
-const EmptyDisposable: Disposable = { dispose() { } };
+const EmptyDisposable: Disposable = { dispose() {} };
 
 class GitHubCredentialProvider implements CredentialsProvider {
-
 	async getCredentials(host: Uri): Promise<Credentials | undefined> {
 		if (!/github\.com/i.test(host.authority)) {
 			return;
@@ -22,7 +21,6 @@ class GitHubCredentialProvider implements CredentialsProvider {
 }
 
 export class GithubCredentialProviderManager {
-
 	private providerDisposable: Disposable = EmptyDisposable;
 	private readonly disposable: Disposable;
 
@@ -35,7 +33,9 @@ export class GithubCredentialProviderManager {
 		this._enabled = enabled;
 
 		if (enabled) {
-			this.providerDisposable = this.gitAPI.registerCredentialsProvider(new GitHubCredentialProvider());
+			this.providerDisposable = this.gitAPI.registerCredentialsProvider(
+				new GitHubCredentialProvider()
+			);
 		} else {
 			this.providerDisposable.dispose();
 		}

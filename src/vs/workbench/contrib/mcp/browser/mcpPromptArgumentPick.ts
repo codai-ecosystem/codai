@@ -5,10 +5,19 @@
 
 import { assertNever } from '../../../../base/common/assert.js';
 import { disposableTimeout, RunOnceScheduler, timeout } from '../../../../base/common/async.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../base/common/cancellation.js';
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from '../../../../base/common/cancellation.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { Disposable, DisposableStore, toDisposable } from '../../../../base/common/lifecycle.js';
-import { autorun, derived, IObservable, ObservablePromise, observableValue } from '../../../../base/common/observable.js';
+import {
+	autorun,
+	derived,
+	IObservable,
+	ObservablePromise,
+	observableValue,
+} from '../../../../base/common/observable.js';
 import { basename } from '../../../../base/common/resources.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { URI } from '../../../../base/common/uri.js';
@@ -19,20 +28,30 @@ import { localize } from '../../../../nls.js';
 import { IFileService } from '../../../../platform/files/common/files.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ILabelService } from '../../../../platform/label/common/label.js';
-import { IQuickInputService, IQuickPick, IQuickPickItem, IQuickPickSeparator } from '../../../../platform/quickinput/common/quickInput.js';
-import { ICommandDetectionCapability, TerminalCapability } from '../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	IQuickInputService,
+	IQuickPick,
+	IQuickPickItem,
+	IQuickPickSeparator,
+} from '../../../../platform/quickinput/common/quickInput.js';
+import {
+	ICommandDetectionCapability,
+	TerminalCapability,
+} from '../../../../platform/terminal/common/capabilities/capabilities.js';
 import { TerminalLocation } from '../../../../platform/terminal/common/terminal.js';
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { QueryBuilder } from '../../../services/search/common/queryBuilder.js';
 import { ISearchService } from '../../../services/search/common/search.js';
-import { ITerminalGroupService, ITerminalInstance, ITerminalService } from '../../terminal/browser/terminal.js';
+import {
+	ITerminalGroupService,
+	ITerminalInstance,
+	ITerminalService,
+} from '../../terminal/browser/terminal.js';
 import { IMcpPrompt } from '../common/mcpTypes.js';
 import { MCP } from '../common/modelContextProtocol.js';
 
-type PickItem = IQuickPickItem & (
-	| { action: 'text' | 'command' | 'suggest' }
-	| { action: 'file'; uri: URI }
-);
+type PickItem = IQuickPickItem &
+	({ action: 'text' | 'command' | 'suggest' } | { action: 'file'; uri: URI });
 
 const SHELL_INTEGRATION_TIMEOUT = 5000;
 const NO_SHELL_INTEGRATION_IDLE = 1000;
@@ -55,7 +74,7 @@ export class McpPromptArgumentPick extends Disposable {
 		@IModelService private readonly _modelService: IModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 		this.quickPick = this._register(_quickInputService.createQuickPick({ useSeparators: true }));
@@ -70,12 +89,18 @@ export class McpPromptArgumentPick extends Disposable {
 		quickPick.sortByLabel = false;
 
 		const args: Record<string, string | undefined> = {};
-		const backSnapshots: { value: string; items: readonly (PickItem | IQuickPickSeparator)[]; activeItems: readonly PickItem[] }[] = [];
+		const backSnapshots: {
+			value: string;
+			items: readonly (PickItem | IQuickPickSeparator)[];
+			activeItems: readonly PickItem[];
+		}[] = [];
 		for (let i = 0; i < prompt.arguments.length; i++) {
 			const arg = prompt.arguments[i];
 			const restore = backSnapshots.at(i);
 			quickPick.step = i + 1;
-			quickPick.placeholder = arg.required ? arg.description : `${arg.description || ''} (${localize('optional', 'Optional')})`;
+			quickPick.placeholder = arg.required
+				? arg.description
+				: `${arg.description || ''} (${localize('optional', 'Optional')})`;
 			quickPick.title = arg.name;
 			quickPick.value = restore?.value ?? ((args.hasOwnProperty(arg.name) && args[arg.name]) || '');
 			quickPick.items = restore?.items ?? [];
@@ -88,7 +113,11 @@ export class McpPromptArgumentPick extends Disposable {
 			} else if (value.type === 'cancel') {
 				return undefined;
 			} else if (value.type === 'arg') {
-				backSnapshots[i] = { value: quickPick.value, items: quickPick.items.slice(), activeItems: quickPick.activeItems.slice() };
+				backSnapshots[i] = {
+					value: quickPick.value,
+					items: quickPick.items.slice(),
+					activeItems: quickPick.activeItems.slice(),
+				};
 				args[arg.name] = value.value;
 			} else {
 				assertNever(value);
@@ -115,66 +144,101 @@ export class McpPromptArgumentPick extends Disposable {
 			{
 				name: localize('mcp.arg.files', 'Files'),
 				observer: this._fileCompletions(input$),
-			}
+			},
 		];
 
-		store.add(autorun(reader => {
-			if (didRestoreState) {
-				input$.read(reader);
-				return; // don't overwrite initial items until the user types
-			}
-
-			let items: (PickItem | IQuickPickSeparator)[] = [];
-			items.push({ id: 'insert-text', label: localize('mcp.arg.asText', 'Insert as text'), iconClass: ThemeIcon.asClassName(Codicon.textSize), action: 'text', alwaysShow: true });
-			items.push({ id: 'run-command', label: localize('mcp.arg.asCommand', 'Run as Command'), description: localize('mcp.arg.asCommand.description', 'Inserts the command output as the prompt argument'), iconClass: ThemeIcon.asClassName(Codicon.terminal), action: 'command', alwaysShow: true });
-
-			let busy = false;
-			for (const pick of asyncPicks) {
-				const state = pick.observer.read(reader);
-				busy ||= state.busy;
-				if (state.picks) {
-					items.push({ label: pick.name, type: 'separator' });
-					items = items.concat(state.picks);
+		store.add(
+			autorun(reader => {
+				if (didRestoreState) {
+					input$.read(reader);
+					return; // don't overwrite initial items until the user types
 				}
-			}
 
-			const previouslyActive = quickPick.activeItems;
-			quickPick.busy = busy;
-			quickPick.items = items;
+				let items: (PickItem | IQuickPickSeparator)[] = [];
+				items.push({
+					id: 'insert-text',
+					label: localize('mcp.arg.asText', 'Insert as text'),
+					iconClass: ThemeIcon.asClassName(Codicon.textSize),
+					action: 'text',
+					alwaysShow: true,
+				});
+				items.push({
+					id: 'run-command',
+					label: localize('mcp.arg.asCommand', 'Run as Command'),
+					description: localize(
+						'mcp.arg.asCommand.description',
+						'Inserts the command output as the prompt argument'
+					),
+					iconClass: ThemeIcon.asClassName(Codicon.terminal),
+					action: 'command',
+					alwaysShow: true,
+				});
 
-			const lastActive = items.find(i => previouslyActive.some(a => a.id === i.id)) as PickItem | undefined;
-			// Keep any selection state, but otherwise select the first completion item, and avoid default-selecting the top item unless there are no compltions
-			if (lastActive) {
-				quickPick.activeItems = [lastActive];
-			} else if (items.length > 2) {
-				quickPick.activeItems = [items[3] as PickItem];
-			} else if (busy) {
-				quickPick.activeItems = [];
-			} else {
-				quickPick.activeItems = [items[0] as PickItem];
-			}
-		}));
+				let busy = false;
+				for (const pick of asyncPicks) {
+					const state = pick.observer.read(reader);
+					busy ||= state.busy;
+					if (state.picks) {
+						items.push({ label: pick.name, type: 'separator' });
+						items = items.concat(state.picks);
+					}
+				}
+
+				const previouslyActive = quickPick.activeItems;
+				quickPick.busy = busy;
+				quickPick.items = items;
+
+				const lastActive = items.find(i => previouslyActive.some(a => a.id === i.id)) as
+					| PickItem
+					| undefined;
+				// Keep any selection state, but otherwise select the first completion item, and avoid default-selecting the top item unless there are no compltions
+				if (lastActive) {
+					quickPick.activeItems = [lastActive];
+				} else if (items.length > 2) {
+					quickPick.activeItems = [items[3] as PickItem];
+				} else if (busy) {
+					quickPick.activeItems = [];
+				} else {
+					quickPick.activeItems = [items[0] as PickItem];
+				}
+			})
+		);
 
 		try {
 			const value = await new Promise<PickItem | 'back' | undefined>(resolve => {
-				store.add(quickPick.onDidChangeValue(value => {
-					quickPick.validationMessage = undefined;
-					input$.set(value, undefined);
-				}));
-				store.add(quickPick.onDidAccept(() => {
-					const item = quickPick.selectedItems[0];
-					if (!quickPick.value && arg.required && (item.action === 'text' || item.action === 'command')) {
-						quickPick.validationMessage = localize('mcp.arg.required', "This argument is required");
-					} else {
-						resolve(quickPick.selectedItems[0]);
-					}
-				}));
-				store.add(quickPick.onDidTriggerButton(() => {
-					resolve('back');
-				}));
-				store.add(quickPick.onDidHide(() => {
-					resolve(undefined);
-				}));
+				store.add(
+					quickPick.onDidChangeValue(value => {
+						quickPick.validationMessage = undefined;
+						input$.set(value, undefined);
+					})
+				);
+				store.add(
+					quickPick.onDidAccept(() => {
+						const item = quickPick.selectedItems[0];
+						if (
+							!quickPick.value &&
+							arg.required &&
+							(item.action === 'text' || item.action === 'command')
+						) {
+							quickPick.validationMessage = localize(
+								'mcp.arg.required',
+								'This argument is required'
+							);
+						} else {
+							resolve(quickPick.selectedItems[0]);
+						}
+					})
+				);
+				store.add(
+					quickPick.onDidTriggerButton(() => {
+						resolve('back');
+					})
+				);
+				store.add(
+					quickPick.onDidHide(() => {
+						resolve(undefined);
+					})
+				);
 				quickPick.show();
 			});
 
@@ -204,7 +268,10 @@ export class McpPromptArgumentPick extends Disposable {
 					return { type: 'arg', value: value.label };
 				case 'file':
 					quickPick.busy = true;
-					return { type: 'arg', value: await this._fileService.readFile(value.uri).then(c => c.value.toString()) };
+					return {
+						type: 'arg',
+						value: await this._fileService.readFile(value.uri).then(c => c.value.toString()),
+					};
 				default:
 					assertNever(value);
 			}
@@ -234,18 +301,23 @@ export class McpPromptArgumentPick extends Disposable {
 
 			const { results } = await this._searchService.fileSearch(query, token);
 
-			return results.map((i): PickItem => ({
-				id: i.resource.toString(),
-				label: basename(i.resource),
-				description: this._labelService.getUriLabel(i.resource),
-				iconClasses: getIconClasses(this._modelService, this._languageService, i.resource),
-				uri: i.resource,
-				action: 'file',
-			}));
+			return results.map(
+				(i): PickItem => ({
+					id: i.resource.toString(),
+					label: basename(i.resource),
+					description: this._labelService.getUriLabel(i.resource),
+					iconClasses: getIconClasses(this._modelService, this._languageService, i.resource),
+					uri: i.resource,
+					action: 'file',
+				})
+			);
 		});
 	}
 
-	private _asyncCompletions(input: IObservable<string>, mapper: (input: string, token: CancellationToken) => Promise<PickItem[]>): IObservable<{ busy: boolean; picks: PickItem[] | undefined }> {
+	private _asyncCompletions(
+		input: IObservable<string>,
+		mapper: (input: string, token: CancellationToken) => Promise<PickItem[]>
+	): IObservable<{ busy: boolean; picks: PickItem[] | undefined }> {
 		const promise = derived(reader => {
 			const queryValue = input.read(reader);
 			const cts = new CancellationTokenSource();
@@ -263,21 +335,26 @@ export class McpPromptArgumentPick extends Disposable {
 		});
 	}
 
-	private async _getTerminalOutput(command: string, token: CancellationToken): Promise<string | undefined> {
+	private async _getTerminalOutput(
+		command: string,
+		token: CancellationToken
+	): Promise<string | undefined> {
 		// The terminal outlives the specific pick argument. This is both a feature and a bug.
 		// Feature: we can reuse the terminal if the user puts in multiple args
 		// Bug workaround: if we dispose the terminal here and that results in the panel
 		// closing, then focus moves out of the quickpick and into the active editor pane (chat input)
 		// https://github.com/microsoft/vscode/blob/6a016f2507cd200b12ca6eecdab2f59da15aacb1/src/vs/workbench/browser/parts/editor/editorGroupView.ts#L1084
-		const terminal = (this._terminal ??= this._register(await this._terminalService.createTerminal({
-			config: {
-				name: localize('mcp.terminal.name', "MCP Terminal"),
-				isTransient: true,
-				forceShellIntegration: true,
-				isFeatureTerminal: true,
-			},
-			location: TerminalLocation.Panel,
-		})));
+		const terminal = (this._terminal ??= this._register(
+			await this._terminalService.createTerminal({
+				config: {
+					name: localize('mcp.terminal.name', 'MCP Terminal'),
+					isTransient: true,
+					forceShellIntegration: true,
+					isFeatureTerminal: true,
+				},
+				location: TerminalLocation.Panel,
+			})
+		));
 
 		this._terminalService.setActiveInstance(terminal);
 		this._terminalGroupService.showPanel(false);
@@ -289,32 +366,45 @@ export class McpPromptArgumentPick extends Disposable {
 
 		const store = new DisposableStore();
 		return await new Promise<string | undefined>(resolve => {
-			store.add(terminal.capabilities.onDidAddCapability(e => {
-				if (e.id === TerminalCapability.CommandDetection) {
+			store.add(
+				terminal.capabilities.onDidAddCapability(e => {
+					if (e.id === TerminalCapability.CommandDetection) {
+						store.dispose();
+						resolve(this._getTerminalOutputInner(terminal, command, e.capability, token));
+					}
+				})
+			);
+			store.add(
+				token.onCancellationRequested(() => {
 					store.dispose();
-					resolve(this._getTerminalOutputInner(terminal, command, e.capability, token));
-				}
-			}));
-			store.add(token.onCancellationRequested(() => {
-				store.dispose();
-				resolve(undefined);
-			}));
-			store.add(disposableTimeout(() => {
-				store.dispose();
-				resolve(this._getTerminalOutputInner(terminal, command, undefined, token));
-			}, SHELL_INTEGRATION_TIMEOUT));
+					resolve(undefined);
+				})
+			);
+			store.add(
+				disposableTimeout(() => {
+					store.dispose();
+					resolve(this._getTerminalOutputInner(terminal, command, undefined, token));
+				}, SHELL_INTEGRATION_TIMEOUT)
+			);
 		});
 	}
 
-	private async _getTerminalOutputInner(terminal: ITerminalInstance, command: string, shellIntegration: ICommandDetectionCapability | undefined, token: CancellationToken) {
+	private async _getTerminalOutputInner(
+		terminal: ITerminalInstance,
+		command: string,
+		shellIntegration: ICommandDetectionCapability | undefined,
+		token: CancellationToken
+	) {
 		const store = new DisposableStore();
 		return new Promise<string | undefined>(resolve => {
 			let allData: string = '';
-			store.add(terminal.onLineData(d => allData += d + '\n'));
+			store.add(terminal.onLineData(d => (allData += d + '\n')));
 			if (shellIntegration) {
 				store.add(shellIntegration.onCommandFinished(e => resolve(e.getOutput() || allData)));
 			} else {
-				const done = store.add(new RunOnceScheduler(() => resolve(allData), NO_SHELL_INTEGRATION_IDLE));
+				const done = store.add(
+					new RunOnceScheduler(() => resolve(allData), NO_SHELL_INTEGRATION_IDLE)
+				);
 				store.add(terminal.onData(() => done.schedule()));
 			}
 			store.add(token.onCancellationRequested(() => resolve(undefined)));

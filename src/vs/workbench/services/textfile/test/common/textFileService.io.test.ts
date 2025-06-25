@@ -4,10 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { ITextFileService, snapshotToString, TextFileOperationError, TextFileOperationResult, stringToSnapshot } from '../../common/textfiles.js';
+import {
+	ITextFileService,
+	snapshotToString,
+	TextFileOperationError,
+	TextFileOperationResult,
+	stringToSnapshot,
+} from '../../common/textfiles.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { join, basename } from '../../../../../base/common/path.js';
-import { UTF16le, UTF8_with_bom, UTF16be, UTF8, UTF16le_BOM, UTF16be_BOM, UTF8_BOM } from '../../common/encoding.js';
+import {
+	UTF16le,
+	UTF8_with_bom,
+	UTF16be,
+	UTF8,
+	UTF16le_BOM,
+	UTF16be_BOM,
+	UTF8_BOM,
+} from '../../common/encoding.js';
 import { bufferToStream, VSBuffer } from '../../../../../base/common/buffer.js';
 import { createTextModel } from '../../../../../editor/test/common/testTextModel.js';
 import { ITextSnapshot, DefaultEndOfLine } from '../../../../../editor/common/model.js';
@@ -27,7 +41,9 @@ export interface Params {
 	readFile(fsPath: string): Promise<VSBuffer | Buffer>;
 	readFile(fsPath: string, encoding: string): Promise<string>;
 	readFile(fsPath: string, encoding?: string): Promise<VSBuffer | Buffer | string>;
-	detectEncodingByBOM(fsPath: string): Promise<typeof UTF16be | typeof UTF16le | typeof UTF8_with_bom | null>;
+	detectEncodingByBOM(
+		fsPath: string
+	): Promise<typeof UTF16be | typeof UTF16le | typeof UTF8_with_bom | null>;
 }
 
 /**
@@ -108,7 +124,10 @@ export default function createSuite(params: Params) {
 		assert.strictEqual(detectedEncoding, UTF16le);
 
 		const res = await readFile(resource.fsPath);
-		assert.strictEqual(res.byteLength, 'Hello World'.length * 2 /* UTF16 2bytes per char */ + UTF16le_BOM.length);
+		assert.strictEqual(
+			res.byteLength,
+			'Hello World'.length * 2 /* UTF16 2bytes per char */ + UTF16le_BOM.length
+		);
 	});
 
 	test('create - UTF 16 BE - no content', async () => {
@@ -136,7 +155,10 @@ export default function createSuite(params: Params) {
 		assert.strictEqual(detectedEncoding, UTF16be);
 
 		const res = await readFile(resource.fsPath);
-		assert.strictEqual(res.byteLength, 'Hello World'.length * 2 /* UTF16 2bytes per char */ + UTF16be_BOM.length);
+		assert.strictEqual(
+			res.byteLength,
+			'Hello World'.length * 2 /* UTF16 2bytes per char */ + UTF16be_BOM.length
+		);
 	});
 
 	test('create - UTF 8 BOM - no content', async () => {
@@ -203,22 +225,47 @@ export default function createSuite(params: Params) {
 	});
 
 	test('write - use encoding (UTF 16 BE) - small content as string', async () => {
-		await testEncoding(URI.file(join(testDir, 'small.txt')), UTF16be, 'Hello\nWorld', 'Hello\nWorld');
+		await testEncoding(
+			URI.file(join(testDir, 'small.txt')),
+			UTF16be,
+			'Hello\nWorld',
+			'Hello\nWorld'
+		);
 	});
 
 	test('write - use encoding (UTF 16 BE) - small content as snapshot', async () => {
-		await testEncoding(URI.file(join(testDir, 'small.txt')), UTF16be, createTextModelSnapshot('Hello\nWorld'), 'Hello\nWorld');
+		await testEncoding(
+			URI.file(join(testDir, 'small.txt')),
+			UTF16be,
+			createTextModelSnapshot('Hello\nWorld'),
+			'Hello\nWorld'
+		);
 	});
 
 	test('write - use encoding (UTF 16 BE) - large content as string', async () => {
-		await testEncoding(URI.file(join(testDir, 'lorem.txt')), UTF16be, 'Hello\nWorld', 'Hello\nWorld');
+		await testEncoding(
+			URI.file(join(testDir, 'lorem.txt')),
+			UTF16be,
+			'Hello\nWorld',
+			'Hello\nWorld'
+		);
 	});
 
 	test('write - use encoding (UTF 16 BE) - large content as snapshot', async () => {
-		await testEncoding(URI.file(join(testDir, 'lorem.txt')), UTF16be, createTextModelSnapshot('Hello\nWorld'), 'Hello\nWorld');
+		await testEncoding(
+			URI.file(join(testDir, 'lorem.txt')),
+			UTF16be,
+			createTextModelSnapshot('Hello\nWorld'),
+			'Hello\nWorld'
+		);
 	});
 
-	async function testEncoding(resource: URI, encoding: string, content: string | ITextSnapshot, expectedContent: string) {
+	async function testEncoding(
+		resource: URI,
+		encoding: string,
+		content: string | ITextSnapshot,
+		expectedContent: string
+	) {
 		await service.write(resource, content, { encoding });
 
 		const detectedEncoding = await detectEncodingByBOM(resource.fsPath);
@@ -227,7 +274,9 @@ export default function createSuite(params: Params) {
 		const resolved = await service.readStream(resource);
 		assert.strictEqual(resolved.encoding, encoding);
 
-		const textBuffer = disposables.add(resolved.value.create(isWindows ? DefaultEndOfLine.CRLF : DefaultEndOfLine.LF).textBuffer);
+		const textBuffer = disposables.add(
+			resolved.value.create(isWindows ? DefaultEndOfLine.CRLF : DefaultEndOfLine.LF).textBuffer
+		);
 		assert.strictEqual(snapshotToString(textBuffer.createSnapshot(false)), expectedContent);
 	}
 
@@ -235,11 +284,24 @@ export default function createSuite(params: Params) {
 		const filePath = join(testDir, 'some_cp1252.txt');
 		const contents = await readFile(filePath, 'utf8');
 		const eol = /\r\n/.test(contents) ? '\r\n' : '\n';
-		await testEncodingKeepsData(URI.file(filePath), 'cp1252', ['ObjectCount = LoadObjects("Öffentlicher Ordner");', '', 'Private = "Persönliche Information"', ''].join(eol));
+		await testEncodingKeepsData(
+			URI.file(filePath),
+			'cp1252',
+			[
+				'ObjectCount = LoadObjects("Öffentlicher Ordner");',
+				'',
+				'Private = "Persönliche Information"',
+				'',
+			].join(eol)
+		);
 	});
 
 	test('write - use encoding (shiftjis)', async () => {
-		await testEncodingKeepsData(URI.file(join(testDir, 'some_shiftjis.txt')), 'shiftjis', '中文abc');
+		await testEncodingKeepsData(
+			URI.file(join(testDir, 'some_shiftjis.txt')),
+			'shiftjis',
+			'中文abc'
+		);
 	});
 
 	test('write - use encoding (gbk)', async () => {
@@ -247,7 +309,11 @@ export default function createSuite(params: Params) {
 	});
 
 	test('write - use encoding (cyrillic)', async () => {
-		await testEncodingKeepsData(URI.file(join(testDir, 'some_cyrillic.txt')), 'cp866', 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя');
+		await testEncodingKeepsData(
+			URI.file(join(testDir, 'some_cyrillic.txt')),
+			'cp866',
+			'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя'
+		);
 	});
 
 	test('write - use encoding (big5)', async () => {
@@ -256,7 +322,9 @@ export default function createSuite(params: Params) {
 
 	async function testEncodingKeepsData(resource: URI, encoding: string, expected: string) {
 		let resolved = await service.readStream(resource, { encoding });
-		const textBuffer = disposables.add(resolved.value.create(isWindows ? DefaultEndOfLine.CRLF : DefaultEndOfLine.LF).textBuffer);
+		const textBuffer = disposables.add(
+			resolved.value.create(isWindows ? DefaultEndOfLine.CRLF : DefaultEndOfLine.LF).textBuffer
+		);
 		const content = snapshotToString(textBuffer.createSnapshot(false));
 		assert.strictEqual(content, expected);
 
@@ -301,7 +369,12 @@ export default function createSuite(params: Params) {
 		const resolved = await service.readStream(resource);
 		assert.strictEqual(resolved.encoding, UTF16le);
 
-		await testEncoding(URI.file(join(testDir, 'some_utf16le.css')), UTF16le, 'Hello\nWorld', 'Hello\nWorld');
+		await testEncoding(
+			URI.file(join(testDir, 'some_utf16le.css')),
+			UTF16le,
+			'Hello\nWorld',
+			'Hello\nWorld'
+		);
 	});
 
 	test('write - encoding preserved (UTF 16 LE) - content as snapshot', async () => {
@@ -310,7 +383,12 @@ export default function createSuite(params: Params) {
 		const resolved = await service.readStream(resource);
 		assert.strictEqual(resolved.encoding, UTF16le);
 
-		await testEncoding(URI.file(join(testDir, 'some_utf16le.css')), UTF16le, createTextModelSnapshot('Hello\nWorld'), 'Hello\nWorld');
+		await testEncoding(
+			URI.file(join(testDir, 'some_utf16le.css')),
+			UTF16le,
+			createTextModelSnapshot('Hello\nWorld'),
+			'Hello\nWorld'
+		);
 	});
 
 	test('write - UTF8 variations - content as string', async () => {
@@ -347,7 +425,9 @@ export default function createSuite(params: Params) {
 		let detectedEncoding = await detectEncodingByBOM(resource.fsPath);
 		assert.strictEqual(detectedEncoding, null);
 
-		const model = disposables.add(createTextModel((await readFile(resource.fsPath)).toString() + 'updates'));
+		const model = disposables.add(
+			createTextModel((await readFile(resource.fsPath)).toString() + 'updates')
+		);
 		await service.write(resource, model.createSnapshot(), { encoding: UTF8_with_bom });
 
 		detectedEncoding = await detectEncodingByBOM(resource.fsPath);
@@ -420,7 +500,8 @@ export default function createSuite(params: Params) {
 		const textBuffer = disposables.add(result.value.create(DefaultEndOfLine.LF).textBuffer);
 		assert.strictEqual(
 			snapshotToString(textBuffer.createSnapshot(false)),
-			snapshotToString(createTextModelSnapshot(content, false)));
+			snapshotToString(createTextModelSnapshot(content, false))
+		);
 	}
 
 	test('read - small text', async () => {
@@ -449,7 +530,10 @@ export default function createSuite(params: Params) {
 
 		const result = await service.readStream(resource, { encoding });
 		assert.strictEqual(result.encoding, encoding);
-		assert.strictEqual(result.value.getFirstLineText(999999), 'Private = "Persönlicheß Information"');
+		assert.strictEqual(
+			result.value.getFirstLineText(999999),
+			'Private = "Persönlicheß Information"'
+		);
 	});
 
 	test('read - encoding picked up (CP1252)', async () => {
@@ -517,7 +601,10 @@ export default function createSuite(params: Params) {
 	});
 
 	test('readStream - large Cyrillic', async () => {
-		await testLargeEncoding('cp866', 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя');
+		await testLargeEncoding(
+			'cp866',
+			'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя'
+		);
 	});
 
 	test('readStream - large GBK', async () => {
@@ -562,7 +649,9 @@ export default function createSuite(params: Params) {
 			rawFileVSBuffer = VSBuffer.wrap(rawFile);
 		}
 
-		const factory = await createTextBufferFactoryFromStream(await service.getDecodedStream(resource, bufferToStream(rawFileVSBuffer), { encoding }));
+		const factory = await createTextBufferFactoryFromStream(
+			await service.getDecodedStream(resource, bufferToStream(rawFileVSBuffer), { encoding })
+		);
 
 		const textBuffer2 = disposables.add(factory.create(DefaultEndOfLine.LF).textBuffer);
 		contents = snapshotToString(textBuffer2.createSnapshot(false));
@@ -596,14 +685,20 @@ export default function createSuite(params: Params) {
 		// This file is determined to be Windows-1252 unless candidateDetectEncoding is set.
 		const resource = URI.file(join(testDir, 'some.shiftjis.1.txt'));
 
-		const result = await service.readStream(resource, { autoGuessEncoding: true, candidateGuessEncodings: ['utf-8', 'shiftjis', 'euc-jp'] });
+		const result = await service.readStream(resource, {
+			autoGuessEncoding: true,
+			candidateGuessEncodings: ['utf-8', 'shiftjis', 'euc-jp'],
+		});
 		assert.strictEqual(result.encoding, 'shiftjis');
 	});
 
 	test('readStream - autoguessEncoding (candidateGuessEncodings is Empty)', async () => {
 		const resource = URI.file(join(testDir, 'some_cp1252.txt'));
 
-		const result = await service.readStream(resource, { autoGuessEncoding: true, candidateGuessEncodings: [] });
+		const result = await service.readStream(resource, {
+			autoGuessEncoding: true,
+			candidateGuessEncodings: [],
+		});
 		assert.strictEqual(result.encoding, 'windows1252');
 	});
 
@@ -620,7 +715,9 @@ export default function createSuite(params: Params) {
 		assert.ok(error);
 		assert.strictEqual(error.textFileOperationResult, TextFileOperationResult.FILE_IS_BINARY);
 
-		const result = await service.readStream(URI.file(join(testDir, 'small.txt')), { acceptTextOnly: true });
+		const result = await service.readStream(URI.file(join(testDir, 'small.txt')), {
+			acceptTextOnly: true,
+		});
 		assert.strictEqual(result.name, 'small.txt');
 	});
 
@@ -637,7 +734,9 @@ export default function createSuite(params: Params) {
 		assert.ok(error);
 		assert.strictEqual(error.textFileOperationResult, TextFileOperationResult.FILE_IS_BINARY);
 
-		const result = await service.read(URI.file(join(testDir, 'small.txt')), { acceptTextOnly: true });
+		const result = await service.read(URI.file(join(testDir, 'small.txt')), {
+			acceptTextOnly: true,
+		});
 		assert.strictEqual(result.name, 'small.txt');
 	});
 }

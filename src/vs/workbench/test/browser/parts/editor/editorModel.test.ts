@@ -22,7 +22,10 @@ import { TestDialogService } from '../../../../../platform/dialogs/test/common/t
 import { IDialogService } from '../../../../../platform/dialogs/common/dialogs.js';
 import { TestNotificationService } from '../../../../../platform/notification/test/common/testNotificationService.js';
 import { INotificationService } from '../../../../../platform/notification/common/notification.js';
-import { TestStorageService, TestTextResourcePropertiesService } from '../../../common/workbenchTestServices.js';
+import {
+	TestStorageService,
+	TestTextResourcePropertiesService,
+} from '../../../common/workbenchTestServices.js';
 import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
 import { TestThemeService } from '../../../../../platform/theme/test/common/testThemeService.js';
 import { EditorModel } from '../../../../common/editor/editorModel.js';
@@ -41,10 +44,13 @@ import { ITreeSitterLibraryService } from '../../../../../editor/common/services
 import { TestTreeSitterLibraryService } from '../../../../../editor/test/common/services/testTreeSitterLibraryService.js';
 
 suite('EditorModel', () => {
-
-	class MyEditorModel extends EditorModel { }
+	class MyEditorModel extends EditorModel {}
 	class MyTextEditorModel extends BaseTextEditorModel {
-		testCreateTextEditorModel(value: ITextBufferFactory, resource?: URI, preferredLanguageId?: string) {
+		testCreateTextEditorModel(
+			value: ITextBufferFactory,
+			resource?: URI,
+			preferredLanguageId?: string
+		) {
 			return super.createTextEditorModel(value, resource, preferredLanguageId);
 		}
 
@@ -59,13 +65,19 @@ suite('EditorModel', () => {
 		const undoRedoService = new UndoRedoService(dialogService, notificationService);
 		instantiationService.stub(IWorkbenchEnvironmentService, TestEnvironmentService);
 		instantiationService.stub(IConfigurationService, new TestConfigurationService());
-		instantiationService.stub(ITextResourcePropertiesService, new TestTextResourcePropertiesService(instantiationService.get(IConfigurationService)));
+		instantiationService.stub(
+			ITextResourcePropertiesService,
+			new TestTextResourcePropertiesService(instantiationService.get(IConfigurationService))
+		);
 		instantiationService.stub(IDialogService, dialogService);
 		instantiationService.stub(INotificationService, notificationService);
 		instantiationService.stub(IUndoRedoService, undoRedoService);
 		instantiationService.stub(IEditorService, disposables.add(new TestEditorService()));
 		instantiationService.stub(IThemeService, new TestThemeService());
-		instantiationService.stub(ILanguageConfigurationService, disposables.add(new TestLanguageConfigurationService()));
+		instantiationService.stub(
+			ILanguageConfigurationService,
+			disposables.add(new TestLanguageConfigurationService())
+		);
 		instantiationService.stub(IStorageService, disposables.add(new TestStorageService()));
 		instantiationService.stub(ITreeSitterLibraryService, new TestTreeSitterLibraryService());
 
@@ -91,10 +103,12 @@ suite('EditorModel', () => {
 
 		const model = disposables.add(new MyEditorModel());
 
-		disposables.add(model.onWillDispose(() => {
-			assert(true);
-			counter++;
-		}));
+		disposables.add(
+			model.onWillDispose(() => {
+				assert(true);
+				counter++;
+			})
+		);
 
 		await model.resolve();
 		assert.strictEqual(model.isDisposed(), false);
@@ -107,10 +121,19 @@ suite('EditorModel', () => {
 	test('BaseTextEditorModel', async () => {
 		const modelService = stubModelService(instantiationService);
 
-		const model = disposables.add(new MyTextEditorModel(modelService, languageService, disposables.add(instantiationService.createInstance(LanguageDetectionService)), instantiationService.createInstance(TestAccessibilityService)));
+		const model = disposables.add(
+			new MyTextEditorModel(
+				modelService,
+				languageService,
+				disposables.add(instantiationService.createInstance(LanguageDetectionService)),
+				instantiationService.createInstance(TestAccessibilityService)
+			)
+		);
 		await model.resolve();
 
-		disposables.add(model.testCreateTextEditorModel(createTextBufferFactory('foo'), null!, Mimes.text));
+		disposables.add(
+			model.testCreateTextEditorModel(createTextBufferFactory('foo'), null!, Mimes.text)
+		);
 		assert.strictEqual(model.isResolved(), true);
 	});
 

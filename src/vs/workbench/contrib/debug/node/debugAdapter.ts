@@ -13,16 +13,21 @@ import * as strings from '../../../../base/common/strings.js';
 import { Promises } from '../../../../base/node/pfs.js';
 import * as nls from '../../../../nls.js';
 import { IExtensionDescription } from '../../../../platform/extensions/common/extensions.js';
-import { IDebugAdapterExecutable, IDebugAdapterNamedPipeServer, IDebugAdapterServer, IDebuggerContribution, IPlatformSpecificAdapterContribution } from '../common/debug.js';
+import {
+	IDebugAdapterExecutable,
+	IDebugAdapterNamedPipeServer,
+	IDebugAdapterServer,
+	IDebuggerContribution,
+	IPlatformSpecificAdapterContribution,
+} from '../common/debug.js';
 import { AbstractDebugAdapter } from '../common/abstractDebugAdapter.js';
 
 /**
  * An implementation that communicates via two streams with the debug adapter.
  */
 export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
-
 	private static readonly TWO_CRLF = '\r\n\r\n';
-	private static readonly HEADER_LINESEPARATOR = /\r?\n/;	// allow for non-RFC 2822 conforming line separators
+	private static readonly HEADER_LINESEPARATOR = /\r?\n/; // allow for non-RFC 2822 conforming line separators
 	private static readonly HEADER_FIELDSEPARATOR = /: */;
 
 	private outputStream!: stream.Writable;
@@ -34,7 +39,6 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 	}
 
 	protected connect(readable: stream.Readable, writable: stream.Writable): void {
-
 		this.outputStream = writable;
 		this.rawData = Buffer.allocUnsafe(0);
 		this.contentLength = -1;
@@ -43,15 +47,16 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 	}
 
 	sendMessage(message: DebugProtocol.ProtocolMessage): void {
-
 		if (this.outputStream) {
 			const json = JSON.stringify(message);
-			this.outputStream.write(`Content-Length: ${Buffer.byteLength(json, 'utf8')}${StreamDebugAdapter.TWO_CRLF}${json}`, 'utf8');
+			this.outputStream.write(
+				`Content-Length: ${Buffer.byteLength(json, 'utf8')}${StreamDebugAdapter.TWO_CRLF}${json}`,
+				'utf8'
+			);
 		}
 	}
 
 	private handleData(data: Buffer): void {
-
 		this.rawData = Buffer.concat([this.rawData, data]);
 
 		while (true) {
@@ -67,7 +72,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 							this._onError.fire(new Error((e.message || e) + '\n' + message));
 						}
 					}
-					continue;	// there may be more complete messages to process
+					continue; // there may be more complete messages to process
 				}
 			} else {
 				const idx = this.rawData.indexOf(StreamDebugAdapter.TWO_CRLF);
@@ -90,7 +95,6 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 }
 
 export abstract class NetworkDebugAdapter extends StreamDebugAdapter {
-
 	protected socket?: net.Socket;
 
 	protected abstract createConnection(connectionListener: () => void): net.Socket;
@@ -139,15 +143,18 @@ export abstract class NetworkDebugAdapter extends StreamDebugAdapter {
 
 /**
  * An implementation that connects to a debug adapter via a socket.
-*/
+ */
 export class SocketDebugAdapter extends NetworkDebugAdapter {
-
 	constructor(private adapterServer: IDebugAdapterServer) {
 		super();
 	}
 
 	protected createConnection(connectionListener: () => void): net.Socket {
-		return net.createConnection(this.adapterServer.port, this.adapterServer.host || '127.0.0.1', connectionListener);
+		return net.createConnection(
+			this.adapterServer.port,
+			this.adapterServer.host || '127.0.0.1',
+			connectionListener
+		);
 	}
 }
 
@@ -155,7 +162,6 @@ export class SocketDebugAdapter extends NetworkDebugAdapter {
  * An implementation that connects to a debug adapter via a NamedPipe (on Windows)/UNIX Domain Socket (on non-Windows).
  */
 export class NamedPipeDebugAdapter extends NetworkDebugAdapter {
-
 	constructor(private adapterServer: IDebugAdapterNamedPipeServer) {
 		super();
 	}
@@ -167,17 +173,18 @@ export class NamedPipeDebugAdapter extends NetworkDebugAdapter {
 
 /**
  * An implementation that launches the debug adapter as a separate process and communicates via stdin/stdout.
-*/
+ */
 export class ExecutableDebugAdapter extends StreamDebugAdapter {
-
 	private serverProcess: cp.ChildProcess | undefined;
 
-	constructor(private adapterExecutable: IDebugAdapterExecutable, private debugType: string) {
+	constructor(
+		private adapterExecutable: IDebugAdapterExecutable,
+		private debugType: string
+	) {
 		super();
 	}
 
 	async startSession(): Promise<void> {
-
 		const command = this.adapterExecutable.command;
 		const args = this.adapterExecutable.args;
 		const options = this.adapterExecutable.options || {};
@@ -188,7 +195,13 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 				if (path.isAbsolute(command)) {
 					const commandExists = await Promises.exists(command);
 					if (!commandExists) {
-						throw new Error(nls.localize('debugAdapterBinNotFound', "Debug adapter executable '{0}' does not exist.", command));
+						throw new Error(
+							nls.localize(
+								'debugAdapterBinNotFound',
+								"Debug adapter executable '{0}' does not exist.",
+								command
+							)
+						);
 					}
 				} else {
 					// relative path
@@ -198,8 +211,16 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 					}
 				}
 			} else {
-				throw new Error(nls.localize({ key: 'debugAdapterCannotDetermineExecutable', comment: ['Adapter executable file not found'] },
-					"Cannot determine executable for debug adapter '{0}'.", this.debugType));
+				throw new Error(
+					nls.localize(
+						{
+							key: 'debugAdapterCannotDetermineExecutable',
+							comment: ['Adapter executable file not found'],
+						},
+						"Cannot determine executable for debug adapter '{0}'.",
+						this.debugType
+					)
+				);
 			}
 
 			let env = process.env;
@@ -209,28 +230,39 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 
 			if (command === 'node') {
 				if (Array.isArray(args) && args.length > 0) {
-					const isElectron = !!process.env['ELECTRON_RUN_AS_NODE'] || !!process.versions['electron'];
+					const isElectron =
+						!!process.env['ELECTRON_RUN_AS_NODE'] || !!process.versions['electron'];
 					const forkOptions: cp.ForkOptions = {
 						env: env,
-						execArgv: isElectron ? ['-e', 'delete process.env.ELECTRON_RUN_AS_NODE;require(process.argv[1])'] : [],
-						silent: true
+						execArgv: isElectron
+							? ['-e', 'delete process.env.ELECTRON_RUN_AS_NODE;require(process.argv[1])']
+							: [],
+						silent: true,
 					};
 					if (options.cwd) {
 						forkOptions.cwd = options.cwd;
 					}
 					const child = cp.fork(args[0], args.slice(1), forkOptions);
 					if (!child.pid) {
-						throw new Error(nls.localize('unableToLaunchDebugAdapter', "Unable to launch debug adapter from '{0}'.", args[0]));
+						throw new Error(
+							nls.localize(
+								'unableToLaunchDebugAdapter',
+								"Unable to launch debug adapter from '{0}'.",
+								args[0]
+							)
+						);
 					}
 					this.serverProcess = child;
 				} else {
-					throw new Error(nls.localize('unableToLaunchDebugAdapterNoArgs', "Unable to launch debug adapter."));
+					throw new Error(
+						nls.localize('unableToLaunchDebugAdapterNoArgs', 'Unable to launch debug adapter.')
+					);
 				}
 			} else {
 				let spawnCommand = command;
 				let spawnArgs = args;
 				const spawnOptions: cp.SpawnOptions = {
-					env: env
+					env: env,
 				};
 				if (options.cwd) {
 					spawnOptions.cwd = options.cwd;
@@ -271,14 +303,12 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 
 			// finally connect to the DA
 			this.connect(this.serverProcess.stdout!, this.serverProcess.stdin!);
-
 		} catch (err) {
 			this._onError.fire(err);
 		}
 	}
 
 	async stopSession(): Promise<void> {
-
 		if (!this.serverProcess) {
 			return Promise.resolve(undefined);
 		}
@@ -289,11 +319,14 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 		await this.cancelPendingRequests();
 		if (platform.isWindows) {
 			return new Promise<void>((c, e) => {
-				const killer = cp.exec(`taskkill /F /T /PID ${this.serverProcess!.pid}`, function (err, stdout, stderr) {
-					if (err) {
-						return e(err);
+				const killer = cp.exec(
+					`taskkill /F /T /PID ${this.serverProcess!.pid}`,
+					function (err, stdout, stderr) {
+						if (err) {
+							return e(err);
+						}
 					}
-				});
+				);
 				killer.on('exit', c);
 				killer.on('error', e);
 			});
@@ -303,14 +336,18 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 		}
 	}
 
-	private static extract(platformContribution: IPlatformSpecificAdapterContribution, extensionFolderPath: string): IDebuggerContribution | undefined {
+	private static extract(
+		platformContribution: IPlatformSpecificAdapterContribution,
+		extensionFolderPath: string
+	): IDebuggerContribution | undefined {
 		if (!platformContribution) {
 			return undefined;
 		}
 
 		const result: IDebuggerContribution = Object.create(null);
 		if (platformContribution.runtime) {
-			if (platformContribution.runtime.indexOf('./') === 0) {	// TODO
+			if (platformContribution.runtime.indexOf('./') === 0) {
+				// TODO
 				result.runtime = path.join(extensionFolderPath, platformContribution.runtime);
 			} else {
 				result.runtime = platformContribution.runtime;
@@ -350,7 +387,10 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 		return result;
 	}
 
-	static platformAdapterExecutable(extensionDescriptions: IExtensionDescription[], debugType: string): IDebugAdapterExecutable | undefined {
+	static platformAdapterExecutable(
+		extensionDescriptions: IExtensionDescription[],
+		debugType: string
+	): IDebugAdapterExecutable | undefined {
 		let result: IDebuggerContribution = Object.create(null);
 		debugType = debugType.toLowerCase();
 
@@ -359,13 +399,17 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 			if (ed.contributes) {
 				const debuggers = <IDebuggerContribution[]>ed.contributes['debuggers'];
 				if (debuggers && debuggers.length > 0) {
-					debuggers.filter(dbg => typeof dbg.type === 'string' && strings.equalsIgnoreCase(dbg.type, debugType)).forEach(dbg => {
-						// extract relevant attributes and make them absolute where needed
-						const extractedDbg = ExecutableDebugAdapter.extract(dbg, ed.extensionLocation.fsPath);
+					debuggers
+						.filter(
+							dbg => typeof dbg.type === 'string' && strings.equalsIgnoreCase(dbg.type, debugType)
+						)
+						.forEach(dbg => {
+							// extract relevant attributes and make them absolute where needed
+							const extractedDbg = ExecutableDebugAdapter.extract(dbg, ed.extensionLocation.fsPath);
 
-						// merge
-						result = objects.mixin(result, extractedDbg, ed.isBuiltin);
-					});
+							// merge
+							result = objects.mixin(result, extractedDbg, ed.isBuiltin);
+						});
 				}
 			}
 		}
@@ -393,13 +437,15 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 			return {
 				type: 'executable',
 				command: runtime,
-				args: (runtimeArgs || []).concat(typeof program === 'string' ? [program] : []).concat(args || [])
+				args: (runtimeArgs || [])
+					.concat(typeof program === 'string' ? [program] : [])
+					.concat(args || []),
 			};
 		} else if (program) {
 			return {
 				type: 'executable',
 				command: program,
-				args: args || []
+				args: args || [],
 			};
 		}
 

@@ -15,7 +15,7 @@ export const enum TerminalHistoryCommandId {
 
 export const defaultTerminalHistoryCommandsToSkipShell = [
 	TerminalHistoryCommandId.GoToRecentDirectory,
-	TerminalHistoryCommandId.RunRecentCommand
+	TerminalHistoryCommandId.RunRecentCommand,
 ];
 
 export const enum TerminalHistorySettingId {
@@ -25,8 +25,11 @@ export const enum TerminalHistorySettingId {
 export const terminalHistoryConfiguration: IStringDictionary<IConfigurationPropertySchema> = {
 	[TerminalHistorySettingId.ShellIntegrationCommandHistory]: {
 		restricted: true,
-		markdownDescription: localize('terminal.integrated.shellIntegration.history', "Controls the number of recently used commands to keep in the terminal command history. Set to 0 to disable terminal command history."),
+		markdownDescription: localize(
+			'terminal.integrated.shellIntegration.history',
+			'Controls the number of recently used commands to keep in the terminal command history. Set to 0 to disable terminal command history.'
+		),
 		type: 'number',
-		default: 100
+		default: 100,
 	},
 };

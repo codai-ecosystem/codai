@@ -9,7 +9,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 import { pick } from '../../common/arrays.js';
 
 suite('Arrays', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('removeFastWithoutKeepingOrder', () => {
@@ -50,8 +49,11 @@ suite('Arrays', () => {
 	});
 
 	test('quickSelect', () => {
-
-		function assertMedian(expexted: number, data: number[], nth: number = Math.floor(data.length / 2)) {
+		function assertMedian(
+			expexted: number,
+			data: number[],
+			nth: number = Math.floor(data.length / 2)
+		) {
 			const compare = (a: number, b: number) => a - b;
 			const actual1 = arrays.quickSelect(nth, data, compare);
 			assert.strictEqual(actual1, expexted);
@@ -73,14 +75,10 @@ suite('Arrays', () => {
 		}
 
 		let d = arrays.sortedDiff([1, 2, 4], [], compare);
-		assert.deepStrictEqual(d, [
-			{ start: 0, deleteCount: 3, toInsert: [] }
-		]);
+		assert.deepStrictEqual(d, [{ start: 0, deleteCount: 3, toInsert: [] }]);
 
 		d = arrays.sortedDiff([], [1, 2, 4], compare);
-		assert.deepStrictEqual(d, [
-			{ start: 0, deleteCount: 0, toInsert: [1, 2, 4] }
-		]);
+		assert.deepStrictEqual(d, [{ start: 0, deleteCount: 0, toInsert: [1, 2, 4] }]);
 
 		d = arrays.sortedDiff([1, 2, 4], [1, 2, 4], compare);
 		assert.deepStrictEqual(d, []);
@@ -102,13 +100,11 @@ suite('Arrays', () => {
 		d = arrays.sortedDiff([1, 3, 5, 7], [5, 9, 11], compare);
 		assert.deepStrictEqual(d, [
 			{ start: 0, deleteCount: 2, toInsert: [] },
-			{ start: 3, deleteCount: 1, toInsert: [9, 11] }
+			{ start: 3, deleteCount: 1, toInsert: [9, 11] },
 		]);
 
 		d = arrays.sortedDiff([1, 3, 7], [5, 9, 11], compare);
-		assert.deepStrictEqual(d, [
-			{ start: 0, deleteCount: 3, toInsert: [5, 9, 11] }
-		]);
+		assert.deepStrictEqual(d, [{ start: 0, deleteCount: 3, toInsert: [5, 9, 11] }]);
 	});
 
 	test('delta sorted arrays', function () {
@@ -185,9 +181,20 @@ suite('Arrays', () => {
 
 		assert.deepStrictEqual(arrays.distinct(['32', '4', '5'], compare), ['32', '4', '5']);
 		assert.deepStrictEqual(arrays.distinct(['32', '4', '5', '4'], compare), ['32', '4', '5']);
-		assert.deepStrictEqual(arrays.distinct(['32', 'constructor', '5', '1'], compare), ['32', 'constructor', '5', '1']);
-		assert.deepStrictEqual(arrays.distinct(['32', 'constructor', 'proto', 'proto', 'constructor'], compare), ['32', 'constructor', 'proto']);
-		assert.deepStrictEqual(arrays.distinct(['32', '4', '5', '32', '4', '5', '32', '4', '5', '5'], compare), ['32', '4', '5']);
+		assert.deepStrictEqual(arrays.distinct(['32', 'constructor', '5', '1'], compare), [
+			'32',
+			'constructor',
+			'5',
+			'1',
+		]);
+		assert.deepStrictEqual(
+			arrays.distinct(['32', 'constructor', 'proto', 'proto', 'constructor'], compare),
+			['32', 'constructor', 'proto']
+		);
+		assert.deepStrictEqual(
+			arrays.distinct(['32', '4', '5', '32', '4', '5', '32', '4', '5', '5'], compare),
+			['32', '4', '5']
+		);
 	});
 
 	test('top', () => {
@@ -377,7 +384,12 @@ suite('Arrays', () => {
 		const array = [{ v: 3 }, { v: 5 }, { v: 2 }, { v: 2 }, { v: 2 }, { v: 5 }];
 
 		assert.strictEqual(
-			array.indexOf(arraysFind.findFirstMax(array, arrays.compareBy(v => v.v, arrays.numberComparator))!),
+			array.indexOf(
+				arraysFind.findFirstMax(
+					array,
+					arrays.compareBy(v => v.v, arrays.numberComparator)
+				)!
+			),
 			1
 		);
 	});
@@ -386,7 +398,12 @@ suite('Arrays', () => {
 		const array = [{ v: 3 }, { v: 5 }, { v: 2 }, { v: 2 }, { v: 2 }, { v: 5 }];
 
 		assert.strictEqual(
-			array.indexOf(arraysFind.findLastMax(array, arrays.compareBy(v => v.v, arrays.numberComparator))!),
+			array.indexOf(
+				arraysFind.findLastMax(
+					array,
+					arrays.compareBy(v => v.v, arrays.numberComparator)
+				)!
+			),
 			5
 		);
 	});
@@ -395,7 +412,12 @@ suite('Arrays', () => {
 		const array = [{ v: 3 }, { v: 5 }, { v: 2 }, { v: 2 }, { v: 2 }, { v: 5 }];
 
 		assert.strictEqual(
-			array.indexOf(arraysFind.findFirstMin(array, arrays.compareBy(v => v.v, arrays.numberComparator))!),
+			array.indexOf(
+				arraysFind.findFirstMin(
+					array,
+					arrays.compareBy(v => v.v, arrays.numberComparator)
+				)!
+			),
 			2
 		);
 	});
@@ -403,58 +425,84 @@ suite('Arrays', () => {
 	suite('pick', () => {
 		suite('object', () => {
 			test('numbers', () => {
-				const array = [{ v: 3, foo: 'a' }, { v: 5, foo: 'b' }, { v: 2, foo: 'c' }, { v: 2, foo: 'd' }, { v: 17, bar: '1' }, { v: -100, baz: '10' }];
+				const array = [
+					{ v: 3, foo: 'a' },
+					{ v: 5, foo: 'b' },
+					{ v: 2, foo: 'c' },
+					{ v: 2, foo: 'd' },
+					{ v: 17, bar: '1' },
+					{ v: -100, baz: '10' },
+				];
 
-				assert.deepStrictEqual(
-					array.map(pick('v')),
-					[3, 5, 2, 2, 17, -100],
-				);
+				assert.deepStrictEqual(array.map(pick('v')), [3, 5, 2, 2, 17, -100]);
 			});
 
 			test('strings', () => {
-				const array = [{ v: 3, foo: 'a' }, { v: 5, foo: 'b' }, { v: 2, foo: 'c' }, { v: 2, foo: 'd' }, { v: 17, bar: '1' }, { v: -100, baz: '10' }, { foo: '12' }];
+				const array = [
+					{ v: 3, foo: 'a' },
+					{ v: 5, foo: 'b' },
+					{ v: 2, foo: 'c' },
+					{ v: 2, foo: 'd' },
+					{ v: 17, bar: '1' },
+					{ v: -100, baz: '10' },
+					{ foo: '12' },
+				];
 
-				assert.deepStrictEqual(
-					array.map(pick('foo')),
-					['a', 'b', 'c', 'd', undefined, undefined, '12'],
-				);
+				assert.deepStrictEqual(array.map(pick('foo')), [
+					'a',
+					'b',
+					'c',
+					'd',
+					undefined,
+					undefined,
+					'12',
+				]);
 			});
 
 			test('booleans', () => {
-				const array = [{ v: 3, foo: 'a' }, { v: 5, foo: 'b' }, { v: 2, foo: 'c' }, { v: 2, foo: 'd' }, { v: 17, bar: true }, { v: -100, bar: false }, { bar: false }];
+				const array = [
+					{ v: 3, foo: 'a' },
+					{ v: 5, foo: 'b' },
+					{ v: 2, foo: 'c' },
+					{ v: 2, foo: 'd' },
+					{ v: 17, bar: true },
+					{ v: -100, bar: false },
+					{ bar: false },
+				];
 
-				assert.deepStrictEqual(
-					array.map(pick('bar')),
-					[undefined, undefined, undefined, undefined, true, false, false],
-				);
+				assert.deepStrictEqual(array.map(pick('bar')), [
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					true,
+					false,
+					false,
+				]);
 			});
 
 			test('objects', () => {
 				const array = [{ v: { test: 12 } }, { v: { test: 24 } }, {}, { v: { test: 17892 } }];
 
-				assert.deepStrictEqual(
-					array.map(pick('v')),
-					[{ test: 12 }, { test: 24 }, undefined, { test: 17892 }],
-				);
+				assert.deepStrictEqual(array.map(pick('v')), [
+					{ test: 12 },
+					{ test: 24 },
+					undefined,
+					{ test: 17892 },
+				]);
 			});
 
 			test('mixed', () => {
 				const array = [{ v: { test: 104 } }, { v: 2 }, {}, { v: '24' }, { v: null }];
 
-				assert.deepStrictEqual(
-					array.map(pick('v')),
-					[{ test: 104 }, 2, undefined, '24', null],
-				);
+				assert.deepStrictEqual(array.map(pick('v')), [{ test: 104 }, 2, undefined, '24', null]);
 			});
 		});
 
 		test('string', () => {
 			const array = ['haallo', 'there', ':wave:', '!'];
 
-			assert.deepStrictEqual(
-				array.map(pick('length')),
-				[6, 5, 6, 1],
-			);
+			assert.deepStrictEqual(array.map(pick('length')), [6, 5, 6, 1]);
 		});
 	});
 
@@ -462,16 +510,34 @@ suite('Arrays', () => {
 		suite('takeWhile/takeFromEndWhile', () => {
 			test('TakeWhile 1', () => {
 				const queue1 = new arrays.ArrayQueue([9, 8, 1, 7, 6]);
-				assert.deepStrictEqual(queue1.takeWhile(x => x > 5), [9, 8]);
-				assert.deepStrictEqual(queue1.takeWhile(x => x < 7), [1]);
-				assert.deepStrictEqual(queue1.takeWhile(x => true), [7, 6]);
+				assert.deepStrictEqual(
+					queue1.takeWhile(x => x > 5),
+					[9, 8]
+				);
+				assert.deepStrictEqual(
+					queue1.takeWhile(x => x < 7),
+					[1]
+				);
+				assert.deepStrictEqual(
+					queue1.takeWhile(x => true),
+					[7, 6]
+				);
 			});
 
 			test('TakeFromEndWhile 1', () => {
 				const queue1 = new arrays.ArrayQueue([9, 8, 1, 7, 6]);
-				assert.deepStrictEqual(queue1.takeFromEndWhile(x => x > 5), [7, 6]);
-				assert.deepStrictEqual(queue1.takeFromEndWhile(x => x < 2), [1]);
-				assert.deepStrictEqual(queue1.takeFromEndWhile(x => true), [9, 8]);
+				assert.deepStrictEqual(
+					queue1.takeFromEndWhile(x => x > 5),
+					[7, 6]
+				);
+				assert.deepStrictEqual(
+					queue1.takeFromEndWhile(x => x < 2),
+					[1]
+				);
+				assert.deepStrictEqual(
+					queue1.takeFromEndWhile(x => true),
+					[9, 8]
+				);
 			});
 		});
 
@@ -490,13 +556,25 @@ suite('Arrays', () => {
 					const queue1 = new arrays.ArrayQueue(array);
 					assert.deepStrictEqual(queue1.takeWhile(predicate), normalize(array.filter(predicate)));
 					assert.deepStrictEqual(queue1.length, array.length - array.filter(predicate).length);
-					assert.deepStrictEqual(queue1.takeWhile(() => true), normalize(array.filter(negatedPredicate)));
+					assert.deepStrictEqual(
+						queue1.takeWhile(() => true),
+						normalize(array.filter(negatedPredicate))
+					);
 				}
 				{
 					const queue3 = new arrays.ArrayQueue(array);
-					assert.deepStrictEqual(queue3.takeFromEndWhile(negatedPredicate), normalize(array.filter(negatedPredicate)));
-					assert.deepStrictEqual(queue3.length, array.length - array.filter(negatedPredicate).length);
-					assert.deepStrictEqual(queue3.takeFromEndWhile(() => true), normalize(array.filter(predicate)));
+					assert.deepStrictEqual(
+						queue3.takeFromEndWhile(negatedPredicate),
+						normalize(array.filter(negatedPredicate))
+					);
+					assert.deepStrictEqual(
+						queue3.length,
+						array.length - array.filter(negatedPredicate).length
+					);
+					assert.deepStrictEqual(
+						queue3.takeFromEndWhile(() => true),
+						normalize(array.filter(predicate))
+					);
 				}
 			}
 

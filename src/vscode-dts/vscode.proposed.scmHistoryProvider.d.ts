@@ -26,12 +26,28 @@ declare module 'vscode' {
 		 */
 		onDidChangeHistoryItemRefs: Event<SourceControlHistoryItemRefsChangeEvent>;
 
-		provideHistoryItemRefs(historyItemRefs: string[] | undefined, token: CancellationToken): ProviderResult<SourceControlHistoryItemRef[]>;
-		provideHistoryItems(options: SourceControlHistoryOptions, token: CancellationToken): ProviderResult<SourceControlHistoryItem[]>;
-		provideHistoryItemChanges(historyItemId: string, historyItemParentId: string | undefined, token: CancellationToken): ProviderResult<SourceControlHistoryItemChange[]>;
+		provideHistoryItemRefs(
+			historyItemRefs: string[] | undefined,
+			token: CancellationToken
+		): ProviderResult<SourceControlHistoryItemRef[]>;
+		provideHistoryItems(
+			options: SourceControlHistoryOptions,
+			token: CancellationToken
+		): ProviderResult<SourceControlHistoryItem[]>;
+		provideHistoryItemChanges(
+			historyItemId: string,
+			historyItemParentId: string | undefined,
+			token: CancellationToken
+		): ProviderResult<SourceControlHistoryItemChange[]>;
 
-		resolveHistoryItemChatContext(historyItemId: string, token: CancellationToken): ProviderResult<string>;
-		resolveHistoryItemRefsCommonAncestor(historyItemRefs: string[], token: CancellationToken): ProviderResult<string>;
+		resolveHistoryItemChatContext(
+			historyItemId: string,
+			token: CancellationToken
+		): ProviderResult<string>;
+		resolveHistoryItemRefsCommonAncestor(
+			historyItemRefs: string[],
+			token: CancellationToken
+		): ProviderResult<string>;
 	}
 
 	export interface SourceControlHistoryOptions {

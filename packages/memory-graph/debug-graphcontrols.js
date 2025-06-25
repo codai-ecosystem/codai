@@ -4,9 +4,9 @@ import { render, screen } from '@testing-library/react';
 import { GraphControls } from './src/components/GraphControls.jsx';
 
 const defaultProps = {
-	onFilterChange: () => { },
+	onFilterChange: () => {},
 	currentFilter: 'data',
-	nodeTypes: ['data', 'api', 'processing']
+	nodeTypes: ['data', 'api', 'processing'],
 };
 
 // Debug the rendered component
@@ -21,7 +21,10 @@ try {
 	console.log('Data button found:', dataButton);
 	console.log('Data button classes:', dataButton.className);
 	console.log('Data button data-node-type:', dataButton.getAttribute('data-node-type'));
-	console.log('Has active class:', dataButton.classList.contains('memory-graph-controls__button--active'));
+	console.log(
+		'Has active class:',
+		dataButton.classList.contains('memory-graph-controls__button--active')
+	);
 } catch (e) {
 	console.log('Error finding data button:', e.message);
 }

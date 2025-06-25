@@ -13,8 +13,15 @@ export interface IEditorSemanticHighlightingOptions {
 	enabled: true | false | 'configuredByTheme';
 }
 
-export function isSemanticColoringEnabled(model: ITextModel, themeService: IThemeService, configurationService: IConfigurationService): boolean {
-	const setting = configurationService.getValue<IEditorSemanticHighlightingOptions>(SEMANTIC_HIGHLIGHTING_SETTING_ID, { overrideIdentifier: model.getLanguageId(), resource: model.uri })?.enabled;
+export function isSemanticColoringEnabled(
+	model: ITextModel,
+	themeService: IThemeService,
+	configurationService: IConfigurationService
+): boolean {
+	const setting = configurationService.getValue<IEditorSemanticHighlightingOptions>(
+		SEMANTIC_HIGHLIGHTING_SETTING_ID,
+		{ overrideIdentifier: model.getLanguageId(), resource: model.uri }
+	)?.enabled;
 	if (typeof setting === 'boolean') {
 		return setting;
 	}

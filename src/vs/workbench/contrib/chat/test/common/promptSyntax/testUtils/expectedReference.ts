@@ -58,7 +58,7 @@ interface IExpectedReferenceOptions {
  * An expected child reference to use in tests.
  */
 export class ExpectedReference {
-	constructor(private readonly options: IExpectedReferenceOptions) { }
+	constructor(private readonly options: IExpectedReferenceOptions) {}
 
 	/**
 	 * Validate that the provided reference is equal to this object.
@@ -71,58 +71,43 @@ export class ExpectedReference {
 		 * Validate the base properties of the reference first.
 		 */
 
-		assert.strictEqual(
-			other.uri.toString(),
-			uri.toString(),
-			`${errorPrefix} Incorrect 'uri'.`,
-		);
+		assert.strictEqual(other.uri.toString(), uri.toString(), `${errorPrefix} Incorrect 'uri'.`);
 
-		assert.strictEqual(
-			other.text,
-			text,
-			`${errorPrefix} Incorrect 'text'.`,
-		);
+		assert.strictEqual(other.text, text, `${errorPrefix} Incorrect 'text'.`);
 
-		assert.strictEqual(
-			other.path,
-			path,
-			`${errorPrefix} Incorrect 'path'.`,
-		);
+		assert.strictEqual(other.path, path, `${errorPrefix} Incorrect 'path'.`);
 
 		const range = new Range(
 			this.options.startLine,
 			this.options.startColumn,
 			this.options.startLine,
-			this.options.startColumn + text.length,
+			this.options.startColumn + text.length
 		);
 
 		assert(
 			range.equalsRange(other.range),
-			`${errorPrefix} Incorrect 'range': expected '${range}', got '${other.range}'.`,
+			`${errorPrefix} Incorrect 'range': expected '${range}', got '${other.range}'.`
 		);
 
 		if (path.length) {
-			assertDefined(
-				other.linkRange,
-				`${errorPrefix} Link range must be defined.`,
-			);
+			assertDefined(other.linkRange, `${errorPrefix} Link range must be defined.`);
 
 			const linkRange = new Range(
 				this.options.startLine,
 				this.options.pathStartColumn,
 				this.options.startLine,
-				this.options.pathStartColumn + path.length,
+				this.options.pathStartColumn + path.length
 			);
 
 			assert(
 				linkRange.equalsRange(other.linkRange),
-				`${errorPrefix} Incorrect 'linkRange': expected '${linkRange}', got '${other.linkRange}'.`,
+				`${errorPrefix} Incorrect 'linkRange': expected '${linkRange}', got '${other.linkRange}'.`
 			);
 		} else {
 			assert.strictEqual(
 				other.linkRange,
 				undefined,
-				`${errorPrefix} Link range must be 'undefined'.`,
+				`${errorPrefix} Link range must be 'undefined'.`
 			);
 		}
 
@@ -133,20 +118,14 @@ export class ExpectedReference {
 		if (childrenOrError instanceof ResolveError) {
 			const error = childrenOrError;
 			const { errorCondition } = other;
-			assertDefined(
-				errorCondition,
-				`${errorPrefix} Expected 'errorCondition' to be defined.`,
-			);
+			assertDefined(errorCondition, `${errorPrefix} Expected 'errorCondition' to be defined.`);
 
 			assert(
 				errorCondition instanceof ResolveError,
-				`${errorPrefix} Expected 'errorCondition' to be a 'ResolveError'.`,
+				`${errorPrefix} Expected 'errorCondition' to be a 'ResolveError'.`
 			);
 
-			assert(
-				error.sameTypeAs(errorCondition),
-				`${errorPrefix} Incorrect 'errorCondition' type.`,
-			);
+			assert(error.sameTypeAs(errorCondition), `${errorPrefix} Incorrect 'errorCondition' type.`);
 
 			return;
 		}
@@ -159,7 +138,7 @@ export class ExpectedReference {
 
 			assertDefined(
 				reference,
-				`${errorPrefix} Expected reference #${i} be ${children[i]}, got 'undefined'.`,
+				`${errorPrefix} Expected reference #${i} be ${children[i]}, got 'undefined'.`
 			);
 
 			children[i].validateEqual(reference);
@@ -169,10 +148,7 @@ export class ExpectedReference {
 			const extraReference = references[children.length];
 
 			// sanity check
-			assertDefined(
-				extraReference,
-				`${errorPrefix} Extra reference must be defined.`,
-			);
+			assertDefined(extraReference, `${errorPrefix} Extra reference must be defined.`);
 
 			throw new Error(`${errorPrefix} Expected no more references, got '${extraReference.text}'.`);
 		}
@@ -181,12 +157,11 @@ export class ExpectedReference {
 			const expectedReference = children[references.length];
 
 			// sanity check
-			assertDefined(
-				expectedReference,
-				`${errorPrefix} Expected reference must be defined.`,
-			);
+			assertDefined(expectedReference, `${errorPrefix} Expected reference must be defined.`);
 
-			throw new Error(`${errorPrefix} Expected another reference '${expectedReference.options.text}', got 'undefined'.`);
+			throw new Error(
+				`${errorPrefix} Expected another reference '${expectedReference.options.text}', got 'undefined'.`
+			);
 		}
 	}
 

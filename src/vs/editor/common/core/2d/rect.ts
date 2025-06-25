@@ -20,16 +20,31 @@ export class Rect {
 		return new Rect(point.x, point.y, point.x + size.x, point.y + size.y);
 	}
 
-	public static fromLeftTopRightBottom(left: number, top: number, right: number, bottom: number): Rect {
+	public static fromLeftTopRightBottom(
+		left: number,
+		top: number,
+		right: number,
+		bottom: number
+	): Rect {
 		return new Rect(left, top, right, bottom);
 	}
 
-	public static fromLeftTopWidthHeight(left: number, top: number, width: number, height: number): Rect {
+	public static fromLeftTopWidthHeight(
+		left: number,
+		top: number,
+		width: number,
+		height: number
+	): Rect {
 		return new Rect(left, top, left + width, top + height);
 	}
 
 	public static fromRanges(leftRight: OffsetRange, topBottom: OffsetRange): Rect {
-		return new Rect(leftRight.start, topBottom.start, leftRight.endExclusive, topBottom.endExclusive);
+		return new Rect(
+			leftRight.start,
+			topBottom.start,
+			leftRight.endExclusive,
+			topBottom.endExclusive
+		);
 	}
 
 	public static hull(rects: Rect[]): Rect {
@@ -48,14 +63,18 @@ export class Rect {
 		return new Rect(left, top, right, bottom);
 	}
 
-	public get width() { return this.right - this.left; }
-	public get height() { return this.bottom - this.top; }
+	public get width() {
+		return this.right - this.left;
+	}
+	public get height() {
+		return this.bottom - this.top;
+	}
 
 	constructor(
 		public readonly left: number,
 		public readonly top: number,
 		public readonly right: number,
-		public readonly bottom: number,
+		public readonly bottom: number
 	) {
 		if (left > right || top > bottom) {
 			throw new BugIndicatingError('Invalid arguments');
@@ -64,8 +83,18 @@ export class Rect {
 
 	withMargin(margin: number): Rect;
 	withMargin(marginVertical: number, marginHorizontal: number): Rect;
-	withMargin(marginTop: number, marginRight: number, marginBottom: number, marginLeft: number): Rect;
-	withMargin(marginOrVerticalOrTop: number, rightOrHorizontal?: number, bottom?: number, left?: number): Rect {
+	withMargin(
+		marginTop: number,
+		marginRight: number,
+		marginBottom: number,
+		marginLeft: number
+	): Rect;
+	withMargin(
+		marginOrVerticalOrTop: number,
+		rightOrHorizontal?: number,
+		bottom?: number,
+		left?: number
+	): Rect {
 		let marginLeft, marginRight, marginTop, marginBottom;
 
 		// Single margin value
@@ -89,30 +118,20 @@ export class Rect {
 			this.left - marginLeft,
 			this.top - marginTop,
 			this.right + marginRight,
-			this.bottom + marginBottom,
+			this.bottom + marginBottom
 		);
 	}
 
 	intersectVertical(range: OffsetRange): Rect {
 		const newTop = Math.max(this.top, range.start);
 		const newBottom = Math.min(this.bottom, range.endExclusive);
-		return new Rect(
-			this.left,
-			newTop,
-			this.right,
-			Math.max(newTop, newBottom),
-		);
+		return new Rect(this.left, newTop, this.right, Math.max(newTop, newBottom));
 	}
 
 	intersectHorizontal(range: OffsetRange): Rect {
 		const newLeft = Math.max(this.left, range.start);
 		const newRight = Math.min(this.right, range.endExclusive);
-		return new Rect(
-			newLeft,
-			this.top,
-			Math.max(newLeft, newRight),
-			this.bottom,
-		);
+		return new Rect(newLeft, this.top, Math.max(newLeft, newRight), this.bottom);
 	}
 
 	toString(): string {
@@ -137,22 +156,23 @@ export class Rect {
 			Math.min(this.left, other.left),
 			Math.min(this.top, other.top),
 			Math.max(this.right, other.right),
-			Math.max(this.bottom, other.bottom),
+			Math.max(this.bottom, other.bottom)
 		);
 	}
 
 	containsRect(other: Rect): boolean {
-		return this.left <= other.left
-			&& this.top <= other.top
-			&& this.right >= other.right
-			&& this.bottom >= other.bottom;
+		return (
+			this.left <= other.left &&
+			this.top <= other.top &&
+			this.right >= other.right &&
+			this.bottom >= other.bottom
+		);
 	}
 
 	containsPoint(point: Point): boolean {
-		return this.left <= point.x
-			&& this.top <= point.y
-			&& this.right >= point.x
-			&& this.bottom >= point.y;
+		return (
+			this.left <= point.x && this.top <= point.y && this.right >= point.x && this.bottom >= point.y
+		);
 	}
 
 	moveToBeContainedIn(parent: Rect): Rect {

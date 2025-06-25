@@ -18,10 +18,7 @@ interface ExtendedTask extends Task {
  * Displays a list of tasks from the agent runtime system
  * Shows task status, description, and results
  */
-export const TaskList = ({
-	agentRuntime,
-	maxItems = 10
-}: TaskListProps) => {
+export const TaskList = ({ agentRuntime, maxItems = 10 }: TaskListProps) => {
 	const [tasks, setTasks] = useState<ExtendedTask[]>([]);
 
 	useEffect(() => {
@@ -31,13 +28,10 @@ export const TaskList = ({
 			if (event.type === 'started') {
 				const updatedTask: ExtendedTask = {
 					...event.task,
-					status: 'in_progress'
+					status: 'in_progress',
 				};
 
-				setTasks(prev => [
-					updatedTask,
-					...prev
-				].slice(0, maxItems));
+				setTasks(prev => [updatedTask, ...prev].slice(0, maxItems));
 			} else if (event.type === 'completed') {
 				setTasks(prev =>
 					prev.map(task =>
@@ -49,9 +43,7 @@ export const TaskList = ({
 			} else if (event.type === 'failed') {
 				setTasks(prev =>
 					prev.map(task =>
-						task.id === event.task.id
-							? { ...task, status: 'failed', error: event.error }
-							: task
+						task.id === event.task.id ? { ...task, status: 'failed', error: event.error } : task
 					)
 				);
 			}
@@ -89,9 +81,7 @@ export const TaskList = ({
 				{agentRuntime && tasks.length === 0 && (
 					<p className="empty-state">No tasks have been submitted yet</p>
 				)}
-				{!agentRuntime && (
-					<p className="empty-state">Agent runtime not connected</p>
-				)}
+				{!agentRuntime && <p className="empty-state">Agent runtime not connected</p>}
 			</div>
 
 			<div className="task-items">
@@ -106,7 +96,9 @@ export const TaskList = ({
 						{task.status === 'completed' && task.result && (
 							<div className="task-result">
 								<h4>Result:</h4>
-								<p>{task.result.success ? 'Success' : 'Failed'}: {task.result.summary}</p>
+								<p>
+									{task.result.success ? 'Success' : 'Failed'}: {task.result.summary}
+								</p>
 							</div>
 						)}
 

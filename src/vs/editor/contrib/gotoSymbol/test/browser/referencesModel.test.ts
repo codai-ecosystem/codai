@@ -11,20 +11,26 @@ import { Range } from '../../../../common/core/range.js';
 import { ReferencesModel } from '../../browser/referencesModel.js';
 
 suite('references', function () {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('nearestReference', () => {
-		const model = new ReferencesModel([{
-			uri: URI.file('/out/obj/can'),
-			range: new Range(1, 1, 1, 1)
-		}, {
-			uri: URI.file('/out/obj/can2'),
-			range: new Range(1, 1, 1, 1)
-		}, {
-			uri: URI.file('/src/can'),
-			range: new Range(1, 1, 1, 1)
-		}], 'FOO');
+		const model = new ReferencesModel(
+			[
+				{
+					uri: URI.file('/out/obj/can'),
+					range: new Range(1, 1, 1, 1),
+				},
+				{
+					uri: URI.file('/out/obj/can2'),
+					range: new Range(1, 1, 1, 1),
+				},
+				{
+					uri: URI.file('/src/can'),
+					range: new Range(1, 1, 1, 1),
+				},
+			],
+			'FOO'
+		);
 
 		let ref = model.nearestReference(URI.file('/src/can'), new Position(1, 1));
 		assert.strictEqual(ref!.uri.path, '/src/can');
@@ -38,5 +44,4 @@ suite('references', function () {
 		ref = model.nearestReference(URI.file('/out/obj/can2222'), new Position(1, 1));
 		assert.strictEqual(ref!.uri.path, '/out/obj/can2');
 	});
-
 });

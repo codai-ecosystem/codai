@@ -43,7 +43,10 @@ export async function verifyAuth(request: NextRequest): Promise<UserDocument | n
 /**
  * Check if user has required role
  */
-export function hasRole(user: UserDocument, requiredRole: 'user' | 'admin' | 'superadmin'): boolean {
+export function hasRole(
+	user: UserDocument,
+	requiredRole: 'user' | 'admin' | 'superadmin'
+): boolean {
 	const roleHierarchy = {
 		user: 0,
 		admin: 1,
@@ -71,26 +74,17 @@ export function withAuth(
 			// Verify authentication
 			const user = await verifyAuth(request);
 			if (!user) {
-				return NextResponse.json(
-					{ error: 'Authentication required' },
-					{ status: 401 }
-				);
+				return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 			}
 
 			// Check if user is active
 			if (options.requireActive !== false && user.status !== 'active') {
-				return NextResponse.json(
-					{ error: 'Account is not active' },
-					{ status: 403 }
-				);
+				return NextResponse.json({ error: 'Account is not active' }, { status: 403 });
 			}
 
 			// Check role requirements
 			if (options.requireRole && !hasRole(user, options.requireRole)) {
-				return NextResponse.json(
-					{ error: 'Insufficient permissions' },
-					{ status: 403 }
-				);
+				return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
 			}
 
 			// Add user to request context
@@ -99,10 +93,7 @@ export function withAuth(
 			return await handler(request, user);
 		} catch (error) {
 			console.error('Authentication middleware error:', error);
-			return NextResponse.json(
-				{ error: 'Internal server error' },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 		}
 	};
 }

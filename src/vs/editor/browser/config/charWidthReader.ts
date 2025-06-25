@@ -9,11 +9,10 @@ import { BareFontInfo } from '../../common/config/fontInfo.js';
 export const enum CharWidthRequestType {
 	Regular = 0,
 	Italic = 1,
-	Bold = 2
+	Bold = 2,
 }
 
 export class CharWidthRequest {
-
 	public readonly chr: string;
 	public readonly type: CharWidthRequestType;
 	public width: number;
@@ -30,7 +29,6 @@ export class CharWidthRequest {
 }
 
 class DomCharWidthReader {
-
 	private readonly _bareFontInfo: BareFontInfo;
 	private readonly _requests: CharWidthRequest[];
 
@@ -84,7 +82,6 @@ class DomCharWidthReader {
 
 		const testElements: HTMLSpanElement[] = [];
 		for (const request of this._requests) {
-
 			let parent: HTMLElement;
 			if (request.type === CharWidthRequestType.Regular) {
 				parent = regularDomNode;
@@ -137,7 +134,11 @@ class DomCharWidthReader {
 	}
 }
 
-export function readCharWidths(targetWindow: Window, bareFontInfo: BareFontInfo, requests: CharWidthRequest[]): void {
+export function readCharWidths(
+	targetWindow: Window,
+	bareFontInfo: BareFontInfo,
+	requests: CharWidthRequest[]
+): void {
 	const reader = new DomCharWidthReader(bareFontInfo, requests);
 	reader.read(targetWindow);
 }

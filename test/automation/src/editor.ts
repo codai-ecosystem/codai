@@ -12,14 +12,18 @@ const RENAME_BOX = '.monaco-editor .monaco-editor.rename-box';
 const RENAME_INPUT = `${RENAME_BOX} .rename-input`;
 const EDITOR = (filename: string) => `.monaco-editor[data-uri$="${filename}"]`;
 const VIEW_LINES = (filename: string) => `${EDITOR(filename)} .view-lines`;
-const LINE_NUMBERS = (filename: string) => `${EDITOR(filename)} .margin .margin-view-overlays .line-numbers`;
+const LINE_NUMBERS = (filename: string) =>
+	`${EDITOR(filename)} .margin .margin-view-overlays .line-numbers`;
 
 export class Editor {
-
-	private static readonly FOLDING_EXPANDED = '.monaco-editor .margin .margin-view-overlays>:nth-child(${INDEX}) .folding';
+	private static readonly FOLDING_EXPANDED =
+		'.monaco-editor .margin .margin-view-overlays>:nth-child(${INDEX}) .folding';
 	private static readonly FOLDING_COLLAPSED = `${Editor.FOLDING_EXPANDED}.collapsed`;
 
-	constructor(private code: Code, private commands: Commands) { }
+	constructor(
+		private code: Code,
+		private commands: Commands
+	) {}
 
 	async findReferences(filename: string, term: string, line: number): Promise<References> {
 		await this.clickOnTerm(filename, term, line);
@@ -76,7 +80,11 @@ export class Editor {
 		await this.code.waitAndClick(selector);
 	}
 
-	async waitForEditorFocus(filename: string, lineNumber: number, selectorPrefix = ''): Promise<void> {
+	async waitForEditorFocus(
+		filename: string,
+		lineNumber: number,
+		selectorPrefix = ''
+	): Promise<void> {
 		const editor = [selectorPrefix || '', EDITOR(filename)].join(' ');
 		const line = `${editor} .view-lines > .view-line:nth-child(${lineNumber})`;
 		const editContext = `${editor} ${this._editContextSelector()}`;
@@ -87,7 +95,9 @@ export class Editor {
 
 	async waitForTypeInEditor(filename: string, text: string, selectorPrefix = ''): Promise<any> {
 		if (text.includes('\n')) {
-			throw new Error('waitForTypeInEditor does not support new lines, use either a long single line or dispatchKeybinding(\'Enter\')');
+			throw new Error(
+				"waitForTypeInEditor does not support new lines, use either a long single line or dispatchKeybinding('Enter')"
+			);
 		}
 		const editor = [selectorPrefix || '', EDITOR(filename)].join(' ');
 
@@ -101,7 +111,10 @@ export class Editor {
 		await this.waitForEditorContents(filename, c => c.indexOf(text) > -1, selectorPrefix);
 	}
 
-	async waitForEditorSelection(filename: string, accept: (selection: { selectionStart: number; selectionEnd: number }) => boolean): Promise<void> {
+	async waitForEditorSelection(
+		filename: string,
+		accept: (selection: { selectionStart: number; selectionEnd: number }) => boolean
+	): Promise<void> {
 		const selector = `${EDITOR(filename)} ${this._editContextSelector()}`;
 		await this.code.waitForEditorSelection(selector, accept);
 	}
@@ -110,13 +123,27 @@ export class Editor {
 		return this.code.quality === Quality.Stable ? 'textarea' : '.native-edit-context';
 	}
 
-	async waitForEditorContents(filename: string, accept: (contents: string) => boolean, selectorPrefix = ''): Promise<any> {
+	async waitForEditorContents(
+		filename: string,
+		accept: (contents: string) => boolean,
+		selectorPrefix = ''
+	): Promise<any> {
 		const selector = [selectorPrefix || '', `${EDITOR(filename)} .view-lines`].join(' ');
-		return this.code.waitForTextContent(selector, undefined, c => accept(c.replace(/\u00a0/g, ' ')));
+		return this.code.waitForTextContent(selector, undefined, c =>
+			accept(c.replace(/\u00a0/g, ' '))
+		);
 	}
 
-	private async getClassSelectors(filename: string, term: string, viewline: number): Promise<string[]> {
-		const elements = await this.code.waitForElements(`${VIEW_LINES(filename)}>:nth-child(${viewline}) span span`, false, els => els.some(el => el.textContent === term));
+	private async getClassSelectors(
+		filename: string,
+		term: string,
+		viewline: number
+	): Promise<string[]> {
+		const elements = await this.code.waitForElements(
+			`${VIEW_LINES(filename)}>:nth-child(${viewline}) span span`,
+			false,
+			els => els.some(el => el.textContent === term)
+		);
 		const { className } = elements.filter(r => r.textContent === term)[0];
 		return className.split(/\s/g);
 	}

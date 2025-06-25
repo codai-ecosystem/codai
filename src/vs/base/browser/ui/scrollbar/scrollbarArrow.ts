@@ -29,7 +29,6 @@ export interface ScrollbarArrowOptions {
 }
 
 export class ScrollbarArrow extends Widget {
-
 	private _onActivate: () => void;
 	public bgDomNode: HTMLElement;
 	public domNode: HTMLElement;
@@ -80,8 +79,16 @@ export class ScrollbarArrow extends Widget {
 		}
 
 		this._pointerMoveMonitor = this._register(new GlobalPointerMoveMonitor());
-		this._register(dom.addStandardDisposableListener(this.bgDomNode, dom.EventType.POINTER_DOWN, (e) => this._arrowPointerDown(e)));
-		this._register(dom.addStandardDisposableListener(this.domNode, dom.EventType.POINTER_DOWN, (e) => this._arrowPointerDown(e)));
+		this._register(
+			dom.addStandardDisposableListener(this.bgDomNode, dom.EventType.POINTER_DOWN, e =>
+				this._arrowPointerDown(e)
+			)
+		);
+		this._register(
+			dom.addStandardDisposableListener(this.domNode, dom.EventType.POINTER_DOWN, e =>
+				this._arrowPointerDown(e)
+			)
+		);
 
 		this._pointerdownRepeatTimer = this._register(new dom.WindowIntervalTimer());
 		this._pointerdownScheduleRepeatTimer = this._register(new TimeoutTimer());
@@ -92,7 +99,11 @@ export class ScrollbarArrow extends Widget {
 			return;
 		}
 		const scheduleRepeater = () => {
-			this._pointerdownRepeatTimer.cancelAndSet(() => this._onActivate(), 1000 / 24, dom.getWindow(e));
+			this._pointerdownRepeatTimer.cancelAndSet(
+				() => this._onActivate(),
+				1000 / 24,
+				dom.getWindow(e)
+			);
 		};
 
 		this._onActivate();
@@ -103,7 +114,9 @@ export class ScrollbarArrow extends Widget {
 			e.target,
 			e.pointerId,
 			e.buttons,
-			(pointerMoveData) => { /* Intentional empty */ },
+			pointerMoveData => {
+				/* Intentional empty */
+			},
 			() => {
 				this._pointerdownRepeatTimer.cancel();
 				this._pointerdownScheduleRepeatTimer.cancel();

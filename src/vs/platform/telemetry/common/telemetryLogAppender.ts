@@ -8,10 +8,15 @@ import { localize } from '../../../nls.js';
 import { IEnvironmentService } from '../../environment/common/environment.js';
 import { ILogger, ILoggerService } from '../../log/common/log.js';
 import { IProductService } from '../../product/common/productService.js';
-import { ITelemetryAppender, TelemetryLogGroup, isLoggingOnly, telemetryLogId, validateTelemetryData } from './telemetryUtils.js';
+import {
+	ITelemetryAppender,
+	TelemetryLogGroup,
+	isLoggingOnly,
+	telemetryLogId,
+	validateTelemetryData,
+} from './telemetryUtils.js';
 
 export class TelemetryLogAppender extends Disposable implements ITelemetryAppender {
-
 	private readonly logger: ILogger;
 
 	constructor(
@@ -19,7 +24,7 @@ export class TelemetryLogAppender extends Disposable implements ITelemetryAppend
 		remote: boolean,
 		@ILoggerService loggerService: ILoggerService,
 		@IEnvironmentService environmentService: IEnvironmentService,
-		@IProductService productService: IProductService,
+		@IProductService productService: IProductService
 	) {
 		super();
 
@@ -31,12 +36,13 @@ export class TelemetryLogAppender extends Disposable implements ITelemetryAppend
 			// Not a perfect check, but a nice way to indicate if we only have logging enabled for debug purposes and nothing is actually being sent
 			const justLoggingAndNotSending = isLoggingOnly(productService, environmentService);
 			const logSuffix = justLoggingAndNotSending ? ' (Not Sent)' : '';
-			this.logger = this._register(loggerService.createLogger(id,
-				{
-					name: localize('telemetryLog', "Telemetry{0}", logSuffix),
+			this.logger = this._register(
+				loggerService.createLogger(id, {
+					name: localize('telemetryLog', 'Telemetry{0}', logSuffix),
 					group: TelemetryLogGroup,
-					hidden: true
-				}));
+					hidden: true,
+				})
+			);
 		}
 	}
 
@@ -48,4 +54,3 @@ export class TelemetryLogAppender extends Disposable implements ITelemetryAppend
 		this.logger.trace(`${this.prefix}telemetry/${eventName}`, validateTelemetryData(data));
 	}
 }
-

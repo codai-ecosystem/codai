@@ -5,7 +5,10 @@
 
 import { AbstractTextFileService } from './textFileService.js';
 import { ITextFileService, TextFileEditorModelState } from '../common/textfiles.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
 import { IModelService } from '../../../../editor/common/services/model.js';
@@ -19,13 +22,15 @@ import { IElevatedFileService } from '../../files/common/elevatedFileService.js'
 import { IFilesConfigurationService } from '../../filesConfiguration/common/filesConfigurationService.js';
 import { ILifecycleService } from '../../lifecycle/common/lifecycle.js';
 import { IPathService } from '../../path/common/pathService.js';
-import { IUntitledTextEditorModelManager, IUntitledTextEditorService } from '../../untitled/common/untitledTextEditorService.js';
+import {
+	IUntitledTextEditorModelManager,
+	IUntitledTextEditorService,
+} from '../../untitled/common/untitledTextEditorService.js';
 import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
 import { IWorkingCopyFileService } from '../../workingCopy/common/workingCopyFileService.js';
 import { IDecorationsService } from '../../decorations/common/decorations.js';
 
 export class BrowserTextFileService extends AbstractTextFileService {
-
 	constructor(
 		@IFileService fileService: IFileService,
 		@IUntitledTextEditorService untitledTextEditorService: IUntitledTextEditorModelManager,
@@ -35,7 +40,8 @@ export class BrowserTextFileService extends AbstractTextFileService {
 		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
 		@IDialogService dialogService: IDialogService,
 		@IFileDialogService fileDialogService: IFileDialogService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@IPathService pathService: IPathService,
@@ -46,15 +52,37 @@ export class BrowserTextFileService extends AbstractTextFileService {
 		@ILogService logService: ILogService,
 		@IDecorationsService decorationsService: IDecorationsService
 	) {
-		super(fileService, untitledTextEditorService, lifecycleService, instantiationService, modelService, environmentService, dialogService, fileDialogService, textResourceConfigurationService, filesConfigurationService, codeEditorService, pathService, workingCopyFileService, uriIdentityService, languageService, logService, elevatedFileService, decorationsService);
+		super(
+			fileService,
+			untitledTextEditorService,
+			lifecycleService,
+			instantiationService,
+			modelService,
+			environmentService,
+			dialogService,
+			fileDialogService,
+			textResourceConfigurationService,
+			filesConfigurationService,
+			codeEditorService,
+			pathService,
+			workingCopyFileService,
+			uriIdentityService,
+			languageService,
+			logService,
+			elevatedFileService,
+			decorationsService
+		);
 
 		this.registerListeners();
 	}
 
 	private registerListeners(): void {
-
 		// Lifecycle
-		this._register(this.lifecycleService.onBeforeShutdown(event => event.veto(this.onBeforeShutdown(), 'veto.textFiles')));
+		this._register(
+			this.lifecycleService.onBeforeShutdown(event =>
+				event.veto(this.onBeforeShutdown(), 'veto.textFiles')
+			)
+		);
 	}
 
 	private onBeforeShutdown(): boolean {

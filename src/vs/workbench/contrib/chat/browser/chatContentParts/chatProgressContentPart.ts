@@ -13,7 +13,11 @@ import { MarkdownRenderer } from '../../../../../editor/browser/widget/markdownR
 import { localize } from '../../../../../nls.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { IChatProgressMessage, IChatTask, IChatTaskSerialized } from '../../common/chatService.js';
-import { IChatRendererContent, IChatWorkingProgress, isResponseVM } from '../../common/chatViewModel.js';
+import {
+	IChatRendererContent,
+	IChatWorkingProgress,
+	isResponseVM,
+} from '../../common/chatViewModel.js';
 import { ChatTreeItem } from '../chat.js';
 import { renderFileWidgets } from '../chatInlineAnchorWidget.js';
 import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
@@ -33,13 +37,15 @@ export class ChatProgressContentPart extends Disposable implements IChatContentP
 		forceShowMessage: boolean | undefined,
 		icon: ThemeIcon | undefined,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IChatMarkdownAnchorService private readonly chatMarkdownAnchorService: IChatMarkdownAnchorService,
+		@IChatMarkdownAnchorService
+		private readonly chatMarkdownAnchorService: IChatMarkdownAnchorService
 	) {
 		super();
 
 		const followingContent = context.content.slice(context.contentIndex + 1);
 		this.showSpinner = forceShowSpinner ?? shouldShowSpinner(followingContent, context.element);
-		this.isHidden = forceShowMessage !== true && followingContent.some(part => part.kind !== 'progressMessage');
+		this.isHidden =
+			forceShowMessage !== true && followingContent.some(part => part.kind !== 'progressMessage');
 		if (this.isHidden) {
 			// Placeholder, don't show the progress message
 			this.domNode = $('');
@@ -51,10 +57,19 @@ export class ChatProgressContentPart extends Disposable implements IChatContentP
 			// this step is in progress, communicate it to SR users
 			alert(progress.content.value);
 		}
-		const codicon = icon ? icon : this.showSpinner ? ThemeIcon.modify(Codicon.loading, 'spin') : Codicon.check;
+		const codicon = icon
+			? icon
+			: this.showSpinner
+				? ThemeIcon.modify(Codicon.loading, 'spin')
+				: Codicon.check;
 		const result = this._register(renderer.render(progress.content));
 		result.element.classList.add('progress-step');
-		renderFileWidgets(result.element, this.instantiationService, this.chatMarkdownAnchorService, this._store);
+		renderFileWidgets(
+			result.element,
+			this.instantiationService,
+			this.chatMarkdownAnchorService,
+			this._store
+		);
 
 		this.domNode = $('.progress-container');
 		const iconElement = $('div');
@@ -63,7 +78,11 @@ export class ChatProgressContentPart extends Disposable implements IChatContentP
 		append(this.domNode, result.element);
 	}
 
-	hasSameContent(other: IChatRendererContent, followingContent: IChatRendererContent[], element: ChatTreeItem): boolean {
+	hasSameContent(
+		other: IChatRendererContent,
+		followingContent: IChatRendererContent[],
+		element: ChatTreeItem
+	): boolean {
 		// Progress parts render render until some other content shows up, then they hide.
 		// When some other content shows up, need to signal to be rerendered as hidden.
 		if (followingContent.some(part => part.kind !== 'progressMessage') && !this.isHidden) {
@@ -76,36 +95,57 @@ export class ChatProgressContentPart extends Disposable implements IChatContentP
 	}
 }
 
-function shouldShowSpinner(followingContent: IChatRendererContent[], element: ChatTreeItem): boolean {
+function shouldShowSpinner(
+	followingContent: IChatRendererContent[],
+	element: ChatTreeItem
+): boolean {
 	return isResponseVM(element) && !element.isComplete && followingContent.length === 0;
 }
 
-export class ChatWorkingProgressContentPart extends ChatProgressContentPart implements IChatContentPart {
+export class ChatWorkingProgressContentPart
+	extends ChatProgressContentPart
+	implements IChatContentPart
+{
 	constructor(
 		private readonly workingProgress: IChatWorkingProgress,
 		renderer: MarkdownRenderer,
 		context: IChatContentPartRenderContext,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IChatMarkdownAnchorService chatMarkdownAnchorService: IChatMarkdownAnchorService,
+		@IChatMarkdownAnchorService chatMarkdownAnchorService: IChatMarkdownAnchorService
 	) {
 		const progressMessage: IChatProgressMessage = {
 			kind: 'progressMessage',
-			content: workingProgress.isPaused ?
-				new MarkdownString().appendText(localize('pausedMessage', "Paused")) :
-				new MarkdownString().appendText(localize('workingMessage', "Working..."))
+			content: workingProgress.isPaused
+				? new MarkdownString().appendText(localize('pausedMessage', 'Paused'))
+				: new MarkdownString().appendText(localize('workingMessage', 'Working...')),
 		};
-		super(progressMessage, renderer, context, undefined, undefined, workingProgress.isPaused ? Codicon.debugPause : undefined, instantiationService, chatMarkdownAnchorService);
+		super(
+			progressMessage,
+			renderer,
+			context,
+			undefined,
+			undefined,
+			workingProgress.isPaused ? Codicon.debugPause : undefined,
+			instantiationService,
+			chatMarkdownAnchorService
+		);
 
 		if (workingProgress.isPaused) {
 			this.domNode.style.cursor = 'pointer';
-			this.domNode.title = localize('resume', "Click to resume");
-			this._register(addDisposableListener(this.domNode, EventType.CLICK, () => {
-				workingProgress.setPaused(false);
-			}));
+			this.domNode.title = localize('resume', 'Click to resume');
+			this._register(
+				addDisposableListener(this.domNode, EventType.CLICK, () => {
+					workingProgress.setPaused(false);
+				})
+			);
 		}
 	}
 
-	override hasSameContent(other: IChatRendererContent, followingContent: IChatRendererContent[], element: ChatTreeItem): boolean {
+	override hasSameContent(
+		other: IChatRendererContent,
+		followingContent: IChatRendererContent[],
+		element: ChatTreeItem
+	): boolean {
 		return other.kind === 'working' && this.workingProgress.isPaused === other.isPaused;
 	}
 }
@@ -113,10 +153,7 @@ export class ChatWorkingProgressContentPart extends ChatProgressContentPart impl
 export class ChatCustomProgressPart {
 	public readonly domNode: HTMLElement;
 
-	constructor(
-		messageElement: HTMLElement,
-		icon: ThemeIcon,
-	) {
+	constructor(messageElement: HTMLElement, icon: ThemeIcon) {
 		this.domNode = $('.progress-container');
 		const iconElement = $('div');
 		iconElement.classList.add(...ThemeIcon.asClassNameArray(icon));

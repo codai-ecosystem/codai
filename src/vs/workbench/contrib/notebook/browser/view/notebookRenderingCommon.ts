@@ -5,7 +5,11 @@
 
 import { FastDomNode } from '../../../../../base/browser/fastDomNode.js';
 import { IMouseWheelEvent } from '../../../../../base/browser/mouseEvent.js';
-import { IListContextMenuEvent, IListEvent, IListMouseEvent } from '../../../../../base/browser/ui/list/list.js';
+import {
+	IListContextMenuEvent,
+	IListEvent,
+	IListMouseEvent,
+} from '../../../../../base/browser/ui/list/list.js';
 import { IListStyles } from '../../../../../base/browser/ui/list/listWidget.js';
 import { Event } from '../../../../../base/common/event.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
@@ -16,11 +20,17 @@ import { Selection } from '../../../../../editor/common/core/selection.js';
 import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { IWorkbenchListOptionsUpdate } from '../../../../../platform/list/browser/listService.js';
-import { CellRevealRangeType, CellRevealType, ICellOutputViewModel, ICellViewModel, INotebookCellOverlayChangeAccessor, INotebookViewZoneChangeAccessor } from '../notebookBrowser.js';
+import {
+	CellRevealRangeType,
+	CellRevealType,
+	ICellOutputViewModel,
+	ICellViewModel,
+	INotebookCellOverlayChangeAccessor,
+	INotebookViewZoneChangeAccessor,
+} from '../notebookBrowser.js';
 import { CellPartsCollection } from './cellPart.js';
 import { CellViewModel, NotebookViewModel } from '../viewModel/notebookViewModelImpl.js';
 import { ICellRange } from '../../common/notebookRange.js';
-
 
 export interface INotebookCellList extends ICoordinatesConverter {
 	isDisposed: boolean;
@@ -61,7 +71,11 @@ export interface INotebookCellList extends ICoordinatesConverter {
 	scrollToBottom(): void;
 	revealCell(cell: ICellViewModel, revealType: CellRevealType): Promise<void>;
 	revealCells(range: ICellRange): void;
-	revealRangeInCell(cell: ICellViewModel, range: Selection | Range, revealType: CellRevealRangeType): Promise<void>;
+	revealRangeInCell(
+		cell: ICellViewModel,
+		range: Selection | Range,
+		revealType: CellRevealRangeType
+	): Promise<void>;
 	revealCellOffsetInCenter(element: ICellViewModel, offset: number): void;
 	revealOffsetInCenterIfOutsideViewport(offset: number): void;
 	setHiddenAreas(_ranges: ICellRange[], triggerViewUpdate: boolean): boolean;
@@ -71,7 +85,11 @@ export interface INotebookCellList extends ICoordinatesConverter {
 	domElementOfElement(element: ICellViewModel): HTMLElement | null;
 	focusView(): void;
 	triggerScrollFromMouseWheelEvent(browserEvent: IMouseWheelEvent): void;
-	updateElementHeight2(element: ICellViewModel, size: number, anchorElementIndex?: number | null): void;
+	updateElementHeight2(
+		element: ICellViewModel,
+		size: number,
+		anchorElementIndex?: number | null
+	): void;
 	domFocus(): void;
 	focusContainer(clearSelection: boolean): void;
 	setCellEditorSelection(element: ICellViewModel, range: Range): void;

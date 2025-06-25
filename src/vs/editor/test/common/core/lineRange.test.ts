@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { LineRange, LineRangeSet } from '../../../common/core/ranges/lineRange.js';
 
 suite('LineRange', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('contains', () => {
@@ -21,7 +20,6 @@ suite('LineRange', () => {
 });
 
 suite('LineRangeSet', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('addRange', () => {
@@ -39,13 +37,9 @@ suite('LineRangeSet', () => {
 		const set1 = new LineRangeSet([
 			new LineRange(2, 3),
 			new LineRange(5, 7),
-			new LineRange(10, 20)
+			new LineRange(10, 20),
 		]);
-		const set2 = new LineRangeSet([
-			new LineRange(3, 4),
-			new LineRange(6, 8),
-			new LineRange(9, 11)
-		]);
+		const set2 = new LineRangeSet([new LineRange(3, 4), new LineRange(6, 8), new LineRange(9, 11)]);
 
 		const union = set1.getUnion(set2);
 		assert.deepStrictEqual(union.toString(), '[2,4), [5,8), [9,20)');
@@ -55,7 +49,7 @@ suite('LineRangeSet', () => {
 		const set1 = new LineRangeSet([
 			new LineRange(2, 3),
 			new LineRange(5, 7),
-			new LineRange(10, 20)
+			new LineRange(10, 20),
 		]);
 
 		assert.deepStrictEqual(set1.intersects(new LineRange(1, 2)), false);

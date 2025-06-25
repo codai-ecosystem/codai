@@ -25,10 +25,14 @@ export const FolderThemeIcon = Codicon.folder;
 
 export function getThemeTypeSelector(type: ColorScheme): ThemeTypeSelector {
 	switch (type) {
-		case ColorScheme.DARK: return ThemeTypeSelector.VS_DARK;
-		case ColorScheme.HIGH_CONTRAST_DARK: return ThemeTypeSelector.HC_BLACK;
-		case ColorScheme.HIGH_CONTRAST_LIGHT: return ThemeTypeSelector.HC_LIGHT;
-		default: return ThemeTypeSelector.VS;
+		case ColorScheme.DARK:
+			return ThemeTypeSelector.VS_DARK;
+		case ColorScheme.HIGH_CONTRAST_DARK:
+			return ThemeTypeSelector.HC_BLACK;
+		case ColorScheme.HIGH_CONTRAST_LIGHT:
+			return ThemeTypeSelector.HC_LIGHT;
+		default:
+			return ThemeTypeSelector.VS;
 	}
 }
 
@@ -41,7 +45,6 @@ export interface ITokenStyle {
 }
 
 export interface IColorTheme {
-
 	readonly type: ColorScheme;
 
 	readonly label: string;
@@ -63,7 +66,11 @@ export interface IColorTheme {
 	/**
 	 * Returns the token style for a given classification. The result uses the <code>MetadataConsts</code> format
 	 */
-	getTokenStyleMetadata(type: string, modifiers: string[], modelLanguage: string): ITokenStyle | undefined;
+	getTokenStyleMetadata(
+		type: string,
+		modifiers: string[],
+		modelLanguage: string
+	): ITokenStyle | undefined;
 
 	/**
 	 * List of all colors used with tokens. <code>getTokenStyleMetadata</code> references the colors by index into this list.
@@ -91,7 +98,6 @@ export interface IProductIconTheme {
 	getIcon(iconContribution: IconContribution): IconDefinition | undefined;
 }
 
-
 export interface ICssStyleCollector {
 	addRule(rule: string): void;
 }
@@ -114,16 +120,14 @@ export interface IThemeService {
 	getProductIconTheme(): IProductIconTheme;
 
 	readonly onDidProductIconThemeChange: Event<IProductIconTheme>;
-
 }
 
 // static theming participant
 export const Extensions = {
-	ThemingContribution: 'base.contributions.theming'
+	ThemingContribution: 'base.contributions.theming',
 };
 
 export interface IThemingRegistry {
-
 	/**
 	 * Register a theming participant that is invoked on every theme change.
 	 */
@@ -175,9 +179,7 @@ export function registerThemingParticipant(participant: IThemingParticipant): ID
 export class Themable extends Disposable {
 	protected theme: IColorTheme;
 
-	constructor(
-		protected themeService: IThemeService
-	) {
+	constructor(protected themeService: IThemeService) {
 		super();
 
 		this.theme = themeService.getColorTheme();
@@ -196,7 +198,10 @@ export class Themable extends Disposable {
 		// Subclasses to override
 	}
 
-	protected getColor(id: string, modify?: (color: Color, theme: IColorTheme) => Color): string | null {
+	protected getColor(
+		id: string,
+		modify?: (color: Color, theme: IColorTheme) => Color
+	): string | null {
 		let color = this.theme.getColor(id);
 
 		if (color && modify) {
@@ -225,15 +230,17 @@ export interface IPartsSplash {
 		statusBarNoFolderBackground: string | undefined;
 		windowBorder: string | undefined;
 	};
-	layoutInfo: {
-		sideBarSide: string;
-		editorPartMinWidth: number;
-		titleBarHeight: number;
-		activityBarWidth: number;
-		sideBarWidth: number;
-		auxiliarySideBarWidth: number;
-		statusBarHeight: number;
-		windowBorder: boolean;
-		windowBorderRadius: string | undefined;
-	} | undefined;
+	layoutInfo:
+		| {
+				sideBarSide: string;
+				editorPartMinWidth: number;
+				titleBarHeight: number;
+				activityBarWidth: number;
+				sideBarWidth: number;
+				auxiliarySideBarWidth: number;
+				statusBarHeight: number;
+				windowBorder: boolean;
+				windowBorderRadius: string | undefined;
+		  }
+		| undefined;
 }

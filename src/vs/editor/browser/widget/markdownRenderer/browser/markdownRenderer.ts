@@ -3,10 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { MarkdownRenderOptions, MarkedOptions, renderMarkdown } from '../../../../../base/browser/markdownRenderer.js';
+import {
+	MarkdownRenderOptions,
+	MarkedOptions,
+	renderMarkdown,
+} from '../../../../../base/browser/markdownRenderer.js';
 import { createTrustedTypesPolicy } from '../../../../../base/browser/trustedTypes.js';
 import { onUnexpectedError } from '../../../../../base/common/errors.js';
-import { IMarkdownString, MarkdownStringTrustedOptions } from '../../../../../base/common/htmlContent.js';
+import {
+	IMarkdownString,
+	MarkdownStringTrustedOptions,
+} from '../../../../../base/common/htmlContent.js';
 import { DisposableStore, IDisposable } from '../../../../../base/common/lifecycle.js';
 import { IOpenerService } from '../../../../../platform/opener/common/opener.js';
 import { EditorOption } from '../../../../common/config/editorOptions.js';
@@ -32,35 +39,47 @@ export interface IMarkdownRendererOptions {
  * renderer should always be preferred.
  */
 export class MarkdownRenderer {
-
 	private static _ttpTokenizer = createTrustedTypesPolicy('tokenizeToString', {
 		createHTML(html: string) {
 			return html;
-		}
+		},
 	});
 
 	constructor(
 		private readonly _options: IMarkdownRendererOptions,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IOpenerService private readonly _openerService: IOpenerService,
-	) { }
+		@IOpenerService private readonly _openerService: IOpenerService
+	) {}
 
-	render(markdown: IMarkdownString | undefined, options?: MarkdownRenderOptions, markedOptions?: MarkedOptions): IMarkdownRenderResult {
+	render(
+		markdown: IMarkdownString | undefined,
+		options?: MarkdownRenderOptions,
+		markedOptions?: MarkedOptions
+	): IMarkdownRenderResult {
 		if (!markdown) {
 			const element = document.createElement('span');
-			return { element, dispose: () => { } };
+			return { element, dispose: () => {} };
 		}
 
 		const disposables = new DisposableStore();
-		const rendered = disposables.add(renderMarkdown(markdown, { ...this._getRenderOptions(markdown, disposables), ...options }, markedOptions));
+		const rendered = disposables.add(
+			renderMarkdown(
+				markdown,
+				{ ...this._getRenderOptions(markdown, disposables), ...options },
+				markedOptions
+			)
+		);
 		rendered.element.classList.add('rendered-markdown');
 		return {
 			element: rendered.element,
-			dispose: () => disposables.dispose()
+			dispose: () => disposables.dispose(),
 		};
 	}
 
-	private _getRenderOptions(markdown: IMarkdownString, disposables: DisposableStore): MarkdownRenderOptions {
+	private _getRenderOptions(
+		markdown: IMarkdownString,
+		disposables: DisposableStore
+	): MarkdownRenderOptions {
 		return {
 			codeBlockRenderer: async (languageAlias, value) => {
 				// In markdown,
@@ -96,9 +115,9 @@ export class MarkdownRenderer {
 				return element;
 			},
 			actionHandler: {
-				callback: (link) => this.openMarkdownLink(link, markdown),
-				disposables
-			}
+				callback: link => this.openMarkdownLink(link, markdown),
+				disposables,
+			},
 		};
 	}
 
@@ -107,13 +126,18 @@ export class MarkdownRenderer {
 	}
 }
 
-export async function openLinkFromMarkdown(openerService: IOpenerService, link: string, isTrusted: boolean | MarkdownStringTrustedOptions | undefined, skipValidation?: boolean): Promise<boolean> {
+export async function openLinkFromMarkdown(
+	openerService: IOpenerService,
+	link: string,
+	isTrusted: boolean | MarkdownStringTrustedOptions | undefined,
+	skipValidation?: boolean
+): Promise<boolean> {
 	try {
 		return await openerService.open(link, {
 			fromUserGesture: true,
 			allowContributedOpeners: true,
 			allowCommands: toAllowCommandsOption(isTrusted),
-			skipValidation
+			skipValidation,
 		});
 	} catch (e) {
 		onUnexpectedError(e);
@@ -121,7 +145,9 @@ export async function openLinkFromMarkdown(openerService: IOpenerService, link: 
 	}
 }
 
-function toAllowCommandsOption(isTrusted: boolean | MarkdownStringTrustedOptions | undefined): boolean | readonly string[] {
+function toAllowCommandsOption(
+	isTrusted: boolean | MarkdownStringTrustedOptions | undefined
+): boolean | readonly string[] {
 	if (isTrusted === true) {
 		return true; // Allow all commands
 	}

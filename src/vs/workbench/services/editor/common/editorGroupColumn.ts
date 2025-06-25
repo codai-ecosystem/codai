@@ -5,7 +5,12 @@
 
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { GroupIdentifier } from '../../../common/editor.js';
-import { IEditorGroupsService, GroupsOrder, IEditorGroup, preferredSideBySideGroupDirection } from './editorGroupsService.js';
+import {
+	IEditorGroupsService,
+	GroupsOrder,
+	IEditorGroup,
+	preferredSideBySideGroupDirection,
+} from './editorGroupsService.js';
 import { ACTIVE_GROUP, ACTIVE_GROUP_TYPE, SIDE_GROUP, SIDE_GROUP_TYPE } from './editorService.js';
 
 /**
@@ -15,7 +20,11 @@ import { ACTIVE_GROUP, ACTIVE_GROUP_TYPE, SIDE_GROUP, SIDE_GROUP_TYPE } from './
  */
 export type EditorGroupColumn = number;
 
-export function columnToEditorGroup(editorGroupService: IEditorGroupsService, configurationService: IConfigurationService, column = ACTIVE_GROUP): GroupIdentifier | ACTIVE_GROUP_TYPE | SIDE_GROUP_TYPE {
+export function columnToEditorGroup(
+	editorGroupService: IEditorGroupsService,
+	configurationService: IConfigurationService,
+	column = ACTIVE_GROUP
+): GroupIdentifier | ACTIVE_GROUP_TYPE | SIDE_GROUP_TYPE {
 	if (column === ACTIVE_GROUP || column === SIDE_GROUP) {
 		return column; // return early for when column is well known
 	}
@@ -29,7 +38,10 @@ export function columnToEditorGroup(editorGroupService: IEditorGroupsService, co
 		for (let i = 0; i <= column; i++) {
 			const editorGroups = editorGroupService.getGroups(GroupsOrder.GRID_APPEARANCE);
 			if (!editorGroups[i]) {
-				editorGroupService.addGroup(editorGroups[i - 1], preferredSideBySideGroupDirection(configurationService));
+				editorGroupService.addGroup(
+					editorGroups[i - 1],
+					preferredSideBySideGroupDirection(configurationService)
+				);
 			}
 		}
 
@@ -39,8 +51,14 @@ export function columnToEditorGroup(editorGroupService: IEditorGroupsService, co
 	return groupInColumn?.id ?? SIDE_GROUP; // finally open to the side when group not found
 }
 
-export function editorGroupToColumn(editorGroupService: IEditorGroupsService, editorGroup: IEditorGroup | GroupIdentifier): EditorGroupColumn {
-	const group = (typeof editorGroup === 'number') ? editorGroupService.getGroup(editorGroup) : editorGroup;
+export function editorGroupToColumn(
+	editorGroupService: IEditorGroupsService,
+	editorGroup: IEditorGroup | GroupIdentifier
+): EditorGroupColumn {
+	const group =
+		typeof editorGroup === 'number' ? editorGroupService.getGroup(editorGroup) : editorGroup;
 
-	return editorGroupService.getGroups(GroupsOrder.GRID_APPEARANCE).indexOf(group ?? editorGroupService.activeGroup);
+	return editorGroupService
+		.getGroups(GroupsOrder.GRID_APPEARANCE)
+		.indexOf(group ?? editorGroupService.activeGroup);
 }

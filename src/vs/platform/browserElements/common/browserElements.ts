@@ -7,7 +7,9 @@ import { CancellationToken } from '../../../base/common/cancellation.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 import { IRectangle } from '../../window/common/window.js';
 
-export const INativeBrowserElementsService = createDecorator<INativeBrowserElementsService>('nativeBrowserElementsService');
+export const INativeBrowserElementsService = createDecorator<INativeBrowserElementsService>(
+	'nativeBrowserElementsService'
+);
 
 export interface IElementData {
 	readonly outerHTML: string;
@@ -20,15 +22,22 @@ export enum BrowserType {
 	LiveServer = 'liveServer',
 }
 
-
 export interface INativeBrowserElementsService {
-
 	readonly _serviceBrand: undefined;
 
 	// Properties
 	readonly windowId: number;
 
-	getElementData(rect: IRectangle, token: CancellationToken, browserType: BrowserType, cancellationId?: number): Promise<IElementData | undefined>;
+	getElementData(
+		rect: IRectangle,
+		token: CancellationToken,
+		browserType: BrowserType,
+		cancellationId?: number
+	): Promise<IElementData | undefined>;
 
-	startDebugSession(token: CancellationToken, browserType: BrowserType, cancelAndDetachId?: number): Promise<void>;
+	startDebugSession(
+		token: CancellationToken,
+		browserType: BrowserType,
+		cancelAndDetachId?: number
+	): Promise<void>;
 }

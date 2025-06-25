@@ -5,7 +5,10 @@
 
 import assert from 'assert';
 import { Emitter } from '../../../../../base/common/event.js';
-import { ensureNoDisposablesAreLeakedInTestSuite, toResource } from '../../../../../base/test/common/utils.js';
+import {
+	ensureNoDisposablesAreLeakedInTestSuite,
+	toResource,
+} from '../../../../../base/test/common/utils.js';
 import { TestFileService } from '../../../../test/browser/workbenchTestServices.js';
 import { ExplorerItem } from '../../common/explorerModel.js';
 import { getContext } from '../../browser/views/explorerView.js';
@@ -18,7 +21,6 @@ import { TestConfigurationService } from '../../../../../platform/configuration/
 import { NullFilesConfigurationService } from '../../../../test/common/workbenchTestServices.js';
 
 suite('Files - ExplorerView', () => {
-
 	const $ = dom.$;
 
 	const ds = ensureNoDisposablesAreLeakedInTestSuite();
@@ -26,9 +28,31 @@ suite('Files - ExplorerView', () => {
 	const fileService = new TestFileService();
 	const configService = new TestConfigurationService();
 
-
-	function createStat(this: any, path: string, name: string, isFolder: boolean, hasChildren: boolean, size: number, mtime: number, isSymLink = false, isUnknown = false): ExplorerItem {
-		return new ExplorerItem(toResource.call(this, path), fileService, configService, NullFilesConfigurationService, undefined, isFolder, isSymLink, false, false, name, mtime, isUnknown);
+	function createStat(
+		this: any,
+		path: string,
+		name: string,
+		isFolder: boolean,
+		hasChildren: boolean,
+		size: number,
+		mtime: number,
+		isSymLink = false,
+		isUnknown = false
+	): ExplorerItem {
+		return new ExplorerItem(
+			toResource.call(this, path),
+			fileService,
+			configService,
+			NullFilesConfigurationService,
+			undefined,
+			isFolder,
+			isSymLink,
+			false,
+			false,
+			name,
+			mtime,
+			isUnknown
+		);
 	}
 
 	test('getContext', async function () {
@@ -37,13 +61,27 @@ suite('Files - ExplorerView', () => {
 		const s2 = createStat.call(this, '/path', 'path', true, false, 8096, d);
 		const s3 = createStat.call(this, '/path/to', 'to', true, false, 8096, d);
 		const s4 = createStat.call(this, '/path/to/stat', 'stat', false, false, 8096, d);
-		const noNavigationController = { getCompressedNavigationController: (stat: ExplorerItem) => undefined };
+		const noNavigationController = {
+			getCompressedNavigationController: (stat: ExplorerItem) => undefined,
+		};
 
-		assert.deepStrictEqual(getContext([s1], [s2, s3, s4], true, noNavigationController), [s2, s3, s4]);
-		assert.deepStrictEqual(getContext([s1], [s1, s3, s4], true, noNavigationController), [s1, s3, s4]);
+		assert.deepStrictEqual(getContext([s1], [s2, s3, s4], true, noNavigationController), [
+			s2,
+			s3,
+			s4,
+		]);
+		assert.deepStrictEqual(getContext([s1], [s1, s3, s4], true, noNavigationController), [
+			s1,
+			s3,
+			s4,
+		]);
 		assert.deepStrictEqual(getContext([s1], [s3, s1, s4], false, noNavigationController), [s1]);
 		assert.deepStrictEqual(getContext([], [s3, s1, s4], false, noNavigationController), []);
-		assert.deepStrictEqual(getContext([], [s3, s1, s4], true, noNavigationController), [s3, s1, s4]);
+		assert.deepStrictEqual(getContext([], [s3, s1, s4], true, noNavigationController), [
+			s3,
+			s1,
+			s4,
+		]);
 	});
 
 	test('decoration provider', async function () {
@@ -55,18 +93,28 @@ suite('Files - ExplorerView', () => {
 		assert.strictEqual(provideDecorations(s3), undefined);
 		assert.deepStrictEqual(provideDecorations(s2), {
 			tooltip: 'Symbolic Link',
-			letter: '\u2937'
+			letter: '\u2937',
 		});
 		assert.deepStrictEqual(provideDecorations(s1), {
 			tooltip: 'Unable to resolve workspace folder (A test error)',
 			letter: '!',
-			color: listInvalidItemForeground
+			color: listInvalidItemForeground,
 		});
 
-		const unknown = createStat.call(this, '/path/to/stat', 'stat', false, false, 8096, d, false, true);
+		const unknown = createStat.call(
+			this,
+			'/path/to/stat',
+			'stat',
+			false,
+			false,
+			8096,
+			d,
+			false,
+			true
+		);
 		assert.deepStrictEqual(provideDecorations(unknown), {
 			tooltip: 'Unknown File Type',
-			letter: '?'
+			letter: '?',
 		});
 	});
 
@@ -87,16 +135,22 @@ suite('Files - ExplorerView', () => {
 		dom.append(label, labelName3);
 		const emitter = new Emitter<void>();
 
-		const navigationController = new CompressedNavigationController('id', [s1, s2, s3], {
-			container,
-			templateDisposables: ds.add(new DisposableStore()),
-			elementDisposables: ds.add(new DisposableStore()),
-			contribs: [],
-			label: <any>{
-				container: label,
-				onDidRender: emitter.event
+		const navigationController = new CompressedNavigationController(
+			'id',
+			[s1, s2, s3],
+			{
+				container,
+				templateDisposables: ds.add(new DisposableStore()),
+				elementDisposables: ds.add(new DisposableStore()),
+				contribs: [],
+				label: <any>{
+					container: label,
+					onDidRender: emitter.event,
+				},
 			},
-		}, 1, false);
+			1,
+			false
+		);
 
 		ds.add(navigationController);
 

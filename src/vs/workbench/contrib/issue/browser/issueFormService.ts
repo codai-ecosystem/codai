@@ -10,12 +10,18 @@ import { localize } from '../../../../nls.js';
 import { IMenuService, MenuId } from '../../../../platform/actions/common/actions.js';
 import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
-import { ExtensionIdentifier, ExtensionIdentifierSet } from '../../../../platform/extensions/common/extensions.js';
+import {
+	ExtensionIdentifier,
+	ExtensionIdentifierSet,
+} from '../../../../platform/extensions/common/extensions.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import product from '../../../../platform/product/common/product.js';
 import { IRectangle } from '../../../../platform/window/common/window.js';
-import { AuxiliaryWindowMode, IAuxiliaryWindowService } from '../../../services/auxiliaryWindow/browser/auxiliaryWindowService.js';
+import {
+	AuxiliaryWindowMode,
+	IAuxiliaryWindowService,
+} from '../../../services/auxiliaryWindow/browser/auxiliaryWindowService.js';
 import { IHostService } from '../../../services/host/browser/host.js';
 import { IIssueFormService, IssueReporterData } from '../common/issue.js';
 import BaseHtml from './issueReporterPage.js';
@@ -28,7 +34,6 @@ export interface IssuePassData {
 }
 
 export class IssueFormService implements IIssueFormService {
-
 	readonly _serviceBrand: undefined;
 
 	protected currentData: IssueReporterData | undefined;
@@ -48,7 +53,7 @@ export class IssueFormService implements IIssueFormService {
 		@ILogService protected readonly logService: ILogService,
 		@IDialogService protected readonly dialogService: IDialogService,
 		@IHostService protected readonly hostService: IHostService
-	) { }
+	) {}
 
 	async openReporter(data: IssueReporterData): Promise<void> {
 		if (this.hasToReload(data)) {
@@ -58,13 +63,19 @@ export class IssueFormService implements IIssueFormService {
 		await this.openAuxIssueReporter(data);
 
 		if (this.issueReporterWindow) {
-			const issueReporter = this.instantiationService.createInstance(IssueWebReporter, false, data, { type: this.type, arch: this.arch, release: this.release }, product, this.issueReporterWindow);
+			const issueReporter = this.instantiationService.createInstance(
+				IssueWebReporter,
+				false,
+				data,
+				{ type: this.type, arch: this.arch, release: this.release },
+				product,
+				this.issueReporterWindow
+			);
 			issueReporter.render();
 		}
 	}
 
 	async openAuxIssueReporter(data: IssueReporterData, bounds?: IRectangle): Promise<void> {
-
 		let issueReporterBounds: Partial<IRectangle> = { width: 700, height: 800 };
 
 		// Center Issue Reporter Window based on bounds from native host service
@@ -77,14 +88,25 @@ export class IssueFormService implements IIssueFormService {
 		const disposables = new DisposableStore();
 
 		// Auxiliary Window
-		const auxiliaryWindow = disposables.add(await this.auxiliaryWindowService.open({ mode: AuxiliaryWindowMode.Normal, bounds: issueReporterBounds, nativeTitlebar: true, disableFullscreen: true }));
+		const auxiliaryWindow = disposables.add(
+			await this.auxiliaryWindowService.open({
+				mode: AuxiliaryWindowMode.Normal,
+				bounds: issueReporterBounds,
+				nativeTitlebar: true,
+				disableFullscreen: true,
+			})
+		);
 
 		const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac';
 
 		if (auxiliaryWindow) {
 			await auxiliaryWindow.whenStylesHaveLoaded;
 			auxiliaryWindow.window.document.title = 'Issue Reporter';
-			auxiliaryWindow.window.document.body.classList.add('issue-reporter-body', 'monaco-workbench', platformClass);
+			auxiliaryWindow.window.document.body.classList.add(
+				'issue-reporter-body',
+				'monaco-workbench',
+				platformClass
+			);
 
 			// custom issue reporter wrapper
 			const div = document.createElement('div');
@@ -116,7 +138,11 @@ export class IssueFormService implements IIssueFormService {
 		const actions = menu.getActions({ renderShortTitle: true }).flatMap(entry => entry[1]);
 		for (const action of actions) {
 			try {
-				if (action.item && 'source' in action.item && action.item.source?.id.toLowerCase() === extensionId.toLowerCase()) {
+				if (
+					action.item &&
+					'source' in action.item &&
+					action.item.source?.id.toLowerCase() === extensionId.toLowerCase()
+				) {
 					this.extensionIdentifierSet.add(extensionId.toLowerCase());
 					await action.run();
 				}
@@ -161,20 +187,23 @@ export class IssueFormService implements IIssueFormService {
 	async showConfirmCloseDialog(): Promise<void> {
 		await this.dialogService.prompt({
 			type: Severity.Warning,
-			message: localize('confirmCloseIssueReporter', "Your input will not be saved. Are you sure you want to close this window?"),
+			message: localize(
+				'confirmCloseIssueReporter',
+				'Your input will not be saved. Are you sure you want to close this window?'
+			),
 			buttons: [
 				{
-					label: localize({ key: 'yes', comment: ['&& denotes a mnemonic'] }, "&&Yes"),
+					label: localize({ key: 'yes', comment: ['&& denotes a mnemonic'] }, '&&Yes'),
 					run: () => {
 						this.closeReporter();
 						this.issueReporterWindow = null;
-					}
+					},
 				},
 				{
-					label: localize('cancel', "Cancel"),
-					run: () => { }
-				}
-			]
+					label: localize('cancel', 'Cancel'),
+					run: () => {},
+				},
+			],
 		});
 	}
 
@@ -183,17 +212,24 @@ export class IssueFormService implements IIssueFormService {
 
 		await this.dialogService.prompt({
 			type: Severity.Warning,
-			message: localize('issueReporterWriteToClipboard', "There is too much data to send to GitHub directly. The data will be copied to the clipboard, please paste it into the GitHub issue page that is opened."),
+			message: localize(
+				'issueReporterWriteToClipboard',
+				'There is too much data to send to GitHub directly. The data will be copied to the clipboard, please paste it into the GitHub issue page that is opened.'
+			),
 			buttons: [
 				{
-					label: localize({ key: 'ok', comment: ['&& denotes a mnemonic'] }, "&&OK"),
-					run: () => { result = true; }
+					label: localize({ key: 'ok', comment: ['&& denotes a mnemonic'] }, '&&OK'),
+					run: () => {
+						result = true;
+					},
 				},
 				{
-					label: localize('cancel', "Cancel"),
-					run: () => { result = false; }
-				}
-			]
+					label: localize('cancel', 'Cancel'),
+					run: () => {
+						result = false;
+					},
+				},
+			],
 		});
 
 		return result;

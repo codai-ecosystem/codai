@@ -6,11 +6,13 @@
 import { Disposable, DisposableMap } from '../../../base/common/lifecycle.js';
 import { ILabelService, ResourceLabelFormatter } from '../../../platform/label/common/label.js';
 import { MainContext, MainThreadLabelServiceShape } from '../common/extHost.protocol.js';
-import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
+import {
+	extHostNamedCustomer,
+	IExtHostContext,
+} from '../../services/extensions/common/extHostCustomers.js';
 
 @extHostNamedCustomer(MainContext.MainThreadLabelService)
 export class MainThreadLabelService extends Disposable implements MainThreadLabelServiceShape {
-
 	private readonly _resourceLabelFormatters = this._register(new DisposableMap<number>());
 
 	constructor(

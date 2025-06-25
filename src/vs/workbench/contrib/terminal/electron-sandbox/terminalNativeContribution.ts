@@ -26,11 +26,13 @@ export class TerminalNativeContribution extends Disposable implements IWorkbench
 	) {
 		super();
 
-		ipcRenderer.on('vscode:openFiles', (_: unknown, request: INativeOpenFileRequest) => { this._onOpenFileRequest(request); });
+		ipcRenderer.on('vscode:openFiles', (_: unknown, request: INativeOpenFileRequest) => {
+			this._onOpenFileRequest(request);
+		});
 		this._register(nativeHostService.onDidResumeOS(() => this._onOsResume()));
 
 		this._terminalService.setNativeDelegate({
-			getWindowCount: () => nativeHostService.getWindowCount()
+			getWindowCount: () => nativeHostService.getWindowCount(),
 		});
 
 		const connection = remoteAgentService.getConnection();
@@ -62,18 +64,22 @@ export class TerminalNativeContribution extends Disposable implements IWorkbench
 		// Complete when wait marker file is deleted
 		return new Promise<void>(resolve => {
 			let running = false;
-			const interval = disposableWindowInterval(getActiveWindow(), async () => {
-				if (!running) {
-					running = true;
-					const exists = await this._fileService.exists(path);
-					running = false;
+			const interval = disposableWindowInterval(
+				getActiveWindow(),
+				async () => {
+					if (!running) {
+						running = true;
+						const exists = await this._fileService.exists(path);
+						running = false;
 
-					if (!exists) {
-						interval.dispose();
-						resolve(undefined);
+						if (!exists) {
+							interval.dispose();
+							resolve(undefined);
+						}
 					}
-				}
-			}, 1000);
+				},
+				1000
+			);
 		});
 	}
 }

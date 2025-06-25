@@ -15,8 +15,14 @@ suite('ExtHost API', function () {
 			assert.strictEqual(originalFSPath(URI.file('C:\\test')).charAt(0), 'C');
 			assert.strictEqual(originalFSPath(URI.file('c:\\test')).charAt(0), 'c');
 
-			assert.strictEqual(originalFSPath(URI.revive(JSON.parse(JSON.stringify(URI.file('C:\\test'))))).charAt(0), 'C');
-			assert.strictEqual(originalFSPath(URI.revive(JSON.parse(JSON.stringify(URI.file('c:\\test'))))).charAt(0), 'c');
+			assert.strictEqual(
+				originalFSPath(URI.revive(JSON.parse(JSON.stringify(URI.file('C:\\test'))))).charAt(0),
+				'C'
+			);
+			assert.strictEqual(
+				originalFSPath(URI.revive(JSON.parse(JSON.stringify(URI.file('c:\\test'))))).charAt(0),
+				'c'
+			);
 		}
 	});
 

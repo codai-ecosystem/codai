@@ -35,15 +35,25 @@ function getIconClass(iconPath: { dark: URI; light?: URI } | undefined): string 
 		iconClass = iconPathToClass[key];
 	} else {
 		iconClass = iconClassGenerator.nextId();
-		domStylesheetsJs.createCSSRule(`.${iconClass}, .hc-light .${iconClass}`, `background-image: ${cssJs.asCSSUrl(iconPath.light || iconPath.dark)}`);
-		domStylesheetsJs.createCSSRule(`.vs-dark .${iconClass}, .hc-black .${iconClass}`, `background-image: ${cssJs.asCSSUrl(iconPath.dark)}`);
+		domStylesheetsJs.createCSSRule(
+			`.${iconClass}, .hc-light .${iconClass}`,
+			`background-image: ${cssJs.asCSSUrl(iconPath.light || iconPath.dark)}`
+		);
+		domStylesheetsJs.createCSSRule(
+			`.vs-dark .${iconClass}, .hc-black .${iconClass}`,
+			`background-image: ${cssJs.asCSSUrl(iconPath.dark)}`
+		);
 		iconPathToClass[key] = iconClass;
 	}
 
 	return iconClass;
 }
 
-export function quickInputButtonToAction(button: IQuickInputButton, id: string, run: () => unknown): IAction {
+export function quickInputButtonToAction(
+	button: IQuickInputButton,
+	id: string,
+	run: () => unknown
+): IAction {
 	let cssClasses = button.iconClass || getIconClass(button.iconPath);
 	if (button.alwaysVisible) {
 		cssClasses = cssClasses ? `${cssClasses} always-visible` : 'always-visible';
@@ -55,11 +65,15 @@ export function quickInputButtonToAction(button: IQuickInputButton, id: string, 
 		tooltip: button.tooltip || '',
 		class: cssClasses,
 		enabled: true,
-		run
+		run,
 	};
 }
 
-export function renderQuickInputDescription(description: string, container: HTMLElement, actionHandler: { callback: (content: string) => void; disposables: DisposableStore }) {
+export function renderQuickInputDescription(
+	description: string,
+	container: HTMLElement,
+	actionHandler: { callback: (content: string) => void; disposables: DisposableStore }
+) {
 	dom.reset(container);
 	const parsed = parseLinkedText(description);
 	let tabIndex = 0;
@@ -70,7 +84,11 @@ export function renderQuickInputDescription(description: string, container: HTML
 			let title = node.title;
 
 			if (!title && node.href.startsWith('command:')) {
-				title = localize('executeCommand', "Click to execute command '{0}'", node.href.substring('command:'.length));
+				title = localize(
+					'executeCommand',
+					"Click to execute command '{0}'",
+					node.href.substring('command:'.length)
+				);
 			} else if (!title) {
 				title = node.href;
 			}
@@ -85,16 +103,24 @@ export function renderQuickInputDescription(description: string, container: HTML
 				actionHandler.callback(node.href);
 			};
 
-			const onClick = actionHandler.disposables.add(new DomEmitter(anchor, dom.EventType.CLICK)).event;
-			const onKeydown = actionHandler.disposables.add(new DomEmitter(anchor, dom.EventType.KEY_DOWN)).event;
-			const onSpaceOrEnter = Event.chain(onKeydown, $ => $.filter(e => {
-				const event = new StandardKeyboardEvent(e);
+			const onClick = actionHandler.disposables.add(
+				new DomEmitter(anchor, dom.EventType.CLICK)
+			).event;
+			const onKeydown = actionHandler.disposables.add(
+				new DomEmitter(anchor, dom.EventType.KEY_DOWN)
+			).event;
+			const onSpaceOrEnter = Event.chain(onKeydown, $ =>
+				$.filter(e => {
+					const event = new StandardKeyboardEvent(e);
 
-				return event.equals(KeyCode.Space) || event.equals(KeyCode.Enter);
-			}));
+					return event.equals(KeyCode.Space) || event.equals(KeyCode.Enter);
+				})
+			);
 
 			actionHandler.disposables.add(Gesture.addTarget(anchor));
-			const onTap = actionHandler.disposables.add(new DomEmitter(anchor, GestureEventType.Tap)).event;
+			const onTap = actionHandler.disposables.add(
+				new DomEmitter(anchor, GestureEventType.Tap)
+			).event;
 
 			Event.any(onClick, onTap, onSpaceOrEnter)(handleOpen, null, actionHandler.disposables);
 			container.appendChild(anchor);

@@ -10,9 +10,8 @@ import { isLinux } from '../../../../base/common/platform.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('EnvironmentMainService', () => {
-
 	test('can unset and restore snap env variables', () => {
-		const service = new EnvironmentMainService({ '_': [] }, { '_serviceBrand': undefined, ...product });
+		const service = new EnvironmentMainService({ _: [] }, { _serviceBrand: undefined, ...product });
 
 		process.env['TEST_ARG1_VSCODE_SNAP_ORIG'] = 'original';
 		process.env['TEST_ARG1'] = 'modified';
@@ -58,7 +57,7 @@ suite('EnvironmentMainService', () => {
 	});
 
 	test('can invoke unsetSnapExportedVariables and restoreSnapExportedVariables multiple times', () => {
-		const service = new EnvironmentMainService({ '_': [] }, { '_serviceBrand': undefined, ...product });
+		const service = new EnvironmentMainService({ _: [] }, { _serviceBrand: undefined, ...product });
 		// Mock snap environment
 		process.env['SNAP'] = '1';
 		process.env['SNAP_REVISION'] = 'test_revision';

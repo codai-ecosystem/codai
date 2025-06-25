@@ -13,8 +13,10 @@ import { ILogService } from '../../../../platform/log/common/log.js';
 import { IWorkingCopyBackupService } from './workingCopyBackup.js';
 import { IFileWorkingCopy, IFileWorkingCopyModel } from './fileWorkingCopy.js';
 
-export interface IBaseFileWorkingCopyManager<M extends IFileWorkingCopyModel, W extends IFileWorkingCopy<M>> extends IDisposable {
-
+export interface IBaseFileWorkingCopyManager<
+	M extends IFileWorkingCopyModel,
+	W extends IFileWorkingCopy<M>,
+> extends IDisposable {
 	/**
 	 * An event for when a file working copy was created.
 	 */
@@ -44,8 +46,13 @@ export interface IBaseFileWorkingCopyManager<M extends IFileWorkingCopyModel, W 
 	destroy(): Promise<void>;
 }
 
-export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel, W extends IFileWorkingCopy<M>> extends Disposable implements IBaseFileWorkingCopyManager<M, W> {
-
+export abstract class BaseFileWorkingCopyManager<
+		M extends IFileWorkingCopyModel,
+		W extends IFileWorkingCopy<M>,
+	>
+	extends Disposable
+	implements IBaseFileWorkingCopyManager<M, W>
+{
 	private readonly _onDidCreate = this._register(new Emitter<W>());
 	readonly onDidCreate = this._onDidCreate.event;
 
@@ -55,7 +62,8 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
 	constructor(
 		@IFileService protected readonly fileService: IFileService,
 		@ILogService protected readonly logService: ILogService,
-		@IWorkingCopyBackupService protected readonly workingCopyBackupService: IWorkingCopyBackupService
+		@IWorkingCopyBackupService
+		protected readonly workingCopyBackupService: IWorkingCopyBackupService
 	) {
 		super();
 	}
@@ -75,14 +83,16 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
 
 		// Update our dispose listener to remove it on dispose
 		this.mapResourceToDisposeListener.get(resource)?.dispose();
-		this.mapResourceToDisposeListener.set(resource, workingCopy.onWillDispose(() => this.remove(resource)));
+		this.mapResourceToDisposeListener.set(
+			resource,
+			workingCopy.onWillDispose(() => this.remove(resource))
+		);
 
 		// Signal creation event
 		this._onDidCreate.fire(workingCopy);
 	}
 
 	protected remove(resource: URI): boolean {
-
 		// Dispose any existing listener
 		const disposeListener = this.mapResourceToDisposeListener.get(resource);
 		if (disposeListener) {
@@ -127,14 +137,15 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
 	}
 
 	async destroy(): Promise<void> {
-
 		// Make sure all dirty working copies are saved to disk
 		try {
-			await Promises.settled(this.workingCopies.map(async workingCopy => {
-				if (workingCopy.isDirty()) {
-					await this.saveWithFallback(workingCopy);
-				}
-			}));
+			await Promises.settled(
+				this.workingCopies.map(async workingCopy => {
+					if (workingCopy.isDirty()) {
+						await this.saveWithFallback(workingCopy);
+					}
+				})
+			);
 		} catch (error) {
 			this.logService.error(error);
 		}
@@ -147,7 +158,6 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
 	}
 
 	private async saveWithFallback(workingCopy: W): Promise<void> {
-
 		// First try regular save
 		let saveSuccess = false;
 		try {

@@ -40,7 +40,7 @@ export class MemoryGraph {
 			content,
 			timestamp: new Date(),
 			connections: [],
-			metadata
+			metadata,
 		};
 
 		this.nodes.set(id, node);
@@ -51,7 +51,13 @@ export class MemoryGraph {
 	/**
 	 * Add an edge between two nodes
 	 */
-	addEdge(from: string, to: string, type: MemoryEdge['type'], weight: number = 1, metadata: Record<string, any> = {}): string {
+	addEdge(
+		from: string,
+		to: string,
+		type: MemoryEdge['type'],
+		weight: number = 1,
+		metadata: Record<string, any> = {}
+	): string {
 		const id = uuidv4();
 		const edge: MemoryEdge = {
 			id,
@@ -59,7 +65,7 @@ export class MemoryGraph {
 			to,
 			type,
 			weight,
-			metadata
+			metadata,
 		};
 
 		this.edges.set(id, edge);
@@ -98,11 +104,12 @@ export class MemoryGraph {
 	 */
 	searchNodes(query: string): MemoryNode[] {
 		const lowercaseQuery = query.toLowerCase();
-		return Array.from(this.nodes.values()).filter(node =>
-			node.content.toLowerCase().includes(lowercaseQuery) ||
-			Object.values(node.metadata).some(value =>
-				typeof value === 'string' && value.toLowerCase().includes(lowercaseQuery)
-			)
+		return Array.from(this.nodes.values()).filter(
+			node =>
+				node.content.toLowerCase().includes(lowercaseQuery) ||
+				Object.values(node.metadata).some(
+					value => typeof value === 'string' && value.toLowerCase().includes(lowercaseQuery)
+				)
 		);
 	}
 
@@ -123,10 +130,10 @@ export class MemoryGraph {
 	/**
 	 * Get all nodes and edges for visualization
 	 */
-	getGraphData(): { nodes: MemoryNode[], edges: MemoryEdge[] } {
+	getGraphData(): { nodes: MemoryNode[]; edges: MemoryEdge[] } {
 		return {
 			nodes: Array.from(this.nodes.values()),
-			edges: Array.from(this.edges.values())
+			edges: Array.from(this.edges.values()),
 		};
 	}
 
@@ -183,7 +190,7 @@ export class MemoryGraph {
 		const data = {
 			nodes: Array.from(this.nodes.entries()),
 			edges: Array.from(this.edges.entries()),
-			timestamp: new Date().toISOString()
+			timestamp: new Date().toISOString(),
 		};
 
 		this.context.globalState.update('aide.memoryGraph', data);

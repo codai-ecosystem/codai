@@ -12,7 +12,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 
 suite('WorkingCopyService', () => {
-
 	const disposables = new DisposableStore();
 
 	teardown(() => {
@@ -46,7 +45,10 @@ suite('WorkingCopyService', () => {
 		const resource1 = URI.file('/some/folder/file.txt');
 		assert.strictEqual(service.has(resource1), false);
 		assert.strictEqual(service.has({ resource: resource1, typeId: 'testWorkingCopyType' }), false);
-		assert.strictEqual(service.get({ resource: resource1, typeId: 'testWorkingCopyType' }), undefined);
+		assert.strictEqual(
+			service.get({ resource: resource1, typeId: 'testWorkingCopyType' }),
+			undefined
+		);
 		assert.strictEqual(service.getAll(resource1), undefined);
 		const copy1 = disposables.add(new TestWorkingCopy(resource1));
 		const unregister1 = service.registerWorkingCopy(copy1);

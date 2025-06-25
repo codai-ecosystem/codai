@@ -11,7 +11,7 @@ export interface IIndexTransformer {
 
 /**
  * Can only be called with increasing values of `index`.
-*/
+ */
 export class MonotonousIndexTransformer implements IIndexTransformer {
 	public static fromMany(transformations: AnyEdit[]): IIndexTransformer {
 		// TODO improve performance by combining transformations first
@@ -22,8 +22,7 @@ export class MonotonousIndexTransformer implements IIndexTransformer {
 	private idx = 0;
 	private offset = 0;
 
-	constructor(private readonly transformation: AnyEdit) {
-	}
+	constructor(private readonly transformation: AnyEdit) {}
 
 	/**
 	 * Precondition: index >= previous-value-of(index).
@@ -47,9 +46,7 @@ export class MonotonousIndexTransformer implements IIndexTransformer {
 }
 
 export class CombinedIndexTransformer implements IIndexTransformer {
-	constructor(
-		private readonly transformers: IIndexTransformer[]
-	) { }
+	constructor(private readonly transformers: IIndexTransformer[]) {}
 
 	transform(index: number): number | undefined {
 		for (const transformer of this.transformers) {

@@ -25,9 +25,13 @@ export class OutlineEntry {
 		if (this.symbolKind) {
 			return SymbolKinds.toIcon(this.symbolKind);
 		}
-		return this.isExecuting && this.isPaused ? executingStateIcon :
-			this.isExecuting ? ThemeIcon.modify(executingStateIcon, 'spin') :
-				this.cell.cellKind === CellKind.Markup ? Codicon.markdown : Codicon.code;
+		return this.isExecuting && this.isPaused
+			? executingStateIcon
+			: this.isExecuting
+				? ThemeIcon.modify(executingStateIcon, 'spin')
+				: this.cell.cellKind === CellKind.Markup
+					? Codicon.markdown
+					: Codicon.code;
 	}
 
 	constructor(
@@ -38,8 +42,8 @@ export class OutlineEntry {
 		readonly isExecuting: boolean,
 		readonly isPaused: boolean,
 		readonly range?: IRange,
-		readonly symbolKind?: SymbolKind,
-	) { }
+		readonly symbolKind?: SymbolKind
+	) {}
 
 	addChild(entry: OutlineEntry) {
 		this._children.push(entry);
@@ -68,11 +72,15 @@ export class OutlineEntry {
 	updateMarkers(markerService: IMarkerService): void {
 		if (this.cell.cellKind === CellKind.Code) {
 			// a code cell can have marker
-			const marker = markerService.read({ resource: this.cell.uri, severities: MarkerSeverity.Error | MarkerSeverity.Warning });
+			const marker = markerService.read({
+				resource: this.cell.uri,
+				severities: MarkerSeverity.Error | MarkerSeverity.Warning,
+			});
 			if (marker.length === 0) {
 				this._markerInfo = undefined;
 			} else {
-				const topSev = marker.find(a => a.severity === MarkerSeverity.Error)?.severity ?? MarkerSeverity.Warning;
+				const topSev =
+					marker.find(a => a.severity === MarkerSeverity.Error)?.severity ?? MarkerSeverity.Warning;
 				this._markerInfo = { topSev, count: marker.length };
 			}
 		} else {
@@ -81,7 +89,9 @@ export class OutlineEntry {
 			for (const child of this.children) {
 				child.updateMarkers(markerService);
 				if (child.markerInfo) {
-					topChild = !topChild ? child.markerInfo.topSev : Math.max(child.markerInfo.topSev, topChild);
+					topChild = !topChild
+						? child.markerInfo.topSev
+						: Math.max(child.markerInfo.topSev, topChild);
 				}
 			}
 			this._markerInfo = topChild && { topSev: topChild, count: 0 };

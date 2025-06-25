@@ -12,16 +12,32 @@ import { basename } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { localize } from '../../../../nls.js';
 import { workbenchConfigurationNodeBase } from '../../../common/configuration.js';
-import { Extensions as ConfigurationExtensions, IConfigurationNode, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
-import { IResourceEditorInput, ITextResourceEditorInput } from '../../../../platform/editor/common/editor.js';
+import {
+	Extensions as ConfigurationExtensions,
+	IConfigurationNode,
+	IConfigurationRegistry,
+} from '../../../../platform/configuration/common/configurationRegistry.js';
+import {
+	IResourceEditorInput,
+	ITextResourceEditorInput,
+} from '../../../../platform/editor/common/editor.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { EditorInputWithOptions, EditorInputWithOptionsAndGroup, IResourceDiffEditorInput, IResourceMultiDiffEditorInput, IResourceMergeEditorInput, IUntitledTextResourceEditorInput, IUntypedEditorInput } from '../../../common/editor.js';
+import {
+	EditorInputWithOptions,
+	EditorInputWithOptionsAndGroup,
+	IResourceDiffEditorInput,
+	IResourceMultiDiffEditorInput,
+	IResourceMergeEditorInput,
+	IUntitledTextResourceEditorInput,
+	IUntypedEditorInput,
+} from '../../../common/editor.js';
 import { IEditorGroup } from './editorGroupsService.js';
 import { PreferredGroup } from './editorService.js';
 import { AtLeastOne } from '../../../../base/common/types.js';
 
-export const IEditorResolverService = createDecorator<IEditorResolverService>('editorResolverService');
+export const IEditorResolverService =
+	createDecorator<IEditorResolverService>('editorResolverService');
 
 //#region Editor Associations
 
@@ -36,19 +52,24 @@ export type EditorAssociations = readonly EditorAssociation[];
 
 export const editorsAssociationsSettingId = 'workbench.editorAssociations';
 
-const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
+const configurationRegistry = Registry.as<IConfigurationRegistry>(
+	ConfigurationExtensions.Configuration
+);
 
 const editorAssociationsConfigurationNode: IConfigurationNode = {
 	...workbenchConfigurationNodeBase,
 	properties: {
 		'workbench.editorAssociations': {
 			type: 'object',
-			markdownDescription: localize('editor.editorAssociations', "Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `\"*.hex\": \"hexEditor.hexedit\"`). These have precedence over the default behavior."),
+			markdownDescription: localize(
+				'editor.editorAssociations',
+				'Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `"*.hex": "hexEditor.hexedit"`). These have precedence over the default behavior.'
+			),
 			additionalProperties: {
-				type: 'string'
-			}
-		}
-	}
+				type: 'string',
+			},
+		},
+	},
 };
 
 export interface IEditorType {
@@ -65,7 +86,7 @@ export enum RegisteredEditorPriority {
 	builtin = 'builtin',
 	option = 'option',
 	exclusive = 'exclusive',
-	default = 'default'
+	default = 'default',
 }
 
 /**
@@ -102,15 +123,30 @@ export type RegisteredEditorInfo = {
 
 type EditorInputFactoryResult = EditorInputWithOptions | Promise<EditorInputWithOptions>;
 
-export type EditorInputFactoryFunction = (editorInput: IResourceEditorInput | ITextResourceEditorInput, group: IEditorGroup) => EditorInputFactoryResult;
+export type EditorInputFactoryFunction = (
+	editorInput: IResourceEditorInput | ITextResourceEditorInput,
+	group: IEditorGroup
+) => EditorInputFactoryResult;
 
-export type UntitledEditorInputFactoryFunction = (untitledEditorInput: IUntitledTextResourceEditorInput, group: IEditorGroup) => EditorInputFactoryResult;
+export type UntitledEditorInputFactoryFunction = (
+	untitledEditorInput: IUntitledTextResourceEditorInput,
+	group: IEditorGroup
+) => EditorInputFactoryResult;
 
-export type DiffEditorInputFactoryFunction = (diffEditorInput: IResourceDiffEditorInput, group: IEditorGroup) => EditorInputFactoryResult;
+export type DiffEditorInputFactoryFunction = (
+	diffEditorInput: IResourceDiffEditorInput,
+	group: IEditorGroup
+) => EditorInputFactoryResult;
 
-export type MultiDiffEditorInputFactoryFunction = (multiDiffEditorInput: IResourceMultiDiffEditorInput, group: IEditorGroup) => EditorInputFactoryResult;
+export type MultiDiffEditorInputFactoryFunction = (
+	multiDiffEditorInput: IResourceMultiDiffEditorInput,
+	group: IEditorGroup
+) => EditorInputFactoryResult;
 
-export type MergeEditorInputFactoryFunction = (mergeEditorInput: IResourceMergeEditorInput, group: IEditorGroup) => EditorInputFactoryResult;
+export type MergeEditorInputFactoryFunction = (
+	mergeEditorInput: IResourceMergeEditorInput,
+	group: IEditorGroup
+) => EditorInputFactoryResult;
 
 type EditorInputFactories = {
 	createEditorInput?: EditorInputFactoryFunction;
@@ -169,7 +205,10 @@ export interface IEditorResolverService {
 	 * @param preferredGroup The group you want to open the editor in
 	 * @returns An EditorInputWithOptionsAndGroup if there is an available editor or a status of how to proceed
 	 */
-	resolveEditor(editor: IUntypedEditorInput, preferredGroup: PreferredGroup | undefined): Promise<ResolvedEditor>;
+	resolveEditor(
+		editor: IUntypedEditorInput,
+		preferredGroup: PreferredGroup | undefined
+	): Promise<ResolvedEditor>;
 
 	/**
 	 * Given a resource returns all the editor ids that match that resource. If there is exclusive editor we return an empty array
@@ -207,12 +246,15 @@ export function priorityToRank(priority: RegisteredEditorPriority): number {
 	}
 }
 
-export function globMatchesResource(globPattern: string | glob.IRelativePattern, resource: URI): boolean {
+export function globMatchesResource(
+	globPattern: string | glob.IRelativePattern,
+	resource: URI
+): boolean {
 	const excludedSchemes = new Set([
 		Schemas.extension,
 		Schemas.webviewPanel,
 		Schemas.vscodeWorkspaceTrust,
-		Schemas.vscodeSettings
+		Schemas.vscodeSettings,
 	]);
 	// We want to say that the above schemes match no glob patterns
 	if (excludedSchemes.has(resource.scheme)) {
@@ -220,6 +262,9 @@ export function globMatchesResource(globPattern: string | glob.IRelativePattern,
 	}
 	const matchOnPath = typeof globPattern === 'string' && globPattern.indexOf(posix.sep) >= 0;
 	const target = matchOnPath ? `${resource.scheme}:${resource.path}` : basename(resource);
-	return glob.match(typeof globPattern === 'string' ? globPattern.toLowerCase() : globPattern, target.toLowerCase());
+	return glob.match(
+		typeof globPattern === 'string' ? globPattern.toLowerCase() : globPattern,
+		target.toLowerCase()
+	);
 }
 //#endregion

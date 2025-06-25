@@ -46,35 +46,64 @@ suite('Hash', () => {
 	test('object', () => {
 		assert.strictEqual(hash({}), hash({}));
 		assert.strictEqual(hash({}), hash(Object.create(null)));
-		assert.strictEqual(hash({ 'foo': 'bar' }), hash({ 'foo': 'bar' }));
-		assert.strictEqual(hash({ 'foo': 'bar', 'foo2': undefined }), hash({ 'foo2': undefined, 'foo': 'bar' }));
-		assert.notStrictEqual(hash({ 'foo': 'bar' }), hash({ 'foo': 'bar2' }));
+		assert.strictEqual(hash({ foo: 'bar' }), hash({ foo: 'bar' }));
+		assert.strictEqual(
+			hash({ foo: 'bar', foo2: undefined }),
+			hash({ foo2: undefined, foo: 'bar' })
+		);
+		assert.notStrictEqual(hash({ foo: 'bar' }), hash({ foo: 'bar2' }));
 		assert.notStrictEqual(hash({}), hash([]));
 	});
 
 	test('array - unexpected collision', function () {
 		const a = hash([undefined, undefined, undefined, undefined, undefined]);
-		const b = hash([undefined, undefined, 'HHHHHH', [{ line: 0, character: 0 }, { line: 0, character: 0 }], undefined]);
+		const b = hash([
+			undefined,
+			undefined,
+			'HHHHHH',
+			[
+				{ line: 0, character: 0 },
+				{ line: 0, character: 0 },
+			],
+			undefined,
+		]);
 		assert.notStrictEqual(a, b);
 	});
 
 	test('all different', () => {
 		const candidates: any[] = [
-			null, undefined, {}, [], 0, false, true, '', ' ', [null], [undefined], [undefined, undefined], { '': undefined }, { [' ']: undefined },
-			'ab', 'ba', ['ab']
+			null,
+			undefined,
+			{},
+			[],
+			0,
+			false,
+			true,
+			'',
+			' ',
+			[null],
+			[undefined],
+			[undefined, undefined],
+			{ '': undefined },
+			{ [' ']: undefined },
+			'ab',
+			'ba',
+			['ab'],
 		];
 		const hashes: number[] = candidates.map(hash);
 		for (let i = 0; i < hashes.length; i++) {
 			assert.strictEqual(hashes[i], hash(candidates[i])); // verify that repeated invocation returns the same hash
 			for (let k = i + 1; k < hashes.length; k++) {
-				assert.notStrictEqual(hashes[i], hashes[k], `Same hash ${hashes[i]} for ${JSON.stringify(candidates[i])} and ${JSON.stringify(candidates[k])}`);
+				assert.notStrictEqual(
+					hashes[i],
+					hashes[k],
+					`Same hash ${hashes[i]} for ${JSON.stringify(candidates[i])} and ${JSON.stringify(candidates[k])}`
+				);
 			}
 		}
 	});
 
-
 	async function checkSHA1(str: string, expected: string) {
-
 		// Test with StringSHA1
 		const hash = new StringSHA1();
 		hash.update(str);

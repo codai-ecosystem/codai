@@ -65,7 +65,7 @@ export class BuilderService {
 			await this.validateProjectStructure();
 
 			// Setup build environment
-			await this.setupBuildEnvironment(config);			// Run build process
+			await this.setupBuildEnvironment(config); // Run build process
 			const result = await this.executeBuild(config);
 
 			const duration = Date.now() - startTime;
@@ -73,16 +73,15 @@ export class BuilderService {
 			// Post-build operations
 			await this.postBuildOperations(config, {
 				...result,
-				duration
+				duration,
 			});
 
 			this.outputChannel.appendLine(`Build completed in ${duration}ms`);
 
 			return {
 				...result,
-				duration
+				duration,
 			};
-
 		} catch (error) {
 			const duration = Date.now() - startTime;
 			this.outputChannel.appendLine(`Build failed after ${duration}ms: ${error}`);
@@ -94,7 +93,7 @@ export class BuilderService {
 				logs: [],
 				errors: [error instanceof Error ? error.message : String(error)],
 				warnings: [],
-				duration
+				duration,
 			};
 		}
 	}
@@ -111,15 +110,15 @@ export class BuilderService {
 					build: 'react-scripts build',
 					start: 'react-scripts start',
 					test: 'react-scripts test',
-					eject: 'react-scripts eject'
+					eject: 'react-scripts eject',
 				},
 				dependencies: ['react', 'react-dom'],
 				devDependencies: ['@types/react', '@types/react-dom', 'typescript'],
 				config: {
 					typescript: true,
 					jsx: true,
-					cssModules: false
-				}
+					cssModules: false,
+				},
 			},
 			{
 				name: 'Next.js',
@@ -128,15 +127,15 @@ export class BuilderService {
 					build: 'next build',
 					start: 'next start',
 					dev: 'next dev',
-					lint: 'next lint'
+					lint: 'next lint',
 				},
 				dependencies: ['next', 'react', 'react-dom'],
 				devDependencies: ['@types/node', '@types/react', '@types/react-dom', 'typescript'],
 				config: {
 					typescript: true,
 					ssr: true,
-					staticGeneration: true
-				}
+					staticGeneration: true,
+				},
 			},
 			{
 				name: 'Node.js Express',
@@ -145,15 +144,15 @@ export class BuilderService {
 					build: 'tsc',
 					start: 'node dist/index.js',
 					dev: 'ts-node-dev src/index.ts',
-					test: 'jest'
+					test: 'jest',
 				},
 				dependencies: ['express'],
 				devDependencies: ['@types/express', '@types/node', 'typescript', 'ts-node-dev'],
 				config: {
 					typescript: true,
 					api: true,
-					database: false
-				}
+					database: false,
+				},
 			},
 			{
 				name: 'Vue.js',
@@ -162,16 +161,16 @@ export class BuilderService {
 					build: 'vue-cli-service build',
 					start: 'vue-cli-service serve',
 					test: 'vue-cli-service test:unit',
-					lint: 'vue-cli-service lint'
+					lint: 'vue-cli-service lint',
 				},
 				dependencies: ['vue'],
 				devDependencies: ['@vue/cli-service', 'typescript'],
 				config: {
 					typescript: true,
 					composition: true,
-					router: true
-				}
-			}
+					router: true,
+				},
+			},
 		];
 	}
 
@@ -216,7 +215,10 @@ export class BuilderService {
 			throw new Error('No workspace folder found');
 		}
 
-		const pattern = new vscode.RelativePattern(workspaceFolder, '**/*.{ts,tsx,js,jsx,vue,css,scss}');
+		const pattern = new vscode.RelativePattern(
+			workspaceFolder,
+			'**/*.{ts,tsx,js,jsx,vue,css,scss}'
+		);
 		const watcher = vscode.workspace.createFileSystemWatcher(pattern);
 
 		let buildTimeout: NodeJS.Timeout | undefined;
@@ -252,7 +254,8 @@ export class BuilderService {
 
 		const suggestions = [];
 
-		if (averageDuration > 30000) { // > 30 seconds
+		if (averageDuration > 30000) {
+			// > 30 seconds
 			suggestions.push('Consider enabling build caching to improve build times');
 			suggestions.push('Review bundle size and consider code splitting');
 		}
@@ -266,7 +269,7 @@ export class BuilderService {
 			successRate: successRate * 100,
 			commonErrors,
 			suggestions,
-			totalBuilds: results.length
+			totalBuilds: results.length,
 		};
 	}
 
@@ -332,16 +335,19 @@ export class BuilderService {
 			artifacts,
 			logs,
 			errors,
-			warnings
+			warnings,
 		};
 	}
 
-	private async postBuildOperations(config: BuildConfiguration, result: BuildResult): Promise<void> {
+	private async postBuildOperations(
+		config: BuildConfiguration,
+		result: BuildResult
+	): Promise<void> {
 		// Store build results in memory
 		const buildRecord = {
 			timestamp: new Date().toISOString(),
 			config,
-			result
+			result,
 		};
 
 		// Save to workspace state

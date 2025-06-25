@@ -49,7 +49,7 @@ class SaveToPromptAction extends Action2 {
 			id: SAVE_TO_PROMPT_ACTION_ID,
 			title: localize2(
 				'workbench.actions.save-to-prompt.label',
-				"Save chat session to a prompt file",
+				'Save chat session to a prompt file'
 			),
 			f1: false,
 			precondition: ContextKeyExpr.and(PromptsConfig.enabledCtx, ChatContextKeys.enabled),
@@ -59,7 +59,7 @@ class SaveToPromptAction extends Action2 {
 
 	public async run(
 		accessor: ServicesAccessor,
-		options: ISaveToPromptActionOptions,
+		options: ISaveToPromptActionOptions
 	): Promise<IEditorPane> {
 		const logService = accessor.get(ILogService);
 		const editorService = accessor.get(IEditorService);
@@ -69,10 +69,7 @@ class SaveToPromptAction extends Action2 {
 		const { chat } = options;
 
 		const { viewModel } = chat;
-		assertDefined(
-			viewModel,
-			'No view model found on currently the active chat widget.',
-		);
+		assertDefined(viewModel, 'No view model found on currently the active chat widget.');
 
 		const { model } = viewModel;
 
@@ -85,9 +82,7 @@ class SaveToPromptAction extends Action2 {
 			}
 
 			if (responseModel === undefined) {
-				logService.warn(
-					`[${logPrefix}]: skipping request '${request.id}' with no response`,
-				);
+				logService.warn(`[${logPrefix}]: skipping request '${request.id}' with no response`);
 
 				continue;
 			}
@@ -96,12 +91,12 @@ class SaveToPromptAction extends Action2 {
 
 			const tools = new Set<string>();
 			for (const record of response.value) {
-				if (('toolId' in record === false) || !record.toolId) {
+				if ('toolId' in record === false || !record.toolId) {
 					continue;
 				}
 
 				const tool = toolsService.getTool(record.toolId);
-				if ((tool === undefined) || (!tool.toolReferenceName)) {
+				if (tool === undefined || !tool.toolReferenceName) {
 					continue;
 				}
 
@@ -123,10 +118,7 @@ class SaveToPromptAction extends Action2 {
 			languageId: PROMPT_LANGUAGE_ID,
 		});
 
-		assertDefined(
-			editor,
-			'Failed to open untitled editor for the prompt.',
-		);
+		assertDefined(editor, 'Failed to open untitled editor for the prompt.');
 
 		editor.focus();
 
@@ -138,9 +130,7 @@ class SaveToPromptAction extends Action2 {
  * Check if provided message belongs to the `save to prompt` slash
  * command itself that was run in the chat to invoke this action.
  */
-const isSaveToPromptSlashCommand = (
-	message: IParsedChatRequest,
-): boolean => {
+const isSaveToPromptSlashCommand = (message: IParsedChatRequest): boolean => {
 	const { parts } = message;
 	if (parts.length < 1) {
 		return false;
@@ -161,14 +151,10 @@ const isSaveToPromptSlashCommand = (
 /**
  * Render the response part of a `request`/`response` turn pair.
  */
-const renderResponse = (
-	response: string,
-): string => {
+const renderResponse = (response: string): string => {
 	// if response starts with a code block, add an extra new line
 	// before it, to prevent full blockquote from being be broken
-	const delimiter = (response.startsWith('```'))
-		? '\n>'
-		: ' ';
+	const delimiter = response.startsWith('```') ? '\n>' : ' ';
 
 	// add `>` to the beginning of each line of the response
 	// so it looks like a blockquote citing Copilot
@@ -180,9 +166,7 @@ const renderResponse = (
 /**
  * Render a single `request`/`response` turn of the chat session.
  */
-const renderTurn = (
-	turn: ITurn,
-): string => {
+const renderTurn = (turn: ITurn): string => {
 	const { request, response } = turn;
 
 	return `\n${request}\n\n${renderResponse(response)}`;
@@ -191,9 +175,7 @@ const renderTurn = (
 /**
  * Render the entire chat session as a markdown prompt.
  */
-const renderPrompt = (
-	turns: readonly ITurn[],
-): string => {
+const renderPrompt = (turns: readonly ITurn[]): string => {
 	const content: string[] = [];
 	const allTools = new Set<string>();
 
@@ -216,9 +198,7 @@ const renderPrompt = (
 	}
 
 	// add chat request/response turns
-	result.push(
-		content.join('\n'),
-	);
+	result.push(content.join('\n'));
 
 	// add trailing empty line
 	result.push('');
@@ -226,14 +206,11 @@ const renderPrompt = (
 	return result.join('\n');
 };
 
-
 /**
  * Render the `tools` metadata inside prompt header.
  */
-const renderTools = (
-	tools: Set<string>,
-): string => {
-	const toolStrings = [...tools].map((tool) => {
+const renderTools = (tools: Set<string>): string => {
+	const toolStrings = [...tools].map(tool => {
 		return `'${tool}'`;
 	});
 
@@ -243,19 +220,13 @@ const renderTools = (
 /**
  * Render prompt header.
  */
-const renderHeader = (
-	tools: Set<string>,
-): string => {
+const renderHeader = (tools: Set<string>): string => {
 	// skip rendering the header if no tools provided
 	if (tools.size === 0) {
 		return '';
 	}
 
-	return [
-		'---',
-		renderTools(tools),
-		'---',
-	].join('\n');
+	return ['---', renderTools(tools), '---'].join('\n');
 };
 
 /**
@@ -275,12 +246,9 @@ interface ITurn {
  */
 export const runSaveToPromptAction = async (
 	options: ISaveToPromptActionOptions,
-	commandService: ICommandService,
+	commandService: ICommandService
 ) => {
-	return await commandService.executeCommand(
-		SAVE_TO_PROMPT_ACTION_ID,
-		options,
-	);
+	return await commandService.executeCommand(SAVE_TO_PROMPT_ACTION_ID, options);
 };
 
 /**

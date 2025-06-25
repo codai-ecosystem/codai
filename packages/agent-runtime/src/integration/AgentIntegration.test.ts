@@ -24,7 +24,7 @@ import {
 	TestRequest,
 	DeployRequest,
 	HistoryQuery,
-	AgentConfig
+	AgentConfig,
 } from '../types';
 
 describe('Agent Integration Tests', () => {
@@ -51,19 +51,21 @@ describe('Agent Integration Tests', () => {
 			name: `${type.charAt(0).toUpperCase() + type.slice(1)} Agent`,
 			description: `Mock ${type} agent for testing`,
 			type: type as any,
-			capabilities: [{
-				name: `${type}Capability`,
-				description: `Can execute ${type} tasks`,
-				inputs: [{ name: 'input', type: 'any', required: true }],
-				outputs: [{ name: 'output', type: 'any' }]
-			}],
+			capabilities: [
+				{
+					name: `${type}Capability`,
+					description: `Can execute ${type} tasks`,
+					inputs: [{ name: 'input', type: 'any', required: true }],
+					outputs: [{ name: 'output', type: 'any' }],
+				},
+			],
 			aiProvider: {
 				provider: 'openai',
 				model: 'gpt-4',
-				temperature: 0.7
+				temperature: 0.7,
 			},
 			priority: 5,
-			isEnabled: true
+			isEnabled: true,
 		});
 
 		plannerAgent = new PlannerAgent(createMockConfig('planner'), mockMemoryGraphEngine);
@@ -93,11 +95,11 @@ describe('Agent Integration Tests', () => {
 					context: {
 						framework: 'React',
 						language: 'TypeScript',
-						testFramework: 'Jest'
-					}
+						testFramework: 'Jest',
+					},
 				},
 				timestamp: Date.now(),
-				priority: 'high'
+				priority: 'high',
 			};
 			// 1. Planning Phase
 			const planResponse = await coordinator.executeWorkflow('planner', projectRequest);
@@ -109,12 +111,12 @@ describe('Agent Integration Tests', () => {
 			const designRequest: DesignRequest = {
 				requirements: projectRequest.payload.requirements,
 				constraints: planResponse.result.plan.constraints || [],
-				preferences: { theme: 'modern', accessibility: 'WCAG-AA' }
+				preferences: { theme: 'modern', accessibility: 'WCAG-AA' },
 			};
 
 			const designResponse = await coordinator.executeWorkflow('designer', {
 				...projectRequest,
-				payload: designRequest
+				payload: designRequest,
 			});
 			expect(designResponse.success).to.be.true;
 			expect(designResponse.result).to.have.property('designSpecs');
@@ -123,12 +125,12 @@ describe('Agent Integration Tests', () => {
 			const buildRequest: BuildRequest = {
 				plan: planResponse.result.plan,
 				designSpecs: designResponse.result.designSpecs,
-				codegenInstructions: ['Follow TypeScript best practices', 'Include comprehensive comments']
+				codegenInstructions: ['Follow TypeScript best practices', 'Include comprehensive comments'],
 			};
 
 			const buildResponse = await coordinator.executeWorkflow('builder', {
 				...projectRequest,
-				payload: buildRequest
+				payload: buildRequest,
 			});
 			expect(buildResponse.success).to.be.true;
 			expect(buildResponse.result).to.have.property('artifacts');
@@ -138,12 +140,12 @@ describe('Agent Integration Tests', () => {
 			const testRequest: TestRequest = {
 				artifacts: buildResponse.result.artifacts,
 				testStrategy: 'comprehensive',
-				coverage: { minimum: 80, target: 95 }
+				coverage: { minimum: 80, target: 95 },
 			};
 
 			const testResponse = await coordinator.executeWorkflow('tester', {
 				...projectRequest,
-				payload: testRequest
+				payload: testRequest,
 			});
 			expect(testResponse.success).to.be.true;
 			expect(testResponse.result).to.have.property('results');
@@ -158,14 +160,14 @@ describe('Agent Integration Tests', () => {
 						planning: planResponse.result,
 						design: designResponse.result,
 						build: buildResponse.result,
-						test: testResponse.result
-					}
-				}
+						test: testResponse.result,
+					},
+				},
 			};
 
 			const historyResponse = await coordinator.executeWorkflow('history', {
 				...projectRequest,
-				payload: historyQuery
+				payload: historyQuery,
 			});
 			expect(historyResponse.success).to.be.true;
 
@@ -180,8 +182,9 @@ describe('Agent Integration Tests', () => {
 				type: 'invalid',
 				payload: null,
 				timestamp: Date.now(),
-				priority: 'low'
-			}; const response = await coordinator.executeWorkflow('planner', faultyRequest);
+				priority: 'low',
+			};
+			const response = await coordinator.executeWorkflow('planner', faultyRequest);
 			expect(response.success).to.be.false;
 			expect(response.error).to.exist;
 			expect(response.error?.type).to.equal('capability_mismatch');
@@ -193,7 +196,7 @@ describe('Agent Integration Tests', () => {
 			const sharedContext = {
 				projectId: 'shared-context-test',
 				framework: 'React',
-				preferences: { styling: 'Tailwind CSS' }
+				preferences: { styling: 'Tailwind CSS' },
 			};
 			// Store context in memory graph
 			memoryGraph.storeContext('shared-context-test', sharedContext);
@@ -201,7 +204,7 @@ describe('Agent Integration Tests', () => {
 			// Planning agent should access shared context
 			const planRequest: PlanningRequest = {
 				description: 'Create a component using shared preferences',
-				requirements: ['Use framework from shared context']
+				requirements: ['Use framework from shared context'],
 			};
 
 			const planResponse = await coordinator.executeWorkflow('planner', {
@@ -209,7 +212,7 @@ describe('Agent Integration Tests', () => {
 				type: 'planning',
 				payload: planRequest,
 				timestamp: Date.now(),
-				priority: 'medium'
+				priority: 'medium',
 			});
 
 			expect(planResponse.success).to.be.true;
@@ -222,7 +225,7 @@ describe('Agent Integration Tests', () => {
 				{ agent: 'planner', dependency: null },
 				{ agent: 'designer', dependency: 'planner' },
 				{ agent: 'builder', dependency: 'designer' },
-				{ agent: 'tester', dependency: 'builder' }
+				{ agent: 'tester', dependency: 'builder' },
 			];
 
 			const execution = await coordinator.executeSequentialWorkflow(workflowSteps, {
@@ -230,10 +233,10 @@ describe('Agent Integration Tests', () => {
 				type: 'sequential',
 				payload: {
 					description: 'Test agent dependencies',
-					requirements: ['Sequential execution', 'Dependency management']
+					requirements: ['Sequential execution', 'Dependency management'],
 				},
 				timestamp: Date.now(),
-				priority: 'medium'
+				priority: 'medium',
 			});
 
 			expect(execution.success).to.be.true;
@@ -251,7 +254,7 @@ describe('Agent Integration Tests', () => {
 				output: { plan: { phases: ['design', 'build'] } },
 				timestamp: Date.now(),
 				duration: 100,
-				success: true
+				success: true,
 			};
 
 			memoryGraph.recordWorkflowStep(workflowId, testData);
@@ -265,7 +268,7 @@ describe('Agent Integration Tests', () => {
 			const patterns = [
 				{ type: 'React', framework: 'TypeScript', testFramework: 'Jest' },
 				{ type: 'React', framework: 'TypeScript', testFramework: 'Vitest' },
-				{ type: 'React', framework: 'JavaScript', testFramework: 'Jest' }
+				{ type: 'React', framework: 'JavaScript', testFramework: 'Jest' },
 			];
 
 			patterns.forEach((pattern, index) => {
@@ -276,7 +279,7 @@ describe('Agent Integration Tests', () => {
 					output: { success: true },
 					timestamp: Date.now(),
 					duration: 100,
-					success: true
+					success: true,
 				});
 			});
 
@@ -294,7 +297,7 @@ describe('Agent Integration Tests', () => {
 				type: 'build',
 				payload: { invalid: 'data' },
 				timestamp: Date.now(),
-				priority: 'high'
+				priority: 'high',
 			};
 
 			const response = await coordinator.executeWorkflowWithRecovery('builder', mockFailureRequest);
@@ -316,7 +319,7 @@ describe('Agent Integration Tests', () => {
 					type: 'invalid',
 					payload: {},
 					timestamp: Date.now(),
-					priority: 'low'
+					priority: 'low',
 				});
 			} catch (error) {
 				// Expected failure

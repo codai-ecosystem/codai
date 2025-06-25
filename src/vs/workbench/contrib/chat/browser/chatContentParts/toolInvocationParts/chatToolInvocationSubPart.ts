@@ -20,11 +20,9 @@ export abstract class BaseChatToolInvocationSubPart extends Disposable {
 
 	public abstract codeblocks: IChatCodeBlockInfo[];
 
-	public readonly codeblocksPartId = 'tool-' + (BaseChatToolInvocationSubPart.idPool++);
+	public readonly codeblocksPartId = 'tool-' + BaseChatToolInvocationSubPart.idPool++;
 
-	constructor(
-		toolInvocation: IChatToolInvocation | IChatToolInvocationSerialized,
-	) {
+	constructor(toolInvocation: IChatToolInvocation | IChatToolInvocationSerialized) {
 		super();
 
 		if (toolInvocation.kind === 'toolInvocation' && !toolInvocation.isComplete) {

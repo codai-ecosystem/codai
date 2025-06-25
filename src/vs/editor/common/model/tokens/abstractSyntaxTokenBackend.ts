@@ -15,14 +15,23 @@ import { TextModel } from '../textModel.js';
 import { IModelContentChangedEvent, IModelTokensChangedEvent } from '../../textModelEvents.js';
 import { BackgroundTokenizationState } from '../../tokenizationTextModelPart.js';
 import { LineTokens } from '../../tokens/lineTokens.js';
-import { derivedOpts, IObservable, ISettableObservable, observableSignal, observableValueOpts } from '../../../../base/common/observable.js';
+import {
+	derivedOpts,
+	IObservable,
+	ISettableObservable,
+	observableSignal,
+	observableValueOpts,
+} from '../../../../base/common/observable.js';
 import { equalsIfDefined, itemEquals, itemsEquals } from '../../../../base/common/equals.js';
 
 /**
  * @internal
  */
 export class AttachedViews {
-	private readonly _onDidChangeVisibleRanges = new Emitter<{ view: IAttachedView; state: AttachedViewState | undefined }>();
+	private readonly _onDidChangeVisibleRanges = new Emitter<{
+		view: IAttachedView;
+		state: AttachedViewState | undefined;
+	}>();
 	public readonly onDidChangeVisibleRanges = this._onDidChangeVisibleRanges.event;
 
 	private readonly _views = new Set<AttachedViewImpl>();
@@ -31,20 +40,23 @@ export class AttachedViews {
 	public readonly visibleLineRanges: IObservable<readonly LineRange[]>;
 
 	constructor() {
-		this.visibleLineRanges = derivedOpts({
-			owner: this,
-			equalsFn: itemsEquals(itemEquals())
-		}, reader => {
-			this._viewsChanged.read(reader);
-			const ranges = LineRange.joinMany(
-				[...this._views].map(view => view.state.read(reader)?.visibleLineRanges ?? [])
-			);
-			return ranges;
-		});
+		this.visibleLineRanges = derivedOpts(
+			{
+				owner: this,
+				equalsFn: itemsEquals(itemEquals()),
+			},
+			reader => {
+				this._viewsChanged.read(reader);
+				const ranges = LineRange.joinMany(
+					[...this._views].map(view => view.state.read(reader)?.visibleLineRanges ?? [])
+				);
+				return ranges;
+			}
+		);
 	}
 
 	public attachView(): IAttachedView {
-		const view = new AttachedViewImpl((state) => {
+		const view = new AttachedViewImpl(state => {
 			this._onDidChangeVisibleRanges.fire({ view, state });
 		});
 		this._views.add(view);
@@ -65,8 +77,8 @@ export class AttachedViews {
 export class AttachedViewState {
 	constructor(
 		readonly visibleLineRanges: readonly LineRange[],
-		readonly stabilized: boolean,
-	) { }
+		readonly stabilized: boolean
+	) {}
 
 	public equals(other: AttachedViewState): boolean {
 		if (this === other) {
@@ -84,29 +96,38 @@ export class AttachedViewState {
 
 class AttachedViewImpl implements IAttachedView {
 	private readonly _state: ISettableObservable<AttachedViewState | undefined>;
-	public get state(): IObservable<AttachedViewState | undefined> { return this._state; }
-
-	constructor(
-		private readonly handleStateChange: (state: AttachedViewState) => void
-	) {
-		this._state = observableValueOpts<AttachedViewState | undefined>({ owner: this, equalsFn: equalsIfDefined((a, b) => a.equals(b)) }, undefined);
+	public get state(): IObservable<AttachedViewState | undefined> {
+		return this._state;
 	}
 
-	setVisibleLines(visibleLines: { startLineNumber: number; endLineNumber: number }[], stabilized: boolean): void {
-		const visibleLineRanges = visibleLines.map((line) => new LineRange(line.startLineNumber, line.endLineNumber + 1));
+	constructor(private readonly handleStateChange: (state: AttachedViewState) => void) {
+		this._state = observableValueOpts<AttachedViewState | undefined>(
+			{ owner: this, equalsFn: equalsIfDefined((a, b) => a.equals(b)) },
+			undefined
+		);
+	}
+
+	setVisibleLines(
+		visibleLines: { startLineNumber: number; endLineNumber: number }[],
+		stabilized: boolean
+	): void {
+		const visibleLineRanges = visibleLines.map(
+			line => new LineRange(line.startLineNumber, line.endLineNumber + 1)
+		);
 		const state = new AttachedViewState(visibleLineRanges, stabilized);
 		this._state.set(state, undefined, undefined);
 		this.handleStateChange(state);
 	}
 }
 
-
 export class AttachedViewHandler extends Disposable {
 	private readonly runner = this._register(new RunOnceScheduler(() => this.update(), 50));
 
 	private _computedLineRanges: readonly LineRange[] = [];
 	private _lineRanges: readonly LineRange[] = [];
-	public get lineRanges(): readonly LineRange[] { return this._lineRanges; }
+	public get lineRanges(): readonly LineRange[] {
+		return this._lineRanges;
+	}
 
 	constructor(private readonly _refreshTokens: () => void) {
 		super();
@@ -143,11 +164,12 @@ export abstract class AbstractSyntaxTokenBackend extends Disposable {
 
 	protected readonly _onDidChangeTokens = this._register(new Emitter<IModelTokensChangedEvent>());
 	/** @internal, should not be exposed by the text model! */
-	public readonly onDidChangeTokens: Event<IModelTokensChangedEvent> = this._onDidChangeTokens.event;
+	public readonly onDidChangeTokens: Event<IModelTokensChangedEvent> =
+		this._onDidChangeTokens.event;
 
 	constructor(
 		protected readonly _languageIdCodec: ILanguageIdCodec,
-		protected readonly _textModel: TextModel,
+		protected readonly _textModel: TextModel
 	) {
 		super();
 	}
@@ -172,7 +194,11 @@ export abstract class AbstractSyntaxTokenBackend extends Disposable {
 
 	public abstract getLineTokens(lineNumber: number): LineTokens;
 
-	public abstract getTokenTypeIfInsertingCharacter(lineNumber: number, column: number, character: string): StandardTokenType;
+	public abstract getTokenTypeIfInsertingCharacter(
+		lineNumber: number,
+		column: number,
+		character: string
+	): StandardTokenType;
 
 	public abstract tokenizeLinesAt(lineNumber: number, lines: string[]): LineTokens[] | null;
 

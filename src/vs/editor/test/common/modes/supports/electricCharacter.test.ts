@@ -6,26 +6,48 @@
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { StandardTokenType } from '../../../../common/encodedTokenAttributes.js';
-import { BracketElectricCharacterSupport, IElectricAction } from '../../../../common/languages/supports/electricCharacter.js';
+import {
+	BracketElectricCharacterSupport,
+	IElectricAction,
+} from '../../../../common/languages/supports/electricCharacter.js';
 import { RichEditBrackets } from '../../../../common/languages/supports/richEditBrackets.js';
 import { TokenText, createFakeScopedLineTokens } from '../../modesTestUtils.js';
 
 const fakeLanguageId = 'test';
 
 suite('Editor Modes - Auto Indentation', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function _testOnElectricCharacter(electricCharacterSupport: BracketElectricCharacterSupport, line: TokenText[], character: string, offset: number): IElectricAction | null {
-		return electricCharacterSupport.onElectricCharacter(character, createFakeScopedLineTokens(line), offset);
+	function _testOnElectricCharacter(
+		electricCharacterSupport: BracketElectricCharacterSupport,
+		line: TokenText[],
+		character: string,
+		offset: number
+	): IElectricAction | null {
+		return electricCharacterSupport.onElectricCharacter(
+			character,
+			createFakeScopedLineTokens(line),
+			offset
+		);
 	}
 
-	function testDoesNothing(electricCharacterSupport: BracketElectricCharacterSupport, line: TokenText[], character: string, offset: number): void {
+	function testDoesNothing(
+		electricCharacterSupport: BracketElectricCharacterSupport,
+		line: TokenText[],
+		character: string,
+		offset: number
+	): void {
 		const actual = _testOnElectricCharacter(electricCharacterSupport, line, character, offset);
 		assert.deepStrictEqual(actual, null);
 	}
 
-	function testMatchBracket(electricCharacterSupport: BracketElectricCharacterSupport, line: TokenText[], character: string, offset: number, matchOpenBracket: string): void {
+	function testMatchBracket(
+		electricCharacterSupport: BracketElectricCharacterSupport,
+		line: TokenText[],
+		character: string,
+		offset: number,
+		matchOpenBracket: string
+	): void {
 		const actual = _testOnElectricCharacter(electricCharacterSupport, line, character, offset);
 		assert.deepStrictEqual(actual, { matchOpenBracket: matchOpenBracket });
 	}
@@ -34,7 +56,7 @@ suite('Editor Modes - Auto Indentation', () => {
 		const sup = new BracketElectricCharacterSupport(
 			new RichEditBrackets(fakeLanguageId, [
 				['{', '}'],
-				['(', ')']
+				['(', ')'],
 			])
 		);
 
@@ -45,7 +67,7 @@ suite('Editor Modes - Auto Indentation', () => {
 		const sup = new BracketElectricCharacterSupport(
 			new RichEditBrackets(fakeLanguageId, [
 				['{', '}'],
-				['(', ')']
+				['(', ')'],
 			])
 		);
 

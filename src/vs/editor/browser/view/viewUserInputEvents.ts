@@ -4,7 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IKeyboardEvent } from '../../../base/browser/keyboardEvent.js';
-import { IEditorMouseEvent, IMouseTarget, IMouseTargetViewZoneData, IPartialEditorMouseEvent, MouseTargetType } from '../editorBrowser.js';
+import {
+	IEditorMouseEvent,
+	IMouseTarget,
+	IMouseTargetViewZoneData,
+	IPartialEditorMouseEvent,
+	MouseTargetType,
+} from '../editorBrowser.js';
 import { ICoordinatesConverter } from '../../common/viewModel.js';
 import { IMouseWheelEvent } from '../../../base/browser/mouseEvent.js';
 import { Position } from '../../common/core/position.js';
@@ -14,7 +20,6 @@ export interface EventCallback<T> {
 }
 
 export class ViewUserInputEvents {
-
 	public onKeyDown: EventCallback<IKeyboardEvent> | null = null;
 	public onKeyUp: EventCallback<IKeyboardEvent> | null = null;
 	public onContextMenu: EventCallback<IEditorMouseEvent> | null = null;
@@ -79,11 +84,13 @@ export class ViewUserInputEvents {
 
 	private _convertViewToModelMouseEvent(e: IEditorMouseEvent): IEditorMouseEvent;
 	private _convertViewToModelMouseEvent(e: IPartialEditorMouseEvent): IPartialEditorMouseEvent;
-	private _convertViewToModelMouseEvent(e: IEditorMouseEvent | IPartialEditorMouseEvent): IEditorMouseEvent | IPartialEditorMouseEvent {
+	private _convertViewToModelMouseEvent(
+		e: IEditorMouseEvent | IPartialEditorMouseEvent
+	): IEditorMouseEvent | IPartialEditorMouseEvent {
 		if (e.target) {
 			return {
 				event: e.event,
-				target: this._convertViewToModelMouseTarget(e.target)
+				target: this._convertViewToModelMouseTarget(e.target),
 			};
 		}
 		return e;
@@ -93,7 +100,10 @@ export class ViewUserInputEvents {
 		return ViewUserInputEvents.convertViewToModelMouseTarget(target, this._coordinatesConverter);
 	}
 
-	public static convertViewToModelMouseTarget(target: IMouseTarget, coordinatesConverter: ICoordinatesConverter): IMouseTarget {
+	public static convertViewToModelMouseTarget(
+		target: IMouseTarget,
+		coordinatesConverter: ICoordinatesConverter
+	): IMouseTarget {
 		const result = { ...target };
 		if (result.position) {
 			result.position = coordinatesConverter.convertViewPositionToModelPosition(result.position);
@@ -101,19 +111,31 @@ export class ViewUserInputEvents {
 		if (result.range) {
 			result.range = coordinatesConverter.convertViewRangeToModelRange(result.range);
 		}
-		if (result.type === MouseTargetType.GUTTER_VIEW_ZONE || result.type === MouseTargetType.CONTENT_VIEW_ZONE) {
+		if (
+			result.type === MouseTargetType.GUTTER_VIEW_ZONE ||
+			result.type === MouseTargetType.CONTENT_VIEW_ZONE
+		) {
 			result.detail = this.convertViewToModelViewZoneData(result.detail, coordinatesConverter);
 		}
 		return result;
 	}
 
-	private static convertViewToModelViewZoneData(data: IMouseTargetViewZoneData, coordinatesConverter: ICoordinatesConverter): IMouseTargetViewZoneData {
+	private static convertViewToModelViewZoneData(
+		data: IMouseTargetViewZoneData,
+		coordinatesConverter: ICoordinatesConverter
+	): IMouseTargetViewZoneData {
 		return {
 			viewZoneId: data.viewZoneId,
-			positionBefore: data.positionBefore ? coordinatesConverter.convertViewPositionToModelPosition(data.positionBefore) : data.positionBefore,
-			positionAfter: data.positionAfter ? coordinatesConverter.convertViewPositionToModelPosition(data.positionAfter) : data.positionAfter,
+			positionBefore: data.positionBefore
+				? coordinatesConverter.convertViewPositionToModelPosition(data.positionBefore)
+				: data.positionBefore,
+			positionAfter: data.positionAfter
+				? coordinatesConverter.convertViewPositionToModelPosition(data.positionAfter)
+				: data.positionAfter,
 			position: coordinatesConverter.convertViewPositionToModelPosition(data.position),
-			afterLineNumber: coordinatesConverter.convertViewPositionToModelPosition(new Position(data.afterLineNumber, 1)).lineNumber,
+			afterLineNumber: coordinatesConverter.convertViewPositionToModelPosition(
+				new Position(data.afterLineNumber, 1)
+			).lineNumber,
 		};
 	}
 }

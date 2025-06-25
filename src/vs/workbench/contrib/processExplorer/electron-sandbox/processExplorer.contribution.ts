@@ -12,6 +12,10 @@ import { NativeProcessExplorerEditor } from './processExplorerEditor.js';
 import { ProcessExplorerEditorInput } from '../browser/processExplorerEditorInput.js';
 
 Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
-	EditorPaneDescriptor.create(NativeProcessExplorerEditor, NativeProcessExplorerEditor.ID, localize('processExplorer', "Process Explorer")),
+	EditorPaneDescriptor.create(
+		NativeProcessExplorerEditor,
+		NativeProcessExplorerEditor.ID,
+		localize('processExplorer', 'Process Explorer')
+	),
 	[new SyncDescriptor(ProcessExplorerEditorInput)]
 );

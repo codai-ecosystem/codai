@@ -31,10 +31,11 @@ export interface IV8CallFrame {
 	columnNumber: number;
 }
 
-export const IV8InspectProfilingService = createDecorator<IV8InspectProfilingService>('IV8InspectProfilingService');
+export const IV8InspectProfilingService = createDecorator<IV8InspectProfilingService>(
+	'IV8InspectProfilingService'
+);
 
 export interface IV8InspectProfilingService {
-
 	_serviceBrand: undefined;
 
 	startProfiling(options: { host: string; port: number }): Promise<string>;
@@ -42,9 +43,7 @@ export interface IV8InspectProfilingService {
 	stopProfiling(sessionId: string): Promise<IV8Profile>;
 }
 
-
 export namespace Utils {
-
 	export function isValidProfile(profile: IV8Profile): profile is Required<IV8Profile> {
 		return Boolean(profile.samples && profile.timeDeltas);
 	}

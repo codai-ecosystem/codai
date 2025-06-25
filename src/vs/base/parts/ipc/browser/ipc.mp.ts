@@ -10,7 +10,6 @@ import { Client as MessagePortClient } from '../common/ipc.mp.js';
  * An implementation of a `IPCClient` on top of DOM `MessagePort`.
  */
 export class Client extends MessagePortClient implements IDisposable {
-
 	/**
 	 * @param clientId a way to uniquely identify this client among
 	 * other clients. this is important for routing because every

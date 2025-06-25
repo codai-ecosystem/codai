@@ -38,18 +38,20 @@ export class ConversationalInterface {
 			{
 				enableScripts: true,
 				retainContextWhenHidden: true,
-				localResourceRoots: [
-					vscode.Uri.joinPath(context.extensionUri, 'src', 'ui', 'assets')
-				]
+				localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'src', 'ui', 'assets')],
 			}
 		);
 
 		this.panel.webview.html = this.getWebviewContent();
 		this.setupMessageHandlers();
 
-		this.panel.onDidDispose(() => {
-			this.panel = undefined;
-		}, null, context.subscriptions);
+		this.panel.onDidDispose(
+			() => {
+				this.panel = undefined;
+			},
+			null,
+			context.subscriptions
+		);
 	}
 
 	/**
@@ -65,7 +67,7 @@ export class ConversationalInterface {
 	 * Sets up message handlers for webview communication
 	 */
 	private setupMessageHandlers(): void {
-		this.panel!.webview.onDidReceiveMessage(async (message) => {
+		this.panel!.webview.onDidReceiveMessage(async message => {
 			switch (message.type) {
 				case 'sendMessage':
 					await this.handleUserMessage(message.text);
@@ -93,13 +95,13 @@ export class ConversationalInterface {
 			// Add user message to memory
 			const userNodeId = this.memoryGraph.addNode('intent', text, {
 				role: 'user',
-				timestamp: new Date().toISOString()
+				timestamp: new Date().toISOString(),
 			});
 
 			// Show typing indicator
 			this.sendMessage({
 				type: 'typing',
-				isTyping: true
+				isTyping: true,
 			});
 
 			// Process message through agent manager
@@ -111,7 +113,7 @@ export class ConversationalInterface {
 				const aiNodeId = this.memoryGraph.addNode('intent', response.message, {
 					role: 'assistant',
 					agent: response.agent,
-					timestamp: new Date().toISOString()
+					timestamp: new Date().toISOString(),
 				});
 
 				// Connect user message to AI response
@@ -123,27 +125,26 @@ export class ConversationalInterface {
 					content: response.message,
 					agent: response.agent,
 					actions: response.actions?.map(action => action.type) || [],
-					timestamp: new Date().toISOString()
+					timestamp: new Date().toISOString(),
 				});
 			}
 
 			// Hide typing indicator
 			this.sendMessage({
 				type: 'typing',
-				isTyping: false
+				isTyping: false,
 			});
-
 		} catch (error) {
 			this.logger.error('Error handling user message:', error);
 			this.sendMessage({
 				type: 'error',
-				message: 'An error occurred while processing your message.'
+				message: 'An error occurred while processing your message.',
 			});
 
 			// Hide typing indicator on error
 			this.sendMessage({
 				type: 'typing',
-				isTyping: false
+				isTyping: false,
 			});
 		}
 	}
@@ -157,7 +158,7 @@ export class ConversationalInterface {
 
 		// Notify UI
 		this.sendMessage({
-			type: 'historyCleared'
+			type: 'historyCleared',
 		});
 
 		vscode.window.showInformationMessage('Conversation history cleared.');
@@ -167,8 +168,8 @@ export class ConversationalInterface {
 	 */
 	private async exportConversationHistory(): Promise<void> {
 		const graphData = this.memoryGraph.getGraphData();
-		const messageNodes = graphData.nodes.filter(node =>
-			node.metadata.role === 'user' || node.metadata.role === 'assistant'
+		const messageNodes = graphData.nodes.filter(
+			node => node.metadata.role === 'user' || node.metadata.role === 'assistant'
 		);
 
 		const history = messageNodes
@@ -177,7 +178,7 @@ export class ConversationalInterface {
 				role: node.metadata.role,
 				content: node.content,
 				agent: node.metadata.agent || 'user',
-				timestamp: node.timestamp
+				timestamp: node.timestamp,
 			}));
 
 		const exportData = JSON.stringify(history, null, 2);
@@ -185,8 +186,8 @@ export class ConversationalInterface {
 		const uri = await vscode.window.showSaveDialog({
 			defaultUri: vscode.Uri.file('aide-conversation-history.json'),
 			filters: {
-				'JSON Files': ['json']
-			}
+				'JSON Files': ['json'],
+			},
 		});
 
 		if (uri) {
@@ -212,21 +213,33 @@ export class ConversationalInterface {
 			const activeEditor = vscode.window.activeTextEditor;
 			const context = activeEditor?.document.uri.fsPath
 				? { uri: activeEditor.document.uri }
-				: {} as vscode.ExtensionContext;
+				: ({} as vscode.ExtensionContext);
 			this.show(context as vscode.ExtensionContext);
 		}
 
 		// Send a special message to start the project creation flow
 		this.sendMessage({
 			type: 'startProjectFlow',
-			message: 'Welcome to AIDE Project Creation! Let\'s build something amazing together.',
+			message: "Welcome to AIDE Project Creation! Let's build something amazing together.",
 			options: [
-				{ id: 'web-app', label: '🌐 Web Application', description: 'Modern web app with React/Next.js' },
-				{ id: 'mobile-app', label: '📱 Mobile App', description: 'Cross-platform mobile app with React Native' },
+				{
+					id: 'web-app',
+					label: '🌐 Web Application',
+					description: 'Modern web app with React/Next.js',
+				},
+				{
+					id: 'mobile-app',
+					label: '📱 Mobile App',
+					description: 'Cross-platform mobile app with React Native',
+				},
 				{ id: 'api', label: '🔌 API Service', description: 'RESTful API with Node.js/Express' },
-				{ id: 'desktop-app', label: '💻 Desktop App', description: 'Desktop application with Electron' },
-				{ id: 'custom', label: '✨ Custom Project', description: 'Tell me what you want to build' }
-			]
+				{
+					id: 'desktop-app',
+					label: '💻 Desktop App',
+					description: 'Desktop application with Electron',
+				},
+				{ id: 'custom', label: '✨ Custom Project', description: 'Tell me what you want to build' },
+			],
 		});
 	}
 
@@ -236,16 +249,20 @@ export class ConversationalInterface {
 	private async handleProjectTypeSelection(projectType: string): Promise<void> {
 		try {
 			// Add the project selection to memory
-			const selectionNodeId = this.memoryGraph.addNode('decision', `Project type selected: ${projectType}`, {
-				role: 'user',
-				timestamp: new Date().toISOString(),
-				projectType: projectType
-			});
+			const selectionNodeId = this.memoryGraph.addNode(
+				'decision',
+				`Project type selected: ${projectType}`,
+				{
+					role: 'user',
+					timestamp: new Date().toISOString(),
+					projectType: projectType,
+				}
+			);
 
 			// Show typing indicator
 			this.sendMessage({
 				type: 'typing',
-				isTyping: true
+				isTyping: true,
 			});
 
 			// Process the project type and generate appropriate response
@@ -269,7 +286,12 @@ export class ConversationalInterface {
 2. Select additional features (authentication, database, etc.)
 3. Set up project structure and dependencies
 4. Create initial components and pages`;
-					nextSteps = ['Choose Framework', 'Add Authentication', 'Setup Database', 'Create Components'];
+					nextSteps = [
+						'Choose Framework',
+						'Add Authentication',
+						'Setup Database',
+						'Create Components',
+					];
 					break;
 
 				case 'mobile-app':
@@ -288,7 +310,12 @@ export class ConversationalInterface {
 2. Select target platforms (iOS, Android, or both)
 3. Configure navigation and state management
 4. Set up native features (camera, location, etc.)`;
-					nextSteps = ['Choose Framework', 'Select Platforms', 'Add Navigation', 'Configure Features'];
+					nextSteps = [
+						'Choose Framework',
+						'Select Platforms',
+						'Add Navigation',
+						'Configure Features',
+					];
 					break;
 
 				case 'api':
@@ -307,7 +334,12 @@ export class ConversationalInterface {
 2. Select database and ORM
 3. Design API endpoints and schemas
 4. Implement authentication and middleware`;
-					nextSteps = ['Choose Framework', 'Select Database', 'Design Endpoints', 'Add Authentication'];
+					nextSteps = [
+						'Choose Framework',
+						'Select Database',
+						'Design Endpoints',
+						'Add Authentication',
+					];
 					break;
 
 				case 'desktop-app':
@@ -345,7 +377,12 @@ export class ConversationalInterface {
 - What technologies do you prefer?
 - Any specific requirements or constraints?
 - Who is your target audience?`;
-					nextSteps = ['Describe Project', 'Choose Technologies', 'Plan Architecture', 'Start Development'];
+					nextSteps = [
+						'Describe Project',
+						'Choose Technologies',
+						'Plan Architecture',
+						'Start Development',
+					];
 					break;
 
 				default:
@@ -356,18 +393,22 @@ export class ConversationalInterface {
 			// Hide typing indicator
 			this.sendMessage({
 				type: 'typing',
-				isTyping: false
+				isTyping: false,
 			});
 
 			// Send the response message
-			const assistantNodeId = this.memoryGraph.addNode('feature', `Project plan for ${projectType}`, {
-				role: 'assistant',
-				timestamp: new Date().toISOString(),
-				agent: 'PlannerAgent',
-				projectType: projectType,
-				nextSteps: nextSteps,
-				response: response
-			});
+			const assistantNodeId = this.memoryGraph.addNode(
+				'feature',
+				`Project plan for ${projectType}`,
+				{
+					role: 'assistant',
+					timestamp: new Date().toISOString(),
+					agent: 'PlannerAgent',
+					projectType: projectType,
+					nextSteps: nextSteps,
+					response: response,
+				}
+			);
 
 			// Link the nodes in memory
 			this.memoryGraph.addEdge(selectionNodeId, assistantNodeId, 'relates_to');
@@ -378,7 +419,7 @@ export class ConversationalInterface {
 				role: 'assistant',
 				agent: 'PlannerAgent',
 				timestamp: new Date().toISOString(),
-				actions: nextSteps
+				actions: nextSteps,
 			});
 
 			// If it's a custom project, wait for user input
@@ -389,20 +430,20 @@ export class ConversationalInterface {
 
 			// For predefined project types, we can start the detailed configuration
 			await this.startDetailedProjectConfiguration(projectType);
-
 		} catch (error) {
 			this.logger.error('Error handling project type selection:', error);
 
 			// Hide typing indicator
 			this.sendMessage({
 				type: 'typing',
-				isTyping: false
+				isTyping: false,
 			});
 
 			// Send error message
 			this.sendMessage({
 				type: 'error',
-				message: 'Sorry, there was an error processing your project type selection. Please try again.'
+				message:
+					'Sorry, there was an error processing your project type selection. Please try again.',
 			});
 		}
 	}
@@ -428,7 +469,7 @@ export class ConversationalInterface {
 					role: 'assistant',
 					agent: primaryResponse.agent,
 					timestamp: new Date().toISOString(),
-					actions: primaryResponse.actions?.map(action => action.type) || []
+					actions: primaryResponse.actions?.map(action => action.type) || [],
 				});
 			}
 		} catch (error) {
@@ -437,7 +478,7 @@ export class ConversationalInterface {
 				content: `Let's continue with your ${projectType} project. What specific features would you like me to help you implement first?`,
 				role: 'assistant',
 				agent: 'PlannerAgent',
-				timestamp: new Date().toISOString()
+				timestamp: new Date().toISOString(),
 			});
 		}
 	}

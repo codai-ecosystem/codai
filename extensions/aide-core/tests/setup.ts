@@ -9,10 +9,10 @@ jest.mock('vscode', () => {
 			workspaceFolders: [
 				{
 					uri: {
-						fsPath: '/mock/workspace'
-					}
-				}
-			]
+						fsPath: '/mock/workspace',
+					},
+				},
+			],
 		},
 		window: {
 			showInformationMessage: jest.fn(),
@@ -24,27 +24,27 @@ jest.mock('vscode', () => {
 				clear: jest.fn(),
 				show: jest.fn(),
 				hide: jest.fn(),
-				dispose: jest.fn()
-			}))
+				dispose: jest.fn(),
+			})),
 		},
 		commands: {
 			registerCommand: jest.fn(),
-			executeCommand: jest.fn()
+			executeCommand: jest.fn(),
 		},
 		ExtensionContext: class {
 			subscriptions = [];
 			workspaceState = {
 				get: jest.fn(),
 				update: jest.fn(),
-				keys: jest.fn(() => [])
+				keys: jest.fn(() => []),
 			};
 			globalState = {
 				get: jest.fn(),
 				update: jest.fn(),
-				keys: jest.fn(() => [])
+				keys: jest.fn(() => []),
 			};
 			extensionPath = '/mock/extension';
 			asAbsolutePath = jest.fn((relativePath: string) => `/mock/extension/${relativePath}`);
-		}
+		},
 	};
 });

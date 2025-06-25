@@ -10,7 +10,6 @@ import { Client as MessagePortClient } from '../../browser/ipc.mp.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../test/common/utils.js';
 
 suite('IPC, MessagePorts', () => {
-
 	test('message passing', async () => {
 		const { port1, port2 } = new MessageChannel();
 
@@ -18,33 +17,49 @@ suite('IPC, MessagePorts', () => {
 		const client2 = new MessagePortClient(port2, 'client2');
 
 		client1.registerChannel('client1', {
-			call(_: unknown, command: string, arg: any, cancellationToken: CancellationToken): Promise<any> {
+			call(
+				_: unknown,
+				command: string,
+				arg: any,
+				cancellationToken: CancellationToken
+			): Promise<any> {
 				switch (command) {
-					case 'testMethodClient1': return Promise.resolve('success1');
-					default: return Promise.reject(new Error('not implemented'));
+					case 'testMethodClient1':
+						return Promise.resolve('success1');
+					default:
+						return Promise.reject(new Error('not implemented'));
 				}
 			},
 
 			listen(_: unknown, event: string, arg?: any): Event<any> {
 				switch (event) {
-					default: throw new Error('not implemented');
+					default:
+						throw new Error('not implemented');
 				}
-			}
+			},
 		});
 
 		client2.registerChannel('client2', {
-			call(_: unknown, command: string, arg: any, cancellationToken: CancellationToken): Promise<any> {
+			call(
+				_: unknown,
+				command: string,
+				arg: any,
+				cancellationToken: CancellationToken
+			): Promise<any> {
 				switch (command) {
-					case 'testMethodClient2': return Promise.resolve('success2');
-					default: return Promise.reject(new Error('not implemented'));
+					case 'testMethodClient2':
+						return Promise.resolve('success2');
+					default:
+						return Promise.reject(new Error('not implemented'));
 				}
 			},
 
 			listen(_: unknown, event: string, arg?: any): Event<any> {
 				switch (event) {
-					default: throw new Error('not implemented');
+					default:
+						throw new Error('not implemented');
 				}
-			}
+			},
 		});
 
 		const channelClient1 = client2.getChannel('client1');

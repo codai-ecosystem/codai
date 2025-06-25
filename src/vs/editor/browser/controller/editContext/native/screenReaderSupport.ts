@@ -6,7 +6,10 @@
 import { getActiveWindow } from '../../../../../base/browser/dom.js';
 import { FastDomNode } from '../../../../../base/browser/fastDomNode.js';
 import { localize } from '../../../../../nls.js';
-import { AccessibilitySupport, IAccessibilityService } from '../../../../../platform/accessibility/common/accessibility.js';
+import {
+	AccessibilitySupport,
+	IAccessibilityService,
+} from '../../../../../platform/accessibility/common/accessibility.js';
 import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
 import { EditorOption } from '../../../../common/config/editorOptions.js';
 import { FontInfo } from '../../../../common/config/fontInfo.js';
@@ -14,15 +17,26 @@ import { Position } from '../../../../common/core/position.js';
 import { Range } from '../../../../common/core/range.js';
 import { Selection } from '../../../../common/core/selection.js';
 import { EndOfLinePreference } from '../../../../common/model.js';
-import { ViewConfigurationChangedEvent, ViewCursorStateChangedEvent } from '../../../../common/viewEvents.js';
+import {
+	ViewConfigurationChangedEvent,
+	ViewCursorStateChangedEvent,
+} from '../../../../common/viewEvents.js';
 import { ViewContext } from '../../../../common/viewModel/viewContext.js';
 import { applyFontInfo } from '../../../config/domFontInfo.js';
 import { IEditorAriaOptions } from '../../../editorBrowser.js';
-import { RestrictedRenderingContext, RenderingContext, HorizontalPosition } from '../../../view/renderingContext.js';
-import { ariaLabelForScreenReaderContent, ISimpleModel, PagedScreenReaderStrategy, ScreenReaderContentState } from '../screenReaderUtils.js';
+import {
+	RestrictedRenderingContext,
+	RenderingContext,
+	HorizontalPosition,
+} from '../../../view/renderingContext.js';
+import {
+	ariaLabelForScreenReaderContent,
+	ISimpleModel,
+	PagedScreenReaderStrategy,
+	ScreenReaderContentState,
+} from '../screenReaderUtils.js';
 
 export class ScreenReaderSupport {
-
 	// Configuration values
 	private _contentLeft: number = 1;
 	private _contentWidth: number = 1;
@@ -81,17 +95,30 @@ export class ScreenReaderSupport {
 	private _updateDomAttributes(): void {
 		const options = this._context.configuration.options;
 		this._domNode.domNode.setAttribute('role', 'textbox');
-		this._domNode.domNode.setAttribute('aria-required', options.get(EditorOption.ariaRequired) ? 'true' : 'false');
+		this._domNode.domNode.setAttribute(
+			'aria-required',
+			options.get(EditorOption.ariaRequired) ? 'true' : 'false'
+		);
 		this._domNode.domNode.setAttribute('aria-multiline', 'true');
-		this._domNode.domNode.setAttribute('aria-autocomplete', options.get(EditorOption.readOnly) ? 'none' : 'both');
-		this._domNode.domNode.setAttribute('aria-roledescription', localize('editor', "editor"));
-		this._domNode.domNode.setAttribute('aria-label', ariaLabelForScreenReaderContent(options, this._keybindingService));
+		this._domNode.domNode.setAttribute(
+			'aria-autocomplete',
+			options.get(EditorOption.readOnly) ? 'none' : 'both'
+		);
+		this._domNode.domNode.setAttribute('aria-roledescription', localize('editor', 'editor'));
+		this._domNode.domNode.setAttribute(
+			'aria-label',
+			ariaLabelForScreenReaderContent(options, this._keybindingService)
+		);
 		const tabSize = this._context.viewModel.model.getOptions().tabSize;
 		const spaceWidth = options.get(EditorOption.fontInfo).spaceWidth;
 		this._domNode.domNode.style.tabSize = `${tabSize * spaceWidth}px`;
 		const wordWrapOverride2 = options.get(EditorOption.wordWrapOverride2);
-		const wordWrapOverride1 = (wordWrapOverride2 === 'inherit' ? options.get(EditorOption.wordWrapOverride1) : wordWrapOverride2);
-		const wordWrap = (wordWrapOverride1 === 'inherit' ? options.get(EditorOption.wordWrap) : wordWrapOverride1);
+		const wordWrapOverride1 =
+			wordWrapOverride2 === 'inherit'
+				? options.get(EditorOption.wordWrapOverride1)
+				: wordWrapOverride2;
+		const wordWrap =
+			wordWrapOverride1 === 'inherit' ? options.get(EditorOption.wordWrap) : wordWrapOverride1;
 		this._domNode.domNode.style.textWrap = wordWrap === 'off' ? 'nowrap' : 'wrap';
 	}
 
@@ -101,7 +128,9 @@ export class ScreenReaderSupport {
 
 	public prepareRender(ctx: RenderingContext): void {
 		this.writeScreenReaderContent();
-		this._primaryCursorVisibleRange = ctx.visibleRangeForPosition(this._primarySelection.getPosition());
+		this._primaryCursorVisibleRange = ctx.visibleRangeForPosition(
+			this._primarySelection.getPosition()
+		);
 	}
 
 	public render(ctx: RestrictedRenderingContext): void {
@@ -125,7 +154,8 @@ export class ScreenReaderSupport {
 
 		const editorScrollTop = this._context.viewLayout.getCurrentScrollTop();
 		const positionLineNumber = this._primarySelection.positionLineNumber;
-		const top = this._context.viewLayout.getVerticalOffsetForLineNumber(positionLineNumber) - editorScrollTop;
+		const top =
+			this._context.viewLayout.getVerticalOffsetForLineNumber(positionLineNumber) - editorScrollTop;
 		if (top < 0 || top > this._contentHeight) {
 			// cursor is outside the viewport
 			this._renderAtTopLeft();
@@ -136,7 +166,8 @@ export class ScreenReaderSupport {
 		// all the lines must have the same height. We use the line height of the cursor position as the
 		// line height for all lines.
 		const lineHeight = this._context.viewLayout.getLineHeightForLineNumber(positionLineNumber);
-		const lineNumberWithinStateAboveCursor = positionLineNumber - this._screenReaderContentState.startPositionWithinEditor.lineNumber;
+		const lineNumberWithinStateAboveCursor =
+			positionLineNumber - this._screenReaderContentState.startPositionWithinEditor.lineNumber;
 		const scrollTop = lineNumberWithinStateAboveCursor * lineHeight;
 		this._doRender(scrollTop, top, this._contentLeft, this._divWidth, lineHeight);
 	}
@@ -145,7 +176,13 @@ export class ScreenReaderSupport {
 		this._doRender(0, 0, 0, this._contentWidth, 1);
 	}
 
-	private _doRender(scrollTop: number, top: number, left: number, width: number, height: number): void {
+	private _doRender(
+		scrollTop: number,
+		top: number,
+		left: number,
+		width: number,
+		height: number
+	): void {
 		// For correct alignment of the screen reader content, we need to apply the correct font
 		applyFontInfo(this._domNode, this._fontInfo);
 
@@ -189,7 +226,10 @@ export class ScreenReaderSupport {
 				this.setIgnoreSelectionChangeTime('setValue');
 				this._domNode.domNode.textContent = value;
 			}
-			this._setSelectionOfScreenReaderContent(this._screenReaderContentState.selectionStart, this._screenReaderContentState.selectionEnd);
+			this._setSelectionOfScreenReaderContent(
+				this._screenReaderContentState.selectionStart,
+				this._screenReaderContentState.selectionEnd
+			);
 		} else {
 			this._screenReaderContentState = undefined;
 			this.setIgnoreSelectionChangeTime('setValue');
@@ -217,12 +257,20 @@ export class ScreenReaderSupport {
 			},
 			modifyPosition: (position: Position, offset: number): Position => {
 				return this._context.viewModel.modifyPosition(position, offset);
-			}
+			},
 		};
-		return PagedScreenReaderStrategy.fromEditorSelection(simpleModel, this._primarySelection, this._accessibilityPageSize, this._accessibilityService.getAccessibilitySupport() === AccessibilitySupport.Unknown);
+		return PagedScreenReaderStrategy.fromEditorSelection(
+			simpleModel,
+			this._primarySelection,
+			this._accessibilityPageSize,
+			this._accessibilityService.getAccessibilitySupport() === AccessibilitySupport.Unknown
+		);
 	}
 
-	private _setSelectionOfScreenReaderContent(selectionOffsetStart: number, selectionOffsetEnd: number): void {
+	private _setSelectionOfScreenReaderContent(
+		selectionOffsetStart: number,
+		selectionOffsetEnd: number
+	): void {
 		const activeDocument = getActiveWindow().document;
 		const activeDocumentSelection = activeDocument.getSelection();
 		if (!activeDocumentSelection) {

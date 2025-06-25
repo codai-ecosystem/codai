@@ -17,21 +17,30 @@ interface IIPCEvent {
 }
 
 function createScopedOnMessageEvent(senderId: number, eventName: string): Event<VSBuffer | null> {
-	const onMessage = Event.fromNodeEventEmitter<IIPCEvent>(validatedIpcMain, eventName, (event, message) => ({ event, message }));
+	const onMessage = Event.fromNodeEventEmitter<IIPCEvent>(
+		validatedIpcMain,
+		eventName,
+		(event, message) => ({ event, message })
+	);
 	const onMessageFromSender = Event.filter(onMessage, ({ event }) => event.sender.id === senderId);
 
-	return Event.map(onMessageFromSender, ({ message }) => message ? VSBuffer.wrap(message) : message);
+	return Event.map(onMessageFromSender, ({ message }) =>
+		message ? VSBuffer.wrap(message) : message
+	);
 }
 
 /**
  * An implementation of `IPCServer` on top of Electron `ipcMain` API.
  */
 export class Server extends IPCServer {
-
 	private static readonly Clients = new Map<number, IDisposable>();
 
 	private static getOnDidClientConnect(): Event<ClientConnectionEvent> {
-		const onHello = Event.fromNodeEventEmitter<WebContents>(validatedIpcMain, 'vscode:hello', ({ sender }) => sender);
+		const onHello = Event.fromNodeEventEmitter<WebContents>(
+			validatedIpcMain,
+			'vscode:hello',
+			({ sender }) => sender
+		);
 
 		return Event.map(onHello, webContents => {
 			const id = webContents.id;
@@ -40,10 +49,16 @@ export class Server extends IPCServer {
 			client?.dispose();
 
 			const onDidClientReconnect = new Emitter<void>();
-			Server.Clients.set(id, toDisposable(() => onDidClientReconnect.fire()));
+			Server.Clients.set(
+				id,
+				toDisposable(() => onDidClientReconnect.fire())
+			);
 
 			const onMessage = createScopedOnMessageEvent(id, 'vscode:message') as Event<VSBuffer>;
-			const onDidClientDisconnect = Event.any(Event.signal(createScopedOnMessageEvent(id, 'vscode:disconnect')), onDidClientReconnect.event);
+			const onDidClientDisconnect = Event.any(
+				Event.signal(createScopedOnMessageEvent(id, 'vscode:disconnect')),
+				onDidClientReconnect.event
+			);
 			const protocol = new ElectronProtocol(webContents, onMessage);
 
 			return { protocol, onDidClientDisconnect };

@@ -9,9 +9,19 @@ import { URI } from '../../../../base/common/uri.js';
 import { ChecksumPair, IIntegrityService, IntegrityTestResult } from '../common/integrity.js';
 import { ILifecycleService, LifecyclePhase } from '../../lifecycle/common/lifecycle.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
-import { INotificationService, NotificationPriority } from '../../../../platform/notification/common/notification.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	INotificationService,
+	NotificationPriority,
+} from '../../../../platform/notification/common/notification.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { FileAccess, AppResourcePath } from '../../../../base/common/network.js';
 import { IChecksumService } from '../../../../platform/checksum/common/checksumService.js';
@@ -23,7 +33,6 @@ interface IStorageData {
 }
 
 class IntegrityStorage {
-
 	private static readonly KEY = 'integrityService';
 
 	private value: IStorageData | null;
@@ -51,18 +60,24 @@ class IntegrityStorage {
 
 	set(data: IStorageData | null): void {
 		this.value = data;
-		this.storageService.store(IntegrityStorage.KEY, JSON.stringify(this.value), StorageScope.APPLICATION, StorageTarget.MACHINE);
+		this.storageService.store(
+			IntegrityStorage.KEY,
+			JSON.stringify(this.value),
+			StorageScope.APPLICATION,
+			StorageTarget.MACHINE
+		);
 	}
 }
 
 export class IntegrityService implements IIntegrityService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly storage: IntegrityStorage;
 
 	private readonly isPurePromise: Promise<IntegrityTestResult>;
-	isPure(): Promise<IntegrityTestResult> { return this.isPurePromise; }
+	isPure(): Promise<IntegrityTestResult> {
+		return this.isPurePromise;
+	}
 
 	constructor(
 		@INotificationService private readonly notificationService: INotificationService,
@@ -106,7 +121,11 @@ export class IntegrityService implements IIntegrityService {
 
 		await this.lifecycleService.when(LifecyclePhase.Eventually);
 
-		const allResults = await Promise.all(Object.keys(expectedChecksums).map(filename => this._resolve(<AppResourcePath>filename, expectedChecksums[filename])));
+		const allResults = await Promise.all(
+			Object.keys(expectedChecksums).map(filename =>
+				this._resolve(<AppResourcePath>filename, expectedChecksums[filename])
+			)
+		);
 
 		let isPure = true;
 		for (let i = 0, len = allResults.length; i < len; i++) {
@@ -118,7 +137,7 @@ export class IntegrityService implements IIntegrityService {
 
 		return {
 			isPure,
-			proof: allResults
+			proof: allResults,
 		};
 	}
 
@@ -139,31 +158,36 @@ export class IntegrityService implements IIntegrityService {
 			uri: uri,
 			actual: actual,
 			expected: expected,
-			isPure: (actual === expected)
+			isPure: actual === expected,
 		};
 	}
 
 	private _showNotification(): void {
 		const checksumFailMoreInfoUrl = this.productService.checksumFailMoreInfoUrl;
-		const message = localize('integrity.prompt', "Your {0} installation appears to be corrupt. Please reinstall.", this.productService.nameShort);
+		const message = localize(
+			'integrity.prompt',
+			'Your {0} installation appears to be corrupt. Please reinstall.',
+			this.productService.nameShort
+		);
 		if (checksumFailMoreInfoUrl) {
 			this.notificationService.prompt(
 				Severity.Warning,
 				message,
 				[
 					{
-						label: localize('integrity.moreInformation', "More Information"),
-						run: () => this.openerService.open(URI.parse(checksumFailMoreInfoUrl))
+						label: localize('integrity.moreInformation', 'More Information'),
+						run: () => this.openerService.open(URI.parse(checksumFailMoreInfoUrl)),
 					},
 					{
 						label: localize('integrity.dontShowAgain', "Don't Show Again"),
 						isSecondary: true,
-						run: () => this.storage.set({ dontShowPrompt: true, commit: this.productService.commit })
-					}
+						run: () =>
+							this.storage.set({ dontShowPrompt: true, commit: this.productService.commit }),
+					},
 				],
 				{
 					sticky: true,
-					priority: NotificationPriority.URGENT
+					priority: NotificationPriority.URGENT,
 				}
 			);
 		} else {
@@ -171,7 +195,7 @@ export class IntegrityService implements IIntegrityService {
 				severity: Severity.Warning,
 				message,
 				sticky: true,
-				priority: NotificationPriority.URGENT
+				priority: NotificationPriority.URGENT,
 			});
 		}
 	}

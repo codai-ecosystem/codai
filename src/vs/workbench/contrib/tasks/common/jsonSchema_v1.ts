@@ -22,51 +22,68 @@ const schema: IJSONSchema = {
 						version: {
 							type: 'string',
 							enum: ['0.1.0'],
-							deprecationMessage: nls.localize('JsonSchema.version.deprecated', 'Task version 0.1.0 is deprecated. Please use 2.0.0'),
-							description: nls.localize('JsonSchema.version', 'The config\'s version number')
+							deprecationMessage: nls.localize(
+								'JsonSchema.version.deprecated',
+								'Task version 0.1.0 is deprecated. Please use 2.0.0'
+							),
+							description: nls.localize('JsonSchema.version', "The config's version number"),
 						},
 						_runner: {
-							deprecationMessage: nls.localize('JsonSchema._runner', 'The runner has graduated. Use the official runner property')
+							deprecationMessage: nls.localize(
+								'JsonSchema._runner',
+								'The runner has graduated. Use the official runner property'
+							),
 						},
 						runner: {
 							type: 'string',
 							enum: ['process', 'terminal'],
 							default: 'process',
-							description: nls.localize('JsonSchema.runner', 'Defines whether the task is executed as a process and the output is shown in the output window or inside the terminal.')
+							description: nls.localize(
+								'JsonSchema.runner',
+								'Defines whether the task is executed as a process and the output is shown in the output window or inside the terminal.'
+							),
 						},
 						windows: {
 							$ref: '#/definitions/taskRunnerConfiguration',
-							description: nls.localize('JsonSchema.windows', 'Windows specific command configuration')
+							description: nls.localize(
+								'JsonSchema.windows',
+								'Windows specific command configuration'
+							),
 						},
 						osx: {
 							$ref: '#/definitions/taskRunnerConfiguration',
-							description: nls.localize('JsonSchema.mac', 'Mac specific command configuration')
+							description: nls.localize('JsonSchema.mac', 'Mac specific command configuration'),
 						},
 						linux: {
 							$ref: '#/definitions/taskRunnerConfiguration',
-							description: nls.localize('JsonSchema.linux', 'Linux specific command configuration')
-						}
-					}
+							description: nls.localize('JsonSchema.linux', 'Linux specific command configuration'),
+						},
+					},
 				},
 				{
-					$ref: '#/definitions/taskRunnerConfiguration'
-				}
-			]
-		}
-	]
+					$ref: '#/definitions/taskRunnerConfiguration',
+				},
+			],
+		},
+	],
 };
 
 const shellCommand: IJSONSchema = {
 	type: 'boolean',
 	default: true,
-	description: nls.localize('JsonSchema.shell', 'Specifies whether the command is a shell command or an external program. Defaults to false if omitted.')
+	description: nls.localize(
+		'JsonSchema.shell',
+		'Specifies whether the command is a shell command or an external program. Defaults to false if omitted.'
+	),
 };
 
 schema.definitions = Objects.deepClone(commonSchema.definitions);
 const definitions = schema.definitions!;
-definitions['commandConfiguration']['properties']!['isShellCommand'] = Objects.deepClone(shellCommand);
+definitions['commandConfiguration']['properties']!['isShellCommand'] =
+	Objects.deepClone(shellCommand);
 definitions['taskDescription']['properties']!['isShellCommand'] = Objects.deepClone(shellCommand);
-definitions['taskRunnerConfiguration']['properties']!['isShellCommand'] = Objects.deepClone(shellCommand);
+definitions['taskRunnerConfiguration']['properties']!['isShellCommand'] =
+	Objects.deepClone(shellCommand);
 
 Object.getOwnPropertyNames(definitions).forEach(key => {
 	const newKey = key + '1';

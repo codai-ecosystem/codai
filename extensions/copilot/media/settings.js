@@ -19,14 +19,14 @@
 			apiKey: document.getElementById('openai-api-key'),
 			status: document.getElementById('openai-status'),
 			config: document.getElementById('openai-config'),
-			testButton: document.querySelector('[data-provider="openai"]')
+			testButton: document.querySelector('[data-provider="openai"]'),
 		},
 		anthropic: {
 			enabled: document.getElementById('anthropic-enabled'),
 			apiKey: document.getElementById('anthropic-api-key'),
 			status: document.getElementById('anthropic-status'),
 			config: document.getElementById('anthropic-config'),
-			testButton: document.querySelector('[data-provider="anthropic"]')
+			testButton: document.querySelector('[data-provider="anthropic"]'),
 		},
 		azure: {
 			enabled: document.getElementById('azure-enabled'),
@@ -35,7 +35,7 @@
 			deployment: document.getElementById('azure-deployment'),
 			status: document.getElementById('azure-status'),
 			config: document.getElementById('azure-config'),
-			testButton: document.querySelector('[data-provider="azure"]')
+			testButton: document.querySelector('[data-provider="azure"]'),
 		},
 		local: {
 			enabled: document.getElementById('local-enabled'),
@@ -43,8 +43,8 @@
 			model: document.getElementById('local-model'),
 			status: document.getElementById('local-status'),
 			config: document.getElementById('local-config'),
-			testButton: document.querySelector('[data-provider="local"]')
-		}
+			testButton: document.querySelector('[data-provider="local"]'),
+		},
 	};
 
 	// Initialize event listeners
@@ -96,12 +96,14 @@
 				defaultProvider: document.getElementById('default-provider').value,
 				memoryRetention: parseInt(document.getElementById('memory-retention').value),
 				debugMode: document.getElementById('debug-mode').checked,
-				telemetry: document.getElementById('telemetry').checked
+				telemetry: document.getElementById('telemetry').checked,
 			},
-			deploymentConfigs: [{
-				platform: document.getElementById('default-platform').value,
-				autoDeploy: document.getElementById('auto-deploy').checked
-			}]
+			deploymentConfigs: [
+				{
+					platform: document.getElementById('default-platform').value,
+					autoDeploy: document.getElementById('auto-deploy').checked,
+				},
+			],
 		};
 
 		// Add AI providers
@@ -109,7 +111,7 @@
 			if (elements.enabled && elements.enabled.checked) {
 				const providerConfig = {
 					provider,
-					enabled: true
+					enabled: true,
 				};
 
 				// Add provider-specific properties
@@ -135,7 +137,7 @@
 
 		vscode.postMessage({
 			type: 'saveSettings',
-			settings
+			settings,
 		});
 
 		showStatusMessage('Saving settings...', 'info');
@@ -144,7 +146,7 @@
 	// Load settings from extension
 	function loadSettings() {
 		vscode.postMessage({
-			type: 'loadSettings'
+			type: 'loadSettings',
 		});
 
 		showStatusMessage('Loading settings...', 'info');
@@ -166,7 +168,7 @@
 		vscode.postMessage({
 			type: 'testConnection',
 			provider,
-			apiKey
+			apiKey,
 		});
 
 		// Update UI for testing state
@@ -188,7 +190,7 @@
 	function resetSettings() {
 		if (confirm('Are you sure you want to reset all settings to defaults?')) {
 			vscode.postMessage({
-				type: 'resetSettings'
+				type: 'resetSettings',
 			});
 
 			showStatusMessage('Resetting settings...', 'info');
@@ -198,14 +200,14 @@
 	// Export settings
 	function exportSettings() {
 		vscode.postMessage({
-			type: 'exportSettings'
+			type: 'exportSettings',
 		});
 	}
 
 	// Import settings
 	function importSettings() {
 		vscode.postMessage({
-			type: 'importSettings'
+			type: 'importSettings',
 		});
 	}
 
@@ -245,8 +247,8 @@
 
 				// Set status
 				if (elements.status) {
-					elements.status.className = 'status-indicator ' +
-						(config.apiKey ? 'connected' : 'disconnected');
+					elements.status.className =
+						'status-indicator ' + (config.apiKey ? 'connected' : 'disconnected');
 				}
 			}
 		}
@@ -333,14 +335,15 @@
 			case 'connectionTested':
 				const testedElements = providerInputs[message.provider];
 				if (testedElements) {
-					testedElements.status.className = 'status-indicator ' +
-						(message.success ? 'connected' : 'disconnected');
+					testedElements.status.className =
+						'status-indicator ' + (message.success ? 'connected' : 'disconnected');
 					testedElements.testButton.disabled = false;
 				}
 
 				showStatusMessage(
-					message.provider + ' connection ' +
-					(message.success ? 'successful' : 'failed: ' + message.message),
+					message.provider +
+						' connection ' +
+						(message.success ? 'successful' : 'failed: ' + message.message),
 					message.success ? 'success' : 'error'
 				);
 				break;

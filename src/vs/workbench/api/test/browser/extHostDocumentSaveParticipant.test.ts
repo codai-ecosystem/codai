@@ -6,8 +6,18 @@ import assert from 'assert';
 import { URI } from '../../../../base/common/uri.js';
 import { ExtHostDocuments } from '../../common/extHostDocuments.js';
 import { ExtHostDocumentsAndEditors } from '../../common/extHostDocumentsAndEditors.js';
-import { TextDocumentSaveReason, TextEdit, Position, EndOfLine } from '../../common/extHostTypes.js';
-import { MainThreadTextEditorsShape, IWorkspaceEditDto, IWorkspaceTextEditDto, MainThreadBulkEditsShape } from '../../common/extHost.protocol.js';
+import {
+	TextDocumentSaveReason,
+	TextEdit,
+	Position,
+	EndOfLine,
+} from '../../common/extHostTypes.js';
+import {
+	MainThreadTextEditorsShape,
+	IWorkspaceEditDto,
+	IWorkspaceTextEditDto,
+	MainThreadBulkEditsShape,
+} from '../../common/extHost.protocol.js';
 import { ExtHostDocumentSaveParticipant } from '../../common/extHostDocumentSaveParticipant.js';
 import { SingleProxyRPCProtocol } from '../common/testRPCProtocol.js';
 import { SaveReason } from '../../../common/editor.js';
@@ -23,24 +33,28 @@ function timeout(n: number) {
 }
 
 suite('ExtHostDocumentSaveParticipant', () => {
-
 	const resource = URI.parse('foo:bar');
-	const mainThreadBulkEdits = new class extends mock<MainThreadBulkEditsShape>() { };
+	const mainThreadBulkEdits = new (class extends mock<MainThreadBulkEditsShape>() {})();
 	let documents: ExtHostDocuments;
 	const nullLogService = new NullLogService();
 
 	setup(() => {
-		const documentsAndEditors = new ExtHostDocumentsAndEditors(SingleProxyRPCProtocol(null), new NullLogService());
+		const documentsAndEditors = new ExtHostDocumentsAndEditors(
+			SingleProxyRPCProtocol(null),
+			new NullLogService()
+		);
 		documentsAndEditors.$acceptDocumentsAndEditorsDelta({
-			addedDocuments: [{
-				isDirty: false,
-				languageId: 'foo',
-				uri: resource,
-				versionId: 1,
-				lines: ['foo'],
-				EOL: '\n',
-				encoding: 'utf8'
-			}]
+			addedDocuments: [
+				{
+					isDirty: false,
+					languageId: 'foo',
+					uri: resource,
+					versionId: 1,
+					lines: ['foo'],
+					EOL: '\n',
+					encoding: 'utf8',
+				},
+			],
 		});
 		documents = new ExtHostDocuments(SingleProxyRPCProtocol(null), documentsAndEditors);
 	});
@@ -48,12 +62,22 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('no listeners, no problem', () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits);
-		return participant.$participateInSave(resource, SaveReason.EXPLICIT).then(() => assert.ok(true));
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits
+		);
+		return participant
+			.$participateInSave(resource, SaveReason.EXPLICIT)
+			.then(() => assert.ok(true));
 	});
 
 	test('event delivery', () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits);
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits
+		);
 
 		let event: vscode.TextDocumentWillSaveEvent;
 		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (e) {
@@ -70,7 +94,11 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	});
 
 	test('event delivery, immutable', () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits);
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits
+		);
 
 		let event: vscode.TextDocumentWillSaveEvent;
 		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (e) {
@@ -81,12 +109,18 @@ suite('ExtHostDocumentSaveParticipant', () => {
 			sub.dispose();
 
 			assert.ok(event);
-			assert.throws(() => { (event.document as any) = null!; });
+			assert.throws(() => {
+				(event.document as any) = null!;
+			});
 		});
 	});
 
 	test('event delivery, bad listener', () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits);
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits
+		);
 
 		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (e) {
 			throw new Error('💀');
@@ -100,8 +134,12 @@ suite('ExtHostDocumentSaveParticipant', () => {
 		});
 	});
 
-	test('event delivery, bad listener doesn\'t prevent more events', () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits);
+	test("event delivery, bad listener doesn't prevent more events", () => {
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits
+		);
 
 		const sub1 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (e) {
 			throw new Error('💀');
@@ -120,16 +158,24 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	});
 
 	test('event delivery, in subscriber order', () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits);
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits
+		);
 
 		let counter = 0;
-		const sub1 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (event) {
-			assert.strictEqual(counter++, 0);
-		});
+		const sub1 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(
+			function (event) {
+				assert.strictEqual(counter++, 0);
+			}
+		);
 
-		const sub2 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (event) {
-			assert.strictEqual(counter++, 1);
-		});
+		const sub2 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(
+			function (event) {
+				assert.strictEqual(counter++, 1);
+			}
+		);
 
 		return participant.$participateInSave(resource, SaveReason.EXPLICIT).then(() => {
 			sub1.dispose();
@@ -138,13 +184,20 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	});
 
 	test('event delivery, ignore bad listeners', async () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits, { timeout: 5, errors: 1 });
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits,
+			{ timeout: 5, errors: 1 }
+		);
 
 		let callCount = 0;
-		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (event) {
-			callCount += 1;
-			throw new Error('boom');
-		});
+		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(
+			function (event) {
+				callCount += 1;
+				throw new Error('boom');
+			}
+		);
 
 		await participant.$participateInSave(resource, SaveReason.EXPLICIT);
 		await participant.$participateInSave(resource, SaveReason.EXPLICIT);
@@ -156,22 +209,33 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	});
 
 	test('event delivery, overall timeout', async function () {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits, { timeout: 20, errors: 5 });
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits,
+			{ timeout: 20, errors: 5 }
+		);
 
 		// let callCount = 0;
 		const calls: number[] = [];
-		const sub1 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (event) {
-			calls.push(1);
-		});
+		const sub1 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(
+			function (event) {
+				calls.push(1);
+			}
+		);
 
-		const sub2 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (event) {
-			calls.push(2);
-			event.waitUntil(timeout(100));
-		});
+		const sub2 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(
+			function (event) {
+				calls.push(2);
+				event.waitUntil(timeout(100));
+			}
+		);
 
-		const sub3 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (event) {
-			calls.push(3);
-		});
+		const sub3 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(
+			function (event) {
+				calls.push(3);
+			}
+		);
 
 		const values = await participant.$participateInSave(resource, SaveReason.EXPLICIT);
 		sub1.dispose();
@@ -182,38 +246,48 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	});
 
 	test('event delivery, waitUntil', () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits);
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits
+		);
 
-		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (event) {
-
-			event.waitUntil(timeout(10));
-			event.waitUntil(timeout(10));
-			event.waitUntil(timeout(10));
-		});
+		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(
+			function (event) {
+				event.waitUntil(timeout(10));
+				event.waitUntil(timeout(10));
+				event.waitUntil(timeout(10));
+			}
+		);
 
 		return participant.$participateInSave(resource, SaveReason.EXPLICIT).then(() => {
 			sub.dispose();
 		});
-
 	});
 
 	test('event delivery, waitUntil must be called sync', () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits);
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits
+		);
 
-		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (event) {
-
-			event.waitUntil(new Promise<undefined>((resolve, reject) => {
-				setTimeout(() => {
-					try {
-						assert.throws(() => event.waitUntil(timeout(10)));
-						resolve(undefined);
-					} catch (e) {
-						reject(e);
-					}
-
-				}, 10);
-			}));
-		});
+		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(
+			function (event) {
+				event.waitUntil(
+					new Promise<undefined>((resolve, reject) => {
+						setTimeout(() => {
+							try {
+								assert.throws(() => event.waitUntil(timeout(10)));
+								resolve(undefined);
+							} catch (e) {
+								reject(e);
+							}
+						}, 10);
+					})
+				);
+			}
+		);
 
 		return participant.$participateInSave(resource, SaveReason.EXPLICIT).then(() => {
 			sub.dispose();
@@ -221,12 +295,18 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	});
 
 	test('event delivery, waitUntil will timeout', function () {
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits,
+			{ timeout: 5, errors: 3 }
+		);
 
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits, { timeout: 5, errors: 3 });
-
-		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (event) {
-			event.waitUntil(timeout(100));
-		});
+		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(
+			function (event) {
+				event.waitUntil(timeout(100));
+			}
+		);
 
 		return participant.$participateInSave(resource, SaveReason.EXPLICIT).then(values => {
 			sub.dispose();
@@ -237,7 +317,11 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	});
 
 	test('event delivery, waitUntil failure handling', () => {
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, mainThreadBulkEdits);
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			mainThreadBulkEdits
+		);
 
 		const sub1 = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (e) {
 			e.waitUntil(Promise.reject(new Error('dddd')));
@@ -256,14 +340,17 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	});
 
 	test('event delivery, pushEdits sync', () => {
-
 		let dto: IWorkspaceEditDto;
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, new class extends mock<MainThreadTextEditorsShape>() {
-			$tryApplyWorkspaceEdit(_edits: SerializableObjectWithBuffers<IWorkspaceEditDto>) {
-				dto = _edits.value;
-				return Promise.resolve(true);
-			}
-		});
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			new (class extends mock<MainThreadTextEditorsShape>() {
+				$tryApplyWorkspaceEdit(_edits: SerializableObjectWithBuffers<IWorkspaceEditDto>) {
+					dto = _edits.value;
+					return Promise.resolve(true);
+				}
+			})()
+		);
 
 		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (e) {
 			e.waitUntil(Promise.resolve([TextEdit.insert(new Position(0, 0), 'bar')]));
@@ -280,30 +367,38 @@ suite('ExtHostDocumentSaveParticipant', () => {
 	});
 
 	test('event delivery, concurrent change', () => {
-
 		let edits: IWorkspaceEditDto;
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, new class extends mock<MainThreadTextEditorsShape>() {
-			$tryApplyWorkspaceEdit(_edits: SerializableObjectWithBuffers<IWorkspaceEditDto>) {
-				edits = _edits.value;
-				return Promise.resolve(true);
-			}
-		});
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			new (class extends mock<MainThreadTextEditorsShape>() {
+				$tryApplyWorkspaceEdit(_edits: SerializableObjectWithBuffers<IWorkspaceEditDto>) {
+					edits = _edits.value;
+					return Promise.resolve(true);
+				}
+			})()
+		);
 
 		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (e) {
-
 			// concurrent change from somewhere
-			documents.$acceptModelChanged(resource, {
-				changes: [{
-					range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
-					rangeOffset: undefined!,
-					rangeLength: undefined!,
-					text: 'bar'
-				}],
-				eol: undefined!,
-				versionId: 2,
-				isRedoing: false,
-				isUndoing: false,
-			}, true);
+			documents.$acceptModelChanged(
+				resource,
+				{
+					changes: [
+						{
+							range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
+							rangeOffset: undefined!,
+							rangeLength: undefined!,
+							text: 'bar',
+						},
+					],
+					eol: undefined!,
+					versionId: 2,
+					isRedoing: false,
+					isUndoing: false,
+				},
+				true
+			);
 
 			e.waitUntil(Promise.resolve([TextEdit.insert(new Position(0, 0), 'bar')]));
 		});
@@ -314,36 +409,42 @@ suite('ExtHostDocumentSaveParticipant', () => {
 			assert.strictEqual(edits, undefined);
 			assert.strictEqual(values[0], false);
 		});
-
 	});
 
 	test('event delivery, two listeners -> two document states', () => {
+		const participant = new ExtHostDocumentSaveParticipant(
+			nullLogService,
+			documents,
+			new (class extends mock<MainThreadTextEditorsShape>() {
+				$tryApplyWorkspaceEdit(dto: SerializableObjectWithBuffers<IWorkspaceEditDto>) {
+					for (const edit of dto.value.edits) {
+						const uri = URI.revive((<IWorkspaceTextEditDto>edit).resource);
+						const { text, range } = (<IWorkspaceTextEditDto>edit).textEdit;
+						documents.$acceptModelChanged(
+							uri,
+							{
+								changes: [
+									{
+										range,
+										text,
+										rangeOffset: undefined!,
+										rangeLength: undefined!,
+									},
+								],
+								eol: undefined!,
+								versionId: documents.getDocumentData(uri)!.version + 1,
+								isRedoing: false,
+								isUndoing: false,
+							},
+							true
+						);
+						// }
+					}
 
-		const participant = new ExtHostDocumentSaveParticipant(nullLogService, documents, new class extends mock<MainThreadTextEditorsShape>() {
-			$tryApplyWorkspaceEdit(dto: SerializableObjectWithBuffers<IWorkspaceEditDto>) {
-
-				for (const edit of dto.value.edits) {
-
-					const uri = URI.revive((<IWorkspaceTextEditDto>edit).resource);
-					const { text, range } = (<IWorkspaceTextEditDto>edit).textEdit;
-					documents.$acceptModelChanged(uri, {
-						changes: [{
-							range,
-							text,
-							rangeOffset: undefined!,
-							rangeLength: undefined!,
-						}],
-						eol: undefined!,
-						versionId: documents.getDocumentData(uri)!.version + 1,
-						isRedoing: false,
-						isUndoing: false,
-					}, true);
-					// }
+					return Promise.resolve(true);
 				}
-
-				return Promise.resolve(true);
-			}
-		});
+			})()
+		);
 
 		const document = documents.getDocument(resource);
 
@@ -371,17 +472,19 @@ suite('ExtHostDocumentSaveParticipant', () => {
 			assert.strictEqual(document.version, 3);
 			assert.strictEqual(document.getText(), 'barbarfoo');
 		});
-
 	});
 
 	test('Log failing listener', function () {
 		let didLogSomething = false;
-		const participant = new ExtHostDocumentSaveParticipant(new class extends NullLogService {
-			override error(message: string | Error, ...args: any[]): void {
-				didLogSomething = true;
-			}
-		}, documents, mainThreadBulkEdits);
-
+		const participant = new ExtHostDocumentSaveParticipant(
+			new (class extends NullLogService {
+				override error(message: string | Error, ...args: any[]): void {
+					didLogSomething = true;
+				}
+			})(),
+			documents,
+			mainThreadBulkEdits
+		);
 
 		const sub = participant.getOnWillSaveTextDocumentEvent(nullExtensionDescription)(function (e) {
 			throw new Error('boom');

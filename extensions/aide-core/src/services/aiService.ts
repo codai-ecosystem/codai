@@ -56,7 +56,7 @@ export class AIService {
 		const providerConfig: AIProvider = {
 			name: provider,
 			apiKey,
-			model: config.get<string>(`${provider}Model`)
+			model: config.get<string>(`${provider}Model`),
 		};
 
 		// Set provider-specific defaults
@@ -130,7 +130,7 @@ export class AIService {
 		temperature: number
 	): Promise<AIResponse> {
 		const headers: Record<string, string> = {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
 		};
 
 		// Set authorization header based on provider
@@ -145,31 +145,33 @@ export class AIService {
 			messages,
 			max_tokens: maxTokens,
 			temperature,
-			stream: false
+			stream: false,
 		};
 
 		try {
 			const response = await fetch(`${provider.baseUrl}/chat/completions`, {
 				method: 'POST',
 				headers,
-				body: JSON.stringify(body)
+				body: JSON.stringify(body),
 			});
 
 			if (!response.ok) {
 				const error = await response.text();
 				throw new Error(`AI API request failed: ${response.status} ${error}`);
-			}			const data = await response.json() as any;
+			}
+			const data = (await response.json()) as any;
 
 			return {
 				content: data.choices[0].message.content,
-				usage: data.usage ? {
-					promptTokens: data.usage.prompt_tokens,
-					completionTokens: data.usage.completion_tokens,
-					totalTokens: data.usage.total_tokens
-				} : undefined,
-				model: data.model
+				usage: data.usage
+					? {
+							promptTokens: data.usage.prompt_tokens,
+							completionTokens: data.usage.completion_tokens,
+							totalTokens: data.usage.total_tokens,
+						}
+					: undefined,
+				model: data.model,
 			};
-
 		} catch (error) {
 			this.logger.error('OpenAI API call failed:', error);
 			throw new Error(`Failed to get AI response: ${error}`);
@@ -188,7 +190,7 @@ export class AIService {
 		const headers = {
 			'Content-Type': 'application/json',
 			'x-api-key': provider.apiKey,
-			'anthropic-version': '2023-06-01'
+			'anthropic-version': '2023-06-01',
 		};
 
 		// Convert messages format for Anthropic
@@ -205,7 +207,7 @@ export class AIService {
 			model: provider.model,
 			messages: anthropicMessages,
 			max_tokens: maxTokens,
-			temperature
+			temperature,
 		};
 
 		if (systemMessage) {
@@ -216,24 +218,26 @@ export class AIService {
 			const response = await fetch(`${provider.baseUrl}/messages`, {
 				method: 'POST',
 				headers,
-				body: JSON.stringify(body)
+				body: JSON.stringify(body),
 			});
 
 			if (!response.ok) {
 				const error = await response.text();
 				throw new Error(`Anthropic API request failed: ${response.status} ${error}`);
-			}			const data = await response.json() as any;
+			}
+			const data = (await response.json()) as any;
 
 			return {
 				content: data.content[0].text,
-				usage: data.usage ? {
-					promptTokens: data.usage.input_tokens,
-					completionTokens: data.usage.output_tokens,
-					totalTokens: data.usage.input_tokens + data.usage.output_tokens
-				} : undefined,
-				model: data.model
+				usage: data.usage
+					? {
+							promptTokens: data.usage.input_tokens,
+							completionTokens: data.usage.output_tokens,
+							totalTokens: data.usage.input_tokens + data.usage.output_tokens,
+						}
+					: undefined,
+				model: data.model,
 			};
-
 		} catch (error) {
 			this.logger.error('Anthropic API call failed:', error);
 			throw new Error(`Failed to get AI response: ${error}`);
@@ -256,7 +260,9 @@ export class AIService {
 		const config = vscode.workspace.getConfiguration('aide');
 		await config.update('aiProvider', provider, vscode.ConfigurationTarget.Global);
 
-		vscode.window.showInformationMessage(`✅ ${provider.toUpperCase()} API key configured successfully!`);
+		vscode.window.showInformationMessage(
+			`✅ ${provider.toUpperCase()} API key configured successfully!`
+		);
 	}
 
 	/**
@@ -264,14 +270,15 @@ export class AIService {
 	 */
 	async testConnection(): Promise<boolean> {
 		try {
-			const response = await this.generateResponse([
-				{ role: 'user', content: 'Say "Hello, AIDE!" to test the connection.' }
-			], 50, 0);
+			const response = await this.generateResponse(
+				[{ role: 'user', content: 'Say "Hello, AIDE!" to test the connection.' }],
+				50,
+				0
+			);
 
 			this.logger.info('AI connection test successful:', response);
 			vscode.window.showInformationMessage('✅ AI connection test successful!');
 			return true;
-
 		} catch (error) {
 			this.logger.error('AI connection test failed:', error);
 			vscode.window.showErrorMessage(`❌ AI connection test failed: ${error}`);

@@ -5,11 +5,19 @@
 
 import { BugIndicatingError } from '../../common/errors.js';
 import { DisposableStore, IDisposable } from '../../common/lifecycle.js';
-import { derived, derivedOpts, IObservable, IReader, observableValue } from '../../common/observable.js';
+import {
+	derived,
+	derivedOpts,
+	IObservable,
+	IReader,
+	observableValue,
+} from '../../common/observable.js';
 import { isSVGElement } from '../dom.js';
 
 export namespace n {
-	function nodeNs<TMap extends Record<string, any>>(elementNs: string | undefined = undefined): DomTagCreateFn<TMap> {
+	function nodeNs<TMap extends Record<string, any>>(
+		elementNs: string | undefined = undefined
+	): DomTagCreateFn<TMap> {
 		return (tag, attributes, children) => {
 			const className = attributes.class;
 			delete attributes.class;
@@ -18,22 +26,39 @@ export namespace n {
 			const obsRef = attributes.obsRef;
 			delete attributes.obsRef;
 
-			return new ObserverNodeWithElement(tag as any, ref, obsRef, elementNs, className, attributes, children);
+			return new ObserverNodeWithElement(
+				tag as any,
+				ref,
+				obsRef,
+				elementNs,
+				className,
+				attributes,
+				children
+			);
 		};
 	}
 
-	function node<TMap extends Record<string, any>, TKey extends keyof TMap>(tag: TKey, elementNs: string | undefined = undefined): DomCreateFn<TMap[TKey], TMap[TKey]> {
+	function node<TMap extends Record<string, any>, TKey extends keyof TMap>(
+		tag: TKey,
+		elementNs: string | undefined = undefined
+	): DomCreateFn<TMap[TKey], TMap[TKey]> {
 		const f = nodeNs(elementNs) as any;
 		return (attributes, children) => {
 			return f(tag, attributes, children);
 		};
 	}
 
-	export const div: DomCreateFn<HTMLDivElement, HTMLDivElement> = node<HTMLElementTagNameMap, 'div'>('div');
+	export const div: DomCreateFn<HTMLDivElement, HTMLDivElement> = node<
+		HTMLElementTagNameMap,
+		'div'
+	>('div');
 
 	export const elem = nodeNs<HTMLElementTagNameMap>(undefined);
 
-	export const svg: DomCreateFn<SVGElementTagNameMap2['svg'], SVGElement> = node<SVGElementTagNameMap2, 'svg'>('svg', 'http://www.w3.org/2000/svg');
+	export const svg: DomCreateFn<SVGElementTagNameMap2['svg'], SVGElement> = node<
+		SVGElementTagNameMap2,
+		'svg'
+	>('svg', 'http://www.w3.org/2000/svg');
 
 	export const svgElem = nodeNs<SVGElementTagNameMap2>('http://www.w3.org/2000/svg');
 
@@ -45,10 +70,12 @@ export namespace n {
 		Object.defineProperty(result, 'element', {
 			get() {
 				if (!value) {
-					throw new BugIndicatingError('Make sure the ref is set before accessing the element. Maybe wrong initialization order?');
+					throw new BugIndicatingError(
+						'Make sure the ref is set before accessing the element. Maybe wrong initialization order?'
+					);
 				}
 				return value;
-			}
+			},
 		});
 		return result as any;
 	}
@@ -91,12 +118,20 @@ type SVGElementTagNameMap2 = {
 
 type DomTagCreateFn<TMap extends Record<string, any>> = <TTag extends keyof TMap>(
 	tag: TTag,
-	attributes: ElementAttributeKeys<TMap[TTag]> & { class?: ValueOrList<string | false | undefined>; ref?: IRef<TMap[TTag]>; obsRef?: IRef<ObserverNodeWithElement<TMap[TTag]> | null> },
+	attributes: ElementAttributeKeys<TMap[TTag]> & {
+		class?: ValueOrList<string | false | undefined>;
+		ref?: IRef<TMap[TTag]>;
+		obsRef?: IRef<ObserverNodeWithElement<TMap[TTag]> | null>;
+	},
 	children?: ChildNode
 ) => ObserverNode<TMap[TTag]>;
 
 type DomCreateFn<TAttributes, TResult extends Element> = (
-	attributes: ElementAttributeKeys<TAttributes> & { class?: ValueOrList<string | false | undefined>; ref?: IRef<TResult>; obsRef?: IRef<ObserverNodeWithElement<TResult> | null> },
+	attributes: ElementAttributeKeys<TAttributes> & {
+		class?: ValueOrList<string | false | undefined>;
+		ref?: IRef<TResult>;
+		obsRef?: IRef<ObserverNodeWithElement<TResult> | null>;
+	},
 	children?: ChildNode
 ) => ObserverNode<TResult>;
 
@@ -109,7 +144,7 @@ export interface IRefWithVal<T> extends IRef<T> {
 }
 
 export abstract class ObserverNode<T extends Element = Element> {
-	private readonly _deriveds: (IObservable<any>)[] = [];
+	private readonly _deriveds: IObservable<any>[] = [];
 
 	protected readonly _element: T;
 
@@ -122,27 +157,33 @@ export abstract class ObserverNode<T extends Element = Element> {
 		attributes: ElementAttributeKeys<T>,
 		children: ChildNode
 	) {
-		this._element = (ns ? document.createElementNS(ns, tag) : document.createElement(tag)) as unknown as T;
+		this._element = (ns
+			? document.createElementNS(ns, tag)
+			: document.createElement(tag)) as unknown as T;
 		if (ref) {
 			ref(this._element);
 		}
 		if (obsRef) {
-			this._deriveds.push(derived((_reader) => {
-				obsRef(this as unknown as ObserverNodeWithElement<T>);
-				_reader.store.add({
-					dispose: () => {
-						obsRef(null);
-					}
-				});
-			}));
+			this._deriveds.push(
+				derived(_reader => {
+					obsRef(this as unknown as ObserverNodeWithElement<T>);
+					_reader.store.add({
+						dispose: () => {
+							obsRef(null);
+						},
+					});
+				})
+			);
 		}
 
 		if (className) {
 			if (hasObservable(className)) {
-				this._deriveds.push(derived(this, reader => {
-					/** @description set.class */
-					setClassName(this._element, getClassName(className, reader));
-				}));
+				this._deriveds.push(
+					derived(this, reader => {
+						/** @description set.class */
+						setClassName(this._element, getClassName(className, reader));
+					})
+				);
 			} else {
 				setClassName(this._element, getClassName(className, undefined));
 			}
@@ -153,19 +194,23 @@ export abstract class ObserverNode<T extends Element = Element> {
 				for (const [cssKey, cssValue] of Object.entries(value)) {
 					const key = camelCaseToHyphenCase(cssKey);
 					if (isObservable(cssValue)) {
-						this._deriveds.push(derivedOpts({ owner: this, debugName: () => `set.style.${key}` }, reader => {
-							this._element.style.setProperty(key, convertCssValue(cssValue.read(reader)));
-						}));
+						this._deriveds.push(
+							derivedOpts({ owner: this, debugName: () => `set.style.${key}` }, reader => {
+								this._element.style.setProperty(key, convertCssValue(cssValue.read(reader)));
+							})
+						);
 					} else {
 						this._element.style.setProperty(key, convertCssValue(cssValue));
 					}
 				}
 			} else if (key === 'tabIndex') {
 				if (isObservable(value)) {
-					this._deriveds.push(derived(this, reader => {
-						/** @description set.tabIndex */
-						this._element.tabIndex = value.read(reader) as any;
-					}));
+					this._deriveds.push(
+						derived(this, reader => {
+							/** @description set.tabIndex */
+							this._element.tabIndex = value.read(reader) as any;
+						})
+					);
 				} else {
 					this._element.tabIndex = value;
 				}
@@ -173,9 +218,11 @@ export abstract class ObserverNode<T extends Element = Element> {
 				(this._element as any)[key] = value;
 			} else {
 				if (isObservable(value)) {
-					this._deriveds.push(derivedOpts({ owner: this, debugName: () => `set.${key}` }, reader => {
-						setOrRemoveAttribute(this._element, key, value.read(reader));
-					}));
+					this._deriveds.push(
+						derivedOpts({ owner: this, debugName: () => `set.${key}` }, reader => {
+							setOrRemoveAttribute(this._element, key, value.read(reader));
+						})
+					);
 				} else {
 					setOrRemoveAttribute(this._element, key, value);
 				}
@@ -183,7 +230,10 @@ export abstract class ObserverNode<T extends Element = Element> {
 		}
 
 		if (children) {
-			function getChildren(reader: IReader | undefined, children: ValueOrList2<Element | string | ObserverNode | undefined>): (Element | string)[] {
+			function getChildren(
+				reader: IReader | undefined,
+				children: ValueOrList2<Element | string | ObserverNode | undefined>
+			): (Element | string)[] {
 				if (isObservable(children)) {
 					return getChildren(reader, children.read(reader));
 				}
@@ -229,7 +279,7 @@ export abstract class ObserverNode<T extends Element = Element> {
 
 	/**
 	 * Creates a live element that will keep the element updated as long as the returned object is not disposed.
-	*/
+	 */
 	toDisposableLiveElement() {
 		const store = new DisposableStore();
 		this.keepUpdated(store);
@@ -245,7 +295,11 @@ function setClassName(domNode: Element, className: string) {
 	}
 }
 
-function resolve<T>(value: ValueOrList<T>, reader: IReader | undefined, cb: (val: T) => void): void {
+function resolve<T>(
+	value: ValueOrList<T>,
+	reader: IReader | undefined,
+	cb: (val: T) => void
+): void {
 	if (isObservable(value)) {
 		cb(value.read(reader));
 		return;
@@ -259,7 +313,10 @@ function resolve<T>(value: ValueOrList<T>, reader: IReader | undefined, cb: (val
 	cb(value as any);
 }
 
-function getClassName(className: ValueOrList<string | undefined | false> | undefined, reader: IReader | undefined): string {
+function getClassName(
+	className: ValueOrList<string | undefined | false> | undefined,
+	reader: IReader | undefined
+): string {
 	let result = '';
 	resolve(className, reader, val => {
 		if (val) {
@@ -290,7 +347,9 @@ function convertCssValue(value: any): string {
 	return value;
 }
 
-function childrenIsObservable(children: ValueOrList2<Element | string | ObserverNode | undefined>): boolean {
+function childrenIsObservable(
+	children: ValueOrList2<Element | string | ObserverNode | undefined>
+): boolean {
 	if (isObservable(children)) {
 		return true;
 	}
@@ -304,7 +363,7 @@ export class LiveElement<T extends Element = HTMLElement> {
 	constructor(
 		public readonly element: T,
 		private readonly _disposable: IDisposable
-	) { }
+	) {}
 
 	dispose() {
 		this._disposable.dispose();
@@ -321,8 +380,8 @@ export class ObserverNodeWithElement<T extends Element = Element> extends Observ
 	get isHovered(): IObservable<boolean> {
 		if (!this._isHovered) {
 			const hovered = observableValue<boolean>('hovered', false);
-			this._element.addEventListener('mouseenter', (_e) => hovered.set(true, undefined));
-			this._element.addEventListener('mouseleave', (_e) => hovered.set(false, undefined));
+			this._element.addEventListener('mouseenter', _e => hovered.set(true, undefined));
+			this._element.addEventListener('mouseleave', _e => hovered.set(false, undefined));
 			this._isHovered = hovered;
 		}
 		return this._isHovered;
@@ -334,15 +393,15 @@ export class ObserverNodeWithElement<T extends Element = Element> extends Observ
 		if (!this._didMouseMoveDuringHover) {
 			let _hovering = false;
 			const hovered = observableValue<boolean>('didMouseMoveDuringHover', false);
-			this._element.addEventListener('mouseenter', (_e) => {
+			this._element.addEventListener('mouseenter', _e => {
 				_hovering = true;
 			});
-			this._element.addEventListener('mousemove', (_e) => {
+			this._element.addEventListener('mousemove', _e => {
 				if (_hovering) {
 					hovered.set(true, undefined);
 				}
 			});
-			this._element.addEventListener('mouseleave', (_e) => {
+			this._element.addEventListener('mouseleave', _e => {
 				_hovering = false;
 				hovered.set(false, undefined);
 			});
@@ -365,9 +424,17 @@ function camelCaseToHyphenCase(str: string) {
 }
 
 function isObservable<T>(obj: unknown): obj is IObservable<T> {
-	return !!obj && (<IObservable<T>>obj).read !== undefined && (<IObservable<T>>obj).reportChanges !== undefined;
+	return (
+		!!obj &&
+		(<IObservable<T>>obj).read !== undefined &&
+		(<IObservable<T>>obj).reportChanges !== undefined
+	);
 }
 
 type ElementAttributeKeys<T> = Partial<{
-	[K in keyof T]: T[K] extends Function ? never : T[K] extends object ? ElementAttributeKeys<T[K]> : Value<number | T[K] | undefined | null>;
+	[K in keyof T]: T[K] extends Function
+		? never
+		: T[K] extends object
+			? ElementAttributeKeys<T[K]>
+			: Value<number | T[K] | undefined | null>;
 }>;

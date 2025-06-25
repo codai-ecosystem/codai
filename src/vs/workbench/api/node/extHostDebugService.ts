@@ -4,16 +4,30 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { createCancelablePromise, disposableTimeout, firstParallel, RunOnceScheduler, timeout } from '../../../base/common/async.js';
+import {
+	createCancelablePromise,
+	disposableTimeout,
+	firstParallel,
+	RunOnceScheduler,
+	timeout,
+} from '../../../base/common/async.js';
 import { DisposableStore, IDisposable } from '../../../base/common/lifecycle.js';
 import * as platform from '../../../base/common/platform.js';
 import * as nls from '../../../nls.js';
 import { IExternalTerminalService } from '../../../platform/externalTerminal/common/externalTerminal.js';
-import { LinuxExternalTerminalService, MacExternalTerminalService, WindowsExternalTerminalService } from '../../../platform/externalTerminal/node/externalTerminalService.js';
+import {
+	LinuxExternalTerminalService,
+	MacExternalTerminalService,
+	WindowsExternalTerminalService,
+} from '../../../platform/externalTerminal/node/externalTerminalService.js';
 import { ISignService } from '../../../platform/sign/common/sign.js';
 import { SignService } from '../../../platform/sign/node/signService.js';
 import { AbstractDebugAdapter } from '../../contrib/debug/common/abstractDebugAdapter.js';
-import { ExecutableDebugAdapter, NamedPipeDebugAdapter, SocketDebugAdapter } from '../../contrib/debug/node/debugAdapter.js';
+import {
+	ExecutableDebugAdapter,
+	NamedPipeDebugAdapter,
+	SocketDebugAdapter,
+} from '../../contrib/debug/node/debugAdapter.js';
 import { hasChildProcesses, prepareCommand } from '../../contrib/debug/node/terminals.js';
 import { ExtensionDescriptionRegistry } from '../../services/extensions/common/extensionDescriptionRegistry.js';
 import { IExtHostCommands } from '../common/extHostCommands.js';
@@ -24,13 +38,17 @@ import { IExtHostExtensionService } from '../common/extHostExtensionService.js';
 import { IExtHostRpcService } from '../common/extHostRpcService.js';
 import { IExtHostTerminalService } from '../common/extHostTerminalService.js';
 import { IExtHostTesting } from '../common/extHostTesting.js';
-import { DebugAdapterExecutable, DebugAdapterNamedPipeServer, DebugAdapterServer, ThemeIcon } from '../common/extHostTypes.js';
+import {
+	DebugAdapterExecutable,
+	DebugAdapterNamedPipeServer,
+	DebugAdapterServer,
+	ThemeIcon,
+} from '../common/extHostTypes.js';
 import { IExtHostVariableResolverProvider } from '../common/extHostVariableResolverService.js';
 import { IExtHostWorkspace } from '../common/extHostWorkspace.js';
 import { IExtHostTerminalShellIntegration } from '../common/extHostTerminalShellIntegration.js';
 
 export class ExtHostDebugService extends ExtHostDebugServiceBase {
-
 	private _integratedTerminalInstances = new DebugTerminalCollection();
 	private _terminalDisposedListener: IDisposable | undefined;
 
@@ -40,16 +58,29 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 		@IExtHostExtensionService extensionService: IExtHostExtensionService,
 		@IExtHostConfiguration configurationService: IExtHostConfiguration,
 		@IExtHostTerminalService private _terminalService: IExtHostTerminalService,
-		@IExtHostTerminalShellIntegration private _terminalShellIntegrationService: IExtHostTerminalShellIntegration,
+		@IExtHostTerminalShellIntegration
+		private _terminalShellIntegrationService: IExtHostTerminalShellIntegration,
 		@IExtHostEditorTabs editorTabs: IExtHostEditorTabs,
 		@IExtHostVariableResolverProvider variableResolver: IExtHostVariableResolverProvider,
 		@IExtHostCommands commands: IExtHostCommands,
-		@IExtHostTesting testing: IExtHostTesting,
+		@IExtHostTesting testing: IExtHostTesting
 	) {
-		super(extHostRpcService, workspaceService, extensionService, configurationService, editorTabs, variableResolver, commands, testing);
+		super(
+			extHostRpcService,
+			workspaceService,
+			extensionService,
+			configurationService,
+			editorTabs,
+			variableResolver,
+			commands,
+			testing
+		);
 	}
 
-	protected override createDebugAdapter(adapter: vscode.DebugAdapterDescriptor, session: ExtHostDebugSession): AbstractDebugAdapter | undefined {
+	protected override createDebugAdapter(
+		adapter: vscode.DebugAdapterDescriptor,
+		session: ExtHostDebugSession
+	): AbstractDebugAdapter | undefined {
 		if (adapter instanceof DebugAdapterExecutable) {
 			return new ExecutableDebugAdapter(this.convertExecutableToDto(adapter), session.type);
 		} else if (adapter instanceof DebugAdapterServer) {
@@ -61,8 +92,14 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 		}
 	}
 
-	protected override daExecutableFromPackage(session: ExtHostDebugSession, extensionRegistry: ExtensionDescriptionRegistry): DebugAdapterExecutable | undefined {
-		const dae = ExecutableDebugAdapter.platformAdapterExecutable(extensionRegistry.getAllExtensionDescriptions(), session.type);
+	protected override daExecutableFromPackage(
+		session: ExtHostDebugSession,
+		extensionRegistry: ExtensionDescriptionRegistry
+	): DebugAdapterExecutable | undefined {
+		const dae = ExecutableDebugAdapter.platformAdapterExecutable(
+			extensionRegistry.getAllExtensionDescriptions(),
+			session.type
+		);
 		if (dae) {
 			return new DebugAdapterExecutable(dae.command, dae.args, dae.options);
 		}
@@ -73,22 +110,25 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 		return new SignService();
 	}
 
-	public override async $runInTerminal(args: DebugProtocol.RunInTerminalRequestArguments, sessionId: string): Promise<number | undefined> {
-
+	public override async $runInTerminal(
+		args: DebugProtocol.RunInTerminalRequestArguments,
+		sessionId: string
+	): Promise<number | undefined> {
 		if (args.kind === 'integrated') {
-
 			if (!this._terminalDisposedListener) {
 				// React on terminal disposed and check if that is the debug terminal #12956
-				this._terminalDisposedListener = this._register(this._terminalService.onDidCloseTerminal(terminal => {
-					this._integratedTerminalInstances.onTerminalClosed(terminal);
-				}));
+				this._terminalDisposedListener = this._register(
+					this._terminalService.onDidCloseTerminal(terminal => {
+						this._integratedTerminalInstances.onTerminalClosed(terminal);
+					})
+				);
 			}
 
 			const configProvider = await this._configurationService.getConfigProvider();
 			const shell = this._terminalService.getDefaultShell(true);
 			const shellArgs = this._terminalService.getDefaultShellArgs(true);
 
-			const terminalName = args.title || nls.localize('debug.terminal.title', "Debug Process");
+			const terminalName = args.title || nls.localize('debug.terminal.title', 'Debug Process');
 
 			const shellConfig = JSON.stringify({ shell, shellArgs });
 			let terminal = await this._integratedTerminalInstances.checkout(shellConfig, terminalName);
@@ -110,10 +150,9 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 					// Since debug termnials are REPLs, we want shell integration to be enabled.
 					// Ignore isFeatureTerminal when evaluating shell integration enablement.
 					forceShellIntegration: true,
-					useShellEnvironment: true
+					useShellEnvironment: true,
 				});
 				this._integratedTerminalInstances.insert(terminal, shellConfig);
-
 			} else {
 				cwdForPrepareCommand = args.cwd;
 			}
@@ -135,16 +174,20 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 				const ds = new DisposableStore();
 				await new Promise<void>(resolve => {
 					const scheduler = ds.add(new RunOnceScheduler(resolve, Timing.DataDebounce));
-					ds.add(this._terminalService.onDidWriteTerminalData(e => {
-						if (e.terminal === terminal) {
-							scheduler.schedule();
-						}
-					}));
-					ds.add(this._terminalShellIntegrationService.onDidChangeTerminalShellIntegration(e => {
-						if (e.terminal === terminal) {
-							resolve();
-						}
-					}));
+					ds.add(
+						this._terminalService.onDidWriteTerminalData(e => {
+							if (e.terminal === terminal) {
+								scheduler.schedule();
+							}
+						})
+					);
+					ds.add(
+						this._terminalShellIntegrationService.onDidChangeTerminalShellIntegration(e => {
+							if (e.terminal === terminal) {
+								resolve();
+							}
+						})
+					);
 					ds.add(disposableTimeout(resolve, Timing.MaxDelay));
 				});
 
@@ -158,7 +201,11 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 				if (configProvider.getConfiguration('debug.terminal').get<boolean>('clearBeforeReusing')) {
 					// clear terminal before reusing it
 					let clearCommand: string;
-					if (shell.indexOf('powershell') >= 0 || shell.indexOf('pwsh') >= 0 || shell.indexOf('cmd.exe') >= 0) {
+					if (
+						shell.indexOf('powershell') >= 0 ||
+						shell.indexOf('pwsh') >= 0 ||
+						shell.indexOf('cmd.exe') >= 0
+					) {
 						clearCommand = 'cls';
 					} else if (shell.indexOf('bash') >= 0) {
 						clearCommand = 'clear';
@@ -172,11 +219,13 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 						const ds = new DisposableStore();
 						const execution = terminal.shellIntegration.executeCommand(clearCommand);
 						await new Promise<void>(resolve => {
-							ds.add(this._terminalShellIntegrationService.onDidEndTerminalShellExecution(e => {
-								if (e.execution === execution) {
-									resolve();
-								}
-							}));
+							ds.add(
+								this._terminalShellIntegrationService.onDidEndTerminalShellExecution(e => {
+									if (e.execution === execution) {
+										resolve();
+									}
+								})
+							);
 							ds.add(disposableTimeout(resolve, 500)); // 500ms timeout to ensure we resolve
 						});
 
@@ -188,7 +237,13 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 				}
 			}
 
-			const command = prepareCommand(shell, args.args, !!args.argsCanBeInterpretedByShell, cwdForPrepareCommand, args.env);
+			const command = prepareCommand(
+				shell,
+				args.args,
+				!!args.argsCanBeInterpretedByShell,
+				cwdForPrepareCommand,
+				args.env
+			);
 
 			if (terminal.shellIntegration) {
 				terminal.shellIntegration.executeCommand(command);
@@ -205,7 +260,6 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 			});
 
 			return shellProcessId;
-
 		} else if (args.kind === 'external') {
 			return runInExternalTerminal(args, await this._configurationService.getConfigProvider());
 		}
@@ -215,7 +269,10 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 
 let externalTerminalService: IExternalTerminalService | undefined = undefined;
 
-function runInExternalTerminal(args: DebugProtocol.RunInTerminalRequestArguments, configProvider: ExtHostConfigProvider): Promise<number | undefined> {
+function runInExternalTerminal(
+	args: DebugProtocol.RunInTerminalRequestArguments,
+	configProvider: ExtHostConfigProvider
+): Promise<number | undefined> {
 	if (!externalTerminalService) {
 		if (platform.isWindows) {
 			externalTerminalService = new WindowsExternalTerminalService();
@@ -228,7 +285,13 @@ function runInExternalTerminal(args: DebugProtocol.RunInTerminalRequestArguments
 		}
 	}
 	const config = configProvider.getConfiguration('terminal');
-	return externalTerminalService.runInTerminal(args.title!, args.cwd, args.args, args.env || {}, config.external || {});
+	return externalTerminalService.runInTerminal(
+		args.title!,
+		args.cwd,
+		args.args,
+		args.env || {},
+		config.external || {}
+	);
 }
 
 class DebugTerminalCollection {
@@ -241,33 +304,37 @@ class DebugTerminalCollection {
 
 	public async checkout(config: string, name: string, cleanupOthersByName = false) {
 		const entries = [...this._terminalInstances.entries()];
-		const promises = entries.map(([terminal, termInfo]) => createCancelablePromise(async ct => {
-
-			// Only allow terminals that match the title.  See #123189
-			if (terminal.name !== name) {
-				return null;
-			}
-
-			if (termInfo.lastUsedAt !== -1 && await hasChildProcesses(await terminal.processId)) {
-				return null;
-			}
-
-			// important: date check and map operations must be synchronous
-			const now = Date.now();
-			if (termInfo.lastUsedAt + DebugTerminalCollection.minUseDelay > now || ct.isCancellationRequested) {
-				return null;
-			}
-
-			if (termInfo.config !== config) {
-				if (cleanupOthersByName) {
-					terminal.dispose();
+		const promises = entries.map(([terminal, termInfo]) =>
+			createCancelablePromise(async ct => {
+				// Only allow terminals that match the title.  See #123189
+				if (terminal.name !== name) {
+					return null;
 				}
-				return null;
-			}
 
-			termInfo.lastUsedAt = now;
-			return terminal;
-		}));
+				if (termInfo.lastUsedAt !== -1 && (await hasChildProcesses(await terminal.processId))) {
+					return null;
+				}
+
+				// important: date check and map operations must be synchronous
+				const now = Date.now();
+				if (
+					termInfo.lastUsedAt + DebugTerminalCollection.minUseDelay > now ||
+					ct.isCancellationRequested
+				) {
+					return null;
+				}
+
+				if (termInfo.config !== config) {
+					if (cleanupOthersByName) {
+						terminal.dispose();
+					}
+					return null;
+				}
+
+				termInfo.lastUsedAt = now;
+				return terminal;
+			})
+		);
 
 		return await firstParallel(promises, (t): t is vscode.Terminal => !!t);
 	}

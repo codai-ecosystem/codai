@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-const testVar = "hello world";
+const testVar = 'hello world';
 console.log(testVar);
 
 function testFunction() {
-	const oldStyleVar = "test";
+	const oldStyleVar = 'test';
 	return oldStyleVar;
 }
 

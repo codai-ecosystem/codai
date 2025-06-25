@@ -45,7 +45,11 @@ export async function shouldInsertMarkdownLinkByDefault(
 	}
 
 	async function checkSmart(): Promise<boolean> {
-		return (await Promise.all(ranges.map(range => shouldSmartPasteForSelection(parser, document, range, token)))).every(x => x);
+		return (
+			await Promise.all(
+				ranges.map(range => shouldSmartPasteForSelection(parser, document, range, token))
+			)
+		).every(x => x);
 	}
 }
 
@@ -114,7 +118,9 @@ async function shouldSmartPasteForSelection(
 	}
 
 	// Run additional regex checks on the current line to check if we are inside an inline element
-	const line = document.getText(new vscode.Range(selectedRange.start.line, 0, selectedRange.start.line, Number.MAX_SAFE_INTEGER));
+	const line = document.getText(
+		new vscode.Range(selectedRange.start.line, 0, selectedRange.start.line, Number.MAX_SAFE_INTEGER)
+	);
 	for (const regex of smartPasteLineRegexes) {
 		for (const match of line.matchAll(regex.regex)) {
 			if (match.index === undefined) {
@@ -125,7 +131,10 @@ async function shouldSmartPasteForSelection(
 				return false;
 			}
 
-			if (selectedRange.start.character > match.index && selectedRange.start.character < match.index + match[0].length) {
+			if (
+				selectedRange.start.character > match.index &&
+				selectedRange.start.character < match.index + match[0].length
+			) {
 				return false;
 			}
 		}
@@ -144,8 +153,9 @@ const externalUriSchemes: ReadonlySet<string> = new Set([
 export function findValidUriInText(text: string): string | undefined {
 	const trimmedUrlList = text.trim();
 
-	if (!/^\S+$/.test(trimmedUrlList) // Uri must consist of a single sequence of characters without spaces
-		|| !trimmedUrlList.includes(':') // And it must have colon somewhere for the scheme. We will verify the schema again later
+	if (
+		!/^\S+$/.test(trimmedUrlList) || // Uri must consist of a single sequence of characters without spaces
+		!trimmedUrlList.includes(':') // And it must have colon somewhere for the scheme. We will verify the schema again later
 	) {
 		return;
 	}
@@ -183,6 +193,5 @@ export enum InsertMarkdownLink {
 	Always = 'always',
 	SmartWithSelection = 'smartWithSelection',
 	Smart = 'smart',
-	Never = 'never'
+	Never = 'never',
 }
-

@@ -7,7 +7,6 @@ import { IView, IViewPaneContainer } from './views.js';
 import { IComposite } from './composite.js';
 
 export interface IPaneComposite extends IComposite {
-
 	/**
 	 * Returns the minimal width needed to avoid any content horizontal truncation
 	 */
@@ -16,4 +15,3 @@ export interface IPaneComposite extends IComposite {
 	openView<T extends IView>(id: string, focus?: boolean): T | undefined;
 	getViewPaneContainer(): IViewPaneContainer | undefined;
 }
-

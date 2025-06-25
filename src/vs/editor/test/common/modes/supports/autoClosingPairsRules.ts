@@ -3,16 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IAutoClosingPair, IAutoClosingPairConditional } from '../../../../common/languages/languageConfiguration.js';
+import {
+	IAutoClosingPair,
+	IAutoClosingPairConditional,
+} from '../../../../common/languages/languageConfiguration.js';
 
 export const javascriptAutoClosingPairsRules: IAutoClosingPairConditional[] = [
 	{ open: '{', close: '}' },
 	{ open: '[', close: ']' },
 	{ open: '(', close: ')' },
-	{ open: '\'', close: '\'', notIn: ['string', 'comment'] },
+	{ open: "'", close: "'", notIn: ['string', 'comment'] },
 	{ open: '"', close: '"', notIn: ['string'] },
 	{ open: '`', close: '`', notIn: ['string', 'comment'] },
-	{ open: '/**', close: ' */', notIn: ['string'] }
+	{ open: '/**', close: ' */', notIn: ['string'] },
 ];
 
 export const latexAutoClosingPairsRules: IAutoClosingPair[] = [
@@ -37,5 +40,5 @@ export const latexAutoClosingPairsRules: IAutoClosingPair[] = [
 	{ open: '{', close: '}' },
 	{ open: '[', close: ']' },
 	{ open: '(', close: ')' },
-	{ open: '`', close: '\'' },
+	{ open: '`', close: "'" },
 ];

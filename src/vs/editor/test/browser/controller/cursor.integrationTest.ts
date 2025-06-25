@@ -8,7 +8,6 @@ import { Selection } from '../../../common/core/selection.js';
 import { withTestCodeEditor } from '../testCodeEditor.js';
 
 suite('Editor Controller', () => {
-
 	test('issue #23913: Greater than 1000+ multi cursor typing replacement text appears inverted, lines begin to drop off selection', function () {
 		this.timeout(10000);
 		const LINE_CNT = 2000;

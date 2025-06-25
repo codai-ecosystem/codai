@@ -13,7 +13,10 @@ export function observableSignalFromEvent(
 	owner: DebugOwner | string,
 	event: Event<any>
 ): IObservable<void> {
-	return new FromEventObservableSignal(typeof owner === 'string' ? owner : new DebugNameData(owner, undefined, undefined), event);
+	return new FromEventObservableSignal(
+		typeof owner === 'string' ? owner : new DebugNameData(owner, undefined, undefined),
+		event
+	);
 }
 
 class FromEventObservableSignal extends BaseObservable<void> {
@@ -25,9 +28,10 @@ class FromEventObservableSignal extends BaseObservable<void> {
 		private readonly event: Event<any>
 	) {
 		super();
-		this.debugName = typeof debugNameDataOrName === 'string'
-			? debugNameDataOrName
-			: debugNameDataOrName.getDebugName(this) ?? 'Observable Signal From Event';
+		this.debugName =
+			typeof debugNameDataOrName === 'string'
+				? debugNameDataOrName
+				: (debugNameDataOrName.getDebugName(this) ?? 'Observable Signal From Event');
 	}
 
 	protected override onFirstObserverAdded(): void {
@@ -36,7 +40,7 @@ class FromEventObservableSignal extends BaseObservable<void> {
 
 	private readonly handleEvent = () => {
 		transaction(
-			(tx) => {
+			tx => {
 				for (const o of this._observers) {
 					tx.updateObserver(o, this);
 					o.handleChange(this, undefined);

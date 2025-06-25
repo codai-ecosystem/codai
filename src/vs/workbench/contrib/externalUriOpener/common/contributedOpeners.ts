@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from '../../../../platform/storage/common/storage.js';
 import { Memento } from '../../../common/memento.js';
 import { updateContributedOpeners } from './configuration.js';
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
@@ -20,7 +24,6 @@ interface OpenersMemento {
 }
 
 export class ContributedExternalUriOpenersStore extends Disposable {
-
 	private static readonly STORAGE_ID = 'externalUriOpeners';
 
 	private readonly _openers = new Map<string, RegisteredExternalOpener>();
@@ -41,26 +44,35 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 
 		this.invalidateOpenersOnExtensionsChanged();
 
-		this._register(this._extensionService.onDidChangeExtensions(() => this.invalidateOpenersOnExtensionsChanged()));
-		this._register(this._extensionService.onDidChangeExtensionsStatus(() => this.invalidateOpenersOnExtensionsChanged()));
+		this._register(
+			this._extensionService.onDidChangeExtensions(() =>
+				this.invalidateOpenersOnExtensionsChanged()
+			)
+		);
+		this._register(
+			this._extensionService.onDidChangeExtensionsStatus(() =>
+				this.invalidateOpenersOnExtensionsChanged()
+			)
+		);
 	}
 
 	public didRegisterOpener(id: string, extensionId: string): void {
 		this.add(id, extensionId, {
-			isCurrentlyRegistered: true
+			isCurrentlyRegistered: true,
 		});
 	}
 
 	private add(id: string, extensionId: string, options: { isCurrentlyRegistered: boolean }): void {
 		const existing = this._openers.get(id);
 		if (existing) {
-			existing.isCurrentlyRegistered = existing.isCurrentlyRegistered || options.isCurrentlyRegistered;
+			existing.isCurrentlyRegistered =
+				existing.isCurrentlyRegistered || options.isCurrentlyRegistered;
 			return;
 		}
 
 		const entry = {
 			extensionId,
-			isCurrentlyRegistered: options.isCurrentlyRegistered
+			isCurrentlyRegistered: options.isCurrentlyRegistered,
 		};
 		this._openers.set(id, entry);
 

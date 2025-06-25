@@ -12,9 +12,7 @@ import { IRange, Range } from '../../../editor/common/core/range.js';
  * token position in the original text.
  */
 export abstract class BaseToken<TText extends string = string> {
-	constructor(
-		private tokenRange: Range,
-	) { }
+	constructor(private tokenRange: Range) {}
 
 	/**
 	 * Range of the token in the original text.
@@ -67,7 +65,7 @@ export abstract class BaseToken<TText extends string = string> {
 			components.startLineNumber ?? this.range.startLineNumber,
 			components.startColumn ?? this.range.startColumn,
 			components.endLineNumber ?? this.range.endLineNumber,
-			components.endColumn ?? this.range.endColumn,
+			components.endColumn ?? this.range.endColumn
 		);
 
 		return this;
@@ -86,10 +84,7 @@ export abstract class BaseToken<TText extends string = string> {
 	/**
 	 * Render a list of tokens into a string.
 	 */
-	public static render(
-		tokens: readonly BaseToken[],
-		delimiter: string = '',
-	): string {
+	public static render(tokens: readonly BaseToken[], delimiter: string = ''): string {
 		return tokens.map(pick('text')).join(delimiter);
 	}
 
@@ -104,10 +99,7 @@ export abstract class BaseToken<TText extends string = string> {
 	 * 	  be smaller than the start column of the last token
 	 */
 	public static fullRange(tokens: readonly BaseToken[]): Range {
-		assert(
-			tokens.length > 0,
-			'Cannot get full range for an empty list of tokens.',
-		);
+		assert(tokens.length > 0, 'Cannot get full range for an empty list of tokens.');
 
 		const firstToken = tokens[0];
 		const lastToken = tokens[tokens.length - 1];
@@ -115,16 +107,19 @@ export abstract class BaseToken<TText extends string = string> {
 		// sanity checks for the full range we would construct
 		assert(
 			firstToken.range.startLineNumber <= lastToken.range.startLineNumber,
-			'First token must start on previous or the same line as the last token.',
+			'First token must start on previous or the same line as the last token.'
 		);
 
-		if ((firstToken !== lastToken) && (firstToken.range.startLineNumber === lastToken.range.startLineNumber)) {
+		if (
+			firstToken !== lastToken &&
+			firstToken.range.startLineNumber === lastToken.range.startLineNumber
+		) {
 			assert(
 				firstToken.range.endColumn <= lastToken.range.startColumn,
 				[
 					'First token must end at least on previous or the same column as the last token.',
 					`First token: ${firstToken}; Last token: ${lastToken}.`,
-				].join('\n'),
+				].join('\n')
 			);
 		}
 
@@ -132,16 +127,14 @@ export abstract class BaseToken<TText extends string = string> {
 			firstToken.range.startLineNumber,
 			firstToken.range.startColumn,
 			lastToken.range.endLineNumber,
-			lastToken.range.endColumn,
+			lastToken.range.endColumn
 		);
 	}
 
 	/**
 	 * Shorten version of the {@link text} property.
 	 */
-	public shortText(
-		maxLength: number = 32,
-	): string {
+	public shortText(maxLength: number = 32): string {
 		if (this.text.length <= maxLength) {
 			return this.text;
 		}

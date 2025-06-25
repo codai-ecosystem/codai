@@ -7,12 +7,17 @@ import assert from 'assert';
 import { shuffle } from '../../common/arrays.js';
 import { randomPath } from '../../common/extpath.js';
 import { StopWatch } from '../../common/stopwatch.js';
-import { ConfigKeysIterator, PathIterator, StringIterator, TernarySearchTree, UriIterator } from '../../common/ternarySearchTree.js';
+import {
+	ConfigKeysIterator,
+	PathIterator,
+	StringIterator,
+	TernarySearchTree,
+	UriIterator,
+} from '../../common/ternarySearchTree.js';
 import { URI } from '../../common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('Ternary Search Tree', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('PathIterator', () => {
@@ -57,7 +62,10 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('URIIterator', function () {
-		const iter = new UriIterator(() => false, () => false);
+		const iter = new UriIterator(
+			() => false,
+			() => false
+		);
 		iter.reset(URI.parse('file:///usr/bin/file.txt'));
 
 		assert.strictEqual(iter.value(), 'file');
@@ -76,7 +84,6 @@ suite('Ternary Search Tree', () => {
 
 		assert.strictEqual(iter.value(), 'file.txt');
 		assert.strictEqual(iter.hasNext(), false);
-
 
 		iter.reset(URI.parse('file://share/usr/bin/file.txt?foo'));
 
@@ -116,7 +123,10 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('URIIterator - ignore query/fragment', function () {
-		const iter = new UriIterator(() => false, () => true);
+		const iter = new UriIterator(
+			() => false,
+			() => true
+		);
 		iter.reset(URI.parse('file:///usr/bin/file.txt'));
 
 		assert.strictEqual(iter.value(), 'file');
@@ -135,7 +145,6 @@ suite('Ternary Search Tree', () => {
 
 		assert.strictEqual(iter.value(), 'file.txt');
 		assert.strictEqual(iter.hasNext(), false);
-
 
 		iter.reset(URI.parse('file://share/usr/bin/file.txt?foo'));
 
@@ -168,7 +177,6 @@ suite('Ternary Search Tree', () => {
 	});
 
 	function assertTstDfs<E>(trie: TernarySearchTree<string, E>, ...elements: [string, E][]) {
-
 		assert.ok(trie._isBalanced(), 'TST is not balanced');
 
 		let i = 0;
@@ -204,11 +212,9 @@ suite('Ternary Search Tree', () => {
 			iterCount++;
 		}
 		assert.strictEqual(map.size, iterCount);
-
 	}
 
 	test('TernarySearchTree - set', function () {
-
 		let trie = TernarySearchTree.forStrings<number>();
 		trie.set('foobar', 1);
 		trie.set('foobaz', 2);
@@ -232,17 +238,10 @@ suite('Ternary Search Tree', () => {
 		trie.set('foob', 4);
 		trie.set('bazz', 5);
 
-		assertTstDfs(trie,
-			['bar', 3],
-			['bazz', 5],
-			['foo', 1],
-			['foob', 4],
-			['foobar', 2],
-		);
+		assertTstDfs(trie, ['bar', 3], ['bazz', 5], ['foo', 1], ['foob', 4], ['foobar', 2]);
 	});
 
 	test('TernarySearchTree - set w/ undefined', function () {
-
 		const trie = TernarySearchTree.forStrings<any>();
 		trie.set('foobar', undefined);
 		trie.set('foobaz', 2);
@@ -263,7 +262,6 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree - findLongestMatch', function () {
-
 		const trie = TernarySearchTree.forStrings<number>();
 		trie.set('foo', 1);
 		trie.set('foobar', 2);
@@ -296,7 +294,6 @@ suite('Ternary Search Tree', () => {
 		assert.strictEqual(trie.findSubstr('fo'), undefined);
 		assert.strictEqual(trie.findSubstr('foo'), 1);
 		assert.strictEqual(trie.findSubstr('foooo'), 1);
-
 
 		trie.delete('foobar');
 		trie.delete('bar');
@@ -416,7 +413,15 @@ suite('Ternary Search Tree', () => {
 			trie.set('/fileF', 24);
 			trie.set('/fileZ', 73);
 			trie.set('/fileE', 15);
-			assertTstDfs(trie, ['/fileB', 2], ['/fileD', 7], ['/fileE', 15], ['/fileF', 24], ['/fileG', 42], ['/fileZ', 73]);
+			assertTstDfs(
+				trie,
+				['/fileB', 2],
+				['/fileD', 7],
+				['/fileE', 15],
+				['/fileF', 24],
+				['/fileG', 42],
+				['/fileZ', 73]
+			);
 		}
 
 		{
@@ -428,12 +433,19 @@ suite('Ternary Search Tree', () => {
 			trie.set('/fileB', 2);
 			trie.set('/fileF', 7);
 			trie.set('/fileG', 1);
-			assertTstDfs(trie, ['/fileB', 2], ['/fileE', 15], ['/fileF', 7], ['/fileG', 1], ['/fileJ', 42], ['/fileZ', 73]);
+			assertTstDfs(
+				trie,
+				['/fileB', 2],
+				['/fileE', 15],
+				['/fileF', 7],
+				['/fileG', 1],
+				['/fileJ', 42],
+				['/fileZ', 73]
+			);
 		}
 	});
 
 	test('TernarySearchTree - (BST) delete', function () {
-
 		const trie = new TernarySearchTree<string, number>(new StringIterator());
 
 		// delete root
@@ -463,7 +475,6 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree - (AVL) delete', function () {
-
 		const trie = new TernarySearchTree<string, number>(new StringIterator());
 
 		trie.clear();
@@ -507,8 +518,7 @@ suite('Ternary Search Tree', () => {
 		assertTstDfs(trie, ['ad', 1], ['ae', 1], ['af', 1], ['az', 1]);
 	});
 
-	test('TernarySearchTree: Cannot read property \'1\' of undefined #138284', function () {
-
+	test("TernarySearchTree: Cannot read property '1' of undefined #138284", function () {
 		const keys = [
 			URI.parse('fake-fs:/C'),
 			URI.parse('fake-fs:/A'),
@@ -527,9 +537,8 @@ suite('Ternary Search Tree', () => {
 		assert.ok(tst._isBalanced());
 	});
 
-	test('TernarySearchTree: Cannot read property \'1\' of undefined #138284 (simple)', function () {
-
-		const keys = ['C', 'A', 'D', 'B',];
+	test("TernarySearchTree: Cannot read property '1' of undefined #138284 (simple)", function () {
+		const keys = ['C', 'A', 'D', 'B'];
 		const tst = TernarySearchTree.forStrings<boolean>();
 		for (const item of keys) {
 			tst.set(item, true);
@@ -546,10 +555,9 @@ suite('Ternary Search Tree', () => {
 			tst.set('B', true);
 			assertTstDfs(tst, ['A', true], ['B', true], ['C', true]);
 		}
-
 	});
 
-	test('TernarySearchTree: Cannot read property \'1\' of undefined #138284 (random)', function () {
+	test("TernarySearchTree: Cannot read property '1' of undefined #138284 (random)", function () {
 		for (let round = 10; round >= 0; round--) {
 			const keys: URI[] = [];
 			for (let i = 0; i < 100; i++) {
@@ -574,10 +582,8 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('https://github.com/microsoft/vscode/issues/227147', function () {
-
 		const raw = `fake-fs:CAOnRvUuxO,fake-fs:1qcbfq54rg,fake-fs:UtDstYUQ56,fake-fs:d5ktqDysll,fake-fs:w5NSAKA4Ch,fake-fs:QcIIIY6WHX,fake-fs:WCedQu9Ogd,fake-fs:cKUC5LunBr,fake-fs:XrIIYjI3HB,fake-fs:xgTkoneFzF,fake-fs:QYkCVx2nYC,fake-fs:ePrIDEKEpJ,fake-fs:nrOPYCW81a,fake-fs:MQbkFLcDsA,fake-fs:wXG8YiOrBI,fake-fs:4tHTWi240D,fake-fs:5uQWjgZGGJ,fake-fs:famP6pZXyx,fake-fs:aB9sUhwP1J,fake-fs:DlS0CssyhG,fake-fs:9vK2k3rL2V,fake-fs:iqWeu7zF6t,fake-fs:8vC6bQX2WH,fake-fs:nFILXMQTRg,fake-fs:miiV72aajE,fake-fs:9VRbqvaw0q,fake-fs:WnEHS1arfZ,fake-fs:Fco75PJ5pM,fake-fs:6CsEpoZ7VW,fake-fs:B2PrCtDpWu,fake-fs:y8Hi94Oekg,fake-fs:wyEjPNa5lo,fake-fs:zw1Ljv0erc,fake-fs:y4KWPUOMx0,fake-fs:1basrPTlTp,fake-fs:5iErr4YM34,fake-fs:Q2TQaujh8Q,fake-fs:QxcYzNNxZw,fake-fs:3QUDHjU55a,fake-fs:23ymf9ggMV,fake-fs:qQhuKFdy29,fake-fs:JuwmxA33oJ,fake-fs:NQeUyfMNUo,fake-fs:2Vo3eR1jxM,fake-fs:NzUXQidwel,fake-fs:aESYKGPxIx,fake-fs:mxLdeJartN,fake-fs:PhSd2xLwVe,fake-fs:9nmWjUUMRz,fake-fs:Wc6a4RsGhn,fake-fs:5a0AlFHALQ,fake-fs:Q93jnNZBxJ,fake-fs:4CuVkbfPSG,fake-fs:mdFlJ7WQva,fake-fs:fgVsaRm1KG,fake-fs:P7UXWiRJYj,fake-fs:q6nz5Q9BEW,fake-fs:1UZmGkvNTn,fake-fs:AKY8cnUQFl,fake-fs:RezYuPU7FD,fake-fs:5zaYc72Bit,fake-fs:yh8FTxFfQq,fake-fs:ayNPgEuc2q,fake-fs:EdOb27cRhF,fake-fs:h4c2uNyI4l,fake-fs:BhzOLNL4JO,fake-fs:HVPTdAMWpS,fake-fs:7K7IlacaZe,fake-fs:iUKJonC5eq,fake-fs:Y9E3NX3eJD,fake-fs:66h80uK32I,fake-fs:gFXpry1Y09,fake-fs:qOqvvXPcu4,fake-fs:UbbLn2NFSJ,fake-fs:TzJ07HsAGz,fake-fs:nQngmvgx4m,fake-fs:6bZQCR8epb,fake-fs:xb3SJKX1bi,fake-fs:GF3DPK4zDj,fake-fs:HmxgAqEegt,fake-fs:yT2OAMQYal,fake-fs:MiVX4VYXHk,fake-fs:QMbsUbjJTI,fake-fs:KzAbDNsmPc,fake-fs:m6CGOwOcdT,fake-fs:0cyHx9zsA3,fake-fs:SIwjWfFLSY,fake-fs:uZSDXCEqLY,fake-fs:HuoTL3nK7k,fake-fs:oyoejYE0CI,fake-fs:56WLhiCxbz,fake-fs:SqYOi0z5sM,fake-fs:LZq3ei28Ez,fake-fs:pTc4pCtwk8,fake-fs:AAJSFf0RHS,fake-fs:up6EHkEbO9,fake-fs:GB1Pesdnxd,fake-fs:Oyvq4Z96S4,fake-fs:rYXrhklgf6,fake-fs:g1HdUkQziH`;
 		const keys: URI[] = raw.split(',').map(value => URI.parse(value, true));
-
 
 		const tst = TernarySearchTree.forUris<boolean>();
 		for (const item of keys) {
@@ -610,8 +616,9 @@ suite('Ternary Search Tree', () => {
 		assert.strictEqual(Array.from(tst).length, 0);
 	});
 
-	test('TernarySearchTree: Cannot read properties of undefined (reading \'length\'): #161618 (simple)', function () {
-		const raw = 'config.debug.toolBarLocation,floating,config.editor.renderControlCharacters,true,config.editor.renderWhitespace,selection,config.files.autoSave,off,config.git.enabled,true,config.notebook.globalToolbar,true,config.terminal.integrated.tabs.enabled,true,config.terminal.integrated.tabs.showActions,singleTerminalOrNarrow,config.terminal.integrated.tabs.showActiveTerminal,singleTerminalOrNarrow,config.workbench.activityBar.visible,true,config.workbench.experimental.settingsProfiles.enabled,true,config.workbench.layoutControl.type,both,config.workbench.sideBar.location,left,config.workbench.statusBar.visible,true';
+	test("TernarySearchTree: Cannot read properties of undefined (reading 'length'): #161618 (simple)", function () {
+		const raw =
+			'config.debug.toolBarLocation,floating,config.editor.renderControlCharacters,true,config.editor.renderWhitespace,selection,config.files.autoSave,off,config.git.enabled,true,config.notebook.globalToolbar,true,config.terminal.integrated.tabs.enabled,true,config.terminal.integrated.tabs.showActions,singleTerminalOrNarrow,config.terminal.integrated.tabs.showActiveTerminal,singleTerminalOrNarrow,config.workbench.activityBar.visible,true,config.workbench.experimental.settingsProfiles.enabled,true,config.workbench.layoutControl.type,both,config.workbench.sideBar.location,left,config.workbench.statusBar.visible,true';
 		const array = raw.split(',');
 		const tuples: [string, string][] = [];
 		for (let i = 0; i < array.length; i += 2) {
@@ -630,8 +637,9 @@ suite('Ternary Search Tree', () => {
 		assert.strictEqual([...map].length, len - 1);
 	});
 
-	test('TernarySearchTree: Cannot read properties of undefined (reading \'length\'): #161618 (random)', function () {
-		const raw = 'config.debug.toolBarLocation,floating,config.editor.renderControlCharacters,true,config.editor.renderWhitespace,selection,config.files.autoSave,off,config.git.enabled,true,config.notebook.globalToolbar,true,config.terminal.integrated.tabs.enabled,true,config.terminal.integrated.tabs.showActions,singleTerminalOrNarrow,config.terminal.integrated.tabs.showActiveTerminal,singleTerminalOrNarrow,config.workbench.activityBar.visible,true,config.workbench.experimental.settingsProfiles.enabled,true,config.workbench.layoutControl.type,both,config.workbench.sideBar.location,left,config.workbench.statusBar.visible,true';
+	test("TernarySearchTree: Cannot read properties of undefined (reading 'length'): #161618 (random)", function () {
+		const raw =
+			'config.debug.toolBarLocation,floating,config.editor.renderControlCharacters,true,config.editor.renderWhitespace,selection,config.files.autoSave,off,config.git.enabled,true,config.notebook.globalToolbar,true,config.terminal.integrated.tabs.enabled,true,config.terminal.integrated.tabs.showActions,singleTerminalOrNarrow,config.terminal.integrated.tabs.showActiveTerminal,singleTerminalOrNarrow,config.workbench.activityBar.visible,true,config.workbench.experimental.settingsProfiles.enabled,true,config.workbench.layoutControl.type,both,config.workbench.sideBar.location,left,config.workbench.statusBar.visible,true';
 		const array = raw.split(',');
 		const tuples: [string, string][] = [];
 		for (let i = 0; i < array.length; i += 2) {
@@ -654,7 +662,6 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree (PathSegments) - lookup', function () {
-
 		const map = new TernarySearchTree<string, number>(new PathIterator());
 		map.set('/user/foo/bar', 1);
 		map.set('/user/foo', 2);
@@ -668,7 +675,6 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree (PathSegments) - superstr', function () {
-
 		const map = new TernarySearchTree<string, number>(new PathIterator());
 		map.set('/user/foo/bar', 1);
 		map.set('/user/foo', 2);
@@ -706,29 +712,29 @@ suite('Ternary Search Tree', () => {
 		assert.strictEqual(map.findSuperstr('/userr'), undefined);
 	});
 
-
 	test('TernarySearchTree (PathSegments) - delete_superstr', function () {
-
 		const map = new TernarySearchTree<string, number>(new PathIterator());
 		map.set('/user/foo/bar', 1);
 		map.set('/user/foo', 2);
 		map.set('/user/foo/flip/flop', 3);
 		map.set('/usr/foo', 4);
 
-		assertTstDfs(map,
+		assertTstDfs(
+			map,
 			['/user/foo', 2],
 			['/user/foo/bar', 1],
 			['/user/foo/flip/flop', 3],
-			['/usr/foo', 4],
+			['/usr/foo', 4]
 		);
 
 		// not a segment
 		map.deleteSuperstr('/user/fo');
-		assertTstDfs(map,
+		assertTstDfs(
+			map,
 			['/user/foo', 2],
 			['/user/foo/bar', 1],
 			['/user/foo/flip/flop', 3],
-			['/usr/foo', 4],
+			['/usr/foo', 4]
 		);
 
 		// delete a segment
@@ -737,14 +743,16 @@ suite('Ternary Search Tree', () => {
 		map.set('/user/foo/flip/flop', 3);
 		map.set('/usr/foo', 4);
 		map.deleteSuperstr('/user/foo');
-		assertTstDfs(map,
-			['/user/foo', 2],
-			['/usr/foo', 4],
-		);
+		assertTstDfs(map, ['/user/foo', 2], ['/usr/foo', 4]);
 	});
 
 	test('TernarySearchTree (URI) - basics', function () {
-		const trie = new TernarySearchTree<URI, number>(new UriIterator(() => false, () => false));
+		const trie = new TernarySearchTree<URI, number>(
+			new UriIterator(
+				() => false,
+				() => false
+			)
+		);
 
 		trie.set(URI.file('/user/foo/bar'), 1);
 		trie.set(URI.file('/user/foo'), 2);
@@ -763,7 +771,12 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree (URI) - query parameters', function () {
-		const trie = new TernarySearchTree<URI, number>(new UriIterator(() => false, () => true));
+		const trie = new TernarySearchTree<URI, number>(
+			new UriIterator(
+				() => false,
+				() => true
+			)
+		);
 		const root = URI.parse('memfs:/?param=1');
 		trie.set(root, 1);
 
@@ -774,8 +787,12 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree (URI) - lookup', function () {
-
-		const map = new TernarySearchTree<URI, number>(new UriIterator(() => false, () => false));
+		const map = new TernarySearchTree<URI, number>(
+			new UriIterator(
+				() => false,
+				() => false
+			)
+		);
 		map.set(URI.parse('http://foo.bar/user/foo/bar'), 1);
 		map.set(URI.parse('http://foo.bar/user/foo?query'), 2);
 		map.set(URI.parse('http://foo.bar/user/foo?QUERY'), 3);
@@ -791,8 +808,12 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree (URI) - lookup, casing', function () {
-
-		const map = new TernarySearchTree<URI, number>(new UriIterator(uri => /^https?$/.test(uri.scheme), () => false));
+		const map = new TernarySearchTree<URI, number>(
+			new UriIterator(
+				uri => /^https?$/.test(uri.scheme),
+				() => false
+			)
+		);
 		map.set(URI.parse('http://foo.bar/user/foo/bar'), 1);
 		assert.strictEqual(map.get(URI.parse('http://foo.bar/USER/foo/bar')), 1);
 
@@ -801,8 +822,12 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree (URI) - superstr', function () {
-
-		const map = new TernarySearchTree<URI, number>(new UriIterator(() => false, () => false));
+		const map = new TernarySearchTree<URI, number>(
+			new UriIterator(
+				() => false,
+				() => false
+			)
+		);
 		map.set(URI.file('/user/foo/bar'), 1);
 		map.set(URI.file('/user/foo'), 2);
 		map.set(URI.file('/user/foo/flip/flop'), 3);
@@ -876,7 +901,6 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree (ConfigKeySegments) - lookup', function () {
-
 		const map = new TernarySearchTree<string, number>(new ConfigKeysIterator());
 		map.set('config.foo.bar', 1);
 		map.set('config.foo', 2);
@@ -890,7 +914,6 @@ suite('Ternary Search Tree', () => {
 	});
 
 	test('TernarySearchTree (ConfigKeySegments) - superstr', function () {
-
 		const map = new TernarySearchTree<string, number>(new ConfigKeysIterator());
 		map.set('config.foo.bar', 1);
 		map.set('config.foo', 2);
@@ -918,29 +941,29 @@ suite('Ternary Search Tree', () => {
 		assert.strictEqual(map.findSuperstr('config.foop'), undefined);
 	});
 
-
 	test('TernarySearchTree (ConfigKeySegments) - delete_superstr', function () {
-
 		const map = new TernarySearchTree<string, number>(new ConfigKeysIterator());
 		map.set('config.foo.bar', 1);
 		map.set('config.foo', 2);
 		map.set('config.foo.flip.flop', 3);
 		map.set('boo', 4);
 
-		assertTstDfs(map,
+		assertTstDfs(
+			map,
 			['boo', 4],
 			['config.foo', 2],
 			['config.foo.bar', 1],
-			['config.foo.flip.flop', 3],
+			['config.foo.flip.flop', 3]
 		);
 
 		// not a segment
 		map.deleteSuperstr('config.fo');
-		assertTstDfs(map,
+		assertTstDfs(
+			map,
 			['boo', 4],
 			['config.foo', 2],
 			['config.foo.bar', 1],
-			['config.foo.flip.flop', 3],
+			['config.foo.flip.flop', 3]
 		);
 
 		// delete a segment
@@ -949,10 +972,7 @@ suite('Ternary Search Tree', () => {
 		map.set('config.foo.flip.flop', 3);
 		map.set('config.boo', 4);
 		map.deleteSuperstr('config.foo');
-		assertTstDfs(map,
-			['boo', 4],
-			['config.foo', 2],
-		);
+		assertTstDfs(map, ['boo', 4], ['config.foo', 2]);
 	});
 
 	test('TST, fill', function () {
@@ -968,9 +988,7 @@ suite('Ternary Search Tree', () => {
 	});
 });
 
-
 suite.skip('TST, perf', function () {
-
 	function createRandomUris(n: number): URI[] {
 		const uris: URI[] = [];
 		function randomWord(): string {
@@ -989,7 +1007,6 @@ suite.skip('TST, perf', function () {
 		}
 
 		for (let i = 0; i < n; i++) {
-
 			let len = 4 + Math.floor(Math.random() * 4);
 
 			const segments: string[] = [];
@@ -1025,11 +1042,15 @@ suite.skip('TST, perf', function () {
 
 	function perfTest(name: string, callback: Function) {
 		test(name, function () {
-			if (_profile) { console.profile(name); }
+			if (_profile) {
+				console.profile(name);
+			}
 			const sw = new StopWatch();
 			callback();
 			console.log(name, sw.elapsed());
-			if (_profile) { console.profileEnd(); }
+			if (_profile) {
+				console.profileEnd();
+			}
 		});
 	}
 

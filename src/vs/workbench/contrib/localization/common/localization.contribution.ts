@@ -10,11 +10,24 @@ import { IExtensionManifest } from '../../../../platform/extensions/common/exten
 import { SyncDescriptor } from '../../../../platform/instantiation/common/descriptors.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
-import { ClearDisplayLanguageAction, ConfigureDisplayLanguageAction } from './localizationsActions.js';
-import { IExtensionFeatureTableRenderer, IRenderedData, ITableData, IRowData, IExtensionFeaturesRegistry, Extensions } from '../../../services/extensionManagement/common/extensionFeatures.js';
+import {
+	ClearDisplayLanguageAction,
+	ConfigureDisplayLanguageAction,
+} from './localizationsActions.js';
+import {
+	IExtensionFeatureTableRenderer,
+	IRenderedData,
+	ITableData,
+	IRowData,
+	IExtensionFeaturesRegistry,
+	Extensions,
+} from '../../../services/extensionManagement/common/extensionFeatures.js';
 import { ExtensionsRegistry } from '../../../services/extensions/common/extensionsRegistry.js';
 
-export class BaseLocalizationWorkbenchContribution extends Disposable implements IWorkbenchContribution {
+export class BaseLocalizationWorkbenchContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
 	constructor() {
 		super();
 
@@ -26,28 +39,52 @@ export class BaseLocalizationWorkbenchContribution extends Disposable implements
 			extensionPoint: 'localizations',
 			defaultExtensionKind: ['ui', 'workspace'],
 			jsonSchema: {
-				description: localize('vscode.extension.contributes.localizations', "Contributes localizations to the editor"),
+				description: localize(
+					'vscode.extension.contributes.localizations',
+					'Contributes localizations to the editor'
+				),
 				type: 'array',
 				default: [],
 				items: {
 					type: 'object',
 					required: ['languageId', 'translations'],
-					defaultSnippets: [{ body: { languageId: '', languageName: '', localizedLanguageName: '', translations: [{ id: 'vscode', path: '' }] } }],
+					defaultSnippets: [
+						{
+							body: {
+								languageId: '',
+								languageName: '',
+								localizedLanguageName: '',
+								translations: [{ id: 'vscode', path: '' }],
+							},
+						},
+					],
 					properties: {
 						languageId: {
-							description: localize('vscode.extension.contributes.localizations.languageId', 'Id of the language into which the display strings are translated.'),
-							type: 'string'
+							description: localize(
+								'vscode.extension.contributes.localizations.languageId',
+								'Id of the language into which the display strings are translated.'
+							),
+							type: 'string',
 						},
 						languageName: {
-							description: localize('vscode.extension.contributes.localizations.languageName', 'Name of the language in English.'),
-							type: 'string'
+							description: localize(
+								'vscode.extension.contributes.localizations.languageName',
+								'Name of the language in English.'
+							),
+							type: 'string',
 						},
 						localizedLanguageName: {
-							description: localize('vscode.extension.contributes.localizations.languageNameLocalized', 'Name of the language in contributed language.'),
-							type: 'string'
+							description: localize(
+								'vscode.extension.contributes.localizations.languageNameLocalized',
+								'Name of the language in contributed language.'
+							),
+							type: 'string',
 						},
 						translations: {
-							description: localize('vscode.extension.contributes.localizations.translations', 'List of translations associated to the language.'),
+							description: localize(
+								'vscode.extension.contributes.localizations.translations',
+								'List of translations associated to the language.'
+							),
 							type: 'array',
 							default: [{ id: 'vscode', path: '' }],
 							items: {
@@ -56,27 +93,35 @@ export class BaseLocalizationWorkbenchContribution extends Disposable implements
 								properties: {
 									id: {
 										type: 'string',
-										description: localize('vscode.extension.contributes.localizations.translations.id', "Id of VS Code or Extension for which this translation is contributed to. Id of VS Code is always `vscode` and of extension should be in format `publisherId.extensionName`."),
+										description: localize(
+											'vscode.extension.contributes.localizations.translations.id',
+											'Id of VS Code or Extension for which this translation is contributed to. Id of VS Code is always `vscode` and of extension should be in format `publisherId.extensionName`.'
+										),
 										pattern: '^((vscode)|([a-z0-9A-Z][a-z0-9A-Z-]*)\\.([a-z0-9A-Z][a-z0-9A-Z-]*))$',
-										patternErrorMessage: localize('vscode.extension.contributes.localizations.translations.id.pattern', "Id should be `vscode` or in format `publisherId.extensionName` for translating VS code or an extension respectively.")
+										patternErrorMessage: localize(
+											'vscode.extension.contributes.localizations.translations.id.pattern',
+											'Id should be `vscode` or in format `publisherId.extensionName` for translating VS code or an extension respectively.'
+										),
 									},
 									path: {
 										type: 'string',
-										description: localize('vscode.extension.contributes.localizations.translations.path', "A relative path to a file containing translations for the language.")
-									}
+										description: localize(
+											'vscode.extension.contributes.localizations.translations.path',
+											'A relative path to a file containing translations for the language.'
+										),
+									},
 								},
 								defaultSnippets: [{ body: { id: '', path: '' } }],
 							},
-						}
-					}
-				}
-			}
+						},
+					},
+				},
+			},
 		});
 	}
 }
 
 class LocalizationsDataRenderer extends Disposable implements IExtensionFeatureTableRenderer {
-
 	readonly type = 'table';
 
 	shouldRender(manifest: IExtensionManifest): boolean {
@@ -86,13 +131,13 @@ class LocalizationsDataRenderer extends Disposable implements IExtensionFeatureT
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const localizations = manifest.contributes?.localizations || [];
 		if (!localizations.length) {
-			return { data: { headers: [], rows: [] }, dispose: () => { } };
+			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
 
 		const headers = [
-			localize('language id', "Language ID"),
-			localize('localizations language name', "Language Name"),
-			localize('localizations localized language name', "Language Name (Localized)"),
+			localize('language id', 'Language ID'),
+			localize('localizations language name', 'Language Name'),
+			localize('localizations localized language name', 'Language Name (Localized)'),
 		];
 
 		const rows: IRowData[][] = localizations
@@ -101,25 +146,27 @@ class LocalizationsDataRenderer extends Disposable implements IExtensionFeatureT
 				return [
 					localization.languageId,
 					localization.languageName ?? '',
-					localization.localizedLanguageName ?? ''
+					localization.localizedLanguageName ?? '',
 				];
 			});
 
 		return {
 			data: {
 				headers,
-				rows
+				rows,
 			},
-			dispose: () => { }
+			dispose: () => {},
 		};
 	}
 }
 
-Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry).registerExtensionFeature({
+Registry.as<IExtensionFeaturesRegistry>(
+	Extensions.ExtensionFeaturesRegistry
+).registerExtensionFeature({
 	id: 'localizations',
-	label: localize('localizations', "Langauage Packs"),
+	label: localize('localizations', 'Langauage Packs'),
 	access: {
-		canToggle: false
+		canToggle: false,
 	},
 	renderer: new SyncDescriptor(LocalizationsDataRenderer),
 });

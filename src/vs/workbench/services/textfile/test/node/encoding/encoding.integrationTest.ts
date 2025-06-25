@@ -8,7 +8,6 @@ import * as terminalEncoding from '../../../../../../base/node/terminalEncoding.
 import * as encoding from '../../../common/encoding.js';
 
 suite('Encoding', function () {
-
 	this.timeout(10000);
 
 	test('resolve terminal encoding (detect)', async function () {

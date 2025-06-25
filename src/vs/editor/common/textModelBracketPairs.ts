@@ -7,13 +7,16 @@ import { CallbackIterable } from '../../base/common/arrays.js';
 import { Event } from '../../base/common/event.js';
 import { IPosition } from './core/position.js';
 import { IRange, Range } from './core/range.js';
-import { ClosingBracketKind, OpeningBracketKind } from './languages/supports/languageBracketsConfiguration.js';
+import {
+	ClosingBracketKind,
+	OpeningBracketKind,
+} from './languages/supports/languageBracketsConfiguration.js';
 import { PairAstNode } from './model/bracketPairsTextModelPart/bracketPairsTree/ast.js';
 
 export interface IBracketPairsTextModelPart {
 	/**
 	 * Is fired when bracket pairs change, either due to a text or a settings change.
-	*/
+	 */
 	onDidChange: Event<void>;
 
 	/**
@@ -26,7 +29,9 @@ export interface IBracketPairsTextModelPart {
 	 * Gets all bracket pairs that intersect the given position.
 	 * The result is sorted by the start position.
 	 */
-	getBracketPairsInRangeWithMinIndentation(range: IRange): CallbackIterable<BracketPairWithMinIndentationInfo>;
+	getBracketPairsInRangeWithMinIndentation(
+		range: IRange
+	): CallbackIterable<BracketPairWithMinIndentationInfo>;
 
 	getBracketsInRange(range: IRange, onlyColorizedBrackets?: boolean): CallbackIterable<BracketInfo>;
 
@@ -77,8 +82,8 @@ export class BracketInfo {
 		/** 0-based level */
 		public readonly nestingLevel: number,
 		public readonly nestingLevelOfEqualBracketType: number,
-		public readonly isInvalid: boolean,
-	) { }
+		public readonly isInvalid: boolean
+	) {}
 }
 
 export class BracketPairInfo {
@@ -89,10 +94,8 @@ export class BracketPairInfo {
 		/** 0-based */
 		public readonly nestingLevel: number,
 		public readonly nestingLevelOfEqualBracketType: number,
-		private readonly bracketPairNode: PairAstNode,
-
-	) {
-	}
+		private readonly bracketPairNode: PairAstNode
+	) {}
 
 	public get openingBracketInfo(): OpeningBracketKind {
 		return this.bracketPairNode.openingBracket.bracketInfo as OpeningBracketKind;
@@ -110,15 +113,22 @@ export class BracketPairWithMinIndentationInfo extends BracketPairInfo {
 		closingBracketRange: Range | undefined,
 		/**
 		 * 0-based
-		*/
+		 */
 		nestingLevel: number,
 		nestingLevelOfEqualBracketType: number,
 		bracketPairNode: PairAstNode,
 		/**
 		 * -1 if not requested, otherwise the size of the minimum indentation in the bracket pair in terms of visible columns.
-		*/
-		public readonly minVisibleColumnIndentation: number,
+		 */
+		public readonly minVisibleColumnIndentation: number
 	) {
-		super(range, openingBracketRange, closingBracketRange, nestingLevel, nestingLevelOfEqualBracketType, bracketPairNode);
+		super(
+			range,
+			openingBracketRange,
+			closingBracketRange,
+			nestingLevel,
+			nestingLevelOfEqualBracketType,
+			bracketPairNode
+		);
 	}
 }

@@ -23,7 +23,7 @@ const errorReporter: ErrorReporter = {
 	onMultipleValues: (id: string, usedValue: string) => {
 		console.error(`Option '${id}' can only be defined once. Using value ${usedValue}.`);
 	},
-	onEmptyValue: (id) => {
+	onEmptyValue: id => {
 		console.error(`Ignoring option '${id}': Value must not be empty.`);
 	},
 	onUnknownOption: (id: string) => {
@@ -31,12 +31,15 @@ const errorReporter: ErrorReporter = {
 	},
 	onDeprecatedOption: (deprecatedOption: string, message) => {
 		console.warn(`Option '${deprecatedOption}' is deprecated: ${message}`);
-	}
+	},
 };
 
 const args = parseArgs(process.argv.slice(2), serverOptions, errorReporter);
 
-const REMOTE_DATA_FOLDER = args['server-data-dir'] || process.env['VSCODE_AGENT_FOLDER'] || join(os.homedir(), product.serverDataFolderName || '.vscode-remote');
+const REMOTE_DATA_FOLDER =
+	args['server-data-dir'] ||
+	process.env['VSCODE_AGENT_FOLDER'] ||
+	join(os.homedir(), product.serverDataFolderName || '.vscode-remote');
 const USER_DATA_PATH = join(REMOTE_DATA_FOLDER, 'data');
 const APP_SETTINGS_HOME = join(USER_DATA_PATH, 'User');
 const GLOBAL_STORAGE_HOME = join(APP_SETTINGS_HOME, 'globalStorage');
@@ -48,12 +51,22 @@ const BUILTIN_EXTENSIONS_FOLDER_PATH = join(APP_ROOT, 'extensions');
 args['builtin-extensions-dir'] = BUILTIN_EXTENSIONS_FOLDER_PATH;
 args['extensions-dir'] = args['extensions-dir'] || join(REMOTE_DATA_FOLDER, 'extensions');
 
-[REMOTE_DATA_FOLDER, args['extensions-dir'], USER_DATA_PATH, APP_SETTINGS_HOME, MACHINE_SETTINGS_HOME, GLOBAL_STORAGE_HOME, LOCAL_HISTORY_HOME].forEach(f => {
+[
+	REMOTE_DATA_FOLDER,
+	args['extensions-dir'],
+	USER_DATA_PATH,
+	APP_SETTINGS_HOME,
+	MACHINE_SETTINGS_HOME,
+	GLOBAL_STORAGE_HOME,
+	LOCAL_HISTORY_HOME,
+].forEach(f => {
 	try {
 		if (!fs.existsSync(f)) {
 			fs.mkdirSync(f, { mode: 0o700 });
 		}
-	} catch (err) { console.error(err); }
+	} catch (err) {
+		console.error(err);
+	}
 });
 
 /**

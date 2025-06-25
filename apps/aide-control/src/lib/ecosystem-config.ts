@@ -1,6 +1,6 @@
 /**
  * Codai Ecosystem Integration Configuration
- * 
+ *
  * This file defines the configuration for integrating the codai service
  * with the broader codai ecosystem (LogAI, MemorAI, Central Platform)
  */
@@ -37,7 +37,7 @@ export interface EcosystemConfig {
 
 export const createEcosystemConfig = (): EcosystemConfig => {
 	const isProduction = process.env.NODE_ENV === 'production';
-	
+
 	return {
 		services: {
 			logai: {
@@ -56,7 +56,9 @@ export const createEcosystemConfig = (): EcosystemConfig => {
 			},
 		},
 		deployment: {
-			domain: process.env.NEXT_PUBLIC_APP_URL || (isProduction ? 'https://codai.ro' : 'http://localhost:3000'),
+			domain:
+				process.env.NEXT_PUBLIC_APP_URL ||
+				(isProduction ? 'https://codai.ro' : 'http://localhost:3000'),
 			port: parseInt(process.env.PORT || '3000', 10),
 			environment: (process.env.NODE_ENV as any) || 'development',
 		},

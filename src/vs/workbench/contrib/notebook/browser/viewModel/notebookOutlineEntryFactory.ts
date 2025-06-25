@@ -5,7 +5,10 @@
 
 import { renderMarkdownAsPlaintext } from '../../../../../base/browser/markdownRenderer.js';
 import { CancellationToken } from '../../../../../base/common/cancellation.js';
-import { IOutlineModelService, OutlineModelService } from '../../../../../editor/contrib/documentSymbols/browser/outlineModel.js';
+import {
+	IOutlineModelService,
+	OutlineModelService,
+} from '../../../../../editor/contrib/documentSymbols/browser/outlineModel.js';
 import { localize } from '../../../../../nls.js';
 import { ICellViewModel } from '../notebookBrowser.js';
 import { getMarkdownHeadersInCell } from './foldingModel.js';
@@ -43,7 +46,9 @@ function getMarkdownHeadersInCellFallbackToHtmlTags(fullContent: string) {
 	return headers;
 }
 
-export const INotebookOutlineEntryFactory = createDecorator<INotebookOutlineEntryFactory>('INotebookOutlineEntryFactory');
+export const INotebookOutlineEntryFactory = createDecorator<INotebookOutlineEntryFactory>(
+	'INotebookOutlineEntryFactory'
+);
 
 export interface INotebookOutlineEntryFactory {
 	readonly _serviceBrand: undefined;
@@ -53,16 +58,19 @@ export interface INotebookOutlineEntryFactory {
 }
 
 export class NotebookOutlineEntryFactory implements INotebookOutlineEntryFactory {
-
 	declare readonly _serviceBrand: undefined;
 
 	private cellOutlineEntryCache: Record<string, entryDesc[]> = {};
-	private readonly cachedMarkdownOutlineEntries = new WeakMap<ICellViewModel, { alternativeId: number; headers: { depth: number; text: string }[] }>();
+	private readonly cachedMarkdownOutlineEntries = new WeakMap<
+		ICellViewModel,
+		{ alternativeId: number; headers: { depth: number; text: string }[] }
+	>();
 	constructor(
-		@INotebookExecutionStateService private readonly executionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private readonly executionStateService: INotebookExecutionStateService,
 		@IOutlineModelService private readonly outlineModelService: IOutlineModelService,
 		@ITextModelService private readonly textModelService: ITextModelService
-	) { }
+	) {}
 
 	public getOutlineEntries(cell: ICellViewModel, index: number): OutlineEntry[] {
 		const entries: OutlineEntry[] = [];
@@ -78,8 +86,14 @@ export class NotebookOutlineEntryFactory implements INotebookOutlineEntryFactory
 		if (isMarkdown) {
 			const fullContent = cell.getText().substring(0, 10000);
 			const cache = this.cachedMarkdownOutlineEntries.get(cell);
-			const headers = cache?.alternativeId === cell.getAlternativeId() ? cache.headers : Array.from(getMarkdownHeadersInCellFallbackToHtmlTags(fullContent));
-			this.cachedMarkdownOutlineEntries.set(cell, { alternativeId: cell.getAlternativeId(), headers });
+			const headers =
+				cache?.alternativeId === cell.getAlternativeId()
+					? cache.headers
+					: Array.from(getMarkdownHeadersInCellFallbackToHtmlTags(fullContent));
+			this.cachedMarkdownOutlineEntries.set(cell, {
+				alternativeId: cell.getAlternativeId(),
+				headers,
+			});
 
 			for (const { depth, text } of headers) {
 				hasHeader = true;
@@ -102,19 +116,49 @@ export class NotebookOutlineEntryFactory implements INotebookOutlineEntryFactory
 				// So symbols need to be precached before this function is called to get the full list.
 				if (cached) {
 					// push code cell entry that is a parent of cached symbols, always necessary. filtering for quickpick done in that provider.
-					entries.push(new OutlineEntry(index++, NotebookOutlineConstants.NonHeaderOutlineLevel, cell, preview, !!exeState, exeState ? exeState.isPaused : false));
-					cached.forEach((entry) => {
-						entries.push(new OutlineEntry(index++, entry.level, cell, entry.name, false, false, entry.range, entry.kind));
+					entries.push(
+						new OutlineEntry(
+							index++,
+							NotebookOutlineConstants.NonHeaderOutlineLevel,
+							cell,
+							preview,
+							!!exeState,
+							exeState ? exeState.isPaused : false
+						)
+					);
+					cached.forEach(entry => {
+						entries.push(
+							new OutlineEntry(
+								index++,
+								entry.level,
+								cell,
+								entry.name,
+								false,
+								false,
+								entry.range,
+								entry.kind
+							)
+						);
 					});
 				}
 			}
 
-			if (entries.length === 0) { // if there are no cached entries, use the first line of the cell as a code cell
+			if (entries.length === 0) {
+				// if there are no cached entries, use the first line of the cell as a code cell
 				if (preview.length === 0) {
 					// empty or just whitespace
-					preview = localize('empty', "empty cell");
+					preview = localize('empty', 'empty cell');
 				}
-				entries.push(new OutlineEntry(index++, NotebookOutlineConstants.NonHeaderOutlineLevel, cell, preview, !!exeState, exeState ? exeState.isPaused : false));
+				entries.push(
+					new OutlineEntry(
+						index++,
+						NotebookOutlineConstants.NonHeaderOutlineLevel,
+						cell,
+						preview,
+						!!exeState,
+						exeState ? exeState.isPaused : false
+					)
+				);
 			}
 		}
 

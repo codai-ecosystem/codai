@@ -16,11 +16,9 @@ import { DisposableStore } from '../../../base/common/lifecycle.js';
 import { mainWindow } from '../../../base/browser/window.js';
 
 suite('Workbench parts', () => {
-
 	const disposables = new DisposableStore();
 
 	class SimplePart extends Part {
-
 		minimumWidth: number = 50;
 		maximumWidth: number = 50;
 		minimumHeight: number = 50;
@@ -36,9 +34,14 @@ suite('Workbench parts', () => {
 	}
 
 	class MyPart extends SimplePart {
-
 		constructor(private expectedParent: HTMLElement) {
-			super('myPart', { hasTitle: true }, new TestThemeService(), disposables.add(new TestStorageService()), new TestLayoutService());
+			super(
+				'myPart',
+				{ hasTitle: true },
+				new TestThemeService(),
+				disposables.add(new TestStorageService()),
+				new TestLayoutService()
+			);
 		}
 
 		protected override createTitleArea(parent: HTMLElement): HTMLElement {
@@ -61,9 +64,14 @@ suite('Workbench parts', () => {
 	}
 
 	class MyPart2 extends SimplePart {
-
 		constructor() {
-			super('myPart2', { hasTitle: true }, new TestThemeService(), disposables.add(new TestStorageService()), new TestLayoutService());
+			super(
+				'myPart2',
+				{ hasTitle: true },
+				new TestThemeService(),
+				disposables.add(new TestStorageService()),
+				new TestLayoutService()
+			);
 		}
 
 		protected override createTitleArea(parent: HTMLElement): HTMLElement {
@@ -86,9 +94,14 @@ suite('Workbench parts', () => {
 	}
 
 	class MyPart3 extends SimplePart {
-
 		constructor() {
-			super('myPart2', { hasTitle: false }, new TestThemeService(), disposables.add(new TestStorageService()), new TestLayoutService());
+			super(
+				'myPart2',
+				{ hasTitle: false },
+				new TestThemeService(),
+				disposables.add(new TestStorageService()),
+				new TestLayoutService()
+			);
 		}
 
 		protected override createTitleArea(parent: HTMLElement): HTMLElement {

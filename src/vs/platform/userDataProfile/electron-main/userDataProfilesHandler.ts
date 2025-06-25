@@ -4,28 +4,37 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../base/common/lifecycle.js';
-import { ILifecycleMainService, } from '../../lifecycle/electron-main/lifecycleMainService.js';
+import { ILifecycleMainService } from '../../lifecycle/electron-main/lifecycleMainService.js';
 import { ICodeWindow, LoadReason } from '../../window/electron-main/window.js';
 import { IUserDataProfilesMainService } from './userDataProfile.js';
-import { IAnyWorkspaceIdentifier, toWorkspaceIdentifier } from '../../workspace/common/workspace.js';
+import {
+	IAnyWorkspaceIdentifier,
+	toWorkspaceIdentifier,
+} from '../../workspace/common/workspace.js';
 import { RunOnceScheduler } from '../../../base/common/async.js';
 import { IWindowsMainService } from '../../windows/electron-main/windows.js';
 
 export class UserDataProfilesHandler extends Disposable {
-
 	constructor(
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
-		@IUserDataProfilesMainService private readonly userDataProfilesService: IUserDataProfilesMainService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IUserDataProfilesMainService
+		private readonly userDataProfilesService: IUserDataProfilesMainService,
+		@IWindowsMainService private readonly windowsMainService: IWindowsMainService
 	) {
 		super();
-		this._register(lifecycleMainService.onWillLoadWindow(e => {
-			if (e.reason === LoadReason.LOAD) {
-				this.unsetProfileForWorkspace(e.window);
-			}
-		}));
-		this._register(lifecycleMainService.onBeforeCloseWindow(window => this.unsetProfileForWorkspace(window)));
-		this._register(new RunOnceScheduler(() => this.cleanUpEmptyWindowAssociations(), 30 * 1000 /* after 30s */)).schedule();
+		this._register(
+			lifecycleMainService.onWillLoadWindow(e => {
+				if (e.reason === LoadReason.LOAD) {
+					this.unsetProfileForWorkspace(e.window);
+				}
+			})
+		);
+		this._register(
+			lifecycleMainService.onBeforeCloseWindow(window => this.unsetProfileForWorkspace(window))
+		);
+		this._register(
+			new RunOnceScheduler(() => this.cleanUpEmptyWindowAssociations(), 30 * 1000 /* after 30s */)
+		).schedule();
 	}
 
 	private async unsetProfileForWorkspace(window: ICodeWindow): Promise<void> {
@@ -40,7 +49,10 @@ export class UserDataProfilesHandler extends Disposable {
 	}
 
 	private getWorkspace(window: ICodeWindow): IAnyWorkspaceIdentifier {
-		return window.openedWorkspace ?? toWorkspaceIdentifier(window.backupPath, window.isExtensionDevelopmentHost);
+		return (
+			window.openedWorkspace ??
+			toWorkspaceIdentifier(window.backupPath, window.isExtensionDevelopmentHost)
+		);
 	}
 
 	private cleanUpEmptyWindowAssociations(): void {
@@ -48,13 +60,16 @@ export class UserDataProfilesHandler extends Disposable {
 		if (associatedEmptyWindows.length === 0) {
 			return;
 		}
-		const openedWorkspaces = this.windowsMainService.getWindows().map(window => this.getWorkspace(window));
+		const openedWorkspaces = this.windowsMainService
+			.getWindows()
+			.map(window => this.getWorkspace(window));
 		for (const associatedEmptyWindow of associatedEmptyWindows) {
-			if (openedWorkspaces.some(openedWorkspace => openedWorkspace.id === associatedEmptyWindow.id)) {
+			if (
+				openedWorkspaces.some(openedWorkspace => openedWorkspace.id === associatedEmptyWindow.id)
+			) {
 				continue;
 			}
 			this.userDataProfilesService.unsetWorkspace(associatedEmptyWindow, false);
 		}
 	}
-
 }

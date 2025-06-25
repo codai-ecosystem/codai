@@ -5,14 +5,20 @@
 
 import assert from 'assert';
 import { Event } from '../../../../../base/common/event.js';
-import { TestContextService, TestWorkingCopy } from '../../../../test/common/workbenchTestServices.js';
+import {
+	TestContextService,
+	TestWorkingCopy,
+} from '../../../../test/common/workbenchTestServices.js';
 import { randomPath } from '../../../../../base/common/extpath.js';
 import { join } from '../../../../../base/common/path.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { WorkingCopyHistoryTracker } from '../../common/workingCopyHistoryTracker.js';
 import { WorkingCopyService } from '../../common/workingCopyService.js';
 import { UriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentityService.js';
-import { TestFileService, TestPathService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestFileService,
+	TestPathService,
+} from '../../../../test/browser/workbenchTestServices.js';
 import { DeferredPromise } from '../../../../../base/common/async.js';
 import { IFileService } from '../../../../../platform/files/common/files.js';
 import { Schemas } from '../../../../../base/common/network.js';
@@ -22,7 +28,10 @@ import { UndoRedoService } from '../../../../../platform/undoRedo/common/undoRed
 import { TestDialogService } from '../../../../../platform/dialogs/test/common/testDialogService.js';
 import { TestNotificationService } from '../../../../../platform/notification/test/common/testNotificationService.js';
 import { CancellationToken } from '../../../../../base/common/cancellation.js';
-import { IWorkingCopyHistoryEntry, IWorkingCopyHistoryEntryDescriptor } from '../../common/workingCopyHistory.js';
+import {
+	IWorkingCopyHistoryEntry,
+	IWorkingCopyHistoryEntryDescriptor,
+} from '../../common/workingCopyHistory.js';
 import { assertIsDefined } from '../../../../../base/common/types.js';
 import { VSBuffer } from '../../../../../base/common/buffer.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
@@ -30,7 +39,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { TestWorkingCopyHistoryService } from './workingCopyHistoryService.test.js';
 
 suite('WorkingCopyHistoryTracker', () => {
-
 	let testDir: URI;
 	let historyHome: URI;
 	let workHome: URI;
@@ -52,22 +60,32 @@ suite('WorkingCopyHistoryTracker', () => {
 		'Lorem ipsum ',
 		'dolor öäü sit amet ',
 		'adipiscing ßß elit',
-		'consectetur '
-	].join('').repeat(1000);
+		'consectetur ',
+	]
+		.join('')
+		.repeat(1000);
 
 	let increasingTimestampCounter = 1;
 
-	async function addEntry(descriptor: IWorkingCopyHistoryEntryDescriptor, token: CancellationToken): Promise<IWorkingCopyHistoryEntry> {
-		const entry = await workingCopyHistoryService.addEntry({
-			...descriptor,
-			timestamp: increasingTimestampCounter++ // very important to get tests to not be flaky with stable sort order
-		}, token);
+	async function addEntry(
+		descriptor: IWorkingCopyHistoryEntryDescriptor,
+		token: CancellationToken
+	): Promise<IWorkingCopyHistoryEntry> {
+		const entry = await workingCopyHistoryService.addEntry(
+			{
+				...descriptor,
+				timestamp: increasingTimestampCounter++, // very important to get tests to not be flaky with stable sort order
+			},
+			token
+		);
 
 		return assertIsDefined(entry);
 	}
 
 	setup(async () => {
-		testDir = URI.file(randomPath(join('vsctests', 'workingcopyhistorytracker'))).with({ scheme: Schemas.inMemory });
+		testDir = URI.file(randomPath(join('vsctests', 'workingcopyhistorytracker'))).with({
+			scheme: Schemas.inMemory,
+		});
 		historyHome = joinPath(testDir, 'User', 'History');
 		workHome = joinPath(testDir, 'work');
 
@@ -118,15 +136,20 @@ suite('WorkingCopyHistoryTracker', () => {
 
 		const saveResult = new DeferredPromise<void>();
 		let addedCounter = 0;
-		disposables.add(workingCopyHistoryService.onDidAddEntry(e => {
-			if (isEqual(e.entry.workingCopy.resource, workingCopy1.resource) || isEqual(e.entry.workingCopy.resource, workingCopy2.resource)) {
-				addedCounter++;
+		disposables.add(
+			workingCopyHistoryService.onDidAddEntry(e => {
+				if (
+					isEqual(e.entry.workingCopy.resource, workingCopy1.resource) ||
+					isEqual(e.entry.workingCopy.resource, workingCopy2.resource)
+				) {
+					addedCounter++;
 
-				if (addedCounter === 2) {
-					saveResult.complete();
+					if (addedCounter === 2) {
+						saveResult.complete();
+					}
 				}
-			}
-		}));
+			})
+		);
 
 		await workingCopy1.save(undefined, stat1);
 		await workingCopy2.save(undefined, stat2);
@@ -135,13 +158,19 @@ suite('WorkingCopyHistoryTracker', () => {
 	});
 
 	test('history entry skipped when setting disabled (globally)', async () => {
-		configurationService.setUserConfiguration('workbench.localHistory.enabled', false, testFile1Path);
+		configurationService.setUserConfiguration(
+			'workbench.localHistory.enabled',
+			false,
+			testFile1Path
+		);
 
 		return assertNoLocalHistoryEntryAddedWithSettingsConfigured();
 	});
 
 	test('history entry skipped when setting disabled (exclude)', () => {
-		configurationService.setUserConfiguration('workbench.localHistory.exclude', { '**/foo.txt': true });
+		configurationService.setUserConfiguration('workbench.localHistory.exclude', {
+			'**/foo.txt': true,
+		});
 
 		// Recreate to apply settings
 		tracker.dispose();
@@ -151,7 +180,11 @@ suite('WorkingCopyHistoryTracker', () => {
 	});
 
 	test('history entry skipped when too large', async () => {
-		configurationService.setUserConfiguration('workbench.localHistory.maxFileSize', 0, testFile1Path);
+		configurationService.setUserConfiguration(
+			'workbench.localHistory.maxFileSize',
+			0,
+			testFile1Path
+		);
 
 		return assertNoLocalHistoryEntryAddedWithSettingsConfigured();
 	});
@@ -167,15 +200,19 @@ suite('WorkingCopyHistoryTracker', () => {
 		disposables.add(workingCopyService.registerWorkingCopy(workingCopy2));
 
 		const saveResult = new DeferredPromise<void>();
-		disposables.add(workingCopyHistoryService.onDidAddEntry(e => {
-			if (isEqual(e.entry.workingCopy.resource, workingCopy1.resource)) {
-				assert.fail('Unexpected working copy history entry: ' + e.entry.workingCopy.resource.toString());
-			}
+		disposables.add(
+			workingCopyHistoryService.onDidAddEntry(e => {
+				if (isEqual(e.entry.workingCopy.resource, workingCopy1.resource)) {
+					assert.fail(
+						'Unexpected working copy history entry: ' + e.entry.workingCopy.resource.toString()
+					);
+				}
 
-			if (isEqual(e.entry.workingCopy.resource, workingCopy2.resource)) {
-				saveResult.complete();
-			}
-		}));
+				if (isEqual(e.entry.workingCopy.resource, workingCopy2.resource)) {
+					saveResult.complete();
+				}
+			})
+		);
 
 		await workingCopy1.save(undefined, stat1);
 		await workingCopy2.save(undefined, stat2);
@@ -188,41 +225,71 @@ suite('WorkingCopyHistoryTracker', () => {
 
 		const workingCopy = disposables.add(new TestWorkingCopy(testFile1Path));
 
-		const entry1 = await addEntry({ resource: workingCopy.resource, source: 'test-source' }, CancellationToken.None);
-		const entry2 = await addEntry({ resource: workingCopy.resource, source: 'test-source' }, CancellationToken.None);
-		const entry3 = await addEntry({ resource: workingCopy.resource, source: 'test-source' }, CancellationToken.None);
+		const entry1 = await addEntry(
+			{ resource: workingCopy.resource, source: 'test-source' },
+			CancellationToken.None
+		);
+		const entry2 = await addEntry(
+			{ resource: workingCopy.resource, source: 'test-source' },
+			CancellationToken.None
+		);
+		const entry3 = await addEntry(
+			{ resource: workingCopy.resource, source: 'test-source' },
+			CancellationToken.None
+		);
 
-		let entries = await workingCopyHistoryService.getEntries(workingCopy.resource, CancellationToken.None);
+		let entries = await workingCopyHistoryService.getEntries(
+			workingCopy.resource,
+			CancellationToken.None
+		);
 		assert.strictEqual(entries.length, 3);
 
 		const renamedWorkingCopyResource = joinPath(dirname(workingCopy.resource), 'renamed.txt');
-		await workingCopyHistoryService._fileService.move(workingCopy.resource, renamedWorkingCopyResource);
+		await workingCopyHistoryService._fileService.move(
+			workingCopy.resource,
+			renamedWorkingCopyResource
+		);
 
 		await entriesMoved;
 
-		entries = await workingCopyHistoryService.getEntries(workingCopy.resource, CancellationToken.None);
+		entries = await workingCopyHistoryService.getEntries(
+			workingCopy.resource,
+			CancellationToken.None
+		);
 		assert.strictEqual(entries.length, 0);
 
-		entries = await workingCopyHistoryService.getEntries(renamedWorkingCopyResource, CancellationToken.None);
+		entries = await workingCopyHistoryService.getEntries(
+			renamedWorkingCopyResource,
+			CancellationToken.None
+		);
 		assert.strictEqual(entries.length, 4);
 
 		assert.strictEqual(entries[0].id, entry1.id);
 		assert.strictEqual(entries[0].timestamp, entry1.timestamp);
 		assert.strictEqual(entries[0].source, entry1.source);
 		assert.notStrictEqual(entries[0].location, entry1.location);
-		assert.strictEqual(entries[0].workingCopy.resource.toString(), renamedWorkingCopyResource.toString());
+		assert.strictEqual(
+			entries[0].workingCopy.resource.toString(),
+			renamedWorkingCopyResource.toString()
+		);
 
 		assert.strictEqual(entries[1].id, entry2.id);
 		assert.strictEqual(entries[1].timestamp, entry2.timestamp);
 		assert.strictEqual(entries[1].source, entry2.source);
 		assert.notStrictEqual(entries[1].location, entry2.location);
-		assert.strictEqual(entries[1].workingCopy.resource.toString(), renamedWorkingCopyResource.toString());
+		assert.strictEqual(
+			entries[1].workingCopy.resource.toString(),
+			renamedWorkingCopyResource.toString()
+		);
 
 		assert.strictEqual(entries[2].id, entry3.id);
 		assert.strictEqual(entries[2].timestamp, entry3.timestamp);
 		assert.strictEqual(entries[2].source, entry3.source);
 		assert.notStrictEqual(entries[2].location, entry3.location);
-		assert.strictEqual(entries[2].workingCopy.resource.toString(), renamedWorkingCopyResource.toString());
+		assert.strictEqual(
+			entries[2].workingCopy.resource.toString(),
+			renamedWorkingCopyResource.toString()
+		);
 
 		const all = await workingCopyHistoryService.getAll(CancellationToken.None);
 		assert.strictEqual(all.length, 1);
@@ -235,18 +302,42 @@ suite('WorkingCopyHistoryTracker', () => {
 		const workingCopy1 = disposables.add(new TestWorkingCopy(testFile1Path));
 		const workingCopy2 = disposables.add(new TestWorkingCopy(testFile2Path));
 
-		const entry1A = await addEntry({ resource: workingCopy1.resource, source: 'test-source' }, CancellationToken.None);
-		const entry2A = await addEntry({ resource: workingCopy1.resource, source: 'test-source' }, CancellationToken.None);
-		const entry3A = await addEntry({ resource: workingCopy1.resource, source: 'test-source' }, CancellationToken.None);
+		const entry1A = await addEntry(
+			{ resource: workingCopy1.resource, source: 'test-source' },
+			CancellationToken.None
+		);
+		const entry2A = await addEntry(
+			{ resource: workingCopy1.resource, source: 'test-source' },
+			CancellationToken.None
+		);
+		const entry3A = await addEntry(
+			{ resource: workingCopy1.resource, source: 'test-source' },
+			CancellationToken.None
+		);
 
-		const entry1B = await addEntry({ resource: workingCopy2.resource, source: 'test-source' }, CancellationToken.None);
-		const entry2B = await addEntry({ resource: workingCopy2.resource, source: 'test-source' }, CancellationToken.None);
-		const entry3B = await addEntry({ resource: workingCopy2.resource, source: 'test-source' }, CancellationToken.None);
+		const entry1B = await addEntry(
+			{ resource: workingCopy2.resource, source: 'test-source' },
+			CancellationToken.None
+		);
+		const entry2B = await addEntry(
+			{ resource: workingCopy2.resource, source: 'test-source' },
+			CancellationToken.None
+		);
+		const entry3B = await addEntry(
+			{ resource: workingCopy2.resource, source: 'test-source' },
+			CancellationToken.None
+		);
 
-		let entries = await workingCopyHistoryService.getEntries(workingCopy1.resource, CancellationToken.None);
+		let entries = await workingCopyHistoryService.getEntries(
+			workingCopy1.resource,
+			CancellationToken.None
+		);
 		assert.strictEqual(entries.length, 3);
 
-		entries = await workingCopyHistoryService.getEntries(workingCopy2.resource, CancellationToken.None);
+		entries = await workingCopyHistoryService.getEntries(
+			workingCopy2.resource,
+			CancellationToken.None
+		);
 		assert.strictEqual(entries.length, 3);
 
 		const renamedWorkHome = joinPath(dirname(testDir), 'renamed');
@@ -257,57 +348,90 @@ suite('WorkingCopyHistoryTracker', () => {
 
 		await entriesMoved;
 
-		entries = await workingCopyHistoryService.getEntries(workingCopy1.resource, CancellationToken.None);
+		entries = await workingCopyHistoryService.getEntries(
+			workingCopy1.resource,
+			CancellationToken.None
+		);
 		assert.strictEqual(entries.length, 0);
-		entries = await workingCopyHistoryService.getEntries(workingCopy2.resource, CancellationToken.None);
+		entries = await workingCopyHistoryService.getEntries(
+			workingCopy2.resource,
+			CancellationToken.None
+		);
 		assert.strictEqual(entries.length, 0);
 
-		entries = await workingCopyHistoryService.getEntries(renamedWorkingCopy1Resource, CancellationToken.None);
+		entries = await workingCopyHistoryService.getEntries(
+			renamedWorkingCopy1Resource,
+			CancellationToken.None
+		);
 		assert.strictEqual(entries.length, 4);
 
 		assert.strictEqual(entries[0].id, entry1A.id);
 		assert.strictEqual(entries[0].timestamp, entry1A.timestamp);
 		assert.strictEqual(entries[0].source, entry1A.source);
 		assert.notStrictEqual(entries[0].location, entry1A.location);
-		assert.strictEqual(entries[0].workingCopy.resource.toString(), renamedWorkingCopy1Resource.toString());
+		assert.strictEqual(
+			entries[0].workingCopy.resource.toString(),
+			renamedWorkingCopy1Resource.toString()
+		);
 
 		assert.strictEqual(entries[1].id, entry2A.id);
 		assert.strictEqual(entries[1].timestamp, entry2A.timestamp);
 		assert.strictEqual(entries[1].source, entry2A.source);
 		assert.notStrictEqual(entries[1].location, entry2A.location);
-		assert.strictEqual(entries[1].workingCopy.resource.toString(), renamedWorkingCopy1Resource.toString());
+		assert.strictEqual(
+			entries[1].workingCopy.resource.toString(),
+			renamedWorkingCopy1Resource.toString()
+		);
 
 		assert.strictEqual(entries[2].id, entry3A.id);
 		assert.strictEqual(entries[2].timestamp, entry3A.timestamp);
 		assert.strictEqual(entries[2].source, entry3A.source);
 		assert.notStrictEqual(entries[2].location, entry3A.location);
-		assert.strictEqual(entries[2].workingCopy.resource.toString(), renamedWorkingCopy1Resource.toString());
+		assert.strictEqual(
+			entries[2].workingCopy.resource.toString(),
+			renamedWorkingCopy1Resource.toString()
+		);
 
-		entries = await workingCopyHistoryService.getEntries(renamedWorkingCopy2Resource, CancellationToken.None);
+		entries = await workingCopyHistoryService.getEntries(
+			renamedWorkingCopy2Resource,
+			CancellationToken.None
+		);
 		assert.strictEqual(entries.length, 4);
 
 		assert.strictEqual(entries[0].id, entry1B.id);
 		assert.strictEqual(entries[0].timestamp, entry1B.timestamp);
 		assert.strictEqual(entries[0].source, entry1B.source);
 		assert.notStrictEqual(entries[0].location, entry1B.location);
-		assert.strictEqual(entries[0].workingCopy.resource.toString(), renamedWorkingCopy2Resource.toString());
+		assert.strictEqual(
+			entries[0].workingCopy.resource.toString(),
+			renamedWorkingCopy2Resource.toString()
+		);
 
 		assert.strictEqual(entries[1].id, entry2B.id);
 		assert.strictEqual(entries[1].timestamp, entry2B.timestamp);
 		assert.strictEqual(entries[1].source, entry2B.source);
 		assert.notStrictEqual(entries[1].location, entry2B.location);
-		assert.strictEqual(entries[1].workingCopy.resource.toString(), renamedWorkingCopy2Resource.toString());
+		assert.strictEqual(
+			entries[1].workingCopy.resource.toString(),
+			renamedWorkingCopy2Resource.toString()
+		);
 
 		assert.strictEqual(entries[2].id, entry3B.id);
 		assert.strictEqual(entries[2].timestamp, entry3B.timestamp);
 		assert.strictEqual(entries[2].source, entry3B.source);
 		assert.notStrictEqual(entries[2].location, entry3B.location);
-		assert.strictEqual(entries[2].workingCopy.resource.toString(), renamedWorkingCopy2Resource.toString());
+		assert.strictEqual(
+			entries[2].workingCopy.resource.toString(),
+			renamedWorkingCopy2Resource.toString()
+		);
 
 		const all = await workingCopyHistoryService.getAll(CancellationToken.None);
 		assert.strictEqual(all.length, 2);
 		for (const resource of all) {
-			if (resource.toString() !== renamedWorkingCopy1Resource.toString() && resource.toString() !== renamedWorkingCopy2Resource.toString()) {
+			if (
+				resource.toString() !== renamedWorkingCopy1Resource.toString() &&
+				resource.toString() !== renamedWorkingCopy2Resource.toString()
+			) {
 				assert.fail(`Unexpected history resource: ${resource.toString()}`);
 			}
 		}

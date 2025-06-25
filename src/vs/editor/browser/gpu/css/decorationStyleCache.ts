@@ -28,11 +28,13 @@ export interface IDecorationStyleCacheEntry extends IDecorationStyleSet {
 }
 
 export class DecorationStyleCache {
-
 	private _nextId = 1;
 
 	private readonly _cacheById = new Map<number, IDecorationStyleCacheEntry>();
-	private readonly _cacheByStyle = new NKeyMap<IDecorationStyleCacheEntry, [number, number, string]>();
+	private readonly _cacheByStyle = new NKeyMap<
+		IDecorationStyleCacheEntry,
+		[number, number, string]
+	>();
 
 	getOrCreateEntry(
 		color: number | undefined,
@@ -42,7 +44,11 @@ export class DecorationStyleCache {
 		if (color === undefined && bold === undefined && opacity === undefined) {
 			return 0;
 		}
-		const result = this._cacheByStyle.get(color ?? 0, bold ? 1 : 0, opacity === undefined ? '' : opacity.toFixed(2));
+		const result = this._cacheByStyle.get(
+			color ?? 0,
+			bold ? 1 : 0,
+			opacity === undefined ? '' : opacity.toFixed(2)
+		);
 		if (result) {
 			return result.id;
 		}
@@ -54,7 +60,12 @@ export class DecorationStyleCache {
 			opacity,
 		};
 		this._cacheById.set(id, entry);
-		this._cacheByStyle.set(entry, color ?? 0, bold ? 1 : 0, opacity === undefined ? '' : opacity.toFixed(2));
+		this._cacheByStyle.set(
+			entry,
+			color ?? 0,
+			bold ? 1 : 0,
+			opacity === undefined ? '' : opacity.toFixed(2)
+		);
 		return id;
 	}
 

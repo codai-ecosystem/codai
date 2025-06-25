@@ -15,14 +15,14 @@ type KeyEvent = {
 	ctrlKey: boolean;
 	metaKey: boolean;
 	repeat: boolean;
-}
+};
 
 type WebViewDragEvent = {
 	shiftKey: boolean;
-}
+};
 
 export type FromWebviewMessage = {
-	'onmessage': { message: any; transfer?: ArrayBuffer[] };
+	onmessage: { message: any; transfer?: ArrayBuffer[] };
 	'did-click-link': { uri: string };
 	'did-scroll': { scrollYPercentage: number };
 	'did-focus': void;
@@ -31,7 +31,14 @@ export type FromWebviewMessage = {
 	'did-find': { didFind: boolean };
 	'do-update-state': string;
 	'do-reload': void;
-	'load-resource': { id: number; path: string; query: string; scheme: string; authority: string; ifNoneMatch?: string };
+	'load-resource': {
+		id: number;
+		path: string;
+		query: string;
+		scheme: string;
+		authority: string;
+		ifNoneMatch?: string;
+	};
 	'load-localhost': { id: string; origin: string };
 	'did-scroll-wheel': IMouseWheelEvent;
 	'fatal-error': { message: string };
@@ -40,7 +47,7 @@ export type FromWebviewMessage = {
 	'did-keyup': KeyEvent;
 	'did-context-menu': { clientX: number; clientY: number; context: { [key: string]: unknown } };
 	'drag-start': void;
-	'drag': WebViewDragEvent
+	drag: WebViewDragEvent;
 };
 
 interface UpdateContentEvent {
@@ -57,14 +64,21 @@ interface UpdateContentEvent {
 }
 
 export type ToWebviewMessage = {
-	'focus': void;
-	'message': { message: any; transfer?: ArrayBuffer[] };
-	'execCommand': string;
+	focus: void;
+	message: { message: any; transfer?: ArrayBuffer[] };
+	execCommand: string;
 	'did-load-resource':
-	| { id: number; status: 401 | 404; path: string }
-	| { id: number; status: 304; path: string; mime: string; mtime: number | undefined }
-	| { id: number; status: 200; path: string; mime: string; data: any; etag: string | undefined; mtime: number | undefined }
-	;
+		| { id: number; status: 401 | 404; path: string }
+		| { id: number; status: 304; path: string; mime: string; mtime: number | undefined }
+		| {
+				id: number;
+				status: 200;
+				path: string;
+				mime: string;
+				data: any;
+				etag: string | undefined;
+				mtime: number | undefined;
+		  };
 	'did-load-localhost': {
 		id: string;
 		origin: string;
@@ -73,9 +87,9 @@ export type ToWebviewMessage = {
 	'set-confirm-before-close': string;
 	'set-context-menu-visible': { visible: boolean };
 	'initial-scroll-position': number;
-	'content': UpdateContentEvent;
+	content: UpdateContentEvent;
 	'set-title': string | undefined;
-	'styles': {
+	styles: {
 		styles: WebviewStyles;
 		activeTheme: string;
 		themeId: string;
@@ -83,13 +97,19 @@ export type ToWebviewMessage = {
 		reduceMotion: boolean;
 		screenReader: boolean;
 	};
-	'find': { value: string; previous?: boolean };
+	find: { value: string; previous?: boolean };
 	'find-stop': { clearSelection?: boolean };
 };
 
-
 export interface WebviewHostMessaging {
-	postMessage<K extends keyof FromWebviewMessage>(channel: K, data: FromWebviewMessage[K], transfer?: []): void;
+	postMessage<K extends keyof FromWebviewMessage>(
+		channel: K,
+		data: FromWebviewMessage[K],
+		transfer?: []
+	): void;
 
-	onMessage<K extends keyof ToWebviewMessage>(channel: K, handler: (e: Event, data: ToWebviewMessage[K]) => void): void;
+	onMessage<K extends keyof ToWebviewMessage>(
+		channel: K,
+		handler: (e: Event, data: ToWebviewMessage[K]) => void
+	): void;
 }

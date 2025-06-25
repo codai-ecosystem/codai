@@ -27,26 +27,25 @@ export interface ISingleEditOperation {
 }
 
 export class EditOperation {
-
 	public static insert(position: Position, text: string): ISingleEditOperation {
 		return {
 			range: new Range(position.lineNumber, position.column, position.lineNumber, position.column),
 			text: text,
-			forceMoveMarkers: true
+			forceMoveMarkers: true,
 		};
 	}
 
 	public static delete(range: Range): ISingleEditOperation {
 		return {
 			range: range,
-			text: null
+			text: null,
 		};
 	}
 
 	public static replace(range: Range, text: string | null): ISingleEditOperation {
 		return {
 			range: range,
-			text: text
+			text: text,
 		};
 	}
 
@@ -54,7 +53,7 @@ export class EditOperation {
 		return {
 			range: range,
 			text: text,
-			forceMoveMarkers: true
+			forceMoveMarkers: true,
 		};
 	}
 }

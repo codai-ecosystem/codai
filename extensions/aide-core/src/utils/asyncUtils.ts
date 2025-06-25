@@ -124,7 +124,7 @@ export function throttle<T extends any[]>(
 		if (!inThrottle) {
 			func(...args);
 			inThrottle = true;
-			setTimeout(() => inThrottle = false, limitMs);
+			setTimeout(() => (inThrottle = false), limitMs);
 		}
 	};
 }

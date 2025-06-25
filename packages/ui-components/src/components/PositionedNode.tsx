@@ -19,7 +19,7 @@ export const PositionedNode: FC<PositionedNodeProps> = ({
 	nodeId,
 	nodeType,
 	isSelected = false,
-	children
+	children,
 }) => {
 	const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -35,15 +35,11 @@ export const PositionedNode: FC<PositionedNodeProps> = ({
 	const dataAttrs = {
 		'data-node-id': nodeId,
 		'data-node-type': nodeType,
-		'data-selected': isSelected ? 'true' : 'false'
+		'data-selected': isSelected ? 'true' : 'false',
 	};
 
 	return (
-		<div
-			ref={nodeRef}
-			className="memory-graph-node"
-			{...dataAttrs}
-		>
+		<div ref={nodeRef} className="memory-graph-node" {...dataAttrs}>
 			{children}
 		</div>
 	);

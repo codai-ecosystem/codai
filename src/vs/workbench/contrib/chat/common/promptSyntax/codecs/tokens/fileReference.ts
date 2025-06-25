@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import { PromptVariableWithData } from './promptVariable.js';
 import { assert } from '../../../../../../../base/common/assert.js';
 import { IRange, Range } from '../../../../../../../editor/common/core/range.js';
@@ -19,7 +18,7 @@ const VARIABLE_NAME: string = 'file';
 export class FileReference extends PromptVariableWithData {
 	constructor(
 		range: Range,
-		public readonly path: string,
+		public readonly path: string
 	) {
 		super(range, VARIABLE_NAME, path);
 	}
@@ -31,13 +30,10 @@ export class FileReference extends PromptVariableWithData {
 	public static from(variable: PromptVariableWithData): FileReference {
 		assert(
 			variable.name === VARIABLE_NAME,
-			`Variable name must be '${VARIABLE_NAME}', got '${variable.name}'.`,
+			`Variable name must be '${VARIABLE_NAME}', got '${variable.name}'.`
 		);
 
-		return new FileReference(
-			variable.range,
-			variable.data,
-		);
+		return new FileReference(variable.range, variable.data);
 	}
 
 	/**

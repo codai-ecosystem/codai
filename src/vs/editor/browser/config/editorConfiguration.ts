@@ -13,12 +13,24 @@ import { ElementSizeObserver } from './elementSizeObserver.js';
 import { FontMeasurements } from './fontMeasurements.js';
 import { migrateOptions } from './migrateOptions.js';
 import { TabFocus } from './tabFocus.js';
-import { ComputeOptionsMemory, ConfigurationChangedEvent, EditorOption, editorOptionsRegistry, FindComputedEditorOptionValueById, IComputedEditorOptions, IEditorOptions, IEnvironmentalOptions } from '../../common/config/editorOptions.js';
+import {
+	ComputeOptionsMemory,
+	ConfigurationChangedEvent,
+	EditorOption,
+	editorOptionsRegistry,
+	FindComputedEditorOptionValueById,
+	IComputedEditorOptions,
+	IEditorOptions,
+	IEnvironmentalOptions,
+} from '../../common/config/editorOptions.js';
 import { EditorZoom } from '../../common/config/editorZoom.js';
 import { BareFontInfo, FontInfo, IValidatedEditorOptions } from '../../common/config/fontInfo.js';
 import { IDimension } from '../../common/core/2d/dimension.js';
 import { IEditorConfiguration } from '../../common/config/editorConfiguration.js';
-import { AccessibilitySupport, IAccessibilityService } from '../../../platform/accessibility/common/accessibility.js';
+import {
+	AccessibilitySupport,
+	IAccessibilityService,
+} from '../../../platform/accessibility/common/accessibility.js';
 import { getWindow, getWindowById } from '../../../base/browser/dom.js';
 import { PixelRatio } from '../../../base/browser/pixelRatio.js';
 import { MenuId } from '../../../platform/actions/common/actions.js';
@@ -37,7 +49,6 @@ export interface IEditorConstructionOptions extends IEditorOptions {
 }
 
 export class EditorConfiguration extends Disposable implements IEditorConfiguration {
-
 	private _onDidChange = this._register(new Emitter<ConfigurationChangedEvent>());
 	public readonly onDidChange: Event<ConfigurationChangedEvent> = this._onDidChange.event;
 
@@ -94,8 +105,12 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 		this._register(TabFocus.onDidChangeTabFocus(() => this._recomputeOptions()));
 		this._register(this._containerObserver.onDidChange(() => this._recomputeOptions()));
 		this._register(FontMeasurements.onDidChange(() => this._recomputeOptions()));
-		this._register(PixelRatio.getInstance(getWindow(container)).onDidChange(() => this._recomputeOptions()));
-		this._register(this._accessibilityService.onDidChangeScreenReaderOptimized(() => this._recomputeOptions()));
+		this._register(
+			PixelRatio.getInstance(getWindow(container)).onDidChange(() => this._recomputeOptions())
+		);
+		this._register(
+			this._accessibilityService.onDidChangeScreenReaderOptimized(() => this._recomputeOptions())
+		);
 		this._register(InputMode.onDidChangeInputMode(() => this._recomputeOptions()));
 	}
 
@@ -114,7 +129,11 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 
 	private _computeOptions(): ComputedEditorOptions {
 		const partialEnv = this._readEnvConfiguration();
-		const bareFontInfo = BareFontInfo.createFromValidatedSettings(this._validatedOptions, partialEnv.pixelRatio, this.isSimpleWidget);
+		const bareFontInfo = BareFontInfo.createFromValidatedSettings(
+			this._validatedOptions,
+			partialEnv.pixelRatio,
+			this.isSimpleWidget
+		);
 		const fontInfo = this._readFontInfo(bareFontInfo);
 		const env: IEnvironmentalOptions = {
 			memory: this._computeOptionsMemory,
@@ -127,11 +146,12 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 			lineNumbersDigitCount: this._lineNumbersDigitCount,
 			emptySelectionClipboard: partialEnv.emptySelectionClipboard,
 			pixelRatio: partialEnv.pixelRatio,
-			tabFocusMode: this._validatedOptions.get(EditorOption.tabFocusMode) || TabFocus.getTabFocusMode(),
+			tabFocusMode:
+				this._validatedOptions.get(EditorOption.tabFocusMode) || TabFocus.getTabFocusMode(),
 			inputMode: InputMode.getInputMode(),
 			accessibilitySupport: partialEnv.accessibilitySupport,
 			glyphMarginDecorationLaneCount: this._glyphMarginDecorationLaneCount,
-			editContextSupported: partialEnv.editContextSupported
+			editContextSupported: partialEnv.editContextSupported,
 		};
 		return EditorOptionsUtil.computeOptions(this._validatedOptions, env);
 	}
@@ -144,16 +164,17 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 			emptySelectionClipboard: browser.isWebKit || browser.isFirefox,
 			pixelRatio: PixelRatio.getInstance(getWindowById(this._targetWindowId, true).window).value,
 			editContextSupported: typeof (globalThis as any).EditContext === 'function',
-			accessibilitySupport: (
-				this._accessibilityService.isScreenReaderOptimized()
-					? AccessibilitySupport.Enabled
-					: this._accessibilityService.getAccessibilitySupport()
-			)
+			accessibilitySupport: this._accessibilityService.isScreenReaderOptimized()
+				? AccessibilitySupport.Enabled
+				: this._accessibilityService.getAccessibilitySupport(),
 		};
 	}
 
 	protected _readFontInfo(bareFontInfo: BareFontInfo): FontInfo {
-		return FontMeasurements.readFontInfo(getWindowById(this._targetWindowId, true).window, bareFontInfo);
+		return FontMeasurements.readFontInfo(
+			getWindowById(this._targetWindowId, true).window,
+			bareFontInfo
+		);
 	}
 
 	public getRawOptions(): IEditorOptions {
@@ -284,20 +305,26 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
 }
 
 class EditorOptionsUtil {
-
 	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
 		const result = new ValidatedEditorOptions();
 		for (const editorOption of editorOptionsRegistry) {
-			const value = (editorOption.name === '_never_' ? undefined : (options as any)[editorOption.name]);
+			const value =
+				editorOption.name === '_never_' ? undefined : (options as any)[editorOption.name];
 			result._write(editorOption.id, editorOption.validate(value));
 		}
 		return result;
 	}
 
-	public static computeOptions(options: ValidatedEditorOptions, env: IEnvironmentalOptions): ComputedEditorOptions {
+	public static computeOptions(
+		options: ValidatedEditorOptions,
+		env: IEnvironmentalOptions
+	): ComputedEditorOptions {
 		const result = new ComputedEditorOptions();
 		for (const editorOption of editorOptionsRegistry) {
-			result._write(editorOption.id, editorOption.compute(env, result, options._read(editorOption.id)));
+			result._write(
+				editorOption.id,
+				editorOption.compute(env, result, options._read(editorOption.id))
+			);
 		}
 		return result;
 	}
@@ -307,7 +334,7 @@ class EditorOptionsUtil {
 			return a === b;
 		}
 		if (Array.isArray(a) || Array.isArray(b)) {
-			return (Array.isArray(a) && Array.isArray(b) ? arrays.equals(a, b) : false);
+			return Array.isArray(a) && Array.isArray(b) ? arrays.equals(a, b) : false;
 		}
 		if (Object.keys(a as unknown as object).length !== Object.keys(b as unknown as object).length) {
 			return false;
@@ -320,28 +347,37 @@ class EditorOptionsUtil {
 		return true;
 	}
 
-	public static checkEquals(a: ComputedEditorOptions, b: ComputedEditorOptions): ConfigurationChangedEvent | null {
+	public static checkEquals(
+		a: ComputedEditorOptions,
+		b: ComputedEditorOptions
+	): ConfigurationChangedEvent | null {
 		const result: boolean[] = [];
 		let somethingChanged = false;
 		for (const editorOption of editorOptionsRegistry) {
-			const changed = !EditorOptionsUtil._deepEquals(a._read(editorOption.id), b._read(editorOption.id));
+			const changed = !EditorOptionsUtil._deepEquals(
+				a._read(editorOption.id),
+				b._read(editorOption.id)
+			);
 			result[editorOption.id] = changed;
 			if (changed) {
 				somethingChanged = true;
 			}
 		}
-		return (somethingChanged ? new ConfigurationChangedEvent(result) : null);
+		return somethingChanged ? new ConfigurationChangedEvent(result) : null;
 	}
 
 	/**
 	 * Returns true if something changed.
 	 * Modifies `options`.
-	*/
+	 */
 	public static applyUpdate(options: IEditorOptions, update: Readonly<IEditorOptions>): boolean {
 		let changed = false;
 		for (const editorOption of editorOptionsRegistry) {
 			if (update.hasOwnProperty(editorOption.name)) {
-				const result = editorOption.applyUpdate((options as any)[editorOption.name], (update as any)[editorOption.name]);
+				const result = editorOption.applyUpdate(
+					(options as any)[editorOption.name],
+					(update as any)[editorOption.name]
+				);
 				(options as any)[editorOption.name] = result.newValue;
 				changed = changed || result.didChange;
 			}

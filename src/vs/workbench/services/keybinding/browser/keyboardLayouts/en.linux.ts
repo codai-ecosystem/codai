@@ -5,9 +5,16 @@
 
 import { KeyboardLayoutContribution } from './_.contribution.js';
 
-
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
-	layout: { model: 'pc105', group: 0, layout: 'us', variant: '', options: '', rules: 'evdev', isUSStandard: true },
+	layout: {
+		model: 'pc105',
+		group: 0,
+		layout: 'us',
+		variant: '',
+		options: '',
+		rules: 'evdev',
+		isUSStandard: true,
+	},
 	secondaryLayouts: [
 		{ model: 'pc105', group: 0, layout: 'cn', variant: '', options: '', rules: 'evdev' },
 	],
@@ -61,7 +68,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		BracketRight: [']', '}', ']', '}', 0],
 		Backslash: ['\\', '|', '\\', '|', 0],
 		Semicolon: [';', ':', ';', ':', 0],
-		Quote: ['\'', '"', '\'', '"', 0],
+		Quote: ["'", '"', "'", '"', 0],
 		Backquote: ['`', '~', '`', '~', 0],
 		Comma: [',', '<', ',', '<', 0],
 		Period: ['.', '>', '.', '>', 0],
@@ -184,7 +191,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		BrowserFavorites: [],
 		MailReply: [],
 		MailForward: [],
-		MailSend: []
-	}
-
+		MailSend: [],
+	},
 });

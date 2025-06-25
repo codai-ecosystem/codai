@@ -11,7 +11,6 @@ import { IpcRenderer, ProcessMemoryInfo, WebFrame, WebUtils } from './electronTy
  * In Electron renderers we cannot expose all of the `process` global of node.js
  */
 export interface ISandboxNodeProcess extends INodeProcess {
-
 	/**
 	 * The process.platform property returns a string identifying the operating system platform
 	 * on which the Node.js process is running.
@@ -87,7 +86,6 @@ export interface ISandboxNodeProcess extends INodeProcess {
 }
 
 export interface IpcMessagePort {
-
 	/**
 	 * Acquire a `MessagePort`. The main process will transfer the port over to
 	 * the `responseChannel` with a payload of `requestNonce` so that the source can
@@ -101,7 +99,6 @@ export interface IpcMessagePort {
 }
 
 export interface ISandboxContext {
-
 	/**
 	 * A configuration object made accessible from the main side
 	 * to configure the sandbox browser window. Will be `undefined`

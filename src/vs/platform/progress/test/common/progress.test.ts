@@ -9,7 +9,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { AsyncProgress } from '../../common/progress.js';
 
 suite('Progress', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('multiple report calls are processed in sequence', async () => {

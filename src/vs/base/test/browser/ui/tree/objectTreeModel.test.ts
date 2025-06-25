@@ -5,7 +5,13 @@
 
 import assert from 'assert';
 import { ObjectTreeModel } from '../../../../browser/ui/tree/objectTreeModel.js';
-import { ITreeFilter, ITreeModel, ITreeNode, ObjectTreeElementCollapseState, TreeVisibility } from '../../../../browser/ui/tree/tree.js';
+import {
+	ITreeFilter,
+	ITreeModel,
+	ITreeNode,
+	ObjectTreeElementCollapseState,
+	TreeVisibility,
+} from '../../../../browser/ui/tree/tree.js';
 import { timeout } from '../../../../common/async.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../common/utils.js';
 import { IDisposable } from '../../../../common/lifecycle.js';
@@ -21,7 +27,6 @@ function toArray<T>(list: ITreeNode<T>[]): T[] {
 }
 
 suite('ObjectTreeModel', function () {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('ctor', () => {
@@ -41,20 +46,12 @@ suite('ObjectTreeModel', function () {
 		const model = new ObjectTreeModel<number>('test');
 		const disposable = bindListToModel(list, model);
 
-		model.setChildren(null, [
-			{ element: 0 },
-			{ element: 1 },
-			{ element: 2 }
-		]);
+		model.setChildren(null, [{ element: 0 }, { element: 1 }, { element: 2 }]);
 
 		assert.deepStrictEqual(toArray(list), [0, 1, 2]);
 		assert.strictEqual(model.size, 3);
 
-		model.setChildren(null, [
-			{ element: 3 },
-			{ element: 4 },
-			{ element: 5 },
-		]);
+		model.setChildren(null, [{ element: 3 }, { element: 4 }, { element: 5 }]);
 
 		assert.deepStrictEqual(toArray(list), [3, 4, 5]);
 		assert.strictEqual(model.size, 3);
@@ -73,23 +70,17 @@ suite('ObjectTreeModel', function () {
 
 		model.setChildren(null, [
 			{
-				element: 0, children: [
-					{ element: 10 },
-					{ element: 11 },
-					{ element: 12 },
-				]
+				element: 0,
+				children: [{ element: 10 }, { element: 11 }, { element: 12 }],
 			},
 			{ element: 1 },
-			{ element: 2 }
+			{ element: 2 },
 		]);
 
 		assert.deepStrictEqual(toArray(list), [0, 10, 11, 12, 1, 2]);
 		assert.strictEqual(model.size, 6);
 
-		model.setChildren(12, [
-			{ element: 120 },
-			{ element: 121 }
-		]);
+		model.setChildren(12, [{ element: 120 }, { element: 121 }]);
 
 		assert.deepStrictEqual(toArray(list), [0, 10, 11, 12, 120, 121, 1, 2]);
 		assert.strictEqual(model.size, 8);
@@ -110,16 +101,11 @@ suite('ObjectTreeModel', function () {
 		const model = new ObjectTreeModel<number>('test');
 		const disposable = bindListToModel(list, model);
 
-		model.setChildren(null, [
-			{ element: 0, collapsed: true }
-		]);
+		model.setChildren(null, [{ element: 0, collapsed: true }]);
 
 		assert.deepStrictEqual(toArray(list), [0]);
 
-		model.setChildren(0, [
-			{ element: 1 },
-			{ element: 2 }
-		]);
+		model.setChildren(0, [{ element: 1 }, { element: 2 }]);
 
 		assert.deepStrictEqual(toArray(list), [0]);
 
@@ -136,19 +122,16 @@ suite('ObjectTreeModel', function () {
 
 		model.setChildren(null, [
 			{
-				element: 1, collapsed: true, children: [
-					{ element: 11, collapsed: false }
-				]
+				element: 1,
+				collapsed: true,
+				children: [{ element: 11, collapsed: false }],
 			},
-			{ element: 2 }
+			{ element: 2 },
 		]);
 
 		assert.deepStrictEqual(toArray(list), [1, 2]);
 
-		model.setChildren(11, [
-			{ element: 111 },
-			{ element: 112 }
-		]);
+		model.setChildren(11, [{ element: 111 }, { element: 112 }]);
 
 		assert.deepStrictEqual(toArray(list), [1, 2]);
 
@@ -192,7 +175,13 @@ suite('ObjectTreeModel', function () {
 	test('collapse state can be optionally preserved with strict identity', () => {
 		const list: ITreeNode<string>[] = [];
 		const model = new ObjectTreeModel<string>('test', { collapseByDefault: true });
-		const data = [{ element: 'father', collapsed: ObjectTreeElementCollapseState.PreserveOrExpanded, children: [{ element: 'child' }] }];
+		const data = [
+			{
+				element: 'father',
+				collapsed: ObjectTreeElementCollapseState.PreserveOrExpanded,
+				children: [{ element: 'child' }],
+			},
+		];
 		const disposable = bindListToModel(list, model);
 
 		model.setChildren(null, data);
@@ -214,19 +203,43 @@ suite('ObjectTreeModel', function () {
 	});
 
 	test('sorter', () => {
-		const compare: (a: string, b: string) => number = (a, b) => a < b ? -1 : 1;
+		const compare: (a: string, b: string) => number = (a, b) => (a < b ? -1 : 1);
 
 		const list: ITreeNode<string>[] = [];
-		const model = new ObjectTreeModel<string>('test', { sorter: { compare(a, b) { return compare(a, b); } } });
+		const model = new ObjectTreeModel<string>('test', {
+			sorter: {
+				compare(a, b) {
+					return compare(a, b);
+				},
+			},
+		});
 		const data = [
-			{ element: 'cars', children: [{ element: 'sedan' }, { element: 'convertible' }, { element: 'compact' }] },
+			{
+				element: 'cars',
+				children: [{ element: 'sedan' }, { element: 'convertible' }, { element: 'compact' }],
+			},
 			{ element: 'airplanes', children: [{ element: 'passenger' }, { element: 'jet' }] },
-			{ element: 'bicycles', children: [{ element: 'dutch' }, { element: 'mountain' }, { element: 'electric' }] },
+			{
+				element: 'bicycles',
+				children: [{ element: 'dutch' }, { element: 'mountain' }, { element: 'electric' }],
+			},
 		];
 		const disposable = bindListToModel(list, model);
 
 		model.setChildren(null, data);
-		assert.deepStrictEqual(toArray(list), ['airplanes', 'jet', 'passenger', 'bicycles', 'dutch', 'electric', 'mountain', 'cars', 'compact', 'convertible', 'sedan']);
+		assert.deepStrictEqual(toArray(list), [
+			'airplanes',
+			'jet',
+			'passenger',
+			'bicycles',
+			'dutch',
+			'electric',
+			'mountain',
+			'cars',
+			'compact',
+			'convertible',
+			'sedan',
+		]);
 
 		disposable.dispose();
 	});
@@ -235,38 +248,110 @@ suite('ObjectTreeModel', function () {
 		let compare: (a: string, b: string) => number = () => 0;
 
 		const list: ITreeNode<string>[] = [];
-		const model = new ObjectTreeModel<string>('test', { sorter: { compare(a, b) { return compare(a, b); } } });
+		const model = new ObjectTreeModel<string>('test', {
+			sorter: {
+				compare(a, b) {
+					return compare(a, b);
+				},
+			},
+		});
 		const data = [
-			{ element: 'cars', children: [{ element: 'sedan' }, { element: 'convertible' }, { element: 'compact' }] },
+			{
+				element: 'cars',
+				children: [{ element: 'sedan' }, { element: 'convertible' }, { element: 'compact' }],
+			},
 			{ element: 'airplanes', children: [{ element: 'passenger' }, { element: 'jet' }] },
-			{ element: 'bicycles', children: [{ element: 'dutch' }, { element: 'mountain' }, { element: 'electric' }] },
+			{
+				element: 'bicycles',
+				children: [{ element: 'dutch' }, { element: 'mountain' }, { element: 'electric' }],
+			},
 		];
 		const disposable = bindListToModel(list, model);
 
 		model.setChildren(null, data);
-		assert.deepStrictEqual(toArray(list), ['cars', 'sedan', 'convertible', 'compact', 'airplanes', 'passenger', 'jet', 'bicycles', 'dutch', 'mountain', 'electric']);
+		assert.deepStrictEqual(toArray(list), [
+			'cars',
+			'sedan',
+			'convertible',
+			'compact',
+			'airplanes',
+			'passenger',
+			'jet',
+			'bicycles',
+			'dutch',
+			'mountain',
+			'electric',
+		]);
 
 		// lexicographical
-		compare = (a, b) => a < b ? -1 : 1;
+		compare = (a, b) => (a < b ? -1 : 1);
 
 		// non-recursive
 		model.resort(null, false);
-		assert.deepStrictEqual(toArray(list), ['airplanes', 'passenger', 'jet', 'bicycles', 'dutch', 'mountain', 'electric', 'cars', 'sedan', 'convertible', 'compact']);
+		assert.deepStrictEqual(toArray(list), [
+			'airplanes',
+			'passenger',
+			'jet',
+			'bicycles',
+			'dutch',
+			'mountain',
+			'electric',
+			'cars',
+			'sedan',
+			'convertible',
+			'compact',
+		]);
 
 		// recursive
 		model.resort();
-		assert.deepStrictEqual(toArray(list), ['airplanes', 'jet', 'passenger', 'bicycles', 'dutch', 'electric', 'mountain', 'cars', 'compact', 'convertible', 'sedan']);
+		assert.deepStrictEqual(toArray(list), [
+			'airplanes',
+			'jet',
+			'passenger',
+			'bicycles',
+			'dutch',
+			'electric',
+			'mountain',
+			'cars',
+			'compact',
+			'convertible',
+			'sedan',
+		]);
 
 		// reverse
-		compare = (a, b) => a < b ? 1 : -1;
+		compare = (a, b) => (a < b ? 1 : -1);
 
 		// scoped
 		model.resort('cars');
-		assert.deepStrictEqual(toArray(list), ['airplanes', 'jet', 'passenger', 'bicycles', 'dutch', 'electric', 'mountain', 'cars', 'sedan', 'convertible', 'compact']);
+		assert.deepStrictEqual(toArray(list), [
+			'airplanes',
+			'jet',
+			'passenger',
+			'bicycles',
+			'dutch',
+			'electric',
+			'mountain',
+			'cars',
+			'sedan',
+			'convertible',
+			'compact',
+		]);
 
 		// recursive
 		model.resort();
-		assert.deepStrictEqual(toArray(list), ['cars', 'sedan', 'convertible', 'compact', 'bicycles', 'mountain', 'electric', 'dutch', 'airplanes', 'passenger', 'jet']);
+		assert.deepStrictEqual(toArray(list), [
+			'cars',
+			'sedan',
+			'convertible',
+			'compact',
+			'bicycles',
+			'mountain',
+			'electric',
+			'dutch',
+			'airplanes',
+			'passenger',
+			'jet',
+		]);
 
 		disposable.dispose();
 	});
@@ -278,14 +363,15 @@ suite('ObjectTreeModel', function () {
 
 		model.setChildren(null, [
 			{
-				element: 0, children: [
+				element: 0,
+				children: [
 					{ element: 10, children: [{ element: 100, children: [{ element: 1000 }] }] },
 					{ element: 11 },
 					{ element: 12 },
-				]
+				],
 			},
 			{ element: 1 },
-			{ element: 2 }
+			{ element: 2 },
 		]);
 
 		assert.deepStrictEqual(toArray(list), [0, 1, 2]);
@@ -298,7 +384,7 @@ suite('ObjectTreeModel', function () {
 	test('issue #95641', async () => {
 		const list: ITreeNode<string>[] = [];
 		let fn = (_: string) => true;
-		const filter = new class implements ITreeFilter<string> {
+		const filter = new (class implements ITreeFilter<string> {
 			filter(element: string, parentVisibility: TreeVisibility): TreeVisibility {
 				if (element === 'file') {
 					return TreeVisibility.Recurse;
@@ -306,7 +392,7 @@ suite('ObjectTreeModel', function () {
 
 				return fn(element) ? TreeVisibility.Visible : parentVisibility;
 			}
-		};
+		})();
 		const model = new ObjectTreeModel<string>('test', { filter });
 		const disposable = bindListToModel(list, model);
 

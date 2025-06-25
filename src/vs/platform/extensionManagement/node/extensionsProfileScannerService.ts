@@ -17,8 +17,14 @@ export class ExtensionsProfileScannerService extends AbstractExtensionsProfileSc
 		@IFileService fileService: IFileService,
 		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
-		super(URI.file(environmentService.extensionsPath), fileService, userDataProfilesService, uriIdentityService, logService);
+		super(
+			URI.file(environmentService.extensionsPath),
+			fileService,
+			userDataProfilesService,
+			uriIdentityService,
+			logService
+		);
 	}
 }

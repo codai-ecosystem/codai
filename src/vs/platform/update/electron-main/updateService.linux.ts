@@ -15,7 +15,6 @@ import { AvailableForDownload, IUpdate, State, UpdateType } from '../common/upda
 import { AbstractUpdateService, createUpdateURL } from './abstractUpdateService.js';
 
 export class LinuxUpdateService extends AbstractUpdateService {
-
 	constructor(
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 		@IConfigurationService configurationService: IConfigurationService,
@@ -25,7 +24,14 @@ export class LinuxUpdateService extends AbstractUpdateService {
 		@INativeHostMainService private readonly nativeHostMainService: INativeHostMainService,
 		@IProductService productService: IProductService
 	) {
-		super(lifecycleMainService, configurationService, environmentMainService, requestService, logService, productService);
+		super(
+			lifecycleMainService,
+			configurationService,
+			environmentMainService,
+			requestService,
+			logService,
+			productService
+		);
 	}
 
 	protected buildUpdateFeedUrl(quality: string): string {
@@ -40,7 +46,8 @@ export class LinuxUpdateService extends AbstractUpdateService {
 		const url = explicit ? this.url : `${this.url}?bg=true`;
 		this.setState(State.CheckingForUpdates(explicit));
 
-		this.requestService.request({ url }, CancellationToken.None)
+		this.requestService
+			.request({ url }, CancellationToken.None)
 			.then<IUpdate | null>(asJson)
 			.then(update => {
 				if (!update || !update.url || !update.version || !update.productVersion) {
@@ -52,7 +59,7 @@ export class LinuxUpdateService extends AbstractUpdateService {
 			.then(undefined, err => {
 				this.logService.error(err);
 				// only show message when explicitly checking for updates
-				const message: string | undefined = explicit ? (err.message || err) : undefined;
+				const message: string | undefined = explicit ? err.message || err : undefined;
 				this.setState(State.Idle(UpdateType.Archive, message));
 			});
 	}

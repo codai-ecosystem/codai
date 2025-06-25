@@ -13,8 +13,10 @@ import { IEditorService } from '../../../services/editor/common/editorService.js
 import { Event } from '../../../../base/common/event.js';
 import { AccessibilityVerbositySettingId } from '../../accessibility/browser/accessibilityConfiguration.js';
 
-export class DiffEditorActiveAnnouncementContribution extends Disposable implements IWorkbenchContribution {
-
+export class DiffEditorActiveAnnouncementContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
 	static readonly ID = 'workbench.contrib.diffEditorActiveAnnouncement';
 
 	private _onDidActiveEditorChangeListener?: IDisposable;
@@ -25,16 +27,24 @@ export class DiffEditorActiveAnnouncementContribution extends Disposable impleme
 		@IConfigurationService private readonly _configurationService: IConfigurationService
 	) {
 		super();
-		this._register(Event.runAndSubscribe(_accessibilityService.onDidChangeScreenReaderOptimized, () => this._updateListener()));
-		this._register(_configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(AccessibilityVerbositySettingId.DiffEditorActive)) {
-				this._updateListener();
-			}
-		}));
+		this._register(
+			Event.runAndSubscribe(_accessibilityService.onDidChangeScreenReaderOptimized, () =>
+				this._updateListener()
+			)
+		);
+		this._register(
+			_configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration(AccessibilityVerbositySettingId.DiffEditorActive)) {
+					this._updateListener();
+				}
+			})
+		);
 	}
 
 	private _updateListener(): void {
-		const announcementEnabled = this._configurationService.getValue(AccessibilityVerbositySettingId.DiffEditorActive);
+		const announcementEnabled = this._configurationService.getValue(
+			AccessibilityVerbositySettingId.DiffEditorActive
+		);
 		const screenReaderOptimized = this._accessibilityService.isScreenReaderOptimized();
 
 		if (!announcementEnabled || !screenReaderOptimized) {
@@ -47,10 +57,12 @@ export class DiffEditorActiveAnnouncementContribution extends Disposable impleme
 			return;
 		}
 
-		this._onDidActiveEditorChangeListener = this._register(this._editorService.onDidActiveEditorChange(() => {
-			if (isDiffEditor(this._editorService.activeTextEditorControl)) {
-				this._accessibilityService.alert(localize('openDiffEditorAnnouncement', "Diff editor"));
-			}
-		}));
+		this._onDidActiveEditorChangeListener = this._register(
+			this._editorService.onDidActiveEditorChange(() => {
+				if (isDiffEditor(this._editorService.activeTextEditorControl)) {
+					this._accessibilityService.alert(localize('openDiffEditorAnnouncement', 'Diff editor'));
+				}
+			})
+		);
 	}
 }

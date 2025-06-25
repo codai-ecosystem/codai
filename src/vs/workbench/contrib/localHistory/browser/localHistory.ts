@@ -18,10 +18,16 @@ let localHistoryDateFormatter: ILocalHistoryDateFormatter | undefined = undefine
 
 export function getLocalHistoryDateFormatter(): ILocalHistoryDateFormatter {
 	if (!localHistoryDateFormatter) {
-		const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+		const options: Intl.DateTimeFormatOptions = {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+			hour: 'numeric',
+			minute: 'numeric',
+		};
 		const formatter = safeIntl.DateTimeFormat(language, options).value;
 		localHistoryDateFormatter = {
-			format: date => formatter.format(date)
+			format: date => formatter.format(date),
 		};
 	}
 
@@ -29,7 +35,18 @@ export function getLocalHistoryDateFormatter(): ILocalHistoryDateFormatter {
 }
 
 export const LOCAL_HISTORY_MENU_CONTEXT_VALUE = 'localHistory:item';
-export const LOCAL_HISTORY_MENU_CONTEXT_KEY = ContextKeyExpr.equals('timelineItem', LOCAL_HISTORY_MENU_CONTEXT_VALUE);
+export const LOCAL_HISTORY_MENU_CONTEXT_KEY = ContextKeyExpr.equals(
+	'timelineItem',
+	LOCAL_HISTORY_MENU_CONTEXT_VALUE
+);
 
-export const LOCAL_HISTORY_ICON_ENTRY = registerIcon('localHistory-icon', Codicon.circleOutline, localize('localHistoryIcon', "Icon for a local history entry in the timeline view."));
-export const LOCAL_HISTORY_ICON_RESTORE = registerIcon('localHistory-restore', Codicon.check, localize('localHistoryRestore', "Icon for restoring contents of a local history entry."));
+export const LOCAL_HISTORY_ICON_ENTRY = registerIcon(
+	'localHistory-icon',
+	Codicon.circleOutline,
+	localize('localHistoryIcon', 'Icon for a local history entry in the timeline view.')
+);
+export const LOCAL_HISTORY_ICON_RESTORE = registerIcon(
+	'localHistory-restore',
+	Codicon.check,
+	localize('localHistoryRestore', 'Icon for restoring contents of a local history entry.')
+);

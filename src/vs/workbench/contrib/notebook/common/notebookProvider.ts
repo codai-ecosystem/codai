@@ -6,7 +6,11 @@
 import * as glob from '../../../../base/common/glob.js';
 import { URI } from '../../../../base/common/uri.js';
 import { basename } from '../../../../base/common/path.js';
-import { INotebookExclusiveDocumentFilter, isDocumentExcludePattern, TransientOptions } from './notebookCommon.js';
+import {
+	INotebookExclusiveDocumentFilter,
+	isDocumentExcludePattern,
+	TransientOptions,
+} from './notebookCommon.js';
 import { RegisteredEditorPriority } from '../../../services/editor/common/editorResolverService.js';
 import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
 
@@ -26,7 +30,6 @@ interface INotebookEditorDescriptorDto {
 }
 
 export class NotebookProviderInfo {
-
 	readonly extension?: ExtensionIdentifier;
 	readonly id: string;
 	readonly displayName: string;
@@ -46,19 +49,20 @@ export class NotebookProviderInfo {
 		this.extension = descriptor.extension;
 		this.id = descriptor.id;
 		this.displayName = descriptor.displayName;
-		this._selectors = descriptor.selectors?.map(selector => ({
-			include: selector.filenamePattern,
-			exclude: selector.excludeFileNamePattern || ''
-		}))
-			|| (descriptor as unknown as INotebookEditorDescriptorDto)._selectors
-			|| [];
+		this._selectors =
+			descriptor.selectors?.map(selector => ({
+				include: selector.filenamePattern,
+				exclude: selector.excludeFileNamePattern || '',
+			})) ||
+			(descriptor as unknown as INotebookEditorDescriptorDto)._selectors ||
+			[];
 		this.priority = descriptor.priority;
 		this.providerDisplayName = descriptor.providerDisplayName;
 		this._options = {
 			transientCellMetadata: {},
 			transientDocumentMetadata: {},
 			transientOutputs: false,
-			cellContentMetadata: {}
+			cellContentMetadata: {},
 		};
 	}
 
@@ -73,7 +77,9 @@ export class NotebookProviderInfo {
 	}
 
 	matches(resource: URI): boolean {
-		return this.selectors?.some(selector => NotebookProviderInfo.selectorMatches(selector, resource));
+		return this.selectors?.some(selector =>
+			NotebookProviderInfo.selectorMatches(selector, resource)
+		);
 	}
 
 	static selectorMatches(selector: NotebookSelector, resource: URI): boolean {
@@ -120,7 +126,6 @@ export class NotebookProviderInfo {
 	}
 
 	private static _possibleFileEnding(selector: NotebookSelector): string | undefined {
-
 		const pattern = /^.*(\.[a-zA-Z0-9_-]+)$/;
 
 		let candidate: string | undefined;

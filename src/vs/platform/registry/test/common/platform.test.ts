@@ -9,7 +9,6 @@ import { Registry } from '../../common/platform.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('Platform / Registry', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('registry - api', function () {
@@ -19,7 +18,6 @@ suite('Platform / Registry', () => {
 	});
 
 	test('registry - mixin', function () {
-
 		Registry.add('foo', { bar: true });
 
 		assert.ok(Registry.knows('foo'));
@@ -28,7 +26,6 @@ suite('Platform / Registry', () => {
 	});
 
 	test('registry - knows, as', function () {
-
 		const ext = {};
 
 		Registry.add('knows,as', ext);
@@ -41,7 +38,6 @@ suite('Platform / Registry', () => {
 	});
 
 	test('registry - mixin, fails on duplicate ids', function () {
-
 		Registry.add('foo-dup', { bar: true });
 
 		try {

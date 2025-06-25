@@ -45,7 +45,10 @@ export function getTerminalResourcesFromDragEvent(event: IPartialDragEvent): URI
 	return undefined;
 }
 
-export function getInstanceFromResource<T extends Pick<ITerminalInstance, 'resource'>>(instances: T[], resource: URI | undefined): T | undefined {
+export function getInstanceFromResource<T extends Pick<ITerminalInstance, 'resource'>>(
+	instances: T[],
+	resource: URI | undefined
+): T | undefined {
 	if (resource) {
 		for (const instance of instances) {
 			// Note that the URI's workspace and instance id might not originally be from this window

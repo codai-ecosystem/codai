@@ -14,30 +14,33 @@ interface SearchBarProps {
 }
 
 const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
-	({
-		placeholder = 'Search...',
-		value: controlledValue,
-		onChange,
-		onSubmit,
-		className,
-		size = 'md',
-		variant = 'default',
-		icon,
-		showClearButton = true,
-		...props
-	}, ref) => {
+	(
+		{
+			placeholder = 'Search...',
+			value: controlledValue,
+			onChange,
+			onSubmit,
+			className,
+			size = 'md',
+			variant = 'default',
+			icon,
+			showClearButton = true,
+			...props
+		},
+		ref
+	) => {
 		const [internalValue, setInternalValue] = useState('');
 		const value = controlledValue !== undefined ? controlledValue : internalValue;
 
 		const sizeClasses = {
 			sm: 'h-8 text-sm px-3',
 			md: 'h-10 text-sm px-4',
-			lg: 'h-12 text-base px-5'
+			lg: 'h-12 text-base px-5',
 		};
 
 		const variantClasses = {
 			default: 'border border-input bg-background',
-			ghost: 'border-0 bg-muted/50'
+			ghost: 'border-0 bg-muted/50',
 		};
 
 		const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

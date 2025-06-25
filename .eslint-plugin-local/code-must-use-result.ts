@@ -11,13 +11,12 @@ const VALID_USES = new Set<TSESTree.AST_NODE_TYPES | undefined>([
 	TSESTree.AST_NODE_TYPES.VariableDeclarator,
 ]);
 
-export = new class MustUseResults implements eslint.Rule.RuleModule {
+export = new (class MustUseResults implements eslint.Rule.RuleModule {
 	readonly meta: eslint.Rule.RuleMetaData = {
-		schema: false
+		schema: false,
 	};
 
 	create(context: eslint.Rule.RuleContext): eslint.Rule.RuleListener {
-
 		const config = <{ message: string; functions: string[] }[]>context.options[0];
 		const listener: eslint.Rule.RuleListener = {};
 
@@ -35,4 +34,4 @@ export = new class MustUseResults implements eslint.Rule.RuleModule {
 
 		return listener;
 	}
-};
+})();

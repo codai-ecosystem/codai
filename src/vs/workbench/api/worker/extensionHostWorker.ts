@@ -6,7 +6,12 @@
 import { IMessagePassingProtocol } from '../../../base/parts/ipc/common/ipc.js';
 import { VSBuffer } from '../../../base/common/buffer.js';
 import { Emitter } from '../../../base/common/event.js';
-import { isMessageOfType, MessageType, createMessageOfType, IExtensionHostInitData } from '../../services/extensions/common/extensionHostProtocol.js';
+import {
+	isMessageOfType,
+	MessageType,
+	createMessageOfType,
+	IExtensionHostInitData,
+} from '../../services/extensions/common/extensionHostProtocol.js';
 import { ExtensionHostMain } from '../common/extensionHostMain.js';
 import { IHostUtils } from '../common/extHostExtensionService.js';
 import { NestedWorker } from '../../services/extensions/worker/polyfillNestedWorker.js';
@@ -30,8 +35,8 @@ declare namespace self {
 	let addEventListener: any;
 	let removeEventListener: any;
 	let dispatchEvent: any;
-	let indexedDB: { open: any;[k: string]: any };
-	let caches: { open: any;[k: string]: any };
+	let indexedDB: { open: any; [k: string]: any };
+	let caches: { open: any; [k: string]: any };
 	let importScripts: any;
 	let fetch: _Fetch;
 	let XMLHttpRequest: any;
@@ -64,7 +69,13 @@ function patchFetching(asBrowserUri: (uri: URI) => Promise<URI>) {
 	};
 
 	self.XMLHttpRequest = class extends XMLHttpRequest {
-		override open(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null): void {
+		override open(
+			method: string,
+			url: string | URL,
+			async?: boolean,
+			username?: string | null,
+			password?: string | null
+		): void {
 			(async () => {
 				if (shouldTransformUri(url.toString())) {
 					url = (await asBrowserUri(URI.parse(url.toString()))).toString(true);
@@ -75,7 +86,9 @@ function patchFetching(asBrowserUri: (uri: URI) => Promise<URI>) {
 	};
 }
 
-self.importScripts = () => { throw new Error(`'importScripts' has been blocked`); };
+self.importScripts = () => {
+	throw new Error(`'importScripts' has been blocked`);
+};
 
 // const nativeAddEventListener = addEventListener.bind(self);
 self.addEventListener = () => console.trace(`'addEventListener' has been blocked`);
@@ -90,7 +103,6 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
 (<any>self)['webkitResolveLocalFileSystemURL'] = undefined;
 
 if ((<any>self).Worker) {
-
 	// make sure new Worker(...) always uses blob: (to maintain current origin)
 	const _Worker = (<any>self).Worker;
 	Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
@@ -106,7 +118,7 @@ if ((<any>self).Worker) {
 		// IMPORTANT: bootstrapFn is stringified and injected as worker blob-url. Because of that it CANNOT
 		// have dependencies on other functions or variables. Only constant values are supported. Due to
 		// that logic of FileAccess.asBrowserUri had to be copied, see `asWorkerBrowserUrl` (below).
-		const bootstrapFnSource = (function bootstrapFn(workerUrl: string) {
+		const bootstrapFnSource = function bootstrapFn(workerUrl: string) {
 			function asWorkerBrowserUrl(url: string | URL | TrustedScriptURL): any {
 				if (typeof url === 'string' || url instanceof URL) {
 					return String(url).replace(/^file:\/\//i, 'vscode-file://vscode-app');
@@ -123,7 +135,13 @@ if ((<any>self).Worker) {
 				return nativeFetch(asWorkerBrowserUrl(input), init);
 			};
 			self.XMLHttpRequest = class extends XMLHttpRequest {
-				override open(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null): void {
+				override open(
+					method: string,
+					url: string | URL,
+					async?: boolean,
+					username?: string | null,
+					password?: string | null
+				): void {
 					return super.open(method, asWorkerBrowserUrl(url), async ?? true, username, password);
 				}
 			};
@@ -133,7 +151,7 @@ if ((<any>self).Worker) {
 			};
 
 			nativeImportScripts(workerUrl);
-		}).toString();
+		}.toString();
 
 		const js = `(${bootstrapFnSource}('${stringUrl}'))`;
 		options = options || {};
@@ -142,33 +160,32 @@ if ((<any>self).Worker) {
 		const blobUrl = URL.createObjectURL(blob);
 		return new _Worker(blobUrl, options);
 	};
-
 } else {
 	(<any>self).Worker = class extends NestedWorker {
 		constructor(stringOrUrl: string | URL, options?: WorkerOptions) {
-			super(nativePostMessage, stringOrUrl, { name: path.basename(stringOrUrl.toString()), ...options });
+			super(nativePostMessage, stringOrUrl, {
+				name: path.basename(stringOrUrl.toString()),
+				...options,
+			});
 		}
 	};
 }
 
 //#endregion ---
 
-const hostUtil = new class implements IHostUtils {
+const hostUtil = new (class implements IHostUtils {
 	declare readonly _serviceBrand: undefined;
 	public readonly pid = undefined;
 	exit(_code?: number | undefined): void {
 		nativeClose();
 	}
-};
-
+})();
 
 class ExtensionWorker {
-
 	// protocol
 	readonly protocol: IMessagePassingProtocol;
 
 	constructor() {
-
 		const channel = new MessageChannel();
 		const emitter = new Emitter<VSBuffer>();
 		let terminating = false;
@@ -199,10 +216,13 @@ class ExtensionWorker {
 			onMessage: emitter.event,
 			send: vsbuf => {
 				if (!terminating) {
-					const data = vsbuf.buffer.buffer.slice(vsbuf.buffer.byteOffset, vsbuf.buffer.byteOffset + vsbuf.buffer.byteLength);
+					const data = vsbuf.buffer.buffer.slice(
+						vsbuf.buffer.byteOffset,
+						vsbuf.buffer.byteOffset + vsbuf.buffer.byteLength
+					);
 					channel.port1.postMessage(data, [data]);
 				}
-			}
+			},
 		};
 	}
 }
@@ -258,6 +278,6 @@ export function create(): { onmessage: (message: any) => void } {
 
 				onTerminate = (reason: string) => extHostMain.terminate(reason);
 			});
-		}
+		},
 	};
 }

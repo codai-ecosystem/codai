@@ -6,10 +6,22 @@
 import assert from 'assert';
 import { URI } from '../../../../../base/common/uri.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { workbenchInstantiationService, TestServiceAccessor, ITestTextFileEditorModelManager } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	workbenchInstantiationService,
+	TestServiceAccessor,
+	ITestTextFileEditorModelManager,
+} from '../../../../test/browser/workbenchTestServices.js';
 import { TextFileEditorModel } from '../../common/textFileEditorModel.js';
-import { FileChangesEvent, FileChangeType, FileOperationError, FileOperationResult } from '../../../../../platform/files/common/files.js';
-import { ensureNoDisposablesAreLeakedInTestSuite, toResource } from '../../../../../base/test/common/utils.js';
+import {
+	FileChangesEvent,
+	FileChangeType,
+	FileOperationError,
+	FileOperationResult,
+} from '../../../../../platform/files/common/files.js';
+import {
+	ensureNoDisposablesAreLeakedInTestSuite,
+	toResource,
+} from '../../../../../base/test/common/utils.js';
 import { PLAINTEXT_LANGUAGE_ID } from '../../../../../editor/common/languages/modesRegistry.js';
 import { ITextFileEditorModel } from '../../common/textfiles.js';
 import { createTextBufferFactory } from '../../../../../editor/common/model/textModel.js';
@@ -17,7 +29,6 @@ import { timeout } from '../../../../../base/common/async.js';
 import { DisposableStore, toDisposable } from '../../../../../base/common/lifecycle.js';
 
 suite('Files - TextFileEditorModelManager', () => {
-
 	const disposables = new DisposableStore();
 	let instantiationService: IInstantiationService;
 	let accessor: TestServiceAccessor;
@@ -25,7 +36,9 @@ suite('Files - TextFileEditorModelManager', () => {
 	setup(() => {
 		instantiationService = workbenchInstantiationService(undefined, disposables);
 		accessor = instantiationService.createInstance(TestServiceAccessor);
-		disposables.add(toDisposable(() => accessor.textFileService.files as ITestTextFileEditorModelManager));
+		disposables.add(
+			toDisposable(() => accessor.textFileService.files as ITestTextFileEditorModelManager)
+		);
 	});
 
 	teardown(() => {
@@ -35,9 +48,30 @@ suite('Files - TextFileEditorModelManager', () => {
 	test('add, remove, clear, get, getAll', function () {
 		const manager = accessor.textFileService.files as ITestTextFileEditorModelManager;
 
-		const model1: TextFileEditorModel = disposables.add(instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/random1.txt'), 'utf8', undefined));
-		const model2: TextFileEditorModel = disposables.add(instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/random2.txt'), 'utf8', undefined));
-		const model3: TextFileEditorModel = disposables.add(instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/random3.txt'), 'utf8', undefined));
+		const model1: TextFileEditorModel = disposables.add(
+			instantiationService.createInstance(
+				TextFileEditorModel,
+				toResource.call(this, '/path/random1.txt'),
+				'utf8',
+				undefined
+			)
+		);
+		const model2: TextFileEditorModel = disposables.add(
+			instantiationService.createInstance(
+				TextFileEditorModel,
+				toResource.call(this, '/path/random2.txt'),
+				'utf8',
+				undefined
+			)
+		);
+		const model3: TextFileEditorModel = disposables.add(
+			instantiationService.createInstance(
+				TextFileEditorModel,
+				toResource.call(this, '/path/random3.txt'),
+				'utf8',
+				undefined
+			)
+		);
 
 		manager.add(URI.file('/test.html'), model1);
 		manager.add(URI.file('/some/other.html'), model2);
@@ -89,9 +123,11 @@ suite('Files - TextFileEditorModelManager', () => {
 		const encoding = 'utf8';
 
 		const events: ITextFileEditorModel[] = [];
-		disposables.add(manager.onDidCreate(model => {
-			events.push(model);
-		}));
+		disposables.add(
+			manager.onDidCreate(model => {
+				events.push(model);
+			})
+		);
 
 		const modelPromise = manager.resolve(resource, { encoding });
 		assert.ok(manager.get(resource)); // model known even before resolved()
@@ -123,12 +159,14 @@ suite('Files - TextFileEditorModelManager', () => {
 
 		let didResolve = false;
 		const onDidResolve = new Promise<void>(resolve => {
-			disposables.add(manager.onDidResolve(({ model }) => {
-				if (model.resource.toString() === resource.toString()) {
-					didResolve = true;
-					resolve();
-				}
-			}));
+			disposables.add(
+				manager.onDidResolve(({ model }) => {
+					if (model.resource.toString() === resource.toString()) {
+						didResolve = true;
+						resolve();
+					}
+				})
+			);
 		});
 
 		manager.resolve(resource, { reload: { async: true } });
@@ -145,11 +183,13 @@ suite('Files - TextFileEditorModelManager', () => {
 		disposables.add(await manager.resolve(resource));
 
 		let didResolve = false;
-		disposables.add(manager.onDidResolve(({ model }) => {
-			if (model.resource.toString() === resource.toString()) {
-				didResolve = true;
-			}
-		}));
+		disposables.add(
+			manager.onDidResolve(({ model }) => {
+				if (model.resource.toString() === resource.toString()) {
+					didResolve = true;
+				}
+			})
+		);
 
 		await manager.resolve(resource, { reload: { async: false } });
 		assert.strictEqual(didResolve, true);
@@ -159,7 +199,9 @@ suite('Files - TextFileEditorModelManager', () => {
 		const manager = accessor.textFileService.files as ITestTextFileEditorModelManager;
 		const resource = URI.file('/path/index.txt');
 
-		accessor.textFileService.setReadStreamErrorOnce(new FileOperationError('fail', FileOperationResult.FILE_OTHER_ERROR));
+		accessor.textFileService.setReadStreamErrorOnce(
+			new FileOperationError('fail', FileOperationResult.FILE_OTHER_ERROR)
+		);
 
 		let error: Error | undefined = undefined;
 		try {
@@ -178,7 +220,9 @@ suite('Files - TextFileEditorModelManager', () => {
 
 		disposables.add(await manager.resolve(resource));
 
-		accessor.textFileService.setReadStreamErrorOnce(new FileOperationError('fail', FileOperationResult.FILE_OTHER_ERROR));
+		accessor.textFileService.setReadStreamErrorOnce(
+			new FileOperationError('fail', FileOperationResult.FILE_OTHER_ERROR)
+		);
 
 		let error: Error | undefined = undefined;
 		try {
@@ -195,11 +239,15 @@ suite('Files - TextFileEditorModelManager', () => {
 		const manager = accessor.textFileService.files as ITestTextFileEditorModelManager;
 		const resource = URI.file('/test.html');
 
-		const model = disposables.add(await manager.resolve(resource, { contents: createTextBufferFactory('Hello World') }));
+		const model = disposables.add(
+			await manager.resolve(resource, { contents: createTextBufferFactory('Hello World') })
+		);
 		assert.strictEqual(model.textEditorModel?.getValue(), 'Hello World');
 		assert.strictEqual(model.isDirty(), true);
 
-		disposables.add(await manager.resolve(resource, { contents: createTextBufferFactory('More Changes') }));
+		disposables.add(
+			await manager.resolve(resource, { contents: createTextBufferFactory('More Changes') })
+		);
 		assert.strictEqual(model.textEditorModel?.getValue(), 'More Changes');
 		assert.strictEqual(model.isDirty(), true);
 	});
@@ -211,18 +259,20 @@ suite('Files - TextFileEditorModelManager', () => {
 		let resolvedModel: unknown;
 
 		const contents: string[] = [];
-		disposables.add(manager.onDidResolve(e => {
-			if (e.model.resource.toString() === resource.toString()) {
-				resolvedModel = disposables.add(e.model as TextFileEditorModel);
-				contents.push(e.model.textEditorModel!.getValue());
-			}
-		}));
+		disposables.add(
+			manager.onDidResolve(e => {
+				if (e.model.resource.toString() === resource.toString()) {
+					resolvedModel = disposables.add(e.model as TextFileEditorModel);
+					contents.push(e.model.textEditorModel!.getValue());
+				}
+			})
+		);
 
 		await Promise.all([
 			manager.resolve(resource),
 			manager.resolve(resource, { contents: createTextBufferFactory('Hello World') }),
 			manager.resolve(resource, { reload: { async: false } }),
-			manager.resolve(resource, { contents: createTextBufferFactory('More Changes') })
+			manager.resolve(resource, { contents: createTextBufferFactory('More Changes') }),
 		]);
 
 		assert.ok(resolvedModel instanceof TextFileEditorModel);
@@ -238,9 +288,30 @@ suite('Files - TextFileEditorModelManager', () => {
 	test('removed from cache when model disposed', function () {
 		const manager = accessor.textFileService.files as ITestTextFileEditorModelManager;
 
-		const model1: TextFileEditorModel = disposables.add(instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/random1.txt'), 'utf8', undefined));
-		const model2: TextFileEditorModel = disposables.add(instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/random2.txt'), 'utf8', undefined));
-		const model3: TextFileEditorModel = disposables.add(instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/random3.txt'), 'utf8', undefined));
+		const model1: TextFileEditorModel = disposables.add(
+			instantiationService.createInstance(
+				TextFileEditorModel,
+				toResource.call(this, '/path/random1.txt'),
+				'utf8',
+				undefined
+			)
+		);
+		const model2: TextFileEditorModel = disposables.add(
+			instantiationService.createInstance(
+				TextFileEditorModel,
+				toResource.call(this, '/path/random2.txt'),
+				'utf8',
+				undefined
+			)
+		);
+		const model3: TextFileEditorModel = disposables.add(
+			instantiationService.createInstance(
+				TextFileEditorModel,
+				toResource.call(this, '/path/random3.txt'),
+				'utf8',
+				undefined
+			)
+		);
 
 		manager.add(URI.file('/test.html'), model1);
 		manager.add(URI.file('/some/other.html'), model2);
@@ -266,51 +337,70 @@ suite('Files - TextFileEditorModelManager', () => {
 		let savedCounter = 0;
 		let encodingCounter = 0;
 
-		disposables.add(manager.onDidResolve(({ model }) => {
-			if (model.resource.toString() === resource1.toString()) {
-				resolvedCounter++;
-			}
-		}));
-
-		disposables.add(manager.onDidRemove(resource => {
-			if (resource.toString() === resource1.toString() || resource.toString() === resource2.toString()) {
-				removedCounter++;
-			}
-		}));
-
-		disposables.add(manager.onDidChangeDirty(model => {
-			if (model.resource.toString() === resource1.toString()) {
-				if (model.isDirty()) {
-					gotDirtyCounter++;
-				} else {
-					gotNonDirtyCounter++;
+		disposables.add(
+			manager.onDidResolve(({ model }) => {
+				if (model.resource.toString() === resource1.toString()) {
+					resolvedCounter++;
 				}
-			}
-		}));
+			})
+		);
 
-		disposables.add(manager.onDidRevert(model => {
-			if (model.resource.toString() === resource1.toString()) {
-				revertedCounter++;
-			}
-		}));
+		disposables.add(
+			manager.onDidRemove(resource => {
+				if (
+					resource.toString() === resource1.toString() ||
+					resource.toString() === resource2.toString()
+				) {
+					removedCounter++;
+				}
+			})
+		);
 
-		disposables.add(manager.onDidSave(({ model }) => {
-			if (model.resource.toString() === resource1.toString()) {
-				savedCounter++;
-			}
-		}));
+		disposables.add(
+			manager.onDidChangeDirty(model => {
+				if (model.resource.toString() === resource1.toString()) {
+					if (model.isDirty()) {
+						gotDirtyCounter++;
+					} else {
+						gotNonDirtyCounter++;
+					}
+				}
+			})
+		);
 
-		disposables.add(manager.onDidChangeEncoding(model => {
-			if (model.resource.toString() === resource1.toString()) {
-				encodingCounter++;
-			}
-		}));
+		disposables.add(
+			manager.onDidRevert(model => {
+				if (model.resource.toString() === resource1.toString()) {
+					revertedCounter++;
+				}
+			})
+		);
+
+		disposables.add(
+			manager.onDidSave(({ model }) => {
+				if (model.resource.toString() === resource1.toString()) {
+					savedCounter++;
+				}
+			})
+		);
+
+		disposables.add(
+			manager.onDidChangeEncoding(model => {
+				if (model.resource.toString() === resource1.toString()) {
+					encodingCounter++;
+				}
+			})
+		);
 
 		const model1 = await manager.resolve(resource1, { encoding: 'utf8' });
 		assert.strictEqual(resolvedCounter, 1);
 
-		accessor.fileService.fireFileChanges(new FileChangesEvent([{ resource: resource1, type: FileChangeType.DELETED }], false));
-		accessor.fileService.fireFileChanges(new FileChangesEvent([{ resource: resource1, type: FileChangeType.ADDED }], false));
+		accessor.fileService.fireFileChanges(
+			new FileChangesEvent([{ resource: resource1, type: FileChangeType.DELETED }], false)
+		);
+		accessor.fileService.fireFileChanges(
+			new FileChangesEvent([{ resource: resource1, type: FileChangeType.ADDED }], false)
+		);
 
 		const model2 = await manager.resolve(resource2, { encoding: 'utf8' });
 		assert.strictEqual(resolvedCounter, 2);
@@ -378,11 +468,12 @@ suite('Files - TextFileEditorModelManager', () => {
 	});
 
 	test('language', async function () {
-
 		const languageId = 'text-file-model-manager-test';
-		disposables.add(accessor.languageService.registerLanguage({
-			id: languageId,
-		}));
+		disposables.add(
+			accessor.languageService.registerLanguage({
+				id: languageId,
+			})
+		);
 
 		const manager = accessor.textFileService.files as ITestTextFileEditorModelManager;
 
@@ -403,15 +494,19 @@ suite('Files - TextFileEditorModelManager', () => {
 
 		let didResolve = false;
 		const onDidResolve = new Promise<void>(resolve => {
-			disposables.add(manager.onDidResolve(({ model }) => {
-				if (model.resource.toString() === resource.toString()) {
-					didResolve = true;
-					resolve();
-				}
-			}));
+			disposables.add(
+				manager.onDidResolve(({ model }) => {
+					if (model.resource.toString() === resource.toString()) {
+						didResolve = true;
+						resolve();
+					}
+				})
+			);
 		});
 
-		accessor.fileService.fireFileChanges(new FileChangesEvent([{ resource, type: FileChangeType.UPDATED }], false));
+		accessor.fileService.fireFileChanges(
+			new FileChangesEvent([{ resource, type: FileChangeType.UPDATED }], false)
+		);
 
 		await onDidResolve;
 		assert.strictEqual(didResolve, true);
@@ -426,19 +521,23 @@ suite('Files - TextFileEditorModelManager', () => {
 		let didResolve = false;
 		let resolvedCounter = 0;
 		const onDidResolve = new Promise<void>(resolve => {
-			disposables.add(manager.onDidResolve(({ model }) => {
-				disposables.add(model);
-				if (model.resource.toString() === resource.toString()) {
-					resolvedCounter++;
-					if (resolvedCounter === 2) {
-						didResolve = true;
-						resolve();
+			disposables.add(
+				manager.onDidResolve(({ model }) => {
+					disposables.add(model);
+					if (model.resource.toString() === resource.toString()) {
+						resolvedCounter++;
+						if (resolvedCounter === 2) {
+							didResolve = true;
+							resolve();
+						}
 					}
-				}
-			}));
+				})
+			);
 		});
 
-		accessor.fileService.fireFileChanges(new FileChangesEvent([{ resource, type: FileChangeType.UPDATED }], false));
+		accessor.fileService.fireFileChanges(
+			new FileChangesEvent([{ resource, type: FileChangeType.UPDATED }], false)
+		);
 
 		await onDidResolve;
 		assert.strictEqual(didResolve, true);

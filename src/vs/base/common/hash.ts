@@ -41,7 +41,7 @@ export function doHash(obj: unknown, hashVal: number): number {
 }
 
 export function numberHash(val: number, initialHashVal: number): number {
-	return (((initialHashVal << 5) - initialHashVal) + val) | 0;  // hashVal * 31 + ch, keep as int32
+	return ((initialHashVal << 5) - initialHashVal + val) | 0; // hashVal * 31 + ch, keep as int32
 }
 
 function booleanHash(b: boolean, initialHashVal: number): number {
@@ -63,13 +63,13 @@ function arrayHash(arr: any[], initialHashVal: number): number {
 
 function objectHash(obj: any, initialHashVal: number): number {
 	initialHashVal = numberHash(181387, initialHashVal);
-	return Object.keys(obj).sort().reduce((hashVal, key) => {
-		hashVal = stringHash(key, hashVal);
-		return doHash(obj[key], hashVal);
-	}, initialHashVal);
+	return Object.keys(obj)
+		.sort()
+		.reduce((hashVal, key) => {
+			hashVal = stringHash(key, hashVal);
+			return doHash(obj[key], hashVal);
+		}, initialHashVal);
 }
-
-
 
 /** Hashes the input as SHA-1, returning a hex-encoded string. */
 export const hashAsync = (input: string | ArrayBufferView | VSBuffer) => {
@@ -98,7 +98,7 @@ export const hashAsync = (input: string | ArrayBufferView | VSBuffer) => {
 
 const enum SHA1Constant {
 	BLOCK_SIZE = 64, // 512 / 8
-	UNICODE_REPLACEMENT = 0xFFFD,
+	UNICODE_REPLACEMENT = 0xfffd,
 }
 
 function leftRotate(value: number, bits: number, totalBits: number = 32): number {
@@ -131,10 +131,10 @@ export class StringSHA1 {
 	private static _bigBlock32 = new DataView(new ArrayBuffer(320)); // 80 * 4 = 320
 
 	private _h0 = 0x67452301;
-	private _h1 = 0xEFCDAB89;
-	private _h2 = 0x98BADCFE;
+	private _h1 = 0xefcdab89;
+	private _h2 = 0x98badcfe;
 	private _h3 = 0x10325476;
-	private _h4 = 0xC3D2E1F0;
+	private _h4 = 0xc3d2e1f0;
 
 	private readonly _buff: Uint8Array;
 	private readonly _buffDV: DataView;
@@ -250,7 +250,13 @@ export class StringSHA1 {
 			this._wrapUp();
 		}
 
-		return toHexString(this._h0) + toHexString(this._h1) + toHexString(this._h2) + toHexString(this._h3) + toHexString(this._h4);
+		return (
+			toHexString(this._h0) +
+			toHexString(this._h1) +
+			toHexString(this._h2) +
+			toHexString(this._h3) +
+			toHexString(this._h4)
+		);
 	}
 
 	private _wrapUp(): void {
@@ -280,7 +286,17 @@ export class StringSHA1 {
 		}
 
 		for (let j = 64; j < 320 /* 80*4 */; j += 4) {
-			bigBlock32.setUint32(j, leftRotate((bigBlock32.getUint32(j - 12, false) ^ bigBlock32.getUint32(j - 32, false) ^ bigBlock32.getUint32(j - 56, false) ^ bigBlock32.getUint32(j - 64, false)), 1), false);
+			bigBlock32.setUint32(
+				j,
+				leftRotate(
+					bigBlock32.getUint32(j - 12, false) ^
+						bigBlock32.getUint32(j - 32, false) ^
+						bigBlock32.getUint32(j - 56, false) ^
+						bigBlock32.getUint32(j - 64, false),
+					1
+				),
+				false
+			);
 		}
 
 		let a = this._h0;
@@ -294,17 +310,17 @@ export class StringSHA1 {
 
 		for (let j = 0; j < 80; j++) {
 			if (j < 20) {
-				f = (b & c) | ((~b) & d);
-				k = 0x5A827999;
+				f = (b & c) | (~b & d);
+				k = 0x5a827999;
 			} else if (j < 40) {
 				f = b ^ c ^ d;
-				k = 0x6ED9EBA1;
+				k = 0x6ed9eba1;
 			} else if (j < 60) {
 				f = (b & c) | (b & d) | (c & d);
-				k = 0x8F1BBCDC;
+				k = 0x8f1bbcdc;
 			} else {
 				f = b ^ c ^ d;
-				k = 0xCA62C1D6;
+				k = 0xca62c1d6;
 			}
 
 			temp = (leftRotate(a, 5) + f + e + k + bigBlock32.getUint32(j * 4, false)) & 0xffffffff;

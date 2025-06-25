@@ -41,7 +41,9 @@ export class SnapshotContext {
 		}
 
 		if (!test.file) {
-			throw new Error('currentTest.file is not set, please open an issue with the test you\'re trying to run');
+			throw new Error(
+				"currentTest.file is not set, please open an issue with the test you're trying to run"
+			);
 		}
 
 		const src = URI.joinPath(FileAccess.asFileUri(''), '../src');
@@ -53,7 +55,7 @@ export class SnapshotContext {
 
 	public async assert(value: unknown, options?: ISnapshotOptions) {
 		const originalStack = new Error().stack!; // save to make the stack nicer on failure
-		const nameOrIndex = (options?.name ? sanitizeName(options.name) : this.nextIndex++);
+		const nameOrIndex = options?.name ? sanitizeName(options.name) : this.nextIndex++;
 		const fileName = this.namePrefix + nameOrIndex + '.' + (options?.extension || 'snap');
 		this.usedNames.add(fileName);
 
@@ -92,7 +94,9 @@ export class SnapshotContext {
 			console.info(`Deleting ${toDelete.length} old snapshots for ${this.test?.fullTitle()}`);
 		}
 
-		await Promise.all(toDelete.map(f => __unlinkInTests(URI.joinPath(this.snapshotsDir, f).fsPath)));
+		await Promise.all(
+			toDelete.map(f => __unlinkInTests(URI.joinPath(this.snapshotsDir, f).fsPath))
+		);
 	}
 }
 
@@ -120,7 +124,10 @@ function formatValue(value: unknown, level = 0, seen: unknown[] = []): string {
 			if (seen.includes(value)) {
 				return '[Circular]';
 			}
-			if (debugDescriptionSymbol in value && typeof (value as any)[debugDescriptionSymbol] === 'function') {
+			if (
+				debugDescriptionSymbol in value &&
+				typeof (value as any)[debugDescriptionSymbol] === 'function'
+			) {
 				return (value as any)[debugDescriptionSymbol]();
 			}
 			const oi = '  '.repeat(level);
@@ -128,7 +135,9 @@ function formatValue(value: unknown, level = 0, seen: unknown[] = []): string {
 			if (Array.isArray(value)) {
 				const children = value.map(v => formatValue(v, level + 1, [...seen, value]));
 				const multiline = children.some(c => c.includes('\n')) || children.join(', ').length > 80;
-				return multiline ? `[\n${ci}${children.join(`,\n${ci}`)}\n${oi}]` : `[ ${children.join(', ')} ]`;
+				return multiline
+					? `[\n${ci}${children.join(`,\n${ci}`)}\n${oi}]`
+					: `[ ${children.join(', ')} ]`;
 			}
 
 			let entries;
@@ -144,9 +153,12 @@ function formatValue(value: unknown, level = 0, seen: unknown[] = []): string {
 			}
 
 			const lines = entries.map(([k, v]) => `${k}: ${formatValue(v, level + 1, [...seen, value])}`);
-			return prefix + (lines.length > 1
-				? `{\n${ci}${lines.join(`,\n${ci}`)}\n${oi}}`
-				: `{ ${lines.join(',\n')} }`);
+			return (
+				prefix +
+				(lines.length > 1
+					? `{\n${ci}${lines.join(`,\n${ci}`)}\n${oi}}`
+					: `{ ${lines.join(',\n')} }`)
+			);
 		}
 		default:
 			throw new Error(`Unknown type ${value}`);

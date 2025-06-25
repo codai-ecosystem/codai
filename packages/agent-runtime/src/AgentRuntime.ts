@@ -12,14 +12,9 @@ import {
 	AgentMessage,
 	AgentStatus,
 	AgentMetrics,
-	ConversationContext
+	ConversationContext,
 } from './types.js';
-import {
-	LLMService,
-	LLMModelConfig,
-	createLLMService,
-	defaultLLMConfigs
-} from './llm/index.js';
+import { LLMService, LLMModelConfig, createLLMService, defaultLLMConfigs } from './llm/index.js';
 import { PlannerAgent } from './agents/PlannerAgent.js';
 import { BuilderAgent } from './agents/BuilderAgent.js';
 import { DesignerAgent } from './agents/DesignerAgent.js';
@@ -38,9 +33,17 @@ export class AgentRuntime {
 	private activeTasks = new Map<string, Task>();
 	private conversations = new Map<string, ConversationContext>();
 
-	private taskSubject = new Subject<{ type: 'started' | 'completed' | 'failed'; task: Task; result?: TaskResult; error?: string }>();
+	private taskSubject = new Subject<{
+		type: 'started' | 'completed' | 'failed';
+		task: Task;
+		result?: TaskResult;
+		error?: string;
+	}>();
 	private messageSubject = new Subject<AgentMessage>();
-	private statusSubject = new BehaviorSubject<{ agentId: string; status: AgentStatus }>({ agentId: '', status: {} as AgentStatus });
+	private statusSubject = new BehaviorSubject<{ agentId: string; status: AgentStatus }>({
+		agentId: '',
+		status: {} as AgentStatus,
+	});
 
 	public tasks$ = this.taskSubject.asObservable();
 	public messages$ = this.messageSubject.asObservable();
@@ -68,7 +71,7 @@ export class AgentRuntime {
 			try {
 				const openaiConfig: LLMModelConfig = {
 					...defaultLLMConfigs.openai,
-					apiKey: this.apiKeys.openai
+					apiKey: this.apiKeys.openai,
 				};
 				const openaiService = createLLMService(openaiConfig);
 				this.llmServices.set('openai', openaiService);
@@ -83,7 +86,7 @@ export class AgentRuntime {
 			try {
 				const anthropicConfig: LLMModelConfig = {
 					...defaultLLMConfigs.anthropic,
-					apiKey: this.apiKeys.anthropic
+					apiKey: this.apiKeys.anthropic,
 				};
 				const anthropicService = createLLMService(anthropicConfig);
 				this.llmServices.set('anthropic', anthropicService);
@@ -98,7 +101,7 @@ export class AgentRuntime {
 			try {
 				const localConfig: LLMModelConfig = {
 					...defaultLLMConfigs.local,
-					apiKey: this.apiKeys.local
+					apiKey: this.apiKeys.local,
 				};
 				const localService = createLLMService(localConfig);
 				this.llmServices.set('local', localService);
@@ -118,9 +121,13 @@ export class AgentRuntime {
 		}
 
 		// Default LLM provider to use if available (prefer OpenAI > Anthropic > Local)
-		const defaultProvider = this.llmServices.has('openai') ? 'openai' :
-			this.llmServices.has('anthropic') ? 'anthropic' :
-				this.llmServices.has('local') ? 'local' : '';
+		const defaultProvider = this.llmServices.has('openai')
+			? 'openai'
+			: this.llmServices.has('anthropic')
+				? 'anthropic'
+				: this.llmServices.has('local')
+					? 'local'
+					: '';
 
 		const agentConfigs: AgentConfig[] = [
 			{
@@ -133,14 +140,24 @@ export class AgentRuntime {
 						name: 'project_planning',
 						description: 'Analyze requirements and create project structure',
 						inputs: [
-							{ name: 'requirements', type: 'string', required: true, description: 'Project requirements' },
-							{ name: 'constraints', type: 'object', required: false, description: 'Technical constraints' }
+							{
+								name: 'requirements',
+								type: 'string',
+								required: true,
+								description: 'Project requirements',
+							},
+							{
+								name: 'constraints',
+								type: 'object',
+								required: false,
+								description: 'Technical constraints',
+							},
 						],
 						outputs: [
 							{ name: 'project_plan', type: 'object', description: 'Structured project plan' },
-							{ name: 'tasks', type: 'array', description: 'List of actionable tasks' }
-						]
-					}
+							{ name: 'tasks', type: 'array', description: 'List of actionable tasks' },
+						],
+					},
 				],
 				aiProvider: {
 					provider: defaultProvider || 'openai',
@@ -160,14 +177,24 @@ export class AgentRuntime {
 						name: 'code_generation',
 						description: 'Generate code from specifications',
 						inputs: [
-							{ name: 'specification', type: 'object', required: true, description: 'Code specification' },
-							{ name: 'language', type: 'string', required: true, description: 'Programming language' }
+							{
+								name: 'specification',
+								type: 'object',
+								required: true,
+								description: 'Code specification',
+							},
+							{
+								name: 'language',
+								type: 'string',
+								required: true,
+								description: 'Programming language',
+							},
 						],
 						outputs: [
 							{ name: 'code', type: 'string', description: 'Generated code' },
-							{ name: 'files', type: 'array', description: 'Created files' }
-						]
-					}
+							{ name: 'files', type: 'array', description: 'Created files' },
+						],
+					},
 				],
 				aiProvider: {
 					provider: 'openai',
@@ -187,14 +214,19 @@ export class AgentRuntime {
 						name: 'ui_design',
 						description: 'Design user interfaces and components',
 						inputs: [
-							{ name: 'requirements', type: 'object', required: true, description: 'Design requirements' },
-							{ name: 'brand', type: 'object', required: false, description: 'Brand guidelines' }
+							{
+								name: 'requirements',
+								type: 'object',
+								required: true,
+								description: 'Design requirements',
+							},
+							{ name: 'brand', type: 'object', required: false, description: 'Brand guidelines' },
 						],
 						outputs: [
 							{ name: 'design', type: 'object', description: 'Design specification' },
-							{ name: 'components', type: 'array', description: 'UI components' }
-						]
-					}
+							{ name: 'components', type: 'array', description: 'UI components' },
+						],
+					},
 				],
 				aiProvider: {
 					provider: 'openai',
@@ -215,13 +247,13 @@ export class AgentRuntime {
 						description: 'Generate comprehensive tests',
 						inputs: [
 							{ name: 'code', type: 'string', required: true, description: 'Code to test' },
-							{ name: 'test_type', type: 'string', required: false, description: 'Type of tests' }
+							{ name: 'test_type', type: 'string', required: false, description: 'Type of tests' },
 						],
 						outputs: [
 							{ name: 'tests', type: 'array', description: 'Generated tests' },
-							{ name: 'coverage', type: 'number', description: 'Test coverage percentage' }
-						]
-					}
+							{ name: 'coverage', type: 'number', description: 'Test coverage percentage' },
+						],
+					},
 				],
 				aiProvider: {
 					provider: 'openai',
@@ -241,14 +273,24 @@ export class AgentRuntime {
 						name: 'deployment_setup',
 						description: 'Set up deployment pipelines',
 						inputs: [
-							{ name: 'platform', type: 'string', required: true, description: 'Deployment platform' },
-							{ name: 'config', type: 'object', required: false, description: 'Deployment configuration' }
+							{
+								name: 'platform',
+								type: 'string',
+								required: true,
+								description: 'Deployment platform',
+							},
+							{
+								name: 'config',
+								type: 'object',
+								required: false,
+								description: 'Deployment configuration',
+							},
 						],
 						outputs: [
 							{ name: 'pipeline', type: 'object', description: 'Deployment pipeline' },
-							{ name: 'url', type: 'string', description: 'Deployed application URL' }
-						]
-					}
+							{ name: 'url', type: 'string', description: 'Deployed application URL' },
+						],
+					},
 				],
 				aiProvider: {
 					provider: 'openai',
@@ -268,13 +310,13 @@ export class AgentRuntime {
 						name: 'change_tracking',
 						description: 'Track and manage project changes',
 						inputs: [
-							{ name: 'changes', type: 'array', required: true, description: 'Project changes' }
+							{ name: 'changes', type: 'array', required: true, description: 'Project changes' },
 						],
 						outputs: [
 							{ name: 'timeline', type: 'array', description: 'Change timeline' },
-							{ name: 'versions', type: 'array', description: 'Version history' }
-						]
-					}
+							{ name: 'versions', type: 'array', description: 'Version history' },
+						],
+					},
 				],
 				aiProvider: {
 					provider: 'openai',
@@ -283,7 +325,7 @@ export class AgentRuntime {
 				},
 				priority: 3,
 				isEnabled: true,
-			}
+			},
 		];
 		// Initialize agents
 		for (const config of agentConfigs) {
@@ -312,7 +354,7 @@ export class AgentRuntime {
 			}
 
 			// Set up agent message handling
-			agent.onMessage((message) => {
+			agent.onMessage(message => {
 				this.messageSubject.next(message);
 			});
 
@@ -372,7 +414,11 @@ export class AgentRuntime {
 	/**
 	 * Send a message to a specific agent
 	 */
-	async sendMessage(agentId: string, content: string, metadata?: Record<string, unknown>): Promise<void> {
+	async sendMessage(
+		agentId: string,
+		content: string,
+		metadata?: Record<string, unknown>
+	): Promise<void> {
 		const agent = this.agents.get(agentId);
 		if (!agent) {
 			throw new Error(`Agent not found: ${agentId}`);
@@ -434,7 +480,7 @@ export class AgentRuntime {
 			this.taskSubject.next({
 				type: 'failed',
 				task: { ...task, status: 'cancelled' },
-				error: 'Task cancelled by user'
+				error: 'Task cancelled by user',
 			});
 		}
 	}
@@ -479,11 +525,7 @@ export class AgentRuntime {
 	 * @param systemPrompt Optional system prompt
 	 * @returns LLM response
 	 */
-	async completeLLM(
-		agentId: string,
-		prompt: string,
-		systemPrompt?: string
-	): Promise<string> {
+	async completeLLM(agentId: string, prompt: string, systemPrompt?: string): Promise<string> {
 		const agent = this.agents.get(agentId);
 		if (!agent) {
 			throw new Error(`Agent ${agentId} not found`);
@@ -501,13 +543,15 @@ export class AgentRuntime {
 				systemPrompt,
 				messages: [{ role: 'user', content: prompt }],
 				temperature: agent.config.aiProvider.temperature,
-				maxTokens: agent.config.aiProvider.maxTokens
+				maxTokens: agent.config.aiProvider.maxTokens,
 			});
 
 			return response.content;
 		} catch (error) {
 			console.error(`Error completing LLM request for agent ${agentId}:`, error);
-			throw new Error(`Failed to get LLM completion: ${error instanceof Error ? error.message : String(error)}`);
+			throw new Error(
+				`Failed to get LLM completion: ${error instanceof Error ? error.message : String(error)}`
+			);
 		}
 	}
 
@@ -521,7 +565,10 @@ export class AgentRuntime {
 	 */
 	async chatWithLLM(
 		agentId: string,
-		messages: Array<{ role: 'user' | 'assistant' | 'system' | 'function' | 'tool'; content: string }>,
+		messages: Array<{
+			role: 'user' | 'assistant' | 'system' | 'function' | 'tool';
+			content: string;
+		}>,
 		systemPrompt?: string,
 		tools?: any[]
 	): Promise<any> {
@@ -543,13 +590,15 @@ export class AgentRuntime {
 				messages,
 				tools,
 				temperature: agent.config.aiProvider.temperature,
-				maxTokens: agent.config.aiProvider.maxTokens
+				maxTokens: agent.config.aiProvider.maxTokens,
 			});
 
 			return response;
 		} catch (error) {
 			console.error(`Error in chat with LLM for agent ${agentId}:`, error);
-			throw new Error(`Failed to complete chat: ${error instanceof Error ? error.message : String(error)}`);
+			throw new Error(
+				`Failed to complete chat: ${error instanceof Error ? error.message : String(error)}`
+			);
 		}
 	}
 
@@ -565,14 +614,18 @@ export class AgentRuntime {
 	 */
 	async streamChatWithLLM(
 		agentId: string,
-		messages: Array<{ role: 'user' | 'assistant' | 'system' | 'function' | 'tool'; content: string }>,
+		messages: Array<{
+			role: 'user' | 'assistant' | 'system' | 'function' | 'tool';
+			content: string;
+		}>,
 		systemPrompt?: string,
 		onContent?: (content: string) => void,
 		onToolCall?: (toolCall: any) => void,
 		onError?: (error: Error) => void,
 		onComplete?: () => void
 	): Promise<void> {
-		const agent = this.agents.get(agentId); if (!agent) {
+		const agent = this.agents.get(agentId);
+		if (!agent) {
 			if (onError) {
 				onError(new Error(`Agent ${agentId} not found`));
 			}
@@ -593,7 +646,7 @@ export class AgentRuntime {
 				systemPrompt,
 				messages,
 				temperature: agent.config.aiProvider.temperature,
-				maxTokens: agent.config.aiProvider.maxTokens
+				maxTokens: agent.config.aiProvider.maxTokens,
 			});
 
 			// Process streaming response
@@ -665,7 +718,7 @@ export class AgentRuntime {
 			// Determine which agents should respond
 			const plannerAgent = this.agents.get('planner');
 			if (plannerAgent) {
-				options?.onAgentStart?.('planner');				// Stream response from planner
+				options?.onAgentStart?.('planner'); // Stream response from planner
 				let fullResponse = '';
 				await this.streamChatWithLLM(
 					'planner',

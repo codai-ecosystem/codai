@@ -29,15 +29,17 @@ export class InstanceContext {
 	toJSON(): ISerializedTerminalInstanceContext {
 		return {
 			$mid: MarshalledId.TerminalContext,
-			instanceId: this.instanceId
+			instanceId: this.instanceId,
 		};
 	}
 }
 
 export class TerminalContextActionRunner extends ActionRunner {
-
 	// eslint-disable-next-line @typescript-eslint/naming-convention
-	protected override async runAction(action: IAction, context?: InstanceContext | InstanceContext[]): Promise<void> {
+	protected override async runAction(
+		action: IAction,
+		context?: InstanceContext | InstanceContext[]
+	): Promise<void> {
 		if (Array.isArray(context) && context.every(e => e instanceof InstanceContext)) {
 			// arg1: The (first) focused instance
 			// arg2: All selected instances
@@ -48,7 +50,14 @@ export class TerminalContextActionRunner extends ActionRunner {
 	}
 }
 
-export function openContextMenu(targetWindow: Window, event: MouseEvent, contextInstances: SingleOrMany<ITerminalInstance> | undefined, menu: IMenu, contextMenuService: IContextMenuService, extraActions?: IAction[]): void {
+export function openContextMenu(
+	targetWindow: Window,
+	event: MouseEvent,
+	contextInstances: SingleOrMany<ITerminalInstance> | undefined,
+	menu: IMenu,
+	contextMenuService: IContextMenuService,
+	extraActions?: IAction[]
+): void {
 	const standardEvent = new StandardMouseEvent(targetWindow, event);
 
 	const actions = getFlatContextMenuActions(menu.getActions({ shouldForwardArgs: true }));
@@ -57,7 +66,9 @@ export function openContextMenu(targetWindow: Window, event: MouseEvent, context
 		actions.push(...extraActions);
 	}
 
-	const context: InstanceContext[] = contextInstances ? asArray(contextInstances).map(e => new InstanceContext(e)) : [];
+	const context: InstanceContext[] = contextInstances
+		? asArray(contextInstances).map(e => new InstanceContext(e))
+		: [];
 
 	const actionRunner = new TerminalContextActionRunner();
 	contextMenuService.showContextMenu({
@@ -65,6 +76,6 @@ export function openContextMenu(targetWindow: Window, event: MouseEvent, context
 		getAnchor: () => standardEvent,
 		getActions: () => actions,
 		getActionsContext: () => context,
-		onHide: () => actionRunner.dispose()
+		onHide: () => actionRunner.dispose(),
 	});
 }

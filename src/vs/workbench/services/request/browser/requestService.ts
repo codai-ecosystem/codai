@@ -7,10 +7,18 @@ import { IRequestOptions, IRequestContext } from '../../../../base/parts/request
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { RequestChannelClient } from '../../../../platform/request/common/requestIpc.js';
-import { IRemoteAgentService, IRemoteAgentConnection } from '../../remote/common/remoteAgentService.js';
+import {
+	IRemoteAgentService,
+	IRemoteAgentConnection,
+} from '../../remote/common/remoteAgentService.js';
 import { ServicesAccessor } from '../../../../editor/browser/editorExtensions.js';
 import { CommandsRegistry } from '../../../../platform/commands/common/commands.js';
-import { AbstractRequestService, AuthInfo, Credentials, IRequestService } from '../../../../platform/request/common/request.js';
+import {
+	AbstractRequestService,
+	AuthInfo,
+	Credentials,
+	IRequestService,
+} from '../../../../platform/request/common/request.js';
 import { request } from '../../../../base/parts/request/common/requestImpl.js';
 import { ILoggerService } from '../../../../platform/log/common/log.js';
 import { localize } from '../../../../nls.js';
@@ -18,15 +26,17 @@ import { LogService } from '../../../../platform/log/common/logService.js';
 import { windowLogGroup } from '../../log/common/logConstants.js';
 
 export class BrowserRequestService extends AbstractRequestService implements IRequestService {
-
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
 		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ILoggerService loggerService: ILoggerService,
+		@ILoggerService loggerService: ILoggerService
 	) {
-		const logger = loggerService.createLogger(`network`, { name: localize('network', "Network"), group: windowLogGroup });
+		const logger = loggerService.createLogger(`network`, {
+			name: localize('network', 'Network'),
+			group: windowLogGroup,
+		});
 		const logService = new LogService(logger);
 		super(logService);
 		this._register(logger);
@@ -36,9 +46,12 @@ export class BrowserRequestService extends AbstractRequestService implements IRe
 	async request(options: IRequestOptions, token: CancellationToken): Promise<IRequestContext> {
 		try {
 			if (!options.proxyAuthorization) {
-				options.proxyAuthorization = this.configurationService.inspect<string>('http.proxyAuthorization').userLocalValue;
+				options.proxyAuthorization =
+					this.configurationService.inspect<string>('http.proxyAuthorization').userLocalValue;
 			}
-			const context = await this.logAndRequest(options, () => request(options, token, () => navigator.onLine));
+			const context = await this.logAndRequest(options, () =>
+				request(options, token, () => navigator.onLine)
+			);
 
 			const connection = this.remoteAgentService.getConnection();
 			if (connection && context.res.statusCode === 405) {
@@ -70,19 +83,28 @@ export class BrowserRequestService extends AbstractRequestService implements IRe
 		return []; // not implemented in the web
 	}
 
-	private _makeRemoteRequest(connection: IRemoteAgentConnection, options: IRequestOptions, token: CancellationToken): Promise<IRequestContext> {
-		return connection.withChannel('request', channel => new RequestChannelClient(channel).request(options, token));
+	private _makeRemoteRequest(
+		connection: IRemoteAgentConnection,
+		options: IRequestOptions,
+		token: CancellationToken
+	): Promise<IRequestContext> {
+		return connection.withChannel('request', channel =>
+			new RequestChannelClient(channel).request(options, token)
+		);
 	}
 }
 
 // --- Internal commands to help authentication for extensions
 
-CommandsRegistry.registerCommand('_workbench.fetchJSON', async function (accessor: ServicesAccessor, url: string, method: string) {
-	const result = await fetch(url, { method, headers: { Accept: 'application/json' } });
+CommandsRegistry.registerCommand(
+	'_workbench.fetchJSON',
+	async function (accessor: ServicesAccessor, url: string, method: string) {
+		const result = await fetch(url, { method, headers: { Accept: 'application/json' } });
 
-	if (result.ok) {
-		return result.json();
-	} else {
-		throw new Error(result.statusText);
+		if (result.ok) {
+			return result.json();
+		} else {
+			throw new Error(result.statusText);
+		}
 	}
-});
+);

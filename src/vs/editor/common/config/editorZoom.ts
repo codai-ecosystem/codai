@@ -11,8 +11,7 @@ export interface IEditorZoom {
 	setZoomLevel(zoomLevel: number): void;
 }
 
-export const EditorZoom: IEditorZoom = new class implements IEditorZoom {
-
+export const EditorZoom: IEditorZoom = new (class implements IEditorZoom {
 	private _zoomLevel: number = 0;
 
 	private readonly _onDidChangeZoomLevel = new Emitter<number>();
@@ -31,4 +30,4 @@ export const EditorZoom: IEditorZoom = new class implements IEditorZoom {
 		this._zoomLevel = zoomLevel;
 		this._onDidChangeZoomLevel.fire(this._zoomLevel);
 	}
-};
+})();

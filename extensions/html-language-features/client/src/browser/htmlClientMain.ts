@@ -17,7 +17,11 @@ export async function activate(context: ExtensionContext) {
 		const worker = new Worker(serverMain.toString());
 		worker.postMessage({ i10lLocation: l10n.uri?.toString(false) ?? '' });
 
-		const newLanguageClient: LanguageClientConstructor = (id: string, name: string, clientOptions: LanguageClientOptions) => {
+		const newLanguageClient: LanguageClientConstructor = (
+			id: string,
+			name: string,
+			clientOptions: LanguageClientOptions
+		) => {
 			return new LanguageClient(id, name, worker, clientOptions);
 		};
 
@@ -25,11 +29,10 @@ export async function activate(context: ExtensionContext) {
 			setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable {
 				const handle = setTimeout(callback, ms, ...args);
 				return { dispose: () => clearTimeout(handle) };
-			}
+			},
 		};
 
 		client = await startClient(context, newLanguageClient, { TextDecoder, timer });
-
 	} catch (e) {
 		console.log(e);
 	}
@@ -41,4 +44,3 @@ export async function deactivate(): Promise<void> {
 		client = undefined;
 	}
 }
-

@@ -55,9 +55,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 				{/* Message Header */}
 				<div className="flex items-center space-x-2 mb-1">
 					{getMessageTypeIcon()}
-					<span className="text-xs font-medium">
-						{isUser ? 'You' : `Agent ${message.agentId}`}
-					</span>
+					<span className="text-xs font-medium">{isUser ? 'You' : `Agent ${message.agentId}`}</span>
 					{timestamp && (
 						<div className="flex items-center space-x-1 text-xs opacity-70">
 							<Clock className="w-3 h-3" />
@@ -67,9 +65,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 				</div>
 
 				{/* Message Content */}
-				<div className="text-sm whitespace-pre-wrap break-words">
-					{message.content}
-				</div>
+				<div className="text-sm whitespace-pre-wrap break-words">{message.content}</div>
 
 				{/* Message Metadata */}
 				{message.metadata && Object.keys(message.metadata).length > 0 && (
@@ -84,11 +80,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 				)}
 
 				{/* Actions */}
-				{actions && (
-					<div className="mt-2 flex space-x-2">
-						{actions}
-					</div>
-				)}
+				{actions && <div className="mt-2 flex space-x-2">{actions}</div>}
 			</div>
 		</div>
 	);

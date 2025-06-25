@@ -10,7 +10,10 @@ import { newWriteableStream } from '../../../../base/common/stream.js';
 import { NewLine } from '../../../common/codecs/linesCodec/tokens/newLine.js';
 import { CarriageReturn } from '../../../common/codecs/linesCodec/tokens/carriageReturn.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { SimpleDecoder, TSimpleDecoderToken } from '../../../common/codecs/simpleCodec/simpleDecoder.js';
+import {
+	SimpleDecoder,
+	TSimpleDecoderToken,
+} from '../../../common/codecs/simpleCodec/simpleDecoder.js';
 import {
 	At,
 	Tab,
@@ -72,9 +75,7 @@ suite('SimpleDecoder', () => {
 	const testDisposables = ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('produces expected tokens #1', async () => {
-		const test = testDisposables.add(
-			new TestSimpleDecoder(),
-		);
+		const test = testDisposables.add(new TestSimpleDecoder());
 
 		await test.run(
 			[
@@ -85,7 +86,7 @@ suite('SimpleDecoder', () => {
 				'\t<hi 👋>\t🤗❤ \t',
 				' hey\v-\tthere\r',
 				' @workspace@legomushroom',
-				'\'my\' ${text} /run',
+				"'my' ${text} /run",
 			],
 			[
 				// first line
@@ -172,14 +173,12 @@ suite('SimpleDecoder', () => {
 				new Space(new Range(8, 13, 8, 14)),
 				new Slash(new Range(8, 14, 8, 15)),
 				new Word(new Range(8, 15, 8, 15 + 3), 'run'),
-			],
+			]
 		);
 	});
 
 	test('produces expected tokens #2', async () => {
-		const test = testDisposables.add(
-			new TestSimpleDecoder(),
-		);
+		const test = testDisposables.add(new TestSimpleDecoder());
 
 		await test.run(
 			[
@@ -232,7 +231,7 @@ suite('SimpleDecoder', () => {
 				new Word(new Range(5, 2, 5, 2 + 6), 'update'),
 				new CarriageReturn(new Range(5, 8, 5, 9)),
 				new NewLine(new Range(5, 9, 5, 10)),
-			],
+			]
 		);
 	});
 });

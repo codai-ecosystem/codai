@@ -30,11 +30,11 @@ function testBuilderAgentFunctionality() {
 
 	// The actual project names created by the builder test
 	const projectMappings = {
-		'webapp': 'my-webapp',
-		'api': 'my-api',
-		'mobile': 'my-mobile-app',
-		'desktop': 'my-desktop-app',
-		'basic': 'my-basic-project'
+		webapp: 'my-webapp',
+		api: 'my-api',
+		mobile: 'my-mobile-app',
+		desktop: 'my-desktop-app',
+		basic: 'my-basic-project',
 	};
 
 	let allProjectsValid = true;
@@ -56,7 +56,6 @@ function testBuilderAgentFunctionality() {
 			if (fs.existsSync(readmePath)) {
 				console.log(`   📖 README.md exists`);
 			}
-
 		} else {
 			console.log(`❌ Project ${projectType} (${projectName}) was not created`);
 			allProjectsValid = false;
@@ -76,7 +75,8 @@ function testPluginSystemIntegration() {
 		return false;
 	}
 
-	const plugins = fs.readdirSync(pluginsDir, { withFileTypes: true })
+	const plugins = fs
+		.readdirSync(pluginsDir, { withFileTypes: true })
 		.filter(item => item.isDirectory())
 		.map(item => item.name);
 
@@ -90,7 +90,9 @@ function testPluginSystemIntegration() {
 		if (fs.existsSync(packageJsonPath)) {
 			try {
 				const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-				console.log(`   ✅ ${packageJson.displayName || packageJson.name} (${packageJson.version})`);
+				console.log(
+					`   ✅ ${packageJson.displayName || packageJson.name} (${packageJson.version})`
+				);
 				validPlugins++;
 			} catch (error) {
 				console.log(`   ❌ ${pluginName} - Invalid package.json`);
@@ -120,7 +122,7 @@ function testExtensionStructure() {
 		'src/ui/conversationalInterface.ts',
 		'src/ui/memoryVisualization.ts',
 		'src/ui/projectStatus.ts',
-		'src/memory/memoryGraph.ts'
+		'src/memory/memoryGraph.ts',
 	];
 
 	let allFilesExist = true;
@@ -160,11 +162,11 @@ function testPackageJsonConfiguration() {
 		const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
 		const requiredFields = {
-			'name': 'aide-core',
-			'displayName': 'AIDE Core',
-			'main': './out/extension.js',
+			name: 'aide-core',
+			displayName: 'AIDE Core',
+			main: './out/extension.js',
 			'engines.vscode': packageJson.engines?.vscode,
-			'activationEvents': packageJson.activationEvents
+			activationEvents: packageJson.activationEvents,
 		};
 
 		let allFieldsValid = true;
@@ -190,7 +192,8 @@ function testPackageJsonConfiguration() {
 		const commands = packageJson.contributes?.commands || [];
 		console.log(`✅ Commands defined: ${commands.length}`);
 
-		for (const command of commands.slice(0, 5)) { // Show first 5
+		for (const command of commands.slice(0, 5)) {
+			// Show first 5
 			console.log(`   - ${command.command}: ${command.title}`);
 		}
 		if (commands.length > 5) {
@@ -231,7 +234,7 @@ function generateProjectReport() {
 			services: true,
 			plugins: true,
 			ui: true,
-			memory: true
+			memory: true,
 		},
 		features: {
 			'Project Planning': true,
@@ -241,7 +244,7 @@ function generateProjectReport() {
 			'Deployment Pipeline': true,
 			'Plugin System': true,
 			'Conversational Interface': true,
-			'Project Visualization': true
+			'Project Visualization': true,
 		},
 		metrics: {
 			totalFiles: 0,
@@ -249,8 +252,8 @@ function generateProjectReport() {
 			agentTypes: 3,
 			projectTemplates: 5,
 			pluginTemplates: 4,
-			commands: 0
-		}
+			commands: 0,
+		},
 	};
 
 	// Count files and lines
@@ -379,7 +382,7 @@ async function runCompleteTestSuite() {
 		{ name: 'Extension Structure', result: testResults.structure },
 		{ name: 'Package Configuration', result: testResults.packageConfig },
 		{ name: 'Builder Agent', result: testResults.builderAgent },
-		{ name: 'Plugin System', result: testResults.pluginSystem }
+		{ name: 'Plugin System', result: testResults.pluginSystem },
 	];
 
 	for (const test of tests) {
@@ -390,7 +393,9 @@ async function runCompleteTestSuite() {
 	console.log('\n📊 Summary:');
 	console.log(`   ✅ Tests passed: ${passedTests}/${totalTests}`);
 	console.log(`   📈 Success rate: ${Math.round((passedTests / totalTests) * 100)}%`);
-	console.log(`   🏗️  Build status: ${fs.existsSync(path.join(__dirname, 'out')) ? 'Compiled' : 'Not compiled'}`);
+	console.log(
+		`   🏗️  Build status: ${fs.existsSync(path.join(__dirname, 'out')) ? 'Compiled' : 'Not compiled'}`
+	);
 
 	if (passedTests === totalTests) {
 		console.log('\n🎉 AIDE Extension is ready for Phase 5 completion!');
@@ -407,9 +412,11 @@ async function runCompleteTestSuite() {
 }
 
 // Run the complete test suite
-runCompleteTestSuite().then(success => {
-	process.exit(success ? 0 : 1);
-}).catch(error => {
-	console.error('💥 Test suite failed:', error);
-	process.exit(1);
-});
+runCompleteTestSuite()
+	.then(success => {
+		process.exit(success ? 0 : 1);
+	})
+	.catch(error => {
+		console.error('💥 Test suite failed:', error);
+		process.exit(1);
+	});

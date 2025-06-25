@@ -58,7 +58,7 @@ export class AgentManager {
 		const intentId = this.memoryGraph.addNode('intent', message, {
 			source: 'user',
 			timestamp: new Date().toISOString(),
-			context
+			context,
 		});
 
 		const responses: AgentResponse[] = [];
@@ -68,7 +68,8 @@ export class AgentManager {
 
 		for (const agentType of agents) {
 			try {
-				let response: AgentResponse; switch (agentType) {
+				let response: AgentResponse;
+				switch (agentType) {
 					case 'planner':
 						response = await this.plannerAgent.process(message, intentId);
 						break;
@@ -93,13 +94,12 @@ export class AgentManager {
 
 				responses.push(response);
 				this.log(`${agentType} agent response: ${response.message}`);
-
 			} catch (error) {
 				this.log(`Error from ${agentType} agent: ${error}`);
 				responses.push({
 					agent: agentType,
 					message: `Error processing request: ${error}`,
-					metadata: { error: true }
+					metadata: { error: true },
 				});
 			}
 		}
@@ -115,7 +115,7 @@ export class AgentManager {
 
 		const intentId = this.memoryGraph.addNode('intent', `Plan feature: ${featureDescription}`, {
 			type: 'feature_planning',
-			timestamp: new Date().toISOString()
+			timestamp: new Date().toISOString(),
 		});
 
 		return await this.plannerAgent.process(featureDescription, intentId);
@@ -129,7 +129,7 @@ export class AgentManager {
 
 		const intentId = this.memoryGraph.addNode('intent', 'Build project', {
 			type: 'build',
-			timestamp: new Date().toISOString()
+			timestamp: new Date().toISOString(),
 		});
 
 		return await this.builderAgent.process('Build the current project', intentId);
@@ -143,7 +143,7 @@ export class AgentManager {
 
 		const intentId = this.memoryGraph.addNode('intent', 'Deploy project', {
 			type: 'deployment',
-			timestamp: new Date().toISOString()
+			timestamp: new Date().toISOString(),
 		});
 
 		return await this.deployAgent.process('Deploy the current project', intentId);
@@ -159,7 +159,7 @@ export class AgentManager {
 			designer: await this.designerAgent.getStatus(),
 			test: await this.testAgent.getStatus(),
 			deploy: await this.deployAgent.getStatus(),
-			code: await this.codeAgent.getStatus()
+			code: await this.codeAgent.getStatus(),
 		};
 
 		return status;
@@ -192,7 +192,7 @@ export class AgentManager {
 			designer: ['ui', 'ux', 'interface', 'design', 'layout', 'style', 'component'],
 			test: ['test', 'testing', 'spec', 'unit', 'integration', 'coverage'],
 			deploy: ['deploy', 'deployment', 'publish', 'release', 'production'],
-			code: ['complete', 'completion', 'suggest', 'autocomplete', 'intellisense', 'snippet']
+			code: ['complete', 'completion', 'suggest', 'autocomplete', 'intellisense', 'snippet'],
 		};
 
 		for (const [agent, agentKeywords] of Object.entries(keywords)) {

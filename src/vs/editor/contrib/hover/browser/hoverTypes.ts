@@ -11,7 +11,10 @@ import { ICodeEditor, IEditorMouseEvent } from '../../../browser/editorBrowser.j
 import { Position } from '../../../common/core/position.js';
 import { Range } from '../../../common/core/range.js';
 import { IModelDecoration } from '../../../common/model.js';
-import { BrandedService, IConstructorSignature } from '../../../../platform/instantiation/common/instantiation.js';
+import {
+	BrandedService,
+	IConstructorSignature,
+} from '../../../../platform/instantiation/common/instantiation.js';
 import { HoverStartSource } from './hoverOperation.js';
 import { ScrollEvent } from '../../../../base/common/scrollable.js';
 
@@ -42,7 +45,7 @@ export interface IHoverPart {
 
 export const enum HoverAnchorType {
 	Range = 1,
-	ForeignElement = 2
+	ForeignElement = 2,
 }
 
 export class HoverRangeAnchor {
@@ -51,14 +54,16 @@ export class HoverRangeAnchor {
 		public readonly priority: number,
 		public readonly range: Range,
 		public readonly initialMousePosX: number | undefined,
-		public readonly initialMousePosY: number | undefined,
-	) {
-	}
+		public readonly initialMousePosY: number | undefined
+	) {}
 	public equals(other: HoverAnchor) {
-		return (other.type === HoverAnchorType.Range && this.range.equalsRange(other.range));
+		return other.type === HoverAnchorType.Range && this.range.equalsRange(other.range);
 	}
 	public canAdoptVisibleHover(lastAnchor: HoverAnchor, showAtPosition: Position): boolean {
-		return (lastAnchor.type === HoverAnchorType.Range && showAtPosition.lineNumber === this.range.startLineNumber);
+		return (
+			lastAnchor.type === HoverAnchorType.Range &&
+			showAtPosition.lineNumber === this.range.startLineNumber
+		);
 	}
 }
 
@@ -71,20 +76,24 @@ export class HoverForeignElementAnchor {
 		public readonly initialMousePosX: number | undefined,
 		public readonly initialMousePosY: number | undefined,
 		public readonly supportsMarkerHover: boolean | undefined
-	) {
-	}
+	) {}
 	public equals(other: HoverAnchor) {
-		return (other.type === HoverAnchorType.ForeignElement && this.owner === other.owner);
+		return other.type === HoverAnchorType.ForeignElement && this.owner === other.owner;
 	}
 	public canAdoptVisibleHover(lastAnchor: HoverAnchor, showAtPosition: Position): boolean {
-		return (lastAnchor.type === HoverAnchorType.ForeignElement && this.owner === lastAnchor.owner);
+		return lastAnchor.type === HoverAnchorType.ForeignElement && this.owner === lastAnchor.owner;
 	}
 }
 
 export type HoverAnchor = HoverRangeAnchor | HoverForeignElementAnchor;
 
 export interface IEditorHoverStatusBar {
-	addAction(actionOptions: { label: string; iconClass?: string; run: (target: HTMLElement) => void; commandId: string }): IEditorHoverAction;
+	addAction(actionOptions: {
+		label: string;
+		iconClass?: string;
+		run: (target: HTMLElement) => void;
+		commandId: string;
+	}): IEditorHoverAction;
 	append(element: HTMLElement): HTMLElement;
 }
 
@@ -148,8 +157,10 @@ export interface IRenderedHoverParts<T extends IHoverPart> extends IDisposable {
  * Default implementation of IRenderedHoverParts.
  */
 export class RenderedHoverParts<T extends IHoverPart> implements IRenderedHoverParts<T> {
-
-	constructor(public readonly renderedHoverParts: IRenderedHoverPart<T>[], private readonly disposables?: IDisposable) { }
+	constructor(
+		public readonly renderedHoverParts: IRenderedHoverPart<T>[],
+		private readonly disposables?: IDisposable
+	) {}
 
 	dispose() {
 		for (const part of this.renderedHoverParts) {
@@ -162,8 +173,17 @@ export class RenderedHoverParts<T extends IHoverPart> implements IRenderedHoverP
 export interface IEditorHoverParticipant<T extends IHoverPart = IHoverPart> {
 	readonly hoverOrdinal: number;
 	suggestHoverAnchor?(mouseEvent: IEditorMouseEvent): HoverAnchor | null;
-	computeSync(anchor: HoverAnchor, lineDecorations: IModelDecoration[], source: HoverStartSource): T[];
-	computeAsync?(anchor: HoverAnchor, lineDecorations: IModelDecoration[], source: HoverStartSource, token: CancellationToken): AsyncIterableObject<T>;
+	computeSync(
+		anchor: HoverAnchor,
+		lineDecorations: IModelDecoration[],
+		source: HoverStartSource
+	): T[];
+	computeAsync?(
+		anchor: HoverAnchor,
+		lineDecorations: IModelDecoration[],
+		source: HoverStartSource,
+		token: CancellationToken
+	): AsyncIterableObject<T>;
 	createLoadingMessage?(anchor: HoverAnchor): T | null;
 	renderHoverParts(context: IEditorHoverRenderContext, hoverParts: T[]): IRenderedHoverParts<T>;
 	getAccessibleContent(hoverPart: T): string;
@@ -172,21 +192,24 @@ export interface IEditorHoverParticipant<T extends IHoverPart = IHoverPart> {
 	handleScroll?(e: ScrollEvent): void;
 }
 
-export type IEditorHoverParticipantCtor = IConstructorSignature<IEditorHoverParticipant, [ICodeEditor]>;
+export type IEditorHoverParticipantCtor = IConstructorSignature<
+	IEditorHoverParticipant,
+	[ICodeEditor]
+>;
 
-export const HoverParticipantRegistry = (new class HoverParticipantRegistry {
-
+export const HoverParticipantRegistry = new (class HoverParticipantRegistry {
 	_participants: IEditorHoverParticipantCtor[] = [];
 
-	public register<Services extends BrandedService[]>(ctor: { new(editor: ICodeEditor, ...services: Services): IEditorHoverParticipant }): void {
+	public register<Services extends BrandedService[]>(ctor: {
+		new (editor: ICodeEditor, ...services: Services): IEditorHoverParticipant;
+	}): void {
 		this._participants.push(ctor as IEditorHoverParticipantCtor);
 	}
 
 	public getAll(): IEditorHoverParticipantCtor[] {
 		return this._participants;
 	}
-
-}());
+})();
 
 export interface IHoverWidget {
 	/**

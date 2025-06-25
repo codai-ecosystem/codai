@@ -8,7 +8,6 @@ export interface ITask<T> {
 }
 
 export class Delayer<T> {
-
 	public defaultDelay: number;
 	private _timeout: any; // Timer
 	private _cancelTimeout: Promise<T | null> | null;
@@ -34,7 +33,7 @@ export class Delayer<T> {
 		}
 
 		if (!this._cancelTimeout) {
-			this._cancelTimeout = new Promise<T | undefined>((resolve) => {
+			this._cancelTimeout = new Promise<T | undefined>(resolve => {
 				this._onSuccess = resolve;
 			}).then(() => {
 				this._cancelTimeout = null;
@@ -46,10 +45,13 @@ export class Delayer<T> {
 		}
 
 		if (delay >= 0 || this._timeout === null) {
-			this._timeout = setTimeout(() => {
-				this._timeout = null;
-				this._onSuccess?.(undefined);
-			}, delay >= 0 ? delay : this.defaultDelay);
+			this._timeout = setTimeout(
+				() => {
+					this._timeout = null;
+					this._onSuccess?.(undefined);
+				},
+				delay >= 0 ? delay : this.defaultDelay
+			);
 		}
 
 		return this._cancelTimeout;

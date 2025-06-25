@@ -78,7 +78,6 @@ export interface IQuickNavigateConfiguration {
 }
 
 export interface IPickOptions<T extends IQuickPickItem> {
-
 	/**
 	 * an optional string to show as the title of the quick input
 	 */
@@ -148,7 +147,6 @@ export interface IPickOptions<T extends IQuickPickItem> {
 }
 
 export interface IInputOptions {
-
 	/**
 	 * an optional string to show as the title of the quick input
 	 */
@@ -187,11 +185,12 @@ export interface IInputOptions {
 	/**
 	 * an optional function that is used to validate user input.
 	 */
-	validateInput?: (input: string) => Promise<string | null | undefined | { content: string; severity: Severity }>;
+	validateInput?: (
+		input: string
+	) => Promise<string | null | undefined | { content: string; severity: Severity }>;
 }
 
 export enum QuickInputHideReason {
-
 	/**
 	 * Focus moved away from the quick input.
 	 */
@@ -205,7 +204,7 @@ export enum QuickInputHideReason {
 	/**
 	 * Anything else.
 	 */
-	Other
+	Other,
 }
 
 export interface IQuickInputHideEvent {
@@ -218,14 +217,13 @@ export interface IQuickInputHideEvent {
 export const enum QuickInputType {
 	QuickPick = 'quickPick',
 	InputBox = 'inputBox',
-	QuickWidget = 'quickWidget'
+	QuickWidget = 'quickWidget',
 }
 
 /**
  * Represents a quick input control that allows users to make selections or provide input quickly.
  */
 export interface IQuickInput extends IDisposable {
-
 	/**
 	 * The type of the quick input.
 	 */
@@ -326,7 +324,6 @@ export interface IQuickInput extends IDisposable {
 }
 
 export interface IQuickWidget extends IQuickInput {
-
 	/**
 	 * The type of the quick input.
 	 */
@@ -340,7 +337,6 @@ export interface IQuickWidget extends IQuickInput {
 }
 
 export interface IQuickPickWillAcceptEvent {
-
 	/**
 	 * Allows to disable the default accept handling
 	 * of the picker. If `veto` is called, the picker
@@ -350,7 +346,6 @@ export interface IQuickPickWillAcceptEvent {
 }
 
 export interface IQuickPickDidAcceptEvent {
-
 	/**
 	 * Signals if the picker item is to be accepted
 	 * in the background while keeping the picker open.
@@ -378,7 +373,7 @@ export enum ItemActivation {
 	/**
 	 * Last item will be active.
 	 */
-	LAST
+	LAST,
 }
 
 /**
@@ -420,14 +415,16 @@ export enum QuickPickFocus {
 	/**
 	 * Focus the first item under the current separator.
 	 */
-	PreviousSeparator
+	PreviousSeparator,
 }
 
 /**
  * Represents a quick pick control that allows the user to select an item from a list of options.
  */
-export interface IQuickPick<T extends IQuickPickItem, O extends { useSeparators: boolean } = { useSeparators: false }> extends IQuickInput {
-
+export interface IQuickPick<
+	T extends IQuickPickItem,
+	O extends { useSeparators: boolean } = { useSeparators: false },
+> extends IQuickInput {
 	/**
 	 * The type of the quick input.
 	 */
@@ -518,7 +515,9 @@ export interface IQuickPick<T extends IQuickPickItem, O extends { useSeparators:
 	/**
 	 * The items to be displayed in the quick pick.
 	 */
-	items: O extends { useSeparators: true } ? ReadonlyArray<T | IQuickPickSeparator> : ReadonlyArray<T>;
+	items: O extends { useSeparators: true }
+		? ReadonlyArray<T | IQuickPickSeparator>
+		: ReadonlyArray<T>;
 
 	/**
 	 * Whether multiple items can be selected. If so, checkboxes will be rendered.
@@ -665,7 +664,6 @@ export interface IQuickInputToggle {
  * Represents an input box in a quick input dialog.
  */
 export interface IInputBox extends IQuickInput {
-
 	/**
 	 * The type of the quick input.
 	 */
@@ -727,7 +725,7 @@ export enum QuickInputButtonLocation {
 	/**
 	 * To the right of the input box.
 	 */
-	Inline = 2
+	Inline = 2,
 }
 
 /**
@@ -793,7 +791,8 @@ export interface IQuickPickSeparatorButtonEvent {
  * Represents a context for a button associated with a quick pick item.
  * @template T - The type of the quick pick item.
  */
-export interface IQuickPickItemButtonContext<T extends IQuickPickItem> extends IQuickPickItemButtonEvent<T> {
+export interface IQuickPickItemButtonContext<T extends IQuickPickItem>
+	extends IQuickPickItemButtonEvent<T> {
 	/**
 	 * Removes the associated item from the quick pick.
 	 */
@@ -802,14 +801,12 @@ export interface IQuickPickItemButtonContext<T extends IQuickPickItem> extends I
 
 export type QuickPickInput<T = IQuickPickItem> = T | IQuickPickSeparator;
 
-
 //#region Fuzzy Scorer Support
 
 export type IQuickPickItemWithResource = IQuickPickItem & { resource?: URI };
 
 export class QuickPickItemScorerAccessor implements IItemAccessor<IQuickPickItemWithResource> {
-
-	constructor(private options?: { skipDescription?: boolean; skipPath?: boolean }) { }
+	constructor(private options?: { skipDescription?: boolean; skipPath?: boolean }) {}
 
 	getItemLabel(entry: IQuickPickItemWithResource): string {
 		return entry.label;
@@ -845,7 +842,6 @@ export const IQuickInputService = createDecorator<IQuickInputService>('quickInpu
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export interface IQuickInputService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -872,9 +868,21 @@ export interface IQuickInputService {
 	 * Opens the quick input box for selecting items and returns a promise
 	 * with the user selected item(s) if any.
 	 */
-	pick<T extends IQuickPickItem>(picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[], options?: IPickOptions<T> & { canPickMany: true }, token?: CancellationToken): Promise<T[] | undefined>;
-	pick<T extends IQuickPickItem>(picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[], options?: IPickOptions<T> & { canPickMany: false }, token?: CancellationToken): Promise<T | undefined>;
-	pick<T extends IQuickPickItem>(picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[], options?: Omit<IPickOptions<T>, 'canPickMany'>, token?: CancellationToken): Promise<T | undefined>;
+	pick<T extends IQuickPickItem>(
+		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
+		options?: IPickOptions<T> & { canPickMany: true },
+		token?: CancellationToken
+	): Promise<T[] | undefined>;
+	pick<T extends IQuickPickItem>(
+		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
+		options?: IPickOptions<T> & { canPickMany: false },
+		token?: CancellationToken
+	): Promise<T | undefined>;
+	pick<T extends IQuickPickItem>(
+		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
+		options?: Omit<IPickOptions<T>, 'canPickMany'>,
+		token?: CancellationToken
+	): Promise<T | undefined>;
 
 	/**
 	 * Opens the quick input box for text input and returns a promise with the user typed value if any.
@@ -884,8 +892,12 @@ export interface IQuickInputService {
 	/**
 	 * Provides raw access to the quick pick controller.
 	 */
-	createQuickPick<T extends IQuickPickItem>(options: { useSeparators: true }): IQuickPick<T, { useSeparators: true }>;
-	createQuickPick<T extends IQuickPickItem>(options?: { useSeparators: boolean }): IQuickPick<T, { useSeparators: false }>;
+	createQuickPick<T extends IQuickPickItem>(options: {
+		useSeparators: true;
+	}): IQuickPick<T, { useSeparators: true }>;
+	createQuickPick<T extends IQuickPickItem>(options?: {
+		useSeparators: boolean;
+	}): IQuickPick<T, { useSeparators: false }>;
 
 	/**
 	 * Provides raw access to the input box controller.

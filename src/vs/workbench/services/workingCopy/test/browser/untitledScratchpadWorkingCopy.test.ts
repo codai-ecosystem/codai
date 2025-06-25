@@ -4,28 +4,53 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { VSBufferReadableStream, VSBuffer, streamToBuffer, bufferToStream, readableToBuffer, VSBufferReadable } from '../../../../../base/common/buffer.js';
+import {
+	VSBufferReadableStream,
+	VSBuffer,
+	streamToBuffer,
+	bufferToStream,
+	readableToBuffer,
+	VSBufferReadable,
+} from '../../../../../base/common/buffer.js';
 import { CancellationToken } from '../../../../../base/common/cancellation.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { Schemas } from '../../../../../base/common/network.js';
 import { basename } from '../../../../../base/common/resources.js';
-import { consumeReadable, consumeStream, isReadable, isReadableStream } from '../../../../../base/common/stream.js';
+import {
+	consumeReadable,
+	consumeStream,
+	isReadable,
+	isReadableStream,
+} from '../../../../../base/common/stream.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { IUntitledFileWorkingCopyModelFactory, UntitledFileWorkingCopy } from '../../common/untitledFileWorkingCopy.js';
+import {
+	IUntitledFileWorkingCopyModelFactory,
+	UntitledFileWorkingCopy,
+} from '../../common/untitledFileWorkingCopy.js';
 import { TestUntitledFileWorkingCopyModel } from './untitledFileWorkingCopy.test.js';
-import { TestServiceAccessor, workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestServiceAccessor,
+	workbenchInstantiationService,
+} from '../../../../test/browser/workbenchTestServices.js';
 
-export class TestUntitledFileWorkingCopyModelFactory implements IUntitledFileWorkingCopyModelFactory<TestUntitledFileWorkingCopyModel> {
-
-	async createModel(resource: URI, contents: VSBufferReadableStream, token: CancellationToken): Promise<TestUntitledFileWorkingCopyModel> {
-		return new TestUntitledFileWorkingCopyModel(resource, (await streamToBuffer(contents)).toString());
+export class TestUntitledFileWorkingCopyModelFactory
+	implements IUntitledFileWorkingCopyModelFactory<TestUntitledFileWorkingCopyModel>
+{
+	async createModel(
+		resource: URI,
+		contents: VSBufferReadableStream,
+		token: CancellationToken
+	): Promise<TestUntitledFileWorkingCopyModel> {
+		return new TestUntitledFileWorkingCopyModel(
+			resource,
+			(await streamToBuffer(contents)).toString()
+		);
 	}
 }
 
 suite('UntitledScratchpadWorkingCopy', () => {
-
 	const factory = new TestUntitledFileWorkingCopyModelFactory();
 
 	const disposables = new DisposableStore();
@@ -34,20 +59,31 @@ suite('UntitledScratchpadWorkingCopy', () => {
 	let accessor: TestServiceAccessor;
 	let workingCopy: UntitledFileWorkingCopy<TestUntitledFileWorkingCopyModel>;
 
-	function createWorkingCopy(uri: URI = resource, hasAssociatedFilePath = false, initialValue = '') {
-		return disposables.add(new UntitledFileWorkingCopy<TestUntitledFileWorkingCopyModel>(
-			'testUntitledWorkingCopyType',
-			uri,
-			basename(uri),
-			hasAssociatedFilePath,
-			true,
-			initialValue.length > 0 ? { value: bufferToStream(VSBuffer.fromString(initialValue)) } : undefined,
-			factory,
-			async workingCopy => { await workingCopy.revert(); return true; },
-			accessor.workingCopyService,
-			accessor.workingCopyBackupService,
-			accessor.logService
-		));
+	function createWorkingCopy(
+		uri: URI = resource,
+		hasAssociatedFilePath = false,
+		initialValue = ''
+	) {
+		return disposables.add(
+			new UntitledFileWorkingCopy<TestUntitledFileWorkingCopyModel>(
+				'testUntitledWorkingCopyType',
+				uri,
+				basename(uri),
+				hasAssociatedFilePath,
+				true,
+				initialValue.length > 0
+					? { value: bufferToStream(VSBuffer.fromString(initialValue)) }
+					: undefined,
+				factory,
+				async workingCopy => {
+					await workingCopy.revert();
+					return true;
+				},
+				accessor.workingCopyService,
+				accessor.workingCopyBackupService,
+				accessor.logService
+			)
+		);
 	}
 
 	setup(() => {
@@ -73,14 +109,18 @@ suite('UntitledScratchpadWorkingCopy', () => {
 		assert.strictEqual(workingCopy.isDirty(), false);
 
 		let changeDirtyCounter = 0;
-		disposables.add(workingCopy.onDidChangeDirty(() => {
-			changeDirtyCounter++;
-		}));
+		disposables.add(
+			workingCopy.onDidChangeDirty(() => {
+				changeDirtyCounter++;
+			})
+		);
 
 		let contentChangeCounter = 0;
-		disposables.add(workingCopy.onDidChangeContent(() => {
-			contentChangeCounter++;
-		}));
+		disposables.add(
+			workingCopy.onDidChangeContent(() => {
+				contentChangeCounter++;
+			})
+		);
 
 		await workingCopy.resolve();
 		assert.strictEqual(workingCopy.isResolved(), true);
@@ -129,14 +169,18 @@ suite('UntitledScratchpadWorkingCopy', () => {
 
 	test('revert', async () => {
 		let revertCounter = 0;
-		disposables.add(workingCopy.onDidRevert(() => {
-			revertCounter++;
-		}));
+		disposables.add(
+			workingCopy.onDidRevert(() => {
+				revertCounter++;
+			})
+		);
 
 		let disposeCounter = 0;
-		disposables.add(workingCopy.onWillDispose(() => {
-			disposeCounter++;
-		}));
+		disposables.add(
+			workingCopy.onWillDispose(() => {
+				disposeCounter++;
+			})
+		);
 
 		await workingCopy.resolve();
 
@@ -152,9 +196,11 @@ suite('UntitledScratchpadWorkingCopy', () => {
 
 	test('dispose', async () => {
 		let disposeCounter = 0;
-		disposables.add(workingCopy.onWillDispose(() => {
-			disposeCounter++;
-		}));
+		disposables.add(
+			workingCopy.onWillDispose(() => {
+				disposeCounter++;
+			})
+		);
 
 		await workingCopy.resolve();
 		workingCopy.dispose();
@@ -172,9 +218,13 @@ suite('UntitledScratchpadWorkingCopy', () => {
 
 		let backupContents: string | undefined = undefined;
 		if (isReadableStream(backup.content)) {
-			backupContents = (await consumeStream(backup.content, chunks => VSBuffer.concat(chunks))).toString();
+			backupContents = (
+				await consumeStream(backup.content, chunks => VSBuffer.concat(chunks))
+			).toString();
 		} else if (backup.content) {
-			backupContents = consumeReadable(backup.content, chunks => VSBuffer.concat(chunks)).toString();
+			backupContents = consumeReadable(backup.content, chunks =>
+				VSBuffer.concat(chunks)
+			).toString();
 		}
 
 		assert.strictEqual(backupContents, 'Hello Backup');
@@ -197,9 +247,11 @@ suite('UntitledScratchpadWorkingCopy', () => {
 		workingCopy = createWorkingCopy(resource, false, 'Hello Initial');
 
 		let contentChangeCounter = 0;
-		disposables.add(workingCopy.onDidChangeContent(() => {
-			contentChangeCounter++;
-		}));
+		disposables.add(
+			workingCopy.onDidChangeContent(() => {
+				contentChangeCounter++;
+			})
+		);
 
 		assert.strictEqual(workingCopy.isModified(), true);
 
@@ -234,7 +286,6 @@ suite('UntitledScratchpadWorkingCopy', () => {
 		}
 	});
 
-
 	test('resolve - with associated resource', async () => {
 		workingCopy.dispose();
 		workingCopy = createWorkingCopy(resource, true);
@@ -250,7 +301,12 @@ suite('UntitledScratchpadWorkingCopy', () => {
 		workingCopy.model?.updateContents('Hello Backup');
 
 		const backup = await workingCopy.backup(CancellationToken.None);
-		await accessor.workingCopyBackupService.backup(workingCopy, backup.content, undefined, backup.meta);
+		await accessor.workingCopyBackupService.backup(
+			workingCopy,
+			backup.content,
+			undefined,
+			backup.meta
+		);
 
 		assert.strictEqual(accessor.workingCopyBackupService.hasBackupSync(workingCopy), true);
 
@@ -259,9 +315,11 @@ suite('UntitledScratchpadWorkingCopy', () => {
 		workingCopy = createWorkingCopy();
 
 		let contentChangeCounter = 0;
-		disposables.add(workingCopy.onDidChangeContent(() => {
-			contentChangeCounter++;
-		}));
+		disposables.add(
+			workingCopy.onDidChangeContent(() => {
+				contentChangeCounter++;
+			})
+		);
 
 		await workingCopy.resolve();
 

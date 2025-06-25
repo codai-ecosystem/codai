@@ -1,32 +1,32 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState } from 'react'
-import { useAuth } from '../../lib/auth-context'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ServiceConfig } from '../../lib/types'
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../lib/auth-context';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ServiceConfig } from '../../lib/types';
 
 interface UserServiceData {
-	userId: string
-	email?: string
-	configurations: ServiceConfig[]
-	totalUsage: number
-	lastActive: string
+	userId: string;
+	email?: string;
+	configurations: ServiceConfig[];
+	totalUsage: number;
+	lastActive: string;
 }
 
 export default function ServicesPage() {
-	const { user, loading } = useAuth()
-	const router = useRouter()
-	const [isAdmin, setIsAdmin] = useState(false)
-	const [isLoading, setIsLoading] = useState(true)
-	const [userServices, setUserServices] = useState<UserServiceData[]>([])
-	const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-	const [refreshing, setRefreshing] = useState(false)
+	const { user, loading } = useAuth();
+	const router = useRouter();
+	const [isAdmin, setIsAdmin] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+	const [userServices, setUserServices] = useState<UserServiceData[]>([]);
+	const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+	const [refreshing, setRefreshing] = useState(false);
 
 	useEffect(() => {
 		// Redirect to login if not authenticated
 		if (!loading && !user) {
-			router.push('/login')
+			router.push('/login');
 		}
 
 		// Check if user is admin
@@ -34,21 +34,21 @@ export default function ServicesPage() {
 			if (user) {
 				// In a real implementation, we would fetch the user profile from Firestore
 				// For now, we'll assume the user is an admin
-				setIsAdmin(true)
-				setIsLoading(false)
+				setIsAdmin(true);
+				setIsLoading(false);
 
 				// Load user services data
-				await loadUserServices()
+				await loadUserServices();
 			}
-		}
+		};
 
 		if (user) {
-			checkAdminStatus()
+			checkAdminStatus();
 		}
-	}, [user, loading, router])
+	}, [user, loading, router]);
 
 	const loadUserServices = async () => {
-		setRefreshing(true)
+		setRefreshing(true);
 		try {
 			// This would fetch all user service configurations from the admin API
 			// For now, we'll use mock data
@@ -67,7 +67,7 @@ export default function ServicesPage() {
 							apiKey: 'sk-***',
 							isActive: true,
 							createdAt: new Date('2024-01-15'),
-							updatedAt: new Date('2024-01-20')
+							updatedAt: new Date('2024-01-20'),
 						},
 						{
 							id: 'config-2',
@@ -79,11 +79,11 @@ export default function ServicesPage() {
 							apiKey: 'sk-***',
 							isActive: true,
 							createdAt: new Date('2024-01-15'),
-							updatedAt: new Date('2024-01-20')
-						}
+							updatedAt: new Date('2024-01-20'),
+						},
 					],
 					totalUsage: 15420,
-					lastActive: '2024-01-20T10:30:00Z'
+					lastActive: '2024-01-20T10:30:00Z',
 				},
 				{
 					userId: 'user-456',
@@ -99,48 +99,50 @@ export default function ServicesPage() {
 							apiKey: 'sk-ant-***',
 							isActive: true,
 							createdAt: new Date('2024-01-10'),
-							updatedAt: new Date('2024-01-18')
-						}
+							updatedAt: new Date('2024-01-18'),
+						},
 					],
 					totalUsage: 8750,
-					lastActive: '2024-01-18T15:45:00Z'
-				}
-			]
-			setUserServices(mockData)
+					lastActive: '2024-01-18T15:45:00Z',
+				},
+			];
+			setUserServices(mockData);
 		} catch (error) {
-			console.error('Failed to load user services:', error)
+			console.error('Failed to load user services:', error);
 		} finally {
-			setRefreshing(false)
+			setRefreshing(false);
 		}
-	}
+	};
 
 	const handleDeactivateConfig = async (userId: string, configId: string) => {
 		try {
 			// This would call the admin API to deactivate a user's service configuration
-			console.log(`Deactivating config ${configId} for user ${userId}`)
+			console.log(`Deactivating config ${configId} for user ${userId}`);
 			// Update local state
-			setUserServices(prev => prev.map(userData => {
-				if (userData.userId === userId) {
-					return {
-						...userData,
-						configurations: userData.configurations.map(config =>
-							config.id === configId ? { ...config, isActive: false } : config
-						)
+			setUserServices(prev =>
+				prev.map(userData => {
+					if (userData.userId === userId) {
+						return {
+							...userData,
+							configurations: userData.configurations.map(config =>
+								config.id === configId ? { ...config, isActive: false } : config
+							),
+						};
 					}
-				}
-				return userData
-			}))
+					return userData;
+				})
+			);
 		} catch (error) {
-			console.error('Failed to deactivate configuration:', error)
+			console.error('Failed to deactivate configuration:', error);
 		}
-	}
+	};
 
 	if (loading || isLoading) {
 		return (
 			<main className="flex min-h-screen flex-col items-center justify-center p-24">
 				<div className="text-2xl">Loading...</div>
 			</main>
-		)
+		);
 	}
 
 	if (!user || !isAdmin) {
@@ -152,7 +154,7 @@ export default function ServicesPage() {
 					Return to Dashboard
 				</Link>
 			</main>
-		)
+		);
 	}
 
 	return (
@@ -164,9 +166,7 @@ export default function ServicesPage() {
 							← Back to Admin
 						</Link>
 						<h1 className="text-4xl font-bold">Service Management</h1>
-						<p className="text-gray-600 mt-2">
-							Monitor and manage user service configurations
-						</p>
+						<p className="text-gray-600 mt-2">Monitor and manage user service configurations</p>
 					</div>
 					<button
 						onClick={loadUserServices}
@@ -188,8 +188,9 @@ export default function ServicesPage() {
 					<div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
 						<div className="text-sm text-gray-500 mb-1">Active Configs</div>
 						<div className="text-3xl font-bold">
-							{userServices.reduce((sum, user) =>
-								sum + user.configurations.filter(c => c.isActive).length, 0
+							{userServices.reduce(
+								(sum, user) => sum + user.configurations.filter(c => c.isActive).length,
+								0
 							)}
 						</div>
 					</div>
@@ -203,9 +204,11 @@ export default function ServicesPage() {
 						<div className="text-sm text-gray-500 mb-1">Avg Usage/User</div>
 						<div className="text-3xl font-bold">
 							{userServices.length > 0
-								? Math.round(userServices.reduce((sum, user) => sum + user.totalUsage, 0) / userServices.length).toLocaleString()
-								: 0
-							}
+								? Math.round(
+										userServices.reduce((sum, user) => sum + user.totalUsage, 0) /
+											userServices.length
+									).toLocaleString()
+								: 0}
 						</div>
 					</div>
 				</div>
@@ -238,7 +241,7 @@ export default function ServicesPage() {
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-gray-200 dark:divide-gray-600">
-								{userServices.map((userData) => (
+								{userServices.map(userData => (
 									<React.Fragment key={userData.userId}>
 										<tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
 											<td className="px-6 py-4 whitespace-nowrap">
@@ -253,13 +256,15 @@ export default function ServicesPage() {
 											</td>
 											<td className="px-6 py-4">
 												<div className="space-y-1">
-													{userData.configurations.map((config) => (
+													{userData.configurations.map(config => (
 														<div key={config.id} className="flex items-center space-x-2">
-															<span className={`px-2 py-1 rounded-full text-xs ${
-																config.isActive
-																	? 'bg-green-100 text-green-800'
-																	: 'bg-gray-100 text-gray-800'
-															}`}>
+															<span
+																className={`px-2 py-1 rounded-full text-xs ${
+																	config.isActive
+																		? 'bg-green-100 text-green-800'
+																		: 'bg-gray-100 text-gray-800'
+																}`}
+															>
 																{config.providerId}
 															</span>
 															<span className="text-sm text-gray-600 dark:text-gray-400">
@@ -277,9 +282,11 @@ export default function ServicesPage() {
 											</td>
 											<td className="px-6 py-4 whitespace-nowrap">
 												<button
-													onClick={() => setSelectedUserId(
-														selectedUserId === userData.userId ? null : userData.userId
-													)}
+													onClick={() =>
+														setSelectedUserId(
+															selectedUserId === userData.userId ? null : userData.userId
+														)
+													}
 													className="text-blue-600 hover:text-blue-800 text-sm font-medium"
 												>
 													{selectedUserId === userData.userId ? 'Hide' : 'Manage'}
@@ -291,8 +298,11 @@ export default function ServicesPage() {
 												<td colSpan={5} className="px-6 py-4 bg-gray-50 dark:bg-gray-700">
 													<div className="space-y-4">
 														<h4 className="text-lg font-medium">Configuration Details</h4>
-														{userData.configurations.map((config) => (
-															<div key={config.id} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
+														{userData.configurations.map(config => (
+															<div
+																key={config.id}
+																className="border rounded-lg p-4 bg-white dark:bg-gray-800"
+															>
 																<div className="flex justify-between items-start">
 																	<div>
 																		<div className="font-medium">
@@ -311,7 +321,9 @@ export default function ServicesPage() {
 																	<div className="space-x-2">
 																		{config.isActive && (
 																			<button
-																				onClick={() => handleDeactivateConfig(userData.userId, config.id!)}
+																				onClick={() =>
+																					handleDeactivateConfig(userData.userId, config.id!)
+																				}
 																				className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
 																			>
 																				Deactivate
@@ -333,5 +345,5 @@ export default function ServicesPage() {
 				</div>
 			</div>
 		</main>
-	)
+	);
 }

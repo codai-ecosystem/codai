@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-
 	// https://github.com/microsoft/vscode/issues/206265
 
 	// TODO@API don't have this dedicated type but as property, e.g anthropic doesn't have a system-role, see
@@ -12,6 +11,6 @@ declare module 'vscode' {
 	// So, we could have `LanguageModelChatRequestOptions#system` which would be more limiting but also more natural?
 
 	export enum LanguageModelChatMessageRole {
-		System = 3
+		System = 3,
 	}
 }

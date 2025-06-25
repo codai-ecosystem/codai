@@ -20,7 +20,7 @@ import { ITextModelService } from '../../../../editor/common/services/resolverSe
 
 export const enum TypeHierarchyDirection {
 	Subtypes = 'subtypes',
-	Supertypes = 'supertypes'
+	Supertypes = 'supertypes',
 }
 
 export interface TypeHierarchyItem {
@@ -41,18 +41,29 @@ export interface TypeHierarchySession {
 }
 
 export interface TypeHierarchyProvider {
-	prepareTypeHierarchy(document: ITextModel, position: IPosition, token: CancellationToken): ProviderResult<TypeHierarchySession>;
-	provideSupertypes(item: TypeHierarchyItem, token: CancellationToken): ProviderResult<TypeHierarchyItem[]>;
-	provideSubtypes(item: TypeHierarchyItem, token: CancellationToken): ProviderResult<TypeHierarchyItem[]>;
+	prepareTypeHierarchy(
+		document: ITextModel,
+		position: IPosition,
+		token: CancellationToken
+	): ProviderResult<TypeHierarchySession>;
+	provideSupertypes(
+		item: TypeHierarchyItem,
+		token: CancellationToken
+	): ProviderResult<TypeHierarchyItem[]>;
+	provideSubtypes(
+		item: TypeHierarchyItem,
+		token: CancellationToken
+	): ProviderResult<TypeHierarchyItem[]>;
 }
 
 export const TypeHierarchyProviderRegistry = new LanguageFeatureRegistry<TypeHierarchyProvider>();
 
-
-
 export class TypeHierarchyModel {
-
-	static async create(model: ITextModel, position: IPosition, token: CancellationToken): Promise<TypeHierarchyModel | undefined> {
+	static async create(
+		model: ITextModel,
+		position: IPosition,
+		token: CancellationToken
+	): Promise<TypeHierarchyModel | undefined> {
 		const [provider] = TypeHierarchyProviderRegistry.ordered(model);
 		if (!provider) {
 			return undefined;
@@ -61,7 +72,12 @@ export class TypeHierarchyModel {
 		if (!session) {
 			return undefined;
 		}
-		return new TypeHierarchyModel(session.roots.reduce((p, c) => p + c._sessionId, ''), provider, session.roots, new RefCountedDisposable(session));
+		return new TypeHierarchyModel(
+			session.roots.reduce((p, c) => p + c._sessionId, ''),
+			provider,
+			session.roots,
+			new RefCountedDisposable(session)
+		);
 	}
 
 	readonly root: TypeHierarchyItem;
@@ -70,7 +86,7 @@ export class TypeHierarchyModel {
 		readonly id: string,
 		readonly provider: TypeHierarchyProvider,
 		readonly roots: TypeHierarchyItem[],
-		readonly ref: RefCountedDisposable,
+		readonly ref: RefCountedDisposable
 	) {
 		this.root = roots[0];
 	}
@@ -81,14 +97,17 @@ export class TypeHierarchyModel {
 
 	fork(item: TypeHierarchyItem): TypeHierarchyModel {
 		const that = this;
-		return new class extends TypeHierarchyModel {
+		return new (class extends TypeHierarchyModel {
 			constructor() {
 				super(that.id, that.provider, [item], that.ref.acquire());
 			}
-		};
+		})();
 	}
 
-	async provideSupertypes(item: TypeHierarchyItem, token: CancellationToken): Promise<TypeHierarchyItem[]> {
+	async provideSupertypes(
+		item: TypeHierarchyItem,
+		token: CancellationToken
+	): Promise<TypeHierarchyItem[]> {
 		try {
 			const result = await this.provider.provideSupertypes(item, token);
 			if (isNonEmptyArray(result)) {
@@ -100,7 +119,10 @@ export class TypeHierarchyModel {
 		return [];
 	}
 
-	async provideSubtypes(item: TypeHierarchyItem, token: CancellationToken): Promise<TypeHierarchyItem[]> {
+	async provideSubtypes(
+		item: TypeHierarchyItem,
+		token: CancellationToken
+	): Promise<TypeHierarchyItem[]> {
 		try {
 			const result = await this.provider.provideSubtypes(item, token);
 			if (isNonEmptyArray(result)) {
@@ -150,7 +172,6 @@ CommandsRegistry.registerCommand('_executePrepareTypeHierarchy', async (accessor
 		}
 
 		return model.roots;
-
 	} finally {
 		textModelReference?.dispose();
 	}
@@ -158,12 +179,14 @@ CommandsRegistry.registerCommand('_executePrepareTypeHierarchy', async (accessor
 
 function isTypeHierarchyItemDto(obj: any): obj is TypeHierarchyItem {
 	const item = obj as TypeHierarchyItem;
-	return typeof obj === 'object'
-		&& typeof item.name === 'string'
-		&& typeof item.kind === 'number'
-		&& URI.isUri(item.uri)
-		&& Range.isIRange(item.range)
-		&& Range.isIRange(item.selectionRange);
+	return (
+		typeof obj === 'object' &&
+		typeof item.name === 'string' &&
+		typeof item.kind === 'number' &&
+		URI.isUri(item.uri) &&
+		Range.isIRange(item.range) &&
+		Range.isIRange(item.selectionRange)
+	);
 }
 
 CommandsRegistry.registerCommand('_executeProvideSupertypes', async (_accessor, ...args) => {

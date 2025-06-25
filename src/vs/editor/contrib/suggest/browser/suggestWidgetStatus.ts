@@ -4,16 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from '../../../../base/browser/dom.js';
-import { ActionBar, IActionViewItemProvider } from '../../../../base/browser/ui/actionbar/actionbar.js';
+import {
+	ActionBar,
+	IActionViewItemProvider,
+} from '../../../../base/browser/ui/actionbar/actionbar.js';
 import { IAction } from '../../../../base/common/actions.js';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { TextOnlyMenuEntryActionViewItem } from '../../../../platform/actions/browser/menuEntryActionViewItem.js';
-import { IMenuService, MenuId, MenuItemAction } from '../../../../platform/actions/common/actions.js';
+import {
+	IMenuService,
+	MenuId,
+	MenuItemAction,
+} from '../../../../platform/actions/common/actions.js';
 import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 
 export class SuggestWidgetStatus {
-
 	readonly element: HTMLElement;
 
 	private readonly _leftActions: ActionBar;
@@ -25,12 +31,16 @@ export class SuggestWidgetStatus {
 		private readonly _menuId: MenuId,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IMenuService private _menuService: IMenuService,
-		@IContextKeyService private _contextKeyService: IContextKeyService,
+		@IContextKeyService private _contextKeyService: IContextKeyService
 	) {
 		this.element = dom.append(container, dom.$('.suggest-status-bar'));
 
 		const actionViewItemProvider = <IActionViewItemProvider>(action => {
-			return action instanceof MenuItemAction ? instantiationService.createInstance(TextOnlyMenuEntryActionViewItem, action, { useComma: true }) : undefined;
+			return action instanceof MenuItemAction
+				? instantiationService.createInstance(TextOnlyMenuEntryActionViewItem, action, {
+						useComma: true,
+					})
+				: undefined;
 		});
 		this._leftActions = new ActionBar(this.element, { actionViewItemProvider });
 		this._rightActions = new ActionBar(this.element, { actionViewItemProvider });

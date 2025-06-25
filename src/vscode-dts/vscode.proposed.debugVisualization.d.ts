@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 declare module 'vscode' {
 	export namespace debug {
 		/**
@@ -125,7 +124,10 @@ declare module 'vscode' {
 		 * `debugVisualizers` contribution point in the `package.json` evaluates
 		 * to true.
 		 */
-		provideDebugVisualization(context: DebugVisualizationContext, token: CancellationToken): ProviderResult<T[]>;
+		provideDebugVisualization(
+			context: DebugVisualizationContext,
+			token: CancellationToken
+		): ProviderResult<T[]>;
 
 		/**
 		 * Invoked for a variable when a user picks the visualizer.

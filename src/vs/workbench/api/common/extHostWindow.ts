@@ -10,12 +10,16 @@ import { URI } from '../../../base/common/uri.js';
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
 import { IExtHostRpcService } from './extHostRpcService.js';
 import { WindowState } from 'vscode';
-import { ExtHostWindowShape, IOpenUriOptions, MainContext, MainThreadWindowShape } from './extHost.protocol.js';
+import {
+	ExtHostWindowShape,
+	IOpenUriOptions,
+	MainContext,
+	MainThreadWindowShape,
+} from './extHost.protocol.js';
 import { IExtHostInitDataService } from './extHostInitDataService.js';
 import { decodeBase64 } from '../../../base/common/buffer.js';
 
 export class ExtHostWindow implements ExtHostWindowShape {
-
 	declare _serviceBrand: undefined;
 
 	private static InitialState: WindowState = {
@@ -113,4 +117,4 @@ export class ExtHostWindow implements ExtHostWindowShape {
 }
 
 export const IExtHostWindow = createDecorator<IExtHostWindow>('IExtHostWindow');
-export interface IExtHostWindow extends ExtHostWindow, ExtHostWindowShape { }
+export interface IExtHostWindow extends ExtHostWindow, ExtHostWindowShape {}

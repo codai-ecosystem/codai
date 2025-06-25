@@ -19,7 +19,10 @@ export interface IContentSegmenter {
 	getSegmentData(index: number): Intl.SegmentData | undefined;
 }
 
-export function createContentSegmenter(lineData: ViewLineRenderingData, options: ViewLineOptions): IContentSegmenter {
+export function createContentSegmenter(
+	lineData: ViewLineRenderingData,
+	options: ViewLineOptions
+): IContentSegmenter {
 	if (lineData.isBasicASCII && options.useMonospaceOptimizations) {
 		return new AsciiContentSegmenter(lineData);
 	}

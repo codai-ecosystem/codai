@@ -15,7 +15,7 @@ if (typeof global.process === 'undefined') {
 	global.process = {
 		env: {},
 		// Add any other required process properties
-		nextTick: (fn: Function, ...args: any[]) => setTimeout(() => fn(...args), 0)
+		nextTick: (fn: Function, ...args: any[]) => setTimeout(() => fn(...args), 0),
 	} as any;
 }
 
@@ -44,8 +44,8 @@ Object.defineProperty(SVGElement.prototype, 'getBBox', {
 });
 
 // Mock requestAnimationFrame
-global.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
-global.cancelAnimationFrame = vi.fn((id) => clearTimeout(id));
+global.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 16));
+global.cancelAnimationFrame = vi.fn(id => clearTimeout(id));
 
 // Mock IDBKeyRange if not available
 if (typeof global.IDBKeyRange === 'undefined') {
@@ -55,13 +55,13 @@ if (typeof global.IDBKeyRange === 'undefined') {
 			lower,
 			type: 'lowerBound',
 			open,
-			includes: (x: any) => open ? x > lower : x >= lower
+			includes: (x: any) => (open ? x > lower : x >= lower),
 		}),
 		upperBound: (upper: any, open = false) => ({
 			upper,
 			type: 'upperBound',
 			open,
-			includes: (x: any) => open ? x < upper : x <= upper
+			includes: (x: any) => (open ? x < upper : x <= upper),
 		}),
 		bound: (lower: any, upper: any, lowerOpen = false, upperOpen = false) => ({
 			lower,
@@ -73,8 +73,8 @@ if (typeof global.IDBKeyRange === 'undefined') {
 				const aboveLower = lowerOpen ? x > lower : x >= lower;
 				const belowUpper = upperOpen ? x < upper : x <= upper;
 				return aboveLower && belowUpper;
-			}
-		})
+			},
+		}),
 	} as any;
 }
 

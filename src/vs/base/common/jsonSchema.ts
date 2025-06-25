@@ -3,7 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'null' | 'array' | 'object';
+export type JSONSchemaType =
+	| 'string'
+	| 'number'
+	| 'integer'
+	| 'boolean'
+	| 'null'
+	| 'array'
+	| 'object';
 
 export interface IJSONSchema {
 	id?: string;
@@ -108,32 +115,34 @@ export interface IJSONSchemaSnippet {
 export type SchemaToType<T> = T extends { type: 'string' }
 	? string
 	: T extends { type: 'number' }
-	? number
-	: T extends { type: 'boolean' }
-	? boolean
-	: T extends { type: 'null' }
-	? null
-	// Object
-	: T extends { type: 'object'; properties: infer P }
-	? { [K in keyof P]: SchemaToType<P[K]> }
-	// Array
-	: T extends { type: 'array'; items: infer I }
-	? Array<SchemaToType<I>>
-	// OneOf
-	: T extends { oneOf: infer I }
-	? MapSchemaToType<I>
-	// Fallthrough
-	: never;
+		? number
+		: T extends { type: 'boolean' }
+			? boolean
+			: T extends { type: 'null' }
+				? null
+				: // Object
+					T extends { type: 'object'; properties: infer P }
+					? { [K in keyof P]: SchemaToType<P[K]> }
+					: // Array
+						T extends { type: 'array'; items: infer I }
+						? Array<SchemaToType<I>>
+						: // OneOf
+							T extends { oneOf: infer I }
+							? MapSchemaToType<I>
+							: // Fallthrough
+								never;
 
 type MapSchemaToType<T> = T extends [infer First, ...infer Rest]
 	? SchemaToType<First> | MapSchemaToType<Rest>
 	: never;
 
-interface Equals { schemas: IJSONSchema[]; id?: string }
+interface Equals {
+	schemas: IJSONSchema[];
+	id?: string;
+}
 
 export function getCompressedContent(schema: IJSONSchema): string {
 	let hasDups = false;
-
 
 	// visit all schema nodes and collect the ones that are equal
 	const equalsByString = new Map<string, Equals>();
@@ -213,7 +222,7 @@ function isObject(thing: unknown): thing is object {
 
 /*
  * Traverse a JSON schema and visit each schema node
-*/
+ */
 function traverseNodes(root: IJSONSchema, visit: (schema: IJSONSchema) => boolean) {
 	if (!root || typeof root !== 'object') {
 		return;
@@ -248,7 +257,7 @@ function traverseNodes(root: IJSONSchema, visit: (schema: IJSONSchema) => boolea
 			}
 		}
 	};
-	const collectEntryOrArrayEntries = (items: (IJSONSchemaRef[] | IJSONSchemaRef | undefined)) => {
+	const collectEntryOrArrayEntries = (items: IJSONSchemaRef[] | IJSONSchemaRef | undefined) => {
 		if (Array.isArray(items)) {
 			for (const entry of items) {
 				if (isObject(entry)) {
@@ -266,12 +275,29 @@ function traverseNodes(root: IJSONSchema, visit: (schema: IJSONSchema) => boolea
 	while (next) {
 		const visitChildern = visit(next);
 		if (visitChildern) {
-			collectEntries(next.additionalItems, next.additionalProperties, next.not, next.contains, next.propertyNames, next.if, next.then, next.else, next.unevaluatedItems, next.unevaluatedProperties);
-			collectMapEntries(next.definitions, next.$defs, next.properties, next.patternProperties, <IJSONSchemaMap>next.dependencies, next.dependentSchemas);
+			collectEntries(
+				next.additionalItems,
+				next.additionalProperties,
+				next.not,
+				next.contains,
+				next.propertyNames,
+				next.if,
+				next.then,
+				next.else,
+				next.unevaluatedItems,
+				next.unevaluatedProperties
+			);
+			collectMapEntries(
+				next.definitions,
+				next.$defs,
+				next.properties,
+				next.patternProperties,
+				<IJSONSchemaMap>next.dependencies,
+				next.dependentSchemas
+			);
 			collectArrayEntries(next.anyOf, next.allOf, next.oneOf, next.prefixItems);
 			collectEntryOrArrayEntries(next.items);
 		}
 		next = toWalk.pop();
 	}
 }
-

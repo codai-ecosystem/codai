@@ -12,7 +12,12 @@ import { URI } from '../../../../base/common/uri.js';
 import { IRange } from '../../../../editor/common/core/range.js';
 import { IEditorContribution } from '../../../../editor/common/editorCommon.js';
 import { ConfigurationTarget } from '../../../../platform/configuration/common/configuration.js';
-import { ConfigurationDefaultValueSource, ConfigurationScope, EditPresentationTypes, IExtensionInfo } from '../../../../platform/configuration/common/configurationRegistry.js';
+import {
+	ConfigurationDefaultValueSource,
+	ConfigurationScope,
+	EditPresentationTypes,
+	IExtensionInfo,
+} from '../../../../platform/configuration/common/configurationRegistry.js';
 import { IEditorOptions } from '../../../../platform/editor/common/editor.js';
 import { IExtensionDescription } from '../../../../platform/extensions/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
@@ -146,11 +151,12 @@ export enum SettingMatchType {
 	AllWordsInSettingsLabel = 1 << 7,
 	ExactMatch = 1 << 8,
 }
-export const SettingKeyMatchTypes = (SettingMatchType.AllWordsInSettingsLabel
-	| SettingMatchType.ContiguousWordsInSettingsLabel
-	| SettingMatchType.NonContiguousWordsInSettingsLabel
-	| SettingMatchType.NonContiguousQueryInSettingId
-	| SettingMatchType.ContiguousQueryInSettingId);
+export const SettingKeyMatchTypes =
+	SettingMatchType.AllWordsInSettingsLabel |
+	SettingMatchType.ContiguousWordsInSettingsLabel |
+	SettingMatchType.NonContiguousWordsInSettingsLabel |
+	SettingMatchType.NonContiguousQueryInSettingId |
+	SettingMatchType.ContiguousQueryInSettingId;
 
 export interface ISettingMatch {
 	setting: ISetting;
@@ -196,13 +202,28 @@ export interface IPreferencesEditorModel<T> {
 }
 
 export type IGroupFilter = (group: ISettingsGroup) => boolean | null;
-export type ISettingMatcher = (setting: ISetting, group: ISettingsGroup) => { matches: IRange[]; matchType: SettingMatchType; keyMatchScore: number; score: number } | null;
+export type ISettingMatcher = (
+	setting: ISetting,
+	group: ISettingsGroup
+) => {
+	matches: IRange[];
+	matchType: SettingMatchType;
+	keyMatchScore: number;
+	score: number;
+} | null;
 
 export interface ISettingsEditorModel extends IPreferencesEditorModel<ISetting> {
 	readonly onDidChangeGroups: Event<void>;
 	settingsGroups: ISettingsGroup[];
-	filterSettings(filter: string, groupFilter: IGroupFilter, settingMatcher: ISettingMatcher): ISettingMatch[];
-	updateResultGroup(id: string, resultGroup: ISearchResultGroup | undefined): IFilterResult | undefined;
+	filterSettings(
+		filter: string,
+		groupFilter: IGroupFilter,
+		settingMatcher: ISettingMatcher
+	): ISettingMatch[];
+	updateResultGroup(
+		id: string,
+		resultGroup: ISearchResultGroup | undefined
+	): IFilterResult | undefined;
 }
 
 export interface ISettingsEditorOptions extends IEditorOptions {
@@ -225,19 +246,20 @@ export interface IOpenSettingsOptions extends ISettingsEditorOptions {
 	groupId?: number;
 }
 
-export function validateSettingsEditorOptions(options: ISettingsEditorOptions): ISettingsEditorOptions {
+export function validateSettingsEditorOptions(
+	options: ISettingsEditorOptions
+): ISettingsEditorOptions {
 	return {
 		// Inherit provided options
 		...options,
 
 		// Enforce some options for settings specifically
 		override: DEFAULT_EDITOR_ASSOCIATION.id,
-		pinned: true
+		pinned: true,
 	};
 }
 
-export interface IKeybindingsEditorModel<T> extends IPreferencesEditorModel<T> {
-}
+export interface IKeybindingsEditorModel<T> extends IPreferencesEditorModel<T> {}
 
 export interface IKeybindingsEditorOptions extends IEditorOptions {
 	query?: string;
@@ -271,11 +293,22 @@ export interface IPreferencesService {
 	openUserSettings(options?: IOpenSettingsOptions): Promise<IEditorPane | undefined>;
 	openRemoteSettings(options?: IOpenSettingsOptions): Promise<IEditorPane | undefined>;
 	openWorkspaceSettings(options?: IOpenSettingsOptions): Promise<IEditorPane | undefined>;
-	openFolderSettings(options: IOpenSettingsOptions & { folderUri: IOpenSettingsOptions['folderUri'] }): Promise<IEditorPane | undefined>;
-	openGlobalKeybindingSettings(textual: boolean, options?: IOpenKeybindingsEditorOptions): Promise<void>;
+	openFolderSettings(
+		options: IOpenSettingsOptions & { folderUri: IOpenSettingsOptions['folderUri'] }
+	): Promise<IEditorPane | undefined>;
+	openGlobalKeybindingSettings(
+		textual: boolean,
+		options?: IOpenKeybindingsEditorOptions
+	): Promise<void>;
 	openDefaultKeybindingsFile(): Promise<IEditorPane | undefined>;
-	openLanguageSpecificSettings(languageId: string, options?: IOpenSettingsOptions): Promise<IEditorPane | undefined>;
-	getEditableSettingsURI(configurationTarget: ConfigurationTarget, resource?: URI): Promise<URI | null>;
+	openLanguageSpecificSettings(
+		languageId: string,
+		options?: IOpenSettingsOptions
+	): Promise<IEditorPane | undefined>;
+	getEditableSettingsURI(
+		configurationTarget: ConfigurationTarget,
+		resource?: URI
+	): Promise<URI | null>;
 	getSetting(settingId: string): ISetting | undefined;
 
 	createSplitJsonEditorInput(configurationTarget: ConfigurationTarget, resource: URI): EditorInput;
@@ -319,7 +352,6 @@ export interface IKeybindingItem {
 }
 
 export interface IKeybindingsEditorPane extends IEditorPane {
-
 	readonly activeKeybindingEntry: IKeybindingItemEntry | null;
 	readonly onDefineWhenExpression: Event<IKeybindingItemEntry>;
 	readonly onLayout: Event<void>;
@@ -333,7 +365,11 @@ export interface IKeybindingsEditorPane extends IEditorPane {
 	selectKeybinding(keybindingEntry: IKeybindingItemEntry): void;
 	defineKeybinding(keybindingEntry: IKeybindingItemEntry, add: boolean): Promise<void>;
 	defineWhenExpression(keybindingEntry: IKeybindingItemEntry): void;
-	updateKeybinding(keybindingEntry: IKeybindingItemEntry, key: string, when: string | undefined): Promise<any>;
+	updateKeybinding(
+		keybindingEntry: IKeybindingItemEntry,
+		key: string,
+		when: string | undefined
+	): Promise<any>;
 	removeKeybinding(keybindingEntry: IKeybindingItemEntry): Promise<any>;
 	resetKeybinding(keybindingEntry: IKeybindingItemEntry): Promise<any>;
 	copyKeybinding(keybindingEntry: IKeybindingItemEntry): Promise<void>;

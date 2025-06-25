@@ -23,7 +23,7 @@ export class BannerController extends Disposable {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -41,7 +41,7 @@ export class BannerController extends Disposable {
 			onClose: () => {
 				this.hide();
 				item.onClose?.();
-			}
+			},
 		});
 		this._editor.setBanner(this.banner.element, BANNER_ELEMENT_HEIGHT);
 	}
@@ -57,9 +57,7 @@ class Banner extends Disposable {
 
 	private actionBar: ActionBar | undefined;
 
-	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-	) {
+	constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
 		super();
 
 		this.markdownRenderer = this.instantiationService.createInstance(MarkdownRenderer, {});
@@ -120,26 +118,36 @@ class Banner extends Disposable {
 		this.messageActionsContainer = append(this.element, $('div.message-actions-container'));
 		if (item.actions) {
 			for (const action of item.actions) {
-				this._register(this.instantiationService.createInstance(Link, this.messageActionsContainer, { ...action, tabIndex: -1 }, {}));
+				this._register(
+					this.instantiationService.createInstance(
+						Link,
+						this.messageActionsContainer,
+						{ ...action, tabIndex: -1 },
+						{}
+					)
+				);
 			}
 		}
 
 		// Action
 		const actionBarContainer = append(this.element, $('div.action-container'));
 		this.actionBar = this._register(new ActionBar(actionBarContainer));
-		this.actionBar.push(this._register(
-			new Action(
-				'banner.close',
-				localize('closeBanner', "Close Banner"),
-				ThemeIcon.asClassName(widgetClose),
-				true,
-				() => {
-					if (typeof item.onClose === 'function') {
-						item.onClose();
+		this.actionBar.push(
+			this._register(
+				new Action(
+					'banner.close',
+					localize('closeBanner', 'Close Banner'),
+					ThemeIcon.asClassName(widgetClose),
+					true,
+					() => {
+						if (typeof item.onClose === 'function') {
+							item.onClose();
+						}
 					}
-				}
-			)
-		), { icon: true, label: false });
+				)
+			),
+			{ icon: true, label: false }
+		);
 		this.actionBar.setFocusable(false);
 	}
 }

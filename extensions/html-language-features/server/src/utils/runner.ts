@@ -18,29 +18,36 @@ export function formatError(message: string, err: any): string {
 	return message;
 }
 
-export function runSafe<T>(runtime: RuntimeEnvironment, func: () => Thenable<T>, errorVal: T, errorMessage: string, token: CancellationToken): Thenable<T | ResponseError<any>> {
-	return new Promise<T | ResponseError<any>>((resolve) => {
+export function runSafe<T>(
+	runtime: RuntimeEnvironment,
+	func: () => Thenable<T>,
+	errorVal: T,
+	errorMessage: string,
+	token: CancellationToken
+): Thenable<T | ResponseError<any>> {
+	return new Promise<T | ResponseError<any>>(resolve => {
 		runtime.timer.setImmediate(() => {
 			if (token.isCancellationRequested) {
 				resolve(cancelValue());
 				return;
 			}
-			return func().then(result => {
-				if (token.isCancellationRequested) {
-					resolve(cancelValue());
-					return;
-				} else {
-					resolve(result);
+			return func().then(
+				result => {
+					if (token.isCancellationRequested) {
+						resolve(cancelValue());
+						return;
+					} else {
+						resolve(result);
+					}
+				},
+				e => {
+					console.error(formatError(errorMessage, e));
+					resolve(errorVal);
 				}
-			}, e => {
-				console.error(formatError(errorMessage, e));
-				resolve(errorVal);
-			});
+			);
 		});
 	});
 }
-
-
 
 function cancelValue<E>() {
 	return new ResponseError<E>(LSPErrorCodes.RequestCancelled, 'Request cancelled');

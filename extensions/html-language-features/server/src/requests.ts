@@ -30,7 +30,7 @@ export enum FileType {
 	/**
 	 * A symbolic link to a file.
 	 */
-	SymbolicLink = 64
+	SymbolicLink = 64,
 }
 export interface FileStat {
 	/**
@@ -57,9 +57,13 @@ export interface FileSystemProvider {
 	readDirectory(uri: string): Promise<[string, FileType][]>;
 }
 
-
-export function getFileSystemProvider(handledSchemas: string[], connection: Connection, runtime: RuntimeEnvironment): FileSystemProvider {
-	const fileFs = runtime.fileFs && handledSchemas.indexOf('file') !== -1 ? runtime.fileFs : undefined;
+export function getFileSystemProvider(
+	handledSchemas: string[],
+	connection: Connection,
+	runtime: RuntimeEnvironment
+): FileSystemProvider {
+	const fileFs =
+		runtime.fileFs && handledSchemas.indexOf('file') !== -1 ? runtime.fileFs : undefined;
 	return {
 		async stat(uri: string): Promise<FileStat> {
 			if (fileFs && uri.startsWith('file:')) {
@@ -73,6 +77,6 @@ export function getFileSystemProvider(handledSchemas: string[], connection: Conn
 				return fileFs.readDirectory(uri);
 			}
 			return connection.sendRequest(FsReadDirRequest.type, uri.toString());
-		}
+		},
 	};
 }

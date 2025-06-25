@@ -16,7 +16,13 @@ import { TestJSONEditingService } from '../../../configuration/test/common/testS
 import { PreferencesService } from '../../browser/preferencesService.js';
 import { IPreferencesService, ISettingsEditorOptions } from '../../common/preferences.js';
 import { IRemoteAgentService } from '../../../remote/common/remoteAgentService.js';
-import { TestRemoteAgentService, ITestInstantiationService, workbenchInstantiationService, TestEditorGroupView, TestEditorGroupsService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestRemoteAgentService,
+	ITestInstantiationService,
+	workbenchInstantiationService,
+	TestEditorGroupView,
+	TestEditorGroupsService,
+} from '../../../../test/browser/workbenchTestServices.js';
 import { IEditorGroupsService } from '../../../editor/common/editorGroupsService.js';
 import { IEditorOptions } from '../../../../../platform/editor/common/editor.js';
 import { SettingsEditor2Input } from '../../common/preferencesEditorInput.js';
@@ -32,7 +38,10 @@ suite('PreferencesService', () => {
 
 		class TestOpenEditorGroupView extends TestEditorGroupView {
 			lastOpenEditorOptions: any;
-			override openEditor(_editor: SettingsEditor2Input, options?: IEditorOptions): Promise<IEditorPane> {
+			override openEditor(
+				_editor: SettingsEditor2Input,
+				options?: IEditorOptions
+			): Promise<IEditorPane> {
 				lastOpenEditorOptions = options;
 				_editor.dispose();
 				return Promise.resolve(undefined!);
@@ -44,7 +53,7 @@ suite('PreferencesService', () => {
 		testInstantiationService.stub(IJSONEditingService, TestJSONEditingService);
 		testInstantiationService.stub(IRemoteAgentService, TestRemoteAgentService);
 		testInstantiationService.stub(ICommandService, TestCommandService);
-		testInstantiationService.stub(IURLService, { registerHandler: () => { } });
+		testInstantiationService.stub(IURLService, { registerHandler: () => {} });
 
 		// PreferencesService creates a PreferencesEditorInput which depends on IPreferencesService, add the real one, not a stub
 		const collection = new ServiceCollection();

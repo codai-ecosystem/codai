@@ -29,7 +29,7 @@ export function hash(obj: any, hashVal = 0): number {
 }
 
 function numberHash(val: number, initialHashVal: number): number {
-	return (((initialHashVal << 5) - initialHashVal) + val) | 0;  // hashVal * 31 + ch, keep as int32
+	return ((initialHashVal << 5) - initialHashVal + val) | 0; // hashVal * 31 + ch, keep as int32
 }
 
 function booleanHash(b: boolean, initialHashVal: number): number {
@@ -51,8 +51,10 @@ function arrayHash(arr: any[], initialHashVal: number): number {
 
 function objectHash(obj: any, initialHashVal: number): number {
 	initialHashVal = numberHash(181387, initialHashVal);
-	return Object.keys(obj).sort().reduce((hashVal, key) => {
-		hashVal = stringHash(key, hashVal);
-		return hash(obj[key], hashVal);
-	}, initialHashVal);
+	return Object.keys(obj)
+		.sort()
+		.reduce((hashVal, key) => {
+			hashVal = stringHash(key, hashVal);
+			return hash(obj[key], hashVal);
+		}, initialHashVal);
 }

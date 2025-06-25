@@ -9,7 +9,6 @@ import { OffsetRange } from '../../../common/core/ranges/offsetRange.js';
 import { RangePriorityQueueImpl } from '../../../common/model/textModelTokens.js';
 
 suite('RangePriorityQueueImpl', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('addRange', () => {
@@ -21,42 +20,42 @@ suite('RangePriorityQueueImpl', () => {
 
 		assert.deepStrictEqual(
 			ranges.map(r => r.toString()),
-			(['[0, 2)', '[10, 13)', '[20, 24)'])
+			['[0, 2)', '[10, 13)', '[20, 24)']
 		);
 
 		OffsetRange.addRange(new OffsetRange(2, 10), ranges);
 
 		assert.deepStrictEqual(
 			ranges.map(r => r.toString()),
-			(['[0, 13)', '[20, 24)'])
+			['[0, 13)', '[20, 24)']
 		);
 
 		OffsetRange.addRange(new OffsetRange(14, 19), ranges);
 
 		assert.deepStrictEqual(
 			ranges.map(r => r.toString()),
-			(['[0, 13)', '[14, 19)', '[20, 24)'])
+			['[0, 13)', '[14, 19)', '[20, 24)']
 		);
 
 		OffsetRange.addRange(new OffsetRange(10, 22), ranges);
 
 		assert.deepStrictEqual(
 			ranges.map(r => r.toString()),
-			(['[0, 24)'])
+			['[0, 24)']
 		);
 
 		OffsetRange.addRange(new OffsetRange(-1, 29), ranges);
 
 		assert.deepStrictEqual(
 			ranges.map(r => r.toString()),
-			(['[-1, 29)'])
+			['[-1, 29)']
 		);
 
 		OffsetRange.addRange(new OffsetRange(-10, -5), ranges);
 
 		assert.deepStrictEqual(
 			ranges.map(r => r.toString()),
-			(['[-10, -5)', '[-1, 29)'])
+			['[-10, -5)', '[-1, 29)']
 		);
 	});
 
@@ -72,28 +71,28 @@ suite('RangePriorityQueueImpl', () => {
 
 		assert.deepStrictEqual(
 			queue.getRanges().map(r => r.toString()),
-			(['[0, 20)', '[98, 118)', '[198, 218)'])
+			['[0, 20)', '[98, 118)', '[198, 218)']
 		);
 
 		queue.addRangeAndResize(new OffsetRange(19, 20), 0);
 
 		assert.deepStrictEqual(
 			queue.getRanges().map(r => r.toString()),
-			(['[0, 19)', '[97, 117)', '[197, 217)'])
+			['[0, 19)', '[97, 117)', '[197, 217)']
 		);
 
 		queue.addRangeAndResize(new OffsetRange(19, 97), 0);
 
 		assert.deepStrictEqual(
 			queue.getRanges().map(r => r.toString()),
-			(['[0, 39)', '[119, 139)'])
+			['[0, 39)', '[119, 139)']
 		);
 
 		queue.addRangeAndResize(new OffsetRange(-1000, 1000), 0);
 
 		assert.deepStrictEqual(
 			queue.getRanges().map(r => r.toString()),
-			([])
+			[]
 		);
 	});
 });

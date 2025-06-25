@@ -6,7 +6,14 @@
 import { deepStrictEqual, ok, strictEqual } from 'assert';
 import { OperatingSystem } from '../../../../../../base/common/platform.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
-import { detectLinks, detectLinkSuffixes, getLinkSuffix, IParsedLink, removeLinkQueryString, removeLinkSuffix } from '../../browser/terminalLinkParsing.js';
+import {
+	detectLinks,
+	detectLinkSuffixes,
+	getLinkSuffix,
+	IParsedLink,
+	removeLinkQueryString,
+	removeLinkSuffix,
+} from '../../browser/terminalLinkParsing.js';
 
 interface ITestLink {
 	link: string;
@@ -22,17 +29,17 @@ interface ITestLink {
 const operatingSystems: ReadonlyArray<OperatingSystem> = [
 	OperatingSystem.Linux,
 	OperatingSystem.Macintosh,
-	OperatingSystem.Windows
+	OperatingSystem.Windows,
 ];
 const osTestPath: { [key: number | OperatingSystem]: string } = {
 	[OperatingSystem.Linux]: '/test/path/linux',
 	[OperatingSystem.Macintosh]: '/test/path/macintosh',
-	[OperatingSystem.Windows]: 'C:\\test\\path\\windows'
+	[OperatingSystem.Windows]: 'C:\\test\\path\\windows',
 };
 const osLabel: { [key: number | OperatingSystem]: string } = {
 	[OperatingSystem.Linux]: '[Linux]',
 	[OperatingSystem.Macintosh]: '[macOS]',
-	[OperatingSystem.Windows]: '[Windows]'
+	[OperatingSystem.Windows]: '[Windows]',
 };
 
 const testRow = 339;
@@ -44,22 +51,94 @@ const testLinks: ITestLink[] = [
 	{ link: 'foo', prefix: undefined, suffix: undefined, hasRow: false, hasCol: false },
 	{ link: 'foo:339', prefix: undefined, suffix: ':339', hasRow: true, hasCol: false },
 	{ link: 'foo:339:12', prefix: undefined, suffix: ':339:12', hasRow: true, hasCol: true },
-	{ link: 'foo:339:12-789', prefix: undefined, suffix: ':339:12-789', hasRow: true, hasCol: true, hasRowEnd: false, hasColEnd: true },
+	{
+		link: 'foo:339:12-789',
+		prefix: undefined,
+		suffix: ':339:12-789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: false,
+		hasColEnd: true,
+	},
 	{ link: 'foo:339.12', prefix: undefined, suffix: ':339.12', hasRow: true, hasCol: true },
-	{ link: 'foo:339.12-789', prefix: undefined, suffix: ':339.12-789', hasRow: true, hasCol: true, hasRowEnd: false, hasColEnd: true },
-	{ link: 'foo:339.12-341.789', prefix: undefined, suffix: ':339.12-341.789', hasRow: true, hasCol: true, hasRowEnd: true, hasColEnd: true },
+	{
+		link: 'foo:339.12-789',
+		prefix: undefined,
+		suffix: ':339.12-789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: false,
+		hasColEnd: true,
+	},
+	{
+		link: 'foo:339.12-341.789',
+		prefix: undefined,
+		suffix: ':339.12-341.789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: true,
+		hasColEnd: true,
+	},
 	{ link: 'foo#339', prefix: undefined, suffix: '#339', hasRow: true, hasCol: false },
 	{ link: 'foo#339:12', prefix: undefined, suffix: '#339:12', hasRow: true, hasCol: true },
-	{ link: 'foo#339:12-789', prefix: undefined, suffix: '#339:12-789', hasRow: true, hasCol: true, hasRowEnd: false, hasColEnd: true },
+	{
+		link: 'foo#339:12-789',
+		prefix: undefined,
+		suffix: '#339:12-789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: false,
+		hasColEnd: true,
+	},
 	{ link: 'foo#339.12', prefix: undefined, suffix: '#339.12', hasRow: true, hasCol: true },
-	{ link: 'foo#339.12-789', prefix: undefined, suffix: '#339.12-789', hasRow: true, hasCol: true, hasRowEnd: false, hasColEnd: true },
-	{ link: 'foo#339.12-341.789', prefix: undefined, suffix: '#339.12-341.789', hasRow: true, hasCol: true, hasRowEnd: true, hasColEnd: true },
+	{
+		link: 'foo#339.12-789',
+		prefix: undefined,
+		suffix: '#339.12-789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: false,
+		hasColEnd: true,
+	},
+	{
+		link: 'foo#339.12-341.789',
+		prefix: undefined,
+		suffix: '#339.12-341.789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: true,
+		hasColEnd: true,
+	},
 	{ link: 'foo 339', prefix: undefined, suffix: ' 339', hasRow: true, hasCol: false },
 	{ link: 'foo 339:12', prefix: undefined, suffix: ' 339:12', hasRow: true, hasCol: true },
-	{ link: 'foo 339:12-789', prefix: undefined, suffix: ' 339:12-789', hasRow: true, hasCol: true, hasRowEnd: false, hasColEnd: true },
+	{
+		link: 'foo 339:12-789',
+		prefix: undefined,
+		suffix: ' 339:12-789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: false,
+		hasColEnd: true,
+	},
 	{ link: 'foo 339.12', prefix: undefined, suffix: ' 339.12', hasRow: true, hasCol: true },
-	{ link: 'foo 339.12-789', prefix: undefined, suffix: ' 339.12-789', hasRow: true, hasCol: true, hasRowEnd: false, hasColEnd: true },
-	{ link: 'foo 339.12-341.789', prefix: undefined, suffix: ' 339.12-341.789', hasRow: true, hasCol: true, hasRowEnd: true, hasColEnd: true },
+	{
+		link: 'foo 339.12-789',
+		prefix: undefined,
+		suffix: ' 339.12-789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: false,
+		hasColEnd: true,
+	},
+	{
+		link: 'foo 339.12-341.789',
+		prefix: undefined,
+		suffix: ' 339.12-341.789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: true,
+		hasColEnd: true,
+	},
 	{ link: 'foo, 339', prefix: undefined, suffix: ', 339', hasRow: true, hasCol: false },
 
 	// Double quotes
@@ -67,54 +146,222 @@ const testLinks: ITestLink[] = [
 	{ link: '"foo",339:12', prefix: '"', suffix: '",339:12', hasRow: true, hasCol: true },
 	{ link: '"foo",339.12', prefix: '"', suffix: '",339.12', hasRow: true, hasCol: true },
 	{ link: '"foo", line 339', prefix: '"', suffix: '", line 339', hasRow: true, hasCol: false },
-	{ link: '"foo", line 339, col 12', prefix: '"', suffix: '", line 339, col 12', hasRow: true, hasCol: true },
-	{ link: '"foo", line 339, column 12', prefix: '"', suffix: '", line 339, column 12', hasRow: true, hasCol: true },
+	{
+		link: '"foo", line 339, col 12',
+		prefix: '"',
+		suffix: '", line 339, col 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: '"foo", line 339, column 12',
+		prefix: '"',
+		suffix: '", line 339, column 12',
+		hasRow: true,
+		hasCol: true,
+	},
 	{ link: '"foo":line 339', prefix: '"', suffix: '":line 339', hasRow: true, hasCol: false },
-	{ link: '"foo":line 339, col 12', prefix: '"', suffix: '":line 339, col 12', hasRow: true, hasCol: true },
-	{ link: '"foo":line 339, column 12', prefix: '"', suffix: '":line 339, column 12', hasRow: true, hasCol: true },
+	{
+		link: '"foo":line 339, col 12',
+		prefix: '"',
+		suffix: '":line 339, col 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: '"foo":line 339, column 12',
+		prefix: '"',
+		suffix: '":line 339, column 12',
+		hasRow: true,
+		hasCol: true,
+	},
 	{ link: '"foo": line 339', prefix: '"', suffix: '": line 339', hasRow: true, hasCol: false },
-	{ link: '"foo": line 339, col 12', prefix: '"', suffix: '": line 339, col 12', hasRow: true, hasCol: true },
-	{ link: '"foo": line 339, column 12', prefix: '"', suffix: '": line 339, column 12', hasRow: true, hasCol: true },
+	{
+		link: '"foo": line 339, col 12',
+		prefix: '"',
+		suffix: '": line 339, col 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: '"foo": line 339, column 12',
+		prefix: '"',
+		suffix: '": line 339, column 12',
+		hasRow: true,
+		hasCol: true,
+	},
 	{ link: '"foo" on line 339', prefix: '"', suffix: '" on line 339', hasRow: true, hasCol: false },
-	{ link: '"foo" on line 339, col 12', prefix: '"', suffix: '" on line 339, col 12', hasRow: true, hasCol: true },
-	{ link: '"foo" on line 339, column 12', prefix: '"', suffix: '" on line 339, column 12', hasRow: true, hasCol: true },
+	{
+		link: '"foo" on line 339, col 12',
+		prefix: '"',
+		suffix: '" on line 339, col 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: '"foo" on line 339, column 12',
+		prefix: '"',
+		suffix: '" on line 339, column 12',
+		hasRow: true,
+		hasCol: true,
+	},
 	{ link: '"foo" line 339', prefix: '"', suffix: '" line 339', hasRow: true, hasCol: false },
-	{ link: '"foo" line 339 column 12', prefix: '"', suffix: '" line 339 column 12', hasRow: true, hasCol: true },
+	{
+		link: '"foo" line 339 column 12',
+		prefix: '"',
+		suffix: '" line 339 column 12',
+		hasRow: true,
+		hasCol: true,
+	},
 
 	// Single quotes
-	{ link: '\'foo\',339', prefix: '\'', suffix: '\',339', hasRow: true, hasCol: false },
-	{ link: '\'foo\',339:12', prefix: '\'', suffix: '\',339:12', hasRow: true, hasCol: true },
-	{ link: '\'foo\',339.12', prefix: '\'', suffix: '\',339.12', hasRow: true, hasCol: true },
-	{ link: '\'foo\', line 339', prefix: '\'', suffix: '\', line 339', hasRow: true, hasCol: false },
-	{ link: '\'foo\', line 339, col 12', prefix: '\'', suffix: '\', line 339, col 12', hasRow: true, hasCol: true },
-	{ link: '\'foo\', line 339, column 12', prefix: '\'', suffix: '\', line 339, column 12', hasRow: true, hasCol: true },
-	{ link: '\'foo\':line 339', prefix: '\'', suffix: '\':line 339', hasRow: true, hasCol: false },
-	{ link: '\'foo\':line 339, col 12', prefix: '\'', suffix: '\':line 339, col 12', hasRow: true, hasCol: true },
-	{ link: '\'foo\':line 339, column 12', prefix: '\'', suffix: '\':line 339, column 12', hasRow: true, hasCol: true },
-	{ link: '\'foo\': line 339', prefix: '\'', suffix: '\': line 339', hasRow: true, hasCol: false },
-	{ link: '\'foo\': line 339, col 12', prefix: '\'', suffix: '\': line 339, col 12', hasRow: true, hasCol: true },
-	{ link: '\'foo\': line 339, column 12', prefix: '\'', suffix: '\': line 339, column 12', hasRow: true, hasCol: true },
-	{ link: '\'foo\' on line 339', prefix: '\'', suffix: '\' on line 339', hasRow: true, hasCol: false },
-	{ link: '\'foo\' on line 339, col 12', prefix: '\'', suffix: '\' on line 339, col 12', hasRow: true, hasCol: true },
-	{ link: '\'foo\' on line 339, column 12', prefix: '\'', suffix: '\' on line 339, column 12', hasRow: true, hasCol: true },
-	{ link: '\'foo\' line 339', prefix: '\'', suffix: '\' line 339', hasRow: true, hasCol: false },
-	{ link: '\'foo\' line 339 column 12', prefix: '\'', suffix: '\' line 339 column 12', hasRow: true, hasCol: true },
+	{ link: "'foo',339", prefix: "'", suffix: "',339", hasRow: true, hasCol: false },
+	{ link: "'foo',339:12", prefix: "'", suffix: "',339:12", hasRow: true, hasCol: true },
+	{ link: "'foo',339.12", prefix: "'", suffix: "',339.12", hasRow: true, hasCol: true },
+	{ link: "'foo', line 339", prefix: "'", suffix: "', line 339", hasRow: true, hasCol: false },
+	{
+		link: "'foo', line 339, col 12",
+		prefix: "'",
+		suffix: "', line 339, col 12",
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: "'foo', line 339, column 12",
+		prefix: "'",
+		suffix: "', line 339, column 12",
+		hasRow: true,
+		hasCol: true,
+	},
+	{ link: "'foo':line 339", prefix: "'", suffix: "':line 339", hasRow: true, hasCol: false },
+	{
+		link: "'foo':line 339, col 12",
+		prefix: "'",
+		suffix: "':line 339, col 12",
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: "'foo':line 339, column 12",
+		prefix: "'",
+		suffix: "':line 339, column 12",
+		hasRow: true,
+		hasCol: true,
+	},
+	{ link: "'foo': line 339", prefix: "'", suffix: "': line 339", hasRow: true, hasCol: false },
+	{
+		link: "'foo': line 339, col 12",
+		prefix: "'",
+		suffix: "': line 339, col 12",
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: "'foo': line 339, column 12",
+		prefix: "'",
+		suffix: "': line 339, column 12",
+		hasRow: true,
+		hasCol: true,
+	},
+	{ link: "'foo' on line 339", prefix: "'", suffix: "' on line 339", hasRow: true, hasCol: false },
+	{
+		link: "'foo' on line 339, col 12",
+		prefix: "'",
+		suffix: "' on line 339, col 12",
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: "'foo' on line 339, column 12",
+		prefix: "'",
+		suffix: "' on line 339, column 12",
+		hasRow: true,
+		hasCol: true,
+	},
+	{ link: "'foo' line 339", prefix: "'", suffix: "' line 339", hasRow: true, hasCol: false },
+	{
+		link: "'foo' line 339 column 12",
+		prefix: "'",
+		suffix: "' line 339 column 12",
+		hasRow: true,
+		hasCol: true,
+	},
 
 	// No quotes
 	{ link: 'foo, line 339', prefix: undefined, suffix: ', line 339', hasRow: true, hasCol: false },
-	{ link: 'foo, line 339, col 12', prefix: undefined, suffix: ', line 339, col 12', hasRow: true, hasCol: true },
-	{ link: 'foo, line 339, column 12', prefix: undefined, suffix: ', line 339, column 12', hasRow: true, hasCol: true },
+	{
+		link: 'foo, line 339, col 12',
+		prefix: undefined,
+		suffix: ', line 339, col 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: 'foo, line 339, column 12',
+		prefix: undefined,
+		suffix: ', line 339, column 12',
+		hasRow: true,
+		hasCol: true,
+	},
 	{ link: 'foo:line 339', prefix: undefined, suffix: ':line 339', hasRow: true, hasCol: false },
-	{ link: 'foo:line 339, col 12', prefix: undefined, suffix: ':line 339, col 12', hasRow: true, hasCol: true },
-	{ link: 'foo:line 339, column 12', prefix: undefined, suffix: ':line 339, column 12', hasRow: true, hasCol: true },
+	{
+		link: 'foo:line 339, col 12',
+		prefix: undefined,
+		suffix: ':line 339, col 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: 'foo:line 339, column 12',
+		prefix: undefined,
+		suffix: ':line 339, column 12',
+		hasRow: true,
+		hasCol: true,
+	},
 	{ link: 'foo: line 339', prefix: undefined, suffix: ': line 339', hasRow: true, hasCol: false },
-	{ link: 'foo: line 339, col 12', prefix: undefined, suffix: ': line 339, col 12', hasRow: true, hasCol: true },
-	{ link: 'foo: line 339, column 12', prefix: undefined, suffix: ': line 339, column 12', hasRow: true, hasCol: true },
-	{ link: 'foo on line 339', prefix: undefined, suffix: ' on line 339', hasRow: true, hasCol: false },
-	{ link: 'foo on line 339, col 12', prefix: undefined, suffix: ' on line 339, col 12', hasRow: true, hasCol: true },
-	{ link: 'foo on line 339, column 12', prefix: undefined, suffix: ' on line 339, column 12', hasRow: true, hasCol: true },
+	{
+		link: 'foo: line 339, col 12',
+		prefix: undefined,
+		suffix: ': line 339, col 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: 'foo: line 339, column 12',
+		prefix: undefined,
+		suffix: ': line 339, column 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: 'foo on line 339',
+		prefix: undefined,
+		suffix: ' on line 339',
+		hasRow: true,
+		hasCol: false,
+	},
+	{
+		link: 'foo on line 339, col 12',
+		prefix: undefined,
+		suffix: ' on line 339, col 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: 'foo on line 339, column 12',
+		prefix: undefined,
+		suffix: ' on line 339, column 12',
+		hasRow: true,
+		hasCol: true,
+	},
 	{ link: 'foo line 339', prefix: undefined, suffix: ' line 339', hasRow: true, hasCol: false },
-	{ link: 'foo line 339 column 12', prefix: undefined, suffix: ' line 339 column 12', hasRow: true, hasCol: true },
+	{
+		link: 'foo line 339 column 12',
+		prefix: undefined,
+		suffix: ' line 339 column 12',
+		hasRow: true,
+		hasCol: true,
+	},
 
 	// Parentheses
 	{ link: 'foo(339)', prefix: undefined, suffix: '(339)', hasRow: true, hasCol: false },
@@ -143,17 +390,75 @@ const testLinks: ITestLink[] = [
 	{ link: 'foo [339:12]', prefix: undefined, suffix: ' [339:12]', hasRow: true, hasCol: true },
 
 	// OCaml-style
-	{ link: '"foo", line 339, character 12', prefix: '"', suffix: '", line 339, character 12', hasRow: true, hasCol: true },
-	{ link: '"foo", line 339, characters 12-789', prefix: '"', suffix: '", line 339, characters 12-789', hasRow: true, hasCol: true, hasColEnd: true },
-	{ link: '"foo", lines 339-341', prefix: '"', suffix: '", lines 339-341', hasRow: true, hasCol: false, hasRowEnd: true },
-	{ link: '"foo", lines 339-341, characters 12-789', prefix: '"', suffix: '", lines 339-341, characters 12-789', hasRow: true, hasCol: true, hasRowEnd: true, hasColEnd: true },
+	{
+		link: '"foo", line 339, character 12',
+		prefix: '"',
+		suffix: '", line 339, character 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: '"foo", line 339, characters 12-789',
+		prefix: '"',
+		suffix: '", line 339, characters 12-789',
+		hasRow: true,
+		hasCol: true,
+		hasColEnd: true,
+	},
+	{
+		link: '"foo", lines 339-341',
+		prefix: '"',
+		suffix: '", lines 339-341',
+		hasRow: true,
+		hasCol: false,
+		hasRowEnd: true,
+	},
+	{
+		link: '"foo", lines 339-341, characters 12-789',
+		prefix: '"',
+		suffix: '", lines 339-341, characters 12-789',
+		hasRow: true,
+		hasCol: true,
+		hasRowEnd: true,
+		hasColEnd: true,
+	},
 
 	// Non-breaking space
-	{ link: 'foo\u00A0339:12', prefix: undefined, suffix: '\u00A0339:12', hasRow: true, hasCol: true },
-	{ link: '"foo" on line 339,\u00A0column 12', prefix: '"', suffix: '" on line 339,\u00A0column 12', hasRow: true, hasCol: true },
-	{ link: '\'foo\' on line\u00A0339, column 12', prefix: '\'', suffix: '\' on line\u00A0339, column 12', hasRow: true, hasCol: true },
-	{ link: 'foo (339,\u00A012)', prefix: undefined, suffix: ' (339,\u00A012)', hasRow: true, hasCol: true },
-	{ link: 'foo\u00A0[339, 12]', prefix: undefined, suffix: '\u00A0[339, 12]', hasRow: true, hasCol: true },
+	{
+		link: 'foo\u00A0339:12',
+		prefix: undefined,
+		suffix: '\u00A0339:12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: '"foo" on line 339,\u00A0column 12',
+		prefix: '"',
+		suffix: '" on line 339,\u00A0column 12',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: "'foo' on line\u00A0339, column 12",
+		prefix: "'",
+		suffix: "' on line\u00A0339, column 12",
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: 'foo (339,\u00A012)',
+		prefix: undefined,
+		suffix: ' (339,\u00A012)',
+		hasRow: true,
+		hasCol: true,
+	},
+	{
+		link: 'foo\u00A0[339, 12]',
+		prefix: undefined,
+		suffix: '\u00A0[339, 12]',
+		hasRow: true,
+		hasCol: true,
+	},
 ];
 const testLinksWithSuffix = testLinks.filter(e => !!e.suffix);
 
@@ -175,16 +480,18 @@ suite('TerminalLinkParsing', () => {
 			test('`' + testLink.link + '`', () => {
 				deepStrictEqual(
 					getLinkSuffix(testLink.link),
-					testLink.suffix === undefined ? null : {
-						row: testLink.hasRow ? testRow : undefined,
-						col: testLink.hasCol ? testCol : undefined,
-						rowEnd: testLink.hasRowEnd ? testRowEnd : undefined,
-						colEnd: testLink.hasColEnd ? testColEnd : undefined,
-						suffix: {
-							index: testLink.link.length - testLink.suffix.length,
-							text: testLink.suffix
-						}
-					} as ReturnType<typeof getLinkSuffix>
+					testLink.suffix === undefined
+						? null
+						: ({
+								row: testLink.hasRow ? testRow : undefined,
+								col: testLink.hasCol ? testCol : undefined,
+								rowEnd: testLink.hasRowEnd ? testRowEnd : undefined,
+								colEnd: testLink.hasColEnd ? testColEnd : undefined,
+								suffix: {
+									index: testLink.link.length - testLink.suffix.length,
+									text: testLink.suffix,
+								},
+							} as ReturnType<typeof getLinkSuffix>)
 				);
 			});
 		}
@@ -194,56 +501,57 @@ suite('TerminalLinkParsing', () => {
 			test('`' + testLink.link + '`', () => {
 				deepStrictEqual(
 					detectLinkSuffixes(testLink.link),
-					testLink.suffix === undefined ? [] : [{
-						row: testLink.hasRow ? testRow : undefined,
-						col: testLink.hasCol ? testCol : undefined,
-						rowEnd: testLink.hasRowEnd ? testRowEnd : undefined,
-						colEnd: testLink.hasColEnd ? testColEnd : undefined,
-						suffix: {
-							index: testLink.link.length - testLink.suffix.length,
-							text: testLink.suffix
-						}
-					} as ReturnType<typeof getLinkSuffix>]
+					testLink.suffix === undefined
+						? []
+						: [
+								{
+									row: testLink.hasRow ? testRow : undefined,
+									col: testLink.hasCol ? testCol : undefined,
+									rowEnd: testLink.hasRowEnd ? testRowEnd : undefined,
+									colEnd: testLink.hasColEnd ? testColEnd : undefined,
+									suffix: {
+										index: testLink.link.length - testLink.suffix.length,
+										text: testLink.suffix,
+									},
+								} as ReturnType<typeof getLinkSuffix>,
+							]
 				);
 			});
 		}
 
 		test('foo(1, 2) bar[3, 4] baz on line 5', () => {
-			deepStrictEqual(
-				detectLinkSuffixes('foo(1, 2) bar[3, 4] baz on line 5'),
-				[
-					{
-						col: 2,
-						row: 1,
-						rowEnd: undefined,
-						colEnd: undefined,
-						suffix: {
-							index: 3,
-							text: '(1, 2)'
-						}
+			deepStrictEqual(detectLinkSuffixes('foo(1, 2) bar[3, 4] baz on line 5'), [
+				{
+					col: 2,
+					row: 1,
+					rowEnd: undefined,
+					colEnd: undefined,
+					suffix: {
+						index: 3,
+						text: '(1, 2)',
 					},
-					{
-						col: 4,
-						row: 3,
-						rowEnd: undefined,
-						colEnd: undefined,
-						suffix: {
-							index: 13,
-							text: '[3, 4]'
-						}
+				},
+				{
+					col: 4,
+					row: 3,
+					rowEnd: undefined,
+					colEnd: undefined,
+					suffix: {
+						index: 13,
+						text: '[3, 4]',
 					},
-					{
-						col: undefined,
-						row: 5,
-						rowEnd: undefined,
-						colEnd: undefined,
-						suffix: {
-							index: 23,
-							text: ' on line 5'
-						}
-					}
-				]
-			);
+				},
+				{
+					col: undefined,
+					row: 5,
+					rowEnd: undefined,
+					colEnd: undefined,
+					suffix: {
+						index: 23,
+						text: ' on line 5',
+					},
+				},
+			]);
 		});
 	});
 	suite('removeLinkQueryString', () => {
@@ -261,135 +569,126 @@ suite('TerminalLinkParsing', () => {
 	});
 	suite('detectLinks', () => {
 		test('foo(1, 2) bar[3, 4] "baz" on line 5', () => {
-			deepStrictEqual(
-				detectLinks('foo(1, 2) bar[3, 4] "baz" on line 5', OperatingSystem.Linux),
-				[
-					{
-						path: {
-							index: 0,
-							text: 'foo'
-						},
-						prefix: undefined,
-						suffix: {
-							col: 2,
-							row: 1,
-							rowEnd: undefined,
-							colEnd: undefined,
-							suffix: {
-								index: 3,
-								text: '(1, 2)'
-							}
-						}
+			deepStrictEqual(detectLinks('foo(1, 2) bar[3, 4] "baz" on line 5', OperatingSystem.Linux), [
+				{
+					path: {
+						index: 0,
+						text: 'foo',
 					},
-					{
-						path: {
-							index: 10,
-							text: 'bar'
-						},
-						prefix: undefined,
+					prefix: undefined,
+					suffix: {
+						col: 2,
+						row: 1,
+						rowEnd: undefined,
+						colEnd: undefined,
 						suffix: {
-							col: 4,
-							row: 3,
-							rowEnd: undefined,
-							colEnd: undefined,
-							suffix: {
-								index: 13,
-								text: '[3, 4]'
-							}
-						}
+							index: 3,
+							text: '(1, 2)',
+						},
 					},
-					{
-						path: {
-							index: 21,
-							text: 'baz'
-						},
-						prefix: {
-							index: 20,
-							text: '"'
-						},
+				},
+				{
+					path: {
+						index: 10,
+						text: 'bar',
+					},
+					prefix: undefined,
+					suffix: {
+						col: 4,
+						row: 3,
+						rowEnd: undefined,
+						colEnd: undefined,
 						suffix: {
-							col: undefined,
-							row: 5,
-							rowEnd: undefined,
-							colEnd: undefined,
-							suffix: {
-								index: 24,
-								text: '" on line 5'
-							}
-						}
-					}
-				] as IParsedLink[]
-			);
+							index: 13,
+							text: '[3, 4]',
+						},
+					},
+				},
+				{
+					path: {
+						index: 21,
+						text: 'baz',
+					},
+					prefix: {
+						index: 20,
+						text: '"',
+					},
+					suffix: {
+						col: undefined,
+						row: 5,
+						rowEnd: undefined,
+						colEnd: undefined,
+						suffix: {
+							index: 24,
+							text: '" on line 5',
+						},
+					},
+				},
+			] as IParsedLink[]);
 		});
 
 		test('should detect multiple links when opening brackets are in the text', () => {
-			deepStrictEqual(
-				detectLinks('notlink[foo:45]', OperatingSystem.Linux),
-				[
-					{
-						path: {
-							index: 0,
-							text: 'notlink[foo'
-						},
-						prefix: undefined,
-						suffix: {
-							col: undefined,
-							row: 45,
-							rowEnd: undefined,
-							colEnd: undefined,
-							suffix: {
-								index: 11,
-								text: ':45'
-							}
-						}
+			deepStrictEqual(detectLinks('notlink[foo:45]', OperatingSystem.Linux), [
+				{
+					path: {
+						index: 0,
+						text: 'notlink[foo',
 					},
-					{
-						path: {
-							index: 8,
-							text: 'foo'
-						},
-						prefix: undefined,
+					prefix: undefined,
+					suffix: {
+						col: undefined,
+						row: 45,
+						rowEnd: undefined,
+						colEnd: undefined,
 						suffix: {
-							col: undefined,
-							row: 45,
-							rowEnd: undefined,
-							colEnd: undefined,
-							suffix: {
-								index: 11,
-								text: ':45'
-							}
-						}
+							index: 11,
+							text: ':45',
+						},
 					},
-				] as IParsedLink[]
-			);
+				},
+				{
+					path: {
+						index: 8,
+						text: 'foo',
+					},
+					prefix: undefined,
+					suffix: {
+						col: undefined,
+						row: 45,
+						rowEnd: undefined,
+						colEnd: undefined,
+						suffix: {
+							index: 11,
+							text: ':45',
+						},
+					},
+				},
+			] as IParsedLink[]);
 		});
 
 		test('should extract the link prefix', () => {
-			deepStrictEqual(
-				detectLinks('"foo", line 5, col 6', OperatingSystem.Linux),
-				[
-					{
-						path: {
-							index: 1,
-							text: 'foo'
-						},
-						prefix: {
-							index: 0,
-							text: '"',
-						},
-						suffix: {
-							row: 5,
-							col: 6,
-							rowEnd: undefined,
-							colEnd: undefined,
-							suffix: {
-								index: 4,
-								text: '", line 5, col 6'
-							}
-						}
+			deepStrictEqual(detectLinks('"foo", line 5, col 6', OperatingSystem.Linux), [
+				{
+					path: {
+						index: 1,
+						text: 'foo',
 					},
-				] as IParsedLink[]
-			);
+					prefix: {
+						index: 0,
+						text: '"',
+					},
+					suffix: {
+						row: 5,
+						col: 6,
+						rowEnd: undefined,
+						colEnd: undefined,
+						suffix: {
+							index: 4,
+							text: '", line 5, col 6',
+						},
+					},
+				},
+			] as IParsedLink[]);
 		});
 
 		test('should be smart about determining the link prefix when multiple prefix characters exist', () => {
@@ -399,7 +698,7 @@ suite('TerminalLinkParsing', () => {
 					{
 						path: {
 							index: 7,
-							text: 'foo'
+							text: 'foo',
 						},
 						prefix: {
 							index: 6,
@@ -412,9 +711,9 @@ suite('TerminalLinkParsing', () => {
 							colEnd: undefined,
 							suffix: {
 								index: 10,
-								text: '", line 5, col 6'
-							}
-						}
+								text: '", line 5, col 6',
+							},
+						},
 					},
 				] as IParsedLink[],
 				'The outer single quotes should be excluded from the link prefix and suffix'
@@ -423,20 +722,23 @@ suite('TerminalLinkParsing', () => {
 
 		test('should detect both suffix and non-suffix links on a single line', () => {
 			deepStrictEqual(
-				detectLinks('PS C:\\Github\\microsoft\\vscode> echo \'"foo", line 5, col 6\'', OperatingSystem.Windows),
+				detectLinks(
+					'PS C:\\Github\\microsoft\\vscode> echo \'"foo", line 5, col 6\'',
+					OperatingSystem.Windows
+				),
 				[
 					{
 						path: {
 							index: 3,
-							text: 'C:\\Github\\microsoft\\vscode'
+							text: 'C:\\Github\\microsoft\\vscode',
 						},
 						prefix: undefined,
-						suffix: undefined
+						suffix: undefined,
 					},
 					{
 						path: {
 							index: 38,
-							text: 'foo'
+							text: 'foo',
 						},
 						prefix: {
 							index: 37,
@@ -449,29 +751,26 @@ suite('TerminalLinkParsing', () => {
 							colEnd: undefined,
 							suffix: {
 								index: 41,
-								text: '", line 5, col 6'
-							}
-						}
-					}
+								text: '", line 5, col 6',
+							},
+						},
+					},
 				] as IParsedLink[]
 			);
 		});
 
 		suite('"|"', () => {
 			test('should exclude pipe characters from link paths', () => {
-				deepStrictEqual(
-					detectLinks('|C:\\Github\\microsoft\\vscode|', OperatingSystem.Windows),
-					[
-						{
-							path: {
-								index: 1,
-								text: 'C:\\Github\\microsoft\\vscode'
-							},
-							prefix: undefined,
-							suffix: undefined
-						}
-					] as IParsedLink[]
-				);
+				deepStrictEqual(detectLinks('|C:\\Github\\microsoft\\vscode|', OperatingSystem.Windows), [
+					{
+						path: {
+							index: 1,
+							text: 'C:\\Github\\microsoft\\vscode',
+						},
+						prefix: undefined,
+						suffix: undefined,
+					},
+				] as IParsedLink[]);
 			});
 			test('should exclude pipe characters from link paths with suffixes', () => {
 				deepStrictEqual(
@@ -480,7 +779,7 @@ suite('TerminalLinkParsing', () => {
 						{
 							path: {
 								index: 1,
-								text: 'C:\\Github\\microsoft\\vscode'
+								text: 'C:\\Github\\microsoft\\vscode',
 							},
 							prefix: undefined,
 							suffix: {
@@ -490,10 +789,10 @@ suite('TerminalLinkParsing', () => {
 								colEnd: undefined,
 								suffix: {
 									index: 27,
-									text: ':400'
-								}
-							}
-						}
+									text: ':400',
+								},
+							},
+						},
 					] as IParsedLink[]
 				);
 			});
@@ -502,78 +801,66 @@ suite('TerminalLinkParsing', () => {
 		suite('"<>"', () => {
 			for (const os of operatingSystems) {
 				test(`should exclude bracket characters from link paths ${osLabel[os]}`, () => {
-					deepStrictEqual(
-						detectLinks(`<${osTestPath[os]}<`, os),
-						[
-							{
-								path: {
-									index: 1,
-									text: osTestPath[os]
-								},
-								prefix: undefined,
-								suffix: undefined
-							}
-						] as IParsedLink[]
-					);
-					deepStrictEqual(
-						detectLinks(`>${osTestPath[os]}>`, os),
-						[
-							{
-								path: {
-									index: 1,
-									text: osTestPath[os]
-								},
-								prefix: undefined,
-								suffix: undefined
-							}
-						] as IParsedLink[]
-					);
+					deepStrictEqual(detectLinks(`<${osTestPath[os]}<`, os), [
+						{
+							path: {
+								index: 1,
+								text: osTestPath[os],
+							},
+							prefix: undefined,
+							suffix: undefined,
+						},
+					] as IParsedLink[]);
+					deepStrictEqual(detectLinks(`>${osTestPath[os]}>`, os), [
+						{
+							path: {
+								index: 1,
+								text: osTestPath[os],
+							},
+							prefix: undefined,
+							suffix: undefined,
+						},
+					] as IParsedLink[]);
 				});
 				test(`should exclude bracket characters from link paths with suffixes ${osLabel[os]}`, () => {
-					deepStrictEqual(
-						detectLinks(`<${osTestPath[os]}:400<`, os),
-						[
-							{
-								path: {
-									index: 1,
-									text: osTestPath[os]
-								},
-								prefix: undefined,
+					deepStrictEqual(detectLinks(`<${osTestPath[os]}:400<`, os), [
+						{
+							path: {
+								index: 1,
+								text: osTestPath[os],
+							},
+							prefix: undefined,
+							suffix: {
+								col: undefined,
+								row: 400,
+								rowEnd: undefined,
+								colEnd: undefined,
 								suffix: {
-									col: undefined,
-									row: 400,
-									rowEnd: undefined,
-									colEnd: undefined,
-									suffix: {
-										index: 1 + osTestPath[os].length,
-										text: ':400'
-									}
-								}
-							}
-						] as IParsedLink[]
-					);
-					deepStrictEqual(
-						detectLinks(`>${osTestPath[os]}:400>`, os),
-						[
-							{
-								path: {
-									index: 1,
-									text: osTestPath[os]
+									index: 1 + osTestPath[os].length,
+									text: ':400',
 								},
-								prefix: undefined,
+							},
+						},
+					] as IParsedLink[]);
+					deepStrictEqual(detectLinks(`>${osTestPath[os]}:400>`, os), [
+						{
+							path: {
+								index: 1,
+								text: osTestPath[os],
+							},
+							prefix: undefined,
+							suffix: {
+								col: undefined,
+								row: 400,
+								rowEnd: undefined,
+								colEnd: undefined,
 								suffix: {
-									col: undefined,
-									row: 400,
-									rowEnd: undefined,
-									colEnd: undefined,
-									suffix: {
-										index: 1 + osTestPath[os].length,
-										text: ':400'
-									}
-								}
-							}
-						] as IParsedLink[]
-					);
+									index: 1 + osTestPath[os].length,
+									text: ':400',
+								},
+							},
+						},
+					] as IParsedLink[]);
 				});
 			}
 		});
@@ -581,97 +868,92 @@ suite('TerminalLinkParsing', () => {
 		suite('query strings', () => {
 			for (const os of operatingSystems) {
 				test(`should exclude query strings from link paths ${osLabel[os]}`, () => {
-					deepStrictEqual(
-						detectLinks(`${osTestPath[os]}?a=b`, os),
-						[
-							{
-								path: {
-									index: 0,
-									text: osTestPath[os]
-								},
-								prefix: undefined,
-								suffix: undefined
-							}
-						] as IParsedLink[]
-					);
-					deepStrictEqual(
-						detectLinks(`${osTestPath[os]}?a=b&c=d`, os),
-						[
-							{
-								path: {
-									index: 0,
-									text: osTestPath[os]
-								},
-								prefix: undefined,
-								suffix: undefined
-							}
-						] as IParsedLink[]
-					);
+					deepStrictEqual(detectLinks(`${osTestPath[os]}?a=b`, os), [
+						{
+							path: {
+								index: 0,
+								text: osTestPath[os],
+							},
+							prefix: undefined,
+							suffix: undefined,
+						},
+					] as IParsedLink[]);
+					deepStrictEqual(detectLinks(`${osTestPath[os]}?a=b&c=d`, os), [
+						{
+							path: {
+								index: 0,
+								text: osTestPath[os],
+							},
+							prefix: undefined,
+							suffix: undefined,
+						},
+					] as IParsedLink[]);
 				});
 				test('should not detect links starting with ? within query strings that contain posix-style paths (#204195)', () => {
 					// ? appended to the cwd will exist since it's just the cwd
-					strictEqual(detectLinks(`http://foo.com/?bar=/a/b&baz=c`, os).some(e => e.path.text.startsWith('?')), false);
+					strictEqual(
+						detectLinks(`http://foo.com/?bar=/a/b&baz=c`, os).some(e =>
+							e.path.text.startsWith('?')
+						),
+						false
+					);
 				});
 				test('should not detect links starting with ? within query strings that contain Windows-style paths (#204195)', () => {
 					// ? appended to the cwd will exist since it's just the cwd
-					strictEqual(detectLinks(`http://foo.com/?bar=a:\\b&baz=c`, os).some(e => e.path.text.startsWith('?')), false);
+					strictEqual(
+						detectLinks(`http://foo.com/?bar=a:\\b&baz=c`, os).some(e =>
+							e.path.text.startsWith('?')
+						),
+						false
+					);
 				});
 			}
 		});
 
 		suite('should detect file names in git diffs', () => {
 			test('--- a/foo/bar', () => {
-				deepStrictEqual(
-					detectLinks('--- a/foo/bar', OperatingSystem.Linux),
-					[
-						{
-							path: {
-								index: 6,
-								text: 'foo/bar'
-							},
-							prefix: undefined,
-							suffix: undefined
-						}
-					] as IParsedLink[]
-				);
+				deepStrictEqual(detectLinks('--- a/foo/bar', OperatingSystem.Linux), [
+					{
+						path: {
+							index: 6,
+							text: 'foo/bar',
+						},
+						prefix: undefined,
+						suffix: undefined,
+					},
+				] as IParsedLink[]);
 			});
 			test('+++ b/foo/bar', () => {
-				deepStrictEqual(
-					detectLinks('+++ b/foo/bar', OperatingSystem.Linux),
-					[
-						{
-							path: {
-								index: 6,
-								text: 'foo/bar'
-							},
-							prefix: undefined,
-							suffix: undefined
-						}
-					] as IParsedLink[]
-				);
+				deepStrictEqual(detectLinks('+++ b/foo/bar', OperatingSystem.Linux), [
+					{
+						path: {
+							index: 6,
+							text: 'foo/bar',
+						},
+						prefix: undefined,
+						suffix: undefined,
+					},
+				] as IParsedLink[]);
 			});
 			test('diff --git a/foo/bar b/foo/baz', () => {
-				deepStrictEqual(
-					detectLinks('diff --git a/foo/bar b/foo/baz', OperatingSystem.Linux),
-					[
-						{
-							path: {
-								index: 13,
-								text: 'foo/bar'
-							},
-							prefix: undefined,
-							suffix: undefined
+				deepStrictEqual(detectLinks('diff --git a/foo/bar b/foo/baz', OperatingSystem.Linux), [
+					{
+						path: {
+							index: 13,
+							text: 'foo/bar',
 						},
-						{
-							path: {
-								index: 23,
-								text: 'foo/baz'
-							},
-							prefix: undefined,
-							suffix: undefined
-						}
-					] as IParsedLink[]
-				);
+						prefix: undefined,
+						suffix: undefined,
+					},
+					{
+						path: {
+							index: 23,
+							text: 'foo/baz',
+						},
+						prefix: undefined,
+						suffix: undefined,
+					},
+				] as IParsedLink[]);
 			});
 		});
 
@@ -687,13 +969,15 @@ suite('TerminalLinkParsing', () => {
 					ok(link2.suffix);
 					ok(link3.suffix);
 					const detectedLink1: IParsedLink = {
-						prefix: link1.prefix ? {
-							index: 1,
-							text: link1.prefix
-						} : undefined,
+						prefix: link1.prefix
+							? {
+									index: 1,
+									text: link1.prefix,
+								}
+							: undefined,
 						path: {
 							index: 1 + (link1.prefix?.length ?? 0),
-							text: link1.link.replace(link1.suffix, '').replace(link1.prefix || '', '')
+							text: link1.link.replace(link1.suffix, '').replace(link1.prefix || '', ''),
 						},
 						suffix: {
 							row: link1.hasRow ? testRow : undefined,
@@ -702,18 +986,27 @@ suite('TerminalLinkParsing', () => {
 							colEnd: link1.hasColEnd ? testColEnd : undefined,
 							suffix: {
 								index: 1 + (link1.link.length - link1.suffix.length),
-								text: link1.suffix
-							}
-						}
+								text: link1.suffix,
+							},
+						},
 					};
 					const detectedLink2: IParsedLink = {
-						prefix: link2.prefix ? {
-							index: (detectedLink1.prefix?.index ?? detectedLink1.path.index) + link1.link.length + 1,
-							text: link2.prefix
-						} : undefined,
+						prefix: link2.prefix
+							? {
+									index:
+										(detectedLink1.prefix?.index ?? detectedLink1.path.index) +
+										link1.link.length +
+										1,
+									text: link2.prefix,
+								}
+							: undefined,
 						path: {
-							index: (detectedLink1.prefix?.index ?? detectedLink1.path.index) + link1.link.length + 1 + (link2.prefix ?? '').length,
-							text: link2.link.replace(link2.suffix, '').replace(link2.prefix ?? '', '')
+							index:
+								(detectedLink1.prefix?.index ?? detectedLink1.path.index) +
+								link1.link.length +
+								1 +
+								(link2.prefix ?? '').length,
+							text: link2.link.replace(link2.suffix, '').replace(link2.prefix ?? '', ''),
 						},
 						suffix: {
 							row: link2.hasRow ? testRow : undefined,
@@ -721,19 +1014,32 @@ suite('TerminalLinkParsing', () => {
 							rowEnd: link2.hasRowEnd ? testRowEnd : undefined,
 							colEnd: link2.hasColEnd ? testColEnd : undefined,
 							suffix: {
-								index: (detectedLink1.prefix?.index ?? detectedLink1.path.index) + link1.link.length + 1 + (link2.link.length - link2.suffix.length),
-								text: link2.suffix
-							}
-						}
+								index:
+									(detectedLink1.prefix?.index ?? detectedLink1.path.index) +
+									link1.link.length +
+									1 +
+									(link2.link.length - link2.suffix.length),
+								text: link2.suffix,
+							},
+						},
 					};
 					const detectedLink3: IParsedLink = {
-						prefix: link3.prefix ? {
-							index: (detectedLink2.prefix?.index ?? detectedLink2.path.index) + link2.link.length + 1,
-							text: link3.prefix
-						} : undefined,
+						prefix: link3.prefix
+							? {
+									index:
+										(detectedLink2.prefix?.index ?? detectedLink2.path.index) +
+										link2.link.length +
+										1,
+									text: link3.prefix,
+								}
+							: undefined,
 						path: {
-							index: (detectedLink2.prefix?.index ?? detectedLink2.path.index) + link2.link.length + 1 + (link3.prefix ?? '').length,
-							text: link3.link.replace(link3.suffix, '').replace(link3.prefix ?? '', '')
+							index:
+								(detectedLink2.prefix?.index ?? detectedLink2.path.index) +
+								link2.link.length +
+								1 +
+								(link3.prefix ?? '').length,
+							text: link3.link.replace(link3.suffix, '').replace(link3.prefix ?? '', ''),
 						},
 						suffix: {
 							row: link3.hasRow ? testRow : undefined,
@@ -741,23 +1047,25 @@ suite('TerminalLinkParsing', () => {
 							rowEnd: link3.hasRowEnd ? testRowEnd : undefined,
 							colEnd: link3.hasColEnd ? testColEnd : undefined,
 							suffix: {
-								index: (detectedLink2.prefix?.index ?? detectedLink2.path.index) + link2.link.length + 1 + (link3.link.length - link3.suffix.length),
-								text: link3.suffix
-							}
-						}
+								index:
+									(detectedLink2.prefix?.index ?? detectedLink2.path.index) +
+									link2.link.length +
+									1 +
+									(link3.link.length - link3.suffix.length),
+								text: link3.suffix,
+							},
+						},
 					};
-					deepStrictEqual(
-						detectLinks(line, OperatingSystem.Linux),
-						[detectedLink1, detectedLink2, detectedLink3]
-					);
+					deepStrictEqual(detectLinks(line, OperatingSystem.Linux), [
+						detectedLink1,
+						detectedLink2,
+						detectedLink3,
+					]);
 				});
 			}
 		});
 		suite('should ignore links with suffixes when the path itself is the empty string', () => {
-			deepStrictEqual(
-				detectLinks('""",1', OperatingSystem.Linux),
-				[] as IParsedLink[]
-			);
+			deepStrictEqual(detectLinks('""",1', OperatingSystem.Linux), [] as IParsedLink[]);
 		});
 	});
 });

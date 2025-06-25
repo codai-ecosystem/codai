@@ -20,9 +20,13 @@ export class FilePromptParser extends BasePromptParser<FilePromptContentProvider
 		options: Partial<IPromptParserOptions>,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IWorkspaceContextService workspaceService: IWorkspaceContextService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
-		const contentsProvider = instantiationService.createInstance(FilePromptContentProvider, uri, options);
+		const contentsProvider = instantiationService.createInstance(
+			FilePromptContentProvider,
+			uri,
+			options
+		);
 		super(contentsProvider, options, instantiationService, workspaceService, logService);
 
 		this._register(contentsProvider);

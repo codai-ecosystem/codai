@@ -37,27 +37,62 @@ export const enum TerminalChatContextKeyStrings {
 	ChatSessionResponseVote = 'terminalChatSessionResponseVote',
 }
 
-
 export namespace TerminalChatContextKeys {
-
 	/** Whether the chat widget is focused */
-	export const focused = new RawContextKey<boolean>(TerminalChatContextKeyStrings.ChatFocus, false, localize('chatFocusedContextKey', "Whether the chat view is focused."));
+	export const focused = new RawContextKey<boolean>(
+		TerminalChatContextKeyStrings.ChatFocus,
+		false,
+		localize('chatFocusedContextKey', 'Whether the chat view is focused.')
+	);
 
 	/** Whether the chat widget is visible */
-	export const visible = new RawContextKey<boolean>(TerminalChatContextKeyStrings.ChatVisible, false, localize('chatVisibleContextKey', "Whether the chat view is visible."));
+	export const visible = new RawContextKey<boolean>(
+		TerminalChatContextKeyStrings.ChatVisible,
+		false,
+		localize('chatVisibleContextKey', 'Whether the chat view is visible.')
+	);
 
 	/** Whether there is an active chat request */
-	export const requestActive = new RawContextKey<boolean>(TerminalChatContextKeyStrings.ChatActiveRequest, false, localize('chatRequestActiveContextKey', "Whether there is an active chat request."));
+	export const requestActive = new RawContextKey<boolean>(
+		TerminalChatContextKeyStrings.ChatActiveRequest,
+		false,
+		localize('chatRequestActiveContextKey', 'Whether there is an active chat request.')
+	);
 
 	/** Whether the chat input has text */
-	export const inputHasText = new RawContextKey<boolean>(TerminalChatContextKeyStrings.ChatInputHasText, false, localize('chatInputHasTextContextKey', "Whether the chat input has text."));
+	export const inputHasText = new RawContextKey<boolean>(
+		TerminalChatContextKeyStrings.ChatInputHasText,
+		false,
+		localize('chatInputHasTextContextKey', 'Whether the chat input has text.')
+	);
 
 	/** The chat response contains at least one code block */
-	export const responseContainsCodeBlock = new RawContextKey<boolean>(TerminalChatContextKeyStrings.ChatResponseContainsCodeBlock, false, localize('chatResponseContainsCodeBlockContextKey', "Whether the chat response contains a code block."));
+	export const responseContainsCodeBlock = new RawContextKey<boolean>(
+		TerminalChatContextKeyStrings.ChatResponseContainsCodeBlock,
+		false,
+		localize(
+			'chatResponseContainsCodeBlockContextKey',
+			'Whether the chat response contains a code block.'
+		)
+	);
 
 	/** The chat response contains multiple code blocks */
-	export const responseContainsMultipleCodeBlocks = new RawContextKey<boolean>(TerminalChatContextKeyStrings.ChatResponseContainsMultipleCodeBlocks, false, localize('chatResponseContainsMultipleCodeBlocksContextKey', "Whether the chat response contains multiple code blocks."));
+	export const responseContainsMultipleCodeBlocks = new RawContextKey<boolean>(
+		TerminalChatContextKeyStrings.ChatResponseContainsMultipleCodeBlocks,
+		false,
+		localize(
+			'chatResponseContainsMultipleCodeBlocksContextKey',
+			'Whether the chat response contains multiple code blocks.'
+		)
+	);
 
 	/** A chat agent exists for the terminal location */
-	export const hasChatAgent = new RawContextKey<boolean>(TerminalChatContextKeyStrings.ChatAgentRegistered, false, localize('chatAgentRegisteredContextKey', "Whether a chat agent is registered for the terminal location."));
+	export const hasChatAgent = new RawContextKey<boolean>(
+		TerminalChatContextKeyStrings.ChatAgentRegistered,
+		false,
+		localize(
+			'chatAgentRegisteredContextKey',
+			'Whether a chat agent is registered for the terminal location.'
+		)
+	);
 }

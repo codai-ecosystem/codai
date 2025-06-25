@@ -6,7 +6,10 @@
 import { generateUuid } from '../../../../base/common/uuid.js';
 import { generateTokensCSSForColorMap } from '../../../../editor/common/languages/supports/tokenization.js';
 import { TokenizationRegistry } from '../../../../editor/common/languages.js';
-import { DEFAULT_MARKDOWN_STYLES, renderMarkdownDocument } from '../../markdown/browser/markdownDocumentRenderer.js';
+import {
+	DEFAULT_MARKDOWN_STYLES,
+	renderMarkdownDocument,
+} from '../../markdown/browser/markdownDocumentRenderer.js';
 import { URI } from '../../../../base/common/uri.js';
 import { language } from '../../../../base/common/platform.js';
 import { joinPath } from '../../../../base/common/resources.js';
@@ -19,7 +22,6 @@ import { ILanguageService } from '../../../../editor/common/languages/language.j
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 import { gettingStartedContentRegistry } from '../common/gettingStartedContent.js';
 
-
 export class GettingStartedDetailsRenderer {
 	private mdCache = new ResourceMap<string>();
 	private svgCache = new ResourceMap<string>();
@@ -28,8 +30,8 @@ export class GettingStartedDetailsRenderer {
 		@IFileService private readonly fileService: IFileService,
 		@INotificationService private readonly notificationService: INotificationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@ILanguageService private readonly languageService: ILanguageService,
-	) { }
+		@ILanguageService private readonly languageService: ILanguageService
+	) {}
 
 	async renderMarkdown(path: URI, base: URI): Promise<string> {
 		const content = await this.readAndCacheStepMarkdown(path, base);
@@ -236,7 +238,12 @@ export class GettingStartedDetailsRenderer {
 	private async readAndCacheStepMarkdown(path: URI, base: URI): Promise<string> {
 		if (!this.mdCache.has(path)) {
 			const contents = await this.readContentsOfPath(path);
-			const markdownContents = await renderMarkdownDocument(transformUris(contents, base), this.extensionService, this.languageService, { allowUnknownProtocols: true });
+			const markdownContents = await renderMarkdownDocument(
+				transformUris(contents, base),
+				this.extensionService,
+				this.languageService,
+				{ allowUnknownProtocols: true }
+			);
 			this.mdCache.set(path, markdownContents);
 		}
 		return assertIsDefined(this.mdCache.get(path));
@@ -256,18 +263,21 @@ export class GettingStartedDetailsRenderer {
 				});
 				return contents;
 			}
-		} catch { }
+		} catch {}
 
 		try {
 			const localizedPath = path.with({ path: path.path.replace(/\.md$/, `.nls.${language}.md`) });
 
 			const generalizedLocale = language?.replace(/-.*$/, '');
-			const generalizedLocalizedPath = path.with({ path: path.path.replace(/\.md$/, `.nls.${generalizedLocale}.md`) });
+			const generalizedLocalizedPath = path.with({
+				path: path.path.replace(/\.md$/, `.nls.${generalizedLocale}.md`),
+			});
 
-			const fileExists = (file: URI) => this.fileService
-				.stat(file)
-				.then((stat) => !!stat.size) // Double check the file actually has content for fileSystemProviders that fake `stat`. #131809
-				.catch(() => false);
+			const fileExists = (file: URI) =>
+				this.fileService
+					.stat(file)
+					.then(stat => !!stat.size) // Double check the file actually has content for fileSystemProviders that fake `stat`. #131809
+					.catch(() => false);
 
 			const [localizedFileExists, generalizedLocalizedFileExists] = await Promise.all([
 				fileExists(localizedPath),
@@ -279,7 +289,8 @@ export class GettingStartedDetailsRenderer {
 					? localizedPath
 					: generalizedLocalizedFileExists
 						? generalizedLocalizedPath
-						: path);
+						: path
+			);
 
 			return bytes.value.toString();
 		} catch (e) {
@@ -294,12 +305,17 @@ const transformUri = (src: string, base: URI) => {
 	return asWebviewUri(path).toString(true);
 };
 
-const transformUris = (content: string, base: URI): string => content
-	.replace(/src="([^"]*)"/g, (_, src: string) => {
-		if (src.startsWith('https://')) { return `src="${src}"`; }
-		return `src="${transformUri(src, base)}"`;
-	})
-	.replace(/!\[([^\]]*)\]\(([^)]*)\)/g, (_, title: string, src: string) => {
-		if (src.startsWith('https://')) { return `![${title}](${src})`; }
-		return `![${title}](${transformUri(src, base)})`;
-	});
+const transformUris = (content: string, base: URI): string =>
+	content
+		.replace(/src="([^"]*)"/g, (_, src: string) => {
+			if (src.startsWith('https://')) {
+				return `src="${src}"`;
+			}
+			return `src="${transformUri(src, base)}"`;
+		})
+		.replace(/!\[([^\]]*)\]\(([^)]*)\)/g, (_, title: string, src: string) => {
+			if (src.startsWith('https://')) {
+				return `![${title}](${src})`;
+			}
+			return `![${title}](${transformUri(src, base)})`;
+		});

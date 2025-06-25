@@ -7,31 +7,40 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { EditorWhitespace, LinesLayout } from '../../../common/viewLayout/linesLayout.js';
 
 suite('Editor ViewLayout - LinesLayout', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function insertWhitespace(linesLayout: LinesLayout, afterLineNumber: number, ordinal: number, heightInPx: number, minWidth: number): string {
+	function insertWhitespace(
+		linesLayout: LinesLayout,
+		afterLineNumber: number,
+		ordinal: number,
+		heightInPx: number,
+		minWidth: number
+	): string {
 		let id: string;
-		linesLayout.changeWhitespace((accessor) => {
+		linesLayout.changeWhitespace(accessor => {
 			id = accessor.insertWhitespace(afterLineNumber, ordinal, heightInPx, minWidth);
 		});
 		return id!;
 	}
 
-	function changeOneWhitespace(linesLayout: LinesLayout, id: string, newAfterLineNumber: number, newHeight: number): void {
-		linesLayout.changeWhitespace((accessor) => {
+	function changeOneWhitespace(
+		linesLayout: LinesLayout,
+		id: string,
+		newAfterLineNumber: number,
+		newHeight: number
+	): void {
+		linesLayout.changeWhitespace(accessor => {
 			accessor.changeOneWhitespace(id, newAfterLineNumber, newHeight);
 		});
 	}
 
 	function removeWhitespace(linesLayout: LinesLayout, id: string): void {
-		linesLayout.changeWhitespace((accessor) => {
+		linesLayout.changeWhitespace(accessor => {
 			accessor.removeWhitespace(id);
 		});
 	}
 
 	test('LinesLayout 1', () => {
-
 		// Start off with 10 lines
 		const linesLayout = new LinesLayout(10, 10, 0, 0, []);
 
@@ -136,11 +145,9 @@ suite('Editor ViewLayout - LinesLayout', () => {
 		assert.strictEqual(linesLayout.getWhitespaceIndexAtOrAfterVerticallOffset(54), 2);
 		assert.strictEqual(linesLayout.getWhitespaceIndexAtOrAfterVerticallOffset(55), -1);
 		assert.strictEqual(linesLayout.getWhitespaceIndexAtOrAfterVerticallOffset(1000), -1);
-
 	});
 
 	test('LinesLayout 2', () => {
-
 		// Start off with 10 lines and one whitespace after line 2, of height 5
 		const linesLayout = new LinesLayout(10, 1, 0, 0, []);
 		const a = insertWhitespace(linesLayout, 2, 0, 5, 0);
@@ -562,7 +569,6 @@ suite('Editor ViewLayout - LinesLayout', () => {
 		assert.strictEqual(viewportData.completelyVisibleEndLineNumber, 7);
 		assert.deepStrictEqual(viewportData.relativeVerticalOffset, [50, 160]);
 
-
 		// viewport 150->169
 		viewportData = linesLayout.getLinesViewportData(150, 169);
 		assert.strictEqual(viewportData.startLineNumber, 7);
@@ -586,7 +592,6 @@ suite('Editor ViewLayout - LinesLayout', () => {
 		assert.strictEqual(viewportData.completelyVisibleStartLineNumber, 7);
 		assert.strictEqual(viewportData.completelyVisibleEndLineNumber, 7);
 		assert.deepStrictEqual(viewportData.relativeVerticalOffset, [160]);
-
 
 		// viewport 160->1000
 		viewportData = linesLayout.getLinesViewportData(160, 1000);
@@ -624,12 +629,14 @@ suite('Editor ViewLayout - LinesLayout', () => {
 		assert.strictEqual(viewportData.completelyVisibleEndLineNumber, 6);
 		assert.deepStrictEqual(viewportData.relativeVerticalOffset, [50]);
 		let whitespaceData = linesLayout.getWhitespaceViewportData(50, 160);
-		assert.deepStrictEqual(whitespaceData, [{
-			id: a,
-			afterLineNumber: 6,
-			verticalOffset: 60,
-			height: 100
-		}]);
+		assert.deepStrictEqual(whitespaceData, [
+			{
+				id: a,
+				afterLineNumber: 6,
+				verticalOffset: 60,
+				height: 100,
+			},
+		]);
 
 		// viewport 50->219
 		viewportData = linesLayout.getLinesViewportData(50, 219);
@@ -639,17 +646,20 @@ suite('Editor ViewLayout - LinesLayout', () => {
 		assert.strictEqual(viewportData.completelyVisibleEndLineNumber, 7);
 		assert.deepStrictEqual(viewportData.relativeVerticalOffset, [50, 160]);
 		whitespaceData = linesLayout.getWhitespaceViewportData(50, 219);
-		assert.deepStrictEqual(whitespaceData, [{
-			id: a,
-			afterLineNumber: 6,
-			verticalOffset: 60,
-			height: 100
-		}, {
-			id: b,
-			afterLineNumber: 7,
-			verticalOffset: 170,
-			height: 50
-		}]);
+		assert.deepStrictEqual(whitespaceData, [
+			{
+				id: a,
+				afterLineNumber: 6,
+				verticalOffset: 60,
+				height: 100,
+			},
+			{
+				id: b,
+				afterLineNumber: 7,
+				verticalOffset: 170,
+				height: 50,
+			},
+		]);
 
 		// viewport 50->220
 		viewportData = linesLayout.getLinesViewportData(50, 220);
@@ -711,7 +721,6 @@ suite('Editor ViewLayout - LinesLayout', () => {
 	});
 
 	test('LinesLayout', () => {
-
 		const linesLayout = new LinesLayout(100, 20, 0, 0, []);
 
 		// Insert a whitespace after line number 2, of height 10
@@ -944,9 +953,10 @@ suite('Editor ViewLayout - LinesLayout', () => {
 	});
 
 	test('LinesLayout findInsertionIndex', () => {
-
 		const makeInternalWhitespace = (afterLineNumbers: number[], ordinal: number = 0) => {
-			return afterLineNumbers.map((afterLineNumber) => new EditorWhitespace('', afterLineNumber, ordinal, 0, 0));
+			return afterLineNumbers.map(
+				afterLineNumber => new EditorWhitespace('', afterLineNumber, ordinal, 0, 0)
+			);
 		};
 
 		let arr: EditorWhitespace[];
@@ -1104,7 +1114,6 @@ suite('Editor ViewLayout - LinesLayout', () => {
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(7), 2); // b
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(8), -1); // --
 
-
 		// Do not really move a
 		changeOneWhitespace(linesLayout, a, 2, 1);
 
@@ -1123,7 +1132,6 @@ suite('Editor ViewLayout - LinesLayout', () => {
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(6), 2); // b
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(7), 2); // b
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(8), -1); // --
-
 
 		// Change a to conflict with c => a gets placed after c
 		changeOneWhitespace(linesLayout, a, 3, 1);
@@ -1144,7 +1152,6 @@ suite('Editor ViewLayout - LinesLayout', () => {
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(7), 2); // b
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(8), -1); // --
 
-
 		// Make a no-op
 		changeOneWhitespace(linesLayout, c, 3, 1);
 
@@ -1163,8 +1170,6 @@ suite('Editor ViewLayout - LinesLayout', () => {
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(6), 2); // b
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(7), 2); // b
 		assert.strictEqual(linesLayout.getFirstWhitespaceIndexAfterLineNumber(8), -1); // --
-
-
 
 		// Conflict c with b => c gets placed after b
 		changeOneWhitespace(linesLayout, c, 7, 1);

@@ -22,7 +22,7 @@ function createWorkspaceFile(workspacePath: string): string {
 		folders: [
 			{ path: toUri(join(workspacePath, 'public')) },
 			{ path: toUri(join(workspacePath, 'routes')) },
-			{ path: toUri(join(workspacePath, 'views')) }
+			{ path: toUri(join(workspacePath, 'views')) },
 		],
 		settings: {
 			'workbench.startupEditor': 'none',
@@ -32,8 +32,8 @@ function createWorkspaceFile(workspacePath: string): string {
 			'npm.fetchOnlinePackageInfo': false,
 			'npm.autoDetect': 'off',
 			'workbench.editor.languageDetection': false,
-			"workbench.localHistory.enabled": false
-		}
+			'workbench.localHistory.enabled': false,
+		},
 	};
 
 	writeFileSync(workspaceFilePath, JSON.stringify(workspace, null, '\t'));
@@ -43,7 +43,6 @@ function createWorkspaceFile(workspacePath: string): string {
 
 export function setup(logger: Logger) {
 	describe('Multiroot', () => {
-
 		// Shared before/after handling
 		installAllHandlers(logger, opts => {
 			const workspacePath = createWorkspaceFile(opts.workspacePath);
@@ -58,11 +57,13 @@ export function setup(logger: Logger) {
 				'style.css',
 				'error.pug',
 				'index.pug',
-				'layout.pug'
+				'layout.pug',
 			];
 
 			await app.workbench.quickaccess.openFileQuickAccessAndWait('*.*', 6);
-			await app.workbench.quickinput.waitForQuickInputElements(names => expectedNames.every(expectedName => names.some(name => expectedName === name)));
+			await app.workbench.quickinput.waitForQuickInputElements(names =>
+				expectedNames.every(expectedName => names.some(name => expectedName === name))
+			);
 			await app.workbench.quickinput.closeQuickInput();
 		});
 

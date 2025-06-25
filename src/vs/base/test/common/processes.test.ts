@@ -28,7 +28,7 @@ suite('Processes', () => {
 			VSCODE_CODE_CACHE_PATH: 'x',
 			VSCODE_NEW_VAR: 'x',
 			GDK_PIXBUF_MODULE_FILE: 'x',
-			GDK_PIXBUF_MODULEDIR: 'x'
+			GDK_PIXBUF_MODULEDIR: 'x',
 		};
 		processes.sanitizeProcessEnvironment(env);
 		assert.strictEqual(env['FOO'], 'bar');

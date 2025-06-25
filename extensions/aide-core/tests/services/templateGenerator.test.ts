@@ -19,7 +19,8 @@ describe('TemplateGenerator', () => {
 			assert.ok(code.includes('@param param2'));
 			assert.ok(code.includes('@returns'));
 		});
-	}); describe('generateComponentCode', () => {
+	});
+	describe('generateComponentCode', () => {
 		it('should generate a React functional component', () => {
 			const componentName = 'TestComponent';
 			const code = templateGenerator.generateComponentCode(componentName);

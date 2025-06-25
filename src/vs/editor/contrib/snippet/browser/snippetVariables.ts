@@ -6,7 +6,12 @@
 import { normalizeDriveLetter } from '../../../../base/common/labels.js';
 import * as path from '../../../../base/common/path.js';
 import { dirname } from '../../../../base/common/resources.js';
-import { commonPrefixLength, getLeadingWhitespace, isFalsyOrWhitespace, splitLines } from '../../../../base/common/strings.js';
+import {
+	commonPrefixLength,
+	getLeadingWhitespace,
+	isFalsyOrWhitespace,
+	splitLines,
+} from '../../../../base/common/strings.js';
 import { generateUuid } from '../../../../base/common/uuid.js';
 import { Selection } from '../../../common/core/selection.js';
 import { ITextModel } from '../../../common/model.js';
@@ -15,48 +20,55 @@ import { Text, Variable, VariableResolver } from './snippetParser.js';
 import { OvertypingCapturer } from '../../suggest/browser/suggestOvertypingCapturer.js';
 import * as nls from '../../../../nls.js';
 import { ILabelService } from '../../../../platform/label/common/label.js';
-import { WORKSPACE_EXTENSION, isSingleFolderWorkspaceIdentifier, toWorkspaceIdentifier, IWorkspaceContextService, ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier, isEmptyWorkspaceIdentifier } from '../../../../platform/workspace/common/workspace.js';
+import {
+	WORKSPACE_EXTENSION,
+	isSingleFolderWorkspaceIdentifier,
+	toWorkspaceIdentifier,
+	IWorkspaceContextService,
+	ISingleFolderWorkspaceIdentifier,
+	IWorkspaceIdentifier,
+	isEmptyWorkspaceIdentifier,
+} from '../../../../platform/workspace/common/workspace.js';
 
 export const KnownSnippetVariableNames = Object.freeze<{ [key: string]: true }>({
-	'CURRENT_YEAR': true,
-	'CURRENT_YEAR_SHORT': true,
-	'CURRENT_MONTH': true,
-	'CURRENT_DATE': true,
-	'CURRENT_HOUR': true,
-	'CURRENT_MINUTE': true,
-	'CURRENT_SECOND': true,
-	'CURRENT_DAY_NAME': true,
-	'CURRENT_DAY_NAME_SHORT': true,
-	'CURRENT_MONTH_NAME': true,
-	'CURRENT_MONTH_NAME_SHORT': true,
-	'CURRENT_SECONDS_UNIX': true,
-	'CURRENT_TIMEZONE_OFFSET': true,
-	'SELECTION': true,
-	'CLIPBOARD': true,
-	'TM_SELECTED_TEXT': true,
-	'TM_CURRENT_LINE': true,
-	'TM_CURRENT_WORD': true,
-	'TM_LINE_INDEX': true,
-	'TM_LINE_NUMBER': true,
-	'TM_FILENAME': true,
-	'TM_FILENAME_BASE': true,
-	'TM_DIRECTORY': true,
-	'TM_FILEPATH': true,
-	'CURSOR_INDEX': true, // 0-offset
-	'CURSOR_NUMBER': true, // 1-offset
-	'RELATIVE_FILEPATH': true,
-	'BLOCK_COMMENT_START': true,
-	'BLOCK_COMMENT_END': true,
-	'LINE_COMMENT': true,
-	'WORKSPACE_NAME': true,
-	'WORKSPACE_FOLDER': true,
-	'RANDOM': true,
-	'RANDOM_HEX': true,
-	'UUID': true
+	CURRENT_YEAR: true,
+	CURRENT_YEAR_SHORT: true,
+	CURRENT_MONTH: true,
+	CURRENT_DATE: true,
+	CURRENT_HOUR: true,
+	CURRENT_MINUTE: true,
+	CURRENT_SECOND: true,
+	CURRENT_DAY_NAME: true,
+	CURRENT_DAY_NAME_SHORT: true,
+	CURRENT_MONTH_NAME: true,
+	CURRENT_MONTH_NAME_SHORT: true,
+	CURRENT_SECONDS_UNIX: true,
+	CURRENT_TIMEZONE_OFFSET: true,
+	SELECTION: true,
+	CLIPBOARD: true,
+	TM_SELECTED_TEXT: true,
+	TM_CURRENT_LINE: true,
+	TM_CURRENT_WORD: true,
+	TM_LINE_INDEX: true,
+	TM_LINE_NUMBER: true,
+	TM_FILENAME: true,
+	TM_FILENAME_BASE: true,
+	TM_DIRECTORY: true,
+	TM_FILEPATH: true,
+	CURSOR_INDEX: true, // 0-offset
+	CURSOR_NUMBER: true, // 1-offset
+	RELATIVE_FILEPATH: true,
+	BLOCK_COMMENT_START: true,
+	BLOCK_COMMENT_END: true,
+	LINE_COMMENT: true,
+	WORKSPACE_NAME: true,
+	WORKSPACE_FOLDER: true,
+	RANDOM: true,
+	RANDOM_HEX: true,
+	UUID: true,
 });
 
 export class CompositeSnippetVariableResolver implements VariableResolver {
-
 	constructor(private readonly _delegates: VariableResolver[]) {
 		//
 	}
@@ -73,7 +85,6 @@ export class CompositeSnippetVariableResolver implements VariableResolver {
 }
 
 export class SelectionBasedVariableResolver implements VariableResolver {
-
 	constructor(
 		private readonly _model: ITextModel,
 		private readonly _selection: Selection,
@@ -84,7 +95,6 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 	}
 
 	resolve(variable: Variable): string | undefined {
-
 		const { name } = variable;
 
 		if (name === 'SELECTION' || name === 'TM_SELECTED_TEXT') {
@@ -107,7 +117,11 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 				// extra indentation to the value
 
 				const line = this._model.getLineContent(this._selection.startLineNumber);
-				const lineLeadingWhitespace = getLeadingWhitespace(line, 0, this._selection.startColumn - 1);
+				const lineLeadingWhitespace = getLeadingWhitespace(
+					line,
+					0,
+					this._selection.startColumn - 1
+				);
 
 				let varLeadingWhitespace = lineLeadingWhitespace;
 				variable.snippet.walk(marker => {
@@ -119,34 +133,32 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 					}
 					return true;
 				});
-				const whitespaceCommonLength = commonPrefixLength(varLeadingWhitespace, lineLeadingWhitespace);
+				const whitespaceCommonLength = commonPrefixLength(
+					varLeadingWhitespace,
+					lineLeadingWhitespace
+				);
 
 				value = value.replace(
 					/(\r\n|\r|\n)(.*)/g,
-					(m, newline, rest) => `${newline}${varLeadingWhitespace.substr(whitespaceCommonLength)}${rest}`
+					(m, newline, rest) =>
+						`${newline}${varLeadingWhitespace.substr(whitespaceCommonLength)}${rest}`
 				);
 			}
 			return value;
-
 		} else if (name === 'TM_CURRENT_LINE') {
 			return this._model.getLineContent(this._selection.positionLineNumber);
-
 		} else if (name === 'TM_CURRENT_WORD') {
 			const info = this._model.getWordAtPosition({
 				lineNumber: this._selection.positionLineNumber,
-				column: this._selection.positionColumn
+				column: this._selection.positionColumn,
 			});
-			return info && info.word || undefined;
-
+			return (info && info.word) || undefined;
 		} else if (name === 'TM_LINE_INDEX') {
 			return String(this._selection.positionLineNumber - 1);
-
 		} else if (name === 'TM_LINE_NUMBER') {
 			return String(this._selection.positionLineNumber);
-
 		} else if (name === 'CURSOR_INDEX') {
 			return String(this._selectionIdx);
-
 		} else if (name === 'CURSOR_NUMBER') {
 			return String(this._selectionIdx + 1);
 		}
@@ -155,7 +167,6 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 }
 
 export class ModelBasedVariableResolver implements VariableResolver {
-
 	constructor(
 		private readonly _labelService: ILabelService,
 		private readonly _model: ITextModel
@@ -164,12 +175,10 @@ export class ModelBasedVariableResolver implements VariableResolver {
 	}
 
 	resolve(variable: Variable): string | undefined {
-
 		const { name } = variable;
 
 		if (name === 'TM_FILENAME') {
 			return path.basename(this._model.uri.fsPath);
-
 		} else if (name === 'TM_FILENAME_BASE') {
 			const name = path.basename(this._model.uri.fsPath);
 			const idx = name.lastIndexOf('.');
@@ -178,13 +187,11 @@ export class ModelBasedVariableResolver implements VariableResolver {
 			} else {
 				return name.slice(0, idx);
 			}
-
 		} else if (name === 'TM_DIRECTORY') {
 			if (path.dirname(this._model.uri.fsPath) === '.') {
 				return '';
 			}
 			return this._labelService.getUriLabel(dirname(this._model.uri));
-
 		} else if (name === 'TM_FILEPATH') {
 			return this._labelService.getUriLabel(this._model.uri);
 		} else if (name === 'RELATIVE_FILEPATH') {
@@ -200,7 +207,6 @@ export interface IReadClipboardText {
 }
 
 export class ClipboardBasedVariableResolver implements VariableResolver {
-
 	constructor(
 		private readonly _readClipboardText: IReadClipboardText,
 		private readonly _selectionIdx: number,
@@ -236,13 +242,17 @@ export class CommentBasedVariableResolver implements VariableResolver {
 	constructor(
 		private readonly _model: ITextModel,
 		private readonly _selection: Selection,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService
 	) {
 		//
 	}
 	resolve(variable: Variable): string | undefined {
 		const { name } = variable;
-		const langId = this._model.getLanguageIdAtPosition(this._selection.selectionStartLineNumber, this._selection.selectionStartColumn);
+		const langId = this._model.getLanguageIdAtPosition(
+			this._selection.selectionStartLineNumber,
+			this._selection.selectionStartColumn
+		);
 		const config = this._languageConfigurationService.getLanguageConfiguration(langId).comments;
 		if (!config) {
 			return undefined;
@@ -258,11 +268,52 @@ export class CommentBasedVariableResolver implements VariableResolver {
 	}
 }
 export class TimeBasedVariableResolver implements VariableResolver {
-
-	private static readonly dayNames = [nls.localize('Sunday', "Sunday"), nls.localize('Monday', "Monday"), nls.localize('Tuesday', "Tuesday"), nls.localize('Wednesday', "Wednesday"), nls.localize('Thursday', "Thursday"), nls.localize('Friday', "Friday"), nls.localize('Saturday', "Saturday")];
-	private static readonly dayNamesShort = [nls.localize('SundayShort', "Sun"), nls.localize('MondayShort', "Mon"), nls.localize('TuesdayShort', "Tue"), nls.localize('WednesdayShort', "Wed"), nls.localize('ThursdayShort', "Thu"), nls.localize('FridayShort', "Fri"), nls.localize('SaturdayShort', "Sat")];
-	private static readonly monthNames = [nls.localize('January', "January"), nls.localize('February', "February"), nls.localize('March', "March"), nls.localize('April', "April"), nls.localize('May', "May"), nls.localize('June', "June"), nls.localize('July', "July"), nls.localize('August', "August"), nls.localize('September', "September"), nls.localize('October', "October"), nls.localize('November', "November"), nls.localize('December', "December")];
-	private static readonly monthNamesShort = [nls.localize('JanuaryShort', "Jan"), nls.localize('FebruaryShort', "Feb"), nls.localize('MarchShort', "Mar"), nls.localize('AprilShort', "Apr"), nls.localize('MayShort', "May"), nls.localize('JuneShort', "Jun"), nls.localize('JulyShort', "Jul"), nls.localize('AugustShort', "Aug"), nls.localize('SeptemberShort', "Sep"), nls.localize('OctoberShort', "Oct"), nls.localize('NovemberShort', "Nov"), nls.localize('DecemberShort', "Dec")];
+	private static readonly dayNames = [
+		nls.localize('Sunday', 'Sunday'),
+		nls.localize('Monday', 'Monday'),
+		nls.localize('Tuesday', 'Tuesday'),
+		nls.localize('Wednesday', 'Wednesday'),
+		nls.localize('Thursday', 'Thursday'),
+		nls.localize('Friday', 'Friday'),
+		nls.localize('Saturday', 'Saturday'),
+	];
+	private static readonly dayNamesShort = [
+		nls.localize('SundayShort', 'Sun'),
+		nls.localize('MondayShort', 'Mon'),
+		nls.localize('TuesdayShort', 'Tue'),
+		nls.localize('WednesdayShort', 'Wed'),
+		nls.localize('ThursdayShort', 'Thu'),
+		nls.localize('FridayShort', 'Fri'),
+		nls.localize('SaturdayShort', 'Sat'),
+	];
+	private static readonly monthNames = [
+		nls.localize('January', 'January'),
+		nls.localize('February', 'February'),
+		nls.localize('March', 'March'),
+		nls.localize('April', 'April'),
+		nls.localize('May', 'May'),
+		nls.localize('June', 'June'),
+		nls.localize('July', 'July'),
+		nls.localize('August', 'August'),
+		nls.localize('September', 'September'),
+		nls.localize('October', 'October'),
+		nls.localize('November', 'November'),
+		nls.localize('December', 'December'),
+	];
+	private static readonly monthNamesShort = [
+		nls.localize('JanuaryShort', 'Jan'),
+		nls.localize('FebruaryShort', 'Feb'),
+		nls.localize('MarchShort', 'Mar'),
+		nls.localize('AprilShort', 'Apr'),
+		nls.localize('MayShort', 'May'),
+		nls.localize('JuneShort', 'Jun'),
+		nls.localize('JulyShort', 'Jul'),
+		nls.localize('AugustShort', 'Aug'),
+		nls.localize('SeptemberShort', 'Sep'),
+		nls.localize('OctoberShort', 'Oct'),
+		nls.localize('NovemberShort', 'Nov'),
+		nls.localize('DecemberShort', 'Dec'),
+	];
 
 	private readonly _date = new Date();
 
@@ -297,9 +348,9 @@ export class TimeBasedVariableResolver implements VariableResolver {
 			const rawTimeOffset = this._date.getTimezoneOffset();
 			const sign = rawTimeOffset > 0 ? '-' : '+';
 			const hours = Math.trunc(Math.abs(rawTimeOffset / 60));
-			const hoursString = (hours < 10 ? '0' + hours : hours);
+			const hoursString = hours < 10 ? '0' + hours : hours;
 			const minutes = Math.abs(rawTimeOffset) - hours * 60;
-			const minutesString = (minutes < 10 ? '0' + minutes : minutes);
+			const minutesString = minutes < 10 ? '0' + minutes : minutes;
 			return sign + hoursString + ':' + minutesString;
 		}
 
@@ -308,9 +359,7 @@ export class TimeBasedVariableResolver implements VariableResolver {
 }
 
 export class WorkspaceBasedVariableResolver implements VariableResolver {
-	constructor(
-		private readonly _workspaceService: IWorkspaceContextService | undefined,
-	) {
+	constructor(private readonly _workspaceService: IWorkspaceContextService | undefined) {
 		//
 	}
 
@@ -332,7 +381,9 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 
 		return undefined;
 	}
-	private _resolveWorkspaceName(workspaceIdentifier: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier): string | undefined {
+	private _resolveWorkspaceName(
+		workspaceIdentifier: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier
+	): string | undefined {
 		if (isSingleFolderWorkspaceIdentifier(workspaceIdentifier)) {
 			return path.basename(workspaceIdentifier.uri.path);
 		}
@@ -343,7 +394,9 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 		}
 		return filename;
 	}
-	private _resoveWorkspacePath(workspaceIdentifier: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier): string | undefined {
+	private _resoveWorkspacePath(
+		workspaceIdentifier: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier
+	): string | undefined {
 		if (isSingleFolderWorkspaceIdentifier(workspaceIdentifier)) {
 			return normalizeDriveLetter(workspaceIdentifier.uri.fsPath);
 		}
@@ -353,7 +406,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 		if (folderpath.endsWith(filename)) {
 			folderpath = folderpath.substr(0, folderpath.length - filename.length - 1);
 		}
-		return (folderpath ? normalizeDriveLetter(folderpath) : '/');
+		return folderpath ? normalizeDriveLetter(folderpath) : '/';
 	}
 }
 

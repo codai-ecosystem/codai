@@ -14,7 +14,7 @@ export const developmentConfig = {
 		persistenceAdapter: 'filesystem', // 'filesystem' | 'memory' | 'indexeddb'
 		persistencePath: './data/memory-graph',
 		enableReactiveUpdates: true,
-		debugMode: process.env.NODE_ENV === 'development'
+		debugMode: process.env.NODE_ENV === 'development',
 	},
 
 	// Agent Runtime Configuration
@@ -22,7 +22,7 @@ export const developmentConfig = {
 		maxConcurrentAgents: 5,
 		messageTimeout: 30000,
 		enableLogging: true,
-		logLevel: 'debug' as const
+		logLevel: 'debug' as const,
 	},
 
 	// AI Model Configuration
@@ -30,19 +30,19 @@ export const developmentConfig = {
 		openai: {
 			apiKey: process.env.OPENAI_API_KEY,
 			model: 'gpt-4',
-			maxTokens: 4000
+			maxTokens: 4000,
 		},
 		anthropic: {
 			apiKey: process.env.ANTHROPIC_API_KEY,
 			model: 'claude-3-sonnet-20240229',
-			maxTokens: 4000
-		}
+			maxTokens: 4000,
+		},
 	},
 
 	// Extension Configuration
 	extensions: {
 		autoActivate: true,
 		enableCopilotIntegration: true,
-		debugExtensions: process.env.NODE_ENV === 'development'
-	}
+		debugExtensions: process.env.NODE_ENV === 'development',
+	},
 };

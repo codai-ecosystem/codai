@@ -9,7 +9,6 @@
  * Use `supported(window)` to find out if the browser supports this kind of API.
  */
 export namespace WebFileSystemAccess {
-
 	export function supported(obj: any & Window): boolean {
 		if (typeof obj?.showDirectoryPicker === 'function') {
 			return true;
@@ -24,28 +23,35 @@ export namespace WebFileSystemAccess {
 			return false;
 		}
 
-		return typeof candidate.kind === 'string' && typeof candidate.queryPermission === 'function' && typeof candidate.requestPermission === 'function';
+		return (
+			typeof candidate.kind === 'string' &&
+			typeof candidate.queryPermission === 'function' &&
+			typeof candidate.requestPermission === 'function'
+		);
 	}
 
 	export function isFileSystemFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
 		return handle.kind === 'file';
 	}
 
-	export function isFileSystemDirectoryHandle(handle: FileSystemHandle): handle is FileSystemDirectoryHandle {
+	export function isFileSystemDirectoryHandle(
+		handle: FileSystemHandle
+	): handle is FileSystemDirectoryHandle {
 		return handle.kind === 'directory';
 	}
 }
 
 // TODO@bpasero adopt official types of FileSystemObserver
 export namespace WebFileSystemObserver {
-
 	export function supported(obj: any & Window): boolean {
 		return typeof obj?.FileSystemObserver === 'function';
 	}
 }
 
 export interface FileSystemObserver {
-	new(callback: (records: FileSystemObserverRecord[], observer: FileSystemObserver) => void): FileSystemObserver;
+	new (
+		callback: (records: FileSystemObserverRecord[], observer: FileSystemObserver) => void
+	): FileSystemObserver;
 
 	observe(handle: FileSystemHandle): Promise<void>;
 	observe(handle: FileSystemDirectoryHandle, options?: { recursive: boolean }): Promise<void>;
@@ -55,7 +61,6 @@ export interface FileSystemObserver {
 }
 
 export interface FileSystemObserverRecord {
-
 	/**
 	 * The handle passed to the `FileSystemObserver.observe()` function
 	 */

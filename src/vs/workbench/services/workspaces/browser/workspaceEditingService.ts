@@ -16,7 +16,10 @@ import { ITextFileService } from '../../textfile/common/textfiles.js';
 import { IHostService } from '../../host/browser/host.js';
 import { AbstractWorkspaceEditingService } from './abstractWorkspaceEditingService.js';
 import { IWorkspaceEditingService } from '../common/workspaceEditing.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { URI } from '../../../../base/common/uri.js';
 import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
 import { IWorkspaceTrustManagementService } from '../../../../platform/workspace/common/workspaceTrust.js';
@@ -25,7 +28,6 @@ import { IUserDataProfilesService } from '../../../../platform/userDataProfile/c
 import { IUserDataProfileService } from '../../userDataProfile/common/userDataProfile.js';
 
 export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingService {
-
 	constructor(
 		@IJSONEditingService jsonEditingService: IJSONEditingService,
 		@IWorkspaceContextService contextService: WorkspaceService,
@@ -40,21 +42,42 @@ export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingServ
 		@IDialogService dialogService: IDialogService,
 		@IHostService hostService: IHostService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService userDataProfileService: IUserDataProfileService
 	) {
-		super(jsonEditingService, contextService, configurationService, notificationService, commandService, fileService, textFileService, workspacesService, environmentService, fileDialogService, dialogService, hostService, uriIdentityService, workspaceTrustManagementService, userDataProfilesService, userDataProfileService);
+		super(
+			jsonEditingService,
+			contextService,
+			configurationService,
+			notificationService,
+			commandService,
+			fileService,
+			textFileService,
+			workspacesService,
+			environmentService,
+			fileDialogService,
+			dialogService,
+			hostService,
+			uriIdentityService,
+			workspaceTrustManagementService,
+			userDataProfilesService,
+			userDataProfileService
+		);
 	}
 
 	async enterWorkspace(workspaceUri: URI): Promise<void> {
 		const result = await this.doEnterWorkspace(workspaceUri);
 		if (result) {
-
 			// Open workspace in same window
 			await this.hostService.openWindow([{ workspaceUri }], { forceReuseWindow: true });
 		}
 	}
 }
 
-registerSingleton(IWorkspaceEditingService, BrowserWorkspaceEditingService, InstantiationType.Delayed);
+registerSingleton(
+	IWorkspaceEditingService,
+	BrowserWorkspaceEditingService,
+	InstantiationType.Delayed
+);

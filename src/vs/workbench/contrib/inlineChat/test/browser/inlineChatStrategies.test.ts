@@ -9,16 +9,14 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { asProgressiveEdit } from '../../browser/utils.js';
 import assert from 'assert';
 
-
 suite('AsyncEdit', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('asProgressiveEdit', async () => {
 		const interval = new IntervalTimer();
 		const edit = {
 			range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
-			text: 'Hello, world!'
+			text: 'Hello, world!',
 		};
 
 		const cts = new CancellationTokenSource();
@@ -50,7 +48,7 @@ suite('AsyncEdit', () => {
 		const interval = new IntervalTimer();
 		const edit = {
 			range: { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 },
-			text: 'Hello, world!'
+			text: 'Hello, world!',
 		};
 
 		const cts = new CancellationTokenSource();

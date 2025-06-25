@@ -14,12 +14,17 @@ import { LineTokens } from './lineTokens.js';
  * Use {@link TokenArrayBuilder} to efficiently create a token array.
  *
  * TODO: Make this class more efficient (e.g. by using a Int32Array).
-*/
+ */
 export class TokenArray {
 	public static fromLineTokens(lineTokens: LineTokens): TokenArray {
 		const tokenInfo: TokenInfo[] = [];
 		for (let i = 0; i < lineTokens.getCount(); i++) {
-			tokenInfo.push(new TokenInfo(lineTokens.getEndOffset(i) - lineTokens.getStartOffset(i), lineTokens.getMetadata(i)));
+			tokenInfo.push(
+				new TokenInfo(
+					lineTokens.getEndOffset(i) - lineTokens.getStartOffset(i),
+					lineTokens.getMetadata(i)
+				)
+			);
 		}
 		return TokenArray.create(tokenInfo);
 	}
@@ -28,12 +33,13 @@ export class TokenArray {
 		return new TokenArray(tokenInfo);
 	}
 
-	private constructor(
-		private readonly _tokenInfo: TokenInfo[],
-	) { }
+	private constructor(private readonly _tokenInfo: TokenInfo[]) {}
 
 	public toLineTokens(lineContent: string, decoder: ILanguageIdCodec): LineTokens {
-		return LineTokens.createFromTextAndMetadata(this.map((r, t) => ({ text: r.substring(lineContent), metadata: t.metadata })), decoder);
+		return LineTokens.createFromTextAndMetadata(
+			this.map((r, t) => ({ text: r.substring(lineContent), metadata: t.metadata })),
+			decoder
+		);
 	}
 
 	public forEach(cb: (range: OffsetRange, tokenInfo: TokenInfo) => void): void {
@@ -89,13 +95,13 @@ export type TokenMetadata = number;
 export class TokenInfo {
 	constructor(
 		public readonly length: number,
-		public readonly metadata: TokenMetadata,
-	) { }
+		public readonly metadata: TokenMetadata
+	) {}
 }
 
 /**
  * TODO: Make this class more efficient (e.g. by using a Int32Array).
-*/
+ */
 export class TokenArrayBuilder {
 	private readonly _tokens: TokenInfo[] = [];
 

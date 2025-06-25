@@ -4,14 +4,27 @@
  *--------------------------------------------------------------------------------------------*/
 
 import '../media/simpleBrowserOverlay.css';
-import { combinedDisposable, DisposableMap, DisposableStore, toDisposable } from '../../../../../base/common/lifecycle.js';
-import { autorun, derivedOpts, observableFromEvent, observableSignalFromEvent } from '../../../../../base/common/observable.js';
+import {
+	combinedDisposable,
+	DisposableMap,
+	DisposableStore,
+	toDisposable,
+} from '../../../../../base/common/lifecycle.js';
+import {
+	autorun,
+	derivedOpts,
+	observableFromEvent,
+	observableSignalFromEvent,
+} from '../../../../../base/common/observable.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { ThemeIcon } from '../../../../../base/common/themables.js';
 import { Codicon } from '../../../../../base/common/codicons.js';
 import { localize } from '../../../../../nls.js';
 import { IWorkbenchContribution } from '../../../../common/contributions.js';
-import { IEditorGroup, IEditorGroupsService } from '../../../../services/editor/common/editorGroupsService.js';
+import {
+	IEditorGroup,
+	IEditorGroupsService,
+} from '../../../../services/editor/common/editorGroupsService.js';
 import { EditorGroupView } from '../../../../browser/parts/editor/editorGroupView.js';
 import { Event } from '../../../../../base/common/event.js';
 import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
@@ -39,7 +52,6 @@ import { IAction, toAction } from '../../../../../base/common/actions.js';
 import { BrowserType } from '../../../../../platform/browserElements/common/browserElements.js';
 
 class SimpleBrowserOverlayWidget {
-
 	private readonly _domNode: HTMLElement;
 
 	private readonly imagesFolder: URI;
@@ -62,19 +74,24 @@ class SimpleBrowserOverlayWidget {
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IPreferencesService private readonly _preferencesService: IPreferencesService,
 		@IBrowserElementsService private readonly _browserElementsService: IBrowserElementsService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextMenuService private readonly contextMenuService: IContextMenuService
 	) {
-		this._showStore.add(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('chat.sendElementsToChat.enabled')) {
-				if (this.configurationService.getValue('chat.sendElementsToChat.enabled')) {
-					this.showElement(this._domNode);
-				} else {
-					this.hideElement(this._domNode);
+		this._showStore.add(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('chat.sendElementsToChat.enabled')) {
+					if (this.configurationService.getValue('chat.sendElementsToChat.enabled')) {
+						this.showElement(this._domNode);
+					} else {
+						this.hideElement(this._domNode);
+					}
 				}
-			}
-		}));
+			})
+		);
 
-		this.imagesFolder = joinPath(this.environmentService.workspaceStorageHome, 'vscode-chat-images');
+		this.imagesFolder = joinPath(
+			this.environmentService.workspaceStorageHome,
+			'vscode-chat-images'
+		);
 		cleanupOldImages(this.fileService, this.logService, this.imagesFolder);
 
 		this._domNode = document.createElement('div');
@@ -92,7 +109,9 @@ class SimpleBrowserOverlayWidget {
 				id: 'singleSelection',
 				label: localize('selectElementDropdown', 'Select an Element'),
 				enabled: true,
-				run: async () => { await startElementSelection(); }
+				run: async () => {
+					await startElementSelection();
+				},
 			}),
 			toAction({
 				id: 'continuousSelection',
@@ -119,39 +138,68 @@ class SimpleBrowserOverlayWidget {
 					// stop selection
 					message.textContent = localize('elementSelectionComplete', 'Element added to chat');
 					finishedSelecting();
-				}
-			}));
+				},
+			})
+		);
 
-		const startButton = this._showStore.add(new ButtonWithDropdown(this._domNode, {
-			actions: actions,
-			addPrimaryActionToDropdown: false,
-			contextMenuProvider: this.contextMenuService,
-			supportShortLabel: true,
-			title: localize('selectAnElement', 'Click to select an element.'),
-			supportIcons: true,
-			...defaultButtonStyles
-		}));
+		const startButton = this._showStore.add(
+			new ButtonWithDropdown(this._domNode, {
+				actions: actions,
+				addPrimaryActionToDropdown: false,
+				contextMenuProvider: this.contextMenuService,
+				supportShortLabel: true,
+				title: localize('selectAnElement', 'Click to select an element.'),
+				supportIcons: true,
+				...defaultButtonStyles,
+			})
+		);
 
 		startButton.primaryButton.label = localize('startSelection', 'Start');
 		startButton.element.classList.add('element-selection-start');
 
-		const cancelButton = this._showStore.add(new Button(this._domNode, { ...defaultButtonStyles, supportIcons: true, title: localize('cancelSelection', 'Click to cancel selection.') }));
+		const cancelButton = this._showStore.add(
+			new Button(this._domNode, {
+				...defaultButtonStyles,
+				supportIcons: true,
+				title: localize('cancelSelection', 'Click to cancel selection.'),
+			})
+		);
 		cancelButton.element.className = 'element-selection-cancel hidden';
 		const cancelButtonLabel = localize('cancelSelectionLabel', 'Cancel');
 		cancelButton.label = cancelButtonLabel;
 
-		const configure = this._showStore.add(new Button(this._domNode, { supportIcons: true, title: localize('chat.configureElements', "Configure Attachments Sent") }));
+		const configure = this._showStore.add(
+			new Button(this._domNode, {
+				supportIcons: true,
+				title: localize('chat.configureElements', 'Configure Attachments Sent'),
+			})
+		);
 		configure.icon = Codicon.gear;
 
-		const collapseOverlay = this._showStore.add(new Button(this._domNode, { supportIcons: true, title: localize('chat.hideOverlay', "Collapse Overlay") }));
+		const collapseOverlay = this._showStore.add(
+			new Button(this._domNode, {
+				supportIcons: true,
+				title: localize('chat.hideOverlay', 'Collapse Overlay'),
+			})
+		);
 		collapseOverlay.icon = Codicon.chevronRight;
 
-		const nextSelection = this._showStore.add(new Button(this._domNode, { supportIcons: true, title: localize('chat.nextSelection', "Select Again") }));
+		const nextSelection = this._showStore.add(
+			new Button(this._domNode, {
+				supportIcons: true,
+				title: localize('chat.nextSelection', 'Select Again'),
+			})
+		);
 		nextSelection.icon = Codicon.close;
 		nextSelection.element.classList.add('hidden');
 
 		// shown if the overlay is collapsed
-		const expandOverlay = this._showStore.add(new Button(this._domNode, { supportIcons: true, title: localize('chat.expandOverlay', "Expand Overlay") }));
+		const expandOverlay = this._showStore.add(
+			new Button(this._domNode, {
+				supportIcons: true,
+				title: localize('chat.expandOverlay', 'Expand Overlay'),
+			})
+		);
 		expandOverlay.icon = Codicon.layout;
 		const expandContainer = document.createElement('div');
 		expandContainer.className = 'element-expand-container hidden';
@@ -193,35 +241,51 @@ class SimpleBrowserOverlayWidget {
 			finishedSelecting();
 		};
 
-		this._showStore.add(addDisposableListener(startButton.primaryButton.element, 'click', async () => {
-			await startElementSelection();
-		}));
+		this._showStore.add(
+			addDisposableListener(startButton.primaryButton.element, 'click', async () => {
+				await startElementSelection();
+			})
+		);
 
-		this._showStore.add(addDisposableListener(cancelButton.element, 'click', () => {
-			cts.cancel();
-			message.textContent = localize('elementCancelMessage', 'Selection canceled');
-			finishedSelecting();
-		}));
+		this._showStore.add(
+			addDisposableListener(cancelButton.element, 'click', () => {
+				cts.cancel();
+				message.textContent = localize('elementCancelMessage', 'Selection canceled');
+				finishedSelecting();
+			})
+		);
 
-		this._showStore.add(addDisposableListener(collapseOverlay.element, 'click', () => {
-			this.hideElement(this._domNode);
-			this.showElement(expandContainer);
-		}));
+		this._showStore.add(
+			addDisposableListener(collapseOverlay.element, 'click', () => {
+				this.hideElement(this._domNode);
+				this.showElement(expandContainer);
+			})
+		);
 
-		this._showStore.add(addDisposableListener(expandOverlay.element, 'click', () => {
-			this.showElement(this._domNode);
-			this.hideElement(expandContainer);
-		}));
+		this._showStore.add(
+			addDisposableListener(expandOverlay.element, 'click', () => {
+				this.showElement(this._domNode);
+				this.hideElement(expandContainer);
+			})
+		);
 
-		this._showStore.add(addDisposableListener(nextSelection.element, 'click', () => {
-			clearTimeout(this._timeout);
-			message.textContent = startSelectionMessage;
-			resetButtons();
-		}));
+		this._showStore.add(
+			addDisposableListener(nextSelection.element, 'click', () => {
+				clearTimeout(this._timeout);
+				message.textContent = startSelectionMessage;
+				resetButtons();
+			})
+		);
 
-		this._showStore.add(addDisposableListener(configure.element, 'click', () => {
-			this._preferencesService.openSettings({ jsonEditor: false, query: '@id:chat.sendElementsToChat.enabled,chat.sendElementsToChat.attachCSS,chat.sendElementsToChat.attachImages' });
-		}));
+		this._showStore.add(
+			addDisposableListener(configure.element, 'click', () => {
+				this._preferencesService.openSettings({
+					jsonEditor: false,
+					query:
+						'@id:chat.sendElementsToChat.enabled,chat.sendElementsToChat.attachCSS,chat.sendElementsToChat.attachImages',
+				});
+			})
+		);
 	}
 
 	setActiveBrowserType(type: BrowserType | undefined) {
@@ -244,16 +308,23 @@ class SimpleBrowserOverlayWidget {
 
 	async addElementToChat(cts: CancellationTokenSource) {
 		const editorContainer = this._container.querySelector('.editor-container') as HTMLDivElement;
-		const editorContainerPosition = editorContainer ? editorContainer.getBoundingClientRect() : this._container.getBoundingClientRect();
+		const editorContainerPosition = editorContainer
+			? editorContainer.getBoundingClientRect()
+			: this._container.getBoundingClientRect();
 
-		const elementData = await this._browserElementsService.getElementData(editorContainerPosition, cts.token, this._activeBrowserType);
+		const elementData = await this._browserElementsService.getElementData(
+			editorContainerPosition,
+			cts.token,
+			this._activeBrowserType
+		);
 		if (!elementData) {
 			throw new Error('Element data not found');
 		}
 		const bounds = elementData.bounds;
 		const toAttach: IChatRequestVariableEntry[] = [];
 
-		const widget = await showChatView(this._viewService) ?? this._chatWidgetService.lastFocusedWidget;
+		const widget =
+			(await showChatView(this._viewService)) ?? this._chatWidgetService.lastFocusedWidget;
 		let value = 'Attached HTML and CSS Context\n\n' + elementData.outerHTML;
 		if (this.configurationService.getValue('chat.sendElementsToChat.attachCSS')) {
 			value += '\n\n' + elementData.computedStyle;
@@ -278,7 +349,12 @@ class SimpleBrowserOverlayWidget {
 			if (!screenshot) {
 				throw new Error('Screenshot failed');
 			}
-			const fileReference = await createFileForMedia(this.fileService, this.imagesFolder, screenshot.buffer, 'image/png');
+			const fileReference = await createFileForMedia(
+				this.fileService,
+				this.imagesFolder,
+				screenshot.buffer,
+				'image/png'
+			);
 			toAttach.push({
 				id: 'element-screenshot-' + Date.now(),
 				name: 'Element Screenshot',
@@ -293,7 +369,6 @@ class SimpleBrowserOverlayWidget {
 
 		widget?.attachmentModel?.addContext(...toAttach);
 	}
-
 
 	getDisplayNameFromOuterHTML(outerHTML: string): string {
 		const firstElementMatch = outerHTML.match(/^<(\w+)([^>]*?)>/);
@@ -319,7 +394,6 @@ class SimpleBrowserOverlayWidget {
 }
 
 class SimpleBrowserOverlayController {
-
 	private readonly _store = new DisposableStore();
 
 	private readonly _domNode = document.createElement('div');
@@ -329,9 +403,8 @@ class SimpleBrowserOverlayController {
 		group: IEditorGroup,
 		@IInstantiationService instaService: IInstantiationService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IBrowserElementsService private readonly _browserElementsService: IBrowserElementsService,
+		@IBrowserElementsService private readonly _browserElementsService: IBrowserElementsService
 	) {
-
 		if (!this.configurationService.getValue('chat.sendElementsToChat.enabled')) {
 			return;
 		}
@@ -350,18 +423,24 @@ class SimpleBrowserOverlayController {
 		const connectingWebviewElement = document.createElement('div');
 		connectingWebviewElement.className = 'connecting-webview-element';
 
-
 		const getActiveBrowserType = () => {
 			const editor = group.activeEditorPane;
 			const isSimpleBrowser = editor?.input.editorId === 'mainThreadWebview-simpleBrowser.view';
 			const isLiveServer = editor?.input.editorId === 'mainThreadWebview-browserPreview';
-			return isSimpleBrowser ? BrowserType.SimpleBrowser : isLiveServer ? BrowserType.LiveServer : undefined;
+			return isSimpleBrowser
+				? BrowserType.SimpleBrowser
+				: isLiveServer
+					? BrowserType.LiveServer
+					: undefined;
 		};
 
 		let cts = new CancellationTokenSource();
 		const show = async () => {
 			// Show the connecting indicator while establishing the session
-			connectingWebviewElement.textContent = localize('connectingWebviewElement', 'Connecting to webview...');
+			connectingWebviewElement.textContent = localize(
+				'connectingWebviewElement',
+				'Connecting to webview...'
+			);
 			if (!container.contains(connectingWebviewElement)) {
 				container.appendChild(connectingWebviewElement);
 			}
@@ -372,7 +451,10 @@ class SimpleBrowserOverlayController {
 				try {
 					await this._browserElementsService.startDebugSession(cts.token, activeBrowserType);
 				} catch (error) {
-					connectingWebviewElement.textContent = localize('reopenErrorWebviewElement', 'Please reopen the preview.');
+					connectingWebviewElement.textContent = localize(
+						'reopenErrorWebviewElement',
+						'Please reopen the preview.'
+					);
 					return;
 				}
 			}
@@ -391,10 +473,12 @@ class SimpleBrowserOverlayController {
 			connectingWebviewElement.remove();
 		};
 
-		const activeEditorSignal = observableSignalFromEvent(this, Event.any(group.onDidActiveEditorChange, group.onDidModelChange));
+		const activeEditorSignal = observableSignalFromEvent(
+			this,
+			Event.any(group.onDidActiveEditorChange, group.onDidModelChange)
+		);
 
 		const activeUriObs = derivedOpts({ equalsFn: isEqual }, r => {
-
 			activeEditorSignal.read(r); // signal
 
 			const editor = group.activeEditorPane;
@@ -403,23 +487,26 @@ class SimpleBrowserOverlayController {
 			widget.setActiveBrowserType(activeBrowser);
 
 			if (activeBrowser) {
-				const uri = EditorResourceAccessor.getOriginalUri(editor?.input, { supportSideBySide: SideBySideEditor.PRIMARY });
+				const uri = EditorResourceAccessor.getOriginalUri(editor?.input, {
+					supportSideBySide: SideBySideEditor.PRIMARY,
+				});
 				return uri;
 			}
 			return undefined;
 		});
 
-		this._store.add(autorun(r => {
+		this._store.add(
+			autorun(r => {
+				const data = activeUriObs.read(r);
 
-			const data = activeUriObs.read(r);
+				if (!data) {
+					hide();
+					return;
+				}
 
-			if (!data) {
-				hide();
-				return;
-			}
-
-			show();
-		}));
+				show();
+			})
+		);
 	}
 
 	dispose(): void {
@@ -428,14 +515,13 @@ class SimpleBrowserOverlayController {
 }
 
 export class SimpleBrowserOverlay implements IWorkbenchContribution {
-
 	static readonly ID = 'chat.simpleBrowser.overlay';
 
 	private readonly _store = new DisposableStore();
 
 	constructor(
 		@IEditorGroupsService editorGroupsService: IEditorGroupsService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		const editorGroups = observableFromEvent(
 			this,
@@ -445,39 +531,40 @@ export class SimpleBrowserOverlay implements IWorkbenchContribution {
 
 		const overlayWidgets = new DisposableMap<IEditorGroup>();
 
-		this._store.add(autorun(r => {
+		this._store.add(
+			autorun(r => {
+				const toDelete = new Set(overlayWidgets.keys());
+				const groups = editorGroups.read(r);
 
-			const toDelete = new Set(overlayWidgets.keys());
-			const groups = editorGroups.read(r);
+				for (const group of groups) {
+					if (!(group instanceof EditorGroupView)) {
+						// TODO@jrieken better with https://github.com/microsoft/vscode/tree/ben/layout-group-container
+						continue;
+					}
 
+					toDelete.delete(group); // we keep the widget for this group!
 
-			for (const group of groups) {
+					if (!overlayWidgets.has(group)) {
+						const scopedInstaService = instantiationService.createChild(
+							new ServiceCollection([IContextKeyService, group.scopedContextKeyService])
+						);
 
-				if (!(group instanceof EditorGroupView)) {
-					// TODO@jrieken better with https://github.com/microsoft/vscode/tree/ben/layout-group-container
-					continue;
+						const container = group.element;
+
+						const ctrl = scopedInstaService.createInstance(
+							SimpleBrowserOverlayController,
+							container,
+							group
+						);
+						overlayWidgets.set(group, combinedDisposable(ctrl, scopedInstaService));
+					}
 				}
 
-				toDelete.delete(group); // we keep the widget for this group!
-
-				if (!overlayWidgets.has(group)) {
-
-					const scopedInstaService = instantiationService.createChild(
-						new ServiceCollection([IContextKeyService, group.scopedContextKeyService])
-					);
-
-					const container = group.element;
-
-
-					const ctrl = scopedInstaService.createInstance(SimpleBrowserOverlayController, container, group);
-					overlayWidgets.set(group, combinedDisposable(ctrl, scopedInstaService));
+				for (const group of toDelete) {
+					overlayWidgets.deleteAndDispose(group);
 				}
-			}
-
-			for (const group of toDelete) {
-				overlayWidgets.deleteAndDispose(group);
-			}
-		}));
+			})
+		);
 	}
 
 	dispose(): void {

@@ -11,17 +11,19 @@ import { INativeHostService } from '../../../../platform/native/common/native.js
 import { Schemas } from '../../../../base/common/network.js';
 import { Action2 } from '../../../../platform/actions/common/actions.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
-import { ExtensionsLocalizedLabel, IExtensionManagementService } from '../../../../platform/extensionManagement/common/extensionManagement.js';
+import {
+	ExtensionsLocalizedLabel,
+	IExtensionManagementService,
+} from '../../../../platform/extensionManagement/common/extensionManagement.js';
 import { Categories } from '../../../../platform/action/common/actionCommonCategories.js';
 
 export class OpenExtensionsFolderAction extends Action2 {
-
 	constructor() {
 		super({
 			id: 'workbench.extensions.action.openExtensionsFolder',
 			title: localize2('openExtensionsFolder', 'Open Extensions Folder'),
 			category: ExtensionsLocalizedLabel,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -47,13 +49,12 @@ export class OpenExtensionsFolderAction extends Action2 {
 }
 
 export class CleanUpExtensionsFolderAction extends Action2 {
-
 	constructor() {
 		super({
 			id: '_workbench.extensions.action.cleanUpExtensionsFolder',
 			title: localize2('cleanUpExtensionsFolder', 'Cleanup Extensions Folder'),
 			category: Categories.Developer,
-			f1: true
+			f1: true,
 		});
 	}
 
@@ -62,4 +63,3 @@ export class CleanUpExtensionsFolderAction extends Action2 {
 		return extensionManagementService.cleanUp();
 	}
 }
-

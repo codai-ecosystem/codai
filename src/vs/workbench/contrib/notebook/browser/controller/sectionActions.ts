@@ -4,12 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize, localize2 } from '../../../../../nls.js';
-import { Action2, MenuId, registerAction2 } from '../../../../../platform/actions/common/actions.js';
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from '../../../../../platform/actions/common/actions.js';
 import { ContextKeyExpr } from '../../../../../platform/contextkey/common/contextkey.js';
 import { ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
 import { NotebookOutlineContext } from '../contrib/outline/notebookOutline.js';
 import { FoldingController } from './foldingController.js';
-import { CellEditState, CellFoldingState, ICellViewModel, INotebookEditor } from '../notebookBrowser.js';
+import {
+	CellEditState,
+	CellFoldingState,
+	ICellViewModel,
+	INotebookEditor,
+} from '../notebookBrowser.js';
 import * as icons from '../notebookIcons.js';
 import { OutlineEntry } from '../viewModel/OutlineEntry.js';
 import { CellKind } from '../../common/notebookCommon.js';
@@ -32,10 +41,13 @@ export class NotebookRunSingleCellInSection extends Action2 {
 		super({
 			id: 'notebook.section.runSingleCell',
 			title: {
-				...localize2('runCell', "Run Cell"),
-				mnemonicTitle: localize({ key: 'mirunCell', comment: ['&& denotes a mnemonic'] }, "&&Run Cell"),
+				...localize2('runCell', 'Run Cell'),
+				mnemonicTitle: localize(
+					{ key: 'mirunCell', comment: ['&& denotes a mnemonic'] },
+					'&&Run Cell'
+				),
 			},
-			shortTitle: localize('runCell', "Run Cell"),
+			shortTitle: localize('runCell', 'Run Cell'),
 			icon: icons.executeIcon,
 			menu: [
 				{
@@ -46,10 +58,10 @@ export class NotebookRunSingleCellInSection extends Action2 {
 						NotebookOutlineContext.CellKind.isEqualTo(CellKind.Code),
 						NotebookOutlineContext.OutlineElementTarget.isEqualTo(OutlineTarget.OutlinePane),
 						NotebookOutlineContext.CellHasChildren.toNegated(),
-						NotebookOutlineContext.CellHasHeader.toNegated(),
-					)
-				}
-			]
+						NotebookOutlineContext.CellHasHeader.toNegated()
+					),
+				},
+			],
 		});
 	}
 
@@ -67,16 +79,19 @@ export class NotebookRunCellsInSection extends Action2 {
 		super({
 			id: 'notebook.section.runCells',
 			title: {
-				...localize2('runCellsInSection', "Run Cells In Section"),
-				mnemonicTitle: localize({ key: 'mirunCellsInSection', comment: ['&& denotes a mnemonic'] }, "&&Run Cells In Section"),
+				...localize2('runCellsInSection', 'Run Cells In Section'),
+				mnemonicTitle: localize(
+					{ key: 'mirunCellsInSection', comment: ['&& denotes a mnemonic'] },
+					'&&Run Cells In Section'
+				),
 			},
-			shortTitle: localize('runCellsInSection', "Run Cells In Section"),
+			shortTitle: localize('runCellsInSection', 'Run Cells In Section'),
 			icon: icons.executeIcon, // TODO @Yoyokrazy replace this with new icon later
 			menu: [
 				{
 					id: MenuId.NotebookStickyScrollContext,
 					group: 'notebookExecution',
-					order: 1
+					order: 1,
 				},
 				{
 					id: MenuId.NotebookOutlineActionMenu,
@@ -86,16 +101,16 @@ export class NotebookRunCellsInSection extends Action2 {
 						NotebookOutlineContext.CellKind.isEqualTo(CellKind.Markup),
 						NotebookOutlineContext.OutlineElementTarget.isEqualTo(OutlineTarget.OutlinePane),
 						NotebookOutlineContext.CellHasChildren,
-						NotebookOutlineContext.CellHasHeader,
-					)
+						NotebookOutlineContext.CellHasHeader
+					),
 				},
 				{
 					id: MenuId.NotebookCellTitle,
 					order: CellToolbarOrder.RunSection,
 					group: CELL_TITLE_CELL_GROUP_ID,
-					when: executeSectionCondition
-				}
-			]
+					when: executeSectionCondition,
+				},
+			],
 		});
 	}
 
@@ -110,7 +125,9 @@ export class NotebookRunCellsInSection extends Action2 {
 		}
 
 		if (cell.getEditState() === CellEditState.Editing) {
-			const foldingController = context.notebookEditor.getContribution<FoldingController>(FoldingController.id);
+			const foldingController = context.notebookEditor.getContribution<FoldingController>(
+				FoldingController.id
+			);
 			foldingController.recompute();
 		}
 
@@ -127,7 +144,10 @@ export class NotebookRunCellsInSection extends Action2 {
 			return;
 		}
 
-		const cells = context.notebookEditor.getCellsInRange({ start: sectionIdx, end: sectionIdx + length + 1 });
+		const cells = context.notebookEditor.getCellsInRange({
+			start: sectionIdx,
+			end: sectionIdx + length + 1,
+		});
 		context.notebookEditor.executeNotebookCells(cells);
 	}
 }
@@ -137,10 +157,13 @@ export class NotebookFoldSection extends Action2 {
 		super({
 			id: 'notebook.section.foldSection',
 			title: {
-				...localize2('foldSection', "Fold Section"),
-				mnemonicTitle: localize({ key: 'mifoldSection', comment: ['&& denotes a mnemonic'] }, "&&Fold Section"),
+				...localize2('foldSection', 'Fold Section'),
+				mnemonicTitle: localize(
+					{ key: 'mifoldSection', comment: ['&& denotes a mnemonic'] },
+					'&&Fold Section'
+				),
 			},
-			shortTitle: localize('foldSection', "Fold Section"),
+			shortTitle: localize('foldSection', 'Fold Section'),
 			menu: [
 				{
 					id: MenuId.NotebookOutlineActionMenu,
@@ -152,9 +175,9 @@ export class NotebookFoldSection extends Action2 {
 						NotebookOutlineContext.CellHasChildren,
 						NotebookOutlineContext.CellHasHeader,
 						NotebookOutlineContext.CellFoldingState.isEqualTo(CellFoldingState.Expanded)
-					)
-				}
-			]
+					),
+				},
+			],
 		});
 	}
 
@@ -167,7 +190,9 @@ export class NotebookFoldSection extends Action2 {
 	}
 
 	private toggleFoldRange(entry: OutlineEntry, notebookEditor: INotebookEditor) {
-		const foldingController = notebookEditor.getContribution<FoldingController>(FoldingController.id);
+		const foldingController = notebookEditor.getContribution<FoldingController>(
+			FoldingController.id
+		);
 		const index = entry.index;
 		const headerLevel = entry.level;
 		const newFoldingState = CellFoldingState.Collapsed;
@@ -181,10 +206,13 @@ export class NotebookExpandSection extends Action2 {
 		super({
 			id: 'notebook.section.expandSection',
 			title: {
-				...localize2('expandSection', "Expand Section"),
-				mnemonicTitle: localize({ key: 'miexpandSection', comment: ['&& denotes a mnemonic'] }, "&&Expand Section"),
+				...localize2('expandSection', 'Expand Section'),
+				mnemonicTitle: localize(
+					{ key: 'miexpandSection', comment: ['&& denotes a mnemonic'] },
+					'&&Expand Section'
+				),
 			},
-			shortTitle: localize('expandSection', "Expand Section"),
+			shortTitle: localize('expandSection', 'Expand Section'),
 			menu: [
 				{
 					id: MenuId.NotebookOutlineActionMenu,
@@ -196,9 +224,9 @@ export class NotebookExpandSection extends Action2 {
 						NotebookOutlineContext.CellHasChildren,
 						NotebookOutlineContext.CellHasHeader,
 						NotebookOutlineContext.CellFoldingState.isEqualTo(CellFoldingState.Collapsed)
-					)
-				}
-			]
+					),
+				},
+			],
 		});
 	}
 
@@ -211,7 +239,9 @@ export class NotebookExpandSection extends Action2 {
 	}
 
 	private toggleFoldRange(entry: OutlineEntry, notebookEditor: INotebookEditor) {
-		const foldingController = notebookEditor.getContribution<FoldingController>(FoldingController.id);
+		const foldingController = notebookEditor.getContribution<FoldingController>(
+			FoldingController.id
+		);
 		const index = entry.index;
 		const headerLevel = entry.level;
 		const newFoldingState = CellFoldingState.Expanded;

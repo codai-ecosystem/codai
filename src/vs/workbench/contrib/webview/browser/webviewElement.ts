@@ -31,12 +31,29 @@ import { IRemoteAuthorityResolverService } from '../../../../platform/remote/com
 import { ITunnelService } from '../../../../platform/tunnel/common/tunnel.js';
 import { WebviewPortMappingManager } from '../../../../platform/webview/common/webviewPortMapping.js';
 import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
-import { decodeAuthority, webviewGenericCspSource, webviewRootResourceAuthority } from '../common/webview.js';
+import {
+	decodeAuthority,
+	webviewGenericCspSource,
+	webviewRootResourceAuthority,
+} from '../common/webview.js';
 import { loadLocalResource, WebviewResourceResponse } from './resourceLoading.js';
 import { WebviewThemeDataProvider } from './themeing.js';
-import { areWebviewContentOptionsEqual, IWebview, WebviewContentOptions, WebviewExtensionDescription, WebviewInitInfo, WebviewMessageReceivedEvent, WebviewOptions } from './webview.js';
+import {
+	areWebviewContentOptionsEqual,
+	IWebview,
+	WebviewContentOptions,
+	WebviewExtensionDescription,
+	WebviewInitInfo,
+	WebviewMessageReceivedEvent,
+	WebviewOptions,
+} from './webview.js';
 import { WebviewFindDelegate, WebviewFindWidget } from './webviewFindWidget.js';
-import { FromWebviewMessage, KeyEvent, ToWebviewMessage, WebViewDragEvent } from './webviewMessages.js';
+import {
+	FromWebviewMessage,
+	KeyEvent,
+	ToWebviewMessage,
+	WebViewDragEvent,
+} from './webviewMessages.js';
 
 interface WebviewContent {
 	readonly html: string;
@@ -46,7 +63,10 @@ interface WebviewContent {
 }
 
 namespace WebviewState {
-	export const enum Type { Initializing, Ready }
+	export const enum Type {
+		Initializing,
+		Ready,
+	}
 
 	export class Initializing {
 		readonly type = Type.Initializing;
@@ -58,7 +78,7 @@ namespace WebviewState {
 				readonly transferable: Transferable[];
 				readonly resolve: (posted: boolean) => void;
 			}>
-		) { }
+		) {}
 	}
 
 	export const Ready = { type: Type.Ready } as const;
@@ -74,7 +94,6 @@ interface WebviewActionContext {
 const webviewIdContext = 'webviewId';
 
 export class WebviewElement extends Disposable implements IWebview, WebviewFindDelegate {
-
 	protected readonly id = generateUuid();
 
 	/**
@@ -88,17 +107,23 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 	public readonly origin: string;
 
 	private _windowId: number | undefined = undefined;
-	private get window() { return typeof this._windowId === 'number' ? getWindowById(this._windowId)?.window : undefined; }
+	private get window() {
+		return typeof this._windowId === 'number' ? getWindowById(this._windowId)?.window : undefined;
+	}
 
 	private _encodedWebviewOriginPromise?: Promise<string>;
 	private _encodedWebviewOrigin: string | undefined;
 
-	protected get platform(): string { return 'browser'; }
+	protected get platform(): string {
+		return 'browser';
+	}
 
 	private readonly _expectedServiceWorkerVersion = 4; // Keep this in sync with the version in service-worker.js
 
 	private _element: HTMLIFrameElement | undefined;
-	protected get element(): HTMLIFrameElement | undefined { return this._element; }
+	protected get element(): HTMLIFrameElement | undefined {
+		return this._element;
+	}
 
 	private _focused: boolean | undefined;
 	public get isFocused(): boolean {
@@ -143,7 +168,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 
 	private _disposed = false;
 
-
 	public extension: WebviewExtensionDescription | undefined;
 	private readonly _options: WebviewOptions;
 
@@ -153,13 +177,15 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@INotificationService notificationService: INotificationService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
 		@IFileService private readonly _fileService: IFileService,
 		@ILogService private readonly _logService: ILogService,
-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IRemoteAuthorityResolverService
+		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ITunnelService private readonly _tunnelService: ITunnelService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
+		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService
 	) {
 		super();
 
@@ -173,147 +199,200 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 			html: '',
 			title: initInfo.title,
 			options: initInfo.contentOptions,
-			state: undefined
+			state: undefined,
 		};
 
-		this._portMappingManager = this._register(new WebviewPortMappingManager(
-			() => this.extension?.location,
-			() => this._content.options.portMapping || [],
-			this._tunnelService
-		));
+		this._portMappingManager = this._register(
+			new WebviewPortMappingManager(
+				() => this.extension?.location,
+				() => this._content.options.portMapping || [],
+				this._tunnelService
+			)
+		);
 
 		this._element = this._createElement(initInfo.options, initInfo.contentOptions);
 
-		this._register(this.on('no-csp-found', () => {
-			this.handleNoCspFound();
-		}));
+		this._register(
+			this.on('no-csp-found', () => {
+				this.handleNoCspFound();
+			})
+		);
 
-		this._register(this.on('did-click-link', ({ uri }) => {
-			this._onDidClickLink.fire(uri);
-		}));
+		this._register(
+			this.on('did-click-link', ({ uri }) => {
+				this._onDidClickLink.fire(uri);
+			})
+		);
 
-		this._register(this.on('onmessage', ({ message, transfer }) => {
-			this._onMessage.fire({ message, transfer });
-		}));
+		this._register(
+			this.on('onmessage', ({ message, transfer }) => {
+				this._onMessage.fire({ message, transfer });
+			})
+		);
 
-		this._register(this.on('did-scroll', ({ scrollYPercentage }) => {
-			this._onDidScroll.fire({ scrollYPercentage });
-		}));
+		this._register(
+			this.on('did-scroll', ({ scrollYPercentage }) => {
+				this._onDidScroll.fire({ scrollYPercentage });
+			})
+		);
 
-		this._register(this.on('do-reload', () => {
-			this.reload();
-		}));
+		this._register(
+			this.on('do-reload', () => {
+				this.reload();
+			})
+		);
 
-		this._register(this.on('do-update-state', (state) => {
-			this.state = state;
-			this._onDidUpdateState.fire(state);
-		}));
+		this._register(
+			this.on('do-update-state', state => {
+				this.state = state;
+				this._onDidUpdateState.fire(state);
+			})
+		);
 
-		this._register(this.on('did-focus', () => {
-			this.handleFocusChange(true);
-		}));
+		this._register(
+			this.on('did-focus', () => {
+				this.handleFocusChange(true);
+			})
+		);
 
-		this._register(this.on('did-blur', () => {
-			this.handleFocusChange(false);
-		}));
+		this._register(
+			this.on('did-blur', () => {
+				this.handleFocusChange(false);
+			})
+		);
 
-		this._register(this.on('did-scroll-wheel', (event) => {
-			this._onDidWheel.fire(event);
-		}));
+		this._register(
+			this.on('did-scroll-wheel', event => {
+				this._onDidWheel.fire(event);
+			})
+		);
 
-		this._register(this.on('did-find', ({ didFind }) => {
-			this._hasFindResult.fire(didFind);
-		}));
+		this._register(
+			this.on('did-find', ({ didFind }) => {
+				this._hasFindResult.fire(didFind);
+			})
+		);
 
-		this._register(this.on('fatal-error', (e) => {
-			notificationService.error(localize('fatalErrorMessage', "Error loading webview: {0}", e.message));
-			this._onFatalError.fire({ message: e.message });
-		}));
+		this._register(
+			this.on('fatal-error', e => {
+				notificationService.error(
+					localize('fatalErrorMessage', 'Error loading webview: {0}', e.message)
+				);
+				this._onFatalError.fire({ message: e.message });
+			})
+		);
 
-		this._register(this.on('did-keydown', (data) => {
-			// Electron: workaround for https://github.com/electron/electron/issues/14258
-			// We have to detect keyboard events in the <webview> and dispatch them to our
-			// keybinding service because these events do not bubble to the parent window anymore.
-			this.handleKeyEvent('keydown', data);
-		}));
+		this._register(
+			this.on('did-keydown', data => {
+				// Electron: workaround for https://github.com/electron/electron/issues/14258
+				// We have to detect keyboard events in the <webview> and dispatch them to our
+				// keybinding service because these events do not bubble to the parent window anymore.
+				this.handleKeyEvent('keydown', data);
+			})
+		);
 
-		this._register(this.on('did-keyup', (data) => {
-			this.handleKeyEvent('keyup', data);
-		}));
+		this._register(
+			this.on('did-keyup', data => {
+				this.handleKeyEvent('keyup', data);
+			})
+		);
 
-		this._register(this.on('did-context-menu', (data) => {
-			if (!this.element) {
-				return;
-			}
-			if (!this._contextKeyService) {
-				return;
-			}
-			const elementBox = this.element.getBoundingClientRect();
-			const contextKeyService = this._contextKeyService.createOverlay([
-				...Object.entries(data.context),
-				[webviewIdContext, this.providedViewType],
-			]);
-			contextMenuService.showContextMenu({
-				menuId: MenuId.WebviewContext,
-				menuActionOptions: { shouldForwardArgs: true },
-				contextKeyService,
-				getActionsContext: (): WebviewActionContext => ({ ...data.context, webview: this.providedViewType }),
-				getAnchor: () => ({
-					x: elementBox.x + data.clientX,
-					y: elementBox.y + data.clientY
-				})
-			});
-			this._send('set-context-menu-visible', { visible: true });
-		}));
-
-		this._register(this.on('load-resource', async (entry) => {
-			try {
-				// Restore the authority we previously encoded
-				const authority = decodeAuthority(entry.authority);
-				const uri = URI.from({
-					scheme: entry.scheme,
-					authority: authority,
-					path: decodeURIComponent(entry.path), // This gets re-encoded
-					query: entry.query ? decodeURIComponent(entry.query) : entry.query,
+		this._register(
+			this.on('did-context-menu', data => {
+				if (!this.element) {
+					return;
+				}
+				if (!this._contextKeyService) {
+					return;
+				}
+				const elementBox = this.element.getBoundingClientRect();
+				const contextKeyService = this._contextKeyService.createOverlay([
+					...Object.entries(data.context),
+					[webviewIdContext, this.providedViewType],
+				]);
+				contextMenuService.showContextMenu({
+					menuId: MenuId.WebviewContext,
+					menuActionOptions: { shouldForwardArgs: true },
+					contextKeyService,
+					getActionsContext: (): WebviewActionContext => ({
+						...data.context,
+						webview: this.providedViewType,
+					}),
+					getAnchor: () => ({
+						x: elementBox.x + data.clientX,
+						y: elementBox.y + data.clientY,
+					}),
 				});
-				this.loadResource(entry.id, uri, entry.ifNoneMatch);
-			} catch (e) {
-				this._send('did-load-resource', {
-					id: entry.id,
-					status: 404,
-					path: entry.path,
-				});
-			}
-		}));
+				this._send('set-context-menu-visible', { visible: true });
+			})
+		);
 
-		this._register(this.on('load-localhost', (entry) => {
-			this.localLocalhost(entry.id, entry.origin);
-		}));
+		this._register(
+			this.on('load-resource', async entry => {
+				try {
+					// Restore the authority we previously encoded
+					const authority = decodeAuthority(entry.authority);
+					const uri = URI.from({
+						scheme: entry.scheme,
+						authority: authority,
+						path: decodeURIComponent(entry.path), // This gets re-encoded
+						query: entry.query ? decodeURIComponent(entry.query) : entry.query,
+					});
+					this.loadResource(entry.id, uri, entry.ifNoneMatch);
+				} catch (e) {
+					this._send('did-load-resource', {
+						id: entry.id,
+						status: 404,
+						path: entry.path,
+					});
+				}
+			})
+		);
 
-		this._register(Event.runAndSubscribe(webviewThemeDataProvider.onThemeDataChanged, () => this.style()));
+		this._register(
+			this.on('load-localhost', entry => {
+				this.localLocalhost(entry.id, entry.origin);
+			})
+		);
+
+		this._register(
+			Event.runAndSubscribe(webviewThemeDataProvider.onThemeDataChanged, () => this.style())
+		);
 		this._register(_accessibilityService.onDidChangeReducedMotion(() => this.style()));
 		this._register(_accessibilityService.onDidChangeScreenReaderOptimized(() => this.style()));
-		this._register(contextMenuService.onDidHideContextMenu(() => this._send('set-context-menu-visible', { visible: false })));
+		this._register(
+			contextMenuService.onDidHideContextMenu(() =>
+				this._send('set-context-menu-visible', { visible: false })
+			)
+		);
 
 		this._confirmBeforeClose = configurationService.getValue<string>('window.confirmBeforeClose');
 
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('window.confirmBeforeClose')) {
-				this._confirmBeforeClose = configurationService.getValue('window.confirmBeforeClose');
-				this._send('set-confirm-before-close', this._confirmBeforeClose);
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('window.confirmBeforeClose')) {
+					this._confirmBeforeClose = configurationService.getValue('window.confirmBeforeClose');
+					this._send('set-confirm-before-close', this._confirmBeforeClose);
+				}
+			})
+		);
 
-		this._register(this.on('drag-start', () => {
-			this._startBlockingIframeDragEvents();
-		}));
+		this._register(
+			this.on('drag-start', () => {
+				this._startBlockingIframeDragEvents();
+			})
+		);
 
-		this._register(this.on('drag', (event) => {
-			this.handleDragEvent('drag', event);
-		}));
+		this._register(
+			this.on('drag', event => {
+				this.handleDragEvent('drag', event);
+			})
+		);
 
 		if (initInfo.options.enableFindWidget) {
-			this._webviewFindWidget = this._register(instantiationService.createInstance(WebviewFindWidget, this));
+			this._webviewFindWidget = this._register(
+				instantiationService.createInstance(WebviewFindWidget, this)
+			);
 		}
 	}
 
@@ -355,7 +434,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 	private readonly _onMessage = this._register(new Emitter<WebviewMessageReceivedEvent>());
 	public readonly onMessage = this._onMessage.event;
 
-	private readonly _onDidScroll = this._register(new Emitter<{ readonly scrollYPercentage: number }>());
+	private readonly _onDidScroll = this._register(
+		new Emitter<{ readonly scrollYPercentage: number }>()
+	);
 	public readonly onDidScroll = this._onDidScroll.event;
 
 	private readonly _onDidWheel = this._register(new Emitter<IMouseWheelEvent>());
@@ -380,7 +461,11 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		return this._send('message', { message, transfer });
 	}
 
-	private async _send<K extends keyof ToWebviewMessage>(channel: K, data: ToWebviewMessage[K], _createElement: Transferable[] = []): Promise<boolean> {
+	private async _send<K extends keyof ToWebviewMessage>(
+		channel: K,
+		data: ToWebviewMessage[K],
+		_createElement: Transferable[] = []
+	): Promise<boolean> {
 		if (this._state.type === WebviewState.Type.Initializing) {
 			const { promise, resolve } = promiseWithResolvers<boolean>();
 			this._state.pendingMessages.push({ channel, data, transferable: _createElement, resolve });
@@ -396,7 +481,13 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		const element = document.createElement('iframe');
 		element.name = this.id;
 		element.className = `webview ${options.customClasses || ''}`;
-		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
+		element.sandbox.add(
+			'allow-scripts',
+			'allow-same-origin',
+			'allow-forms',
+			'allow-pointer-lock',
+			'allow-downloads'
+		);
 
 		const allowRules = ['cross-origin-isolated', 'autoplay'];
 		if (!isFirefox) {
@@ -415,7 +506,12 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		return element;
 	}
 
-	private _initElement(encodedWebviewOrigin: string, extension: WebviewExtensionDescription | undefined, options: WebviewOptions, targetWindow: CodeWindow) {
+	private _initElement(
+		encodedWebviewOrigin: string,
+		extension: WebviewExtensionDescription | undefined,
+		options: WebviewOptions,
+		targetWindow: CodeWindow
+	) {
 		// The extensionId and purpose in the URL are used for filtering in js-debug:
 		const params: { [key: string]: string } = {
 			id: this.id,
@@ -445,7 +541,10 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		const queryString = new URLSearchParams(params).toString();
 
 		const fileName = 'index.html';
-		this.element!.setAttribute('src', `${this.webviewContentEndpoint(encodedWebviewOrigin)}/${fileName}?${queryString}`);
+		this.element!.setAttribute(
+			'src',
+			`${this.webviewContentEndpoint(encodedWebviewOrigin)}/${fileName}?${queryString}`
+		);
 	}
 
 	public mountTo(element: HTMLElement, targetWindow: CodeWindow) {
@@ -454,7 +553,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		}
 
 		this._windowId = targetWindow.vscodeWindowId;
-		this._encodedWebviewOriginPromise = parentOriginHash(targetWindow.origin, this.origin).then(id => this._encodedWebviewOrigin = id);
+		this._encodedWebviewOriginPromise = parentOriginHash(targetWindow.origin, this.origin).then(
+			id => (this._encodedWebviewOrigin = id)
+		);
 		this._encodedWebviewOriginPromise.then(encodedWebviewOrigin => {
 			if (!this._disposed) {
 				this._initElement(encodedWebviewOrigin, this.extension, this._options, targetWindow);
@@ -467,15 +568,19 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		}
 
 		for (const eventName of [EventType.MOUSE_DOWN, EventType.MOUSE_MOVE, EventType.DROP]) {
-			this._register(addDisposableListener(element, eventName, () => {
-				this._stopBlockingIframeDragEvents();
-			}));
+			this._register(
+				addDisposableListener(element, eventName, () => {
+					this._stopBlockingIframeDragEvents();
+				})
+			);
 		}
 
 		for (const node of [element, targetWindow]) {
-			this._register(addDisposableListener(node, EventType.DRAG_END, () => {
-				this._stopBlockingIframeDragEvents();
-			}));
+			this._register(
+				addDisposableListener(node, EventType.DRAG_END, () => {
+					this._stopBlockingIframeDragEvents();
+				})
+			);
 		}
 
 		element.id = this.id; // This is used by aria-flow for accessibility order
@@ -484,43 +589,49 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 	}
 
 	private _registerMessageHandler(targetWindow: CodeWindow) {
-		const subscription = this._register(addDisposableListener(targetWindow, 'message', (e: MessageEvent) => {
-			if (!this._encodedWebviewOrigin || e?.data?.target !== this.id) {
-				return;
-			}
-
-			if (e.origin !== this._webviewContentOrigin(this._encodedWebviewOrigin)) {
-				console.log(`Skipped renderer receiving message due to mismatched origins: ${e.origin} ${this._webviewContentOrigin}`);
-				return;
-			}
-
-			if (e.data.channel === 'webview-ready') {
-				if (this._messagePort) {
+		const subscription = this._register(
+			addDisposableListener(targetWindow, 'message', (e: MessageEvent) => {
+				if (!this._encodedWebviewOrigin || e?.data?.target !== this.id) {
 					return;
 				}
 
-				this._logService.debug(`Webview(${this.id}): webview ready`);
+				if (e.origin !== this._webviewContentOrigin(this._encodedWebviewOrigin)) {
+					console.log(
+						`Skipped renderer receiving message due to mismatched origins: ${e.origin} ${this._webviewContentOrigin}`
+					);
+					return;
+				}
 
-				this._messagePort = e.ports[0];
-				this._messagePort.onmessage = (e) => {
-					const handlers = this._messageHandlers.get(e.data.channel);
-					if (!handlers) {
-						console.log(`No handlers found for '${e.data.channel}'`);
+				if (e.data.channel === 'webview-ready') {
+					if (this._messagePort) {
 						return;
 					}
-					handlers?.forEach(handler => handler(e.data.data, e));
-				};
 
-				this.element?.classList.add('ready');
+					this._logService.debug(`Webview(${this.id}): webview ready`);
 
-				if (this._state.type === WebviewState.Type.Initializing) {
-					this._state.pendingMessages.forEach(({ channel, data, resolve }) => resolve(this.doPostMessage(channel, data)));
+					this._messagePort = e.ports[0];
+					this._messagePort.onmessage = e => {
+						const handlers = this._messageHandlers.get(e.data.channel);
+						if (!handlers) {
+							console.log(`No handlers found for '${e.data.channel}'`);
+							return;
+						}
+						handlers?.forEach(handler => handler(e.data.data, e));
+					};
+
+					this.element?.classList.add('ready');
+
+					if (this._state.type === WebviewState.Type.Initializing) {
+						this._state.pendingMessages.forEach(({ channel, data, resolve }) =>
+							resolve(this.doPostMessage(channel, data))
+						);
+					}
+					this._state = WebviewState.Ready;
+
+					subscription.dispose();
 				}
-				this._state = WebviewState.Ready;
-
-				subscription.dispose();
-			}
-		}));
+			})
+		);
 	}
 
 	private _startBlockingIframeDragEvents() {
@@ -561,7 +672,10 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 		return false;
 	}
 
-	private on<K extends keyof FromWebviewMessage>(channel: K, handler: (data: FromWebviewMessage[K], e: MessageEvent) => void): IDisposable {
+	private on<K extends keyof FromWebviewMessage>(
+		channel: K,
+		handler: (data: FromWebviewMessage[K], e: MessageEvent) => void
+	): IDisposable {
 		let handlers = this._messageHandlers.get(channel);
 		if (!handlers) {
 			handlers = new Set();
@@ -591,10 +705,12 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 	public reload(): void {
 		this.doUpdateContent(this._content);
 
-		const subscription = this._register(this.on('did-load', () => {
-			this._onDidReload.fire();
-			subscription.dispose();
-		}));
+		const subscription = this._register(
+			this.on('did-load', () => {
+				this._onDidReload.fire();
+				subscription.dispose();
+			})
+		);
 	}
 
 	public setHtml(html: string) {
@@ -621,7 +737,7 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 	public set localResourcesRoot(resources: readonly URI[]) {
 		this._content = {
 			...this._content,
-			options: { ...this._content.options, localResourceRoots: resources }
+			options: { ...this._content.options, localResourceRoots: resources },
 		};
 	}
 
@@ -654,7 +770,8 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 	}
 
 	protected style(): void {
-		let { styles, activeTheme, themeLabel, themeId } = this.webviewThemeDataProvider.getWebviewThemeData();
+		let { styles, activeTheme, themeLabel, themeId } =
+			this.webviewThemeDataProvider.getWebviewThemeData();
 		if (this._options.transformCssVariables) {
 			styles = this._options.transformCssVariables(styles);
 		}
@@ -664,7 +781,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 
 		this._send('styles', { styles, activeTheme, themeId, themeLabel, reduceMotion, screenReader });
 	}
-
 
 	protected handleFocusChange(isFocused: boolean): void {
 		this._focused = isFocused;
@@ -740,23 +856,33 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 
 	private async loadResource(id: number, uri: URI, ifNoneMatch: string | undefined) {
 		try {
-			const result = await loadLocalResource(uri, {
-				ifNoneMatch,
-				roots: this._content.options.localResourceRoots || [],
-			}, this._fileService, this._logService, this._resourceLoadingCts.token);
+			const result = await loadLocalResource(
+				uri,
+				{
+					ifNoneMatch,
+					roots: this._content.options.localResourceRoots || [],
+				},
+				this._fileService,
+				this._logService,
+				this._resourceLoadingCts.token
+			);
 
 			switch (result.type) {
 				case WebviewResourceResponse.Type.Success: {
 					const buffer = await this.streamToBuffer(result.stream);
-					return this._send('did-load-resource', {
-						id,
-						status: 200,
-						path: uri.path,
-						mime: result.mimeType,
-						data: buffer,
-						etag: result.etag,
-						mtime: result.mtime
-					}, [buffer]);
+					return this._send(
+						'did-load-resource',
+						{
+							id,
+							status: 200,
+							path: uri.path,
+							mime: result.mimeType,
+							data: buffer,
+							etag: result.etag,
+							mtime: result.mtime,
+						},
+						[buffer]
+					);
 				}
 				case WebviewResourceResponse.Type.NotModified: {
 					return this._send('did-load-resource', {
@@ -764,7 +890,7 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 						status: 304, // not modified
 						path: uri.path,
 						mime: result.mimeType,
-						mtime: result.mtime
+						mtime: result.mtime,
 					});
 				}
 				case WebviewResourceResponse.Type.AccessDenied: {
@@ -793,12 +919,16 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 
 	private async localLocalhost(id: string, origin: string) {
 		const authority = this._environmentService.remoteAuthority;
-		const resolveAuthority = authority ? await this._remoteAuthorityResolverService.resolveAuthority(authority) : undefined;
-		const redirect = resolveAuthority ? await this._portMappingManager.getRedirect(resolveAuthority.authority, origin) : undefined;
+		const resolveAuthority = authority
+			? await this._remoteAuthorityResolverService.resolveAuthority(authority)
+			: undefined;
+		const redirect = resolveAuthority
+			? await this._portMappingManager.getRedirect(resolveAuthority.authority, origin)
+			: undefined;
 		return this._send('did-load-localhost', {
 			id,
 			origin,
-			location: redirect
+			location: redirect,
 		});
 	}
 
@@ -836,7 +966,11 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
 				return;
 			}
 
-			if (this.window?.document.activeElement && this.window.document.activeElement !== this.element && this.window.document.activeElement?.tagName !== 'BODY') {
+			if (
+				this.window?.document.activeElement &&
+				this.window.document.activeElement !== this.element &&
+				this.window.document.activeElement?.tagName !== 'BODY'
+			) {
 				return;
 			}
 

@@ -11,7 +11,6 @@ import { extUri } from '../../../../base/common/resources.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('BoundModelReferenceCollection', function () {
-
 	let col: BoundModelReferenceCollection;
 
 	setup(function () {
@@ -25,24 +24,20 @@ suite('BoundModelReferenceCollection', function () {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('max age', async function () {
-
 		let didDispose = false;
 
-		col.add(
-			URI.parse('test://farboo'),
-			{
-				object: {},
-				dispose() {
-					didDispose = true;
-				}
-			});
+		col.add(URI.parse('test://farboo'), {
+			object: {},
+			dispose() {
+				didDispose = true;
+			},
+		});
 
 		await timeout(30);
 		assert.strictEqual(didDispose, true);
 	});
 
 	test('max size', function () {
-
 		const disposed: number[] = [];
 
 		col.add(
@@ -51,8 +46,10 @@ suite('BoundModelReferenceCollection', function () {
 				object: {},
 				dispose() {
 					disposed.push(0);
-				}
-			}, 6);
+				},
+			},
+			6
+		);
 
 		col.add(
 			URI.parse('test://boofar'),
@@ -60,8 +57,10 @@ suite('BoundModelReferenceCollection', function () {
 				object: {},
 				dispose() {
 					disposed.push(1);
-				}
-			}, 6);
+				},
+			},
+			6
+		);
 
 		col.add(
 			URI.parse('test://xxxxxxx'),
@@ -69,8 +68,10 @@ suite('BoundModelReferenceCollection', function () {
 				object: {},
 				dispose() {
 					disposed.push(2);
-				}
-			}, 70);
+				},
+			},
+			70
+		);
 
 		assert.deepStrictEqual(disposed, [0, 1]);
 	});
@@ -81,85 +82,65 @@ suite('BoundModelReferenceCollection', function () {
 
 		const disposed: number[] = [];
 
-		col.add(
-			URI.parse('test://xxxxxxx'),
-			{
-				object: {},
-				dispose() {
-					disposed.push(0);
-				}
-			}
-		);
-		col.add(
-			URI.parse('test://xxxxxxx'),
-			{
-				object: {},
-				dispose() {
-					disposed.push(1);
-				}
-			}
-		);
-		col.add(
-			URI.parse('test://xxxxxxx'),
-			{
-				object: {},
-				dispose() {
-					disposed.push(2);
-				}
-			}
-		);
+		col.add(URI.parse('test://xxxxxxx'), {
+			object: {},
+			dispose() {
+				disposed.push(0);
+			},
+		});
+		col.add(URI.parse('test://xxxxxxx'), {
+			object: {},
+			dispose() {
+				disposed.push(1);
+			},
+		});
+		col.add(URI.parse('test://xxxxxxx'), {
+			object: {},
+			dispose() {
+				disposed.push(2);
+			},
+		});
 
 		assert.deepStrictEqual(disposed, [0]);
 	});
 
 	test('dispose uri', function () {
-
 		let disposed: number[] = [];
 
-		col.add(
-			URI.parse('test:///farboo'),
-			{
-				object: {},
-				dispose() {
-					disposed.push(0);
-				}
-			});
+		col.add(URI.parse('test:///farboo'), {
+			object: {},
+			dispose() {
+				disposed.push(0);
+			},
+		});
 
-		col.add(
-			URI.parse('test:///boofar'),
-			{
-				object: {},
-				dispose() {
-					disposed.push(1);
-				}
-			});
+		col.add(URI.parse('test:///boofar'), {
+			object: {},
+			dispose() {
+				disposed.push(1);
+			},
+		});
 
-		col.add(
-			URI.parse('test:///boo/far1'),
-			{
-				object: {},
-				dispose() {
-					disposed.push(2);
-				}
-			});
+		col.add(URI.parse('test:///boo/far1'), {
+			object: {},
+			dispose() {
+				disposed.push(2);
+			},
+		});
 
-		col.add(
-			URI.parse('test:///boo/far2'),
-			{
-				object: {},
-				dispose() {
-					disposed.push(3);
-				}
-			});
+		col.add(URI.parse('test:///boo/far2'), {
+			object: {},
+			dispose() {
+				disposed.push(3);
+			},
+		});
 
-		col.add(
-			URI.parse('test:///boo1/far'),
-			{
-				object: {},
-				dispose() {
-					disposed.push(4);
-				}
-			});
+		col.add(URI.parse('test:///boo1/far'), {
+			object: {},
+			dispose() {
+				disposed.push(4);
+			},
+		});
 
 		col.remove(URI.parse('test:///unknown'));
 		assert.strictEqual(disposed.length, 0);
@@ -172,5 +153,4 @@ suite('BoundModelReferenceCollection', function () {
 		col.remove(URI.parse('test:///boo'));
 		assert.deepStrictEqual(disposed, [2, 3]);
 	});
-
 });

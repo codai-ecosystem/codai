@@ -26,7 +26,7 @@ suite('github smoke test', function () {
 			'.github/PULL_REQUEST_TEMPLATE.md',
 			'.github/PULL_REQUEST_TEMPLATE/a.md',
 			'.github/PULL_REQUEST_TEMPLATE/b.md',
-			'PULL_REQUEST_TEMPLATE.md'
+			'PULL_REQUEST_TEMPLATE.md',
 		];
 		expectedValuesSorted.sort();
 
@@ -39,27 +39,27 @@ suite('github smoke test', function () {
 	});
 
 	test('selecting non-default quick-pick item should correspond to a template', async () => {
-		const template0 = Uri.file("some-imaginary-template-0");
-		const template1 = Uri.file("some-imaginary-template-1");
+		const template0 = Uri.file('some-imaginary-template-0');
+		const template1 = Uri.file('some-imaginary-template-1');
 		const templates = [template0, template1];
 
-		const pick = pickPullRequestTemplate(Uri.file("/"), templates);
+		const pick = pickPullRequestTemplate(Uri.file('/'), templates);
 
 		await commands.executeCommand('workbench.action.quickOpenSelectNext');
 		await commands.executeCommand('workbench.action.quickOpenSelectNext');
 		await commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
 
-		assert.ok(await pick === template0);
+		assert.ok((await pick) === template0);
 	});
 
 	test('selecting first quick-pick item should return undefined', async () => {
-		const templates = [Uri.file("some-imaginary-file")];
+		const templates = [Uri.file('some-imaginary-file')];
 
-		const pick = pickPullRequestTemplate(Uri.file("/"), templates);
+		const pick = pickPullRequestTemplate(Uri.file('/'), templates);
 
 		await commands.executeCommand('workbench.action.quickOpenSelectNext');
 		await commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
 
-		assert.ok(await pick === undefined);
+		assert.ok((await pick) === undefined);
 	});
 });

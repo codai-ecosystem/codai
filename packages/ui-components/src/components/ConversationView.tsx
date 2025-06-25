@@ -57,7 +57,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 						</div>
 					</div>
 				) : (
-					messages.map((message) => (
+					messages.map(message => (
 						<MessageBubble
 							key={message.id}
 							message={message}
@@ -81,17 +81,13 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 					<Input
 						ref={inputRef}
 						value={inputValue}
-						onChange={(e) => setInputValue(e.target.value)}
+						onChange={e => setInputValue(e.target.value)}
 						onKeyPress={handleKeyPress}
 						placeholder={placeholder}
 						disabled={isLoading}
 						className="flex-1"
 					/>
-					<Button
-						onClick={handleSend}
-						disabled={!inputValue.trim() || isLoading}
-						size="sm"
-					>
+					<Button onClick={handleSend} disabled={!inputValue.trim() || isLoading} size="sm">
 						{isLoading ? (
 							<Loader2 className="w-4 h-4 animate-spin" />
 						) : (

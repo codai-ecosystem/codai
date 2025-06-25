@@ -11,24 +11,36 @@ import type { IHoverAction } from '../../../../base/browser/ui/hover/hover.js';
 import { TerminalCapability } from '../../../../platform/terminal/common/capabilities/capabilities.js';
 import { TerminalStatus } from './terminalStatusList.js';
 import Severity from '../../../../base/common/severity.js';
-import { StorageScope, StorageTarget, type IStorageService } from '../../../../platform/storage/common/storage.js';
+import {
+	StorageScope,
+	StorageTarget,
+	type IStorageService,
+} from '../../../../platform/storage/common/storage.js';
 import { TerminalStorageKeys } from '../common/terminalStorageKeys.js';
 import type { ITerminalStatusHoverAction } from '../common/terminal.js';
 import { basename } from '../../../../base/common/path.js';
 
-export function getInstanceHoverInfo(instance: ITerminalInstance, storageService: IStorageService): { content: MarkdownString; actions: IHoverAction[] } {
-	const showDetailed = parseInt(storageService.get(TerminalStorageKeys.TabsShowDetailed, StorageScope.APPLICATION) ?? '0');
+export function getInstanceHoverInfo(
+	instance: ITerminalInstance,
+	storageService: IStorageService
+): { content: MarkdownString; actions: IHoverAction[] } {
+	const showDetailed = parseInt(
+		storageService.get(TerminalStorageKeys.TabsShowDetailed, StorageScope.APPLICATION) ?? '0'
+	);
 	let statusString = '';
 	const statuses = instance.statusList.statuses;
 	const actions: ITerminalStatusHoverAction[] = [];
 	for (const status of statuses) {
 		if (showDetailed) {
 			if (status.detailedTooltip ?? status.tooltip) {
-				statusString += `\n\n---\n\n${status.icon ? `$(${status.icon?.id}) ` : ''}` + (status.detailedTooltip ?? status.tooltip ?? '');
+				statusString +=
+					`\n\n---\n\n${status.icon ? `$(${status.icon?.id}) ` : ''}` +
+					(status.detailedTooltip ?? status.tooltip ?? '');
 			}
 		} else {
 			if (status.tooltip) {
-				statusString += `\n\n---\n\n${status.icon ? `$(${status.icon?.id}) ` : ''}` + (status.tooltip ?? '');
+				statusString +=
+					`\n\n---\n\n${status.icon ? `$(${status.icon?.id}) ` : ''}` + (status.tooltip ?? '');
 			}
 		}
 		if (status.hoverActions) {
@@ -37,14 +49,23 @@ export function getInstanceHoverInfo(instance: ITerminalInstance, storageService
 	}
 	actions.push({
 		commandId: 'toggleDetailedInfo',
-		label: showDetailed ? localize('hideDetails', 'Hide Details') : localize('showDetails', 'Show Details'),
+		label: showDetailed
+			? localize('hideDetails', 'Hide Details')
+			: localize('showDetails', 'Show Details'),
 		run() {
-			storageService.store(TerminalStorageKeys.TabsShowDetailed, (showDetailed + 1) % 2, StorageScope.APPLICATION, StorageTarget.USER);
+			storageService.store(
+				TerminalStorageKeys.TabsShowDetailed,
+				(showDetailed + 1) % 2,
+				StorageScope.APPLICATION,
+				StorageTarget.USER
+			);
 		},
 	});
 
 	const shellProcessString = getShellProcessTooltip(instance, !!showDetailed);
-	const content = new MarkdownString(instance.title + shellProcessString + statusString, { supportThemeIcons: true });
+	const content = new MarkdownString(instance.title + shellProcessString + statusString, {
+		supportThemeIcons: true,
+	});
 
 	return { content, actions };
 }
@@ -53,7 +74,17 @@ export function getShellProcessTooltip(instance: ITerminalInstance, showDetailed
 	const lines: string[] = [];
 
 	if (instance.processId && instance.processId > 0) {
-		lines.push(localize({ key: 'shellProcessTooltip.processId', comment: ['The first arg is "PID" which shouldn\'t be translated'] }, "Process ID ({0}): {1}", 'PID', instance.processId) + '\n');
+		lines.push(
+			localize(
+				{
+					key: 'shellProcessTooltip.processId',
+					comment: ['The first arg is "PID" which shouldn\'t be translated'],
+				},
+				'Process ID ({0}): {1}',
+				'PID',
+				instance.processId
+			) + '\n'
+		);
 	}
 
 	if (instance.shellLaunchConfig.executable) {
@@ -66,7 +97,9 @@ export function getShellProcessTooltip(instance: ITerminalInstance, showDetailed
 		} else {
 			commandLine += instance.shellLaunchConfig.executable;
 		}
-		const args = asArray(instance.injectedArgs || instance.shellLaunchConfig.args || []).map(x => x.match(/\s/) ? `'${x}'` : x).join(' ');
+		const args = asArray(instance.injectedArgs || instance.shellLaunchConfig.args || [])
+			.map(x => (x.match(/\s/) ? `'${x}'` : x))
+			.join(' ');
 		if (args) {
 			commandLine += ` ${args}`;
 		}
@@ -81,15 +114,14 @@ export function refreshShellIntegrationInfoStatus(instance: ITerminalInstance) {
 	if (!instance.xterm) {
 		return;
 	}
-	const cmdDetectionType = (
-		instance.capabilities.get(TerminalCapability.CommandDetection)?.hasRichCommandDetection
-			? localize('shellIntegration.rich', 'Rich')
-			: instance.capabilities.has(TerminalCapability.CommandDetection)
-				? localize('shellIntegration.basic', 'Basic')
-				: instance.usedShellIntegrationInjection
-					? localize('shellIntegration.injectionFailed', "Injection failed to activate")
-					: localize('shellIntegration.no', 'No')
-	);
+	const cmdDetectionType = instance.capabilities.get(TerminalCapability.CommandDetection)
+		?.hasRichCommandDetection
+		? localize('shellIntegration.rich', 'Rich')
+		: instance.capabilities.has(TerminalCapability.CommandDetection)
+			? localize('shellIntegration.basic', 'Basic')
+			: instance.usedShellIntegrationInjection
+				? localize('shellIntegration.injectionFailed', 'Injection failed to activate')
+				: localize('shellIntegration.no', 'No');
 
 	const detailedAdditions: string[] = [];
 	const seenSequences = Array.from(instance.xterm.shellIntegration.seenSequences);
@@ -100,18 +132,19 @@ export function refreshShellIntegrationInfoStatus(instance: ITerminalInstance) {
 	if (promptType) {
 		detailedAdditions.push(`Prompt type: \`${promptType}\``);
 	}
-	const combinedString = instance.capabilities.get(TerminalCapability.CommandDetection)?.promptInputModel.getCombinedString();
+	const combinedString = instance.capabilities
+		.get(TerminalCapability.CommandDetection)
+		?.promptInputModel.getCombinedString();
 	if (combinedString !== undefined) {
 		detailedAdditions.push(`Prompt input: \`${combinedString}\``);
 	}
-	const detailedAdditionsString = detailedAdditions.length > 0
-		? '\n\n' + detailedAdditions.map(e => `- ${e}`).join('\n')
-		: '';
+	const detailedAdditionsString =
+		detailedAdditions.length > 0 ? '\n\n' + detailedAdditions.map(e => `- ${e}`).join('\n') : '';
 
 	instance.statusList.add({
 		id: TerminalStatus.ShellIntegrationInfo,
 		severity: Severity.Info,
-		tooltip: `${localize('shellIntegration', "Shell integration")}: ${cmdDetectionType}`,
-		detailedTooltip: `${localize('shellIntegration', "Shell integration")}: ${cmdDetectionType}${detailedAdditionsString}`
+		tooltip: `${localize('shellIntegration', 'Shell integration')}: ${cmdDetectionType}`,
+		detailedTooltip: `${localize('shellIntegration', 'Shell integration')}: ${cmdDetectionType}${detailedAdditionsString}`,
 	});
 }

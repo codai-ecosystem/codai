@@ -9,12 +9,22 @@ import { isUNC } from '../../../../base/common/extpath.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { normalize, sep } from '../../../../base/common/path.js';
 import { URI } from '../../../../base/common/uri.js';
-import { FileOperationError, FileOperationResult, IFileService, IWriteFileOptions } from '../../../../platform/files/common/files.js';
+import {
+	FileOperationError,
+	FileOperationResult,
+	IFileService,
+	IWriteFileOptions,
+} from '../../../../platform/files/common/files.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { getWebviewContentMimeType } from '../../../../platform/webview/common/mimeTypes.js';
 
 export namespace WebviewResourceResponse {
-	export enum Type { Success, Failed, AccessDenied, NotModified }
+	export enum Type {
+		Success,
+		Failed,
+		AccessDenied,
+		NotModified,
+	}
 
 	export class StreamSuccess {
 		readonly type = Type.Success;
@@ -23,8 +33,8 @@ export namespace WebviewResourceResponse {
 			public readonly stream: VSBufferReadableStream,
 			public readonly etag: string | undefined,
 			public readonly mtime: number | undefined,
-			public readonly mimeType: string,
-		) { }
+			public readonly mimeType: string
+		) {}
 	}
 
 	export const Failed = { type: Type.Failed } as const;
@@ -35,8 +45,8 @@ export namespace WebviewResourceResponse {
 
 		constructor(
 			public readonly mimeType: string,
-			public readonly mtime: number | undefined,
-		) { }
+			public readonly mtime: number | undefined
+		) {}
 	}
 
 	export type StreamResponse = StreamSuccess | typeof Failed | typeof AccessDenied | NotModified;
@@ -50,13 +60,15 @@ export async function loadLocalResource(
 	},
 	fileService: IFileService,
 	logService: ILogService,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<WebviewResourceResponse.StreamResponse> {
 	logService.debug(`loadLocalResource - begin. requestUri=${requestUri}`);
 
 	const resourceToLoad = getResourceToLoad(requestUri, options.roots);
 
-	logService.debug(`loadLocalResource - found resource to load. requestUri=${requestUri}, resourceToLoad=${resourceToLoad}`);
+	logService.debug(
+		`loadLocalResource - found resource to load. requestUri=${requestUri}, resourceToLoad=${resourceToLoad}`
+	);
 
 	if (!resourceToLoad) {
 		return WebviewResourceResponse.AccessDenied;
@@ -65,7 +77,11 @@ export async function loadLocalResource(
 	const mime = getWebviewContentMimeType(requestUri); // Use the original path for the mime
 
 	try {
-		const result = await fileService.readFileStream(resourceToLoad, { etag: options.ifNoneMatch }, token);
+		const result = await fileService.readFileStream(
+			resourceToLoad,
+			{ etag: options.ifNoneMatch },
+			token
+		);
 		return new WebviewResourceResponse.StreamSuccess(result.value, result.etag, result.mtime, mime);
 	} catch (err) {
 		if (err instanceof FileOperationError) {
@@ -73,7 +89,10 @@ export async function loadLocalResource(
 
 			// NotModified status is expected and can be handled gracefully
 			if (result === FileOperationResult.FILE_NOT_MODIFIED_SINCE) {
-				return new WebviewResourceResponse.NotModified(mime, (err.options as IWriteFileOptions | undefined)?.mtime);
+				return new WebviewResourceResponse.NotModified(
+					mime,
+					(err.options as IWriteFileOptions | undefined)?.mtime
+				);
 			}
 		}
 
@@ -85,10 +104,7 @@ export async function loadLocalResource(
 	}
 }
 
-function getResourceToLoad(
-	requestUri: URI,
-	roots: ReadonlyArray<URI>,
-): URI | undefined {
+function getResourceToLoad(requestUri: URI, roots: ReadonlyArray<URI>): URI | undefined {
 	for (const root of roots) {
 		if (containsResource(root, requestUri)) {
 			return normalizeResourcePath(requestUri);
@@ -122,8 +138,8 @@ function normalizeResourcePath(resource: URI): URI {
 			authority: resource.authority,
 			path: '/vscode-resource',
 			query: JSON.stringify({
-				requestResourcePath: resource.path
-			})
+				requestResourcePath: resource.path,
+			}),
 		});
 	}
 	return resource;

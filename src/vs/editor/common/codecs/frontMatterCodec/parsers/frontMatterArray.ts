@@ -18,16 +18,16 @@ import { FrontMatterSequence } from '../tokens/frontMatterSequence.js';
  * List of tokens that can go in-between array items
  * and array brackets.
  */
-const VALID_DELIMITER_TOKENS = Object.freeze([
-	...VALID_INTER_RECORD_SPACING_TOKENS,
-	Comma,
-]);
+const VALID_DELIMITER_TOKENS = Object.freeze([...VALID_INTER_RECORD_SPACING_TOKENS, Comma]);
 
 /**
  * Responsible for parsing an array syntax (or "inline sequence"
  * in YAML terms), e.g. `[1, '2', true, 2.54]`
-*/
-export class PartialFrontMatterArray extends ParserBase<TSimpleDecoderToken, PartialFrontMatterArray | FrontMatterArray> {
+ */
+export class PartialFrontMatterArray extends ParserBase<
+	TSimpleDecoderToken,
+	PartialFrontMatterArray | FrontMatterArray
+> {
 	/**
 	 * Current parser reference responsible for parsing an array "value".
 	 */
@@ -40,14 +40,14 @@ export class PartialFrontMatterArray extends ParserBase<TSimpleDecoderToken, Par
 	 */
 	private arrayItemAllowed = true;
 
-	constructor(
-		private readonly startToken: LeftBracket,
-	) {
+	constructor(private readonly startToken: LeftBracket) {
 		super([startToken]);
 	}
 
 	@assertNotConsumed
-	public accept(token: TSimpleDecoderToken): TAcceptTokenResult<PartialFrontMatterArray | FrontMatterArray> {
+	public accept(
+		token: TSimpleDecoderToken
+	): TAcceptTokenResult<PartialFrontMatterArray | FrontMatterArray> {
 		if (this.currentValueParser !== undefined) {
 			const acceptResult = this.currentValueParser.accept(token);
 			const { result, wasTokenConsumed } = acceptResult;
@@ -94,7 +94,7 @@ export class PartialFrontMatterArray extends ParserBase<TSimpleDecoderToken, Par
 			// to a different place in the code
 			assert(
 				this.currentValueParser === undefined,
-				`Unexpected end of array. Last value is not finished.`,
+				`Unexpected end of array. Last value is not finished.`
 			);
 
 			this.currentTokens.push(token);
@@ -112,7 +112,7 @@ export class PartialFrontMatterArray extends ParserBase<TSimpleDecoderToken, Par
 			if (token instanceof ValidToken) {
 				this.currentTokens.push(token);
 
-				if ((this.arrayItemAllowed === false) && token instanceof Comma) {
+				if (this.arrayItemAllowed === false && token instanceof Comma) {
 					this.arrayItemAllowed = true;
 				}
 
@@ -127,16 +127,11 @@ export class PartialFrontMatterArray extends ParserBase<TSimpleDecoderToken, Par
 		// is an array item value is allowed at this position, create a new
 		// value parser and start the value parsing process using it
 		if (this.arrayItemAllowed === true) {
-			this.currentValueParser = new PartialFrontMatterValue(
-				(currentToken) => {
-					// comma or a closing square bracket must stop the parsing
-					// process of the value represented by a generic sequence of tokens
-					return (
-						(currentToken instanceof RightBracket)
-						|| (currentToken instanceof Comma)
-					);
-				},
-			);
+			this.currentValueParser = new PartialFrontMatterValue(currentToken => {
+				// comma or a closing square bracket must stop the parsing
+				// process of the value represented by a generic sequence of tokens
+				return currentToken instanceof RightBracket || currentToken instanceof Comma;
+			});
 			this.arrayItemAllowed = false;
 
 			return this.accept(token);
@@ -160,19 +155,13 @@ export class PartialFrontMatterArray extends ParserBase<TSimpleDecoderToken, Par
 	public asArrayToken(): FrontMatterArray {
 		const endToken = this.currentTokens[this.currentTokens.length - 1];
 
-		assertDefined(
-			endToken,
-			`No tokens found.`,
-		);
+		assertDefined(endToken, `No tokens found.`);
 
-		assert(
-			endToken instanceof RightBracket,
-			'Cannot find a closing bracket of the array.',
-		);
+		assert(endToken instanceof RightBracket, 'Cannot find a closing bracket of the array.');
 
 		const valueTokens: FrontMatterValueToken[] = [];
 		for (const currentToken of this.currentTokens) {
-			if ((currentToken instanceof FrontMatterValueToken) === false) {
+			if (currentToken instanceof FrontMatterValueToken === false) {
 				continue;
 			}
 
@@ -186,10 +175,6 @@ export class PartialFrontMatterArray extends ParserBase<TSimpleDecoderToken, Par
 		}
 
 		this.isConsumed = true;
-		return new FrontMatterArray([
-			this.startToken,
-			...valueTokens,
-			endToken,
-		]);
+		return new FrontMatterArray([this.startToken, ...valueTokens, endToken]);
 	}
 }

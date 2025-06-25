@@ -8,14 +8,16 @@ import { QuickAccess } from './quickaccess';
 
 export const enum ProblemSeverity {
 	WARNING = 0,
-	ERROR = 1
+	ERROR = 1,
 }
 
 export class Problems {
-
 	static PROBLEMS_VIEW_SELECTOR = '.panel .markers-panel';
 
-	constructor(private code: Code, private quickAccess: QuickAccess) { }
+	constructor(
+		private code: Code,
+		private quickAccess: QuickAccess
+	) {}
 
 	async showProblemsView(): Promise<any> {
 		await this.quickAccess.runCommand('workbench.panel.markers.view.focus');
@@ -37,7 +39,8 @@ export class Problems {
 	}
 
 	static getSelectorInEditor(problemType: ProblemSeverity): string {
-		const selector = problemType === ProblemSeverity.WARNING ? 'squiggly-warning' : 'squiggly-error';
+		const selector =
+			problemType === ProblemSeverity.WARNING ? 'squiggly-warning' : 'squiggly-error';
 		return `.view-overlays .cdr.${selector}`;
 	}
 }

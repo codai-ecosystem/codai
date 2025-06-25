@@ -8,7 +8,12 @@ import { localize } from '../../../../nls.js';
 import { Event } from '../../../../base/common/event.js';
 import { ViewPane, IViewPaneOptions } from '../../../browser/parts/views/viewPane.js';
 import { append, $ } from '../../../../base/browser/dom.js';
-import { IListVirtualDelegate, IListContextMenuEvent, IListEvent, IListRenderer } from '../../../../base/browser/ui/list/list.js';
+import {
+	IListVirtualDelegate,
+	IListContextMenuEvent,
+	IListEvent,
+	IListRenderer,
+} from '../../../../base/browser/ui/list/list.js';
 import { ISCMRepository, ISCMViewService } from '../common/scm.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
@@ -28,7 +33,6 @@ import { MenuId } from '../../../../platform/actions/common/actions.js';
 import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 
 class ListDelegate implements IListVirtualDelegate<ISCMRepository> {
-
 	getHeight(): number {
 		return 22;
 	}
@@ -39,7 +43,6 @@ class ListDelegate implements IListVirtualDelegate<ISCMRepository> {
 }
 
 export class SCMRepositoriesViewPane extends ViewPane {
-
 	private list!: WorkbenchList<ISCMRepository>;
 	private readonly disposables = new DisposableStore();
 
@@ -56,7 +59,18 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		@IThemeService themeService: IThemeService,
 		@IHoverService hoverService: IHoverService
 	) {
-		super({ ...options, titleMenuId: MenuId.SCMSourceControlTitle }, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, hoverService);
+		super(
+			{ ...options, titleMenuId: MenuId.SCMSourceControlTitle },
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			hoverService
+		);
 	}
 
 	protected override renderBody(container: HTMLElement): void {
@@ -65,30 +79,49 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		const listContainer = append(container, $('.scm-view.scm-repositories-view'));
 
 		const updateProviderCountVisibility = () => {
-			const value = this.configurationService.getValue<'hidden' | 'auto' | 'visible'>('scm.providerCountBadge');
+			const value = this.configurationService.getValue<'hidden' | 'auto' | 'visible'>(
+				'scm.providerCountBadge'
+			);
 			listContainer.classList.toggle('hide-provider-counts', value === 'hidden');
 			listContainer.classList.toggle('auto-provider-counts', value === 'auto');
 		};
-		this._register(Event.filter(this.configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('scm.providerCountBadge'), this.disposables)(updateProviderCountVisibility));
+		this._register(
+			Event.filter(
+				this.configurationService.onDidChangeConfiguration,
+				e => e.affectsConfiguration('scm.providerCountBadge'),
+				this.disposables
+			)(updateProviderCountVisibility)
+		);
 		updateProviderCountVisibility();
 
 		const delegate = new ListDelegate();
-		const renderer = this.instantiationService.createInstance(RepositoryRenderer, MenuId.SCMSourceControlInline, getActionViewItemProvider(this.instantiationService));
+		const renderer = this.instantiationService.createInstance(
+			RepositoryRenderer,
+			MenuId.SCMSourceControlInline,
+			getActionViewItemProvider(this.instantiationService)
+		);
 		const identityProvider = { getId: (r: ISCMRepository) => r.provider.id };
 
-		this.list = this.instantiationService.createInstance(WorkbenchList, `SCM Main`, listContainer, delegate, [renderer as IListRenderer<ISCMRepository, any>], {
-			identityProvider,
-			horizontalScrolling: false,
-			overrideStyles: this.getLocationBasedColors().listOverrideStyles,
-			accessibilityProvider: {
-				getAriaLabel(r: ISCMRepository) {
-					return r.provider.label;
+		this.list = this.instantiationService.createInstance(
+			WorkbenchList,
+			`SCM Main`,
+			listContainer,
+			delegate,
+			[renderer as IListRenderer<ISCMRepository, any>],
+			{
+				identityProvider,
+				horizontalScrolling: false,
+				overrideStyles: this.getLocationBasedColors().listOverrideStyles,
+				accessibilityProvider: {
+					getAriaLabel(r: ISCMRepository) {
+						return r.provider.label;
+					},
+					getWidgetAriaLabel() {
+						return localize('scm', 'Source Control Repositories');
+					},
 				},
-				getWidgetAriaLabel() {
-					return localize('scm', "Source Control Repositories");
-				}
 			}
-		}) as WorkbenchList<ISCMRepository>;
+		) as WorkbenchList<ISCMRepository>;
 
 		this._register(this.list);
 		this._register(this.list.onDidChangeSelection(this.onListSelectionChange, this));
@@ -96,14 +129,18 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		this._register(this.list.onContextMenu(this.onListContextMenu, this));
 
 		this._register(this.scmViewService.onDidChangeRepositories(this.onDidChangeRepositories, this));
-		this._register(this.scmViewService.onDidChangeVisibleRepositories(this.updateListSelection, this));
+		this._register(
+			this.scmViewService.onDidChangeVisibleRepositories(this.updateListSelection, this)
+		);
 
 		if (this.orientation === Orientation.VERTICAL) {
-			this._register(this.configurationService.onDidChangeConfiguration(e => {
-				if (e.affectsConfiguration('scm.repositories.visible')) {
-					this.updateBodySize();
-				}
-			}));
+			this._register(
+				this.configurationService.onDidChangeConfiguration(e => {
+					if (e.affectsConfiguration('scm.repositories.visible')) {
+						this.updateBodySize();
+					}
+				})
+			);
 		}
 
 		this.onDidChangeRepositories();
@@ -135,7 +172,8 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		const size = Math.min(this.list.length, visibleCount) * 22;
 
 		this.minimumBodySize = visibleCount === 0 ? 22 : size;
-		this.maximumBodySize = visibleCount === 0 ? Number.POSITIVE_INFINITY : empty ? Number.POSITIVE_INFINITY : size;
+		this.maximumBodySize =
+			visibleCount === 0 ? Number.POSITIVE_INFINITY : empty ? Number.POSITIVE_INFINITY : size;
 	}
 
 	private onListContextMenu(e: IListContextMenuEvent<ISCMRepository>): void {
@@ -158,7 +196,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 			getAnchor: () => e.anchor,
 			getActions: () => actions,
 			getActionsContext: () => provider,
-			onHide: () => actionRunner.dispose()
+			onHide: () => actionRunner.dispose(),
 		});
 	}
 
@@ -187,8 +225,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 			return;
 		}
 
-		const selection = oldSelection
-			.filter(i => !removed.has(this.list.element(i)));
+		const selection = oldSelection.filter(i => !removed.has(this.list.element(i)));
 
 		for (let i = 0; i < this.list.length; i++) {
 			if (added.has(this.list.element(i))) {

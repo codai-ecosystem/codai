@@ -23,9 +23,12 @@ export type TStreamListenerNames = 'data' | 'error' | 'end';
  * Intended to be a part of "codec" implementation rather than used directly.
  */
 export abstract class BaseDecoder<
-	T extends NonNullable<unknown>,
-	K extends NonNullable<unknown> = NonNullable<unknown>,
-> extends ObservableDisposable implements ReadableStream<T> {
+		T extends NonNullable<unknown>,
+		K extends NonNullable<unknown> = NonNullable<unknown>,
+	>
+	extends ObservableDisposable
+	implements ReadableStream<T>
+{
 	/**
 	 * Private attribute to track if the stream has ended.
 	 */
@@ -52,9 +55,7 @@ export abstract class BaseDecoder<
 	/**
 	 * @param stream The input stream to decode.
 	 */
-	constructor(
-		protected readonly stream: ReadableStream<K>,
-	) {
+	constructor(protected readonly stream: ReadableStream<K>) {
 		super();
 	}
 
@@ -89,7 +90,7 @@ export abstract class BaseDecoder<
 			[
 				'Cannot get `settled` promise of a stream that has not been started.',
 				'Please call `start()` first.',
-			].join(' '),
+			].join(' ')
 		);
 
 		return this.settledPromise.p;
@@ -100,14 +101,8 @@ export abstract class BaseDecoder<
 	 * @throws if the decoder stream has already ended.
 	 */
 	public start(): this {
-		assert(
-			this._ended === false,
-			'Cannot start stream that has already ended.',
-		);
-		assert(
-			this.isDisposed === false,
-			'Cannot start stream that has already disposed.',
-		);
+		assert(this._ended === false, 'Cannot start stream that has already ended.');
+		assert(this.isDisposed === false, 'Cannot start stream that has already disposed.');
 
 		// if already started, nothing to do
 		if (this.started) {
@@ -180,7 +175,7 @@ export abstract class BaseDecoder<
 	public onData(callback: (data: T) => void): void {
 		assert(
 			!this.ended,
-			'Cannot subscribe to the `data` event because the decoder stream has already ended.',
+			'Cannot subscribe to the `data` event because the decoder stream has already ended.'
 		);
 
 		let currentListeners = this._listeners.get('data');
@@ -200,7 +195,7 @@ export abstract class BaseDecoder<
 	public onError(callback: (error: Error) => void): void {
 		assert(
 			!this.ended,
-			'Cannot subscribe to the `error` event because the decoder stream has already ended.',
+			'Cannot subscribe to the `error` event because the decoder stream has already ended.'
 		);
 
 		let currentListeners = this._listeners.get('error');
@@ -220,7 +215,7 @@ export abstract class BaseDecoder<
 	public onEnd(callback: () => void): void {
 		assert(
 			!this.ended,
-			'Cannot subscribe to the `end` event because the decoder stream has already ended.',
+			'Cannot subscribe to the `end` event because the decoder stream has already ended.'
 		);
 
 		let currentListeners = this._listeners.get('end');
@@ -245,10 +240,7 @@ export abstract class BaseDecoder<
 	 * @throws if the decoder stream has already ended.
 	 */
 	public resume(): void {
-		assert(
-			this.ended === false,
-			'Cannot resume the stream because it has already ended.',
-		);
+		assert(this.ended === false, 'Cannot resume the stream because it has already ended.');
 
 		this.stream.resume();
 	}
@@ -313,10 +305,7 @@ export abstract class BaseDecoder<
 	 * @throws if the decoder stream has already ended.
 	 */
 	public async consumeAll(): Promise<T[]> {
-		assert(
-			!this._ended,
-			'Cannot consume all messages of the stream that has already ended.',
-		);
+		assert(!this._ended, 'Cannot consume all messages of the stream that has already ended.');
 
 		const messages = [];
 
@@ -336,10 +325,7 @@ export abstract class BaseDecoder<
 	 * @throws if the decoder stream has already ended.
 	 */
 	[Symbol.asyncIterator](): AsyncIterator<T | null> {
-		assert(
-			!this._ended,
-			'Cannot iterate on messages of the stream that has already ended.',
-		);
+		assert(!this._ended, 'Cannot iterate on messages of the stream that has already ended.');
 
 		const asyncDecoder = this._register(new AsyncDecoder(this));
 

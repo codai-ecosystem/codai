@@ -4,16 +4,29 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { NotificationsModel, NotificationViewItem, INotificationChangeEvent, NotificationChangeType, NotificationViewItemContentChangeKind, IStatusMessageChangeEvent, StatusMessageChangeType, INotificationsFilter } from '../../common/notifications.js';
+import {
+	NotificationsModel,
+	NotificationViewItem,
+	INotificationChangeEvent,
+	NotificationChangeType,
+	NotificationViewItemContentChangeKind,
+	IStatusMessageChangeEvent,
+	StatusMessageChangeType,
+	INotificationsFilter,
+} from '../../common/notifications.js';
 import { Action } from '../../../base/common/actions.js';
-import { INotification, Severity, NotificationsFilter, NotificationPriority } from '../../../platform/notification/common/notification.js';
+import {
+	INotification,
+	Severity,
+	NotificationsFilter,
+	NotificationPriority,
+} from '../../../platform/notification/common/notification.js';
 import { createErrorWithActions } from '../../../base/common/errorMessage.js';
 import { timeout } from '../../../base/common/async.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/common/utils.js';
 import { DisposableStore } from '../../../base/common/lifecycle.js';
 
 suite('Notifications', () => {
-
 	const disposables = new DisposableStore();
 	const noFilter: INotificationsFilter = { global: NotificationsFilter.OFF, sources: new Map() };
 
@@ -22,18 +35,44 @@ suite('Notifications', () => {
 	});
 
 	test('Items', () => {
-
 		// Invalid
 		assert.ok(!NotificationViewItem.create({ severity: Severity.Error, message: '' }, noFilter));
 		assert.ok(!NotificationViewItem.create({ severity: Severity.Error, message: null! }, noFilter));
 
 		// Duplicates
-		const item1 = NotificationViewItem.create({ severity: Severity.Error, message: 'Error Message' }, noFilter)!;
-		const item2 = NotificationViewItem.create({ severity: Severity.Error, message: 'Error Message' }, noFilter)!;
-		const item3 = NotificationViewItem.create({ severity: Severity.Info, message: 'Info Message' }, noFilter)!;
-		const item4 = NotificationViewItem.create({ severity: Severity.Error, message: 'Error Message', source: 'Source' }, noFilter)!;
-		const item5 = NotificationViewItem.create({ severity: Severity.Error, message: 'Error Message', actions: { primary: [disposables.add(new Action('id', 'label'))] } }, noFilter)!;
-		const item6 = NotificationViewItem.create({ severity: Severity.Error, message: 'Error Message', actions: { primary: [disposables.add(new Action('id', 'label'))] }, progress: { infinite: true } }, noFilter)!;
+		const item1 = NotificationViewItem.create(
+			{ severity: Severity.Error, message: 'Error Message' },
+			noFilter
+		)!;
+		const item2 = NotificationViewItem.create(
+			{ severity: Severity.Error, message: 'Error Message' },
+			noFilter
+		)!;
+		const item3 = NotificationViewItem.create(
+			{ severity: Severity.Info, message: 'Info Message' },
+			noFilter
+		)!;
+		const item4 = NotificationViewItem.create(
+			{ severity: Severity.Error, message: 'Error Message', source: 'Source' },
+			noFilter
+		)!;
+		const item5 = NotificationViewItem.create(
+			{
+				severity: Severity.Error,
+				message: 'Error Message',
+				actions: { primary: [disposables.add(new Action('id', 'label'))] },
+			},
+			noFilter
+		)!;
+		const item6 = NotificationViewItem.create(
+			{
+				severity: Severity.Error,
+				message: 'Error Message',
+				actions: { primary: [disposables.add(new Action('id', 'label'))] },
+				progress: { infinite: true },
+			},
+			noFilter
+		)!;
 
 		assert.strictEqual(item1.equals(item1), true);
 		assert.strictEqual(item2.equals(item2), true);
@@ -46,8 +85,14 @@ suite('Notifications', () => {
 		assert.strictEqual(item1.equals(item4), false);
 		assert.strictEqual(item1.equals(item5), false);
 
-		const itemId1 = NotificationViewItem.create({ id: 'same', message: 'Info Message', severity: Severity.Info }, noFilter)!;
-		const itemId2 = NotificationViewItem.create({ id: 'same', message: 'Error Message', severity: Severity.Error }, noFilter)!;
+		const itemId1 = NotificationViewItem.create(
+			{ id: 'same', message: 'Info Message', severity: Severity.Info },
+			noFilter
+		)!;
+		const itemId2 = NotificationViewItem.create(
+			{ id: 'same', message: 'Error Message', severity: Severity.Error },
+			noFilter
+		)!;
 
 		assert.strictEqual(itemId1.equals(itemId2), true);
 		assert.strictEqual(itemId1.equals(item3), false);
@@ -62,9 +107,11 @@ suite('Notifications', () => {
 
 		// Events
 		let called = 0;
-		disposables.add(item1.onDidChangeExpansion(() => {
-			called++;
-		}));
+		disposables.add(
+			item1.onDidChangeExpansion(() => {
+				called++;
+			})
+		);
 
 		item1.expand();
 		item1.expand();
@@ -74,11 +121,13 @@ suite('Notifications', () => {
 		assert.strictEqual(called, 2);
 
 		called = 0;
-		disposables.add(item1.onDidChangeContent(e => {
-			if (e.kind === NotificationViewItemContentChangeKind.PROGRESS) {
-				called++;
-			}
-		}));
+		disposables.add(
+			item1.onDidChangeContent(e => {
+				if (e.kind === NotificationViewItemContentChangeKind.PROGRESS) {
+					called++;
+				}
+			})
+		);
 
 		item1.progress.infinite();
 		item1.progress.done();
@@ -86,38 +135,46 @@ suite('Notifications', () => {
 		assert.strictEqual(called, 2);
 
 		called = 0;
-		disposables.add(item1.onDidChangeContent(e => {
-			if (e.kind === NotificationViewItemContentChangeKind.MESSAGE) {
-				called++;
-			}
-		}));
+		disposables.add(
+			item1.onDidChangeContent(e => {
+				if (e.kind === NotificationViewItemContentChangeKind.MESSAGE) {
+					called++;
+				}
+			})
+		);
 
 		item1.updateMessage('message update');
 
 		called = 0;
-		disposables.add(item1.onDidChangeContent(e => {
-			if (e.kind === NotificationViewItemContentChangeKind.SEVERITY) {
-				called++;
-			}
-		}));
+		disposables.add(
+			item1.onDidChangeContent(e => {
+				if (e.kind === NotificationViewItemContentChangeKind.SEVERITY) {
+					called++;
+				}
+			})
+		);
 
 		item1.updateSeverity(Severity.Error);
 
 		called = 0;
-		disposables.add(item1.onDidChangeContent(e => {
-			if (e.kind === NotificationViewItemContentChangeKind.ACTIONS) {
-				called++;
-			}
-		}));
+		disposables.add(
+			item1.onDidChangeContent(e => {
+				if (e.kind === NotificationViewItemContentChangeKind.ACTIONS) {
+					called++;
+				}
+			})
+		);
 
 		item1.updateActions({ primary: [disposables.add(new Action('id2', 'label'))] });
 
 		assert.strictEqual(called, 1);
 
 		called = 0;
-		disposables.add(item1.onDidChangeVisibility(e => {
-			called++;
-		}));
+		disposables.add(
+			item1.onDidChangeVisibility(e => {
+				called++;
+			})
+		);
 
 		item1.updateVisibility(true);
 		item1.updateVisibility(false);
@@ -126,48 +183,105 @@ suite('Notifications', () => {
 		assert.strictEqual(called, 2);
 
 		called = 0;
-		disposables.add(item1.onDidClose(() => {
-			called++;
-		}));
+		disposables.add(
+			item1.onDidClose(() => {
+				called++;
+			})
+		);
 
 		item1.close();
 		assert.strictEqual(called, 1);
 
 		// Error with Action
-		const item7 = NotificationViewItem.create({ severity: Severity.Error, message: createErrorWithActions('Hello Error', [disposables.add(new Action('id', 'label'))]) }, noFilter)!;
+		const item7 = NotificationViewItem.create(
+			{
+				severity: Severity.Error,
+				message: createErrorWithActions('Hello Error', [
+					disposables.add(new Action('id', 'label')),
+				]),
+			},
+			noFilter
+		)!;
 		assert.strictEqual(item7.actions!.primary!.length, 1);
 
 		// Filter
-		const item8 = NotificationViewItem.create({ severity: Severity.Error, message: 'Error Message' }, { global: NotificationsFilter.OFF, sources: new Map() })!;
+		const item8 = NotificationViewItem.create(
+			{ severity: Severity.Error, message: 'Error Message' },
+			{ global: NotificationsFilter.OFF, sources: new Map() }
+		)!;
 		assert.strictEqual(item8.priority, NotificationPriority.DEFAULT);
 
-		const item9 = NotificationViewItem.create({ severity: Severity.Error, message: 'Error Message' }, { global: NotificationsFilter.ERROR, sources: new Map() })!;
+		const item9 = NotificationViewItem.create(
+			{ severity: Severity.Error, message: 'Error Message' },
+			{ global: NotificationsFilter.ERROR, sources: new Map() }
+		)!;
 		assert.strictEqual(item9.priority, NotificationPriority.DEFAULT);
 
-		const item10 = NotificationViewItem.create({ severity: Severity.Warning, message: 'Error Message' }, { global: NotificationsFilter.ERROR, sources: new Map() })!;
+		const item10 = NotificationViewItem.create(
+			{ severity: Severity.Warning, message: 'Error Message' },
+			{ global: NotificationsFilter.ERROR, sources: new Map() }
+		)!;
 		assert.strictEqual(item10.priority, NotificationPriority.SILENT);
 
 		const sources = new Map<string, NotificationsFilter>();
 		sources.set('test.source', NotificationsFilter.ERROR);
-		const item11 = NotificationViewItem.create({ severity: Severity.Warning, message: 'Error Message', source: 'test.source' }, { global: NotificationsFilter.OFF, sources })!;
+		const item11 = NotificationViewItem.create(
+			{ severity: Severity.Warning, message: 'Error Message', source: 'test.source' },
+			{ global: NotificationsFilter.OFF, sources }
+		)!;
 		assert.strictEqual(item11.priority, NotificationPriority.DEFAULT);
-		const item12 = NotificationViewItem.create({ severity: Severity.Warning, message: 'Error Message', source: { id: 'test.source', label: 'foo' } }, { global: NotificationsFilter.OFF, sources })!;
+		const item12 = NotificationViewItem.create(
+			{
+				severity: Severity.Warning,
+				message: 'Error Message',
+				source: { id: 'test.source', label: 'foo' },
+			},
+			{ global: NotificationsFilter.OFF, sources }
+		)!;
 		assert.strictEqual(item12.priority, NotificationPriority.SILENT);
-		const item13 = NotificationViewItem.create({ severity: Severity.Warning, message: 'Error Message', source: { id: 'test.source2', label: 'foo' } }, { global: NotificationsFilter.OFF, sources })!;
+		const item13 = NotificationViewItem.create(
+			{
+				severity: Severity.Warning,
+				message: 'Error Message',
+				source: { id: 'test.source2', label: 'foo' },
+			},
+			{ global: NotificationsFilter.OFF, sources }
+		)!;
 		assert.strictEqual(item13.priority, NotificationPriority.DEFAULT);
 
-		for (const item of [item1, item2, item3, item4, item5, item6, itemId1, itemId2, item7, item8, item9, item10, item11, item12, item13]) {
+		for (const item of [
+			item1,
+			item2,
+			item3,
+			item4,
+			item5,
+			item6,
+			itemId1,
+			itemId2,
+			item7,
+			item8,
+			item9,
+			item10,
+			item11,
+			item12,
+			item13,
+		]) {
 			item.close();
 		}
 	});
 
 	test('Items - does not fire changed when message did not change (content, severity)', async () => {
-		const item1 = NotificationViewItem.create({ severity: Severity.Error, message: 'Error Message' }, noFilter)!;
+		const item1 = NotificationViewItem.create(
+			{ severity: Severity.Error, message: 'Error Message' },
+			noFilter
+		)!;
 
 		let fired = false;
-		disposables.add(item1.onDidChangeContent(() => {
-			fired = true;
-		}));
+		disposables.add(
+			item1.onDidChangeContent(() => {
+				fired = true;
+			})
+		);
 
 		item1.updateMessage('Error Message');
 		await timeout(0);
@@ -186,18 +300,34 @@ suite('Notifications', () => {
 		const model = disposables.add(new NotificationsModel());
 
 		let lastNotificationEvent!: INotificationChangeEvent;
-		disposables.add(model.onDidChangeNotification(e => {
-			lastNotificationEvent = e;
-		}));
+		disposables.add(
+			model.onDidChangeNotification(e => {
+				lastNotificationEvent = e;
+			})
+		);
 
 		let lastStatusMessageEvent!: IStatusMessageChangeEvent;
-		disposables.add(model.onDidChangeStatusMessage(e => {
-			lastStatusMessageEvent = e;
-		}));
+		disposables.add(
+			model.onDidChangeStatusMessage(e => {
+				lastStatusMessageEvent = e;
+			})
+		);
 
-		const item1: INotification = { severity: Severity.Error, message: 'Error Message', actions: { primary: [disposables.add(new Action('id', 'label'))] } };
-		const item2: INotification = { severity: Severity.Warning, message: 'Warning Message', source: 'Some Source' };
-		const item2Duplicate: INotification = { severity: Severity.Warning, message: 'Warning Message', source: 'Some Source' };
+		const item1: INotification = {
+			severity: Severity.Error,
+			message: 'Error Message',
+			actions: { primary: [disposables.add(new Action('id', 'label'))] },
+		};
+		const item2: INotification = {
+			severity: Severity.Warning,
+			message: 'Warning Message',
+			source: 'Some Source',
+		};
+		const item2Duplicate: INotification = {
+			severity: Severity.Warning,
+			message: 'Warning Message',
+			source: 'Some Source',
+		};
 		const item3: INotification = { severity: Severity.Info, message: 'Info Message' };
 
 		const item1Handle = model.addNotification(item1);
@@ -212,7 +342,10 @@ suite('Notifications', () => {
 
 		item1Handle.updateSeverity(Severity.Warning);
 		assert.strictEqual(lastNotificationEvent.kind, NotificationChangeType.CHANGE);
-		assert.strictEqual(lastNotificationEvent.detail, NotificationViewItemContentChangeKind.SEVERITY);
+		assert.strictEqual(
+			lastNotificationEvent.detail,
+			NotificationViewItemContentChangeKind.SEVERITY
+		);
 
 		item1Handle.updateActions({ primary: [], secondary: [] });
 		assert.strictEqual(lastNotificationEvent.kind, NotificationChangeType.CHANGE);
@@ -220,7 +353,10 @@ suite('Notifications', () => {
 
 		item1Handle.progress.infinite();
 		assert.strictEqual(lastNotificationEvent.kind, NotificationChangeType.CHANGE);
-		assert.strictEqual(lastNotificationEvent.detail, NotificationViewItemContentChangeKind.PROGRESS);
+		assert.strictEqual(
+			lastNotificationEvent.detail,
+			NotificationViewItemContentChangeKind.PROGRESS
+		);
 
 		const item2Handle = model.addNotification(item2);
 		assert.strictEqual(lastNotificationEvent.item.severity, item2.severity);
@@ -237,29 +373,40 @@ suite('Notifications', () => {
 		assert.strictEqual(model.notifications.length, 3);
 
 		let called = 0;
-		disposables.add(item1Handle.onDidClose(() => {
-			called++;
-		}));
+		disposables.add(
+			item1Handle.onDidClose(() => {
+				called++;
+			})
+		);
 
 		item1Handle.close();
 		assert.strictEqual(called, 1);
 		assert.strictEqual(model.notifications.length, 2);
 		assert.strictEqual(lastNotificationEvent.item.severity, Severity.Warning);
-		assert.strictEqual(lastNotificationEvent.item.message.linkedText.toString(), 'Different Error Message');
+		assert.strictEqual(
+			lastNotificationEvent.item.message.linkedText.toString(),
+			'Different Error Message'
+		);
 		assert.strictEqual(lastNotificationEvent.index, 2);
 		assert.strictEqual(lastNotificationEvent.kind, NotificationChangeType.REMOVE);
 
 		const item2DuplicateHandle = model.addNotification(item2Duplicate);
 		assert.strictEqual(model.notifications.length, 2);
 		assert.strictEqual(lastNotificationEvent.item.severity, item2Duplicate.severity);
-		assert.strictEqual(lastNotificationEvent.item.message.linkedText.toString(), item2Duplicate.message);
+		assert.strictEqual(
+			lastNotificationEvent.item.message.linkedText.toString(),
+			item2Duplicate.message
+		);
 		assert.strictEqual(lastNotificationEvent.index, 0);
 		assert.strictEqual(lastNotificationEvent.kind, NotificationChangeType.ADD);
 
 		item2Handle.close();
 		assert.strictEqual(model.notifications.length, 1);
 		assert.strictEqual(lastNotificationEvent.item.severity, item2Duplicate.severity);
-		assert.strictEqual(lastNotificationEvent.item.message.linkedText.toString(), item2Duplicate.message);
+		assert.strictEqual(
+			lastNotificationEvent.item.message.linkedText.toString(),
+			item2Duplicate.message
+		);
 		assert.strictEqual(lastNotificationEvent.index, 0);
 		assert.strictEqual(lastNotificationEvent.kind, NotificationChangeType.REMOVE);
 

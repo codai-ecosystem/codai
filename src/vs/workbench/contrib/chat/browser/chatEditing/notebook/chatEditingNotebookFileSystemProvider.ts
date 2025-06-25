@@ -10,33 +10,62 @@ import { Disposable, IDisposable } from '../../../../../../base/common/lifecycle
 import { ResourceMap } from '../../../../../../base/common/map.js';
 import { ReadableStreamEvents } from '../../../../../../base/common/stream.js';
 import { URI } from '../../../../../../base/common/uri.js';
-import { FileSystemProviderCapabilities, FileType, IFileChange, IFileDeleteOptions, IFileOpenOptions, IFileOverwriteOptions, IFileReadStreamOptions, IFileService, IFileSystemProvider, IFileWriteOptions, IStat, IWatchOptions } from '../../../../../../platform/files/common/files.js';
+import {
+	FileSystemProviderCapabilities,
+	FileType,
+	IFileChange,
+	IFileDeleteOptions,
+	IFileOpenOptions,
+	IFileOverwriteOptions,
+	IFileReadStreamOptions,
+	IFileService,
+	IFileSystemProvider,
+	IFileWriteOptions,
+	IStat,
+	IWatchOptions,
+} from '../../../../../../platform/files/common/files.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
 import { IWorkbenchContribution } from '../../../../../common/contributions.js';
 import { INotebookService } from '../../../../notebook/common/notebookService.js';
 import { IChatEditingService } from '../../../common/chatEditingService.js';
-import { ChatEditingNotebookSnapshotScheme, deserializeSnapshot } from './chatEditingModifiedNotebookSnapshot.js';
+import {
+	ChatEditingNotebookSnapshotScheme,
+	deserializeSnapshot,
+} from './chatEditingModifiedNotebookSnapshot.js';
 import { ChatEditingSession } from '../chatEditingSession.js';
 
-
-export class ChatEditingNotebookFileSystemProviderContrib extends Disposable implements IWorkbenchContribution {
+export class ChatEditingNotebookFileSystemProviderContrib
+	extends Disposable
+	implements IWorkbenchContribution
+{
 	static ID = 'chatEditingNotebookFileSystemProviderContribution';
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
-
 		super();
-		const fileSystemProvider = instantiationService.createInstance(ChatEditingNotebookFileSystemProvider);
-		this._register(this.fileService.registerProvider(ChatEditingNotebookSnapshotScheme, fileSystemProvider));
+		const fileSystemProvider = instantiationService.createInstance(
+			ChatEditingNotebookFileSystemProvider
+		);
+		this._register(
+			this.fileService.registerProvider(ChatEditingNotebookSnapshotScheme, fileSystemProvider)
+		);
 	}
 }
 
-type ChatEditingSnapshotNotebookContentQueryData = { sessionId: string; requestId: string | undefined; undoStop: string | undefined; viewType: string };
+type ChatEditingSnapshotNotebookContentQueryData = {
+	sessionId: string;
+	requestId: string | undefined;
+	undoStop: string | undefined;
+	viewType: string;
+};
 
 export class ChatEditingNotebookFileSystemProvider implements IFileSystemProvider {
 	private static registeredFiles = new ResourceMap<VSBuffer>();
-	public readonly capabilities: FileSystemProviderCapabilities = FileSystemProviderCapabilities.Readonly | FileSystemProviderCapabilities.FileAtomicRead | FileSystemProviderCapabilities.FileReadWrite;
+	public readonly capabilities: FileSystemProviderCapabilities =
+		FileSystemProviderCapabilities.Readonly |
+		FileSystemProviderCapabilities.FileAtomicRead |
+		FileSystemProviderCapabilities.FileReadWrite;
 	public static registerFile(resource: URI, buffer: VSBuffer): IDisposable {
 		ChatEditingNotebookFileSystemProvider.registeredFiles.set(resource, buffer);
 		return {
@@ -44,13 +73,14 @@ export class ChatEditingNotebookFileSystemProvider implements IFileSystemProvide
 				if (ChatEditingNotebookFileSystemProvider.registeredFiles.get(resource) === buffer) {
 					ChatEditingNotebookFileSystemProvider.registeredFiles.delete(resource);
 				}
-			}
+			},
 		};
 	}
 
 	constructor(
 		@IChatEditingService private readonly _chatEditingService: IChatEditingService,
-		@INotebookService private readonly notebookService: INotebookService) { }
+		@INotebookService private readonly notebookService: INotebookService
+	) {}
 	readonly onDidChangeCapabilities = Event.None;
 	readonly onDidChangeFile: Event<readonly IFileChange[]> = Event.None;
 	watch(_resource: URI, _opts: IWatchOptions): IDisposable {
@@ -61,7 +91,7 @@ export class ChatEditingNotebookFileSystemProvider implements IFileSystemProvide
 			type: FileType.File,
 			ctime: 0,
 			mtime: 0,
-			size: 0
+			size: 0,
 		};
 	}
 	mkdir(_resource: URI): Promise<void> {
@@ -92,7 +122,11 @@ export class ChatEditingNotebookFileSystemProvider implements IFileSystemProvide
 		if (!(session instanceof ChatEditingSession) || !queryData.requestId) {
 			throw new Error('File not found, session not found');
 		}
-		const snapshotEntry = session.getSnapshot(queryData.requestId, queryData.undoStop || undefined, resource);
+		const snapshotEntry = session.getSnapshot(
+			queryData.requestId,
+			queryData.undoStop || undefined,
+			resource
+		);
 		if (!snapshotEntry) {
 			throw new Error('File not found, snapshot not found');
 		}
@@ -105,7 +139,11 @@ export class ChatEditingNotebookFileSystemProvider implements IFileSystemProvide
 	writeFile?(__resource: URI, _content: Uint8Array, _opts: IFileWriteOptions): Promise<void> {
 		throw new Error('Method not implemented7.');
 	}
-	readFileStream?(__resource: URI, _opts: IFileReadStreamOptions, _token: CancellationToken): ReadableStreamEvents<Uint8Array> {
+	readFileStream?(
+		__resource: URI,
+		_opts: IFileReadStreamOptions,
+		_token: CancellationToken
+	): ReadableStreamEvents<Uint8Array> {
 		throw new Error('Method not implemented8.');
 	}
 	open?(__resource: URI, _opts: IFileOpenOptions): Promise<number> {
@@ -114,10 +152,22 @@ export class ChatEditingNotebookFileSystemProvider implements IFileSystemProvide
 	close?(_fd: number): Promise<void> {
 		throw new Error('Method not implemented10.');
 	}
-	read?(_fd: number, _pos: number, _data: Uint8Array, _offset: number, _length: number): Promise<number> {
+	read?(
+		_fd: number,
+		_pos: number,
+		_data: Uint8Array,
+		_offset: number,
+		_length: number
+	): Promise<number> {
 		throw new Error('Method not implemented11.');
 	}
-	write?(_fd: number, _pos: number, _data: Uint8Array, _offset: number, _length: number): Promise<number> {
+	write?(
+		_fd: number,
+		_pos: number,
+		_data: Uint8Array,
+		_offset: number,
+		_length: number
+	): Promise<number> {
 		throw new Error('Method not implemented12.');
 	}
 	cloneFile?(_from: URI, __to: URI): Promise<void> {

@@ -6,7 +6,6 @@
 import { computeLevenshteinDistance } from '../../../../../base/common/diff/diff.js';
 import { CellKind } from '../notebookCommon.js';
 
-
 type EditCount = number;
 type OriginalIndex = number;
 type ModifiedIndex = number;
@@ -50,20 +49,33 @@ type ICell = {
  * ]
  * @returns
  */
-export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCells: ICell[]): { modified: number; original: number; percentage: number }[] {
+export function matchCellBasedOnSimilarties(
+	modifiedCells: ICell[],
+	originalCells: ICell[]
+): { modified: number; original: number; percentage: number }[] {
 	const cache: CellEditCountCache = {
 		modifiedToOriginal: new Map<ModifiedIndex, Map<OriginalIndex, { editCount: EditCount }>>(),
 		originalToModified: new Map<OriginalIndex, Map<ModifiedIndex, { editCount: EditCount }>>(),
 	};
-	const results: { modified: number; original: number; dist: number; percentage: number; possibleOriginal: number }[] = [];
+	const results: {
+		modified: number;
+		original: number;
+		dist: number;
+		percentage: number;
+		possibleOriginal: number;
+	}[] = [];
 	const mappedOriginalCellToModifiedCell = new Map<number, number>();
 	const mappedModifiedIndexes = new Set<number>();
 	const originalIndexWithMostEdits = new Map<number, { dist: number; modifiedIndex: number }>();
-	const canOriginalIndexBeMappedToModifiedIndex = (originalIndex: number, value: { editCount: EditCount }) => {
+	const canOriginalIndexBeMappedToModifiedIndex = (
+		originalIndex: number,
+		value: { editCount: EditCount }
+	) => {
 		if (mappedOriginalCellToModifiedCell.has(originalIndex)) {
 			return false;
 		}
-		const existingEdits = originalIndexWithMostEdits.get(originalIndex)?.dist ?? Number.MAX_SAFE_INTEGER;
+		const existingEdits =
+			originalIndexWithMostEdits.get(originalIndex)?.dist ?? Number.MAX_SAFE_INTEGER;
 		return value.editCount < existingEdits;
 	};
 	const trackMappedIndexes = (modifiedIndex: number, originalIndex: number) => {
@@ -73,7 +85,17 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 
 	for (let i = 0; i < modifiedCells.length; i++) {
 		const modifiedCell = modifiedCells[i];
-		const { index, editCount: dist, percentage } = computeClosestCell({ cell: modifiedCell, index: i }, originalCells, true, cache, canOriginalIndexBeMappedToModifiedIndex);
+		const {
+			index,
+			editCount: dist,
+			percentage,
+		} = computeClosestCell(
+			{ cell: modifiedCell, index: i },
+			originalCells,
+			true,
+			cache,
+			canOriginalIndexBeMappedToModifiedIndex
+		);
 		if (index >= 0 && dist === 0) {
 			trackMappedIndexes(i, index);
 			results.push({ modified: i, original: index, dist, percentage, possibleOriginal: index });
@@ -101,13 +123,22 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 		 * Just match A => a, B => b, C => c
 		 */
 		// Find the next cell that has been matched.
-		const previousMatchedCell = i > 0 ? results.slice(0, i).reverse().find(r => r.original >= 0) : undefined;
+		const previousMatchedCell =
+			i > 0
+				? results
+						.slice(0, i)
+						.reverse()
+						.find(r => r.original >= 0)
+				: undefined;
 		const previousMatchedOriginalIndex = previousMatchedCell?.original ?? -1;
 		const previousMatchedModifiedIndex = previousMatchedCell?.modified ?? -1;
 		const matchedCell = results.slice(i + 1).find(r => r.original >= 0);
 		const unavailableIndexes = new Set<number>();
-		const nextMatchedModifiedIndex = results.findIndex((item, idx) => idx > i && item.original >= 0);
-		const nextMatchedOriginalIndex = nextMatchedModifiedIndex >= 0 ? results[nextMatchedModifiedIndex].original : -1;
+		const nextMatchedModifiedIndex = results.findIndex(
+			(item, idx) => idx > i && item.original >= 0
+		);
+		const nextMatchedOriginalIndex =
+			nextMatchedModifiedIndex >= 0 ? results[nextMatchedModifiedIndex].original : -1;
 		// Find the available indexes that we can match with.
 		// We are only interested in b and c (anything after d is of no use).
 		originalCells.forEach((_, i) => {
@@ -123,7 +154,6 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 			}
 		});
 
-
 		const modifiedCell = modifiedCells[i];
 		/**
 		 * I.e. Assume you have the following
@@ -137,12 +167,16 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 		 * =================
 		 * Given that we have a probable match for B => b, we can match it.
 		 */
-		if (result.original === -1 && result.possibleOriginal >= 0 && !unavailableIndexes.has(result.possibleOriginal) && canOriginalIndexBeMappedToModifiedIndex(result.possibleOriginal, { editCount: result.dist })) {
+		if (
+			result.original === -1 &&
+			result.possibleOriginal >= 0 &&
+			!unavailableIndexes.has(result.possibleOriginal) &&
+			canOriginalIndexBeMappedToModifiedIndex(result.possibleOriginal, { editCount: result.dist })
+		) {
 			trackMappedIndexes(i, result.possibleOriginal);
 			result.original = result.possibleOriginal;
 			return;
 		}
-
 
 		/**
 		 * I.e. Assume you have the following
@@ -163,12 +197,28 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 		 * I.e. we have B, C remaining in Modified, and b, c remaining in Original.
 		 * Thats 2 Modified items === 2 Original Items.
 		 * If its not the same, then this means something has been deleted/inserted, and we cannot blindly map the indexes.
-		*/
-		if (previousMatchedOriginalIndex > 0 && previousMatchedModifiedIndex > 0 && previousMatchedOriginalIndex === previousMatchedModifiedIndex) {
-			if ((nextMatchedModifiedIndex >= 0 ? nextMatchedModifiedIndex : modifiedCells.length - 1) === (nextMatchedOriginalIndex >= 0 ? nextMatchedOriginalIndex : originalCells.length - 1) && !unavailableIndexes.has(i) && i < originalCells.length) {
-				const remainingModifiedItems = (nextMatchedModifiedIndex >= 0 ? nextMatchedModifiedIndex : modifiedCells.length) - previousMatchedModifiedIndex;
-				const remainingOriginalItems = (nextMatchedOriginalIndex >= 0 ? nextMatchedOriginalIndex : originalCells.length) - previousMatchedOriginalIndex;
-				if (remainingModifiedItems === remainingOriginalItems && modifiedCell.cellKind === originalCells[i].cellKind) {
+		 */
+		if (
+			previousMatchedOriginalIndex > 0 &&
+			previousMatchedModifiedIndex > 0 &&
+			previousMatchedOriginalIndex === previousMatchedModifiedIndex
+		) {
+			if (
+				(nextMatchedModifiedIndex >= 0 ? nextMatchedModifiedIndex : modifiedCells.length - 1) ===
+					(nextMatchedOriginalIndex >= 0 ? nextMatchedOriginalIndex : originalCells.length - 1) &&
+				!unavailableIndexes.has(i) &&
+				i < originalCells.length
+			) {
+				const remainingModifiedItems =
+					(nextMatchedModifiedIndex >= 0 ? nextMatchedModifiedIndex : modifiedCells.length) -
+					previousMatchedModifiedIndex;
+				const remainingOriginalItems =
+					(nextMatchedOriginalIndex >= 0 ? nextMatchedOriginalIndex : originalCells.length) -
+					previousMatchedOriginalIndex;
+				if (
+					remainingModifiedItems === remainingOriginalItems &&
+					modifiedCell.cellKind === originalCells[i].cellKind
+				) {
 					trackMappedIndexes(i, i);
 					result.original = i;
 					return;
@@ -188,41 +238,49 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 		 * We can now try to match B with b and c and figure out which is best.
 		 * RULE 1. Its possible that B will match best with c, howevber C matches better with c, meaning we should match B with b.
 		 * To do this, we need to see if c has a better match with something else.
-		*/
+		 */
 		// RULE 1
 		// Try to find the next best match, but exclucde items that have a better match.
-		const { index, percentage } = computeClosestCell({ cell: modifiedCell, index: i }, originalCells, false, cache, (originalIndex: number, originalValue: { editCount: EditCount }) => {
-			if (unavailableIndexes.has(originalIndex)) {
-				return false;
-			}
+		const { index, percentage } = computeClosestCell(
+			{ cell: modifiedCell, index: i },
+			originalCells,
+			false,
+			cache,
+			(originalIndex: number, originalValue: { editCount: EditCount }) => {
+				if (unavailableIndexes.has(originalIndex)) {
+					return false;
+				}
 
-			if (nextMatchedModifiedIndex > 0 || previousMatchedOriginalIndex > 0) {
-				// See if we have a beter match for this.
-				const matchesForThisOriginalIndex = cache.originalToModified.get(originalIndex);
-				if (matchesForThisOriginalIndex && previousMatchedOriginalIndex < originalIndex) {
-					const betterMatch = Array.from(matchesForThisOriginalIndex).find(([modifiedIndex, value]) => {
-						if (modifiedIndex === i) {
-							// This is the same modifeid entry.
+				if (nextMatchedModifiedIndex > 0 || previousMatchedOriginalIndex > 0) {
+					// See if we have a beter match for this.
+					const matchesForThisOriginalIndex = cache.originalToModified.get(originalIndex);
+					if (matchesForThisOriginalIndex && previousMatchedOriginalIndex < originalIndex) {
+						const betterMatch = Array.from(matchesForThisOriginalIndex).find(
+							([modifiedIndex, value]) => {
+								if (modifiedIndex === i) {
+									// This is the same modifeid entry.
+									return false;
+								}
+								if (modifiedIndex >= nextMatchedModifiedIndex) {
+									// We're only interested in matches that are before the next matched index.
+									return false;
+								}
+								if (mappedModifiedIndexes.has(i)) {
+									// This has already been matched.
+									return false;
+								}
+								return value.editCount < originalValue.editCount;
+							}
+						);
+						if (betterMatch) {
+							// We do have a better match for this, hence do not use this.
 							return false;
 						}
-						if (modifiedIndex >= nextMatchedModifiedIndex) {
-							// We're only interested in matches that are before the next matched index.
-							return false;
-						}
-						if (mappedModifiedIndexes.has(i)) {
-							// This has already been matched.
-							return false;
-						}
-						return value.editCount < originalValue.editCount;
-					});
-					if (betterMatch) {
-						// We do have a better match for this, hence do not use this.
-						return false;
 					}
 				}
+				return !unavailableIndexes.has(originalIndex);
 			}
-			return !unavailableIndexes.has(originalIndex);
-		});
+		);
 
 		/**
 		 * I.e. Assume you have the following
@@ -237,11 +295,11 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 		 * RULE 1 . Now when attempting to match `bbbbbbbbbbbb` with B, the number of edits is very high and the percentage is also very high.
 		 * Basically majority of the text needs to be changed.
 		 * However if the indexes line up perfectly well, and this is the best match, then use it.
-		*
+		 *
 		 * Similarly its possible we're trying to match b with `BBBBBBBBBBBB` and the number of edits is very high, but the indexes line up perfectly well.
-		*
-		* RULE 2. However it is also possible that there's a better match with another cell
-		* Assume we have
+		 *
+		 * RULE 2. However it is also possible that there's a better match with another cell
+		 * Assume we have
 		 * =================
 		 * AAAA     a (this has been matched)
 		 * bbbbbbbb b <not matched>
@@ -252,7 +310,7 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 		 * But we're not really sure if this is the best match.
 		 * In such cases try to match with the same cell index.
 		 *
-		*/
+		 */
 		// RULE 1 (got a match and the indexes line up perfectly well, use it regardless of the number of edits).
 		if (index >= 0 && i > 0 && results[i - 1].original === index - 1) {
 			trackMappedIndexes(i, index);
@@ -264,10 +322,22 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 		// Here we know that `AAAA => a`
 		// Check if the previous cell has been matched.
 		// And if the next modified and next original cells are a match.
-		const nextOriginalCell = (i > 0 && originalCells.length > results[i - 1].original) ? results[i - 1].original + 1 : -1;
-		const nextOriginalCellValue = i > 0 && nextOriginalCell >= 0 && nextOriginalCell < originalCells.length ? originalCells[nextOriginalCell].getValue() : undefined;
-		if (index >= 0 && i > 0 && typeof nextOriginalCellValue === 'string' && !mappedOriginalCellToModifiedCell.has(nextOriginalCell)) {
-			if (modifiedCell.getValue().includes(nextOriginalCellValue) || nextOriginalCellValue.includes(modifiedCell.getValue())) {
+		const nextOriginalCell =
+			i > 0 && originalCells.length > results[i - 1].original ? results[i - 1].original + 1 : -1;
+		const nextOriginalCellValue =
+			i > 0 && nextOriginalCell >= 0 && nextOriginalCell < originalCells.length
+				? originalCells[nextOriginalCell].getValue()
+				: undefined;
+		if (
+			index >= 0 &&
+			i > 0 &&
+			typeof nextOriginalCellValue === 'string' &&
+			!mappedOriginalCellToModifiedCell.has(nextOriginalCell)
+		) {
+			if (
+				modifiedCell.getValue().includes(nextOriginalCellValue) ||
+				nextOriginalCellValue.includes(modifiedCell.getValue())
+			) {
 				trackMappedIndexes(i, nextOriginalCell);
 				results[i].original = nextOriginalCell;
 				return;
@@ -284,7 +354,16 @@ export function matchCellBasedOnSimilarties(modifiedCells: ICell[], originalCell
 	return results;
 }
 
-function computeClosestCell({ cell, index: cellIndex }: { cell: ICell; index: number }, arr: readonly ICell[], ignoreEmptyCells: boolean, cache: CellEditCountCache, canOriginalIndexBeMappedToModifiedIndex: (originalIndex: number, value: { editCount: EditCount }) => boolean): { index: number; editCount: number; percentage: number } {
+function computeClosestCell(
+	{ cell, index: cellIndex }: { cell: ICell; index: number },
+	arr: readonly ICell[],
+	ignoreEmptyCells: boolean,
+	cache: CellEditCountCache,
+	canOriginalIndexBeMappedToModifiedIndex: (
+		originalIndex: number,
+		value: { editCount: EditCount }
+	) => boolean
+): { index: number; editCount: number; percentage: number } {
 	let min_edits = Infinity;
 	let min_index = -1;
 
@@ -303,12 +382,14 @@ function computeClosestCell({ cell, index: cellIndex }: { cell: ICell; index: nu
 			continue;
 		}
 		const str = arr[i].getValue();
-		const cacheEntry = cache.modifiedToOriginal.get(cellIndex) ?? new Map<OriginalIndex, { editCount: EditCount }>();
-		const value = cacheEntry.get(i) ?? { editCount: computeNumberOfEdits(cell, arr[i]), };
+		const cacheEntry =
+			cache.modifiedToOriginal.get(cellIndex) ?? new Map<OriginalIndex, { editCount: EditCount }>();
+		const value = cacheEntry.get(i) ?? { editCount: computeNumberOfEdits(cell, arr[i]) };
 		cacheEntry.set(i, value);
 		cache.modifiedToOriginal.set(cellIndex, cacheEntry);
 
-		const originalCacheEntry = cache.originalToModified.get(i) ?? new Map<ModifiedIndex, { editCount: EditCount }>();
+		const originalCacheEntry =
+			cache.originalToModified.get(i) ?? new Map<ModifiedIndex, { editCount: EditCount }>();
 		originalCacheEntry.set(cellIndex, value);
 		cache.originalToModified.set(i, originalCacheEntry);
 
@@ -331,7 +412,12 @@ function computeClosestCell({ cell, index: cellIndex }: { cell: ICell; index: nu
 	if (min_index === -1) {
 		return { index: -1, editCount: Number.MAX_SAFE_INTEGER, percentage: Number.MAX_SAFE_INTEGER };
 	}
-	const percentage = !cell.getValue().length && !arr[min_index].getValue().length ? 0 : (cell.getValue().length ? (min_edits * 100 / cell.getValue().length) : Number.MAX_SAFE_INTEGER);
+	const percentage =
+		!cell.getValue().length && !arr[min_index].getValue().length
+			? 0
+			: cell.getValue().length
+				? (min_edits * 100) / cell.getValue().length
+				: Number.MAX_SAFE_INTEGER;
 	return { index: min_index, editCount: min_edits, percentage };
 }
 

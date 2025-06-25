@@ -12,7 +12,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../common/utils.js';
 import { flakySuite, getRandomTestPath } from './testUtils.js';
 
 flakySuite('Crypto', () => {
-
 	let testDir: string;
 
 	ensureNoDisposablesAreLeakedInTestSuite();

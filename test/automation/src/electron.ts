@@ -18,8 +18,20 @@ export interface IElectronConfiguration {
 	readonly env?: NodeJS.ProcessEnv;
 }
 
-export async function resolveElectronConfiguration(options: LaunchOptions): Promise<IElectronConfiguration> {
-	const { codePath, workspacePath, extensionsPath, userDataDir, remote, logger, logsPath, crashesPath, extraArgs } = options;
+export async function resolveElectronConfiguration(
+	options: LaunchOptions
+): Promise<IElectronConfiguration> {
+	const {
+		codePath,
+		workspacePath,
+		extensionsPath,
+		userDataDir,
+		remote,
+		logger,
+		logsPath,
+		crashesPath,
+		extraArgs,
+	} = options;
 	const env = { ...process.env };
 
 	const args = [
@@ -34,7 +46,7 @@ export async function resolveElectronConfiguration(options: LaunchOptions): Prom
 		'--disable-workspace-trust',
 		`--extensions-dir=${extensionsPath}`,
 		`--user-data-dir=${userDataDir}`,
-		`--logsPath=${logsPath}`
+		`--logsPath=${logsPath}`,
 	];
 
 	if (options.verbose) {
@@ -47,7 +59,11 @@ export async function resolveElectronConfiguration(options: LaunchOptions): Prom
 
 		if (codePath) {
 			// running against a build: copy the test resolver extension
-			await measureAndLog(() => copyExtension(root, extensionsPath, 'vscode-test-resolver'), 'copyExtension(vscode-test-resolver)', logger);
+			await measureAndLog(
+				() => copyExtension(root, extensionsPath, 'vscode-test-resolver'),
+				'copyExtension(vscode-test-resolver)',
+				logger
+			);
 		}
 		args.push('--enable-proposed-api=vscode.vscode-test-resolver');
 		const remoteDataDir = `${userDataDir}-server`;
@@ -73,7 +89,7 @@ export async function resolveElectronConfiguration(options: LaunchOptions): Prom
 	return {
 		env,
 		args,
-		electronPath
+		electronPath,
 	};
 }
 
@@ -83,7 +99,14 @@ export function getDevElectronPath(): string {
 
 	switch (process.platform) {
 		case 'darwin':
-			return join(buildPath, 'electron', `${product.nameLong}.app`, 'Contents', 'MacOS', 'Electron');
+			return join(
+				buildPath,
+				'electron',
+				`${product.nameLong}.app`,
+				'Contents',
+				'MacOS',
+				'Electron'
+			);
 		case 'linux':
 			return join(buildPath, 'electron', `${product.applicationName}`);
 		case 'win32':

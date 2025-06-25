@@ -21,16 +21,16 @@ async function checkServiceHealth(url: string): Promise<'available' | 'unavailab
 	try {
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-		
+
 		const response = await fetch(`${url}/health`, {
 			signal: controller.signal,
 			headers: {
 				'User-Agent': 'Codai-AIDE-HealthCheck/1.0.0',
 			},
 		});
-		
+
 		clearTimeout(timeoutId);
-		
+
 		if (response.ok) {
 			return 'available';
 		} else {
@@ -45,14 +45,14 @@ async function checkServiceHealth(url: string): Promise<'available' | 'unavailab
 export async function GET(request: NextRequest) {
 	try {
 		const config = ecosystemConfig;
-		
+
 		// Check ecosystem services health in parallel
 		const [logaiHealth, memoraiHealth, codaiApiHealth] = await Promise.all([
 			checkServiceHealth(config.services.logai.apiUrl),
 			checkServiceHealth(config.services.memorai.apiUrl),
 			checkServiceHealth(config.services.central.apiUrl),
 		]);
-		
+
 		// Determine overall health status
 		const allServicesAvailable = [logaiHealth, memoraiHealth, codaiApiHealth].every(
 			status => status === 'available'
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 		const someServicesUnavailable = [logaiHealth, memoraiHealth, codaiApiHealth].some(
 			status => status === 'unavailable'
 		);
-		
+
 		let overallStatus: 'healthy' | 'degraded' | 'unhealthy';
 		if (allServicesAvailable) {
 			overallStatus = 'healthy';
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 		} else {
 			overallStatus = 'unhealthy';
 		}
-		
+
 		const healthResponse: HealthCheckResponse = {
 			status: overallStatus,
 			timestamp: new Date().toISOString(),
@@ -83,10 +83,10 @@ export async function GET(request: NextRequest) {
 			uptime: Date.now() - startTime,
 			environment: process.env.NODE_ENV || 'development',
 		};
-		
+
 		const statusCode = overallStatus === 'healthy' ? 200 : overallStatus === 'degraded' ? 206 : 503;
-		
-		return NextResponse.json(healthResponse, { 
+
+		return NextResponse.json(healthResponse, {
 			status: statusCode,
 			headers: {
 				'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
 		});
 	} catch (error) {
 		console.error('Health check error:', error);
-		
+
 		const errorResponse: HealthCheckResponse = {
 			status: 'unhealthy',
 			timestamp: new Date().toISOString(),
@@ -110,8 +110,8 @@ export async function GET(request: NextRequest) {
 			uptime: Date.now() - startTime,
 			environment: process.env.NODE_ENV || 'development',
 		};
-		
-		return NextResponse.json(errorResponse, { 
+
+		return NextResponse.json(errorResponse, {
 			status: 503,
 			headers: {
 				'Cache-Control': 'no-cache, no-store, must-revalidate',

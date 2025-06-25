@@ -8,7 +8,6 @@ import { Lazy } from '../../common/lazy.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from './utils.js';
 
 suite('Lazy', () => {
-
 	test('lazy values should only be resolved once', () => {
 		let counter = 0;
 		const value = new Lazy(() => ++counter);
@@ -21,7 +20,9 @@ suite('Lazy', () => {
 
 	test('lazy values handle error case', () => {
 		let counter = 0;
-		const value = new Lazy(() => { throw new Error(`${++counter}`); });
+		const value = new Lazy(() => {
+			throw new Error(`${++counter}`);
+		});
 
 		assert.strictEqual(value.hasValue, false);
 		assert.throws(() => value.value, /\b1\b/);

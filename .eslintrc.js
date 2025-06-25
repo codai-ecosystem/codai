@@ -1,10 +1,6 @@
 module.exports = {
 	root: true,
-	extends: [
-		'eslint:recommended',
-		'@typescript-eslint/recommended',
-		'prettier',
-	],
+	extends: ['eslint:recommended', '@typescript-eslint/recommended', 'prettier'],
 	parser: '@typescript-eslint/parser',
 	plugins: ['@typescript-eslint', 'react', 'react-hooks'],
 	parserOptions: {
@@ -62,7 +58,7 @@ module.exports = {
 		'func-style': ['error', 'expression'],
 
 		// Require curly braces for all control statements
-		'curly': ['error', 'all'],
+		curly: ['error', 'all'],
 
 		// Spacing rules following VS Code guidelines
 		'object-curly-spacing': ['error', 'always'],

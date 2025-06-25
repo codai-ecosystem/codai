@@ -10,12 +10,17 @@ import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uri
 import { ILabelService } from '../../../../platform/label/common/label.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IWorkingCopyHistoryModelOptions, WorkingCopyHistoryService } from '../common/workingCopyHistoryService.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import {
+	IWorkingCopyHistoryModelOptions,
+	WorkingCopyHistoryService,
+} from '../common/workingCopyHistoryService.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from '../../../../platform/instantiation/common/extensions.js';
 import { IWorkingCopyHistoryService } from '../common/workingCopyHistory.js';
 
 export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService {
-
 	constructor(
 		@IFileService fileService: IFileService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
@@ -25,7 +30,15 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 		@ILogService logService: ILogService,
 		@IConfigurationService configurationService: IConfigurationService
 	) {
-		super(fileService, remoteAgentService, environmentService, uriIdentityService, labelService, logService, configurationService);
+		super(
+			fileService,
+			remoteAgentService,
+			environmentService,
+			uriIdentityService,
+			labelService,
+			logService,
+			configurationService
+		);
 	}
 
 	protected getModelOptions(): IWorkingCopyHistoryModelOptions {
@@ -34,4 +47,8 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 }
 
 // Register Service
-registerSingleton(IWorkingCopyHistoryService, BrowserWorkingCopyHistoryService, InstantiationType.Delayed);
+registerSingleton(
+	IWorkingCopyHistoryService,
+	BrowserWorkingCopyHistoryService,
+	InstantiationType.Delayed
+);

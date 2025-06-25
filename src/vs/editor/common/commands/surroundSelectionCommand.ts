@@ -21,19 +21,25 @@ export class SurroundSelectionCommand implements ICommand {
 	}
 
 	public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {
-		builder.addTrackedEditOperation(new Range(
-			this._range.startLineNumber,
-			this._range.startColumn,
-			this._range.startLineNumber,
-			this._range.startColumn
-		), this._charBeforeSelection);
+		builder.addTrackedEditOperation(
+			new Range(
+				this._range.startLineNumber,
+				this._range.startColumn,
+				this._range.startLineNumber,
+				this._range.startColumn
+			),
+			this._charBeforeSelection
+		);
 
-		builder.addTrackedEditOperation(new Range(
-			this._range.endLineNumber,
-			this._range.endColumn,
-			this._range.endLineNumber,
-			this._range.endColumn
-		), this._charAfterSelection);
+		builder.addTrackedEditOperation(
+			new Range(
+				this._range.endLineNumber,
+				this._range.endColumn,
+				this._range.endLineNumber,
+				this._range.endColumn
+			),
+			this._charAfterSelection
+		);
 	}
 
 	public computeCursorState(model: ITextModel, helper: ICursorStateComputerData): Selection {
@@ -54,20 +60,22 @@ export class SurroundSelectionCommand implements ICommand {
  * A surround selection command that runs after composition finished.
  */
 export class CompositionSurroundSelectionCommand implements ICommand {
-
 	constructor(
 		private readonly _position: Position,
 		private readonly _text: string,
 		private readonly _charAfter: string
-	) { }
+	) {}
 
 	public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {
-		builder.addTrackedEditOperation(new Range(
-			this._position.lineNumber,
-			this._position.column,
-			this._position.lineNumber,
-			this._position.column
-		), this._text + this._charAfter);
+		builder.addTrackedEditOperation(
+			new Range(
+				this._position.lineNumber,
+				this._position.column,
+				this._position.lineNumber,
+				this._position.column
+			),
+			this._text + this._charAfter
+		);
 	}
 
 	public computeCursorState(model: ITextModel, helper: ICursorStateComputerData): Selection {

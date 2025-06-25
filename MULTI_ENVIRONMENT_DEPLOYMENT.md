@@ -8,11 +8,11 @@ The AIDE Landing Page uses a three-environment deployment strategy:
 
 ### 🌍 Environments
 
-| Environment | Branch | URL | Purpose | Stripe Keys |
-|-------------|--------|-----|---------|-------------|
-| **Production** | `main` | `aide.dev` | Live production site | Production keys |
-| **Preview** | `preview` | `preview.aide.dev` | Staging/testing | Test keys |
-| **Development** | `dev` | `dev.aide.dev` | Development testing | Test keys |
+| Environment     | Branch    | URL                | Purpose              | Stripe Keys     |
+| --------------- | --------- | ------------------ | -------------------- | --------------- |
+| **Production**  | `main`    | `aide.dev`         | Live production site | Production keys |
+| **Preview**     | `preview` | `preview.aide.dev` | Staging/testing      | Test keys       |
+| **Development** | `dev`     | `dev.aide.dev`     | Development testing  | Test keys       |
 
 ### 🔄 Deployment Flow
 
@@ -34,11 +34,13 @@ graph TD
 Run the multi-environment setup script:
 
 **Linux/macOS:**
+
 ```bash
 ./scripts/setup-multi-env.sh
 ```
 
 **Windows:**
+
 ```powershell
 .\scripts\setup-multi-env.ps1
 ```
@@ -48,11 +50,13 @@ Run the multi-environment setup script:
 Configure GitHub secrets for automatic deployment:
 
 **Linux/macOS:**
+
 ```bash
 ./scripts/setup-github-secrets.sh
 ```
 
 **Windows:**
+
 ```powershell
 .\scripts\setup-github-secrets.ps1
 ```
@@ -81,6 +85,7 @@ git checkout main
 Each environment requires the following variables:
 
 #### Required Variables
+
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `STRIPE_SECRET_KEY`
 - `NEXT_PUBLIC_STRIPE_PROFESSIONAL_PRICE_ID`
@@ -119,26 +124,29 @@ Configure these secrets in your GitHub repository:
 1. Go to **Settings** → **Secrets and variables** → **Actions**
 2. Add the following secrets:
 
-| Secret Name | Description | How to Get |
-|-------------|-------------|------------|
-| `VERCEL_TOKEN` | Vercel API token | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
-| `VERCEL_ORG_ID` | Organization ID | From `.vercel/project.json` |
-| `VERCEL_PROJECT_ID` | Project ID | From `.vercel/project.json` |
+| Secret Name         | Description      | How to Get                                                     |
+| ------------------- | ---------------- | -------------------------------------------------------------- |
+| `VERCEL_TOKEN`      | Vercel API token | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID`     | Organization ID  | From `.vercel/project.json`                                    |
+| `VERCEL_PROJECT_ID` | Project ID       | From `.vercel/project.json`                                    |
 
 ## 🔗 Custom Domains
 
 Configure custom domains in the Vercel dashboard:
 
 ### Production Domain
+
 1. Go to Vercel dashboard → Your project → **Domains**
 2. Add `aide.dev`
 3. Configure DNS records as instructed
 
 ### Preview Domain
+
 1. Add `preview.aide.dev`
 2. Configure DNS CNAME: `preview.aide.dev` → `cname.vercel-dns.com`
 
 ### Development Domain
+
 1. Add `dev.aide.dev`
 2. Configure DNS CNAME: `dev.aide.dev` → `cname.vercel-dns.com`
 
@@ -206,16 +214,19 @@ vercel --target preview
 ### Common Issues
 
 #### Deployment Fails
+
 1. Check GitHub secrets are set correctly
 2. Verify Vercel project is linked
 3. Check environment variables in Vercel dashboard
 
 #### Wrong Environment Variables
+
 1. Verify branch name matches environment configuration
 2. Check Vercel environment variable scoping
 3. Clear deployment cache and retry
 
 #### Domain Issues
+
 1. Check DNS configuration
 2. Verify domain is added in Vercel dashboard
 3. Check SSL certificate status
@@ -275,6 +286,7 @@ Edit `.github/workflows/deploy-landing.yml` to change:
 ### Alerts
 
 Set up alerts for:
+
 - Failed deployments
 - High error rates
 - Performance degradation
@@ -293,6 +305,7 @@ Set up alerts for:
 ### Environment Synchronization
 
 Keep environments in sync:
+
 - Use same codebase
 - Update configurations together
 - Test changes in dev → preview → production order

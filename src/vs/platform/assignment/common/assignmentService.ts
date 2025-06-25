@@ -3,12 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IExperimentationTelemetry, ExperimentationService as TASClient, IKeyValueStorage } from 'tas-client-umd';
+import type {
+	IExperimentationTelemetry,
+	ExperimentationService as TASClient,
+	IKeyValueStorage,
+} from 'tas-client-umd';
 import { TelemetryLevel } from '../../telemetry/common/telemetry.js';
 import { IConfigurationService } from '../../configuration/common/configuration.js';
 import { IProductService } from '../../product/common/productService.js';
 import { getTelemetryLevel } from '../../telemetry/common/telemetryUtils.js';
-import { AssignmentFilterProvider, ASSIGNMENT_REFETCH_INTERVAL, ASSIGNMENT_STORAGE_KEY, IAssignmentService, TargetPopulation } from './assignment.js';
+import {
+	AssignmentFilterProvider,
+	ASSIGNMENT_REFETCH_INTERVAL,
+	ASSIGNMENT_STORAGE_KEY,
+	IAssignmentService,
+	TargetPopulation,
+} from './assignment.js';
 import { importAMDNodeModule } from '../../../amdX.js';
 import { IEnvironmentService } from '../../environment/common/environment.js';
 
@@ -31,7 +41,12 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 		private keyValueStorage?: IKeyValueStorage
 	) {
 		const isTesting = environmentService.extensionTestsLocationURI !== undefined;
-		if (!isTesting && productService.tasConfig && this.experimentsEnabled && getTelemetryLevel(this.configurationService) === TelemetryLevel.USAGE) {
+		if (
+			!isTesting &&
+			productService.tasConfig &&
+			this.experimentsEnabled &&
+			getTelemetryLevel(this.configurationService) === TelemetryLevel.USAGE
+		) {
 			this.tasClient = this.setupTASClient();
 		}
 
@@ -75,10 +90,12 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 	}
 
 	private async setupTASClient(): Promise<TASClient> {
-
-		const targetPopulation = this.productService.quality === 'stable' ?
-			TargetPopulation.Public : (this.productService.quality === 'exploration' ?
-				TargetPopulation.Exploration : TargetPopulation.Insiders);
+		const targetPopulation =
+			this.productService.quality === 'stable'
+				? TargetPopulation.Public
+				: this.productService.quality === 'exploration'
+					? TargetPopulation.Exploration
+					: TargetPopulation.Insiders;
 
 		const filterProvider = new AssignmentFilterProvider(
 			this.productService.version,
@@ -88,7 +105,12 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 		);
 
 		const tasConfig = this.productService.tasConfig!;
-		const tasClient = new (await importAMDNodeModule<typeof import('tas-client-umd')>('tas-client-umd', 'lib/tas-client-umd.js')).ExperimentationService({
+		const tasClient = new (
+			await importAMDNodeModule<typeof import('tas-client-umd')>(
+				'tas-client-umd',
+				'lib/tas-client-umd.js'
+			)
+		).ExperimentationService({
 			filterProviders: [filterProvider],
 			telemetry: this.telemetry,
 			storageKey: ASSIGNMENT_STORAGE_KEY,
@@ -100,7 +122,7 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 		});
 
 		await tasClient.initializePromise;
-		tasClient.initialFetch.then(() => this.networkInitialized = true);
+		tasClient.initialFetch.then(() => (this.networkInitialized = true));
 
 		return tasClient;
 	}

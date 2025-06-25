@@ -19,28 +19,26 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 		private readonly _context: vscode.ExtensionContext,
 		private readonly memoryGraph?: MemoryGraphEngine,
 		private readonly agentRuntime?: AgentRuntime
-	) { }
+	) {}
 
 	public resolveWebviewView(
 		webviewView: vscode.WebviewView,
 		context: vscode.WebviewViewResolveContext,
-		_token: vscode.CancellationToken,
+		_token: vscode.CancellationToken
 	) {
 		this._view = webviewView;
 
 		webviewView.webview.options = {
 			// Allow scripts in the webview
 			enableScripts: true,
-			localResourceRoots: [
-				this._context.extensionUri
-			]
+			localResourceRoots: [this._context.extensionUri],
 		};
 
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
 		// Handle messages from the webview
 		webviewView.webview.onDidReceiveMessage(
-			async (data) => {
+			async data => {
 				switch (data.type) {
 					case 'sendMessage':
 						await this.handleUserMessage(data.message);
@@ -82,14 +80,15 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 				type: 'agentResponse',
 				content: 'AIDE is initializing. Please wait a moment...',
 				timestamp: new Date(),
-				agent: 'system'
+				agent: 'system',
 			});
 			return;
 		}
 
 		try {
 			// Send message to agent runtime for processing
-			const taskId = `task-${Date.now()}`; const task = {
+			const taskId = `task-${Date.now()}`;
+			const task = {
 				id: taskId,
 				title: 'Process User Request',
 				description: message,
@@ -98,44 +97,43 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 				priority: 'medium' as const,
 				inputs: { userMessage: message },
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			// Show typing indicator
 			this.sendMessage({
 				type: 'agentTyping',
 				agent: 'planner',
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 
 			// Execute task through agent runtime
-			const result = await this.agentRuntime.executeTask(task);			// Send agent response
+			const result = await this.agentRuntime.executeTask(task); // Send agent response
 			this.sendMessage({
 				type: 'agentResponse',
-				content: (result.outputs?.response as string) || 'I\'ve processed your request.',
+				content: (result.outputs?.response as string) || "I've processed your request.",
 				timestamp: new Date(),
 				agent: 'planner',
 				metadata: {
 					taskId: taskId,
 					confidence: (result.outputs?.confidence as number) || 0.8,
-					suggestions: (result.outputs?.suggestions as string[]) || []
-				}
-			});			// If the task resulted in code generation or project changes, update the preview
+					suggestions: (result.outputs?.suggestions as string[]) || [],
+				},
+			}); // If the task resulted in code generation or project changes, update the preview
 			if (result.outputs?.projectChanges) {
 				this.sendMessage({
 					type: 'projectUpdate',
 					changes: result.outputs.projectChanges as any,
-					timestamp: new Date()
+					timestamp: new Date(),
 				});
 			}
-
 		} catch (error) {
 			this.sendMessage({
 				type: 'agentResponse',
 				content: `I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`,
 				timestamp: new Date(),
 				agent: 'system',
-				isError: true
+				isError: true,
 			});
 		}
 	}
@@ -154,26 +152,26 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 				priority: 'high' as const,
 				inputs: { projectDetails },
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			this.sendMessage({
 				type: 'projectCreationStarted',
 				projectName: projectDetails.name,
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 
-			const result = await this.agentRuntime.executeTask(task); this.sendMessage({
+			const result = await this.agentRuntime.executeTask(task);
+			this.sendMessage({
 				type: 'projectCreated',
 				project: result.outputs?.project as any,
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
-
 		} catch (error) {
 			this.sendMessage({
 				type: 'error',
 				message: `Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`,
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 		}
 	}
@@ -193,28 +191,28 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 				priority: 'high' as const,
 				inputs: { platform },
 				progress: 0,
-				createdAt: new Date()
+				createdAt: new Date(),
 			};
 
 			this.sendMessage({
 				type: 'deploymentStarted',
 				platform,
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 
-			const result = await this.agentRuntime.executeTask(task); this.sendMessage({
+			const result = await this.agentRuntime.executeTask(task);
+			this.sendMessage({
 				type: 'deploymentCompleted',
 				platform,
 				url: (result.outputs?.deploymentUrl as string) || 'https://deployment-url.com',
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
-
 		} catch (error) {
 			this.sendMessage({
 				type: 'deploymentFailed',
 				platform,
 				error: error instanceof Error ? error.message : 'Unknown error',
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 		}
 	}
@@ -233,13 +231,13 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 			nodes: graph.nodes.length,
 			relationships: graph.relationships.length,
 			lastUpdated: graph.updatedAt,
-			projectType: graph.projectType
+			projectType: graph.projectType,
 		};
 
 		this.sendMessage({
 			type: 'projectStatus',
 			status,
-			timestamp: new Date()
+			timestamp: new Date(),
 		});
 	}
 
@@ -272,8 +270,8 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 			const uri = await vscode.window.showSaveDialog({
 				defaultUri: vscode.Uri.file(`${graph.name}.${format}`),
 				filters: {
-					[format.toUpperCase()]: [format]
-				}
+					[format.toUpperCase()]: [format],
+				},
 			});
 
 			if (uri) {
@@ -282,15 +280,14 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 					type: 'projectExported',
 					format,
 					path: uri.fsPath,
-					timestamp: new Date()
+					timestamp: new Date(),
 				});
 			}
-
 		} catch (error) {
 			this.sendMessage({
 				type: 'error',
 				message: `Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 		}
 	}
@@ -304,7 +301,7 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 			this.sendMessage({
 				...message,
 				type: 'agentMessage',
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 		});
 
@@ -312,7 +309,7 @@ export class ConversationPanel implements vscode.WebviewViewProvider {
 			this.sendMessage({
 				...taskEvent,
 				type: 'taskUpdate',
-				timestamp: new Date()
+				timestamp: new Date(),
 			});
 		});
 	}
@@ -330,7 +327,7 @@ I'm your AI development partner. You can:
 
 What would you like to create today?`,
 			timestamp: new Date(),
-			agent: 'aide'
+			agent: 'aide',
 		});
 
 		// Send current capabilities
@@ -340,9 +337,9 @@ What would you like to create today?`,
 				memoryGraph: !!this.memoryGraph,
 				agentRuntime: !!this.agentRuntime,
 				deployment: true,
-				collaboration: true
+				collaboration: true,
 			},
-			timestamp: new Date()
+			timestamp: new Date(),
 		});
 	}
 

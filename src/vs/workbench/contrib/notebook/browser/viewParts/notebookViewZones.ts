@@ -12,12 +12,19 @@ import { Categories } from '../../../../../platform/action/common/actionCommonCa
 import { Action2, registerAction2 } from '../../../../../platform/actions/common/actions.js';
 import { IsDevelopmentContext } from '../../../../../platform/contextkey/common/contextkeys.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
-import { getNotebookEditorFromEditorPane, INotebookViewCellsUpdateEvent, INotebookViewZone, INotebookViewZoneChangeAccessor } from '../notebookBrowser.js';
+import {
+	getNotebookEditorFromEditorPane,
+	INotebookViewCellsUpdateEvent,
+	INotebookViewZone,
+	INotebookViewZoneChangeAccessor,
+} from '../notebookBrowser.js';
 import { NotebookCellListView } from '../view/notebookCellListView.js';
 import { ICoordinatesConverter } from '../view/notebookRenderingCommon.js';
 import { CellViewModel } from '../viewModel/notebookViewModelImpl.js';
 
-const invalidFunc = () => { throw new Error(`Invalid notebook view zone change accessor`); };
+const invalidFunc = () => {
+	throw new Error(`Invalid notebook view zone change accessor`);
+};
 
 interface IZoneWidget {
 	whitespaceId: string;
@@ -30,7 +37,10 @@ export class NotebookViewZones extends Disposable {
 	private _zones: { [key: string]: IZoneWidget };
 	public domNode: FastDomNode<HTMLElement>;
 
-	constructor(private readonly listView: NotebookCellListView<CellViewModel>, private readonly coordinator: ICoordinatesConverter) {
+	constructor(
+		private readonly listView: NotebookCellListView<CellViewModel>,
+		private readonly coordinator: ICoordinatesConverter
+	) {
 		super();
 		this.domNode = createFastDomNode(document.createElement('div'));
 		this.domNode.setClassName('view-zones');
@@ -59,7 +69,7 @@ export class NotebookViewZones extends Disposable {
 				zonesHaveChanged = true;
 				// TODO: validate if zones have changed layout
 				this._layoutZone(id);
-			}
+			},
 		};
 
 		safeInvoke1Arg(callback, changeAccessor);
@@ -123,10 +133,16 @@ export class NotebookViewZones extends Disposable {
 
 	private _updateWhitespace(zone: IZoneWidget) {
 		const whitespaceId = zone.whitespaceId;
-		const viewPosition = this.coordinator.convertModelIndexToViewIndex(zone.zone.afterModelPosition);
+		const viewPosition = this.coordinator.convertModelIndexToViewIndex(
+			zone.zone.afterModelPosition
+		);
 		const isInHiddenArea = this._isInHiddenRanges(zone.zone);
 		zone.isInHiddenArea = isInHiddenArea;
-		this.listView.changeOneWhitespace(whitespaceId, viewPosition, isInHiddenArea ? 0 : zone.zone.heightInPx);
+		this.listView.changeOneWhitespace(
+			whitespaceId,
+			viewPosition,
+			isInHiddenArea ? 0 : zone.zone.heightInPx
+		);
 	}
 
 	layout() {
@@ -143,7 +159,7 @@ export class NotebookViewZones extends Disposable {
 			whitespaceId: whitespaceId,
 			zone: zone,
 			domNode: createFastDomNode(zone.domNode),
-			isInHiddenArea: isInHiddenArea
+			isInHiddenArea: isInHiddenArea,
 		};
 
 		this._zones[whitespaceId] = myZone;
@@ -196,7 +212,6 @@ export class NotebookViewZones extends Disposable {
 
 		// In notebook, the first cell (markdown cell) in a folding range is always visible, so we need to check the cell after the notebook view zone
 		return !this.coordinator.modelIndexIsVisible(afterIndex);
-
 	}
 
 	override dispose(): void {
@@ -218,10 +233,10 @@ class ToggleNotebookViewZoneDeveloperAction extends Action2 {
 	constructor() {
 		super({
 			id: 'notebook.developer.addViewZones',
-			title: localize2('workbench.notebook.developer.addViewZones', "Toggle Notebook View Zones"),
+			title: localize2('workbench.notebook.developer.addViewZones', 'Toggle Notebook View Zones'),
 			category: Categories.Developer,
 			precondition: IsDevelopmentContext,
-			f1: true
+			f1: true,
 		});
 	}
 

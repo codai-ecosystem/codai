@@ -10,13 +10,22 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/
 import { TestConfigurationService } from '../../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { DiffEditorHeightCalculatorService } from '../../../browser/diff/editorHeightCalculator.js';
 import { FontInfo } from '../../../../../../editor/common/config/fontInfo.js';
-import { IResolvedTextEditorModel, ITextModelService } from '../../../../../../editor/common/services/resolverService.js';
+import {
+	IResolvedTextEditorModel,
+	ITextModelService,
+} from '../../../../../../editor/common/services/resolverService.js';
 import { URI } from '../../../../../../base/common/uri.js';
 import { createTextModel as createTextModelWithText } from '../../../../../../editor/test/common/testTextModel.js';
 import { ITextModel } from '../../../../../../editor/common/model.js';
 import { DefaultLinesDiffComputer } from '../../../../../../editor/common/diff/defaultLinesDiffComputer/defaultLinesDiffComputer.js';
-import { DiffAlgorithmName, IEditorWorkerService } from '../../../../../../editor/common/services/editorWorker.js';
-import { IDocumentDiffProviderOptions, IDocumentDiff } from '../../../../../../editor/common/diff/documentDiffProvider.js';
+import {
+	DiffAlgorithmName,
+	IEditorWorkerService,
+} from '../../../../../../editor/common/services/editorWorker.js';
+import {
+	IDocumentDiffProviderOptions,
+	IDocumentDiff,
+} from '../../../../../../editor/common/diff/documentDiffProvider.js';
 import { getEditorPadding } from '../../../browser/diff/diffCellEditorOptions.js';
 import { HeightOfHiddenLinesRegionInDiffEditor } from '../../../browser/diff/diffElementViewModel.js';
 
@@ -35,11 +44,14 @@ suite('NotebookDiff EditorHeightCalculator', () => {
 			let calculator: DiffEditorHeightCalculatorService;
 			const hideUnchangedRegions = suiteTitle.startsWith('Hide');
 			const configurationService = new TestConfigurationService({
-				notebook: { diff: { ignoreMetadata: true } }, diffEditor: {
+				notebook: { diff: { ignoreMetadata: true } },
+				diffEditor: {
 					hideUnchangedRegions: {
-						enabled: hideUnchangedRegions, minimumLineCount: 3, contextLineCount: 3
-					}
-				}
+						enabled: hideUnchangedRegions,
+						minimumLineCount: 3,
+						contextLineCount: 3,
+					},
+				},
 			});
 
 			function createTextModel(lines: string[]): ITextModel {
@@ -51,21 +63,32 @@ suite('NotebookDiff EditorHeightCalculator', () => {
 
 			setup(() => {
 				disposables = new DisposableStore();
-				textModelResolver = new class extends mock<ITextModelService>() {
-					override async createModelReference(resource: URI): Promise<IReference<IResolvedTextEditorModel>> {
+				textModelResolver = new (class extends mock<ITextModelService>() {
+					override async createModelReference(
+						resource: URI
+					): Promise<IReference<IResolvedTextEditorModel>> {
 						return {
-							dispose: () => { },
+							dispose: () => {},
 							object: {
 								textEditorModel: resource === original ? originalModel : modifiedModel,
 								getLanguageId: () => 'javascript',
-							} as any
+							} as any,
 						};
 					}
-				};
-				editorWorkerService = new class extends mock<IEditorWorkerService>() {
-					override async computeDiff(_original: URI, _modified: URI, options: IDocumentDiffProviderOptions, _algorithm: DiffAlgorithmName): Promise<IDocumentDiff | null> {
-						const originalLines = new Array(originalModel.getLineCount()).fill(0).map((_, i) => originalModel.getLineContent(i + 1));
-						const modifiedLines = new Array(modifiedModel.getLineCount()).fill(0).map((_, i) => modifiedModel.getLineContent(i + 1));
+				})();
+				editorWorkerService = new (class extends mock<IEditorWorkerService>() {
+					override async computeDiff(
+						_original: URI,
+						_modified: URI,
+						options: IDocumentDiffProviderOptions,
+						_algorithm: DiffAlgorithmName
+					): Promise<IDocumentDiff | null> {
+						const originalLines = new Array(originalModel.getLineCount())
+							.fill(0)
+							.map((_, i) => originalModel.getLineContent(i + 1));
+						const modifiedLines = new Array(modifiedModel.getLineCount())
+							.fill(0)
+							.map((_, i) => modifiedModel.getLineContent(i + 1));
 						const result = diffComputer.computeDiff(originalLines, modifiedLines, options);
 						const identical = originalLines.join('') === modifiedLines.join('');
 
@@ -75,10 +98,14 @@ suite('NotebookDiff EditorHeightCalculator', () => {
 							changes: result.changes,
 							moves: result.moves,
 						};
-
 					}
-				};
-				calculator = new DiffEditorHeightCalculatorService(fontInfo.lineHeight, textModelResolver, editorWorkerService, configurationService);
+				})();
+				calculator = new DiffEditorHeightCalculatorService(
+					fontInfo.lineHeight,
+					textModelResolver,
+					editorWorkerService,
+					configurationService
+				);
 			});
 
 			test('1 original line with change in same line', async () => {
@@ -116,7 +143,10 @@ suite('NotebookDiff EditorHeightCalculator', () => {
 				modifiedModel = disposables.add(createTextModel(createLines(10).concat('Foo Bar')));
 
 				const height = await calculator.diffAndComputeHeight(original, modified);
-				const expectedHeight = getExpectedHeight(hideUnchangedRegions ? 4 : 11, hideUnchangedRegions ? 1 : 0);
+				const expectedHeight = getExpectedHeight(
+					hideUnchangedRegions ? 4 : 11,
+					hideUnchangedRegions ? 1 : 0
+				);
 
 				assert.strictEqual(height, expectedHeight);
 			});
@@ -134,13 +164,21 @@ suite('NotebookDiff EditorHeightCalculator', () => {
 				modifiedModel = disposables.add(createTextModel(modifiedLines));
 
 				const height = await calculator.diffAndComputeHeight(original, modified);
-				const expectedHeight = getExpectedHeight(hideUnchangedRegions ? 50 : 70, hideUnchangedRegions ? 3 : 0);
+				const expectedHeight = getExpectedHeight(
+					hideUnchangedRegions ? 50 : 70,
+					hideUnchangedRegions ? 3 : 0
+				);
 
 				assert.strictEqual(height, expectedHeight);
 			});
 
 			function getExpectedHeight(visibleLineCount: number, unchangeRegionsHeight: number): number {
-				return (visibleLineCount * fontInfo.lineHeight) + getEditorPadding(visibleLineCount).top + getEditorPadding(visibleLineCount).bottom + (unchangeRegionsHeight * HeightOfHiddenLinesRegionInDiffEditor);
+				return (
+					visibleLineCount * fontInfo.lineHeight +
+					getEditorPadding(visibleLineCount).top +
+					getEditorPadding(visibleLineCount).bottom +
+					unchangeRegionsHeight * HeightOfHiddenLinesRegionInDiffEditor
+				);
 			}
 
 			function createLines(count: number, linePrefix = 'Hello World'): string[] {

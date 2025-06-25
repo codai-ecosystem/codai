@@ -4,13 +4,15 @@ import { NextResponse } from 'next/server';
 export default withAuth(
 	function middleware(req) {
 		// Log access attempts for security monitoring
-		console.log(`[Auth] ${req.method} ${req.url} - User: ${req.nextauth.token?.email || 'anonymous'}`);
-		
+		console.log(
+			`[Auth] ${req.method} ${req.url} - User: ${req.nextauth.token?.email || 'anonymous'}`
+		);
+
 		// Add Codai ecosystem headers
 		const response = NextResponse.next();
 		response.headers.set('X-Codai-Service', 'aide-control');
 		response.headers.set('X-Codai-Version', '1.0.0');
-		
+
 		return response;
 	},
 	{
@@ -26,18 +28,16 @@ export default withAuth(
 					'/_next',
 					'/favicon',
 					'/images',
-					'/static'
+					'/static',
 				];
-				
+
 				// Check if the current path is public
-				const isPublicPath = publicPaths.some(path => 
-					req.nextUrl.pathname.startsWith(path)
-				);
-				
+				const isPublicPath = publicPaths.some(path => req.nextUrl.pathname.startsWith(path));
+
 				if (isPublicPath) {
 					return true;
 				}
-				
+
 				// For protected routes, require authentication
 				return !!token;
 			},

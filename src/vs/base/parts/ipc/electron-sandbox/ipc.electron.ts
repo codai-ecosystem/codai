@@ -15,11 +15,14 @@ import { ipcRenderer } from '../../sandbox/electron-sandbox/globals.js';
  * provided from sandbox globals (via preload script).
  */
 export class Client extends IPCClient implements IDisposable {
-
 	private protocol: ElectronProtocol;
 
 	private static createProtocol(): ElectronProtocol {
-		const onMessage = Event.fromNodeEventEmitter<VSBuffer>(ipcRenderer, 'vscode:message', (_, message) => VSBuffer.wrap(message));
+		const onMessage = Event.fromNodeEventEmitter<VSBuffer>(
+			ipcRenderer,
+			'vscode:message',
+			(_, message) => VSBuffer.wrap(message)
+		);
 		ipcRenderer.send('vscode:hello');
 
 		return new ElectronProtocol(ipcRenderer, onMessage);

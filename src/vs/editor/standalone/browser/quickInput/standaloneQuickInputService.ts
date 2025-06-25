@@ -5,23 +5,43 @@
 
 import './standaloneQuickInput.css';
 import { Event } from '../../../../base/common/event.js';
-import { ICodeEditor, IOverlayWidget, IOverlayWidgetPosition, OverlayWidgetPositionPreference } from '../../../browser/editorBrowser.js';
-import { EditorContributionInstantiation, registerEditorContribution } from '../../../browser/editorExtensions.js';
+import {
+	ICodeEditor,
+	IOverlayWidget,
+	IOverlayWidgetPosition,
+	OverlayWidgetPositionPreference,
+} from '../../../browser/editorBrowser.js';
+import {
+	EditorContributionInstantiation,
+	registerEditorContribution,
+} from '../../../browser/editorExtensions.js';
 import { IEditorContribution } from '../../../common/editorCommon.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
-import { IQuickInputService, IQuickPickItem, IQuickPick, IInputBox, IQuickNavigateConfiguration, IPickOptions, QuickPickInput, IInputOptions, IQuickWidget } from '../../../../platform/quickinput/common/quickInput.js';
+import {
+	IQuickInputService,
+	IQuickPickItem,
+	IQuickPick,
+	IInputBox,
+	IQuickNavigateConfiguration,
+	IPickOptions,
+	QuickPickInput,
+	IInputOptions,
+	IQuickWidget,
+} from '../../../../platform/quickinput/common/quickInput.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 import { EditorScopedLayoutService } from '../standaloneLayoutService.js';
 import { ICodeEditorService } from '../../../browser/services/codeEditorService.js';
-import { QuickInputController, IQuickInputControllerHost } from '../../../../platform/quickinput/browser/quickInputController.js';
+import {
+	QuickInputController,
+	IQuickInputControllerHost,
+} from '../../../../platform/quickinput/browser/quickInputController.js';
 import { QuickInputService } from '../../../../platform/quickinput/browser/quickInputService.js';
 import { createSingleCallFunction } from '../../../../base/common/functional.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 
 class EditorScopedQuickInputService extends QuickInputService {
-
 	private host: IQuickInputControllerHost | undefined = undefined;
 
 	constructor(
@@ -30,14 +50,14 @@ class EditorScopedQuickInputService extends QuickInputService {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(
 			instantiationService,
 			contextKeyService,
 			themeService,
 			new EditorScopedLayoutService(editor.getContainerDomNode(), codeEditorService),
-			configurationService,
+			configurationService
 		);
 
 		// Use the passed in code editor as host for the quick input widget
@@ -46,21 +66,52 @@ class EditorScopedQuickInputService extends QuickInputService {
 			const widget = contribution.widget;
 			this.host = {
 				_serviceBrand: undefined,
-				get mainContainer() { return widget.getDomNode(); },
-				getContainer() { return widget.getDomNode(); },
-				whenContainerStylesLoaded() { return undefined; },
-				get containers() { return [widget.getDomNode()]; },
-				get activeContainer() { return widget.getDomNode(); },
-				get mainContainerDimension() { return editor.getLayoutInfo(); },
-				get activeContainerDimension() { return editor.getLayoutInfo(); },
-				get onDidLayoutMainContainer() { return editor.onDidLayoutChange; },
-				get onDidLayoutActiveContainer() { return editor.onDidLayoutChange; },
-				get onDidLayoutContainer() { return Event.map(editor.onDidLayoutChange, dimension => ({ container: widget.getDomNode(), dimension })); },
-				get onDidChangeActiveContainer() { return Event.None; },
-				get onDidAddContainer() { return Event.None; },
-				get mainContainerOffset() { return { top: 0, quickPickTop: 0 }; },
-				get activeContainerOffset() { return { top: 0, quickPickTop: 0 }; },
-				focus: () => editor.focus()
+				get mainContainer() {
+					return widget.getDomNode();
+				},
+				getContainer() {
+					return widget.getDomNode();
+				},
+				whenContainerStylesLoaded() {
+					return undefined;
+				},
+				get containers() {
+					return [widget.getDomNode()];
+				},
+				get activeContainer() {
+					return widget.getDomNode();
+				},
+				get mainContainerDimension() {
+					return editor.getLayoutInfo();
+				},
+				get activeContainerDimension() {
+					return editor.getLayoutInfo();
+				},
+				get onDidLayoutMainContainer() {
+					return editor.onDidLayoutChange;
+				},
+				get onDidLayoutActiveContainer() {
+					return editor.onDidLayoutChange;
+				},
+				get onDidLayoutContainer() {
+					return Event.map(editor.onDidLayoutChange, dimension => ({
+						container: widget.getDomNode(),
+						dimension,
+					}));
+				},
+				get onDidChangeActiveContainer() {
+					return Event.None;
+				},
+				get onDidAddContainer() {
+					return Event.None;
+				},
+				get mainContainerOffset() {
+					return { top: 0, quickPickTop: 0 };
+				},
+				get activeContainerOffset() {
+					return { top: 0, quickPickTop: 0 };
+				},
+				focus: () => editor.focus(),
 			};
 		} else {
 			this.host = undefined;
@@ -73,7 +124,6 @@ class EditorScopedQuickInputService extends QuickInputService {
 }
 
 export class StandaloneQuickInputService implements IQuickInputService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private mapEditorToService = new Map<ICodeEditor, EditorScopedQuickInputService>();
@@ -87,7 +137,10 @@ export class StandaloneQuickInputService implements IQuickInputService {
 		// editor or create it lazily if not yet created
 		let quickInputService = this.mapEditorToService.get(editor);
 		if (!quickInputService) {
-			const newQuickInputService = quickInputService = this.instantiationService.createInstance(EditorScopedQuickInputService, editor);
+			const newQuickInputService = (quickInputService = this.instantiationService.createInstance(
+				EditorScopedQuickInputService,
+				editor
+			));
 			this.mapEditorToService.set(editor, quickInputService);
 
 			createSingleCallFunction(editor.onDidDispose)(() => {
@@ -99,29 +152,52 @@ export class StandaloneQuickInputService implements IQuickInputService {
 		return quickInputService;
 	}
 
-	get currentQuickInput() { return this.activeService.currentQuickInput; }
-	get quickAccess() { return this.activeService.quickAccess; }
-	get backButton() { return this.activeService.backButton; }
-	get onShow() { return this.activeService.onShow; }
-	get onHide() { return this.activeService.onHide; }
+	get currentQuickInput() {
+		return this.activeService.currentQuickInput;
+	}
+	get quickAccess() {
+		return this.activeService.quickAccess;
+	}
+	get backButton() {
+		return this.activeService.backButton;
+	}
+	get onShow() {
+		return this.activeService.onShow;
+	}
+	get onHide() {
+		return this.activeService.onHide;
+	}
 
 	constructor(
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@ICodeEditorService private readonly codeEditorService: ICodeEditorService
-	) {
+	) {}
+
+	pick<T extends IQuickPickItem, O extends IPickOptions<T>>(
+		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
+		options?: O,
+		token: CancellationToken = CancellationToken.None
+	): Promise<(O extends { canPickMany: true } ? T[] : T) | undefined> {
+		return (this.activeService as unknown as QuickInputController) /* TS fail */
+			.pick(picks, options, token);
 	}
 
-	pick<T extends IQuickPickItem, O extends IPickOptions<T>>(picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[], options?: O, token: CancellationToken = CancellationToken.None): Promise<(O extends { canPickMany: true } ? T[] : T) | undefined> {
-		return (this.activeService as unknown as QuickInputController /* TS fail */).pick(picks, options, token);
-	}
-
-	input(options?: IInputOptions | undefined, token?: CancellationToken | undefined): Promise<string | undefined> {
+	input(
+		options?: IInputOptions | undefined,
+		token?: CancellationToken | undefined
+	): Promise<string | undefined> {
 		return this.activeService.input(options, token);
 	}
 
-	createQuickPick<T extends IQuickPickItem>(options: { useSeparators: true }): IQuickPick<T, { useSeparators: true }>;
-	createQuickPick<T extends IQuickPickItem>(options?: { useSeparators: boolean }): IQuickPick<T, { useSeparators: false }>;
-	createQuickPick<T extends IQuickPickItem>(options: { useSeparators: boolean } = { useSeparators: false }): IQuickPick<T, { useSeparators: boolean }> {
+	createQuickPick<T extends IQuickPickItem>(options: {
+		useSeparators: true;
+	}): IQuickPick<T, { useSeparators: true }>;
+	createQuickPick<T extends IQuickPickItem>(options?: {
+		useSeparators: boolean;
+	}): IQuickPick<T, { useSeparators: false }>;
+	createQuickPick<T extends IQuickPickItem>(
+		options: { useSeparators: boolean } = { useSeparators: false }
+	): IQuickPick<T, { useSeparators: boolean }> {
 		return this.activeService.createQuickPick(options);
 	}
 
@@ -167,7 +243,6 @@ export class StandaloneQuickInputService implements IQuickInputService {
 }
 
 export class QuickInputEditorContribution implements IEditorContribution {
-
 	static readonly ID = 'editor.controller.quickInput';
 
 	static get(editor: ICodeEditor): QuickInputEditorContribution | null {
@@ -186,7 +261,6 @@ export class QuickInputEditorContribution implements IEditorContribution {
 }
 
 export class QuickInputEditorWidget implements IOverlayWidget {
-
 	private static readonly ID = 'editor.contrib.quickInputWidget';
 
 	private domNode: HTMLElement;
@@ -214,4 +288,8 @@ export class QuickInputEditorWidget implements IOverlayWidget {
 	}
 }
 
-registerEditorContribution(QuickInputEditorContribution.ID, QuickInputEditorContribution, EditorContributionInstantiation.Lazy);
+registerEditorContribution(
+	QuickInputEditorContribution.ID,
+	QuickInputEditorContribution,
+	EditorContributionInstantiation.Lazy
+);

@@ -5,7 +5,6 @@
 
 import { KeyboardLayoutContribution } from './_.contribution.js';
 
-
 KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 	layout: { id: 'com.apple.keylayout.Italian-Pro', lang: 'it', localizedName: 'Italian' },
 	secondaryLayouts: [],
@@ -51,7 +50,7 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		Backspace: [],
 		Tab: [],
 		Space: [' ', ' ', ' ', ' ', 0],
-		Minus: ['\'', '?', '¡', '¿', 0],
+		Minus: ["'", '?', '¡', '¿', 0],
 		Equal: ['ì', '^', 'ˆ', '±', 4],
 		BracketLeft: ['è', 'é', '[', '{', 0],
 		BracketRight: ['+', '*', ']', '}', 0],
@@ -127,6 +126,6 @@ KeyboardLayoutContribution.INSTANCE.registerKeyboardLayout({
 		ControlRight: [],
 		ShiftRight: [],
 		AltRight: [],
-		MetaRight: []
-	}
+		MetaRight: [],
+	},
 });

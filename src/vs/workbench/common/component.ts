@@ -5,12 +5,16 @@
 
 import { Memento, MementoObject } from './memento.js';
 import { IThemeService, Themable } from '../../platform/theme/common/themeService.js';
-import { IStorageService, IStorageValueChangeEvent, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	IStorageValueChangeEvent,
+	StorageScope,
+	StorageTarget,
+} from '../../platform/storage/common/storage.js';
 import { DisposableStore } from '../../base/common/lifecycle.js';
 import { Event } from '../../base/common/event.js';
 
 export class Component extends Themable {
-
 	private readonly memento: Memento;
 
 	constructor(
@@ -22,14 +26,15 @@ export class Component extends Themable {
 
 		this.memento = new Memento(this.id, storageService);
 
-		this._register(storageService.onWillSaveState(() => {
+		this._register(
+			storageService.onWillSaveState(() => {
+				// Ask the component to persist state into the memento
+				this.saveState();
 
-			// Ask the component to persist state into the memento
-			this.saveState();
-
-			// Then save the memento into storage
-			this.memento.saveMemento();
-		}));
+				// Then save the memento into storage
+				this.memento.saveMemento();
+			})
+		);
 	}
 
 	getId(): string {
@@ -44,7 +49,10 @@ export class Component extends Themable {
 		return this.memento.reloadMemento(scope);
 	}
 
-	protected onDidChangeMementoValue(scope: StorageScope, disposables: DisposableStore): Event<IStorageValueChangeEvent> {
+	protected onDidChangeMementoValue(
+		scope: StorageScope,
+		disposables: DisposableStore
+	): Event<IStorageValueChangeEvent> {
 		return this.memento.onDidChangeValue(scope, disposables);
 	}
 

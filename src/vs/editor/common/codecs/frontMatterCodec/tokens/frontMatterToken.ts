@@ -12,7 +12,7 @@ import { FrontMatterSequence } from './frontMatterSequence.js';
  */
 export abstract class FrontMatterToken<
 	TTokens extends readonly BaseToken[] = readonly BaseToken[],
-> extends CompositeToken<TTokens> { }
+> extends CompositeToken<TTokens> {}
 
 /**
  * List of all currently supported value types.

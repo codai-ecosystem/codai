@@ -13,30 +13,16 @@ export const Layout: React.FC<LayoutProps> = ({
 	header,
 	sidebar,
 	statusBar,
-	className = ''
+	className = '',
 }) => {
 	return (
 		<div className={`h-screen flex flex-col ${className}`}>
-			{header && (
-				<div className="flex-shrink-0">
-					{header}
-				</div>
-			)}
+			{header && <div className="flex-shrink-0">{header}</div>}
 			<div className="flex-1 flex overflow-hidden">
-				{sidebar && (
-					<div className="flex-shrink-0">
-						{sidebar}
-					</div>
-				)}
-				<main className="flex-1 overflow-auto">
-					{children}
-				</main>
+				{sidebar && <div className="flex-shrink-0">{sidebar}</div>}
+				<main className="flex-1 overflow-auto">{children}</main>
 			</div>
-			{statusBar && (
-				<div className="flex-shrink-0">
-					{statusBar}
-				</div>
-			)}
+			{statusBar && <div className="flex-shrink-0">{statusBar}</div>}
 		</div>
 	);
 };

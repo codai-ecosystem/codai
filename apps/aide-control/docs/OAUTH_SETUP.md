@@ -105,12 +105,10 @@ In Firebase Authentication settings, add your domains to the authorized domains 
 ### Common Issues
 
 1. **"Invalid redirect URI"**
-
    - Ensure the redirect URI in your OAuth configuration matches exactly
    - Check for trailing slashes and HTTP vs HTTPS
 
 2. **"OAuth client not found"**
-
    - Verify your client IDs are correct in environment variables
    - Ensure the OAuth app is enabled in the respective platform
 

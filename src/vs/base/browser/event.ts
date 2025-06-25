@@ -10,7 +10,11 @@ import { IDisposable } from '../common/lifecycle.js';
 export type EventHandler = HTMLElement | HTMLDocument | Window;
 
 export interface IDomEvent {
-	<K extends keyof HTMLElementEventMap>(element: EventHandler, type: K, useCapture?: boolean): BaseEvent<HTMLElementEventMap[K]>;
+	<K extends keyof HTMLElementEventMap>(
+		element: EventHandler,
+		type: K,
+		useCapture?: boolean
+	): BaseEvent<HTMLElementEventMap[K]>;
 	(element: EventHandler, type: string, useCapture?: boolean): BaseEvent<unknown>;
 }
 
@@ -20,13 +24,12 @@ export interface DOMEventMap extends HTMLElementEventMap, DocumentEventMap, Wind
 	'-monaco-gesturestart': GestureEvent;
 	'-monaco-gesturesend': GestureEvent;
 	'-monaco-gesturecontextmenu': GestureEvent;
-	'compositionstart': CompositionEvent;
-	'compositionupdate': CompositionEvent;
-	'compositionend': CompositionEvent;
+	compositionstart: CompositionEvent;
+	compositionupdate: CompositionEvent;
+	compositionend: CompositionEvent;
 }
 
 export class DomEmitter<K extends keyof DOMEventMap> implements IDisposable {
-
 	private emitter: Emitter<DOMEventMap[K]>;
 
 	get event(): BaseEvent<DOMEventMap[K]> {
@@ -40,7 +43,7 @@ export class DomEmitter<K extends keyof DOMEventMap> implements IDisposable {
 		const fn = (e: Event) => this.emitter.fire(e as DOMEventMap[K]);
 		this.emitter = new Emitter({
 			onWillAddFirstListener: () => element.addEventListener(type, fn, useCapture),
-			onDidRemoveLastListener: () => element.removeEventListener(type, fn, useCapture)
+			onDidRemoveLastListener: () => element.removeEventListener(type, fn, useCapture),
 		});
 	}
 

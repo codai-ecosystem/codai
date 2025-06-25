@@ -6,22 +6,34 @@
 import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
 import { onUnexpectedError } from '../../../../base/common/errors.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
-import { DisposableStore, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+import {
+	DisposableStore,
+	MutableDisposable,
+	toDisposable,
+} from '../../../../base/common/lifecycle.js';
 import { Schemas, matchesSomeScheme } from '../../../../base/common/network.js';
 import { dirname, isEqual } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { FileKind } from '../../../../platform/files/common/files.js';
-import { IWorkspaceContextService, IWorkspaceFolder, WorkbenchState } from '../../../../platform/workspace/common/workspace.js';
+import {
+	IWorkspaceContextService,
+	IWorkspaceFolder,
+	WorkbenchState,
+} from '../../../../platform/workspace/common/workspace.js';
 import { BreadcrumbsConfig } from './breadcrumbs.js';
 import { IEditorPane } from '../../../common/editor.js';
-import { IOutline, IOutlineService, OutlineTarget } from '../../../services/outline/browser/outline.js';
+import {
+	IOutline,
+	IOutlineService,
+	OutlineTarget,
+} from '../../../services/outline/browser/outline.js';
 
 export class FileElement {
 	constructor(
 		readonly uri: URI,
 		readonly kind: FileKind
-	) { }
+	) {}
 }
 
 type FileInfo = { path: FileElement[]; folder?: IWorkspaceFolder };
@@ -30,11 +42,10 @@ export class OutlineElement2 {
 	constructor(
 		readonly element: IOutline<any> | any,
 		readonly outline: IOutline<any>
-	) { }
+	) {}
 }
 
 export class BreadcrumbsModel {
-
 	private readonly _disposables = new DisposableStore();
 	private _fileInfo: FileInfo;
 
@@ -52,14 +63,18 @@ export class BreadcrumbsModel {
 		readonly editor: IEditorPane | undefined,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IWorkspaceContextService private readonly _workspaceService: IWorkspaceContextService,
-		@IOutlineService private readonly _outlineService: IOutlineService,
+		@IOutlineService private readonly _outlineService: IOutlineService
 	) {
 		this._cfgFilePath = BreadcrumbsConfig.FilePath.bindTo(configurationService);
 		this._cfgSymbolPath = BreadcrumbsConfig.SymbolPath.bindTo(configurationService);
 
 		this._disposables.add(this._cfgFilePath.onDidChange(_ => this._onDidUpdate.fire(this)));
 		this._disposables.add(this._cfgSymbolPath.onDidChange(_ => this._onDidUpdate.fire(this)));
-		this._workspaceService.onDidChangeWorkspaceFolders(this._onDidChangeWorkspaceFolders, this, this._disposables);
+		this._workspaceService.onDidChangeWorkspaceFolders(
+			this._onDidChangeWorkspaceFolders,
+			this,
+			this._disposables
+		);
 		this._fileInfo = this._initFilePathInfo(resource);
 
 		if (editor) {
@@ -101,8 +116,16 @@ export class BreadcrumbsModel {
 			return result;
 		}
 
-		const breadcrumbsElements = this._currentOutline.value.config.breadcrumbsDataSource.getBreadcrumbElements();
-		for (let i = this._cfgSymbolPath.getValue() === 'last' && breadcrumbsElements.length > 0 ? breadcrumbsElements.length - 1 : 0; i < breadcrumbsElements.length; i++) {
+		const breadcrumbsElements =
+			this._currentOutline.value.config.breadcrumbsDataSource.getBreadcrumbElements();
+		for (
+			let i =
+				this._cfgSymbolPath.getValue() === 'last' && breadcrumbsElements.length > 0
+					? breadcrumbsElements.length - 1
+					: 0;
+			i < breadcrumbsElements.length;
+			i++
+		) {
 			result.push(new OutlineElement2(breadcrumbsElements[i], this._currentOutline.value));
 		}
 
@@ -114,17 +137,16 @@ export class BreadcrumbsModel {
 	}
 
 	private _initFilePathInfo(uri: URI): FileInfo {
-
 		if (matchesSomeScheme(uri, Schemas.untitled, Schemas.data)) {
 			return {
 				folder: undefined,
-				path: []
+				path: [],
 			};
 		}
 
 		const info: FileInfo = {
 			folder: this._workspaceService.getWorkspaceFolder(uri) ?? undefined,
-			path: []
+			path: [],
 		};
 
 		let uriPrefix: URI | null = uri;
@@ -132,7 +154,9 @@ export class BreadcrumbsModel {
 			if (info.folder && isEqual(info.folder.uri, uriPrefix)) {
 				break;
 			}
-			info.path.unshift(new FileElement(uriPrefix, info.path.length === 0 ? FileKind.FILE : FileKind.FOLDER));
+			info.path.unshift(
+				new FileElement(uriPrefix, info.path.length === 0 ? FileKind.FILE : FileKind.FOLDER)
+			);
 			const prevPathLength = uriPrefix.path.length;
 			uriPrefix = dirname(uriPrefix);
 			if (uriPrefix.path.length === prevPathLength) {
@@ -157,21 +181,23 @@ export class BreadcrumbsModel {
 		this._outlineDisposables.clear();
 		this._outlineDisposables.add(toDisposable(() => newCts.dispose(true)));
 
-		this._outlineService.createOutline(editor, OutlineTarget.Breadcrumbs, newCts.token).then(outline => {
-			if (newCts.token.isCancellationRequested) {
-				// cancelled: dispose new outline and reset
-				outline?.dispose();
-				outline = undefined;
-			}
-			this._currentOutline.value = outline;
-			this._onDidUpdate.fire(this);
-			if (outline) {
-				this._outlineDisposables.add(outline.onDidChange(() => this._onDidUpdate.fire(this)));
-			}
-
-		}).catch(err => {
-			this._onDidUpdate.fire(this);
-			onUnexpectedError(err);
-		});
+		this._outlineService
+			.createOutline(editor, OutlineTarget.Breadcrumbs, newCts.token)
+			.then(outline => {
+				if (newCts.token.isCancellationRequested) {
+					// cancelled: dispose new outline and reset
+					outline?.dispose();
+					outline = undefined;
+				}
+				this._currentOutline.value = outline;
+				this._onDidUpdate.fire(this);
+				if (outline) {
+					this._outlineDisposables.add(outline.onDidChange(() => this._onDidUpdate.fire(this)));
+				}
+			})
+			.catch(err => {
+				this._onDidUpdate.fire(this);
+				onUnexpectedError(err);
+			});
 	}
 }

@@ -29,7 +29,9 @@ export function testCommand(
 	if (prepare) {
 		instantiationService.invokeFunction(prepare, disposables);
 	}
-	const model = disposables.add(instantiateTextModel(instantiationService, lines.join('\n'), languageId));
+	const model = disposables.add(
+		instantiateTextModel(instantiationService, lines.join('\n'), languageId)
+	);
 	const editor = disposables.add(instantiateTestCodeEditor(instantiationService, model));
 	const viewModel = editor.getViewModel()!;
 
@@ -39,7 +41,9 @@ export function testCommand(
 
 	viewModel.setSelections('tests', [selection]);
 
-	const command = instantiationService.invokeFunction((accessor) => commandFactory(accessor, viewModel.getSelection()));
+	const command = instantiationService.invokeFunction(accessor =>
+		commandFactory(accessor, viewModel.getSelection())
+	);
 	viewModel.executeCommand(command, 'tests');
 
 	assert.deepStrictEqual(model.getLinesContent(), expectedLines);
@@ -60,7 +64,7 @@ export function getEditOperation(model: ITextModel, command: ICommand): ISingleE
 			operations.push({
 				range: range,
 				text: text,
-				forceMoveMarkers: forceMoveMarkers
+				forceMoveMarkers: forceMoveMarkers,
 			});
 		},
 
@@ -68,14 +72,13 @@ export function getEditOperation(model: ITextModel, command: ICommand): ISingleE
 			operations.push({
 				range: range,
 				text: text,
-				forceMoveMarkers: forceMoveMarkers
+				forceMoveMarkers: forceMoveMarkers,
 			});
 		},
 
-
 		trackSelection: (selection: ISelection) => {
 			return '';
-		}
+		},
 	};
 	command.getEditOperations(model, editOperationBuilder);
 	return operations;

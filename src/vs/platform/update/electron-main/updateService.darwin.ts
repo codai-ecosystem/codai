@@ -10,22 +10,41 @@ import { hash } from '../../../base/common/hash.js';
 import { DisposableStore } from '../../../base/common/lifecycle.js';
 import { IConfigurationService } from '../../configuration/common/configuration.js';
 import { IEnvironmentMainService } from '../../environment/electron-main/environmentMainService.js';
-import { ILifecycleMainService, IRelaunchHandler, IRelaunchOptions } from '../../lifecycle/electron-main/lifecycleMainService.js';
+import {
+	ILifecycleMainService,
+	IRelaunchHandler,
+	IRelaunchOptions,
+} from '../../lifecycle/electron-main/lifecycleMainService.js';
 import { ILogService } from '../../log/common/log.js';
 import { IProductService } from '../../product/common/productService.js';
 import { IRequestService } from '../../request/common/request.js';
 import { ITelemetryService } from '../../telemetry/common/telemetry.js';
 import { IUpdate, State, StateType, UpdateType } from '../common/update.js';
-import { AbstractUpdateService, createUpdateURL, UpdateErrorClassification } from './abstractUpdateService.js';
+import {
+	AbstractUpdateService,
+	createUpdateURL,
+	UpdateErrorClassification,
+} from './abstractUpdateService.js';
 
 export class DarwinUpdateService extends AbstractUpdateService implements IRelaunchHandler {
-
 	private readonly disposables = new DisposableStore();
 
-	@memoize private get onRawError(): Event<string> { return Event.fromNodeEventEmitter(electron.autoUpdater, 'error', (_, message) => message); }
-	@memoize private get onRawUpdateNotAvailable(): Event<void> { return Event.fromNodeEventEmitter<void>(electron.autoUpdater, 'update-not-available'); }
-	@memoize private get onRawUpdateAvailable(): Event<void> { return Event.fromNodeEventEmitter(electron.autoUpdater, 'update-available'); }
-	@memoize private get onRawUpdateDownloaded(): Event<IUpdate> { return Event.fromNodeEventEmitter(electron.autoUpdater, 'update-downloaded', (_, releaseNotes, version, timestamp) => ({ version, productVersion: version, timestamp })); }
+	@memoize private get onRawError(): Event<string> {
+		return Event.fromNodeEventEmitter(electron.autoUpdater, 'error', (_, message) => message);
+	}
+	@memoize private get onRawUpdateNotAvailable(): Event<void> {
+		return Event.fromNodeEventEmitter<void>(electron.autoUpdater, 'update-not-available');
+	}
+	@memoize private get onRawUpdateAvailable(): Event<void> {
+		return Event.fromNodeEventEmitter(electron.autoUpdater, 'update-available');
+	}
+	@memoize private get onRawUpdateDownloaded(): Event<IUpdate> {
+		return Event.fromNodeEventEmitter(
+			electron.autoUpdater,
+			'update-downloaded',
+			(_, releaseNotes, version, timestamp) => ({ version, productVersion: version, timestamp })
+		);
+	}
 
 	constructor(
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
@@ -36,7 +55,14 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
 		@ILogService logService: ILogService,
 		@IProductService productService: IProductService
 	) {
-		super(lifecycleMainService, configurationService, environmentMainService, requestService, logService, productService);
+		super(
+			lifecycleMainService,
+			configurationService,
+			environmentMainService,
+			requestService,
+			logService,
+			productService
+		);
 
 		lifecycleMainService.setRelaunchHandler(this);
 	}
@@ -65,11 +91,15 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
 	}
 
 	private onError(err: string): void {
-		this.telemetryService.publicLog2<{ messageHash: string }, UpdateErrorClassification>('update:error', { messageHash: String(hash(String(err))) });
+		this.telemetryService.publicLog2<{ messageHash: string }, UpdateErrorClassification>(
+			'update:error',
+			{ messageHash: String(hash(String(err))) }
+		);
 		this.logService.error('UpdateService error:', err);
 
 		// only show message when explicitly checking for updates
-		const message = (this.state.type === StateType.CheckingForUpdates && this.state.explicit) ? err : undefined;
+		const message =
+			this.state.type === StateType.CheckingForUpdates && this.state.explicit ? err : undefined;
 		this.setState(State.Idle(UpdateType.Archive, message));
 	}
 
@@ -120,10 +150,17 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
 
 		type UpdateDownloadedClassification = {
 			owner: 'joaomoreno';
-			newVersion: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The version number of the new VS Code that has been downloaded.' };
+			newVersion: {
+				classification: 'SystemMetaData';
+				purpose: 'FeatureInsight';
+				comment: 'The version number of the new VS Code that has been downloaded.';
+			};
 			comment: 'This is used to know how often VS Code has successfully downloaded the update.';
 		};
-		this.telemetryService.publicLog2<{ newVersion: String }, UpdateDownloadedClassification>('update:downloaded', { newVersion: update.version });
+		this.telemetryService.publicLog2<{ newVersion: String }, UpdateDownloadedClassification>(
+			'update:downloaded',
+			{ newVersion: update.version }
+		);
 
 		this.setState(State.Ready(update));
 	}

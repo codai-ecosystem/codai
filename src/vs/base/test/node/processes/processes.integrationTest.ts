@@ -15,8 +15,8 @@ function fork(id: string): cp.ChildProcess {
 		env: objects.mixin(objects.deepClone(process.env), {
 			VSCODE_ESM_ENTRYPOINT: id,
 			VSCODE_PIPE_LOGGING: 'true',
-			VSCODE_VERBOSE_LOGGING: true
-		})
+			VSCODE_VERBOSE_LOGGING: true,
+		}),
 	};
 
 	return cp.fork(FileAccess.asFileUri('bootstrap-fork').fsPath, ['--type=processTests'], opts);
@@ -59,25 +59,29 @@ suite('Processes', () => {
 		});
 	});
 
-	(!platform.isWindows || process.env['VSCODE_PID'] ? test.skip : test)('buffered sending - lots of data (potential deadlock on win32)', function (done: () => void) { // test is only relevant for Windows and seems to crash randomly on some Linux builds
-		const child = fork('vs/base/test/node/processes/fixtures/fork_large');
-		const sender = processes.createQueuedSender(child);
+	(!platform.isWindows || process.env['VSCODE_PID'] ? test.skip : test)(
+		'buffered sending - lots of data (potential deadlock on win32)',
+		function (done: () => void) {
+			// test is only relevant for Windows and seems to crash randomly on some Linux builds
+			const child = fork('vs/base/test/node/processes/fixtures/fork_large');
+			const sender = processes.createQueuedSender(child);
 
-		const largeObj = Object.create(null);
-		for (let i = 0; i < 10000; i++) {
-			largeObj[i] = 'some data';
-		}
-
-		const msg = JSON.stringify(largeObj);
-		child.on('message', msgFromChild => {
-			if (msgFromChild === 'ready') {
-				sender.send(msg);
-				sender.send(msg);
-				sender.send(msg);
-			} else if (msgFromChild === 'done') {
-				child.kill();
-				done();
+			const largeObj = Object.create(null);
+			for (let i = 0; i < 10000; i++) {
+				largeObj[i] = 'some data';
 			}
-		});
-	});
+
+			const msg = JSON.stringify(largeObj);
+			child.on('message', msgFromChild => {
+				if (msgFromChild === 'ready') {
+					sender.send(msg);
+					sender.send(msg);
+					sender.send(msg);
+				} else if (msgFromChild === 'done') {
+					child.kill();
+					done();
+				}
+			});
+		}
+	);
 });

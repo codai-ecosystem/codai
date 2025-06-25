@@ -51,11 +51,11 @@ export function Footer() {
 							<span className="text-2xl font-bold text-foreground">AIDE</span>
 						</div>
 						<p className="text-muted-foreground mb-6 max-w-md">
-							The complete AI-powered development platform for modern software teams.
-							Build, deploy, and scale with autonomous AI assistance.
+							The complete AI-powered development platform for modern software teams. Build, deploy,
+							and scale with autonomous AI assistance.
 						</p>
 						<div className="flex space-x-4">
-							{socialLinks.map((social) => (
+							{socialLinks.map(social => (
 								<Link
 									key={social.name}
 									href={social.href}
@@ -74,7 +74,7 @@ export function Footer() {
 							Product
 						</h3>
 						<ul className="space-y-3">
-							{navigation.product.map((item) => (
+							{navigation.product.map(item => (
 								<li key={item.name}>
 									<Link
 										href={item.href}
@@ -92,7 +92,7 @@ export function Footer() {
 							Company
 						</h3>
 						<ul className="space-y-3">
-							{navigation.company.map((item) => (
+							{navigation.company.map(item => (
 								<li key={item.name}>
 									<Link
 										href={item.href}
@@ -110,7 +110,7 @@ export function Footer() {
 							Support
 						</h3>
 						<ul className="space-y-3">
-							{navigation.support.map((item) => (
+							{navigation.support.map(item => (
 								<li key={item.name}>
 									<Link
 										href={item.href}
@@ -128,7 +128,7 @@ export function Footer() {
 							Legal
 						</h3>
 						<ul className="space-y-3">
-							{navigation.legal.map((item) => (
+							{navigation.legal.map(item => (
 								<li key={item.name}>
 									<Link
 										href={item.href}
@@ -145,9 +145,7 @@ export function Footer() {
 				{/* Bottom Section */}
 				<div className="mt-12 pt-8 border-t border-border">
 					<div className="flex flex-col md:flex-row justify-between items-center">
-						<p className="text-muted-foreground text-sm">
-							© 2025 AIDE. All rights reserved.
-						</p>
+						<p className="text-muted-foreground text-sm">© 2025 AIDE. All rights reserved.</p>
 						<p className="text-muted-foreground text-sm mt-4 md:mt-0">
 							Made with ❤️ by the AIDE team
 						</p>

@@ -14,44 +14,49 @@ import { IModelService } from '../../../../../editor/common/services/model.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { BulkFileOperations } from '../../browser/preview/bulkEditPreview.js';
 import { Range } from '../../../../../editor/common/core/range.js';
-import { ResourceFileEdit, ResourceTextEdit } from '../../../../../editor/browser/services/bulkEditService.js';
+import {
+	ResourceFileEdit,
+	ResourceTextEdit,
+} from '../../../../../editor/browser/services/bulkEditService.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('BulkEditPreview', function () {
-
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	let instaService: IInstantiationService;
 
 	setup(function () {
-
-		const fileService: IFileService = new class extends mock<IFileService>() {
+		const fileService: IFileService = new (class extends mock<IFileService>() {
 			override onDidFilesChange = Event.None;
 			override async exists() {
 				return true;
 			}
-		};
+		})();
 
-		const modelService: IModelService = new class extends mock<IModelService>() {
+		const modelService: IModelService = new (class extends mock<IModelService>() {
 			override getModel() {
 				return null;
 			}
 			override getModels() {
 				return [];
 			}
-		};
+		})();
 
-		instaService = new InstantiationService(new ServiceCollection(
-			[IFileService, fileService],
-			[IModelService, modelService],
-		));
+		instaService = new InstantiationService(
+			new ServiceCollection([IFileService, fileService], [IModelService, modelService])
+		);
 	});
 
 	test('one needsConfirmation unchecks all of file', async function () {
-
 		const edits = [
-			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, { label: 'cat1', needsConfirmation: true }),
-			new ResourceFileEdit(URI.parse('some:///uri1'), URI.parse('some:///uri2'), undefined, { label: 'cat2', needsConfirmation: false }),
+			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, {
+				label: 'cat1',
+				needsConfirmation: true,
+			}),
+			new ResourceFileEdit(URI.parse('some:///uri1'), URI.parse('some:///uri2'), undefined, {
+				label: 'cat2',
+				needsConfirmation: false,
+			}),
 		];
 
 		const ops = await instaService.invokeFunction(BulkFileOperations.create, edits);
@@ -61,12 +66,16 @@ suite('BulkEditPreview', function () {
 	});
 
 	test('has categories', async function () {
-
 		const edits = [
-			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, { label: 'uri1', needsConfirmation: true }),
-			new ResourceFileEdit(undefined, URI.parse('some:///uri2'), undefined, { label: 'uri2', needsConfirmation: false }),
+			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, {
+				label: 'uri1',
+				needsConfirmation: true,
+			}),
+			new ResourceFileEdit(undefined, URI.parse('some:///uri2'), undefined, {
+				label: 'uri2',
+				needsConfirmation: false,
+			}),
 		];
-
 
 		const ops = await instaService.invokeFunction(BulkFileOperations.create, edits);
 		store.add(ops);
@@ -76,10 +85,15 @@ suite('BulkEditPreview', function () {
 	});
 
 	test('has not categories', async function () {
-
 		const edits = [
-			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, { label: 'uri1', needsConfirmation: true }),
-			new ResourceFileEdit(undefined, URI.parse('some:///uri2'), undefined, { label: 'uri1', needsConfirmation: false }),
+			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, {
+				label: 'uri1',
+				needsConfirmation: true,
+			}),
+			new ResourceFileEdit(undefined, URI.parse('some:///uri2'), undefined, {
+				label: 'uri1',
+				needsConfirmation: false,
+			}),
 		];
 
 		const ops = await instaService.invokeFunction(BulkFileOperations.create, edits);
@@ -90,12 +104,18 @@ suite('BulkEditPreview', function () {
 	});
 
 	test('category selection', async function () {
-
 		const edits = [
-			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, { label: 'C1', needsConfirmation: false }),
-			new ResourceTextEdit(URI.parse('some:///uri2'), { text: 'foo', range: new Range(1, 1, 1, 1) }, undefined, { label: 'C2', needsConfirmation: false }),
+			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, {
+				label: 'C1',
+				needsConfirmation: false,
+			}),
+			new ResourceTextEdit(
+				URI.parse('some:///uri2'),
+				{ text: 'foo', range: new Range(1, 1, 1, 1) },
+				undefined,
+				{ label: 'C2', needsConfirmation: false }
+			),
 		];
-
 
 		const ops = await instaService.invokeFunction(BulkFileOperations.create, edits);
 		store.add(ops);
@@ -116,12 +136,19 @@ suite('BulkEditPreview', function () {
 	});
 
 	test('fix bad metadata', async function () {
-
 		// bogous edit that wants creation to be confirmed, but not it's textedit-child...
 
 		const edits = [
-			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, { label: 'C1', needsConfirmation: true }),
-			new ResourceTextEdit(URI.parse('some:///uri1'), { text: 'foo', range: new Range(1, 1, 1, 1) }, undefined, { label: 'C2', needsConfirmation: false })
+			new ResourceFileEdit(undefined, URI.parse('some:///uri1'), undefined, {
+				label: 'C1',
+				needsConfirmation: true,
+			}),
+			new ResourceTextEdit(
+				URI.parse('some:///uri1'),
+				{ text: 'foo', range: new Range(1, 1, 1, 1) },
+				undefined,
+				{ label: 'C2', needsConfirmation: false }
+			),
 		];
 
 		const ops = await instaService.invokeFunction(BulkFileOperations.create, edits);

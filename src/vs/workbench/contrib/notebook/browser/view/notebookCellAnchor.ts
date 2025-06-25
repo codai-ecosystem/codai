@@ -6,7 +6,11 @@
 import { IDisposable } from '../../../../../base/common/lifecycle.js';
 import { CellFocusMode, ICellViewModel } from '../notebookBrowser.js';
 import { CodeCellViewModel } from '../viewModel/codeCellViewModel.js';
-import { CellKind, NotebookCellExecutionState, NotebookSetting } from '../../common/notebookCommon.js';
+import {
+	CellKind,
+	NotebookCellExecutionState,
+	NotebookSetting,
+} from '../../common/notebookCommon.js';
 import { INotebookExecutionStateService } from '../../common/notebookExecutionStateService.js';
 import { Event } from '../../../../../base/common/event.js';
 import { ScrollEvent } from '../../../../../base/common/scrollable.js';
@@ -14,9 +18,7 @@ import { IConfigurationService } from '../../../../../platform/configuration/com
 import { IListView } from '../../../../../base/browser/ui/list/listView.js';
 import { CellViewModel } from '../viewModel/notebookViewModelImpl.js';
 
-
 export class NotebookCellAnchor implements IDisposable {
-
 	private stopAnchoring = false;
 	private executionWatcher: IDisposable | undefined;
 	private scrollWatcher: IDisposable | undefined;
@@ -24,10 +26,15 @@ export class NotebookCellAnchor implements IDisposable {
 	constructor(
 		private readonly notebookExecutionStateService: INotebookExecutionStateService,
 		private readonly configurationService: IConfigurationService,
-		private readonly scrollEvent: Event<ScrollEvent>) {
-	}
+		private readonly scrollEvent: Event<ScrollEvent>
+	) {}
 
-	public shouldAnchor(cellListView: IListView<CellViewModel>, focusedIndex: number, heightDelta: number, executingCellUri: ICellViewModel) {
+	public shouldAnchor(
+		cellListView: IListView<CellViewModel>,
+		focusedIndex: number,
+		heightDelta: number,
+		executingCellUri: ICellViewModel
+	) {
 		if (cellListView.element(focusedIndex).focusMode === CellFocusMode.Editor) {
 			return true;
 		}
@@ -35,10 +42,14 @@ export class NotebookCellAnchor implements IDisposable {
 			return false;
 		}
 
-		const newFocusBottom = cellListView.elementTop(focusedIndex) + cellListView.elementHeight(focusedIndex) + heightDelta;
+		const newFocusBottom =
+			cellListView.elementTop(focusedIndex) +
+			cellListView.elementHeight(focusedIndex) +
+			heightDelta;
 		const viewBottom = cellListView.renderHeight + cellListView.getScrollTop();
 		const focusStillVisible = viewBottom > newFocusBottom;
-		const allowScrolling = this.configurationService.getValue(NotebookSetting.scrollToRevealCell) !== 'none';
+		const allowScrolling =
+			this.configurationService.getValue(NotebookSetting.scrollToRevealCell) !== 'none';
 		const growing = heightDelta > 0;
 		const autoAnchor = allowScrolling && growing && !focusStillVisible;
 
@@ -61,7 +72,7 @@ export class NotebookCellAnchor implements IDisposable {
 					this.scrollWatcher?.dispose();
 					this.stopAnchoring = false;
 				});
-				this.scrollWatcher = this.scrollEvent((scrollEvent) => {
+				this.scrollWatcher = this.scrollEvent(scrollEvent => {
 					if (scrollEvent.scrollTop < scrollEvent.oldScrollTop) {
 						this.stopAnchoring = true;
 						this.scrollWatcher?.dispose();

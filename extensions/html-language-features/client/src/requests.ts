@@ -17,20 +17,24 @@ export namespace FsReadDirRequest {
 
 export function serveFileSystemRequests(client: BaseLanguageClient, runtime: Runtime): Disposable {
 	const disposables = [];
-	disposables.push(client.onRequest(FsReadDirRequest.type, (uriString: string) => {
-		const uri = Uri.parse(uriString);
-		if (uri.scheme === 'file' && runtime.fileFs) {
-			return runtime.fileFs.readDirectory(uriString);
-		}
-		return workspace.fs.readDirectory(uri);
-	}));
-	disposables.push(client.onRequest(FsStatRequest.type, (uriString: string) => {
-		const uri = Uri.parse(uriString);
-		if (uri.scheme === 'file' && runtime.fileFs) {
-			return runtime.fileFs.stat(uriString);
-		}
-		return workspace.fs.stat(uri);
-	}));
+	disposables.push(
+		client.onRequest(FsReadDirRequest.type, (uriString: string) => {
+			const uri = Uri.parse(uriString);
+			if (uri.scheme === 'file' && runtime.fileFs) {
+				return runtime.fileFs.readDirectory(uriString);
+			}
+			return workspace.fs.readDirectory(uri);
+		})
+	);
+	disposables.push(
+		client.onRequest(FsStatRequest.type, (uriString: string) => {
+			const uri = Uri.parse(uriString);
+			if (uri.scheme === 'file' && runtime.fileFs) {
+				return runtime.fileFs.stat(uriString);
+			}
+			return workspace.fs.stat(uri);
+		})
+	);
 	return Disposable.from(...disposables);
 }
 
@@ -50,7 +54,7 @@ export enum FileType {
 	/**
 	 * A symbolic link to a file.
 	 */
-	SymbolicLink = 64
+	SymbolicLink = 64,
 }
 export interface FileStat {
 	/**

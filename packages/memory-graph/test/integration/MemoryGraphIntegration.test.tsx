@@ -3,7 +3,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MemoryGraphVisualization } from '../../src/components/MemoryGraphVisualization';
 import { MemoryGraph } from '../../src/schemas';
-import { createFeatureNode, createScreenNode, createApiNode, createDataModelNode, createRelationship } from '../utils/testHelpers';
+import {
+	createFeatureNode,
+	createScreenNode,
+	createApiNode,
+	createDataModelNode,
+	createRelationship,
+} from '../utils/testHelpers';
 
 /**
  * Integration tests for the complete Memory Graph system
@@ -42,51 +48,51 @@ describe('Memory Graph Integration Tests', () => {
 		// Create a realistic memory graph for testing
 		const featureNode = createFeatureNode({
 			name: 'User Authentication',
-			description: 'Complete user authentication system with login, logout, and session management'
+			description: 'Complete user authentication system with login, logout, and session management',
 		});
 
 		const loginScreen = createScreenNode({
 			name: 'Login Screen',
-			description: 'User login interface with email and password fields'
+			description: 'User login interface with email and password fields',
 		});
 
 		const dashboardScreen = createScreenNode({
 			name: 'Dashboard Screen',
-			description: 'Main dashboard after successful login'
+			description: 'Main dashboard after successful login',
 		});
 
 		const authApi = createApiNode({
 			name: 'Authentication API',
-			description: 'RESTful API for user authentication'
+			description: 'RESTful API for user authentication',
 		});
 
 		const userDataModel = createDataModelNode({
 			name: 'User Model',
-			description: 'User data model for authentication'
+			description: 'User data model for authentication',
 		});
 
 		const relationship1 = createRelationship({
 			fromNodeId: featureNode.id,
 			toNodeId: loginScreen.id,
-			type: 'contains'
+			type: 'contains',
 		});
 
 		const relationship2 = createRelationship({
 			fromNodeId: featureNode.id,
 			toNodeId: dashboardScreen.id,
-			type: 'contains'
+			type: 'contains',
 		});
 
 		const relationship3 = createRelationship({
 			fromNodeId: loginScreen.id,
 			toNodeId: authApi.id,
-			type: 'uses'
+			type: 'uses',
 		});
 
 		const relationship4 = createRelationship({
 			fromNodeId: authApi.id,
 			toNodeId: userDataModel.id,
-			type: 'uses'
+			type: 'uses',
 		});
 
 		mockGraph = {
@@ -96,7 +102,7 @@ describe('Memory Graph Integration Tests', () => {
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			nodes: [featureNode, loginScreen, dashboardScreen, authApi, userDataModel],
-			relationships: [relationship1, relationship2, relationship3, relationship4]
+			relationships: [relationship1, relationship2, relationship3, relationship4],
 		};
 	});
 
@@ -133,7 +139,7 @@ describe('Memory Graph Integration Tests', () => {
 			// Verify the graph structure is properly rendered
 			const featureNode = await screen.findByText('User Authentication');
 			const loginScreen = await screen.findByText('Login Screen');
-			
+
 			expect(featureNode).toBeDefined();
 			expect(loginScreen).toBeDefined();
 		});
@@ -179,10 +185,7 @@ describe('Memory Graph Integration Tests', () => {
 	describe('Graph Layout and Display', () => {
 		it('renders graph with proper layout structure', async () => {
 			const { container } = render(
-				<MemoryGraphVisualization
-					graph={mockGraph}
-					isEditable={false}
-				/>
+				<MemoryGraphVisualization graph={mockGraph} isEditable={false} />
 			);
 
 			// Check that the graph container is present
@@ -191,12 +194,7 @@ describe('Memory Graph Integration Tests', () => {
 		});
 
 		it('handles different node types with appropriate styling', async () => {
-			render(
-				<MemoryGraphVisualization
-					graph={mockGraph}
-					isEditable={false}
-				/>
-			);
+			render(<MemoryGraphVisualization graph={mockGraph} isEditable={false} />);
 
 			// Wait for nodes to render
 			await waitFor(() => {
@@ -214,35 +212,30 @@ describe('Memory Graph Integration Tests', () => {
 	describe('Performance and Scalability', () => {
 		it('handles large graphs efficiently', async () => {
 			// Create a larger graph for performance testing
-			const largeNodes = Array.from({ length: 20 }, (_, i) => 
+			const largeNodes = Array.from({ length: 20 }, (_, i) =>
 				createFeatureNode({ name: `Feature ${i + 1}` })
 			);
-			
-			const largeRelationships = Array.from({ length: 15 }, (_, i) => 
+
+			const largeRelationships = Array.from({ length: 15 }, (_, i) =>
 				createRelationship({
 					fromNodeId: largeNodes[i % largeNodes.length].id,
 					toNodeId: largeNodes[(i + 1) % largeNodes.length].id,
-					type: 'depends_on'
+					type: 'depends_on',
 				})
 			);
 
 			const largeGraph: MemoryGraph = {
 				...mockGraph,
 				nodes: largeNodes,
-				relationships: largeRelationships
+				relationships: largeRelationships,
 			};
 
 			const startTime = performance.now();
-			
-			render(
-				<MemoryGraphVisualization
-					graph={largeGraph}
-					isEditable={false}
-				/>
-			);
+
+			render(<MemoryGraphVisualization graph={largeGraph} isEditable={false} />);
 
 			const renderTime = performance.now() - startTime;
-			
+
 			// Should render within reasonable time (less than 1 second)
 			expect(renderTime).toBeLessThan(1000);
 		});
@@ -259,19 +252,14 @@ describe('Memory Graph Integration Tests', () => {
 						name: '',
 						createdAt: new Date(),
 						updatedAt: new Date(),
-						version: '1.0.0'
-					} as any
+						version: '1.0.0',
+					} as any,
 				],
-				relationships: []
+				relationships: [],
 			};
 
 			expect(() => {
-				render(
-					<MemoryGraphVisualization
-						graph={malformedGraph}
-						isEditable={false}
-					/>
-				);
+				render(<MemoryGraphVisualization graph={malformedGraph} isEditable={false} />);
 			}).not.toThrow();
 		});
 
@@ -282,18 +270,13 @@ describe('Memory Graph Integration Tests', () => {
 					createRelationship({
 						fromNodeId: 'non-existent-node',
 						toNodeId: 'another-non-existent-node',
-						type: 'contains'
-					})
-				]
+						type: 'contains',
+					}),
+				],
 			};
 
 			expect(() => {
-				render(
-					<MemoryGraphVisualization
-						graph={graphWithBadRelationships}
-						isEditable={false}
-					/>
-				);
+				render(<MemoryGraphVisualization graph={graphWithBadRelationships} isEditable={false} />);
 			}).not.toThrow();
 		});
 	});
@@ -317,17 +300,12 @@ describe('Memory Graph Integration Tests', () => {
 		});
 
 		it('provides proper ARIA labels and roles', async () => {
-			render(
-				<MemoryGraphVisualization
-					graph={mockGraph}
-					isEditable={false}
-				/>
-			);
+			render(<MemoryGraphVisualization graph={mockGraph} isEditable={false} />);
 
 			// Check for accessibility attributes
 			const graphContainer = document.querySelector('.memory-graph-visualization');
 			expect(graphContainer).toBeDefined();
-			
+
 			// Additional ARIA checks would depend on the actual implementation
 		});
 	});
@@ -373,10 +351,7 @@ describe('Memory Graph Integration Tests', () => {
 			// Update with modified graph
 			const updatedGraph = {
 				...mockGraph,
-				nodes: [
-					...mockGraph.nodes,
-					createFeatureNode({ name: 'New Feature' })
-				]
+				nodes: [...mockGraph.nodes, createFeatureNode({ name: 'New Feature' })],
 			};
 
 			rerender(

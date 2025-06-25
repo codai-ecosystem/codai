@@ -9,7 +9,11 @@ import { IMarkdownString, MarkdownString } from '../../../../../../base/common/h
 import { autorun } from '../../../../../../base/common/observable.js';
 import { MarkdownRenderer } from '../../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
-import { IChatToolInvocation, IChatToolInvocationSerialized, IChatProgressMessage } from '../../../common/chatService.js';
+import {
+	IChatToolInvocation,
+	IChatToolInvocationSerialized,
+	IChatProgressMessage,
+} from '../../../common/chatService.js';
 import { IChatCodeBlockInfo } from '../../chat.js';
 import { IChatContentPartRenderContext } from '../chatContentParts.js';
 import { ChatProgressContentPart } from '../chatProgressContentPart.js';
@@ -24,7 +28,7 @@ export class ChatToolProgressSubPart extends BaseChatToolInvocationSubPart {
 		private readonly toolInvocation: IChatToolInvocation | IChatToolInvocationSerialized,
 		private readonly context: IChatContentPartRenderContext,
 		private readonly renderer: MarkdownRenderer,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super(toolInvocation);
 
@@ -32,18 +36,27 @@ export class ChatToolProgressSubPart extends BaseChatToolInvocationSubPart {
 	}
 
 	private createProgressPart(): HTMLElement {
-		if (this.toolInvocation.isComplete && this.toolInvocation.isConfirmed !== false && this.toolInvocation.pastTenseMessage) {
+		if (
+			this.toolInvocation.isComplete &&
+			this.toolInvocation.isConfirmed !== false &&
+			this.toolInvocation.pastTenseMessage
+		) {
 			const part = this.renderProgressContent(this.toolInvocation.pastTenseMessage);
 			this._register(part);
 			return part.domNode;
 		} else {
 			const container = document.createElement('div');
-			const progressObservable = this.toolInvocation.kind === 'toolInvocation' ? this.toolInvocation.progress : undefined;
-			this._register(autorun(reader => {
-				const progress = progressObservable?.read(reader);
-				const part = reader.store.add(this.renderProgressContent(progress?.message || this.toolInvocation.invocationMessage));
-				dom.reset(container, part.domNode);
-			}));
+			const progressObservable =
+				this.toolInvocation.kind === 'toolInvocation' ? this.toolInvocation.progress : undefined;
+			this._register(
+				autorun(reader => {
+					const progress = progressObservable?.read(reader);
+					const part = reader.store.add(
+						this.renderProgressContent(progress?.message || this.toolInvocation.invocationMessage)
+					);
+					dom.reset(container, part.domNode);
+				})
+			);
 			return container;
 		}
 	}
@@ -55,13 +68,22 @@ export class ChatToolProgressSubPart extends BaseChatToolInvocationSubPart {
 
 		const progressMessage: IChatProgressMessage = {
 			kind: 'progressMessage',
-			content
+			content,
 		};
 
-		const iconOverride = !this.toolInvocation.isConfirmed ?
-			Codicon.error :
-			this.toolInvocation.isComplete ?
-				Codicon.check : undefined;
-		return this.instantiationService.createInstance(ChatProgressContentPart, progressMessage, this.renderer, this.context, undefined, true, iconOverride);
+		const iconOverride = !this.toolInvocation.isConfirmed
+			? Codicon.error
+			: this.toolInvocation.isComplete
+				? Codicon.check
+				: undefined;
+		return this.instantiationService.createInstance(
+			ChatProgressContentPart,
+			progressMessage,
+			this.renderer,
+			this.context,
+			undefined,
+			true,
+			iconOverride
+		);
 	}
 }

@@ -41,35 +41,35 @@ class MatchCandidate {
 		readonly languageId: string,
 		readonly notebookUri: URI | undefined,
 		readonly notebookType: string | undefined,
-		readonly recursive: boolean,
-	) { }
+		readonly recursive: boolean
+	) {}
 
 	equals(other: MatchCandidate): boolean {
-		return this.notebookType === other.notebookType
-			&& this.languageId === other.languageId
-			&& this.uri.toString() === other.uri.toString()
-			&& this.notebookUri?.toString() === other.notebookUri?.toString()
-			&& this.recursive === other.recursive;
+		return (
+			this.notebookType === other.notebookType &&
+			this.languageId === other.languageId &&
+			this.uri.toString() === other.uri.toString() &&
+			this.notebookUri?.toString() === other.notebookUri?.toString() &&
+			this.recursive === other.recursive
+		);
 	}
 }
 
 export class LanguageFeatureRegistry<T> {
-
 	private _clock: number = 0;
 	private readonly _entries: Entry<T>[] = [];
 
 	private readonly _onDidChange = new Emitter<number>();
 	readonly onDidChange = this._onDidChange.event;
 
-	constructor(private readonly _notebookInfoResolver?: NotebookInfoResolver) { }
+	constructor(private readonly _notebookInfoResolver?: NotebookInfoResolver) {}
 
 	register(selector: LanguageSelector, provider: T): IDisposable {
-
 		let entry: Entry<T> | undefined = {
 			selector,
 			provider,
 			_score: -1,
-			_time: this._clock++
+			_time: this._clock++,
 		};
 
 		this._entries.push(entry);
@@ -139,8 +139,11 @@ export class LanguageFeatureRegistry<T> {
 		return result;
 	}
 
-	private _orderedForEach(model: ITextModel, recursive: boolean, callback: (provider: Entry<T>) => any): void {
-
+	private _orderedForEach(
+		model: ITextModel,
+		recursive: boolean,
+		callback: (provider: Entry<T>) => any
+	): void {
 		this._updateScores(model, recursive);
 
 		for (const entry of this._entries) {
@@ -153,13 +156,18 @@ export class LanguageFeatureRegistry<T> {
 	private _lastCandidate: MatchCandidate | undefined;
 
 	private _updateScores(model: ITextModel, recursive: boolean): void {
-
 		const notebookInfo = this._notebookInfoResolver?.(model.uri);
 
 		// use the uri (scheme, pattern) of the notebook info iff we have one
 		// otherwise it's the model's/document's uri
 		const candidate = notebookInfo
-			? new MatchCandidate(model.uri, model.getLanguageId(), notebookInfo.uri, notebookInfo.type, recursive)
+			? new MatchCandidate(
+					model.uri,
+					model.getLanguageId(),
+					notebookInfo.uri,
+					notebookInfo.type,
+					recursive
+				)
 			: new MatchCandidate(model.uri, model.getLanguageId(), undefined, undefined, recursive);
 
 		if (this._lastCandidate?.equals(candidate)) {
@@ -170,7 +178,14 @@ export class LanguageFeatureRegistry<T> {
 		this._lastCandidate = candidate;
 
 		for (const entry of this._entries) {
-			entry._score = score(entry.selector, candidate.uri, candidate.languageId, shouldSynchronizeModel(model), candidate.notebookUri, candidate.notebookType);
+			entry._score = score(
+				entry.selector,
+				candidate.uri,
+				candidate.languageId,
+				shouldSynchronizeModel(model),
+				candidate.notebookUri,
+				candidate.notebookType
+			);
 
 			if (isExclusive(entry.selector) && entry._score > 0) {
 				if (recursive) {
@@ -226,4 +241,3 @@ function isBuiltinSelector(selector: LanguageSelector): boolean {
 
 	return Boolean((selector as LanguageFilter).isBuiltin);
 }
-

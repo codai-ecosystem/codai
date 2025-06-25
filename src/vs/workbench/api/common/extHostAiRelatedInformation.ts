@@ -4,8 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
-import { ExtHostAiRelatedInformationShape, IMainContext, MainContext, MainThreadAiRelatedInformationShape } from './extHost.protocol.js';
-import type { CancellationToken, RelatedInformationProvider, RelatedInformationType, RelatedInformationResult } from 'vscode';
+import {
+	ExtHostAiRelatedInformationShape,
+	IMainContext,
+	MainContext,
+	MainThreadAiRelatedInformationShape,
+} from './extHost.protocol.js';
+import type {
+	CancellationToken,
+	RelatedInformationProvider,
+	RelatedInformationType,
+	RelatedInformationResult,
+} from 'vscode';
 import { Disposable } from './extHostTypes.js';
 
 export class ExtHostRelatedInformation implements ExtHostAiRelatedInformationShape {
@@ -18,7 +28,11 @@ export class ExtHostRelatedInformation implements ExtHostAiRelatedInformationSha
 		this._proxy = mainContext.getProxy(MainContext.MainThreadAiRelatedInformation);
 	}
 
-	async $provideAiRelatedInformation(handle: number, query: string, token: CancellationToken): Promise<RelatedInformationResult[]> {
+	async $provideAiRelatedInformation(
+		handle: number,
+		query: string,
+		token: CancellationToken
+	): Promise<RelatedInformationResult[]> {
 		if (this._relatedInformationProviders.size === 0) {
 			throw new Error('No related information providers registered');
 		}
@@ -28,15 +42,23 @@ export class ExtHostRelatedInformation implements ExtHostAiRelatedInformationSha
 			throw new Error('related information provider not found');
 		}
 
-		const result = await provider.provideRelatedInformation(query, token) ?? [];
+		const result = (await provider.provideRelatedInformation(query, token)) ?? [];
 		return result;
 	}
 
-	getRelatedInformation(extension: IExtensionDescription, query: string, types: RelatedInformationType[]): Promise<RelatedInformationResult[]> {
+	getRelatedInformation(
+		extension: IExtensionDescription,
+		query: string,
+		types: RelatedInformationType[]
+	): Promise<RelatedInformationResult[]> {
 		return this._proxy.$getAiRelatedInformation(query, types);
 	}
 
-	registerRelatedInformationProvider(extension: IExtensionDescription, type: RelatedInformationType, provider: RelatedInformationProvider): Disposable {
+	registerRelatedInformationProvider(
+		extension: IExtensionDescription,
+		type: RelatedInformationType,
+		provider: RelatedInformationProvider
+	): Disposable {
 		const handle = this._nextHandle;
 		this._nextHandle++;
 		this._relatedInformationProviders.set(handle, provider);

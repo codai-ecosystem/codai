@@ -10,9 +10,7 @@ import { ViewContext } from '../../../common/viewModel/viewContext.js';
 import * as viewEvents from '../../../common/viewEvents.js';
 import { EditorOption } from '../../../common/config/editorOptions.js';
 
-
 export class LinesDecorationsOverlay extends DedupOverlay {
-
 	private readonly _context: ViewContext;
 
 	private _decorationsLeft: number;
@@ -78,11 +76,23 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 			const linesDecorationsClassName = d.options.linesDecorationsClassName;
 			const zIndex = d.options.zIndex;
 			if (linesDecorationsClassName) {
-				r[rLen++] = new DecorationToRender(d.range.startLineNumber, d.range.endLineNumber, linesDecorationsClassName, d.options.linesDecorationsTooltip ?? null, zIndex);
+				r[rLen++] = new DecorationToRender(
+					d.range.startLineNumber,
+					d.range.endLineNumber,
+					linesDecorationsClassName,
+					d.options.linesDecorationsTooltip ?? null,
+					zIndex
+				);
 			}
 			const firstLineDecorationClassName = d.options.firstLineDecorationClassName;
 			if (firstLineDecorationClassName) {
-				r[rLen++] = new DecorationToRender(d.range.startLineNumber, d.range.startLineNumber, firstLineDecorationClassName, d.options.linesDecorationsTooltip ?? null, zIndex);
+				r[rLen++] = new DecorationToRender(
+					d.range.startLineNumber,
+					d.range.startLineNumber,
+					firstLineDecorationClassName,
+					d.options.linesDecorationsTooltip ?? null,
+					zIndex
+				);
 			}
 		}
 		return r;
@@ -91,14 +101,22 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 	public prepareRender(ctx: RenderingContext): void {
 		const visibleStartLineNumber = ctx.visibleRange.startLineNumber;
 		const visibleEndLineNumber = ctx.visibleRange.endLineNumber;
-		const toRender = this._render(visibleStartLineNumber, visibleEndLineNumber, this._getDecorations(ctx));
+		const toRender = this._render(
+			visibleStartLineNumber,
+			visibleEndLineNumber,
+			this._getDecorations(ctx)
+		);
 
 		const left = this._decorationsLeft.toString();
 		const width = this._decorationsWidth.toString();
 		const common = '" style="left:' + left + 'px;width:' + width + 'px;"></div>';
 
 		const output: string[] = [];
-		for (let lineNumber = visibleStartLineNumber; lineNumber <= visibleEndLineNumber; lineNumber++) {
+		for (
+			let lineNumber = visibleStartLineNumber;
+			lineNumber <= visibleEndLineNumber;
+			lineNumber++
+		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
 			const decorations = toRender[lineIndex].getDecorations();
 			let lineOutput = '';
